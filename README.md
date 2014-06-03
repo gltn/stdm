@@ -10,8 +10,14 @@ for both spatial and textual representations.
 Requirements
 ------------
 
--   SQLAlchemy 0.8 or higher
--   GeoAlchemy 2
--   fuzzyparsers 0.9
--   QtAlchemy 0.8
--   XML to DDL
+-   [SQLAlchemy][] 0.8 or higher
+-   [GeoAlchemy][] 2
+-   [fuzzyparsers][] 0.9
+-   [QtAlchemy][] 0.8
+-   [XML to DDL][]
+
+  [SQLAlchemy]: https://pypi.python.org/pypi/SQLAlchemy
+  [GeoAlchemy]: https://github.com/geoalchemy/geoalchemy2
+  [fuzzyparsers]: https://pypi.python.org/pypi/fuzzyparsers/0.9.0
+  [QtAlchemy]: https://pypi.python.org/pypi/qtalchemy/0.8.3
+  [XML to DDL]: http://xml2ddl.berlios.de/
