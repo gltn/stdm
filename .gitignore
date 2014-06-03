@@ -1,0 +1,7 @@
+#PyDev files
+*.project
+*.pydevproject
+.settings
+
+#Compiled Python Files
+*.pyc

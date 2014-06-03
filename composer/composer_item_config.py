@@ -1,0 +1,362 @@
+"""
+/***************************************************************************
+Name                 : Custom STDM composer configuration tools.
+Date                 : 10/May/2014
+copyright            : (C) 2014 by John Gitau
+email                : gkahiu@gmail.com
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+"""
+from PyQt4.QtCore import (
+                          QObject,
+                          Qt,
+                          QFile,
+                          QFileInfo
+                          )
+from PyQt4.QtGui import (
+                         QActionGroup,
+                         QAction,
+                         QIcon,
+                         QApplication,
+                         QMessageBox,
+                         QDialog
+                         )
+
+from PyQt4.QtXml import QDomDocument
+
+from qgis.gui import QgsComposerView
+
+from qgis.core import (
+                       QgsComposerArrow,
+                       QgsComposerLabel
+                       )
+
+from stdm.ui import (
+                     TemplateDocumentSelector
+                     )
+
+from .item_formatter import (
+                             LineFormatter,
+                             DataLabelFormatter,
+                             MapFormatter
+                             )
+
+class ComposerItemConfig(QObject):
+    """
+    Base class for custom configurations for QgsComposer.
+    """
+    itemConfigurations = []
+    
+    def __init__(self,composerWrapper):
+        QObject.__init__(self,composerWrapper.composerView())
+        self._composerWrapper = composerWrapper
+        self._itemFormatter = None
+        
+        self.itemAction = self.action()
+        self.itemAction.setCheckable(True)
+        self.itemAction.triggered.connect(self.on_action_triggered)
+        self.itemAction.toggled.connect(self.on_action_toggled)
+        
+        #Add action to toolbar and connect 'triggered' signal
+        self._composerWrapper.stdmToolBar().addAction(self.itemAction)
+        
+        #Add action to the composer items action group
+        if self._composerWrapper.selectMoveAction() != None and self.registerInItemGroup():
+            actionGroup = self._composerWrapper.selectMoveAction().actionGroup()
+            actionGroup.addAction(self.itemAction)
+        
+        #Connect signals
+        self.composerView().actionFinished.connect(self.onActionFinished)
+    
+    def action(self):
+        """
+        Specify QAction that will be associated with the configuration item.
+        """
+        raise NotImplementedError
+    
+    def registerInItemGroup(self):
+        """
+        Returns whether the action associated with this config should be registered in the item group
+        for adding composer items.
+        """
+        return True
+    
+    def on_action_triggered(self,state):
+        """
+        Slot raised upon action trigger.
+        """
+        pass
+    
+    def on_action_toggled(self,checked):
+        """
+        Slot raised when checked status of the action changes.
+        """
+        pass
+    
+    def mainWindow(self):
+        """
+        Returns the QMainWindow used by the composer view.
+        """
+        return self._composerWrapper.mainWindow()
+    
+    def composerView(self):
+        """
+        Returns the composer view.
+        """
+        return self._composerWrapper.composerView()
+    
+    def composition(self):
+        """
+        Returns the QgsComposition instance.
+        """
+        return self._composerWrapper.composition()
+    
+    def composerWrapper(self):
+        """
+        Returns an instance of the composer wrapper.
+        """
+        return self._composerWrapper
+    
+    def itemFormatter(self):
+        """
+        Returns the formatter configured for the item configuration.
+        """
+        return self._itemFormatter
+    
+    def onActionFinished(self):
+        """
+        Slot raised when the specified action has finished drawing in the composition.
+        This checks the default move/select action and uncheck the QAction for the
+        current configuration item.
+        """
+        self.itemAction.setChecked(False)
+        if self._composerWrapper.selectMoveAction() != None:
+            self._composerWrapper.selectMoveAction().setChecked(True)
+            
+    def onSelectItemChanged(self,selected):
+        """
+        Slot raised when selection changes.
+        """
+        pass
+    
+    @classmethod
+    def register(cls):
+        """
+        Add subclasses to the collection of config items.
+        """ 
+        ComposerItemConfig.itemConfigurations.append(cls)
+        
+class LineItemConfig(ComposerItemConfig):
+    """
+    For drawing lines in the composition. This uses the arrow composer item as the base.
+    """
+    def __init__(self,composerWrapper):
+        ComposerItemConfig.__init__(self, composerWrapper)
+        self._itemFormatter = LineFormatter()
+        
+    def action(self):
+        lineAct = QAction(QIcon(":/plugins/stdm/images/icons/line.png"), \
+        QApplication.translate("LineItemConfig","Add Line"), self.composerView())
+        
+        return lineAct
+
+    def on_action_triggered(self,state):
+        self.composerView().setCurrentTool(QgsComposerView.AddArrow)
+        
+    def on_action_toggled(self, checked):
+        if checked:
+            self.composerView().selectedItemChanged.connect(self.onSelectItemChanged)
+            
+        else:
+            self.composerView().selectedItemChanged.disconnect(self.onSelectItemChanged)
+        
+    def onSelectItemChanged(self, selected):
+        """
+        We use this method since there seems to be an issue with QgsComposition not raising
+        signals when new composer items are added in the composition.
+        """
+        selItems = self.composition().selectedComposerItems()
+        if len(selItems) == 0:
+            return
+        
+        arrow = selItems[0]
+        self._itemFormatter.apply(arrow,self.composerWrapper())
+ 
+LineItemConfig.register()
+
+class DataLabelConfig(ComposerItemConfig):
+    """
+    Enables users to define values for QgsComposerLabels from database sources.
+    """
+    def __init__(self,composerWrapper):
+        ComposerItemConfig.__init__(self, composerWrapper)
+        self._itemFormatter = DataLabelFormatter()
+        
+    def action(self):
+        dataLabelAct = QAction(QIcon(":/plugins/stdm/images/icons/db_field.png"), \
+        QApplication.translate("DataLabelConfig","Add Data Label"), self.composerView())
+        
+        return dataLabelAct
+    
+    def on_action_triggered(self, state):
+        self.composerView().setCurrentTool(QgsComposerView.AddLabel)
+        
+    def on_action_toggled(self, checked):
+        if checked:
+            self.composerView().selectedItemChanged.connect(self.onSelectItemChanged)
+            
+        else:
+            self.composerView().selectedItemChanged.disconnect(self.onSelectItemChanged)
+        
+    def onSelectItemChanged(self, selected):
+        """
+        We use this method since there seems to be an issue with QgsComposition not raising
+        signals when new composer items are added in the composition.
+        """
+        selItems = self.composition().selectedComposerItems()
+        if len(selItems) == 0:
+            return
+        
+        label = selItems[0]
+        self._itemFormatter.apply(label,self.composerWrapper())   
+    
+DataLabelConfig.register()
+
+class MapConfig(ComposerItemConfig):
+    """
+    Enables users to add a map into the composition as well as define styling for spatial
+    data sources.
+    """
+    def __init__(self,composerWrapper):
+        ComposerItemConfig.__init__(self, composerWrapper)
+        self._itemFormatter = MapFormatter()
+        
+    def action(self):
+        mapAct = QAction(QIcon(":/plugins/stdm/images/icons/add_map.png"), \
+        QApplication.translate("MapConfig","Add Map"), self.composerView())
+        
+        return mapAct
+    
+    def on_action_triggered(self, state):
+        self.composerView().setCurrentTool(QgsComposerView.AddMap)
+        
+    def on_action_toggled(self, checked):
+        if checked:
+            self.composerView().selectedItemChanged.connect(self.onSelectItemChanged)
+            
+        else:
+            self.composerView().selectedItemChanged.disconnect(self.onSelectItemChanged)
+        
+    def onSelectItemChanged(self, selected):
+        """
+        We use this method since there seems to be an issue with QgsComposition not raising
+        signals when new composer items are added in the composition.
+        """
+        selItems = self.composition().selectedComposerItems()
+        if len(selItems) == 0:
+            return
+        
+        templateMap = selItems[0]
+        self._itemFormatter.apply(templateMap,self.composerWrapper())   
+    
+MapConfig.register()
+
+class SeparatorConfig(ComposerItemConfig):
+    """
+    Simple toolbar separator.
+    """
+    def __init__(self,composerWrapper):
+        ComposerItemConfig.__init__(self, composerWrapper)
+        
+    def action(self):
+        separatorAct = QAction(self.composerView())
+        separatorAct.setSeparator(True)
+        
+        return separatorAct
+    
+    def registerInItemGroup(self):
+        return False
+    
+SeparatorConfig.register()
+
+class SaveTemplateConfig(ComposerItemConfig):
+    """
+    For saving user templates.
+    """
+    def __init__(self,composerWrapper):
+        ComposerItemConfig.__init__(self, composerWrapper)
+        self.itemAction.setCheckable(False)
+        
+    def action(self):
+        saveTemplateAct = QAction(QIcon(":/plugins/stdm/images/icons/save_tb.png"), \
+        QApplication.translate("SaveTemplateConfig","Save Document Template"), self.composerView())
+        
+        return saveTemplateAct
+    
+    def registerInItemGroup(self):
+        return False
+    
+    def on_action_triggered(self, state):
+        """
+        Save document template.
+        """
+        self.composerWrapper().saveTemplate()
+            
+SaveTemplateConfig.register()
+
+class OpenTemplateConfig(SaveTemplateConfig):
+    """
+    Opens user templates.
+    """
+    def action(self):
+        openTemplateAct = QAction(QIcon(":/plugins/stdm/images/icons/open_file.png"), \
+        QApplication.translate("OpenTemplateConfig","Open Document Template"), self.composerView())
+        
+        return openTemplateAct
+      
+    def on_action_triggered(self, state):
+        """
+        Load template document selector dialog then process selection.
+        """
+        docSelector = TemplateDocumentSelector(self.composerView())
+        
+        if docSelector.exec_() == QDialog.Accepted:
+            docName,filePath = docSelector.documentMapping()
+            self.composerWrapper().loadTemplate(filePath)  
+            
+OpenTemplateConfig.register()
+
+class ManageTemplatesConfig(ComposerItemConfig):
+    """
+    Action that loads dialog for managing user document templates.
+    """
+    def __init__(self,composerWrapper):
+        ComposerItemConfig.__init__(self, composerWrapper)
+        self.itemAction.setCheckable(False)
+        
+    def action(self):
+        manageTemplatesAct = QAction(QIcon(":/plugins/stdm/images/icons/manage_templates.png"), \
+        QApplication.translate("ManageTemplatesConfig","Manage Document Templates"), self.composerView())
+        
+        return manageTemplatesAct
+    
+    def registerInItemGroup(self):
+        return False
+    
+    def on_action_triggered(self, state):
+        """
+        Show dialog for managing document templates.
+        """
+        docManager = TemplateDocumentSelector(self.composerView(),False)
+        docManager.exec_()
+            
+ManageTemplatesConfig.register()
+    

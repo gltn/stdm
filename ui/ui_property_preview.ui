@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>frmPropertyPreview</class>
+ <widget class="QTabWidget" name="frmPropertyPreview">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>627</width>
+    <height>480</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Property Preview</string>
+  </property>
+  <property name="tabPosition">
+   <enum>QTabWidget::South</enum>
+  </property>
+  <property name="currentIndex">
+   <number>0</number>
+  </property>
+  <widget class="QWidget" name="local">
+   <attribute name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/plugins/stdm/images/icons/local.png</normaloff>:/plugins/stdm/images/icons/local.png</iconset>
+   </attribute>
+   <attribute name="title">
+    <string>Local</string>
+   </attribute>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0" colspan="2">
+     <widget class="QgsMapCanvas" name="localMap" native="true"/>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label">
+      <property name="maximumSize">
+       <size>
+        <width>120</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Map Reference</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QComboBox" name="cboMapReference">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>30</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="web">
+   <attribute name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/plugins/stdm/images/icons/web.png</normaloff>:/plugins/stdm/images/icons/web.png</iconset>
+   </attribute>
+   <attribute name="title">
+    <string>Web</string>
+   </attribute>
+   <widget class="QWebView" name="webView">
+    <property name="geometry">
+     <rect>
+      <x>19</x>
+      <y>19</y>
+      <width>561</width>
+      <height>401</height>
+     </rect>
+    </property>
+    <property name="url">
+     <url>
+      <string>about:blank</string>
+     </url>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QWebView</class>
+   <extends>QWidget</extends>
+   <header>QtWebKit/QWebView</header>
+  </customwidget>
+  <customwidget>
+   <class>QgsMapCanvas</class>
+   <extends>QWidget</extends>
+   <header>qgis.gui</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

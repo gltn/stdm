@@ -1,0 +1,13 @@
+[general]
+name=Social Tenure Domain Model
+description=A Pro-poor Land Information Tool.
+category=STDM
+version=0.9.8
+qgisMinimumVersion=2.0
+
+author=Global Land Tool Network
+email=stdm@unhabitat.org
+
+icon=images/icons/stdm.png
+
+class_name=stdmqgisloader
