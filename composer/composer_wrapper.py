@@ -451,7 +451,7 @@ class ComposerWrapper(QObject):
         Slot raised when a composer item is selected. Load the corresponding field selector
         if the selection is an STDM data field label.
         QComposerLabel is returned as a QObject in the slot argument hence, we have resorted to 
-        capturing the currently selected items in the composition.
+        capturing the current selected items in the composition.
         """
         selectedItems = self.composition().selectedComposerItems()
         

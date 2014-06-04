@@ -629,7 +629,7 @@ class stdmqgisloader:
             
         for layer in mapLayers:
             if self.isSTDMLayer(layer):
-                QgsMapLayerRegistry.instance().removeMapLayer(layer)
+                QgsMapLayerRegistry.instance().removeMapLayer(layer.id())
                 
         self.stdmTables = []
         

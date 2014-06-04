@@ -1,3 +1,4 @@
+
 """
 /***************************************************************************
 Name                 : Base Person Dialog
@@ -61,7 +62,7 @@ class BasePersonDialogMixin(MapperMixin):
         self.buttonBox.accepted.connect(self.submit)
         self.buttonBox.rejected.connect(self.cancel)
         
-class BasePerson(QDialog,Ui_frmBasePerson,MapperMixin):
+class BasePerson(QDialog,Ui_frmBasePerson,BasePersonDialogMixin):
     '''
     Base dialog for managing attributes for a person's record.
     ''' 
