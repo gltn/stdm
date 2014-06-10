@@ -1,7 +1,13 @@
+
 from .config import DatabaseConfig
 from .connection import DatabaseConnection
 from .database import STDMDb,Base, Model
 from .database import Content, Role, Enumerator,Respondent, LookupBase, CheckGender,CheckMaritalStatus, \
+from config import DatabaseConfig
+from connection import DatabaseConnection
+from database import STDMDb,Base,Model
+from database import Content, Role, Enumerator,Respondent, LookupBase, CheckGender,CheckMaritalStatus, \
+>>>>>>> db2c301434675ade0c35ba5525a9502e3bf1f67c
  SocialTenureRelationshipMixin, CheckSocialTenureRelationship, CheckRespondentType, \
  CheckWitnessRelationship, CheckHouseUseType, CheckLandType, CheckHouseType, CheckSavingsOption,\
  CheckFoodCropCategory, CheckInputService, CheckSocioEconomicImpact, BasePersonMixin, Farmer, Witness, \
@@ -16,6 +22,7 @@ socioEconImpactFormatter,foodCropCategoryFormatter,geometryFormatter,respondentN
 enumeratorNamesFormatter,dateFormatter
 from .lookups import initLookups
 from .mapping import MapperMixin,QgsFeatureMapperMixin,SAVE,UPDATE
+<<<<<<< HEAD
 from .pg_utils import spatial_tables,pg_tables,pg_views,table_column_names,geometryType,_execute
 
 from .stdm_entity import STDMEntity,LookupTable
@@ -35,3 +42,16 @@ from .config_table_reader import ConfigTableReader
 from .enums import datatypes, actions,constraints, nullable
 from .config_utils import setCollectiontypes,activeProfile, UserData,tableCols
 from .license_doc import LicenseDocument
+=======
+from .pg_utils import (
+                       spatial_tables,
+                       pg_tables,
+                       pg_views,
+                       table_column_names,
+                       geometryType,
+                       unique_column_values,
+                       columnType,
+                       process_report_filter,
+                       delete_table_data
+                       )
+>>>>>>> db2c301434675ade0c35ba5525a9502e3bf1f67c

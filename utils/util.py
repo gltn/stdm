@@ -18,11 +18,16 @@ email                : gkahiu@gmail.com
 """
 
 import os, os.path
+import tempfile
 from decimal import Decimal
 import binascii,string,random
 from collections import OrderedDict
 
-from PyQt4.QtCore import QDir
+from PyQt4.QtCore import (
+                          QDir,
+                          Qt
+                          )
+from PyQt4.QtGui import QPixmap
 
 from stdm.settings import RegistryConfig
 
@@ -71,7 +76,7 @@ def setModelAttrFromCombo(model,attributename,combo,ignorefirstitem = True):
 def setComboCurrentIndexWithItemData(combo,itemdata,onNoneSetCurrentIndex = True):
     '''
     Convenience method for setting the current index of the combo item
-    with the specified value of the item data
+    with the specified value of the item data.
     '''    
     if itemdata == None and onNoneSetCurrentIndex:
         combo.setCurrentIndex(0)
@@ -81,6 +86,82 @@ def setComboCurrentIndexWithItemData(combo,itemdata,onNoneSetCurrentIndex = True
     currIndex = combo.findData(itemdata)
     if currIndex != -1:
         combo.setCurrentIndex(currIndex)
+        
+def setComboCurrentIndexWithText(combo,text):
+    """
+    Convenience method for setting the current index of the combo item
+    with the specified value of the corresponding display text.
+    """
+    txtIndex = combo.findText(text)
+    if txtIndex != -1:
+        combo.setCurrentIndex(txtIndex)
+        
+def createQuerySet(columnList,resultSet,imageFields):
+    '''
+    Create a list consisting of dictionary items
+    derived from the database result set.
+    For image fields, the fxn will write the binary object to disk
+    and insert the full path of the image into the dictionary.    
+    '''
+    qSet=[]
+    #Create root directory name to be used for storing the current session's image files
+    rtDir=''
+    if len(imageFields)>0:        
+        rtDir=tempfile.mkdtemp()    
+    for r in resultSet:           
+        rowItems={}
+        for c in range(len(columnList)): 
+            clmName=str(columnList[c])
+            #Get the index of the image field, if one has been defined
+            imgIndex=getIndex(imageFields,clmName) 
+            if imgIndex!=-1:
+                imgPath=writeImage(rtDir,str(r[c]))
+                rowItems[clmName]=imgPath
+            else:                        
+                rowItems[clmName]=str(r[c])        
+        qSet.append(rowItems)       
+    
+    return rtDir,qSet
+
+def writeImage(rootDir,imageStr):
+    '''
+    Write an image object to disk under the root directory in the
+    system's temp directory. 
+    The method returns the absolute path to the image.
+    '''
+    imgTemp = PLUGIN_DIR + '/images/icons/img_not_available.jpg'  
+      
+    try:
+        os_hnd,imgPath = tempfile.mkstemp(suffix='.JPG',dir=rootDir)
+        pimgPix = QPixmap()
+        imgPix = pimgPix.scaled(80, 60, aspectRatioMode=Qt.KeepAspectRatio)
+        lStatus=imgPix.loadFromData(imageStr) #Load Status
+        
+        if lStatus:
+            wStatus=imgPix.save(imgPath) #Write Status
+            if wStatus:
+                imgTemp=imgPath  
+        os.close(os_hnd)   
+                       
+    except:
+        pass
+    
+    return imgTemp    
+        
+def copyattrs(objfrom, objto, names):
+    #Copies named attributes over to another object
+    for n in names:
+        if hasattr(objfrom,n):
+            v = getattr(objfrom,n)
+            setattr(objto,n,v) 
+            
+def compareLists(validList,userList):
+    #Method for validating if items defined in the user list actually exist in the valid list        
+    validList = [x for x in userList if x in validList]    
+    #Get invalid items in the user list    
+    invalidList = [x for x in userList if x not in validList]
+    
+    return validList, invalidList
         
 def replaceNoneText(dbvalue,replacewith=""):
     '''

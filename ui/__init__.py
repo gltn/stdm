@@ -66,6 +66,8 @@ from .composer_spcolumn_styler import (
                                        ComposerSpatialColumnEditor,
                                        SpatialFieldMapping
                                        )
+from .import_data import ImportData
+from .export_data import ExportData
             
 from .addtable import TableEditor
 from .attribute_editor import AttributeEditor
