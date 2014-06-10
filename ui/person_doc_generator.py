@@ -43,6 +43,7 @@ from .notification import NotificationBar
 from .entity_browser import FarmerEntitySelector
 from .ui_person_doc_generator import Ui_frmPersonDocGenerator
 from .composer_doc_selector import TemplateDocumentSelector
+from .stdmdialog import  declareMapping
 
 __all__ = ["PersonDocumentGenerator"]
 
@@ -61,19 +62,30 @@ class PersonDocumentGenerator(QDialog,Ui_frmPersonDocGenerator):
         
         self._notifBar = NotificationBar(self.vlNotification)
         
+        mapping=declareMapping.instance()
+        self._dbModel=mapping.tableMapping('party')
+        
         #Initialize person foreign key mapper
         self.personFKMapper = self.tabWidget.widget(0)
-        self.personFKMapper.setDatabaseModel(Farmer)
+        self.personFKMapper.setDatabaseModel(self._dbModel)
         self.personFKMapper.setEntitySelector(FarmerEntitySelector)
         self.personFKMapper.setSupportsList(True)
         self.personFKMapper.setDeleteonRemove(False)
+        '''
         self.personFKMapper.addCellFormatter("GenderID",genderFormatter)
         self.personFKMapper.addCellFormatter("MaritalStatusID",maritalStatusFormatter)
+        '''
         self.personFKMapper.setNotificationBar(self._notifBar)
         self.personFKMapper.initialize()
         
         #Configure person model attribute view
-        self.lstDocNaming.setDataModel(Farmer)
+        
+        QMessageBox.information(None,"test",str(self._dbModel.displayMapping()))
+        #tableMapping=self.mapping.displayMapping('party')
+        
+        
+        self.lstDocNaming.setDataModel(self._dbModel)
+        #self.lstDocNaming.setModelDisplayMapping(tableMapping)
         self.lstDocNaming.load()
         
         #Configure generate button
@@ -219,10 +231,11 @@ class PersonDocumentGenerator(QDialog,Ui_frmPersonDocGenerator):
                                                           filePath = self._outputFilePath)
             
             #Output folder location using custom naming  
+            
             else:
                 status,msg = docGenerator.run(self._docTemplatePath,entityFieldName,record.id,outputMode, \
                                                           dataFields = documentNamingAttrs,fileExtension = fileExtension, \
-                                                          dbmodel = Farmer)
+                                                          dbmodel = self._dbModel)
             
             if not status:
                 result = QMessageBox.warning(self, QApplication.translate("PersonDocumentGenerator","Document Generate Error"), 

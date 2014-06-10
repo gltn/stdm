@@ -37,14 +37,22 @@ from ui import (
                 ViewSTRWidget, 
                 AdminUnitSelector, 
                 FarmerEntityBrowser,
+                STDMEntityBrowser,
                 SurveyEntityBrowser,
-                PersonDocumentGenerator
+                PersonDocumentGenerator,
+                AboutDialog,
+                STDMDialog,
+                declareMapping,
+                WorkspaceLoader
                 )
 import data
 from data import (
                   STDMDb, 
                   Content,
-                  spatial_tables
+                  spatial_tables,
+                  ConfigTableReader,
+                  activeProfile,
+                  contentGroup
                   )
 from navigation import (
                         STDMAction,
@@ -59,7 +67,7 @@ from utils import getIndex
 from mapping.utils import pg_layerNamesIDMapping
 from composer import ComposerWrapper
 
-class stdmqgisloader:
+class STDMQGISLoader(object):
     
     viewSTRWin = None
     
@@ -94,6 +102,7 @@ class stdmqgisloader:
         self.loginAct = STDMAction(QIcon(":/plugins/stdm/images/icons/login.png"), \
         QApplication.translate("LoginToolbarAction","Login"), self.iface.mainWindow(),
         "CAA4F0D9-727F-4745-A1FC-C2173101F711")
+        
         self.aboutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/information.png"), \
         QApplication.translate("AboutToolbarAction","About"), self.iface.mainWindow(),
         "137FFB1B-90CD-4A6D-B49E-0E99CD46F784")
@@ -108,6 +117,8 @@ class stdmqgisloader:
         QObject.connect(self.loginAct, SIGNAL("triggered()"), self.login) 
         QObject.connect(self.changePasswordAct, SIGNAL("triggered()"), self.changePassword)
         QObject.connect(self.logoutAct, SIGNAL("triggered()"), self.logout)
+        self.aboutAct.triggered.connect(self.about)
+        # self.wzdAct.triggered.connect(self.workspaceLoader)
         self.initToolbar()
         
     def getThemeIcon(self, theName):        
@@ -160,11 +171,13 @@ class stdmqgisloader:
             
             #Get STDM tables
             self.stdmTables = spatial_tables()                         
-            
+            self.loadModules()
+            """
             try:
                 self.loadModules()
             except Exception as ex:
                 QMessageBox.warning(self.iface.mainWindow(),QApplication.translate("STDM","Error"),ex.message)
+            """
             
     def loadModules(self):
         '''
@@ -185,7 +198,19 @@ class stdmqgisloader:
         adminBtn.setPopupMode(QToolButton.InstantPopup)
         
         adminMenu = QMenu(adminBtn) 
-        adminBtn.setMenu(adminMenu)  
+        adminBtn.setMenu(adminMenu) 
+        
+        #Create content menu container
+        contentBtn = QToolButton()
+        contentObjName = QApplication.translate("ToolbarAdminSettings","Module Settings")
+        #Required by module loader for those widgets that need to be inserted into the container
+        contentBtn.setObjectName(contentObjName)              
+        contentBtn.setToolTip(contentObjName)
+        contentBtn.setIcon(QIcon(":/plugins/stdm/images/icons/entity_management.png"))
+        contentBtn.setPopupMode(QToolButton.InstantPopup)
+        
+        contentMenu = QMenu(contentBtn) 
+        contentBtn.setMenu(contentMenu)  
         
         #Separator definition
         tbSeparator = QAction(self.iface.mainWindow())   
@@ -205,8 +230,8 @@ class stdmqgisloader:
         QApplication.translate("NewSurveyToolbarAction","Survey"), self.iface.mainWindow()) 
         
         self.farmerAct = QAction(QIcon(":/plugins/stdm/images/icons/farmer.png"), \
-        QApplication.translate("NewFarmerToolbarAction","Farmer"), self.iface.mainWindow())    
-        
+        QApplication.translate("NewFarmerToolbarAction","Content"), self.iface.mainWindow())   
+                
         self.docDesignerAct = QAction(QIcon(":/plugins/stdm/images/icons/cert_designer.png"), \
         QApplication.translate("DocumentDesignerAction","Document Designer"), self.iface.mainWindow()) 
         
@@ -233,6 +258,12 @@ class stdmqgisloader:
         self.viewSTRAct = QAction(QIcon(":/plugins/stdm/images/icons/view_str.png"), \
         QApplication.translate("ViewSTRToolbarAction","View Social Tenure Relationship"), self.iface.mainWindow()) 
         
+        self.wzdAct = QAction(QIcon(":/plugins/stdm/images/icons/browse_all.png"),\
+                    QApplication.translate("WorkspaceConfig","Design Forms"), self.iface.mainWindow())
+        self.ModuleAct = QAction(QIcon(":/plugins/stdm/images/icons/browse_all.png"),\
+                    QApplication.translate("WorkspaceConfig","Modules"), self.iface.mainWindow())
+        
+
         #Connect the slots for the actions above
         QObject.connect(self.contentAuthAct, SIGNAL("triggered()"),self.contentAuthorization)
         QObject.connect(self.usersAct, SIGNAL("triggered()"),self.manageAccounts)     
@@ -244,10 +275,13 @@ class stdmqgisloader:
         QObject.connect(self.spatialEditorAct, SIGNAL("toggled(bool)"),self.onToggleSpatialEditing)
         QObject.connect(self.saveEditsAct, SIGNAL("triggered()"),self.onSaveEdits)
         QObject.connect(self.createFeatureAct, SIGNAL("triggered()"),self.onCreateFeature)
-        '''
+        contentMenu.triggered.connect(self.widgetLoader)
+        self.wzdAct.triggered.connect(self.workspaceLoader)
+        
+        
         QObject.connect(self.newSTRAct, SIGNAL("triggered()"), self.newSTR)
         QObject.connect(self.viewSTRAct, SIGNAL("triggered()"), self.onViewSTR)
-        '''
+        
         
         #Create content items
         contentAuthCnt = ContentGroup.contentItemFromQAction(self.contentAuthAct)
@@ -277,9 +311,57 @@ class stdmqgisloader:
         createFeatureCnt = ContentGroup.contentItemFromQAction(self.createFeatureAct)
         createFeatureCnt.code = "71CFDB15-EDB5-410D-82EA-0E982971BC51"
         
-        #Create content groups and add items
-        username = data.app_dbconn.User.UserName
+        wzdConfigCnt = ContentGroup.contentItemFromQAction(self.wzdAct)
+        wzdConfigCnt.code = "F16CA4AC-3E8C-49C8-BD3C-96111EA74206"
         
+        strViewCnt=ContentGroup.contentItemFromQAction(self.viewSTRAct)
+        strViewCnt.code="D13B0415-30B4-4497-B471-D98CA98CD841"
+        
+        username = data.app_dbconn.User.UserName
+        self.moduleCntGroup=None
+        self._moduleItems={}
+        profile=activeProfile()
+        handler=ConfigTableReader()
+        if profile==None:
+            '''add a default is not provided'''
+            default=handler.STDMProfiles()
+            #QMessageBox.information(self.iface.mainWindow(),"Title",str(profile))
+            profile=str(default[0])
+        
+        moduleList=[]
+        moduleList=handler.tableNames(profile)        
+        '''
+            map the user tables to sqlalchemy model object
+            '''
+        try:
+            tableMapping=declareMapping.instance()
+            tableMapping.setTableMapping(moduleList)
+        except:
+            pass
+        '''
+        add the tables to the stdm toolbar
+        '''
+        if 'spatial_unit' in moduleList:
+            moduleList.remove('spatial_unit')
+        for table in moduleList:
+            displayName=str(table).replace("_", " ").title()
+            #displayName=displayName.capitalize()
+            self._moduleItems[displayName]=table
+        for k,v in self._moduleItems.iteritems():
+            contentAction=QAction(QIcon(":/plugins/stdm/images/icons/table.png"),\
+                                         k, self.iface.mainWindow())
+            capabilities=contentGroup(self._moduleItems[k])
+            if capabilities!=None:
+                self.moduleCntGroup = TableContentGroup(username,k,contentAction)
+                self.moduleCntGroup.createContentItem().code =capabilities[0]
+                self.moduleCntGroup.readContentItem().code =capabilities[1]
+                self.moduleCntGroup.updateContentItem().code =capabilities[2]
+                self.moduleCntGroup.deleteContentItem().code =capabilities[3]
+                self.moduleCntGroup.register()
+                contentMenu.addAction(contentAction)
+                         
+        #Create content groups and add items
+                
         self.contentAuthCntGroup = ContentGroup(username)
         self.contentAuthCntGroup.addContentItem(contentAuthCnt)
         self.contentAuthCntGroup.setContainerItem(self.contentAuthAct)
@@ -303,6 +385,14 @@ class stdmqgisloader:
         self.createFeatureCntGroup.addContentItem(createFeatureCnt)
         self.createFeatureCntGroup.register()
         
+        self.wzdConfigCntGroup = ContentGroup(username,self.wzdAct)
+        self.wzdConfigCntGroup.addContentItem(wzdConfigCnt)
+        self.wzdConfigCntGroup.register()
+        
+        self.STRCntGroup = ContentGroup(username,self.viewSTRAct)
+        self.STRCntGroup.addContentItem(strViewCnt)
+        self.STRCntGroup.register()
+        
         self.surveyCntGroup = TableContentGroup(username,self.surveyAct.text(),self.surveyAct)
         self.surveyCntGroup.createContentItem().code = "A7783C39-1A5B-4F79-81C2-639C2EA3E8A3"
         self.surveyCntGroup.readContentItem().code = "CADFC838-DA3C-44C5-A6A8-3B2FC4CA8464"
@@ -310,12 +400,13 @@ class stdmqgisloader:
         self.surveyCntGroup.deleteContentItem().code = "C916ACF3-30E6-45C3-B8E1-22E56D0AFB3E"
         self.surveyCntGroup.register()
         
-        self.farmerCntGroup = TableContentGroup(username,self.farmerAct.text(),self.farmerAct)
-        self.farmerCntGroup.createContentItem().code = "07402A75-89BF-4EB2-A161-FE6EE875AD5B"
-        self.farmerCntGroup.readContentItem().code = "1ACF4D60-4592-4ED2-A479-C9D3E409B112"
-        self.farmerCntGroup.updateContentItem().code = "05E3DEAA-77A2-4556-ABF9-016427EE607F"
-        self.farmerCntGroup.deleteContentItem().code = "B2BC55EF-A0AF-45C7-A4BE-766839C910A3"
-        self.farmerCntGroup.register()
+#         self.farmerCntGroup = TableContentGroup(username,self.farmerAct.text(),self.farmerAct)
+#         self.farmerCntGroup.createContentItem().code = "07402A75-89BF-4EB2-A161-FE6EE875AD5B"
+#         self.farmerCntGroup.readContentItem().code = "1ACF4D60-4592-4ED2-A479-C9D3E409B112"
+#         self.farmerCntGroup.updateContentItem().code = "05E3DEAA-77A2-4556-ABF9-016427EE607F"
+#         self.farmerCntGroup.deleteContentItem().code = "B2BC55EF-A0AF-45C7-A4BE-766839C910A3"
+#         self.farmerCntGroup.register()
+
         
         self.docDesignerCntGroup = ContentGroup(username,self.docDesignerAct)
         self.docDesignerCntGroup.addContentItem(documentDesignerCnt)
@@ -327,13 +418,17 @@ class stdmqgisloader:
         
         self.toolbarLoader.addContent(self.contentAuthCntGroup,[adminMenu,adminBtn])
         self.toolbarLoader.addContent(self.userRoleCntGroup, [adminMenu,adminBtn])
+        self.toolbarLoader.addContent(self.moduleCntGroup, [contentMenu,contentBtn])
+        
         self.toolbarLoader.addContent(self.adminUnitsCntGroup)
+        
         self.toolbarLoader.addContent(tbSeparator)
+        self.toolbarLoader.addContent(self.wzdConfigCntGroup)
         self.toolbarLoader.addContent(self.docDesignerCntGroup)
         self.toolbarLoader.addContent(self.docGeneratorCntGroup)
         self.toolbarLoader.addContent(tbSeparator)
         self.toolbarLoader.addContent(self.surveyCntGroup)
-        self.toolbarLoader.addContent(self.farmerCntGroup)
+        self.toolbarLoader.addContent(self.STRCntGroup)
         self.toolbarLoader.addContent(tbSeparator)
         self.toolbarLoader.addContent(self.spatialEditingCntGroup)
         self.toolbarLoader.addContent(self.createFeatureCntGroup)
@@ -389,6 +484,14 @@ class stdmqgisloader:
         '''
         frmAuthContent = contentAuthDlg(self)
         frmAuthContent.exec_()
+        
+        
+    def workspaceLoader(self):
+        '''
+        Slot for customizing user forms
+        '''
+        self.wkspDlg=WorkspaceLoader(self.iface.mainWindow())
+        self.wkspDlg.exec_()
         
     def changePassword(self):
         '''
@@ -611,6 +714,31 @@ class stdmqgisloader:
             return True
         
         return False
+    
+    def widgetLoader(self,QAction):
+        #Method to load custom forms
+        tbList=self._moduleItems.values()
+        dispName=QAction.text()
+        if dispName=='Social Tenure Relationship':
+            self.newSTR()
+        else:
+            tableName=self._moduleItems.get(dispName)
+            if tableName in tbList:
+                try:
+                    main=STDMDialog(tableName,self.iface.mainWindow()) 
+                    main.loadUI()
+                    #try:
+                    #main=STDMEntityBrowser(self.moduleCntGroup,tableName,self.iface.mainWindow()) 
+                    #main.exec_()
+                except Exception as ex:
+                    QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
+            
+    def about(self):
+        '''
+        Brief note about STDM
+        '''
+        abtDlg=AboutDialog()
+        abtDlg.exec_()
             
     def logout(self):
         '''
@@ -629,7 +757,7 @@ class stdmqgisloader:
             
         for layer in mapLayers:
             if self.isSTDMLayer(layer):
-                QgsMapLayerRegistry.instance().removeMapLayer(layer)
+                QgsMapLayerRegistry.instance().removeMapLayer(layer.id())
                 
         self.stdmTables = []
         

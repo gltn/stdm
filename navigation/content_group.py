@@ -20,8 +20,9 @@ from PyQt4.QtGui import QApplication
 from PyQt4.QtCore import pyqtSignal,QObject
 
 from stdm.security import Authorizer, SecurityException
-from stdm.data import Content, initLookups, Role
+from stdm.data import Content, initLookups, Role, STDMDb, Base
 from stdm.utils import randomCodeGenerator,HashableMixin
+from sqlalchemy import Table
 
 __all__ = ["ContentGroup,TableContentGroup"]
 
@@ -124,6 +125,7 @@ class ContentGroup(QObject,HashableMixin):
             for c in self.contentItems():
                 if isinstance(c,Content):
                     cnt = Content()
+                    #self.content=Table('content_base',Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
                     qo = cnt.queryObject()
                     cn = qo.filter(Content.code == c.code).first()
                     

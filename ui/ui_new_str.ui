@@ -33,7 +33,7 @@
     <item>
      <widget class="QLabel" name="label">
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Scoial Tenure Relationship refers to the right or 'relationship' between persons and properties (which as represented as polygons on the map). It also includes conflict information associated with a given property.&lt;/p&gt;&lt;p&gt;This module provides a mechanism for defining STR applicable to property - both land and building - for CIAT's purposes.&lt;/p&gt;&lt;p&gt;Click on the 'Next' button below to proceed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Scoial Tenure Relationship refers to the right or 'relationship' between persons and properties (which as represented as polygons on the map). It also includes conflict information associated with a given property.&lt;/p&gt;&lt;p&gt;This module provides a mechanism for defining STR applicable to property - both land and building&lt;/p&gt;&lt;p&gt;Click on the 'Next' button below to proceed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -359,85 +359,6 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWizardPage" name="frmWizRight">
-   <property name="title">
-    <string>Right of Enjoyment </string>
-   </property>
-   <property name="subTitle">
-    <string>Specify Ownership Details.</string>
-   </property>
-   <attribute name="pageId">
-    <string notr="true">enjoy_right</string>
-   </attribute>
-   <layout class="QGridLayout" name="gridLayout">
-    <property name="horizontalSpacing">
-     <number>5</number>
-    </property>
-    <property name="verticalSpacing">
-     <number>20</number>
-    </property>
-    <item row="1" column="1">
-     <widget class="QComboBox" name="cboInheritanceType">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>30</height>
-       </size>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QComboBox" name="cboDeadAlive">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>30</height>
-       </size>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="label_5">
-      <property name="text">
-       <string>Receiving Date</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1">
-     <widget class="QDateEdit" name="dtReceivingDate">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>30</height>
-       </size>
-      </property>
-      <property name="displayFormat">
-       <string>yyyy</string>
-      </property>
-      <property name="calendarPopup">
-       <bool>false</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label_3">
-      <property name="text">
-       <string>Inheritance type</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label_4">
-      <property name="text">
-       <string>State</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0" colspan="2">
-     <layout class="QVBoxLayout" name="vlEnjoymentNotif"/>
-    </item>
-   </layout>
-  </widget>
   <widget class="QWizardPage" name="frmWizSourceDocs">
    <property name="title">
     <string>Source Documents</string>
@@ -489,84 +410,12 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>590</width>
-             <height>387</height>
+             <width>607</width>
+             <height>374</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_8">
             <item row="0" column="0">
-             <widget class="QGroupBox" name="gpPrivateTaxInfo">
-              <property name="title">
-               <string>Tax Information:</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-              <layout class="QGridLayout" name="gridLayout_7">
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_10">
-                 <property name="text">
-                  <string>Last Year CFBP Was Paid</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="QDateEdit" name="dtLastYearCFBP">
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>30</height>
-                  </size>
-                 </property>
-                 <property name="displayFormat">
-                  <string>yyyy</string>
-                 </property>
-                 <property name="calendarPopup">
-                  <bool>false</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="QLineEdit" name="txtCFBPAmount">
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>30</height>
-                  </size>
-                 </property>
-                 <property name="maxLength">
-                  <number>100</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_11">
-                 <property name="text">
-                  <string>Amount of CFBP</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QPushButton" name="btnPrivateReceiptScan">
-                 <property name="text">
-                  <string>Add Receipt Scan</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="../resources.qrc">
-                   <normaloff>:/plugins/stdm/images/icons/receipt.png</normaloff>:/plugins/stdm/images/icons/receipt.png</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <layout class="QVBoxLayout" name="vlPrivateReceiptScan"/>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="1" column="0">
              <widget class="QGroupBox" name="groupBox_4">
               <property name="title">
                <string/>
@@ -581,7 +430,7 @@
                   </size>
                  </property>
                  <property name="text">
-                  <string>Add Title Deed</string>
+                  <string>Add Supporting document</string>
                  </property>
                  <property name="icon">
                   <iconset resource="../resources.qrc">
@@ -591,93 +440,6 @@
                </item>
                <item>
                 <layout class="QVBoxLayout" name="vlDocTitleDeed"/>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QGroupBox" name="groupBox_5">
-              <property name="title">
-               <string/>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_5">
-               <item>
-                <widget class="QPushButton" name="btnAddStatRefPaper">
-                 <property name="maximumSize">
-                  <size>
-                   <width>200</width>
-                   <height>32</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string>Add Statutory Reference Paper</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="../resources.qrc">
-                   <normaloff>:/plugins/stdm/images/icons/attachment.png</normaloff>:/plugins/stdm/images/icons/attachment.png</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <layout class="QVBoxLayout" name="vlDocStatRefPaper"/>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QGroupBox" name="groupBox_6">
-              <property name="title">
-               <string/>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_4">
-               <item>
-                <widget class="QPushButton" name="btnAddSurveyorRef">
-                 <property name="maximumSize">
-                  <size>
-                   <width>200</width>
-                   <height>32</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string>Add Surveyor Reference</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="../resources.qrc">
-                   <normaloff>:/plugins/stdm/images/icons/attachment.png</normaloff>:/plugins/stdm/images/icons/attachment.png</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <layout class="QVBoxLayout" name="vlDocSurveyorRef"/>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="4" column="0">
-             <widget class="QGroupBox" name="groupBox_10">
-              <property name="title">
-               <string/>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_3">
-               <item>
-                <widget class="QPushButton" name="btnAddNotaryRef">
-                 <property name="maximumSize">
-                  <size>
-                   <width>200</width>
-                   <height>32</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string>Add Notary Reference</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="../resources.qrc">
-                   <normaloff>:/plugins/stdm/images/icons/attachment.png</normaloff>:/plugins/stdm/images/icons/attachment.png</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <layout class="QVBoxLayout" name="vlDocNotaryRef"/>
                </item>
               </layout>
              </widget>
@@ -818,75 +580,6 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWizardPage" name="frmWizConflict">
-   <property name="title">
-    <string>Conflict Information</string>
-   </property>
-   <property name="subTitle">
-    <string>Provide details on past or present conflicts over land and property.</string>
-   </property>
-   <attribute name="pageId">
-    <string notr="true">conflict</string>
-   </attribute>
-   <layout class="QGridLayout" name="gridLayout_13">
-    <property name="verticalSpacing">
-     <number>20</number>
-    </property>
-    <property name="topMargin">
-     <number>9</number>
-    </property>
-    <property name="bottomMargin">
-     <number>9</number>
-    </property>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label_16">
-      <property name="text">
-       <string>State</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="label_17">
-      <property name="text">
-       <string>Solution</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QComboBox" name="cboConflictOccurrence">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>30</height>
-       </size>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1">
-     <widget class="QTextEdit" name="txtConflictSolution">
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>100000</height>
-       </size>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0" colspan="2">
-     <layout class="QVBoxLayout" name="vlConflictNotif"/>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label_19">
-      <property name="text">
-       <string>Description</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QTextEdit" name="txtConflictDescription"/>
-    </item>
-   </layout>
-  </widget>
   <widget class="QWizardPage" name="frmSTRSummary">
    <property name="title">
     <string>STR Definition Summary</string>
@@ -939,9 +632,6 @@
   <tabstop>txtFilterPattern</tabstop>
   <tabstop>txtPropID</tabstop>
   <tabstop>tvPropInfo</tabstop>
-  <tabstop>cboInheritanceType</tabstop>
-  <tabstop>cboDeadAlive</tabstop>
-  <tabstop>dtReceivingDate</tabstop>
  </tabstops>
  <resources>
   <include location="../resources.qrc"/>

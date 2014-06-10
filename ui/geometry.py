@@ -1,0 +1,94 @@
+# -*- coding: utf-8 -*-
+"""
+/***************************************************************************
+ stdm
+                                 A QGIS plugin
+ Securing land and property rights for all
+                              -------------------
+        begin                : 2014-03-04
+        copyright            : (C) 2014 by GLTN
+        email                : njoroge.solomon@yahoo.com
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+"""
+# Import the PyQt and QGIS libraries
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+from stdm.data  import datatypes, setCollectiontypes
+from stdm.data.config_utils import UserData
+from stdm.settings import projectionSelector
+
+class GeometryProperty(QDialog):
+    def __init__(self,parent):
+        QDialog.__init__(self,parent)
+        
+        
+        #add control to the dialog
+        self.label=QLabel()
+        self.label.setText("Select Geometry Type")
+        self.comboField=QComboBox()
+        self.sridButton=QPushButton()
+        self.sridButton.setText("Select Coordinate System ")
+        self.textField=QLineEdit()
+        geometryCollections={'Point':'POINT','Line':'LINESTRING','Polygon':'POLYGON'}
+        setCollectiontypes(geometryCollections,self.comboField)
+        #self.textField.setPlaceHolderText("Lookup value to be added to the list")
+        #self.textField.setLineWrapMode(QTextEdit.WidgetWidth)
+        self.buttons=QDialogButtonBox()
+        self.buttons.addButton(QDialogButtonBox.Ok)
+        self.buttons.addButton(QDialogButtonBox.Cancel)
+        self.sridButton.clicked.connect(self.projectionsSettings)
+        
+        layout = QGridLayout()
+        layout.addWidget(self.label)
+        layout.addWidget(self.comboField)
+        layout.addWidget(self.sridButton)
+        layout.addWidget(self.textField)
+        layout.addWidget(self.buttons)
+        self.setLayout(layout)
+        self.setWindowTitle("Geometry Column Property")
+        
+        self.buttons.accepted.connect(self.setGeometrySetting)
+        self.buttons.rejected.connect(self.cancel)
+        
+    def projectionsSettings(self):
+        '''let user select the projections for the data'''
+        projSelect=projectionSelector(self)
+        projection=projSelect.loadAvailableSystems()
+        self.textField.setText(str(projection))
+        
+    def setGeometrySetting(self):
+        if self.textField.text()=='':
+            self.ErrorInfoMessage(QApplication.translate("GeometryProperty","Projections is not selected"))
+            return
+        
+        self.value=self.textField.text()
+        #rPart=self.value.index(':')
+        self.value=self.textField.text()[5:]
+        geomType=UserData(self.comboField)
+        self.geomCollection=[self.value,geomType]
+        self.accept()
+        
+    def cancel(self):
+        self.close()
+        
+    def ErrorInfoMessage(self, Message):
+        # Error Message Box
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Warning)
+        msg.setWindowTitle(QApplication.translate("GeometryProperty","Geometry Settings"))
+        msg.setText(Message)
+        msg.exec_() 
+       
+        
+        
+        
+        

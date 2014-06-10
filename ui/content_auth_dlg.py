@@ -24,8 +24,10 @@ from PyQt4.QtGui import *
 from stdm import resources_rc
 
 from stdm.security import RoleProvider
-from stdm.data import Content,Role, UsersRolesModel
+from stdm.data import Content,Role, UsersRolesModel, STDMDb, Base
 from stdm.utils import *
+from sqlalchemy.orm import clear_mappers
+from sqlalchemy import Table
 
 
 from ui_content_auth import Ui_frmContentAuth
@@ -68,7 +70,14 @@ class contentAuthDlg(QDialog, Ui_frmContentAuth):
         Loads STDM content items
         '''
         self.content = Content()
+        #self.content=Table('content_base',Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
         cntItems = self.content.queryObject().all()
+        '''
+        self.content=Table('content_base',Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
+        
+        session= STDMDb.instance().session
+        cntItems=session.query(self.content)
+        '''
         cnts = [cntItem.name for cntItem in cntItems]
         self.contentModel = UsersRolesModel(cnts)        
         self.lstContent.setModel(self.contentModel)
@@ -82,6 +91,7 @@ class contentAuthDlg(QDialog, Ui_frmContentAuth):
         roles = []
         
         #Load the corresponding roles for the specified content item
+        cnt=Content()
         if contentname != "":
             self.currentContent = self.content.queryObject().filter(Content.name == contentname).first()
             if self.currentContent:                

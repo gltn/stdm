@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>frmAbout</class>
+ <widget class="QDialog" name="frmAbout">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>579</width>
+    <height>565</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>About STDM</string>
+  </property>
+  <property name="layoutDirection">
+   <enum>Qt::LeftToRight</enum>
+  </property>
+  <widget class="QWidget" name="layoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>9</x>
+     <y>9</y>
+     <width>561</width>
+     <height>531</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QTextEdit" name="txtAbout">
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+      <property name="html">
+       <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:6px; margin-bottom:8px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt; background-color:#ffffff;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:6px; margin-bottom:8px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; color:#000000; background-color:#ffffff;&quot;&gt;The&lt;/span&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; color:#000000;&quot;&gt; &lt;/span&gt;&lt;a href=&quot;http://www.stdm.gltn.net/&quot;&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline; color:#0000ff;&quot;&gt;Social Tenure Domain Model (STDM)&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; color:#000000;&quot;&gt; is a pro poor, gender responsive and participatory land information system developed by the Global Land Tool Network (GLTN). Its one of eighteen land tools being developed, tested and applied by GLTN partners for the promotion of secure land and property rights for all.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a name=&quot;Core_Values&quot;&gt;&lt;/a&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; font-weight:600; color:#000000;&quot;&gt;C&lt;/span&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; font-weight:600; color:#000000;&quot;&gt;ore Values&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:6px; margin-bottom:8px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; color:#000000; background-color:#ffffff;&quot;&gt;STDM's core values and principles are pro-poor, good governance, equity, subsidiarity, sustainability, affordability, systematic large scale, and gender responsiveness.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a name=&quot;The_STDM_Universe&quot;&gt;&lt;/a&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; font-weight:600; color:#000000;&quot;&gt;T&lt;/span&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; font-weight:600; color:#000000;&quot;&gt;he STDM Universe&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:6px; margin-bottom:8px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; color:#000000; background-color:#ffffff;&quot;&gt;STDM is a pro-poor, participatory and affordable&lt;/span&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; color:#000000;&quot;&gt; &lt;/span&gt;&lt;a href=&quot;http://gltn.net/index.php/land-tools/introduction-to-land-tools&quot;&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline; color:#0000ff;&quot;&gt;land tool&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; color:#000000;&quot;&gt; that broadens the scope of land administration by incorporating all person/s to land relationships beyond formal/legal land rights, cognisant of the continuum of land rights. STDM has four inter-related components:&lt;/span&gt;&lt;/p&gt;
+&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; font-family:'sans-serif'; font-size:8pt; color:#000000;&quot; style=&quot; margin-top:5px; margin-bottom:1px; margin-left:26px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:13px;&quot;&gt;A new way of thinking about land records&lt;/span&gt;&lt;/li&gt;
+&lt;li style=&quot; font-family:'sans-serif'; font-size:8pt; color:#000000;&quot; style=&quot; margin-top:0px; margin-bottom:1px; margin-left:26px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:13px;&quot;&gt;A free and open-source software package to record information about land&lt;/span&gt;&lt;/li&gt;
+&lt;li style=&quot; font-family:'sans-serif'; font-size:8pt; color:#000000;&quot; style=&quot; margin-top:0px; margin-bottom:1px; margin-left:26px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:13px;&quot;&gt;An approach of collecting data about land&lt;/span&gt;&lt;/li&gt;
+&lt;li style=&quot; font-family:'sans-serif'; font-size:8pt; color:#000000;&quot; style=&quot; margin-top:0px; margin-bottom:1px; margin-left:26px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:13px;&quot;&gt;A way of using and disseminating information about land&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:1px; margin-left:26px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'sans-serif'; font-size:8pt; color:#000000;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:1px; margin-left:26px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; color:#000000; background-color:#ffffff;&quot;&gt;The STDM Universe consists of an extensible data model, conceptual and operational model, database implementation, software modules and an extensible architecture. In detail:&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:3px; margin-bottom:1px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; font-weight:600; color:#000000;&quot;&gt;The data model&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:21px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; color:#000000;&quot;&gt;The data model has been developed by the members of GLTN. It was tested, extended and maintained to meet real world scenarios. It can be extended to a certain degree to meet the needs of most land administration and natural resource management applications.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:3px; margin-bottom:1px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; font-weight:600; color:#000000;&quot;&gt;The Enumeration Template&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:21px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; color:#000000;&quot;&gt;STDM has derived common aspects from existing enumeration questionnaires and aggregated them into a generic model which supports location-based information and settlements profiling.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:3px; margin-bottom:1px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; font-weight:600; color:#000000;&quot;&gt;The data store&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:21px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; color:#000000;&quot;&gt;The data store is implemented in an object-relational database with spatial capabilities. It can be extended to a certain degree through the user front end.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:3px; margin-bottom:1px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; font-weight:600; color:#000000;&quot;&gt;The QGIS Plugin&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:21px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; color:#000000;&quot;&gt;The STDM software is implemented as an extension (plugin) to the Open Source Geographic Information System (GIS) software package, QGIS. This GIS package can be used to analyze, present and combine the collected STDM data on a mapping background and with other geospatial data and maps.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a name=&quot;Future_Plans&quot;&gt;&lt;/a&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; font-weight:600; color:#000000;&quot;&gt;F&lt;/span&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; font-weight:600; color:#000000;&quot;&gt;uture Plans&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:6px; margin-bottom:8px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'sans-serif'; font-size:8pt; color:#000000; background-color:#ffffff;&quot;&gt;The STDM software stack and architecture can be adapted to Online versions which could be an alternative as mobile communications connectivity grows.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QDialogButtonBox" name="buttonBox">
+      <property name="standardButtons">
+       <set>QDialogButtonBox::Close</set>
+      </property>
+      <property name="centerButtons">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="9"/>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

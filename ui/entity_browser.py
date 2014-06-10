@@ -31,6 +31,10 @@ from .ui_entity_browser import Ui_EntityBrowser
 from .helpers import SupportsManageMixin
 from .notification import NotificationBar, ERROR, WARNING,INFO
 from .base_person import RespondentEditor,WitnessEditor,FarmerEditor
+from stdm.data import STDMDb, tableCols
+from .stdmdialog import declareMapping
+from .data_reader_form import STDMForm
+
 
 __all__ = ["EntityBrowser","EnumeratorEntityBrowser","EntityBrowserWithEditor", \
            "ContentGroupEntityBrowser","RespondentEntityBrowser","WitnessEntityBrowser", \
@@ -533,8 +537,11 @@ class FarmerEntitySelector(EntityBrowser):
     '''
     Browser for simply selecting farmer records.
     '''
-    def __init__(self,parent = None,state = MANAGE):
-        EntityBrowser.__init__(self, parent, Farmer, state)
+    
+    def __init__(self,parent = None, state = MANAGE):
+        mapping=declareMapping.instance()
+        model = mapping.tableMapping('party')
+        EntityBrowser.__init__(self, parent, model, state)
         
     def title(self):
         return QApplication.translate("EnumeratorEntityBrowser", "Farmer Records")
@@ -546,6 +553,32 @@ class FarmerEntityBrowser(ContentGroupEntityBrowser):
     def __init__(self,tableContentGroup,parent = None,state = MANAGE):
         ContentGroupEntityBrowser.__init__(self, Farmer, tableContentGroup, parent, state)
         self._editorDialog = FarmerEditor      
+        
+    def _setFormatters(self):
+        """
+        Specify formatting mappings.
+        """   
+        self.addCellFormatter("GenderID",genderFormatter)
+        self.addCellFormatter("MaritalStatusID",maritalStatusFormatter)
+        
+    def title(self):
+        return QApplication.translate("FarmerEntityBrowser", "Farmer Records Manager")
+
+class STDMEntityBrowser(ContentGroupEntityBrowser):
+    '''
+    Browser for farmer records.
+    '''
+    def __init__(self,tableContentGroup,table=None,parent = None,state = MANAGE):
+        
+        mapping=declareMapping.instance()
+        tableCls=mapping.tableMapping(table)
+        columns=tableCols(table)
+        QMessageBox.information(None,"test",str(tableCls.displayMapping().keys()))
+        #ContentGroupEntityBrowser.__init__(self, tableCls, tableContentGroup, parent, state)
+        EntityBrowserWithEditor.__init__(self, tableCls, parent, state)
+        #self._editorDialog = FarmerEditor    
+        
+        #self._editorDialog = STDMForm(self, tableCls, columns, Session=STDMDb.instance().session)      
         
     def _setFormatters(self):
         """
