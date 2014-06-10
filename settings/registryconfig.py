@@ -59,6 +59,15 @@ class RegistryConfig(object):
             uSettings.setValue(k,v)
         uSettings.endGroup()
         uSettings.sync()
+        
+class QGISRegistryConfig(RegistryConfig):
+    """
+    Class for reading and writing QGIS-wide registry settings.
+    The user has to specify the group path which contains the keys.
+    """
+    def __init__(self,path):
+        RegistryConfig.__init__(self)
+        self.groupPath = path
             
         
         

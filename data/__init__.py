@@ -1,6 +1,6 @@
 from config import DatabaseConfig
 from connection import DatabaseConnection
-from database import STDMDb,Base
+from database import STDMDb,Base,Model
 from database import Content, Role, Enumerator,Respondent, LookupBase, CheckGender,CheckMaritalStatus, \
  SocialTenureRelationshipMixin, CheckSocialTenureRelationship, CheckRespondentType, \
  CheckWitnessRelationship, CheckHouseUseType, CheckLandType, CheckHouseType, CheckSavingsOption,\
@@ -16,4 +16,14 @@ socioEconImpactFormatter,foodCropCategoryFormatter,geometryFormatter,respondentN
 enumeratorNamesFormatter,dateFormatter
 from .lookups import initLookups
 from .mapping import MapperMixin,QgsFeatureMapperMixin,SAVE,UPDATE
-from .pg_utils import spatial_tables,pg_tables,pg_views,table_column_names,geometryType
+from .pg_utils import (
+                       spatial_tables,
+                       pg_tables,
+                       pg_views,
+                       table_column_names,
+                       geometryType,
+                       unique_column_values,
+                       columnType,
+                       process_report_filter,
+                       delete_table_data
+                       )

@@ -38,14 +38,19 @@ from ui import (
                 AdminUnitSelector, 
                 FarmerEntityBrowser,
                 SurveyEntityBrowser,
-                PersonDocumentGenerator
+                PersonDocumentGenerator,
+                ImportData,
+                ExportData
                 )
+from ui.reports import ReportBuilder
+
 import data
 from data import (
                   STDMDb, 
                   Content,
                   spatial_tables
                   )
+from data.reports import SysFonts
 from navigation import (
                         STDMAction,
                         QtContainerLoader,
@@ -55,12 +60,14 @@ from navigation import (
 from mapping import (
                      StdmMapToolCreateFeature
                      )
-from utils import getIndex
+from utils import *
 from mapping.utils import pg_layerNamesIDMapping
 from composer import ComposerWrapper
 
 class stdmqgisloader:
-    
+    """
+    STDM QGIS plugin loader.
+    """
     viewSTRWin = None
     
     def __init__(self,iface):        
@@ -109,6 +116,9 @@ class stdmqgisloader:
         QObject.connect(self.changePasswordAct, SIGNAL("triggered()"), self.changePassword)
         QObject.connect(self.logoutAct, SIGNAL("triggered()"), self.logout)
         self.initToolbar()
+        
+        #Load system fonts if font cache not set.
+        SysFonts.register()
         
     def getThemeIcon(self, theName):        
         # get the icon from the best available theme
@@ -199,7 +209,13 @@ class stdmqgisloader:
         QApplication.translate("ManageUsersToolbarAction","Manage Users-Roles"), self.iface.mainWindow())  
         
         self.manageAdminUnitsAct = QAction(QIcon(":/plugins/stdm/images/icons/manage_admin_units.png"), \
-        QApplication.translate("ManageAdminUnitsToolbarAction","Manage Administrative Units"), self.iface.mainWindow())             
+        QApplication.translate("ManageAdminUnitsToolbarAction","Manage Administrative Units"), self.iface.mainWindow()) 
+        
+        self.importAct = QAction(QIcon(":/plugins/stdm/images/icons/import.png"), \
+        QApplication.translate("ImportAction","Import Data"), self.iface.mainWindow())
+        
+        self.exportAct = QAction(QIcon(":/plugins/stdm/images/icons/export.png"), \
+        QApplication.translate("ReportBuilderAction","Export Data"), self.iface.mainWindow())            
         
         self.surveyAct = QAction(QIcon(":/plugins/stdm/images/icons/survey.png"), \
         QApplication.translate("NewSurveyToolbarAction","Survey"), self.iface.mainWindow()) 
@@ -212,6 +228,9 @@ class stdmqgisloader:
         
         self.docGeneratorAct = QAction(QIcon(":/plugins/stdm/images/icons/generate_document.png"), \
         QApplication.translate("DocumentGeneratorAction","Document Generator"), self.iface.mainWindow())
+        
+        self.rptBuilderAct = QAction(QIcon(":/plugins/stdm/images/icons/report.png"), \
+        QApplication.translate("ReportBuilderAction","Report Builder"), self.iface.mainWindow())
         
         #Activate spatial unit management tools
         self.spatialEditorAct = QAction(QIcon(":/plugins/stdm/images/icons/edit24.png"), \
@@ -234,16 +253,19 @@ class stdmqgisloader:
         QApplication.translate("ViewSTRToolbarAction","View Social Tenure Relationship"), self.iface.mainWindow()) 
         
         #Connect the slots for the actions above
-        QObject.connect(self.contentAuthAct, SIGNAL("triggered()"),self.contentAuthorization)
-        QObject.connect(self.usersAct, SIGNAL("triggered()"),self.manageAccounts)     
-        QObject.connect(self.manageAdminUnitsAct, SIGNAL("triggered()"),self.onManageAdminUnits)
-        QObject.connect(self.surveyAct, SIGNAL("triggered()"),self.onManageSurvey)
-        QObject.connect(self.farmerAct, SIGNAL("triggered()"),self.onManageFarmer)
+        self.contentAuthAct.triggered.connect(self.contentAuthorization)
+        self.usersAct.triggered.connect(self.manageAccounts)     
+        self.manageAdminUnitsAct.triggered.connect(self.onManageAdminUnits)
+        self.exportAct.triggered.connect(self.onExportData)
+        self.importAct.triggered.connect(self.onImportData)
+        self.surveyAct.triggered.connect(self.onManageSurvey)
+        self.farmerAct.triggered.connect(self.onManageFarmer)
         self.docDesignerAct.triggered.connect(self.onDocumentDesigner)
         self.docGeneratorAct.triggered.connect(self.onDocumentGeneratorByPerson)
-        QObject.connect(self.spatialEditorAct, SIGNAL("toggled(bool)"),self.onToggleSpatialEditing)
-        QObject.connect(self.saveEditsAct, SIGNAL("triggered()"),self.onSaveEdits)
-        QObject.connect(self.createFeatureAct, SIGNAL("triggered()"),self.onCreateFeature)
+        self.rptBuilderAct.triggered.connect(self.onReportBuilder)
+        self.spatialEditorAct.triggered.connect(self.onToggleSpatialEditing)
+        self.saveEditsAct.triggered.connect(self.onSaveEdits)
+        self.createFeatureAct.triggered.connect(self.onCreateFeature)
         '''
         QObject.connect(self.newSTRAct, SIGNAL("triggered()"), self.newSTR)
         QObject.connect(self.viewSTRAct, SIGNAL("triggered()"), self.onViewSTR)
@@ -259,6 +281,12 @@ class stdmqgisloader:
         adminUnitsCnt = ContentGroup.contentItemFromQAction(self.manageAdminUnitsAct)
         adminUnitsCnt.code = "770EAC75-2BEC-492E-8703-34674054C246"
         
+        importCnt = ContentGroup.contentItemFromQAction(self.importAct)
+        importCnt.code = "3BBD6347-4A37-45D0-9B41-36D68D2CA4DB"
+        
+        exportCnt = ContentGroup.contentItemFromQAction(self.exportAct)
+        exportCnt.code = "D0C34436-619D-434E-928C-2CBBDA79C060"
+        
         surveyCnt = ContentGroup.contentItemFromQAction(self.surveyAct)
         surveyCnt.code = "5620049B-983A-4F85-B0D6-9D83925CC45E"
         
@@ -270,6 +298,9 @@ class stdmqgisloader:
         
         documentGeneratorCnt = ContentGroup.contentItemFromQAction(self.docGeneratorAct)
         documentGeneratorCnt.code = "4C0C7EF2-5914-4FDE-96CB-089D44EDDA5A"
+        
+        rptBuilderCnt = ContentGroup.contentItemFromQAction(self.rptBuilderAct)
+        rptBuilderCnt.code = "E60A9143-FFA5-4422-985A-0C43C71323BE"
         
         spatialEditingCnt = ContentGroup.contentItemFromQAction(self.spatialEditorAct)
         spatialEditingCnt.code = "4E945EE7-D6F9-4E1C-A4AA-0C7F1BC67224"
@@ -325,12 +356,27 @@ class stdmqgisloader:
         self.docGeneratorCntGroup.addContentItem(documentGeneratorCnt)
         self.docGeneratorCntGroup.register()
         
+        self.importCntGroup = ContentGroup(username,self.importAct)
+        self.importCntGroup.addContentItem(importCnt)
+        self.importCntGroup.register()
+        
+        self.exportCntGroup = ContentGroup(username,self.exportAct)
+        self.exportCntGroup.addContentItem(exportCnt)
+        self.exportCntGroup.register()
+        
+        self.rptBuilderCntGroup = ContentGroup(username,self.rptBuilderAct)
+        self.rptBuilderCntGroup.addContentItem(rptBuilderCnt)
+        self.rptBuilderCntGroup.register()
+        
         self.toolbarLoader.addContent(self.contentAuthCntGroup,[adminMenu,adminBtn])
         self.toolbarLoader.addContent(self.userRoleCntGroup, [adminMenu,adminBtn])
+        self.toolbarLoader.addContent(self.importCntGroup)
+        self.toolbarLoader.addContent(self.exportCntGroup)
         self.toolbarLoader.addContent(self.adminUnitsCntGroup)
         self.toolbarLoader.addContent(tbSeparator)
         self.toolbarLoader.addContent(self.docDesignerCntGroup)
         self.toolbarLoader.addContent(self.docGeneratorCntGroup)
+        self.toolbarLoader.addContent(self.rptBuilderCntGroup)
         self.toolbarLoader.addContent(tbSeparator)
         self.toolbarLoader.addContent(self.surveyCntGroup)
         self.toolbarLoader.addContent(self.farmerCntGroup)
@@ -455,6 +501,33 @@ class stdmqgisloader:
         """
         personDocGenDlg = PersonDocumentGenerator(self.iface,self.iface.mainWindow())
         personDocGenDlg.exec_()
+        
+    def onReportBuilder(self):
+        """
+        Show tabular reports' builder dialog
+        """
+        #TODO: To be incorporated into the XML config file.
+        import ConfigParser
+        config = ConfigParser.ConfigParser()
+        confPath = PLUGIN_DIR + "/config.ini"
+        config.read(confPath)
+        
+        rptBuilder = ReportBuilder(config,self.iface.mainWindow())
+        rptBuilder.exec_()
+        
+    def onImportData(self):
+        """
+        Show import data wizard.
+        """
+        importData = ImportData(self.iface.mainWindow())
+        importData.exec_()
+    
+    def onExportData(self):
+        """
+        Show export data dialog.
+        """
+        exportData = ExportData(self.iface.mainWindow())
+        exportData.exec_()
         
     def onSaveEdits(self):
         '''

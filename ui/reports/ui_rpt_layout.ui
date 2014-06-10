@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>frmRptLayout</class>
+ <widget class="QWidget" name="frmRptLayout">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>345</width>
+    <height>328</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Layout</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>325</width>
+        <height>308</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Size</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="cboPageSize">
+         <item>
+          <property name="text">
+           <string>A0</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>A1</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>A2</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>A3</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>A4</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>A5</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>A6</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>LETTER</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>LEGAL</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>B0</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>B1</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>B2</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>B3</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>B4</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>B5</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>B6</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Orientation</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="cboPageOrien">
+         <item>
+          <property name="text">
+           <string>Potrait</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Landscape</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Top Margin (cm)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="txtTopMargin">
+         <property name="maxLength">
+          <number>10</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Bottom Margin (cm)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="txtBtMargin">
+         <property name="maxLength">
+          <number>10</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Left Margin (cm)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="txtLeftMargin">
+         <property name="maxLength">
+          <number>10</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Right Margin (cm)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="txtRightMargin">
+         <property name="maxLength">
+          <number>10</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

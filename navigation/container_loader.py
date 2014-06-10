@@ -119,6 +119,7 @@ class QtContainerLoader(QObject):
                 self._container.insertAction(self._actionReference, content)
             else:                        
                 self._container.addAction(content) 
+                
         elif isinstance(self._container,QListWidget):
             self._container.insertItem(self._iter,content)
             self._iter += 1             
