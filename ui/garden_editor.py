@@ -30,6 +30,10 @@ from .entity_browser import EnumeratorEntityBrowser,RespondentEntityBrowser, \
 WitnessEntityBrowser
 from .notification import NotificationBar
 from .helpers import SpinBoxValueHandler
+from qtalchemy.dialogs.objectforms import BoundDialog
+from qtalchemy import *
+from .stdmdialog import declareMapping
+from stdm.data import STDMDb, tableCols
 
 class PendingLayerEntities(object):
     '''
@@ -233,9 +237,41 @@ class SpatialGardenEditor(BaseGardenEditor,QgsFeatureMapperMixin):
         '''
         return self._pendingLayerEntities
 
+
+class spatialUnitEditor(BoundDialog,QgsFeatureMapperMixin):
+    def __init__(self,parent,layer,feature,mode = SAVE,session=None, row=None, row_id=None):
+        BoundDialog.__init__(self, parent)
+        QgsFeatureMapperMixin.__init__(self, layer, feature, mode)
+        self.session=STDMDb.instance().session
+
+        self.columns=tableCols('spatial_unit')
         
+        mapping=declareMapping.instance()
+        SpatialModel=mapping.tableMapping('spatial_unit')
         
+        self.setWindowTitle("Spatial unit editor")
+        self.setDataReader(self.session,SpatialModel,'id')
+        vbox=QVBoxLayout()
+        self.setLayout(vbox)
+        grid=LayoutLayout(vbox,QFormLayout())
         
+        self.mm=self.mapClass(SpatialModel)
+        self.mm.addBoundForm(vbox,self.columns)
+        
+        buttons = LayoutWidget(vbox,QDialogButtonBox())
+        self.close_button = ButtonBoxButton(buttons,QDialogButtonBox.Ok)
+        self.close_button1 = ButtonBoxButton(buttons,QDialogButtonBox.Cancel)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        
+        self.geo=WindowGeometry(self, position=False, tabs=None)
+        # self.readData(self.main_row)
+        
+    def load(self):
+        #self.mm.connect_instance(self.main_row)
+        self.submit()
+        
+
         
         
         

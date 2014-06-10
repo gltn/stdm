@@ -23,10 +23,12 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
 
-from sqlalchemy import func,String
+from sqlalchemy import func,String, Table
+from sqlalchemy.orm import mapper
+
 
 import stdm.data
-from stdm.data import STRTreeViewModel,app_dbconn, Content
+from stdm.data import STRTreeViewModel,app_dbconn, Content, Base, STDMDb
 from stdm.navigation.socialtenure import PersonNodeFormatter,STRNode,BaseSTRNode
 from stdm.security import Authorizer
 
@@ -34,6 +36,7 @@ from ui_view_str import Ui_frmViewSTR
 from ui_str_view_entity import Ui_frmSTRViewEntity
 from notification import NotificationBar,ERROR,INFO, WARNING
 from sourcedocument import SourceDocumentManager,docTypeMapping
+from .stdmdialog import declareMapping
 
 class ViewSTRWidget(QWidget, Ui_frmViewSTR):
     '''
@@ -60,7 +63,7 @@ class ViewSTRWidget(QWidget, Ui_frmViewSTR):
         self._sourceDocManager = SourceDocumentManager()
         self.connect(self._sourceDocManager,SIGNAL("documentRemoved(int)"),self.onSourceDocumentRemoved)
         self._sourceDocManager.setEditPermissions(self._canEdit)
-        
+        self.mapping=declareMapping.instance()
         self.initGui()
         
     def initGui(self):
@@ -85,6 +88,7 @@ class ViewSTRWidget(QWidget, Ui_frmViewSTR):
         #Load async for the current widget
         self.entityTabIndexChanged(0)
         
+        
     def loadEntityConfig(self):
         '''
         Specify the entity configurations.
@@ -92,17 +96,24 @@ class ViewSTRWidget(QWidget, Ui_frmViewSTR):
         #Person configuration
         personCfg = EntityConfiguration()
         personCfg.Title = str(QApplication.translate("ViewSTR", "Person"))
-        personCfg.filterColumns["firstname"] = str(QApplication.translate("ViewSTR", "First Name"))
-        personCfg.filterColumns["lastname"] = str(QApplication.translate("ViewSTR", "Last Name"))
-        personCfg.filterColumns["identification_number"] = str(QApplication.translate("ViewSTR", "Identification Number"))
+        personCfg.filterColumns["family_name"] = str(QApplication.translate("ViewSTR", "First Name"))
+        personCfg.filterColumns["other_names"] = str(QApplication.translate("ViewSTR", "Last Name"))
+        personCfg.filterColumns["unique_id"] = str(QApplication.translate("ViewSTR", "Identification Number"))
+        Person=self.mapping.tableMapping('party')
         personCfg.STRModel = Person
         personWidget = self.setEntityConfigWidget(personCfg)
+        # QMessageBox.information(None,'test',)
         personWidget.setNodeFormatter(PersonNodeFormatter(self.tvSTRResults,self))
         
         #Property configuration
         propertyCfg = EntityConfiguration()
         propertyCfg.Title = str(QApplication.translate("ViewSTR", "Property"))
         propertyCfg.filterColumns["PropertyID"] = str(QApplication.translate("ViewSTR", "Property Identifier"))
+        
+        
+        Property=self.mapping.tableMapping('spatial_unit')
+        
+    
         propertyCfg.STRModel = Property
         self.setEntityConfigWidget(propertyCfg)
     
@@ -488,9 +499,9 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         
         searchTerm = self._searchTerm()
         modelInstance = self.config.STRModel()
+        
         modelQueryObj = modelInstance.queryObject()
         queryObjProperty = getattr(self.config.STRModel,self.currentFieldName())
-        
         #Get property type so that the filter can be applied according to the appropriate type
         propType = queryObjProperty.property.columns[0].type
         
@@ -519,7 +530,7 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         Returns the name of the database field from the current item in the combo box.
         '''
         currIndex = self.cboFilterCol.currentIndex()
-        fieldName = self.cboFilterCol.itemData(currIndex).toString()
+        fieldName = self.cboFilterCol.itemData(currIndex)
         
         return str(fieldName)
     
@@ -587,7 +598,8 @@ class ModelWorker(QObject):
             try:
                 modelInstance = model()
                 objProperty = getattr(model,fieldname)
-                modelValues = modelInstance.queryObject([objProperty]).distinct()        
+                #modelValues = modelInstance.queryObject([objProperty]).distinct() 
+                modelValues = modelInstance.queryObject([objProperty]).all()       
                 self.retrieved.emit(modelValues)
             except Exception as ex:
                 self.error.emit(QString(ex))

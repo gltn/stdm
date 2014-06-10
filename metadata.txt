@@ -1,13 +1,38 @@
-[general]
-name=Social Tenure Domain Model
-description=A Pro-poor Land Information Tool.
-category=STDM
-version=0.9.8
-qgisMinimumVersion=2.0
+# This file contains metadata for your plugin. Beginning
+# with version 1.8 this is the preferred way to supply information about a
+# plugin. The current method of embedding metadata in __init__.py will
+# be supported until version 2.0
 
-author=Global Land Tool Network
+# This file should be included when you package your plugin.
+
+# Mandatory items:
+
+
+[general]
+name=stdmqgisloader
+qgisMinimumVersion=2.0
+description=Securing land and property rights for all
+version=0.98
+author=GLTN
 email=stdm@unhabitat.org
 
-icon=images/icons/stdm.png
+# end of mandatory metadata
 
-class_name=stdmqgisloader
+# Optional items:
+
+# Uncomment the following line and add your changelog entries:
+# changelog=
+
+# tags are comma separated with spaces allowed
+tags=
+
+homepage=
+tracker=
+repository=
+icon=icon.png
+# experimental flag
+experimental=True
+
+# deprecated flag (applies to the whole plugin, not just a single version
+deprecated=False
+

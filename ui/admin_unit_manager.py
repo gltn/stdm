@@ -20,11 +20,12 @@ email                : gkahiu@gmail.com
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import STRTreeViewModel,AdminSpatialUnitSet
+from stdm.data import STRTreeViewModel,AdminSpatialUnitSet, STDMDb, Base
 from stdm.navigation.socialtenure import STRNodeFormatter,BaseSTRNode
 
 from .ui_adminUnitManager import Ui_frmAdminUnitManager
 from .notification import NotificationBar,ERROR,INFO
+from sqlalchemy import Table
 
 '''
 Tree view model implementation will be based on the STR formatter architecture.
@@ -50,10 +51,18 @@ class AdminUnitFormatter(STRNodeFormatter):
         '''
         Override of base class method.
         '''
+        '''
+        adminSUSet=Table('admin_spatial_unit_set',Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
+        session= STDMDb.instance().session
+        cols=[]
+        for c in adminSUSet.columns:
+            cols.append(str(c.name))
+            '''
         adminSUSet = AdminSpatialUnitSet()
+        
         #Get top-level items
         adminUnits = adminSUSet.queryObject().filter(AdminSpatialUnitSet.Parent == None).order_by(AdminSpatialUnitSet.Name)
-        
+       
         for aus in adminUnits:
             nodeData = self._extractAdminUnitSetInfo(aus)
             ausNode = BaseSTRNode(nodeData,self.rootNode)

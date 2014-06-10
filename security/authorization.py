@@ -19,10 +19,15 @@ email                : gkahiu@gmail.com
 """
 from roleprovider import RoleProvider
 from exception import SecurityException
-from stdm.data import Content
+from stdm.data import Content, STDMDb, Base
 from stdm.utils import *
-
+from sqlalchemy import Table
+from sqlalchemy.orm import relationship, mapper, clear_mappers
+from qtalchemy import ForeignKeyReferral
 from sqlalchemy.exc import *
+
+class RoleMapper(object):
+    pass
 
 class Authorizer(object):
     '''
@@ -57,13 +62,18 @@ class Authorizer(object):
         hasPermission = False
         
         #Get roles with permission        
-        try:                              
-            cnt = Content()            
-            qo = cnt.queryObject()            
+        try:        
+                                  
+            cnt = Content()                       
+            qo = cnt.queryObject()
+            #raise NameError(qo)
+            '''            
             cntRef = qo.filter(Content.code == contentCode).first()            
-            
+            '''
+            cntRef = qo.filter(Content.code == contentCode).first()  
+            #raise NameError (dir(RoleMapper))
             if cntRef != None:
-                cntRoles = cntRef.roles
+                cntRoles =cntRef.roles 
                 for rl in cntRoles:
                     if getIndex(self.userRoles,rl.name) != -1:
                         hasPermission = True
@@ -77,6 +87,8 @@ class Authorizer(object):
             raise            
         
         return hasPermission
+    
+
         
         
         

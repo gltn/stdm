@@ -19,5 +19,5 @@ email                : gkahiu@gmail.com
 """
 
 def classFactory(iface): 
-    from stdm import stdmqgisloader 
-    return stdmqgisloader(iface)
+    from stdm import STDMQGISLoader 
+    return STDMQGISLoader(iface)

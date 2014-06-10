@@ -19,9 +19,10 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import QApplication
+from PyQt4.QtGui import QApplication, QMessageBox
+from stdm.ui import declareMapping
 
-from nodes import BaseSTRNode, PersonNode, NoSTRNode, STRNode, PropertyNode,\
+from .nodes import BaseSTRNode, PersonNode, NoSTRNode, STRNode, PropertyNode,\
 ConflictNode,TaxationNode
 
 class STRNodeFormatter(object):
@@ -148,14 +149,21 @@ class PersonNodeFormatter(STRNodeFormatter):
         '''
         Implementation of base class method.
         '''
+        
         for p in self._data:
-            pNode = PersonNode(self._extractPersonInfo(p),self.rootNode)
             
+            pNode = PersonNode(self._extractPersonInfo(p),self.rootNode)
+            QMessageBox.information(None,"test",str(p.id))
             '''
             Check if an STR relationship has been defined for the person object and set node to indicate NoSTR
             if it has not been defined.
             '''
-            strModel,noSTRNode = self.isSTRDefined(p, pNode)
+            #strModel,noSTRNode = self.isSTRDefined(p, pNode)
+            
+            mapping=declareMapping.instance()
+            stModel=mapping.tableMapping('social_tenure_relationship')
+            model=stModel()
+            strModel=model.queryObject().filter(stModel.party=p.id)
             
             if strModel:
                 #Define additional STR nodes that describe the STR in detail
@@ -173,9 +181,9 @@ class PersonNodeFormatter(STRNodeFormatter):
         Extracts the person data in the same order as defined in the header labels.
         '''
         personInfo = []
-        personInfo.append(person.firstname)
-        personInfo.append(person.lastname)
-        personInfo.append(person.identification_number)
+        personInfo.append(person.family_name)
+        personInfo.append(person.other_names)
+        personInfo.append(person.unique_id)
         
         return personInfo
         

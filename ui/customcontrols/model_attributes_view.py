@@ -37,6 +37,7 @@ class ModelAtrributesView(QListView):
         
         self._dataModel = dataModel
         self._selectedDisplayMapping = OrderedDict()
+        self._modelDisplayMapping = OrderedDict()
         self._attrModel = QStandardItemModel(self)
         
     def dataModel(self):
@@ -55,6 +56,21 @@ class ModelAtrributesView(QListView):
             
         else:
             self._dataModel = dataModel.__class__
+    
+    def modelDisplayMapping(self):
+        '''
+        Returns the colname and display name
+        '''
+        return self._modelDisplayMapping
+    
+    def setModelDisplayMapping(self,dataMapping):   
+        '''
+        Sets the mapping dictory for the table object
+        '''
+        if dataMapping!=None:
+            self._modelDisplayMapping=dataMapping
+        else:
+            return self.modelDisplayMapping   
         
     def load(self):
         """
@@ -65,6 +81,7 @@ class ModelAtrributesView(QListView):
         
         try:
             self._loadAttrs(self._dataModel.displayMapping())
+#           self._loadAttrs(self._modelDisplayMapping)
         except AttributeError:
             #Ignore error if model does not contain the displayMapping static method
             pass

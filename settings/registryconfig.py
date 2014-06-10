@@ -21,6 +21,7 @@ from PyQt4.QtCore import QSettings
 
 #Names of registry keys
 NETWORK_DOC_RESOURCE = "NetDocumentResource"
+PATHKEYS=['Config','NetDocumentResource','ComposerOutputs','ComposerTemplates']
 DATABASE_LOOKUP = "LookupInit"
 
 class RegistryConfig(object):

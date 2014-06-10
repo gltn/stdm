@@ -24,7 +24,7 @@ email                : gkahiu@gmail.com
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from database import Enumerator, Respondent, CheckGender,CheckMaritalStatus, \
+from .database import Enumerator, Respondent, CheckGender,CheckMaritalStatus, \
 CheckRespondentType,CheckWitnessRelationship,CheckSavingsOption,CheckInputService, \
 CheckSocioEconomicImpact,CheckFoodCropCategory,STDMDb
 

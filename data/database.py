@@ -23,7 +23,7 @@ from collections import OrderedDict
 
 from PyQt4.QtGui import QApplication
 
-from sqlalchemy import create_engine, ForeignKey,Table ,event,func
+from sqlalchemy import create_engine, ForeignKey,Table ,event,func, MetaData
 from sqlalchemy import Column, Date, Integer, String ,Numeric,Text,Boolean
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import relationship, backref 
@@ -33,7 +33,9 @@ from geoalchemy2 import Geometry
 
 import stdm.data
 
-Base = declarative_base()
+metadata=MetaData()
+Base = declarative_base(metadata=metadata)
+
 
 class Singleton(object):
     '''
@@ -79,6 +81,8 @@ class STDMDb(object):
         Session = sessionmaker(bind = self.engine)
         self.session = Session() 
         Base.metadata.create_all(self.engine)
+        #Base.metadata=metadata
+        #metadata.reflect(bind=self.engine)
         
     def createMetadata(self):
         '''
@@ -128,7 +132,7 @@ class Model(object):
         Else, the full model object will be returned.
         '''
         db = STDMDb.instance()
-        
+        #raise NameError(str(self.__class__))
         if len(args) == 0:            
             return db.session.query(self.__class__)
         
@@ -151,8 +155,12 @@ class Model(object):
         '''
         Returns the dictionary containing the translation mapping for the attributes.
         Base classes need to implement this method.
+        
+        if len(Model.attrTranslations) == 0:
+            raise NotImplementedError
+        else:
         '''
-        raise NotImplementedError
+        return Model.attrTranslations
     
 class LookupBase(object):
     '''

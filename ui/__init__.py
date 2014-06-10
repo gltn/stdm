@@ -33,6 +33,7 @@ from .entity_browser import (
                             WitnessEntityBrowser,
                             FarmerEntitySelector, 
                             FarmerEntityBrowser,
+                            STDMEntityBrowser,
                             SurveyEntityBrowser
                             )
 from .foreign_key_editors import (
@@ -52,7 +53,8 @@ from .base_person import (
                          )
 from .garden_editor import (
                             GardenEditor,
-                            SpatialGardenEditor
+                            SpatialGardenEditor,
+                            spatialUnitEditor
                             )
 from .composer_symbol_editor import ComposerSymbolEditor
 from .composer_field_selector import ComposerFieldSelector
@@ -65,6 +67,17 @@ from .composer_spcolumn_styler import (
                                        SpatialFieldMapping
                                        )
             
+from .addtable import TableEditor
+from .attribute_editor import AttributeEditor
+from .workspace_config import WorkspaceLoader
+from .stdmdialog import STDMDialog, declareMapping
+from .dialog_generator import ContentView
+from .ui_table_property import Ui_TableProperty
+from .table_propertyDlg import TableProperty
+from .profileDlg import ProfileEditor
+from .lookup_values_dlg import ADDLookupValue
+from .frmAbout import AboutDialog
+from .data_reader_form import STDMForm,STDMEntityForm
             
             
             
