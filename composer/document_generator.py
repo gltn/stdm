@@ -186,13 +186,13 @@ class DocumentGenerator(QObject):
                             bbox = self._addFeatureToLayer(refLayer, geomWKT)
                             bbox.scale(spfm.zoomLevel())
                             
+                            #Style layer based on the spatial field mapping symbol layer
+                            refLayer.rendererV2().symbols()[0].changeSymbolLayer(0,spfm.symbolLayer())
+                            
                             #Add layer to map
                             QgsMapLayerRegistry.instance().addMapLayer(refLayer)
                             self._iface.mapCanvas().setExtent(bbox)
                             self._iface.mapCanvas().refresh()
-                            
-                            #mapItem.storeCurrentLayerSet()
-                            #mapItem.updateCachedImage()
                             
                             #Add layer to memory layer list
                             self._memoryLayers.append(refLayer)
@@ -334,7 +334,7 @@ class DocumentGenerator(QObject):
                 if fValue != None:
                     modelValues.append(unicode(fValue))
                     
-            return "_".join(modelValues) + "." +fileExtension
+            return "_".join(modelValues) + "." + fileExtension
             
         return ""
 

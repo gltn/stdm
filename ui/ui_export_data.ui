@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>frmExportWizard</class>
+ <widget class="QWizard" name="frmExportWizard">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>512</width>
+    <height>444</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Export STDM Data...</string>
+  </property>
+  <property name="wizardStyle">
+   <enum>QWizard::ModernStyle</enum>
+  </property>
+  <widget class="QWizardPage" name="pgDestination">
+   <property name="title">
+    <string>Destination Options</string>
+   </property>
+   <property name="subTitle">
+    <string>Select destination file name and format.</string>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <widget class="QGroupBox" name="groupBox_3">
+      <property name="title">
+       <string>Destination Format:</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QRadioButton" name="rbShp">
+         <property name="text">
+          <string>ESRI Shapefile</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="rbCSV">
+         <property name="text">
+          <string>CSV</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="rbMapInfo">
+         <property name="text">
+          <string>MapInfo File</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="rbGPX">
+         <property name="text">
+          <string>GPX</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="rbDXF">
+         <property name="text">
+          <string>DXF</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="groupBox_4">
+      <property name="title">
+       <string>Destination File:</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QLineEdit" name="txtExportPath">
+         <property name="maxLength">
+          <number>200</number>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QPushButton" name="btnDestFile">
+         <property name="maximumSize">
+          <size>
+           <width>30</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWizardPage" name="pgSrcTab">
+   <property name="title">
+    <string>Export Table</string>
+   </property>
+   <property name="subTitle">
+    <string>Select the table or view from the STDM database whose contents are to be exported.</string>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="0" column="0" rowspan="2">
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="title">
+       <string>Source Table:</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <widget class="QListWidget" name="lstSrcTab">
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectRows</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QGroupBox" name="groupBox_7">
+      <property name="title">
+       <string>Textual Columns:</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_6">
+       <item row="0" column="0">
+        <widget class="QListWidget" name="lstSrcCols_2"/>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QGroupBox" name="groupBox_8">
+      <property name="title">
+       <string>Spatial Columns:</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_7">
+       <item row="0" column="0">
+        <widget class="QComboBox" name="cboSpatialCols_2"/>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWizardPage" name="pgFilter">
+   <property name="title">
+    <string>Filter Data</string>
+   </property>
+   <property name="subTitle">
+    <string>Specify a custom query to filter out the resulting dataset.</string>
+   </property>
+   <widget class="QGroupBox" name="gpQBuilder">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>471</width>
+      <height>311</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Query Builder:</string>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+    <widget class="QGroupBox" name="groupBox_5">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>23</y>
+       <width>451</width>
+       <height>155</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string/>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Columns:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Unique Values:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" rowspan="2">
+       <widget class="QListWidget" name="lstQueryCols">
+        <property name="selectionBehavior">
+         <enum>QAbstractItemView::SelectRows</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QListWidget" name="lstUniqueVals"/>
+      </item>
+      <item row="2" column="1">
+       <widget class="QPushButton" name="btnUniqueVals">
+        <property name="text">
+         <string>Get Unique Values</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QGroupBox" name="groupBox_6">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>184</y>
+       <width>221</width>
+       <height>117</height>
+      </rect>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>221</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="title">
+      <string>Operators:</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_5">
+      <item row="0" column="0">
+       <widget class="QPushButton" name="btnOpEq">
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>=</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QPushButton" name="btnOpNotEq">
+        <property name="text">
+         <string>&lt;&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="btnOpLike">
+        <property name="text">
+         <string>LIKE</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QPushButton" name="btnOpGreater">
+        <property name="text">
+         <string>&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="btnOpGreaterEq">
+        <property name="text">
+         <string>&gt;=</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="btnOpAnd">
+        <property name="text">
+         <string>AND</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QPushButton" name="btnOpLess">
+        <property name="text">
+         <string>&lt;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QPushButton" name="btnOpLessEq">
+        <property name="text">
+         <string>&lt;=</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QPushButton" name="btnOpOr">
+        <property name="text">
+         <string>OR</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QTextEdit" name="txtWhereQuery">
+     <property name="geometry">
+      <rect>
+       <x>237</x>
+       <y>184</y>
+       <width>224</width>
+       <height>88</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnClearQuery">
+     <property name="geometry">
+      <rect>
+       <x>237</x>
+       <y>278</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Clear</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnQueryVerify">
+     <property name="geometry">
+      <rect>
+       <x>352</x>
+       <y>278</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Verify</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

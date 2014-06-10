@@ -59,5 +59,16 @@
 	<file>images/icons/generate_document.png</file>
 	<file>images/icons/manage_templates.png</file>
 	<file>images/icons/add_map.png</file>
+	<file>images/icons/report.png</file>
+	<file>images/icons/column.png</file>
+	<file>images/icons/down.png</file>
+	<file>images/icons/first.png</file>
+	<file>images/icons/last.png</file>
+	<file>images/icons/next.png</file>
+	<file>images/icons/previous.png</file>
+	<file>images/icons/table.png</file>
+	<file>images/icons/up.png</file>
+	<file>images/icons/export.png</file>
+	<file>images/icons/import.png</file>
   </qresource>  
 </RCC>

@@ -117,9 +117,9 @@ class SpatialFieldsConfiguration(object):
             labelField = spatialFieldMappingElement.attribute("labelField")
             spatialField = spatialFieldMappingElement.attribute("name")
             itemId = spatialFieldMappingElement.attribute("itemid") 
-            srid = spatialFieldMappingElement.attribute("srid") 
+            srid = int(spatialFieldMappingElement.attribute("srid"))
             geomType = spatialFieldMappingElement.attribute("geomType") 
-            zoom = spatialFieldMappingElement.attribute("zoom") 
+            zoom = int(spatialFieldMappingElement.attribute("zoom"))
             
             #Create spatial field mapping
             spFieldMapping = SpatialFieldMapping(spatialField,labelField) 
