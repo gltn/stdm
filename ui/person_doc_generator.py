@@ -79,11 +79,7 @@ class PersonDocumentGenerator(QDialog,Ui_frmPersonDocGenerator):
         self.personFKMapper.initialize()
         
         #Configure person model attribute view
-        
-        # QMessageBox.information(None,"test",str(self._dbModel.displayMapping()))
-        #tableMapping=self.mapping.displayMapping('party')
-        
-        
+               
         self.lstDocNaming.setDataModel(self._dbModel)
         #self.lstDocNaming.setModelDisplayMapping(tableMapping)
         self.lstDocNaming.load()

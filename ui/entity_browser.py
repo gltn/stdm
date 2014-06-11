@@ -544,7 +544,7 @@ class FarmerEntitySelector(EntityBrowser):
         EntityBrowser.__init__(self, parent, model, state)
         
     def title(self):
-        return QApplication.translate("EnumeratorEntityBrowser", "Farmer Records")
+        return QApplication.translate("EnumeratorEntityBrowser", "Party Records")
     
 class FarmerEntityBrowser(ContentGroupEntityBrowser):
     '''

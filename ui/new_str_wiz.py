@@ -566,16 +566,17 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         '''
         Slot for updating the person information into the tree widget based on the user-selected value
         '''
+        Person=self.mapping.tableMapping('party')
+        person=Person()
         #Get the id from the model then the value of the ID model index
         row = index.row()
         idIndex = self.personStandardModel.index(row, 0)
-        #QMessageBox.information(None,'test',str(idIndex.data()))
         personId =int(idIndex.data())
         
+        QMessageBox.information(self,'test',str(personId))
         #Get person info
-        Person=self.mapping.tableMapping('party')
-        person = Person()
         p = person.queryObject().filter(Person.id == personId).first()
+       
         if p:   
             self.selPerson = p
             personInfoMapping = self._mapPersonAttributes(p)

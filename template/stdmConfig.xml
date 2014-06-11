@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='utf-8'?>
+<schema>
+	<profile fullname="STDM Core Modules" name="stdm">
+		<table fullname="party can be a person household or group" name="party">
+			<columns>
+				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
+				<column fullname="Surname" name="family_name" null="yes" size="25" type="character varying" />
+				<column fullname="other given names" name="other_names" null="yes" size="25" type="character varying" />
+				<column fullname="address id" name="address" null="yes" size="25" type="character varying" />
+				<column fullname="identity" name="unique_id" null="yes" size="" type="integer" />
+				<column fullname="mobile" name="contact_telephone" null="yes" size="25" type="character varying" />
+			</columns>
+			<relations />
+			<constraints />
+			<contentgroups fullname="party can be a person household or group" name="party">
+				<contentgroup code="{3337F9B8-4D54-45CD-BDAD-1577FD668BC7}" name="create" />
+				<contentgroup code="{4F259F92-DB94-4B0D-A6E4-28BBB15BAB9F}" name="select" />
+				<contentgroup code="{6CA953A3-A6CE-48AF-B660-5B6F2EC42065}" name="update" />
+				<contentgroup code="{AF0244F9-8831-449F-ACAA-C2096DBE8181}" name="delete" />
+			</contentgroups>
+		</table>
+		<table fullname="spatial unit or a group of spatial unit" name="spatial_unit">
+			<columns>
+				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
+				<column fullname="unique identifier" name="spatial_unit_id" null="yes" size="" type="integer" />
+				<column fullname="Friendly name of the unit" name="name" null="yes" size="25" type="character varying" />
+				<column fullname="type of the unit" lookup="check_type" name="type" null="yes" size="25" type="character varying" />
+			</columns>
+			<relations>
+				</relations>
+			<constraints>
+				<constraint arguments="2" column="geom_line" srid="4326" table="spatial_unit" type="LINESTRING" />
+				<constraint arguments="2" column="geom_point" srid="4326" table="spatial_unit" type="POINT" />
+				<constraint arguments="2" column="geom_polygon" srid="4326" table="spatial_unit" type="POLYGON" />
+			</constraints>
+			<contentgroups fullname="spatial unit or a group of spatial unit" name="spatial_unit">
+				<contentgroup code="{BD1488E7-04EF-48C0-A21E-D2761E7DC3F2}" name="create" />
+				<contentgroup code="{765D6E74-1725-4720-9C49-E1E7BB9511FD}" name="select" />
+				<contentgroup code="{0F016C29-987D-493D-B556-1FC5CEE5892B}" name="update" />
+				<contentgroup code="{5D01B4BF-081E-49C1-8F96-465826522C81}" name="delete" />
+			</contentgroups>
+		</table>
+		<table fullname="Prove of evidence to the defined tenure" name="supporting_document">
+			<columns>
+				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
+				<column fullname="" lookup="check_document_type" name="document_type" null="yes" size="25" type="character varying" />
+			<column fullname="" name="party" null="yes" size="" type="integer" /><column fullname="id of the spatial unit relating to the document" name="spatial_unit" null="yes" size="" type="integer" /><column fullname="when it was obtained" name="date_of_recording" null="yes" size="" type="date" /><column fullname="For how long" name="validity" null="yes" size="" type="date" /></columns>
+			<relations>
+				<relation column="id" name="spid" ondelete="cascade" onupdate="cascade" table="spatial_unit" /><relation column="id" name="pid" ondelete="cascade" onupdate="cascade" table="party" /></relations>
+			<constraints />
+			<contentgroups fullname="Prove of evidence to the defined tenure" name="supporting_document">
+				<contentgroup code="{A6FCF613-5442-40BF-96A9-F9BADC6BA647}" name="create" />
+				<contentgroup code="{9A8359E0-F257-4A7B-AA52-397277C1D14D}" name="select" />
+				<contentgroup code="{DD8343D8-E188-4D6B-93A0-516AF7F22361}" name="update" />
+				<contentgroup code="{30B31A51-065C-4252-969E-54B17805A9FD}" name="delete" />
+			</contentgroups>
+		</table>
+		<table fullname="Relation of the person to spatial unit as supported by supporting documents" name="social_tenure_relationship">
+			<columns>
+				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
+			<column fullname="type of social tenure" lookup="check_social_tenure_type" name="social_tenure_type" null="yes" size="25" type="character varying" /><column fullname="share unit " name="share" null="yes" size="" type="double precision" /><column fullname="party id" name="party" null="yes" size="" type="integer" /><column fullname="spatial unit id" name="spatial_unit" null="yes" size="" type="integer" /></columns>
+			<relations><relation column="id" name="partyid" ondelete="cascade" onupdate="cascade" table="party" /><relation column="id" name="spid" ondelete="cascade" onupdate="cascade" table="spatial_unit" /></relations>
+			<constraints />
+			<contentgroups fullname="Relation of the person to spatial unit as supported by supporting documents" name="social_tenure_relationship">
+				<contentgroup code="{A30E6D14-1110-4847-BC2E-095888AF08EA}" name="create" />
+				<contentgroup code="{1955C262-6CBF-45DF-BC10-5A72A37EEBB6}" name="select" />
+				<contentgroup code="{7E5880E6-A8D7-4EF1-83EE-4E45DE376FF3}" name="update" />
+				<contentgroup code="{3E0C439C-248F-4CDC-8803-8187450BB940}" name="delete" />
+			</contentgroups>
+		</table>
+		<lookup fullname="type of the units" name="check_type">
+			<columns>
+				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
+				<column fullname="Choice list" name="value" size="50" type="character varying" />
+			</columns>
+			<data>
+				<value>Point</value>
+				<value>Line</value>
+				<value>Polygon</value>
+			</data>
+		</lookup>
+		<lookup fullname="" name="check_document_type">
+			<columns>
+				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
+				<column fullname="Choice list" name="value" size="50" type="character varying" />
+			</columns>
+			<data>
+				<value>Audio Files</value>
+				<value>Video Files</value>
+				<value>Rent certificate</value>
+				<value>Lease agreement</value>
+				<value>Title</value>
+			</data>
+		</lookup>
+	<lookup fullname="" name="check_social_tenure_type"><columns><column fullname="Primary Key" key="1" name="id" size="" type="serial" /><column fullname="Choice list" name="value" size="50" type="character varying" /></columns><data><value>Tenant</value><value>Individual owner</value><value>Part owner/shared ownership</value><value>Lease</value><value>Occupant</value><value>Others</value></data></lookup></profile>
+</schema>
