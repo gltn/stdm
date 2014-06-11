@@ -272,11 +272,3 @@ def deleteLookupChoice(level,category,tableName,elemnt,key,value):
         else:
             continue
 
-#if __name__=="__main__":
-    data={
-         'table' : 'spatial_unit'
-          
-          }
-    #setLookupValue('check_gender', "newdata")
-#    #from PyQt4.QtCore import *
-    writeTableColumn(data,'household','table','spatial_unit','relation')

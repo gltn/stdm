@@ -80,7 +80,7 @@ class PersonDocumentGenerator(QDialog,Ui_frmPersonDocGenerator):
         
         #Configure person model attribute view
         
-        QMessageBox.information(None,"test",str(self._dbModel.displayMapping()))
+        # QMessageBox.information(None,"test",str(self._dbModel.displayMapping()))
         #tableMapping=self.mapping.displayMapping('party')
         
         

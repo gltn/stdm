@@ -22,7 +22,7 @@
 from collections import OrderedDict
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from stdm.data import tableColumns,deleteProfile,tableFullDescription,profileFullDescription
+from .xmlconfig_reader import tableColumns,deleteProfile,tableFullDescription,profileFullDescription
 from stdm.settings import RegistryConfig
 regConfig = RegistryConfig()            
 #rofileName=lookupReg['currentProfile']

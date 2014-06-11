@@ -38,7 +38,7 @@ TAX_RECEIPT_STATE = 2025
 
 #Display text for document types
 docTypeMapping = {
-                  TITLE_DEED:str(QApplication.translate("sourceDocument", "Title Deed")),
+                  TITLE_DEED:str(QApplication.translate("sourceDocument", "Supporting Document")),
                   STATUTORY_REF_PAPER:str(QApplication.translate("sourceDocument", "Statutory Reference Paper")),
                   SURVEYOR_REF:str(QApplication.translate("sourceDocument", "Surveyor Reference")),
                   NOTARY_REF:str(QApplication.translate("sourceDocument", "Notary Reference")),
