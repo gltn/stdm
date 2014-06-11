@@ -33,6 +33,7 @@ HELP="stdm.chm"
 xmldoc=os.path.dirname(os.path.abspath(__file__))
 #from stdm.config import activeProfile
 from stdm.settings import RegistryConfig
+from .reports import SysFonts
 
 class FilePaths(object):
     def __init__(self, path=None):
@@ -119,6 +120,7 @@ class FilePaths(object):
                 if not os.path.isfile(self.userPath+'/%s'%fileN):
                     baseFile=self.baseDir +'/%s'%fileN
                     shutil.copy(baseFile,self.userPath)
+            fontPath=self.userPath+'/font.cache'
         except IOError as ex:
             raise ex
     

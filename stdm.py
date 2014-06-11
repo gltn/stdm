@@ -17,7 +17,7 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 
-import os.path, string
+import os.path, string, platform
 
 from PyQt4.QtCore import * 
 from PyQt4.QtGui import *
@@ -57,6 +57,7 @@ from data import (
                   activeProfile,
                   contentGroup
                   )
+from data.reports import SysFonts
 from navigation import (
                         STDMAction,
                         QtContainerLoader,
@@ -123,6 +124,8 @@ class STDMQGISLoader(object):
         self.aboutAct.triggered.connect(self.about)
         # self.wzdAct.triggered.connect(self.workspaceLoader)
         self.initToolbar()
+        
+        
         
     def getThemeIcon(self, theName):        
         # get the icon from the best available theme
@@ -383,6 +386,8 @@ class STDMQGISLoader(object):
                 self.moduleCntGroup.deleteContentItem().code =capabilities[3]
                 self.moduleCntGroup.register()
                 contentMenu.addAction(contentAction)
+        
+        
                          
         #Create content groups and add items
                 
@@ -471,6 +476,14 @@ class STDMQGISLoader(object):
         
         #Load all the content in the container
         self.toolbarLoader.loadContent()
+        
+        #Quick fix
+        fontPath=None
+        if platform.system() == "Windows":
+            userPath = os.environ["USERPROFILE"]
+            profPath = userPath + "/.stdm"
+            fontPath=str(profPath).replace("\\", "/")+"/font.cache"
+        SysFonts.register(fontPath)
         
     def configureMapTools(self):
         '''

@@ -519,6 +519,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         Initializes person filter settings
         '''         
         cols=tableCols('party')
+        QMessageBox.information(None,'test',str(cols))
         if 'id' in cols:
             cols.remove('id')
         for col in cols:
@@ -573,9 +574,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         idIndex = self.personStandardModel.index(row, 0)
         personId =int(idIndex.data())
         
-        QMessageBox.information(self,'test',str(personId))
         #Get person info
-        p = person.queryObject().filter(Person.id == personId).first()
+        p = person.queryObject().filter(Person.id == str(personId)).first()
        
         if p:   
             self.selPerson = p
@@ -598,9 +598,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         colMapping = pmapper.displayMapping()
         colMapping.pop('id')
         pMapping=OrderedDict()
-        for attrib,label in colMapping.iteritems():
-            pMapping[label] = getattr(person,attrib)
-            
+        try:
+            for attrib,label in colMapping.iteritems():
+                pMapping[label] = getattr(person,attrib)
+        except:
+            pass
 #         pMapping["Position"] = person.firstname
 #         pMapping["Gender"] = str(genderFormatter.setDisplay(person.gender_id).toString())
 #         pMapping["Age"] = str(dobFormatter.setDisplay(person.date_of_birth))        

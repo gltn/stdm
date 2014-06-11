@@ -688,7 +688,10 @@ class PropertyNode(BaseSTRNode):
         '''
         Returns the object values as a list.
         '''
-        self.propertyLabels.pop('id')
+        try:
+            self.propertyLabels.pop('id')
+        except:
+            pass
         for prop,label in self.propertyLabels.iteritems():
             
             strText=str(getattr(self.property, prop))
@@ -739,7 +742,7 @@ class PropertyNode(BaseSTRNode):
                 strText = unicode(getattr(self.property,prop))
             '''
             self._objValues.append(strText)
-        QMessageBox.information(None,"test",str(self._objValues[0]))
+        
     
     def _setChildren(self):
         '''

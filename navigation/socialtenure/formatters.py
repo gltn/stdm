@@ -188,7 +188,7 @@ class PersonNodeFormatter(STRNodeFormatter):
         personInfo = []
         personInfo.append(person.family_name)
         personInfo.append(person.other_names)
-        personInfo.append(person.unique_id)
+        personInfo.append(person.identification)
         
         return personInfo
         
