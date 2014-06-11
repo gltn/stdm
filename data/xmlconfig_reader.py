@@ -231,17 +231,3 @@ def contentGroup(tableName):
             else:
                 return None
                 
-#if __name__=="__main__":
- #   lookupData("check_gender")
-##     import sys
-#    tree, root=parseRootElement()
-#    root= tree.parse(xml_doc)
-#    tree = ET()
-#    root= tree.parse(xml_doc)
-#    #table=[]
-#    #filter=".//*[@name='%s']/table"%profile
-#    profile='household'
-#    table='person'
-    #tableColumns(profile, table)
-    #lookupTable()
-    #return pfList

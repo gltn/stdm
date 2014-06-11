@@ -27,7 +27,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from sqlalchemy.orm import clear_mappers, Query
 #from stdm.data import TableMapper
-from stdm.data import STDMEntity, STDMDb, TableMapper,LookupTable,ForeignRelationMapper,ForeignKey,LookupEntity
+from stdm.data import STDMDb
 #from foreign_key_mapper import ForeignRelationMapper,ForeignKey,LookupEntity
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -37,16 +37,12 @@ class STDMForm(BoundDialog):
         self.session=Session
         self.cols=columns
         
-        self.setWindowTitle("Editor")
+        
         self.setDataReader(self.session,tableCls,'id')
         vbox=QVBoxLayout()
         self.setLayout(vbox)
         grid=LayoutLayout(vbox,QFormLayout())
-        try:
-            tableCls.household=ForeignKeyReferral(str,"household",'household',LookupTable,'id')
-        except:
-            pass
-        
+                
         self.mm=self.mapClass(tableCls)
         self.mm.addBoundForm(vbox,self.cols)
         
@@ -63,16 +59,11 @@ class STDMForm(BoundDialog):
     def load(self):
         self.mm.connect_instance(self.main_row)
         self.submit()
+        self.setWindowTitle("Editor")
 
     def actionSave(self):
         title=QApplication.translate("BoundingDialog","Save entity")
         QMessageBox.information(self,title,QApplication.translate("BoundingDialog","information save successfully"))
-        
-    def createDynamicClass(self,className,**attr):
-        return type(className,(object,),dict(**attr))
-    
-    def classFromTable(self,name):
-        return self.createDynamicClass(name)
         
     def foreignkeymapped(self):
         return ForeignKeyReferral(str,"household",'household',LookupTable,'income')

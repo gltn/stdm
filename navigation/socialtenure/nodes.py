@@ -346,7 +346,7 @@ class STRNode(BaseSTRNode):
         self._objValues = []
         
         #Define property names
-        self.propNameSTRType = "SocialTenureType"
+        self.propNameSTRType = "social_tenure_type"
         self.propNameHasAgreement = "AgreementAvailable"
         
         self.propertyLabels = OrderedDict({
@@ -395,11 +395,14 @@ class STRNode(BaseSTRNode):
         '''
         for prop,label in self.propertyLabels.iteritems():
             if prop == self.propNameSTRType:
-                strLoookupFormatter = LookupFormatter(CheckSocialTenureRelationship)
-                strAttrVal = getattr(self.strModel,self.propNameSTRType)
-                strText = str(strLoookupFormatter.setDisplay(strAttrVal).toString())
+                #strLoookupFormatter = LookupFormatter(CheckSocialTenureRelationship)
+                #strAttrVal = getattr(self.strModel,self.propNameSTRType)
+                strAttrVal = self.strModel.social_tenure_type
+                #strText = str(strLoookupFormatter.setDisplay(strAttrVal).toString())
+                strText=strAttrVal
             elif prop == self.propNameHasAgreement:
-                strText = "Yes" if getattr(self.strModel,prop) else "No"
+                    #strText = "Yes" if getattr(self.strModel,prop) else "No"
+                    strText = "No"
             
             self._objValues.append(strText)
     
@@ -614,9 +617,9 @@ class PropertyNode(BaseSTRNode):
     '''
     Node for rendering property information.
     '''
-    def __init__(self,property,parent = None, isChild = False, styleIfChild = True):
+    def __init__(self,property, model, parent = None, isChild = False, styleIfChild = True):
         self.property = property
-        
+        self.model=model
         self._objValues = []
         
         #Define property names
@@ -635,10 +638,15 @@ class PropertyNode(BaseSTRNode):
         self.propBuildingAccession = "BuildingAccessionID"
         self.propBuildingAccessYear = "BuildingAccessionYear"
         
-        self.propertyLabels = OrderedDict({
-                       self.propNamePropertyID : str(QApplication.translate("PropertyNode","Identity")),
-                       self.propNameUseType : str(QApplication.translate("PropertyNode","Use")),
-                       self.propNameDescription : str(QApplication.translate("PropertyNode","Description")),
+        self.propertyLabels = self.model.displayMapping()
+        '''
+        OrderedDict({
+                       #self.propNamePropertyID : str(QApplication.translate("PropertyNode","Name")),
+                       self.propNameUseType : str(QApplication.translate("PropertyNode","Type")),
+        
+                       self.propNameDescription : str(QApplication.translate("PropertyNode","Name"))
+                       })
+        
                        self.propNumFloors : str(QApplication.translate("PropertyNode","Number of Floors")),
                        self.propRoofType : str(QApplication.translate("PropertyNode","Roof Type")),
                        self.propNatureWalls : str(QApplication.translate("PropertyNode","Nature of Walls")),
@@ -650,7 +658,10 @@ class PropertyNode(BaseSTRNode):
                        self.propLandAccessYear : str(QApplication.translate("PropertyNode","Land Accession Year")),
                        self.propBuildingAccession : str(QApplication.translate("PropertyNode","Building Accession")),
                        self.propBuildingAccessYear : str(QApplication.translate("PropertyNode","Building Accession Year"))
+                       
                        })
+        '''
+        #QMessageBox.information(None,"test",str(self.propertyLabels.items()))
         
         #Set object values
         self._setObjectValues()
@@ -677,15 +688,27 @@ class PropertyNode(BaseSTRNode):
         '''
         Returns the object values as a list.
         '''
+        self.propertyLabels.pop('id')
         for prop,label in self.propertyLabels.iteritems():
+            
+            strText=str(getattr(self.property, prop))
+            '''
             if prop == self.propNameUseType:
+                
                 lkFormatter = LookupFormatter(CheckBuildingUseType)
                 attrVal = getattr(self.property,self.propNameUseType)
+                
                 strText = unicode(lkFormatter.setDisplay(attrVal).toString())
+                
+                strText=self.property.type
             elif prop == self.propNameDescription:
+                
                 lkFormatter = LookupFormatter(CheckBuildingDescription)
                 attrVal = getattr(self.property,self.propNameDescription)
                 strText = unicode(lkFormatter.setDisplay(attrVal).toString())
+                
+                strText=self.property.name
+
             elif prop == self.propRoofType:
                 lkFormatter = LookupFormatter(CheckRoofType)
                 attrVal = getattr(self.property,self.propRoofType)
@@ -714,13 +737,15 @@ class PropertyNode(BaseSTRNode):
                     strText = moneyfmt(decAmount)
             else:
                 strText = unicode(getattr(self.property,prop))
-            
+            '''
             self._objValues.append(strText)
+        QMessageBox.information(None,"test",str(self._objValues[0]))
     
     def _setChildren(self):
         '''
         Add text information as children to this node describing the STR info.
         '''
+        #QMessageBox.information(None,"test",str(self.property.name))
         propValues = self.propertyLabels.values()
         for i in range(len(propValues)):
             label = propValues[i]

@@ -25,7 +25,7 @@ from qtalchemy.widgets import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from sqlalchemy.orm import *
-from .data_reader_form import STDMEntity, STDMDb,STDMEntityForm
+from .data_reader_form import STDMDb,STDMEntityForm
 
 from qtalchemy.ext.dataviews import BasicQueryManager
 

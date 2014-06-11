@@ -163,7 +163,10 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         session=STDMDb.instance().session
         strTypeFormatter =session.query(pty.c.value).all()
         strType=[str(ids[0]) for ids in strTypeFormatter]
+        
         self.cboSTRType.insertItems(0,strType)
+        strType.insert(0, " ")
+        self.cboSTRType.setCurrentIndex(-1)
         #loadComboSelections(self.cboSTRType, CheckSocialTenureRelationship) 
         
         self.notifSTR = NotificationBar(self.vlSTRTypeNotif)
@@ -238,17 +241,17 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         Display summary information.
         '''
         personMapping = self._mapPersonAttributes(self.selPerson)
-        #propertyMapping = self._mapPropertyAttributes(self.selProperty)
+        propertyMapping = self._mapPropertyAttributes(self.selProperty)
         STRMapping = self._mapSTRTypeSelection()
         
         #Load summary information in the tree view
         summaryTreeLoader = TreeSummaryLoader(self.twSTRSummary)
         summaryTreeLoader.addCollection(personMapping, QApplication.translate("newSTRWiz","Occupant Information"), 
                                              ":/plugins/stdm/images/icons/user.png")    
-        '''
+        
         summaryTreeLoader.addCollection(propertyMapping, QApplication.translate("newSTRWiz","Property Information"), 
                                              ":/plugins/stdm/images/icons/property.png")
-                                             '''
+                                             
         summaryTreeLoader.addCollection(STRMapping, QApplication.translate("newSTRWiz","Social Tenure Relationship Information"), 
                                              ":/plugins/stdm/images/icons/social_tenure.png")    
         
@@ -516,10 +519,13 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         Initializes person filter settings
         '''         
         cols=tableCols('party')
-        self.cboPersonFilterCols.addItem(str(QApplication.translate("newSTRWiz","First Name")), cols[1])
-        self.cboPersonFilterCols.addItem(str(QApplication.translate("newSTRWiz","Last Name")), cols[2])
+        if 'id' in cols:
+            cols.remove('id')
+        for col in cols:
+            self.cboPersonFilterCols.addItem(str(QApplication.translate("newSTRWiz",col.replace('_',' ').title())), col)
+        #self.cboPersonFilterCols.addItem(str(QApplication.translate("newSTRWiz","Last Name")), cols[2])
         #self.cboPersonFilterCols.addItem(str(QApplication.translate("newSTRWiz","Nick Name")), "nickname")
-        self.cboPersonFilterCols.addItem(str(QApplication.translate("newSTRWiz","Identification Number")), "unique_id")            
+        #self.cboPersonFilterCols.addItem(str(QApplication.translate("newSTRWiz","Identification Number")), "unique_id")            
         
     def _updatePersonCompleter(self,index):
         '''
@@ -572,7 +578,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         p = person.queryObject().filter(Person.id == personId).first()
         if p:   
             self.selPerson = p
-                     
             personInfoMapping = self._mapPersonAttributes(p)
             personTreeLoader = TreeSummaryLoader(self.tvPersonInfo)
             personTreeLoader.addCollection(personInfoMapping, QApplication.translate("newSTRWiz","Occupant Information"), 
@@ -588,11 +593,13 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         dobFormatter = DoBFormatter()
         maritalStatFormatter = LookupFormatter(CheckMaritalStatus)
                      
-        pMapping = OrderedDict()
-        
-        pMapping["First Name"] = person.family_name
-        pMapping["Last Name"] = person.other_names
-        pMapping["Identification"] = person.unique_id
+        pmapper=self.mapping.tableMapping('party')
+        colMapping = pmapper.displayMapping()
+        colMapping.pop('id')
+        pMapping=OrderedDict()
+        for attrib,label in colMapping.iteritems():
+            pMapping[label] = getattr(person,attrib)
+            
 #         pMapping["Position"] = person.firstname
 #         pMapping["Gender"] = str(genderFormatter.setDisplay(person.gender_id).toString())
 #         pMapping["Age"] = str(dobFormatter.setDisplay(person.date_of_birth))        
@@ -611,12 +618,12 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         session=STDMDb.instance().session
         prop =session.query(propty).filter(propty.c.spatial_unit_id == str(propid)).first()
         if prop:
-            #propMapping = self._mapPropertyAttributes(prop)
+            propMapping = self._mapPropertyAttributes(prop)
             
             #Load information in the tree view
             propertyTreeLoader = TreeSummaryLoader(self.tvPropInfo)
-            #propertyTreeLoader.addCollection(propMapping, QApplication.translate("newSTRWiz","Property Information"), 
-            #                                 ":/plugins/stdm/images/icons/property.png")       
+            propertyTreeLoader.addCollection(propMapping, QApplication.translate("newSTRWiz","Property Information"), 
+                                             ":/plugins/stdm/images/icons/property.png")       
             propertyTreeLoader.display()  
             
             self.selProperty = prop
@@ -628,13 +635,20 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
     
     def _mapPropertyAttributes(self,prop):
             #Configure formatters
+            spMapper=self.mapping.tableMapping('spatial_unit')
+            colMapping = spMapper.displayMapping()
+            colMapping.pop('id')
+            propMapping=OrderedDict()
+            for attrib,label in colMapping.iteritems():
+                propMapping[label] = getattr(prop,attrib)
+            '''
             useTypeFormatter = LookupFormatter(CheckBuildingUseType)
             descFormatter = LookupFormatter(CheckBuildingDescription)
             roofTypeFormatter = LookupFormatter(CheckRoofType)
             wallNatureFormatter = LookupFormatter(CheckWallNature)
             boundTypeFormatter = LookupFormatter(CheckBoundaryType)
             accessionFormatter = LookupFormatter(CheckAccessionMode)
-
+            
             #Check for nulls
             if prop.locality:
                 locArea = prop.locality.area
@@ -663,7 +677,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             propMapping[str(QApplication.translate("newSTRWiz","Land Accession Year"))] = unicode(prop.LandAccessionYear)
             propMapping[str(QApplication.translate("newSTRWiz","Type of Building Accession"))] = unicode(accessionFormatter.setDisplay(prop.BuildingAccessionID).toString())
             propMapping[str(QApplication.translate("newSTRWiz","Building Accession Year"))] = unicode(prop.BuildingAccessionYear)
-            
+            '''
             return propMapping
         
     def _mapSTRTypeSelection(self):

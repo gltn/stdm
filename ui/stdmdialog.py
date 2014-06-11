@@ -30,12 +30,13 @@ from .data_reader_form import STDMEntityForm,STDMDb
 from sqlalchemy.orm import clear_mappers, sessionmaker, mapper
 from sqlalchemy import MetaData, Table
 from qtalchemy import *
-from stdm.data import TableMapper, Model, Base
-from .data_reader_form import STDMEntity
+from stdm.data import Model, Base
+#from stdm.data import tableCols
+from stdm.data.config_utils import tableCols
+
 from collections import OrderedDict
 import types
 
-from stdm.data import ForeignRelationMapper,tableCols
 from stdm.data.database import Singleton
 
 class STDMDialog(object):

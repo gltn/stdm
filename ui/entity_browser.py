@@ -33,7 +33,7 @@ from .notification import NotificationBar, ERROR, WARNING,INFO
 from .base_person import RespondentEditor,WitnessEditor,FarmerEditor
 from stdm.data import STDMDb, tableCols
 from .stdmdialog import declareMapping
-from .data_reader_form import STDMForm
+from .data_reader_form import STDMForm,STDMEntityForm
 
 
 __all__ = ["EntityBrowser","EnumeratorEntityBrowser","EntityBrowserWithEditor", \
@@ -573,12 +573,12 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
         mapping=declareMapping.instance()
         tableCls=mapping.tableMapping(table)
         columns=tableCols(table)
-        QMessageBox.information(None,"test",str(tableCls.displayMapping().keys()))
-        #ContentGroupEntityBrowser.__init__(self, tableCls, tableContentGroup, parent, state)
-        EntityBrowserWithEditor.__init__(self, tableCls, parent, state)
-        #self._editorDialog = FarmerEditor    
         
-        #self._editorDialog = STDMForm(self, tableCls, columns, Session=STDMDb.instance().session)      
+        ContentGroupEntityBrowser.__init__(self, tableCls, tableContentGroup, parent, state)
+        
+        #self._editorDialog = FarmerEditor 
+        #QMessageBox.information(self,"tit",str(STDMDb.instance().session))
+        self._editorDialog = STDMForm(self, tableCls, columns, Session=STDMDb.instance().session)      
         
     def _setFormatters(self):
         """

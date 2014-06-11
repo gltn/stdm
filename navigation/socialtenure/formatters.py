@@ -20,7 +20,7 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from PyQt4.QtGui import QApplication, QMessageBox
-from stdm.ui import declareMapping
+from stdm.ui.stdmdialog import declareMapping
 
 from .nodes import BaseSTRNode, PersonNode, NoSTRNode, STRNode, PropertyNode,\
 ConflictNode,TaxationNode
@@ -65,11 +65,11 @@ class STRNodeFormatter(object):
         
         return strNode
     
-    def setPropertyNodeChild(self,property,parentnode):
+    def setPropertyNodeChild(self,property,parentnode,model=None):
         '''
         Creates a new PropertyNode based on the properties of 'property' and adds it as a child to the 'parentnode'.
         '''
-        propNode = PropertyNode(property,parentnode,isChild = True)
+        propNode = PropertyNode(property, model, parentnode, isChild = True)
         
         return propNode
     
@@ -153,7 +153,7 @@ class PersonNodeFormatter(STRNodeFormatter):
         for p in self._data:
             
             pNode = PersonNode(self._extractPersonInfo(p),self.rootNode)
-            QMessageBox.information(None,"test",str(p.id))
+            
             '''
             Check if an STR relationship has been defined for the person object and set node to indicate NoSTR
             if it has not been defined.
@@ -163,16 +163,21 @@ class PersonNodeFormatter(STRNodeFormatter):
             mapping=declareMapping.instance()
             stModel=mapping.tableMapping('social_tenure_relationship')
             model=stModel()
-            strModel=model.queryObject().filter(stModel.party=p.id)
             
+            spUnitModel=mapping.tableMapping('spatial_unit')
+            spModels=spUnitModel()
+           
+            strModel=model.queryObject().filter(stModel.party == p.id).first()
+           
             if strModel:
                 #Define additional STR nodes that describe the STR in detail
                 self.setSTRNodeChild(strModel, pNode)
-                self.setPropertyNodeChild(strModel.Property, pNode)
-                if isinstance(strModel.Conflict,Conflict):
-                    self.setConflictNodeChild(strModel.Conflict, pNode)
-                if isinstance(strModel.Taxation,Taxation):
-                    self.setTaxationNodeChild(strModel.Taxation, pNode)
+                spModel=spModels.queryObject().filter(spUnitModel.id == strModel.spatial_unit).first()
+                self.setPropertyNodeChild(spModel, pNode,spUnitModel)
+#                 if isinstance(strModel.Conflict,Conflict):
+#                     self.setConflictNodeChild(strModel.Conflict, pNode)
+#                 if isinstance(strModel.Taxation,Taxation):
+#                     self.setTaxationNodeChild(strModel.Taxation, pNode)
             
         return self.rootNode
     

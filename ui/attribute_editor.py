@@ -210,8 +210,8 @@ class AttributeEditor(QDialog,Ui_editor):
         if self.tableName==None:
             self.ErrorInfoMessage(QApplication.translate('AttributeEditor','No selected table found'))
             return
-        if self.lookup and self.checkBox.isChecked():
-            self.setTableRelation()
+        # if self.lookup and self.checkBox.isChecked():
+        #    self.setTableRelation()
         if self.args!=None:
             self.updateColumnData()
         if self.args==None:
