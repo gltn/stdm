@@ -519,7 +519,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         Initializes person filter settings
         '''         
         cols=tableCols('party')
-        QMessageBox.information(None,'test',str(cols))
         if 'id' in cols:
             cols.remove('id')
         for col in cols:

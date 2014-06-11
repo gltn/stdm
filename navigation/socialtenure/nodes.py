@@ -688,10 +688,6 @@ class PropertyNode(BaseSTRNode):
         '''
         Returns the object values as a list.
         '''
-        try:
-            self.propertyLabels.pop('id')
-        except:
-            pass
         for prop,label in self.propertyLabels.iteritems():
             
             strText=str(getattr(self.property, prop))
