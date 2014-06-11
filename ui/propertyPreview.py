@@ -43,7 +43,7 @@ class PropertyPreviewWidget(QTabWidget, Ui_frmPropertyPreview):
         '''
         self.setCanvasBackgroundColor(self.canvasBgColor)
         #Temp
-        self.addProject("D:/Test.qgs")
+        #self.addProject("D:/Test.qgs")
         
     def setCanvasBackgroundColor(self,color):
         '''
