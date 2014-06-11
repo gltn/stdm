@@ -11,7 +11,6 @@ from ttfquery import ttffiles
 from stdm.utils import *
 from stdm.settings import RegistryConfig
 
-FONT_CACHE = "D:/Temp/font.cache"
 
 class SysFonts:    
     '''
@@ -21,7 +20,9 @@ class SysFonts:
     '''
     def __init__(self):
         self.reg = ttffiles.Registry()
-        self.reg.load(FONT_CACHE)
+        if fontCachePath()==None:
+            return
+        self.reg.load(fontCachePath())
     
     def fontFile(self,fontName):        
         #Get the system font filename from the specific font name                    
@@ -58,15 +59,28 @@ class SysFonts:
         return matchingFont 
     
     @staticmethod
-    def register(): 
+    def register(fontPath=None): 
         """
         Write fonts into a cache file.
         """ 
-        if not QFile.exists(FONT_CACHE):
+        cache=None
+        if fontPath!=None:
+            cache=fontPath
+        else:
+            cache=fontCachePath()
+        if not QFile.exists(cache):
             fontRegistry = ttffiles.Registry()
             new,failed = fontRegistry.scan()
-            fontRegistry.save(FONT_CACHE)
+            fontRegistry.save(cache)
             
-        
+            
+def fontCachePath():
+    regConfig = RegistryConfig()
+    try:
+        lookupReg = regConfig.read(['Config'])
+        cachePath=lookupReg['Config']
+        return cachePath+"/font.cache"
+    except:
+        return None
         
         
