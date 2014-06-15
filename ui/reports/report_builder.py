@@ -74,7 +74,7 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         
         #Get instance of config object    
         self.config = config
-        self.progressDlgDlg = QProgressDialog(self)
+        self.progressDlg = QProgressDialog(self)
         
         #Event handlers
         #Fields Section
