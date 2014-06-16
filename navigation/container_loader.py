@@ -47,7 +47,7 @@ class QtContainerLoader(QObject):
         self._actionReference = actionRef
         self._contentGroups = OrderedDict()
         self._widgets = []
-        #self._userName = stdm.data.app_dbconn.User.UserName
+        self._userName = stdm.data.app_dbconn.User.UserName
         self._authorizer = Authorizer(stdm.data.app_dbconn.User.UserName)
         self._iter = 0
         self._separatorAction = None
