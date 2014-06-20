@@ -535,7 +535,7 @@ class WitnessEntityBrowser(EntityBrowserWithEditor):
     
 class FarmerEntitySelector(EntityBrowser):
     '''
-    Browser for simply selecting farmer records.
+    Browser for simply selecting peson records.
     '''
     
     def __init__(self,parent = None, state = MANAGE):

@@ -215,40 +215,44 @@ class PersonDocumentGenerator(QDialog,Ui_frmPersonDocGenerator):
         progressDlg = QProgressDialog(self)
         progressDlg.setMaximum(len(records))
         
-        for i,record in enumerate(records):
-            progressDlg.setValue(i)
-            
-            if progressDlg.wasCanceled():
-                break
-            
-            #User-defined location
-            if self.chkUseOutputFolder.checkState() == Qt.Unchecked:
-                status,msg = docGenerator.run(self._docTemplatePath,entityFieldName,record.id,outputMode, \
-                                                          filePath = self._outputFilePath)
-            
-            #Output folder location using custom naming  
-            
-            else:
-                status,msg = docGenerator.run(self._docTemplatePath,entityFieldName,record.id,outputMode, \
-                                                          dataFields = documentNamingAttrs,fileExtension = fileExtension, \
-                                                          dbmodel = self._dbModel)
-            
-            if not status:
-                result = QMessageBox.warning(self, QApplication.translate("PersonDocumentGenerator","Document Generate Error"), 
-                                             msg, 
-                                             QMessageBox.Ignore|QMessageBox.Abort)
-                
-                if result == QMessageBox.Abort:
-                    progressDlg.close()
-                    return
-                
-            else:
-                progressDlg.setValue(len(records))
-                
-                QMessageBox.information(self, 
-                                    QApplication.translate("PersonDocumentGenerator","Document Generation Complete"), 
-                                    QApplication.translate("PersonDocumentGenerator","Document generation has successfully completed.")
-                                    )
+        try:
         
+            for i,record in enumerate(records):
+                progressDlg.setValue(i)
+                
+                if progressDlg.wasCanceled():
+                    break
+                
+                #User-defined location
+                if self.chkUseOutputFolder.checkState() == Qt.Unchecked:
+                    status,msg = docGenerator.run(self._docTemplatePath,entityFieldName,record.id,outputMode, \
+                                                              filePath = self._outputFilePath)
+                
+                #Output folder location using custom naming  
+                
+                else:
+                    status,msg = docGenerator.run(self._docTemplatePath,entityFieldName,record.id,outputMode, \
+                                                              dataFields = documentNamingAttrs,fileExtension = fileExtension, \
+                                                              dbmodel = self._dbModel)
+                
+                if not status:
+                    result = QMessageBox.warning(self, QApplication.translate("PersonDocumentGenerator","Document Generate Error"), 
+                                                 msg, 
+                                                 QMessageBox.Ignore|QMessageBox.Abort)
+                    
+                    if result == QMessageBox.Abort:
+                        progressDlg.close()
+                        return
+                    
+                else:
+                    progressDlg.setValue(len(records))
+                    
+                    QMessageBox.information(self, 
+                                        QApplication.translate("PersonDocumentGenerator","Document Generation Complete"), 
+                                        QApplication.translate("PersonDocumentGenerator","Document generation has successfully completed.")
+                                        )
+        except Exception as ex:
+            QMessageBox.information(self,"STDM",QApplication.translate("PersonDocumentGenerator","Error Generating documents %s"%(str(ex.message)))) 
+            return
         #Reset UI
         self.reset()

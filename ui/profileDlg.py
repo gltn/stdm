@@ -43,7 +43,7 @@ class ProfileEditor(QDialog, Ui_Profile):
         return formattedName.lower()
     
     def writeProfile(self):
-        '''add new profile to teh configuration file'''
+        '''add new profile to the configuration file'''
         if self.profileFormater()== checkProfile(self.profileFormater()):
             self.ErrorInfoMessage(QApplication.translate("TableEditor","Profile already exist"))
             return

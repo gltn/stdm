@@ -169,8 +169,9 @@ def tableRelations(tableName,element):
                 for child in elem[1]:
                     ordDict=OrderedDict()
                     ordDict["Relation Name"]=child.get('name')
-                    ordDict["Relation to table"]=child.get('table')
-                    ordDict["Table column"]=child.get('column')
+                    ordDict["Reference table"]=child.get('table')
+                    ordDict["Foreign column"]=child.get('fk')
+                    ordDict["Local column"]=child.get('column')
                     ordDict["On delete"]=child.get('ondelete')
                     ordDict["On update"]=child.get('onupdate')
                     relationData.append(ordDict) 
