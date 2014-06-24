@@ -40,7 +40,6 @@ class ContentView(QDialog, MapperMixin):
         title=str(self.table).capitalize()
         
         self.table=str(self.table).capitalize()
-        #self.setWindowTitle("{0}".format(table))
         
 #         #Window resize
         screen = QDesktopWidget().screenGeometry()
@@ -65,37 +64,26 @@ class ContentView(QDialog, MapperMixin):
         self.query=self.session.query(table)
         self.model=QueryTableModel(self.query, self.cols,self.session)
         '''need to implement data sorting proxy'''
-        
-        proxy=QSortFilterProxyModel()
-        proxy.setSourceModel(self.model)
+    
         
         self.tableView.setModel(self.model)
-        proxy.setFilterKeyColumn(1) 
-        self.tableView.setSortingEnabled(True)
-        self.tableView.sortByColumn(1,Qt.AscendingOrder)
-       
-        self.entity = STDMEntityForm(table,self.cols,self)
-        self.binding = self.entity.itemCommands.withView(self.tableView, bindDefault=True)
-        self.binding.fillToolbar(self.toolbar)
-        self.binding.preCommand.connect(self.preCommandSave)
-        self.binding.refresh.connect(self.refresh)
-               
         self.tableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         
-        self.main=table()
-        self.load()
-    
+        self.entity = STDMEntityForm(table,self.cols,self)
+        self.binding = self.entity.itemCommands.withView(self.tableView, bindDefault=True)
+        self.binding.fillToolbar(self.toolbar)
+        #self.binding.preCommand.connect(self.preCommandSave)
+        #self.binding.refresh.connect(self.refresh)
+            
     def load(self):
         self.submit()
-       # self.setWindowTitle("{0}".format(t))
+        self.reset_content_from_session()
+        # self.setWindowTitle("{0}".format(t))
     
     def refresh(self,item):
         #Not sure whether this is necessary but how do we refresh the data
-        if self.tableView.model() is not None:
-            self.model=QueryTableModel(self.query, self.cols,self.session)
-            self.tableView.setModel(self.model)
-            self.tableView.model().reset_content_from_session()
+        pass
             
     def preCommandSave(self,id=None):
         #Not very sure, how to be friendly with the user feedback

@@ -130,31 +130,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         if id == 5:
             self.buildSummary()
             
-    def nextId(self):
-        '''
-        Filter subsequent pages based on user selections.
-        If the user has specified 'Heir' as an STR type the load the 'Right of Enjoyment' wizard page.
-        '''
-        currentId = self.currentId()
-        
-        #Validate STR type selection
-        if currentId == 3:
-            #Determine STR selection then return the appropriate page
-            heir = QApplication.translate("Lookup","Heir")
-            selIndex= self.field("STR_Type")         
-            if selIndex:
-                #Get index of heir selection
-                heirIndex = self.cboSTRType.findText(heir)   
-                if selIndex == heirIndex:
-                    return 4
-                else:
-                    return 5
-            else:
-                return 5
-            
-        else:
-            return QWizard.nextId(self)
-            
     def initSTRType(self):
         '''
         Initialize 'Social Tenure Relationship' GUI controls
@@ -323,7 +298,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         if currPageIndex == 3:
             #Get current selected index
             currIndex = self.cboSTRType.currentIndex()
-            if currIndex == 0:
+            if currIndex ==-1:
                 msg = QApplication.translate("newSTRWiz", 
                                                  "Please specify the social tenure relationship type.")     
                 self.notifSTR.clear()
@@ -783,7 +758,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         '''
         Overlay property boundaries on the basemap imagery
         '''                    
-        self.propBrowser.addOverlay(self.selProperty,"PropertyID")
+        self.propBrowser.addOverlay(self.selProperty,"name")
         
     def validateEnjoymentRight(self): 
         '''

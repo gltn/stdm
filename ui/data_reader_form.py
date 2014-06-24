@@ -37,7 +37,6 @@ class STDMForm(BoundDialog):
         self.session=Session
         self.cols=columns
         
-        
         self.setDataReader(self.session,tableCls,'id')
         vbox=QVBoxLayout()
         self.setLayout(vbox)
@@ -53,7 +52,7 @@ class STDMForm(BoundDialog):
         buttons.rejected.connect(self.reject)
         
         self.geo=WindowGeometry(self, position=False, tabs=None)
-        self.main=tableCls()
+        #self.main=tableCls()
         self.readData(row, row_id)
         
     def load(self):
@@ -64,15 +63,16 @@ class STDMForm(BoundDialog):
     def actionSave(self):
         title=QApplication.translate("BoundingDialog","Save entity")
         QMessageBox.information(self,title,QApplication.translate("BoundingDialog","information save successfully"))
+  
+  
         
-    def foreignkeymapped(self):
-        return ForeignKeyReferral(str,"household",'household',LookupTable,'income')
 
 class EntityHelper(DomainEntity):
-    def session_entity(self, tableCls,id):
-        session = self.Session
+    def session_entity(self,session, tableCls,id):
         a = session.query(tableCls).filter(self.key_column==id.id).one()
         return session, a
+  
+  
     
 class STDMEntityForm(EntityHelper):
     def __init__(self,table,cols,parent):
@@ -104,7 +104,7 @@ class STDMEntityForm(EntityHelper):
     @itemCommands.itemAction("&Edit...", default=True, iconFile=":qtalchemy/default-edit.ico")
     def view(self, row):
         try:
-            session, aa = self.session_entity(self.table_cls,row)
+            session, aa = self.session_entity(self.Session,self.table_cls,row)
             self.view_row(session, aa)
         except SQLAlchemyError as ex:
             QMessageBox.information(None,QApplication.translate("Dialog","Add data"),str(ex.message))
@@ -123,7 +123,7 @@ class STDMEntityForm(EntityHelper):
     @itemCommands.itemDelete()
     def delete(self, row):
         try:
-            self.Session, aa = self.session_entity(self.table_cls,row)
+            self.Session, aa = self.session_entity(self.Session,self.table_cls,row)
             self.Session.delete(aa)
             self.Session.commit()
             self.Session.close()
