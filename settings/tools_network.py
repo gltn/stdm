@@ -27,21 +27,27 @@ def getProxy():
     proxy = None
     settings = QSettings()
     settings.beginGroup("proxy")
-    if settings.value("/proxyEnabled"):
+    if settings.value("/proxyEnabled",type=bool):
         proxy = QNetworkProxy()
-        proxyType = settings.value( "/proxyType", QVariant(0))
+        proxyType = settings.value("/proxyType","")
         #if len(args)>0 and settings.value("/proxyExcludedUrls").toString().contains(args[0]):
         #  proxyType = "NoProxy"
-        if proxyType in ["1","Socks5Proxy"]: proxy.setType(QNetworkProxy.Socks5Proxy)
-        elif proxyType in ["2","NoProxy"]: proxy.setType(QNetworkProxy.NoProxy)
-        elif proxyType in ["3","HttpProxy"]: proxy.setType(QNetworkProxy.HttpProxy)
-        elif proxyType in ["4","HttpCachingProxy"] and QT_VERSION >= 0X040400: proxy.setType(QNetworkProxy.HttpCachingProxy)
-        elif proxyType in ["5","FtpCachingProxy"] and QT_VERSION >= 0X040400: proxy.setType(QNetworkProxy.FtpCachingProxy)
-        else: proxy.setType(QNetworkProxy.DefaultProxy)
-        proxy.setHostName(settings.value("/proxyHost"))
-        proxy.setPort(settings.value("/proxyPort")[0])
-        proxy.setUser(settings.value("/proxyUser"))
-        proxy.setPassword(settings.value("/proxyPassword"))
+        if proxyType in ["1","Socks5Proxy"]:
+            proxy.setType(QNetworkProxy.Socks5Proxy)
+        elif proxyType in ["2","NoProxy"]:
+            proxy.setType(QNetworkProxy.NoProxy)
+        elif proxyType in ["3","HttpProxy"]:
+            proxy.setType(QNetworkProxy.HttpProxy)
+        elif proxyType in ["4","HttpCachingProxy"] and QT_VERSION >= 0X040400:
+            proxy.setType(QNetworkProxy.HttpCachingProxy)
+        elif proxyType in ["5","FtpCachingProxy"] and QT_VERSION >= 0X040400:
+            proxy.setType(QNetworkProxy.FtpCachingProxy)
+        else: 
+            proxy.setType(QNetworkProxy.DefaultProxy)
+            proxy.setHostName(settings.value("/proxyHost"))
+            proxy.setPort(settings.value("/proxyPort")[0])
+            proxy.setUser(settings.value("/proxyUser"))
+            proxy.setPassword(settings.value("/proxyPassword"))
     
     settings.endGroup()
     return proxy

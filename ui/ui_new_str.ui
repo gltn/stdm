@@ -373,206 +373,202 @@
     <item row="1" column="0">
      <widget class="QGroupBox" name="groupBox_3">
       <property name="title">
-       <string>Property Ownership Type:</string>
+       <string>Supporting Documents</string>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QRadioButton" name="rbPrivateProperty">
-         <property name="text">
-          <string>Private Property</string>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QPushButton" name="btnAddTitleDeed">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
          </property>
-         <property name="checked">
-          <bool>true</bool>
+         <property name="maximumSize">
+          <size>
+           <width>200</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Add Supporting Document</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../resources.qrc">
+           <normaloff>:/plugins/stdm/images/icons/attachment.png</normaloff>:/plugins/stdm/images/icons/attachment.png</iconset>
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="QRadioButton" name="rbStateland">
-         <property name="text">
-          <string>Stateland</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QStackedWidget" name="stkSrcDocList">
-      <widget class="QWidget" name="pgPrivate">
-       <layout class="QGridLayout" name="gridLayout_2">
-        <item row="0" column="0">
-         <widget class="QScrollArea" name="scrollArea">
-          <property name="widgetResizable">
-           <bool>true</bool>
-          </property>
-          <widget class="QWidget" name="scrollAreaWidgetContents">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>607</width>
-             <height>374</height>
-            </rect>
-           </property>
-           <layout class="QGridLayout" name="gridLayout_8">
-            <item row="0" column="0">
-             <widget class="QGroupBox" name="groupBox_4">
-              <property name="title">
-               <string/>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_6">
-               <item>
-                <widget class="QPushButton" name="btnAddTitleDeed">
-                 <property name="maximumSize">
-                  <size>
-                   <width>200</width>
-                   <height>32</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string>Add Supporting document</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="../resources.qrc">
-                   <normaloff>:/plugins/stdm/images/icons/attachment.png</normaloff>:/plugins/stdm/images/icons/attachment.png</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <layout class="QVBoxLayout" name="vlDocTitleDeed"/>
-               </item>
-              </layout>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="pgStateland">
-       <layout class="QGridLayout" name="gridLayout_10">
-        <item row="0" column="0">
-         <widget class="QGroupBox" name="groupBox_8">
-          <property name="title">
-           <string>Tax Information:</string>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_9">
-           <item row="1" column="1">
-            <widget class="QLineEdit" name="txtStateReceiptAmount">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="maxLength">
-              <number>200</number>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QLineEdit" name="txtStateTaxOffice">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="maxLength">
-              <number>100</number>
-             </property>
-            </widget>
-           </item>
+       <item row="1" column="0">
+        <widget class="QStackedWidget" name="stkSrcDocList">
+         <widget class="QWidget" name="pgPrivate">
+          <layout class="QGridLayout" name="gridLayout_2">
            <item row="0" column="0">
-            <widget class="QLabel" name="label_6">
-             <property name="text">
-              <string>Date of Latest Receipt</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_13">
-             <property name="text">
-              <string>Start of Leasing Year</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QDateEdit" name="dtStateReceiptDate">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="displayFormat">
-              <string>dd/MM/yyyy</string>
-             </property>
-             <property name="calendarPopup">
+            <widget class="QScrollArea" name="scrollArea">
+             <property name="widgetResizable">
               <bool>true</bool>
              </property>
+             <widget class="QWidget" name="scrollAreaWidgetContents">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>587</width>
+                <height>361</height>
+               </rect>
+              </property>
+              <widget class="QGroupBox" name="groupBox_4">
+               <property name="geometry">
+                <rect>
+                 <x>9</x>
+                 <y>9</y>
+                 <width>561</width>
+                 <height>351</height>
+                </rect>
+               </property>
+               <property name="title">
+                <string/>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_7">
+                <item row="0" column="0">
+                 <layout class="QVBoxLayout" name="vlDocTitleDeed"/>
+                </item>
+               </layout>
+              </widget>
+             </widget>
             </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_14">
-             <property name="text">
-              <string>Tax Office</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_12">
-             <property name="text">
-              <string>Amount of Last Receipt</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QDateEdit" name="dtStateLeaseYear">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="displayFormat">
-              <string>yyyy</string>
-             </property>
-             <property name="calendarPopup">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="1">
-            <widget class="QPushButton" name="btnPublicReceiptScan">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>Add Receipt Scan</string>
-             </property>
-             <property name="icon">
-              <iconset resource="../resources.qrc">
-               <normaloff>:/plugins/stdm/images/icons/receipt.png</normaloff>:/plugins/stdm/images/icons/receipt.png</iconset>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="1">
-            <layout class="QVBoxLayout" name="vlStateScanReceipt">
-             <property name="sizeConstraint">
-              <enum>QLayout::SetMaximumSize</enum>
-             </property>
-            </layout>
            </item>
           </layout>
          </widget>
-        </item>
-       </layout>
-      </widget>
+         <widget class="QWidget" name="pgStateland">
+          <layout class="QGridLayout" name="gridLayout_10">
+           <item row="0" column="0">
+            <widget class="QGroupBox" name="groupBox_8">
+             <property name="title">
+              <string>Tax Information:</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_9">
+              <item row="1" column="1">
+               <widget class="QLineEdit" name="txtStateReceiptAmount">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="maxLength">
+                 <number>200</number>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QLineEdit" name="txtStateTaxOffice">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="maxLength">
+                 <number>100</number>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_6">
+                <property name="text">
+                 <string>Date of Latest Receipt</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_13">
+                <property name="text">
+                 <string>Start of Leasing Year</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QDateEdit" name="dtStateReceiptDate">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="displayFormat">
+                 <string>dd/MM/yyyy</string>
+                </property>
+                <property name="calendarPopup">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="label_14">
+                <property name="text">
+                 <string>Tax Office</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_12">
+                <property name="text">
+                 <string>Amount of Last Receipt</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QDateEdit" name="dtStateLeaseYear">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="displayFormat">
+                 <string>yyyy</string>
+                </property>
+                <property name="calendarPopup">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QPushButton" name="btnPublicReceiptScan">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Add Receipt Scan</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../resources.qrc">
+                  <normaloff>:/plugins/stdm/images/icons/receipt.png</normaloff>:/plugins/stdm/images/icons/receipt.png</iconset>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <layout class="QVBoxLayout" name="vlStateScanReceipt">
+                <property name="sizeConstraint">
+                 <enum>QLayout::SetMaximumSize</enum>
+                </property>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
     <item row="0" column="0">

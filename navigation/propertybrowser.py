@@ -187,7 +187,7 @@ class PropertyBrowser(QObject):
         Set the base layer to either Google Maps or OpenStreetMaps
         '''        
         changeBaseJS = "setBaseLayer(%s)"%(layertype)
-        zoomLevel,ok = self._setJS(changeBaseJS).toInt()
+        zoomLevel = self._setJS(changeBaseJS)
         
         #Raise map zoom changed event
         self.onZoomLevelChanged(zoomLevel)
@@ -204,7 +204,7 @@ class PropertyBrowser(QObject):
         Zoom to a specific level
         '''
         zoomJS = "zoom(%s)"%(level)
-        zoomLevel,ok = self._setJS(zoomJS).toInt()
+        zoomLevel = self._setJS(zoomJS)
         
     def zoomToPropertyExtents(self):
         '''
@@ -212,7 +212,7 @@ class PropertyBrowser(QObject):
         property.
         '''
         zoomToExtentsJS = "zoomToPropertyExtent()"
-        zoomLevel,ok = self._setJS(zoomToExtentsJS).toInt()
+        zoomLevel = self._setJS(zoomToExtentsJS)
         
         #Raise map zoom changed event
         self.onZoomLevelChanged(zoomLevel)
@@ -239,12 +239,12 @@ class PropertyBrowser(QObject):
             labelJSObject = "{'%s':'%s'}"%(labelfield,str(propVal))
         
         #Reproject to web mercator
-        prop_wkb = self.dbSession.scalar(property.geom.ST_Transform(900913))  
+        prop_wkb = self.dbSession.scalar(property.geom_polygon.ST_Transform(900913))  
         web_geom = WKBElement(prop_wkb)
         prop_geo_json = self.dbSession.scalar(web_geom.ST_AsGeoJSON())
         
         overlayJS = "drawProperty('%s',%s);"%(prop_geo_json,labelJSObject)                
-        zoomLevel,ok = self._setJS(overlayJS).toInt()
+        zoomLevel = self._setJS(overlayJS)
         
         #Raise map zoom changed event
         self.onZoomLevelChanged(zoomLevel)
