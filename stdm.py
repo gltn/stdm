@@ -40,7 +40,7 @@ from ui import (
                 STDMEntityBrowser,
                 SurveyEntityBrowser,
                 PersonDocumentGenerator,
-                AboutDialog,
+                AboutSTDMDialog,
                 STDMDialog,
                 declareMapping,
                 WorkspaceLoader,
@@ -118,11 +118,10 @@ class STDMQGISLoader(object):
         QApplication.translate("ChangePasswordToolbarAction","Change Password"), self.iface.mainWindow(),
         "8C425E0E-3761-43F5-B0B2-FB8A9C3C8E4B")
         # connect the actions to their respective methods
-        QObject.connect(self.loginAct, SIGNAL("triggered()"), self.login) 
-        QObject.connect(self.changePasswordAct, SIGNAL("triggered()"), self.changePassword)
-        QObject.connect(self.logoutAct, SIGNAL("triggered()"), self.logout)
+        self.loginAct.triggered.connect(self.login)
+        self.changePasswordAct.triggered.connect(self.changePassword)
+        self.logoutAct.triggered.connect(self.logout)
         self.aboutAct.triggered.connect(self.about)
-        # self.wzdAct.triggered.connect(self.workspaceLoader)
         self.initToolbar()
         
         
@@ -805,9 +804,9 @@ class STDMQGISLoader(object):
             
     def about(self):
         '''
-        Brief note about STDM
+        STDM Description
         '''
-        abtDlg=AboutDialog()
+        abtDlg = AboutSTDMDialog(self.iface.mainWindow())
         abtDlg.exec_()
             
     def logout(self):

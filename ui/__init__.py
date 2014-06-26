@@ -78,7 +78,7 @@ from .ui_table_property import Ui_TableProperty
 from .table_propertyDlg import TableProperty
 from .profileDlg import ProfileEditor
 from .lookup_values_dlg import ADDLookupValue
-from .frmAbout import AboutDialog
+from .about import AboutSTDMDialog
 from .data_reader_form import STDMForm,STDMEntityForm
             
             

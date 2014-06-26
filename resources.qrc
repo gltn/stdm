@@ -70,5 +70,7 @@
 	<file>images/icons/up.png</file>
 	<file>images/icons/export.png</file>
 	<file>images/icons/import.png</file>
+	<file>images/icons/stdm.png</file>
+	<file>images/icons/stdm_2.png</file>
   </qresource>  
 </RCC>
