@@ -3,5 +3,8 @@
 *.pydevproject
 .settings
 
+#PyCharm files
+.idea
+
 #Compiled Python Files
 *.pyc
