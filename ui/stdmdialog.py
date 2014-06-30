@@ -54,9 +54,6 @@ class STDMDialog(object):
         self.toqtalchemyMapping()
             
     def toqtalchemyMapping(self):
-        #Method to map database table to qtAlchemy dialog
-        #self.displayMapping(self.tableName)
-        #QMessageBox.information(None,"test",str(self.displayMapping(self.tableName).keys()))
         mapping=declareMapping.instance()
         tableCls=mapping.tableMapping(self.tableName)
         self.columns=self.tablecolums()
@@ -81,13 +78,6 @@ class STDMDialog(object):
         return ForeignKeyReferral(str,"household",'household',LookupTable,'id')
         #return ForeignKeyComboYoke(LookupTable,'income')
 
-def displayMapping(cols):
-        for col in cols:
-            attribs={
-                     col:str(col.capitalize())            
-                    }
-            return attribs
-
 @Singleton                  
 class declareMapping():  
     '''
@@ -101,7 +91,6 @@ class declareMapping():
         for table in list:
             className=table.capitalize()
             classObject=self.classFromTable(className)
-            #setattr(classObject, "displayMapping", classmethod(displayMapping(list)))
             pgtable=Table(table,Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
             mapper(classObject,pgtable)
             self.mapping[table]=classObject
@@ -110,10 +99,7 @@ class declareMapping():
     def tableMapping(self,table):
         if table in self.mapping:
             modelCls = self.mapping[table]
-            #QMessageBox.information(None,"test",str(dir(super(cls,Model))))
             Model.attrTranslations = self.displayMapping(table)
-            
-            
             return modelCls
         
     def instance(self,*args,**kwargs):
@@ -123,15 +109,14 @@ class declareMapping():
         pass
     
     def displayMapping(self,table):
-        if table in self.mapping:
-            cols=tableCols(table)
-            attribs=OrderedDict()
-            for col in cols:
-                attribs[col]=col.replace('_',' ').title()
-            return attribs
+        cols=tableCols(table)
+        attribs=OrderedDict()
+        for col in cols:
+            attribs[col]=col.replace('_',' ').title()
+        return attribs
     
     def createDynamicClass(self,className,**attr):
-        '''create a class based on the provided table name'''
+        '''create a python class from database table name'''
         return type(className,(Model,),dict(**attr))
     
     def classFromTable(self,className):

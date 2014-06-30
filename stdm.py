@@ -80,6 +80,7 @@ class STDMQGISLoader(object):
         
         #Initialize loader
         self.toolbarLoader = None
+        self.menubarLoader=None
         
         #setup locale
         pluginDir = os.path.dirname(__file__)
@@ -103,6 +104,7 @@ class STDMQGISLoader(object):
         
     def initGui(self):
         #Initial actions on starting up the application
+        self.STDMmenuItems()
         self.loginAct = STDMAction(QIcon(":/plugins/stdm/images/icons/login.png"), \
         QApplication.translate("LoginToolbarAction","Login"), self.iface.mainWindow(),
         "CAA4F0D9-727F-4745-A1FC-C2173101F711")
@@ -124,9 +126,23 @@ class STDMQGISLoader(object):
         self.aboutAct.triggered.connect(self.about)
         # self.wzdAct.triggered.connect(self.workspaceLoader)
         self.initToolbar()
+        self.initMenuItems()
         
         
+    def STDMmenuItems(self):
+        #Create menu and menu items on the menu bar
+        self.stdmMenu=QMenu()
+        self.stdmMenu.setTitle("&STDM")
+        #Initialize the menu bar item
+        self.menu_bar=self.iface.mainWindow().menuBar()
+        #Create actions
+        actions=self.menu_bar.actions()
+        currAction=actions[len(actions)-1]
+        #add actions to the menu bar
+        self.menu_bar.insertMenu(currAction, self.stdmMenu)
+        self.stdmMenu.setToolTip("STDM plugin menu.")
         
+          
     def getThemeIcon(self, theName):        
         # get the icon from the best available theme
         myCurThemePath = QgsApplication.activeThemePath() + "/plugins/" + theName;
@@ -150,6 +166,11 @@ class STDMQGISLoader(object):
                                 
         self.stdmInitToolbar.addSeparator()
         self.stdmInitToolbar.addAction(self.aboutAct)   
+        
+   
+    def initMenuItems(self):
+        self.stdmMenu.addAction(self.loginAct)
+        #self.stdmMenu.addAction(self.aboutAct)
    
     def unload(self):                
         #Remove the STDM toolbar
@@ -190,6 +211,7 @@ class STDMQGISLoader(object):
         Define and add modules to the menu and/or toolbar using the module loader
         '''
         self.toolbarLoader = QtContainerLoader(self.iface.mainWindow(),self.stdmInitToolbar,self.logoutAct)
+        self.menubarLoader = QtContainerLoader(self.iface.mainWindow(), self.stdmMenu, self.aboutAct)
         
         #Connect to the content added signal
         #self.toolbarLoader.contentAdded.connect(self.onContentAdded)
@@ -449,11 +471,16 @@ class STDMQGISLoader(object):
         self.rptBuilderCntGroup.addContentItem(rptBuilderCnt)
         self.rptBuilderCntGroup.register()
         
+        self.stdmMenu.addAction(self.wzdAct)
+        
         self.toolbarLoader.addContent(self.contentAuthCntGroup,[adminMenu,adminBtn])
         self.toolbarLoader.addContent(self.userRoleCntGroup, [adminMenu,adminBtn])
         self.toolbarLoader.addContent(self.moduleCntGroup, [contentMenu,contentBtn])
+        self.menubarLoader.addContent(self.moduleCntGroup, [contentMenu,contentBtn])
         
         self.toolbarLoader.addContent(self.adminUnitsCntGroup)
+        self.menubarLoader.addContent(self.adminUnitsCntGroup)
+        
         self.toolbarLoader.addContent(self.importCntGroup)
         self.toolbarLoader.addContent(self.exportCntGroup)
         self.toolbarLoader.addContent(tbSeparator)
