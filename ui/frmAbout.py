@@ -45,7 +45,7 @@ class AboutDialog(QDialog):
         #absPath=os.path.join(str(dir),'\stdm\summary.txt')
         aboutStream=open(os.path.normpath(normPath))
         about=aboutStream.read()
-        self.ui.lblAbout.setText(about)   
+        #self.ui.lblAbout.setText(about)   
     
   
       

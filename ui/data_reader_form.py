@@ -63,18 +63,9 @@ class STDMForm(BoundDialog):
     def actionSave(self):
         title=QApplication.translate("BoundingDialog","Save entity")
         QMessageBox.information(self,title,QApplication.translate("BoundingDialog","information save successfully"))
-  
-  
         
-
-class EntityHelper(DomainEntity):
-    def session_entity(self,session, tableCls,id):
-        a = session.query(tableCls).filter(self.key_column==id.id).one()
-        return session, a
-  
-  
     
-class STDMEntityForm(EntityHelper):
+class STDMEntityForm(object):
     def __init__(self,table,cols,parent):
         self.Session = STDMDb.instance().session
         self.cols=cols
@@ -89,23 +80,20 @@ class STDMEntityForm(EntityHelper):
         self.list_display_columns = self.cols
         self.list_search_columns = self.cols
 
-    def view_row(self,session,row):
+    def view_row(self,row):
         form = STDMForm(self.parent,self.table_cls,self.list_display_columns,Session=self.Session,row=row)
         form.show() 
         form.exec_()
-        session.close()
+        #self.Session.close()
 
-    def list_query_converter(self):
-        from sqlalchemy.orm import Query
-        queryCols = tuple([self.key_column.label('_hidden_id')] + self.list_display_columns)
-        return (Query(queryCols), lambda x: x._hidden_id)      
-
+ 
     itemCommands = CommandMenu('_item_commands')
     @itemCommands.itemAction("&Edit...", default=True, iconFile=":qtalchemy/default-edit.ico")
     def view(self, row):
         try:
-            session, aa = self.session_entity(self.Session,self.table_cls,row)
-            self.view_row(session, aa)
+            #session, aa = self.session_entity(self.Session,self.table_cls,row)
+            aa = self.Session.query(self.table_cls).filter(self.key_column==row.id).one()
+            self.view_row(aa)
         except SQLAlchemyError as ex:
             QMessageBox.information(None,QApplication.translate("Dialog","Add data"),str(ex.message))
    
@@ -115,7 +103,7 @@ class STDMEntityForm(EntityHelper):
             #session = self.Session()
             aa=self.table_cls()
             self.Session.add(aa)
-            self.view_row(self.Session, aa)
+            self.view_row(aa)
             
         except SQLAlchemyError as ex:
             QMessageBox.information(None,QApplication.translate("Dialog","Add data"),ex.message)
@@ -123,11 +111,12 @@ class STDMEntityForm(EntityHelper):
     @itemCommands.itemDelete()
     def delete(self, row):
         try:
-            self.Session, aa = self.session_entity(self.Session,self.table_cls,row)
+            aa = self.Session.query(self.table_cls).filter(self.key_column==row.id).one()
             self.Session.delete(aa)
             self.Session.commit()
             self.Session.close()
-            QMessageBox.information(None,QApplication.translate("Dialog","Delete Row"),QApplication.translate("Dialog","Current selection deleted from database"))
+            QMessageBox.information(None,QApplication.translate("Dialog","Delete Row"),
+                                    QApplication.translate("Dialog","Current selection deleted from database"))
         except SQLAlchemyError as ex:
             QMessageBox.information(None,QApplication.translate("Dialog","Add data"),ex.message)
             

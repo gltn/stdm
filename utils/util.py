@@ -70,7 +70,7 @@ def setModelAttrFromCombo(model,attributename,combo,ignorefirstitem = True):
         if combo.currentIndex() == 0:
             return
     
-    itemValue,ok = combo.itemData(combo.currentIndex()).toInt()  
+    itemValue = combo.itemData(combo.currentIndex()) 
     setattr(model,attributename,itemValue)
     
 def setComboCurrentIndexWithItemData(combo,itemdata,onNoneSetCurrentIndex = True):
