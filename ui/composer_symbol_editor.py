@@ -64,6 +64,11 @@ class SimpleFillSymbolLayerProxyWidget(QgsSimpleFillSymbolLayerV2Widget):
         if self._btnFillColor != None:
             self._btnFillColor.colorChanged.disconnect()
             self._btnFillColor.colorChanged.connect(self.onSetFillColor)
+
+        #Disable data defined properties button
+        btnDataProp = self.findChild(QPushButton,"mDataDefinedPropertiesButton")
+        if btnDataProp != None:
+            btnDataProp.setVisible(False)
             
     def onSetFillColor(self,color):
         self.symbolLayer().setFillColor(color)
@@ -135,6 +140,9 @@ class ComposerSymbolEditor(QWidget,Ui_frmComposerSymbolEditor):
         Slot raised to add a styling and editing widget to the field tab widget.
         """
         spColumnName = self.cboSpatialFields.currentText()
+
+        if spColumnName == "":
+            return
         
         if spColumnName in self._editorMappings:
             return
