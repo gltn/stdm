@@ -11,7 +11,6 @@ homepage=http://www.stdm.gltn.net/
 tracker=https://github.com/gltn/stdm-plugin/issues
 repository=https://github.com/gltn/stdm-plugin
 icon=images/icons/stdm.png
-class_name=STDMQGISLoader
 
 experimental=False
 
