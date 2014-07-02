@@ -882,7 +882,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         Slot raised when the user clicks to upload a title deed
         '''
         titleStr = QApplication.translate("newSTRWiz", 
-                                             "Specify Title Deed File Location")
+                                             "Specify the Document File Location")
         titles = self.selectSourceDocumentDialog(titleStr)
         
         for title in titles:

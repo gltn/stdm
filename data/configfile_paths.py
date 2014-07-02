@@ -23,13 +23,15 @@ import os
 import shutil
 import platform
 from exceptions import NameError
+from stdm.utils import PLUGIN_DIR
+from PyQt4.QtGui import QMessageBox
 FILE="stdmConfig.xml"
-htmlLICENSE="license.htm"
 LICENSE="LICENSE.txt"
 HTML="stdm_schema.html"
 SQL="stdmConfig.sql"
 CONFIG="Config"
 HELP="stdm.chm"
+
 xmldoc=os.path.dirname(os.path.abspath(__file__))
 #from stdm.config import activeProfile
 from stdm.settings import RegistryConfig
@@ -37,12 +39,12 @@ from .reports import SysFonts
 
 class FilePaths(object):
     def __init__(self, path=None):
-        self._file=xmldoc
+        self._file=PLUGIN_DIR
         self.baseDir=None
         self._html=''
         self._sql=''
         self.userPath=None
-        self.actualPath=None
+        self.cachePath=None
         self.config = RegistryConfig()
         #try:
         self.checkPreviousSetting()
@@ -70,8 +72,16 @@ class FilePaths(object):
         path=self.userPath+'/temp/%s'%FILE
         return path
     
-    def cachePath(self):
-        return self.userPath+'/temp'
+    def cacheDir(self):
+        return self.cachePath
+    
+        
+    def setCacheDir(self,path=None):
+        if path:
+            self.cachePath = self.userPath+"/%s"%path
+        else:
+            self.cachePath = self.userPath+"/temp"
+        self.createDir(self.cachePath)
 
     def STDMSettingsPath(self):
         #To be implemented to write new file with user edits
@@ -94,24 +104,20 @@ class FilePaths(object):
         return path
     
     def HelpContents(self):
-        return self.actualPath+'/%s'%HELP
+        return self._file+'/%s'%HELP
         
     def defaultConfigPath(self):
         '''returns the path with configuration file'''
-        basePath=str(self._file).rfind("\\")
-        actualPath=str(self._file)[:basePath]
-        self.actualPath=actualPath
-        self.baseDir=actualPath+"/template/"
-        self._file=self.baseDir+FILE        
+        self.baseDir=self._file+"/template/"       
     
     def setUserConfigPath(self,path=None):
         ''' set new path with user configuration'''
-        #self.defaultConfigPath()
         self.userPath=self.localPath()
         self.createDir(self.userPath)
-        cachePath=self.userPath+'/temp'
-        self.createDir(cachePath)
+        self.cachePath=self.userPath+'/temp'
+        self.createDir(self.cachePath)
         self.userConfigPath()
+    
     
     def userConfigPath(self,path=None):
         #Copy template files to the user directory
@@ -120,7 +126,7 @@ class FilePaths(object):
                 if not os.path.isfile(self.userPath+'/%s'%fileN):
                     baseFile=self.baseDir +'/%s'%fileN
                     shutil.copy(baseFile,self.userPath)
-            fontPath=self.userPath+'/font.cache'
+           
         except IOError as ex:
             raise ex
     
@@ -139,26 +145,27 @@ class FilePaths(object):
     
     def setLocalPath(self,path=None):
         if path:
-            self.userPath=path
+            self.userPath = path
         if not path:
-            self.userPath=self.localPath()
+            self.userPath = self.localPath()
             
     def createDir(self,dirPath):
-        if os.access(dirPath, os.F_OK)==False:
+        if os.access(dirPath, os.F_OK) == False:
             os.makedirs(dirPath)    
             return dirPath
      
     
     def STDMLicenseDoc(self):
         '''load STDM license file for viewing'''
-        self.licPath=self.actualPath+'/%s'%LICENSE
-        return self.actualPath+'/%s'%LICENSE
+        self.licPath=self._file+'/%s'%LICENSE
+        return self._file+'/%s'%LICENSE
         
     def createBackupSettings(self):
         '''incase the user want to keep track of the old file when current file changes'''
         if os.path.isfile(self.cacheFile()):
             os.remove(self.cacheFile())
-        shutil.copy(self.setUserXMLFile(), self.cachePath())
+        #QMessageBox.information(None,'test',self.cachePath)
+        shutil.copy(self.setUserXMLFile(), self.cacheDir())
         
             
     
