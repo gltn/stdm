@@ -227,6 +227,12 @@ class STDMQGISLoader(object):
         adminMenu = QMenu(adminBtn) 
         adminBtn.setMenu(adminMenu) 
         
+        #Settings menu container in STDM's QGIS menu
+        stdmAdminMenu = QMenu(self.stdmMenu)
+        stdmAdminMenu.setIcon(QIcon(":/plugins/stdm/images/icons/settings.png"))
+        stdmAdminMenu.setObjectName("STDMAdminSettings")
+        stdmAdminMenu.setTitle(QApplication.translate("ToolbarAdminSettings","Admin Settings"))
+        
         #Create content menu container
         contentBtn = QToolButton()
         contentObjName = QApplication.translate("ToolbarAdminSettings","Module Settings")
@@ -238,6 +244,10 @@ class STDMQGISLoader(object):
         
         contentMenu = QMenu(contentBtn) 
         contentBtn.setMenu(contentMenu)  
+        
+        stdmEntityMenu = QMenu(self.stdmMenu)
+        stdmEntityMenu.setObjectName("STDMEntityMenu")
+        stdmEntityMenu.setTitle("Content")
         
         #Separator definition
         tbSeparator = QAction(self.iface.mainWindow())   
@@ -368,29 +378,16 @@ class STDMQGISLoader(object):
         username = data.app_dbconn.User.UserName
         self.moduleCntGroup=None
         self._moduleItems={}
-        profile=activeProfile()
-        handler=ConfigTableReader()
-        if profile==None:
-            '''add a default is not provided'''
-            default=handler.STDMProfiles()
-            #QMessageBox.information(self.iface.mainWindow(),"Title",str(profile))
-            profile=str(default[0])
         
-        moduleList=[]
-        moduleList=handler.tableNames(profile)        
-        '''
-            map the user tables to sqlalchemy model object
-            '''
-        try:
-            tableMapping=declareMapping.instance()
-            tableMapping.setTableMapping(moduleList)
-        except:
-            pass
+        #    map the user tables to sqlalchemy model object
+        moduleList=self.configHandler()
+        
         '''
         add the tables to the stdm toolbar
         '''
-        if 'spatial_unit' in moduleList:
-            moduleList.remove('spatial_unit')
+        moduleContentGroups = []
+       
+        
         for table in moduleList:
             displayName=str(table).replace("_", " ").title()
             #displayName=displayName.capitalize()
@@ -400,16 +397,15 @@ class STDMQGISLoader(object):
                                          k, self.iface.mainWindow())
             capabilities=contentGroup(self._moduleItems[k])
             if capabilities!=None:
-                self.moduleCntGroup = TableContentGroup(username,k,contentAction)
-                self.moduleCntGroup.createContentItem().code =capabilities[0]
-                self.moduleCntGroup.readContentItem().code =capabilities[1]
-                self.moduleCntGroup.updateContentItem().code =capabilities[2]
-                self.moduleCntGroup.deleteContentItem().code =capabilities[3]
-                self.moduleCntGroup.register()
-                contentMenu.addAction(contentAction)
-        
-        
-                         
+                moduleCntGroup = TableContentGroup(username,k,contentAction)
+                moduleCntGroup.createContentItem().code =capabilities[0]
+                moduleCntGroup.readContentItem().code =capabilities[1]
+                moduleCntGroup.updateContentItem().code =capabilities[2]
+                moduleCntGroup.deleteContentItem().code =capabilities[3]
+                moduleCntGroup.register()
+                
+                moduleContentGroups.append(moduleCntGroup)
+                                 
         #Create content groups and add items
                 
         self.contentAuthCntGroup = ContentGroup(username)
@@ -421,6 +417,11 @@ class STDMQGISLoader(object):
         self.userRoleCntGroup.addContentItem(userRoleMngtCnt)
         self.userRoleCntGroup.setContainerItem(self.usersAct)
         self.userRoleCntGroup.register()
+        
+        #Group admin settings content groups
+        adminSettingsCntGroups = []
+        adminSettingsCntGroups.append(self.contentAuthCntGroup)
+        adminSettingsCntGroups.append(self.userRoleCntGroup)
         
         self.adminUnitsCntGroup = ContentGroup(username)
         self.adminUnitsCntGroup.addContentItem(adminUnitsCnt)
@@ -470,12 +471,15 @@ class STDMQGISLoader(object):
         self.rptBuilderCntGroup.addContentItem(rptBuilderCnt)
         self.rptBuilderCntGroup.register()
         
-        self.stdmMenu.addAction(self.wzdAct)
+        #self.stdmMenu.addAction(self.wzdAct)
         
         self.toolbarLoader.addContent(self.contentAuthCntGroup,[adminMenu,adminBtn])
         self.toolbarLoader.addContent(self.userRoleCntGroup, [adminMenu,adminBtn])
-        self.toolbarLoader.addContent(self.moduleCntGroup, [contentMenu,contentBtn])
-        self.menubarLoader.addContent(self.moduleCntGroup, [contentMenu,contentBtn])
+        
+        self.menubarLoader.addContents(adminSettingsCntGroups,[stdmAdminMenu,stdmAdminMenu])
+        
+        self.menubarLoader.addContents(moduleContentGroups,[stdmEntityMenu,stdmEntityMenu])
+        self.toolbarLoader.addContents(moduleContentGroups, [contentMenu,contentBtn])
         
         self.toolbarLoader.addContent(self.adminUnitsCntGroup)
         self.menubarLoader.addContent(self.adminUnitsCntGroup)
@@ -502,6 +506,7 @@ class STDMQGISLoader(object):
         
         #Load all the content in the container
         self.toolbarLoader.loadContent()
+        self.menubarLoader.loadContent()
         
         #Quick fix
         fontPath=None
@@ -884,6 +889,34 @@ class STDMQGISLoader(object):
         if self.viewSTRWin != None:
             del self.viewSTRWin
             self.viewSTRWin = None
+            
+    def configHandler(self):
+        '''
+        create a handler to read the xml config and return the table list
+        '''
+        profile=activeProfile()
+        handler=ConfigTableReader()
+        if profile == None:
+            '''add a default is not provided'''
+            default = handler.STDMProfiles()
+            profile = str(default[0])
+        moduleList = handler.tableNames(profile)    
+        self.pgtable2PyObject(moduleList)
+        if 'spatial_unit' in moduleList:
+            moduleList.remove('spatial_unit')
+        return moduleList
+    
+    def pgtable2PyObject(self,tableList=None):
+        '''
+        map postgresql table to Python object/ model based on current user profile
+        '''
+        if tableList:
+            try:
+                tableMapping = declareMapping.instance()
+                tableMapping.setTableMapping(tableList)
+            except:
+                pass 
+            
             
         
         
