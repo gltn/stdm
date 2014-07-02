@@ -27,6 +27,12 @@ def getProxy():
     proxy = None
     settings = QSettings()
     settings.beginGroup("proxy")
+    
+    #Check if the 'proxy' group exists
+    proxyKeys = settings.childKeys()
+    if len(proxyKeys) == 0:
+        return
+    
     if settings.value("/proxyEnabled",type=bool):
         proxy = QNetworkProxy()
         proxyType = settings.value("/proxyType","")
@@ -45,7 +51,9 @@ def getProxy():
         else: 
             proxy.setType(QNetworkProxy.DefaultProxy)
             proxy.setHostName(settings.value("/proxyHost"))
-            proxy.setPort(settings.value("/proxyPort")[0])
+            port = settings.value("/proxyPort")
+            if port != "":
+                proxy.setPort(int(port))
             proxy.setUser(settings.value("/proxyUser"))
             proxy.setPassword(settings.value("/proxyPassword"))
     

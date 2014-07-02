@@ -61,6 +61,13 @@ class QtContainerLoader(QObject):
         #Connect content group signals
         if isinstance(content,ContentGroup):
             content.contentAuthorized.connect(self._onContentAuthorized)
+            
+    def addContents(self,contentGroups,parents = None):
+        """
+        Append multiple content groups which share the same parent widgets.
+        """
+        for cg in contentGroups:
+            self.addContent(cg, parents)
         
     def loadContent(self):
         '''
@@ -132,8 +139,12 @@ class QtContainerLoader(QObject):
         '''  
         objName = widget.objectName()
         #Determine if the widget is already in the container
-        if getIndex(self._widgets,objName)== -1:
-            self._container.insertWidget(self._actionReference,widget)
+        if getIndex(self._widgets,objName) == -1:
+            if isinstance(self._container,QToolBar):
+                self._container.insertWidget(self._actionReference,widget)
+            elif isinstance(self._container,QMenu):
+                self._container.insertMenu(self._actionReference,widget)
+                
             self._widgets.append(objName)                        
             
     def unloadContent(self):
