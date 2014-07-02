@@ -34,7 +34,6 @@ class ContentView(QDialog, MapperMixin):
     def __init__(self,parent,table,cols,row=None,Session=None,row_id=None, flush=True):
         QDialog.__init__(self,parent)
         MapperMixin.__init__(self)
-        self.session=Session
         self.table=table               
         self.cols=cols
         title=str(self.table).capitalize()
@@ -54,15 +53,15 @@ class ContentView(QDialog, MapperMixin):
         
         #self.tableView = LayoutWidget(main, TableView(extensionId=suffixExtId(self,"Table")))
         self.tableView = LayoutWidget(main, TableView())
-        '''user can use table column to sort the data, ....'''
+       
         self.Combo = LayoutWidget(main, QComboBox())
         self.refreshBtn = LayoutWidget(main, QLineEdit("Search"))
-        if 'id' in self.cols:
-            self.cols.remove('id')
+        #if 'id' in self.cols:
+        #    self.cols.remove('id')
         self.Combo.insertItems(0, self.cols)
         
-        self.query=self.session.query(table)
-        self.model=QueryTableModel(self.query, self.cols,self.session)
+        query=Session.query(table)
+        self.model=QueryTableModel(query, self.cols)
         '''need to implement data sorting proxy'''
     
         
@@ -78,10 +77,10 @@ class ContentView(QDialog, MapperMixin):
             
     def load(self):
         self.submit()
-        self.reset_content_from_session()
+        #self.reset_content_from_session()
         # self.setWindowTitle("{0}".format(t))
     
-    def refresh(self,item):
+    def refresh(self):
         #Not sure whether this is necessary but how do we refresh the data
         pass
             
