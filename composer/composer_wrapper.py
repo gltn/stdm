@@ -44,8 +44,10 @@ from stdm.settings import RegistryConfig
 from stdm.ui import (
                      ComposerDataSourceSelector, 
                      ComposerFieldSelector,
-                     ComposerSymbolEditor
-                     )
+                     ComposerSymbolEditor)
+from stdm.utils import (
+    documentTemplates,
+    CaseInsensitiveDict)
 
 from .composer_item_config import ComposerItemConfig
 from .composer_data_source import ComposerDataSource
@@ -332,10 +334,34 @@ class ComposerWrapper(QObject):
                 
                 if templateDir == None:
                     QMessageBox.critical(self.composerView(), QApplication.translate("ComposerWrapper","Error"), \
-                                            QApplication.translate("ComposerWrapper","Directory for document templates could not be found."))
+                                            QApplication.translate("ComposerWrapper","Directory for document templates cannot not be found."))
                     return
-                
-                absPath = templateDir + "/" + docName + ".sdt"            
+
+                absPath = templateDir + "/" + docName + ".sdt"
+
+                #Check if there is an existing document with the same name
+                caseInsenDic = CaseInsensitiveDict(documentTemplates())
+                if docName in caseInsenDic:
+                    result = QMessageBox.warning(self.composerView(), QApplication.translate("ComposerWrapper",
+                                                                                             "Existing Tamplate"),
+                                            "'{0}' {1}.\nDo you want to replace the existing template?".format(docName,
+                                                      QApplication.translate("ComposerWrapper","already exists")),
+                                            QMessageBox.Yes|QMessageBox.No)
+
+                    if result == QMessageBox.Yes:
+                        #Delete the existing template
+                        delFile = QFile(absPath)
+                        remStatus = delFile.remove()
+                        if not remStatus:
+                            QMessageBox.critical(self.composerView(), QApplication.translate("ComposerWrapper","Delete Error"), \
+                                            "'{0}' {1}.".format(docName,
+                                                QApplication.translate("ComposerWrapper",
+                            "template could not be removed by the system, please remove it manually from the document templates directory.")))
+                            return
+
+                    else:
+                        return
+
                 docFile= QFile(absPath)
             
             else:
@@ -358,8 +384,7 @@ class ComposerWrapper(QObject):
                                             QApplication.translate("ComposerWrapper","Could not save template file."))
             return
         
-        docFile.close()                   
-        self.setDocumentFile(docFile)
+        docFile.close()
         
     def _writeXML(self,xmlDoc,docName):
         """
@@ -472,6 +497,7 @@ class ComposerWrapper(QObject):
                     
                 #Playing it safe in applying the formatting for the editor controls where applicable
                 itemFormatter = None
+
                 if isinstance(composerItem,QgsComposerArrow):
                     itemFormatter = LineFormatter()
                 elif isinstance(composerItem,QgsComposerLabel):
