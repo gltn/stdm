@@ -388,14 +388,11 @@ class STDMQGISLoader(object):
         self._moduleItems={}
         
         #    map the user tables to sqlalchemy model object
-        moduleList=self.configHandler()
-        
+        moduleList=self.configTables()
         '''
         add the tables to the stdm toolbar
         '''
         moduleContentGroups = []
-       
-        
         for module in moduleList:
             displayName=str(module).replace("_", " ").title()
             self._moduleItems[displayName]=module
@@ -877,6 +874,7 @@ class STDMQGISLoader(object):
         self.stdmInitToolbar.removeAction(self.changePasswordAct)
         self.loginAct.setEnabled(True)
         self.logoutCleanUp()
+        self.initMenuItems()
         
     def removeSTDMLayers(self):
         '''
@@ -908,7 +906,8 @@ class STDMQGISLoader(object):
             self.toolbarLoader.unloadContent()
         if self.menubarLoader != None:
             self.menubarLoader.unloadContent()
-            del self.stdmMenu
+            self.stdmMenu.clear()
+            #del self.stdmMenu
             
             
         #Reset property management window
@@ -922,7 +921,7 @@ class STDMQGISLoader(object):
             del self.viewSTRWin
             self.viewSTRWin = None
             
-    def configHandler(self):
+    def configTables(self):
         '''
         create a handler to read the xml config and return the table list
         '''
@@ -932,13 +931,14 @@ class STDMQGISLoader(object):
             '''add a default is not provided'''
             default = handler.STDMProfiles()
             profile = str(default[0])
+            
         moduleList = handler.tableNames(profile)    
-        self.pgtable2PyObject(moduleList)
+        self.pgTable2pyClass(moduleList)
         if 'spatial_unit' in moduleList:
             moduleList.remove('spatial_unit')
         return moduleList
     
-    def pgtable2PyObject(self,tableList=None):
+    def pgTable2pyClass(self,tableList=None):
         '''
         map postgresql table to Python object/ model
         '''
