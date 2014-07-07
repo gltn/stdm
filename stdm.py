@@ -119,11 +119,16 @@ class STDMQGISLoader(object):
         self.changePasswordAct = STDMAction(QIcon(":/plugins/stdm/images/icons/change_password.png"), \
         QApplication.translate("ChangePasswordToolbarAction","Change Password"), self.iface.mainWindow(),
         "8C425E0E-3761-43F5-B0B2-FB8A9C3C8E4B")
+        self.helpAct = STDMAction(QIcon(":/plugins/stdm/images/icons/help-content.png"), \
+        QApplication.translate("ConfigTableReader","Help Contents"), self.iface.mainWindow(),
+        "7A61CEA9-2A64-45F6-A40F-D83987D416EB")
+        
         # connect the actions to their respective methods
         self.loginAct.triggered.connect(self.login)
         self.changePasswordAct.triggered.connect(self.changePassword)
         self.logoutAct.triggered.connect(self.logout)
         self.aboutAct.triggered.connect(self.about)
+        self.helpAct.triggered.connect(self.helpContents)
         self.initToolbar()
         self.initMenuItems()
         
@@ -169,7 +174,9 @@ class STDMQGISLoader(object):
    
     def initMenuItems(self):
         self.stdmMenu.addAction(self.loginAct)
-        #self.stdmMenu.addAction(self.aboutAct)
+        self.stdmMenu.addSeparator()
+        self.stdmMenu.addAction(self.helpAct)
+        self.stdmMenu.addAction(self.aboutAct)
    
     def unload(self):                
         #Remove the STDM toolbar
@@ -210,7 +217,7 @@ class STDMQGISLoader(object):
         Define and add modules to the menu and/or toolbar using the module loader
         '''
         self.toolbarLoader = QtContainerLoader(self.iface.mainWindow(),self.stdmInitToolbar,self.logoutAct)
-        self.menubarLoader = QtContainerLoader(self.iface.mainWindow(), self.stdmMenu, self.aboutAct)
+        self.menubarLoader = QtContainerLoader(self.iface.mainWindow(), self.stdmMenu, self.helpAct)
         
         #Connect to the content added signal
         #self.toolbarLoader.contentAdded.connect(self.onContentAdded)
@@ -247,7 +254,8 @@ class STDMQGISLoader(object):
         
         stdmEntityMenu = QMenu(self.stdmMenu)
         stdmEntityMenu.setObjectName("STDMEntityMenu")
-        stdmEntityMenu.setTitle("Content")
+        stdmEntityMenu.setIcon(QIcon(":/plugins/stdm/images/icons/entity_management.png"))
+        stdmEntityMenu.setTitle("Modules")
         
         #Separator definition
         tbSeparator = QAction(self.iface.mainWindow())   
@@ -388,10 +396,9 @@ class STDMQGISLoader(object):
         moduleContentGroups = []
        
         
-        for table in moduleList:
-            displayName=str(table).replace("_", " ").title()
-            #displayName=displayName.capitalize()
-            self._moduleItems[displayName]=table
+        for module in moduleList:
+            displayName=str(module).replace("_", " ").title()
+            self._moduleItems[displayName]=module
         for k,v in self._moduleItems.iteritems():
             contentAction=QAction(QIcon(":/plugins/stdm/images/icons/table.png"),\
                                          k, self.iface.mainWindow())
@@ -479,24 +486,45 @@ class STDMQGISLoader(object):
         self.menubarLoader.addContents(adminSettingsCntGroups,[stdmAdminMenu,stdmAdminMenu])
         
         self.menubarLoader.addContents(moduleContentGroups,[stdmEntityMenu,stdmEntityMenu])
-        self.toolbarLoader.addContents(moduleContentGroups, [contentMenu,contentBtn])
+        self.toolbarLoader.addContents(moduleContentGroups, [contentMenu,contentBtn])    
+        #self.menubarLoader.addContent(tbSeparator)
+        
+        self.toolbarLoader.addContent(self.wzdConfigCntGroup)
+        self.menubarLoader.addContent(self.wzdConfigCntGroup)
+        self.menubarLoader.addContent(tbSeparator)
         
         self.toolbarLoader.addContent(self.adminUnitsCntGroup)
         self.menubarLoader.addContent(self.adminUnitsCntGroup)
         
         self.toolbarLoader.addContent(self.importCntGroup)
+        self.menubarLoader.addContent(self.importCntGroup)
+        
         self.toolbarLoader.addContent(self.exportCntGroup)
+        self.menubarLoader.addContent(self.exportCntGroup)
+        self.menubarLoader.addContent(tbSeparator)
+        
         self.toolbarLoader.addContent(tbSeparator)
-        self.toolbarLoader.addContent(self.wzdConfigCntGroup)
+        
         self.toolbarLoader.addContent(self.docDesignerCntGroup)
+        self.menubarLoader.addContent(self.docDesignerCntGroup)
+        
         self.toolbarLoader.addContent(self.docGeneratorCntGroup)
+        self.menubarLoader.addContent(self.docGeneratorCntGroup)
+        self.menubarLoader.addContent(tbSeparator)
+        
         self.toolbarLoader.addContent(self.rptBuilderCntGroup)
+        self.menubarLoader.addContent(self.rptBuilderCntGroup)
+        
         self.toolbarLoader.addContent(tbSeparator)
         self.toolbarLoader.addContent(self.surveyCntGroup)
+        self.menubarLoader.addContent(self.surveyCntGroup)
+        
         self.toolbarLoader.addContent(self.STRCntGroup)
+        self.menubarLoader.addContent(self.spatialEditingCntGroup)
         self.toolbarLoader.addContent(tbSeparator)
         self.toolbarLoader.addContent(self.spatialEditingCntGroup)
         self.toolbarLoader.addContent(self.createFeatureCntGroup)
+        self.menubarLoader.addContent(self.createFeatureCntGroup)
         
         #Group spatial editing tools together
         self.spatialEditingGroup = QActionGroup(self.iface.mainWindow())
@@ -878,6 +906,10 @@ class STDMQGISLoader(object):
               
         if self.toolbarLoader != None:
             self.toolbarLoader.unloadContent()
+        if self.menubarLoader != None:
+            self.menubarLoader.unloadContent()
+            del self.stdmMenu
+            
             
         #Reset property management window
         if self.propManageWindow != None:
@@ -908,7 +940,7 @@ class STDMQGISLoader(object):
     
     def pgtable2PyObject(self,tableList=None):
         '''
-        map postgresql table to Python object/ model based on current user profile
+        map postgresql table to Python object/ model
         '''
         if tableList:
             try:
@@ -917,7 +949,14 @@ class STDMQGISLoader(object):
             except:
                 pass 
             
-            
+    def helpContents(self):
+        '''
+        Load and open documentation manual
+        '''
+        handler=ConfigTableReader()
+        helpManual=handler.setDocumentationPath()
+        os.startfile(helpManual,'open')
+                  
         
         
         
