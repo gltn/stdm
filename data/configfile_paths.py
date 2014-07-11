@@ -22,7 +22,7 @@
 import os
 import shutil
 import platform
-from exceptions import NameError
+
 from stdm.utils import PLUGIN_DIR
 from PyQt4.QtGui import QMessageBox
 FILE="stdmConfig.xml"
@@ -75,7 +75,6 @@ class FilePaths(object):
     def cacheDir(self):
         return self.cachePath
     
-        
     def setCacheDir(self,path=None):
         if path:
             self.cachePath = self.userPath+"/%s"%path
@@ -85,17 +84,16 @@ class FilePaths(object):
 
     def STDMSettingsPath(self):
         #To be implemented to write new file with user edits
-        
         pass
     
     def HtmlFile(self):
         #Read the html representation of the schema
-        self._html=self.userPath+'/%s'%HTML
+        self._html = self.userPath+'/%s'%HTML
         return self._html
     
     def SQLFile(self):
         #Read the html representation of the schema
-        self._sql=self.userPath+'/%s'%SQL
+        self._sql = self.userPath+'/%s'%SQL
         return self._sql
     
     def baseSQLPath(self):
@@ -108,25 +106,23 @@ class FilePaths(object):
         
     def defaultConfigPath(self):
         '''returns the path with configuration file'''
-        self.baseDir=self._file+"/template/"       
+        self.baseDir = self._file+"/template/"       
     
     def setUserConfigPath(self,path=None):
         ''' set new path with user configuration'''
-        self.userPath=self.localPath()
+        self.userPath = self.localPath()
         self.createDir(self.userPath)
-        self.cachePath=self.userPath+'/temp'
+        self.cachePath = self.userPath+'/temp'
         self.createDir(self.cachePath)
         self.userConfigPath()
-    
     
     def userConfigPath(self,path=None):
         #Copy template files to the user directory
         try:
             for fileN in [FILE,HTML,SQL]:
                 if not os.path.isfile(self.userPath+'/%s'%fileN):
-                    baseFile=self.baseDir +'/%s'%fileN
+                    baseFile = self.baseDir +'/%s'%fileN
                     shutil.copy(baseFile,self.userPath)
-           
         except IOError as ex:
             raise ex
     
@@ -153,11 +149,9 @@ class FilePaths(object):
         if os.access(dirPath, os.F_OK) == False:
             os.makedirs(dirPath)    
             return dirPath
-     
     
     def STDMLicenseDoc(self):
         '''load STDM license file for viewing'''
-        self.licPath=self._file+'/%s'%LICENSE
         return self._file+'/%s'%LICENSE
         
     def createBackupSettings(self):

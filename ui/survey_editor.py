@@ -21,9 +21,8 @@ from datetime import datetime
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import Enumerator,MapperMixin,Survey,Respondent,Witness, \
-respondentRoleFormatter,witnessRelationshipFormatter,genderFormatter, \
-maritalStatusFormatter
+from stdm.data import Enumerator,Survey,Witness, MapperMixin
+
 from stdm.utils import randomCodeGenerator
 from .ui_survey import Ui_frmSurvey
 from .admin_unit_manager import VIEW, MANAGE,SELECT

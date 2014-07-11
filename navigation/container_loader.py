@@ -25,7 +25,7 @@ from collections import OrderedDict
 
 from stdm.utils import *
 import stdm.data
-from stdm.data import Content, Role, initLookups
+from stdm.data import Content, Role
 from .content_group import ContentGroup
 from stdm.security import Authorizer, SecurityException
 

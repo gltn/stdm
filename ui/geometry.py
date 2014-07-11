@@ -40,8 +40,7 @@ class GeometryProperty(QDialog):
         self.textField=QLineEdit()
         geometryCollections={'Point':'POINT','Line':'LINESTRING','Polygon':'POLYGON'}
         setCollectiontypes(geometryCollections,self.comboField)
-        #self.textField.setPlaceHolderText("Lookup value to be added to the list")
-        #self.textField.setLineWrapMode(QTextEdit.WidgetWidth)
+       
         self.buttons=QDialogButtonBox()
         self.buttons.addButton(QDialogButtonBox.Ok)
         self.buttons.addButton(QDialogButtonBox.Cancel)

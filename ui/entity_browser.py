@@ -22,15 +22,13 @@ from datetime import date
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import BaseSTDMTableModel,Enumerator,Respondent,Witness, \
-MapperMixin,HouseholdIncome,Farmer,Survey, respondentNamesFormatter, \
-enumeratorNamesFormatter,dateFormatter,genderFormatter,maritalStatusFormatter
+from stdm.data import Enumerator,Witness,Survey
 from stdm.navigation import TableContentGroup
 from .admin_unit_manager import VIEW,MANAGE,SELECT
 from .ui_entity_browser import Ui_EntityBrowser
 from .helpers import SupportsManageMixin
 from .notification import NotificationBar, ERROR, WARNING,INFO
-from .base_person import RespondentEditor,WitnessEditor,FarmerEditor
+#from .base_person import RespondentEditor,WitnessEditor,FarmerEditor
 from stdm.data import STDMDb, tableCols
 from .stdmdialog import declareMapping
 from .data_reader_form import STDMForm,STDMEntityForm

@@ -20,10 +20,10 @@ email                : gkahiu@gmail.com
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import Garden,GardenSurveyPoint, MapperMixin,QgsFeatureMapperMixin, \
+# from stdm.data import GardenSurveyPoint, MapperMixin,QgsFeatureMapperMixin, \
 SAVE,UPDATE,FoodCrop,foodCropCategoryFormatter,geometryFormatter
 from .ui_garden_editor import Ui_frmGardenEditor
-from .foreign_key_editors import FoodCropEditor,GardenSurveyPointEditor
+#from .foreign_key_editors import FoodCropEditor,GardenSurveyPointEditor
 from .admin_unit_manager import VIEW, MANAGE,SELECT
 from .admin_unit_selector import AdminUnitSelector
 from .entity_browser import EnumeratorEntityBrowser,RespondentEntityBrowser, \
