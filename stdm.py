@@ -522,6 +522,7 @@ class STDMQGISLoader(object):
         self.toolbarLoader.addContent(self.spatialEditingCntGroup)
         self.toolbarLoader.addContent(self.createFeatureCntGroup)
         self.menubarLoader.addContent(self.createFeatureCntGroup)
+        self.menubarLoader.addContent(self.logoutAct)
         
         #Group spatial editing tools together
         self.spatialEditingGroup = QActionGroup(self.iface.mainWindow())
