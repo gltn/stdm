@@ -475,12 +475,7 @@ class STDMQGISLoader(object):
         self.rptBuilderCntGroup.addContentItem(rptBuilderCnt)
         self.rptBuilderCntGroup.register()
         
-<<<<<<< HEAD
-        #self.stdmMenu.addAction(self.wzdAct)        
-=======
-        #self.stdmMenu.addAction(self.wzdAct)
-        
->>>>>>> f976aa56051d6550d360ef1cebc5a46db0ba0219
+
         self.toolbarLoader.addContent(self.contentAuthCntGroup,[adminMenu,adminBtn])
         self.toolbarLoader.addContent(self.userRoleCntGroup, [adminMenu,adminBtn])
         

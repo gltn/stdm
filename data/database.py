@@ -169,77 +169,7 @@ class LookupBase(object):
     id  = Column(Integer,primary_key = True)
     name = Column(String(50))
 
-# class CheckGender(LookupBase,Model,Base):
-#     '''
-#     Stores gender information
-#     '''
-#     __tablename__ = 'check_gender'
-#     
-# class CheckMaritalStatus(LookupBase,Model,Base):
-#     '''
-#     Stores marital status information
-#     '''
-#     __tablename__ = 'check_marital_status'
-#     
-# class CheckRespondentType(LookupBase,Model,Base):
-#     '''
-#     Enumeration for the type of the questionnaire respondent.
-#     '''
-#     __tablename__ = 'check_respondent_type'
-#     
-# class CheckSocialTenureRelationship(LookupBase,Model,Base):
-#     '''
-#     Enumeration for the type of social tenure relationship
-#     '''
-#     __tablename__ = 'check_social_tenure_relationship'
-#     
-# class CheckWitnessRelationship(LookupBase,Model,Base):
-#     '''
-#     Witness relationship enumeration.
-#     '''
-#     __tablename__ = 'check_witness_relationship'
-#     
-# class CheckHouseUseType(LookupBase,Model,Base):
-#     '''
-#     House use type enumeration.
-#     '''
-#     __tablename__ = 'check_house_use_type'
-#     
-# class CheckLandType(LookupBase,Model,Base):
-#     '''
-#     Land type enumeration.
-#     '''
-#     __tablename__ = 'check_land_type'
-#     
-# class CheckHouseType(LookupBase,Model,Base):
-#     '''
-#     House type enumeration.
-#     '''
-#     __tablename__ = 'check_house_type'
-#     
-# class CheckSavingsOption(LookupBase,Model,Base):
-#     '''
-#     Household savings enumeration.
-#     '''
-#     __tablename__ = 'check_household_savings'
-#     
-# class CheckFoodCropCategory(LookupBase,Model,Base):
-#     '''
-#     Food crop categories.
-#     '''
-#     __tablename__ = 'check_food_crop_category'
-#     
-# class CheckInputService(LookupBase,Model,Base):
-#     '''
-#     Types of inputs required by farmers.
-#     '''
-#     __tablename__ = 'check_input_service'
-#     
-# class CheckSocioEconomicImpact(LookupBase,Model,Base):
-#     '''
-#     Socio-economic impact types.
-#     '''
-#     __tablename__ = 'check_socio_economic_impact'
+
                         
 class Content(Model,Base):
     '''
@@ -303,38 +233,6 @@ class AdminSpatialUnitSet(Model,Base):
             
         return separator.join(reverseCode)
 
-
-# class BasePersonMixin(object):
-#     '''
-#     Mixin class for person entity.
-#     '''
-#     FirstName = Column("first_name",String(50))
-#     LastName = Column("last_name",String(50))
-#     DateofBirth = Column("date_of_birth",Date)
-#     Cellphone = Column("cellphone",String(20)) 
-#     
-#     #Declarative extension definitions.
-#     def age(self,format):
-#         '''
-#         Calculate current age of person instance.
-#         '''
-#         currDate = date.today()
-#         age = self.DateofBirth - currDate
-#         
-#         return age.days
-#     
-#     @staticmethod
-#     def displayMapping():
-#         #Display translation mappings
-#         attrTranslations = OrderedDict()
-#         attrTranslations["id"] = "ID" 
-#         attrTranslations["FirstName"] = QApplication.translate("DatabaseMapping","First Name") 
-#         attrTranslations["LastName"] = QApplication.translate("DatabaseMapping","Last Name")
-#         attrTranslations["GenderID"] = QApplication.translate("DatabaseMapping","Gender")
-#         attrTranslations["MaritalStatusID"] = QApplication.translate("DatabaseMapping","Marital Status")
-#         attrTranslations["Cellphone"] = QApplication.translate("DatabaseMapping","Cellphone") 
-#         
-#         return attrTranslations
         
 class Enumerator(Model,Base):
     '''
