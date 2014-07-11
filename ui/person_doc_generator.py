@@ -33,7 +33,7 @@ from PyQt4.QtCore import (
                           )
 
 from stdm.data import (
-                       Farmer,
+                       #Farmer,
                        genderFormatter,
                        maritalStatusFormatter
                        )

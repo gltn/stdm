@@ -29,7 +29,7 @@ from qgis.core import *
 
 from stdm import resources_rc
 from stdm.utils import *
-from stdm.data import SocialTenureRelationshipMixin, LookupFormatter, CheckSocialTenureRelationship
+#from stdm.data import SocialTenureRelationshipMixin, LookupFormatter
 from stdm.ui.sourcedocument import TITLE_DEED,STATUTORY_REF_PAPER,SURVEYOR_REF,NOTARY_REF,TAX_RECEIPT_PRIVATE, \
         TAX_RECEIPT_STATE,SourceDocumentManager
 from stdm.ui.str_editor_dlg import STREditorDialog

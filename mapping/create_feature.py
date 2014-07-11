@@ -23,7 +23,7 @@ from PyQt4.QtGui import *
 from qgis.gui import *
 from qgis.core import *
 
-from stdm.ui import SpatialCoordinatesEditor
+#from stdm.ui import SpatialCoordinatesEditor
 from .capture_tool import StdmMapToolCapture,CAPTURE_LINE,CAPTURE_NONE,CAPTURE_POINT, \
 CAPTURE_POLYGON
 from .edit_tool import StdmMapToolEdit

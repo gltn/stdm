@@ -31,8 +31,7 @@ from ui_new_str import Ui_frmNewSTR
 from notification import NotificationBar,ERROR,INFO, WARNING
 from sourcedocument import *
 
-from stdm.data import CheckGender, LookupFormatter, DoBFormatter, CheckMaritalStatus, \
-CheckSocialTenureRelationship, SocialTenureRelationshipMixin, STDMDb, Base, tableCols
+from stdm.data import STDMDb, Base, tableCols
 from stdm.navigation import TreeSummaryLoader, PropertyBrowser, GMAP_SATELLITE, OSM
 from stdm.utils import *
 from .stdmdialog import  declareMapping
@@ -246,13 +245,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             srcDocMapping = self.sourceDocManager.attributeMapping()
             summaryTreeLoader.addCollection(srcDocMapping, QApplication.translate("newSTRWiz","Source Documents"), 
                                              ":/plugins/stdm/images/icons/attachment.png") 
-            #Tax information
-#             if self.gpPrivateTaxInfo.isChecked():
-#                 privatePropTaxMapping = self._mapPrivatePropertyTax()
-#                 taxDocMapping = self.privateTaxDocManager.attributeMapping()
-#                 privatePropTaxMapping.update(taxDocMapping)
-#                 summaryTreeLoader.addCollection(privatePropTaxMapping, QApplication.translate("newSTRWiz","Tax Information"), 
-#                      ":/plugins/stdm/images/icons/receipt.png")
+
         elif self.rbStateland.isChecked():
             #Tax information only
             statePropTaxMapping = self._mapStatePropertyTax()
@@ -260,13 +253,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             statePropTaxMapping.update(taxDocMapping)
             summaryTreeLoader.addCollection(statePropTaxMapping, QApplication.translate("newSTRWiz","Tax Information"), 
                                              ":/plugins/stdm/images/icons/receipt.png")
-            
-        #Map conflict
-#         if self.cboConflictOccurrence.currentIndex() != 0:
-#             conflictMapping = self._mapConflict(self.conflict)
-#             summaryTreeLoader.addCollection(conflictMapping, QApplication.translate("newSTRWiz","Conflict Information"), 
-#                                              ":/plugins/stdm/images/icons/conflict.png")
-        
+
         summaryTreeLoader.display()  
     
     def validateCurrentPage(self):
@@ -304,18 +291,10 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 self.notifSTR.clear()
                 self.notifSTR.insertErrorNotification(msg)
                 isValid = False
-         
-        #Validate right of enjoyment details
-        #if currPageIndex == 4:
-        #    isValid = self.validateEnjoymentRight()
-        
+
         #Validate source document    
         if currPageIndex == 4:
             isValid = self.validateSourceDocuments()
-            
-        #Validate conflict details
-       # if currPageIndex == 6:
-         #   isValid = self.validateConflict()
             
         if currPageIndex == 5:
             isValid = self.onCreateSTR()
@@ -343,43 +322,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             progDialog.setValue(2)
             socialTenure.spatial_unit = self.selProperty.id
             progDialog.setValue(3)
-            '''
-            if self.rbPrivateProperty.isChecked():
-                progDialog.setValue(4)
-                socialTenure.SourceDocuments = self.sourceDocManager.sourceDocuments()
-                if self.gpPrivateTaxInfo.isChecked():
-                    taxInfo = Taxation()
-                    taxInfo.Amount = Decimal(str(self.txtCFBPAmount.text()))
-                    taxInfo.ReferenceDate = self.dtLastYearCFBP.date().toPyDate()
-                    taxDocs = self.privateTaxDocManager.sourceDocuments(TAX_RECEIPT_PRIVATE)
-                    if len(taxDocs) > 0:
-                        taxInfo.Document = taxDocs[0]
-                    socialTenure.Taxation = taxInfo
-                    
-            elif self.rbStateland.isChecked():
-                progDialog.setValue(4)
-                taxInfo = Taxation()
-                taxInfo.Amount = Decimal(str(self.txtStateReceiptAmount.text()))
-                taxInfo.ReferenceDate = self.dtStateReceiptDate.date().toPyDate()
-                taxInfo.LeaseDate = self.dtStateLeaseYear.date().toPyDate()
-                taxInfo.TaxOffice = str(self.txtStateTaxOffice.text())
-                taxDocs = self.stateTaxDocManager.sourceDocuments(TAX_RECEIPT_STATE)
-                if len(taxDocs) > 0:
-                        taxInfo.Document = taxDocs[0]
-                socialTenure.Taxation = taxInfo
-                
-            progDialog.setValue(5)
             
-            socialTenure.AgreementAvailable = self.chkSTRAgreement.isChecked()
-            '''
             socialTenure.social_tenure_type=str(self.cboSTRType.currentText())
-            '''
-            if self.enjoymentRight != None:
-                socialTenure.EnjoymentRight = self.enjoymentRight
-                
-            if self.conflict != None:
-                socialTenure.Conflict = self.conflict
-                '''
             progDialog.setValue(6)
                     
             socialTenure.save()
@@ -563,11 +507,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         '''
         Maps the attributes of a person to a more friendly user representation 
         '''   
-        #Setup formatters 
-        genderFormatter = LookupFormatter(CheckGender)
-        dobFormatter = DoBFormatter()
-        maritalStatFormatter = LookupFormatter(CheckMaritalStatus)
-                     
+        #Setup formatters        
         pmapper=self.mapping.tableMapping('party')
         colMapping = pmapper.displayMapping()
         colMapping.pop('id')
@@ -577,14 +517,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 pMapping[label] = getattr(person,attrib)
         except:
             pass
-#         pMapping["Position"] = person.firstname
-#         pMapping["Gender"] = str(genderFormatter.setDisplay(person.gender_id).toString())
-#         pMapping["Age"] = str(dobFormatter.setDisplay(person.date_of_birth))        
-#         pMapping["Marital Status"] = str(maritalStatFormatter.setDisplay(person.marital_status_id).toString())
-#         pMapping["National Identification Number"] = str(person.identification_number)
-#         pMapping["Telephone Number"] = person.telephone     
-#         pMapping["Address"] = person.address
-                    
+#                             
         return pMapping  
     
     def _updatePropertySummary(self,propid):
@@ -618,43 +551,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             propMapping=OrderedDict()
             for attrib,label in colMapping.iteritems():
                 propMapping[label] = getattr(prop,attrib)
-            '''
-            useTypeFormatter = LookupFormatter(CheckBuildingUseType)
-            descFormatter = LookupFormatter(CheckBuildingDescription)
-            roofTypeFormatter = LookupFormatter(CheckRoofType)
-            wallNatureFormatter = LookupFormatter(CheckWallNature)
-            boundTypeFormatter = LookupFormatter(CheckBoundaryType)
-            accessionFormatter = LookupFormatter(CheckAccessionMode)
-            
-            #Check for nulls
-            if prop.locality:
-                locArea = prop.locality.area
-                locStreetNum = prop.locality.street_number
-            else:
-                locArea = ""
-                locStreetNum = ""
-            
-            propMapping = OrderedDict()
-            propMapping[str(QApplication.translate("newSTRWiz","Identifier"))] = prop.PropertyID
-            propMapping[str(QApplication.translate("newSTRWiz","Locality"))] = {
-                                                                                unicode(QApplication.translate("newSTRWiz","Area")):locArea,
-                                                                                unicode(QApplication.translate("newSTRWiz","Street Number")):locStreetNum
-                                                                                }
-            propMapping[str(QApplication.translate("newSTRWiz","Property Use Type"))] = unicode(useTypeFormatter.setDisplay(prop.UseTypeID).toString())
-            propMapping[str(QApplication.translate("newSTRWiz","Description"))] = unicode(descFormatter.setDisplay(prop.DescriptionID).toString())
-            propMapping[str(QApplication.translate("newSTRWiz","Number of Floors"))] = unicode(prop.NumFloors)
-            propMapping[str(QApplication.translate("newSTRWiz","Type of Building Roof"))] = unicode(roofTypeFormatter.setDisplay(prop.RoofTypeID).toString())            
-            propMapping[str(QApplication.translate("newSTRWiz","Nature of Walls"))] = unicode(wallNatureFormatter.setDisplay(prop.NatureWalls).toString())
-            propMapping[str(QApplication.translate("newSTRWiz","Type of Boundary"))] = unicode(boundTypeFormatter.setDisplay(prop.BoundaryType).toString())
-            propMapping[str(QApplication.translate("newSTRWiz","Number of Rooms"))] = unicode(prop.NumRooms)
-            propMapping[str(QApplication.translate("newSTRWiz","Land Value"))] = unicode(prop.LandValue)
-            propMapping[str(QApplication.translate("newSTRWiz","Building Value"))] = unicode(prop.BuildingValue)
-            propMapping[str(QApplication.translate("newSTRWiz","Combined Value"))] = unicode(prop.CombinedValue)
-            propMapping[str(QApplication.translate("newSTRWiz","Type of Land Accession"))] = unicode(accessionFormatter.setDisplay(prop.LandAccessionID).toString())
-            propMapping[str(QApplication.translate("newSTRWiz","Land Accession Year"))] = unicode(prop.LandAccessionYear)
-            propMapping[str(QApplication.translate("newSTRWiz","Type of Building Accession"))] = unicode(accessionFormatter.setDisplay(prop.BuildingAccessionID).toString())
-            propMapping[str(QApplication.translate("newSTRWiz","Building Accession Year"))] = unicode(prop.BuildingAccessionYear)
-            '''
             return propMapping
         
     def _mapSTRTypeSelection(self):

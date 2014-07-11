@@ -25,7 +25,7 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from .ui_attribute_editor import Ui_editor
 from .lookupDlg import LookupDialog
-from stdm.data  import datatypes,nullable,deleteColumn,ConfigTableReader,writeTableColumn,FilePaths,\
+from stdm.data  import datatypes,nullable,ConfigTableReader,writeTableColumn,\
  setCollectiontypes,editTableColumn
 from stdm.data.config_utils import *
 from .geometry import GeometryProperty
@@ -39,21 +39,21 @@ class AttributeEditor(QDialog,Ui_editor):
         #Initialize the Qt designer form
         #Iniherit the form controls to this class
         self.setupUi(self)
-        self.tableName=tableName
+        
         self.profile=profile
+        self.tableName=tableName
         self.args=args
         self.lookup=None
         self.geomCollection=[]
-        xmlobject=FilePaths()
-        xml_doc=xmlobject.setUserXMLFile()
+        
         self.cboDatatype.currentIndexChanged.connect(self.postgresDataTypeDefaults)
         self.btnTableList.clicked.connect(self.lookupDialog)
         self.initControls()
         
     def initControls(self):
-        self.defaults=['integer','date','boolean','time with time zone','serial','geometry','double precision','text']
-        tableModel=ConfigTableReader()
-        model=tableModel.fulltableList()
+        self.defaults = ['integer','date','boolean','time with time zone','serial','geometry','double precision','text']
+        tableHandler = ConfigTableReader()
+        model = tableHandler.fulltableList()
         self.cboTabList.insertItems(0,model)
         index=self.cboTabList.findText(self.tableName,Qt.MatchExactly)
         if index!=-1:
@@ -155,7 +155,6 @@ class AttributeEditor(QDialog,Ui_editor):
         except:
             self.ErrorInfoMessage(QApplication.translate('AttributeEditor','Unable to update the column data'))
             return
-        #self.enforceProjection()
          
     def clearControls(self):
         self.txtCol.setText('')
@@ -179,7 +178,7 @@ class AttributeEditor(QDialog,Ui_editor):
             pass
         
     def enforceProjection(self):
-        if self.geomCollection!=None:
+        if self.geomCollection:
             geomconstraint='st_srid'
             geom={}
             geom['table']=self.tableName

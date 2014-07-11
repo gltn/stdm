@@ -57,10 +57,6 @@ def activeProfile():
     except:
         pass
     
-def tabletoList(table):
-        tableModel=ConfigTableReader()
-        model=tableModel.tableListModel()
-    
 def tableFullname(table):
     tableFullDescription(table)
     

@@ -17,9 +17,10 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from stdm.ui import SpatialGardenEditor,spatialUnitEditor
-
+#from stdm.ui import SpatialGardenEditor,spatialUnitEditor
+''''
 spatial_editor_widgets = {
                   "garden": SpatialGardenEditor,
                   "spatial_unit": spatialUnitEditor
                   }
+                  '''

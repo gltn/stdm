@@ -21,9 +21,8 @@ email                : gkahiu@gmail.com
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import MapperMixin,HouseholdIncome,HouseholdSaving,CheckSavingsOption, \
-Priority,CheckInputService,Impact,CheckSocioEconomicImpact,FoodCrop,CheckFoodCropCategory, \
-GardenSurveyPoint
+from stdm.data import MapperMixin,HouseholdIncome,HouseholdSaving, \
+Priority,FoodCrop,GardenSurveyPoint
 from .admin_unit_manager import VIEW,MANAGE,SELECT
 from stdm.utils import loadComboSelections
 from customcontrols import ComboBoxWithOther
@@ -261,68 +260,68 @@ class PriorityServiceEditor(QDialog,MapperMixin):
         '''
         self.recordSelected.emit(dbmodel.id)
         
-class ImpactEditor(QDialog,MapperMixin):
-    '''
-    Dialog for specifying VODP impact.
-    ''' 
-    
-    #See EntityBrowser base class for details on implementation.
-    recordSelected = pyqtSignal(int)
-    
-    def __init__(self,parent=None, state = None, dataModel=Impact):
-        QDialog.__init__(self,parent)
-        self.setAttribute(Qt.WA_DeleteOnClose)
-        MapperMixin.__init__(self, dataModel)
-        
-        self.resize(300,200)
-        self.setWindowTitle(QApplication.translate("ImpactEditor","Project Impact Editor"))
-        self.gridLayout = QGridLayout(self)
-        self.gridLayout.setMargin(10)
-        
-        self.vlNotification = QVBoxLayout()
-        self.vlNotification.setMargin(0)
-        self.gridLayout.addLayout(self.vlNotification,0,0,1,2)
-        
-        #Add vertical layout for the notification bar
-        self.setNotificationLayout(self.vlNotification)
-        
-        self.lblImpact = QLabel(self)
-        self.lblImpact.setText(QApplication.translate("ImpactEditor","Socio-Economic Impact"))
-        self.gridLayout.addWidget(self.lblImpact,1,0,1,1)
-        
-        self.cboImpact = ComboBoxWithOther(self)
-        self.cboImpact.lineEdit().setMaxLength(30)
-        self.gridLayout.addWidget(self.cboImpact,1,1,1,1)
-        
-        self.lblRank = QLabel(self)
-        self.lblRank.setText(QApplication.translate("ImpactEditor","Rank"))
-        self.gridLayout.addWidget(self.lblRank,2,0,1,1)
-        
-        self.cboRank = QComboBox(self)
-        self.cboRank.setMinimumSize(QSize(0, 30))
-        self.gridLayout.addWidget(self.cboRank,2,1,1,1)
-        
-        self.buttonBox = QDialogButtonBox(self)
-        self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Save)
-        self.gridLayout.addWidget(self.buttonBox,3,0,1,2)
-        
-        #Load combobox options
-        loadComboSelections(self.cboImpact.comboBox(),CheckSocioEconomicImpact)
-        self.cboRank.addItem("")
-        self.cboRank.addItem(QApplication.translate("ImpactEditor","3 (Highest)"), 3)
-        self.cboRank.addItem("2", 2)
-        self.cboRank.addItem(QApplication.translate("ImpactEditor","1 (Lowest)"), 1)
-        
-        #Configure mappings
-        self.addMapping("itemID",self.cboImpact.comboBox(),True, \
-                        pseudoname=QApplication.translate("ImpactEditor","Priority Service"))
-        self.addMapping("OtherItem",self.cboImpact.lineEdit())
-        self.addMapping("Rank",self.cboRank,True)
-        
-        #Connect signals
-        self.connect(self.buttonBox, SIGNAL("accepted()"),self.submit)
-        self.connect(self.buttonBox, SIGNAL("rejected()"),self.cancel)
+# class ImpactEditor(QDialog,MapperMixin):
+#     '''
+#     Dialog for specifying VODP impact.
+#     ''' 
+#     
+#     #See EntityBrowser base class for details on implementation.
+#     recordSelected = pyqtSignal(int)
+#     
+#     def __init__(self,parent=None, state = None, dataModel=Impact):
+#         QDialog.__init__(self,parent)
+#         self.setAttribute(Qt.WA_DeleteOnClose)
+#         MapperMixin.__init__(self, dataModel)
+#         
+#         self.resize(300,200)
+#         self.setWindowTitle(QApplication.translate("ImpactEditor","Project Impact Editor"))
+#         self.gridLayout = QGridLayout(self)
+#         self.gridLayout.setMargin(10)
+#         
+#         self.vlNotification = QVBoxLayout()
+#         self.vlNotification.setMargin(0)
+#         self.gridLayout.addLayout(self.vlNotification,0,0,1,2)
+#         
+#         #Add vertical layout for the notification bar
+#         self.setNotificationLayout(self.vlNotification)
+#         
+#         self.lblImpact = QLabel(self)
+#         self.lblImpact.setText(QApplication.translate("ImpactEditor","Socio-Economic Impact"))
+#         self.gridLayout.addWidget(self.lblImpact,1,0,1,1)
+#         
+#         self.cboImpact = ComboBoxWithOther(self)
+#         self.cboImpact.lineEdit().setMaxLength(30)
+#         self.gridLayout.addWidget(self.cboImpact,1,1,1,1)
+#         
+#         self.lblRank = QLabel(self)
+#         self.lblRank.setText(QApplication.translate("ImpactEditor","Rank"))
+#         self.gridLayout.addWidget(self.lblRank,2,0,1,1)
+#         
+#         self.cboRank = QComboBox(self)
+#         self.cboRank.setMinimumSize(QSize(0, 30))
+#         self.gridLayout.addWidget(self.cboRank,2,1,1,1)
+#         
+#         self.buttonBox = QDialogButtonBox(self)
+#         self.buttonBox.setOrientation(Qt.Horizontal)
+#         self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Save)
+#         self.gridLayout.addWidget(self.buttonBox,3,0,1,2)
+#         
+#         #Load combobox options
+#         loadComboSelections(self.cboImpact.comboBox(),CheckSocioEconomicImpact)
+#         self.cboRank.addItem("")
+#         self.cboRank.addItem(QApplication.translate("ImpactEditor","3 (Highest)"), 3)
+#         self.cboRank.addItem("2", 2)
+#         self.cboRank.addItem(QApplication.translate("ImpactEditor","1 (Lowest)"), 1)
+#         
+#         #Configure mappings
+#         self.addMapping("itemID",self.cboImpact.comboBox(),True, \
+#                         pseudoname=QApplication.translate("ImpactEditor","Priority Service"))
+#         self.addMapping("OtherItem",self.cboImpact.lineEdit())
+#         self.addMapping("Rank",self.cboRank,True)
+#         
+#         #Connect signals
+#         self.connect(self.buttonBox, SIGNAL("accepted()"),self.submit)
+#         self.connect(self.buttonBox, SIGNAL("rejected()"),self.cancel)
         
     def setCellFormatters(self,formattermapping):
         '''
