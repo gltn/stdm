@@ -118,7 +118,6 @@ class DocumentGenerator(QObject):
         :param dbmodel: In order to name the files using the custom column mapping, a callable
         sqlalchemy data model must be specified.
         """
-        #Unpack arguments
         templatePath = args[0]
         entityFieldName = args[1]
         entityFieldValue = args[2]
