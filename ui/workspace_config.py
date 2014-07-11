@@ -562,6 +562,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             roles=roleP.GetSysRoles()
             for role in roles:
                 roleSql=text("GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO %s;"%(role))
+                self.ErrorInfoMessage(str(roleSql))
                 _execute(roleSql)
         
     def DropSchemaTables(self):

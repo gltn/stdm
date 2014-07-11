@@ -25,9 +25,10 @@ from PyQt4.QtGui import (
                          QWidget,
                          QLabel,
                          QDoubleSpinBox,
-                         QMessageBox
+                         QMessageBox,
+                         QGroupBox
                          )
-
+from qgis.gui import QgsCollapsibleGroupBoxBasic
 from qgis.core import (
                        QgsComposerArrow,
                        QgsComposerLabel,
@@ -98,9 +99,6 @@ class DataLabelFormatter(BaseComposerItemFormatter):
         
             #Adjust width
             label.adjustSizeToText()
-        
-            #Set ID to match UUID
-            label.setId(label.uuid())
             
             fieldSelector = ComposerFieldSelector(composerWrapper,label) 
             stdmDock = composerWrapper.stdmItemDock()
@@ -108,6 +106,9 @@ class DataLabelFormatter(BaseComposerItemFormatter):
             
             #Add widget to the composer wrapper widget mapping collection
             composerWrapper.addWidgetMapping(label.uuid(),fieldSelector)
+
+        #Set ID to match UUID
+        label.setId(label.uuid())
         
         #Get the editor widget for the label
         labelEditor = composerWrapper.itemDock().widget()
@@ -135,8 +136,23 @@ class MapFormatter(BaseComposerItemFormatter):
             return
         
         if not fromTemplate:
-            #Set ID to match UUID
-            templateMap.setId(templateMap.uuid())
+            #Enable outline in map composer item
+            frameWidth = 0.3
+            templateMap.setFrameEnabled(True)
+            templateMap.setFrameOutlineWidth(frameWidth)
+
+            #Enable the properties for the corresponding widget for the frame
+            #Get the editor widget for the label
+            mapEditor = composerWrapper.itemDock().widget()
+
+            if mapEditor != None:
+                frameGP = mapEditor.findChild(QgsCollapsibleGroupBoxBasic,"mGridFrameGroupBox")
+                if frameGP != None:
+                    frameGP.setCollapse(True)
+
+                thicknessSpinBox = mapEditor.findChild(QDoubleSpinBox,"mGridFramePenSizeSpinBox")
+                if thicknessSpinBox != None:
+                    thicknessSpinBox.setValue(frameWidth)
         
             #Create styling editor and it to the dock widget
             composerSymbolEditor = ComposerSymbolEditor(composerWrapper)
@@ -145,6 +161,10 @@ class MapFormatter(BaseComposerItemFormatter):
                 
             #Add widget to the composer wrapper widget mapping collection
             composerWrapper.addWidgetMapping(templateMap.uuid(),composerSymbolEditor)
+
+        #Set ID to match UUID
+        templateMap.setId(templateMap.uuid())
+
         
         
         
