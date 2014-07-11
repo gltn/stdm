@@ -1,20 +1,19 @@
 from .config import DatabaseConfig
 from connection import DatabaseConnection
 from database import STDMDb,Base,Model
-from database import Content, Role, Enumerator,Respondent, LookupBase, CheckGender,CheckMaritalStatus, \
- SocialTenureRelationshipMixin, CheckSocialTenureRelationship, CheckRespondentType, \
- CheckWitnessRelationship, CheckHouseUseType, CheckLandType, CheckHouseType, CheckSavingsOption,\
- CheckFoodCropCategory, CheckInputService, CheckSocioEconomicImpact, BasePersonMixin, Farmer, Witness, \
- Survey, Garden, SurveyPointMixin, GardenSurveyPoint, HouseSurveyPoint, FoodCrop, GardenSocialTenureRelationship, \
- House, HouseSocialTenureRelationship, Household, HouseholdIncome, HouseholdSaving, SupportsRankingMixin, Priority, \
- Impact, AdminSpatialUnitSet
+# from database import Content, Role, Enumerator,Respondent, LookupBase, \
+#  SocialTenureRelationshipMixin, BasePersonMixin, Farmer, Witness, \
+#  Survey, Garden, SurveyPointMixin, GardenSurveyPoint, HouseSurveyPoint, FoodCrop, GardenSocialTenureRelationship, \
+#  House, HouseSocialTenureRelationship, Household, HouseholdIncome, HouseholdSaving, SupportsRankingMixin, Priority, \
+#  AdminSpatialUnitSet
+from .database import AdminSpatialUnitSet, Enumerator, Survey, Priority, Content, Role, Witness
 from .qtmodels import UsersRolesModel,PersonTableModel, STRTreeViewModel, BaseSTDMTableModel
 from .globals import app_dbconn
 from .modelformatters import respondentRoleFormatter,LookupFormatter,witnessRelationshipFormatter, \
 DoBFormatter,genderFormatter,maritalStatusFormatter,savingOptionFormatter,inputServiceFormatter, \
 socioEconImpactFormatter,foodCropCategoryFormatter,geometryFormatter,respondentNamesFormatter, \
 enumeratorNamesFormatter,dateFormatter
-from .lookups import initLookups
+#from .lookups import initLookups
 from .mapping import MapperMixin,QgsFeatureMapperMixin,SAVE,UPDATE
 
 from .pg_utils import spatial_tables,pg_tables,pg_views,table_column_names,geometryType,_execute

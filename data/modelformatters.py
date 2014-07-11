@@ -24,9 +24,9 @@ email                : gkahiu@gmail.com
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from .database import Enumerator, Respondent, CheckGender,CheckMaritalStatus, \
-CheckRespondentType,CheckWitnessRelationship,CheckSavingsOption,CheckInputService, \
-CheckSocioEconomicImpact,CheckFoodCropCategory,STDMDb
+# from .database import Enumerator, Respondent, CheckGender,CheckMaritalStatus, \
+# CheckRespondentType,CheckWitnessRelationship,CheckSavingsOption,CheckInputService, \
+# CheckSocioEconomicImpact,CheckFoodCropCategory,STDMDb
 
 def intFromQType(intitem):
     '''

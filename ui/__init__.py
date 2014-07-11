@@ -36,26 +36,27 @@ from .entity_browser import (
                             STDMEntityBrowser,
                             SurveyEntityBrowser
                             )
-from .foreign_key_editors import (
-                                  HouseholdIncomeEditor,
-                                  HouseholdSavingsEditor,
-                                  PriorityServiceEditor,
-                                  ImpactEditor,
-                                  FoodCropEditor,
-                                  SpatialCoordinatesEditor,
-                                  GardenSurveyPointEditor
-                                  )
+#from .foreign_key_editors import SpatialCoordinatesEditor
+#from .foreign_key_editors import (
+#                                    SpatialCoordinatesEditor
+#                                   HouseholdIncomeEditor,
+#                                   HouseholdSavingsEditor,
+#                                   PriorityServiceEditor,
+#                                   ImpactEditor,
+#                                   FoodCropEditor,
+#                                   GardenSurveyPointEditor
+#                                   )
 from .base_person import (
                          BasePerson,
-                         RespondentEditor,
+                         #RespondentEditor,
                          WitnessEditor,
-                         FarmerEditor
+                         #FarmerEditor
                          )
-from .garden_editor import (
-                            GardenEditor,
-                            SpatialGardenEditor,
-                            spatialUnitEditor
-                            )
+# from .garden_editor import (
+#                            # GardenEditor,
+#                             SpatialGardenEditor,
+#                             spatialUnitEditor
+#                             )
 from .composer_symbol_editor import ComposerSymbolEditor
 from .composer_field_selector import ComposerFieldSelector
 from .composer_data_source import ComposerDataSourceSelector

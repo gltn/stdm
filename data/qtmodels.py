@@ -25,7 +25,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from modelformatters import LookupFormatter, DoBFormatter
-from database import CheckGender,CheckMaritalStatus
+
 
 #Standard colors for widgets supporting alternating rows
 ALT_COLOR_EVEN = QColor(255,165,79)

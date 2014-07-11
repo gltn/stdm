@@ -23,7 +23,6 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from .ui_str_editor import Ui_frmSTREditor
-from stdm.data import CheckSocialTenureRelationship
 from .notification import NotificationBar,ERROR,INFO, WARNING
 '''
 from .helpers import ControlDirtyTrackerCollection,CheckBoxValueHandler, \
@@ -47,8 +46,8 @@ class STREditorDialog(QDialog, Ui_frmSTREditor):
         self.initGui()   
         
         #Load STR info
-        loadComboSelections(self.cboSTRType, CheckSocialTenureRelationship)
-        setComboCurrentIndexWithItemData(self.cboSTRType,socialtenure.SocialTenureType)
+        #loadComboSelections(self.cboSTRType, CheckSocialTenureRelationship)
+        #setComboCurrentIndexWithItemData(self.cboSTRType,socialtenure.SocialTenureType)
         
         if socialtenure.AgreementAvailable:
             self.chkSTRAgreement.setChecked(True)        
