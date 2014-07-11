@@ -25,7 +25,7 @@ from collections import OrderedDict
 
 from stdm.utils import *
 import stdm.data
-from stdm.data import Content, Role, initLookups
+from stdm.data import Content, Role
 from .content_group import ContentGroup
 from stdm.security import Authorizer, SecurityException
 
@@ -133,7 +133,10 @@ class QtContainerLoader(QObject):
         objName = widget.objectName()
         #Determine if the widget is already in the container
         if getIndex(self._widgets,objName)== -1:
-            self._container.insertWidget(self._actionReference,widget)
+            if isinstance (self._container,QToolBar):
+                self._container.insertWidget(self._actionReference,widget)
+            elif isinstance(self._container, QMenu):
+                self._container.insertMenu(self._actionReference,widget)
             self._widgets.append(objName)                        
             
     def unloadContent(self):

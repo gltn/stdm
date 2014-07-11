@@ -20,7 +20,7 @@ from PyQt4.QtGui import QApplication
 from PyQt4.QtCore import pyqtSignal,QObject
 
 from stdm.security import Authorizer, SecurityException
-from stdm.data import Content, initLookups, Role, STDMDb, Base
+from stdm.data import Content, Role, STDMDb, Base
 from stdm.utils import randomCodeGenerator,HashableMixin
 from sqlalchemy import Table
 
@@ -148,7 +148,7 @@ class ContentGroup(QObject,HashableMixin):
                             role.update()     
                     
             #Initialize lookup values
-            initLookups()
+            #initLookups()
             
 class TableContentGroup(ContentGroup):
     """

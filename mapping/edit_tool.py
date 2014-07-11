@@ -24,7 +24,7 @@ from qgis.gui import *
 from qgis.core import *
 
 from .utils import pg_layerNamesIDMapping
-from .editor_config import spatial_editor_widgets
+#from .editor_config import spatial_editor_widgets
 
 class StdmMapToolEdit(QgsMapTool):
     '''

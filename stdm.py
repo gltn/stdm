@@ -470,8 +470,7 @@ class STDMQGISLoader(object):
         self.rptBuilderCntGroup.addContentItem(rptBuilderCnt)
         self.rptBuilderCntGroup.register()
         
-        self.stdmMenu.addAction(self.wzdAct)
-        
+        #self.stdmMenu.addAction(self.wzdAct)        
         self.toolbarLoader.addContent(self.contentAuthCntGroup,[adminMenu,adminBtn])
         self.toolbarLoader.addContent(self.userRoleCntGroup, [adminMenu,adminBtn])
         self.toolbarLoader.addContent(self.moduleCntGroup, [contentMenu,contentBtn])
@@ -502,6 +501,7 @@ class STDMQGISLoader(object):
         
         #Load all the content in the container
         self.toolbarLoader.loadContent()
+        self.menubarLoader.loadContent()
         
         #Quick fix
         fontPath=None
