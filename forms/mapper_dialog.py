@@ -1,9 +1,9 @@
 """
 /***************************************************************************
-Name                 : Generic application for generating forms
-Description          : User forms
-Date                 : 30/June/2014 
-copyright            : (C) 2014 by Solomon Njogu
+Name                 : Generic application for forms
+Description          : forms generator functions
+Date                 : 30/June/2013 
+copyright            : (C) 2013 by Solomon Njogu
 email                : njoroge.solomon.com
  ***************************************************************************/
 
@@ -16,5 +16,23 @@ email                : njoroge.solomon.com
  *                                                                         *
  ***************************************************************************/
 """
-from .mapper_dialog import CustomFormDailog, MapperDailog
-from .wigets import inputWidget
+from PyQt4.QtCore import * 
+from PyQt4.QtGui import *
+from stdm.data import MapperMixin
+
+class MapperDailog(QDialog):
+    def __init__(self, parent, model):
+        #MapperMixin.__init__(self, model)
+        self.model=model
+        
+    def accept(self):
+        self.submit()
+        QDialog.accept(self)
+        
+class CustomFormDailog(MapperDailog):
+    def __init__(self,parent,model):
+        MapperDailog.__init__(self, parent, model)
+        
+        self.layout=QFormLayout()
+        #self.layout.addRow()
+        
