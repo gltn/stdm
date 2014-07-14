@@ -29,7 +29,8 @@ from .ui_entity_browser import Ui_EntityBrowser
 from .helpers import SupportsManageMixin
 from .notification import NotificationBar, ERROR, WARNING,INFO
 #from .base_person import RespondentEditor,WitnessEditor,FarmerEditor
-from stdm.data import STDMDb, tableCols
+from stdm.data import BaseSTDMTableModel
+from stdm.data import STDMDb, tableCols,dateFormatter
 from .stdmdialog import declareMapping
 from .data_reader_form import STDMForm,STDMEntityForm
 
@@ -60,7 +61,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
         self._dataInitialized = False
         self._notifBar = NotificationBar(self.vlNotification)
         self._cellFormatters = {}
-        self._dateFormatter = dateFormatter
+        #self._dateFormatter = dateFormatter
         
         #Connect signals
         self.connect(self.buttonBox,SIGNAL("accepted ()"),self.onAccept)
@@ -562,6 +563,8 @@ class FarmerEntityBrowser(ContentGroupEntityBrowser):
     def title(self):
         return QApplication.translate("FarmerEntityBrowser", "Farmer Records Manager")
 
+from stdm.forms import CustomFormDailog,MapperDailog
+
 class STDMEntityBrowser(ContentGroupEntityBrowser):
     '''
     Browser for farmer records.
@@ -576,17 +579,18 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
         
         #self._editorDialog = FarmerEditor 
         #QMessageBox.information(self,"tit",str(STDMDb.instance().session))
-        self._editorDialog = STDMForm(self, tableCls, columns, Session=STDMDb.instance().session)      
-        
+        #self._editorDialog = STDMForm(self, tableCls, columns, Session=STDMDb.instance().session)      
+        self._editorDialog=MapperDailog(self,tableCls)
+    '''   
     def _setFormatters(self):
         """
         Specify formatting mappings.
         """   
         self.addCellFormatter("GenderID",genderFormatter)
         self.addCellFormatter("MaritalStatusID",maritalStatusFormatter)
-        
+        '''
     def title(self):
-        return QApplication.translate("FarmerEntityBrowser", "Farmer Records Manager")
+        return QApplication.translate("PartyEntityBrowser", "Persons Records Manager")
     
 class SurveyEntityBrowser(ContentGroupEntityBrowser):
     '''
@@ -600,10 +604,12 @@ class SurveyEntityBrowser(ContentGroupEntityBrowser):
         
     def _setFormatters(self):
         """
+        
         Specify formatting mappings.
         """   
-        self.addCellFormatter("EnumeratorID",enumeratorNamesFormatter)
-        self.addCellFormatter("RespondentID",respondentNamesFormatter)
+        #self.addCellFormatter("EnumeratorID",enumeratorNamesFormatter)
+        # self.addCellFormatter("RespondentID",respondentNamesFormatter)
+        pass
         
     def title(self):
         return QApplication.translate("SurveyEntityBrowser", "Survey Records Manager")

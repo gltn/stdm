@@ -392,7 +392,7 @@ class STDMQGISLoader(object):
         '''
         add the tables to the stdm toolbar
         '''
-        moduleContentGroups = []
+        self.moduleContentGroups = []
         for module in moduleList:
             displayName=str(module).replace("_", " ").title()
             self._moduleItems[displayName]=module
@@ -408,7 +408,7 @@ class STDMQGISLoader(object):
                 moduleCntGroup.deleteContentItem().code =capabilities[3]
                 moduleCntGroup.register()
                 
-                moduleContentGroups.append(moduleCntGroup)
+                self.moduleContentGroups.append(moduleCntGroup)
                                  
         #Create content groups and add items
                 
@@ -481,8 +481,8 @@ class STDMQGISLoader(object):
         
         self.menubarLoader.addContents(adminSettingsCntGroups,[stdmAdminMenu,stdmAdminMenu])
         
-        self.menubarLoader.addContents(moduleContentGroups,[stdmEntityMenu,stdmEntityMenu])
-        self.toolbarLoader.addContents(moduleContentGroups, [contentMenu,contentBtn])    
+        self.menubarLoader.addContents(self.moduleContentGroups,[stdmEntityMenu,stdmEntityMenu])
+        self.toolbarLoader.addContents(self.moduleContentGroups, [contentMenu,contentBtn])    
         #self.menubarLoader.addContent(tbSeparator)
         
         self.toolbarLoader.addContent(self.wzdConfigCntGroup)
@@ -850,14 +850,13 @@ class STDMQGISLoader(object):
         else:
             tableName=self._moduleItems.get(dispName)
             if tableName in tbList:
-                try:
-                    main=STDMDialog(tableName,self.iface.mainWindow()) 
-                    main.loadUI()
-                    #try:
-                    #main=STDMEntityBrowser(self.moduleCntGroup,tableName,self.iface.mainWindow()) 
-                    #main.exec_()
-                except Exception as ex:
-                    QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
+                #try:
+                    #main=STDMDialog(tableName,self.iface.mainWindow()) 
+                    #main.loadUI()
+                    main=STDMEntityBrowser(self.moduleContentGroups[0],tableName,self.iface.mainWindow()) 
+                    main.exec_()
+                #except Exception as ex:
+                 #   QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
             
     def about(self):
         '''
