@@ -7,7 +7,7 @@
 				<column fullname="Surname" name="family_name" null="yes" size="25" type="character varying" />
 				<column fullname="other given names" name="other_names" null="yes" size="25" type="character varying" />
 				<column fullname="address id" name="address" null="yes" size="25" type="character varying" />
-				<column fullname="identity" name="unique_id" null="yes" size="" type="integer" />
+				<column fullname="identity" name="identification" null="yes" oldname="unique_id" size="" type="integer" />
 				<column fullname="mobile" name="contact_telephone" null="yes" size="25" type="character varying" />
 			</columns>
 			<relations />
@@ -48,7 +48,7 @@
 				<column fullname="id of the spatial unit relating to the document" name="spatial_unit" null="yes" size="" type="integer" />
 				<column fullname="when it was obtained" name="date_of_recording" null="yes" size="" type="date" />
 				<column fullname="For how long" name="validity" null="yes" size="" type="date" />
-			</columns>
+			<column fullname="" name="filename" null="yes" size="25" type="character varying" /><column fullname="" name="document_id" null="yes" size="25" type="character varying" /></columns>
 			<relations>
 			</relations>
 			<constraints />
