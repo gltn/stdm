@@ -25,7 +25,7 @@ from PyQt4.QtCore import *
 #from .entity_browser import ContentGroupEntityBrowser
 
 # create the dialog for zoom to point
-from .dialog_generator import  ContentView
+
 from sqlalchemy import Table
 from sqlalchemy.orm import mapper
 from stdm.data import Model, Base, STDMDb
@@ -37,40 +37,6 @@ import types
 
 from stdm.data.database import Singleton
 
-class STDMDialog(object):
-    '''
-    this class reads the selected table model and returns the associated qtalchemy dialog
-    '''
-    def __init__(self,module,parent):
-        
-        self.tableName=module
-        self.parent=parent
-        self.columns=[]
-        #self.loadUI()
-       
-    def loadUI(self):    
-        self.toqtalchemyMapping()
-            
-    def toqtalchemyMapping(self):
-        mapping=declareMapping.instance()
-        tableCls=mapping.tableMapping(self.tableName)
-        self.columns=self.tablecolums()
-        Session=STDMDb.instance().session
-        #QMessageBox.information(None,"test",str(self.propertyAttribute(tableCls)))
-        contentMd=ContentView(self.parent,tableCls,self.columns,Session=Session)
-        contentMd.show()
-        contentMd.exec_()
-
-    def propertyAttribute(self,classObj):
-        for attrib in self.columns:
-            classname=classObj.__table__
-            attrTranslation=OrderedDict()
-            # attrTranslation[attrib]=attrib.replace('_',' ').title()
-            return classname
-                   
-        
-    def tablecolums(self):
-        return tableCols(self.tableName)
         
 @Singleton                  
 class declareMapping():  

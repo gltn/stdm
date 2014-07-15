@@ -32,7 +32,6 @@ from .notification import NotificationBar, ERROR, WARNING,INFO
 from stdm.data import BaseSTDMTableModel
 from stdm.data import STDMDb, tableCols,dateFormatter,tableColType
 from .stdmdialog import declareMapping
-from .data_reader_form import STDMForm,STDMEntityForm
 from stdm.forms import CustomFormDialog
 
 
@@ -590,7 +589,7 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
         ContentGroupEntityBrowser.__init__(self, tableCls, tableContentGroup, parent, state)
         
         #QMessageBox.information(self,"module",str(tableCls.__name__))
-        self._editorDialog=CustomFormDialog(self,table,tableCls)
+        self._editorDialog=CustomFormDialog(self,tableCls)
         
     '''   
     def _setFormatters(self):

@@ -84,7 +84,7 @@ class FilePaths(object):
 
     def STDMSettingsPath(self):
         #To be implemented to write new file with user edits
-        pass
+        return self.userPath
     
     def HtmlFile(self):
         #Read the html representation of the schema

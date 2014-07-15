@@ -41,7 +41,6 @@ from ui import (
                 SurveyEntityBrowser,
                 PersonDocumentGenerator,
                 AboutSTDMDialog,
-                STDMDialog,
                 declareMapping,
                 WorkspaceLoader,
                 ImportData,
@@ -615,14 +614,14 @@ class STDMQGISLoader(object):
         '''
         Slot for showing the wizard for defining a new social
         tenure relationship
-        
+        '''
         frmNewSTR = newSTRWiz(self)
         frmNewSTR.exec_()
         
         '''
         mapdlg=CustomFormDialog(self,None)
         mapdlg.exec_()
-        
+        '''
                 
     def onManageAdminUnits(self):
         '''
@@ -856,16 +855,12 @@ class STDMQGISLoader(object):
         else:
             tableName=self._moduleItems.get(dispName)
             if tableName in tbList:
-                #try:
-                    #main=STDMDialog(tableName,self.iface.mainWindow()) 
-                    #main.loadUI()
-                    #mapping=declareMapping.instance()
-                    #tableCls=mapping.tableMapping(tableName)
-                    #QMessageBox.information(self.iface.mainWindow(),"title",str(tableCls))
+                try:
+                    
                     main=STDMEntityBrowser(self.moduleContentGroups[0],tableName,self.iface.mainWindow()) 
                     main.exec_()
-                #except Exception as ex:
-                    # QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
+                except Exception as ex:
+                    QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
             
     def about(self):
         '''

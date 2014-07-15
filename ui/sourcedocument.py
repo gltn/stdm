@@ -429,10 +429,12 @@ class DocumentWidget(QWidget,Ui_frmDocumentItem):
         Builds the database model for the source document file reference.
         '''
         if self._mode == UPLOAD_MODE:
-            if dtype == TAX_RECEIPT_PRIVATE or dtype == TAX_RECEIPT_STATE:
-                srcDoc = TaxDocument()
-            else:
-                srcDoc = SourceDocument()
+            #if dtype == TAX_RECEIPT_PRIVATE or dtype == TAX_RECEIPT_STATE:
+            #    srcDoc = TaxDocument()
+            #else:
+            self.mapping=declareMapping.instance()
+            srcDoc=self.mapping.tableMapping('supporting_document')
+            #srcDoc = SourceDocument()
                 
             srcDoc.DocumentID = self.fileUUID
             srcDoc.FileName = str(self.fileInfo.fileName())

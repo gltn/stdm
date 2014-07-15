@@ -43,15 +43,13 @@
 		<table fullname="Prove of evidence to the defined tenure" name="supporting_document">
 			<columns>
 				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
-				<column fullname="" lookup="check_document_type" name="document_type" null="yes" size="25" type="character varying" />
+				<column fullname="" lookup="check_document_type" name="document_type" null="yes" oldname="document_type" size="25" type="character varying" />
 				<column fullname="" name="party" null="yes" size="" type="integer" />
 				<column fullname="id of the spatial unit relating to the document" name="spatial_unit" null="yes" size="" type="integer" />
 				<column fullname="when it was obtained" name="date_of_recording" null="yes" size="" type="date" />
 				<column fullname="For how long" name="validity" null="yes" size="" type="date" />
 			</columns>
 			<relations>
-				<relation column="id" name="spid" ondelete="cascade" onupdate="cascade" table="spatial_unit" />
-				<relation column="id" name="pid" ondelete="cascade" onupdate="cascade" table="party" />
 			</relations>
 			<constraints />
 			<contentgroups fullname="Prove of evidence to the defined tenure" name="supporting_document">
@@ -70,8 +68,8 @@
 				<column fullname="spatial unit id" name="spatial_unit" null="yes" size="" type="integer" />
 			</columns>
 			<relations>
-				<relation column="id" name="partyid" ondelete="cascade" onupdate="cascade" table="party" />
-				<relation column="id" name="spid" ondelete="cascade" onupdate="cascade" table="spatial_unit" />
+				<relation column="id" fk="party" name="partyid" ondelete="cascade" onupdate="cascade" table="party" />
+				<relation column="id" fk="spatial_unit" name="spid" ondelete="cascade" onupdate="cascade" table="spatial_unit" />
 			</relations>
 			<constraints />
 			<contentgroups fullname="Relation of the person to spatial unit as supported by supporting documents" name="social_tenure_relationship">
@@ -119,5 +117,5 @@
 				<value>Others</value>
 			</data>
 		</lookup>
-	</profile>
+	<table fullname="household entity" name="household"><columns><column fullname="Primary Key" key="1" name="id" size="" type="serial" /><column fullname="code number" name="household_code" null="yes" size="25" type="character varying" /><column fullname="family persons" name="total_members" null="yes" size="25" type="character varying" /><column fullname="" lookup="check_previous_residence" name="previous_residence" null="yes" size="25" type="character varying" /></columns><relations /><constraints /><contentgroups fullname="household entity" name="household"><contentgroup code="{7AEA6E3D-6EB9-40F5-B55D-8E9DF99EEDDB}" name="create" /><contentgroup code="{214B33F2-9277-4F21-9795-7DD3E8D46194}" name="select" /><contentgroup code="{B6A4B8E9-36E4-4C17-85A3-37559A236444}" name="update" /><contentgroup code="{EE2C3CE2-9BA5-4A9D-A805-8B3C2DEC3C74}" name="delete" /></contentgroups></table><lookup fullname="" name="check_previous_residence"><columns><column fullname="Primary Key" key="1" name="id" size="" type="serial" /><column fullname="Choice list" name="value" size="50" type="character varying" /></columns><data><value>Here</value><value>Another town</value><value>Another settlement</value></data></lookup></profile>
 </schema>

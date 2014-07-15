@@ -44,7 +44,7 @@ class MapperDialog(QDialog,Ui_Dialog):
     
         
 class CustomFormDialog(MapperDialog, MapperMixin):
-    def __init__(self,parent,table=None,model=None):
+    def __init__(self,parent,model=None):
         MapperDialog.__init__(self, parent)
         MapperMixin.__init__(self, model)
         
@@ -65,15 +65,15 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         self.frmLayout. setLabelAlignment(Qt.AlignLeft)
         
         for attrib, widget in widgets.iteritems():
-            widgetCls=widget()
-            widgetControl=widgetCls.Factory()
-            #widgetCls.adopt()
-            self.addMapping(attrib, widgetControl, False,attrib)
-            self.frmLayout.addRow(self.userLabel(attrib),widgetControl)
-        #self.checkDirty()
+            if hasattr(model, attrib):
+                widgetCls=widget()
+                widgetControl=widgetCls.Factory()
+                widgetCls.adopt()
+                self.addMapping(attrib, widgetControl, False,attrib)
+                self.frmLayout.addRow(self.userLabel(attrib),widgetControl)
+       
         
     def userLabel(self,attr):
-        #if hasattr(self.model, attr):
             return attr.replace("_", " ").title()
         
     def userAttribute(self,attr):

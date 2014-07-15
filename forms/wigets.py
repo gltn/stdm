@@ -69,7 +69,7 @@ class IntegerWidget(CharacterWidget):
         return self.control
     
     def adopt(self):
-        self.control.setValue("0")
+        self.control.setValue(0)
         
 
 class BlankFloatValidator(QDoubleValidator):
