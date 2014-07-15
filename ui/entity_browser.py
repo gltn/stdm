@@ -30,9 +30,10 @@ from .helpers import SupportsManageMixin
 from .notification import NotificationBar, ERROR, WARNING,INFO
 #from .base_person import RespondentEditor,WitnessEditor,FarmerEditor
 from stdm.data import BaseSTDMTableModel
-from stdm.data import STDMDb, tableCols,dateFormatter
+from stdm.data import STDMDb, tableCols,dateFormatter,tableColType
 from .stdmdialog import declareMapping
 from .data_reader_form import STDMForm,STDMEntityForm
+from stdm.forms import CustomFormDialog
 
 
 __all__ = ["EntityBrowser","EnumeratorEntityBrowser","EntityBrowserWithEditor", \
@@ -563,7 +564,7 @@ class FarmerEntityBrowser(ContentGroupEntityBrowser):
     def title(self):
         return QApplication.translate("FarmerEntityBrowser", "Farmer Records Manager")
 
-from stdm.forms import CustomFormDailog,MapperDailog
+
 
 class STDMEntityBrowser(ContentGroupEntityBrowser):
     '''
@@ -573,14 +574,17 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
         
         mapping=declareMapping.instance()
         tableCls=mapping.tableMapping(table)
-        columns=tableCols(table)
+        
+        #columnsData=tableColType(table)
+        #columns=columnsData.keys()
         
         ContentGroupEntityBrowser.__init__(self, tableCls, tableContentGroup, parent, state)
         
         #self._editorDialog = FarmerEditor 
-        #QMessageBox.information(self,"tit",str(STDMDb.instance().session))
+        QMessageBox.information(self,"title",str(table))
+        QMessageBox.information(self,"title",str(tableCls.__class__.__str__))
         #self._editorDialog = STDMForm(self, tableCls, columns, Session=STDMDb.instance().session)      
-        self._editorDialog=MapperDailog(self,tableCls)
+        self._editorDialog=CustomFormDialog(self,table,tableCls)
     '''   
     def _setFormatters(self):
         """

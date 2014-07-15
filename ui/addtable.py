@@ -22,7 +22,8 @@
 from ui_table import Ui_table
 from PyQt4.QtCore import *
 from PyQt4.QtGui import QDialog, QApplication, QMessageBox
-from stdm.data import writeTable, renameTable,inheritTableColumn, writeTableColumn,writeLookup,checktableExist,ConfigTableReader
+from stdm.data import writeTable, renameTable,inheritTableColumn, writeTableColumn,writeLookup,\
+checktableExist,ConfigTableReader
 
 class TableEditor(QDialog, Ui_table):
     def __init__(self,actionMode,tableName,parent):

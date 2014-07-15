@@ -33,7 +33,7 @@ editTableColumn
 from .configfile_paths import FilePaths
 from .config_table_reader import ConfigTableReader
 from .enums import datatypes, actions,constraints, nullable
-from .config_utils import tableCols,setCollectiontypes,activeProfile, UserData
+from .config_utils import tableCols,setCollectiontypes,activeProfile, UserData, tableColType
 from .license_doc import LicenseDocument
 
 from .pg_utils import (

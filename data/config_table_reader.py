@@ -182,7 +182,7 @@ class ConfigTableReader(object):
         return helpFile
     
     def trackXMLChanges(self):
-        self.fileHandler.createBackupSettings()
+        self.fileHandler.createBackup()
     
         
         

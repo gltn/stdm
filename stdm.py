@@ -70,6 +70,7 @@ from mapping import (
 from utils import *
 from mapping.utils import pg_layerNamesIDMapping
 from composer import ComposerWrapper
+from forms import CustomFormDialog
 
 class STDMQGISLoader(object):
     
@@ -618,6 +619,11 @@ class STDMQGISLoader(object):
         frmNewSTR = newSTRWiz(self)
         frmNewSTR.exec_()
         
+        '''
+        mapdlg=CustomFormDialog(self,None)
+        mapdlg.exec_()
+        '''
+                
     def onManageAdminUnits(self):
         '''
         Slot for showing administrative unit selector dialog.
@@ -853,10 +859,13 @@ class STDMQGISLoader(object):
                 #try:
                     #main=STDMDialog(tableName,self.iface.mainWindow()) 
                     #main.loadUI()
+                    #mapping=declareMapping.instance()
+                    #tableCls=mapping.tableMapping(tableName)
+                    #QMessageBox.information(self.iface.mainWindow(),"title",str(tableCls))
                     main=STDMEntityBrowser(self.moduleContentGroups[0],tableName,self.iface.mainWindow()) 
                     main.exec_()
                 #except Exception as ex:
-                 #   QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
+                    # QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
             
     def about(self):
         '''
