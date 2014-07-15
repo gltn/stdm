@@ -50,7 +50,7 @@ class SQLInsert(object):
     
     def spatialRelation(self):
         # needed for creation of map on the composer
-        defaultView = "CREATE OR REPLACE VIEW spatial_unit_relations AS SELECT party.id, party.family_name AS sirname, party.other_names,\
+        defaultView = "CREATE OR REPLACE VIEW spatial_unit_relations AS SELECT party.id, party.family_name AS surname, party.other_names,\
         party.unique_id AS identification, \
         spatial_unit.spatial_unit_id AS identifier, spatial_unit.name AS type_name,spatial_unit.geom_polygon AS polygon \
         FROM party, spatial_unit, social_tenure_relationship \
