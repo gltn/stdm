@@ -63,10 +63,14 @@ class CharacterWidget(InputWidget):
 class IntegerWidget(CharacterWidget):
     def __init__(self):
         self.type='integer'
-            
+    
+    def Factory(self):
+        self.control=QSpinBox()
+        return self.control
+    
     def adopt(self):
-        self.control.setText("0")
-        self.control.setValidator(BlankIntValidator())
+        self.control.setValue("0")
+        
 
 class BlankFloatValidator(QDoubleValidator):
     def validate(self,input,pos):
@@ -80,8 +84,8 @@ class DoubleWidget(IntegerWidget):
         self.type="double"
             
     def adopt(self):
-        self.control.setText("0.0")
-        self.control.setValidator(BlankFloatValidator(self.control))
+        self.control.setValue(0)
+        #self.control.setValidator(BlankFloatValidator(self.control))
 
 class ChoiceListWidget(CharacterWidget):
     def __init__(self):

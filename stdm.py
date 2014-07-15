@@ -615,14 +615,14 @@ class STDMQGISLoader(object):
         '''
         Slot for showing the wizard for defining a new social
         tenure relationship
-        '''
+        
         frmNewSTR = newSTRWiz(self)
         frmNewSTR.exec_()
         
         '''
         mapdlg=CustomFormDialog(self,None)
         mapdlg.exec_()
-        '''
+        
                 
     def onManageAdminUnits(self):
         '''

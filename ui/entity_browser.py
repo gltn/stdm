@@ -350,7 +350,11 @@ class EntityBrowserWithEditor(EntityBrowser):
         '''
         Load editor dialog for adding new information.
         '''
-        addEntityDlg = self._editorDialog(self)
+        if callable(self._editorDialog):
+            addEntityDlg = self._editorDialog(self)
+        else:
+            addEntityDlg = self._editorDialog
+            
         result = addEntityDlg.exec_()
         
         if result == QDialog.Accepted:
@@ -399,7 +403,12 @@ class EntityBrowserWithEditor(EntityBrowser):
         Load editor dialog based on the selected model instance with the given ID.
         '''
         modelObj = self._modelFromID(recid)
-        editEntityDlg = self._editorDialog(self,modelObj)
+        if callable(self._editorDialog):
+            editEntityDlg = self._editorDialog(self,modelObj)
+        else:
+            editorDlg = self._editorDialog.__class__
+            editEntityDlg = editorDlg(self,model = modelObj)
+            
         result = editEntityDlg.exec_()
         
         if result == QDialog.Accepted:
@@ -580,11 +589,9 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
         
         ContentGroupEntityBrowser.__init__(self, tableCls, tableContentGroup, parent, state)
         
-        #self._editorDialog = FarmerEditor 
-        QMessageBox.information(self,"title",str(table))
-        QMessageBox.information(self,"title",str(tableCls.__class__.__str__))
-        #self._editorDialog = STDMForm(self, tableCls, columns, Session=STDMDb.instance().session)      
+        #QMessageBox.information(self,"module",str(tableCls.__name__))
         self._editorDialog=CustomFormDialog(self,table,tableCls)
+        
     '''   
     def _setFormatters(self):
         """
