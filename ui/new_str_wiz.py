@@ -294,7 +294,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         #Validate source document    
         if currPageIndex == 4:
-            isValid = self.validateSourceDocuments()
+            pass
+          #  isValid = self.validateSourceDocuments()
             
         if currPageIndex == 5:
             isValid = self.onCreateSTR()

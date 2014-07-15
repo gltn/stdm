@@ -73,14 +73,12 @@ from .export_data import ExportData
 from .addtable import TableEditor
 from .attribute_editor import AttributeEditor
 from .workspace_config import WorkspaceLoader
-from .stdmdialog import STDMDialog, declareMapping
-from .dialog_generator import ContentView
+from .stdmdialog import declareMapping
 from .ui_table_property import Ui_TableProperty
 from .table_propertyDlg import TableProperty
 from .profileDlg import ProfileEditor
 from .lookup_values_dlg import ADDLookupValue
 from .about import AboutSTDMDialog
-from .data_reader_form import STDMForm,STDMEntityForm
             
             
             

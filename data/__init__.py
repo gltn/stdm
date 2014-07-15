@@ -20,9 +20,8 @@ from .pg_utils import spatial_tables,pg_tables,pg_views,table_column_names,geome
 
 from .stdm_entity import STDMEntity,LookupTable
 from .usermodels import listEntityViewer, EntityColumnModel
-from .pgtable_mapper import TableMapper
 
-from .foreign_key_mapper import ForeignRelationMapper,ForeignKey,LookupEntity
+
 from .xmldata2sql import SQLInsert
 from .xmlconfig_reader import XMLTableElement, tableColumns, tableRelations,tableFullDescription,profileFullDescription, \
 deleteProfile,tableLookUpCollection,checktableExist,lookupData,lookupData2List,geometryColumns,lookupColumn,\

@@ -562,7 +562,6 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             roles=roleP.GetSysRoles()
             for role in roles:
                 roleSql=text("GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO %s;"%(role))
-                self.ErrorInfoMessage(str(roleSql))
                 _execute(roleSql)
         
     def DropSchemaTables(self):
@@ -628,13 +627,17 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def configPath(self):
         try:
             pathKeys,configPath=self.tableHandler.pathSettings()
-            if configPath!=None:
+            if configPath:
                 self.txtSetting.setText(configPath[pathKeys[0]])
                 self.txtDefaultFolder.setText(configPath[pathKeys[1]])
                 self.txtCertFolder.setText(configPath[pathKeys[2]])
                 self.txtTemplates.setText(configPath[pathKeys[3]])
             else:
-                self.txtSetting.setText(self.tableHandler.userProfileDir())
+                userpath=self.tableHandler.userProfileDir()
+                self.txtSetting.setText(userpath)
+                self.setWorkingDataPath(userpath)
+                self.CertificatePath(userpath)
+                self.templatePath()
         except: 
             pass
     
@@ -647,14 +650,15 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             dataPath[settings[i]]=userPath[i]
         self.tableHandler.setProfileSettings(dataPath)
         self.tableHandler.createDir(dataPath.values())
-    
+        
     def settingsPath(self):
         try:
             dir_name=self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",\
                                                                       "Choose STDM Settings Folder",str(self.txtSetting.text())))
-            self.txtSetting.setText(str(dir_name[0]))
-            self.setWorkingDataPath(dir_name)
-            self.CertificatePath(dir_name)
+            dirPath=dir_name[0]
+            self.txtSetting.setText(dirPath)
+            self.setWorkingDataPath(dirPath)
+            self.CertificatePath(dirPath)
             self.templatePath()
         except:
             pass
@@ -664,19 +668,20 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         try:
             dir_name=self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",
                                                                       "Choose STDM default Data Folder",str(self.txtDefaultFolder.text())))
-            self.setWorkingDataPath(dir_name)
-            self.CertificatePath(dir_name)
+            dirPath=dir_name[0]
+            self.setWorkingDataPath(dirPath)
+            self.CertificatePath(dirPath)
             self.templatePath()
 
         except:
             pass
     
     def setWorkingDataPath(self,dir_name):
-        self.txtDefaultFolder.setText(str(dir_name[0])+"/Data")
+        self.txtDefaultFolder.setText(str(dir_name)+"/Data")
         
         
     def CertificatePath(self,dirP):
-        path=str(dirP[0])+QApplication.translate("WorkspaceLoader","/Reports")
+        path=str(dirP)+"/Reports"
         self.txtCertFolder.setText(path)
         self.templatePath()
         
