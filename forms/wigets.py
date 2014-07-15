@@ -18,19 +18,19 @@ email                : njoroge.solomon.com
 """
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
+from stdm.data import dateFormatter
+from datetime import date
 
-class inputWidget(object):
-    def __init__(self, model):
-        self._model=model
-        self.cotrols={}
+class InputWidget(QWidget):
+    def __init__(self,parent=None):
+        self.type=''
+        self.control=None
+        self.mapping={}
         
     def Factory(self):
         pass
-    
-    def register(self):
-        pass
-    
-    def Bind(self):
+       
+    def adopt(self):
         pass
     
     def save(self):
@@ -38,3 +38,84 @@ class inputWidget(object):
     
     def update(self):
         pass
+    def type(self):
+        pass
+    
+
+class BlankIntValidator(QIntValidator):
+    def validate(self,input,pos):
+        if input == "":
+            return QValidator.Acceptable, input, pos
+        else:
+            return QIntValidator.validate(self,input,pos)
+        
+class CharacterWidget(InputWidget):
+    def __init__(self):
+        self.type="character varying"
+        
+    def Factory(self):
+        self.control=QLineEdit()
+        return self.control
+    
+    def adopt(self):
+        self.control.setText("")
+          
+class IntegerWidget(CharacterWidget):
+    def __init__(self):
+        self.type='integer'
+            
+    def adopt(self):
+        self.control.setText("0")
+        self.control.setValidator(BlankIntValidator())
+
+class BlankFloatValidator(QDoubleValidator):
+    def validate(self,input,pos):
+        if input == "":
+            return QValidator.Acceptable, input, pos
+        else:
+            return QDoubleValidator.validate(self,input,pos)
+        
+class DoubleWidget(IntegerWidget):
+    def __init__(self):
+        self.type="double"
+            
+    def adopt(self):
+        self.control.setText("0.0")
+        self.control.setValidator(BlankFloatValidator(self.control))
+
+class ChoiceListWidget(CharacterWidget):
+    def __init__(self):
+        self.type='character varying'
+        
+    def Factory(self):
+        self.control = QComboBox()
+        return self.control
+    
+    def adopt(self, options=None):
+        if options:
+            self.control.insertItems(0,options)
+        self.control.setCurrentIndex(0)
+
+class DateWidget(InputWidget):
+    def __init__(self):
+        self.type='date'
+        
+    def Factory(self):
+        self.control = QDateEdit()
+        self.control.setCalendarPopup(True)
+        return self.control
+    
+    def adopt(self):
+        tDate=date.today()
+        self.control.setDate(tDate)
+
+def widgetCollection():
+    mapping={}
+    mapping['integer'] = IntegerWidget
+    mapping['serial'] = IntegerWidget
+    mapping['double precision'] = DoubleWidget
+    mapping['character varying'] = CharacterWidget
+    mapping['choice'] = ChoiceListWidget
+    mapping['date'] = DateWidget
+    return mapping
+        

@@ -154,7 +154,7 @@ class FilePaths(object):
         '''load STDM license file for viewing'''
         return self._file+'/%s'%LICENSE
         
-    def createBackupSettings(self):
+    def createBackup(self):
         '''incase the user want to keep track of the old file when current file changes'''
         if os.path.isfile(self.cacheFile()):
             os.remove(self.cacheFile())

@@ -44,10 +44,20 @@ def tableCols(table):
         profileName=activeProfile()
         cols=tableColumns(profileName,table)
         tcols=[]
-        for colD in cols:
-            colLabel=colD.get('Column label')
+        for col in cols:
+            colLabel=col.get('Column label')
             tcols.append(colLabel)
         return tcols
+    
+def tableColType(table):
+    profileName=activeProfile()
+    cols=tableColumns(profileName,table)
+    colMapping=OrderedDict()
+    for col in cols:
+        colLabel = col.get('Column label')
+        #colMapping[colLabel] = [col.get('Data type'),col.get('lookup')]
+        colMapping[colLabel] = col.get('Data type')
+    return colMapping
 
 def activeProfile():
     try:

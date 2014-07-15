@@ -26,11 +26,9 @@ from PyQt4.QtCore import *
 
 # create the dialog for zoom to point
 from .dialog_generator import  ContentView
-from .data_reader_form import STDMEntityForm,STDMDb
-from sqlalchemy.orm import clear_mappers, sessionmaker, mapper
-from sqlalchemy import MetaData, Table
-from qtalchemy import *
-from stdm.data import Model, Base
+from sqlalchemy import Table
+from sqlalchemy.orm import mapper
+from stdm.data import Model, Base, STDMDb
 #from stdm.data import tableCols
 from stdm.data.config_utils import tableCols
 
@@ -74,10 +72,6 @@ class STDMDialog(object):
     def tablecolums(self):
         return tableCols(self.tableName)
         
-    def foreignkeymapped(self):
-        return ForeignKeyReferral(str,"household",'household',LookupTable,'id')
-        #return ForeignKeyComboYoke(LookupTable,'income')
-
 @Singleton                  
 class declareMapping():  
     '''
@@ -107,12 +101,16 @@ class declareMapping():
         Dummy method
         '''
         pass
-    
-    def displayMapping(self,table):
-        cols=tableCols(table)
+
+    def displayMapping(self,table=''):
         attribs=OrderedDict()
-        for col in cols:
-            attribs[col]=col.replace('_',' ').title()
+        if table!='':
+            cols=tableCols(table)
+            
+            for col in cols:
+                attribs[col]=col.replace('_',' ').title()
+        else:
+            return None
         return attribs
     
     def createDynamicClass(self,className,**attr):
