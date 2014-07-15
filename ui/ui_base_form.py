@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_base_form.ui'
 #
-# Created: Mon Jul 14 21:41:35 2014
+# Created: Tue Jul 15 14:46:45 2014
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -33,13 +33,15 @@ class Ui_Dialog(object):
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.buttonBox, 2, 0, 1, 1)
         self.frmLayout = QtGui.QFormLayout()
         self.frmLayout.setObjectName(_fromUtf8("frmLayout"))
-        self.gridLayout.addLayout(self.frmLayout, 0, 0, 1, 1)
+        self.gridLayout.addLayout(self.frmLayout, 1, 0, 1, 1)
+        self.vlNotification = QtGui.QVBoxLayout()
+        self.vlNotification.setObjectName(_fromUtf8("vlNotification"))
+        self.gridLayout.addLayout(self.vlNotification, 0, 0, 1, 1)
 
         self.retranslateUi(Dialog)
-        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), Dialog.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), Dialog.reject)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 

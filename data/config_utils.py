@@ -55,8 +55,7 @@ def tableColType(table):
     colMapping=OrderedDict()
     for col in cols:
         colLabel = col.get('Column label')
-        #colMapping[colLabel] = [col.get('Data type'),col.get('lookup')]
-        colMapping[colLabel] = col.get('Data type')
+        colMapping[colLabel] = [col.get('Data type'),col.get('lookup')]
     return colMapping
 
 def activeProfile():

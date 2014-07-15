@@ -24,11 +24,11 @@ class TypePropertyMapper(object):
         self._attr=attrMap
         self.attripMap=[]
         self.widgetList=OrderedDict()
-        
+        self._attr.pop('id')
         
     def widget(self):
         for attr, dataType in self._attr.iteritems():
-            self.widgetList[attr]=widgetCollection()[dataType]
+            self.widgetList[attr]=widgetCollection()[dataType[0]]
             
     def setProperty(self):
         self.widget()
