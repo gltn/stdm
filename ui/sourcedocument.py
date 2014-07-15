@@ -26,6 +26,7 @@ from ui_doc_item import Ui_frmDocumentItem
 from stdm.utils import size,getIndex
 from stdm.network import NetworkFileManager, DocumentTransferWorker
 #from stdm.data import SourceDocument
+from stdmdialog import declareMapping
 from stdm.settings import RegistryConfig,NETWORK_DOC_RESOURCE
 
 #Document Type Enumerations
@@ -151,7 +152,7 @@ class SourceDocumentManager(QObject):
         Renders the source document info from 'SourceDocument' model.
         '''
         #Check if the document has already been inserted in the manager.
-        docIndex = getIndex(self._docRefs, sourcedoc.DocumentID)
+        docIndex = getIndex(self._docRefs, sourcedoc.document_id)
         if docIndex != -1:
             return
         
@@ -165,7 +166,7 @@ class SourceDocumentManager(QObject):
                 self._linkWidgetRemovedSignal(docWidg)
                 docWidg.setModel(sourcedoc)
                 container.addWidget(docWidg)  
-                self._docRefs.append(sourcedoc.DocumentID)
+                self._docRefs.append(sourcedoc.document_id)
                     
     def networkResource(self): 
         '''
@@ -436,10 +437,10 @@ class DocumentWidget(QWidget,Ui_frmDocumentItem):
             srcDoc=self.mapping.tableMapping('supporting_document')
             #srcDoc = SourceDocument()
                 
-            srcDoc.DocumentID = self.fileUUID
-            srcDoc.FileName = str(self.fileInfo.fileName())
-            srcDoc.Size = self._docSize
-            srcDoc.DocumentType = self._docType
+            srcDoc.document_id = self.fileUUID
+            srcDoc.filename = str(self.fileInfo.fileName())
+            #srcDoc.Size = self._docSize
+            srcDoc.document_type = self._docType
             
             self._srcDoc  = srcDoc
             
