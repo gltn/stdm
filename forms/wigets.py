@@ -66,6 +66,7 @@ class IntegerWidget(CharacterWidget):
     
     def Factory(self):
         self.control=QSpinBox()
+        self.control.setMaximum(1000000000)
         return self.control
     
     def adopt(self):

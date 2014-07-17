@@ -37,8 +37,8 @@ class BasePersonDialogMixin(MapperMixin):
     def __init__(self,datamodel=None):
         MapperMixin.__init__(self,datamodel)
         #Load combobox items
-        loadComboSelections(self.cboGender,CheckGender)
-        loadComboSelections(self.cboMaritalStatus,CheckMaritalStatus)
+        #loadComboSelections(self.cboGender,CheckGender)
+        #loadComboSelections(self.cboMaritalStatus,CheckMaritalStatus)
         
         #Set current date as maximum date
         self.dtDoB.setMaximumDate(QDate.currentDate())
@@ -51,8 +51,8 @@ class BasePersonDialogMixin(MapperMixin):
         self.addMapping("FirstName", self.txtFirstName, True)
         self.addMapping("LastName", self.txtLastName, True)
         self.addMapping("Cellphone", self.txtCellphone)
-        self.addMapping("GenderID", self.cboGender,True,pseudoname="Gender")
-        self.addMapping("MaritalStatusID", self.cboMaritalStatus,True,pseudoname="Marital Status")
+        #self.addMapping("GenderID", self.cboGender,True,pseudoname="Gender")
+        #self.addMapping("MaritalStatusID", self.cboMaritalStatus,True,pseudoname="Marital Status")
         self.addMapping("DateofBirth", self.dtDoB)
         
         #Connect signals
@@ -69,8 +69,8 @@ class BasePerson(QDialog,Ui_frmBasePerson,BasePersonDialogMixin):
         BasePersonDialogMixin.__init__(self,datamodel)
         
         #Load combobox items
-        loadComboSelections(self.cboGender,CheckGender)
-        loadComboSelections(self.cboMaritalStatus,CheckMaritalStatus)
+        #loadComboSelections(self.cboGender,CheckGender)
+        #loadComboSelections(self.cboMaritalStatus,CheckMaritalStatus)
         
         #Set current date as maximum date
         self.dtDoB.setMaximumDate(QDate.currentDate())
@@ -83,8 +83,8 @@ class BasePerson(QDialog,Ui_frmBasePerson,BasePersonDialogMixin):
         self.addMapping("FirstName", self.txtFirstName, True)
         self.addMapping("LastName", self.txtLastName, True)
         self.addMapping("Cellphone", self.txtCellphone)
-        self.addMapping("GenderID", self.cboGender,True,pseudoname="Gender")
-        self.addMapping("MaritalStatusID", self.cboMaritalStatus,True,pseudoname="Marital Status")
+        #self.addMapping("GenderID", self.cboGender,True,pseudoname="Gender")
+        #self.addMapping("MaritalStatusID", self.cboMaritalStatus,True,pseudoname="Marital Status")
         self.addMapping("DateofBirth", self.dtDoB)
         
         #Connect signals
@@ -104,20 +104,20 @@ class WitnessEditor(BasePerson):
         
         #Add widget for capturing the witness relationship
         lblRelationship = QLabel(self)
-        lblRelationship.setText(QApplication.translate("WitnessEditor","Relationship"))
+        #lblRelationship.setText(QApplication.translate("WitnessEditor","Relationship"))
         
         self.cboRelationship = QComboBox(self)
         self.cboRelationship.setMinimumHeight(30)
-        loadComboSelections(self.cboRelationship,CheckWitnessRelationship)
+        #loadComboSelections(self.cboRelationship,CheckWitnessRelationship)
         
         #Specify additional mapping for respondent role
-        self.addMapping("RelationshipID", self.cboRelationship,True,pseudoname="Witness Relationship")
+        #self.addMapping("RelationshipID", self.cboRelationship,True,pseudoname="Witness Relationship")
         
         rowCount = self.gridLayout.rowCount()
-        self.gridLayout.removeWidget(self.buttonBox)
-        self.gridLayout.addWidget(lblRelationship, rowCount-1, 0, 1, 1)
-        self.gridLayout.addWidget(self.cboRelationship, rowCount-1, 1, 1, 1)
-        self.gridLayout.addWidget(self.buttonBox,rowCount,0,1,2)
+        #self.gridLayout.removeWidget(self.buttonBox)
+        #self.gridLayout.addWidget(lblRelationship, rowCount-1, 0, 1, 1)
+        #self.gridLayout.addWidget(self.cboRelationship, rowCount-1, 1, 1, 1)
+        #self.gridLayout.addWidget(self.buttonBox,rowCount,0,1,2)
         
 
         

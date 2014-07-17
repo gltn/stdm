@@ -70,6 +70,7 @@ from utils import *
 from mapping.utils import pg_layerNamesIDMapping
 from composer import ComposerWrapper
 from forms import CustomFormDialog
+from sqlalchemy.orm import clear_mappers
 
 class STDMQGISLoader(object):
     
@@ -899,8 +900,10 @@ class STDMQGISLoader(object):
         self.removeSTDMLayers()
         
         #Clear singleton ref for SQLALchemy connections
-        if data.app_dbconn!= None:            
-            STDMDb.cleanUp()     
+        if data.app_dbconn!= None:
+            #clear_mappers()            
+            STDMDb.cleanUp()  
+            declareMapping.cleanUp()
                    
         #Remove database reference 
         data.app_dbconn = None  
