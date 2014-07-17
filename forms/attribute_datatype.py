@@ -27,7 +27,7 @@ class AttributePropretyType(object):
         return typeMapping
     
     def displayMapping(self):
-        #user the mapped table properties
+        #use the mapped table properties
         pass
         
     

@@ -260,10 +260,11 @@ class Witness(Model,Base):
         Returns the dictionary containing the translation mapping for the attributes.
         '''
         #baseAttrTranslations = BasePersonMixin.displayMapping()
-        baseAttrTranslations["RelationshipID"] = QApplication.translate("DatabaseMapping","Relationship") 
-        baseAttrTranslations["OtherRelationship"] = QApplication.translate("DatabaseMapping","Other Relationship") 
+        attrTranslations = OrderedDict()
+        attrTranslations["RelationshipID"] = QApplication.translate("DatabaseMapping","Relationship") 
+        attrTranslations["OtherRelationship"] = QApplication.translate("DatabaseMapping","Other Relationship") 
         
-        return baseAttrTranslations
+        return attrTranslations
     
 class Survey(Model,Base):
     '''

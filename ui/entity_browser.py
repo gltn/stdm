@@ -28,7 +28,7 @@ from .admin_unit_manager import VIEW,MANAGE,SELECT
 from .ui_entity_browser import Ui_EntityBrowser
 from .helpers import SupportsManageMixin
 from .notification import NotificationBar, ERROR, WARNING,INFO
-#from .base_person import RespondentEditor,WitnessEditor,FarmerEditor
+from .base_person import WitnessEditor
 from stdm.data import BaseSTDMTableModel
 from stdm.data import STDMDb, tableCols,dateFormatter,tableColType
 from .stdmdialog import declareMapping
@@ -513,7 +513,7 @@ class EnumeratorEntityBrowser(EntityBrowser):
     '''
     Browser for enumerator records.
     '''
-    def __init__(self,parent = None,state = MANAGE):
+    def __init__(self,parent = None,state = VIEW|MANAGE):
         EntityBrowser.__init__(self, parent, Enumerator, state)
         
     def title(self):
@@ -524,8 +524,13 @@ class RespondentEntityBrowser(EntityBrowserWithEditor):
     Browser for respondent records.
     '''
     def __init__(self,parent = None,state = VIEW|MANAGE):
-        EntityBrowserWithEditor.__init__(self, Respondent, parent, state)
-        self._editorDialog = RespondentEditor       
+        
+        mapping=declareMapping.instance()
+        tableCls=mapping.tableMapping('respondent')
+        
+        EntityBrowserWithEditor.__init__(self, tableCls, parent, state)
+        #self._editorDialog = RespondentEditor  
+        self._editorDialog=CustomFormDialog(self,tableCls)     
         
     def title(self):
         return QApplication.translate("RespondentEntityBrowser", "Respondent Records")
@@ -535,8 +540,9 @@ class WitnessEntityBrowser(EntityBrowserWithEditor):
     Browser for witness records.
     '''
     def __init__(self,parent = None,state = VIEW|MANAGE):
+                
         EntityBrowserWithEditor.__init__(self, Witness, parent, state)
-        self._editorDialog = WitnessEditor
+        self._editorDialog = WitnessEditor  
         
     def title(self):
         return QApplication.translate("WitnessEntityBrowser", "Witness Records")

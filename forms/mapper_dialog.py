@@ -57,13 +57,10 @@ class CustomFormDialog(MapperDialog, MapperMixin):
             self._table=model.__class__.__name__
                 
         tableProperties = self.tableProperty()
-       
         propertyMapper = TypePropertyMapper(tableProperties)
-        
         widgets=propertyMapper.setProperty()
         
         self.frmLayout. setLabelAlignment(Qt.AlignLeft)
-        
         for attrib, widget in widgets.iteritems():
             if hasattr(model, attrib):
                 widgetCls=widget()
@@ -72,7 +69,6 @@ class CustomFormDialog(MapperDialog, MapperMixin):
                 self.addMapping(attrib, widgetControl, False,attrib)
                 self.frmLayout.addRow(self.userLabel(attrib),widgetControl)
        
-        
     def userLabel(self,attr):
             return attr.replace("_", " ").title()
         
