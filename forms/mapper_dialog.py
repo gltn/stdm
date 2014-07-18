@@ -22,6 +22,7 @@ from stdm.data import MapperMixin
 
 class MapperDailog(QDialog):
     def __init__(self, parent, model):
+        QDialog.__init__(self,parent)
         #MapperMixin.__init__(self, model)
         self.model=model
         
