@@ -31,9 +31,9 @@ from .notification import NotificationBar, ERROR, WARNING,INFO
 from .base_person import WitnessEditor
 from stdm.data import BaseSTDMTableModel
 from stdm.data import STDMDb, tableCols,dateFormatter,tableColType
-from .stdmdialog import declareMapping
+from .stdmdialog import DeclareMapping
 from stdm.forms import CustomFormDialog
-
+ 
 
 __all__ = ["EntityBrowser","EnumeratorEntityBrowser","EntityBrowserWithEditor", \
            "ContentGroupEntityBrowser","RespondentEntityBrowser","WitnessEntityBrowser", \
@@ -525,7 +525,7 @@ class RespondentEntityBrowser(EntityBrowserWithEditor):
     '''
     def __init__(self,parent = None,state = VIEW|MANAGE):
         
-        mapping=declareMapping.instance()
+        mapping=DeclareMapping.instance()
         tableCls=mapping.tableMapping('respondent')
         
         EntityBrowserWithEditor.__init__(self, tableCls, parent, state)
@@ -553,8 +553,9 @@ class FarmerEntitySelector(EntityBrowser):
     '''
     
     def __init__(self,parent = None, state = MANAGE):
-        mapping=declareMapping.instance()
+        mapping=DeclareMapping.instance()
         model = mapping.tableMapping('party')
+       
         EntityBrowser.__init__(self, parent, model, state)
         
     def title(self):
@@ -586,7 +587,7 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
     '''
     def __init__(self,tableContentGroup,table=None,parent = None,state = MANAGE):
         
-        mapping=declareMapping.instance()
+        mapping=DeclareMapping.instance()
         tableCls=mapping.tableMapping(table)
         
         #columnsData=tableColType(table)
@@ -595,6 +596,7 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
         ContentGroupEntityBrowser.__init__(self, tableCls, tableContentGroup, parent, state)
         
         #QMessageBox.information(self,"module",str(tableCls.__name__))
+        #QMessageBox.information(self,"module",str( mapping.attDictionary))
         self._editorDialog=CustomFormDialog(self,tableCls)
         
     '''   

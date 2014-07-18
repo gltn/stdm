@@ -73,7 +73,7 @@ from .export_data import ExportData
 from .addtable import TableEditor
 from .attribute_editor import AttributeEditor
 from .workspace_config import WorkspaceLoader
-from .stdmdialog import declareMapping
+from .stdmdialog import DeclareMapping
 from .ui_table_property import Ui_TableProperty
 from .table_propertyDlg import TableProperty
 from .profileDlg import ProfileEditor

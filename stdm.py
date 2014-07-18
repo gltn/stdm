@@ -41,7 +41,7 @@ from ui import (
                 SurveyEntityBrowser,
                 PersonDocumentGenerator,
                 AboutSTDMDialog,
-                declareMapping,
+                DeclareMapping,
                 WorkspaceLoader,
                 ImportData,
                 ExportData
@@ -616,14 +616,12 @@ class STDMQGISLoader(object):
         Slot for showing the wizard for defining a new social
         tenure relationship
         '''
-        frmNewSTR = newSTRWiz(self)
-        frmNewSTR.exec_()
-        
-        '''
-        mapdlg=CustomFormDialog(self,None)
-        mapdlg.exec_()
-        '''
-                
+        try:
+            frmNewSTR = newSTRWiz(self)
+            frmNewSTR.exec_()
+        except Exception as ex:
+            QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
+            
     def onManageAdminUnits(self):
         '''
         Slot for showing administrative unit selector dialog.
@@ -903,7 +901,8 @@ class STDMQGISLoader(object):
         if data.app_dbconn!= None:
             #clear_mappers()            
             STDMDb.cleanUp()  
-            declareMapping.cleanUp()
+            DeclareMapping.instance().resetMapping()
+            DeclareMapping.cleanUp()
                    
         #Remove database reference 
         data.app_dbconn = None  
@@ -950,7 +949,7 @@ class STDMQGISLoader(object):
         '''
         if tableList:
             try:
-                tableMapping = declareMapping.instance()
+                tableMapping = DeclareMapping.instance()
                 tableMapping.setTableMapping(tableList)
             except:
                 pass 

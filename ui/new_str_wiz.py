@@ -34,7 +34,7 @@ from sourcedocument import *
 from stdm.data import STDMDb, Base, tableCols
 from stdm.navigation import TreeSummaryLoader, PropertyBrowser, GMAP_SATELLITE, OSM
 from stdm.utils import *
-from .stdmdialog import  declareMapping
+from .stdmdialog import  DeclareMapping
 
 class newSTRWiz(QWizard, Ui_frmNewSTR):
     '''
@@ -51,7 +51,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.conflict = None
         
         #Initialize GUI wizard pages
-        self.mapping=declareMapping.instance()
+        self.mapping=DeclareMapping.instance()
         self.initPerson()
         
         self.initProperty()
@@ -886,7 +886,7 @@ class PersonWorker(QThread):
         '''
         Fetch person objects from the database
         '''        
-        self.mapping=declareMapping.instance()
+        self.mapping=DeclareMapping.instance()
         Person=self.mapping.tableMapping('party')
         p = Person()
         persons = p.queryObject().all()

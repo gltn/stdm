@@ -222,6 +222,7 @@ def _execute(sql,**kwargs):
     '''
     Execute the passed in sql statement
     '''        
+
     conn = STDMDb.instance().engine.connect()        
     result = conn.execute(sql,**kwargs)
     conn.close()

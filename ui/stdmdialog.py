@@ -39,19 +39,21 @@ from stdm.data.database import Singleton
 
         
 @Singleton                  
-class declareMapping():  
+class DeclareMapping():  
     '''
     this class takes an instance of the table defined the schema and returns a model objects
     '''
     def __init__(self,list=None):
         self.list=list
         self.mapping={}
+        self.attDictionary=OrderedDict()
     
     def setTableMapping(self,list):
         for table in list:
             className=table.capitalize()
             classObject=self.classFromTable(className)
             pgtable=Table(table,Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
+            self.mappedTableProperties(pgtable)
             mapper(classObject,pgtable)
             self.mapping[table]=classObject
               
@@ -72,7 +74,6 @@ class declareMapping():
         attribs=OrderedDict()
         if table!='':
             cols=tableCols(table)
-            
             for col in cols:
                 attribs[col]=col.replace('_',' ').title()
         else:
@@ -85,4 +86,9 @@ class declareMapping():
     
     def classFromTable(self,className):
         return self.createDynamicClass(className)
+    
+    def resetMapping(self):
+        self.mapping={}
         
+    def mappedTableProperties(self,table):
+        self.attDictionary[table]=[column.name for column in table.columns]

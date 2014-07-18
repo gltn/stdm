@@ -30,7 +30,7 @@ from .helpers import SupportsManageMixin
 from .entity_browser import EnumeratorEntityBrowser,RespondentEntityBrowser, \
 WitnessEntityBrowser
 from .notification import NotificationBar
-from .stdmdialog import declareMapping
+from .stdmdialog import DeclareMapping
 
 __all__ = ["SurveyEditor"]
 
@@ -64,7 +64,7 @@ class SurveyEditor(QDialog,Ui_frmSurvey,MapperMixin):
         enumFKMapper.setNotificationBar(self._notifBar)
         enumFKMapper.initialize()
         
-        mapping=declareMapping.instance()
+        mapping=DeclareMapping.instance()
         tableCls=mapping.tableMapping('respondent')
         
         
