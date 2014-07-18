@@ -23,7 +23,7 @@ from stdm.data import Content, STDMDb, Base
 from stdm.utils import *
 from sqlalchemy import Table
 from sqlalchemy.orm import relationship, mapper, clear_mappers
-from qtalchemy import ForeignKeyReferral
+
 from sqlalchemy.exc import *
 
 class RoleMapper(object):

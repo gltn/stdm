@@ -1,9 +1,9 @@
 """
 /***************************************************************************
-Name                 : Generic application for generating forms
-Description          : User forms
-Date                 : 30/June/2014 
-copyright            : (C) 2014 by Solomon Njogu
+Name                 : Generic application for forms
+Description          : forms generator functions
+Date                 : 30/June/2013 
+copyright            : (C) 2013 by Solomon Njogu
 email                : njoroge.solomon.com
  ***************************************************************************/
 
@@ -16,6 +16,21 @@ email                : njoroge.solomon.com
  *                                                                         *
  ***************************************************************************/
 """
-from .mapper_dialog import CustomFormDialog
-from .wigets import InputWidget, IntegerWidget, DoubleWidget, CharacterWidget
-from .property_mapper import TypePropertyMapper
+from collections import OrderedDict
+from .wigets import widgetCollection
+class TypePropertyMapper(object):
+    def __init__(self, attrMap, options=None):
+        
+        self._attr=attrMap
+        self.attripMap=[]
+        self.widgetList=OrderedDict()
+        self._attr.pop('id')
+        
+    def widget(self):
+        for attr, dataType in self._attr.iteritems():
+            self.widgetList[attr]=widgetCollection()[dataType[0]]
+            
+    def setProperty(self):
+        self.widget()
+        return self.widgetList
+        

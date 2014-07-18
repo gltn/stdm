@@ -28,11 +28,11 @@ from .admin_unit_manager import VIEW,MANAGE,SELECT
 from .ui_entity_browser import Ui_EntityBrowser
 from .helpers import SupportsManageMixin
 from .notification import NotificationBar, ERROR, WARNING,INFO
-#from .base_person import RespondentEditor,WitnessEditor,FarmerEditor
+from .base_person import WitnessEditor
 from stdm.data import BaseSTDMTableModel
-from stdm.data import STDMDb, tableCols,dateFormatter
+from stdm.data import STDMDb, tableCols,dateFormatter,tableColType
 from .stdmdialog import declareMapping
-from .data_reader_form import STDMForm,STDMEntityForm
+from stdm.forms import CustomFormDialog
 
 
 __all__ = ["EntityBrowser","EnumeratorEntityBrowser","EntityBrowserWithEditor", \
@@ -349,7 +349,11 @@ class EntityBrowserWithEditor(EntityBrowser):
         '''
         Load editor dialog for adding new information.
         '''
-        addEntityDlg = self._editorDialog(self)
+        if callable(self._editorDialog):
+            addEntityDlg = self._editorDialog(self)
+        else:
+            addEntityDlg = self._editorDialog
+            
         result = addEntityDlg.exec_()
         
         if result == QDialog.Accepted:
@@ -398,7 +402,12 @@ class EntityBrowserWithEditor(EntityBrowser):
         Load editor dialog based on the selected model instance with the given ID.
         '''
         modelObj = self._modelFromID(recid)
-        editEntityDlg = self._editorDialog(self,modelObj)
+        if callable(self._editorDialog):
+            editEntityDlg = self._editorDialog(self,modelObj)
+        else:
+            editorDlg = self._editorDialog.__class__
+            editEntityDlg = editorDlg(self,model = modelObj)
+            
         result = editEntityDlg.exec_()
         
         if result == QDialog.Accepted:
@@ -504,7 +513,7 @@ class EnumeratorEntityBrowser(EntityBrowser):
     '''
     Browser for enumerator records.
     '''
-    def __init__(self,parent = None,state = MANAGE):
+    def __init__(self,parent = None,state = VIEW|MANAGE):
         EntityBrowser.__init__(self, parent, Enumerator, state)
         
     def title(self):
@@ -515,8 +524,13 @@ class RespondentEntityBrowser(EntityBrowserWithEditor):
     Browser for respondent records.
     '''
     def __init__(self,parent = None,state = VIEW|MANAGE):
-        EntityBrowserWithEditor.__init__(self, Respondent, parent, state)
-        self._editorDialog = RespondentEditor       
+        
+        mapping=declareMapping.instance()
+        tableCls=mapping.tableMapping('respondent')
+        
+        EntityBrowserWithEditor.__init__(self, tableCls, parent, state)
+        #self._editorDialog = RespondentEditor  
+        self._editorDialog=CustomFormDialog(self,tableCls)     
         
     def title(self):
         return QApplication.translate("RespondentEntityBrowser", "Respondent Records")
@@ -526,8 +540,9 @@ class WitnessEntityBrowser(EntityBrowserWithEditor):
     Browser for witness records.
     '''
     def __init__(self,parent = None,state = VIEW|MANAGE):
+                
         EntityBrowserWithEditor.__init__(self, Witness, parent, state)
-        self._editorDialog = WitnessEditor
+        self._editorDialog = WitnessEditor  
         
     def title(self):
         return QApplication.translate("WitnessEntityBrowser", "Witness Records")
@@ -563,7 +578,7 @@ class FarmerEntityBrowser(ContentGroupEntityBrowser):
     def title(self):
         return QApplication.translate("FarmerEntityBrowser", "Farmer Records Manager")
 
-from stdm.forms import CustomFormDailog,MapperDailog
+
 
 class STDMEntityBrowser(ContentGroupEntityBrowser):
     '''
@@ -573,14 +588,15 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
         
         mapping=declareMapping.instance()
         tableCls=mapping.tableMapping(table)
-        columns=tableCols(table)
+        
+        #columnsData=tableColType(table)
+        #columns=columnsData.keys()
         
         ContentGroupEntityBrowser.__init__(self, tableCls, tableContentGroup, parent, state)
         
-        #self._editorDialog = FarmerEditor 
-        #QMessageBox.information(self,"tit",str(STDMDb.instance().session))
-        #self._editorDialog = STDMForm(self, tableCls, columns, Session=STDMDb.instance().session)      
-        self._editorDialog=MapperDailog(self,tableCls)
+        #QMessageBox.information(self,"module",str(tableCls.__name__))
+        self._editorDialog=CustomFormDialog(self,tableCls)
+        
     '''   
     def _setFormatters(self):
         """

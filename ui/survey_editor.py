@@ -30,6 +30,7 @@ from .helpers import SupportsManageMixin
 from .entity_browser import EnumeratorEntityBrowser,RespondentEntityBrowser, \
 WitnessEntityBrowser
 from .notification import NotificationBar
+from .stdmdialog import declareMapping
 
 __all__ = ["SurveyEditor"]
 
@@ -63,26 +64,36 @@ class SurveyEditor(QDialog,Ui_frmSurvey,MapperMixin):
         enumFKMapper.setNotificationBar(self._notifBar)
         enumFKMapper.initialize()
         
+        mapping=declareMapping.instance()
+        tableCls=mapping.tableMapping('respondent')
+        
+        
+        respondentFKMapper = self.tabWidget.widget(1)
+        respondentFKMapper.setDatabaseModel(tableCls)
+        respondentFKMapper.setEntitySelector(RespondentEntityBrowser,VIEW|MANAGE)
+        
+        witnessFKMapper = self.tabWidget.widget(2)
+        witnessFKMapper.setDatabaseModel(Witness)
+        witnessFKMapper.setEntitySelector(WitnessEntityBrowser,VIEW|MANAGE)
+        witnessFKMapper.setSupportsList(True)
+        
 #         #Configure Respondent FK mapper
 #         respondentFKMapper = self.tabWidget.widget(1)
 #         #respondentFKMapper.setDatabaseModel(Respondent)
-#         respondentFKMapper.setEntitySelector(RespondentEntityBrowser,VIEW|MANAGE)
+        
 #         respondentFKMapper.setSupportsList(False)
 #         #respondentFKMapper.addCellFormatter("GenderID",genderFormatter)
 #         #respondentFKMapper.addCellFormatter("MaritalStatusID",maritalStatusFormatter)
 #         #respondentFKMapper.addCellFormatter("RoleID",respondentRoleFormatter)
-#         respondentFKMapper.setNotificationBar(self._notifBar)
+        respondentFKMapper.setNotificationBar(self._notifBar)
 #         respondentFKMapper.initialize()
 #         
 #         #Configure Witnesses FK mapper
-#         witnessFKMapper = self.tabWidget.widget(2)
-#         witnessFKMapper.setDatabaseModel(Witness)
-#         witnessFKMapper.setEntitySelector(WitnessEntityBrowser,VIEW|MANAGE)
-#         witnessFKMapper.setSupportsList(True)
+         
 #         #witnessFKMapper.addCellFormatter("GenderID",genderFormatter)
 #         #witnessFKMapper.addCellFormatter("MaritalStatusID",maritalStatusFormatter)
 #         #witnessFKMapper.addCellFormatter("RelationshipID",witnessRelationshipFormatter)
-#         witnessFKMapper.setNotificationBar(self._notifBar)
+        witnessFKMapper.setNotificationBar(self._notifBar)
 #         witnessFKMapper.initialize()
         
         #Configure attribute mappings

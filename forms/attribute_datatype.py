@@ -1,9 +1,9 @@
 """
 /***************************************************************************
-Name                 : Generic application for generating forms
-Description          : User forms
-Date                 : 30/June/2014 
-copyright            : (C) 2014 by Solomon Njogu
+Name                 : Generic application for forms
+Description          : forms generator functions
+Date                 : 30/June/2013 
+copyright            : (C) 2013 by Solomon Njogu
 email                : njoroge.solomon.com
  ***************************************************************************/
 
@@ -16,6 +16,18 @@ email                : njoroge.solomon.com
  *                                                                         *
  ***************************************************************************/
 """
-from .mapper_dialog import CustomFormDialog
-from .wigets import InputWidget, IntegerWidget, DoubleWidget, CharacterWidget
-from .property_mapper import TypePropertyMapper
+from stdm.data import tableColType
+class AttributePropretyType(object):
+    def __init__(self, model):
+        self.model=model
+        
+    def attributeType(self):
+        #Enumerate column and datatype
+        typeMapping=tableColType(self.model)
+        return typeMapping
+    
+    def displayMapping(self):
+        #use the mapped table properties
+        pass
+        
+    

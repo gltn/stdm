@@ -181,13 +181,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         #self.privateTaxDocManager = SourceDocumentManager()
         #self.stateTaxDocManager = SourceDocumentManager()
         self.sourceDocManager.registerContainer(self.vlDocTitleDeed, TITLE_DEED)
-        #self.sourceDocManager.registerContainer(self.vlDocStatRefPaper, STATUTORY_REF_PAPER)
-        #self.sourceDocManager.registerContainer(self.vlDocSurveyorRef, SURVEYOR_REF)
-        #self.sourceDocManager.registerContainer(self.vlDocNotaryRef, NOTARY_REF)  
-        
-        #Receipt scan document managers
-        #self.privateTaxDocManager.registerContainer(self.vlPrivateReceiptScan, TAX_RECEIPT_PRIVATE)  
-        #self.stateTaxDocManager.registerContainer(self.vlStateScanReceipt, TAX_RECEIPT_STATE)        
+               
         '''
         #Connect signals
         self.connect(self.rbPrivateProperty, SIGNAL("toggled(bool)"),self.onSelectPrivateProperty)
@@ -241,18 +235,18 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                                              ":/plugins/stdm/images/icons/inherit.png") 
                 
         #Check the source documents based on the type of property
-        if self.rbPrivateProperty.isChecked():
-            srcDocMapping = self.sourceDocManager.attributeMapping()
-            summaryTreeLoader.addCollection(srcDocMapping, QApplication.translate("newSTRWiz","Source Documents"), 
+        #if self.rbPrivateProperty.isChecked():
+        srcDocMapping = self.sourceDocManager.attributeMapping()
+        summaryTreeLoader.addCollection(srcDocMapping, QApplication.translate("newSTRWiz","Source Documents"), 
                                              ":/plugins/stdm/images/icons/attachment.png") 
 
-        elif self.rbStateland.isChecked():
-            #Tax information only
-            statePropTaxMapping = self._mapStatePropertyTax()
-            taxDocMapping = self.stateTaxDocManager.attributeMapping()
-            statePropTaxMapping.update(taxDocMapping)
-            summaryTreeLoader.addCollection(statePropTaxMapping, QApplication.translate("newSTRWiz","Tax Information"), 
-                                             ":/plugins/stdm/images/icons/receipt.png")
+#         elif self.rbStateland.isChecked():
+#             #Tax information only
+#             statePropTaxMapping = self._mapStatePropertyTax()
+#             taxDocMapping = self.stateTaxDocManager.attributeMapping()
+#             statePropTaxMapping.update(taxDocMapping)
+#             summaryTreeLoader.addCollection(statePropTaxMapping, QApplication.translate("newSTRWiz","Tax Information"), 
+#                                              ":/plugins/stdm/images/icons/receipt.png")
 
         summaryTreeLoader.display()  
     
@@ -294,7 +288,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         #Validate source document    
         if currPageIndex == 4:
-            isValid = self.validateSourceDocuments()
+            pass
+          #  isValid = self.validateSourceDocuments()
             
         if currPageIndex == 5:
             isValid = self.onCreateSTR()

@@ -134,7 +134,7 @@ class ConfigTableReader(object):
         return docfile
     
     def userProfileDir(self):
-        return self.fileHandler.localPath()
+        return self.fileHandler.STDMSettingsPath()
         
     def saveXMLchanges(self):
         writeSQLFile()
@@ -182,7 +182,7 @@ class ConfigTableReader(object):
         return helpFile
     
     def trackXMLChanges(self):
-        self.fileHandler.createBackupSettings()
+        self.fileHandler.createBackup()
     
         
         
