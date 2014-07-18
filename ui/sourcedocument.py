@@ -26,7 +26,7 @@ from ui_doc_item import Ui_frmDocumentItem
 from stdm.utils import size,getIndex
 from stdm.network import NetworkFileManager, DocumentTransferWorker
 #from stdm.data import SourceDocument
-from stdmdialog import declareMapping
+from stdmdialog import DeclareMapping
 from stdm.settings import RegistryConfig,NETWORK_DOC_RESOURCE
 
 #Document Type Enumerations
@@ -433,7 +433,7 @@ class DocumentWidget(QWidget,Ui_frmDocumentItem):
             #if dtype == TAX_RECEIPT_PRIVATE or dtype == TAX_RECEIPT_STATE:
             #    srcDoc = TaxDocument()
             #else:
-            self.mapping=declareMapping.instance()
+            self.mapping=DeclareMapping.instance()
             srcDoc=self.mapping.tableMapping('supporting_document')
             #srcDoc = SourceDocument()
                 

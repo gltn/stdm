@@ -43,7 +43,7 @@ from .notification import NotificationBar
 from .entity_browser import FarmerEntitySelector
 from .ui_person_doc_generator import Ui_frmPersonDocGenerator
 from .composer_doc_selector import TemplateDocumentSelector
-from .stdmdialog import  declareMapping
+from .stdmdialog import  DeclareMapping
 
 __all__ = ["PersonDocumentGenerator"]
 
@@ -62,7 +62,7 @@ class PersonDocumentGenerator(QDialog,Ui_frmPersonDocGenerator):
         
         self._notifBar = NotificationBar(self.vlNotification)
         
-        mapping=declareMapping.instance()
+        mapping=DeclareMapping.instance()
         self._dbModel=mapping.tableMapping('party')
         
         #Initialize person foreign key mapper

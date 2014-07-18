@@ -32,7 +32,7 @@ from .notification import NotificationBar
 from .helpers import SpinBoxValueHandler
 from qtalchemy.dialogs.objectforms import BoundDialog
 from qtalchemy import *
-from .stdmdialog import declareMapping
+from .stdmdialog import DeclareMapping
 from stdm.data import STDMDb, tableCols
 
 class PendingLayerEntities(object):
@@ -246,7 +246,7 @@ class spatialUnitEditor(BoundDialog,QgsFeatureMapperMixin):
 
         self.columns=tableCols('spatial_unit')
         
-        mapping=declareMapping.instance()
+        mapping=DeclareMapping.instance()
         SpatialModel=mapping.tableMapping('spatial_unit')
         
         self.setWindowTitle("Spatial unit editor")

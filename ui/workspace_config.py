@@ -127,7 +127,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         if self.currentId()==2:
             self.configPath()
         if self.currentId()==3:
-            self.tableHandler.trackXMLChanges()
+            
             self.pathSettings()
             self.profileContent()
         if self.currentId()==4:
@@ -526,6 +526,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                         f.write(row)
                         f.write("\n")
                 f. close()
+            self.setRelation(fileN,sqlInsert)
         if self.rbSchema.isChecked():
             self.tableHandler.upDateSQLSchema()
         self.rawSQLDefinition()
@@ -535,10 +536,9 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         file=self.tableHandler.sqlTableDefinition()
         return file
     
-    def setSummaryView(self):
-        fileN=self.tableHandler.htmlTableDefinition()
-        with open(fileN,'r')as f:
-            self.txtHtml_2.setHtml(f.read())
+    def setRelation(self,fileN,sql):
+        with open(fileN,'a')as f:
+            f.write(sql.spatialRelation())
         f.close()
             
     def setDatabaseSchema(self):    
@@ -553,6 +553,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 roleP._execute(sqlSt)
                 self.assignRoles()
                 self.InfoMessage("Changes successfully saved in the STDM database")
+                self.tableHandler.trackXMLChanges()
         except SQLAlchemyError as ex:
             return self.ErrorInfoMessage(str(ex.message))
     

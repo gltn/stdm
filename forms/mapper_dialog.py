@@ -25,17 +25,11 @@ from stdm.data.config_utils import tableColType
 from .property_mapper import TypePropertyMapper
 from .attribute_datatype import AttributePropretyType
 
-<<<<<<< HEAD
-class MapperDailog(QDialog):
-    def __init__(self, parent, model):
-        QDialog.__init__(self,parent)
-=======
-
 class MapperDialog(QDialog,Ui_Dialog):
     def __init__(self,parent):
         QDialog.__init__(self)
         self.setupUi(self)
->>>>>>> b61dd4fdf353fe3d1408f903e1c014ce14bae7eb
+
         #MapperMixin.__init__(self, model)
         self.setWindowTitle("STDM data entry")
         
@@ -56,7 +50,7 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         
         self.buttonBox.accepted.connect(self.submit)
         self.buttonBox.rejected.connect(self.cancel)
-        
+        #QMessageBox.information(self,"mapper",str(dir(model)))
         if callable(model):
             self._table = model.__name__
         else:

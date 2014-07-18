@@ -20,7 +20,7 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from PyQt4.QtGui import QApplication, QMessageBox
-from stdm.ui.stdmdialog import declareMapping
+from stdm.ui.stdmdialog import DeclareMapping
 
 from .nodes import BaseSTRNode, PersonNode, NoSTRNode, STRNode, PropertyNode,\
 ConflictNode,TaxationNode
@@ -160,7 +160,7 @@ class PersonNodeFormatter(STRNodeFormatter):
             '''
             #strModel,noSTRNode = self.isSTRDefined(p, pNode)
             
-            mapping=declareMapping.instance()
+            mapping=DeclareMapping.instance()
             stModel=mapping.tableMapping('social_tenure_relationship')
             model=stModel()
             

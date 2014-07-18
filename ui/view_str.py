@@ -36,7 +36,7 @@ from ui_view_str import Ui_frmViewSTR
 from ui_str_view_entity import Ui_frmSTRViewEntity
 from notification import NotificationBar,ERROR,INFO, WARNING
 from sourcedocument import SourceDocumentManager,docTypeMapping
-from .stdmdialog import declareMapping
+from .stdmdialog import DeclareMapping
 
 class ViewSTRWidget(QWidget, Ui_frmViewSTR):
     '''
@@ -63,7 +63,7 @@ class ViewSTRWidget(QWidget, Ui_frmViewSTR):
         self._sourceDocManager = SourceDocumentManager()
         self.connect(self._sourceDocManager,SIGNAL("documentRemoved(int)"),self.onSourceDocumentRemoved)
         self._sourceDocManager.setEditPermissions(self._canEdit)
-        self.mapping=declareMapping.instance()
+        self.mapping=DeclareMapping.instance()
         self.initGui()
         
     def initGui(self):
