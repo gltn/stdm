@@ -25,12 +25,10 @@ from PyQt4.QtCore import *
 #from .entity_browser import ContentGroupEntityBrowser
 
 # create the dialog for zoom to point
-from .dialog_generator import  ContentView
-from .data_reader_form import STDMEntityForm,STDMDb
-from sqlalchemy.orm import clear_mappers, sessionmaker, mapper
-from sqlalchemy import MetaData, Table
-from qtalchemy import *
-from stdm.data import Model, Base
+
+from sqlalchemy import Table
+from sqlalchemy.orm import mapper
+from stdm.data import Model, Base, STDMDb
 #from stdm.data import tableCols
 from stdm.data.config_utils import tableCols
 
@@ -39,45 +37,7 @@ import types
 
 from stdm.data.database import Singleton
 
-class STDMDialog(object):
-    '''
-    this class reads the selected table model and returns the associated qtalchemy dialog
-    '''
-    def __init__(self,module,parent):
         
-        self.tableName=module
-        self.parent=parent
-        self.columns=[]
-        #self.loadUI()
-       
-    def loadUI(self):    
-        self.toqtalchemyMapping()
-            
-    def toqtalchemyMapping(self):
-        mapping=declareMapping.instance()
-        tableCls=mapping.tableMapping(self.tableName)
-        self.columns=self.tablecolums()
-        Session=STDMDb.instance().session
-        #QMessageBox.information(None,"test",str(self.propertyAttribute(tableCls)))
-        contentMd=ContentView(self.parent,tableCls,self.columns,Session=Session)
-        contentMd.show()
-        contentMd.exec_()
-
-    def propertyAttribute(self,classObj):
-        for attrib in self.columns:
-            classname=classObj.__table__
-            attrTranslation=OrderedDict()
-            # attrTranslation[attrib]=attrib.replace('_',' ').title()
-            return classname
-                   
-        
-    def tablecolums(self):
-        return tableCols(self.tableName)
-        
-    def foreignkeymapped(self):
-        return ForeignKeyReferral(str,"household",'household',LookupTable,'id')
-        #return ForeignKeyComboYoke(LookupTable,'income')
-
 @Singleton                  
 class declareMapping():  
     '''
@@ -107,12 +67,16 @@ class declareMapping():
         Dummy method
         '''
         pass
-    
-    def displayMapping(self,table):
-        cols=tableCols(table)
+
+    def displayMapping(self,table=''):
         attribs=OrderedDict()
-        for col in cols:
-            attribs[col]=col.replace('_',' ').title()
+        if table!='':
+            cols=tableCols(table)
+            
+            for col in cols:
+                attribs[col]=col.replace('_',' ').title()
+        else:
+            return None
         return attribs
     
     def createDynamicClass(self,className,**attr):

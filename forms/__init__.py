@@ -16,5 +16,6 @@ email                : njoroge.solomon.com
  *                                                                         *
  ***************************************************************************/
 """
-from .mapper_dialog import CustomFormDailog, MapperDailog
-from .wigets import inputWidget
+from .mapper_dialog import CustomFormDialog
+from .wigets import InputWidget, IntegerWidget, DoubleWidget, CharacterWidget
+from .property_mapper import TypePropertyMapper

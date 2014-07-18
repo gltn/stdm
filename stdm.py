@@ -41,7 +41,6 @@ from ui import (
                 SurveyEntityBrowser,
                 PersonDocumentGenerator,
                 AboutSTDMDialog,
-                STDMDialog,
                 declareMapping,
                 WorkspaceLoader,
                 ImportData,
@@ -70,6 +69,8 @@ from mapping import (
 from utils import *
 from mapping.utils import pg_layerNamesIDMapping
 from composer import ComposerWrapper
+from forms import CustomFormDialog
+from sqlalchemy.orm import clear_mappers
 
 class STDMQGISLoader(object):
     
@@ -618,6 +619,11 @@ class STDMQGISLoader(object):
         frmNewSTR = newSTRWiz(self)
         frmNewSTR.exec_()
         
+        '''
+        mapdlg=CustomFormDialog(self,None)
+        mapdlg.exec_()
+        '''
+                
     def onManageAdminUnits(self):
         '''
         Slot for showing administrative unit selector dialog.
@@ -850,13 +856,12 @@ class STDMQGISLoader(object):
         else:
             tableName=self._moduleItems.get(dispName)
             if tableName in tbList:
-                #try:
-                    #main=STDMDialog(tableName,self.iface.mainWindow()) 
-                    #main.loadUI()
+                try:
+                    
                     main=STDMEntityBrowser(self.moduleContentGroups[0],tableName,self.iface.mainWindow()) 
                     main.exec_()
-                #except Exception as ex:
-                 #   QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
+                except Exception as ex:
+                    QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
             
     def about(self):
         '''
@@ -895,8 +900,10 @@ class STDMQGISLoader(object):
         self.removeSTDMLayers()
         
         #Clear singleton ref for SQLALchemy connections
-        if data.app_dbconn!= None:            
-            STDMDb.cleanUp()     
+        if data.app_dbconn!= None:
+            #clear_mappers()            
+            STDMDb.cleanUp()  
+            declareMapping.cleanUp()
                    
         #Remove database reference 
         data.app_dbconn = None  
