@@ -849,12 +849,12 @@ class STDMQGISLoader(object):
         else:
             tableName=self._moduleItems.get(dispName)
             if tableName in tbList:
-                try:
+               # try:
                     
-                    main=STDMEntityBrowser(self.moduleContentGroups[0],tableName,self.iface.mainWindow()) 
-                    main.exec_()
-                except Exception as ex:
-                    QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
+                main=STDMEntityBrowser(self.moduleContentGroups[0],tableName,self.iface.mainWindow())
+                main.exec_()
+                #except Exception as ex:
+                #    QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
             
     def about(self):
         '''
