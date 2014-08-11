@@ -226,7 +226,10 @@ class SpinBoxValueHandler(ControlValueHandler):
         return self.control.value()
     
     def setValue(self,value):
-        self.control.setValue(value)
+        if value != None:
+            self.control.setValue(value)
+        else:
+            self.control.setValue(0)
     
     def supportsMandatory(self):
         return False

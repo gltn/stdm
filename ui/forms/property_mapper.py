@@ -17,20 +17,33 @@ email                : njoroge.solomon.com
  ***************************************************************************/
 """
 from collections import OrderedDict
+
 from .wigets import widgetCollection
+from stdm.data import lookupData
+
 class TypePropertyMapper(object):
-    def __init__(self, attrMap, options=None):
-        
-        self._attr=attrMap
-        self.attripMap=[]
-        self.widgetList=OrderedDict()
+    def __init__(self, attrMap, options = None):
+        self._attr = attrMap
+        self.widgetList = OrderedDict()
         self._attr.pop('id')
-        
+
     def widget(self):
+        isLookup = False
         for attr, dataType in self._attr.iteritems():
-            self.widgetList[attr]=widgetCollection()[dataType[0]]
-            
+            if dataType[1] != False:
+                dataType[0] = 'choice'
+                options = self.lookupOptions(dataType[1])
+                if options: isLookup = options
+            self.widgetList[attr] = [widgetCollection()[dataType[0]], isLookup]
+
     def setProperty(self):
         self.widget()
         return self.widgetList
-        
+
+    def lookupOptions(self, tName):
+        '''
+        if it is a lookup get values from the config
+        :return:
+        '''
+        choice_list = lookupData(tName)
+        return choice_list

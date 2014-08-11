@@ -29,5 +29,3 @@ class AttributePropretyType(object):
     def displayMapping(self):
         #use the mapped table properties
         pass
-        
-    
