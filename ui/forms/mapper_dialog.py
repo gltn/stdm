@@ -16,14 +16,15 @@ email                : njoroge.solomon.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import * 
+from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+
 from stdm.data import MapperMixin
 from stdm.ui.ui_base_form import Ui_Dialog
 from stdm.ui.notification import NotificationBar
-from stdm.data.config_utils import tableColType
 from .property_mapper import TypePropertyMapper
 from .attribute_datatype import AttributePropretyType
+
 
 class MapperDialog(QDialog,Ui_Dialog):
     def __init__(self,parent):
@@ -58,22 +59,27 @@ class CustomFormDialog(MapperDialog, MapperMixin):
                 
         tableProperties = self.tableProperty()
         propertyMapper = TypePropertyMapper(tableProperties)
-        widgets=propertyMapper.setProperty()
+        #QMessageBox.information(self, "mapper", str(tableProperties))
+        widgets = propertyMapper.setProperty()
         
         self.frmLayout. setLabelAlignment(Qt.AlignLeft)
         for attrib, widget in widgets.iteritems():
             if hasattr(model, attrib):
-                widgetCls=widget()
+                widgetCls = widget[0]()
                 widgetControl=widgetCls.Factory()
+                #if widget[1] is not False:
+                #    self.lookupOptions(widgetCls, widget[1])
                 widgetCls.adopt()
                 self.addMapping(attrib, widgetControl, False,attrib)
                 self.frmLayout.addRow(self.userLabel(attrib),widgetControl)
        
-    def userLabel(self,attr):
+    def userLabel(self, attr):
             return attr.replace("_", " ").title()
         
-    def userAttribute(self,attr):
-        pass
+    def lookupOptions(self, widget, widgetOptions):
+        if widgetOptions:
+            widget.setOptions(widgetOptions)
+
     
     def tableProperty(self):
         property = AttributePropretyType(self._table.lower())

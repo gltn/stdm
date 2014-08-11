@@ -32,7 +32,7 @@ from .base_person import WitnessEditor
 from stdm.data import BaseSTDMTableModel
 from stdm.data import STDMDb, tableCols,dateFormatter,tableColType
 from .stdmdialog import DeclareMapping
-from stdm.forms import CustomFormDialog
+from stdm.ui.forms import CustomFormDialog
  
 
 __all__ = ["EntityBrowser","EnumeratorEntityBrowser","EntityBrowserWithEditor", \

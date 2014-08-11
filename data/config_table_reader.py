@@ -83,54 +83,54 @@ class ConfigTableReader(object):
     
     def columns(self,profile,tableName):
         '''Functions to read columns details from the config for the given table''' 
-        columnModel=None
-        tableAttrib=tableColumns(profile,tableName)
-        if len(tableAttrib)>0:
-            colHeaders=tableAttrib[0].keys()
-            colVals=[]
+        columnModel = None
+        tableAttrib = tableColumns(profile,tableName)
+        if len(tableAttrib) > 0:
+            colHeaders = tableAttrib[0].keys()
+            colVals = []
             for item in tableAttrib:
                 colVals.append(item.values())
-            columnModel=EntityColumnModel(colHeaders,colVals)
+            columnModel = EntityColumnModel(colHeaders, colVals)
             return columnModel
         else: 
             return None
     
     def tableRelation(self,tableName):
         '''Method to read all defined table relationship in the config file'''
-        relationModel=None
-        tableAttrib=tableRelations(tableName,"relations")
-        if tableAttrib==None:
+        relationModel = None
+        tableAttrib = tableRelations(tableName,"relations")
+        if tableAttrib is None:
             return tableAttrib
         if len(tableAttrib)>0:
-            colHeaders=tableAttrib[0].keys()
-            colVals=[]
+            colHeaders = tableAttrib[0].keys()
+            colVals = []
             for item in tableAttrib:
                 colVals.append(item.values())
-            relationModel=EntityColumnModel(colHeaders,colVals)
+            relationModel = EntityColumnModel(colHeaders,colVals)
             return relationModel
         
     def geometryData(self,tableName):
         '''Method to read all defined table relationship in the config file'''
-        geometryModel=None
-        tableAttrib=geometryColumns(tableName,'constraints')
-        if tableAttrib==None:
+        geometryModel = None
+        tableAttrib = geometryColumns(tableName, 'constraints')
+        if tableAttrib == None:
             return tableAttrib
-        if len(tableAttrib)>0:
-            colHeaders=tableAttrib[0].keys()
-            colVals=[]
+        if len(tableAttrib) > 0:
+            colHeaders = tableAttrib[0].keys()
+            colVals = []
             for item in tableAttrib:
                 colVals.append(item.values())
-            geometryModel=EntityColumnModel(colHeaders,colVals)
+            geometryModel = EntityColumnModel(colHeaders, colVals)
             return geometryModel
 
     def sqlTableDefinition(self):
         '''load the table definition info in html file'''
-        docfile=self.fileHandler.SQLFile()
+        docfile = self.fileHandler.SQLFile()
         return docfile
     
     def htmlTableDefinition(self):
         '''load the table definition info in html file'''
-        docfile=self.fileHandler.HtmlFile()
+        docfile = self.fileHandler.HtmlFile()
         return docfile
     
     def userProfileDir(self):
@@ -151,17 +151,17 @@ class ConfigTableReader(object):
     
     def settingsKeys(self):
         '''
-        Keys used to store directory in the database
+        Keys used to store directory paths in the database
         '''
         return PATHKEYS
     
     def pathSettings(self):
-        pathKeys=self.settingsKeys()
-        pathSetting=self.config.read(pathKeys)
-        return pathKeys,pathSetting
+        pathKeys = self.settingsKeys()
+        pathSetting = self.config.read(pathKeys)
+        return pathKeys, pathSetting
     
-    def createDir(self,paths):
-        if paths!=None:
+    def createDir(self, paths):
+        if paths != None:
             for fPath in paths:
                 self.fileHandler.createDir(fPath)
     
@@ -184,5 +184,3 @@ class ConfigTableReader(object):
     def trackXMLChanges(self):
         self.fileHandler.createBackup()
     
-        
-        

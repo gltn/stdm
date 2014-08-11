@@ -17,25 +17,22 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 
-import os.path, string, platform
+import os.path
+import platform
 
-from PyQt4.QtCore import * 
+from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from PyQt4.QtWebKit import *
-from PyQt4.QtNetwork import *
 
 from qgis.core import *
 from qgis.gui import *
-
-import resources_rc
 from ui import (
-                loginDlg, 
-                changePwdDlg, 
-                manageAccountsDlg, 
+                loginDlg,
+                changePwdDlg,
+                manageAccountsDlg,
                 contentAuthDlg,
-                newSTRWiz, 
-                ViewSTRWidget, 
-                AdminUnitSelector, 
+                newSTRWiz,
+                ViewSTRWidget,
+                AdminUnitSelector,
                 FarmerEntityBrowser,
                 STDMEntityBrowser,
                 SurveyEntityBrowser,
@@ -49,8 +46,7 @@ from ui import (
 from ui.reports import ReportBuilder
 import data
 from data import (
-                  STDMDb, 
-                  Content,
+                  STDMDb,
                   spatial_tables,
                   ConfigTableReader,
                   activeProfile,
@@ -69,8 +65,7 @@ from mapping import (
 from utils import *
 from mapping.utils import pg_layerNamesIDMapping
 from composer import ComposerWrapper
-from forms import CustomFormDialog
-from sqlalchemy.orm import clear_mappers
+
 
 class STDMQGISLoader(object):
     

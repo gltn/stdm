@@ -55,7 +55,7 @@ def tableColType(table):
     colMapping=OrderedDict()
     for col in cols:
         colLabel = col.get('Column label')
-        colMapping[colLabel] = [col.get('Data type'),col.get('lookup')]
+        colMapping[colLabel] = [col.get('Data type'),col.get('Lookup')]
     return colMapping
 
 def activeProfile():
@@ -91,7 +91,4 @@ def getOpenFileChooser(self,message,file_filter):
         except:
             return
         return filePath
-
-
-
     
