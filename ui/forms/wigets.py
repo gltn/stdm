@@ -22,10 +22,9 @@ from stdm.data import dateFormatter
 from datetime import date
 
 class InputWidget(QWidget):
-    def __init__(self, options=None):
+    def __init__(self):
         self.type = ''
         self.control = None
-        self.options = options
         
     def Factory(self):
         pass
@@ -70,6 +69,7 @@ class IntegerWidget(InputWidget):
         return self.control
     
     def adopt(self):
+        self.control.setMinimumWidth(50)
         self.control.setValue(0)
         
 
@@ -99,12 +99,14 @@ class ChoiceListWidget(CharacterWidget):
     
     def setOptions(self, options):
         self.options = options
+        self.control.setMinimumContentsLength(50)
         return self.options
 
     def adopt(self):
         if self.options:
             self.control.insertItems(0, self.options)
-        self.control.setMaximumWidth(300)
+            self.control.setMinimumContentsLength(50)
+        self.control.setMaxVisibleItems(len(self.options))
         self.control.setCurrentIndex(0)
 
 class DateWidget(InputWidget):
@@ -119,6 +121,7 @@ class DateWidget(InputWidget):
     def adopt(self):
         tDate=date.today()
         self.control.setDate(tDate)
+        self.control.setMinimumWidth(50)
 
 def widgetCollection():
     mapping = \

@@ -67,8 +67,8 @@ class CustomFormDialog(MapperDialog, MapperMixin):
             if hasattr(model, attrib):
                 widgetCls = widget[0]()
                 widgetControl=widgetCls.Factory()
-                #if widget[1] is not False:
-                #    self.lookupOptions(widgetCls, widget[1])
+                if widget[1] is not False:
+                    self.lookupOptions(widgetCls, widget[1])
                 widgetCls.adopt()
                 self.addMapping(attrib, widgetControl, False,attrib)
                 self.frmLayout.addRow(self.userLabel(attrib),widgetControl)
