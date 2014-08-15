@@ -123,6 +123,8 @@ class FilePaths(object):
                 if not os.path.isfile(self.userPath+'/%s'%fileN):
                     baseFile = self.baseDir +'/%s'%fileN
                     shutil.copy(baseFile,self.userPath)
+            if not os.path.isfile(self.cacheFile()):
+                shutil.copy(self.setUserXMLFile(), self.cacheDir())
         except IOError as ex:
             raise ex
     

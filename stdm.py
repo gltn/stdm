@@ -895,8 +895,7 @@ class STDMQGISLoader(object):
         #Clear singleton ref for SQLALchemy connections
         if data.app_dbconn!= None:
             #clear_mappers()            
-            STDMDb.cleanUp()  
-            DeclareMapping.instance().resetMapping()
+            STDMDb.cleanUp()
             DeclareMapping.cleanUp()
                    
         #Remove database reference 
