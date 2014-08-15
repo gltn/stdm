@@ -39,15 +39,7 @@ class InputWidget(QWidget):
         pass
     def type(self):
         pass
-    
 
-class BlankIntValidator(QIntValidator):
-    def validate(self, input, pos):
-        if input == "":
-            return QValidator.Acceptable, input, pos
-        else:
-            return QIntValidator.validate(self,input,pos)
-        
 class CharacterWidget(InputWidget):
     def __init__(self):
         self.type="character varying"
@@ -57,6 +49,7 @@ class CharacterWidget(InputWidget):
         return self.control
     
     def adopt(self):
+        self.control.setMinimumWidth(50)
         self.control.setText("")
           
 class IntegerWidget(InputWidget):
@@ -69,45 +62,39 @@ class IntegerWidget(InputWidget):
         return self.control
     
     def adopt(self):
-        self.control.setMinimumWidth(50)
         self.control.setValue(0)
-        
 
-class BlankFloatValidator(QDoubleValidator):
-    def validate(self, input, pos):
-        if input == "":
-            return QValidator.Acceptable, input, pos
-        else:
-            return QDoubleValidator.validate(self, input, pos)
-        
 class DoubleWidget(IntegerWidget):
     def __init__(self):
         self.type = "double"
-            
+
+    def Factory(self):
+        self.control = QDoubleSpinBox()
+
     def adopt(self):
         self.control.setValue(0)
-        #self.control.setValidator(BlankFloatValidator(self.control))
 
-class ChoiceListWidget(CharacterWidget):
+class ChoiceListWidget(InputWidget):
     def __init__(self, options=None):
         self.options = options
 
     def Factory(self):
         self.control = QComboBox()
-
         return self.control
     
     def setOptions(self, options):
         self.options = options
-        self.control.setMinimumContentsLength(50)
+
         return self.options
 
     def adopt(self):
         if self.options:
-            self.control.insertItems(0, self.options)
+            for index, value in enumerate(self.options):
+                self.control.insertItem(index, value)
             self.control.setMinimumContentsLength(50)
-        self.control.setMaxVisibleItems(len(self.options))
-        self.control.setCurrentIndex(0)
+            self.control.setDuplicatesEnabled(False)
+            self.control.setMaxVisibleItems(len(self.options))
+            self.control.setCurrentIndex(0)
 
 class DateWidget(InputWidget):
     def __init__(self):
@@ -126,10 +113,10 @@ class DateWidget(InputWidget):
 def widgetCollection():
     mapping = \
         {
+            'character varying': CharacterWidget,
             'integer': IntegerWidget,
             'serial': IntegerWidget,
             'double precision': DoubleWidget,
-            'character varying': CharacterWidget,
             'choice': ChoiceListWidget,
             'date': DateWidget
         }

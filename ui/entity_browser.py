@@ -350,7 +350,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         Load editor dialog for adding new information.
         '''
         if callable(self._editorDialog):
-            addEntityDlg = self._editorDialog(self)
+            addEntityDlg = self._editorDialog(self, self._dbmodel)
         else:
             addEntityDlg = self._editorDialog
             
@@ -586,7 +586,7 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
     Browser for farmer records.
     '''
     def __init__(self,tableContentGroup,table=None,parent = None,state = MANAGE):
-        
+
         mapping=DeclareMapping.instance()
         tableCls=mapping.tableMapping(table)
         
@@ -597,7 +597,7 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
         
         #QMessageBox.information(self,"module",str(tableCls.__name__))
         #QMessageBox.information(self,"module",str( mapping.attDictionary))
-        self._editorDialog=CustomFormDialog(self,tableCls)
+        self._editorDialog=CustomFormDialog
         
     '''   
     def _setFormatters(self):

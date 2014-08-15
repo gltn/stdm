@@ -36,7 +36,7 @@ import stdm.data
 metadata=MetaData()
 Base = declarative_base(metadata=metadata)
 
-
+from PyQt4.QtGui import QMessageBox
 class Singleton(object):
     '''
     Singleton class
