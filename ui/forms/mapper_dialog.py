@@ -55,13 +55,10 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         #QMessageBox.information(self,"mapper",str(dir(model)))
         if callable(model):
             self._table = model.__name__
-            QMessageBox.information(self,"mapper",str("callable"))
         else:
             self._table = model.__class__.__name__
-            QMessageBox.information(self,"mapper",str('instance'))
         tableProperties = self.tableProperty()
         propertyMapper = TypePropertyMapper(tableProperties)
-        #QMessageBox.information(self, "mapper", str(tableProperties))
         widgets = propertyMapper.setProperty()
         self.frmLayout.setLabelAlignment(Qt.AlignLeft)
         for attrib, widget in widgets.iteritems():
