@@ -932,12 +932,12 @@ class STDMQGISLoader(object):
             profile = str(default[0])
             
         moduleList = handler.tableNames(profile)    
-        self.pgTable2pyClass(moduleList)
+        self.pgTableMapper(moduleList)
         if 'spatial_unit' in moduleList:
             moduleList.remove('spatial_unit')
         return moduleList
     
-    def pgTable2pyClass(self,tableList=None):
+    def pgTableMapper(self, tableList=None):
         '''
         map postgresql table to Python object/ model
         '''
