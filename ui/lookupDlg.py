@@ -28,16 +28,16 @@ from ui_lookup import Ui_Lookup
 from addtable import TableEditor
 from lookup_values_dlg import ADDLookupValue
 
-class LookupDialog(QDialog,Ui_Lookup):
-    def __init__(self,parent):
-        QDialog.__init__(self,parent)
+class LookupDialog(QDialog, Ui_Lookup):
+    def __init__(self, parent):
+        QDialog.__init__(self, parent)
         # Set up the user interface from Designer.
         # After setupUI you can access any designer object by doing
         # self.<objectname>, and you can use autoconnect slots - see
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
-        self.tableName=None
+        self.tableName = None
         self.initControls()
         #QObject.connect(self.listView,SIGNAL('clicked(QModelIndex)'),self.selectedIndex)
         self.btnNew.clicked.connect(self.addLookUp)
@@ -46,16 +46,18 @@ class LookupDialog(QDialog,Ui_Lookup):
         
     def initControls(self):
         #perform initialization of controls
-        self.profile=activeProfile()
-        self.handler=ConfigTableReader()
-        Lkupmodel=self.handler.lookupTableModel()
+        self.profile = activeProfile()
+        self.handler = ConfigTableReader()
+        Lkupmodel = self.handler.lookupTableModel()
         self.cboTable.setModel(Lkupmodel)
         self.showDefinedLookupChoices()
     
     def showDefinedLookupChoices(self):
-        ''' show preview of defined lookup choices when the lookup table is selected'''
+        '''
+        show preview of defined lookup choices when the lookup table is selected
+        '''
         self.lstData.clear()
-        lkChoices=self.handler.readLookupList(self.cboTable.currentText())
+        lkChoices = self.handler.readLookupList(self.cboTable.currentText())
         if lkChoices:
             self.lstData.addItems(lkChoices)
     
@@ -65,22 +67,22 @@ class LookupDialog(QDialog,Ui_Lookup):
     
     def addNewLookupChoice(self):
         '''Add new choice to lookup table'''
-        lkDlg=ADDLookupValue(self)
-        if lkDlg.exec_()==QDialog.Accepted:
-            lkName=lkDlg.value
-            self.handler.addLookupValue(self.cboTable.currentText(),lkName)  
+        lkDlg = ADDLookupValue(self)
+        if lkDlg.exec_()== QDialog.Accepted:
+            lkName = lkDlg.value
+            self.handler.addLookupValue(self.cboTable.currentText(), lkName)
         self.showDefinedLookupChoices()
           
     def addLookUp(self):     
         #add new lookup table"
-        actionState=[self.profile,QApplication.translate("WorkspaceLoader","Add Lookup")]
-        dlg=TableEditor(actionState,None,self)
+        actionState = [self.profile, QApplication.translate("WorkspaceLoader","Add Lookup")]
+        dlg = TableEditor(actionState, None, self)
         dlg.exec_()
         self.initControls()
  
     def acceptDlg(self):
         '''return user selected table''' 
-        self.tableName=self.cboTable.currentText()
+        self.tableName = self.cboTable.currentText()
         self.accept()
 
     def ErrorInfoMessage(self, Message):
@@ -90,5 +92,3 @@ class LookupDialog(QDialog,Ui_Lookup):
         msg.setWindowTitle("STDM")
         msg.setText(Message)
         msg.exec_()  
-                     
-            
