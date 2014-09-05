@@ -179,13 +179,12 @@ class AttributeEditor(QDialog,Ui_editor):
         
     def enforceProjection(self):
         if self.geomCollection:
-            geomconstraint='st_srid'
             geom={}
-            geom['table']=self.tableName
-            geom['srid']=self.geomCollection[0]
-            geom['column']=formatColumnName(self.txtCol.text())
-            geom['type']=self.geomCollection[1]
-            geom['arguments']='2'
+            geom['table'] = self.tableName
+            geom['srid'] = self.geomCollection[0]
+            geom['column'] = formatColumnName(self.txtCol.text())
+            geom['type'] = self.geomCollection[1]
+            geom['arguments'] = '2'
             writeTableColumn(geom,self.profile,'table',self.tableName,'constraints')
             #self.enforceGeometry() 
             
@@ -209,8 +208,6 @@ class AttributeEditor(QDialog,Ui_editor):
         if self.tableName==None:
             self.ErrorInfoMessage(QApplication.translate('AttributeEditor','No selected table found'))
             return
-        # if self.lookup and self.checkBox.isChecked():
-        #    self.setTableRelation()
         if self.args!=None:
             self.updateColumnData()
         if self.args==None:
