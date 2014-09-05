@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/plugins/stdm">
+    <file>images/icons/edit_settings.png</file>
     <file>images/icons/help-content.png</file>
     <file>images/icons/information.png</file>
     <file>images/icons/login.png</file>
