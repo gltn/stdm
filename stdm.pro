@@ -1,17 +1,6 @@
 SOURCES = stdm.py \
 			navigation/components.py \
 			security/membership.py \
-			ui/changePwdDlg.py \
-			ui/dbconnDlg.py \
-			ui/loginDlg.py \
-			ui/adminDetailsDlg.py \
-			ui/adminUnitWdg.py \
-			ui/entityDlg.py \
-			ui/enumDetailsDlg.py \
-			ui/enumeratorWdg.py \
-			ui/questWdg.py \
-			ui/respondentDlg.py \
-			ui/worksiteWdg.py \
 			ui/about.py \
 			ui/addtable.py \
 			ui/admin_unit_manager.py \
@@ -45,7 +34,49 @@ SOURCES = stdm.py \
 			ui/stdmdialog.py \
 			ui/str_editor_dlg.py \
 			ui/table_propertyDlg.py \
-			ui/ui_about_stdm.py
+			ui/ui_about_stdm.py \
+			ui/ui_admin_details.py \
+			ui/ui_admin_unit.py \
+			ui/ui_adminUnitManager.py \
+			ui/ui_attribute_editor.py \
+			ui/ui_changepwd.py \
+			ui/ui_composer_data_field.py \ 
+			ui/ui_composer_data_source.py \
+			ui/ui_composer_doc_selector.py \
+			ui/ui_composer_spcolumn_styler.py \
+			ui/ui_composer_symbol_editor.py \
+			ui/ui_content_auth.py \
+			ui/ui_coordinates_editor.py \
+			ui/ui_dbconn.py \
+			ui/ui_dbmanage.py \
+			ui/ui_doc_item.py \
+			ui/ui_entity_browser.py \
+			ui/ui_export_data.py \
+			ui/ui_foreign_key_mapper.py \
+			ui/ui_genericAdminUnitManager.py \
+			ui/import_data.py \
+			ui/ui_login.py \
+			ui/ui_login.py \
+			ui/ui_login.py \
+			ui/ui_main_widget.py \
+			ui/ui_new_role.py \
+			ui/ui_new_str.py \
+			ui/ui_new_user.py \
+			ui/ui_notif_item.py \
+			ui/ui_person_doc_generator.py \
+			ui/ui_profile.py \
+			ui/ui_property_preview.py \
+			ui/ui_str_editor.py \
+			ui/ui_str_view_entity.py \
+			ui/ui_table.py \
+			ui/ui_table_property.py \
+			ui/ui_user_role_manage.py \
+			ui/ui_view_str.py \
+			ui/ui_workspace_config.py \
+			ui/view_str.py \
+			ui/workspace_config.py
+			
+			
 			
 FORMS = ui/ui_changepwd.ui \		  			  	
 		ui/ui_dbconn.ui \
@@ -53,13 +84,6 @@ FORMS = ui/ui_changepwd.ui \
 		ui/ui_login.ui \
 		ui/ui_user_role_manage.ui \
 		ui/ui_admin_details.ui \
-		ui/ui_admin_unit.ui \
-		ui/ui_enum_details.ui \
-		ui/ui_enumerators.ui \
-		ui/ui_new_admin_unit.ui \
-		ui/ui_questionnaire.ui \
-		ui/ui_respondent.ui \		
-		ui/ui_worksite.ui \
 		ui/ui_attribute_editor.ui \
 		ui/ui_combo_option_other.ui \
 		ui/ui_composer_data_field.ui \ 
