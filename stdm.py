@@ -849,12 +849,11 @@ class STDMQGISLoader(object):
         else:
             tableName=self._moduleItems.get(dispName)
             if tableName in tbList:
-               # try:
-                    
-                main=STDMEntityBrowser(self.moduleContentGroups[0],tableName,self.iface.mainWindow())
-                main.exec_()
-                #except Exception as ex:
-                #    QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
+                try:
+                    main=STDMEntityBrowser(self.moduleContentGroups[0],tableName,self.iface.mainWindow())
+                    main.exec_()
+                except Exception as ex:
+                    QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
             
     def about(self):
         '''
@@ -930,7 +929,6 @@ class STDMQGISLoader(object):
             '''add a default is not provided'''
             default = handler.STDMProfiles()
             profile = str(default[0])
-            
         moduleList = handler.tableNames(profile)    
         self.pgTableMapper(moduleList)
         if 'spatial_unit' in moduleList:
@@ -952,8 +950,8 @@ class STDMQGISLoader(object):
         '''
         Load and open documentation manual
         '''
-        handler=ConfigTableReader()
-        helpManual=handler.setDocumentationPath()
+        handler = ConfigTableReader()
+        helpManual = handler.setDocumentationPath()
         os.startfile(helpManual,'open')
                   
         
