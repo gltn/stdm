@@ -45,13 +45,14 @@ class MapperDialog(QDialog,Ui_Dialog):
     
         
 class CustomFormDialog(MapperDialog, MapperMixin):
-    def __init__(self, parent, model=None):
+    def __init__(self,parent,model=None):
         MapperDialog.__init__(self, parent)
         MapperMixin.__init__(self, model)
         
         self.buttonBox.accepted.connect(self.closeAct)
+        #self.buttonBox.accepted.connect(self.closeAct)
         self.buttonBox.rejected.connect(self.cancel)
-
+        #QMessageBox.information(self,"mapper",str(dir(model)))
         if callable(model):
             self._table = model.__name__
         else:
@@ -59,14 +60,13 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         tableProperties = self.tableProperty()
         propertyMapper = TypePropertyMapper(tableProperties)
         widgets = propertyMapper.setProperty()
-
-        self.setFormAlignment()
+        self.frmLayout.setLabelAlignment(Qt.AlignLeft)
         for attrib, widget in widgets.iteritems():
             if hasattr(model, attrib):
                 self.controlWidget(widget[0])
                 self.setControl(widget[1])
-                self.addMapping(attrib, self.control, False, attrib)
-                self.frmLayout.addRow(self.userLabel(attrib), self.control)
+                self.addMapping(attrib, self.control, False,attrib)
+                self.frmLayout.addRow(self.userLabel(attrib),self.control)
         self.frmLayout.setLabelAlignment(Qt.AlignJustify)
        
     def userLabel(self, attr):
@@ -87,13 +87,10 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         self.widgetCls = widget()
         self.control = self.widgetCls.Factory()
         
-    def setControl(self, widget):
+    def setControl(self,widget):
         if widget:
             self.lookupOptions(self.widgetCls, widget)
         self.widgetCls.adopt()
-
-    def setFormAlignment(self):
-        self.frmLayout.setLabelAlignment(Qt.AlignLeft)
 
     def closeAct(self):
         self.submit()

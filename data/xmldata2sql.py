@@ -20,6 +20,7 @@
  ***************************************************************************/
 """
 INSERTSQL=("INSERT INTO %s %s VALUES %s")
+
 class SQLInsert(object):
     def __init__(self,table,args):
         self.args=args
@@ -41,21 +42,20 @@ class SQLInsert(object):
                 return sqlInsert
         
     def setInsertStatement(self):
-        '''Run through the table list and return the full insert statement'''
+        '''Run through the lookup table list and return the full insert statement'''
         for value in self.args:
             sqlInsert =  r'('+r"'"+value +r"');"
             self.sqlDef.append(INSERTSQL%(self.table,self.keyColAttrib(),str(sqlInsert)))
         return self.sqlDef
     
     def spatialRelation(self):
-        # needed for creation of map on the composer
-        defaultView = "CREATE OR REPLACE VIEW spatial_unit_relations AS SELECT party.id, party.family_name AS surname, party.other_names,\
-        party.identification AS identification, \
-        spatial_unit.spatial_unit_id AS identifier, spatial_unit.name AS type_name,spatial_unit.geom_polygon AS polygon \
-        FROM party, spatial_unit, social_tenure_relationship \
-        WHERE spatial_unit.id = social_tenure_relationship.spatial_unit AND party.id = social_tenure_relationship.party;"
+        # needed for creation of map on the composer and reporting on social tenure
+        socialTenure = "CREATE OR REPLACE VIEW social_tenure_relations AS SELECT party.id, party.family_name AS party_surname, party.other_names, \
+        party.identification, spatial_unit.spatial_unit_id AS spatial_unit_number, spatial_unit.name AS spatial_unit_name, spatial_unit.geom_polygon AS geometry, \
+                        social_tenure_relationship.social_tenure_type FROM party, spatial_unit, social_tenure_relationship\
+                        WHERE spatial_unit.id = social_tenure_relationship.spatial_unit AND party.id = social_tenure_relationship.party; "
             
-        return defaultView
+        return socialTenure
         
         
     

@@ -663,9 +663,10 @@ class STDMQGISLoader(object):
         """
         #TODO: To be incorporated into the XML config file.
         import ConfigParser
-        config = ConfigParser.ConfigParser()
-        confPath = PLUGIN_DIR + "/config.ini"
-        config.read(confPath)
+#         config = ConfigParser.ConfigParser()
+#         confPath = PLUGIN_DIR + "/config.ini"
+#         config.read(confPath)
+        config = self._moduleItems
         
         rptBuilder = ReportBuilder(config,self.iface.mainWindow())
         rptBuilder.exec_()
