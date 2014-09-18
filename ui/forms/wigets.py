@@ -52,7 +52,7 @@ class CharacterWidget(InputWidget):
         self.control.setMinimumWidth(50)
         self.control.setText("")
           
-class IntegerWidget(InputWidget):
+class IntegerWidget(CharacterWidget):
     def __init__(self):
         self.type = 'integer'
     
@@ -74,7 +74,7 @@ class DoubleWidget(IntegerWidget):
     def adopt(self):
         self.control.setValue(0)
 
-class ChoiceListWidget(InputWidget):
+class ChoiceListWidget(CharacterWidget):
     def __init__(self, options=None):
         self.options = options
 
