@@ -26,9 +26,12 @@ class TypePropertyMapper(object):
     def __init__(self, attrMap, options = None):
         self._attr = attrMap
         self.widgetList = OrderedDict()
-        if hasattr('id',self._attr):
-            QMessageBox.information(None,"Id ","id present")
-            self._attr.pop('id')
+        self.hideGUID()
+
+    def hideGUID(self):
+        for keys in self._attr:
+            if keys == 'id':
+                self._attr.pop(keys)
 
     def widget(self):
         isLookup = False
