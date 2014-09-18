@@ -39,7 +39,7 @@ class LookupDialog(QDialog, Ui_Lookup):
         self.setupUi(self)
         self.tableName = None
         self.initControls()
-        #QObject.connect(self.listView,SIGNAL('clicked(QModelIndex)'),self.selectedIndex)
+      
         self.btnNew.clicked.connect(self.addLookUp)
         self.cboTable.currentIndexChanged.connect(self.currentTableChanged)
         self.btnChoice.clicked.connect(self.addNewLookupChoice)
