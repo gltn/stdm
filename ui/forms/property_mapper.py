@@ -20,12 +20,15 @@ from collections import OrderedDict
 
 from .wigets import widgetCollection
 from stdm.data import lookupData
+from PyQt4.QtGui import *
 
 class TypePropertyMapper(object):
     def __init__(self, attrMap, options = None):
         self._attr = attrMap
         self.widgetList = OrderedDict()
-        self._attr.pop('id')
+        if hasattr('id',self._attr):
+            QMessageBox.information(None,"Id ","id present")
+            self._attr.pop('id')
 
     def widget(self):
         isLookup = False
@@ -42,8 +45,14 @@ class TypePropertyMapper(object):
 
     def lookupOptions(self, tName):
         '''
-        if it is a lookup get values from the config
+        if it's a lookup, get values from the config
         :return:
         '''
         choice_list = lookupData(tName)
         return choice_list
+    
+    def userLookupOptions(self):
+        '''
+        Fetch lookup values from the DB.
+        '''
+        
