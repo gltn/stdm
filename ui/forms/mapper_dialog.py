@@ -50,13 +50,13 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         MapperMixin.__init__(self, model)
         
         self.buttonBox.accepted.connect(self.closeAct)
-        #self.buttonBox.accepted.connect(self.closeAct)
         self.buttonBox.rejected.connect(self.cancel)
-        #QMessageBox.information(self,"mapper",str(dir(model)))
+        
         if callable(model):
             self._table = model.__name__
         else:
             self._table = model.__class__.__name__
+        # start form loading procedure
         tableProperties = self.tableProperty()
         propertyMapper = TypePropertyMapper(tableProperties)
         widgets = propertyMapper.setProperty()
