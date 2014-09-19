@@ -42,6 +42,7 @@ from stdm.data import (
                        process_report_filter
                        )
 from stdm.ui.customcontrols import TableComboBox
+from sqlalchemy.exc import SQLAlchemyError
 '''
 from stdm.workspace.defaultSetting.config import dbTableConfig
 from stdm.workspace.defaultSetting.map_query import CertificateMap
@@ -121,14 +122,15 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
     
     def initRptDialog(self):
         #Initialize the dialog with table names
-        self.tabNames={}    
-        tabList=self.config.items("ReportFields")
+        self.tabNames=self.config   
+        #tabList=self.config.items("ReportFields")
+        #tabList=self.config.items()
         
-        for names in tabList:
-            tableName = names[0]
-            displayName = names[1]
-            self.tabNames[tableName] = displayName
+        for name, value in self.tabNames.iteritems():
+            tableName = value
+            displayName = name
             self.comboBox.addItem(displayName,tableName)
+            self.tabNames['Social Tenure Relationship'] = 'social_tenure_relations'
         
         self.initStackWidgets()
         
@@ -416,8 +418,8 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
                 mpPartQry=mpPartQry
             mapUnits=self.stdmPgProv.procReportViewFilter(self.tabName,str(mpPartQry))            
             refLayer=CertificateMap(mapUnits)
-        except:
-            self.ErrorInfoMessage(str(sys.exc_info()[1]))
+        except Exception as ex:
+            self.ErrorInfoMessage(str(ex.message))
             return
                 
     def filter_verifyQuery(self):
