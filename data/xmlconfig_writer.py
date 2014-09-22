@@ -25,16 +25,14 @@ from xml2ddl.xml2html import Xml2Html, xml2ddl
 from xml2ddl.diffxml2ddl import DiffXml2Ddl
 
 from .configfile_paths import FilePaths
-try:
-    xmlobject=FilePaths()
-    xml_doc=xmlobject.setUserXMLFile()
-    #xml_doc=xmlobject.XMLFile()
-    destPath=xmlobject.SQLFile()
-    destHtml=xmlobject.HtmlFile()
-    sourcePath=xml_doc
-    oldPath=xmlobject.cacheFile()
-except:
-    pass
+xmlobject=FilePaths()
+xml_doc=xmlobject.setUserXMLFile()
+#xml_doc=xmlobject.XMLFile()
+destPath=xmlobject.SQLFile()
+destHtml=xmlobject.HtmlFile()
+sourcePath=xml_doc
+oldPath=xmlobject.cacheFile()
+
 
 def writeTable(data,profile,tableName):
     #method to addnew table definition in the config file
@@ -131,7 +129,7 @@ def deleteColumn(level,category,tableName,elemnt,key,value):
             continue
             #print "Not founded"+str(profile.attrib)
     
-def editTableColumn(profile,tableName, key, value, newValue):
+def editTableColumn(profile,tableName, key, value, newValue,type,size):
     tree, root=parseRootElement()
     filter=(".//*[@name='%s']/table")%profile
     for elem in root.findall(filter):
@@ -141,6 +139,8 @@ def editTableColumn(profile,tableName, key, value, newValue):
                 if col.get(key)==value:
                     col.set(key,newValue)
                     col.set('oldname',value)
+                    col.set('type',type)
+                    col.set('size',size)
     tree.write(xml_doc,xml_declaration=True, encoding='utf-8')
 
 def renameTable(profile,oldName, newName):
