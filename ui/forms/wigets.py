@@ -89,8 +89,9 @@ class ChoiceListWidget(CharacterWidget):
 
     def adopt(self):
         if self.options:
-            for index, value in enumerate(self.options):
-                self.control.insertItem(index, value)
+            self.control.addItem("")
+            for item in self.options:
+                self.control.addItem(item.value,item.id)
             self.control.setMinimumContentsLength(50)
             self.control.setDuplicatesEnabled(False)
             self.control.setMaxVisibleItems(len(self.options))
