@@ -333,16 +333,17 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         except sqlalchemy.exc.OperationalError as oe:
             errMsg = oe.message
             QMessageBox.critical(self, QApplication.translate("newSTRWiz", "Unexpected Error"),errMsg)
-            STDMDb.instance().session.rollback()
             progDialog.hide()
             isValid = False
             
         except Exception as e:
             errMsg = str(e)
             QMessageBox.critical(self, QApplication.translate("newSTRWiz", "Unexpected Error"),errMsg)
-            progDialog.hide()
+            
             isValid = False
-        
+        finally:
+            STDMDb.instance().session.rollback()
+            progDialog.hide()
         return isValid
             
     def _loadPersonInfo(self,persons):
