@@ -149,9 +149,13 @@ class AttributeEditor(QDialog,Ui_editor):
                 
     def updateColumnData(self):
         '''Delete existing data and set new data defined by the user for this column'''
-        element='columns'
+        atType = UserData(self.cboDatatype)
+        if atType in self.defaults:
+            sizeval=''
+        if atType not in self.defaults:
+            sizeval=self.txtAttrib.text()
         try:
-            editTableColumn(self.profile, self.tableName, 'name', self.args[0], formatColumnName(self.txtCol.text()))
+            editTableColumn(self.profile, self.tableName, 'name', self.args[0], formatColumnName(self.txtCol.text()),atType,sizeval)
         except:
             self.ErrorInfoMessage(QApplication.translate('AttributeEditor','Unable to update the column data'))
             return
