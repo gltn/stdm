@@ -302,7 +302,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 EditorSession.append(selCols[1].data())
                 EditorSession.append(selCols[2].data())
                 EditorSession.append(selCols[3].data())
-                colDlg=AttributeEditor(str(self.cboProfile.currentText()),self.tableName,self,args=EditorSession)
+                colDlg = AttributeEditor(str(self.cboProfile.currentText()),self.tableName,self,args=EditorSession)
                 colDlg.exec_()
             else:
                 self.InfoMessage(QApplication.translate("WorkSpaceLoader","No table column is selected for editing"))
