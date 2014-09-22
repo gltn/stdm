@@ -661,13 +661,7 @@ class STDMQGISLoader(object):
         """
         Show tabular reports' builder dialog
         """
-        #TODO: To be incorporated into the XML config file.
-        import ConfigParser
-#         config = ConfigParser.ConfigParser()
-#         confPath = PLUGIN_DIR + "/config.ini"
-#         config.read(confPath)
         config = self._moduleItems
-        
         rptBuilder = ReportBuilder(config,self.iface.mainWindow())
         rptBuilder.exec_()
         
@@ -838,7 +832,6 @@ class STDMQGISLoader(object):
         '''
         if layer.id() in pg_layerNamesIDMapping().reverse:
             return True
-        
         return False
     
     def widgetLoader(self,QAction):
@@ -906,9 +899,6 @@ class STDMQGISLoader(object):
         if self.menubarLoader != None:
             self.menubarLoader.unloadContent()
             self.stdmMenu.clear()
-            #del self.stdmMenu
-            
-            
         #Reset property management window
         if self.propManageWindow != None:
             self.iface.removeDockWidget(self.propManageWindow)
@@ -926,11 +916,11 @@ class STDMQGISLoader(object):
         '''
         profile=activeProfile()
         handler=ConfigTableReader()
-        if profile == None:
-            '''add a default is not provided'''
-            default = handler.STDMProfiles()
-            profile = str(default[0])
-        moduleList = handler.tableNames(profile)    
+        #if profile == None:
+           # '''add a default is not provided'''
+           #default = handler.STDMProfiles()
+            #profile = str(default[0])
+        moduleList = handler.fulltableList()  
         self.pgTableMapper(moduleList)
         if 'spatial_unit' in moduleList:
             moduleList.remove('spatial_unit')
