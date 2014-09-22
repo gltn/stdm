@@ -17,13 +17,17 @@ email                : njoroge.solomon.com
  ***************************************************************************/
 """
 from collections import OrderedDict
-
+from stdm.utils import *
 from .wigets import widgetCollection
 from stdm.data import lookupData
 from PyQt4.QtGui import *
+from stdm.ui.stdmdialog import  DeclareMapping
+
 
 class TypePropertyMapper(object):
     def __init__(self, attrMap, options = None):
+        
+        self._mapper = DeclareMapping.instance()
         self._attr = attrMap
         self.widgetList = OrderedDict()
         self.hideGUID()
@@ -38,24 +42,25 @@ class TypePropertyMapper(object):
         for attr, dataType in self._attr.iteritems():
             if dataType[1] != False:
                 dataType[0] = 'choice'
-                options = self.lookupOptions(dataType[1])
+                options = self.lookupModel(dataType[1])
                 if options: isLookup = options
             self.widgetList[attr] = [widgetCollection()[dataType[0]], isLookup]
 
     def setProperty(self):
         self.widget()
         return self.widgetList
-
-    def lookupOptions(self, tName):
-        '''
-        if it's a lookup, get values from the config
-        :return:
-        '''
-        choice_list = lookupData(tName)
-        return choice_list
     
-    def userLookupOptions(self):
+    def userLookupOptions(self,DBmodel):
         '''
         Fetch lookup values from the DB.
         '''
+        return readComboSelections(DBmodel)
+        
+    def lookupModel(self, tName):
+        '''
+        ensure the lookup table is mapped to an SQLALchemy mapper entity
+        '''
+        self._lkmodel = self._mapper.tableMapping(tName.lower())
+        modelItems = self.userLookupOptions(self._lkmodel)
+        return modelItems
         
