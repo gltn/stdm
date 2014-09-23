@@ -52,13 +52,12 @@ def XMLTableElement(profile):
     return tables
 
 def checktableExist(profile,tableName):
-    Exist=False
-    tree = ET()
-    root= tree.parse(xml_doc)
+    Exist = False
+    tree,root=parseRootElement()
     level=(".//*[@name='%s']/table")%profile
     for elem in root.findall(level):
-         if elem.get('name')==tableName:
-             Exist= True
+         if elem.get('name')== tableName:
+             Exist = True
     return Exist
         
 def deleteProfile(profileName):
