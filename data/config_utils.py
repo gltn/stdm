@@ -31,6 +31,11 @@ def formatColumnName(txtName):
     txtName=str(txtName).strip()
     return txtName.replace(" ", "_").lower()
 
+def setUniversalCode(self):
+        codGen=QUuid()
+        code=codGen.createUuid()
+        return code.toString().upper()
+
 def UserData(comboBox):
         #get the user data from the combo box display item
         text=comboBox.currentText()
