@@ -31,7 +31,7 @@ def formatColumnName(txtName):
     txtName=str(txtName).strip()
     return txtName.replace(" ", "_").lower()
 
-def setUniversalCode(self):
+def setUniversalCode():
         codGen=QUuid()
         code=codGen.createUuid()
         return code.toString().upper()
