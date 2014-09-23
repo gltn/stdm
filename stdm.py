@@ -848,6 +848,8 @@ class STDMQGISLoader(object):
                     main.exec_()
                 except Exception as ex:
                     QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
+                finally:
+                    STDMDb.instance().session.rollback()
             
     def about(self):
         '''
