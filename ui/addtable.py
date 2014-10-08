@@ -24,6 +24,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import QDialog, QApplication, QMessageBox
 from stdm.data import writeTable, renameTable,inheritTableColumn, writeTableColumn,writeLookup,\
 checktableExist,ConfigTableReader
+from stdm.data.config_utils import setUniversalCode
 
 class TableEditor(QDialog, Ui_table):
     def __init__(self,actionMode,tableName,parent):
@@ -35,7 +36,7 @@ class TableEditor(QDialog, Ui_table):
         self.profile=actionMode[0]
         self.lookup=None
         self.checkBox.clicked.connect(self.actionInherit)
-        self.txtTable.editingFinished.connect(self.checkTableExist)
+        #self.txtTable.editingFinished.connect(self.checkTableExist)
         self.initGui()
         
         
@@ -51,7 +52,7 @@ class TableEditor(QDialog, Ui_table):
         self.widget.hide()
        
     def actionInherit(self):
-        '''check if the user want to inherit other table columns'''
+        """check if the user want to inherit other table columns"""
         if self.checkBox.isChecked():
             self.widget.show()
             self.tableModel()
@@ -62,8 +63,8 @@ class TableEditor(QDialog, Ui_table):
             model.removeColumns(0,items)
         
     def tableModel(self):
-        tableHandler=ConfigTableReader()
-        tableModel=tableHandler.tableListModel(self.profile)
+        tableHandler = ConfigTableReader()
+        tableModel = tableHandler.tableListModel(self.profile)
         self.cboInheritTable.setModel(tableModel)
         
     def setTableData(self):
@@ -76,74 +77,70 @@ class TableEditor(QDialog, Ui_table):
         self.tableCapabilities()
         
     def tableCapabilities(self):
-        options=['create','select','update','delete']
+        options=['create', 'select', 'update', 'delete']
         capabilities={}
         for opt in options:
-            capabilities['name']=opt
-            capabilities['code']=self.capabilityCode()
+            capabilities['name'] = opt
+            capabilities['code'] = setUniversalCode()
             writeTableColumn(capabilities, self.profile, 'table', self.table, 'contentgroups')
-            
-    def capabilityCode(self):
-        codGen=QUuid()
-        code=codGen.createUuid()
-        return code.toString().upper()
-        
+
     def setLookupTable(self):
         '''def add lookup table'''
         tableName=self.setTableName(self.txtTable.text())
         if str(tableName).startswith("check"):
             self.table=tableName
         if not str(tableName).startswith("check"):
-            self.table='check_'+tableName
+            self.table = 'check_'+tableName
         attrib={}
-        tableDesc=str(self.txtDesc.text())
-        attrib['name']=self.table
-        attrib['fullname']=tableDesc
-        writeLookup(attrib,self.profile,self.table)
+        tableDesc = str(self.txtDesc.text())
+        attrib['name'] = self.table
+        attrib['fullname'] = tableDesc
+        writeLookup(attrib, self.profile,self.table)
         self.autoCreatePrimaryKeyColumn('lookup')
         self.dataColumnForLookup('lookup')
     
     def updateTableName(self):
-        tableName=self.setTableName(self.txtTable.text())
+        tableName = self.setTableName(self.txtTable.text())
         renameTable(self.profile,self.table,tableName)
     
     def inheritsColumns(self):
-        sourceTable=self.cboInheritTable.currentText()
-        destTable=self.setTableName(self.txtTable.text())
+        sourceTable = self.cboInheritTable.currentText()
+        destTable = self.setTableName(self.txtTable.text())
         #try:
         inheritTableColumn(self.profile,sourceTable,destTable)
         #except:
         #    self.ErrorInfoMessage(QApplication.translate("TableEditor","Cannot copy columns from "+sourceTable))
         
     def setTableName(self, tabName):
-        formattedName=str(tabName).strip()
-        formattedName=formattedName.replace(' ', "_")
+        formattedName = str(tabName).strip()
+        formattedName = formattedName.replace(' ', "_")
         return formattedName.lower()
     
     def autoCreatePrimaryKeyColumn(self,Node):
-        '''Allow automatic created of primary column in the table'''
-        attrib={}
-        attrib['name']='id'
-        attrib['fullname']='Primary Key'
-        attrib['type']='serial'
-        attrib['size']=''
-        attrib['key']='1'
+        """Allow automatic created of primary column in the table"""
+        attrib = {
+            'name' : 'id',
+            'fullname' : 'Primary Key',
+            'type' : 'serial',
+            'size' : '',
+            'key' : '1'
+        }
         writeTableColumn(attrib,self.profile,Node,self.table,'columns')
     
     def dataColumnForLookup(self,Node):
-        attrib={}
-        attrib['name']='value'
-        attrib['fullname']='Choice list'
-        attrib['type']='character varying'
-        attrib['size']='50'
-        #attrib['key']='1'
+        attrib  = {
+            'name' : 'value',
+            'fullname' : 'Choice list',
+            'type' : 'character varying',
+            'size' : '50'
+             }
         writeTableColumn(attrib,self.profile,Node,self.table,'columns')
     
     def checkTableExist(self):
-        '''check if the table has been defined already'''
+        """check if the table has been defined already"""
         tableName=self.setTableName(self.txtTable.text())
         status=checktableExist(self.profile,tableName)
-        if status==True:
+        if status == True:
             QMessageBox.critical(self, QApplication.translate("TableEditor","Table Exist Warning"), 
                                  QApplication.translate("TableEditor","Table name cannot be defined twice"))
             self.txtTable.setFocus()
