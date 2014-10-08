@@ -71,8 +71,8 @@ class DeclareMapping():
         pass
 
     def displayMapping(self,table=''):
-        attribs=OrderedDict()
-        if table!='':
+        attribs = OrderedDict()
+        if table != '':
             cols=tableCols(table)
             for col in cols:
                 attribs[col]=col.replace('_',' ').title()
