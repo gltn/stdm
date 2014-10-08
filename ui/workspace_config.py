@@ -312,7 +312,6 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.loadTableColumns(self.tableName)
         self.loadTableRelations(self.tableName)
         self.populateLookup()
-                #if str(self.tableName).startswith('check'):
         
     def tableRelationEditor(self):
         if self.tableName!=None:
