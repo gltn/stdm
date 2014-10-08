@@ -20,31 +20,31 @@
  ***************************************************************************/
 """
 
-datatypes={
-            'Short integer'  : 'integer',
-            'Long integer'  : 'bigint',
-            'True/ False'    : 'boolean',
-            'Date'    :'date',
-            'Double/ decimal'  : 'double precision',
-            'Auto Increment' : 'serial',
-            'Geometry' : 'geometry',
-            'Short text' : 'character varying',
-            'Long text'  : 'text'
+datatypes = {
+        'Short integer': 'integer',
+        'Long integer': 'bigint',
+        'True/ False': 'boolean',
+        'Date': 'date',
+        'Double/ decimal': 'double precision',
+        'Auto Increment': 'serial',
+        'Geometry': 'geometry',
+        'Short text': 'character varying',
+        'Long text': 'text'
          }
 
-actions={ 
-            'CASCADE'  : 'cascade',
-            'SET NULL'  : 'setnull'     
+actions = {
+            'CASCADE': 'cascade',
+            'SET NULL': 'setnull'
              }
 
-constraints ={
+constraints = {
              'Unique': 'UNIQUE', 
-             'Check' : 'CHECK'
+             'Check': 'CHECK'
               }
 
-nullable={
-            'Yes' : 'no',
-            'No' : 'yes'
+nullable = {
+            'Yes': 'no',
+            'No': 'yes'
           }
 
 
