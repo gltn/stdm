@@ -38,7 +38,7 @@ class GeometryProperty(QDialog):
         self.sridButton = QPushButton()
         self.sridButton.setText("Select Coordinate System ")
         self.textField = QLineEdit()
-        geometryCollections = {'Point':'POINT','Line':'LINESTRING','Polygon':'POLYGON'}
+        geometryCollections = {'Point': 'POINT','Line': 'LINESTRING','Polygon': 'POLYGON', 'Multipolygon': 'MULTIPOLYGON'}
         setCollectiontypes(geometryCollections,self.comboField)
        
         self.buttons=QDialogButtonBox()
@@ -66,7 +66,7 @@ class GeometryProperty(QDialog):
         
     def setGeometrySetting(self):
         if self.textField.text() == '':
-            self.ErrorInfoMessage(QApplication.translate("GeometryProperty","Projections is not selected"))
+            self.ErrorInfoMessage(QApplication.translate("GeometryProperty", "Projections is not selected"))
             return
         
         self.value = self.textField.text()[5:]
@@ -81,7 +81,7 @@ class GeometryProperty(QDialog):
         # Error Message Box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
-        msg.setWindowTitle(QApplication.translate("GeometryProperty","Geometry Settings"))
+        msg.setWindowTitle(QApplication.translate("GeometryProperty", "Geometry Settings"))
         msg.setText(Message)
         msg.exec_() 
        
