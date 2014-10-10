@@ -470,8 +470,10 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         Person=self.mapping.tableMapping('party')
         person=Person()
         #Get the id from the model then the value of the ID model index
-
-        personId = UserData(self.cboFilterPattern)
+        index =self.cboFilterPattern.currentIndex()
+        personId = self.cboFilterPattern.itemData(index)
+        #QMessageBox.information(None,'index',str(data))
+        # personId = pData
         if personId is not None:
         #Get person info
             p = person.queryObject().filter(Person.id == str(personId)).first()
