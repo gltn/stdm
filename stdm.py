@@ -64,6 +64,7 @@ from mapping import (
                      )
 from utils import *
 from mapping.utils import pg_layerNamesIDMapping
+from data.pg_utils import resetContentRoles
 from composer import ComposerWrapper
 
 
@@ -202,21 +203,19 @@ class STDMQGISLoader(object):
             
             #Get STDM tables
             self.stdmTables = spatial_tables()                         
-            self.loadModules()
-            """
+            #self.loadModules()
+            #resetContentRoles()
             try:
                 self.loadModules()
             except Exception as ex:
                 QMessageBox.warning(self.iface.mainWindow(),QApplication.translate("STDM","Error"),ex.message)
-            """
-            
+
     def loadModules(self):
         '''
         Define and add modules to the menu and/or toolbar using the module loader
         '''
         self.toolbarLoader = QtContainerLoader(self.iface.mainWindow(),self.stdmInitToolbar,self.logoutAct)
         self.menubarLoader = QtContainerLoader(self.iface.mainWindow(), self.stdmMenu, self.helpAct)
-        
         #Connect to the content added signal
         #self.toolbarLoader.contentAdded.connect(self.onContentAdded)
         
