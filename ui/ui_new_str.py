@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_new_str.ui'
 #
-# Created: Tue Jun 24 16:33:54 2014
-#      by: PyQt4 UI code generator 4.10.3
+# Created: Fri Oct 10 11:32:18 2014
+#      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -49,12 +49,18 @@ class Ui_frmNewSTR(object):
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
         self.horizontalLayout = QtGui.QHBoxLayout(self.groupBox)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
-        self.txtFilterPattern = QtGui.QLineEdit(self.groupBox)
-        self.txtFilterPattern.setMinimumSize(QtCore.QSize(0, 30))
-        self.txtFilterPattern.setMaxLength(100)
-        self.txtFilterPattern.setObjectName(_fromUtf8("txtFilterPattern"))
-        self.horizontalLayout.addWidget(self.txtFilterPattern)
+        self.label_3 = QtGui.QLabel(self.groupBox)
+        self.label_3.setMinimumSize(QtCore.QSize(20, 0))
+        self.label_3.setMaximumSize(QtCore.QSize(50, 16777215))
+        self.label_3.setObjectName(_fromUtf8("label_3"))
+        self.horizontalLayout.addWidget(self.label_3)
+        self.cboFilterPattern = QtGui.QComboBox(self.groupBox)
+        self.cboFilterPattern.setMinimumSize(QtCore.QSize(60, 30))
+        self.cboFilterPattern.setEditable(True)
+        self.cboFilterPattern.setObjectName(_fromUtf8("cboFilterPattern"))
+        self.horizontalLayout.addWidget(self.cboFilterPattern)
         self.label_2 = QtGui.QLabel(self.groupBox)
+        self.label_2.setMaximumSize(QtCore.QSize(50, 16777215))
         self.label_2.setObjectName(_fromUtf8("label_2"))
         self.horizontalLayout.addWidget(self.label_2)
         self.cboPersonFilterCols = QtGui.QComboBox(self.groupBox)
@@ -195,7 +201,7 @@ class Ui_frmNewSTR(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName(_fromUtf8("scrollArea"))
         self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 587, 361))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 98, 28))
         self.scrollAreaWidgetContents.setObjectName(_fromUtf8("scrollAreaWidgetContents"))
         self.groupBox_4 = QtGui.QGroupBox(self.scrollAreaWidgetContents)
         self.groupBox_4.setGeometry(QtCore.QRect(9, 9, 561, 351))
@@ -287,8 +293,7 @@ class Ui_frmNewSTR(object):
         self.retranslateUi(frmNewSTR)
         QtCore.QMetaObject.connectSlotsByName(frmNewSTR)
         frmNewSTR.setTabOrder(self.cboPersonFilterCols, self.tvPersonInfo)
-        frmNewSTR.setTabOrder(self.tvPersonInfo, self.txtFilterPattern)
-        frmNewSTR.setTabOrder(self.txtFilterPattern, self.txtPropID)
+        frmNewSTR.setTabOrder(self.tvPersonInfo, self.txtPropID)
         frmNewSTR.setTabOrder(self.txtPropID, self.tvPropInfo)
 
     def retranslateUi(self, frmNewSTR):
@@ -299,7 +304,7 @@ class Ui_frmNewSTR(object):
         self.frmWizPerson.setTitle(_translate("frmNewSTR", "Occupant Information", None))
         self.frmWizPerson.setSubTitle(_translate("frmNewSTR", "Select the occupant information by searching through the existing repository.", None))
         self.groupBox.setTitle(_translate("frmNewSTR", "Search Criteria:", None))
-        self.txtFilterPattern.setPlaceholderText(_translate("frmNewSTR", "Look for", None))
+        self.label_3.setText(_translate("frmNewSTR", "Look for....", None))
         self.label_2.setText(_translate("frmNewSTR", "in column:", None))
         self.frmWizProperty.setTitle(_translate("frmNewSTR", "Property information", None))
         self.frmWizProperty.setSubTitle(_translate("frmNewSTR", "Select the land and building information.", None))
