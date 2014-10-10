@@ -18,15 +18,18 @@ email                : njoroge.solomon.com
 """
 from collections import OrderedDict
 from stdm.utils import *
+from stdm.data import STDMDb
 from .wigets import widgetCollection
 from stdm.data import lookupData
 from PyQt4.QtGui import *
 from stdm.ui.stdmdialog import  DeclareMapping
+from Lookup import  LookupModeller
 
 
 class TypePropertyMapper(object):
     def __init__(self, attrMap, options = None):
-        
+        """ Class to read and match the datatype to respective control on the form"""
+        self._modeller = LookupModeller()
         self._mapper = DeclareMapping.instance()
         self._attr = attrMap
         self.widgetList = OrderedDict()
@@ -42,7 +45,9 @@ class TypePropertyMapper(object):
         for attr, dataType in self._attr.iteritems():
             if dataType[1] != False:
                 dataType[0] = 'choice'
-                options = self.lookupModel(dataType[1])
+                self._modeller.setLookupAttribute(dataType[0])
+                lkModel = self._modeller.lookupModel(dataType[1])
+                options = self.lookupItems(lkModel)
                 if options: isLookup = options
             self.widgetList[attr] = [widgetCollection()[dataType[0]], isLookup]
 
@@ -50,17 +55,22 @@ class TypePropertyMapper(object):
         self.widget()
         return self.widgetList
     
-    def userLookupOptions(self,DBmodel):
-        '''
+    def userLookupOptions(self, DBmodel):
+        """
         Fetch lookup values from the DB.
-        '''
-        return readComboSelections(DBmodel)
-        
-    def lookupModel(self, tName):
-        '''
-        ensure the lookup table is mapped to an SQLALchemy mapper entity
-        '''
-        self._lkmodel = self._mapper.tableMapping(tName.lower())
-        modelItems = self.userLookupOptions(self._lkmodel)
+        """
+        try:
+            lkupModel = readComboSelections(DBmodel)
+        except Exception as ex:
+            QMessageBox.information(None,'Lookup choices', str(ex.message))
+        finally:
+            self.clearMapping()
+        return lkupModel
+
+    def lookupItems(self, model):
+        modelItems = self.userLookupOptions(model)
+        #QMessageBox.information(None,'modeller', str(model.displayMapping()))
         return modelItems
-        
+
+    def clearMapping(self):
+        STDMDb.instance().session.rollback()
