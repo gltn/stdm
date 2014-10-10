@@ -382,23 +382,23 @@ class STDMQGISLoader(object):
         strViewCnt.code="D13B0415-30B4-4497-B471-D98CA98CD841"
         
         username = data.app_dbconn.User.UserName
-        self.moduleCntGroup=None
-        self._moduleItems={}
+        self.moduleCntGroup = None
+        self.moduleContentGroups = []
+        self._moduleItems = {}
+        self._reportModules = {}
         
         #    map the user tables to sqlalchemy model object
-        moduleList=self.configTables()
         '''
         add the tables to the stdm toolbar
         '''
-        self.moduleContentGroups = []
-        for module in moduleList:
+        for module in self.configTables():
             displayName=str(module).replace("_", " ").title()
             self._moduleItems[displayName]=module
         for k,v in self._moduleItems.iteritems():
             contentAction=QAction(QIcon(":/plugins/stdm/images/icons/table.png"),\
                                          k, self.iface.mainWindow())
             capabilities=contentGroup(self._moduleItems[k])
-            if capabilities!=None:
+            if capabilities != None:
                 moduleCntGroup = TableContentGroup(username,k,contentAction)
                 moduleCntGroup.createContentItem().code =capabilities[0]
                 moduleCntGroup.readContentItem().code =capabilities[1]
@@ -407,7 +407,8 @@ class STDMQGISLoader(object):
                 moduleCntGroup.register()
                 
                 self.moduleContentGroups.append(moduleCntGroup)
-                                 
+                # Add core modules to the report configuration
+                self._reportModules[k] = self._moduleItems.get(k)
         #Create content groups and add items
                 
         self.contentAuthCntGroup = ContentGroup(username)
@@ -663,7 +664,7 @@ class STDMQGISLoader(object):
         """
         Show tabular reports' builder dialog
         """
-        config = self._moduleItems
+        config = self._reportModules
         rptBuilder = ReportBuilder(config,self.iface.mainWindow())
         rptBuilder.exec_()
         
@@ -951,13 +952,3 @@ class STDMQGISLoader(object):
         handler = ConfigTableReader()
         helpManual = handler.setDocumentationPath()
         os.startfile(helpManual,'open')
-                  
-        
-        
-        
-        
-        
-        
-        
-        
-        
