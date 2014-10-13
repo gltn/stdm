@@ -393,8 +393,8 @@ class STDMQGISLoader(object):
         '''
         for module in self.configTables():
             displayName=str(module).replace("_", " ").title()
-            self._moduleItems[displayName]=module
-        for k,v in self._moduleItems.iteritems():
+            self._moduleItems[displayName] = module
+        for k, v in self._moduleItems.iteritems():
             contentAction=QAction(QIcon(":/plugins/stdm/images/icons/table.png"),\
                                          k, self.iface.mainWindow())
             capabilities=contentGroup(self._moduleItems[k])
@@ -665,7 +665,7 @@ class STDMQGISLoader(object):
         Show tabular reports' builder dialog
         """
         config = self._reportModules
-        rptBuilder = ReportBuilder(config,self.iface.mainWindow())
+        rptBuilder = ReportBuilder(config, self.iface.mainWindow())
         rptBuilder.exec_()
         
     def onImportData(self):
