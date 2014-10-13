@@ -17,6 +17,8 @@ email                : njoroge.solomon.com
  ***************************************************************************/
 """
 from stdm.data import tableColType
+from stdm.ui.stdmdialog import DeclareMapping
+from PyQt4.QtGui import QMessageBox
 class AttributePropretyType(object):
     def __init__(self, model):
         self.model=model
@@ -28,4 +30,5 @@ class AttributePropretyType(object):
     
     def displayMapping(self):
         #use the mapped table properties
-        pass
+        self._mapper =  DeclareMapping.instance()
+        lkModel = self._mapper.tableMapping(self.model)

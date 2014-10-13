@@ -19,7 +19,7 @@ email                : njoroge.solomon.com
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import MapperMixin
+from stdm.data import MapperMixin, STDMDb
 from stdm.ui.ui_base_form import Ui_Dialog
 from stdm.ui.notification import NotificationBar
 from .property_mapper import TypePropertyMapper
@@ -42,8 +42,6 @@ class MapperDialog(QDialog,Ui_Dialog):
         size = self.geometry()
         self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
         
-    
-        
 class CustomFormDialog(MapperDialog, MapperMixin):
     def __init__(self,parent,model=None):
         MapperDialog.__init__(self, parent)
@@ -56,9 +54,12 @@ class CustomFormDialog(MapperDialog, MapperMixin):
             self._table = model.__name__
         else:
             self._table = model.__class__.__name__
+
+        self.property = AttributePropretyType(self._table.lower())
         # start form loading procedure
         tableProperties = self.tableProperty()
-        propertyMapper = TypePropertyMapper(tableProperties)
+        #QMessageBox.information(None,"display Mapping",len(self.property.model.displayMapping()))
+        propertyMapper = TypePropertyMapper(tableProperties,self._table.lower())
         widgets = propertyMapper.setProperty()
         self.frmLayout.setLabelAlignment(Qt.AlignLeft)
         for attrib, widget in widgets.iteritems():
@@ -80,10 +81,15 @@ class CustomFormDialog(MapperDialog, MapperMixin):
             pass
 
     def tableProperty(self):
-        property = AttributePropretyType(self._table.lower())
-        return property.attributeType()
+        """
+        loop through the config and load all the datatype
+        Associated with this table model
+        :return dict:
+        """
+        return self.property.attributeType()
     
     def controlWidget(self,widget):
+
         self.widgetCls = widget()
         self.control = self.widgetCls.Factory()
         
@@ -92,6 +98,19 @@ class CustomFormDialog(MapperDialog, MapperMixin):
             self.lookupOptions(self.widgetCls, widget)
         self.widgetCls.adopt()
 
+    def resetSessionMapping(self):
+        """Ensure the current table model has its correct mapping
+        :return dict:
+        """
+        self.property.displayMapping()
+
     def closeAct(self):
-        self.submit()
-        self.accept()
+        try:
+            self.resetSessionMapping()
+            self.submit()
+            self.accept()
+
+        except Exception as ex:
+            self._notifBar.insertWarningNotification(str(ex.message))
+        finally:
+            STDMDb.instance().session.rollback()
