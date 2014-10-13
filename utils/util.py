@@ -55,8 +55,17 @@ def loadComboSelections(comboref,obj):
     modelItems = modelinstance.queryObject().all()
     comboref.addItem("")
     for item in modelItems:
-        comboref.addItem(item.name,item.id) 
+        comboref.addItem(item.value,item.id) 
             
+def readComboSelections(obj):
+    '''
+    Convenience method for loading lookup values in combo boxes
+    '''
+    modelinstance = obj()
+    modelItems = modelinstance.queryObject().all()
+    return modelItems
+    
+    
 def setModelAttrFromCombo(model,attributename,combo,ignorefirstitem = True): 
     '''
     Convenience method for checking whether an item in the combo box

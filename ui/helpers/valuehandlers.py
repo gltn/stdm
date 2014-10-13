@@ -161,7 +161,10 @@ class DateEditValueHandler(ControlValueHandler):
         return self.control.date().toPyDate()
     
     def setValue(self,value):
-        self.control.setDate(value)
+        try:
+            self.control.setDate(value)
+        except:
+            pass
         
     def supportsMandatory(self):
         return False
