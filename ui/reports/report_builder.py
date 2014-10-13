@@ -125,13 +125,14 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         self.tabNames=self.config   
         #tabList=self.config.items("ReportFields")
         #tabList=self.config.items()
-        
-        for name, value in self.tabNames.iteritems():
-            tableName = value
-            displayName = name
-            self.comboBox.addItem(displayName,tableName)
-            self.tabNames['Social Tenure Relationship'] = 'social_tenure_relations'
-        
+        try:
+            for name, value in self.tabNames.iteritems():
+                tableName = value
+                displayName = name
+                self.comboBox.addItem(displayName,tableName)
+                self.tabNames['Social Tenure Relationship'] = 'social_tenure_relations'
+        except:
+            pass
         self.initStackWidgets()
         
         #Sorting
