@@ -30,10 +30,10 @@ class LookupModeller(object):
     def setLookupAttribute(self, attributeName):
         self._lookup.append(attributeName)
 
-    def lookupChoices(self, attributeName, tableModel):
+    def lookupChoices(self, attributeName, lkupModel):
         """
         """
-        self._lookupFormatter[attributeName] = tableModel
+        self._lookupFormatter[attributeName] = lkupModel
 
     def lookupModel(self, tName):
         """
