@@ -127,7 +127,6 @@ class BooleanWidget(CharacterWidget):
         self.control.setMinimumContentsLength(50)
         self.control.setMaxVisibleItems(len(self.options))
 
-
 class DateWidget(InputWidget):
     def __init__(self):
         self.type= 'date'
@@ -151,7 +150,7 @@ def widgetCollection():
             'double precision': DoubleWidget,
             'choice': ChoiceListWidget,
             'date': DateWidget,
-            'text' : TextAreaWidget,
-            'boolean' : BooleanWidget
+            'text': TextAreaWidget,
+            'boolean': BooleanWidget
         }
     return mapping
