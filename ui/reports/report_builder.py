@@ -122,17 +122,15 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
     
     def initRptDialog(self):
         #Initialize the dialog with table names
-        self.tabNames=self.config   
+        self.tabNames = self.config
         #tabList=self.config.items("ReportFields")
         #tabList=self.config.items()
+        self.tabNames['Social Tenure Relationship'] = 'social_tenure_relations'
         try:
-            for name, value in self.tabNames.iteritems():
-                tableName = value
-                displayName = name
-                self.comboBox.addItem(displayName,tableName)
-                self.tabNames['Social Tenure Relationship'] = 'social_tenure_relations'
-        except:
-            pass
+            for name, value in self.config.iteritems():
+                self.comboBox.addItem(name, value)
+        except Exception as ex:
+            self.ErrorInfoMessage(str(ex.message))
         self.initStackWidgets()
         
         #Sorting
@@ -165,7 +163,7 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
     
     def initVars(self):
         #Initialize data variables   
-        self._sortOrder=0    
+        self._sortOrder = 0
     
     def initStackWidgets(self):
         #Instantiate new report display widgets

@@ -23,7 +23,7 @@ class projectionSelector(QDialog):
     def __init__(self,parent):
         super(projectionSelector,self).__init__(parent)
         self.parent=parent
-        #self.loadAvailableSystems()
+       
       
     def loadAvailableSystems(self):
         coordSys=""
