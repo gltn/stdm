@@ -625,7 +625,7 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
         :return lookup formatter
         """
         lkName ='gender'
-        def lookupformatter(lookupvalue)
+        def lookupformatter(lookupvalue):
             lkformatter = lookupformatter(s)
             return lkformatter.
     
