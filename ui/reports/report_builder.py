@@ -410,18 +410,20 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
     def map_query_fromFilter(self):
         strQuery=self.txtSqlParser.toPlainText()
         unitArray=[]
-        
-        try:
-            mpPartQry=self.tabName+"."+ dbTableConfig.getItem(self.tabName)+"=spatial_unit.identity"
-            if strQuery!="":
-                mpPartQry+=" AND "+self.tabName+"."+strQuery
-            else:
-                mpPartQry=mpPartQry
-            mapUnits=self.stdmPgProv.procReportViewFilter(self.tabName,str(mpPartQry))            
-            refLayer=CertificateMap(mapUnits)
-        except Exception as ex:
-            self.ErrorInfoMessage(str(ex.message))
-            return
+       # QMessageBox.information(None,"mapping",self.tabName)
+        if self.tabName == 'social_tenure_relations':
+            #try:
+                mpPartQry=self.tabName+".spatial_unit_number = spatial_unit.spatial_unit_id"
+                if strQuery != "":
+                    mpPartQry+=" AND "+self.tabName+"."+strQuery
+                else:
+                    mpPartQry = mpPartQry
+                QMessageBox.information(None,"mapping",str(mpPartQry))
+                #mapUnits=self.stdmPgProv.procReportViewFilter(self.tabName,str(mpPartQry))
+                #refLayer=CertificateMap(mapUnits)
+            #except Exception as ex:
+              #  self.ErrorInfoMessage(str(ex.message))
+               # return
                 
     def filter_verifyQuery(self):
         #Verify the query expression    
