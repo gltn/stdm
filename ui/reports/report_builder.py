@@ -416,7 +416,6 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
                     mpPartQry+=" AND "+self.tabName+"."+strQuery
                 else:
                     mpPartQry = mpPartQry
-                QMessageBox.information(None,"mapping",str(mpPartQry))
                 #mapUnits=self.stdmPgProv.procReportViewFilter(self.tabName,str(mpPartQry))
                 #refLayer=CertificateMap(mapUnits)
             #except Exception as ex:
