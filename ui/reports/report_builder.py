@@ -410,13 +410,13 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         unitArray=[]
         
         try:
-            mpPartQry=self.tabName+"."+ dbTableConfig.getItem(self.tabName)+"=spatial_unit.identity"
-            if strQuery!="":
-                mpPartQry+=" AND "+self.tabName+"."+strQuery
+            mpPartQry = self.tabName+"."+ dbTableConfig.getItem(self.tabName)+"=spatial_unit.identity"
+            if strQuery != "":
+                mpPartQry += " AND "+self.tabName+"."+strQuery
             else:
-                mpPartQry=mpPartQry
-            mapUnits=self.stdmPgProv.procReportViewFilter(self.tabName,str(mpPartQry))            
-            refLayer=CertificateMap(mapUnits)
+                mpPartQry = mpPartQry
+            mapUnits = self.stdmPgProv.procReportViewFilter(self.tabName,str(mpPartQry))
+            refLayer= CertificateMap(mapUnits)
         except Exception as ex:
             self.ErrorInfoMessage(str(ex.message))
             return
