@@ -43,7 +43,7 @@ class MapperDialog(QDialog,Ui_Dialog):
         self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
         
 class CustomFormDialog(MapperDialog, MapperMixin):
-    def __init__(self,parent,model=None):
+    def __init__(self, parent, model=None):
         MapperDialog.__init__(self, parent)
         MapperMixin.__init__(self, model)
         
@@ -55,21 +55,27 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         else:
             self._table = model.__class__.__name__
 
+        self.loadMapperDialog()
+
+    def loadMapperDialog(self):
+        """
+        :return: Mapper dialog form
+        """
         self.property = AttributePropretyType(self._table.lower())
         # start form loading procedure
         tableProperties = self.tableProperty()
         #QMessageBox.information(None,"display Mapping",len(self.property.model.displayMapping()))
-        propertyMapper = TypePropertyMapper(tableProperties,self._table.lower())
+        propertyMapper = TypePropertyMapper(tableProperties, self._table.lower())
         widgets = propertyMapper.setProperty()
         self.frmLayout.setLabelAlignment(Qt.AlignLeft)
         for attrib, widget in widgets.iteritems():
-            if hasattr(model, attrib):
+            if hasattr(self._model, attrib):
                 self.controlWidget(widget[0])
                 self.setControl(widget[1])
-                self.addMapping(attrib, self.control, False,attrib)
-                self.frmLayout.addRow(self.userLabel(attrib),self.control)
+                self.addMapping(attrib, self.control, False, attrib)
+                self.frmLayout.addRow(self.userLabel(attrib), self.control)
         self.frmLayout.setLabelAlignment(Qt.AlignJustify)
-       
+
     def userLabel(self, attr):
             return attr.replace("_", " ").title()
         
@@ -79,6 +85,7 @@ class CustomFormDialog(MapperDialog, MapperMixin):
                 widget.setOptions(widgetOptions)
         except:
             pass
+            #QMessageBox.information(None, 'loading lookup', str(ex.message))
 
     def tableProperty(self):
         """
@@ -88,19 +95,19 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         """
         return self.property.attributeType()
     
-    def controlWidget(self,widget):
+    def controlWidget(self, widget):
 
         self.widgetCls = widget()
         self.control = self.widgetCls.Factory()
         
-    def setControl(self,widget):
+    def setControl(self, widget):
         if widget:
             self.lookupOptions(self.widgetCls, widget)
         self.widgetCls.adopt()
 
     def resetSessionMapping(self):
-        """Ensure the current table model has its correct mapping
-        :return dict:
+        """Since only one instance of model can be mapped at a time, ensure the current table model has its correct mapping
+        :return table model attribute mapping- dict:
         """
         self.property.displayMapping()
 
