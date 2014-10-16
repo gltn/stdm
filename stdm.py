@@ -397,7 +397,7 @@ class STDMQGISLoader(object):
         for k, v in self._moduleItems.iteritems():
             contentAction=QAction(QIcon(":/plugins/stdm/images/icons/table.png"),\
                                          k, self.iface.mainWindow())
-            capabilities=contentGroup(self._moduleItems[k])
+            capabilities = contentGroup(self._moduleItems[k])
             if capabilities != None:
                 moduleCntGroup = TableContentGroup(username,k,contentAction)
                 moduleCntGroup.createContentItem().code =capabilities[0]
@@ -405,10 +405,10 @@ class STDMQGISLoader(object):
                 moduleCntGroup.updateContentItem().code =capabilities[2]
                 moduleCntGroup.deleteContentItem().code =capabilities[3]
                 moduleCntGroup.register()
-                
+                self._reportModules[k] = self._moduleItems.get(k)
                 self.moduleContentGroups.append(moduleCntGroup)
                 # Add core modules to the report configuration
-                self._reportModules[k] = self._moduleItems.get(k)
+
         #Create content groups and add items
                 
         self.contentAuthCntGroup = ContentGroup(username)
