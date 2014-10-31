@@ -608,26 +608,29 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
         #QMessageBox.information(self,"module",str( mapping.attDictionary))
         self._editorDialog = CustomFormDialog
         
-    '''   
+
     def _setFormatters(self):
         """
         Specify formatting mappings.
-        """   
-        self.addCellFormatter("GenderID",genderFormatter)
-        self.addCellFormatter("MaritalStatusID",maritalStatusFormatter)
-        '''
+        """
+        lk_function= self.create_lookup_setter('gender')
+        self.addCellFormatter('Female',lk_function)
+        #self.addCellFormatter("MaritalStatusID",maritalStatusFormatter)
+
     def title(self):
         return QApplication.translate("STDMEntityBrowser", "{0} Records Manager".format(self.tbEntityClass.title()))
-        from ui.forms.Lookup import LookupModeller
-        modeller = LookupModeller()
+
+    from stdm.ui.forms.Lookup import LookupModeller
+    modeller = LookupModeller()
     def create_lookup_setter(self, attr_name):
         """
         :return lookup formatter
         """
         lkName ='gender'
         def lookupformatter(lookupvalue):
-            lkformatter = lookupformatter()
-           
+            lkformatter = modeller.lookupModel('check_gender')
+            return lkformatter.setDisplay(lookupvalue)
+        return lookupformatter
     
 class SurveyEntityBrowser(ContentGroupEntityBrowser):
     '''
