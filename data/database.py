@@ -23,13 +23,13 @@ from collections import OrderedDict
 
 from PyQt4.QtGui import QApplication
 
-from sqlalchemy import create_engine, ForeignKey,Table ,event,func, MetaData
-from sqlalchemy import Column, Date, Integer, String ,Numeric,Text,Boolean
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import relationship, backref 
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.schema import Sequence
-from geoalchemy2 import Geometry
+from stdm.third_party.sqlalchemy import create_engine, ForeignKey,Table ,event,func, MetaData
+from stdm.third_party.sqlalchemy import Column, Date, Integer, String ,Numeric,Text,Boolean
+from stdm.third_party.sqlalchemy.ext.declarative import declarative_base, declared_attr
+from stdm.third_party.sqlalchemy.orm import relationship, backref
+from stdm.third_party.sqlalchemy.orm import sessionmaker
+from stdm.third_party.sqlalchemy.schema import Sequence
+from stdm.third_party.geoalchemy2 import Geometry
 
 import stdm.data
 
