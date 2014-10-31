@@ -626,8 +626,8 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
         """
         lkName ='gender'
         def lookupformatter(lookupvalue):
-            lkformatter = lookupformatter(s)
-            return lkformatter.
+            lkformatter = lookupformatter()
+           
     
 class SurveyEntityBrowser(ContentGroupEntityBrowser):
     '''
