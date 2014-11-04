@@ -21,12 +21,12 @@ from PyQt4 import QtCore, QtGui
 
 from stdm.utils import *
 
-from third_party.reportlab.lib.pagesizes import A4
-from third_party.reportlab.lib.units import cm,inch
-from third_party.reportlab.lib.enums import TA_CENTER, TA_RIGHT
-from third_party.reportlab.lib.colors import navy, yellow, red, white
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import cm,inch
+from reportlab.lib.enums import TA_CENTER, TA_RIGHT
+from reportlab.lib.colors import navy, yellow, red, white
 
-from third_party.geraldo import (
+from geraldo import (
                      Report, 
                      ReportBand, 
                      DetailBand, 
@@ -38,7 +38,7 @@ from third_party.geraldo import (
                      Line
                      )
 
-from third_party.geraldo.generators import PDFGenerator
+from geraldo.generators import PDFGenerator
 
 class STDMReport(Report):
     def __init__(self,querySet,reportElements):  
