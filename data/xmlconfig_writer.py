@@ -22,8 +22,8 @@
 from xml.etree.ElementTree import ElementTree as ET , Element, SubElement,iselement
 from xml2ddl.xml2html import Xml2Html, xml2ddl
 from xml2ddl.diffxml2ddl import DiffXml2Ddl
-from stdm.third_party.xml2ddl.xml2ddl import Xml2Ddl, readMergeDict
-from stdm.third_party.xml2ddl.xml2html import Xml2Html
+from xml2ddl.xml2ddl import Xml2Ddl, readMergeDict
+from xml2ddl.xml2html import Xml2Html
 
 
 from .configfile_paths import FilePaths
