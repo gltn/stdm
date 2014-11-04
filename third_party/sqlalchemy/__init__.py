@@ -1,5 +1,6 @@
 # sqlalchemy/__init__.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -116,7 +117,8 @@ from .schema import (
 from .inspection import inspect
 from .engine import create_engine, engine_from_config
 
-__version__ = '0.9.4'
+__version__ = '0.9.8'
+
 
 def __go(lcls):
     global __all__
@@ -127,7 +129,7 @@ def __go(lcls):
     import inspect as _inspect
 
     __all__ = sorted(name for name, obj in lcls.items()
-                 if not (name.startswith('_') or _inspect.ismodule(obj)))
+                     if not (name.startswith('_') or _inspect.ismodule(obj)))
 
     _sa_util.dependencies.resolve_all("sqlalchemy")
 __go(locals())

@@ -1,5 +1,6 @@
 # event/api.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -24,7 +25,8 @@ def _event_key(target, identifier, fn):
             return _EventKey(target, identifier, fn, tgt)
     else:
         raise exc.InvalidRequestError("No such event '%s' for target '%s'" %
-                                (identifier, target))
+                                      (identifier, target))
+
 
 def listen(target, identifier, fn, *args, **kw):
     """Register a listener function for the given target.
@@ -53,7 +55,7 @@ def listen(target, identifier, fn, *args, **kw):
 
         event.listen(Mapper, "before_configure", on_config, once=True)
 
-    .. versionadded:: 0.9.3 Added ``once=True`` to :func:`.event.listen`
+    .. versionadded:: 0.9.4 Added ``once=True`` to :func:`.event.listen`
        and :func:`.event.listens_for`.
 
     """
@@ -84,7 +86,7 @@ def listens_for(target, identifier, *args, **kw):
             do_config()
 
 
-    .. versionadded:: 0.9.3 Added ``once=True`` to :func:`.event.listen`
+    .. versionadded:: 0.9.4 Added ``once=True`` to :func:`.event.listen`
        and :func:`.event.listens_for`.
 
     """
@@ -113,13 +115,14 @@ def remove(target, identifier, fn):
         event.remove(SomeMappedClass, "before_insert", my_listener_function)
 
     Above, the listener function associated with ``SomeMappedClass`` was also
-    propagated to subclasses of ``SomeMappedClass``; the :func:`.remove` function
-    will revert all of these operations.
+    propagated to subclasses of ``SomeMappedClass``; the :func:`.remove`
+    function will revert all of these operations.
 
     .. versionadded:: 0.9.0
 
     """
     _event_key(target, identifier, fn).remove()
+
 
 def contains(target, identifier, fn):
     """Return True if the given target/ident/fn is set up to listen.

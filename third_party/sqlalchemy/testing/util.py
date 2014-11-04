@@ -1,5 +1,6 @@
 # testing/util.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -60,8 +61,8 @@ def round_decimal(value, prec):
 
     # can also use shift() here but that is 2.6 only
     return (value * decimal.Decimal("1" + "0" * prec)
-                    ).to_integral(decimal.ROUND_FLOOR) / \
-                        pow(10, prec)
+            ).to_integral(decimal.ROUND_FLOOR) / \
+        pow(10, prec)
 
 
 class RandomSet(set):
@@ -137,7 +138,7 @@ def function_named(fn, name):
         fn.__name__ = name
     except TypeError:
         fn = types.FunctionType(fn.__code__, fn.__globals__, name,
-                          fn.__defaults__, fn.__closure__)
+                                fn.__defaults__, fn.__closure__)
     return fn
 
 
@@ -195,6 +196,7 @@ def provide_metadata(fn, *args, **kw):
 
 class adict(dict):
     """Dict keys available as attributes.  Shadows."""
+
     def __getattribute__(self, key):
         try:
             return self[key]

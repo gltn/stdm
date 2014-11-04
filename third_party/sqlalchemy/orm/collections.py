@@ -1,5 +1,6 @@
 # orm/collections.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -127,6 +128,7 @@ class _PlainColumnGetter(object):
     and some rare caveats.
 
     """
+
     def __init__(self, cols):
         self.cols = cols
         self.composite = len(cols) > 1
@@ -158,6 +160,7 @@ class _SerializableColumnGetter(object):
     Remains here for pickle compatibility with 0.7.6.
 
     """
+
     def __init__(self, colkeys):
         self.colkeys = colkeys
         self.composite = len(colkeys) > 1
@@ -169,9 +172,9 @@ class _SerializableColumnGetter(object):
         state = base.instance_state(value)
         m = base._state_mapper(state)
         key = [m._get_state_attr_by_column(
-                        state, state.dict,
-                        m.mapped_table.columns[k])
-                     for k in self.colkeys]
+            state, state.dict,
+            m.mapped_table.columns[k])
+            for k in self.colkeys]
         if self.composite:
             return tuple(key)
         else:
@@ -212,8 +215,8 @@ class _SerializableColumnGetterV2(_PlainColumnGetter):
         metadata = getattr(mapper.local_table, 'metadata', None)
         for (ckey, tkey) in self.colkeys:
             if tkey is None or \
-                metadata is None or \
-                tkey not in metadata:
+                    metadata is None or \
+                    tkey not in metadata:
                 cols.append(mapper.local_table.c[ckey])
             else:
                 cols.append(metadata.tables[tkey].c[ckey])
@@ -234,7 +237,7 @@ def column_mapped_collection(mapping_spec):
 
     """
     cols = [expression._only_column_elements(q, "mapping_spec")
-                for q in util.to_list(mapping_spec)
+            for q in util.to_list(mapping_spec)
             ]
     keyfunc = _PlainColumnGetter(cols)
     return lambda: MappedCollection(keyfunc)
@@ -445,7 +448,7 @@ class collection(object):
         The converter method will receive the object being assigned and should
         return an iterable of values suitable for use by the ``appender``
         method.  A converter must not assign values or mutate the collection,
-        it's sole job is to adapt the value the user provides into an iterable
+        its sole job is to adapt the value the user provides into an iterable
         of values for the ORM's use.
 
         The default converter implementation will use duck-typing to do the
@@ -533,9 +536,9 @@ class collection(object):
     def removes_return():
         """Mark the method as removing an entity in the collection.
 
-        Adds "remove from collection" handling to the method.  The return value
-        of the method, if any, is considered the value to remove.  The method
-        arguments are not inspected::
+        Adds "remove from collection" handling to the method.  The return
+        value of the method, if any, is considered the value to remove.  The
+        method arguments are not inspected::
 
             @collection.removes_return()
             def pop(self): ...
@@ -582,6 +585,16 @@ class CollectionAdapter(object):
         "The entity collection being adapted."
         return self._data()
 
+    @property
+    def _referenced_by_owner(self):
+        """return True if the owner state still refers to this collection.
+
+        This will return False within a bulk replace operation,
+        where this collection is the one being replaced.
+
+        """
+        return self.owner_state.dict[self._key] is self._data()
+
     @util.memoized_property
     def attr(self):
         return self.owner_state.manager[self._key].impl
@@ -592,7 +605,6 @@ class CollectionAdapter(object):
         data._sa_adapter = self
         if data._sa_linker:
             data._sa_linker(self)
-
 
     def unlink(self, data):
         """Unlink a collection from any adapter"""
@@ -631,7 +643,7 @@ class CollectionAdapter(object):
 
             raise TypeError(
                 "Incompatible collection type: %s is not %s-like" % (
-                given, wanted))
+                    given, wanted))
 
         # If the object is an adapted collection, return the (iterable)
         # adapter.
@@ -709,9 +721,9 @@ class CollectionAdapter(object):
             if self.invalidated:
                 self._warn_invalidated()
             return self.attr.fire_append_event(
-                                    self.owner_state,
-                                    self.owner_state.dict,
-                                    item, initiator)
+                self.owner_state,
+                self.owner_state.dict,
+                item, initiator)
         else:
             return item
 
@@ -727,9 +739,9 @@ class CollectionAdapter(object):
             if self.invalidated:
                 self._warn_invalidated()
             self.attr.fire_remove_event(
-                                    self.owner_state,
-                                    self.owner_state.dict,
-                                    item, initiator)
+                self.owner_state,
+                self.owner_state.dict,
+                item, initiator)
 
     def fire_pre_remove_event(self, initiator=None):
         """Notify that an entity is about to be removed from the collection.
@@ -741,9 +753,9 @@ class CollectionAdapter(object):
         if self.invalidated:
             self._warn_invalidated()
         self.attr.fire_pre_remove_event(
-                                    self.owner_state,
-                                    self.owner_state.dict,
-                                    initiator=initiator)
+            self.owner_state,
+            self.owner_state.dict,
+            initiator=initiator)
 
     def __getstate__(self):
         return {'key': self._key,
@@ -847,6 +859,7 @@ def __converting_factory(specimen_cls, original_factory):
 
     return wrapper
 
+
 def _instrument_class(cls):
     """Modify methods in a class and install instrumentation."""
 
@@ -905,7 +918,7 @@ def _instrument_class(cls):
         for method, decorator in decorators.items():
             fn = getattr(cls, method, None)
             if (fn and method not in methods and
-                not hasattr(fn, '_sa_instrumented')):
+                    not hasattr(fn, '_sa_instrumented')):
                 setattr(cls, method, decorator(fn))
 
     # ensure all roles are present, and apply implicit instrumentation if
@@ -950,11 +963,12 @@ def _instrument_class(cls):
 
 
 def _instrument_membership_mutator(method, before, argument, after):
-    """Route method args and/or return value through the collection adapter."""
+    """Route method args and/or return value through the collection
+    adapter."""
     # This isn't smart enough to handle @adds(1) for 'def fn(self, (a, b))'
     if before:
         fn_args = list(util.flatten_iterator(inspect.getargspec(method)[0]))
-        if type(argument) is int:
+        if isinstance(argument, int):
             pos_arg = argument
             named_arg = len(fn_args) > argument and fn_args[argument] or None
         else:
@@ -1144,8 +1158,8 @@ def _list_decorators():
 
     def __iadd__(fn):
         def __iadd__(self, iterable):
-            # list.__iadd__ takes any iterable and seems to let TypeError raise
-            # as-is instead of returning NotImplemented
+            # list.__iadd__ takes any iterable and seems to let TypeError
+            # raise as-is instead of returning NotImplemented
             for value in iterable:
                 self.append(value)
             return self
@@ -1250,7 +1264,7 @@ def _dict_decorators():
                 if hasattr(__other, 'keys'):
                     for key in list(__other):
                         if (key not in self or
-                            self[key] is not __other[key]):
+                                self[key] is not __other[key]):
                             self[key] = __other[key]
                 else:
                     for key, value in __other:
@@ -1446,23 +1460,23 @@ __canned_instrumentation = {
     list: InstrumentedList,
     set: InstrumentedSet,
     dict: InstrumentedDict,
-    }
+}
 
 __interfaces = {
     list: (
         {'appender': 'append', 'remover': 'remove',
-           'iterator': '__iter__'}, _list_decorators()
-        ),
+         'iterator': '__iter__'}, _list_decorators()
+    ),
 
     set: ({'appender': 'add',
-          'remover': 'remove',
-          'iterator': '__iter__'}, _set_decorators()
-        ),
+           'remover': 'remove',
+           'iterator': '__iter__'}, _set_decorators()
+          ),
 
     # decorators are required for dicts and object collections.
     dict: ({'iterator': 'values'}, _dict_decorators()) if util.py3k
-            else ({'iterator': 'itervalues'}, _dict_decorators()),
-    }
+    else ({'iterator': 'itervalues'}, _dict_decorators()),
+}
 
 
 class MappedCollection(dict):
@@ -1537,7 +1551,7 @@ class MappedCollection(dict):
                     "Found incompatible key %r for value %r; this "
                     "collection's "
                     "keying function requires a key of %r for this value." % (
-                    incoming_key, value, new_key))
+                        incoming_key, value, new_key))
             yield value
 
 # ensure instrumentation is associated with

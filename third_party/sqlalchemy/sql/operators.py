@@ -1,5 +1,6 @@
 # sql/operators.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -15,7 +16,7 @@ from .. import util
 from operator import (
     and_, or_, inv, add, mul, sub, mod, truediv, lt, le, ne, gt, ge, eq, neg,
     getitem, lshift, rshift
-    )
+)
 
 if util.py2k:
     from operator import div
@@ -23,11 +24,11 @@ else:
     div = truediv
 
 
-
 class Operators(object):
     """Base of comparison and logical operators.
 
-    Implements base methods :meth:`~sqlalchemy.sql.operators.Operators.operate` and
+    Implements base methods
+    :meth:`~sqlalchemy.sql.operators.Operators.operate` and
     :meth:`~sqlalchemy.sql.operators.Operators.reverse_operate`, as well as
     :meth:`~sqlalchemy.sql.operators.Operators.__and__`,
     :meth:`~sqlalchemy.sql.operators.Operators.__or__`,
@@ -37,6 +38,7 @@ class Operators(object):
     :class:`.ColumnOperators`.
 
     """
+
     def __and__(self, other):
         """Implement the ``&`` operator.
 
@@ -135,13 +137,13 @@ class Operators(object):
          .. versionadded:: 0.8 - added the 'precedence' argument.
 
         :param is_comparison: if True, the operator will be considered as a
-         "comparison" operator, that is which evaulates to a boolean true/false
-         value, like ``==``, ``>``, etc.  This flag should be set so that
-         ORM relationships can establish that the operator is a comparison
-         operator when used in a custom join condition.
+         "comparison" operator, that is which evaulates to a boolean
+         true/false value, like ``==``, ``>``, etc.  This flag should be set
+         so that ORM relationships can establish that the operator is a
+         comparison operator when used in a custom join condition.
 
-         .. versionadded:: 0.9.2 - added the :paramref:`.Operators.op.is_comparison`
-            flag.
+         .. versionadded:: 0.9.2 - added the
+            :paramref:`.Operators.op.is_comparison` flag.
 
         .. seealso::
 
@@ -421,8 +423,8 @@ class ColumnOperators(Operators):
     def notin_(self, other):
         """implement the ``NOT IN`` operator.
 
-        This is equivalent to using negation with :meth:`.ColumnOperators.in_`,
-        i.e. ``~x.in_(y)``.
+        This is equivalent to using negation with
+        :meth:`.ColumnOperators.in_`, i.e. ``~x.in_(y)``.
 
         .. versionadded:: 0.8
 
@@ -518,11 +520,17 @@ class ColumnOperators(Operators):
         return self.operate(contains_op, other, **kwargs)
 
     def match(self, other, **kwargs):
-        """Implements the 'match' operator.
+        """Implements a database-specific 'match' operator.
 
-        In a column context, this produces a MATCH clause, i.e.
-        ``MATCH '<other>'``.  The allowed contents of ``other``
-        are database backend specific.
+        :meth:`~.ColumnOperators.match` attempts to resolve to
+        a MATCH-like function or operator provided by the backend.
+        Examples include:
+
+        * Postgresql - renders ``x @@ to_tsquery(y)``
+        * MySQL - renders ``MATCH (x) AGAINST (y IN BOOLEAN MODE)``
+        * Oracle - renders ``CONTAINS(x, y)``
+        * other backends may provide special implementations;
+          some backends such as SQLite have no support.
 
         """
         return self.operate(match_op, other, **kwargs)
@@ -584,10 +592,12 @@ class ColumnOperators(Operators):
         """
         return self.reverse_operate(div, other)
 
-    def between(self, cleft, cright):
+    def between(self, cleft, cright, symmetric=False):
         """Produce a :func:`~.expression.between` clause against
-        the parent object, given the lower and upper range."""
-        return self.operate(between_op, cleft, cright)
+        the parent object, given the lower and upper range.
+
+        """
+        return self.operate(between_op, cleft, cright, symmetric=symmetric)
 
     def distinct(self):
         """Produce a :func:`~.expression.distinct` clause against the
@@ -672,8 +682,10 @@ def exists():
 def istrue(a):
     raise NotImplementedError()
 
+
 def isfalse(a):
     raise NotImplementedError()
+
 
 def is_(a, b):
     return a.is_(b)
@@ -707,8 +719,12 @@ def notilike_op(a, b, escape=None):
     return a.notilike(b, escape=escape)
 
 
-def between_op(a, b, c):
-    return a.between(b, c)
+def between_op(a, b, c, symmetric=False):
+    return a.between(b, c, symmetric=symmetric)
+
+
+def notbetween_op(a, b, c, symmetric=False):
+    return a.notbetween(b, c, symmetric=symmetric)
 
 
 def in_op(a, b):
@@ -747,8 +763,8 @@ def notcontains_op(a, b, escape=None):
     return ~a.contains(b, escape=escape)
 
 
-def match_op(a, b):
-    return a.match(b)
+def match_op(a, b, **kw):
+    return a.match(b, **kw)
 
 
 def comma_op(a, b):
@@ -777,7 +793,7 @@ def nullslast_op(a):
 
 _commutative = set([eq, ne, add, mul])
 
-_comparison = set([eq, ne, lt, gt, ge, le, between_op])
+_comparison = set([eq, ne, lt, gt, ge, le, between_op, like_op])
 
 
 def is_comparison(op):
@@ -791,7 +807,7 @@ def is_commutative(op):
 
 def is_ordering_modifier(op):
     return op in (asc_op, desc_op,
-                    nullsfirst_op, nullslast_op)
+                  nullsfirst_op, nullslast_op)
 
 _associative = _commutative.union([concat_op, and_, or_])
 
@@ -837,6 +853,7 @@ _PRECEDENCE = {
     le: 5,
 
     between_op: 5,
+    notbetween_op: 5,
     distinct_op: 5,
     inv: 5,
     istrue: 5,
@@ -862,6 +879,6 @@ def is_precedent(operator, against):
         return False
     else:
         return (_PRECEDENCE.get(operator,
-                getattr(operator, 'precedence', _smallest)) <=
-            _PRECEDENCE.get(against,
-                getattr(against, 'precedence', _largest)))
+                                getattr(operator, 'precedence', _smallest)) <=
+                _PRECEDENCE.get(against,
+                                getattr(against, 'precedence', _largest)))

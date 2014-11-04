@@ -1,5 +1,6 @@
 # engine/interfaces.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -10,6 +11,7 @@ from .. import util, event
 
 # backwards compat
 from ..sql.compiler import Compiled, TypeCompiler
+
 
 class Dialect(object):
     """Define the behavior of a specific database and DB-API combination.
@@ -152,7 +154,6 @@ class Dialect(object):
 
     _has_events = False
 
-
     def create_connect_args(self, url):
         """Build DB-API compatible connection arguments.
 
@@ -189,14 +190,15 @@ class Dialect(object):
         The connection passed here is a SQLAlchemy Connection object,
         with full capabilities.
 
-        The initalize() method of the base dialect should be called via
+        The initialize() method of the base dialect should be called via
         super().
 
         """
 
         pass
 
-    def reflecttable(self, connection, table, include_columns, exclude_columns):
+    def reflecttable(
+            self, connection, table, include_columns, exclude_columns):
         """Load table description from the database.
 
         Given a :class:`.Connection` and a
@@ -253,7 +255,8 @@ class Dialect(object):
 
         Deprecated.  This method is only called by the default
         implementation of :meth:`.Dialect.get_pk_constraint`.  Dialects should
-        instead implement the :meth:`.Dialect.get_pk_constraint` method directly.
+        instead implement the :meth:`.Dialect.get_pk_constraint` method
+        directly.
 
         """
 
@@ -345,7 +348,8 @@ class Dialect(object):
 
         raise NotImplementedError()
 
-    def get_unique_constraints(self, connection, table_name, schema=None, **kw):
+    def get_unique_constraints(
+            self, connection, table_name, schema=None, **kw):
         """Return information about unique constraints in `table_name`.
 
         Given a string `table_name` and an optional string `schema`, return
@@ -358,7 +362,8 @@ class Dialect(object):
           list of column names in order
 
         \**kw
-          other options passed to the dialect's get_unique_constraints() method.
+          other options passed to the dialect's get_unique_constraints()
+          method.
 
         .. versionadded:: 0.9.0
 
@@ -443,7 +448,7 @@ class Dialect(object):
         :meth:`.Dialect.do_autocommit`
         hook is provided for DBAPIs that need some extra commands emitted
         after a commit in order to enter the next transaction, when the
-        SQLAlchemy :class:`.Connection` is used in it's default "autocommit"
+        SQLAlchemy :class:`.Connection` is used in its default "autocommit"
         mode.
 
         :param dbapi_connection: a DBAPI connection, typically
@@ -463,7 +468,6 @@ class Dialect(object):
          """
 
         raise NotImplementedError()
-
 
     def do_commit(self, dbapi_connection):
         """Provide an implementation of ``connection.commit()``, given a
@@ -550,7 +554,7 @@ class Dialect(object):
         raise NotImplementedError()
 
     def do_rollback_twophase(self, connection, xid, is_prepared=True,
-                            recover=False):
+                             recover=False):
         """Rollback a two phase transaction on the given connection.
 
         :param connection: a :class:`.Connection`.
@@ -564,7 +568,7 @@ class Dialect(object):
         raise NotImplementedError()
 
     def do_commit_twophase(self, connection, xid, is_prepared=True,
-                            recover=False):
+                           recover=False):
         """Commit a two phase transaction on the given connection.
 
 
@@ -707,6 +711,40 @@ class ExecutionContext(object):
       and updates.
     """
 
+    exception = None
+    """A DBAPI-level exception that was caught when this ExecutionContext
+    attempted to execute a statement.
+
+    This attribute is meaningful only within the
+    :meth:`.ConnectionEvents.dbapi_error` event.
+
+    .. versionadded:: 0.9.7
+
+    .. seealso::
+
+        :attr:`.ExecutionContext.is_disconnect`
+
+        :meth:`.ConnectionEvents.dbapi_error`
+
+    """
+
+    is_disconnect = None
+    """Boolean flag set to True or False when a DBAPI-level exception
+    is caught when this ExecutionContext attempted to execute a statement.
+
+    This attribute is meaningful only within the
+    :meth:`.ConnectionEvents.dbapi_error` event.
+
+    .. versionadded:: 0.9.7
+
+    .. seealso::
+
+        :attr:`.ExecutionContext.exception`
+
+        :meth:`.ConnectionEvents.dbapi_error`
+
+    """
+
     def create_cursor(self):
         """Return a new cursor generated from this ExecutionContext's
         connection.
@@ -842,8 +880,111 @@ class Connectable(object):
         raise NotImplementedError()
 
     def _run_visitor(self, visitorcallable, element,
-                                    **kwargs):
+                     **kwargs):
         raise NotImplementedError()
 
     def _execute_clauseelement(self, elem, multiparams=None, params=None):
         raise NotImplementedError()
+
+
+class ExceptionContext(object):
+    """Encapsulate information about an error condition in progress.
+
+    This object exists solely to be passed to the
+    :meth:`.ConnectionEvents.handle_error` event, supporting an interface that
+    can be extended without backwards-incompatibility.
+
+    .. versionadded:: 0.9.7
+
+    """
+
+    connection = None
+    """The :class:`.Connection` in use during the exception.
+
+    This member is always present.
+
+    """
+
+    cursor = None
+    """The DBAPI cursor object.
+
+    May be None.
+
+    """
+
+    statement = None
+    """String SQL statement that was emitted directly to the DBAPI.
+
+    May be None.
+
+    """
+
+    parameters = None
+    """Parameter collection that was emitted directly to the DBAPI.
+
+    May be None.
+
+    """
+
+    original_exception = None
+    """The exception object which was caught.
+
+    This member is always present.
+
+    """
+
+    sqlalchemy_exception = None
+    """The :class:`sqlalchemy.exc.StatementError` which wraps the original,
+    and will be raised if exception handling is not circumvented by the event.
+
+    May be None, as not all exception types are wrapped by SQLAlchemy.
+    For DBAPI-level exceptions that subclass the dbapi's Error class, this
+    field will always be present.
+
+    """
+
+    chained_exception = None
+    """The exception that was returned by the previous handler in the
+    exception chain, if any.
+
+    If present, this exception will be the one ultimately raised by
+    SQLAlchemy unless a subsequent handler replaces it.
+
+    May be None.
+
+    """
+
+    execution_context = None
+    """The :class:`.ExecutionContext` corresponding to the execution
+    operation in progress.
+
+    This is present for statement execution operations, but not for
+    operations such as transaction begin/end.  It also is not present when
+    the exception was raised before the :class:`.ExecutionContext`
+    could be constructed.
+
+    Note that the :attr:`.ExceptionContext.statement` and
+    :attr:`.ExceptionContext.parameters` members may represent a
+    different value than that of the :class:`.ExecutionContext`,
+    potentially in the case where a
+    :meth:`.ConnectionEvents.before_cursor_execute` event or similar
+    modified the statement/parameters to be sent.
+
+    May be None.
+
+    """
+
+    is_disconnect = None
+    """Represent whether the exception as occurred represents a "disconnect"
+    condition.
+
+    This flag will always be True or False within the scope of the
+    :meth:`.ConnectionEvents.handle_error` handler.
+
+    SQLAlchemy will defer to this flag in order to determine whether or not
+    the connection should be invalidated subsequently.    That is, by
+    assigning to this flag, a "disconnect" event which then results in
+    a connection and pool invalidation can be invoked or prevented by
+    changing this flag.
+
+    """

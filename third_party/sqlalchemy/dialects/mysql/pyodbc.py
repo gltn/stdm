@@ -1,5 +1,6 @@
 # mysql/pyodbc.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -66,7 +67,8 @@ class MySQLDialect_pyodbc(PyODBCConnector, MySQLDialect):
             if opts.get(key, None):
                 return opts[key]
 
-        util.warn("Could not detect the connection character set.  Assuming latin1.")
+        util.warn("Could not detect the connection character set.  "
+                  "Assuming latin1.")
         return 'latin1'
 
     def _extract_error_code(self, exception):

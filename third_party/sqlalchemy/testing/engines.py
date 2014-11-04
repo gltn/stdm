@@ -1,5 +1,6 @@
 # testing/engines.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -15,6 +16,7 @@ from .. import event, pool
 import re
 import warnings
 from .. import util
+
 
 class ConnectionKiller(object):
 
@@ -42,8 +44,8 @@ class ConnectionKiller(object):
             raise
         except Exception as e:
             warnings.warn(
-                    "testing_reaper couldn't "
-                    "rollback/close connection: %s" % e)
+                "testing_reaper couldn't "
+                "rollback/close connection: %s" % e)
 
     def rollback_all(self):
         for rec in list(self.proxy_refs):
@@ -57,7 +59,7 @@ class ConnectionKiller(object):
 
     def _after_test_ctx(self):
         # this can cause a deadlock with pg8000 - pg8000 acquires
-        # prepared statment lock inside of rollback() - if async gc
+        # prepared statement lock inside of rollback() - if async gc
         # is collecting in finalize_fairy, deadlock.
         # not sure if this should be if pypy/jython only.
         # note that firebird/fdb definitely needs this though
@@ -173,8 +175,8 @@ class ReconnectFixture(object):
             raise
         except Exception as e:
             warnings.warn(
-                    "ReconnectFixture couldn't "
-                    "close connection: %s" % e)
+                "ReconnectFixture couldn't "
+                "close connection: %s" % e)
 
     def shutdown(self):
         # TODO: this doesn't cover all cases
@@ -235,8 +237,6 @@ def testing_engine(url=None, options=None):
     return engine
 
 
-
-
 def mock_engine(dialect_name=None):
     """Provides a mocking engine based on the current testing.db.
 
@@ -261,7 +261,7 @@ def mock_engine(dialect_name=None):
 
     def assert_sql(stmts):
         recv = [re.sub(r'[\n\t]', '', str(s)) for s in buffer]
-        assert  recv == stmts, recv
+        assert recv == stmts, recv
 
     def print_sql():
         d = engine.dialect
@@ -286,6 +286,7 @@ class DBAPIProxyCursor(object):
     DBAPI-level cursor operations.
 
     """
+
     def __init__(self, engine, conn):
         self.engine = engine
         self.connection = conn
@@ -311,6 +312,7 @@ class DBAPIProxyConnection(object):
     DBAPI-level connection operations.
 
     """
+
     def __init__(self, engine, cursor_cls):
         self.conn = self._sqla_unwrap = engine.pool._creator()
         self.engine = engine
@@ -351,20 +353,20 @@ class ReplayableSession(object):
 
     if util.py2k:
         Natives = set([getattr(types, t)
-                   for t in dir(types) if not t.startswith('_')]).\
-                   difference([getattr(types, t)
-                           for t in ('FunctionType', 'BuiltinFunctionType',
-                                     'MethodType', 'BuiltinMethodType',
-                                     'LambdaType', 'UnboundMethodType',)])
+                       for t in dir(types) if not t.startswith('_')]).\
+            difference([getattr(types, t)
+                        for t in ('FunctionType', 'BuiltinFunctionType',
+                                  'MethodType', 'BuiltinMethodType',
+                                  'LambdaType', 'UnboundMethodType',)])
     else:
         Natives = set([getattr(types, t)
                        for t in dir(types) if not t.startswith('_')]).\
-                       union([type(t) if not isinstance(t, type)
-                                else t for t in __builtins__.values()]).\
-                       difference([getattr(types, t)
-                                for t in ('FunctionType', 'BuiltinFunctionType',
-                                          'MethodType', 'BuiltinMethodType',
-                                          'LambdaType', )])
+            union([type(t) if not isinstance(t, type)
+                   else t for t in __builtins__.values()]).\
+            difference([getattr(types, t)
+                        for t in ('FunctionType', 'BuiltinFunctionType',
+                                  'MethodType', 'BuiltinMethodType',
+                                  'LambdaType', )])
 
     def __init__(self):
         self.buffer = deque()

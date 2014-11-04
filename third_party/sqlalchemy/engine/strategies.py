@@ -1,5 +1,6 @@
 # engine/strategies.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -90,8 +91,8 @@ class DefaultEngineStrategy(EngineStrategy):
                 except dialect.dbapi.Error as e:
                     invalidated = dialect.is_disconnect(e, None, None)
                     util.raise_from_cause(
-                        exc.DBAPIError.instance(None, None,
-                            e, dialect.dbapi.Error,
+                        exc.DBAPIError.instance(
+                            None, None, e, dialect.dbapi.Error,
                             connection_invalidated=invalidated
                         )
                     )
@@ -160,8 +161,8 @@ class DefaultEngineStrategy(EngineStrategy):
 
             def first_connect(dbapi_connection, connection_record):
                 c = base.Connection(engine, connection=dbapi_connection,
-                            _has_events=False)
-
+                                    _has_events=False)
+                c._execution_options = util.immutabledict()
                 dialect.initialize(c)
             event.listen(pool, 'first_connect', first_connect, once=True)
 
@@ -246,11 +247,11 @@ class MockEngineStrategy(EngineStrategy):
                 self.dialect, self, **kwargs).traverse_single(entity)
 
         def _run_visitor(self, visitorcallable, element,
-                                        connection=None,
-                                        **kwargs):
+                         connection=None,
+                         **kwargs):
             kwargs['checkfirst'] = False
             visitorcallable(self.dialect, self,
-                                **kwargs).traverse_single(element)
+                            **kwargs).traverse_single(element)
 
         def execute(self, object, *multiparams, **params):
             raise NotImplementedError()

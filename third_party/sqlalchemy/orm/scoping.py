@@ -1,5 +1,6 @@
 # orm/scoping.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -58,8 +59,8 @@ class scoped_session(object):
             if scope is not None:
                 if self.registry.has():
                     raise sa_exc.InvalidRequestError(
-                            "Scoped session is already present; "
-                            "no new arguments may be specified.")
+                        "Scoped session is already present; "
+                        "no new arguments may be specified.")
                 else:
                     sess = self.session_factory(**kw)
                     self.registry.set(sess)
@@ -96,8 +97,8 @@ class scoped_session(object):
 
         if self.registry.has():
             warn('At least one scoped session is already present. '
-                      ' configure() can not affect sessions that have '
-                      'already been created.')
+                 ' configure() can not affect sessions that have '
+                 'already been created.')
 
         self.session_factory.configure(**kwargs)
 

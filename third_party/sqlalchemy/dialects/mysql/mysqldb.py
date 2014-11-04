@@ -1,5 +1,6 @@
 # mysql/mysqldb.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -41,17 +42,20 @@ It is strongly advised to use the latest version of MySQL-Python.
 """
 
 from .base import (MySQLDialect, MySQLExecutionContext,
-                                            MySQLCompiler, MySQLIdentifierPreparer)
+                   MySQLCompiler, MySQLIdentifierPreparer)
 from ...connectors.mysqldb import (
-                        MySQLDBExecutionContext,
-                        MySQLDBCompiler,
-                        MySQLDBIdentifierPreparer,
-                        MySQLDBConnector
-                    )
+    MySQLDBExecutionContext,
+    MySQLDBCompiler,
+    MySQLDBIdentifierPreparer,
+    MySQLDBConnector
+)
 from .base import TEXT
 from ... import sql
 
-class MySQLExecutionContext_mysqldb(MySQLDBExecutionContext, MySQLExecutionContext):
+
+class MySQLExecutionContext_mysqldb(
+        MySQLDBExecutionContext,
+        MySQLExecutionContext):
     pass
 
 
@@ -59,7 +63,9 @@ class MySQLCompiler_mysqldb(MySQLDBCompiler, MySQLCompiler):
     pass
 
 
-class MySQLIdentifierPreparer_mysqldb(MySQLDBIdentifierPreparer, MySQLIdentifierPreparer):
+class MySQLIdentifierPreparer_mysqldb(
+        MySQLDBIdentifierPreparer,
+        MySQLIdentifierPreparer):
     pass
 
 
@@ -74,21 +80,21 @@ class MySQLDialect_mysqldb(MySQLDBConnector, MySQLDialect):
         # specific issue w/ the utf8_bin collation and unicode returns
 
         has_utf8_bin = connection.scalar(
-                                "show collation where %s = 'utf8' and %s = 'utf8_bin'"
-                                    % (
-                                    self.identifier_preparer.quote("Charset"),
-                                    self.identifier_preparer.quote("Collation")
-                                ))
+            "show collation where %s = 'utf8' and %s = 'utf8_bin'"
+            % (
+                self.identifier_preparer.quote("Charset"),
+                self.identifier_preparer.quote("Collation")
+            ))
         if has_utf8_bin:
             additional_tests = [
                 sql.collate(sql.cast(
-                        sql.literal_column(
+                    sql.literal_column(
                             "'test collated returns'"),
-                            TEXT(charset='utf8')), "utf8_bin")
+                    TEXT(charset='utf8')), "utf8_bin")
             ]
         else:
             additional_tests = []
         return super(MySQLDBConnector, self)._check_unicode_returns(
-                            connection, additional_tests)
+            connection, additional_tests)
 
 dialect = MySQLDialect_mysqldb

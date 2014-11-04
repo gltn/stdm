@@ -1,5 +1,6 @@
 # util/compat.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -17,6 +18,7 @@ py33 = sys.version_info >= (3, 3)
 py32 = sys.version_info >= (3, 2)
 py3k = sys.version_info >= (3, 0)
 py2k = sys.version_info < (3, 0)
+py265 = sys.version_info >= (2, 6, 5)
 jython = sys.platform.startswith('java')
 pypy = hasattr(sys, 'pypy_version_info')
 win32 = sys.platform.startswith('win')
@@ -33,14 +35,21 @@ else:
     except ImportError:
         import pickle
 
+# work around http://bugs.python.org/issue2646
+if py265:
+    safe_kwarg = lambda arg: arg
+else:
+    safe_kwarg = str
+
 ArgSpec = collections.namedtuple("ArgSpec",
-                ["args", "varargs", "keywords", "defaults"])
+                                 ["args", "varargs", "keywords", "defaults"])
 
 if py3k:
     import builtins
 
     from inspect import getfullargspec as inspect_getfullargspec
-    from urllib.parse import quote_plus, unquote_plus, parse_qsl, quote, unquote
+    from urllib.parse import (quote_plus, unquote_plus,
+                              parse_qsl, quote, unquote)
     import configparser
     from io import StringIO
 
@@ -48,8 +57,8 @@ if py3k:
 
     def inspect_getargspec(func):
         return ArgSpec(
-                    *inspect_getfullargspec(func)[0:4]
-                )
+            *inspect_getfullargspec(func)[0:4]
+        )
 
     string_types = str,
     binary_type = bytes
@@ -85,10 +94,13 @@ if py3k:
     itertools_filterfalse = itertools.filterfalse
     itertools_filter = filter
     itertools_imap = map
+    from itertools import zip_longest
 
     import base64
+
     def b64encode(x):
         return base64.b64encode(x).decode('ascii')
+
     def b64decode(x):
         return base64.b64decode(x.encode('ascii'))
 
@@ -105,6 +117,7 @@ else:
     binary_type = str
     text_type = unicode
     int_types = int, long
+
     def iterbytes(buf):
         return (ord(byte) for byte in buf)
 
@@ -147,6 +160,7 @@ else:
     itertools_filterfalse = itertools.ifilterfalse
     itertools_filter = itertools.ifilter
     itertools_imap = itertools.imap
+    from itertools import izip_longest as zip_longest
 
 
 import time
@@ -174,7 +188,7 @@ if py3k:
         reraise(type(exception), exception, tb=exc_tb, cause=exc_value)
 else:
     exec("def reraise(tp, value, tb=None, cause=None):\n"
-            "    raise tp, value, tb\n")
+         "    raise tp, value, tb\n")
 
     def raise_from_cause(exception, exc_info=None):
         # not as nice as that of Py3K, but at least preserves
@@ -206,6 +220,7 @@ def with_metaclass(meta, *bases):
     class metaclass(meta):
         __call__ = type.__call__
         __init__ = type.__init__
+
         def __new__(cls, name, this_bases, d):
             if this_bases is None:
                 return type.__new__(cls, name, (), d)
@@ -213,3 +228,35 @@ def with_metaclass(meta, *bases):
     return metaclass('temporary_class', None, {})
 
 
+from contextlib import contextmanager
+
+try:
+    from contextlib import nested
+except ImportError:
+    # removed in py3k, credit to mitsuhiko for
+    # workaround
+
+    @contextmanager
+    def nested(*managers):
+        exits = []
+        vars = []
+        exc = (None, None, None)
+        try:
+            for mgr in managers:
+                exit = mgr.__exit__
+                enter = mgr.__enter__
+                vars.append(enter())
+                exits.append(exit)
+            yield vars
+        except:
+            exc = sys.exc_info()
+        finally:
+            while exits:
+                exit = exits.pop()
+                try:
+                    if exit(*exc):
+                        exc = (None, None, None)
+                except:
+                    exc = sys.exc_info()
+            if exc != (None, None, None):
+                reraise(exc[0], exc[1], exc[2])

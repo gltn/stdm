@@ -1,5 +1,6 @@
 # mysql/gaerdbms.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -8,10 +9,11 @@
     :name: Google Cloud SQL
     :dbapi: rdbms
     :connectstring: mysql+gaerdbms:///<dbname>?instance=<instancename>
-    :url: https://developers.google.com/appengine/docs/python/cloud-sql/developers-guide
+    :url: https://developers.google.com/appengine/docs/python/cloud-sql/\
+developers-guide
 
-    This dialect is based primarily on the :mod:`.mysql.mysqldb` dialect with minimal
-    changes.
+    This dialect is based primarily on the :mod:`.mysql.mysqldb` dialect with
+    minimal changes.
 
     .. versionadded:: 0.7.8
 
@@ -44,7 +46,7 @@ class MySQLDialect_gaerdbms(MySQLDialect_mysqldb):
         # from django:
         # http://code.google.com/p/googleappengine/source/
         #     browse/trunk/python/google/storage/speckle/
-        #     python/django/backend/base.py#118
+        # python/django/backend/base.py#118
         # see also [ticket:2649]
         # see also http://stackoverflow.com/q/14224679/34549
         from google.appengine.api import apiproxy_stub_map

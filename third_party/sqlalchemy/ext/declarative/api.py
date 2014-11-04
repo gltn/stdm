@@ -1,5 +1,6 @@
 # ext/declarative/api.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -8,8 +9,8 @@
 
 from ...schema import Table, MetaData
 from ...orm import synonym as _orm_synonym, mapper,\
-                                comparable_property,\
-                                interfaces, properties
+    comparable_property,\
+    interfaces, properties
 from ...orm.util import polymorphic_union
 from ...orm.base import _mapper_or_none
 from ...util import OrderedDict
@@ -17,10 +18,11 @@ from ... import exc
 import weakref
 
 from .base import _as_declarative, \
-                _declarative_constructor,\
-                _DeferredMapperConfig, _add_attribute
+    _declarative_constructor,\
+    _DeferredMapperConfig, _add_attribute
 from .clsregistry import _class_resolver
 from . import clsregistry
+
 
 def instrument_declarative(cls, registry, metadata):
     """Given a class, configure the class declaratively,
@@ -30,8 +32,8 @@ def instrument_declarative(cls, registry, metadata):
     """
     if '_decl_class_registry' in cls.__dict__:
         raise exc.InvalidRequestError(
-                            "Class %r already has been "
-                            "instrumented declaratively" % cls)
+            "Class %r already has been "
+            "instrumented declaratively" % cls)
     cls._decl_class_registry = registry
     cls.metadata = metadata
     _as_declarative(cls, cls.__name__, cls.__dict__)
@@ -244,6 +246,7 @@ def declarative_base(bind=None, metadata=None, mapper=None, cls=object,
 
     return metaclass(name, bases, class_dict)
 
+
 def as_declarative(**kw):
     """
     Class decorator for :func:`.declarative_base`.
@@ -280,6 +283,7 @@ def as_declarative(**kw):
         return declarative_base(**kw)
 
     return decorate
+
 
 class ConcreteBase(object):
     """A helper class for 'concrete' declarative mappings.
@@ -322,7 +326,7 @@ class ConcreteBase(object):
         return polymorphic_union(OrderedDict(
             (mp.polymorphic_identity, mp.local_table)
             for mp in mappers
-         ), 'type', 'pjoin')
+        ), 'type', 'pjoin')
 
     @classmethod
     def __declare_first__(cls):
@@ -392,7 +396,7 @@ class AbstractConcreteBase(ConcreteBase):
 
         for scls in cls.__subclasses__():
             sm = _mapper_or_none(scls)
-            if sm.concrete and cls in scls.__bases__:
+            if sm and sm.concrete and cls in scls.__bases__:
                 sm._set_concrete_base(m)
 
 
@@ -477,7 +481,7 @@ class DeferredReflection(object):
             metadata = mapper.class_.metadata
             for rel in mapper._props.values():
                 if isinstance(rel, properties.RelationshipProperty) and \
-                    rel.secondary is not None:
+                        rel.secondary is not None:
                     if isinstance(rel.secondary, Table):
                         cls._reflect_table(rel.secondary, engine)
                     elif isinstance(rel.secondary, _class_resolver):
@@ -505,9 +509,9 @@ class DeferredReflection(object):
     @classmethod
     def _reflect_table(cls, table, engine):
         Table(table.name,
-            table.metadata,
-            extend_existing=True,
-            autoload_replace=False,
-            autoload=True,
-            autoload_with=engine,
-            schema=table.schema)
+              table.metadata,
+              extend_existing=True,
+              autoload_replace=False,
+              autoload=True,
+              autoload_with=engine,
+              schema=table.schema)

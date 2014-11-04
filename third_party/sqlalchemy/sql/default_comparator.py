@@ -1,5 +1,6 @@
 # sql/default_comparator.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -11,10 +12,11 @@ from .. import exc, util
 from . import operators
 from . import type_api
 from .elements import BindParameter, True_, False_, BinaryExpression, \
-        Null, _const_expr, _clause_element_as_expr, \
-        ClauseList, ColumnElement, TextClause, UnaryExpression, \
-        collate, _is_literal, _literal_as_text, ClauseElement
+    Null, _const_expr, _clause_element_as_expr, \
+    ClauseList, ColumnElement, TextClause, UnaryExpression, \
+    collate, _is_literal, _literal_as_text, ClauseElement, and_, or_
 from .selectable import SelectBase, Alias, Selectable, ScalarSelect
+
 
 class _DefaultColumnComparator(operators.ColumnOperators):
     """Defines comparison and math operations.
@@ -34,7 +36,8 @@ class _DefaultColumnComparator(operators.ColumnOperators):
 
     def reverse_operate(self, op, other, **kwargs):
         o = self.operators[op.__name__]
-        return o[0](self, self.expr, op, other, reverse=True, *o[1:], **kwargs)
+        return o[0](self, self.expr, op, other,
+                    reverse=True, *o[1:], **kwargs)
 
     def _adapt_expression(self, op, other_comparator):
         """evaluate the return type of <self> <op> <othertype>,
@@ -64,8 +67,8 @@ class _DefaultColumnComparator(operators.ColumnOperators):
         return op, other_comparator.type
 
     def _boolean_compare(self, expr, op, obj, negate=None, reverse=False,
-                        _python_is_types=(util.NoneType, bool),
-                        **kwargs):
+                         _python_is_types=(util.NoneType, bool),
+                         **kwargs):
 
         if isinstance(obj, _python_is_types + (Null, True_, False_)):
 
@@ -75,20 +78,20 @@ class _DefaultColumnComparator(operators.ColumnOperators):
             if op in (operators.eq, operators.ne) and \
                     isinstance(obj, (bool, True_, False_)):
                 return BinaryExpression(expr,
-                                _literal_as_text(obj),
-                                op,
-                                type_=type_api.BOOLEANTYPE,
-                                negate=negate, modifiers=kwargs)
+                                        _literal_as_text(obj),
+                                        op,
+                                        type_=type_api.BOOLEANTYPE,
+                                        negate=negate, modifiers=kwargs)
             else:
                 # all other None/True/False uses IS, IS NOT
                 if op in (operators.eq, operators.is_):
                     return BinaryExpression(expr, _const_expr(obj),
-                            operators.is_,
-                            negate=operators.isnot)
+                                            operators.is_,
+                                            negate=operators.isnot)
                 elif op in (operators.ne, operators.isnot):
                     return BinaryExpression(expr, _const_expr(obj),
-                            operators.isnot,
-                            negate=operators.is_)
+                                            operators.isnot,
+                                            negate=operators.is_)
                 else:
                     raise exc.ArgumentError(
                         "Only '=', '!=', 'is_()', 'isnot()' operators can "
@@ -98,19 +101,19 @@ class _DefaultColumnComparator(operators.ColumnOperators):
 
         if reverse:
             return BinaryExpression(obj,
-                            expr,
-                            op,
-                            type_=type_api.BOOLEANTYPE,
-                            negate=negate, modifiers=kwargs)
+                                    expr,
+                                    op,
+                                    type_=type_api.BOOLEANTYPE,
+                                    negate=negate, modifiers=kwargs)
         else:
             return BinaryExpression(expr,
-                            obj,
-                            op,
-                            type_=type_api.BOOLEANTYPE,
-                            negate=negate, modifiers=kwargs)
+                                    obj,
+                                    op,
+                                    type_=type_api.BOOLEANTYPE,
+                                    negate=negate, modifiers=kwargs)
 
     def _binary_operate(self, expr, op, obj, reverse=False, result_type=None,
-                            **kw):
+                        **kw):
         obj = self._check_literal(expr, op, obj)
 
         if reverse:
@@ -120,9 +123,17 @@ class _DefaultColumnComparator(operators.ColumnOperators):
 
         if result_type is None:
             op, result_type = left.comparator._adapt_expression(
-                                                op, right.comparator)
+                op, right.comparator)
 
         return BinaryExpression(left, right, op, type_=result_type)
+
+    def _conjunction_operate(self, expr, op, other, **kw):
+        if op is operators.and_:
+            return and_(expr, other)
+        elif op is operators.or_:
+            return or_(expr, other)
+        else:
+            raise NotImplementedError()
 
     def _scalar(self, expr, op, fn, **kw):
         return fn(expr)
@@ -132,7 +143,7 @@ class _DefaultColumnComparator(operators.ColumnOperators):
 
         if isinstance(seq_or_selectable, ScalarSelect):
             return self._boolean_compare(expr, op, seq_or_selectable,
-                                  negate=negate_op)
+                                         negate=negate_op)
         elif isinstance(seq_or_selectable, SelectBase):
 
             # TODO: if we ever want to support (x, y, z) IN (select x,
@@ -145,20 +156,22 @@ class _DefaultColumnComparator(operators.ColumnOperators):
                 negate=negate_op, **kw)
         elif isinstance(seq_or_selectable, (Selectable, TextClause)):
             return self._boolean_compare(expr, op, seq_or_selectable,
-                                  negate=negate_op, **kw)
+                                         negate=negate_op, **kw)
         elif isinstance(seq_or_selectable, ClauseElement):
-            raise exc.InvalidRequestError('in_() accepts'
-                    ' either a list of expressions '
-                    'or a selectable: %r' % seq_or_selectable)
+            raise exc.InvalidRequestError(
+                'in_() accepts'
+                ' either a list of expressions '
+                'or a selectable: %r' % seq_or_selectable)
 
         # Handle non selectable arguments as sequences
         args = []
         for o in seq_or_selectable:
             if not _is_literal(o):
                 if not isinstance(o, operators.ColumnOperators):
-                    raise exc.InvalidRequestError('in_() accepts'
-                            ' either a list of expressions '
-                            'or a selectable: %r' % o)
+                    raise exc.InvalidRequestError(
+                        'in_() accepts'
+                        ' either a list of expressions '
+                        'or a selectable: %r' % o)
             elif o is None:
                 o = Null()
             else:
@@ -183,12 +196,19 @@ class _DefaultColumnComparator(operators.ColumnOperators):
                 return expr == expr
 
         return self._boolean_compare(expr, op,
-                              ClauseList(*args).self_group(against=op),
-                              negate=negate_op)
+                                     ClauseList(*args).self_group(against=op),
+                                     negate=negate_op)
 
     def _unsupported_impl(self, expr, op, *arg, **kw):
         raise NotImplementedError("Operator '%s' is not supported on "
-                            "this expression" % op.__name__)
+                                  "this expression" % op.__name__)
+
+    def _inv_impl(self, expr, op, **kw):
+        """See :meth:`.ColumnOperators.__inv__`."""
+        if hasattr(expr, 'negation_clause'):
+            return expr.negation_clause
+        else:
+            return expr._negate()
 
     def _neg_impl(self, expr, op, **kw):
         """See :meth:`.ColumnOperators.__neg__`."""
@@ -196,25 +216,31 @@ class _DefaultColumnComparator(operators.ColumnOperators):
 
     def _match_impl(self, expr, op, other, **kw):
         """See :meth:`.ColumnOperators.match`."""
-        return self._boolean_compare(expr, operators.match_op,
-                              self._check_literal(expr, operators.match_op,
-                              other))
+        return self._boolean_compare(
+            expr, operators.match_op,
+            self._check_literal(
+                expr, operators.match_op, other),
+            **kw)
 
     def _distinct_impl(self, expr, op, **kw):
         """See :meth:`.ColumnOperators.distinct`."""
         return UnaryExpression(expr, operator=operators.distinct_op,
-                                type_=expr.type)
+                               type_=expr.type)
 
     def _between_impl(self, expr, op, cleft, cright, **kw):
         """See :meth:`.ColumnOperators.between`."""
         return BinaryExpression(
-                expr,
-                ClauseList(
-                    self._check_literal(expr, operators.and_, cleft),
-                    self._check_literal(expr, operators.and_, cright),
-                    operator=operators.and_,
-                    group=False, group_contents=False),
-                operators.between_op)
+            expr,
+            ClauseList(
+                self._check_literal(expr, operators.and_, cleft),
+                self._check_literal(expr, operators.and_, cright),
+                operator=operators.and_,
+                group=False, group_contents=False),
+            op,
+            negate=operators.notbetween_op
+            if op is operators.between_op
+            else operators.between_op,
+            modifiers=kw)
 
     def _collate_impl(self, expr, op, other, **kw):
         return collate(expr, other)
@@ -222,6 +248,9 @@ class _DefaultColumnComparator(operators.ColumnOperators):
     # a mapping of operators with the method they use, along with
     # their negated operator for comparison operators
     operators = {
+        "and_": (_conjunction_operate,),
+        "or_": (_conjunction_operate,),
+        "inv": (_inv_impl,),
         "add": (_binary_operate,),
         "mul": (_binary_operate,),
         "sub": (_binary_operate,),
@@ -255,6 +284,7 @@ class _DefaultColumnComparator(operators.ColumnOperators):
         "match_op": (_match_impl,),
         "distinct_op": (_distinct_impl,),
         "between_op": (_between_impl, ),
+        "notbetween_op": (_between_impl, ),
         "neg": (_neg_impl,),
         "getitem": (_unsupported_impl,),
         "lshift": (_unsupported_impl,),
@@ -279,4 +309,3 @@ class _DefaultColumnComparator(operators.ColumnOperators):
             return expr._bind_param(operator, other)
         else:
             return other
-
