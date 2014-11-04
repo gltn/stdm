@@ -18,7 +18,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-import sqlalchemy
+#import stdm.third_party.sqlalchemy
 from sqlalchemy import create_engine
 
 class DatabaseConnection(object):
