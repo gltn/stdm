@@ -19,7 +19,7 @@ email                : gkahiu@gmail.com
 """
 from PyQt4.QtGui import *
 
-from reportlab.lib.units import cm
+from stdm.third_party import cm
 from reportlab.lib.colors import black
 
 from geraldo import (
