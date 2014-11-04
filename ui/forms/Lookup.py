@@ -43,7 +43,6 @@ class LookupModeller(object):
         self._lookupFormatter[tName.lower()] = lkModel
         return lkModel
 
-    # def lookups(self,tName):
 
 
 
