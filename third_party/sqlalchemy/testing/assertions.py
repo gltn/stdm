@@ -1,5 +1,6 @@
 # testing/assertions.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -18,9 +19,30 @@ from .warnings import resetwarnings
 from .exclusions import db_spec, _is_excluded
 from . import assertsql
 from . import config
-import itertools
 from .util import fail
 import contextlib
+
+
+@contextlib.contextmanager
+def expect_warnings(*messages):
+    """Context manager to expect warnings with the given messages."""
+
+    filters = [dict(action='ignore',
+                    category=sa_exc.SAPendingDeprecationWarning)]
+    if not messages:
+        filters.append(dict(action='ignore',
+                            category=sa_exc.SAWarning))
+    else:
+        filters.extend(dict(action='ignore',
+                            message=message,
+                            category=sa_exc.SAWarning)
+                       for message in messages)
+    for f in filters:
+        warnings.filterwarnings(**f)
+    try:
+        yield
+    finally:
+        resetwarnings()
 
 
 def emits_warning(*messages):
@@ -30,31 +52,10 @@ def emits_warning(*messages):
     strings; these will be matched to the root of the warning description by
     warnings.filterwarnings().
     """
-    # TODO: it would be nice to assert that a named warning was
-    # emitted. should work with some monkeypatching of warnings,
-    # and may work on non-CPython if they keep to the spirit of
-    # warnings.showwarning's docstring.
-    # - update: jython looks ok, it uses cpython's module
-
     @decorator
     def decorate(fn, *args, **kw):
-        # todo: should probably be strict about this, too
-        filters = [dict(action='ignore',
-                        category=sa_exc.SAPendingDeprecationWarning)]
-        if not messages:
-            filters.append(dict(action='ignore',
-                                 category=sa_exc.SAWarning))
-        else:
-            filters.extend(dict(action='ignore',
-                                 message=message,
-                                 category=sa_exc.SAWarning)
-                            for message in messages)
-        for f in filters:
-            warnings.filterwarnings(**f)
-        try:
+        with expect_warnings(*messages):
             return fn(*args, **kw)
-        finally:
-            resetwarnings()
     return decorate
 
 
@@ -102,6 +103,7 @@ def uses_deprecated(*messages):
             return fn(*args, **kw)
     return decorate
 
+
 @contextlib.contextmanager
 def expect_deprecated(*messages):
     # todo: should probably be strict about this, too
@@ -117,8 +119,8 @@ def expect_deprecated(*messages):
                   category=sa_exc.SADeprecationWarning)
              for message in
              [(m.startswith('//') and
-                ('Call to deprecated function ' + m[2:]) or m)
-               for m in messages]])
+               ('Call to deprecated function ' + m[2:]) or m)
+              for m in messages]])
 
     for f in filters:
         warnings.filterwarnings(**f)
@@ -139,6 +141,8 @@ def global_cleanup_assertions():
     _assert_no_stray_pool_connections()
 
 _STRAY_CONNECTION_FAILURES = 0
+
+
 def _assert_no_stray_pool_connections():
     global _STRAY_CONNECTION_FAILURES
 
@@ -150,12 +154,11 @@ def _assert_no_stray_pool_connections():
     # there's a ref in there.  usually just one.
     if pool._refs:
 
-        # OK, let's be somewhat forgiving.  Increment a counter,
-        # we'll allow a couple of these at most.
+        # OK, let's be somewhat forgiving.
         _STRAY_CONNECTION_FAILURES += 1
 
         print("Encountered a stray connection in test cleanup: %s"
-                        % str(pool._refs))
+              % str(pool._refs))
         # then do a real GC sweep.   We shouldn't even be here
         # so a single sweep should really be doing it, otherwise
         # there's probably a real unreachable cycle somewhere.
@@ -164,7 +167,7 @@ def _assert_no_stray_pool_connections():
     # if we've already had two of these occurrences, or
     # after a hard gc sweep we still have pool._refs?!
     # now we have to raise.
-    if _STRAY_CONNECTION_FAILURES >= 2 or pool._refs:
+    if pool._refs:
         err = str(pool._refs)
 
         # but clean out the pool refs collection directly,
@@ -172,7 +175,11 @@ def _assert_no_stray_pool_connections():
         # so the error doesn't at least keep happening.
         pool._refs.clear()
         _STRAY_CONNECTION_FAILURES = 0
-        assert False, "Stray conections in cleanup: %s" % err
+        assert False, "Stray connection refused to leave "\
+            "after gc.collect(): %s" % err
+    elif _STRAY_CONNECTION_FAILURES > 10:
+        assert False, "Encountered more than 10 stray connections"
+        _STRAY_CONNECTION_FAILURES = 0
 
 
 def eq_(a, b, msg=None):
@@ -217,17 +224,18 @@ def assert_raises_message(except_cls, msg, callable_, *args, **kwargs):
         callable_(*args, **kwargs)
         assert False, "Callable did not raise an exception"
     except except_cls as e:
-        assert re.search(msg, util.text_type(e), re.UNICODE), "%r !~ %s" % (msg, e)
+        assert re.search(
+            msg, util.text_type(e), re.UNICODE), "%r !~ %s" % (msg, e)
         print(util.text_type(e).encode('utf-8'))
 
 
 class AssertsCompiledSQL(object):
     def assert_compile(self, clause, result, params=None,
-                        checkparams=None, dialect=None,
-                        checkpositional=None,
-                        use_default_dialect=False,
-                        allow_dialect_select=False,
-                        literal_binds=False):
+                       checkparams=None, dialect=None,
+                       checkpositional=None,
+                       use_default_dialect=False,
+                       allow_dialect_select=False,
+                       literal_binds=False):
         if use_default_dialect:
             dialect = default.DefaultDialect()
         elif allow_dialect_select:
@@ -242,7 +250,6 @@ class AssertsCompiledSQL(object):
                 dialect = default.DefaultDialect()
             elif isinstance(dialect, util.string_types):
                 dialect = url.URL(dialect).get_dialect()()
-
 
         kw = {}
         compile_kwargs = {}
@@ -267,10 +274,15 @@ class AssertsCompiledSQL(object):
 
         if util.py3k:
             param_str = param_str.encode('utf-8').decode('ascii', 'ignore')
-            print(("\nSQL String:\n" + util.text_type(c) + param_str).encode('utf-8'))
+            print(
+                ("\nSQL String:\n" +
+                 util.text_type(c) +
+                 param_str).encode('utf-8'))
         else:
-            print("\nSQL String:\n" + util.text_type(c).encode('utf-8') + param_str)
-
+            print(
+                "\nSQL String:\n" +
+                util.text_type(c).encode('utf-8') +
+                param_str)
 
         cc = re.sub(r'[\n\t]', '', util.text_type(c))
 
@@ -295,7 +307,7 @@ class ComparesTables(object):
 
             if strict_types:
                 msg = "Type '%s' doesn't correspond to type '%s'"
-                assert type(reflected_c.type) is type(c.type), \
+                assert isinstance(reflected_c.type, type(c.type)), \
                     msg % (reflected_c.type, c.type)
             else:
                 self.assert_types_base(reflected_c, c)
@@ -317,8 +329,8 @@ class ComparesTables(object):
 
     def assert_types_base(self, c1, c2):
         assert c1.type._compare_type_affinity(c2.type),\
-                "On column %r, type '%s' doesn't correspond to type '%s'" % \
-                (c1.name, c1.type, c2.type)
+            "On column %r, type '%s' doesn't correspond to type '%s'" % \
+            (c1.name, c1.type, c2.type)
 
 
 class AssertsExecutionResults(object):
@@ -362,7 +374,8 @@ class AssertsExecutionResults(object):
         found = util.IdentitySet(result)
         expected = set([immutabledict(e) for e in expected])
 
-        for wrong in util.itertools_filterfalse(lambda o: type(o) == cls, found):
+        for wrong in util.itertools_filterfalse(lambda o:
+                                                isinstance(o, cls), found):
             fail('Unexpected type "%s", expected "%s"' % (
                 type(wrong).__name__, cls.__name__))
 
@@ -393,7 +406,7 @@ class AssertsExecutionResults(object):
             else:
                 fail(
                     "Expected %s instance with attributes %s not found." % (
-                    cls.__name__, repr(expected_item)))
+                        cls.__name__, repr(expected_item)))
         return True
 
     def assert_sql_execution(self, db, callable_, *rules):
@@ -405,7 +418,8 @@ class AssertsExecutionResults(object):
             assertsql.asserter.clear_rules()
 
     def assert_sql(self, db, callable_, list_, with_sequences=None):
-        if with_sequences is not None and config.db.dialect.supports_sequences:
+        if (with_sequences is not None and
+                config.db.dialect.supports_sequences):
             rules = with_sequences
         else:
             rules = list_

@@ -1,5 +1,6 @@
 # testing/config.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -13,6 +14,7 @@ db_opts = None
 file_config = None
 
 _current = None
+
 
 class Config(object):
     def __init__(self, db, db_opts, options, file_config):
@@ -51,7 +53,8 @@ class Config(object):
     def push_engine(cls, db, namespace):
         assert _current, "Can't push without a default Config set up"
         cls.push(
-            Config(db, _current.db_opts, _current.options, _current.file_config),
+            Config(
+                db, _current.db_opts, _current.options, _current.file_config),
             namespace
         )
 

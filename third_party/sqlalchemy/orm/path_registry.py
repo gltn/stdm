@@ -1,5 +1,6 @@
 # orm/path_registry.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -13,12 +14,14 @@ from .. import exc
 from itertools import chain
 from .base import class_mapper
 
+
 def _unreduce_path(path):
     return PathRegistry.deserialize(path)
 
 
 _WILDCARD_TOKEN = "*"
 _DEFAULT_TOKEN = "_sa_default"
+
 
 class PathRegistry(object):
     """Represent query load paths and registry functions.
@@ -80,7 +83,7 @@ class PathRegistry(object):
             self.path[i] for i in range(0, len(self.path), 2)
         ]:
             if path_mapper.is_mapper and \
-                path_mapper.isa(mapper):
+                    path_mapper.isa(mapper):
                 return True
         else:
             return False
@@ -104,9 +107,9 @@ class PathRegistry(object):
             return None
 
         p = tuple(chain(*[(class_mapper(mcls),
-                            class_mapper(mcls).attrs[key]
-                                if key is not None else None)
-                            for mcls, key in path]))
+                           class_mapper(mcls).attrs[key]
+                           if key is not None else None)
+                          for mcls, key in path]))
         if p and p[-1] is None:
             p = p[0:-1]
         return cls.coerce(p)
@@ -114,8 +117,8 @@ class PathRegistry(object):
     @classmethod
     def per_mapper(cls, mapper):
         return EntityRegistry(
-                cls.root, mapper
-            )
+            cls.root, mapper
+        )
 
     @classmethod
     def coerce(cls, raw):
@@ -131,8 +134,8 @@ class PathRegistry(object):
 
     def __add__(self, other):
         return util.reduce(
-                    lambda prev, next: prev[next],
-                    other.path, self)
+            lambda prev, next: prev[next],
+            other.path, self)
 
     def __repr__(self):
         return "%s(%r)" % (self.__class__.__name__, self.path, )
@@ -145,10 +148,12 @@ class RootRegistry(PathRegistry):
     """
     path = ()
     has_entity = False
+
     def __getitem__(self, entity):
         return entity._path_registry
 
 PathRegistry.root = RootRegistry()
+
 
 class TokenRegistry(PathRegistry):
     def __init__(self, parent, token):
@@ -161,6 +166,7 @@ class TokenRegistry(PathRegistry):
     def __getitem__(self, entity):
         raise NotImplementedError()
 
+
 class PropRegistry(PathRegistry):
     def __init__(self, parent, prop):
         # restate this path in terms of the
@@ -170,7 +176,7 @@ class PropRegistry(PathRegistry):
             parent = parent.parent[prop.parent]
         elif insp.is_aliased_class and insp.with_polymorphic_mappers:
             if prop.parent is not insp.mapper and \
-                prop.parent in insp.with_polymorphic_mappers:
+                    prop.parent in insp.with_polymorphic_mappers:
                 subclass_entity = parent[-1]._entity_for_mapper(prop.parent)
                 parent = parent.parent[subclass_entity]
 
@@ -195,16 +201,18 @@ class PropRegistry(PathRegistry):
         """
         return ("loader",
                 self.parent.token(
-                    "%s:%s" % (self.prop.strategy_wildcard_key, _WILDCARD_TOKEN)
-                    ).path
+                    "%s:%s" % (
+                        self.prop.strategy_wildcard_key, _WILDCARD_TOKEN)
+                ).path
                 )
 
     @util.memoized_property
     def _default_path_loader_key(self):
         return ("loader",
                 self.parent.token(
-                    "%s:%s" % (self.prop.strategy_wildcard_key, _DEFAULT_TOKEN)
-                    ).path
+                    "%s:%s" % (self.prop.strategy_wildcard_key,
+                               _DEFAULT_TOKEN)
+                ).path
                 )
 
     @util.memoized_property
@@ -226,6 +234,7 @@ class PropRegistry(PathRegistry):
             return EntityRegistry(
                 self, entity
             )
+
 
 class EntityRegistry(PathRegistry, dict):
     is_aliased_class = False
@@ -256,6 +265,3 @@ class EntityRegistry(PathRegistry, dict):
     def __missing__(self, key):
         self[key] = item = PropRegistry(self, key)
         return item
-
-
-

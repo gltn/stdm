@@ -1,5 +1,6 @@
 # orm/state.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -16,11 +17,35 @@ from .. import util
 from . import exc as orm_exc, interfaces
 from .path_registry import PathRegistry
 from .base import PASSIVE_NO_RESULT, SQL_OK, NEVER_SET, ATTR_WAS_SET, \
-        NO_VALUE, PASSIVE_NO_INITIALIZE, INIT_OK, PASSIVE_OFF
+    NO_VALUE, PASSIVE_NO_INITIALIZE, INIT_OK, PASSIVE_OFF
 from . import base
 
+
 class InstanceState(interfaces._InspectionAttr):
-    """tracks state information at the instance level."""
+    """tracks state information at the instance level.
+
+    The :class:`.InstanceState` is a key object used by the
+    SQLAlchemy ORM in order to track the state of an object;
+    it is created the moment an object is instantiated, typically
+    as a result of :term:`instrumentation` which SQLAlchemy applies
+    to the ``__init__()`` method of the class.
+
+    :class:`.InstanceState` is also a semi-public object,
+    available for runtime inspection as to the state of a
+    mapped instance, including information such as its current
+    status within a particular :class:`.Session` and details
+    about data on individual attributes.  The public API
+    in order to acquire a :class:`.InstanceState` object
+    is to use the :func:`.inspect` system::
+
+        >>> from sqlalchemy import inspect
+        >>> insp = inspect(some_mapped_object)
+
+    .. seealso::
+
+        :ref:`core_inspection_toplevel`
+
+    """
 
     session_id = None
     key = None
@@ -50,6 +75,9 @@ class InstanceState(interfaces._InspectionAttr):
         and history.
 
         The returned object is an instance of :class:`.AttributeState`.
+        This object allows inspection of the current data
+        within an attribute as well as attribute history
+        since the last flush.
 
         """
         return util.ImmutableProperties(
@@ -61,25 +89,50 @@ class InstanceState(interfaces._InspectionAttr):
 
     @property
     def transient(self):
-        """Return true if the object is transient."""
+        """Return true if the object is :term:`transient`.
+
+        .. seealso::
+
+            :ref:`session_object_states`
+
+        """
         return self.key is None and \
             not self._attached
 
     @property
     def pending(self):
-        """Return true if the object is pending."""
+        """Return true if the object is :term:`pending`.
+
+
+        .. seealso::
+
+            :ref:`session_object_states`
+
+        """
         return self.key is None and \
             self._attached
 
     @property
     def persistent(self):
-        """Return true if the object is persistent."""
+        """Return true if the object is :term:`persistent`.
+
+        .. seealso::
+
+            :ref:`session_object_states`
+
+            """
         return self.key is not None and \
             self._attached
 
     @property
     def detached(self):
-        """Return true if the object is detached."""
+        """Return true if the object is :term:`detached`.
+
+        .. seealso::
+
+            :ref:`session_object_states`
+
+        """
         return self.key is not None and \
             not self._attached
 
@@ -180,6 +233,17 @@ class InstanceState(interfaces._InspectionAttr):
 
     @property
     def dict(self):
+        """Return the instance dict used by the object.
+
+        Under normal circumstances, this is always synonymous
+        with the ``__dict__`` attribute of the mapped object,
+        unless an alternative instrumentation system has been
+        configured.
+
+        In the case that the actual object has been garbage
+        collected, this accessor returns a blank dictionary.
+
+        """
         o = self.obj()
         if o is not None:
             return base.instance_dict(o)
@@ -213,8 +277,8 @@ class InstanceState(interfaces._InspectionAttr):
         state_dict = {'instance': self.obj()}
         state_dict.update(
             (k, self.__dict__[k]) for k in (
-                'committed_state', '_pending_mutations', 'modified', 'expired',
-                'callables', 'key', 'parents', 'load_options',
+                'committed_state', '_pending_mutations', 'modified',
+                'expired', 'callables', 'key', 'parents', 'load_options',
                 'class_',
             ) if k in self.__dict__
         )
@@ -252,7 +316,7 @@ class InstanceState(interfaces._InspectionAttr):
 
         if 'load_path' in state_dict:
             self.load_path = PathRegistry.\
-                                deserialize(state_dict['load_path'])
+                deserialize(state_dict['load_path'])
 
         state_dict['manager'](self, inst, state_dict)
 
@@ -355,7 +419,7 @@ class InstanceState(interfaces._InspectionAttr):
             return PASSIVE_NO_RESULT
 
         toload = self.expired_attributes.\
-                        intersection(self.unmodified)
+            intersection(self.unmodified)
 
         self.manager.deferred_scalar_loader(self, toload)
 
@@ -378,7 +442,7 @@ class InstanceState(interfaces._InspectionAttr):
         """Return self.unmodified.intersection(keys)."""
 
         return set(keys).intersection(self.manager).\
-                    difference(self.committed_state)
+            difference(self.committed_state)
 
     @property
     def unloaded(self):
@@ -389,15 +453,15 @@ class InstanceState(interfaces._InspectionAttr):
 
         """
         return set(self.manager).\
-                    difference(self.committed_state).\
-                    difference(self.dict)
+            difference(self.committed_state).\
+            difference(self.dict)
 
     @property
     def _unloaded_non_object(self):
         return self.unloaded.intersection(
-                attr for attr in self.manager
-                    if self.manager[attr].impl.accepts_scalar_loader
-            )
+            attr for attr in self.manager
+            if self.manager[attr].impl.accepts_scalar_loader
+        )
 
     @property
     def expired_attributes(self):
@@ -414,7 +478,8 @@ class InstanceState(interfaces._InspectionAttr):
     def _instance_dict(self):
         return None
 
-    def _modified_event(self, dict_, attr, previous, collection=False, force=False):
+    def _modified_event(
+            self, dict_, attr, previous, collection=False, force=False):
         if not attr.send_modified_events:
             return
         if attr.key not in self.committed_state or force:
@@ -445,13 +510,13 @@ class InstanceState(interfaces._InspectionAttr):
 
             if inst is None:
                 raise orm_exc.ObjectDereferencedError(
-                        "Can't emit change event for attribute '%s' - "
-                        "parent object of type %s has been garbage "
-                        "collected."
-                        % (
-                            self.manager[attr.key],
-                            base.state_class_str(self)
-                        ))
+                    "Can't emit change event for attribute '%s' - "
+                    "parent object of type %s has been garbage "
+                    "collected."
+                    % (
+                        self.manager[attr.key],
+                        base.state_class_str(self)
+                    ))
             self.modified = True
 
     def _commit(self, dict_, keys):
@@ -470,8 +535,8 @@ class InstanceState(interfaces._InspectionAttr):
         self.expired = False
 
         for key in set(self.callables).\
-                            intersection(keys).\
-                            intersection(dict_):
+                intersection(keys).\
+                intersection(dict_):
             del self.callables[key]
 
     def _commit_all(self, dict_, instance_dict=None):
@@ -550,7 +615,7 @@ class AttributeState(object):
 
         """
         return self.state.manager[self.key].__get__(
-                        self.state.obj(), self.state.class_)
+            self.state.obj(), self.state.class_)
 
     @property
     def history(self):
@@ -569,7 +634,7 @@ class AttributeState(object):
 
         """
         return self.state.get_history(self.key,
-                    PASSIVE_NO_INITIALIZE)
+                                      PASSIVE_NO_INITIALIZE)
 
     def load_history(self):
         """Return the current pre-flush change history for
@@ -588,8 +653,7 @@ class AttributeState(object):
 
         """
         return self.state.get_history(self.key,
-                    PASSIVE_OFF ^ INIT_OK)
-
+                                      PASSIVE_OFF ^ INIT_OK)
 
 
 class PendingCollection(object):
@@ -600,6 +664,7 @@ class PendingCollection(object):
     PendingCollection are applied to it to produce the final result.
 
     """
+
     def __init__(self):
         self.deleted_items = util.IdentitySet()
         self.added_items = util.OrderedIdentitySet()

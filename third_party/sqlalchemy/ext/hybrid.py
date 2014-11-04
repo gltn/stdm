@@ -1,5 +1,6 @@
 # ext/hybrid.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -473,8 +474,8 @@ of measurement, currencies and encrypted passwords.
 .. seealso::
 
     `Hybrids and Value Agnostic Types
-    <http://techspot.zzzeek.org/2011/10/21/hybrids-and-value-agnostic-types/>`_ -
-    on the techspot.zzzeek.org blog
+    <http://techspot.zzzeek.org/2011/10/21/hybrids-and-value-agnostic-types/>`_
+    - on the techspot.zzzeek.org blog
 
     `Value Agnostic Types, Part II
     <http://techspot.zzzeek.org/2011/10/29/value-agnostic-types-part-ii/>`_ -
@@ -658,6 +659,7 @@ HYBRID_PROPERTY = util.symbol('HYBRID_PROPERTY')
 
 """
 
+
 class hybrid_method(interfaces._InspectionAttr):
     """A decorator which allows definition of a Python object method with both
     instance-level and class-level behavior.
@@ -779,7 +781,7 @@ class hybrid_property(interfaces._InspectionAttr):
         """
 
         proxy_attr = attributes.\
-                        create_proxied_attribute(self)
+            create_proxied_attribute(self)
 
         def expr(owner):
             return proxy_attr(owner, self.__name__, self, comparator(owner))

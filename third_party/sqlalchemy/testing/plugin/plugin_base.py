@@ -1,5 +1,6 @@
 # plugin/plugin_base.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -7,8 +8,8 @@
 """Testing extensions.
 
 this module is designed to work as a testing-framework-agnostic library,
-so that we can continue to support nose and also begin adding new functionality
-via py.test.
+so that we can continue to support nose and also begin adding new
+functionality via py.test.
 
 """
 
@@ -49,49 +50,61 @@ logging = None
 db_opts = {}
 options = None
 
+
 def setup_options(make_option):
     make_option("--log-info", action="callback", type="string", callback=_log,
-        help="turn on info logging for <LOG> (multiple OK)")
-    make_option("--log-debug", action="callback", type="string", callback=_log,
-        help="turn on debug logging for <LOG> (multiple OK)")
+                help="turn on info logging for <LOG> (multiple OK)")
+    make_option("--log-debug", action="callback",
+                type="string", callback=_log,
+                help="turn on debug logging for <LOG> (multiple OK)")
     make_option("--db", action="append", type="string", dest="db",
                 help="Use prefab database uri. Multiple OK, "
-                        "first one is run by default.")
+                "first one is run by default.")
     make_option('--dbs', action='callback', callback=_list_dbs,
-        help="List available prefab dbs")
+                help="List available prefab dbs")
     make_option("--dburi", action="append", type="string", dest="dburi",
-        help="Database uri.  Multiple OK, first one is run by default.")
+                help="Database uri.  Multiple OK, "
+                "first one is run by default.")
     make_option("--dropfirst", action="store_true", dest="dropfirst",
-        help="Drop all tables in the target database first")
+                help="Drop all tables in the target database first")
     make_option("--backend-only", action="store_true", dest="backend_only",
-        help="Run only tests marked with __backend__")
+                help="Run only tests marked with __backend__")
     make_option("--mockpool", action="store_true", dest="mockpool",
-        help="Use mock pool (asserts only one connection used)")
-    make_option("--low-connections", action="store_true", dest="low_connections",
-        help="Use a low number of distinct connections - i.e. for Oracle TNS"
-    )
-    make_option("--reversetop", action="store_true", dest="reversetop", default=False,
-        help="Use a random-ordering set implementation in the ORM (helps "
-              "reveal dependency issues)")
+                help="Use mock pool (asserts only one connection used)")
+    make_option("--low-connections", action="store_true",
+                dest="low_connections",
+                help="Use a low number of distinct connections - "
+                "i.e. for Oracle TNS")
+    make_option("--reversetop", action="store_true",
+                dest="reversetop", default=False,
+                help="Use a random-ordering set implementation in the ORM "
+                "(helps reveal dependency issues)")
     make_option("--requirements", action="callback", type="string",
-        callback=_requirements_opt,
-        help="requirements class for testing, overrides setup.cfg")
-    make_option("--with-cdecimal", action="store_true", dest="cdecimal", default=False,
-        help="Monkeypatch the cdecimal library into Python 'decimal' for all tests")
-    make_option("--serverside", action="callback", callback=_server_side_cursors,
-        help="Turn on server side cursors for PG")
-    make_option("--mysql-engine", action="store", dest="mysql_engine", default=None,
-        help="Use the specified MySQL storage engine for all tables, default is "
-             "a db-default/InnoDB combo.")
+                callback=_requirements_opt,
+                help="requirements class for testing, overrides setup.cfg")
+    make_option("--with-cdecimal", action="store_true",
+                dest="cdecimal", default=False,
+                help="Monkeypatch the cdecimal library into Python 'decimal' "
+                "for all tests")
+    make_option("--serverside", action="callback",
+                callback=_server_side_cursors,
+                help="Turn on server side cursors for PG")
+    make_option("--mysql-engine", action="store",
+                dest="mysql_engine", default=None,
+                help="Use the specified MySQL storage engine for all tables, "
+                "default is a db-default/InnoDB combo.")
     make_option("--tableopts", action="append", dest="tableopts", default=[],
-        help="Add a dialect-specific table option, key=value")
-    make_option("--write-profiles", action="store_true", dest="write_profiles", default=False,
-            help="Write/update profiling data.")
+                help="Add a dialect-specific table option, key=value")
+    make_option("--write-profiles", action="store_true",
+                dest="write_profiles", default=False,
+                help="Write/update profiling data.")
+
 
 def read_config():
     global file_config
     file_config = configparser.ConfigParser()
     file_config.read(['setup.cfg', 'test.cfg'])
+
 
 def pre_begin(opt):
     """things to set up early, before coverage might be setup."""
@@ -100,8 +113,10 @@ def pre_begin(opt):
     for fn in pre_configure:
         fn(options, file_config)
 
+
 def set_coverage_flag(value):
     options.has_coverage = value
+
 
 def post_begin():
     """things to set up later, once we know coverage is running."""
@@ -112,11 +127,11 @@ def post_begin():
     # late imports, has to happen after config as well
     # as nose plugins like coverage
     global util, fixtures, engines, exclusions, \
-                    assertions, warnings, profiling,\
-                    config, testing
+        assertions, warnings, profiling,\
+        config, testing
     from sqlalchemy import testing
     from sqlalchemy.testing import fixtures, engines, exclusions, \
-                    assertions, warnings, profiling, config
+        assertions, warnings, profiling, config
     from sqlalchemy import util
 
 
@@ -141,6 +156,7 @@ def _list_dbs(*args):
 
 def _server_side_cursors(opt_str, value, parser):
     db_opts['server_side_cursors'] = True
+
 
 def _requirements_opt(opt_str, value, parser):
     _setup_requirements(value)
@@ -188,8 +204,9 @@ def _engine_uri(options, file_config):
             for db in re.split(r'[,\s]+', db_token):
                 if db not in file_config.options('db'):
                     raise RuntimeError(
-                        "Unknown URI specifier '%s'.  Specify --dbs for known uris."
-                                % db)
+                        "Unknown URI specifier '%s'.  "
+                        "Specify --dbs for known uris."
+                        % db)
                 else:
                     db_urls.append(file_config.get('db', db))
 
@@ -210,11 +227,13 @@ def _engine_pool(options, file_config):
         from sqlalchemy import pool
         db_opts['poolclass'] = pool.AssertionPool
 
+
 @post
 def _requirements(options, file_config):
 
     requirement_cls = file_config.get('sqla_testing', "requirement_cls")
     _setup_requirements(requirement_cls)
+
 
 def _setup_requirements(argument):
     from sqlalchemy.testing import config
@@ -234,6 +253,7 @@ def _setup_requirements(argument):
 
     config.requirements = testing.requires = req_cls()
 
+
 @post
 def _prep_testing_database(options, file_config):
     from sqlalchemy.testing import config
@@ -249,27 +269,36 @@ def _prep_testing_database(options, file_config):
                 pass
             else:
                 for vname in view_names:
-                    e.execute(schema._DropView(schema.Table(vname, schema.MetaData())))
+                    e.execute(schema._DropView(
+                        schema.Table(vname, schema.MetaData())
+                    ))
 
             if config.requirements.schemas.enabled_for_config(cfg):
                 try:
-                    view_names = inspector.get_view_names(schema="test_schema")
+                    view_names = inspector.get_view_names(
+                        schema="test_schema")
                 except NotImplementedError:
                     pass
                 else:
                     for vname in view_names:
                         e.execute(schema._DropView(
-                                    schema.Table(vname,
-                                                schema.MetaData(), schema="test_schema")))
+                            schema.Table(vname, schema.MetaData(),
+                                         schema="test_schema")
+                        ))
 
-            for tname in reversed(inspector.get_table_names(order_by="foreign_key")):
-                e.execute(schema.DropTable(schema.Table(tname, schema.MetaData())))
+            for tname in reversed(inspector.get_table_names(
+                    order_by="foreign_key")):
+                e.execute(schema.DropTable(
+                    schema.Table(tname, schema.MetaData())
+                ))
 
             if config.requirements.schemas.enabled_for_config(cfg):
                 for tname in reversed(inspector.get_table_names(
-                                        order_by="foreign_key", schema="test_schema")):
+                        order_by="foreign_key", schema="test_schema")):
                     e.execute(schema.DropTable(
-                        schema.Table(tname, schema.MetaData(), schema="test_schema")))
+                        schema.Table(tname, schema.MetaData(),
+                                     schema="test_schema")
+                    ))
 
 
 @post
@@ -303,7 +332,7 @@ def _post_setup_options(opt, file_config):
 def _setup_profiling(options, file_config):
     from sqlalchemy.testing import profiling
     profiling._profile_stats = profiling.ProfileStatsFile(
-                file_config.get('sqla_testing', 'profile_file'))
+        file_config.get('sqla_testing', 'profile_file'))
 
 
 def want_class(cls):
@@ -311,22 +340,24 @@ def want_class(cls):
         return False
     elif cls.__name__.startswith('_'):
         return False
-    elif config.options.backend_only and not getattr(cls, '__backend__', False):
+    elif config.options.backend_only and not getattr(cls, '__backend__',
+                                                     False):
         return False
     else:
         return True
 
+
 def generate_sub_tests(cls, module):
     if getattr(cls, '__backend__', False):
-        for cfg in config.Config.all_configs():
+        for cfg in _possible_configs_for_cls(cls):
             name = "%s_%s_%s" % (cls.__name__, cfg.db.name, cfg.db.driver)
             subcls = type(
-                        name,
-                        (cls, ),
-                        {
-                            "__only_on__": ("%s+%s" % (cfg.db.name, cfg.db.driver)),
-                            "__backend__": False}
-                        )
+                name,
+                (cls, ),
+                {
+                    "__only_on__": ("%s+%s" % (cfg.db.name, cfg.db.driver)),
+                }
+            )
             setattr(module, name, subcls)
             yield subcls
     else:
@@ -337,19 +368,25 @@ def start_test_class(cls):
     _do_skips(cls)
     _setup_engine(cls)
 
+
 def stop_test_class(cls):
+    #from sqlalchemy import inspect
+    #assert not inspect(testing.db).get_table_names()
     engines.testing_reaper._stop_test_ctx()
     if not options.low_connections:
         assertions.global_cleanup_assertions()
     _restore_engine()
 
+
 def _restore_engine():
     config._current.reset(testing)
+
 
 def _setup_engine(cls):
     if getattr(cls, '__engine_options__', None):
         eng = engines.testing_engine(options=cls.__engine_options__)
         config._current.push_engine(eng, testing)
+
 
 def before_test(test, test_module_name, test_class, test_name):
 
@@ -366,13 +403,24 @@ def before_test(test, test_module_name, test_class, test_name):
     warnings.resetwarnings()
     profiling._current_test = id_
 
+
 def after_test(test):
     engines.testing_reaper._after_test_ctx()
     warnings.resetwarnings()
 
-def _do_skips(cls):
+
+def _possible_configs_for_cls(cls, reasons=None):
     all_configs = set(config.Config.all_configs())
-    reasons = []
+    if cls.__unsupported_on__:
+        spec = exclusions.db_spec(*cls.__unsupported_on__)
+        for config_obj in list(all_configs):
+            if spec(config_obj):
+                all_configs.remove(config_obj)
+    if getattr(cls, '__only_on__', None):
+        spec = exclusions.db_spec(*util.to_list(cls.__only_on__))
+        for config_obj in list(all_configs):
+            if not spec(config_obj):
+                all_configs.remove(config_obj)
 
     if hasattr(cls, '__requires__'):
         requirements = config.requirements
@@ -380,10 +428,11 @@ def _do_skips(cls):
             for requirement in cls.__requires__:
                 check = getattr(requirements, requirement)
 
-                if check.predicate(config_obj):
+                skip_reasons = check.matching_config_reasons(config_obj)
+                if skip_reasons:
                     all_configs.remove(config_obj)
-                    if check.reason:
-                        reasons.append(check.reason)
+                    if reasons is not None:
+                        reasons.extend(skip_reasons)
                     break
 
     if hasattr(cls, '__prefer_requires__'):
@@ -393,23 +442,24 @@ def _do_skips(cls):
             for requirement in cls.__prefer_requires__:
                 check = getattr(requirements, requirement)
 
-                if check.predicate(config_obj):
+                if not check.enabled_for_config(config_obj):
                     non_preferred.add(config_obj)
         if all_configs.difference(non_preferred):
             all_configs.difference_update(non_preferred)
 
-    if cls.__unsupported_on__:
-        spec = exclusions.db_spec(*cls.__unsupported_on__)
+    for db_spec, op, spec in getattr(cls, '__excluded_on__', ()):
         for config_obj in list(all_configs):
-            if spec(config_obj):
+            if not exclusions.skip_if(
+                    exclusions.SpecPredicate(db_spec, op, spec)
+            ).enabled_for_config(config_obj):
                 all_configs.remove(config_obj)
 
-    if getattr(cls, '__only_on__', None):
-        spec = exclusions.db_spec(*util.to_list(cls.__only_on__))
-        for config_obj in list(all_configs):
-            if not spec(config_obj):
-                all_configs.remove(config_obj)
+    return all_configs
 
+
+def _do_skips(cls):
+    reasons = []
+    all_configs = _possible_configs_for_cls(cls, reasons)
 
     if getattr(cls, '__skip_if__', False):
         for c in getattr(cls, '__skip_if__'):
@@ -418,26 +468,26 @@ def _do_skips(cls):
                     cls.__name__, c.__name__)
                 )
 
-    for db_spec, op, spec in getattr(cls, '__excluded_on__', ()):
-        for config_obj in list(all_configs):
-            if exclusions.skip_if(
-                    exclusions.SpecPredicate(db_spec, op, spec)
-                    ).predicate(config_obj):
-                all_configs.remove(config_obj)
-
-
     if not all_configs:
-        raise SkipTest(
-            "'%s' unsupported on DB implementation %s%s" % (
+        if getattr(cls, '__backend__', False):
+            msg = "'%s' unsupported for implementation '%s'" % (
+                cls.__name__, cls.__only_on__)
+        else:
+            msg = "'%s' unsupported on any DB implementation %s%s" % (
                 cls.__name__,
-                ", ".join("'%s' = %s" % (
-                                config_obj.db.name,
-                                config_obj.db.dialect.server_version_info)
-                    for config_obj in config.Config.all_configs()
+                ", ".join(
+                    "'%s(%s)+%s'" % (
+                        config_obj.db.name,
+                        ".".join(
+                            str(dig) for dig in
+                            config_obj.db.dialect.server_version_info),
+                        config_obj.db.driver
+                    )
+                  for config_obj in config.Config.all_configs()
                 ),
                 ", ".join(reasons)
             )
-        )
+        raise SkipTest(msg)
     elif hasattr(cls, '__prefer_backends__'):
         non_preferred = set()
         spec = exclusions.db_spec(*util.to_list(cls.__prefer_backends__))
@@ -450,6 +500,6 @@ def _do_skips(cls):
     if config._current not in all_configs:
         _setup_config(all_configs.pop(), cls)
 
+
 def _setup_config(config_obj, ctx):
     config._current.push(config_obj, testing)
-
