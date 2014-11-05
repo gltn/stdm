@@ -8,3 +8,5 @@
 
 #Compiled Python Files
 *.pyc
+
+/third_party/*
