@@ -31,7 +31,7 @@ from ui_new_str import Ui_frmNewSTR
 from notification import NotificationBar,ERROR,INFO, WARNING
 from sourcedocument import *
 
-from stdm.data import STDMDb, Base, tableCols
+from stdm.data import STDMDb, Base, tableCols, UserData
 from stdm.navigation import TreeSummaryLoader, PropertyBrowser, GMAP_SATELLITE, OSM
 from stdm.utils import *
 from .stdmdialog import  DeclareMapping
@@ -333,16 +333,17 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         except sqlalchemy.exc.OperationalError as oe:
             errMsg = oe.message
             QMessageBox.critical(self, QApplication.translate("newSTRWiz", "Unexpected Error"),errMsg)
-            STDMDb.instance().session.rollback()
             progDialog.hide()
             isValid = False
             
         except Exception as e:
             errMsg = str(e)
             QMessageBox.critical(self, QApplication.translate("newSTRWiz", "Unexpected Error"),errMsg)
-            progDialog.hide()
+            
             isValid = False
-        
+        finally:
+            STDMDb.instance().session.rollback()
+            progDialog.hide()
         return isValid
             
     def _loadPersonInfo(self,persons):
@@ -446,35 +447,21 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         Updates the person completer based on the person attribute item that the user has selected
         '''
         #Clear dependent controls
-        self.txtFilterPattern.clear()
+        #self.txtFilterPattern.clear()
+        self.cboFilterPattern.clear()
         self.tvPersonInfo.clear()
         
         self.currPersonAttr = str(self.cboPersonFilterCols.itemData(index))            
         
         #Create standard model which will always contain the id of the person row then the attribute for use in the completer
-        self.personStandardModel = QStandardItemModel(self)
-        self.personStandardModel.setColumnCount(2)
-        self.personStandardModel.clear()
-       
+        self.cboFilterPattern.addItem("")
         for p in self.persons:
             pVal = getattr(p,self.currPersonAttr)
             if pVal != "" or pVal != None:
-                idItem = QStandardItem()
-                idItem.setData(p.id,Qt.EditRole)
-                attrItem = QStandardItem()
-                attrItem.setData(pVal,Qt.EditRole)
-                self.personStandardModel.appendRow([idItem,attrItem])
-             
-        #Configure completer   
-        personCompleter = QCompleter(self) 
-        personCompleter.setModel(self.personStandardModel)        
-        personCompleter.setCompletionColumn(1)        
-        personCompleter.setCaseSensitivity(Qt.CaseInsensitive)
-        personCompleter.setCompletionMode(QCompleter.PopupCompletion)
-        self.txtFilterPattern.setCompleter(personCompleter)
-        
-        #Connect 'activated' slot for the completer to load person information
-        self.connect(personCompleter, SIGNAL("activated(const QModelIndex&)"),self._updatePersonSummary)        
+                self.cboFilterPattern.addItem(pVal,p.id)
+
+        self.cboFilterPattern.activated.connect(self._updatePersonSummary)
+         #self.connect(self.cboFilterPattern, SIGNAL("currentIndexChanged(int)"),self._updatePersonSummary)
                 
     def _updatePersonSummary(self,index):
         '''
@@ -483,20 +470,20 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         Person=self.mapping.tableMapping('party')
         person=Person()
         #Get the id from the model then the value of the ID model index
-        row = index.row()
-        idIndex = self.personStandardModel.index(row, 0)
-        personId =int(idIndex.data())
-        
+        index =self.cboFilterPattern.currentIndex()
+        personId = self.cboFilterPattern.itemData(index)
+        #QMessageBox.information(None,'index',str(data))
+        # personId = pData
+        if personId is not None:
         #Get person info
-        p = person.queryObject().filter(Person.id == str(personId)).first()
-       
-        if p:   
-            self.selPerson = p
-            personInfoMapping = self._mapPersonAttributes(p)
-            personTreeLoader = TreeSummaryLoader(self.tvPersonInfo)
-            personTreeLoader.addCollection(personInfoMapping, QApplication.translate("newSTRWiz","Occupant Information"), 
-                                           ":/plugins/stdm/images/icons/user.png")
-            personTreeLoader.display()
+            p = person.queryObject().filter(Person.id == str(personId)).first()
+            if p:
+                self.selPerson = p
+                personInfoMapping = self._mapPersonAttributes(p)
+                personTreeLoader = TreeSummaryLoader(self.tvPersonInfo)
+                personTreeLoader.addCollection(personInfoMapping, QApplication.translate("newSTRWiz","Occupant Information"),
+                                               ":/plugins/stdm/images/icons/user.png")
+                personTreeLoader.display()
             
     def _mapPersonAttributes(self,person):
         '''
@@ -540,7 +527,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
     
     def _mapPropertyAttributes(self,prop):
             #Configure formatters
-            spMapper=self.mapping.tableMapping('spatial_unit')
+            spMapper = self.mapping.tableMapping('spatial_unit')
             colMapping = spMapper.displayMapping()
             colMapping.pop('id')
             propMapping=OrderedDict()
@@ -582,7 +569,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         privateTaxMapping[str(QApplication.translate("newSTRWiz","CFPB Payment Year"))] = str(self.dtLastYearCFBP.date().toPyDate().year)
         
         taxDec = Decimal(str(self.txtCFBPAmount.text()))
-        taxFormatted = moneyfmt(taxDec,curr=CURRENCY_CODE)
+        taxFormatted = moneyfmt(taxDec,curr = CURRENCY_CODE)
         privateTaxMapping[str(QApplication.translate("newSTRWiz","CFPB Amount"))] = taxFormatted
         
         return privateTaxMapping
@@ -593,7 +580,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         stateTaxMapping[str(QApplication.translate("newSTRWiz","Latest Receipt Date"))] = str(self.dtStateReceiptDate.date().toPyDate())
         
         taxDec = Decimal(str(self.txtStateReceiptAmount.text()))
-        taxFormatted = moneyfmt(taxDec,curr=CURRENCY_CODE)
+        taxFormatted = moneyfmt(taxDec,curr = CURRENCY_CODE)
         stateTaxMapping[str(QApplication.translate("newSTRWiz","Amount"))] = taxFormatted
         stateTaxMapping[str(QApplication.translate("newSTRWiz","Lease Starting Year"))] = str(self.dtStateLeaseYear.date().toPyDate().year)
         stateTaxMapping[str(QApplication.translate("newSTRWiz","Tax Office"))] = str(self.txtStateTaxOffice.text())

@@ -32,13 +32,13 @@ class GeometryProperty(QDialog):
         
         
         #add control to the dialog
-        self.label=QLabel()
+        self.label = QLabel()
         self.label.setText("Select Geometry Type")
-        self.comboField=QComboBox()
-        self.sridButton=QPushButton()
+        self.comboField = QComboBox()
+        self.sridButton = QPushButton()
         self.sridButton.setText("Select Coordinate System ")
-        self.textField=QLineEdit()
-        geometryCollections={'Point':'POINT','Line':'LINESTRING','Polygon':'POLYGON'}
+        self.textField = QLineEdit()
+        geometryCollections = {'Point': 'POINT','Line': 'LINESTRING','Polygon': 'POLYGON', 'Multipolygon': 'MULTIPOLYGON'}
         setCollectiontypes(geometryCollections,self.comboField)
        
         self.buttons=QDialogButtonBox()
@@ -65,15 +65,13 @@ class GeometryProperty(QDialog):
         self.textField.setText(str(projection))
         
     def setGeometrySetting(self):
-        if self.textField.text()=='':
-            self.ErrorInfoMessage(QApplication.translate("GeometryProperty","Projections is not selected"))
+        if self.textField.text() == '':
+            self.ErrorInfoMessage(QApplication.translate("GeometryProperty", "Projections is not selected"))
             return
         
-        self.value=self.textField.text()
-        #rPart=self.value.index(':')
-        self.value=self.textField.text()[5:]
+        self.value = self.textField.text()[5:]
         geomType=UserData(self.comboField)
-        self.geomCollection=[self.value,geomType]
+        self.geomCollection = [self.value,geomType]
         self.accept()
         
     def cancel(self):
@@ -83,7 +81,7 @@ class GeometryProperty(QDialog):
         # Error Message Box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
-        msg.setWindowTitle(QApplication.translate("GeometryProperty","Geometry Settings"))
+        msg.setWindowTitle(QApplication.translate("GeometryProperty", "Geometry Settings"))
         msg.setText(Message)
         msg.exec_() 
        

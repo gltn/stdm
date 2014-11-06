@@ -35,7 +35,7 @@ from ui_about_stdm import Ui_frmAbout
 
 class AboutSTDMDialog(QDialog,Ui_frmAbout):
     def __init__(self,parent=None):
-        QDialog.__init__(self,parent)
+        QDialog.__init__(self, parent)
         self.setupUi(self)
 
         #Connect signals
@@ -76,6 +76,3 @@ class AboutSTDMDialog(QDialog,Ui_frmAbout):
         contactURL = "http://www.stdm.gltn.net/?page_id=291"
         QDesktopServices.openUrl(QUrl(contactURL))
     
-  
-      
-                

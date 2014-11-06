@@ -26,7 +26,7 @@ from PyQt4.QtGui import QApplication
 from sqlalchemy import create_engine, ForeignKey,Table ,event,func, MetaData
 from sqlalchemy import Column, Date, Integer, String ,Numeric,Text,Boolean
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import relationship, backref 
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.schema import Sequence
 from geoalchemy2 import Geometry

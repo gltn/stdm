@@ -33,10 +33,11 @@ def pg_layerNamesIDMapping():
     layers = QgsMapLayerRegistry.instance().mapLayers()
     
     for name,layer in layers.iteritems():
-        if layer.dataProvider().name() == 'postgres':
-            layerConnStr = layer.dataProvider().dataSourceUri()
-            dataSourceURI = QgsDataSourceURI(layerConnStr)
-            mapping[dataSourceURI.table()] = layer.id()
+        if hasattr(layer, 'dataProvider'):
+            if layer.dataProvider().name() == 'postgres':
+                layerConnStr = layer.dataProvider().dataSourceUri()
+                dataSourceURI = QgsDataSourceURI(layerConnStr)
+                mapping[dataSourceURI.table()] = layer.id()
     
     return mapping
     

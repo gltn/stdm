@@ -1,0 +1,4 @@
+This file contains a list of people have contributed code to the Social Tenure Domain Model:
+(List in alphabetical order)
+John Gitau <john.gitau@unhabitat.org>
+Solomon Njogu <solomon.njogu@unhabitat.org>

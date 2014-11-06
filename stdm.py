@@ -64,6 +64,7 @@ from mapping import (
                      )
 from utils import *
 from mapping.utils import pg_layerNamesIDMapping
+from data.pg_utils import resetContentRoles
 from composer import ComposerWrapper
 
 
@@ -104,7 +105,7 @@ class STDMQGISLoader(object):
         self.loginAct = STDMAction(QIcon(":/plugins/stdm/images/icons/login.png"), \
         QApplication.translate("LoginToolbarAction","Login"), self.iface.mainWindow(),
         "CAA4F0D9-727F-4745-A1FC-C2173101F711")
-        
+        self.loginAct.setShortcut(QKeySequence(Qt.Key_F2))
         self.aboutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/information.png"), \
         QApplication.translate("AboutToolbarAction","About"), self.iface.mainWindow(),
         "137FFB1B-90CD-4A6D-B49E-0E99CD46F784")
@@ -112,13 +113,15 @@ class STDMQGISLoader(object):
         self.logoutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/logout.png"), \
         QApplication.translate("LogoutToolbarAction","Logout"), self.iface.mainWindow(),
         "EF3D96AF-F127-4C31-8D9F-381C07E855DD")
+        self.logoutAct.setShortcut(QKeySequence(Qt.Key_Delete))
         self.changePasswordAct = STDMAction(QIcon(":/plugins/stdm/images/icons/change_password.png"), \
         QApplication.translate("ChangePasswordToolbarAction","Change Password"), self.iface.mainWindow(),
         "8C425E0E-3761-43F5-B0B2-FB8A9C3C8E4B")
         self.helpAct = STDMAction(QIcon(":/plugins/stdm/images/icons/help-content.png"), \
         QApplication.translate("ConfigTableReader","Help Contents"), self.iface.mainWindow(),
         "7A61CEA9-2A64-45F6-A40F-D83987D416EB")
-        
+        self.helpAct.setShortcut(Qt.Key_F10)
+
         # connect the actions to their respective methods
         self.loginAct.triggered.connect(self.login)
         self.changePasswordAct.triggered.connect(self.changePassword)
@@ -200,21 +203,19 @@ class STDMQGISLoader(object):
             
             #Get STDM tables
             self.stdmTables = spatial_tables()                         
-            self.loadModules()
-            """
+            #self.loadModules()
+            #resetContentRoles()
             try:
                 self.loadModules()
             except Exception as ex:
                 QMessageBox.warning(self.iface.mainWindow(),QApplication.translate("STDM","Error"),ex.message)
-            """
-            
+
     def loadModules(self):
         '''
         Define and add modules to the menu and/or toolbar using the module loader
         '''
         self.toolbarLoader = QtContainerLoader(self.iface.mainWindow(),self.stdmInitToolbar,self.logoutAct)
         self.menubarLoader = QtContainerLoader(self.iface.mainWindow(), self.stdmMenu, self.helpAct)
-        
         #Connect to the content added signal
         #self.toolbarLoader.contentAdded.connect(self.onContentAdded)
         
@@ -287,7 +288,7 @@ class STDMQGISLoader(object):
         
         self.rptBuilderAct = QAction(QIcon(":/plugins/stdm/images/icons/report.png"), \
         QApplication.translate("ReportBuilderAction","Report Builder"), self.iface.mainWindow())
-        
+        self.rptBuilderAct.setShortcut(Qt.Key_F6)
         #Activate spatial unit management tools
         self.spatialEditorAct = QAction(QIcon(":/plugins/stdm/images/icons/edit24.png"), \
         QApplication.translate("SpatialEditorAction","Toggle Spatial Unit Editing"), self.iface.mainWindow()) 
@@ -310,6 +311,7 @@ class STDMQGISLoader(object):
         
         self.wzdAct = QAction(QIcon(":/plugins/stdm/images/icons/browse_all.png"),\
                     QApplication.translate("WorkspaceConfig","Design Forms"), self.iface.mainWindow())
+        self.wzdAct.setShortcut(Qt.Key_F7)
         self.ModuleAct = QAction(QIcon(":/plugins/stdm/images/icons/browse_all.png"),\
                     QApplication.translate("WorkspaceConfig","Modules"), self.iface.mainWindow())
         
@@ -321,7 +323,7 @@ class STDMQGISLoader(object):
         self.exportAct.triggered.connect(self.onExportData)
         self.importAct.triggered.connect(self.onImportData)
         self.surveyAct.triggered.connect(self.onManageSurvey)
-        self.farmerAct.triggered.connect(self.onManageFarmer)
+        #self.farmerAct.triggered.connect(self.onManageFarmer)
         self.docDesignerAct.triggered.connect(self.onDocumentDesigner)
         self.docGeneratorAct.triggered.connect(self.onDocumentGeneratorByPerson)
         self.rptBuilderAct.triggered.connect(self.onReportBuilder)
@@ -375,37 +377,38 @@ class STDMQGISLoader(object):
         
         wzdConfigCnt = ContentGroup.contentItemFromQAction(self.wzdAct)
         wzdConfigCnt.code = "F16CA4AC-3E8C-49C8-BD3C-96111EA74206"
-        
+
         strViewCnt=ContentGroup.contentItemFromQAction(self.viewSTRAct)
         strViewCnt.code="D13B0415-30B4-4497-B471-D98CA98CD841"
         
         username = data.app_dbconn.User.UserName
-        self.moduleCntGroup=None
-        self._moduleItems={}
+        self.moduleCntGroup = None
+        self.moduleContentGroups = []
+        self._moduleItems = {}
+        self._reportModules = {}
         
         #    map the user tables to sqlalchemy model object
-        moduleList=self.configTables()
         '''
         add the tables to the stdm toolbar
         '''
-        self.moduleContentGroups = []
-        for module in moduleList:
+        for module in self.configTables():
             displayName=str(module).replace("_", " ").title()
-            self._moduleItems[displayName]=module
-        for k,v in self._moduleItems.iteritems():
+            self._moduleItems[displayName] = module
+        for k, v in self._moduleItems.iteritems():
             contentAction=QAction(QIcon(":/plugins/stdm/images/icons/table.png"),\
                                          k, self.iface.mainWindow())
-            capabilities=contentGroup(self._moduleItems[k])
-            if capabilities!=None:
+            capabilities = contentGroup(self._moduleItems[k])
+            if capabilities != None:
                 moduleCntGroup = TableContentGroup(username,k,contentAction)
                 moduleCntGroup.createContentItem().code =capabilities[0]
                 moduleCntGroup.readContentItem().code =capabilities[1]
                 moduleCntGroup.updateContentItem().code =capabilities[2]
                 moduleCntGroup.deleteContentItem().code =capabilities[3]
                 moduleCntGroup.register()
-                
+                self._reportModules[k] = self._moduleItems.get(k)
                 self.moduleContentGroups.append(moduleCntGroup)
-                                 
+                # Add core modules to the report configuration
+
         #Create content groups and add items
                 
         self.contentAuthCntGroup = ContentGroup(username)
@@ -661,13 +664,8 @@ class STDMQGISLoader(object):
         """
         Show tabular reports' builder dialog
         """
-        #TODO: To be incorporated into the XML config file.
-        import ConfigParser
-        config = ConfigParser.ConfigParser()
-        confPath = PLUGIN_DIR + "/config.ini"
-        config.read(confPath)
-        
-        rptBuilder = ReportBuilder(config,self.iface.mainWindow())
+        config = self._reportModules
+        rptBuilder = ReportBuilder(config, self.iface.mainWindow())
         rptBuilder.exec_()
         
     def onImportData(self):
@@ -837,7 +835,6 @@ class STDMQGISLoader(object):
         '''
         if layer.id() in pg_layerNamesIDMapping().reverse:
             return True
-        
         return False
     
     def widgetLoader(self,QAction):
@@ -849,24 +846,25 @@ class STDMQGISLoader(object):
         else:
             tableName=self._moduleItems.get(dispName)
             if tableName in tbList:
-               # try:
-                    
-                main=STDMEntityBrowser(self.moduleContentGroups[0],tableName,self.iface.mainWindow())
-                main.exec_()
-                #except Exception as ex:
-                #    QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
+                try:
+                    main=STDMEntityBrowser(self.moduleContentGroups[0],tableName,self.iface.mainWindow())
+                    main.exec_()
+                except Exception as ex:
+                    QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
+                finally:
+                    STDMDb.instance().session.rollback()
             
     def about(self):
-        '''
+        """
         STDM Description
-        '''
+        """
         abtDlg = AboutSTDMDialog(self.iface.mainWindow())
         abtDlg.exec_()
             
     def logout(self):
-        '''
+        """
         Logout the user and remove default user buttons when logged in
-        '''
+        """
         self.stdmInitToolbar.removeAction(self.logoutAct)
         self.stdmInitToolbar.removeAction(self.changePasswordAct)
         self.loginAct.setEnabled(True)
@@ -874,9 +872,9 @@ class STDMQGISLoader(object):
         self.initMenuItems()
         
     def removeSTDMLayers(self):
-        '''
+        """
         Remove all STDM layers from the map registry.
-        '''
+        """
         mapLayers = QgsMapLayerRegistry.instance().mapLayers().values()
             
         for layer in mapLayers:
@@ -906,9 +904,6 @@ class STDMQGISLoader(object):
         if self.menubarLoader != None:
             self.menubarLoader.unloadContent()
             self.stdmMenu.clear()
-            #del self.stdmMenu
-            
-            
         #Reset property management window
         if self.propManageWindow != None:
             self.iface.removeDockWidget(self.propManageWindow)
@@ -927,41 +922,33 @@ class STDMQGISLoader(object):
         profile=activeProfile()
         handler=ConfigTableReader()
         if profile == None:
-            '''add a default is not provided'''
+            """add a default is not provided"""
             default = handler.STDMProfiles()
             profile = str(default[0])
-            
-        moduleList = handler.tableNames(profile)    
-        self.pgTable2pyClass(moduleList)
+        moduleList = handler.tableNames(profile)
+        moduleList.extend(handler.lookupTable())
+        self.pgTableMapper(moduleList)
         if 'spatial_unit' in moduleList:
             moduleList.remove('spatial_unit')
         return moduleList
-    
-    def pgTable2pyClass(self,tableList=None):
-        '''
+
+    def pgTableMapper(self, tableList=None):
+        """
         map postgresql table to Python object/ model
-        '''
+        """
+        tableMapper = DeclareMapping.instance()
         if tableList:
             try:
-                tableMapping = DeclareMapping.instance()
-                tableMapping.setTableMapping(tableList)
-            except:
-                pass 
+                tableMapper.setTableMapping(tableList)
+            except Exception as ex:
+                QMessageBox.information(self.iface.mainWindow(),QApplication.translate('STDM Plugin','Loading tables'),ex.message)
+            finally:
+                pass
             
     def helpContents(self):
-        '''
+        """
         Load and open documentation manual
-        '''
-        handler=ConfigTableReader()
-        helpManual=handler.setDocumentationPath()
+        """
+        handler = ConfigTableReader()
+        helpManual = handler.setDocumentationPath()
         os.startfile(helpManual,'open')
-                  
-        
-        
-        
-        
-        
-        
-        
-        
-        

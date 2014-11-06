@@ -51,13 +51,7 @@ class AdminUnitFormatter(STRNodeFormatter):
         '''
         Override of base class method.
         '''
-        '''
-        adminSUSet=Table('admin_spatial_unit_set',Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
-        session= STDMDb.instance().session
-        cols=[]
-        for c in adminSUSet.columns:
-            cols.append(str(c.name))
-            '''
+
         adminSUSet = AdminSpatialUnitSet()
         
         #Get top-level items
@@ -132,10 +126,10 @@ class AdminUnitManager(QWidget,Ui_frmAdminUnitManager):
         self.tvAdminUnits.setColumnWidth(0,250)
         
         #Connects slots
-        self.connect(self.btnAdd,SIGNAL("clicked()"),self.onCreateAdminUnit)
-        self.connect(self.btnClear,SIGNAL("clicked()"),self.onClearSelection)
-        self.connect(self.btnRemove,SIGNAL("clicked()"),self.onDeleteSelection)
-        self.connect(self._adminUnitTreeModel,SIGNAL("dataChanged(const QModelIndex&,const QModelIndex&)"),self.onModelDataChanged)
+        self.connect(self.btnAdd, SIGNAL("clicked()"), self.onCreateAdminUnit)
+        self.connect(self.btnClear, SIGNAL("clicked()"), self.onClearSelection)
+        self.connect(self.btnRemove, SIGNAL("clicked()"), self.onDeleteSelection)
+        self.connect(self._adminUnitTreeModel, SIGNAL("dataChanged(const QModelIndex&,const QModelIndex&)"), self.onModelDataChanged)
         
     def state(self):
         '''

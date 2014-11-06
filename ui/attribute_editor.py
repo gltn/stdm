@@ -149,9 +149,13 @@ class AttributeEditor(QDialog,Ui_editor):
                 
     def updateColumnData(self):
         '''Delete existing data and set new data defined by the user for this column'''
-        element='columns'
+        atType = UserData(self.cboDatatype)
+        if atType in self.defaults:
+            sizeval=''
+        if atType not in self.defaults:
+            sizeval=self.txtAttrib.text()
         try:
-            editTableColumn(self.profile, self.tableName, 'name', self.args[0], formatColumnName(self.txtCol.text()))
+            editTableColumn(self.profile, self.tableName, 'name', self.args[0], formatColumnName(self.txtCol.text()),atType,sizeval)
         except:
             self.ErrorInfoMessage(QApplication.translate('AttributeEditor','Unable to update the column data'))
             return
@@ -179,13 +183,12 @@ class AttributeEditor(QDialog,Ui_editor):
         
     def enforceProjection(self):
         if self.geomCollection:
-            geomconstraint='st_srid'
             geom={}
-            geom['table']=self.tableName
-            geom['srid']=self.geomCollection[0]
-            geom['column']=formatColumnName(self.txtCol.text())
-            geom['type']=self.geomCollection[1]
-            geom['arguments']='2'
+            geom['table'] = self.tableName
+            geom['srid'] = self.geomCollection[0]
+            geom['column'] = formatColumnName(self.txtCol.text())
+            geom['type'] = self.geomCollection[1]
+            geom['arguments'] = '2'
             writeTableColumn(geom,self.profile,'table',self.tableName,'constraints')
             #self.enforceGeometry() 
             
@@ -209,8 +212,6 @@ class AttributeEditor(QDialog,Ui_editor):
         if self.tableName==None:
             self.ErrorInfoMessage(QApplication.translate('AttributeEditor','No selected table found'))
             return
-        # if self.lookup and self.checkBox.isChecked():
-        #    self.setTableRelation()
         if self.args!=None:
             self.updateColumnData()
         if self.args==None:

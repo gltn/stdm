@@ -42,6 +42,7 @@ from stdm.data import (
                        process_report_filter
                        )
 from stdm.ui.customcontrols import TableComboBox
+from sqlalchemy.exc import SQLAlchemyError
 '''
 from stdm.workspace.defaultSetting.config import dbTableConfig
 from stdm.workspace.defaultSetting.map_query import CertificateMap
@@ -121,15 +122,15 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
     
     def initRptDialog(self):
         #Initialize the dialog with table names
-        self.tabNames={}    
-        tabList=self.config.items("ReportFields")
-        
-        for names in tabList:
-            tableName = names[0]
-            displayName = names[1]
-            self.tabNames[tableName] = displayName
-            self.comboBox.addItem(displayName,tableName)
-        
+        self.tabNames = self.config
+        #tabList=self.config.items("ReportFields")
+        #tabList=self.config.items()
+        self.tabNames['Social Tenure Relationship'] = 'social_tenure_relations'
+        try:
+            for name, value in self.config.iteritems():
+                self.comboBox.addItem(name, value)
+        except Exception as ex:
+            self.ErrorInfoMessage(str(ex.message))
         self.initStackWidgets()
         
         #Sorting
@@ -162,7 +163,7 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
     
     def initVars(self):
         #Initialize data variables   
-        self._sortOrder=0    
+        self._sortOrder = 0
     
     def initStackWidgets(self):
         #Instantiate new report display widgets
@@ -407,18 +408,18 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
     def map_query_fromFilter(self):
         strQuery=self.txtSqlParser.toPlainText()
         unitArray=[]
-        
-        try:
-            mpPartQry=self.tabName+"."+ dbTableConfig.getItem(self.tabName)+"=spatial_unit.identity"
-            if strQuery!="":
-                mpPartQry+=" AND "+self.tabName+"."+strQuery
-            else:
-                mpPartQry=mpPartQry
-            mapUnits=self.stdmPgProv.procReportViewFilter(self.tabName,str(mpPartQry))            
-            refLayer=CertificateMap(mapUnits)
-        except:
-            self.ErrorInfoMessage(str(sys.exc_info()[1]))
-            return
+       # QMessageBox.information(None,"mapping",self.tabName)
+        if self.tabName == 'social_tenure_relations':
+            #try:
+                mpPartQry = self.tabName+".spatial_unit_number = spatial_unit.spatial_unit_id"
+                if strQuery != "":
+                    mpPartQry +=" AND "+ self.tabName+"."+strQuery
+                else:
+                    mpPartQry = mpPartQry
+
+            #except Exception as ex:
+              #  self.ErrorInfoMessage(str(ex.message))
+               # return
                 
     def filter_verifyQuery(self):
         #Verify the query expression    
@@ -426,9 +427,9 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
             self.ErrorInfoMessage("No filter has been defined")
             
         else:
-            results=self.filter_buildQuery()
+            results = self.filter_buildQuery()
             
-            if results!=None:            
+            if results != None:
                 resLen = results.rowcount
                 msg = "The SQL statement was successfully verified.\n" + str(resLen) + " record(s) returned."
                 self.InfoMessage(msg)

@@ -52,7 +52,7 @@ class CharacterWidget(InputWidget):
         self.control.setMinimumWidth(50)
         self.control.setText("")
           
-class IntegerWidget(InputWidget):
+class IntegerWidget(CharacterWidget):
     def __init__(self):
         self.type = 'integer'
     
@@ -74,7 +74,7 @@ class DoubleWidget(IntegerWidget):
     def adopt(self):
         self.control.setValue(0)
 
-class ChoiceListWidget(InputWidget):
+class ChoiceListWidget(CharacterWidget):
     def __init__(self, options=None):
         self.options = options
 
@@ -89,12 +89,43 @@ class ChoiceListWidget(InputWidget):
 
     def adopt(self):
         if self.options:
-            for index, value in enumerate(self.options):
-                self.control.insertItem(index, value)
+            self.control.addItem("")
+            for item in self.options:
+                self.control.addItem(item.value,item.id)
             self.control.setMinimumContentsLength(50)
             self.control.setDuplicatesEnabled(False)
-            self.control.setMaxVisibleItems(len(self.options))
+            #self.control.setMaxVisibleItems(len(self.options))
             self.control.setCurrentIndex(0)
+
+class TextAreaWidget(CharacterWidget):
+    def __init__(self):
+        self.type ='text'
+
+    def Factory(self):
+        self.control = QTextEdit()
+        return self.control
+
+    def adopt(self):
+        self.control.acceptRichText()
+        self.control.canPaste()
+
+class BooleanWidget(CharacterWidget):
+    def __init__(self):
+        self.type = 'boolean'
+
+    def Factory(self):
+        self.control = QComboBox()
+        return  self.control
+
+    def adopt(self):
+        self.options = {
+            '1' : 'Yes',
+            '0' : 'No'
+        }
+        for k, v in self.options.iteritems():
+            self.control.addItem(v, k)
+        self.control.setMinimumContentsLength(50)
+        self.control.setMaxVisibleItems(len(self.options))
 
 class DateWidget(InputWidget):
     def __init__(self):
@@ -111,13 +142,15 @@ class DateWidget(InputWidget):
         self.control.setMinimumWidth(50)
 
 def widgetCollection():
-    mapping = \
-        {
+    mapping = {
             'character varying': CharacterWidget,
             'integer': IntegerWidget,
+            'bigint': IntegerWidget,
             'serial': IntegerWidget,
             'double precision': DoubleWidget,
             'choice': ChoiceListWidget,
-            'date': DateWidget
+            'date': DateWidget,
+            'text': TextAreaWidget,
+            'boolean': BooleanWidget
         }
     return mapping
