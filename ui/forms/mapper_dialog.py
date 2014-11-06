@@ -19,7 +19,7 @@ email                : njoroge.solomon.com
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import MapperMixin
+from stdm.data import MapperMixin, STDMDb
 from stdm.ui.ui_base_form import Ui_Dialog
 from stdm.ui.notification import NotificationBar
 from .property_mapper import TypePropertyMapper
@@ -42,33 +42,40 @@ class MapperDialog(QDialog,Ui_Dialog):
         size = self.geometry()
         self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
         
-    
-        
 class CustomFormDialog(MapperDialog, MapperMixin):
-    def __init__(self,parent,model=None):
+    def __init__(self, parent, model=None):
         MapperDialog.__init__(self, parent)
         MapperMixin.__init__(self, model)
         
         self.buttonBox.accepted.connect(self.closeAct)
-        #self.buttonBox.accepted.connect(self.closeAct)
         self.buttonBox.rejected.connect(self.cancel)
-        #QMessageBox.information(self,"mapper",str(dir(model)))
+        
         if callable(model):
             self._table = model.__name__
         else:
             self._table = model.__class__.__name__
+
+        self.loadMapperDialog()
+
+    def loadMapperDialog(self):
+        """
+        :return: Mapper dialog form
+        """
+        self.property = AttributePropretyType(self._table.lower())
+        # start form loading procedure
         tableProperties = self.tableProperty()
-        propertyMapper = TypePropertyMapper(tableProperties)
+        #QMessageBox.information(None,"display Mapping",len(self.property.model.displayMapping()))
+        propertyMapper = TypePropertyMapper(tableProperties, self._table.lower())
         widgets = propertyMapper.setProperty()
         self.frmLayout.setLabelAlignment(Qt.AlignLeft)
         for attrib, widget in widgets.iteritems():
-            if hasattr(model, attrib):
+            if hasattr(self._model, attrib):
                 self.controlWidget(widget[0])
                 self.setControl(widget[1])
-                self.addMapping(attrib, self.control, False,attrib)
-                self.frmLayout.addRow(self.userLabel(attrib),self.control)
+                self.addMapping(attrib, self.control, False, attrib)
+                self.frmLayout.addRow(self.userLabel(attrib), self.control)
         self.frmLayout.setLabelAlignment(Qt.AlignJustify)
-       
+
     def userLabel(self, attr):
             return attr.replace("_", " ").title()
         
@@ -78,20 +85,39 @@ class CustomFormDialog(MapperDialog, MapperMixin):
                 widget.setOptions(widgetOptions)
         except:
             pass
+            #QMessageBox.information(None, 'loading lookup', str(ex.message))
 
     def tableProperty(self):
-        property = AttributePropretyType(self._table.lower())
-        return property.attributeType()
+        """
+        loop through the config and load all the datatype
+        Associated with this table model
+        :return dict:
+        """
+        return self.property.attributeType()
     
-    def controlWidget(self,widget):
+    def controlWidget(self, widget):
+
         self.widgetCls = widget()
         self.control = self.widgetCls.Factory()
         
-    def setControl(self,widget):
+    def setControl(self, widget):
         if widget:
             self.lookupOptions(self.widgetCls, widget)
         self.widgetCls.adopt()
 
+    def resetSessionMapping(self):
+        """Since only one instance of model can be mapped at a time, ensure the current table model has its correct mapping
+        :return table model attribute mapping- dict:
+        """
+        self.property.displayMapping()
+
     def closeAct(self):
-        self.submit()
-        self.accept()
+        try:
+            self.resetSessionMapping()
+            self.submit()
+            self.accept()
+
+        except Exception as ex:
+            self._notifBar.insertWarningNotification(str(ex.message))
+        finally:
+            STDMDb.instance().session.rollback()

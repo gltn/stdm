@@ -183,19 +183,22 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
             for i,er in enumerate(entityRecords):
                 entityRowInfo = []
                 progressDialog.setValue(i)
-                
-                for attr in modelAttrs:
-                    attrVal = getattr(er,attr)
-                    
-                    #Check if there are display formatters and apply if one exists for the given attribute
-                    if attr in self._cellFormatters:
-                        attrVal = self._cellFormatters[attr](attrVal)
-                        
-                    if not attr in self._cellFormatters and isinstance(attrVal,date):
-                        attrVal = dateFormatter(attrVal)
-                        
-                    entityRowInfo.append(attrVal)
-                
+                try:
+                    for attr in modelAttrs:
+                        attrVal = getattr(er,attr)
+
+                        #Check if there are display formatters and apply if one exists for the given attribute
+                        if attr in self._cellFormatters:
+                            attrVal = self._cellFormatters[attr](attrVal)
+
+                        if not attr in self._cellFormatters and isinstance(attrVal,date):
+                            attrVal = dateFormatter(attrVal)
+
+                        entityRowInfo.append(attrVal)
+                except Exception as ex:
+                    QMessageBox.information(None, QApplication.translate("EntityBrowser", "Loading dialog"), str(ex.message) )
+                    return
+
                 entityRecordsList.append(entityRowInfo)
                 
             #Set maximum value of the progress dialog
@@ -289,20 +292,25 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
         '''
         Convenience method for adding model info into the view.
         '''
-        insertPosition = self._tableModel.rowCount()
-        self._tableModel.insertRows(insertPosition,1)
-        
-        for i,attr in enumerate(self._dbmodel.displayMapping().keys()):
-            propIndex = self._tableModel.index(insertPosition,i)
-            attrVal = getattr(modelObj,attr)
-            
-            #Check if there re display formatters and apply if one exists for the given attribute
-            if attr in self._cellFormatters:
-                attrVal = self._cellFormatters[attr](attrVal)
-            if not attr in self._cellFormatters and isinstance(attrVal,date):
-                        attrVal = dateFormatter(attrVal)
-                        
-            self._tableModel.setData(propIndex, attrVal)
+        try:
+            insertPosition = self._tableModel.rowCount()
+            self._tableModel.insertRows(insertPosition,1)
+
+            for i,attr in enumerate(self._dbmodel.displayMapping().keys()):
+                propIndex = self._tableModel.index(insertPosition, i)
+                if hasattr(modelObj, attr):
+                    attrVal = getattr(modelObj, attr)
+                #QMessageBox.information(self, 'model',"propertyindex;{0}\nattributeVal;{1}".format(str(propIndex), str(attrVal)))
+                #Check if there re display formatters and apply if one exists for the given attribute
+                if attr in self._cellFormatters:
+                    attrVal = self._cellFormatters[attr](attrVal)
+                if not attr in self._cellFormatters and isinstance(attrVal, date):
+                    attrVal = dateFormatter(attrVal)
+
+                self._tableModel.setData(propIndex, attrVal)
+        except Exception as ex:
+            QMessageBox.information(self, QApplication.translate("EntityBrowser", "Updating row"), str(ex.message))
+            return
             
     def _modelFromID(self,recordid):
         '''
@@ -403,24 +411,24 @@ class EntityBrowserWithEditor(EntityBrowser):
         '''
         modelObj = self._modelFromID(recid)
         if callable(self._editorDialog):
-            editEntityDlg = self._editorDialog(self,modelObj)
+            editEntityDlg = self._editorDialog(self, modelObj)
         else:
             editorDlg = self._editorDialog.__class__
-            editEntityDlg = editorDlg(self,model = modelObj)
+            editEntityDlg = editorDlg(self, model=modelObj)
             
         result = editEntityDlg.exec_()
         
         if result == QDialog.Accepted:
             updatedModelObj = editEntityDlg.model()
-            for i,attr in enumerate(self._dbmodel.displayMapping().keys()):
-                propIndex = self._tableModel.index(rownumber,i)
-                attrVal = getattr(updatedModelObj,attr)
+            for i, attr in enumerate(self._dbmodel.displayMapping().keys()):
+                propIndex = self._tableModel.index(rownumber, i)
+                attrVal = getattr(updatedModelObj, attr)
                 #Check if there re display formatters and apply if one exists for the given attribute
                 if attr in self._cellFormatters:
                     attrVal = self._cellFormatters[attr](attrVal)
                 self._tableModel.setData(propIndex, attrVal)
         
-    def _deleteRecord(self,recid,rownumber):
+    def _deleteRecord(self, recid, rownumber):
         '''
         Delete the record with the given id and remove it from the table view.
         '''
@@ -587,28 +595,42 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
     '''
     def __init__(self,tableContentGroup,table=None,parent = None,state = MANAGE):
 
-        mapping=DeclareMapping.instance()
-        tableCls=mapping.tableMapping(table)
-        
+        mapping = DeclareMapping.instance()
+        self._tableCls = mapping.tableMapping(table)
+
+        self.tbEntityClass = table
         #columnsData=tableColType(table)
         #columns=columnsData.keys()
         
-        ContentGroupEntityBrowser.__init__(self, tableCls, tableContentGroup, parent, state)
+        ContentGroupEntityBrowser.__init__(self, self._tableCls, tableContentGroup, parent, state)
         
         #QMessageBox.information(self,"module",str(tableCls.__name__))
         #QMessageBox.information(self,"module",str( mapping.attDictionary))
-        self._editorDialog=CustomFormDialog
+        self._editorDialog = CustomFormDialog
         
-    '''   
+
     def _setFormatters(self):
         """
         Specify formatting mappings.
-        """   
-        self.addCellFormatter("GenderID",genderFormatter)
-        self.addCellFormatter("MaritalStatusID",maritalStatusFormatter)
-        '''
+        """
+        lk_function= self.create_lookup_setter('gender')
+        self.addCellFormatter('Female',lk_function)
+        #self.addCellFormatter("MaritalStatusID",maritalStatusFormatter)
+
     def title(self):
-        return QApplication.translate("PartyEntityBrowser", "Persons Records Manager")
+        return QApplication.translate("STDMEntityBrowser", "{0} Records Manager".format(self.tbEntityClass.title()))
+
+    from stdm.ui.forms.Lookup import LookupModeller
+    modeller = LookupModeller()
+    def create_lookup_setter(self, attr_name):
+        """
+        :return lookup formatter
+        """
+        lkName ='gender'
+        def lookupformatter(lookupvalue):
+            lkformatter = modeller.lookupModel('check_gender')
+            return lkformatter.setDisplay(lookupvalue)
+        return lookupformatter
     
 class SurveyEntityBrowser(ContentGroupEntityBrowser):
     '''

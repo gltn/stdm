@@ -105,7 +105,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 self.InfoMessage(" You must agree to the disclaimer to continue")
                 validPage=False
             if self.rbReject.isChecked():
-                self.InfoMessage("Rejecting to comply with Dislaimer policy will cause the wizard to exit. Th STDM will no to be accessible")
+                self.InfoMessage("Rejecting to comply with Dislaimer policy will cause the wizard to exit.\
+                 Th STDM will no to be accessible")
                 validPage=False
         if self.currentId()==2:
             if self.txtDefaultFolder.text()=='' or self.txtCertFolder.text()=='' or self.txtSetting.text()=='':
@@ -302,7 +303,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 EditorSession.append(selCols[1].data())
                 EditorSession.append(selCols[2].data())
                 EditorSession.append(selCols[3].data())
-                colDlg=AttributeEditor(str(self.cboProfile.currentText()),self.tableName,self,args=EditorSession)
+                colDlg = AttributeEditor(str(self.cboProfile.currentText()),self.tableName,self,args=EditorSession)
                 colDlg.exec_()
             else:
                 self.InfoMessage(QApplication.translate("WorkSpaceLoader","No table column is selected for editing"))
@@ -312,7 +313,6 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.loadTableColumns(self.tableName)
         self.loadTableRelations(self.tableName)
         self.populateLookup()
-                #if str(self.tableName).startswith('check'):
         
     def tableRelationEditor(self):
         if self.tableName!=None:
@@ -621,7 +621,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     
     def licenseFile(self):
         self.txtLicense.clear()
-        licenseDoc=LicenseDocument()
+        licenseDoc = LicenseDocument()
         self.txtLicense.setCurrentFont(licenseDoc.textFont())
         self.txtLicense.setText(licenseDoc.readLicenseData()) 
         
@@ -634,7 +634,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 self.txtCertFolder.setText(configPath[pathKeys[2]])
                 self.txtTemplates.setText(configPath[pathKeys[3]])
             else:
-                userpath=self.tableHandler.userProfileDir()
+                userpath = self.tableHandler.userProfileDir()
                 self.txtSetting.setText(userpath)
                 self.setWorkingDataPath(userpath)
                 self.CertificatePath(userpath)
@@ -655,7 +655,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def settingsPath(self):
         try:
             dir_name=self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",\
-                                                                      "Choose STDM Settings Folder",str(self.txtSetting.text())))
+                                                                      "Choose STDM Settings Folder",\
+                                                                      str(self.txtSetting.text())))
             dirPath=dir_name[0]
             self.txtSetting.setText(dirPath)
             self.setWorkingDataPath(dirPath)
@@ -668,7 +669,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         dir_name=None
         try:
             dir_name=self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",
-                                                                      "Choose STDM default Data Folder",str(self.txtDefaultFolder.text())))
+                                                                      "Choose STDM default Data Folder",\
+                                                                      str(self.txtDefaultFolder.text())))
             dirPath=dir_name[0]
             self.setWorkingDataPath(dirPath)
             self.CertificatePath(dirPath)
@@ -694,7 +696,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def setCertificatePath(self):
         try:
             dir_name=self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",
-                                                                      "Select a Directory for Saving Reports",str(self.txtCertFolder.text())))
+                                                                      "Select a Directory for Saving Reports",\
+                                                                      str(self.txtCertFolder.text())))
             self.txtCertFolder.setText(str(dir_name[0]))
         except:
             pass
@@ -702,7 +705,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def setTemplatesPath(self):
         try:
             dir_name=self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",
-                                                                      "Select a Directory for Saving templates",str(self.txtCertFolder.text())))
+                                                                      "Select a Directory for Saving templates",\
+                                                                      str(self.txtCertFolder.text())))
             self.txtTemplates.setText(str(dir_name[0]))
         except:
             pass

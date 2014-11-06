@@ -24,10 +24,10 @@
 		<table fullname="spatial unit or a group of spatial unit" name="spatial_unit">
 			<columns>
 				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
-				<column fullname="unique identifier" name="spatial_unit_id" null="yes" size="" type="integer" />
+				<column fullname="unique identifier" name="spatial_unit_id" null="yes" oldname="spatial_unit_id" size="25" type="character varying" />
 				<column fullname="Friendly name of the unit" name="name" null="yes" size="25" type="character varying" />
 				<column fullname="type of the unit" lookup="check_type" name="type" null="yes" size="25" type="character varying" />
-			<column fullname="" name="area" null="yes" size="" type="double precision" /></columns>
+			<column fullname="" name="area" null="yes" size="" type="double precision" /><column fullname="" name="structure_id" null="yes" size="25" type="character varying" /></columns>
 			<relations>
 			</relations>
 			<constraints>
@@ -67,9 +67,9 @@
 			<columns>
 				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
 				<column fullname="type of social tenure" lookup="check_social_tenure_type" name="social_tenure_type" null="yes" size="25" type="character varying" />
-				<column fullname="share unit " name="share" null="yes" size="" type="double precision" />
+				<column fullname="share unit " name="share" null="yes" oldname="share" size="" type="double precision" />
 				<column fullname="party id" name="party" null="yes" size="" type="integer" />
-				<column fullname="spatial unit id" name="spatial_unit" null="yes" size="" type="integer" />
+				<column fullname="spatial unit id" name="spatial_unit" null="yes" oldname="spatial_unit" size="" type="integer" />
 			</columns>
 			<relations>
 				<relation column="id" fk="spatial_unit" name="pid1" ondelete="cascade" onupdate="cascade" table="spatial_unit" /><relation column="id" fk="party" name="partyid" ondelete="cascade" onupdate="cascade" table="party" /></relations>
@@ -81,17 +81,6 @@
 				<contentgroup code="{3E0C439C-248F-4CDC-8803-8187450BB940}" name="delete" />
 			</contentgroups>
 		</table>
-		<lookup fullname="type of the units" name="check_type">
-			<columns>
-				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
-				<column fullname="Choice list" name="value" size="50" type="character varying" />
-			</columns>
-			<data>
-				<value>Point</value>
-				<value>Line</value>
-				<value>Polygon</value>
-			</data>
-		</lookup>
 		<lookup fullname="" name="check_document_type">
 			<columns>
 				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
@@ -126,7 +115,7 @@
 				<column fullname="family persons" name="total_members" null="yes" size="25" type="character varying" />
 				<column fullname="" lookup="check_previous_residence" name="previous_residence" null="yes" size="25" type="character varying" />
 				<column fullname="" lookup="check_settlement_reason" name="reason_for_settling_here" null="yes" size="25" type="character varying" />
-			<column fullname="" lookup="check_montly_income" name="monthly_income" null="yes" size="25" type="character varying" /></columns>
+			<column fullname="" lookup="check_montly_income" name="monthly_income" null="yes" size="25" type="character varying" /><column fullname="" name="rent" null="yes" size="25" type="character varying" /><column fullname="" name="income" null="yes" size="25" type="character varying" /><column fullname="" lookup="check_rent" name="rent_per_month" null="yes" size="25" type="character varying" /></columns>
 			<relations />
 			<constraints />
 			<contentgroups fullname="household entity" name="household">
@@ -168,5 +157,5 @@
 				<value>Job opportunity</value>
 			</data>
 		</lookup>
-	<lookup fullname="" name="check_montly_income"><columns><column fullname="Primary Key" key="1" name="id" size="" type="serial" /><column fullname="Choice list" name="value" size="50" type="character varying" /></columns><data><value>below 1000</value><value>1001-2500</value><value>2501-5000</value><value>5000-10000</value><value>10000-20000</value><value>Above 20000</value></data></lookup></profile>
+	<lookup fullname="" name="check_montly_income"><columns><column fullname="Primary Key" key="1" name="id" size="" type="serial" /><column fullname="Choice list" name="value" size="50" type="character varying" /></columns><data><value>below 1000</value><value>1001-2500</value><value>2501-5000</value><value>5000-10000</value><value>10000-20000</value><value>Above 20000</value></data></lookup><lookup fullname="" name="check_rent"><columns><column fullname="Primary Key" key="1" name="id" size="" type="serial" /><column fullname="Choice list" name="value" size="50" type="character varying" /></columns><data><value>4000</value><value>1000</value></data></lookup></profile>
 </schema>

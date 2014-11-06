@@ -7,7 +7,7 @@ import os
 
 from PyQt4.QtCore import QFile
 
-from ttfquery import ttffiles
+from stdm.third_party.ttfquery import ttffiles
 from stdm.utils import *
 from stdm.settings import RegistryConfig
 
