@@ -5,7 +5,12 @@ __author__ = 'John Gitau'
 __license__ = 'GNU Lesser General Public License (LGPL)'
 __url__ = 'http://www.unhabitat.org'
 
-import ogr
+try:
+    from osgeo import gdal
+    from osgeo import ogr
+except:
+    import gdal
+    import ogr
 
 drivers={
          "shp":"ESRI Shapefile",
