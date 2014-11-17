@@ -12,12 +12,14 @@ Requirements
 
 -   [SQLAlchemy][] 0.8 or higher
 -   [GeoAlchemy][] 2
--   [fuzzyparsers][] 0.9
--   [QtAlchemy][] 0.8
+-   [reportlap][]
+-   [fontTools][]
+-   [ttfquery][]
 -   [XML to DDL][]
 
   [SQLAlchemy]: https://pypi.python.org/pypi/SQLAlchemy
   [GeoAlchemy]: https://github.com/geoalchemy/geoalchemy2
-  [fuzzyparsers]: https://pypi.python.org/pypi/fuzzyparsers/0.9.0
-  [QtAlchemy]: https://pypi.python.org/pypi/qtalchemy/0.8.3
+  [reportlab]: https://pypi.python.org/pypi/reportlab
+  [fontTools]: https://pypi.python.org/pypi/FontTools
+  [ttfquery]: https://pypi.python.org/pypi/TTFQuery
   [XML to DDL]: http://xml2ddl.berlios.de/
