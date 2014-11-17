@@ -41,10 +41,10 @@ from geraldo import (
 from geraldo.generators import PDFGenerator
 
 class STDMReport(Report):
-    def __init__(self,querySet,reportElements):  
-        Report.__init__(self,querySet)
+    def __init__(self, querySet, reportElements):
+        Report.__init__(self, querySet)
         
-        self.__reportElements=reportElements
+        self.__reportElements = reportElements
         
         #Set Root Report Properties
         self.title=self.__reportElements.title
