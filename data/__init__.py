@@ -23,12 +23,40 @@ from .usermodels import listEntityViewer, EntityColumnModel
 
 
 from .xmldata2sql import SQLInsert
-from .xmlconfig_reader import XMLTableElement, tableColumns, tableRelations,tableFullDescription,profileFullDescription, \
-deleteProfile,tableLookUpCollection,checktableExist,lookupData,lookupData2List,geometryColumns,lookupColumn,\
-lookupTable,profiles,contentGroup
-from .xmlconfig_writer import writeSQLFile, writeHTML,writeTable,writeTableColumn,renameTable,inheritTableColumn, \
-writeProfile, checkProfile, deleteColumn, deleteTable,writeLookup,setLookupValue,deleteLookupChoice,updateSQL,\
-editTableColumn
+from .xmlconfig_reader import (
+                XMLTableElement,
+                tableColumns,
+                tableRelations,
+                tableFullDescription,
+                profileFullDescription,
+                deleteProfile,
+                tableLookUpCollection,
+                checktableExist,
+                lookupData,
+                lookupData2List,
+                geometryColumns,
+                lookupColumn,
+                lookupTable,
+                profiles,
+                contentGroup
+            )
+from .xmlconfig_writer import(
+                writeSQLFile,
+                writeHTML,
+                writeTable,
+                writeTableColumn,
+                renameTable,
+                inheritTableColumn,
+                writeProfile,
+                checkProfile,
+                deleteColumn,
+                deleteTable,
+                writeLookup,
+                setLookupValue,
+                deleteLookupChoice,
+                updateSQL,
+                editTableColumn
+            )
 from .configfile_paths import FilePaths
 from .config_table_reader import ConfigTableReader
 from .enums import datatypes, actions,constraints, nullable

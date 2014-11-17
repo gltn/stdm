@@ -162,12 +162,12 @@ def deleteTable(level,tableName):
                 if table.get('name')==tableName:
                     profile.remove(table)
                 else:
-                    lookup=profile.findall('lookup')
-                    for lkUp in lookup:
+                    lookups=profile.findall('lookup')
+                    for lkUp in lookups:
                         if lkUp.get('name')==tableName:
                             profile.remove(lkUp)
                     
-    tree.write(xml_doc,xml_declaration=True, encoding='utf-8')
+    tree.write(xml_doc, xml_declaration=True, encoding='utf-8')
     
 def inheritTableColumn(profile,sourceTable,destTable):
     tree, root=parseRootElement()
@@ -243,20 +243,22 @@ def writeHTML():
         of.write("%s\n" % (line))
     of.close() 
 
-def setLookupValue(tableName,valueText):
-    '''add lookup value specified by the user'''
-    tree,root=parseRootElement()
-    node=None
+def setLookupValue(tableName, valueText):
+    '''add lookup value specified by the user
+    :type tableName: object
+    '''
+    tree, root= parseRootElement()
+    node = None
     for elem in root.findall('profile/lookup'):
-        if elem.get('name')==tableName:
-            child=elem.find('data')
-            if child!=None:
-                node=SubElement(child,"value")
-            if child==None:
-                dataNode=SubElement(elem,'data')
-                node=SubElement(dataNode,"value")
-            node.text=valueText
-    tree.write(xml_doc,xml_declaration=True, encoding='utf-8')
+        if elem.get('name')== tableName:
+            child = elem.find('data')
+            if child is not None:
+                node = SubElement(child, "value")
+            if child is None:
+                dataNode = SubElement(elem, 'data')
+                node = SubElement(dataNode, "value")
+            node.text = valueText
+    tree.write(xml_doc, xml_declaration=True, encoding='utf-8')
 
 def deleteLookupChoice(level,category,tableName,elemnt,key,value):
     tree, root=parseRootElement()
