@@ -40,6 +40,7 @@ from .xmlconfig_reader import (
                 profiles,
                 contentGroup
             )
+
 from .xmlconfig_writer import(
                 writeSQLFile,
                 writeHTML,
@@ -57,6 +58,7 @@ from .xmlconfig_writer import(
                 updateSQL,
                 editTableColumn
             )
+
 from .configfile_paths import FilePaths
 from .config_table_reader import ConfigTableReader
 from .enums import datatypes, actions,constraints, nullable
