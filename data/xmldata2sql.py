@@ -29,7 +29,7 @@ class SQLInsert(object):
         
     def keyColAttrib(self):
         '''get column keys into the SQL prepend statement'''
-        'temporary fix, data column is only one...can be improved'
+        'temporary fix, because data column is only one...can be improved'
         colKeys=["value"]
         if colKeys:
             sqlPrepend=r'("'+r'", "'.join(colKeys) + r'")'
@@ -52,7 +52,7 @@ class SQLInsert(object):
         # needed for creation of map on the composer and reporting on social tenure
         socialTenure = "CREATE OR REPLACE VIEW social_tenure_relations AS SELECT party.id, party.family_name AS party_surname, party.other_names, \
         party.identification, spatial_unit.spatial_unit_id AS spatial_unit_number, spatial_unit.name AS spatial_unit_name, spatial_unit.geom_polygon AS geometry, \
-                        social_tenure_relationship.social_tenure_type FROM party, spatial_unit, social_tenure_relationship\
+                        social_tenure_relationship.social_tenure_type FROM party, spatial_unit, social_tenure_relationship \
                         WHERE spatial_unit.id = social_tenure_relationship.spatial_unit AND party.id = social_tenure_relationship.party; "
             
         return socialTenure
