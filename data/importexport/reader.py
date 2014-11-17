@@ -23,7 +23,12 @@ import sys
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-import ogr
+try:
+    from osgeo import gdal
+    from osgeo import ogr
+except:
+    import gdal
+    import ogr
 
 import sqlalchemy
 from sqlalchemy.schema import (
