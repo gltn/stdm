@@ -47,7 +47,7 @@ class DatabaseCreator(object):
         """
         session = sessionmaker(bind=self._engine)()
         session.connection().connection.set_isolation_level(0)
-        session.execute(dbStmt) % self.
+        session.execute(dbStmt) % self.dbName
         session.connection().connection.set_isolation_level(1)
 
     def createDbExtension(self):
