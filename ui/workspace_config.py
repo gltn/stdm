@@ -647,7 +647,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         dataPath={}
         settings=self.tableHandler.settingsKeys()
         userPath=[self.txtSetting.text(),self.txtDefaultFolder.text(),self.txtCertFolder.text(),self.txtTemplates.text()]
-        for i in range (len(settings)):
+        for i in range(len(settings)):
             dataPath[settings[i]]=userPath[i]
         self.tableHandler.setProfileSettings(dataPath)
         self.tableHandler.createDir(dataPath.values())
