@@ -81,8 +81,12 @@ class dbconnDlg(QDialog, Ui_frmDbConn):
             host = self.txtHost.text()
             port = self.txtPort.text()
             database = self.txtDatabase.text()
-            dbconfig = DatabaseConfig()            
-            self.dbconn = DatabaseConnection(host,port,database)
-            #Write DB conn object to the registry
-            dbconfig.write(self.dbconn)
+            dbconfig = DatabaseConfig()
+            try:
+                self.dbconn = DatabaseConnection(host,port,database)
+                #Write DB conn object to the registry
+                dbconfig.write(self.dbconn)
+            except Exception as ex:
+                raise ex.message
+
             self.accept()
