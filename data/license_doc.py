@@ -24,20 +24,20 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 class LicenseDocument(object):
     def __init__(self):
-        self.file=None
-        self.filehandler=FilePaths()
+        self.file = None
+        self.filehandler = FilePaths()
         
     def openLicenseFile(self):
         '''get the path to the license file'''
-        self.file=self.filehandler.STDMLicenseDoc()
+        self.file = self.filehandler.STDMLicenseDoc()
         #self.file=docFile
     
     def readLicenseData(self):
         '''read license information for user '''
         try:
             self.openLicenseFile()
-            with open(self.file,'r')as inf:
-                lic_data=inf.read()
+            with open(self.file, 'r')as inf:
+                lic_data = inf.read()
             return lic_data
         except IOError as ex:
             raise ex
