@@ -38,6 +38,7 @@ class DatabaseCreator(object):
     def dbExistCheck(self):
         """Check if the suggested db exist"""
         """To be implemented"""
+        pass
 
     def createDb(self):
         """
