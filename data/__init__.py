@@ -61,7 +61,7 @@ from .xmlconfig_writer import(
 
 from .configfile_paths import FilePaths
 from .config_table_reader import ConfigTableReader
-from .enums import datatypes, actions,constraints, nullable
+from .enums import data_types, actions,constraints, nullable, postgres_defaults, RESERVED_ID
 from .config_utils import tableCols,setCollectiontypes,activeProfile, UserData, tableColType
 from .license_doc import LicenseDocument
 
