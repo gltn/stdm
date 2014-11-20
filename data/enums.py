@@ -21,6 +21,12 @@
 """
 from collections import OrderedDict
 
+geometry_collections = {
+    'Point': 'POINT',
+    'Line': 'LINESTRING',
+    'Polygon': 'POLYGON',
+    'Multipolygon': 'MULTIPOLYGON'
+}
 
 data_types = {
         '': '',
