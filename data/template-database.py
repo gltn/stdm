@@ -21,8 +21,10 @@ from stdm.data import STDMDb
 
 from sqlalchemy.orm import sessionmaker
 from stdm.data import _execute
+from PyQt4.QtGui import QMessageBox
 
-dbStmt = 'CREATE DATABASE %s'
+dbStmt = "CREATE DATABASE %s WITH ENCODING='UTF8'"
+extStmt = "CREATE EXTENSION %s"
 
 class DatabaseCreator(object):
     def __init__(self, dbname, template=None):
@@ -45,9 +47,10 @@ class DatabaseCreator(object):
         create a new database
         :return database object:
         """
+        createStmt = dbStmt%self.dbName
         session = sessionmaker(bind=self._engine)()
         session.connection().connection.set_isolation_level(0)
-        session.execute(dbStmt) % self.dbName
+        session.execute(createStmt)
         session.connection().connection.set_isolation_level(1)
 
     def createDbExtension(self):
@@ -55,14 +58,15 @@ class DatabaseCreator(object):
         Create postgis extension in the new database
         :return:
         """
+        extension_sql = extStmt%self.template
         try:
             if self.template is not None:
-                template_sql = ('CREATE EXTENSION %') % self.template
+                create_ext = extension_sql
             else:
-                template_sql = ('CREATE EXTENSION postgis')
-            _execute(template_sql)
+                create_ext = ('CREATE EXTENSION postgis')
+            _execute(create_ext)
         except Exception as ex:
-            raise ex.message
+            QMessageBox.information(None,"Database Operation", str(ex.message))
 
 
 
