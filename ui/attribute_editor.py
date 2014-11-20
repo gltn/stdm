@@ -212,9 +212,9 @@ class AttributeEditor(QDialog,Ui_editor):
         msg.exec_()  
                 
     def accept(self):
-        if str(self.txtCol.text()).lower()== RESERVED_ID:
-            self.ErrorInfoMessage(QApplication.translate('AttributeEditor',"(%s) is a reserved word and '\
-                                                                           'cannot be used for column name")%str(self.txtCol.text()))
+        if str(self.txtCol.text()).lower()== RESERVED_ID or str(self.txtCol.text()).lower() in self.defaults:
+            self.ErrorInfoMessage(QApplication.translate('AttributeEditor',"(%s) "
+                        "is a reserved word and cannot be used for column name")%str(self.txtCol.text()))
             return
         if self.tableName==None:
             self.ErrorInfoMessage(QApplication.translate('AttributeEditor','No selected table found'))
@@ -231,8 +231,7 @@ class AttributeEditor(QDialog,Ui_editor):
             self.writeAttributeData()
         self.clearControls()
         self.close()
-        
-            
+
     def rejectAct(self):
         self.close()
         
