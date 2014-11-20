@@ -615,7 +615,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 del menu
         if action==self.closeAction:
             if self.tableName!=None:
-                if self.warningInfo(QApplication.translate("WorkspaceLoader","Delete selected table?"))==QMessageBox.Yes:
+                if self.warningInfo(QApplication.translate("WorkspaceLoader","Delete %s table?")%self.tableName)==QMessageBox.Yes:
                     self.deletedSelectedTable()
         self.readUserTable()
     
