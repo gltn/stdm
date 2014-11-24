@@ -62,6 +62,8 @@ class changePwdDlg(QDialog, Ui_frmChangePwd):
             return False
         else:
             return True 
+    
+    
         
     def acceptdlg(self):
         '''

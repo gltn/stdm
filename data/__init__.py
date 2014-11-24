@@ -64,6 +64,8 @@ from .config_table_reader import ConfigTableReader
 from .enums import datatypes, actions,constraints, nullable
 from .config_utils import tableCols,setCollectiontypes,activeProfile, UserData, tableColType
 from .license_doc import LicenseDocument
+from .template_database import DatabaseCreator
+
 
 from .pg_utils import (
                        spatial_tables,

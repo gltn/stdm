@@ -21,8 +21,10 @@ from stdm.data import STDMDb
 
 from sqlalchemy.orm import sessionmaker
 from stdm.data import _execute
+from PyQt4.QtGui import QMessageBox
 
-dbStmt = 'CREATE DATABASE %s'
+dbStmt = ("CREATE DATABASE %s WITH ENCODING='UTF8'")
+dbExt = ("CREATE DATABASE %s WITH ENCODING='UTF8' TEMPLATE=%s")
 
 class DatabaseCreator(object):
     def __init__(self, dbname, template=None):
@@ -45,9 +47,13 @@ class DatabaseCreator(object):
         create a new database
         :return database object:
         """
+        if self.template is not None:
+            statement = dbExt%(self.dbName,self.template)
+        else:
+            statement = dbStmt%self.dbName
         session = sessionmaker(bind=self._engine)()
         session.connection().connection.set_isolation_level(0)
-        session.execute(dbStmt) % self.dbName
+        session.execute(statement)
         session.connection().connection.set_isolation_level(1)
 
     def createDbExtension(self):
@@ -55,14 +61,23 @@ class DatabaseCreator(object):
         Create postgis extension in the new database
         :return:
         """
+        ext_name = dbExt%self.template
         try:
             if self.template is not None:
-                template_sql = ('CREATE EXTENSION %') % self.template
+                ext_sql=ext_name
             else:
-                template_sql = ('CREATE EXTENSION postgis')
-            _execute(template_sql)
+                ext_sql = ('CREATE EXTENSION postgis')
+            _execute(ext_sql)
         except Exception as ex:
-            raise ex.message
+            QMessageBox.information(None, "Database Operation", str(ex.message))
+
+    def update_registry(self):
+        """ If the user want to use the new database for the current work
+        :return:
+
+        """
+        pass
+
 
 
 
