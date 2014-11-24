@@ -135,6 +135,9 @@ class ConfigTableReader(object):
     
     def userProfileDir(self):
         return self.fileHandler.STDMSettingsPath()
+
+    def updateDir(self, path):
+        return  self.fileHandler.userConfigPath(path)
         
     def saveXMLchanges(self):
         writeSQLFile()
