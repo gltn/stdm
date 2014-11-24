@@ -110,17 +110,20 @@ class FilePaths(object):
     
     def setUserConfigPath(self,path=None):
         ''' set new path with user configuration'''
-        self.userPath = self.localPath()
+        if path is not None:
+            self.userPath= path
+        else:
+            self.userPath = self.localPath()
         self.createDir(self.userPath)
         self.cachePath = self.userPath+'/temp'
         self.createDir(self.cachePath)
-        self.userConfigPath()
+        self.userConfigPath(self.userPath)
     
     def userConfigPath(self,path=None):
         #Copy template files to the user directory
         try:
             for fileN in [FILE,HTML,SQL]:
-                if not os.path.isfile(self.userPath+'/%s'%fileN):
+                if not os.path.isfile(path+'/%s'%fileN):
                     baseFile = self.baseDir +'/%s'%fileN
                     shutil.copy(baseFile,self.userPath)
             if not os.path.isfile(self.cacheFile()):
