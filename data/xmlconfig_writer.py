@@ -92,18 +92,21 @@ def writeTableColumn(data,profile,category,tableName,tableNode):
                     SubElement(node,nodeElem, data)
         tree.write(xml_doc,xml_declaration=True, encoding='utf-8')
         
-def writeGeomConstraint(data,profile,level,tableName):
+def writeGeomConstraint(profile,level,tableName,data = None):
     #Get new data to write to the config as a table column
     #node=None
+    success =''
     tree, root=parseRootElement()
     filters=(".//*[@name='%s']/%s")%(profile,level)
     for elem in root.findall(filters):
         if elem.get('name')==tableName:
             parent=Element(tableName)
             if iselement(parent):
-                node=SubElement(parent,'constraints',data=None)
-                SubElement(node,'constraint', data)
-        tree.write(xml_doc,xml_declaration=True, encoding='utf-8')
+                success = tableName
+                node=SubElement(parent,'geometry',data)
+                #SubElement(node,'constraint', data)
+        tree.write(xml_doc, xml_declaration=True, encoding='utf-8')
+        return success
 
     
 def parseRootElement():

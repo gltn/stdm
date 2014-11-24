@@ -56,7 +56,8 @@ from .xmlconfig_writer import(
                 setLookupValue,
                 deleteLookupChoice,
                 updateSQL,
-                editTableColumn
+                editTableColumn,
+                writeGeomConstraint
             )
 
 from .configfile_paths import FilePaths
