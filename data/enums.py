@@ -19,17 +19,25 @@
  *                                                                         *
  ***************************************************************************/
 """
+from collections import OrderedDict
 
-datatypes = {
-        'Short integer': 'integer',
-        'Long integer': 'bigint',
-        'True/ False': 'boolean',
+geometry_collections = {
+    'Point': 'POINT',
+    'Line': 'LINESTRING',
+    'Polygon': 'POLYGON',
+    'Multipolygon': 'MULTIPOLYGON'
+}
+
+data_types = {
+        '': '',
+        'Whole Number': 'integer',
+        'Decimal Number': 'double precision',
         'Date': 'date',
-        'Double/ decimal': 'double precision',
-        'Auto Increment': 'serial',
-        'Geometry': 'geometry',
+        'True/ False': 'boolean',
         'Short text': 'character varying',
-        'Long text': 'text'
+        'Long text': 'text',
+        'Auto Increment': 'serial',
+        'Geometry': 'geometry'
          }
 
 actions = {
@@ -47,5 +55,8 @@ nullable = {
             'No': 'yes'
           }
 
+postgres_defaults = ['integer','date','boolean','time with time zone','serial',
+                     'geometry','double precision','text']
 
+RESERVED_ID = 'id'
 

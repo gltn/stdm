@@ -23,13 +23,21 @@ import os
 import collections
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
+from collections import OrderedDict
 from .ui_attribute_editor import Ui_editor
 from .lookupDlg import LookupDialog
-from stdm.data  import datatypes,nullable,ConfigTableReader,writeTableColumn,\
- setCollectiontypes,editTableColumn
+from stdm.data  import (
+    data_types,
+    nullable,
+    ConfigTableReader,
+    writeTableColumn,
+    setCollectiontypes,
+    editTableColumn,
+    postgres_defaults,
+    RESERVED_ID
+)
 from stdm.data.config_utils import *
 from .geometry import GeometryProperty
-
 
 class AttributeEditor(QDialog,Ui_editor):
     #class constructor
@@ -45,25 +53,25 @@ class AttributeEditor(QDialog,Ui_editor):
         self.args=args
         self.lookup=None
         self.geomCollection=[]
-        
         self.cboDatatype.currentIndexChanged.connect(self.postgresDataTypeDefaults)
         self.btnTableList.clicked.connect(self.lookupDialog)
         self.initControls()
         
     def initControls(self):
-        self.defaults = ['integer','date','boolean','time with time zone','serial','geometry','double precision','text']
+        self.defaults = postgres_defaults
         tableHandler = ConfigTableReader()
         model = tableHandler.fulltableList()
         self.cboTabList.insertItems(0,model)
         index=self.cboTabList.findText(self.tableName,Qt.MatchExactly)
         if index!=-1:
             self.cboTabList.setCurrentIndex(index)
-        setCollectiontypes(datatypes, self.cboDatatype)
+        setCollectiontypes(data_types, self.cboDatatype)
         setCollectiontypes(nullable, self.cboNull)
        
         dIndex=self.cboDatatype.findText('Short text',Qt.MatchExactly)
         if dIndex!=-1:
             self.cboDatatype.setCurrentIndex(dIndex)
+            self.txtAttrib.setText('50')
         self.cboNull.setCurrentIndex(1)
         self.reloadColumnValues()
         self.initializeValidator()
@@ -71,7 +79,7 @@ class AttributeEditor(QDialog,Ui_editor):
     def initializeValidator(self):
         intValidator = QIntValidator(1,500,self)
         self.txtAttrib.setValidator(intValidator)
-        
+
     def reloadColumnValues(self):
         '''provide user with already defined data for editing if it is editing session'''
         if self.args!=None:
@@ -102,6 +110,7 @@ class AttributeEditor(QDialog,Ui_editor):
         return attribDict
     
     def postgresDataTypeDefaults(self):
+        self.txtAttrib.clear()
         atType=UserData(self.cboDatatype)
         if atType in self.defaults:
             self.txtAttrib.setEnabled(False)
@@ -114,12 +123,6 @@ class AttributeEditor(QDialog,Ui_editor):
     def writeAttributeData(self):
         #Flush the new attribute data to the xml file
         atType=UserData(self.cboDatatype)
-        if atType not in self.defaults and self.txtAttrib.text()=="":
-            self.ErrorInfoMessage(QApplication.translate("AttributeEditor","Attribute length is not given"))
-            return
-        if self.txtCol.text()=="":
-            self.ErrorInfoMessage(QApplication.translate("AttributeEditor","Column name is not given"))
-            return
         if atType in self.defaults:
             sizeval=''
         if atType not in self.defaults:
@@ -208,9 +211,19 @@ class AttributeEditor(QDialog,Ui_editor):
         msg.setText(message)
         msg.exec_()  
                 
-    def accept(self): 
+    def accept(self):
+        if str(self.txtCol.text()).lower()== RESERVED_ID or str(self.txtCol.text()).lower() in self.defaults:
+            self.ErrorInfoMessage(QApplication.translate('AttributeEditor',"(%s) "
+                        "is a reserved word and cannot be used for column name")%str(self.txtCol.text()))
+            return
         if self.tableName==None:
             self.ErrorInfoMessage(QApplication.translate('AttributeEditor','No selected table found'))
+            return
+        if UserData(self.cboDatatype) not in self.defaults and self.txtAttrib.text()=="":
+            self.ErrorInfoMessage(QApplication.translate("AttributeEditor","Attribute length is not given"))
+            return
+        if self.txtCol.text()=="":
+            self.ErrorInfoMessage(QApplication.translate("AttributeEditor","Column name is not given"))
             return
         if self.args!=None:
             self.updateColumnData()
@@ -218,8 +231,7 @@ class AttributeEditor(QDialog,Ui_editor):
             self.writeAttributeData()
         self.clearControls()
         self.close()
-        
-            
+
     def rejectAct(self):
         self.close()
         

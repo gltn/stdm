@@ -22,7 +22,7 @@
 # Import the PyQt and QGIS libraries
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from stdm.data  import datatypes, setCollectiontypes
+from stdm.data  import data_types, setCollectiontypes, geometry_collections
 from stdm.data.config_utils import UserData
 from stdm.settings import projectionSelector
 
@@ -38,8 +38,8 @@ class GeometryProperty(QDialog):
         self.sridButton = QPushButton()
         self.sridButton.setText("Select Coordinate System ")
         self.textField = QLineEdit()
-        geometryCollections = {'Point': 'POINT','Line': 'LINESTRING','Polygon': 'POLYGON', 'Multipolygon': 'MULTIPOLYGON'}
-        setCollectiontypes(geometryCollections,self.comboField)
+
+        setCollectiontypes(geometry_collections, self.comboField)
        
         self.buttons=QDialogButtonBox()
         self.buttons.addButton(QDialogButtonBox.Ok)

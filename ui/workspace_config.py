@@ -105,8 +105,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 self.InfoMessage(" You must agree to the disclaimer to continue")
                 validPage=False
             if self.rbReject.isChecked():
-                self.InfoMessage("Rejecting to comply with Dislaimer policy will cause the wizard to exit.\
-                 Th STDM will no to be accessible")
+                self.InfoMessage("Rejecting to comply with disclaimer policy will cause the wizard to exit.\
+                 STDM will no to be accessible")
                 validPage=False
         if self.currentId()==2:
             if self.txtDefaultFolder.text()=='' or self.txtCertFolder.text()=='' or self.txtSetting.text()=='':
@@ -615,7 +615,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 del menu
         if action==self.closeAction:
             if self.tableName!=None:
-                if self.warningInfo(QApplication.translate("WorkspaceLoader","Delete selected table?"))==QMessageBox.Yes:
+                if self.warningInfo(QApplication.translate("WorkspaceLoader","Delete (%s) table?")%self.tableName)==QMessageBox.Yes:
                     self.deletedSelectedTable()
         self.readUserTable()
     
@@ -651,6 +651,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             dataPath[settings[i]]=userPath[i]
         self.tableHandler.setProfileSettings(dataPath)
         self.tableHandler.createDir(dataPath.values())
+        self.tableHandler.updateDir(self.txtSetting.text())
         
     def settingsPath(self):
         try:
