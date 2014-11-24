@@ -112,13 +112,13 @@ class ConfigTableReader(object):
     def geometryData(self,tableName):
         '''Method to read all defined table relationship in the config file'''
         geometryModel = None
-        tableAttrib = geometryColumns(tableName, 'constraints')
-        if tableAttrib == None:
-            return tableAttrib
-        if len(tableAttrib) > 0:
-            colHeaders = tableAttrib[0].keys()
+        geomAttrib = geometryColumns(tableName, 'constraints')
+        if geomAttrib == None:
+            return geomAttrib
+        if len(geomAttrib) > 0:
+            colHeaders = geomAttrib[0].keys()
             colVals = []
-            for item in tableAttrib:
+            for item in geomAttrib:
                 colVals.append(item.values())
             geometryModel = EntityColumnModel(colHeaders, colVals)
             return geometryModel
