@@ -73,6 +73,8 @@ from .enums import (
 )
 from .config_utils import tableCols,setCollectiontypes,activeProfile, UserData, tableColType
 from .license_doc import LicenseDocument
+from .template_database import DatabaseCreator
+
 
 from .pg_utils import (
                        spatial_tables,
