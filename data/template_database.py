@@ -48,7 +48,7 @@ class DatabaseCreator(object):
         :return database object:
         """
         if self.template is not None:
-            statement = dbExt%(self.dbName,self.template)
+            statement = dbExt%(self.dbName, self.template)
         else:
             statement = dbStmt%self.dbName
         session = sessionmaker(bind=self._engine)()
