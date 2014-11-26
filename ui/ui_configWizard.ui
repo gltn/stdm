@@ -45,7 +45,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>:/plugins/stdm/images/QGIS Splash.png</pixmap>
+     <pixmap resource="../resources.qrc">:/plugins/stdm/images/QGIS Splash.png</pixmap>
     </property>
     <property name="scaledContents">
      <bool>true</bool>
@@ -735,8 +735,8 @@
           <property name="title">
            <string>Relations</string>
           </property>
-          <layout class="QGridLayout" name="gridLayout_16">
-           <item row="0" column="1">
+          <layout class="QGridLayout" name="gridLayout_14">
+           <item row="0" column="0">
             <widget class="QTableView" name="tblEdit_2">
              <property name="minimumSize">
               <size>
@@ -752,15 +752,15 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="2">
-            <widget class="QGroupBox" name="groupBox_12">
+           <item row="0" column="1">
+            <widget class="QGroupBox" name="groupBox_13">
              <property name="title">
               <string>Relation</string>
              </property>
              <property name="flat">
               <bool>true</bool>
              </property>
-             <layout class="QGridLayout" name="gridLayout_17">
+             <layout class="QGridLayout" name="gridLayout_19">
               <item row="1" column="2">
                <widget class="QPushButton" name="btnPropDel">
                 <property name="maximumSize">
@@ -812,7 +812,7 @@
           <property name="title">
            <string>Table/ Entity </string>
           </property>
-          <layout class="QGridLayout" name="gridLayout_14">
+          <layout class="QGridLayout" name="gridLayout_15">
            <item row="0" column="0">
             <widget class="QListView" name="lstEntity_2">
              <property name="minimumSize">
@@ -837,9 +837,61 @@
           <property name="title">
            <string>Geometry Columns</string>
           </property>
-          <layout class="QGridLayout" name="gridLayout_19">
-           <item row="0" column="0">
+          <layout class="QGridLayout" name="gridLayout">
+           <item row="1" column="0">
             <widget class="QTableView" name="tblLookup_2"/>
+           </item>
+           <item row="1" column="1">
+            <widget class="QGroupBox" name="groupBox_12">
+             <property name="title">
+              <string>Geometry</string>
+             </property>
+             <property name="flat">
+              <bool>true</bool>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_17">
+              <item row="1" column="2">
+               <widget class="QPushButton" name="btnGeomDel">
+                <property name="maximumSize">
+                 <size>
+                  <width>50</width>
+                  <height>40</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Del</string>
+                </property>
+                <property name="icon">
+                 <iconset>
+                  <normaloff>:/plugins/stdm/images/delete2.png</normaloff>:/plugins/stdm/images/delete2.png</iconset>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <widget class="QPushButton" name="btnGeomEdit">
+                <property name="maximumSize">
+                 <size>
+                  <width>50</width>
+                  <height>40</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Edit</string>
+                </property>
+                <property name="icon">
+                 <iconset>
+                  <normaloff>:/plugins/stdm/images/editor.png</normaloff>:/plugins/stdm/images/editor.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
            </item>
           </layout>
          </widget>

@@ -34,7 +34,8 @@ from stdm.data  import (
     setCollectiontypes,
     editTableColumn,
     postgres_defaults,
-    RESERVED_ID
+    RESERVED_ID,
+    writeGeomConstraint
 )
 from stdm.data.config_utils import *
 from .geometry import GeometryProperty
@@ -133,7 +134,9 @@ class AttributeEditor(QDialog,Ui_editor):
             writeTableColumn(attribData,self.profile,'lookup',self.tableName,'columns')
         else:
             if atType=='geometry':
-                self.InfoMessage(QApplication.translate("AttributeEditor","Geometry column will not appear in the list of column but it is loaded in the background"))
+                self.InfoMessage(QApplication.translate("AttributeEditor",
+                    "Geometry column will not appear in the list of column but it is loaded in the background"))
+                self.geomtag()
                 self.enforceProjection()
             else:
                 writeTableColumn(attribData,self.profile,'table',self.tableName,'columns')
@@ -192,8 +195,13 @@ class AttributeEditor(QDialog,Ui_editor):
             geom['column'] = formatColumnName(self.txtCol.text())
             geom['type'] = self.geomCollection[1]
             geom['arguments'] = '2'
-            writeTableColumn(geom,self.profile,'table',self.tableName,'constraints')
-            #self.enforceGeometry() 
+            writeTableColumn(geom,self.profile,'table',self.tableName,'geometryz')
+    
+    def geomtag(self):
+        """Add tag on the table with geometry to ensure that it added correctly
+        """
+        action= writeGeomConstraint(self.profile, 'table', self.tableName)
+        return action
             
     def ErrorInfoMessage(self, Message):
         # Error Message Box

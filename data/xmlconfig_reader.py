@@ -186,11 +186,12 @@ def geometryColumns(tableName,element):
                 for child in childs:
                     ordDict=OrderedDict()
                     ordDict["Table Name"]=child.get('table')
-                    ordDict["Geometry Column"]=child.get('column')
+                    ordDict["Geometry Column Name"]=child.get('column')
                     ordDict["Geometry Type"]=child.get('type')
                     ordDict["Projection"]=child.get('srid')
                     ordDict["Schema"]='default'
                     geomData.append(ordDict) 
+    return geomData
 
 def lookupData(tableName):    
     lstLookup=[]
