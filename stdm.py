@@ -208,7 +208,7 @@ class STDMQGISLoader(object):
             try:
                 self.loadModules()
             except Exception as ex:
-                QMessageBox.warning(self.iface.mainWindow(),QApplication.translate("STDM","Error"),ex.message)
+                QMessageBox.warning(self.iface.mainWindow(),QApplication.translate("STDM","Error"),str(ex.message))
 
     def loadModules(self):
         '''

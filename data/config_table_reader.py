@@ -112,7 +112,7 @@ class ConfigTableReader(object):
     def geometryData(self,tableName):
         '''Method to read all defined table relationship in the config file'''
         geometryModel = None
-        geomAttrib = geometryColumns(tableName, 'constraints')
+        geomAttrib = geometryColumns(tableName, 'geometryz')
         if geomAttrib == None:
             return geomAttrib
         if len(geomAttrib) > 0:

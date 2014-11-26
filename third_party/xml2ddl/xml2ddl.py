@@ -112,7 +112,7 @@ class Xml2Ddl:
     def addChecks(self,doc):
 #        if not self.params['output_references']:
 #            return
-        checks=doc.getElementsByTagName('constraint')
+        checks=doc.getElementsByTagName('geometry')
         #strTableName=getTableName(doc)
         
         for check in checks:
