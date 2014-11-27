@@ -21,15 +21,15 @@
 """
 # Import the PyQt and QGIS libraries
 
-import sys
+import platform
 import os
 
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from ui_workspace_config import Ui_STDMWizard
 from stdm.data import ConfigTableReader,deleteProfile,profileFullDescription,tableFullDescription,deleteColumn,\
-deleteTable,lookupData2List,deleteLookupChoice,listEntityViewer, EntityColumnModel,SQLInsert,LicenseDocument,_execute
-#from stdm.config.config_utils import openDirectoryChooser
+deleteTable,lookupData2List,deleteLookupChoice,SQLInsert,LicenseDocument,_execute
+
 from attribute_editor import AttributeEditor
 from table_propertyDlg import TableProperty
 from addtable import TableEditor
@@ -47,12 +47,14 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.setupUi(self)
         self.registerFields()
         #Initialize the xml filehandler
-        self.tableHandler=ConfigTableReader()
+        self.tableHandler = ConfigTableReader()
         self.tableName=None
         self.tableList=[]
         self.profile=''
         self.geomEntity=None
-        
+
+        #if platform.system() =="Windows":
+        #    self.setWizardStyle(QWizard.AeroStyle)
         self.setWindowFlags(Qt.Dialog| Qt.WindowMaximizeButtonHint|Qt.WindowCloseButtonHint)
         
         QObject.connect(self.lstEntity,SIGNAL('clicked(QModelIndex)'),self.seletedTableAttrib)
@@ -88,7 +90,15 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.rbSchema.clicked.connect(self.setSqlIsertDefinition)
         self.rbSchemaNew.clicked.connect(self.setSqlIsertDefinition)
         self.chkPdefault.clicked.connect(self.setDefualtProfile)
-        
+
+        try:
+            settings = self.tableHandler.pathSettings()
+            if settings[1].get('Config') == None:
+               self.startId() == 1
+            elif settings[1].get('Config') != None:
+                self.setStartId(2)
+        except:
+            pass
         
     def registerFields(self):
         self.setOption(self.HaveHelpButton, True)  
@@ -97,7 +107,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         pgCount.registerField("Reject",self.rbReject)
         pgCount2=self.page(4)
         pgCount2.registerField("SelectionMenu",self.toolbtn)
-         
+
+
     def validateCurrentPage (self):
         validPage = True
         if self.currentId()==1:
@@ -123,6 +134,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     
     def initializePage(self, int):
         if self.currentId()==1:
+
+
             self.licenseFile()
             
         if self.currentId()==2:
