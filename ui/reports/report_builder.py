@@ -998,7 +998,7 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
       
     def showhideProgressDialog(self,message,show = True):
         #Generic progress dialog for the report builder window    
-        if show == True:                    
+        if show:
             self.progressDlg.setWindowModality(Qt.WindowModal)
             self.progressDlg.setLabelText(message) 
             self.progressDlg.setCancelButtonText("")
