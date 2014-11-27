@@ -205,10 +205,10 @@ class STDMQGISLoader(object):
             self.stdmTables = spatial_tables()                         
             #self.loadModules()
             #resetContentRoles()
-            try:
-                self.loadModules()
-            except Exception as ex:
-                QMessageBox.warning(self.iface.mainWindow(),QApplication.translate("STDM","Error"),str(ex.message))
+            #try:
+            self.loadModules()
+            #except Exception as ex:
+            #    QMessageBox.warning(self.iface.mainWindow(),QApplication.translate("STDM","sfafError"),str(ex.message))
 
     def loadModules(self):
         '''
@@ -533,12 +533,7 @@ class STDMQGISLoader(object):
         self.menubarLoader.loadContent()
         
         #Quick fix
-        fontPath=None
-        if platform.system() == "Windows":
-            userPath = os.environ["USERPROFILE"]
-            profPath = userPath + "/.stdm"
-            fontPath=str(profPath).replace("\\", "/")+"/font.cache"
-        SysFonts.register(fontPath)
+       
         
     def configureMapTools(self):
         '''
