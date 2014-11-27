@@ -160,8 +160,9 @@ class AttributeEditor(QDialog,Ui_editor):
             sizeval=''
         if atType not in self.defaults:
             sizeval=self.txtAttrib.text()
+        desc = self.txtColDesc.text()
         try:
-            editTableColumn(self.profile, self.tableName, 'name', self.args[0], formatColumnName(self.txtCol.text()),atType,sizeval)
+            editTableColumn(self.profile, self.tableName, 'name', self.args[0], formatColumnName(self.txtCol.text()),atType,sizeval, desc)
         except:
             self.ErrorInfoMessage(QApplication.translate('AttributeEditor','Unable to update the column data'))
             return
