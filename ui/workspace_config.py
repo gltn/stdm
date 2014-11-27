@@ -637,7 +637,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 userpath = self.tableHandler.userProfileDir()
                 self.txtSetting.setText(userpath)
                 self.setWorkingDataPath(userpath)
-                self.CertificatePath(userpath)
+                self.certificatePath(userpath)
                 self.templatePath()
         except: 
             pass
@@ -656,12 +656,12 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def settingsPath(self):
         try:
             dir_name=self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",\
-                                                                      "Choose STDM Settings Folder",\
+                                                                      "Select a directory for configuration Settings",\
                                                                       str(self.txtSetting.text())))
             dirPath=dir_name[0]
             self.txtSetting.setText(dirPath)
             self.setWorkingDataPath(dirPath)
-            self.CertificatePath(dirPath)
+            self.certificatePath(dirPath)
             self.templatePath()
         except:
             pass
@@ -670,34 +670,34 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         dir_name=None
         try:
             dir_name=self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",
-                                                                      "Choose STDM default Data Folder",\
+                                                                      "Select a directory for STDM data",\
                                                                       str(self.txtDefaultFolder.text())))
             dirPath=dir_name[0]
             self.setWorkingDataPath(dirPath)
-            self.CertificatePath(dirPath)
+            self.certificatePath(dirPath)
             self.templatePath()
 
         except:
             pass
     
-    def setWorkingDataPath(self,dir_name):
+    def setWorkingDataPath(self, dir_name):
         self.txtDefaultFolder.setText(str(dir_name)+"/Data")
         
         
-    def CertificatePath(self,dirP):
-        path=str(dirP)+"/Reports"
+    def certificatePath(self,dirP):
+        path = str(dirP)+"/Reports"
         self.txtCertFolder.setText(path)
         self.templatePath()
         
     def templatePath(self):
-        path=self.txtCertFolder.text()
-        path=path+"/Templates"
+        path = self.txtCertFolder.text()
+        path =path+"/Templates"
         self.txtTemplates.setText(path)
         
     def setCertificatePath(self):
         try:
             dir_name=self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",
-                                                                      "Select a Directory for Saving Reports",\
+                                                                      "Select a directory for saving Reports",\
                                                                       str(self.txtCertFolder.text())))
             self.txtCertFolder.setText(str(dir_name[0]))
         except:
@@ -706,13 +706,13 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def setTemplatesPath(self):
         try:
             dir_name=self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",
-                                                                      "Select a Directory for Saving templates",\
+                                                                      "Select a directory for saving templates",\
                                                                       str(self.txtCertFolder.text())))
             self.txtTemplates.setText(str(dir_name[0]))
         except:
             pass
         
-    def openDirectoryChooser(self,message,dir=None):
+    def openDirectoryChooser(self, message, dir=None):
         #Method to get the user selected directory
         dirDlg=QFileDialog(self,message,dir)
         dirDlg.setFileMode(QFileDialog.Directory)
@@ -726,15 +726,15 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         normPath = self.tableHandler.setDocumentationPath() 
         os.startfile(normPath,'open')
                                         
-    def ErrorInfoMessage(self, Message):
+    def ErrorInfoMessage(self, message):
         # Error Message Box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
         msg.setWindowTitle(QApplication.translate("WorkspaceLoader","STDM"))
-        msg.setText(Message)
+        msg.setText(message)
         msg.exec_()  
                 
-    def InfoMessage(self,message):
+    def InfoMessage(self, message):
         #Information message box        
         msg=QMessageBox()
         msg.setWindowTitle(unicode(self.windowTitle()))
@@ -742,7 +742,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         msg.setText(message)
         msg.exec_()  
         
-    def warningInfo(self,message):
+    def warningInfo(self, message):
         #Information message box        
         msg=QMessageBox()
         msg.setWindowTitle(unicode(self.windowTitle()))
