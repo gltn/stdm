@@ -1,86 +1,93 @@
-CREATE TABLE party (
-	id integer,
-	address character varying( 80) NOT NULL,
-	contact integer,
-	identity integer,
-	CONSTRAINT pk_party PRIMARY KEY (id));
-CREATE TABLE person (
-	id serial NOT NULL,
-	first_name character varying( 80),
-	last_name character varying( 80),
-	age integer,
-	contact integer,
-	education_level character varying( 45),
-	houshold character varying( 50),
-	work character varying( 60),
-	marital_status character varying( 50),
-	birth_date date( 50),
-	CONSTRAINT pk_person PRIMARY KEY (id));
-ALTER TABLE person ADD CONSTRAINT pguid FOREIGN KEY (id) REFERENCES party(id) ON DELETE CASCADE ON UPDATE CASCADE;
-CREATE TABLE household (
-	id integer,
-	previous_resdence character varying( 100),
-	settlement_period character varying( 50),
-	CONSTRAINT pk_household PRIMARY KEY (id));
-ALTER TABLE household ADD CONSTRAINT hguid FOREIGN KEY (id) REFERENCES party(id) ON DELETE CASCADE ON UPDATE CASCADE;
-CREATE TABLE services (
-	name character varying( 45),
-	source character varying( 10),
-	id integer
-);
-CREATE TABLE project_area (
-	id integer,
-	name character varying( 50),
-	location character varying( 50),
-	code integer
-);
-CREATE TABLE respondent (
-	id integer,
-	first_name character varying( 50),
-	last_name character varying( 50),
-	relationship character varying( 40),
-	CONSTRAINT pk_respondent PRIMARY KEY (id));
-ALTER TABLE respondent ADD CONSTRAINT houseid FOREIGN KEY (id) REFERENCES household(id) ON DELETE CASCADE ON UPDATE CASCADE;
-CREATE TABLE property (
-	id integer,
-	name character varying( 30),
-	value character varying( 10),
-	tax real
-);
-ALTER TABLE property ADD CONSTRAINT spguuid FOREIGN KEY (id) REFERENCES spatial_unit(id) ON DELETE CASCADE ON UPDATE CASCADE;
-CREATE TABLE spatial_unit (
-	id integer,
-	unit_name character varying( 25),
-	use_of_the_unit character varying( 25),
-	registration_date date,
-	CONSTRAINT pk_spatial_unit PRIMARY KEY (id));
-CREATE TABLE source_document (
-	id integer,
-	type character varying( 25),
-	person_id integer,
-	household_id integer,
-	CONSTRAINT pk_source_document PRIMARY KEY (id,
-	household_id));
-CREATE TABLE social_tenure (
-	id integer,
-	social_tenure_type character varying( 50),
-	person_id integer,
-	spatial_unit_id integer,
-	group_id integer,
-	share integer,
-	CONSTRAINT pk_social_tenure PRIMARY KEY (id));
-CREATE TABLE social_tenure (
-	id integer,
-	social_tenure_type character varying( 50),
-	person_id integer,
-	spatial_unit_id integer,
-	group_id integer,
-	share integer,
-	CONSTRAINT pk_social_tenure PRIMARY KEY (id));
-CREATE TABLE check_gender (
-	value character varying( 50)
-);
-CREATE TABLE check_use_type (
+CREATE TABLE check_document_type (
+	id serial,
 	value character varying( 50),
-	value character varying( 50)
-);
+	CONSTRAINT pk_check_document_type PRIMARY KEY (id));
+CREATE TABLE check_social_tenure_type (
+	id serial,
+	value character varying( 50),
+	CONSTRAINT pk_check_social_tenure_type PRIMARY KEY (id));
+CREATE TABLE check_previous_residence (
+	id serial,
+	value character varying( 50),
+	CONSTRAINT pk_check_previous_residence PRIMARY KEY (id));
+CREATE TABLE check_gender (
+	id serial,
+	value character varying( 50),
+	CONSTRAINT pk_check_gender PRIMARY KEY (id));
+CREATE TABLE check_settlement_reason (
+	id serial,
+	value character varying( 50),
+	CONSTRAINT pk_check_settlement_reason PRIMARY KEY (id));
+CREATE TABLE check_montly_income (
+	id serial,
+	value character varying( 50),
+	CONSTRAINT pk_check_montly_income PRIMARY KEY (id));
+CREATE TABLE check_rent (
+	id serial,
+	value character varying( 50),
+	CONSTRAINT pk_check_rent PRIMARY KEY (id));
+CREATE TABLE party (
+	id serial,
+	family_name character varying( 25),
+	other_names character varying( 25),
+	address character varying( 25),
+	identification integer,
+	contact_telephone character varying( 25),
+	age integer,
+	gender character varying( 25),
+	CONSTRAINT pk_party PRIMARY KEY (id));
+CREATE TABLE spatial_unit (
+	id serial,
+	spatial_unit_id character varying( 25),
+	name character varying( 25),
+	type character varying( 25),
+	sp_unit_use character varying( 50),
+	CONSTRAINT pk_spatial_unit PRIMARY KEY (id));
+CREATE TABLE supporting_document (
+	id serial,
+	document_type character varying( 25),
+	date_of_recording date,
+	validity character varying( 50),
+	source character varying( 50),
+	CONSTRAINT pk_supporting_document PRIMARY KEY (id));
+CREATE TABLE social_tenure_relationship (
+	id serial,
+	social_tenure_type character varying( 25),
+	share double precision,
+	party integer,
+	spatial_unit integer,
+	CONSTRAINT pk_social_tenure_relationship PRIMARY KEY (id));
+SELECT AddGeometryColumn('spatial_unit', 'geom_test', '4326','POLYGON',2);
+SELECT AddGeometryColumn('spatial_unit', 'geom_line', '4326','LINESTRING',2);
+SELECT AddGeometryColumn('spatial_unit', 'geom_point', '4326','POINT',2);
+SELECT AddGeometryColumn('spatial_unit', 'geom_polygon', '4326','POLYGON',2);
+ALTER TABLE social_tenure_relationship ADD CONSTRAINT pid1 FOREIGN KEY (spatial_unit) REFERENCES spatial_unit(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE social_tenure_relationship ADD CONSTRAINT partyid FOREIGN KEY (party) REFERENCES party(id) ON DELETE CASCADE ON UPDATE CASCADE;
+INSERT INTO check_document_type ("value") VALUES ('Audio Files');
+INSERT INTO check_document_type ("value") VALUES ('Video Files');
+INSERT INTO check_document_type ("value") VALUES ('Rent certificate');
+INSERT INTO check_document_type ("value") VALUES ('Lease agreement');
+INSERT INTO check_document_type ("value") VALUES ('Title');
+INSERT INTO check_social_tenure_type ("value") VALUES ('Tenant');
+INSERT INTO check_social_tenure_type ("value") VALUES ('Individual owner');
+INSERT INTO check_social_tenure_type ("value") VALUES ('Part owner/shared ownership');
+INSERT INTO check_social_tenure_type ("value") VALUES ('Lease');
+INSERT INTO check_social_tenure_type ("value") VALUES ('Occupant');
+INSERT INTO check_social_tenure_type ("value") VALUES ('Others');
+INSERT INTO check_previous_residence ("value") VALUES ('Here');
+INSERT INTO check_previous_residence ("value") VALUES ('Another town');
+INSERT INTO check_previous_residence ("value") VALUES ('Another settlement');
+INSERT INTO check_gender ("value") VALUES ('Male');
+INSERT INTO check_gender ("value") VALUES ('Female');
+INSERT INTO check_settlement_reason ("value") VALUES ('Eviction');
+INSERT INTO check_settlement_reason ("value") VALUES ('Poverty');
+INSERT INTO check_settlement_reason ("value") VALUES ('Job opportunity');
+INSERT INTO check_montly_income ("value") VALUES ('below 1000');
+INSERT INTO check_montly_income ("value") VALUES ('1001-2500');
+INSERT INTO check_montly_income ("value") VALUES ('2501-5000');
+INSERT INTO check_montly_income ("value") VALUES ('5000-10000');
+INSERT INTO check_montly_income ("value") VALUES ('10000-20000');
+INSERT INTO check_montly_income ("value") VALUES ('Above 20000');
+INSERT INTO check_rent ("value") VALUES ('4000');
+INSERT INTO check_rent ("value") VALUES ('1000');
+CREATE OR REPLACE VIEW social_tenure_relations AS SELECT party.id, party.family_name AS party_surname, party.other_names,         party.identification, spatial_unit.spatial_unit_id AS spatial_unit_number, spatial_unit.name AS spatial_unit_name, spatial_unit.geom_polygon AS geometry,                         social_tenure_relationship.social_tenure_type FROM party, spatial_unit, social_tenure_relationship                         WHERE spatial_unit.id = social_tenure_relationship.spatial_unit AND party.id = social_tenure_relationship.party; 
