@@ -25,15 +25,12 @@
 			<columns>
 				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
 				<column fullname="unique identifier" name="spatial_unit_id" null="yes" oldname="spatial_unit_id" size="25" type="character varying" />
-				<column fullname="Friendly name of the unit" name="name" null="yes" size="25" type="character varying" />
-				<column fullname="type of the unit" lookup="check_type" name="type" null="yes" size="25" type="character varying" />
-			<column fullname="" name="area" null="yes" size="" type="double precision" /><column fullname="" name="structure_id" null="yes" size="25" type="character varying" /></columns>
+				<column fullname="Friendly name of the unit" name="name" null="yes" oldname="sp_unit_name" size="25" type="character varying" />
+				<column fullname="type of the unit" lookup="check_type" name="type" null="yes" oldname="type" size="25" type="character varying" />
+				<column fullname="Use" name="sp_unit_use" null="yes" oldname="sp_unit_use" size="50" type="character varying" /></columns>
 			<relations>
 			</relations>
 			<constraints>
-				<constraint arguments="2" column="geom_line" srid="4326" table="spatial_unit" type="LINESTRING" />
-				<constraint arguments="2" column="geom_point" srid="4326" table="spatial_unit" type="POINT" />
-				<constraint arguments="2" column="geom_polygon" srid="4326" table="spatial_unit" type="POLYGON" />
 			</constraints>
 			<contentgroups fullname="spatial unit or a group of spatial unit" name="spatial_unit">
 				<contentgroup code="{BD1488E7-04EF-48C0-A21E-D2761E7DC3F2}" name="create" />
@@ -41,20 +38,21 @@
 				<contentgroup code="{0F016C29-987D-493D-B556-1FC5CEE5892B}" name="update" />
 				<contentgroup code="{5D01B4BF-081E-49C1-8F96-465826522C81}" name="delete" />
 			</contentgroups>
+			<geometryz>
+				<geometry arguments="2" column="geom_test" srid="4326" table="spatial_unit" type="POLYGON" />
+				<geometry arguments="2" column="geom_line" srid="4326" table="spatial_unit" type="LINESTRING" />
+				<geometry arguments="2" column="geom_point" srid="4326" table="spatial_unit" type="POINT" />
+				<geometry arguments="2" column="geom_polygon" srid="4326" table="spatial_unit" type="POLYGON" />
+			</geometryz>
 		</table>
 		<table fullname="Prove of evidence to the defined tenure" name="supporting_document">
 			<columns>
 				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
 				<column fullname="" lookup="check_document_type" name="document_type" null="yes" oldname="document_type" size="25" type="character varying" />
-				<column fullname="" name="party" null="yes" size="" type="integer" />
-				<column fullname="id of the spatial unit relating to the document" name="spatial_unit" null="yes" size="" type="integer" />
 				<column fullname="when it was obtained" name="date_of_recording" null="yes" size="" type="date" />
-				<column fullname="For how long" name="validity" null="yes" size="" type="date" />
-				<column fullname="" name="filename" null="yes" size="25" type="character varying" />
-				<column fullname="" name="document_id" null="yes" size="25" type="character varying" />
-			</columns>
+				<column fullname="Validity period" name="validity" null="yes" size="50" type="character varying" /><column fullname="From whom/ where" name="source" null="yes" size="50" type="character varying" /></columns>
 			<relations>
-			<relation column="id" fk="spatial_unit" name="spid" ondelete="cascade" onupdate="cascade" table="spatial_unit" /><relation column="id" fk="party" name="party" ondelete="cascade" onupdate="cascade" table="party" /></relations>
+				</relations>
 			<constraints />
 			<contentgroups fullname="Prove of evidence to the defined tenure" name="supporting_document">
 				<contentgroup code="{A6FCF613-5442-40BF-96A9-F9BADC6BA647}" name="create" />
@@ -72,7 +70,9 @@
 				<column fullname="spatial unit id" name="spatial_unit" null="yes" oldname="spatial_unit" size="" type="integer" />
 			</columns>
 			<relations>
-				<relation column="id" fk="spatial_unit" name="pid1" ondelete="cascade" onupdate="cascade" table="spatial_unit" /><relation column="id" fk="party" name="partyid" ondelete="cascade" onupdate="cascade" table="party" /></relations>
+				<relation column="id" fk="spatial_unit" name="pid1" ondelete="cascade" onupdate="cascade" table="spatial_unit" />
+				<relation column="id" fk="party" name="partyid" ondelete="cascade" onupdate="cascade" table="party" />
+			</relations>
 			<constraints />
 			<contentgroups fullname="Relation of the person to spatial unit as supported by supporting documents" name="social_tenure_relationship">
 				<contentgroup code="{A30E6D14-1110-4847-BC2E-095888AF08EA}" name="create" />
@@ -108,23 +108,6 @@
 				<value>Others</value>
 			</data>
 		</lookup>
-		<table fullname="household entity" name="household">
-			<columns>
-				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
-				<column fullname="code number" name="household_code" null="yes" size="25" type="character varying" />
-				<column fullname="family persons" name="total_members" null="yes" size="25" type="character varying" />
-				<column fullname="" lookup="check_previous_residence" name="previous_residence" null="yes" size="25" type="character varying" />
-				<column fullname="" lookup="check_settlement_reason" name="reason_for_settling_here" null="yes" size="25" type="character varying" />
-			<column fullname="" lookup="check_montly_income" name="monthly_income" null="yes" size="25" type="character varying" /><column fullname="" name="rent" null="yes" size="25" type="character varying" /><column fullname="" name="income" null="yes" size="25" type="character varying" /><column fullname="" lookup="check_rent" name="rent_per_month" null="yes" size="25" type="character varying" /></columns>
-			<relations />
-			<constraints />
-			<contentgroups fullname="household entity" name="household">
-				<contentgroup code="{7AEA6E3D-6EB9-40F5-B55D-8E9DF99EEDDB}" name="create" />
-				<contentgroup code="{214B33F2-9277-4F21-9795-7DD3E8D46194}" name="select" />
-				<contentgroup code="{B6A4B8E9-36E4-4C17-85A3-37559A236444}" name="update" />
-				<contentgroup code="{EE2C3CE2-9BA5-4A9D-A805-8B3C2DEC3C74}" name="delete" />
-			</contentgroups>
-		</table>
 		<lookup fullname="" name="check_previous_residence">
 			<columns>
 				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
@@ -157,5 +140,29 @@
 				<value>Job opportunity</value>
 			</data>
 		</lookup>
-	<lookup fullname="" name="check_montly_income"><columns><column fullname="Primary Key" key="1" name="id" size="" type="serial" /><column fullname="Choice list" name="value" size="50" type="character varying" /></columns><data><value>below 1000</value><value>1001-2500</value><value>2501-5000</value><value>5000-10000</value><value>10000-20000</value><value>Above 20000</value></data></lookup><lookup fullname="" name="check_rent"><columns><column fullname="Primary Key" key="1" name="id" size="" type="serial" /><column fullname="Choice list" name="value" size="50" type="character varying" /></columns><data><value>4000</value><value>1000</value></data></lookup></profile>
+		<lookup fullname="" name="check_montly_income">
+			<columns>
+				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
+				<column fullname="Choice list" name="value" size="50" type="character varying" />
+			</columns>
+			<data>
+				<value>below 1000</value>
+				<value>1001-2500</value>
+				<value>2501-5000</value>
+				<value>5000-10000</value>
+				<value>10000-20000</value>
+				<value>Above 20000</value>
+			</data>
+		</lookup>
+		<lookup fullname="" name="check_rent">
+			<columns>
+				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
+				<column fullname="Choice list" name="value" size="50" type="character varying" />
+			</columns>
+			<data>
+				<value>4000</value>
+				<value>1000</value>
+			</data>
+		</lookup>
+	</profile>
 </schema>

@@ -19,7 +19,7 @@ class DdlCommonInterface:
             'table_desc'      : ["COMMENT ON TABLE %(table)s IS %(desc)s;"],
             # Column
             'add_column'      : ['ALTER TABLE %(table_name)s ADD %(column_name)s %(column_type)s;'],
-            'drop_column'     : ['ALTER TABLE %(table_name)s DROP %(column_name)s'],
+            'drop_column'     : ['ALTER TABLE %(table_name)s DROP %(column_name)s;'],
             'rename_column'   : ['ALTER TABLE %(table_name)s RENAME %(old_col_name)s TO %(new_col_name)s;'],
             'change_col_type' : ['ALTER TABLE %(table_name)s ALTER %(column_name)s TYPE %(column_type)s;'],
             'column_desc'     : ["COMMENT ON COLUMN %(table)s.%(column)s IS %(desc)s;"],
