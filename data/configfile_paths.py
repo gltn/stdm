@@ -128,8 +128,22 @@ class FilePaths(object):
                     shutil.copy(baseFile,self.userPath)
             if not os.path.isfile(self.cacheFile()):
                 shutil.copy(self.setUserXMLFile(), self.cacheDir())
+            self.localFontPath(path)
         except IOError as ex:
             raise ex
+    
+    def localFontPath(self, path):
+        """ Create a path where fonts will be stored"""
+        fontPath=None
+        if path == None:
+            if platform.system() == "Windows":
+                path = os.environ["USERPROFILE"]
+            else:
+                path = os.getenv("HOME")
+            fontPath = path + "/.stdm/font.cache"
+        else:
+            fontPath=str(path).replace("\\", "/")+"/font.cache"
+        SysFonts.register(fontPath)
     
     def setUserXMLFile(self):
         '''default path to the config file'''

@@ -4,7 +4,7 @@ Name                 : Generic application for forms
 Description          : forms generator functions
 Date                 : 30/June/2013 
 copyright            : (C) 2013 by Solomon Njogu
-email                : njoroge.solomon.com
+email                : njoroge.solomon@yahoo.com
  ***************************************************************************/
 
 /***************************************************************************
