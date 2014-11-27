@@ -19,7 +19,7 @@ email                : njoroge.solomon.com
 from collections import OrderedDict
 from stdm.utils import *
 from stdm.data import STDMDb
-from .wigets import widgetCollection
+from .widgets import widgetCollection
 from stdm.data import lookupData
 from PyQt4.QtGui import *
 from stdm.ui.stdmdialog import  DeclareMapping
