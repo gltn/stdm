@@ -165,9 +165,10 @@ class STDMQGISLoader(object):
         self.stdmInitToolbar = self.iface.addToolBar("STDM")  
         self.stdmInitToolbar.setObjectName("STDM")
         #Add actions to the toolbar
-        self.stdmInitToolbar.addAction(self.loginAct)                
+        self.stdmInitToolbar.addAction(self.loginAct)
                                 
         self.stdmInitToolbar.addSeparator()
+        self.stdmInitToolbar.addAction(self.helpAct)
         self.stdmInitToolbar.addAction(self.aboutAct)   
         
    
