@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <schema>
-	<profile fullname="STDM Core Modules" name="stdm">
+	<profile fullname="STDM Core Modules" name="Basic">
 		<table fullname="party can be a person household or group" name="party">
 			<columns>
 				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
