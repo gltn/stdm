@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>832</width>
-    <height>580</height>
+    <width>869</width>
+    <height>595</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -294,14 +294,7 @@
        <string>Profiles</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_28">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Select</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
+       <item row="0" column="2">
         <widget class="QComboBox" name="cboProfile">
          <property name="minimumSize">
           <size>
@@ -311,20 +304,65 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="0" column="0" rowspan="3">
+        <widget class="QLabel" name="label_3">
+         <property name="frameShape">
+          <enum>QFrame::Box</enum>
+         </property>
+         <property name="text">
+          <string>A profile in STDM tool refers to a description of a survey or forms of survey based on a particular data collection methodology and therefore the methodology workflow need to be customized within it. </string>
+         </property>
+         <property name="scaledContents">
+          <bool>true</bool>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLabel" name="label">
+         <property name="maximumSize">
+          <size>
+           <width>30</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Select</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" colspan="2">
         <widget class="QWidget" name="widget" native="true">
          <layout class="QGridLayout" name="gridLayout_24">
-          <item row="0" column="1" colspan="3">
-           <widget class="QLabel" name="lblDescprition">
-            <property name="styleSheet">
-             <string notr="true">color: rgb(0, 85, 0);</string>
+          <item row="1" column="5">
+           <widget class="QPushButton" name="btnNewP">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>150</width>
+              <height>16777215</height>
+             </size>
             </property>
             <property name="text">
-             <string>Profile description</string>
+             <string>New Profile</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../resources.qrc">
+              <normaloff>:/plugins/stdm/images/icons/property_manager.png</normaloff>:/plugins/stdm/images/icons/property_manager.png</iconset>
             </property>
            </widget>
           </item>
-          <item row="1" column="4">
+          <item row="1" column="1">
            <widget class="QPushButton" name="btnPDelete">
             <property name="minimumSize">
              <size>
@@ -347,26 +385,13 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QPushButton" name="btnNewP">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>150</width>
-              <height>16777215</height>
-             </size>
+          <item row="0" column="1" colspan="5">
+           <widget class="QLabel" name="lblDescprition">
+            <property name="styleSheet">
+             <string notr="true">color: rgb(0, 85, 0);</string>
             </property>
             <property name="text">
-             <string>New Profile</string>
-            </property>
-            <property name="icon">
-             <iconset resource="../resources.qrc">
-              <normaloff>:/plugins/stdm/images/icons/property_manager.png</normaloff>:/plugins/stdm/images/icons/property_manager.png</iconset>
+             <string>Profile description</string>
             </property>
            </widget>
           </item>
@@ -421,7 +446,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Edit</string>
+             <string/>
             </property>
             <property name="icon">
              <iconset resource="../resources.qrc">
@@ -444,7 +469,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Add</string>
+             <string/>
             </property>
             <property name="icon">
              <iconset resource="../resources.qrc">
@@ -467,7 +492,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Remove</string>
+             <string/>
             </property>
             <property name="icon">
              <iconset resource="../resources.qrc">
@@ -490,7 +515,7 @@
    <property name="subTitle">
     <string>Add or Edit Fields/ Columns For Each Module</string>
    </property>
-   <layout class="QGridLayout" name="gridLayout_9">
+   <layout class="QGridLayout" name="gridLayout_13">
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
@@ -500,133 +525,199 @@
        <attribute name="title">
         <string>Tables</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout_13">
-        <item row="0" column="0" colspan="2">
-         <widget class="QGroupBox" name="groupBox">
-          <property name="title">
-           <string>Table/ Entity </string>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_6">
-           <item row="0" column="0" colspan="2">
-            <widget class="QListView" name="lstEntity">
-             <property name="minimumSize">
-              <size>
-               <width>150</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>200</width>
-               <height>16777215</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="0" column="2" colspan="2">
+       <layout class="QGridLayout" name="gridLayout_18">
+        <item row="0" column="1">
          <widget class="QGroupBox" name="groupBox_4">
+          <property name="minimumSize">
+           <size>
+            <width>550</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="title">
            <string>Column list</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_8">
-           <item row="0" column="1">
-            <widget class="QTableView" name="tblEdit">
+           <item row="0" column="0">
+            <widget class="QTabWidget" name="tabWidget_2">
              <property name="minimumSize">
               <size>
                <width>500</width>
                <height>0</height>
               </size>
              </property>
-             <property name="selectionMode">
-              <enum>QAbstractItemView::SingleSelection</enum>
+             <property name="currentIndex">
+              <number>1</number>
              </property>
-             <property name="selectionBehavior">
-              <enum>QAbstractItemView::SelectRows</enum>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QGroupBox" name="groupBox_8">
-             <property name="title">
-              <string>Column</string>
-             </property>
-             <property name="flat">
-              <bool>true</bool>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_12">
-              <item row="2" column="2">
-               <widget class="QPushButton" name="btnDel">
-                <property name="maximumSize">
-                 <size>
-                  <width>50</width>
-                  <height>40</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>Del</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="../resources.qrc">
-                  <normaloff>:/plugins/stdm/images/icons/delete.png</normaloff>:/plugins/stdm/images/icons/delete.png</iconset>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <widget class="QPushButton" name="btnAdd">
-                <property name="maximumSize">
-                 <size>
-                  <width>50</width>
-                  <height>40</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>Add</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="../resources.qrc">
-                  <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>20</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="2">
-               <widget class="QPushButton" name="btnEdit">
-                <property name="maximumSize">
-                 <size>
-                  <width>50</width>
-                  <height>40</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>Edit</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="../resources.qrc">
-                  <normaloff>:/plugins/stdm/images/icons/edit.png</normaloff>:/plugins/stdm/images/icons/edit.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>20</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-             </layout>
+             <widget class="QWidget" name="tab_3">
+              <attribute name="title">
+               <string>Basic data types columns</string>
+              </attribute>
+              <layout class="QGridLayout" name="gridLayout_16">
+               <item row="0" column="0">
+                <widget class="QTableView" name="tblEdit">
+                 <property name="minimumSize">
+                  <size>
+                   <width>400</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::SingleSelection</enum>
+                 </property>
+                 <property name="selectionBehavior">
+                  <enum>QAbstractItemView::SelectRows</enum>
+                 </property>
+                 <attribute name="horizontalHeaderStretchLastSection">
+                  <bool>true</bool>
+                 </attribute>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QGroupBox" name="groupBox_8">
+                 <property name="title">
+                  <string>Actions</string>
+                 </property>
+                 <property name="flat">
+                  <bool>true</bool>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_12">
+                  <item row="2" column="2">
+                   <widget class="QPushButton" name="btnDel">
+                    <property name="maximumSize">
+                     <size>
+                      <width>50</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../resources.qrc">
+                      <normaloff>:/plugins/stdm/images/icons/delete.png</normaloff>:/plugins/stdm/images/icons/delete.png</iconset>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="2">
+                   <widget class="QPushButton" name="btnAdd">
+                    <property name="maximumSize">
+                     <size>
+                      <width>50</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../resources.qrc">
+                      <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>20</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="2">
+                   <widget class="QPushButton" name="btnEdit">
+                    <property name="maximumSize">
+                     <size>
+                      <width>50</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../resources.qrc">
+                      <normaloff>:/plugins/stdm/images/icons/edit.png</normaloff>:/plugins/stdm/images/icons/edit.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>20</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="tab_4">
+              <attribute name="title">
+               <string>Geometry columns</string>
+              </attribute>
+              <layout class="QGridLayout" name="gridLayout_9">
+               <item row="0" column="0">
+                <widget class="QTableView" name="tblLookup_3"/>
+               </item>
+               <item row="0" column="1">
+                <widget class="QGroupBox" name="groupBox_12">
+                 <property name="title">
+                  <string>Actions</string>
+                 </property>
+                 <property name="flat">
+                  <bool>true</bool>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_17">
+                  <item row="1" column="2">
+                   <widget class="QPushButton" name="btnGeomDel">
+                    <property name="maximumSize">
+                     <size>
+                      <width>45</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../resources.qrc">
+                      <normaloff>:/plugins/stdm/images/icons/delete.png</normaloff>:/plugins/stdm/images/icons/delete.png</iconset>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="2">
+                   <widget class="QPushButton" name="btnGeomEdit">
+                    <property name="maximumSize">
+                     <size>
+                      <width>45</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../resources.qrc">
+                      <normaloff>:/plugins/stdm/images/icons/edit.png</normaloff>:/plugins/stdm/images/icons/edit.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>20</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
             </widget>
            </item>
           </layout>
          </widget>
         </item>
-        <item row="1" column="2" colspan="2">
+        <item row="1" column="1">
          <widget class="QGroupBox" name="groupBox_7">
           <property name="title">
            <string>Lookup choices</string>
@@ -635,7 +726,7 @@
            <item row="0" column="1">
             <widget class="QGroupBox" name="groupBox_2">
              <property name="title">
-              <string>Add/Remove Lookup choice</string>
+              <string>Actions</string>
              </property>
              <property name="flat">
               <bool>true</bool>
@@ -656,7 +747,7 @@
                  </size>
                 </property>
                 <property name="text">
-                 <string>Add</string>
+                 <string/>
                 </property>
                 <property name="icon">
                  <iconset resource="../resources.qrc">
@@ -679,7 +770,7 @@
                  </size>
                 </property>
                 <property name="text">
-                 <string>Del</string>
+                 <string/>
                 </property>
                 <property name="icon">
                  <iconset resource="../resources.qrc">
@@ -707,14 +798,55 @@
           </layout>
          </widget>
         </item>
-        <item row="1" column="0" colspan="2">
-         <widget class="QGroupBox" name="groupBox_5">
-          <property name="title">
-           <string>Lookups tables</string>
+        <item row="0" column="0">
+         <widget class="QFrame" name="frame">
+          <property name="maximumSize">
+           <size>
+            <width>200</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_6">
+           <item row="0" column="0" colspan="2">
+            <widget class="QListView" name="lstEntity">
+             <property name="minimumSize">
+              <size>
+               <width>150</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>200</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QFrame" name="frame_5">
+          <property name="maximumSize">
+           <size>
+            <width>200</width>
+            <height>16777215</height>
+           </size>
           </property>
           <layout class="QGridLayout" name="gridLayout_7">
            <item row="0" column="0">
-            <widget class="QTreeView" name="tblLookupList"/>
+            <widget class="QTreeView" name="tblLookupList">
+             <property name="maximumSize">
+              <size>
+               <width>200</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="itemsExpandable">
+              <bool>false</bool>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -725,86 +857,15 @@
        <attribute name="title">
         <string>Table relation and constraint</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout_18">
-        <item row="0" column="1">
-         <widget class="QGroupBox" name="groupBox_10">
-          <property name="title">
-           <string>Relations</string>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_14">
-           <item row="0" column="0">
-            <widget class="QTableView" name="tblEdit_2">
-             <property name="minimumSize">
-              <size>
-               <width>500</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="selectionMode">
-              <enum>QAbstractItemView::SingleSelection</enum>
-             </property>
-             <property name="selectionBehavior">
-              <enum>QAbstractItemView::SelectRows</enum>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QGroupBox" name="groupBox_13">
-             <property name="title">
-              <string>Relation</string>
-             </property>
-             <property name="flat">
-              <bool>true</bool>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_19">
-              <item row="1" column="2">
-               <widget class="QPushButton" name="btnPropDel">
-                <property name="maximumSize">
-                 <size>
-                  <width>50</width>
-                  <height>40</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>Del</string>
-                </property>
-                <property name="icon">
-                 <iconset>
-                  <normaloff>:/plugins/stdm/images/delete2.png</normaloff>:/plugins/stdm/images/delete2.png</iconset>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <widget class="QPushButton" name="btnProperty">
-                <property name="maximumSize">
-                 <size>
-                  <width>50</width>
-                  <height>40</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>Add</string>
-                </property>
-                <property name="icon">
-                 <iconset>
-                  <normaloff>:/plugins/stdm/images/editor.png</normaloff>:/plugins/stdm/images/editor.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>20</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
+       <layout class="QGridLayout" name="gridLayout">
         <item row="0" column="0">
          <widget class="QGroupBox" name="groupBox_9">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>1000</height>
+           </size>
+          </property>
           <property name="title">
            <string>Table/ Entity </string>
           </property>
@@ -828,26 +889,29 @@
           </layout>
          </widget>
         </item>
-        <item row="1" column="0" rowspan="2" colspan="2">
-         <widget class="QGroupBox" name="groupBox_11">
-          <property name="title">
-           <string>Geometry Columns</string>
+        <item row="0" column="1">
+         <widget class="QGroupBox" name="groupBox_10">
+          <property name="minimumSize">
+           <size>
+            <width>550</width>
+            <height>0</height>
+           </size>
           </property>
-          <layout class="QGridLayout" name="gridLayout">
+          <property name="title">
+           <string>Relations</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_14">
            <item row="1" column="0">
-            <widget class="QTableView" name="tblLookup_2"/>
-           </item>
-           <item row="1" column="1">
-            <widget class="QGroupBox" name="groupBox_12">
+            <widget class="QGroupBox" name="groupBox_13">
              <property name="title">
-              <string>Geometry</string>
+              <string>Actions</string>
              </property>
              <property name="flat">
               <bool>true</bool>
              </property>
-             <layout class="QGridLayout" name="gridLayout_17">
-              <item row="1" column="2">
-               <widget class="QPushButton" name="btnGeomDel">
+             <layout class="QGridLayout" name="gridLayout_19">
+              <item row="0" column="4">
+               <widget class="QPushButton" name="btnPropDel">
                 <property name="maximumSize">
                  <size>
                   <width>50</width>
@@ -855,16 +919,16 @@
                  </size>
                 </property>
                 <property name="text">
-                 <string>Del</string>
+                 <string/>
                 </property>
                 <property name="icon">
-                 <iconset>
-                  <normaloff>:/plugins/stdm/images/delete2.png</normaloff>:/plugins/stdm/images/delete2.png</iconset>
+                 <iconset resource="../resources.qrc">
+                  <normaloff>:/plugins/stdm/images/icons/delete.png</normaloff>:/plugins/stdm/images/icons/delete.png</iconset>
                 </property>
                </widget>
               </item>
               <item row="0" column="2">
-               <widget class="QPushButton" name="btnGeomEdit">
+               <widget class="QPushButton" name="btnProperty">
                 <property name="maximumSize">
                  <size>
                   <width>50</width>
@@ -872,11 +936,11 @@
                  </size>
                 </property>
                 <property name="text">
-                 <string>Edit</string>
+                 <string/>
                 </property>
                 <property name="icon">
-                 <iconset>
-                  <normaloff>:/plugins/stdm/images/editor.png</normaloff>:/plugins/stdm/images/editor.png</iconset>
+                 <iconset resource="../resources.qrc">
+                  <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -886,7 +950,40 @@
                 </property>
                </widget>
               </item>
+              <item row="0" column="3">
+               <widget class="QPushButton" name="pushButton">
+                <property name="maximumSize">
+                 <size>
+                  <width>45</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="../resources.qrc">
+                  <normaloff>:/plugins/stdm/images/icons/edit.png</normaloff>:/plugins/stdm/images/icons/edit.png</iconset>
+                </property>
+               </widget>
+              </item>
              </layout>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QTableView" name="tblEdit_2">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="selectionMode">
+              <enum>QAbstractItemView::SingleSelection</enum>
+             </property>
+             <property name="selectionBehavior">
+              <enum>QAbstractItemView::SelectRows</enum>
+             </property>
             </widget>
            </item>
           </layout>
@@ -916,11 +1013,14 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>794</width>
-         <height>464</height>
+         <width>831</width>
+         <height>479</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout_21">
+        <item row="1" column="0">
+         <widget class="QTextEdit" name="txtHtml"/>
+        </item>
         <item row="0" column="0">
          <widget class="QFrame" name="frame">
           <property name="maximumSize">
@@ -950,7 +1050,7 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="2">
+           <item row="1" column="3">
             <widget class="QPushButton" name="btnSQL">
              <property name="maximumSize">
               <size>
@@ -981,24 +1081,15 @@
              </property>
             </widget>
            </item>
+           <item row="1" column="2">
+            <widget class="QRadioButton" name="rbSkip">
+             <property name="text">
+              <string>Skip changes to database</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QPushButton" name="btnRunSchema">
-          <property name="maximumSize">
-           <size>
-            <width>150</width>
-            <height>50</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Save</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QTextEdit" name="txtHtml"/>
         </item>
        </layout>
       </widget>
@@ -1009,6 +1100,7 @@
  </widget>
  <resources>
   <include location="../resources.qrc"/>
+  <include location="../../../../../../../../Users/njogus/.designer/resources.qrc"/>
  </resources>
  <connections/>
 </ui>
