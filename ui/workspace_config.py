@@ -89,7 +89,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.helpRequested.connect(self.HelpContents)
         self.rbSchema.clicked.connect(self.setSqlIsertDefinition)
         self.rbSchemaNew.clicked.connect(self.setSqlIsertDefinition)
-        self.chkPdefault.clicked.connect(self.setDefualtProfile)
+        #self.chkPdefault.clicked.connect(self.setDefualtProfile)
 
         try:
             settings = self.tableHandler.pathSettings()
@@ -106,7 +106,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         pgCount.registerField("Accept",self.rbAccpt)
         pgCount.registerField("Reject",self.rbReject)
         pgCount2=self.page(4)
-        pgCount2.registerField("SelectionMenu",self.toolbtn)
+        #pgCount2.registerField("SelectionMenu",self.toolbtn)
 
 
     def validateCurrentPage (self):
@@ -145,7 +145,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             self.pathSettings()
             self.profileContent()
         if self.currentId()==4:
-            self.toolbtn.setPopupMode(QToolButton.InstantPopup)
+            #self.toolbtn.setPopupMode(QToolButton.InstantPopup)
             self.registerProfileSettings()
             self.readUserTable()
             try:
@@ -609,7 +609,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def popup(self,QAction):
         #A shortcut menu to allow the user to customize table details on the forms page
         menu=QMenu()
-        self.toolbtn.setMenu(menu)
+        #self.toolbtn.setMenu(menu)
         self.addAction = menu.addAction(QApplication.translate("WorkspaceLoader","Add Table"))
         menu.addSeparator()
         self.editAction = menu.addAction(QApplication.translate("WorkspaceLoader","Rename Table"))

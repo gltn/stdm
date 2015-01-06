@@ -172,6 +172,10 @@
             <property name="text">
              <string>Change</string>
             </property>
+            <property name="icon">
+             <iconset resource="../resources.qrc">
+              <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
+            </property>
            </widget>
           </item>
           <item row="1" column="0">
@@ -191,6 +195,10 @@
            <widget class="QPushButton" name="btnBrowse2_2">
             <property name="text">
              <string>Change</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../resources.qrc">
+              <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
             </property>
            </widget>
           </item>
@@ -212,6 +220,10 @@
            <widget class="QPushButton" name="btnBrowse2">
             <property name="text">
              <string>Change</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../resources.qrc">
+              <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
             </property>
            </widget>
           </item>
@@ -244,6 +256,10 @@
             <property name="text">
              <string>Change</string>
             </property>
+            <property name="icon">
+             <iconset resource="../resources.qrc">
+              <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
+            </property>
            </widget>
           </item>
          </layout>
@@ -264,6 +280,9 @@
    <layout class="QGridLayout" name="gridLayout_26">
     <item row="3" column="0">
      <widget class="QLabel" name="lblTDescription">
+      <property name="styleSheet">
+       <string notr="true">color: rgb(0, 85, 0);</string>
+      </property>
       <property name="text">
        <string>Table Description</string>
       </property>
@@ -275,65 +294,6 @@
        <string>Profiles</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_28">
-       <item row="2" column="1">
-        <widget class="QWidget" name="widget" native="true">
-         <layout class="QGridLayout" name="gridLayout_24">
-          <item row="1" column="1">
-           <widget class="QPushButton" name="btnPDelete">
-            <property name="minimumSize">
-             <size>
-              <width>25</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>150</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Delete Selected </string>
-            </property>
-            <property name="icon">
-             <iconset>
-              <normaloff>:/plugins/stdm/images/delete2.png</normaloff>:/plugins/stdm/images/delete2.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1" colspan="3">
-           <widget class="QLabel" name="lblDescprition">
-            <property name="text">
-             <string>Profile description</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <widget class="QPushButton" name="btnNewP">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>150</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>New Profile</string>
-            </property>
-            <property name="icon">
-             <iconset>
-              <normaloff>:/plugins/stdm/images/icons/icon_info.png</normaloff>:/plugins/stdm/images/icons/icon_info.png</iconset>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
        <item row="0" column="0">
         <widget class="QLabel" name="label">
          <property name="text">
@@ -351,11 +311,66 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
-        <widget class="QCheckBox" name="chkPdefault">
-         <property name="text">
-          <string>Set as default profile</string>
-         </property>
+       <item row="2" column="1">
+        <widget class="QWidget" name="widget" native="true">
+         <layout class="QGridLayout" name="gridLayout_24">
+          <item row="0" column="1" colspan="3">
+           <widget class="QLabel" name="lblDescprition">
+            <property name="styleSheet">
+             <string notr="true">color: rgb(0, 85, 0);</string>
+            </property>
+            <property name="text">
+             <string>Profile description</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="4">
+           <widget class="QPushButton" name="btnPDelete">
+            <property name="minimumSize">
+             <size>
+              <width>25</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>150</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Delete Selected </string>
+            </property>
+            <property name="icon">
+             <iconset resource="../resources.qrc">
+              <normaloff>:/plugins/stdm/images/icons/remove.png</normaloff>:/plugins/stdm/images/icons/remove.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPushButton" name="btnNewP">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>150</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>New Profile</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../resources.qrc">
+              <normaloff>:/plugins/stdm/images/icons/property_manager.png</normaloff>:/plugins/stdm/images/icons/property_manager.png</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
@@ -385,7 +400,7 @@
           </size>
          </property>
          <property name="title">
-          <string>Module</string>
+          <string>Actions</string>
          </property>
          <property name="flat">
           <bool>true</bool>
@@ -409,8 +424,8 @@
              <string>Edit</string>
             </property>
             <property name="icon">
-             <iconset>
-              <normaloff>:/plugins/stdm/images/tools.png</normaloff>:/plugins/stdm/images/tools.png</iconset>
+             <iconset resource="../resources.qrc">
+              <normaloff>:/plugins/stdm/images/icons/edit.png</normaloff>:/plugins/stdm/images/icons/edit.png</iconset>
             </property>
            </widget>
           </item>
@@ -432,8 +447,8 @@
              <string>Add</string>
             </property>
             <property name="icon">
-             <iconset>
-              <normaloff>:/plugins/stdm/images/editor.png</normaloff>:/plugins/stdm/images/editor.png</iconset>
+             <iconset resource="../resources.qrc">
+              <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
             </property>
            </widget>
           </item>
@@ -455,8 +470,8 @@
              <string>Remove</string>
             </property>
             <property name="icon">
-             <iconset>
-              <normaloff>:/plugins/stdm/images/delete2.png</normaloff>:/plugins/stdm/images/delete2.png</iconset>
+             <iconset resource="../resources.qrc">
+              <normaloff>:/plugins/stdm/images/icons/delete.png</normaloff>:/plugins/stdm/images/icons/delete.png</iconset>
             </property>
            </widget>
           </item>
@@ -492,25 +507,6 @@
            <string>Table/ Entity </string>
           </property>
           <layout class="QGridLayout" name="gridLayout_6">
-           <item row="1" column="1">
-            <widget class="QToolButton" name="toolbtn">
-             <property name="minimumSize">
-              <size>
-               <width>70</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>Options</string>
-             </property>
-             <property name="popupMode">
-              <enum>QToolButton::MenuButtonPopup</enum>
-             </property>
-             <property name="autoRaise">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
            <item row="0" column="0" colspan="2">
             <widget class="QListView" name="lstEntity">
              <property name="minimumSize">
@@ -573,8 +569,8 @@
                  <string>Del</string>
                 </property>
                 <property name="icon">
-                 <iconset>
-                  <normaloff>:/plugins/stdm/images/delete2.png</normaloff>:/plugins/stdm/images/delete2.png</iconset>
+                 <iconset resource="../resources.qrc">
+                  <normaloff>:/plugins/stdm/images/icons/delete.png</normaloff>:/plugins/stdm/images/icons/delete.png</iconset>
                 </property>
                </widget>
               </item>
@@ -590,8 +586,8 @@
                  <string>Add</string>
                 </property>
                 <property name="icon">
-                 <iconset>
-                  <normaloff>:/plugins/stdm/images/editor.png</normaloff>:/plugins/stdm/images/editor.png</iconset>
+                 <iconset resource="../resources.qrc">
+                  <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -613,8 +609,8 @@
                  <string>Edit</string>
                 </property>
                 <property name="icon">
-                 <iconset>
-                  <normaloff>:/plugins/stdm/images/tools.png</normaloff>:/plugins/stdm/images/tools.png</iconset>
+                 <iconset resource="../resources.qrc">
+                  <normaloff>:/plugins/stdm/images/icons/edit.png</normaloff>:/plugins/stdm/images/icons/edit.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -663,8 +659,8 @@
                  <string>Add</string>
                 </property>
                 <property name="icon">
-                 <iconset>
-                  <normaloff>:/plugins/stdm/images/editor.png</normaloff>:/plugins/stdm/images/editor.png</iconset>
+                 <iconset resource="../resources.qrc">
+                  <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
                 </property>
                </widget>
               </item>
@@ -686,8 +682,8 @@
                  <string>Del</string>
                 </property>
                 <property name="icon">
-                 <iconset>
-                  <normaloff>:/plugins/stdm/images/delete2.png</normaloff>:/plugins/stdm/images/delete2.png</iconset>
+                 <iconset resource="../resources.qrc">
+                  <normaloff>:/plugins/stdm/images/icons/delete.png</normaloff>:/plugins/stdm/images/icons/delete.png</iconset>
                 </property>
                </widget>
               </item>
@@ -920,8 +916,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>507</width>
-         <height>165</height>
+         <width>794</width>
+         <height>464</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout_21">
