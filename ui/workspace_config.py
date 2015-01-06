@@ -74,7 +74,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.btnBrowse2.clicked.connect(self.setCertificatePath)
         self.btnTemplates.clicked.connect(self.setTemplatesPath)
         self.btnBrowse2_2.clicked.connect(self.settingsPath)
-        self.btnRunSchema.clicked.connect(self.setDatabaseSchema)
+        #self.btnRunSchema.clicked.connect(self.setDatabaseSchema)
         self.cboProfile.currentIndexChanged.connect(self.selectionChanged)
         self.btnNew.clicked.connect(self.setTableName)
         self.btnNew_2.clicked.connect(self.editTableName)
@@ -129,19 +129,24 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                                         "You have not selected any default profile for your configuration. \n "\
                                 "The current profile will be used as default instead"))==QMessageBox.No:
                     validPage=False
+        if self.currentId() == 5:
+            if self.setDatabaseSchema() == 'success' or self.rbSkip.isChecked():
+                validPage = True
+
+            else:
+                validPage = False
+
         return validPage
                     
     
     def initializePage(self, int):
         if self.currentId()==1:
-
-
             self.licenseFile()
             
         if self.currentId()==2:
             self.configPath()
+
         if self.currentId()==3:
-            
             self.pathSettings()
             self.profileContent()
         if self.currentId()==4:
@@ -149,19 +154,21 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             self.registerProfileSettings()
             self.readUserTable()
             try:
-                self.loadTableColumns()
-            except:
-                pass
+                if self.tableName:
+                    self.loadTableColumns(self.tableName)
+            except Exception as ex:
+                self.ErrorInfoMessage(ex.message)
+
         if self.currentId()==5:
             self.txtHtml.hide()
             self.rbSchema.setChecked(True)
-            #try:
             self.setSqlIsertDefinition()
-            #except:
-            #     pass
-#         if self.currentId()==6:
-#             self.setSummaryView()
-#             
+
+        if self.currentId()==6:
+            try:
+                 self.setDatabaseSchema()
+            except:
+                return
     
     def checkTablesExist(self,activeProfile):
         '''Method to check if the right config exist in the directory and then return the table names'''
@@ -556,19 +563,23 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             
     def setDatabaseSchema(self):    
         '''run generated SQL to the database'''
-        if self.rbSchemaNew.isChecked():
+        valid = 'success'
+        if self.rbSkip.isChecked():
+            pass
+        else:
             self.DropSchemaTables()
-        fileName=self.SQLFileView() 
-        try:
-            with open(fileName,'r')as f:
-                sqlSt=text(f.read())
-                roleP=RoleProvider()
-                roleP._execute(sqlSt)
-                self.assignRoles()
-                self.InfoMessage("Changes successfully saved in the STDM database")
-                self.tableHandler.trackXMLChanges()
-        except SQLAlchemyError as ex:
-            return self.ErrorInfoMessage(str(ex.message))
+            fileName = self.SQLFileView()
+            try:
+                with open(fileName,'r')as f:
+                    sqlSt=text(f.read())
+                    roleP=RoleProvider()
+                    roleP._execute(sqlSt)
+                    self.assignRoles()
+                    self.InfoMessage("Changes successfully saved in the STDM database")
+                    self.tableHandler.trackXMLChanges()
+                    return valid
+            except SQLAlchemyError as ex:
+                return self.ErrorInfoMessage(str(ex.message))
     
     def assignRoles(self):
         if self.rbSchemaNew.isChecked():
@@ -581,23 +592,23 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def DropSchemaTables(self):
         '''Check if table is already defined in pgtables and drop it'''
         if self.rbSchemaNew.isChecked():
-            self.tableList=self.tableHandler.fulltableList()
-        if self.rbSchema.isChecked():
-            self.tableList=self.tableHandler.tableNames(self.profile)
-        try:
-            for table in self.tableList:
-                sqlSt=text("drop table if exists " +table+ " cascade;")
-                _execute(sqlSt)
-        except SQLAlchemyError as ex:
-            return self.ErrorInfoMessage(str(ex.message))
+            self.tableList = self.tableHandler.fulltableList()
+            try:
+                for table in self.tableList:
+                    sqlSt = text("drop table if exists " +table+ " cascade;")
+                    _execute(sqlSt)
+            except SQLAlchemyError as ex:
+                return self.ErrorInfoMessage(str(ex.message))
+        else:
+            pass
     
     def updateSQLFile(self):
         '''Method to record and save changes whenever the document's content changes'''
-        fileName=self.SQLFileView() 
+        fileName = self.SQLFileView()
         if str(fileName).endswith(".sql"):
-            doc=self.txtHtml.document()
-            docText=str(doc.toPlainText())
-            if docText!="":
+            doc = self.txtHtml.document()
+            docText = str(doc.toPlainText())
+            if docText != "":
                 try:
                     with open(fileName,'w')as f:
                         f.write(docText)
@@ -606,7 +617,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                     self.ErrorInfoMessage(io.message)
             else:return
          
-    def popup(self,QAction):
+    def popup(self, QAction):
         #A shortcut menu to allow the user to customize table details on the forms page
         menu=QMenu()
         #self.toolbtn.setMenu(menu)
