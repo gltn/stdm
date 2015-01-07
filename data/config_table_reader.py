@@ -52,7 +52,7 @@ class ConfigTableReader(object):
             rowData= [row.values() for row in table_desc]
 
             table_desc_model = EntityColumnModel(headers, rowData)
-        return table_desc_model
+            return table_desc_model
     
     def tableNames(self,profile):
         tData=XMLTableElement(profile)
