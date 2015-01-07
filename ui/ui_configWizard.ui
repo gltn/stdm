@@ -547,7 +547,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>1</number>
+              <number>0</number>
              </property>
              <widget class="QWidget" name="tab_3">
               <attribute name="title">
@@ -1100,7 +1100,7 @@
  </widget>
  <resources>
   <include location="../resources.qrc"/>
-  <include location="../../../../../../../../Users/njogus/.designer/resources.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections/>
 </ui>
