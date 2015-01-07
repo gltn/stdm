@@ -656,7 +656,7 @@
               </attribute>
               <layout class="QGridLayout" name="gridLayout_9">
                <item row="0" column="0">
-                <widget class="QTableView" name="tblLookup_3"/>
+                <widget class="QTableView" name="tblLookup_2"/>
                </item>
                <item row="0" column="1">
                 <widget class="QGroupBox" name="groupBox_12">
