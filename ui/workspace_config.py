@@ -242,6 +242,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.loadTableRelations(tableName)
         self.tblEdit.resizeColumnsToContents()
         self.tblEdit.setColumnWidth(4,100)
+        self.showGeometryColumns(tableName)
     
     def loadTableRelations(self, tableName):
         '''Method to load defined relations for the given table from the config'''
@@ -267,7 +268,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         selectIndex=self.lstEntity_2.selectedIndexes()
         if len(selectIndex)>0:
             tabName=selectIndex[0]
-            self.showGeometryColumns(tabName.data())
+
             self.loadTableRelations(tabName.data())
             self.tableName=tabName.data()
         
