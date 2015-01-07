@@ -147,13 +147,22 @@ def editTableColumn(profile,tableName, key, value, newValue, type, size, desc):
                         col.set('fullname', desc)
     tree.write(xml_doc, xml_declaration=True, encoding='utf-8')
 
-def renameTable(profile,oldName, newName):
+def renameTable(profile,oldName, newName, desc):
     tree, root=parseRootElement()
     filter=(".//*[@name='%s']/table")%profile
     for elem in root.findall(filter):
         if elem.get('name')==oldName:
             elem.set('name',newName)
+            if desc != None:
+                elem.set('fullname',desc)
+        cntGroup = elem.find('contentgroups')
+        if cntGroup:
+            if cntGroup.get('name')== oldName:
+                cntGroup.set('name', newName)
+                if desc != None:
+                    cntGroup.set('fullname',desc)
     tree.write(xml_doc,xml_declaration=True, encoding='utf-8')
+
 
 def deleteTable(level,tableName):
     tree, root=parseRootElement()

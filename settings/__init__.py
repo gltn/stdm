@@ -11,4 +11,5 @@ from .registryconfig import (
                             )
 
 from .tools_network import getProxy
+from .path_settings import  dataIcon
 

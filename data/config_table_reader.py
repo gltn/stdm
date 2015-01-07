@@ -21,7 +21,8 @@
 """
 from stdm.data import XMLTableElement, tableColumns, tableRelations,lookupTable,lookupColumn,profiles,\
 tableLookUpCollection,lookupData,lookupData2List,geometryColumns,writeSQLFile, writeHTML,setLookupValue,updateSQL,\
-listEntityViewer, EntityColumnModel,FilePaths
+listEntityViewer, EntityColumnModel,FilePaths,tableFullDescription
+from stdm.settings import dataIcon
 
 
 from stdm.settings import RegistryConfig, PATHKEYS
@@ -43,6 +44,15 @@ class ConfigTableReader(object):
             return model
         else:
             return None
+
+    def profile_tables(self, profile):
+        table_desc = tableFullDescription(profile)
+        if table_desc:
+            headers= table_desc[0].keys()
+            rowData= [row.values() for row in table_desc]
+
+            table_desc_model = EntityColumnModel(headers, rowData)
+        return table_desc_model
     
     def tableNames(self,profile):
         tData=XMLTableElement(profile)
@@ -73,7 +83,8 @@ class ConfigTableReader(object):
         tableAttrib=lookupColumn(lookupName)
         if len(tableAttrib)>0:
             colHeaders=tableAttrib[0].keys()
-            colVals=[]
+            colVals= []
+           # [item.values for item in tableAttrib]
             for item in tableAttrib:
                 colVals.append(item.values())
             columnModel=EntityColumnModel(colHeaders,colVals)
@@ -138,7 +149,7 @@ class ConfigTableReader(object):
 
     def updateDir(self, path):
         return  self.fileHandler.userConfigPath(path)
-        
+
     def saveXMLchanges(self):
         writeSQLFile()
         writeHTML()
@@ -177,7 +188,8 @@ class ConfigTableReader(object):
             lookupList=lookupData(table)
         except:
             pass
-        return lookupList
+        lookupModel = listEntityViewer(lookupList, icon=dataIcon)
+        return lookupModel
         
     def setDocumentationPath(self):
         '''get the help contents available to user'''

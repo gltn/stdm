@@ -43,11 +43,11 @@ class TableEditor(QDialog, Ui_table):
     def initGui(self):
         if self.state==QApplication.translate("TableEditor","Edit Table"):
             self.groupBox.setTitle(self.state +" "+ self.table)
-        if self.state==QApplication.translate("TableEditor","Add Lookup"):
+        elif self.state==QApplication.translate("TableEditor","Add Lookup"):
             self.groupBox.setTitle(self.state + " Note: lookup tables must begin with 'check_' followed by 'table name'")
             self.chkDefault.setVisible(False)
         else:
-            self.groupBox.setTitle(self.state)
+            #self.groupBox.setTitle(self.state)
             self.chkDefault.setChecked(True)
         self.widget.hide()
        
@@ -100,8 +100,13 @@ class TableEditor(QDialog, Ui_table):
         self.dataColumnForLookup('lookup')
     
     def updateTableName(self):
+        """Update the table name and its description """
         tableName = self.setTableName(self.txtTable.text())
-        renameTable(self.profile,self.table,tableName)
+        if self.txtDesc.text() !='':
+            tableDesc = self.txtDesc.text()
+        else:
+            tableDesc = None
+        renameTable(self.profile,self.table,tableName,tableDesc)
     
     def inheritsColumns(self):
         sourceTable = self.cboInheritTable.currentText()
