@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_configWizard.ui'
 #
-# Created: Tue Jan 06 16:16:02 2015
+# Created: Tue Jan 06 20:37:45 2015
 #      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -307,9 +307,9 @@ class Ui_STDMWizard(object):
         self.tab_4.setObjectName(_fromUtf8("tab_4"))
         self.gridLayout_9 = QtGui.QGridLayout(self.tab_4)
         self.gridLayout_9.setObjectName(_fromUtf8("gridLayout_9"))
-        self.tblLookup_3 = QtGui.QTableView(self.tab_4)
-        self.tblLookup_3.setObjectName(_fromUtf8("tblLookup_3"))
-        self.gridLayout_9.addWidget(self.tblLookup_3, 0, 0, 1, 1)
+        self.tblLookup_2 = QtGui.QTableView(self.tab_4)
+        self.tblLookup_2.setObjectName(_fromUtf8("tblLookup_2"))
+        self.gridLayout_9.addWidget(self.tblLookup_2, 0, 0, 1, 1)
         self.groupBox_12 = QtGui.QGroupBox(self.tab_4)
         self.groupBox_12.setFlat(True)
         self.groupBox_12.setObjectName(_fromUtf8("groupBox_12"))
@@ -489,7 +489,7 @@ class Ui_STDMWizard(object):
 
         self.retranslateUi(STDMWizard)
         self.tabWidget.setCurrentIndex(0)
-        self.tabWidget_2.setCurrentIndex(1)
+        self.tabWidget_2.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(STDMWizard)
 
     def retranslateUi(self, STDMWizard):

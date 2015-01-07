@@ -547,7 +547,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>1</number>
+              <number>0</number>
              </property>
              <widget class="QWidget" name="tab_3">
               <attribute name="title">
@@ -656,7 +656,7 @@
               </attribute>
               <layout class="QGridLayout" name="gridLayout_9">
                <item row="0" column="0">
-                <widget class="QTableView" name="tblLookup_3"/>
+                <widget class="QTableView" name="tblLookup_2"/>
                </item>
                <item row="0" column="1">
                 <widget class="QGroupBox" name="groupBox_12">
@@ -1100,7 +1100,7 @@
  </widget>
  <resources>
   <include location="../resources.qrc"/>
-  <include location="../../../../../../../../Users/njogus/.designer/resources.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections/>
 </ui>
