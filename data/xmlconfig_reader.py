@@ -73,12 +73,16 @@ def profileFullDescription(profile):
         if elem.get('name')==profile:
             return elem.get('fullname')
 
-def tableFullDescription(profile,tableName):
+def tableFullDescription(profile):
     tree,root=parseRootElement()
+    tablDesc= []
     filter=(".//*[@name='%s']/table")%profile
     for elem in root.findall(filter):
-        if elem.get('name')==tableName:
-            return elem.get('fullname')
+        ordDict = OrderedDict()
+        ordDict["Table Name"] = elem.get('name')
+        ordDict["Description"]= elem.get('fullname')
+        tablDesc.append(ordDict)
+    return tablDesc
 
 def tableColumns(profile,tableName):
     #scan the xml file and return all the table defined columns information

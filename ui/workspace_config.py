@@ -58,7 +58,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.setWindowFlags(Qt.Dialog| Qt.WindowMaximizeButtonHint|Qt.WindowCloseButtonHint)
         
         QObject.connect(self.lstEntity,SIGNAL('clicked(QModelIndex)'),self.seletedTableAttrib)
-        QObject.connect(self.listWidget,SIGNAL('clicked(QModelIndex)'),self.selectedTableName)
+        QObject.connect(self.pftableView,SIGNAL('clicked(QModelIndex)'),self.selectedTableName)
         QObject.connect(self.lstEntity_2,SIGNAL('clicked(QModelIndex)'),self.relationForTable)       
         QObject.connect(self.tblEdit, SIGNAL('clicked(QModelIndex)'), self.selectedColumnIndex)
         QObject.connect(self.tblEdit_2, SIGNAL('clicked(QModelIndex)'), self.selectedColumnIndex)
@@ -158,6 +158,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                     self.loadTableColumns(self.tableName)
             except Exception as ex:
                 self.ErrorInfoMessage(ex.message)
+            self.tblLookup.setAlternatingRowColors(True)
 
         if self.currentId()==5:
             self.txtHtml.hide()
@@ -196,8 +197,10 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         
     def loadTableData(self,profile,widget):
         '''method returns the model to the passed listview widget'''
-        model=self.tableHandler.tableListModel(self.profile) 
+        model=self.tableHandler.profile_tables(profile)
+        #QMessageBox.information(self,"Test",str(type))
         widget.setModel(model)
+        widget.resizeColumnToContents(0)
         #return widget    
     
     def profileContent(self):
@@ -207,7 +210,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.cboProfile.clear()
         self.cboProfile.insertItems(0,profiles)
         self.cboProfile.setCurrentIndex(0)
-        self.loadTableData(self.profile, self.listWidget)
+        self.loadTableData(self.profile, self.pftableView)
         
     def setDefualtProfile(self):
         '''
@@ -222,7 +225,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         '''Listen to user selection for the profile to load the corresponding table'''
         self.tableName=None
         self.profile=str(self.cboProfile.currentText())
-        self.loadTableData(self.profile, self.listWidget)
+        self.loadTableData(self.profile, self.pftableView)
         self.registerProfileSettings()
         self.lblDescprition.setText(profileFullDescription(self.profile))
         
@@ -290,19 +293,15 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
            
     def selectedTableName(self):
         '''Modify table data including table name'''
-        selectIndex=self.listWidget.selectionModel().selectedIndexes()
+        selectIndex=self.pftableView.selectionModel().selectedIndexes()
         if len(selectIndex)>0:
             tabName=selectIndex[0]
             self.loadTableColumns(tabName.data())
             self.tableName=tabName.data()
-            self.descriptionForTable(self.tableName)
+
         else:
             return None
-        
-    def descriptionForTable(self,table):
-        '''show table description based on the selected table'''
-        self.lblTDescription.setText(tableFullDescription(self.profile,table))
-        
+
     def addTableColumn(self):
         '''add new attribute for the table'''
         if self.tableName!=None:
@@ -352,10 +351,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         else:
             return
     def lookupColumns(self):
-        tableName=''
-        itemHeader=QTableWidgetItem("Lookup Values")
-        self.tblLookup.setColumnCount(1)
-        self.tblLookup.setHorizontalHeaderItem(0,itemHeader)
+
         selCols=self.tblLookupList.selectionModel().selectedIndexes() 
         if len(selCols)>0:
             tableName=selCols[0].data()    
@@ -381,7 +377,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def setTableName(self):
         actionState=[self.profile,QApplication.translate("WorkspaceLoader","Add Table")]
         self.addTable(actionState)
-        self.loadTableData(self.profile, self.listWidget)
+        self.loadTableData(self.profile, self.pftableView)
         
     def editTableName(self):
         if self.tableName==None:
@@ -389,7 +385,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             return
         actionState=[self.profile,QApplication.translate("WorkspaceLoader","Edit Table")]
         self.addTable(actionState) 
-        self.loadTableData(self.profile, self.listWidget)
+        self.loadTableData(self.profile, self.pftableView)
         
     def addTable(self,actionState):
         '''add new table'''
@@ -409,9 +405,12 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             self.ErrorInfoMessage(QApplication.translate('WorkspaceLoader',"No table is selected for this operation"))
             return
         else:
-            deleteTable(self.profile,self.tableName)
-            self.loadTableData(self.profile, self.listWidget)
-            self.tableName=None
+            if self.warningInfo(QApplication.translate("WorkspaceLoader","You are about to delete %s table" %self.tableName))==QMessageBox.Yes:
+                deleteTable(self.profile,self.tableName)
+                self.loadTableData(self.profile, self.pftableView)
+                self.tableName=None
+            else:
+                return
     
     def deleteProfile(self):
         if self.cboProfile.currentIndex==-1:
@@ -463,8 +462,10 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         
     def deleteLookupChoice(self): 
         '''remove a text from the lookup choices'''
-        selItem =self.tblLookup.currentItem()
-        if selItem==None:
+        selIndx =self.tblLookup.selectionModel().selectedIndexes()
+        if selIndx:
+            selItem = selIndx[0]
+        else:
             self.ErrorInfoMessage(QApplication.translate('WorkspaceLoader',\
                                                        "No text is selected from the lookup choices"))
             return
@@ -473,10 +474,10 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                                                        "selected table is not a lookup table"))
             return
         if self.warningInfo(QApplication.translate('WorkspaceLoader',\
-                                                       "Are you sure you want to delete "+str(selItem.text())+ " choice from "+\
+                                                       "Are you sure you want to delete "+str(selItem.data())+ " choice from "+\
                                                        self.tableName))==QMessageBox.Yes:
             if str(self.tableName).startswith('check'):
-                deleteLookupChoice(self.profile,'lookup',self.tableName,'data','value',str(selItem.text()))
+                deleteLookupChoice(self.profile,'lookup',self.tableName,'data','value',str(selItem.data()))
                 self.lookupDefinedValues()
         
            
@@ -494,22 +495,15 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     
     def addLookupToWidget(self,lkText):
         '''Add lookup to config list and add it to view widget'''
-        self.tblLookup.setColumnCount(1)
         self.tableHandler.addLookupValue(self.tableName,str(lkText).capitalize())
         self.lookupDefinedValues()
                 
     def lookupDefinedValues(self):
         '''load all defined lookup choices for the selected table'''
-        lookUpList=self.tableHandler.readLookupList(self.tableName)
-        if lookUpList!=None:
-            #self.tblLookup.setHorizontalHeaderLabels(["Lookup Values"])
-            self.tblLookup.setRowCount(len(lookUpList))
-            for i in range(len(lookUpList)):
-                item=QTableWidgetItem(lookUpList[i])
-                self.tblLookup.setItem(i,0,item)
-        else:
-            self.tblLookup.clear()
-               
+        lookUpModel = self.tableHandler.readLookupList(self.tableName)
+        self.tblLookup.clearFocus()
+        self.tblLookup.setModel(lookUpModel)
+
     def schemaPreview(self):
         #Method to allow the user preview customized xml in SQL format
         if self.txtHtml.isVisible():

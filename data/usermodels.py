@@ -6,15 +6,25 @@ Created on Mar 28, 2014
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
+ALT_COLOR_EVEN = QColor(183, 100, 102)
+ALT_COLOR_ODD = QColor(135,206,255)
+
+itemIcon = QIcon(":/plugins/stdm/images/icons/table.png")
+
 class listEntityViewer(QAbstractListModel):
-    def __init__(self, list=[], parent=None):
+    def __init__(self, list=[], icon =None, parent=None):
         QAbstractListModel.__init__(self,parent)
         self.__list=list
+        self._icon = icon
      
     def headerData(self,section, orientation, role):
         if role==Qt.DisplayRole:
             if orientation==Qt.Vertical:
-                return "Entities: "
+               return  section
+            elif orientation == Qt.Horizontal:
+                return "STDM Entities"
+            else:
+                return "Entities"
         
     def rowCount(self,parent):
         return len(self.__list)
@@ -28,12 +38,21 @@ class listEntityViewer(QAbstractListModel):
             return self.__list[row]
                    
         if role==Qt.DecorationRole:
-            row=index.row()
-            value=self.__list[row]
+            if self._icon is not None:
+                return self._icon
+            else:
+                return itemIcon
         
         if role==Qt.DisplayRole:
             row=index.row()
             return self.__list[row]
+        if role == Qt.BackgroundRole:
+            if index.row() % 2 == 0:
+                #Orange
+                return ALT_COLOR_EVEN
+            else:
+                #Blue
+                return ALT_COLOR_ODD
             
     def flags(self, index):
         if not index.isValid():
@@ -76,6 +95,8 @@ class EntityColumnModel(QAbstractTableModel):
     def headerData(self,col, orientation, role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self._header[col]
+        if orientation == Qt.Vertical and role == Qt.DisplayRole:
+            return col+1
         
     def rowCount(self,parent):
         return len(self._data) 
@@ -95,8 +116,16 @@ class EntityColumnModel(QAbstractTableModel):
               
         if role==Qt.DecorationRole:
             return self._data[index.row()][index.column()]
-        if role==Qt.DisplayRole: 
+
+        if role==Qt.DisplayRole:
             return self._data[index.row()][index.column()]
+        if role == Qt.BackgroundRole:
+            if index.row() % 2 == 0:
+                #Orange
+                return ALT_COLOR_EVEN
+            else:
+                #Blue
+                return ALT_COLOR_ODD
         
     def flags(self, index):
         if not index.isValid():
