@@ -104,7 +104,7 @@ class Xml2Ddl:
                 getRelationName(relation), 
                 relation.getAttribute('fk'),
                 relation.getAttribute('table'),
-                relation.getAttribute('column'), 
+                 relation.getAttribute('column'),   
                 relation.getAttribute('ondelete'),
                 relation.getAttribute('onupdate'),
                 self.ddls)

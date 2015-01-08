@@ -260,20 +260,19 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def showGeometryColumns(self,tableName):
         '''method to show defined geometry columns '''
         self.tblLookup_2.clearSpans()
-        if tableName==None:
+        if tableName == None:
             return
-        geometryModel=self.tableHandler.geometryData(tableName)
+        geometryModel = self.tableHandler.geometryData(tableName)
         self.tblLookup_2.setModel(geometryModel)
                
     def relationForTable(self):
         '''Load defined relations for the selected table'''
         self.tblEdit_2.clearSpans()
-        selectIndex=self.lstEntity_2.selectedIndexes()
+        selectIndex = self.lstEntity_2.selectedIndexes()
         if len(selectIndex)>0:
-            tabName=selectIndex[0]
-
+            tabName = selectIndex[0]
             self.loadTableRelations(tabName.data())
-            self.tableName=tabName.data()
+            self.tableName = tabName.data()
         
     def EditTableNode(self):
         '''Select table for editing and adding new attributes'''
@@ -298,7 +297,6 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             tabName=selectIndex[0]
             self.loadTableColumns(tabName.data())
             self.tableName=tabName.data()
-
         else:
             return None
 

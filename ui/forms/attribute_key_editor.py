@@ -1,9 +1,10 @@
 """
 /***************************************************************************
-Name                 : Lookup
-Description          : class for handling lookup and lookup table models for the forms
-Date                 : 24/September/2014
-copyright            : (C) 2014 by UN-Habitat and implementing partners.
+Name                 : lineEditButton
+Description          : subclasses Qline edit to support a button for browsing
+                        foreign key relations.
+Date                 : 8/January/2015
+copyright            : (C) 2015 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
 email                : stdm@unhabitat.org
  ***************************************************************************/
@@ -17,7 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import *
-
-dataIcon = QIcon(":/plugins/stdm/images/icons/column.png")
-pbIcon = QIcon(":/plugins/stdm/images/icons/search.png")
+from stdm.ui.customcontrols import LineEditButton
+class AttributeKeyEdit(LineEditButton):
+    def __init__(self, parent=None):
+        LineEditButton.__init__(self, parent)

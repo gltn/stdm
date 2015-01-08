@@ -16,16 +16,14 @@ email                : njoroge.solomon@yahoo.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from stdm.data import dateFormatter
 from datetime import date
 
+from PyQt4.QtGui import *
+from stdm.ui.customcontrols import SearchableLineEdit
+
+
 class InputWidget(QWidget):
-    def __init__(self):
-        self.type = ''
-        self.control = None
-        
+    control = None
     def Factory(self):
         pass
        
@@ -41,20 +39,18 @@ class InputWidget(QWidget):
         pass
 
 class CharacterWidget(InputWidget):
-    def __init__(self):
-        self.type="character varying"
-        
+
     def Factory(self):
-        self.control = QLineEdit()
+        self.control =SearchableLineEdit()
         return self.control
     
     def adopt(self):
+        """Set mimimum character length"""
         self.control.setMinimumWidth(50)
         self.control.setText("")
           
 class IntegerWidget(CharacterWidget):
-    def __init__(self):
-        self.type = 'integer'
+
     
     def Factory(self):
         self.control = QSpinBox()
@@ -65,8 +61,7 @@ class IntegerWidget(CharacterWidget):
         self.control.setValue(0)
 
 class DoubleWidget(IntegerWidget):
-    def __init__(self):
-        self.type = "double"
+
 
     def Factory(self):
         self.control = QDoubleSpinBox()
@@ -74,9 +69,8 @@ class DoubleWidget(IntegerWidget):
     def adopt(self):
         self.control.setValue(0)
 
-class ChoiceListWidget(CharacterWidget):
-    def __init__(self, options=None):
-        self.options = options
+class ChoiceListWidget(InputWidget):
+
 
     def Factory(self):
         self.control = QComboBox()
@@ -98,8 +92,6 @@ class ChoiceListWidget(CharacterWidget):
             self.control.setCurrentIndex(0)
 
 class TextAreaWidget(CharacterWidget):
-    def __init__(self):
-        self.type ='text'
 
     def Factory(self):
         self.control = QTextEdit()
@@ -110,8 +102,7 @@ class TextAreaWidget(CharacterWidget):
         self.control.canPaste()
 
 class BooleanWidget(CharacterWidget):
-    def __init__(self):
-        self.type = 'boolean'
+
 
     def Factory(self):
         self.control = QComboBox()
@@ -128,8 +119,7 @@ class BooleanWidget(CharacterWidget):
         self.control.setMaxVisibleItems(len(self.options))
 
 class DateWidget(InputWidget):
-    def __init__(self):
-        self.type= 'date'
+
         
     def Factory(self):
         self.control = QDateEdit()

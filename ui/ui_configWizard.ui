@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>869</width>
-    <height>595</height>
+    <width>840</width>
+    <height>591</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -976,6 +976,158 @@
     </item>
    </layout>
   </widget>
+  <widget class="QWizardPage" name="wizardPage_5">
+   <property name="title">
+    <string>Defining Social Tenure Relationship</string>
+   </property>
+   <property name="subTitle">
+    <string>Add new tenure relationship</string>
+   </property>
+   <widget class="QGroupBox" name="groupBox">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>10</y>
+      <width>781</width>
+      <height>113</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>500</width>
+      <height>0</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>16777215</width>
+      <height>120</height>
+     </size>
+    </property>
+    <property name="title">
+     <string>Entities</string>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_18">
+     <item row="0" column="5">
+      <widget class="QPushButton" name="pushButton_4">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>80</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>100</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../resources.qrc">
+         <normaloff>:/plugins/stdm/images/icons/admin_unit.png</normaloff>:/plugins/stdm/images/icons/admin_unit.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>60</width>
+         <height>54</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="pushButton_2">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>80</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>100</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../resources.qrc">
+         <normaloff>:/plugins/stdm/images/icons/people_icon.png</normaloff>:/plugins/stdm/images/icons/people_icon.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>63</width>
+         <height>54</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QPushButton" name="pushButton_3">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>80</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>100</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>../images/icons/diamond.png</normaloff>../images/icons/diamond.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>77</width>
+         <height>70</height>
+        </size>
+       </property>
+       <property name="autoDefault">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>has</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="4">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>With</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_3">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>130</y>
+      <width>781</width>
+      <height>361</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>GroupBox</string>
+    </property>
+   </widget>
+  </widget>
   <widget class="QWizardPage" name="wizardPage_4">
    <property name="title">
     <string>Update Database</string>
@@ -994,8 +1146,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>659</width>
-         <height>136</height>
+         <width>802</width>
+         <height>475</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout_21">

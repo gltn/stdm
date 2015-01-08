@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_lookup_source.ui'
 #
-# Created: Sat May 24 21:46:00 2014
-#      by: PyQt4 UI code generator 4.10.3
+# Created: Thu Jan 08 15:51:01 2015
+#      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -47,12 +47,12 @@ class Ui_Lookup(object):
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
         self.gridLayout_2 = QtGui.QGridLayout(self.groupBox)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
-        self.lstData = QtGui.QListWidget(self.groupBox)
-        self.lstData.setObjectName(_fromUtf8("lstData"))
-        self.gridLayout_2.addWidget(self.lstData, 0, 0, 1, 1)
         self.btnChoice = QtGui.QPushButton(self.groupBox)
         self.btnChoice.setObjectName(_fromUtf8("btnChoice"))
         self.gridLayout_2.addWidget(self.btnChoice, 1, 0, 1, 1)
+        self.lklstView = QtGui.QListView(self.groupBox)
+        self.lklstView.setObjectName(_fromUtf8("lklstView"))
+        self.gridLayout_2.addWidget(self.lklstView, 0, 0, 1, 1)
         self.gridLayout.addWidget(self.groupBox, 1, 0, 1, 3)
 
         self.retranslateUi(Lookup)

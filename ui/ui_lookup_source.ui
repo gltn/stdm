@@ -47,15 +47,15 @@
       <string>Lookup Table Choices</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="0">
-       <widget class="QListWidget" name="lstData"/>
-      </item>
       <item row="1" column="0">
        <widget class="QPushButton" name="btnChoice">
         <property name="text">
          <string>Add New Choice</string>
         </property>
        </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QListView" name="lklstView"/>
       </item>
      </layout>
     </widget>

@@ -1,8 +1,19 @@
 from .dirtytracker import ControlDirtyTracker,ControlDirtyTrackerCollection, \
 ControlReaderMapper
-from .valuehandlers import CheckBoxValueHandler,ControlValueHandler,LineEditValueHandler, \
-ComboBoxValueHandler,TextEditValueHandler, DateEditValueHandler, SourceDocManagerValueHandler, \
-ForeignKeyMapperValueHandler,SpinBoxValueHandler,DoubleSpinBoxValueHandler,CoordinatesWidgetValueHandler
+from .valuehandlers import (
+                CheckBoxValueHandler,
+                ControlValueHandler,
+                LineEditValueHandler,
+                ComboBoxValueHandler,
+                TextEditValueHandler,
+                DateEditValueHandler,
+                SourceDocManagerValueHandler,
+                ForeignKeyMapperValueHandler,
+                SpinBoxValueHandler,
+                DoubleSpinBoxValueHandler,
+                CoordinatesWidgetValueHandler,
+                SearchWidgetValueHandler
+)
 from .datamanagemixin import SupportsManageMixin
 
 def valueHandler(ctl):

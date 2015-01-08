@@ -37,7 +37,7 @@ class LookupModeller(object):
 
     def lookupModel(self, tName):
         """
-        ensure the lookup table is mapped to an SQLALchemy mapper entity
+        ensure the lookup table is mapped to an SQLALchemy model
         """
         lkModel = self._mapper.tableMapping(tName.lower())
         self._lookupFormatter[tName.lower()] = lkModel

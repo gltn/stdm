@@ -71,7 +71,13 @@ from .enums import (
     geometry_collections,
     RESERVED_ID
 )
-from .config_utils import tableCols,setCollectiontypes,activeProfile, UserData, tableColType
+from .config_utils import (
+                tableCols,
+                setCollectiontypes,
+                activeProfile,
+                UserData,
+                tableColType
+)
 from .license_doc import LicenseDocument
 from .template_database import DatabaseCreator
 

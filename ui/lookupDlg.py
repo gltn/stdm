@@ -56,10 +56,8 @@ class LookupDialog(QDialog, Ui_Lookup):
         '''
         show preview of defined lookup choices when the lookup table is selected
         '''
-        self.lstData.clear()
         lkChoices = self.handler.readLookupList(self.cboTable.currentText())
-        if lkChoices:
-            self.lstData.addItems(lkChoices)
+        self.lklstView.setModel(lkChoices)
     
     def currentTableChanged(self,int):
         '''Load lookup choices based on the selected lookup table'''
