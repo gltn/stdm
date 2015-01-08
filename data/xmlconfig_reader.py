@@ -79,7 +79,7 @@ def tableFullDescription(profile):
     filter=(".//*[@name='%s']/table")%profile
     for elem in root.findall(filter):
         ordDict = OrderedDict()
-        ordDict["Table Name"] = elem.get('name')
+        ordDict["Name"] = elem.get('name')
         ordDict["Description"]= elem.get('fullname')
         tablDesc.append(ordDict)
     return tablDesc
