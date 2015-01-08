@@ -24,6 +24,7 @@ from stdm.ui.sourcedocument import SourceDocumentManager
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.customcontrols import CoordinatesWidget
 from stdm.utils import setComboCurrentIndexWithItemData
+from stdm.ui.customcontrols import SearchableLineEdit
 
 class ControlValueHandler(object):
     control = None
@@ -269,6 +270,13 @@ class CoordinatesWidgetValueHandler(ControlValueHandler):
         return None
     
 CoordinatesWidgetValueHandler.register()
+
+class SearchWidgetValueHandler(LineEditValueHandler):
+    '''
+    Value handler for CoordinatesWidget.
+    '''
+    controlType = SearchableLineEdit
+SearchWidgetValueHandler.register()
 
 
 

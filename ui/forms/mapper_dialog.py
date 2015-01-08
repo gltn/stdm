@@ -19,7 +19,8 @@ email                : njoroge.solomon.com
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import MapperMixin, STDMDb
+from stdm.data import MapperMixin
+from stdm.data import STDMDb
 from stdm.ui.ui_base_form import Ui_Dialog
 from stdm.ui.notification import NotificationBar
 from .property_mapper import TypePropertyMapper
@@ -55,6 +56,7 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         else:
             self._table = model.__class__.__name__
 
+        self.frmLayout.setLabelAlignment(Qt.AlignLeft)
         self.loadMapperDialog()
 
     def loadMapperDialog(self):
@@ -62,16 +64,14 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         :return: Mapper dialog form
         """
         self.property = AttributePropretyType(self._table.lower())
-        # start form loading procedure
-        tableProperties = self.tableProperty()
-        #QMessageBox.information(None,"display Mapping",len(self.property.model.displayMapping()))
-        propertyMapper = TypePropertyMapper(tableProperties, self._table.lower())
-        widgets = propertyMapper.setProperty()
-        self.frmLayout.setLabelAlignment(Qt.AlignLeft)
+        # start loading table attribute properties
+        table_properties = self.property.attributeType()
+
+        property_mapper = TypePropertyMapper(table_properties)
+        widgets = property_mapper.setProperty()
         for attrib, widget in widgets.iteritems():
             if hasattr(self._model, attrib):
-                self.controlWidget(widget[0])
-                self.setControl(widget[1])
+                self.controlWidget(widget)
                 self.addMapping(attrib, self.control, False, attrib)
                 self.frmLayout.addRow(self.userLabel(attrib), self.control)
         self.frmLayout.setLabelAlignment(Qt.AlignJustify)
@@ -80,29 +80,20 @@ class CustomFormDialog(MapperDialog, MapperMixin):
             return attr.replace("_", " ").title()
         
     def lookupOptions(self, widget, widgetOptions):
-        try:
-            if widgetOptions:
-                widget.setOptions(widgetOptions)
-        except:
-            pass
-            #QMessageBox.information(None, 'loading lookup', str(ex.message))
+        #try:
+            widget.setOptions(widgetOptions)
+        #except Exception as ex:
+            #QMessageBox.information(self, QApplication.translate("CustomFormDialog", "Loading lookup"), str(ex.message))
 
-    def tableProperty(self):
-        """
-        loop through the config and load all the datatype
-        Associated with this table model
-        :return dict:
-        """
-        return self.property.attributeType()
-    
     def controlWidget(self, widget):
-
-        self.widgetCls = widget()
+        """
+        Add controls to the form and controls options for lookup choices
+        """
+        self.widgetCls = widget[0]()
         self.control = self.widgetCls.Factory()
-        
-    def setControl(self, widget):
-        if widget:
-            self.lookupOptions(self.widgetCls, widget)
+        QMessageBox.information(self,"Widgeet 1", str(widget[1]))
+        if widget[1]:
+            self.lookupOptions(self.widgetCls, widget[2])
         self.widgetCls.adopt()
 
     def resetSessionMapping(self):

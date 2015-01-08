@@ -16,7 +16,7 @@ email                : njoroge.solomon.com
  *                                                                         *
  ***************************************************************************/
 """
-from stdm.data import tableColType
+from stdm.data.config_utils import tableColType
 from stdm.ui.stdmdialog import DeclareMapping
 from PyQt4.QtGui import QMessageBox
 class AttributePropretyType(object):
@@ -24,7 +24,7 @@ class AttributePropretyType(object):
         self.model=model
         
     def attributeType(self):
-        #Enumerate column and datatype
+        """Enumerate column and datatype for the selected model"""
         typeMapping=tableColType(self.model)
         return typeMapping
     

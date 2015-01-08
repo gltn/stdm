@@ -42,14 +42,15 @@ class TypePropertyMapper(object):
 
     def widget(self):
         isLookup = False
+        model =None
         for attr, dataType in self._attr.iteritems():
             if dataType[1]:
                 dataType[0] = 'choice'
                 self._modeller.setLookupAttribute(dataType[0])
                 lkModel = self._modeller.lookupModel(dataType[1])
-                options = self.lookupItems(lkModel)
-                if options: isLookup = options
-            self.widgetList[attr] = [widgetCollection()[dataType[0]], isLookup]
+                model = self.lookupItems(lkModel)
+                if model: isLookup = True
+            self.widgetList[attr] = [widgetCollection()[dataType[0]], isLookup, model]
 
     def setProperty(self):
         self.widget()

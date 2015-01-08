@@ -146,7 +146,7 @@ class Ui_TableProperty(object):
         self.label_5.setText(_translate("TableProperty", "On Update action", None))
         self.label_4.setText(_translate("TableProperty", "On Delete action", None))
         self.label_2.setText(_translate("TableProperty", "Reference table", None))
-        self.label_3.setText(_translate("TableProperty", "Reference column", None))
+        self.label_3.setText(_translate("TableProperty", "Referenced column", None))
         self.label_11.setText(_translate("TableProperty", "Local Column", None))
         self.gpConstraint.setTitle(_translate("TableProperty", "Add Table Constraint", None))
         self.label_6.setText(_translate("TableProperty", "Constraint type", None))
