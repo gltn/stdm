@@ -33,7 +33,7 @@ class MapperDialog(QDialog,Ui_Dialog):
         self.setupUi(self)
 
         #MapperMixin.__init__(self, model)
-        self.setWindowTitle("STDM data entry")
+        #self.setWindowTitle("STDM data entry")
         
         self._notifBar = NotificationBar(self.vlNotification)
         self.center()
@@ -55,7 +55,7 @@ class CustomFormDialog(MapperDialog, MapperMixin):
             self._table = model.__name__
         else:
             self._table = model.__class__.__name__
-
+        self.setWindowTitle("{0} Entity Editor".format(self._table))
         self.frmLayout.setLabelAlignment(Qt.AlignLeft)
         self.loadMapperDialog()
 
@@ -69,9 +69,9 @@ class CustomFormDialog(MapperDialog, MapperMixin):
 
         property_mapper = TypePropertyMapper(table_properties)
         widgets = property_mapper.setProperty()
-        for attrib, widget in widgets.iteritems():
+        for attrib, widgetProp in widgets.iteritems():
             if hasattr(self._model, attrib):
-                self.controlWidget(widget)
+                self.controlWidget(widgetProp)
                 self.addMapping(attrib, self.control, False, attrib)
                 self.frmLayout.addRow(self.userLabel(attrib), self.control)
         self.frmLayout.setLabelAlignment(Qt.AlignJustify)
@@ -80,20 +80,19 @@ class CustomFormDialog(MapperDialog, MapperMixin):
             return attr.replace("_", " ").title()
         
     def lookupOptions(self, widget, widgetOptions):
-        #try:
+        try:
             widget.setOptions(widgetOptions)
-        #except Exception as ex:
-            #QMessageBox.information(self, QApplication.translate("CustomFormDialog", "Loading lookup"), str(ex.message))
+        except Exception as ex:
+            QMessageBox.information(self, QApplication.translate("CustomFormDialog", "Loading lookup"), str(ex.message))
 
-    def controlWidget(self, widget):
+    def controlWidget(self, prop):
         """
         Add controls to the form and controls options for lookup choices
         """
-        self.widgetCls = widget[0]()
+        self.widgetCls = prop[0]()
         self.control = self.widgetCls.Factory()
-        QMessageBox.information(self,"Widgeet 1", str(widget[1]))
-        if widget[1]:
-            self.lookupOptions(self.widgetCls, widget[2])
+        if prop[1]:
+            self.lookupOptions(self.widgetCls, prop[2])
         self.widgetCls.adopt()
 
     def resetSessionMapping(self):

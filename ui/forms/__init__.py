@@ -19,8 +19,8 @@ email                : njoroge.solomon.com
 from .attribute_datatype import AttributePropretyType
 from .mapper_dialog import CustomFormDialog
 from .widgets import (
-                    DateWidget,
-                    CharacterWidget,
+                    DateEditWidget,
+                    LineEditWidget,
                     IntegerWidget,
                     DoubleWidget,
                     ChoiceListWidget,
