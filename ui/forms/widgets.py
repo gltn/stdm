@@ -23,7 +23,8 @@ from stdm.ui.customcontrols import SearchableLineEdit
 
 
 class InputWidget(QWidget):
-    control = None
+    data_type = None
+
     def Factory(self):
         pass
        
@@ -35,13 +36,17 @@ class InputWidget(QWidget):
     
     def update(self):
         pass
+
     def type(self):
         pass
 
-class CharacterWidget(InputWidget):
+    def setOptions(self, opt=None):
+        pass
 
+class LineEditWidget(InputWidget):
+    data_type = 'string'
     def Factory(self):
-        self.control =SearchableLineEdit()
+        self.control = QLineEdit()
         return self.control
     
     def adopt(self):
@@ -49,9 +54,8 @@ class CharacterWidget(InputWidget):
         self.control.setMinimumWidth(50)
         self.control.setText("")
           
-class IntegerWidget(CharacterWidget):
-
-    
+class IntegerWidget(LineEditWidget):
+    data_type = 'integer'
     def Factory(self):
         self.control = QSpinBox()
         self.control.setMaximum(1000000000)
@@ -61,8 +65,7 @@ class IntegerWidget(CharacterWidget):
         self.control.setValue(0)
 
 class DoubleWidget(IntegerWidget):
-
-
+    data_type = 'floating'
     def Factory(self):
         self.control = QDoubleSpinBox()
 
@@ -70,15 +73,13 @@ class DoubleWidget(IntegerWidget):
         self.control.setValue(0)
 
 class ChoiceListWidget(InputWidget):
-
-
+    data_type = 'list'
     def Factory(self):
         self.control = QComboBox()
         return self.control
     
     def setOptions(self, options):
         self.options = options
-
         return self.options
 
     def adopt(self):
@@ -91,8 +92,8 @@ class ChoiceListWidget(InputWidget):
             #self.control.setMaxVisibleItems(len(self.options))
             self.control.setCurrentIndex(0)
 
-class TextAreaWidget(CharacterWidget):
-
+class TextAreaWidget(LineEditWidget):
+    data_type = 'long text'
     def Factory(self):
         self.control = QTextEdit()
         return self.control
@@ -101,9 +102,8 @@ class TextAreaWidget(CharacterWidget):
         self.control.acceptRichText()
         self.control.canPaste()
 
-class BooleanWidget(CharacterWidget):
-
-
+class BooleanWidget(LineEditWidget):
+    data_type = 'boolean'
     def Factory(self):
         self.control = QComboBox()
         return  self.control
@@ -118,9 +118,8 @@ class BooleanWidget(CharacterWidget):
         self.control.setMinimumContentsLength(50)
         self.control.setMaxVisibleItems(len(self.options))
 
-class DateWidget(InputWidget):
-
-        
+class DateEditWidget(InputWidget):
+    data_type = 'datetime'
     def Factory(self):
         self.control = QDateEdit()
         self.control.setCalendarPopup(True)
@@ -131,15 +130,22 @@ class DateWidget(InputWidget):
         self.control.setDate(tDate)
         self.control.setMinimumWidth(50)
 
+class ForeignKeyEdit(LineEditWidget):
+    data_type = SearchableLineEdit
+    def Factory(self):
+        self.control = SearchableLineEdit()
+        return self.control
+
+
 def widgetCollection():
     mapping = {
-            'character varying': CharacterWidget,
+            'character varying': LineEditWidget,
             'integer': IntegerWidget,
             'bigint': IntegerWidget,
             'serial': IntegerWidget,
             'double precision': DoubleWidget,
             'choice': ChoiceListWidget,
-            'date': DateWidget,
+            'date': DateEditWidget,
             'text': TextAreaWidget,
             'boolean': BooleanWidget
         }
