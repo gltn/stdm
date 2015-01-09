@@ -59,6 +59,7 @@ class IntegerWidget(LineEditWidget):
     def Factory(self):
         self.control = QSpinBox()
         self.control.setMaximum(1000000000)
+        self.control.adjustSize()
         return self.control
     
     def adopt(self):
@@ -87,9 +88,9 @@ class ChoiceListWidget(InputWidget):
             self.control.addItem("")
             for item in self.options:
                 self.control.addItem(item.value,item.id)
-            self.control.setMinimumContentsLength(50)
+            self.control.setMinimumContentsLength(60)
             self.control.setDuplicatesEnabled(False)
-            #self.control.setMaxVisibleItems(len(self.options))
+            #self.control.
             self.control.setCurrentIndex(0)
 
 class TextAreaWidget(LineEditWidget):
@@ -115,7 +116,6 @@ class BooleanWidget(LineEditWidget):
         }
         for k, v in self.options.iteritems():
             self.control.addItem(v, k)
-        self.control.setMinimumContentsLength(50)
         self.control.setMaxVisibleItems(len(self.options))
 
 class DateEditWidget(InputWidget):
@@ -136,6 +136,8 @@ class ForeignKeyEdit(LineEditWidget):
         self.control = SearchableLineEdit()
         return self.control
 
+    def adopt(self):
+        self.control.setText("")
 
 def widgetCollection():
     mapping = {
@@ -147,6 +149,7 @@ def widgetCollection():
             'choice': ChoiceListWidget,
             'date': DateEditWidget,
             'text': TextAreaWidget,
-            'boolean': BooleanWidget
+            'boolean': BooleanWidget,
+            'foreign key': IntegerWidget
         }
     return mapping

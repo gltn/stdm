@@ -22,7 +22,12 @@
 from collections import OrderedDict
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from .xmlconfig_reader import tableColumns,deleteProfile,tableFullDescription,profileFullDescription
+from .xmlconfig_reader import (
+    tableColumns,
+    deleteProfile,
+    tableFullDescription,
+    tableRelations
+)
 from stdm.settings import RegistryConfig
 regConfig = RegistryConfig()            
 #rofileName=lookupReg['currentProfile']
@@ -61,6 +66,15 @@ def tableColType(table):
     for col in cols:
         colLabel = col.get('Column label')
         colMapping[colLabel] = [col.get('Data type'),col.get('Lookup')]
+    return colMapping
+
+def foreign_key_columns(table):
+    #profileName=activeProfile()
+    cols= tableRelations(table,"relations")
+    colMapping=OrderedDict()
+    for col in cols:
+        colLabel = col.get('Local column')
+        colMapping[colLabel] = ['foreign key', False]
     return colMapping
 
 def activeProfile():

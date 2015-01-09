@@ -94,10 +94,10 @@ def tableColumns(profile,tableName):
         if elem.get('name')==tableName:
             for child in elem.findall('columns/column'):
                 ordDict=OrderedDict()
-                ordDict["Column label"]=child.get('name')
-                ordDict["Description"]=child.get('fullname')
-                ordDict["Data type"]=child.get('type')
-                ordDict["Length"]=child.get('size')
+                ordDict["Column label"]= child.get('name')
+                ordDict["Description"]= child.get('fullname')
+                ordDict["Data type"]= child.get('type')
+                ordDict["Length"]= child.get('size')
                 if child.get('lookup')!=None:
                     ordDict["Lookup"]=child.get('lookup')
                 else:

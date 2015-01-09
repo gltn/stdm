@@ -16,7 +16,7 @@ email                : njoroge.solomon.com
  *                                                                         *
  ***************************************************************************/
 """
-from stdm.data.config_utils import tableColType
+from stdm.data.config_utils import tableColType, foreign_key_columns
 from stdm.ui.stdmdialog import DeclareMapping
 from PyQt4.QtGui import QMessageBox
 class AttributePropretyType(object):
@@ -24,9 +24,26 @@ class AttributePropretyType(object):
         self.model=model
         
     def attributeType(self):
-        """Enumerate column and datatype for the selected model"""
+        """Enumerate column and datatype for the selected model
+        :return: dict
+        """
         typeMapping=tableColType(self.model)
+
+        foreignk_attr= self.foreign_key_attribute_for_model()
+        """
+        Compare the two dictionaries of attributes and return a combined one.
+        """
+        typeMapping.update(foreignk_attr)
+
         return typeMapping
+
+    def foreign_key_attribute_for_model(self):
+        """
+        Scan trough the model attributes for foreign key column
+        :return:dict
+        """
+        foreignk_attr = foreign_key_columns(self.model)
+        return foreignk_attr
     
     def displayMapping(self):
         #use the mapped table properties

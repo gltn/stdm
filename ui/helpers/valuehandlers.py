@@ -88,7 +88,9 @@ class LineEditValueHandler(ControlValueHandler):
         return self.control.text()
     
     def setValue(self,value):
-        self.control.setText(value)
+        try:
+            self.control.setText(value)
+        except:
         
     def supportsMandatory(self):
         return True
@@ -162,11 +164,10 @@ class DateEditValueHandler(ControlValueHandler):
         return self.control.date().toPyDate()
     
     def setValue(self,value):
-        try:
-            self.control.setDate(value)
-        except:
-            pass
-        
+        #try:
+        self.control.setDate(value)
+       # except:
+
     def supportsMandatory(self):
         return False
     
