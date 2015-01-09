@@ -1,10 +1,10 @@
 """
 /***************************************************************************
-Name                 : Generic application for forms
-Description          : forms generator functions
-Date                 : 30/June/2013 
-copyright            : (C) 2013 by Solomon Njogu
-email                : njoroge.solomon.com
+Name                 : Mapper Dialog
+Description          : classes for generating form controls at run time from the passed model attributes
+Date                 : 30/June/2014
+copyright            : (C) 2014 by Solomon Njogu
+email                : njoroge.solomon.@yahoo.com
  ***************************************************************************/
 
 /***************************************************************************
@@ -31,11 +31,10 @@ class MapperDialog(QDialog,Ui_Dialog):
     def __init__(self,parent):
         QDialog.__init__(self)
         self.setupUi(self)
-
-        #MapperMixin.__init__(self, model)
-        #self.setWindowTitle("STDM data entry")
         
         self._notifBar = NotificationBar(self.vlNotification)
+        self.frmLayout.setLabelAlignment(Qt.AlignLeft)
+        self.frmLayout.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
         self.center()
              
     def center(self):
@@ -55,8 +54,10 @@ class CustomFormDialog(MapperDialog, MapperMixin):
             self._table = model.__name__
         else:
             self._table = model.__class__.__name__
-        self.setWindowTitle("{0} Entity Editor".format(self._table))
-        self.frmLayout.setLabelAlignment(Qt.AlignLeft)
+        self.set_window_title()
+
+
+        self.setLayout(self.frmLayout)
         self.loadMapperDialog()
 
     def loadMapperDialog(self):
@@ -111,3 +112,10 @@ class CustomFormDialog(MapperDialog, MapperMixin):
             self._notifBar.insertWarningNotification(str(ex.message))
         finally:
             STDMDb.instance().session.rollback()
+
+    def set_window_title(self):
+        """
+        Set the dialog title from the model name
+        :return: string
+        """
+        self.setWindowTitle("{0} Entity Editor".format(self._table))

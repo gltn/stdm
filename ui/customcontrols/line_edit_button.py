@@ -26,9 +26,11 @@ class SearchableLineEdit(QLineEdit):
     """Subclass the QLineEdit to support a toolbutton"""
     def __init__(self, parent=None):
         QLineEdit.__init__(self, parent)
+        Signal = pyqtSignal()
         self.button = QToolButton(self)
         self.button.setCursor(Qt.ArrowCursor)
         self.button.setIcon(pbIcon)
+        self.button.clicked.connect(self.buttonGesture)
 
 
     def resizeEvent(self,event):
@@ -37,4 +39,8 @@ class SearchableLineEdit(QLineEdit):
         buttonWidth = self.style().pixelMetric(QStyle.PM_ScrollBarExtent)
         self.button.resize(buttonWidth,rect.height()-2*frameWidth)
         self.button.move(rect.right() - buttonWidth, frameWidth)
+
+    def buttonGesture(self):
+        name="Hello foreign Key"
+        return QMessageBox.information(None, "button test",name)
 

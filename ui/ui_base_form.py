@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_base_form.ui'
 #
-# Created: Tue Jul 15 14:46:45 2014
-#      by: PyQt4 UI code generator 4.10.3
+# Created: Fri Jan 09 10:07:10 2015
+#      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -27,19 +27,27 @@ class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName(_fromUtf8("Dialog"))
         Dialog.resize(466, 374)
-        self.gridLayout = QtGui.QGridLayout(Dialog)
-        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.verticalLayout = QtGui.QVBoxLayout(Dialog)
+        self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
+        self.vlNotification = QtGui.QVBoxLayout()
+        self.vlNotification.setObjectName(_fromUtf8("vlNotification"))
+        self.verticalLayout.addLayout(self.vlNotification)
+        self.groupBox = QtGui.QGroupBox(Dialog)
+        self.groupBox.setTitle(_fromUtf8(""))
+        self.groupBox.setObjectName(_fromUtf8("groupBox"))
+        self.horizontalLayout = QtGui.QHBoxLayout(self.groupBox)
+        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
+        self.frmLayout = QtGui.QFormLayout()
+        self.frmLayout.setSizeConstraint(QtGui.QLayout.SetMinimumSize)
+        self.frmLayout.setFieldGrowthPolicy(QtGui.QFormLayout.ExpandingFieldsGrow)
+        self.frmLayout.setObjectName(_fromUtf8("frmLayout"))
+        self.horizontalLayout.addLayout(self.frmLayout)
+        self.verticalLayout.addWidget(self.groupBox)
         self.buttonBox = QtGui.QDialogButtonBox(Dialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.gridLayout.addWidget(self.buttonBox, 2, 0, 1, 1)
-        self.frmLayout = QtGui.QFormLayout()
-        self.frmLayout.setObjectName(_fromUtf8("frmLayout"))
-        self.gridLayout.addLayout(self.frmLayout, 1, 0, 1, 1)
-        self.vlNotification = QtGui.QVBoxLayout()
-        self.vlNotification.setObjectName(_fromUtf8("vlNotification"))
-        self.gridLayout.addLayout(self.vlNotification, 0, 0, 1, 1)
+        self.verticalLayout.addWidget(self.buttonBox)
 
         self.retranslateUi(Dialog)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), Dialog.reject)
