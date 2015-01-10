@@ -88,9 +88,7 @@ class LineEditValueHandler(ControlValueHandler):
         return self.control.text()
     
     def setValue(self,value):
-        try:
-            self.control.setText(value)
-        except:
+        self.control.setText(value)
         
     def supportsMandatory(self):
         return True
