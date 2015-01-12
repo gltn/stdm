@@ -41,6 +41,7 @@ class TableProperty(QDialog,Ui_TableProperty):
         self.setupUi(self)
         self.tableName=tableName
         self.userProfile=usrProf
+        self.table_handler=ConfigTableReader()
         self.initControls()
         
         QObject.connect(self.rbRelation, SIGNAL('clicked()'), self.propertyType)
@@ -57,17 +58,26 @@ class TableProperty(QDialog,Ui_TableProperty):
         setCollectiontypes(actions,self.cboDelAct)
         setCollectiontypes(actions,self.cboUpAct)
         setCollectiontypes(constraints,self.cboType)
-        self.cboColumn.insertItems(0,tableCols(self.cboTable.currentText()))
-        self.cboColumn_2.insertItems(0,tableCols(self.cboTable.currentText())) 
-        self.cboRefCol.insertItems(0,tableCols(self.tableName))                   
+        self.table_column_model(self.cboColumn,self.cboTable.currentText())
+        self.table_column_model(self.cboRefCol,self.tableName)
               
     def tableList(self,comboBox):
-        tableModel=ConfigTableReader()
-        model=tableModel.tableListModel(self.userProfile)
+        model=self.table_handler.tableListModel(self.userProfile)
         comboBox.setModel(model)
         index=comboBox.findText(self.tableName,Qt.MatchExactly)
         if index!=-1:
-            comboBox.setCurrentIndex(index-1) 
+            comboBox.setCurrentIndex(index-1)
+
+    def table_column_model(self, combo, tableName):
+        """
+        Return a list of column as QAbstractListModel
+        :param combo:
+        :param tableName:
+        :return:
+        """
+        col_list =tableCols(tableName)
+        col_model = self.table_handler.column_labels(col_list)
+        combo.setModel(col_model)
     
     def propertyType(self):
         if self.rbRelation.isChecked():
@@ -89,25 +99,21 @@ class TableProperty(QDialog,Ui_TableProperty):
         for k, v in ordDict.iteritems():
             combo.addItem(k,v)
             combo.setInsertPolicy(QComboBox.InsertAlphabetically)
-        
         combo.setMaxVisibleItems(len(collectionType))
     
     def relationColumns(self):
         '''update columns set for the selected table'''
-        self.cboColumn.clear()
         referenceTable=self.cboTable.currentText()
-        self.cboColumn.insertItems(0,tableCols(referenceTable))
+        self.table_column_model(self.cboColumn,referenceTable)
         
     def localColumns(self):
         '''update columns set for the selected table'''
-        self.cboRefCol.clear()
-        self.cboRefCol.insertItems(0,tableCols(self.tableName))
+        self.table_column_model(self.cboRefCol,self.tableName)
         
     def constraintColumns(self):
         '''update columns set for the selected table'''
-        self.cboColumn_2.clear()
         referenceTable=self.cboTable_2.currentText()
-        self.cboColumn_2.insertItems(0,tableCols(referenceTable))  
+        self.table_column_model(self.cboColumn_2,referenceTable)
         
     def selectedData(self,comboBox):
         #get the user data from the combo box display item
