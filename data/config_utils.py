@@ -52,12 +52,8 @@ def UserData(comboBox):
 def tableCols(table):
         #Get table columns from the config file
         profileName=activeProfile()
-        cols=tableColumns(profileName,table)
-        tcols=[]
-        for col in cols:
-            colLabel=col.get('Column label')
-            tcols.append(colLabel)
-        return tcols
+        cols = tableColumns(profileName,table)
+        return [col.get('Column label') for col in cols]
     
 def tableColType(table):
     profileName=activeProfile()

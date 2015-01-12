@@ -19,9 +19,25 @@
  *                                                                         *
  ***************************************************************************/
 """
-from stdm.data import XMLTableElement, tableColumns, tableRelations,lookupTable,lookupColumn,profiles,\
-tableLookUpCollection,lookupData,lookupData2List,geometryColumns,writeSQLFile, writeHTML,setLookupValue,updateSQL,\
-listEntityViewer, EntityColumnModel,FilePaths,tableFullDescription
+from stdm.data import (
+    XMLTableElement,
+    tableColumns,
+    tableRelations,
+    lookupTable,
+    lookupColumn,
+    profiles,
+    tableLookUpCollection,
+    lookupData,
+    lookupData2List,
+    geometryColumns,
+    writeSQLFile,
+    writeHTML,
+    setLookupValue,updateSQL,
+    listEntityViewer,
+    EntityColumnModel,
+    FilePaths,
+    tableFullDescription
+)
 from stdm.settings import dataIcon
 
 
@@ -98,13 +114,23 @@ class ConfigTableReader(object):
         tableAttrib = tableColumns(profile,tableName)
         if len(tableAttrib) > 0:
             colHeaders = tableAttrib[0].keys()
-            colVals = []
-            for item in tableAttrib:
-                colVals.append(item.values())
+            colVals = [item.values() for item in tableAttrib]
+            #for item in tableAttrib:
+             #   colVals.append(item.values())
             columnModel = EntityColumnModel(colHeaders, colVals)
             return columnModel
         else: 
             return None
+    def column_labels(self,col_list):
+        """
+        Method to read and return the defined column labels for the table as a model
+        :param list:
+        :return:Listmodel
+        """
+        from PyQt4.QtGui import QMessageBox
+        #QMessageBox.information(None,"Loist items",str(col_list))
+        return listEntityViewer(col_list, icon=dataIcon)
+
     
     def tableRelation(self,tableName):
         '''Method to read all defined table relationship in the config file'''
