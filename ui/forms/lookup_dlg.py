@@ -28,10 +28,12 @@ class LookupModeller(object):
         self._mapper =  DeclareMapping.instance()
 
     def setLookupAttribute(self, attributeName):
+        """Add the attribute to the list of attribute in this model"""
         self._lookup.append(attributeName)
 
     def lookupChoices(self, attributeName, lkupModel):
         """
+        Temporarily hold the mapping of table to model. Need further implementation
         """
         self._lookupFormatter[attributeName] = lkupModel
 

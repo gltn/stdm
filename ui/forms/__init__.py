@@ -27,4 +27,5 @@ from .widgets import (
                     widgetCollection
 )
 from .property_mapper import TypePropertyMapper
+from .lookup_dlg import LookupModeller
 
