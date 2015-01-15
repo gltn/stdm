@@ -138,6 +138,7 @@ class ForeignKeyEdit(LineEditWidget):
 
     def adopt(self):
         self.control.setText("")
+        self.control.setReadOnly(True)
 
 def widgetCollection():
     mapping = {
@@ -150,6 +151,6 @@ def widgetCollection():
             'date': DateEditWidget,
             'text': TextAreaWidget,
             'boolean': BooleanWidget,
-            'foreign key': IntegerWidget
+            'foreign key': ForeignKeyEdit
         }
     return mapping
