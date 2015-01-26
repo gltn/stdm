@@ -270,11 +270,28 @@ class CoordinatesWidgetValueHandler(ControlValueHandler):
     
 CoordinatesWidgetValueHandler.register()
 
-class SearchWidgetValueHandler(LineEditValueHandler):
+class SearchWidgetValueHandler(ControlValueHandler):
     '''
     Value handler for CoordinatesWidget.
     '''
     controlType = SearchableLineEdit
+
+    def value(self):
+        ctlValue = self.control.text()
+        try:
+            ctlIntValue = int(ctlValue)
+        except ValueError:
+            ctlIntValue = None
+        return ctlIntValue
+
+    def setValue(self,value):
+        self.control.setText(str(value))
+
+    def supportsMandatory(self):
+        return True
+
+    def default(self):
+        return None
 SearchWidgetValueHandler.register()
 
 
