@@ -32,7 +32,10 @@ from .base_person import WitnessEditor
 from stdm.data import BaseSTDMTableModel
 from stdm.data import STDMDb, tableCols,dateFormatter,tableColType
 from .stdmdialog import DeclareMapping
-from stdm.ui.forms import CustomFormDialog
+from stdm.ui.forms import (
+        CustomFormDialog,
+        LookupModeller
+)
  
 
 __all__ = ["EntityBrowser","EnumeratorEntityBrowser","EntityBrowserWithEditor", \
@@ -620,7 +623,6 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
     def title(self):
         return QApplication.translate("STDMEntityBrowser", "{0} Records Manager".format(self.tbEntityClass.title()))
 
-    from stdm.ui.forms.Lookup import LookupModeller
     modeller = LookupModeller()
     def create_lookup_setter(self, attr_name):
         """

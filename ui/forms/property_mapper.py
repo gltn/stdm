@@ -23,7 +23,7 @@ from .widgets import widgetCollection
 from stdm.data import lookupData
 from PyQt4.QtGui import *
 from stdm.ui.stdmdialog import  DeclareMapping
-from Lookup import  LookupModeller
+from lookup_dlg import  LookupModeller
 
 
 class TypePropertyMapper(object):
@@ -46,7 +46,7 @@ class TypePropertyMapper(object):
         for attr, dataType in self._attr.iteritems():
             if dataType[1]:
                 dataType[0] = 'choice'
-                self._modeller.setLookupAttribute(dataType[0])
+                #self._modeller.setLookupAttribute(dataType[0])
                 lkModel = self._modeller.lookupModel(dataType[1])
                 model = self.lookupItems(lkModel)
                 if model: isLookup = True
