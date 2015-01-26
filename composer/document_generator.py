@@ -20,7 +20,8 @@ from PyQt4.QtGui import (
                          QApplication,
                          QImage,
                          QPainter,
-                         QPrinter
+                         QPrinter,
+                         QMessageBox
                          )
 from PyQt4.QtCore import (
                           QObject,
@@ -180,7 +181,7 @@ class DocumentGenerator(QObject):
                             
                             #Create reference layer with feature
                             refLayer = self._buildVectorLayer(layerName)
-                            
+
                             #Add feature
                             bbox = self._addFeatureToLayer(refLayer, geomWKT)
                             bbox.scale(spfm.zoomLevel())
@@ -190,6 +191,7 @@ class DocumentGenerator(QObject):
                             
                             #Add layer to map
                             QgsMapLayerRegistry.instance().addMapLayer(refLayer)
+
                             self._iface.mapCanvas().setExtent(bbox)
                             self._iface.mapCanvas().refresh()
                             
@@ -220,9 +222,10 @@ class DocumentGenerator(QObject):
                     
                     absDocPath = unicode(outputDir) + "/" + docFileName
                     self._writeOutput(composition,outputMode,absDocPath)
+
             
             #Clear temporary layers
-            self.clearTemporaryLayers()        
+            self.clearTemporaryLayers()
             
             return (True,"Success")
         
@@ -302,20 +305,12 @@ class DocumentGenerator(QObject):
         """
         Render the composition as a PDF file.
         """
-        printer = QPrinter()
-        printer.setOutputFormat(QPrinter.PdfFormat)
-        printer.setOutputFileName(filePath)
-        printer.setPaperSize(QSizeF(composition.paperWidth(),composition.paperHeight()),QPrinter.Millimeter)
-        printer.setFullPage(True)
-        printer.setColorMode(QPrinter.Color)
-        printer.setResolution(composition.printResolution())
-        
-        #Use painter to send output to printer
-        pdfPainter = QPainter(printer)
-        paperRectMM = printer.pageRect(QPrinter.Millimeter)
-        paperRectPixel = printer.pageRect(QPrinter.DevicePixel)
-        composition.render(pdfPainter,paperRectPixel,paperRectMM)
-        pdfPainter.end()
+        QMessageBox.information(None, "layer","break point")
+        status = composition.exportAsPDF(filePath)
+        if not status:
+            msg = QApplication.translate("DocumentGenerator",
+                                         u"Error creating {0}".format(filePath))
+            raise Exception(msg)
     
     def _buildFileName(self,dataModel,fieldName,fieldValue,dataFields,fileExtension):
         """
