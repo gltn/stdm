@@ -62,7 +62,7 @@ class AttributeEditor(QDialog,Ui_editor):
         self.defaults = postgres_defaults
         tableHandler = ConfigTableReader()
         model = tableHandler.fulltableList()
-        self.cboTabList.insertItems(0,model)
+        self.cboTabList.setModel(model)
         index=self.cboTabList.findText(self.tableName,Qt.MatchExactly)
         if index!=-1:
             self.cboTabList.setCurrentIndex(index)
@@ -201,8 +201,8 @@ class AttributeEditor(QDialog,Ui_editor):
     def geomtag(self):
         """Add tag on the table with geometry to ensure that it added correctly
         """
-        action= writeGeomConstraint(self.profile, 'table', self.tableName)
-        return action
+        add_geom_tag = writeGeomConstraint(self.profile, 'table', self.tableName)
+        return add_geom_tag
             
     def ErrorInfoMessage(self, Message):
         # Error Message Box

@@ -305,12 +305,11 @@ class DocumentGenerator(QObject):
         """
         Render the composition as a PDF file.
         """
-        QMessageBox.information(None, "layer","break point")
-        status = composition.exportAsPDF(filePath)
-        if not status:
-            msg = QApplication.translate("DocumentGenerator",
-                                         u"Error creating {0}".format(filePath))
-            raise Exception(msg)
+        composition.exportAsPDF(filePath)
+        #if not status:
+        #    msg = QApplication.translate("DocumentGenerator",
+                                    #     u"Error creating {0}".format(filePath))
+        #    raise Exception(msg)
     
     def _buildFileName(self,dataModel,fieldName,fieldValue,dataFields,fileExtension):
         """
