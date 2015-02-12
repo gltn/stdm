@@ -46,7 +46,6 @@ class TypePropertyMapper(object):
         for attr, dataType in self._attr.iteritems():
             if dataType[1]:
                 dataType[0] = 'choice'
-                #self._modeller.setLookupAttribute(dataType[0])
                 lkModel = self._modeller.lookupModel(dataType[1])
                 model = self.lookupItems(lkModel)
                 if model: isLookup = True
