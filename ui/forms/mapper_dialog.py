@@ -31,7 +31,9 @@ class MapperDialog(QDialog,Ui_Dialog):
     def __init__(self,parent):
         QDialog.__init__(self)
         self.setupUi(self)
-        
+        boxLayout = QVBoxLayout()
+        self.setLayout(boxLayout)
+
         self._notifBar = NotificationBar(self.vlNotification)
         self.frmLayout.setLabelAlignment(Qt.AlignLeft)
         self.frmLayout.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
@@ -47,7 +49,7 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         MapperDialog.__init__(self, parent)
         MapperMixin.__init__(self, model)
         
-        self.buttonBox.accepted.connect(self.closeAct)
+        self.buttonBox.accepted.connect(self.close_event)
         self.buttonBox.rejected.connect(self.cancel)
         
         if callable(model):
@@ -66,13 +68,13 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         """
         self.property = AttributePropretyType(self._table.lower())
         # start loading table attribute properties
-        table_properties = self.property.attributeType()
+        table_properties = self.property.attribute_type()
 
         property_mapper = TypePropertyMapper(table_properties)
         widgets = property_mapper.setProperty()
-        for attrib, widgetProp in widgets.iteritems():
+        for attrib, widget_prop in widgets.iteritems():
             if hasattr(self._model, attrib):
-                self.controlWidget(widgetProp)
+                self.control_widget(widget_prop)
                 self.addMapping(attrib, self.control, False, attrib)
                 self.frmLayout.addRow(self.userLabel(attrib), self.control)
         self.frmLayout.setLabelAlignment(Qt.AlignJustify)
@@ -86,7 +88,7 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         except Exception as ex:
             QMessageBox.information(self, QApplication.translate("CustomFormDialog", "Loading lookup"), str(ex.message))
 
-    def controlWidget(self, prop):
+    def control_widget(self, prop):
         """
         Add controls to the form and controls options for lookup choices
         """
@@ -96,15 +98,15 @@ class CustomFormDialog(MapperDialog, MapperMixin):
             self.lookupOptions(self.widgetCls, prop[2])
         self.widgetCls.adopt()
 
-    def resetSessionMapping(self):
+    def reset_session_mapping(self):
         """Since only one instance of model can be mapped at a time, ensure the current table model has its correct mapping
         :return table model attribute mapping- dict:
         """
-        self.property.displayMapping()
+        self.property.display_mapping()
 
-    def closeAct(self):
+    def close_event(self):
         try:
-            self.resetSessionMapping()
+            self.reset_session_mapping()
             self.submit()
             self.accept()
 
