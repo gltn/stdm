@@ -21,21 +21,21 @@ from stdm.ui.stdmdialog import DeclareMapping
 from PyQt4.QtGui import QMessageBox
 class AttributePropretyType(object):
     def __init__(self, model):
-        self.model=model
+        self.model = model
         
-    def attributeType(self):
+    def attribute_type(self):
         """Enumerate column and datatype for the selected model
         :return: dict
         """
-        typeMapping=tableColType(self.model)
+        type_mapping = tableColType(self.model)
 
-        foreignk_attr= self.foreign_key_attribute_for_model()
+        foreignk_attr = self.foreign_key_attribute_for_model()
         """
-        Compare the two dictionaries of attributes and return a combined one.
+        Compare the two dictionaries of attributes and return an updated one.
         """
-        typeMapping.update(foreignk_attr)
+        type_mapping.update(foreignk_attr)
 
-        return typeMapping
+        return type_mapping
 
     def foreign_key_attribute_for_model(self):
         """
@@ -45,7 +45,7 @@ class AttributePropretyType(object):
         foreignk_attr = foreign_key_columns(self.model)
         return foreignk_attr
     
-    def displayMapping(self):
+    def display_mapping(self):
         #use the mapped table properties
         self._mapper =  DeclareMapping.instance()
         lkModel = self._mapper.tableMapping(self.model)
