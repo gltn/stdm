@@ -305,7 +305,6 @@ class DocumentGenerator(QObject):
         """
         Render the composition as a PDF file.
         """
-        QMessageBox.information(None, "layer","break point")
         status = composition.exportAsPDF(filePath)
         if not status:
             msg = QApplication.translate("DocumentGenerator",
