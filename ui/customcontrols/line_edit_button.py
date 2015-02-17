@@ -29,7 +29,7 @@ class SearchableLineEdit(QLineEdit):
         self.button = QToolButton(self)
         self.button.setCursor(Qt.ArrowCursor)
         self.button.setIcon(pbIcon)
-        self.button.clicked.connect(self.button_click_event())
+        #self.button.clicked.connect(self.button_click_event())
 
 
     def resizeEvent(self,event):

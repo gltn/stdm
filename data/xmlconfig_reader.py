@@ -171,12 +171,12 @@ def tableRelations(tableName,element):
             else:
                 for child in elem[1]:
                     ordDict=OrderedDict()
-                    ordDict["Relation Name"]=child.get('name')
-                    ordDict["Referenced table"]=child.get('table')
-                    ordDict["Local column"]=child.get('fk')
-                    ordDict["Foreign column"]=child.get('column')
-                    ordDict["On delete"]=child.get('ondelete')
-                    ordDict["On update"]=child.get('onupdate')
+                    ordDict["Relation Name"] = child.get('name')
+                    ordDict["Referenced table"] = child.get('table')
+                    ordDict["Local column"] = child.get('fk')
+                    ordDict["Foreign column"] = child.get('column')
+                    ordDict["On delete"] = child.get('ondelete')
+                    ordDict["On update"] = child.get('onupdate')
                     relationData.append(ordDict) 
                 return relationData  
             
@@ -184,16 +184,16 @@ def geometryColumns(tableName,element):
     tree,root=parseRootElement()
     geomData=[]
     for elem in root.findall('profile/table'):
-        if elem.get('name')==tableName:
-            childs=elem.find(element)
-            if childs!=None:
+        if elem.get('name') == tableName:
+            childs = elem.find(element)
+            if childs != None:
                 for child in childs:
                     ordDict=OrderedDict()
-                    ordDict["Table Name"]=child.get('table')
-                    ordDict["Geometry Column Name"]=child.get('column')
-                    ordDict["Geometry Type"]=child.get('type')
-                    ordDict["Projection"]=child.get('srid')
-                    ordDict["Schema"]='default'
+                    ordDict["Table Name"] = child.get('table')
+                    ordDict["Geometry Column Name"] = child.get('column')
+                    ordDict["Geometry Type"] = child.get('type')
+                    ordDict["Projection"] = child.get('srid')
+                    ordDict["Schema"] = 'default'
                     geomData.append(ordDict) 
     return geomData
 
@@ -235,4 +235,3 @@ def contentGroup(tableName):
                 return codeList
             else:
                 return None
-                

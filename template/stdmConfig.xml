@@ -11,8 +11,10 @@
 				<column fullname="mobile" name="contact_telephone" null="yes" size="25" type="character varying" />
 				<column fullname="" name="age" null="yes" size="" type="integer" />
 				<column fullname="" lookup="check_gender" name="gender" null="yes" size="25" type="character varying" />
+				<column fullname="" name="household_number" null="yes" size="" type="integer" />
 			</columns>
-			<relations />
+			<relations>
+				<relation column="id" fk="household_number" name="personid" ondelete="cascade" onupdate="cascade" table="household_entity" /></relations>
 			<constraints />
 			<contentgroups fullname="party can be a person household or group" name="party">
 				<contentgroup code="{3337F9B8-4D54-45CD-BDAD-1577FD668BC7}" name="create" />
@@ -27,7 +29,8 @@
 				<column fullname="unique identifier" name="spatial_unit_id" null="yes" oldname="spatial_unit_id" size="25" type="character varying" />
 				<column fullname="Friendly name of the unit" name="name" null="yes" oldname="sp_unit_name" size="25" type="character varying" />
 				<column fullname="type of the unit" lookup="check_type" name="type" null="yes" oldname="type" size="25" type="character varying" />
-				<column fullname="Use" name="sp_unit_use" null="yes" oldname="sp_unit_use" size="50" type="character varying" /></columns>
+				<column fullname="Use" name="sp_unit_use" null="yes" oldname="sp_unit_use" size="50" type="character varying" />
+			</columns>
 			<relations>
 			</relations>
 			<constraints>
@@ -50,7 +53,9 @@
 				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
 				<column fullname="" lookup="check_document_type" name="document_type" null="yes" oldname="document_type" size="25" type="character varying" />
 				<column fullname="when it was obtained" name="date_of_recording" null="yes" size="" type="date" />
-				<column fullname="Validity period" name="validity" null="yes" size="50" type="character varying" /><column fullname="From whom/ where" name="source" null="yes" size="50" type="character varying" /></columns>
+				<column fullname="Validity period" name="validity" null="yes" size="50" type="character varying" />
+				<column fullname="From whom/ where" name="source" null="yes" size="50" type="character varying" />
+				<column fullname="" name="document_id" null="yes" size="50" type="character varying" /><column fullname="" name="filename" null="yes" size="50" type="character varying" /></columns>
 			<relations>
 				</relations>
 			<constraints />
@@ -160,9 +165,29 @@
 				<column fullname="Choice list" name="value" size="50" type="character varying" />
 			</columns>
 			<data>
-				<value>4000</value>
 				<value>1000</value>
+				<value>3000</value>
+				<value>4000</value>
+				<value>5000</value>
 			</data>
 		</lookup>
+		<table fullname="Table for household details" name="household_entity">
+			<columns>
+				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
+				<column fullname="" name="total_persons" null="yes" size="" type="integer" />
+				<column fullname="" lookup="check_rent" name="rent" null="yes" size="50" type="character varying" />
+				<column fullname="" lookup="check_settlement_reason" name="reason_for_settlement" null="yes" size="50" type="character varying" />
+				<column fullname="" lookup="check_previous_residence" name="previous_stay" null="yes" size="50" type="character varying" />
+				<column fullname="" lookup="check_montly_income" name="income" null="yes" size="50" type="character varying" />
+			</columns>
+			<relations />
+			<constraints />
+			<contentgroups fullname="Table for household details" name="household_entity">
+				<contentgroup code="{BFF0B5AB-DF28-4FE2-A2AE-D8381E7C8609}" name="create" />
+				<contentgroup code="{594797EF-C7AE-4C69-81D3-9E9FBF5C1011}" name="select" />
+				<contentgroup code="{D9F64BB6-7ED8-4939-B127-057E786D9182}" name="update" />
+				<contentgroup code="{8936D17A-9D91-4D45-9630-D1517D6ACC99}" name="delete" />
+			</contentgroups>
+		</table>
 	</profile>
 </schema>

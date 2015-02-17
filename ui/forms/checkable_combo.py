@@ -91,8 +91,6 @@ class MultipleChoiceCombo(QComboBox):
                 item.setCheckState(Qt.Unchecked)
                 self.model().appendRow(item)
 
-
-
 class Dialog(QDialog):
     def __init__(self):
         super(Dialog,self).__init__()
