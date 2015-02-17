@@ -84,8 +84,7 @@ class listEntityViewer(QAbstractListModel):
             count -= 1
         self.endRemoveRows()
         
-        
-        
+
 class EntityColumnModel(QAbstractTableModel):
     def __init__(self, header,data, parent=None):
         QAbstractTableModel.__init__(self,parent)

@@ -61,7 +61,7 @@ class AttributeEditor(QDialog,Ui_editor):
     def initControls(self):
         self.defaults = postgres_defaults
         tableHandler = ConfigTableReader()
-        model = tableHandler.fulltableList()
+        model = tableHandler.on_main_table_selection()
         self.cboTabList.setModel(model)
         index=self.cboTabList.findText(self.tableName,Qt.MatchExactly)
         if index!=-1:
