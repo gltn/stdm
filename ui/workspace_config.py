@@ -129,7 +129,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                                         "You have not selected any default profile for your configuration. \n "\
                                 "The current profile will be used as default instead"))==QMessageBox.No:
                     validPage=False
-        if self.currentId() == 5:
+        if self.currentId() == 7:
             if self.setDatabaseSchema() == 'success' or self.rbSkip.isChecked():
                 validPage = True
 
@@ -160,12 +160,15 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 self.ErrorInfoMessage(ex.message)
             self.tblLookup.setAlternatingRowColors(True)
 
-        if self.currentId()==5:
+        if self.currentId() == 6:
+            self.set_social_tenure_entities()
+
+        if self.currentId()==7:
             self.txtHtml.hide()
             self.rbSchema.setChecked(True)
             self.setSqlIsertDefinition()
 
-        if self.currentId()==6:
+        if self.currentId()==8:
             try:
                  self.setDatabaseSchema()
             except:
@@ -670,6 +673,18 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.tableHandler.createDir(dataPath.values())
         self.tableHandler.updateDir(self.txtSetting.text())
         
+    def set_social_tenure_entities(self):
+        """
+
+        :return:
+        """
+        from stdm.ui.forms.checkable_combo import *
+        dlg = Dialog()
+        dlg.exec_()
+        dlg.show()
+
+
+
     def settingsPath(self):
         try:
             dir_name=self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",\
