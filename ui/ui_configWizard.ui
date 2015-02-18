@@ -162,6 +162,12 @@
          <layout class="QGridLayout" name="gridLayout_22">
           <item row="1" column="1">
            <widget class="QLineEdit" name="txtDefaultFolder">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>30</height>
+             </size>
+            </property>
             <property name="readOnly">
              <bool>true</bool>
             </property>
@@ -169,6 +175,12 @@
           </item>
           <item row="1" column="2">
            <widget class="QPushButton" name="btnBrowse">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>30</height>
+             </size>
+            </property>
             <property name="text">
              <string>Change</string>
             </property>
@@ -183,7 +195,7 @@
             <property name="minimumSize">
              <size>
               <width>200</width>
-              <height>0</height>
+              <height>30</height>
              </size>
             </property>
             <property name="text">
@@ -193,6 +205,12 @@
           </item>
           <item row="0" column="2">
            <widget class="QPushButton" name="btnBrowse2_2">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>30</height>
+             </size>
+            </property>
             <property name="text">
              <string>Change</string>
             </property>
@@ -204,6 +222,12 @@
           </item>
           <item row="0" column="1">
            <widget class="QLineEdit" name="txtSetting">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>30</height>
+             </size>
+            </property>
             <property name="readOnly">
              <bool>true</bool>
             </property>
@@ -218,6 +242,12 @@
           </item>
           <item row="2" column="2">
            <widget class="QPushButton" name="btnBrowse2">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>30</height>
+             </size>
+            </property>
             <property name="text">
              <string>Change</string>
             </property>
@@ -236,6 +266,12 @@
           </item>
           <item row="2" column="1">
            <widget class="QLineEdit" name="txtCertFolder">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>30</height>
+             </size>
+            </property>
             <property name="readOnly">
              <bool>true</bool>
             </property>
@@ -249,10 +285,23 @@
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QLineEdit" name="txtTemplates"/>
+           <widget class="QLineEdit" name="txtTemplates">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>30</height>
+             </size>
+            </property>
+           </widget>
           </item>
           <item row="3" column="2">
            <widget class="QPushButton" name="btnTemplates">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>30</height>
+             </size>
+            </property>
             <property name="text">
              <string>Change</string>
             </property>
@@ -288,19 +337,27 @@
         <widget class="QComboBox" name="cboProfile">
          <property name="minimumSize">
           <size>
-           <width>200</width>
-           <height>25</height>
+           <width>180</width>
+           <height>30</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>9</pointsize>
+          </font>
          </property>
         </widget>
        </item>
        <item row="0" column="0" rowspan="3">
         <widget class="QLabel" name="label_3">
+         <property name="styleSheet">
+          <string notr="true">font: 75 10pt &quot;Myriad Web Pro&quot;;</string>
+         </property>
          <property name="frameShape">
           <enum>QFrame::Box</enum>
          </property>
          <property name="text">
-          <string>A profile in STDM tool refers to a description of a survey or forms of survey based on a particular data collection methodology and therefore the methodology workflow need to be customized within it. </string>
+          <string>A profile in STDM tool refers to a description of a survey or forms of survey based on a particular data collection methodology and therefore the methodology workflow need to be customized in these configuration steps. </string>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
@@ -315,11 +372,24 @@
        </item>
        <item row="0" column="1">
         <widget class="QLabel" name="label">
+         <property name="minimumSize">
+          <size>
+           <width>50</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="maximumSize">
           <size>
            <width>30</width>
            <height>16777215</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>9</pointsize>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
          </property>
          <property name="text">
           <string>Select</string>
@@ -334,7 +404,7 @@
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>25</height>
+              <height>30</height>
              </size>
             </property>
             <property name="maximumSize">
@@ -357,7 +427,7 @@
             <property name="minimumSize">
              <size>
               <width>25</width>
-              <height>25</height>
+              <height>30</height>
              </size>
             </property>
             <property name="maximumSize">
@@ -398,6 +468,9 @@
         <width>0</width>
         <height>0</height>
        </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 75 9pt &quot;Myriad Web Pro&quot;;</string>
       </property>
       <property name="title">
        <string>Profile modules/ tables </string>
@@ -519,7 +592,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -983,148 +1056,309 @@
    <property name="subTitle">
     <string>Add new tenure relationship</string>
    </property>
-   <widget class="QGroupBox" name="groupBox">
+   <layout class="QGridLayout" name="gridLayout_31">
+    <item row="1" column="0">
+     <widget class="QGroupBox" name="groupBox_3">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>250</height>
+       </size>
+      </property>
+      <property name="title">
+       <string>Selected modules for Party and Spatial unit</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_32">
+       <item row="0" column="1">
+        <layout class="QGridLayout" name="gridLayout_30">
+         <item row="0" column="2">
+          <widget class="QListView" name="listView_2"/>
+         </item>
+         <item row="0" column="3">
+          <widget class="QPushButton" name="pushButton_4">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>80</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>100</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../resources.qrc">
+             <normaloff>:/plugins/stdm/images/icons/admin_unit.png</normaloff>:/plugins/stdm/images/icons/admin_unit.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>60</width>
+             <height>54</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="0" column="0">
+        <layout class="QGridLayout" name="gridLayout_23">
+         <item row="0" column="1">
+          <widget class="QListView" name="listView"/>
+         </item>
+         <item row="0" column="0">
+          <widget class="QPushButton" name="pushButton_2">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>80</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>100</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../resources.qrc">
+             <normaloff>:/plugins/stdm/images/icons/people_icon.png</normaloff>:/plugins/stdm/images/icons/people_icon.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>63</width>
+             <height>54</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QGroupBox" name="groupBox">
+      <property name="minimumSize">
+       <size>
+        <width>500</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>200</height>
+       </size>
+      </property>
+      <property name="title">
+       <string>Choose Social Tenure Relationship module</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_18">
+       <item row="0" column="0">
+        <layout class="QGridLayout" name="gridLayout_34">
+         <item row="3" column="1">
+          <widget class="QComboBox" name="comboBox_2">
+           <property name="minimumSize">
+            <size>
+             <width>200</width>
+             <height>30</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="comboBox">
+           <property name="minimumSize">
+            <size>
+             <width>350</width>
+             <height>30</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="2">
+          <widget class="QPushButton" name="btnAddLk_2">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>45</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../resources.qrc">
+             <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Select party </string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QPushButton" name="btnAddLk_3">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>45</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../resources.qrc">
+             <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>Select spatial unit</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0" rowspan="4">
+          <widget class="QTextEdit" name="textEdit">
+           <property name="maximumSize">
+            <size>
+             <width>350</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="html">
+            <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;By default, person to spatial unit tenure relationship is default in basic STDM setup. To add custom tenure relationship (i.e family to parcel of land, a settlement and related customary land, please select appropriate party and related spatial unit entity from the list and click add button.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWizardPage" name="wizardPage_2">
+   <property name="title">
+    <string>Social Tenure Types</string>
+   </property>
+   <property name="subTitle">
+    <string>Defining Social tenure types for STR modules</string>
+   </property>
+   <widget class="QGroupBox" name="groupBox_4">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>10</y>
-      <width>781</width>
-      <height>113</height>
+      <x>30</x>
+      <y>20</y>
+      <width>801</width>
+      <height>227</height>
      </rect>
     </property>
-    <property name="minimumSize">
-     <size>
-      <width>500</width>
-      <height>0</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>16777215</width>
-      <height>120</height>
-     </size>
-    </property>
     <property name="title">
-     <string>Entities</string>
+     <string>Add Social Tenure Relationship Types</string>
     </property>
-    <layout class="QGridLayout" name="gridLayout_18">
-     <item row="0" column="5">
-      <widget class="QPushButton" name="pushButton_4">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>80</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>100</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="../resources.qrc">
-         <normaloff>:/plugins/stdm/images/icons/admin_unit.png</normaloff>:/plugins/stdm/images/icons/admin_unit.png</iconset>
-       </property>
-       <property name="iconSize">
-        <size>
-         <width>60</width>
-         <height>54</height>
-        </size>
-       </property>
-      </widget>
+    <layout class="QGridLayout" name="gridLayout_33">
+     <item row="0" column="0">
+      <layout class="QGridLayout" name="gridLayout_35">
+       <item row="0" column="1">
+        <widget class="QListView" name="listView_3">
+         <property name="minimumSize">
+          <size>
+           <width>300</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>Pre Defined Types</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item row="0" column="1">
-      <widget class="QPushButton" name="pushButton_2">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>80</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>100</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="../resources.qrc">
-         <normaloff>:/plugins/stdm/images/icons/people_icon.png</normaloff>:/plugins/stdm/images/icons/people_icon.png</iconset>
-       </property>
-       <property name="iconSize">
-        <size>
-         <width>63</width>
-         <height>54</height>
-        </size>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="3">
-      <widget class="QPushButton" name="pushButton_3">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>80</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>100</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>../images/icons/diamond.png</normaloff>../images/icons/diamond.png</iconset>
-       </property>
-       <property name="iconSize">
-        <size>
-         <width>77</width>
-         <height>70</height>
-        </size>
-       </property>
-       <property name="autoDefault">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <widget class="QLabel" name="label_6">
-       <property name="text">
-        <string>has</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="4">
-      <widget class="QLabel" name="label_7">
-       <property name="text">
-        <string>With</string>
-       </property>
-      </widget>
+      <layout class="QGridLayout" name="gridLayout_36">
+       <item row="0" column="2">
+        <widget class="QPushButton" name="btnAddLk_4">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>45</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../resources.qrc">
+           <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="lineEdit">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </widget>
-   <widget class="QGroupBox" name="groupBox_3">
+   <widget class="QGroupBox" name="groupBox_5">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>130</y>
-      <width>781</width>
-      <height>361</height>
+      <x>30</x>
+      <y>250</y>
+      <width>791</width>
+      <height>231</height>
      </rect>
     </property>
     <property name="title">
-     <string>GroupBox</string>
+     <string>Additional attributes for social tenure relationships</string>
     </property>
    </widget>
   </widget>
@@ -1146,8 +1380,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>659</width>
-         <height>136</height>
+         <width>802</width>
+         <height>475</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout_21">

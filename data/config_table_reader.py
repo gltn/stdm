@@ -81,6 +81,15 @@ class ConfigTableReader(object):
         tbList=tableLookUpCollection()
         if tbList is not None:
             return tbList
+    def on_main_table_selection(self):
+        """
+        Method required by the wizard for loading all the table in a model
+        to a combo box
+        :return:
+        """
+        tbl_list= self.fulltableList()
+        tbl_model = listEntityViewer(tbl_list)
+        return tbl_model
         
     def STDMProfiles(self):
         pfList=profiles()

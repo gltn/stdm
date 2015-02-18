@@ -440,7 +440,7 @@ class DocumentWidget(QWidget,Ui_frmDocumentItem):
             srcDoc.document_id = self.fileUUID
             srcDoc.filename = str(self.fileInfo.fileName())
             #srcDoc.Size = self._docSize
-            srcDoc.document_type = self._docType
+            srcDoc.document_type = dtype
             
             self._srcDoc  = srcDoc
             
