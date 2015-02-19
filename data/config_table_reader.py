@@ -137,7 +137,7 @@ class ConfigTableReader(object):
         :return:Listmodel
         """
         from PyQt4.QtGui import QMessageBox
-        #QMessageBox.information(None,"Loist items",str(col_list))
+        #QMessageBox.information(None,"Lost items",str(col_list))
         return listEntityViewer(col_list, icon=dataIcon)
 
     

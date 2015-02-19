@@ -24,7 +24,7 @@ from stdm.ui.sourcedocument import SourceDocumentManager
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.customcontrols import CoordinatesWidget
 from stdm.utils import setComboCurrentIndexWithItemData
-from stdm.ui.customcontrols import SearchableLineEdit
+from stdm.ui.customcontrols import SearchableLineEdit, MultipleChoiceCombo
 
 class ControlValueHandler(object):
     control = None
@@ -294,7 +294,19 @@ class SearchWidgetValueHandler(ControlValueHandler):
         return None
 SearchWidgetValueHandler.register()
 
+class MultipleChoiceComboBox(ControlValueHandler):
 
+    controlType = MultipleChoiceCombo
+
+    def value(self):
+        ctlValue = self.control.values()
+        return ctlValue
+
+    def setValue(self,value):
+        if value:
+            self.control.set_values(value)
+
+MultipleChoiceComboBox.register()
 
 
 

@@ -19,7 +19,7 @@ email                : njoroge.solomon@yahoo.com
 from datetime import date
 
 from PyQt4.QtGui import *
-from stdm.ui.customcontrols import SearchableLineEdit
+from stdm.ui.customcontrols import SearchableLineEdit, MultipleChoiceCombo
 
 
 class InputWidget(QWidget):
@@ -75,7 +75,9 @@ class DoubleWidget(IntegerWidget):
 
 class ChoiceListWidget(InputWidget):
     data_type = 'list'
+
     def Factory(self):
+        #self.control = MultipleChoiceCombo()
         self.control = QComboBox()
         return self.control
     
@@ -84,14 +86,25 @@ class ChoiceListWidget(InputWidget):
         return self.options
 
     def adopt(self):
-        if self.options:
-            self.control.addItem("")
-            for item in self.options:
-                self.control.addItem(item.value,item.id)
-            self.control.setMinimumContentsLength(60)
-            self.control.setDuplicatesEnabled(False)
-            #self.control.
-            self.control.setCurrentIndex(0)
+        try:
+            if self.options:
+
+                #self.control.set_value(options)
+                self.control.addItem("")
+                for item in self.options:
+                    self.control.addItem(item.value,item.id)
+                self.control.setMinimumContentsLength(60)
+                self.control.setDuplicatesEnabled(False)
+                #self.control.
+                self.control.setCurrentIndex(0)
+            else:
+                return
+        except Exception as ex:
+            QMessageBox.information(None,QApplication.translate("InputWidget",
+                        "Initializing Form Controls"),
+            QApplication.translate("InputWidget",
+                        "Error loading data for the widget:"))
+            
 
 class TextAreaWidget(LineEditWidget):
     data_type = 'long text'

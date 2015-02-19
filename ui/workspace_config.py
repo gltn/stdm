@@ -159,9 +159,11 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             except Exception as ex:
                 self.ErrorInfoMessage(ex.message)
             self.tblLookup.setAlternatingRowColors(True)
+            self.setPage(7,self)
 
-        if self.currentId() == 6:
-            self.set_social_tenure_entities()
+
+        #if self.currentId() == 6:
+         #   self.set_social_tenure_entities()
 
         if self.currentId()==7:
             self.txtHtml.hide()
