@@ -146,6 +146,17 @@ class SourceDocumentManager(QObject):
         if isinstance(docWidget, DocumentWidget):
             self.fileUploaded.emit(docWidget.sourceDocument(documenttype))
             self._docRefs.append(docWidget.fileUUID)
+            
+    def set_source_documents(self,source_docs):
+        """
+        :param source_docs: Supporting document objects to be inserted in their respective containers.
+        :type source_docs: list
+        """
+        for source_doc in source_docs:
+            if hasattr(source_doc,"doc_type"):
+                document_type = source_doc.doc_type
+
+                self.insertDocFromModel(source_doc,document_type)
                     
     def InsertDocFromModel(self,sourcedoc,containerid):
         '''
@@ -153,6 +164,12 @@ class SourceDocumentManager(QObject):
         '''
         #Check if the document has already been inserted in the manager.
         docIndex = getIndex(self._docRefs, sourcedoc.document_id)
+        QMessageBox.information(self, 
+                QApplication.translate("CustomFormDialog", "Document Reference"), str(self._docRefs))
+            
+        QMessageBox.information(self, 
+                QApplication.translate("CustomFormDialog", "Document ID"), str(sourcedoc.document_id))
+            
         if docIndex != -1:
             return
         
@@ -435,14 +452,15 @@ class DocumentWidget(QWidget,Ui_frmDocumentItem):
             #else:
             self.mapping=DeclareMapping.instance()
             srcDoc=self.mapping.tableMapping('supporting_document')
-            #srcDoc = SourceDocument()
+            srcDocument = srcDoc()
                 
-            srcDoc.document_id = self.fileUUID
-            srcDoc.filename = str(self.fileInfo.fileName())
+            srcDocument.document_id = self.fileUUID
+            srcDocument.filename = str(self.fileInfo.fileName())
             #srcDoc.Size = self._docSize
-            srcDoc.document_type = dtype
-            
-            self._srcDoc  = srcDoc
+            srcDocument.document_type = dtype
+            #QMessageBox.information(None, "Type of header", str(srcDoc))
+            srcDocument.save()
+
             
         return self._srcDoc
         

@@ -23,7 +23,7 @@ from PyQt4.QtCore import  *
 
 class MultipleChoiceCombo(QComboBox):
     """Class initialization"""
-    def __init__(self, parent):
+    def __init__(self, parent= None):
         super(MultipleChoiceCombo, self).__init__()
         self.view().pressed.connect(self.current_item_state)
         self.setModel(QStandardItemModel(self))
@@ -63,7 +63,7 @@ class MultipleChoiceCombo(QComboBox):
     def values(self):
         """
         Convert a list to a string,
-        convinent menthod for adding selected items to database
+        convinent method for adding selected items to database
         :return:
         """
         string_values =""
@@ -73,6 +73,7 @@ class MultipleChoiceCombo(QComboBox):
             return string_values[:len(string_values)-1]
         else:
             return None
+
 
     def set_values(self, data):
         """

@@ -61,11 +61,12 @@ class TypePropertyMapper(object):
         """
         try:
             lkupModel = readComboSelections(DBmodel)
+            return lkupModel
         except Exception as ex:
             QMessageBox.information(None,'Lookup choices', str(ex.message))
         finally:
             self.clearMapping()
-        return lkupModel
+        
 
     def lookupItems(self, model):
         modelItems = self.userLookupOptions(model)

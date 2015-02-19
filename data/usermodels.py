@@ -14,20 +14,23 @@ itemIcon = QIcon(":/plugins/stdm/images/icons/table.png")
 class listEntityViewer(QAbstractListModel):
     def __init__(self, list=[], icon =None, parent=None):
         QAbstractListModel.__init__(self,parent)
-        self.__list=list
+        self.__list = list
         self._icon = icon
      
     def headerData(self,section, orientation, role):
         if role==Qt.DisplayRole:
             if orientation==Qt.Vertical:
-               return  section
+                return  section
             elif orientation == Qt.Horizontal:
                 return "STDM Entities"
             else:
                 return "Entities"
         
     def rowCount(self,parent):
-        return len(self.__list)
+        if self.__list is not None:
+            return len(self.__list)
+        else:
+            return 0
     
     def data(self,index,role):
         if role==Qt.ToolTipRole:

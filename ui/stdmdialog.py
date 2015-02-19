@@ -39,7 +39,7 @@ from stdm.data.database import Singleton
 
         
 @Singleton                  
-class DeclareMapping():  
+class DeclareMapping(object):
     '''
     this class takes an instance of the table defined the schema and returns a model objects
     '''

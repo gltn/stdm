@@ -237,17 +237,12 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         #Check the source documents based on the type of property
         #if self.rbPrivateProperty.isChecked():
         srcDocMapping = self.sourceDocManager.attributeMapping()
+        QMessageBox.information(self, 
+                QApplication.translate("CustomFormDialog", "Document Mapping"), str(srcDocMapping))
+            
         summaryTreeLoader.addCollection(srcDocMapping, QApplication.translate("newSTRWiz","Source Documents"), 
                                              ":/plugins/stdm/images/icons/attachment.png") 
-
-#         elif self.rbStateland.isChecked():
-#             #Tax information only
-#             statePropTaxMapping = self._mapStatePropertyTax()
-#             taxDocMapping = self.stateTaxDocManager.attributeMapping()
-#             statePropTaxMapping.update(taxDocMapping)
-#             summaryTreeLoader.addCollection(statePropTaxMapping, QApplication.translate("newSTRWiz","Tax Information"), 
-#                                              ":/plugins/stdm/images/icons/receipt.png")
-
+      
         summaryTreeLoader.display()  
     
     def validateCurrentPage(self):
@@ -324,6 +319,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             socialTenure.save()
             
             progDialog.setValue(7)
+            #source_doc_model = self.sourceDocManager.sourceDocuments(dtype ="TITLE DEED")
             
             #strPerson = "%s %s"%(str(self.selPerson.family_name),str(self.selPerson.other_names))          
             strMsg = str(QApplication.translate("newSTRWiz", 
@@ -846,7 +842,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         '''
         Displays a file dialog for a user to specify a source document
         '''
-        files = QFileDialog.getOpenFileNames(self,title,"/home","Source Documents (*.pdf)")
+        files = QFileDialog.getOpenFileNames(self,title,"/home","Source Documents (*.*)")
         return files
     
     def selectReceiptScanDialog(self,title):
