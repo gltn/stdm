@@ -159,7 +159,6 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             except Exception as ex:
                 self.ErrorInfoMessage(ex.message)
             self.tblLookup.setAlternatingRowColors(True)
-            self.setPage(7,self)
 
 
         #if self.currentId() == 6:
