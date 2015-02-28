@@ -266,7 +266,8 @@ class RoleProvider(object):
         '''
         Raised when a user with the given username exists 
         '''
-        msg = str(QApplication.translate("RoleNameError","'%s' role already exists.Please specify another name for the role."%(rolename,)))
+        msg = str(QApplication.translate("RoleNameError","'%s' role already exists."
+                                                         "Please specify another name for the role."%(rolename,)))
         raise SecurityException(msg)
     
     

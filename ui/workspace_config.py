@@ -129,7 +129,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                                         "You have not selected any default profile for your configuration. \n "\
                                 "The current profile will be used as default instead"))==QMessageBox.No:
                     validPage=False
-        if self.currentId() == 7:
+        if self.currentId() == 5:
             if self.setDatabaseSchema() == 'success' or self.rbSkip.isChecked():
                 validPage = True
 
@@ -164,12 +164,12 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         #if self.currentId() == 6:
          #   self.set_social_tenure_entities()
 
-        if self.currentId()==7:
+        if self.currentId()==5:
             self.txtHtml.hide()
             self.rbSchema.setChecked(True)
             self.setSqlIsertDefinition()
 
-        if self.currentId()==8:
+        if self.currentId()==6:
             try:
                  self.setDatabaseSchema()
             except:

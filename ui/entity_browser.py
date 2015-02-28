@@ -558,7 +558,7 @@ class WitnessEntityBrowser(EntityBrowserWithEditor):
     def title(self):
         return QApplication.translate("WitnessEntityBrowser", "Witness Records")
     
-class FarmerEntitySelector(EntityBrowser):
+class PartyEntitySelector(EntityBrowser):
     '''
     Browser for simply selecting peson records.
     '''

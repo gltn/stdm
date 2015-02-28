@@ -152,6 +152,19 @@ class ForeignKeyEdit(LineEditWidget):
     def adopt(self):
         self.control.setText("")
         self.control.setReadOnly(True)
+        self.control.signal_sender.connect(self.foreign_key_widget_activated)
+
+    def foreign_key_widget_activated(self):
+        self.on_select_foreignkey()
+
+
+    def on_select_foreignkey(self):
+
+        from .BaseForm import MapperDialog
+        mapper =MapperDialog()
+        mapper.show()
+        mapper.exec_()
+
 
 def widgetCollection():
     mapping = {
