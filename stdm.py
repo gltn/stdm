@@ -203,13 +203,15 @@ class STDMQGISLoader(object):
             self.loginAct.setEnabled(False)   
             
             #Get STDM tables
-            self.stdmTables = spatial_tables()                         
-            #self.loadModules()
-            #resetContentRoles()
-            #try:
-            self.loadModules()
-            #except Exception as ex:
-            #    QMessageBox.warning(self.iface.mainWindow(),QApplication.translate("STDM","sfafError"),str(ex.message))
+            try:
+                self.stdmTables = spatial_tables()
+                #self.loadModules()
+                #resetContentRoles()
+
+                self.loadModules()
+            except Exception as ex:
+                QMessageBox.warning(self.iface.mainWindow(),
+                        QApplication.translate("STDM","Content Authorization"),str(ex.message))
 
     def loadModules(self):
         '''
@@ -386,7 +388,7 @@ class STDMQGISLoader(object):
         self.moduleCntGroup = None
         self.moduleContentGroups = []
         self._moduleItems = {}
-        self._reportModules = {}
+        self._reportModules = OrderedDict()
         
         #    map the user tables to sqlalchemy model object
         '''
@@ -401,10 +403,10 @@ class STDMQGISLoader(object):
             capabilities = contentGroup(self._moduleItems[k])
             if capabilities != None:
                 moduleCntGroup = TableContentGroup(username,k,contentAction)
-                moduleCntGroup.createContentItem().code =capabilities[0]
-                moduleCntGroup.readContentItem().code =capabilities[1]
-                moduleCntGroup.updateContentItem().code =capabilities[2]
-                moduleCntGroup.deleteContentItem().code =capabilities[3]
+                moduleCntGroup.createContentItem().code = capabilities[0]
+                moduleCntGroup.readContentItem().code = capabilities[1]
+                moduleCntGroup.updateContentItem().code = capabilities[2]
+                moduleCntGroup.deleteContentItem().code = capabilities[3]
                 moduleCntGroup.register()
                 self._reportModules[k] = self._moduleItems.get(k)
                 self.moduleContentGroups.append(moduleCntGroup)
@@ -614,7 +616,8 @@ class STDMQGISLoader(object):
             frmNewSTR = newSTRWiz(self)
             frmNewSTR.exec_()
         except Exception as ex:
-            QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
+            QMessageBox.critical(self.iface.mainWindow(),
+                QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
             
     def onManageAdminUnits(self):
         '''
@@ -836,17 +839,22 @@ class STDMQGISLoader(object):
     def widgetLoader(self,QAction):
         #Method to load custom forms
         tbList=self._moduleItems.values()
+
         dispName=QAction.text()
         if dispName=='Social Tenure Relationship':
             self.newSTR()
         else:
             tableName=self._moduleItems.get(dispName)
             if tableName in tbList:
+                cnt_idx = getIndex(self._reportModules.keys(), dispName)
                 try:
-                    main=STDMEntityBrowser(self.moduleContentGroups[0],tableName,self.iface.mainWindow())
+                    main=STDMEntityBrowser(self.moduleContentGroups[cnt_idx],tableName,self.iface.mainWindow())
                     main.exec_()
                 except Exception as ex:
-                    QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
+                    QMessageBox.critical(self.iface.mainWindow(),
+                                         QApplication.translate("STDMPlugin","Loading dialog..."),
+                                         str(ex.message)+ QApplication.translate("STDMPlugin",": "
+                                         "The selected table dialog failed to load completely."))
                 finally:
                     STDMDb.instance().session.rollback()
             

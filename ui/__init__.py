@@ -31,7 +31,7 @@ from .entity_browser import (
                             RespondentEntityBrowser, 
                             ContentGroupEntityBrowser, 
                             WitnessEntityBrowser,
-                            FarmerEntitySelector, 
+                            PartyEntitySelector,
                             FarmerEntityBrowser,
                             STDMEntityBrowser,
                             SurveyEntityBrowser

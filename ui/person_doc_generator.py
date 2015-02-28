@@ -40,7 +40,7 @@ from stdm.data import (
 from stdm.composer import DocumentGenerator
 
 from .notification import NotificationBar
-from .entity_browser import FarmerEntitySelector
+from .entity_browser import PartyEntitySelector
 from .ui_person_doc_generator import Ui_frmPersonDocGenerator
 from .composer_doc_selector import TemplateDocumentSelector
 from .stdmdialog import  DeclareMapping
@@ -68,7 +68,7 @@ class PersonDocumentGenerator(QDialog,Ui_frmPersonDocGenerator):
         #Initialize person foreign key mapper
         self.personFKMapper = self.tabWidget.widget(0)
         self.personFKMapper.setDatabaseModel(self._dbModel)
-        self.personFKMapper.setEntitySelector(FarmerEntitySelector)
+        self.personFKMapper.setEntitySelector(PartyEntitySelector)
         self.personFKMapper.setSupportsList(True)
         self.personFKMapper.setDeleteonRemove(False)
         '''

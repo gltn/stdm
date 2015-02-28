@@ -27,7 +27,7 @@ from .notification import NotificationBar,ERROR
 from stdm.data import DatabaseConfig, DatabaseConnection
 from stdm.settings import RegistryConfig
 from stdm.security import User
-
+SUPERUSER = 'postgres'
 class loginDlg(QDialog, Ui_frmLogin):
     '''
     This class handles user authentication for accessing STDM resources
@@ -98,6 +98,7 @@ class loginDlg(QDialog, Ui_frmLogin):
         btnReset=self.btnBox.button(QDialogButtonBox.Reset)
         btnReset.clicked.connect(self.settingsDialog)
 
+
     def settingsDialog(self):
         '''
         Incase the user clicks reset button to change the settings
@@ -142,7 +143,8 @@ class loginDlg(QDialog, Ui_frmLogin):
                 self.accept()
             else:
                 QMessageBox.critical(self, QApplication.translate("LoginDialog","Authentication Failed"), msg)
-                self.resetSetting()
-                self.onRegistrySettings()
+                if self.User.UserName == SUPERUSER:
+                    self.resetSetting()
+                    self.onRegistrySettings()
                 self.txtPassword.setFocus()
                 self.txtPassword.selectAll()

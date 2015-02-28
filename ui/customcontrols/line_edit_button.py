@@ -18,18 +18,22 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import QLineEdit, QToolButton, QStyle, QMessageBox
+from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from stdm.settings import pbIcon
+__all__ = ["SearchableLineEdit"]
 
 class SearchableLineEdit(QLineEdit):
     """Subclass the QLineEdit to support a toolbutton"""
+    #signal_sender = pyqtSignal("PyQt_PyObject")
+    signal_sender = pyqtSignal(name = 'Button clicked')
     def __init__(self, parent=None):
         QLineEdit.__init__(self, parent)
         self.button = QToolButton(self)
         self.button.setCursor(Qt.ArrowCursor)
+
         self.button.setIcon(pbIcon)
-        #self.button.clicked.connect(self.button_click_event())
+        self.button.clicked.connect(self.button_click_event)
 
 
     def resizeEvent(self,event):
@@ -40,6 +44,6 @@ class SearchableLineEdit(QLineEdit):
         self.button.move(rect.right() - buttonWidth, frameWidth)
 
     def button_click_event(self):
-        name="Hello foreign Key"
-        #return QMessageBox.information(None, "button test",name)
+        self.signal_sender.emit()
+
 
