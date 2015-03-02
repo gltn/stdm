@@ -489,6 +489,7 @@ class ContentGroupEntityBrowser(EntityBrowserWithEditor):
         
         #Enable/disable tools based on permissions
         if (state & MANAGE) != 0:
+            QMessageBox.information(None, "content", str(self._tableContentGroup._groupName) +str(self._tableContentGroup.canCreate()))
             if not self._tableContentGroup.canCreate():
                 self._newEntityAction.setVisible(False)
                     
