@@ -94,7 +94,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         try:
             settings = self.tableHandler.pathSettings()
             if settings[1].get('Config') == None:
-               self.startId() == 1
+                self.startId() == 1
             elif settings[1].get('Config') != None:
                 self.setStartId(2)
         except:
@@ -129,7 +129,10 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                                         "You have not selected any default profile for your configuration. \n "\
                                 "The current profile will be used as default instead"))==QMessageBox.No:
                     validPage=False
-        if self.currentId() == 7:
+
+       
+
+        if self.currentId() == 5:
             if self.setDatabaseSchema() == 'success' or self.rbSkip.isChecked():
                 validPage = True
 
@@ -159,20 +162,16 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             except Exception as ex:
                 self.ErrorInfoMessage(ex.message)
             self.tblLookup.setAlternatingRowColors(True)
-            self.setPage(7,self)
 
 
-        #if self.currentId() == 6:
-         #   self.set_social_tenure_entities()
-
-        if self.currentId()==7:
+        if self.currentId()==5:
             self.txtHtml.hide()
             self.rbSchema.setChecked(True)
             self.setSqlIsertDefinition()
 
-        if self.currentId()==8:
+        if self.currentId()==6:
             try:
-                 self.setDatabaseSchema()
+                self.setDatabaseSchema()
             except:
                 return
     
@@ -675,18 +674,6 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.tableHandler.createDir(dataPath.values())
         self.tableHandler.updateDir(self.txtSetting.text())
         
-    def set_social_tenure_entities(self):
-        """
-
-        :return:
-        """
-        from stdm.ui.forms.checkable_combo import *
-        dlg = Dialog()
-        dlg.exec_()
-        dlg.show()
-
-
-
     def settingsPath(self):
         try:
             dir_name=self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",\

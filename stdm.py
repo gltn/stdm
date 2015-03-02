@@ -402,12 +402,14 @@ class STDMQGISLoader(object):
             if capabilities != None:
                 moduleCntGroup = TableContentGroup(username,k,contentAction)
                 moduleCntGroup.createContentItem().code =capabilities[0]
+
                 moduleCntGroup.readContentItem().code =capabilities[1]
                 moduleCntGroup.updateContentItem().code =capabilities[2]
                 moduleCntGroup.deleteContentItem().code =capabilities[3]
                 moduleCntGroup.register()
-                self._reportModules[k] = self._moduleItems.get(k)
+                #self._reportModules[k] = self._moduleItems.get(k)
                 self.moduleContentGroups.append(moduleCntGroup)
+                QMessageBox.information(None, "content",k + str(moduleCntGroup.canCreate()))
                 # Add core modules to the report configuration
 
         #Create content groups and add items
@@ -843,7 +845,7 @@ class STDMQGISLoader(object):
             tableName=self._moduleItems.get(dispName)
             if tableName in tbList:
                 try:
-                    main=STDMEntityBrowser(self.moduleContentGroups[0],tableName,self.iface.mainWindow())
+                    main=STDMEntityBrowser(self.moduleContentGroups[1],tableName,self.iface.mainWindow())
                     main.exec_()
                 except Exception as ex:
                     QMessageBox.critical(self.iface.mainWindow(),QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
