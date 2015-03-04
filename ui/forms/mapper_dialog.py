@@ -67,18 +67,21 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         """
         :return: Mapper dialog form
         """
-        self.property = AttributePropretyType(self._table.lower())
-        # start loading table attribute properties
-        table_properties = self.property.attribute_type()
+        try:
+            self.property = AttributePropretyType(self._table.lower())
+            # start loading table attribute properties
+            table_properties = self.property.attribute_type()
 
-        property_mapper = TypePropertyMapper(table_properties)
-        widgets = property_mapper.setProperty()
-        for attrib, widget_prop in widgets.iteritems():
-            if hasattr(self._model, attrib):
-                self.control_widget(widget_prop)
-                self.addMapping(attrib, self.control, False, attrib)
-                self.frmLayout.addRow(self.userLabel(attrib), self.control)
-        self.frmLayout.setLabelAlignment(Qt.AlignJustify)
+            property_mapper = TypePropertyMapper(table_properties)
+            widgets = property_mapper.setProperty()
+            for attrib, widget_prop in widgets.iteritems():
+                if hasattr(self._model, attrib):
+                    self.control_widget(widget_prop)
+                    self.addMapping(attrib, self.control, False, attrib)
+                    self.frmLayout.addRow(self.userLabel(attrib), self.control)
+            self.frmLayout.setLabelAlignment(Qt.AlignJustify)
+        except Exception as ex:
+            self._notifBar.insertWarningNotification(str(ex.message))
 
     def userLabel(self, attr):
             return attr.replace("_", " ").title()
@@ -87,7 +90,8 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         try:
             widget.setOptions(widgetOptions)
         except Exception as ex:
-            QMessageBox.information(self, QApplication.translate("CustomFormDialog", "Loading lookup"), str(ex.message))
+            QMessageBox.information(self, QApplication.translate("CustomFormDialog", "Loading lookup"),
+                                    QApplication.translate("CustomFormDialog","Error loading lookup values: %s"%str(ex.message)))
 
     def control_widget(self, prop):
         """

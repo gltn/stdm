@@ -46,10 +46,8 @@ class FilePaths(object):
         self.userPath=None
         self.cachePath=None
         self.config = RegistryConfig()
-        #try:
         self.checkPreviousSetting()
-        #except:
-            #pass
+
     
     def checkPreviousSetting(self):    
         self.defaultConfigPath()
@@ -59,7 +57,7 @@ class FilePaths(object):
                 self.setUserConfigPath(pathSettings[CONFIG])
             else:
                 self.setUserConfigPath()
-        except Exception as ex:
+        except:
             pass
                         
     def XMLFile(self):
@@ -156,6 +154,8 @@ class FilePaths(object):
         if platform.system() == "Windows":
             userPath = os.environ["USERPROFILE"]
             profPath = userPath + "/.stdm"
+        else:
+            profPath = str(os.getenv('HOME'))+"/.stdm"
         return str(profPath).replace("\\", "/")
     
     def setLocalPath(self,path=None):
@@ -177,8 +177,4 @@ class FilePaths(object):
         '''incase the user want to keep track of the old file when current file changes'''
         if os.path.isfile(self.cacheFile()):
             os.remove(self.cacheFile())
-        #QMessageBox.information(None,'test',self.cachePath)
         shutil.copy(self.setUserXMLFile(), self.cacheDir())
-        
-            
-    

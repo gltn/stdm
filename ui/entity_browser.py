@@ -489,7 +489,6 @@ class ContentGroupEntityBrowser(EntityBrowserWithEditor):
         
         #Enable/disable tools based on permissions
         if (state & MANAGE) != 0:
-            QMessageBox.information(None, "content", str(self._tableContentGroup._groupName) +str(self._tableContentGroup.canCreate()))
             if not self._tableContentGroup.canCreate():
                 self._newEntityAction.setVisible(False)
                     
@@ -603,13 +602,7 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
         self._tableCls = mapping.tableMapping(table)
 
         self.tbEntityClass = table
-        #columnsData=tableColType(table)
-        #columns=columnsData.keys()
-        
         ContentGroupEntityBrowser.__init__(self, self._tableCls, tableContentGroup, parent, state)
-        
-        #QMessageBox.information(self,"module",str(tableCls.__name__))
-        #QMessageBox.information(self,"module",str( mapping.attDictionary))
         self._editorDialog = CustomFormDialog
         
 

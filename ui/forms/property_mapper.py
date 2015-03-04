@@ -36,9 +36,12 @@ class TypePropertyMapper(object):
         self.hideGUID()
 
     def hideGUID(self):
-        for keys in self._attr:
-            if keys == 'id':
-                self._attr.pop(keys)
+        try:
+            for keys in self._attr.keys():
+                if keys == 'id':
+                    self._attr.pop(keys)
+        except KeyError as ex:
+            raise ex.message
 
     def widget(self):
         isLookup = False
@@ -52,20 +55,21 @@ class TypePropertyMapper(object):
             self.widgetList[attr] = [widgetCollection()[dataType[0]], isLookup, model]
 
     def setProperty(self):
-        self.widget()
-        return self.widgetList
-    
+            self.widget()
+            return self.widgetList
+
     def userLookupOptions(self, DBmodel):
         """
         Fetch lookup values from the DB.
         """
-        try:
-            lkupModel = readComboSelections(DBmodel)
-            return lkupModel
-        except Exception as ex:
-            QMessageBox.information(None,'Lookup choices', str(ex.message))
-        finally:
-            self.clearMapping()
+       # try:
+        lkupModel = readComboSelections(DBmodel)
+        return lkupModel
+        #except Exception as ex:
+           # QMessageBox.information(None,'Lookup choices',
+                                    #QApplication.translate(u'TypePropertyMapper',"Error loading %s lookup values"%str(ex.message)))
+        #finally:
+       #     self.clearMapping()
         
 
     def lookupItems(self, model):

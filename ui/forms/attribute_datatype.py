@@ -18,34 +18,90 @@ email                : njoroge.solomon.com
 """
 from stdm.data.config_utils import tableColType, foreign_key_columns
 from stdm.ui.stdmdialog import DeclareMapping
-from PyQt4.QtGui import QMessageBox
+from stdm.data import data_types
+from PyQt4.QtGui import *
 class AttributePropretyType(object):
     def __init__(self, model):
         self.model = model
+        self._mapper =  DeclareMapping.instance()
         
     def attribute_type(self):
         """Enumerate column and datatype for the selected model
         :return: dict
         """
-        type_mapping = tableColType(self.model)
+        try:
+            type_mapping = tableColType(self.model)
+            db_mapping = self._mapper.column_data_types(self.model)
+            db_mapping.update(type_mapping)
+            """
+            Compare table columns definition in the database and configuration file.
+            """
+            if cmp(db_mapping, type_mapping) != 0:
+                QMessageBox.information(None,"Table Columns ",
+                                        QApplication.translate(u"AttributePropertyType",
+                                        u"Database columns and configuration table columns do not "
+                                        u"match. Database table columns will be used instead\n"
+                                        u"Please update configuration tables for complete dialog mapping"))
+                self.schema_has_changed(db_mapping, type_mapping)
+            foreignk_attr = self.foreign_key_attribute_for_model()
+            """
+            Only the foreign key attributes defined in the configuration shall be considered in the foreign key definition
+            """
+            db_mapping.update(foreignk_attr)
 
-        foreignk_attr = self.foreign_key_attribute_for_model()
-        """
-        Compare the two dictionaries of attributes and return an updated one.
-        """
-        type_mapping.update(foreignk_attr)
-
-        return type_mapping
+            return db_mapping
+        except Exception as ex:
+                QMessageBox.information(None, "Reading %s columns"%self.model,
+                                        QApplication.translate(u"AttributeDataType", u"Error reading the columns"))
 
     def foreign_key_attribute_for_model(self):
         """
-        Scan trough the model attributes for foreign key column
+        Scan trough the model attributes for foreign key columns in the configuration file
         :return:dict
         """
         foreignk_attr = foreign_key_columns(self.model)
         return foreignk_attr
-    
+
+    def schema_has_changed(self, dbtablemapping, configtablemapping):
+        """
+        Method to update the column datatype with the default types pre defined in the STDM: data/enums.py
+        :param dbtablemapping:
+        :param configtablemapping:
+        :return:
+        """
+        try:
+            for col, coltype in dbtablemapping.iteritems():
+                if not col in configtablemapping:
+                    match_type = self. convert_db_data_types(coltype)
+                    if not match_type:
+                        """If the column datatype cannot be matched, use string as the datatype"""
+                        match_type = 'character varying'
+                        dbtablemapping[col] = [match_type, False]
+                    elif len(match_type) < 1:
+                        continue
+                    else:
+                        """Check if the column can be formatted on the fly"""
+                        dbtablemapping[col] = [match_type[0], False]
+        except IndexError as ie:
+            QMessageBox.information(None,
+                                    QApplication.translate(u"AttributePropertyType", u"Data Type Error"),
+                                    QApplication.translate(u"AttributePropertyType", u"data type error: %s")%str(ie.message))
+
+    @staticmethod
+    def convert_db_data_types(db_type):
+        """
+        Method to convert the sqlalchemy datatype to default type that is recognized by STDM
+        i.e VARCHAR(50) to character varying
+        :param datatype:
+        :return:
+        """
+        db_type = str(db_type).lower()
+        option_type = [user_type for user_type in data_types.values() if db_type[:4] in user_type]
+        if option_type:
+            return option_type
+        else:
+            return None
+
     def display_mapping(self):
         #use the mapped table properties
-        self._mapper =  DeclareMapping.instance()
         lkModel = self._mapper.tableMapping(self.model)

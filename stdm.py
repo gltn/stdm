@@ -853,8 +853,8 @@ class STDMQGISLoader(object):
                 except Exception as ex:
                     QMessageBox.critical(self.iface.mainWindow(),
                                          QApplication.translate("STDMPlugin","Loading dialog..."),
-                                         str(ex.message)+ QApplication.translate("STDMPlugin",": "
-                                         "The selected table dialog failed to load completely."))
+                                         QApplication.translate("STDMPlugin",": "
+                                         "Unable to load the %s table data corretly.") %str(ex.message))
                 finally:
                     STDMDb.instance().session.rollback()
             

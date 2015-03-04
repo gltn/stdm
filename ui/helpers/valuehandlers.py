@@ -162,9 +162,13 @@ class DateEditValueHandler(ControlValueHandler):
         return self.control.date().toPyDate()
     
     def setValue(self,value):
-        #try:
-        self.control.setDate(value)
-       # except:
+        try:
+            if value is not None:
+                self.control.setDate(value)
+            else:
+                self.control.setValue(None)
+        except:
+            pass
 
     def supportsMandatory(self):
         return False
