@@ -37,6 +37,7 @@ class MapperDialog(QDialog,Ui_Dialog):
         self._notifBar = NotificationBar(self.vlNotification)
         self.frmLayout.setLabelAlignment(Qt.AlignLeft)
         self.frmLayout.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
+        self.setWindowModality(Qt.NonModal)
         self.center()
              
     def center(self):

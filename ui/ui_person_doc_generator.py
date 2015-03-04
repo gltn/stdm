@@ -35,7 +35,7 @@ class Ui_frmPersonDocGenerator(object):
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Close|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
         self.gridLayout.addWidget(self.buttonBox, 9, 0, 1, 1)
-        self.label = QtGui.QLabel(frmPersonDocGenerator)
+        self.label = QtGui.QLabel(frmPersonDocGenerator)        
         self.label.setMaximumSize(QtCore.QSize(16777215, 25))
         self.label.setWordWrap(True)
         self.label.setObjectName(_fromUtf8("label"))
