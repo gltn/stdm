@@ -2,7 +2,7 @@ __author__ = 'SOLOMON'
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.ui.ui_base_form1 import Ui_Dialog
+from stdm.ui.ui_base_form import Ui_Dialog
 from stdm.ui.notification import NotificationBar
 from stdm.ui.entity_browser import PartyEntitySelector
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper

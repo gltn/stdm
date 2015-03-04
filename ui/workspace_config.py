@@ -577,6 +577,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                     return valid
             except SQLAlchemyError as ex:
                 return self.ErrorInfoMessage(str(ex.message))
+            except IOError as ex:
+                return self.ErrorInfoMessage(str(ex.message))
     
     def assignRoles(self):
         if self.rbSchemaNew.isChecked():
@@ -612,7 +614,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                     f.close()
                 except IOError as io:
                     self.ErrorInfoMessage(io.message)
-            else:return
+            else: return
          
     def popup(self, QAction):
         #A shortcut menu to allow the user to customize table details on the forms page
@@ -643,8 +645,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def licenseFile(self):
         self.txtLicense.clear()
         licenseDoc = LicenseDocument()
-        self.txtLicense.setCurrentFont(licenseDoc.textFont())
-        self.txtLicense.setText(licenseDoc.readLicenseData()) 
+        self.txtLicense.setCurrentFont(licenseDoc.text_font())
+        self.txtLicense.setText(licenseDoc.read_license_info())
         
     def configPath(self):
         try:
@@ -674,18 +676,6 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.tableHandler.createDir(dataPath.values())
         self.tableHandler.updateDir(self.txtSetting.text())
         
-    def set_social_tenure_entities(self):
-        """
-
-        :return:
-        """
-        from stdm.ui.forms.checkable_combo import *
-        dlg = Dialog()
-        dlg.exec_()
-        dlg.show()
-
-
-
     def settingsPath(self):
         try:
             dir_name=self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",\

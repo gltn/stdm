@@ -46,14 +46,16 @@ class DeclareMapping(object):
     def __init__(self,list=None):
         self.list=list
         self.mapping={}
-        self.attDictionary=OrderedDict()
+        self.attDictionary = OrderedDict()
+        self.type_dictionary = OrderedDict()
     
     def setTableMapping(self,list):
         for table in list:
             className=table.capitalize()
             classObject=self.classFromTable(className)
             pgtable=Table(table,Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
-            self.mappedTableProperties(pgtable)
+            self.column_mapping_for_table(pgtable)
+            self.datatype_for_column(pgtable)
             mapper(classObject,pgtable)
             self.mapping[table]=classObject
               
@@ -71,10 +73,16 @@ class DeclareMapping(object):
         pass
 
     def displayMapping(self,table=''):
+        """
+        Replaces the depreciated method where column names were read from the config.
+        column names already stored in a dictionary.
+        :param table:
+        :return:
+        """
         attribs = OrderedDict()
         if table != '':
-            cols=tableCols(table)
-            for col in cols:
+            col_list = self.attDictionary.get(table)
+            for col in col_list:
                 attribs[col]=col.replace('_',' ').title()
         else:
             return None
@@ -90,5 +98,29 @@ class DeclareMapping(object):
     def resetMapping(self):
         self.mapping={}
         
-    def mappedTableProperties(self,table):
-        self.attDictionary[table]=[column.name for column in table.columns]
+    def column_mapping_for_table(self,table):
+        """
+        Method to store all the columns names from the database table into an array.
+
+        :param table:
+        :return:
+        """
+        self.attDictionary[table.name] = [column.name for column in table.columns]
+
+    def datatype_for_column(self, table):
+        """
+
+        :param table:
+        :return:
+        """
+        self.typemapping = OrderedDict()
+        for column in table.columns:
+            self.typemapping[column.name] = column.type
+        self.type_dictionary[table.name] = self.typemapping
+
+    def column_data_types(self, table):
+        """
+        Return the table columns datatype as a dictionary
+        :return:
+        """
+        return self.type_dictionary.get(table)
