@@ -29,7 +29,7 @@ from PyQt4.QtCore import *
 from sqlalchemy import Table
 from sqlalchemy.orm import mapper
 from stdm.data import Model, Base, STDMDb
-from .PythonObject import class_from_table
+from .python_object import class_from_table
 from collections import OrderedDict
 import types
 
@@ -54,7 +54,7 @@ class DeclareMapping(object):
             class_object = class_from_table(class_name)
             try:
                 pgtable = Table(table, Base.metadata, autoload=True, autoload_with=STDMDb.instance().engine)
-            except Exception as exc:
+            except:
                 pass
             self.column_mapping_for_table(pgtable)
             self.datatype_for_column(pgtable)
@@ -66,12 +66,6 @@ class DeclareMapping(object):
             modelCls = self._mapping[table]
             Model.attrTranslations = self.displayMapping(table)
             return modelCls
-        
-    def instance(self,*args,**kwargs):
-        '''
-        Dummy method
-        '''
-        pass
 
     def displayMapping(self,table=''):
         """
@@ -94,7 +88,7 @@ class DeclareMapping(object):
         
     def column_mapping_for_table(self,table):
         """
-        Method to store all the columns names from the database table into an array.
+        Method to store all the columns names from the database table into an dict.
 
         :param table:
         :return:

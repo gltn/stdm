@@ -79,18 +79,4 @@ from .table_propertyDlg import TableProperty
 from .profileDlg import ProfileEditor
 from .lookup_values_dlg import ADDLookupValue
 from .about import AboutSTDMDialog
-from .PythonObject import class_from_table
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
+from .python_object import class_from_table
