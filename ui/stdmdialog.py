@@ -29,13 +29,12 @@ from PyQt4.QtCore import *
 from sqlalchemy import Table
 from sqlalchemy.orm import mapper
 from stdm.data import Model, Base, STDMDb
-#from stdm.data import tableCols
-from stdm.data.config_utils import tableCols
-
+from .PythonObject import class_from_table
 from collections import OrderedDict
 import types
 
 from stdm.data.database import Singleton
+from stdm.third_party.sqlalchemy.exc import NoSuchTableError
 
         
 @Singleton                  
@@ -45,24 +44,26 @@ class DeclareMapping(object):
     '''
     def __init__(self,list=None):
         self.list=list
-        self.mapping={}
+        self._mapping={}
         self.attDictionary = OrderedDict()
         self.type_dictionary = OrderedDict()
     
-    def setTableMapping(self,list):
+    def setTableMapping(self, list):
         for table in list:
-            className=table.capitalize()
-            classObject=self.classFromTable(className)
-            pgtable=Table(table,Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
+            class_name = table.capitalize()
+            class_object = class_from_table(class_name)
+            try:
+                pgtable = Table(table, Base.metadata, autoload=True, autoload_with=STDMDb.instance().engine)
+            except Exception as exc:
+                pass
             self.column_mapping_for_table(pgtable)
             self.datatype_for_column(pgtable)
-            mapper(classObject,pgtable)
-            self.mapping[table]=classObject
-              
-    #@property
-    def tableMapping(self,table):
-        if table in self.mapping:
-            modelCls = self.mapping[table]
+            mapper(class_object, pgtable)
+            self._mapping[table] = class_object
+
+    def tableMapping(self, table):
+        if table in self._mapping:
+            modelCls = self._mapping[table]
             Model.attrTranslations = self.displayMapping(table)
             return modelCls
         
@@ -87,14 +88,7 @@ class DeclareMapping(object):
         else:
             return None
         return attribs
-    
-    def createDynamicClass(self,className,**attr):
-        '''create a python class from database table name'''
-        return type(className,(Model,),dict(**attr))
-    
-    def classFromTable(self,className):
-        return self.createDynamicClass(className)
-    
+
     def resetMapping(self):
         self.mapping={}
         

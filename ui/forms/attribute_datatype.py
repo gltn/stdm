@@ -23,7 +23,7 @@ from PyQt4.QtGui import *
 class AttributePropretyType(object):
     def __init__(self, model):
         self.model = model
-        self._mapper =  DeclareMapping.instance()
+        self._mapper = DeclareMapping.instance()
         
     def attribute_type(self):
         """Enumerate column and datatype for the selected model
