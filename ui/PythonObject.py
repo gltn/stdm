@@ -1,13 +1,11 @@
-# -*- coding: utf-8 -*-
 """
 /***************************************************************************
- stdm
-                                 A QGIS plugin
- Securing land and property rights for all
-                              -------------------
-        begin                : 2014-03-04
-        copyright            : (C) 2014 by GLTN
-        email                : njoroge.solomon@yahoo.com
+Name                 : PythonObject
+Description          : provides abstract methods for creating a python class from a table name
+Date                 : 5/March/2015
+copyright            : (C) 2015 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -20,10 +18,14 @@
  ***************************************************************************/
 """
 from stdm.data import Model
-class STDMEntity(object):
-    pass
-    
-class LookupTable(object):
-    pass
-class Role(Model):
-    pass
+
+
+def create_dynamic_class(clsname, **attr):
+        """create a python class from database table name"""
+        return type(clsname, (Model,), dict(**attr))
+
+
+def class_from_table(clsname):
+        return create_dynamic_class(clsname)
+
+

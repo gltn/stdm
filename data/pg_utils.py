@@ -229,7 +229,7 @@ def _execute(sql,**kwargs):
     
     return result
 
-def resetContentRoles():
+def reset_content_roles():
     rolesSet = "truncate table content_base cascade;"
     resetSql = text(rolesSet)
     _execute(resetSql)

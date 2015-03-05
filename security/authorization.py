@@ -34,7 +34,7 @@ class Authorizer(object):
     This class has the responsibility of asserting whether an account with 
     the given user name has permissions to access a particular content item
     '''
-    def __init__(self,username):
+    def __init__(self, username):
         self.username = username
         self.userRoles = []
         self._getUserRoles()        
@@ -54,24 +54,20 @@ class Authorizer(object):
         if self.username == pg_account:
             self.userRoles.append(pg_account)
         
-    def CheckAccess(self,contentCode):      
+    def CheckAccess(self, contentCode):
         '''
         Assert whether the given user has permissions to access a content
         item with the gien code. 
         '''        
         hasPermission = False
-        
         #Get roles with permission        
-        try:        
-                                  
+        try:
             cnt = Content()                       
             qo = cnt.queryObject()
-            #raise NameError(qo)
             '''            
             cntRef = qo.filter(Content.code == contentCode).first()            
             '''
-            cntRef = qo.filter(Content.code == contentCode).first()  
-            #raise NameError (dir(RoleMapper))
+            cntRef = qo.filter(Content.code == contentCode).first()
             if cntRef != None:
                 cntRoles =cntRef.roles 
                 for rl in cntRoles:
@@ -84,8 +80,7 @@ class Authorizer(object):
             Catches all errors
             '''
             #pass
-            raise            
-        
+            raise
         return hasPermission
     
 

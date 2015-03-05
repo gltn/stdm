@@ -130,9 +130,11 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
         
         if self._dataInitialized:
             return
-        
-        if self._dbmodel != None:
-            self._initializeData()
+        try:
+            if self._dbmodel != None:
+                self._initializeData()
+        except Exception as ex:
+            pass
             
         self._dataInitialized = True
     
