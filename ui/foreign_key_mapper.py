@@ -81,6 +81,7 @@ class ForeignKeyMapper(QWidget):
         self._cellFormatters = {}
         self._deleteOnRemove = False
         self._uniqueValueColIndices = OrderedDict()
+        self.global_id = {}
         
     def initialize(self):
         '''
@@ -255,16 +256,17 @@ class ForeignKeyMapper(QWidget):
         '''
         Returns the primary keys of the records in the table.
         '''
-        rowCount = self._tableModel.rowCount()
-        recordIds = []
-        
-        for r in range(rowCount):
-            #Get ID value
-            modelIndex = self._tableModel.index(r,0)
-            modelId = modelIndex.data()
-            recordIds.append(modelId)
-                
-        return recordIds
+        if self._tableModel:
+            rowCount = self._tableModel.rowCount()
+            recordIds = []
+            
+            for r in range(rowCount):
+                #Get ID value
+                modelIndex = self._tableModel.index(r,0)
+                modelId = modelIndex.data()
+                recordIds.append(modelId)
+                    
+            return recordIds
             
     def entities(self):
         '''
@@ -337,13 +339,16 @@ class ForeignKeyMapper(QWidget):
         Add the record to the foreign key table using the mappings.
         '''
         #Check if the record exists using the primary key so as to ensure only one instance is added to the table
-        recIndex = getIndex(self._recordIds(),id)
-        if recIndex != -1:
-            return
+        try:
+            recIndex = getIndex(self._recordIds(),id)
+            if recIndex != -1:
+                return
+        except:
+            pass
         
         dbHandler = self._dbModel()
         modelObj = dbHandler.queryObject().filter(self._dbModel.id == recid).first()
-        
+              
         if modelObj != None:
             #Raise before entity added signal
             self.beforeEntityAdded.emit(modelObj)
@@ -352,7 +357,6 @@ class ForeignKeyMapper(QWidget):
             for colIndex,replace in self._uniqueValueColIndices.items():
                 attrName = self._dbModel.displayMapping().keys()[colIndex]
                 attrValue = getattr(modelObj,attrName)
-                
                 #Check to see if there are cell formatters so that the correct value is searched for in the model
                 if attrName in self._cellFormatters:
                     attrValue = self._cellFormatters[attrName](attrValue)
@@ -368,16 +372,19 @@ class ForeignKeyMapper(QWidget):
                         if len(entityModels) > 0:
                             entityModels[0].delete()
                         self._removeRow(matchingIndex.row())
-                        
                         break
-                    
                     else:
                         #Break. Do not add item to the list.
                         return
-            
-            if not self._supportsLists and self._tableModel.rowCount() > 0:
-                self._removeRow(0)
-            self._insertModelToView(modelObj)
+            if self._tableModel:
+                if not self._supportsLists and self._tableModel.rowCount() > 0:
+                    self._removeRow(0)
+                self._insertModelToView(modelObj)
+            else:
+                item_id = getattr(modelObj, 'id')
+                col_list = self._dbModel.displayMapping().keys()
+                item_key =getattr(modelObj, str(col_list[1]))
+                self.global_id[item_id] = item_key
             
     def _insertModelToView(self,modelObj):    
         '''
@@ -419,9 +426,7 @@ class ForeignKeyMapper(QWidget):
                 msg = QApplication.translate("ForeignKeyMapper","Null instance of entity selector.")   
                 self._notifBar.clear()
                 self._notifBar.insertErrorNotification(msg)           
-        
-        
-        
+                
         
         
         

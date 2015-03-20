@@ -46,4 +46,10 @@ class SearchableLineEdit(QLineEdit):
     def button_click_event(self):
         self.signal_sender.emit()
 
+    def set_value(self, data, list):
+        key = self.list.get(data)
+        return  key
+
+
+
 

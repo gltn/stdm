@@ -275,6 +275,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
             rowIndex = self._proxyModel.mapToSource(proxyRowIndex)
             entityId = rowIndex.data(Qt.DisplayRole)
             selectedIds.append(entityId)
+            #QMessageBox.information(None, "Slected", str(selectedIds))
                 
         return selectedIds
         
@@ -531,7 +532,7 @@ class EnumeratorEntityBrowser(EntityBrowser):
         
     def title(self):
         return QApplication.translate("EnumeratorEntityBrowser", "Enumerator Records")
-    
+
 class RespondentEntityBrowser(EntityBrowserWithEditor):
     '''
     Browser for respondent records.
@@ -568,7 +569,7 @@ class PartyEntitySelector(EntityBrowser):
     def __init__(self,parent = None, state = MANAGE):
         mapping=DeclareMapping.instance()
         model = mapping.tableMapping('party')
-       
+
         EntityBrowser.__init__(self, parent, model, state)
         
     def title(self):
@@ -580,15 +581,15 @@ class FarmerEntityBrowser(ContentGroupEntityBrowser):
     '''
     def __init__(self,tableContentGroup,parent = None,state = MANAGE):
         ContentGroupEntityBrowser.__init__(self, Farmer, tableContentGroup, parent, state)
-        self._editorDialog = FarmerEditor      
-        
+        self._editorDialog = FarmerEditor
+
     def _setFormatters(self):
         """
         Specify formatting mappings.
-        """   
+        """
         self.addCellFormatter("GenderID",genderFormatter)
         self.addCellFormatter("MaritalStatusID",maritalStatusFormatter)
-        
+
     def title(self):
         return QApplication.translate("FarmerEntityBrowser", "Farmer Records Manager")
 
@@ -629,7 +630,21 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
             lkformatter = modeller.lookupModel('check_gender')
             return lkformatter.setDisplay(lookupvalue)
         return lookupformatter
-    
+
+class ForeignKeyBrowser(EntityBrowser):
+    '''
+    Browser for foreign records.
+    '''
+
+    def __init__(self,parent = None,state = VIEW|MANAGE):
+        mapping=DeclareMapping.instance()
+        model = mapping.tableMapping('party')
+        self._model = model
+        EntityBrowser.__init__(self, parent, model, state)
+
+    def title(self):
+        return QApplication.translate("ForeignKeyBrowser", "{0} Records".format(self._model.__class__.__name__))
+
 class SurveyEntityBrowser(ContentGroupEntityBrowser):
     '''
     Browser for survey records.
