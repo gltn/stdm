@@ -71,11 +71,11 @@ class ConfigTableReader(object):
             return table_desc_model
     
     def tableNames(self,profile):
-        tData=XMLTableElement(profile)
-        if tData is not None:
+        tbl_data = XMLTableElement(profile)
+        if tbl_data is not None:
 #            if "social_tenure" in tData:
 #                tData.remove('social_tenure')
-            return tData
+            return tbl_data
     
     def fulltableList(self):
         tbList=tableLookUpCollection()

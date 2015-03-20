@@ -42,7 +42,6 @@
 				<contentgroup code="{5D01B4BF-081E-49C1-8F96-465826522C81}" name="delete" />
 			</contentgroups>
 			<geometryz>
-				<geometry arguments="2" column="geom_test" srid="4326" table="spatial_unit" type="POLYGON" />
 				<geometry arguments="2" column="geom_line" srid="4326" table="spatial_unit" type="LINESTRING" />
 				<geometry arguments="2" column="geom_point" srid="4326" table="spatial_unit" type="POINT" />
 				<geometry arguments="2" column="geom_polygon" srid="4326" table="spatial_unit" type="POLYGON" />

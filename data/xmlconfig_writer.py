@@ -199,10 +199,10 @@ def writeProfile(data):
     profile=SubElement(root,'profile',data)
     tree.write(xml_doc,xml_declaration=True, encoding='utf-8')
 
-def checkProfile(profileName): 
-    tree, root=parseRootElement() 
+def checkProfile(profile_name):
+    tree, root = parseRootElement()
     for profile in root.findall('profile'):
-        if profile.get('name')==profileName:
+        if profile.get('name') == profile_name:
             return profile.get('name')
 
 def writeSQLFile(dropTable=False):
@@ -213,7 +213,7 @@ def writeSQLFile(dropTable=False):
     #strFilename = path
     xml = readMergeDict(sourcePath)
     results = configdoc.createTables(xml)
-    fileN=open(destPath,"w")
+    fileN = open(destPath, "w")
     for result in results:
         fileN.write(result[1])
         fileN.write("\n")
@@ -223,16 +223,10 @@ def writeSQLFile(dropTable=False):
 def updateSQL(dropTable=False):
     configdoc = DiffXml2Ddl()
     configdoc.setDbms("postgres")
-    #configdoc.params['drop-tables'] = dropTable
-           
-    #strFilename = path
-    #fc = DiffXml2Ddl()
-  
+
     strNewFile = sourcePath
     strOldFile = oldPath
-    
-    #strOldFile = './.svn/text-base/%s.svn-base' % strNewFile
-    # raise  NameError strNewFile
+
     fileN=open(destPath,"w")
     results = configdoc.diffFiles(strOldFile, strNewFile)
     for result in results:
@@ -247,7 +241,7 @@ def writeHTML():
     strFilename = sourcePath
     xml = readMergeDict(strFilename)
     lines = xml2html.outputHtml(xml)
-    strOutfile =destHtml
+    strOutfile = destHtml
         
     of = open(strOutfile, "w")
     for line in lines:
@@ -258,10 +252,10 @@ def setLookupValue(tableName, valueText):
     '''add lookup value specified by the user
     :type tableName: object
     '''
-    tree, root= parseRootElement()
+    tree, root = parseRootElement()
     node = None
     for elem in root.findall('profile/lookup'):
-        if elem.get('name')== tableName:
+        if elem.get('name') == tableName:
             child = elem.find('data')
             if child is not None:
                 node = SubElement(child, "value")
@@ -272,18 +266,17 @@ def setLookupValue(tableName, valueText):
     tree.write(xml_doc, xml_declaration=True, encoding='utf-8')
 
 def deleteLookupChoice(level,category,tableName,elemnt,key,value):
-    tree, root=parseRootElement()
+    tree, root = parseRootElement()
     for profile in root.findall('profile'):
-        if profile.get('name')==level:
-            tables=profile.findall(category)
+        if profile.get('name') == level:
+            tables = profile.findall(category)
             for table in tables:
-                if table.get('name')==tableName:
+                if table.get('name') == tableName:
                     node=table.find(elemnt)
-                    #nodeElem=elemnt[:(len(elemnt)-1)]
                     for col in node.findall(key):
-                        if col.text==value:
+                        if col.text == value:
                             node.remove(col)
-                            tree.write(xml_doc,xml_declaration=True, encoding='utf-8')
+                            tree.write(xml_doc, xml_declaration=True, encoding='utf-8')
         else:
             continue
 

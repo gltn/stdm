@@ -25,8 +25,8 @@ from PyQt4.QtGui import QDialog, QApplication, QMessageBox
 from stdm.data import writeProfile, checkProfile
 
 class ProfileEditor(QDialog, Ui_Profile):
-    def __init__(self,parent):
-        QDialog.__init__(self,parent)
+    def __init__(self, parent):
+        QDialog.__init__(self, parent)
         
         self.setupUi(self)
         self.initControls()
@@ -35,27 +35,29 @@ class ProfileEditor(QDialog, Ui_Profile):
         self.txtProfile.clear()
         self.txtDesc.clear()
         
-    def profileFormater(self):
+    def profile_formater(self):
         ''''remove training spaces in the name and replace them'''
-        profileName=self.txtProfile.text()
-        formattedName=str(profileName).strip()
-        formattedName=formattedName.replace(' ', "_")
-        return formattedName.lower()
+        profile_name = self.txtProfile.text()
+        formatted_name = str(profile_name).strip().replace(' ', "_")
+        return formatted_name.lower()
     
     def writeProfile(self):
         '''add new profile to the configuration file'''
-        if self.profileFormater()== checkProfile(self.profileFormater()):
+        if self.txtProfile.text() == str(checkProfile(self.txtProfile.text())):
             self.ErrorInfoMessage(QApplication.translate("TableEditor","Profile already exist"))
             return
-        if self.profileFormater()!= checkProfile(self.profileFormater()):
-            profileData={}
-            profileData['name']=str(self.profileFormater())
-            profileData['fullname']=str(self.txtDesc.text())
+        if self.profile_formater() == str(checkProfile(self.profile_formater())):
+            self.ErrorInfoMessage(QApplication.translate("TableEditor","Profile already exist"))
+            return
+        if self.profile_formater() != str(checkProfile(self.profile_formater())).lower():
+            profileData = {}
+            profileData['name'] = str(self.profile_formater())
+            profileData['fullname'] = str(self.txtDesc.text())
             writeProfile(profileData)
         
     def accept(self):
         '''listen to user action on the dialog'''
-        if self.txtProfile.text()=='':
+        if self.txtProfile.text() == '':
             self.ErrorInfoMessage(QApplication.translate("TableEditor","Profile name is not given"))
             return
         self.writeProfile()
@@ -69,7 +71,3 @@ class ProfileEditor(QDialog, Ui_Profile):
         msg.setText(Message)
         msg.exec_()  
 
-        
-        
-        
-        
