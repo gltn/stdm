@@ -207,9 +207,10 @@ class STDMQGISLoader(object):
 
                 self.loadModules()
             except Exception as ex:
-                QMessageBox.warning(self.iface.mainWindow(),
-                         QApplication.translate("STDM","Content Authorization"), str(ex.message))
-                reset_content_roles()
+                pass
+                #QMessageBox.warning(self.iface.mainWindow(),
+                 #        QApplication.translate("STDM","Content Authorization"), str(ex.message))
+                #reset_content_roles()
 
     def loadModules(self):
         '''
