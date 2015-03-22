@@ -89,7 +89,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.helpRequested.connect(self.HelpContents)
         self.rbSchema.clicked.connect(self.setSqlIsertDefinition)
         self.rbSchemaNew.clicked.connect(self.setSqlIsertDefinition)
-        #self.chkPdefault.clicked.connect(self.setDefualtProfile)
+        self.btnGeomDel.clicked.connect(self.delete_geom)
 
         try:
             settings = self.tableHandler.pathSettings()
@@ -415,8 +415,12 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 return
     
     def deleteProfile(self):
+        default_p = "basic"
         if self.cboProfile.currentIndex==-1:
             self.InfoMessage(QApplication.translate("WorkspaceLoader","No profile found"))
+            return
+        if self.cboProfile.currentText().lower() == default_p:
+            self.InfoMessage(QApplication.translate("WorkspaceLoader", "Current profile cannot be deleted"))
             return
         else:
             if self.warningInfo(QApplication.translate("WorkspaceLoader","You are about to delete current profile"))==QMessageBox.Yes:
@@ -453,13 +457,25 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def deleteTableRelation(self):
         '''delete defined table relation from the config '''
         if self.warningInfo(QApplication.translate('WorkspaceLoader',\
-                                                       "Are you sure you want to deleted selected relation for table "+\
+                                                       "Are you sure you want to deleted selected relation from table "+\
                                                        self.tableName))==QMessageBox.Yes:
             selCols=self.tblEdit_2.selectionModel().selectedIndexes() 
             if len(selCols)>0:
                 item=selCols[0].data()
                 element="relations"
                 deleteColumn(self.profile,'table',self.tableName,element,'name',str(item))
+                self.loadTableRelations(self.tableName)
+
+    def delete_geom(self):
+        '''delete defined table relation from the config '''
+        if self.warningInfo(QApplication.translate('WorkspaceLoader',\
+                                                       u"Are you sure you want to deleted selected geometry column from table "+\
+                                                       self.tableName))==QMessageBox.Yes:
+            selCols=self.tblLookup_2.selectionModel().selectedIndexes()
+            if len(selCols)>0:
+                item=selCols[1].data()
+                element="geometryz"
+                deleteColumn(self.profile,'table',self.tableName,element,'column',str(item))
                 self.loadTableRelations(self.tableName)
         
     def deleteLookupChoice(self): 

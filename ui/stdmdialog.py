@@ -49,17 +49,19 @@ class DeclareMapping(object):
         self.type_dictionary = OrderedDict()
     
     def setTableMapping(self, list):
+        Base.metadata.reflect(STDMDb.instance().engine)
         for table in list:
             class_name = table.capitalize()
             class_object = class_from_table(class_name)
             try:
                 pgtable = Table(table, Base.metadata, autoload=True, autoload_with=STDMDb.instance().engine)
+                self.column_mapping_for_table(pgtable)
+                self.datatype_for_column(pgtable)
+                mapper(class_object, pgtable)
+                self._mapping[table] = class_object
             except:
                 pass
-            self.column_mapping_for_table(pgtable)
-            self.datatype_for_column(pgtable)
-            mapper(class_object, pgtable)
-            self._mapping[table] = class_object
+
 
     def tableMapping(self, table):
         if table in self._mapping:
