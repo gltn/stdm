@@ -914,13 +914,14 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         #Validate if the object is an STDM Report Settings file      
         if rptValid:          
             #Check if the table exists
-            tabExists = self._tableExists(rptConf.table)          
+            tabExists = self._tableExists(rptConf.table)
+            #QMessageBox.information(self, "List of tables", str(rptConf.table))
             if tabExists:
                 self.showhideProgressDialog("Restoring Report Settings...")              
-                friendlyTabName = self.tabNames[rptConf.table]  
+                friendlyTabName = self.tabNames[rptConf.table.title()]
                 
                 #Force builder reset even if the loaded report refers to the previously loaded table            
-                if rptConf.table == self.tabName:                                
+                if rptConf.table.title() == self.tabName:
                     self.tabChanged(friendlyTabName)                  
                 else:                  
                     self.tabName = rptConf.table
@@ -928,7 +929,7 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
                     setComboCurrentIndexWithText(self.comboBox,friendlyTabName)
                 
                 #Validate the fields
-                validTabFields = table_column_names(rptConf.table)                      
+                validTabFields = table_column_names(rptConf.table.title())
                 validRptFields, invalidRptFields = compareLists(validTabFields,rptConf.fields)  
                             
                 #Configure supporting controls

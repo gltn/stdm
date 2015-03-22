@@ -202,15 +202,15 @@ class STDMQGISLoader(object):
             self.stdmInitToolbar.insertAction(self.loginAct,self.changePasswordAct)
             self.loginAct.setEnabled(False)
             #Get STDM tables
-            try:
-                self.stdmTables = spatial_tables()
+            self.stdmTables = spatial_tables()
 
-                self.loadModules()
-            except Exception as ex:
-                pass
-                #QMessageBox.warning(self.iface.mainWindow(),
-                 #        QApplication.translate("STDM","Content Authorization"), str(ex.message))
-                #reset_content_roles()
+            self.loadModules()
+            # try:
+            #
+            # except Exception as ex:
+            #     QMessageBox.warning(self.iface.mainWindow(),
+            #              QApplication.translate("STDM","Content Authorization"), str(ex.message))
+            #     reset_content_roles()
 
     def loadModules(self):
         '''

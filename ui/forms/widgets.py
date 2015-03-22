@@ -161,9 +161,10 @@ class ForeignKeyEdit(LineEditWidget):
     def on_select_foreignkey(self):
 
         from .BaseForm import MapperDialog
-        mapper =MapperDialog()
-        mapper.show()
-        mapper.exec_()
+        mapper =MapperDialog(self)
+        mapper.foreign_key_modeller()
+        key0 = mapper.personFKMapper.global_id.keys()[0]
+        self.control.setText(str(mapper.personFKMapper.global_id.get(key0)))
 
 
 def widgetCollection():

@@ -263,7 +263,7 @@ class TitleBase(QWidget,Ui_frmRptTitleBase):
         '''
         ds = dialogSettings
         
-        if not ds == None:
+        if not ds:
             self.txtTitleTop.setText(ds.top)
             self.txtTitleLeft.setText(ds.left)
             self.txtTitleHeight.setText(ds.height)
