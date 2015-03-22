@@ -42,7 +42,7 @@ class AttributePropretyType(object):
                                         u"Database columns and configuration table columns do not "
                                         u"match. Database table columns will be used instead\n"
                                         u"Please update configuration tables for complete dialog mapping"))
-                self.schema_has_changed(db_mapping, type_mapping)
+                self.table_has_changed(db_mapping, type_mapping)
             foreignk_attr = self.foreign_key_attribute_for_model()
             """
             Only the foreign key attributes defined in the configuration shall be considered in the foreign key definition
@@ -62,7 +62,7 @@ class AttributePropretyType(object):
         foreignk_attr = foreign_key_columns(self.model)
         return foreignk_attr
 
-    def schema_has_changed(self, dbtablemapping, configtablemapping):
+    def table_has_changed(self, dbtablemapping, configtablemapping):
         """
         Method to update the column datatype with the default types pre defined in the STDM: data/enums.py
         :param dbtablemapping:
