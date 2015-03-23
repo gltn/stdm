@@ -6,8 +6,8 @@ Created on Mar 28, 2014
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
-ALT_COLOR_EVEN = QColor(183, 100, 102)
-ALT_COLOR_ODD = QColor(135,206,255)
+ALT_COLOR_EVEN = QColor(209, 243, 249)
+ALT_COLOR_ODD = QColor(241,246,245)
 
 itemIcon = QIcon(":/plugins/stdm/images/icons/table.png")
 
