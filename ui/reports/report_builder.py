@@ -55,6 +55,7 @@ from .field_names import FieldNames
 from .groups import Groups
 from .report_layout import ReportLayout
 from .highlighter import SqlHighlighter
+from stdm.data import pg_views
 
 from qgis.core import *
 from qgis.gui import *
@@ -125,6 +126,10 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         self.tabNames = self.config
         #tabList=self.config.items("ReportFields")
         #tabList=self.config.items()
+        user_views = pg_views()
+        if user_views:
+            for view_name in user_views:
+                self.config[view_name.title()] = view_name
         self.tabNames['Social Tenure Relationship'] = 'social_tenure_relations'
         try:
             for name, value in self.config.iteritems():
