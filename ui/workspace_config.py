@@ -402,7 +402,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.profileContent()
         
     def deletedSelectedTable(self):
-        #use the delete buttont to remove the selected table
+        #use the delete button to remove the selected table
         if self.tableName==None:
             self.ErrorInfoMessage(QApplication.translate('WorkspaceLoader',"No table is selected for this operation"))
             return
@@ -410,6 +410,12 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             if self.warningInfo(QApplication.translate("WorkspaceLoader","You are about to delete %s table" %self.tableName))==QMessageBox.Yes:
                 deleteTable(self.profile,self.tableName)
                 self.loadTableData(self.profile, self.pftableView)
+                base_name = self.tableName.title()
+                from stdm.data.pg_utils import delete_table_keys
+                delete_table_keys(self.tableName)
+                #QMessageBox.information(None, "Keys",str(delete_table_keys(self.tableName)))
+                #delete_table_keys('content_base',True)
+
                 self.tableName=None
             else:
                 return
