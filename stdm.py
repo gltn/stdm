@@ -64,7 +64,7 @@ from mapping import (
                      )
 from utils import *
 from mapping.utils import pg_layerNamesIDMapping
-from data.pg_utils import reset_content_roles
+from data.pg_utils import delete_table_data
 from composer import ComposerWrapper
 
 
@@ -201,16 +201,22 @@ class STDMQGISLoader(object):
             self.stdmInitToolbar.insertAction(self.loginAct,self.logoutAct)
             self.stdmInitToolbar.insertAction(self.loginAct,self.changePasswordAct)
             self.loginAct.setEnabled(False)
-            #Get STDM tables
-            self.stdmTables = spatial_tables()
 
-            self.loadModules()
-            # try:
-            #
-            # except Exception as ex:
-            #     QMessageBox.warning(self.iface.mainWindow(),
-            #              QApplication.translate("STDM","Content Authorization"), str(ex.message))
-            #     reset_content_roles()
+            #Get STDM tables
+            try:
+
+                self.stdmTables = spatial_tables()
+                self.loadModules()
+            except Exception as ex:
+                options = "This error is attributed to authentication " \
+                          "or permission on modules or  duplicate keys for the named table(s)" \
+                          "Remove content authorization for the modules or deleted the modules with duplicate keys completely."
+                self.reset_content_modules_id(str(ex.message + options))
+               # self.stdmInitToolbar.addAction(self.wzdAct)
+               # self.stdmInitToolbar.addAction(self.wzdAct)
+
+
+
 
     def loadModules(self):
         '''
@@ -873,6 +879,7 @@ class STDMQGISLoader(object):
         """
         self.stdmInitToolbar.removeAction(self.logoutAct)
         self.stdmInitToolbar.removeAction(self.changePasswordAct)
+        self.stdmInitToolbar.removeAction(self.wzdAct)
         self.loginAct.setEnabled(True)
         self.logoutCleanUp()
         self.initMenuItems()
@@ -952,3 +959,10 @@ class STDMQGISLoader(object):
         handler = ConfigTableReader()
         helpManual = handler.setDocumentationPath()
         os.startfile(helpManual,'open')
+
+    def reset_content_modules_id(self, message_text):
+        message =QMessageBox()
+        message.setWindowTitle(QApplication.translate("STDMQGISLoader",u"Error Loading Modules"))
+        message.setText(message_text)
+        message.setStandardButtons(QMessageBox.Ok)
+        return  message.exec_()
