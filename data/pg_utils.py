@@ -25,7 +25,7 @@ from stdm.data import STDMDb
 from stdm.utils import getIndex
 
 _postGISTables = ["spatial_ref_sys"]
-_postGISViews = ["geometry_columns","raster_columns","geography_columns","raster_overviews"]
+_postGISViews = ["geometry_columns","raster_columns","geography_columns","raster_overviews", "social_tenure_relations"]
 
 def spatial_tables(excludeViews=False):
     '''
@@ -226,13 +226,27 @@ def _execute(sql,**kwargs):
     conn = STDMDb.instance().engine.connect()        
     result = conn.execute(sql,**kwargs)
     conn.close()
-    
     return result
 
 def reset_content_roles():
     rolesSet = "truncate table content_base cascade;"
-    resetSql = text(rolesSet)
-    _execute(resetSql)
-    # rolesSet1 = "truncate table content_roles cascade;"
-    # resetSql1 = text(rolesSet1)
-    # _execute(resetSql1)
+    _execute(text(rolesSet))
+
+def delete_table_keys(table):
+    #clean_delete_table(table)
+    capabilities = ["Create", "Select", "Update", "Delete"]
+    for action in capabilities:
+        init_key = action +" "+ str(table).title()
+        sql = "DELETE FROM content_roles WHERE content_base_id IN (SELECT id FROM content_base WHERE name = '{0}');".format(init_key)
+        sql2 = "DELETE FROM content_base WHERE content_base.id IN (SELECT id FROM content_base WHERE name = '{0}');".format(init_key)
+        r = text(sql)
+        r2 = text(sql2)
+        _execute(r)
+        _execute(r2)
+
+def clean_delete_table(table):
+    sql = "DROP TABLE {0}".format(table)
+    _execute(text(sql))
+
+
+
