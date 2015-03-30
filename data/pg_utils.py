@@ -246,9 +246,10 @@ def delete_table_keys(table):
         _execute(r)
         _execute(r2)
 
-def clean_delete_table(table):
-    sql = "DROP TABLE {0}".format(table)
-    _execute(text(sql))
+def safely_delete_tables(tables):
+    for table in tables:
+        sql = "DROP TABLE  if exists {0} CASCADE".format(table)
+        _execute(text(sql))
 
 
 
