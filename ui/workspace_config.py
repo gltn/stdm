@@ -28,7 +28,7 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from ui_workspace_config import Ui_STDMWizard
 from stdm.data import ConfigTableReader,deleteProfile,profileFullDescription,tableFullDescription,deleteColumn,\
-deleteTable,lookupData2List,deleteLookupChoice,SQLInsert,LicenseDocument,_execute
+deleteTable,lookupData2List,deleteLookupChoice,SQLInsert,LicenseDocument, safely_delete_tables, pg_tables, _execute
 
 from attribute_editor import AttributeEditor
 from table_propertyDlg import TableProperty
@@ -93,21 +93,18 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
 
         try:
             settings = self.tableHandler.pathSettings()
-            if settings[1].get('Config') == None:
-               self.startId() == 1
-            elif settings[1].get('Config') != None:
+            if not settings[1].get('Config'):
+                self.startId() == 1
+            elif settings[1].get('Config'):
                 self.setStartId(2)
         except:
             pass
         
     def registerFields(self):
         self.setOption(self.HaveHelpButton, True)  
-        pgCount=self.page(1)
+        pgCount = self.page(1)
         pgCount.registerField("Accept",self.rbAccpt)
         pgCount.registerField("Reject",self.rbReject)
-        pgCount2=self.page(4)
-        #pgCount2.registerField("SelectionMenu",self.toolbtn)
-
 
     def validateCurrentPage (self):
         validPage = True
@@ -613,15 +610,9 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def DropSchemaTables(self):
         '''Check if table is already defined in pgtables and drop it'''
         if self.rbSchemaNew.isChecked():
-            self.tableList = self.tableHandler.fulltableList()
-            try:
-                for table in self.tableList:
-                    sqlSt = text("drop table if exists " +table+ " cascade;")
-                    _execute(sqlSt)
-            except SQLAlchemyError as ex:
-                return self.ErrorInfoMessage(str(ex.message))
-        else:
-            pass
+            tables = pg_tables()
+            safely_delete_tables(tables)
+
     
     def updateSQLFile(self):
         '''Method to record and save changes whenever the document's content changes'''
