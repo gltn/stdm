@@ -237,8 +237,10 @@ def delete_table_keys(table):
     capabilities = ["Create", "Select", "Update", "Delete"]
     for action in capabilities:
         init_key = action +" "+ str(table).title()
-        sql = "DELETE FROM content_roles WHERE content_base_id IN (SELECT id FROM content_base WHERE name = '{0}');".format(init_key)
-        sql2 = "DELETE FROM content_base WHERE content_base.id IN (SELECT id FROM content_base WHERE name = '{0}');".format(init_key)
+        sql = "DELETE FROM content_roles WHERE content_base_id IN" \
+              " (SELECT id FROM content_base WHERE name = '{0}');".format(init_key)
+        sql2 = "DELETE FROM content_base WHERE content_base.id IN" \
+               " (SELECT id FROM content_base WHERE name = '{0}');".format(init_key)
         r = text(sql)
         r2 = text(sql2)
         _execute(r)
