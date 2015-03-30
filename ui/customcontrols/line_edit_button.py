@@ -31,7 +31,7 @@ class SearchableLineEdit(QLineEdit):
         QLineEdit.__init__(self, parent)
         self.button = QToolButton(self)
         self.button.setCursor(Qt.ArrowCursor)
-
+        self.key = None
         self.button.setIcon(pbIcon)
         self.button.clicked.connect(self.button_click_event)
 
@@ -46,9 +46,15 @@ class SearchableLineEdit(QLineEdit):
     def button_click_event(self):
         self.signal_sender.emit()
 
-    def set_value(self, data, list):
+    def set_value(self, id):
         key = self.list.get(data)
         return  key
+
+    def fk_id(self, key):
+        self.key = key
+
+    def value(self):
+        return self.key
 
 
 

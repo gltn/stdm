@@ -154,7 +154,11 @@ class ForeignKeyMapper(QWidget):
         Set the dialog for selecting entity objects.
         Selector must be a callable.
         '''
-        self._entitySelector = selector
+        if callable(selector):
+            self._entitySelector = selector
+        else:
+            self._entitySelector = selector(self, self._dbModel)
+
         self._entitySelectorState = state
         
     def supportList(self):
@@ -382,13 +386,15 @@ class ForeignKeyMapper(QWidget):
                     self._removeRow(0)
                 self._insertModelToView(modelObj)
             else:
-                item_id = getattr(modelObj, 'id')
-                col_list = self._dbModel.displayMapping().keys()
-                item_key =getattr(modelObj, str(col_list[1]))
-                #self.global_id[item_id] = item_key
-                self.global_id = FKBrowserProperty(item_id, item_key)
-                #return fk_browser
-            
+                try:
+                    item_id = getattr(modelObj, 'id')
+                    col_list = self._dbModel.displayMapping().keys()
+                    item_key =getattr(modelObj, str(col_list[1]))
+                    self.global_id = FKBrowserProperty(item_id, item_key)
+                except Exception as ex:
+                    QMessageBox.information(self, "Foreign Key Reference", str(ex.message))
+                    return
+
     def _insertModelToView(self,modelObj):    
         '''
         Insert the given database model instance into the view.
