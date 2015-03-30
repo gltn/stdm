@@ -81,6 +81,7 @@ class ConfigTableReader(object):
         tbList=tableLookUpCollection()
         if tbList is not None:
             return tbList
+
     def on_main_table_selection(self):
         """
         Method required by the wizard for loading all the table in a model
@@ -136,8 +137,6 @@ class ConfigTableReader(object):
         :param list:
         :return:Listmodel
         """
-        from PyQt4.QtGui import QMessageBox
-        #QMessageBox.information(None,"Lost items",str(col_list))
         return listEntityViewer(col_list, icon=dataIcon)
 
     
@@ -155,7 +154,7 @@ class ConfigTableReader(object):
             relationModel = EntityColumnModel(colHeaders,colVals)
             return relationModel
         
-    def geometryData(self,tableName):
+    def geometry_collection(self,tableName):
         '''Method to read all defined table relationship in the config file'''
         geometryModel = None
         geomAttrib = geometryColumns(tableName, 'geometryz')

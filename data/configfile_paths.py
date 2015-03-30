@@ -52,12 +52,12 @@ class FilePaths(object):
     def checkPreviousSetting(self):    
         self.defaultConfigPath()
         try:
-            pathSettings=self.config.read([CONFIG])
+            pathSettings = self.config.read([CONFIG])
             if pathSettings:
                 self.setUserConfigPath(pathSettings[CONFIG])
             else:
                 self.setUserConfigPath()
-        except:
+        except Exception as ex:
             pass
                         
     def XMLFile(self):
@@ -67,7 +67,7 @@ class FilePaths(object):
 
     def cacheFile(self):
         #To implemented a backup file for comparing edits everytime the user makes changes
-        path=self.userPath+'/temp/%s'%FILE
+        path = self.userPath+'/temp/%s'%FILE
         return path
     
     def cacheDir(self):
@@ -100,10 +100,13 @@ class FilePaths(object):
         return path
     
     def HelpContents(self):
+        """Method to load help contents file"""
         return self._file+'/%s'%HELP
         
     def defaultConfigPath(self):
-        '''returns the path with configuration file'''
+        """
+        returns the path with base configuration file
+        """
         self.baseDir = self._file+"/template/"       
     
     def setUserConfigPath(self,path=None):
@@ -127,8 +130,8 @@ class FilePaths(object):
             if not os.path.isfile(self.cacheFile()):
                 shutil.copy(self.setUserXMLFile(), self.cacheDir())
             self.localFontPath(path)
-        except IOError as ex:
-            raise ex
+        except IOError as io:
+            raise io
     
     def localFontPath(self, path):
         """ Create a path where fonts will be stored"""
@@ -144,13 +147,18 @@ class FilePaths(object):
         SysFonts.register(fontPath)
     
     def setUserXMLFile(self):
-        '''default path to the config file'''
-        xml=self.userPath+'/%s'%FILE
+        """
+        Default path to the config file
+        """
+        xml = self.userPath +'/%s'%FILE
         return xml
     
     def localPath(self):
-        '''look for users path based on platform, need to implement for unix systems'''
-        profPath=None
+        """
+        Look for users path based on platform, need to implement for unix systems
+        :return:
+        """
+        profPath = None
         if platform.system() == "Windows":
             userPath = os.environ["USERPROFILE"]
             profPath = userPath + "/.stdm"
@@ -166,15 +174,21 @@ class FilePaths(object):
             
     def createDir(self,dirPath):
         if os.access(dirPath, os.F_OK) == False:
-            os.makedirs(dirPath)    
+            os.makedirs(dirPath)
+        else:
             return dirPath
     
     def STDMLicenseDoc(self):
-        '''load STDM license file for viewing'''
+        """
+        load STDM license file for viewing
+        """
         return self._file+'/%s'%LICENSE
         
     def createBackup(self):
-        '''incase the user want to keep track of the old file when current file changes'''
+        """
+        Incase the user want to keep track of the old file when current file changes
+        :return:
+        """
         if os.path.isfile(self.cacheFile()):
             os.remove(self.cacheFile())
         shutil.copy(self.setUserXMLFile(), self.cacheDir())

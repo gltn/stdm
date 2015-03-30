@@ -208,15 +208,11 @@ class STDMQGISLoader(object):
                 self.stdmTables = spatial_tables()
                 self.loadModules()
             except Exception as ex:
-                options = "This error is attributed to authentication " \
-                          "or permission on modules or  duplicate keys for the named table(s)" \
-                          "Remove content authorization for the modules or deleted the modules with duplicate keys completely."
+                options = " This error is attributed to authentication " \
+                          "/permission on modules or  duplicate keys for the named table(s)" \
+                          "Remove content authorization for the modules or " \
+                          "deleted the modules with duplicate keys completely."
                 self.reset_content_modules_id(str(ex.message + options))
-               # self.stdmInitToolbar.addAction(self.wzdAct)
-               # self.stdmInitToolbar.addAction(self.wzdAct)
-
-
-
 
     def loadModules(self):
         '''
@@ -407,7 +403,7 @@ class STDMQGISLoader(object):
             content_action = QAction(QIcon(":/plugins/stdm/images/icons/table.png"),
                                     k, self.iface.mainWindow())
             capabilities = contentGroup(self._moduleItems[k])
-            if capabilities != None:
+            if capabilities:
                 moduleCntGroup = TableContentGroup(username, k, content_action)
                 moduleCntGroup.createContentItem().code = capabilities[0]
                 moduleCntGroup.readContentItem().code = capabilities[1]
