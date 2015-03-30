@@ -43,6 +43,7 @@ from stdm.data import (
                        )
 from stdm.ui.customcontrols import TableComboBox
 from sqlalchemy.exc import SQLAlchemyError
+import os
 '''
 from stdm.workspace.defaultSetting.config import dbTableConfig
 from stdm.workspace.defaultSetting.map_query import CertificateMap
@@ -1041,7 +1042,8 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
             if rptFile != "":            
                 rptGenerator=STDMGenerator(stdmRpt,rptFile)
                 rptGenerator.generateReport()            
-                self.InfoMessage("The report has been successfully created and written to {0}".format(rptFile))
+                if self.InfoMessage("The report has been successfully created and written to {0}".format(rptFile)) == QMessageBox.Open:
+                    os.startfile(rptFile,'open')
                 self.close()
                 
     def _tableExists(self,tableName):
@@ -1068,4 +1070,5 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
         msg.setText(Message)
-        msg.exec_() 
+        msg.setStandardButtons(QMessageBox.Ok|QMessageBox.Open)
+        return msg.exec_()

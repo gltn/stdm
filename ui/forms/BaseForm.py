@@ -13,6 +13,7 @@ class MapperDialog(ForeignKeyMapper):
         super(MapperDialog, self).__init__()
         self.personFKMapper = ForeignKeyMapper()
 
+
     def foreign_key_modeller(self):
         self.model()
         self.personFKMapper.setDatabaseModel(self._dbModel)
@@ -26,5 +27,13 @@ class MapperDialog(ForeignKeyMapper):
         mapping=DeclareMapping.instance()
         self._dbModel=mapping.tableMapping('party')
         return self._dbModel
+
+    def model_fkid(self):
+        QMessageBox.information(None, "adflafd", str(self.personFKMapper.global_id.baseid()))
+        return self.personFKMapper.global_id.baseid()
+
+    def model_display_value(self):
+        return self.personFKMapper.global_id.display_value()
+
 
 

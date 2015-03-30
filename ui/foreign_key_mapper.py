@@ -28,6 +28,7 @@ from PyQt4.QtGui import *
 from stdm.data import BaseSTDMTableModel
 from stdm.utils import getIndex
 from .admin_unit_manager import VIEW,MANAGE,SELECT
+from stdm.ui.customcontrols import FKBrowserProperty
 
 __all__=["ForeignKeyMapper"]
 
@@ -81,7 +82,7 @@ class ForeignKeyMapper(QWidget):
         self._cellFormatters = {}
         self._deleteOnRemove = False
         self._uniqueValueColIndices = OrderedDict()
-        self.global_id = {}
+        self.global_id = None
         
     def initialize(self):
         '''
@@ -384,7 +385,9 @@ class ForeignKeyMapper(QWidget):
                 item_id = getattr(modelObj, 'id')
                 col_list = self._dbModel.displayMapping().keys()
                 item_key =getattr(modelObj, str(col_list[1]))
-                self.global_id[item_id] = item_key
+                #self.global_id[item_id] = item_key
+                self.global_id = FKBrowserProperty(item_id, item_key)
+                #return fk_browser
             
     def _insertModelToView(self,modelObj):    
         '''

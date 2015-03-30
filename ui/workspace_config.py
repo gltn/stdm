@@ -262,12 +262,12 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         
 
     def showGeometryColumns(self,tableName):
-        '''method to show defined geometry columns '''
+        '''method to show defined geometry columns in a table model'''
         self.tblLookup_2.clearSpans()
         if tableName == None:
             return
-        geometryModel = self.tableHandler.geometryData(tableName)
-        self.tblLookup_2.setModel(geometryModel)
+        geometry_col_model = self.tableHandler.geometry_collection(tableName)
+        self.tblLookup_2.setModel(geometry_col_model)
                
     def relationForTable(self):
         '''Load defined relations for the selected table'''
@@ -651,17 +651,18 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         action = menu.exec_(self.mapToGlobal(pos))
         if action==self.addAction:
             self.setTableName()
+
         if action==self.editAction:
             if self.tableName==None:
                 self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","No selected table found"))
                 return
             else:
                 self.editTableName()
-                del menu
         if action==self.closeAction:
             if self.tableName!=None:
                 if self.warningInfo(QApplication.translate("WorkspaceLoader","Delete (%s) table?")%self.tableName)==QMessageBox.Yes:
                     self.deletedSelectedTable()
+        del menu
         self.readUserTable()
     
     def licenseFile(self):
@@ -684,16 +685,20 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 self.setWorkingDataPath(userpath)
                 self.certificatePath(userpath)
                 self.templatePath()
-        except: 
-            pass
+        except IOError as io:
+            QMessageBox.information(self,
+                                    QApplication.translate("WorkspaceLoader",u"Directory Error",str(io.message)))
     
     def pathSettings(self):
-        '''add the datapath to the setting'''
+        """
+        add user paths to the registry setting and update the new directory with base files
+        :return:
+        """
         dataPath={}
         settings=self.tableHandler.settingsKeys()
         userPath=[self.txtSetting.text(),self.txtDefaultFolder.text(),self.txtCertFolder.text(),self.txtTemplates.text()]
         for i in range(len(settings)):
-            dataPath[settings[i]]=userPath[i]
+            dataPath[settings[i]] = userPath[i]
         self.tableHandler.setProfileSettings(dataPath)
         self.tableHandler.createDir(dataPath.values())
         self.tableHandler.updateDir(self.txtSetting.text())
@@ -796,4 +801,3 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         msg.setDefaultButton(QMessageBox.No)
         msg.setText(message)
         return msg.exec_()
-        
