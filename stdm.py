@@ -958,7 +958,7 @@ class STDMQGISLoader(object):
 
     def reset_content_modules_id(self, message_text):
         message =QMessageBox()
-        message.setWindowTitle(QApplication.translate("STDMQGISLoader",u"Error Loading Modules"))
+        message.setWindowTitle(QApplication.translate("STDMQGISLoader", u"Error Loading Modules"))
         message.setText(message_text)
-        message.setStandardButtons(QMessageBox.Ok)
+        message.setStandardButtons(QMessageBox.Ok| QMessageBox.Reset)
         return  message.exec_()
