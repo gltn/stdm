@@ -279,7 +279,7 @@ class SearchWidgetValueHandler(ControlValueHandler):
     controlType = SearchableLineEdit
 
     def value(self):
-        ctlValue = self.control.text()
+        ctlValue = self.control.value()
         return ctlValue
 
     def setValue(self, value):
