@@ -17,7 +17,7 @@ class MapperDialog(ForeignKeyMapper):
     def foreign_key_modeller(self):
         self.model()
         self.editor = ForeignKeyBrowser
-        #self.editor.table ="household"
+        self.editor.setDatabaseModel =self.model()
         self.personFKMapper.setDatabaseModel(self._dbModel)
         self.personFKMapper.setEntitySelector(self.editor)
         self.personFKMapper.setSupportsList(True)
