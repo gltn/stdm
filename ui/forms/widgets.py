@@ -147,6 +147,7 @@ class ForeignKeyEdit(LineEditWidget):
     data_type = SearchableLineEdit
     def Factory(self):
         self.control = SearchableLineEdit()
+        self.base_id = None
         return self.control
 
     def adopt(self):
@@ -163,9 +164,11 @@ class ForeignKeyEdit(LineEditWidget):
         from .BaseForm import MapperDialog
         mapper =MapperDialog(self)
         mapper.foreign_key_modeller()
-        key0 = mapper.personFKMapper.global_id.keys()[0]
-        self.control.setText(str(mapper.personFKMapper.global_id.get(key0)))
-
+        #key0 = mapper.personFKMapper.global_id.keys()[0]
+        #self.control.setText(str(mapper.personFKMapper.global_id.get(key0)))
+        self.control.setText(str(mapper.model_display_value()))
+        self.base_id = mapper.model_fkid()
+        self.control.fk_id(self.base_id)
 
 def widgetCollection():
     mapping = {

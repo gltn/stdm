@@ -13,10 +13,13 @@ class MapperDialog(ForeignKeyMapper):
         super(MapperDialog, self).__init__()
         self.personFKMapper = ForeignKeyMapper()
 
+
     def foreign_key_modeller(self):
         self.model()
+        self.editor = ForeignKeyBrowser
+        #self.editor.table ="household"
         self.personFKMapper.setDatabaseModel(self._dbModel)
-        self.personFKMapper.setEntitySelector(ForeignKeyBrowser)
+        self.personFKMapper.setEntitySelector(self.editor)
         self.personFKMapper.setSupportsList(True)
         self.personFKMapper.setDeleteonRemove(False)
         self.personFKMapper.onAddEntity()
@@ -26,5 +29,19 @@ class MapperDialog(ForeignKeyMapper):
         mapping=DeclareMapping.instance()
         self._dbModel=mapping.tableMapping('household')
         return self._dbModel
+
+    def model_fkid(self):
+        #QMessageBox.information(None, "adflafd", str(self.personFKMapper.global_id.baseid()))
+        try:
+            return self.personFKMapper.global_id.baseid()
+        except:
+            pass
+
+    def model_display_value(self):
+        try:
+            return self.personFKMapper.global_id.display_value()
+        except:
+            pass
+
 
 

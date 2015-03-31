@@ -229,9 +229,7 @@ def contentGroup(tableName):
     for elem in root.findall('profile/table'):
         if elem.get('name') == tableName:
             childs = elem.find('contentgroups')
-            if childs is not None:
-                for child in childs:
-                    codeList.append(child.get('code'))
-                return codeList
+            if childs:
+                return [(child.get('code')) for child in childs]
             else:
                 return None

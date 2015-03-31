@@ -636,11 +636,12 @@ class ForeignKeyBrowser(EntityBrowser):
     Browser for foreign records.
     '''
 
-    def __init__(self,parent = None,state = VIEW|MANAGE):
+    def __init__(self, parent = None, table =None, state = VIEW|MANAGE):
+        self.table = table
         mapping=DeclareMapping.instance()
         model = mapping.tableMapping('household')
         self._model = model
-        EntityBrowser.__init__(self, parent, model, state)
+        EntityBrowser.__init__(self, parent, self._model, state)
 
     def title(self):
         return QApplication.translate("ForeignKeyBrowser", "{0} Records".format(self._model.__class__.__name__))
