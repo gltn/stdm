@@ -639,7 +639,7 @@ class ForeignKeyBrowser(EntityBrowser):
     def __init__(self, parent = None, table =None, state = VIEW|MANAGE):
         self.table = table
         mapping=DeclareMapping.instance()
-        model = mapping.tableMapping('household')
+        model = mapping.tableMapping(table)
         self._model = model
         EntityBrowser.__init__(self, parent, self._model, state)
 
