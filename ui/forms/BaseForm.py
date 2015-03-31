@@ -24,7 +24,7 @@ class MapperDialog(ForeignKeyMapper):
 
     def model(self):
         mapping=DeclareMapping.instance()
-        self._dbModel=mapping.tableMapping('party')
+        self._dbModel=mapping.tableMapping('household')
         return self._dbModel
 
 

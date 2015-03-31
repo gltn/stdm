@@ -18,45 +18,20 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from stdm.settings import pbIcon
-__all__ = ["SearchableLineEdit"]
+from .line_edit_button import SearchableLineEdit
+from data import STDMDb, Model
 
-class SearchableLineEdit(QLineEdit):
-    """Subclass the QLineEdit to support a toolbutton"""
-    #signal_sender = pyqtSignal("PyQt_PyObject")
-    signal_sender = pyqtSignal(name = 'Button clicked')
-    def __init__(self, parent=None):
-        QLineEdit.__init__(self, parent)
-        self.button = QToolButton(self)
-        self.button.setCursor(Qt.ArrowCursor)
-        self.setText("1")
-        self.button.setIcon(pbIcon)
-        self.button.clicked.connect(self.button_click_event)
+class BrowseLineControl(SearchableLineEdit):
+    """
+    Class to implement browsable line control for foreign key references
+    """
+    def __init__(self, model = None, parent =None):
 
-
-    def resizeEvent(self,event):
-        rect = self.rect()
-        frameWidth = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
-        buttonWidth = self.style().pixelMetric(QStyle.PM_ScrollBarExtent)
-        self.button.resize(buttonWidth,rect.height()-2*frameWidth)
-        self.button.move(rect.right() - buttonWidth, frameWidth)
-
-    def button_click_event(self):
-        self.signal_sender.emit()
-
-    def set_value(self, fk_value):
-        if
-        return
-
-    def _model(self):
-        return self._dbmodel
-
-    def set_model(self, model):
         self._dbmodel = model
 
+    def set_value(self, fk_value):
+        """
 
-
-
-
+        :param fk_value:
+        :return:
+        """

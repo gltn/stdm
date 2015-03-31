@@ -217,9 +217,7 @@ class ForeignKeyMapperValueHandler(ControlValueHandler):
     
     def supportsMandatory(self):
         return True
-    
-    def default(self):
-        return None
+
     
 ForeignKeyMapperValueHandler.register()
 
@@ -282,20 +280,15 @@ class SearchWidgetValueHandler(ControlValueHandler):
 
     def value(self):
         ctlValue = self.control.text()
-        try:
-            ctlIntValue = int(ctlValue)
-        except ValueError:
-            ctlIntValue = None
-        return ctlIntValue
+        return ctlValue
 
-    def setValue(self,value):
+    def setValue(self, value):
         self.control.setText(str(value))
 
     def supportsMandatory(self):
         return True
 
-    def default(self):
-        return None
+
 SearchWidgetValueHandler.register()
 
 class MultipleChoiceComboBox(ControlValueHandler):
@@ -309,6 +302,7 @@ class MultipleChoiceComboBox(ControlValueHandler):
     def setValue(self,value):
         if value:
             self.control.set_values(value)
+
 
 MultipleChoiceComboBox.register()
 

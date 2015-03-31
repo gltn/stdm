@@ -638,7 +638,7 @@ class ForeignKeyBrowser(EntityBrowser):
 
     def __init__(self,parent = None,state = VIEW|MANAGE):
         mapping=DeclareMapping.instance()
-        model = mapping.tableMapping('party')
+        model = mapping.tableMapping('household')
         self._model = model
         EntityBrowser.__init__(self, parent, model, state)
 
