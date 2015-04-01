@@ -21,7 +21,7 @@ from PyQt4.QtCore import QRegExp
 
 from sqlalchemy.sql.expression import text
 
-from stdm.data import STDMDb
+from stdm.data import STDMDb, Base
 from stdm.utils import getIndex
 
 _postGISTables = ["spatial_ref_sys"]
@@ -245,11 +245,18 @@ def delete_table_keys(table):
         r2 = text(sql2)
         _execute(r)
         _execute(r2)
+        Base.metadata._remove_table(table, 'public')
 
 def safely_delete_tables(tables):
     for table in tables:
         sql = "DROP TABLE  if exists {0} CASCADE".format(table)
         _execute(text(sql))
+        Base.metadata._remove_table(table, 'public')
+        flush_session_activity()
+
+def flush_session_activity():
+    STDMDb.instance().session._autoflush()
+    Base.metadata.reflect(STDMDb.instance().engine)
 
 
 

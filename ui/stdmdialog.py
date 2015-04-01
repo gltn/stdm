@@ -61,7 +61,7 @@ class DeclareMapping(object):
                 mapper(class_object, pgtable)
                 self.table_property(pgtable)
                 self._mapping[table] = class_object
-            except NoSuchTableError:
+            except:
                 pass
 
     def pythonize_tablename(self, table):

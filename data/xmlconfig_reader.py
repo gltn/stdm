@@ -27,7 +27,7 @@ from collections import OrderedDict
 from configfile_paths import FilePaths
 try:
     xmlobject = FilePaths()
-    doc = xmlobject.XMLFile()
+    #doc = xmlobject.XMLFile()
     xml_doc = xmlobject.setUserXMLFile()
     #xml_doc="C:/Users/SOLOMON/.stdm/stdmConfig.xml"
     html_doc = xmlobject.HtmlFile()
@@ -35,7 +35,7 @@ except:
     pass
 
 def parseRootElement():
-    if xml_doc == None:
+    if not xml_doc:
         return
     else:
         tree = ET()

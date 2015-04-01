@@ -28,7 +28,8 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from ui_workspace_config import Ui_STDMWizard
 from stdm.data import ConfigTableReader,deleteProfile,profileFullDescription,tableFullDescription,deleteColumn,\
-deleteTable,lookupData2List,deleteLookupChoice,SQLInsert,LicenseDocument, safely_delete_tables, pg_tables, _execute
+deleteTable,lookupData2List,deleteLookupChoice,SQLInsert,LicenseDocument, safely_delete_tables, pg_tables, \
+    _execute, flush_session_activity
 
 from attribute_editor import AttributeEditor
 from table_propertyDlg import TableProperty
@@ -592,6 +593,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                     roleP._execute(sqlSt)
                     self.assignRoles()
                     self.InfoMessage("Changes successfully saved in the STDM database")
+                    flush_session_activity()
                     self.tableHandler.trackXMLChanges()
                     return valid
             except SQLAlchemyError as ex:
@@ -610,7 +612,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def DropSchemaTables(self):
         '''Check if table is already defined in pgtables and drop it'''
         if self.rbSchemaNew.isChecked():
-            tables = pg_tables()
+            #tables = pg_tables()
+            tables = self.tableHandler.fulltableList()
             safely_delete_tables(tables)
 
     
