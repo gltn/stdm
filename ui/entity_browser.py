@@ -633,14 +633,16 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
 
 class ForeignKeyBrowser(EntityBrowser):
     '''
-    Browser for foreign records.
+    Browser for  foreign key records.
     '''
 
     def __init__(self, parent = None, table =None, state = VIEW|MANAGE):
         self.table = table
-        mapping=DeclareMapping.instance()
-        model = mapping.tableMapping(table)
+
+        mapping = DeclareMapping.instance()
+        model = mapping.tableMapping(self.table)
         self._model = model
+
         EntityBrowser.__init__(self, parent, self._model, state)
 
     def title(self):
