@@ -204,7 +204,6 @@ class STDMQGISLoader(object):
 
             #Get STDM tables
             try:
-
                 self.stdmTables = spatial_tables()
                 self.loadModules()
             except Exception as ex:
