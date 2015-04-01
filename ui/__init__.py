@@ -34,7 +34,8 @@ from .entity_browser import (
                             PartyEntitySelector,
                             FarmerEntityBrowser,
                             STDMEntityBrowser,
-                            SurveyEntityBrowser
+                            SurveyEntityBrowser,
+                            ForeignKeyBrowser
                             )
 #from .foreign_key_editors import SpatialCoordinatesEditor
 #from .foreign_key_editors import (

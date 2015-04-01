@@ -157,7 +157,7 @@ class ForeignKeyMapper(QWidget):
         if callable(selector):
             self._entitySelector = selector
         else:
-            self._entitySelector = selector(self, self._dbModel)
+            self._entitySelector = selector.__class__
 
         self._entitySelectorState = state
         
@@ -420,7 +420,7 @@ class ForeignKeyMapper(QWidget):
         database model instance.
         '''
         if self._entitySelector != None:           
-            entitySelector = self._entitySelector(self,self._entitySelectorState)
+            entitySelector = self._entitySelector(self, self._dbModel)
             #Cascade cell formatters
             entitySelector.setCellFormatters(self._cellFormatters)
             self.connect(entitySelector, SIGNAL("recordSelected(int)"),self._onRecordSelectedEntityBrowser)
