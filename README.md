@@ -1,11 +1,7 @@
 STDM Plugin
 ===========
 
-This is a QGIS plugin that has been implemented using Python and
-provides the core GIS functionality for the different STDM modules. By
-using QGIS as the host framework for creating and managing geographic
-objects, the plugin enables seamleass integration of tenure entities,
-for both spatial and textual representations.
+A pro-poor land information tool, implemented as a QGIS plugin, that is based on the ISO-certified Land Administration Domain Model and built on top of free and open source software products. STDM supports the continuum of land rights and is participatory-driven, gender-sensitive, affordable and scalable.
 
 Requirements
 ------------
