@@ -27,7 +27,6 @@ from PyQt4.QtCore import (
                           )
 
 from stdm.utils import *
-import resources_rc
 from stdm.data import (
                        table_column_names,
                        pg_tables,
