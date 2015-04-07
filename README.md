@@ -1,5 +1,5 @@
-STDM Plugin
-===========
+Social Tenure Domain Model
+==========================
 
 A pro-poor land information tool, implemented as a QGIS plugin, that is based on the ISO-certified Land Administration Domain Model and built on top of free and open source software products. STDM supports the continuum of land rights and is participatory-driven, gender-sensitive, affordable and scalable.
 
