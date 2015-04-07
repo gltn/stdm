@@ -60,5 +60,3 @@ class Ui_frmAbout(object):
         frmAbout.setWindowTitle(_translate("frmAbout", "About STDM", None))
         self.btnSTDMHome.setText(_translate("frmAbout", "STDM Home Page", None))
         self.btnContactUs.setText(_translate("frmAbout", "Contact Us", None))
-
-import resources_rc
