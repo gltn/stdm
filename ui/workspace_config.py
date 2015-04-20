@@ -541,8 +541,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def rawSQLDefinition(self):
         '''read sql definition on the UI'''
         self.txtHtml.clear()
-        fileN=self.SQLFileView()
-        color=QColor(192, 192, 192)
+        fileN = self.SQLFileView()
+        color = QColor(192, 192, 192)
         self.txtHtml.setTextBackgroundColor(color)
         with open(fileN,'r')as f:
             self.txtHtml.insertPlainText(f.read())
@@ -550,14 +550,14 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             
     def setSqlIsertDefinition(self):
         '''Add insert sql statement for the lookup defined values'''
-        fileN=self.SQLFileView()
+        fileN = self.SQLFileView()
         if self.rbSchemaNew.isChecked():
             self.tableHandler.saveXMLchanges()
-            lookups=self.lookupTables()
+            lookups = self.lookupTables()
             for lookup in lookups:
-                lookupTextList=lookupData2List(self.profile,lookup)
-                sqlInsert=SQLInsert(lookup,lookupTextList)
-                SQLSt=sqlInsert.setInsertStatement()
+                lookupTextList = lookupData2List(self.profile, lookup)
+                sqlInsert = SQLInsert(lookup, lookupTextList)
+                SQLSt = sqlInsert.setInsertStatement()
                 with open(fileN,'a')as f:
                     for row in SQLSt:
                         f.write(row)
@@ -647,13 +647,13 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             self.setTableName()
 
         if action==self.editAction:
-            if self.tableName==None:
+            if not self.tableName:
                 self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","No selected table found"))
                 return
             else:
                 self.editTableName()
         if action==self.closeAction:
-            if self.tableName!=None:
+            if self.tableName:
                 if self.warningInfo(QApplication.translate("WorkspaceLoader","Delete (%s) table?")%self.tableName)==QMessageBox.Yes:
                     self.deletedSelectedTable()
         del menu
