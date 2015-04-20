@@ -390,10 +390,14 @@ class ForeignKeyMapper(QWidget):
                     item_id = getattr(modelObj, 'id')
                     col_list = self._dbModel.displayMapping().keys()
                     item_key =getattr(modelObj, str(col_list[1]))
-                    self.global_id = FKBrowserProperty(item_id, item_key)
+                    self.global_id = self.onfk_lookup(item_id, item_key)
                 except Exception as ex:
                     QMessageBox.information(self, "Foreign Key Reference", str(ex.message))
                     return
+
+    def onfk_lookup(self, base_id, displayName):
+
+        return FKBrowserProperty(base_id, displayName)
 
     def _insertModelToView(self,modelObj):    
         '''
@@ -419,22 +423,34 @@ class ForeignKeyMapper(QWidget):
         Slot raised on selecting to add related entities that will be mapped to the primary
         database model instance.
         '''
-        if self._entitySelector != None:           
-            entitySelector = self._entitySelector(self, self._dbModel)
-            #Cascade cell formatters
-            entitySelector.setCellFormatters(self._cellFormatters)
+        #QMessageBox.information(None, "Current model", str(self._dbModel))
+        if self._tableModel:
+            #QMessageBox.information(None, "Current model", str(self._dbModel))
+            if self._entitySelector != None:
+                entitySelector = self._entitySelector(self, self._entitySelectorState)
+                #Cascade cell formatters
+
+                entitySelector.setCellFormatters(self._cellFormatters)
+                self.connect(entitySelector, SIGNAL("recordSelected(int)"),self._onRecordSelectedEntityBrowser)
+                #self.connect(entitySelector, SIGNAL("destroyed(QObject *)"),self.onEntitySelectorDestroyed)
+
+                retStatus = entitySelector.exec_()
+                if retStatus == QDialog.Accepted:
+                    pass
+            else:
+                if self._notifBar != None:
+                    msg = QApplication.translate("ForeignKeyMapper","Null instance of entity selector.")
+                    self._notifBar.clear()
+                    self._notifBar.insertErrorNotification(msg)
+        else:
+            #QMessageBox.information(None, "Table name", str(self._dbModel.__name__))
+            entitySelector = self._entitySelector(self, str(self._dbModel.__name__).lower())
             self.connect(entitySelector, SIGNAL("recordSelected(int)"),self._onRecordSelectedEntityBrowser)
-            #self.connect(entitySelector, SIGNAL("destroyed(QObject *)"),self.onEntitySelectorDestroyed)
-            
+                #self.connect(entitySelector, SIGNAL("destroyed(QObject *)"),self.onEntitySelectorDestroyed)
+
             retStatus = entitySelector.exec_()
             if retStatus == QDialog.Accepted:
                 pass
-                
-        else:
-            if self._notifBar != None:
-                msg = QApplication.translate("ForeignKeyMapper","Null instance of entity selector.")   
-                self._notifBar.clear()
-                self._notifBar.insertErrorNotification(msg)           
                 
         
         
