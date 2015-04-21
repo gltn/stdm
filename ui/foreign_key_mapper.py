@@ -420,10 +420,10 @@ class ForeignKeyMapper(QWidget):
         database model instance.
         '''
         if self._entitySelector != None:           
-            entitySelector = self._entitySelector(self, self._dbModel)
+            entitySelector = self._entitySelector(self, self._entitySelectorState)
             #Cascade cell formatters
             entitySelector.setCellFormatters(self._cellFormatters)
-            self.connect(entitySelector, SIGNAL("recordSelected(int)"),self._onRecordSelectedEntityBrowser)
+            self.connect(entitySelector, SIGNAL("recordSelected(int)"), self._onRecordSelectedEntityBrowser)
             #self.connect(entitySelector, SIGNAL("destroyed(QObject *)"),self.onEntitySelectorDestroyed)
             
             retStatus = entitySelector.exec_()
