@@ -89,6 +89,9 @@ from .pg_utils import (
                        unique_column_values,
                        columnType,
                        process_report_filter,
-                       delete_table_data
+                       delete_table_data,
+                       safely_delete_tables,
+                       delete_table_keys,
+                       flush_session_activity
                        )
 

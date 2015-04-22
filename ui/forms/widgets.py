@@ -19,7 +19,8 @@ email                : njoroge.solomon@yahoo.com
 from datetime import date
 
 from PyQt4.QtGui import *
-from stdm.ui.customcontrols import SearchableLineEdit, MultipleChoiceCombo
+
+from stdm.ui.customcontrols import SearchableLineEdit
 
 
 class InputWidget(QWidget):
@@ -120,12 +121,12 @@ class BooleanWidget(LineEditWidget):
     data_type = 'boolean'
     def Factory(self):
         self.control = QComboBox()
-        return  self.control
+        return self.control
 
     def adopt(self):
         self.options = {
-            '1' : 'Yes',
-            '0' : 'No'
+            'Yes': 'Yes',
+            'No': 'No'
         }
         for k, v in self.options.iteritems():
             self.control.addItem(v, k)
@@ -139,32 +140,40 @@ class DateEditWidget(InputWidget):
         return self.control
     
     def adopt(self):
-        tDate=date.today()
+        tDate = date.today()
         self.control.setDate(tDate)
         self.control.setMinimumWidth(50)
 
-class ForeignKeyEdit(LineEditWidget):
+class ForeignKeyEdit(InputWidget):
     data_type = SearchableLineEdit
+
     def Factory(self):
         self.control = SearchableLineEdit()
+        self.base_id = 0
+        self.control.signal_sender.connect(self.foreign_key_widget_activated)
         return self.control
 
     def adopt(self):
-        self.control.setText("")
+        self.control.setText("0")
         self.control.setReadOnly(True)
-        self.control.signal_sender.connect(self.foreign_key_widget_activated)
+
 
     def foreign_key_widget_activated(self):
         self.on_select_foreignkey()
 
-
     def on_select_foreignkey(self):
-
-        from .BaseForm import MapperDialog
-        mapper =MapperDialog(self)
+        from stdm.ui import FKMapperDialog
+        mapper = FKMapperDialog()
         mapper.foreign_key_modeller()
-        key0 = mapper.personFKMapper.global_id.keys()[0]
-        self.control.setText(str(mapper.personFKMapper.global_id.get(key0)))
+
+        if mapper.model_display_value() == None:
+            mapper.model_display_value() == self.base_id
+        self.control.setText(str(mapper.model_display_value()))
+        if not mapper.model_fkid():
+            self.control.fk_id(self.base_id)
+        else:
+            self.base_id = mapper.model_fkid()
+            self.control.fk_id(self.base_id)
 
 
 def widgetCollection():

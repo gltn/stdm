@@ -82,7 +82,7 @@ class STDMDb(object):
         self.session = Session() 
         Base.metadata.create_all(self.engine)
         #Base.metadata=metadata
-        #metadata.reflect(bind=self.engine)
+        metadata.reflect(bind=self.engine)
         
     def createMetadata(self):
         '''
@@ -180,7 +180,7 @@ class Content(Model,Base):
     id = Column(Integer,primary_key = True)
     name = Column(String(100), unique = True)
     code = Column(String(100),unique = True) 
-    roles = relationship("Role", secondary = "content_roles", backref = "contents")  
+    roles = relationship("Role", secondary = "content_roles", backref = "contents")
     
 class Role(Model,Base):
     '''

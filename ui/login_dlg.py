@@ -27,6 +27,7 @@ from .notification import NotificationBar,ERROR
 from stdm.data import DatabaseConfig, DatabaseConnection
 from stdm.settings import RegistryConfig
 from stdm.security import User
+from stdm.data import DatabaseCreator
 SUPERUSER = 'postgres'
 class loginDlg(QDialog, Ui_frmLogin):
     '''
@@ -105,14 +106,18 @@ class loginDlg(QDialog, Ui_frmLogin):
         '''
         Incase the user clicks reset button to change the settings
         '''
-        connSettings = ['Host', 'Database', 'Port']
-        setting = RegistryConfig()
+        setting_data = self.reg_setting()
         dbDlg = dbconnDlg(self)
-        settingData = setting.read(connSettings)
-        dbDlg.txtDatabase.setText(str(settingData['Database']))
-        dbDlg.txtHost.setText(str(settingData['Host']))
-        dbDlg.txtPort.setText(str(settingData['Port']))
+        dbDlg.txtDatabase.setText(str(setting_data['Database']))
+        dbDlg.txtHost.setText(str(setting_data['Host']))
+        dbDlg.txtPort.setText(str(setting_data['Port']))
         dbDlg.exec_()
+
+    def reg_setting(self):
+        connSettings = ['Host', 'Database', 'Port']
+        set_conn = RegistryConfig()
+        settings = set_conn.read(connSettings)
+        return settings
 
     def acceptdlg(self):
         '''
@@ -125,7 +130,7 @@ class loginDlg(QDialog, Ui_frmLogin):
             #Get DB connection
             dbconfig = DatabaseConfig()
             dbconn = dbconfig.read()
-            if dbconn == None:
+            if not dbconn:
                 msg = QApplication.translate("LoginDialog","The STDM database connection has not been configured in your system.\nWould you like to configure it now?")
                 response = QMessageBox.warning(self, QApplication.translate("LoginDialog","Database Connection"), 
                                                msg, QMessageBox.Yes|QMessageBox.No, QMessageBox.Yes)
@@ -144,9 +149,27 @@ class loginDlg(QDialog, Ui_frmLogin):
                 self.dbConn = dbconn
                 self.accept()
             else:
-                QMessageBox.critical(self, QApplication.translate("LoginDialog","Authentication Failed"), msg)
+                self.login_operation_error(msg)
+                    #self.on_new_db()
                 if self.User.UserName == SUPERUSER:
                     self.resetSetting()
                     self.onRegistrySettings()
                 self.txtPassword.setFocus()
                 self.txtPassword.selectAll()
+
+    def on_new_db(self):
+        """
+        Create a new database if the user selects so
+        :return:
+        """
+
+        db_creator = DatabaseCreator()
+        db_creator.createDb()
+
+    def login_operation_error(self, message_text):
+        message =QMessageBox()
+        message.setWindowTitle(QApplication.translate("LoginDialog","Authentication Failed"))
+        message.setText(message_text)
+        message.setStandardButtons(QMessageBox.Ok)
+        message.addButton("Create New", QMessageBox.AcceptRole)
+        return  message.exec_()

@@ -204,19 +204,14 @@ class STDMQGISLoader(object):
 
             #Get STDM tables
             try:
-
                 self.stdmTables = spatial_tables()
                 self.loadModules()
             except Exception as ex:
-                options = "This error is attributed to authentication " \
-                          "or permission on modules or  duplicate keys for the named table(s)" \
-                          "Remove content authorization for the modules or deleted the modules with duplicate keys completely."
+                options = " This error is attributed to authentication " \
+                          "/permission on modules or  duplicate keys for the named table(s)" \
+                          "Remove content authorization for the modules or " \
+                          "deleted the modules with duplicate keys completely."
                 self.reset_content_modules_id(str(ex.message + options))
-               # self.stdmInitToolbar.addAction(self.wzdAct)
-               # self.stdmInitToolbar.addAction(self.wzdAct)
-
-
-
 
     def loadModules(self):
         '''
@@ -407,7 +402,7 @@ class STDMQGISLoader(object):
             content_action = QAction(QIcon(":/plugins/stdm/images/icons/table.png"),
                                     k, self.iface.mainWindow())
             capabilities = contentGroup(self._moduleItems[k])
-            if capabilities != None:
+            if capabilities:
                 moduleCntGroup = TableContentGroup(username, k, content_action)
                 moduleCntGroup.createContentItem().code = capabilities[0]
                 moduleCntGroup.readContentItem().code = capabilities[1]
@@ -962,7 +957,7 @@ class STDMQGISLoader(object):
 
     def reset_content_modules_id(self, message_text):
         message =QMessageBox()
-        message.setWindowTitle(QApplication.translate("STDMQGISLoader",u"Error Loading Modules"))
+        message.setWindowTitle(QApplication.translate("STDMQGISLoader", u"Error Loading Modules"))
         message.setText(message_text)
-        message.setStandardButtons(QMessageBox.Ok)
+        message.setStandardButtons(QMessageBox.Ok| QMessageBox.Reset)
         return  message.exec_()

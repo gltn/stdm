@@ -39,29 +39,49 @@ from stdm.third_party.sqlalchemy.exc import NoSuchTableError
         
 @Singleton                  
 class DeclareMapping(object):
-    '''
-    this class takes an instance of the table defined the schema and returns a model objects
-    '''
-    def __init__(self,list=None):
-        self.list=list
-        self._mapping={}
+    """
+    this class takes an instance of the table defined the pg schema and returns a sqlalchemy table mapper model
+    """
+    def __init__(self, tlist=None):
+        self.list = tlist
+        self._mapping = {}
         self.attDictionary = OrderedDict()
-        self.type_dictionary = OrderedDict()
+        self.tablecol_mapping = OrderedDict()
     
-    def setTableMapping(self, list):
-        Base.metadata.reflect(STDMDb.instance().engine)
-        for table in list:
-            class_name = table.capitalize()
-            class_object = class_from_table(class_name)
+    def setTableMapping(self, tablist):
+        """
+        Method to convert a list of table to mapped table object
+        :return Mapper calass
+        """
+        #Base.metadata.reflect(STDMDb.instance().engine)
+        for table in tablist:
+            class_object = self.pythonize_tablename(table)
             try:
                 pgtable = Table(table, Base.metadata, autoload=True, autoload_with=STDMDb.instance().engine)
-                self.column_mapping_for_table(pgtable)
-                self.datatype_for_column(pgtable)
                 mapper(class_object, pgtable)
+                self.table_property(pgtable)
                 self._mapping[table] = class_object
             except:
                 pass
 
+    def pythonize_tablename(self, table):
+        """
+        Method to create a python object from a table name
+        :param table:
+        :return:
+        """
+        class_name = table.capitalize()
+        class_object = class_from_table(class_name)
+        return class_object
+
+    def table_property(self, reflectedtab):
+        """
+        Method to query table and its column attribute and format to dictionary
+        :param mappedtable:
+        :return:
+        """
+        self.column_mapping_for_table(reflectedtab)
+        self.table_columns_metadata(reflectedtab)
 
     def tableMapping(self, table):
         if table in self._mapping:
@@ -69,7 +89,7 @@ class DeclareMapping(object):
             Model.attrTranslations = self.displayMapping(table)
             return modelCls
 
-    def displayMapping(self,table=''):
+    def displayMapping(self, table= None):
         """
         Replaces the depreciated method where column names were read from the config.
         column names already stored in a dictionary.
@@ -77,40 +97,36 @@ class DeclareMapping(object):
         :return:
         """
         attribs = OrderedDict()
-        if table != '':
+        if table:
             col_list = self.attDictionary.get(table)
             for col in col_list:
-                attribs[col]=col.replace('_',' ').title()
+                attribs[col] = col.replace('_', ' ').title()
         else:
             return None
         return attribs
-
-    def resetMapping(self):
-        self.mapping={}
         
-    def column_mapping_for_table(self,table):
+    def column_mapping_for_table(self, table):
         """
         Method to store all the columns names from the database table into an dict.
-
         :param table:
         :return:
         """
         self.attDictionary[table.name] = [column.name for column in table.columns]
 
-    def datatype_for_column(self, table):
+    def table_columns_metadata(self, table):
         """
-
+        Method to package the table columns and their datatype into a dictionary mapping.
         :param table:
-        :return:
+        :return dict:
         """
-        self.typemapping = OrderedDict()
+        type_mapping = OrderedDict()
         for column in table.columns:
-            self.typemapping[column.name] = column.type
-        self.type_dictionary[table.name] = self.typemapping
+            type_mapping[column.name] = column.type
+        self.tablecol_mapping[table.name] = type_mapping
 
     def column_data_types(self, table):
         """
-        Return the table columns datatype as a dictionary
+        Return the selected table columns datatype as a dictionary
         :return:
         """
-        return self.type_dictionary.get(table)
+        return self.tablecol_mapping.get(table)

@@ -19,12 +19,15 @@ email                : njoroge.solomon.com
 from .attribute_datatype import AttributePropretyType
 from .mapper_dialog import CustomFormDialog
 from .widgets import (
-                    DateEditWidget,
-                    LineEditWidget,
-                    IntegerWidget,
-                    DoubleWidget,
-                    ChoiceListWidget,
-                    widgetCollection
+            DateEditWidget,
+            LineEditWidget,
+            IntegerWidget,
+            DoubleWidget,
+            ChoiceListWidget,
+            widgetCollection,
+            ForeignKeyEdit,
+            TextAreaWidget,
+            BooleanWidget
 )
 from .property_mapper import TypePropertyMapper
 from .lookup_dlg import LookupModeller
