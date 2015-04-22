@@ -30,7 +30,7 @@ from stdm.utils import getIndex
 from .admin_unit_manager import VIEW,MANAGE,SELECT
 from stdm.ui.customcontrols import FKBrowserProperty
 
-__all__=["ForeignKeyMapper"]
+#__all__=["ForeignKeyMapper"]
 
 class ForeignKeyMapper(QWidget):
     '''
@@ -390,6 +390,7 @@ class ForeignKeyMapper(QWidget):
                     item_id = getattr(modelObj, 'id')
                     col_list = self._dbModel.displayMapping().keys()
                     item_key =getattr(modelObj, str(col_list[1]))
+
                     self.global_id = self.onfk_lookup(item_id, item_key)
                 except Exception as ex:
                     QMessageBox.information(self, "Foreign Key Reference", str(ex.message))
@@ -443,7 +444,6 @@ class ForeignKeyMapper(QWidget):
                     self._notifBar.clear()
                     self._notifBar.insertErrorNotification(msg)
         else:
-            #QMessageBox.information(None, "Table name", str(self._dbModel.__name__))
             entitySelector = self._entitySelector(self, str(self._dbModel.__name__).lower())
             self.connect(entitySelector, SIGNAL("recordSelected(int)"),self._onRecordSelectedEntityBrowser)
                 #self.connect(entitySelector, SIGNAL("destroyed(QObject *)"),self.onEntitySelectorDestroyed)

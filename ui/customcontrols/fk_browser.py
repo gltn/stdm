@@ -28,7 +28,10 @@ class FKBrowserProperty(object):
 
         :return:
         """
-        return self._display_value
+        if self._display_value == None:
+            return 0
+        else:
+            return self._display_value
 
     def set_display_value(self,newvalue):
         """

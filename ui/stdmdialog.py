@@ -89,7 +89,7 @@ class DeclareMapping(object):
             Model.attrTranslations = self.displayMapping(table)
             return modelCls
 
-    def displayMapping(self, table=''):
+    def displayMapping(self, table= None):
         """
         Replaces the depreciated method where column names were read from the config.
         column names already stored in a dictionary.
@@ -97,7 +97,7 @@ class DeclareMapping(object):
         :return:
         """
         attribs = OrderedDict()
-        if table != '':
+        if table:
             col_list = self.attDictionary.get(table)
             for col in col_list:
                 attribs[col] = col.replace('_', ' ').title()

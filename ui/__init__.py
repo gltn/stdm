@@ -81,4 +81,5 @@ from .profileDlg import ProfileEditor
 from .lookup_values_dlg import ADDLookupValue
 from .about import AboutSTDMDialog
 from .python_object import class_from_table
-from .forms import *
+#from .forms import *
+from .fkbase_form import FKMapperDialog

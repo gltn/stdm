@@ -19,19 +19,20 @@ email                : stdm@unhabitat.org
  ****
 """
 
-from .ui import ForeignKeyMapper, ForeignKeyBrowser
+from .foreign_key_mapper import ForeignKeyMapper
+from .entity_browser import ForeignKeyBrowser
 from stdm.ui.stdmdialog import DeclareMapping
 
 class FKMapperDialog(object):
-    def __init__(self, parent):
 
-        self.id = None
-        #super(FKMapperDialog, self).__init__()
+    def __init__(self, parent = None):
+        super(FKMapperDialog, self).__init__()
+        self.personFKMapper = ForeignKeyMapper()
 
     def foreign_key_modeller(self):
         self.model()
         self.editor = ForeignKeyBrowser
-        self.personFKMapper = ForeignKeyMapper()
+
         self.personFKMapper.setDatabaseModel(self._dbModel)
         self.personFKMapper.setEntitySelector(self.editor)
         self.personFKMapper.setSupportsList(True)
@@ -40,7 +41,6 @@ class FKMapperDialog(object):
         self.personFKMapper.initialize()
 
     def model(self):
-        columnType("household",'totalnumber')
         mapping = DeclareMapping.instance()
         self._dbModel = mapping.tableMapping('household')
         return self._dbModel
@@ -53,7 +53,10 @@ class FKMapperDialog(object):
 
     def model_display_value(self):
         try:
-            return self.personFKMapper.global_id.display_value()
+            if self.personFKMapper.global_id.display_value() == None:
+                return "0"
+            else:
+                return self.personFKMapper.global_id.display_value()
         except:
             pass
 
