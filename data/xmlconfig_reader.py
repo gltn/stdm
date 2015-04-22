@@ -59,6 +59,17 @@ def checktableExist(profile,tableName):
          if elem.get('name') == tableName:
              is_found = True
     return is_found
+
+def table_column_exist(profile, tableName, idcol):
+    is_found = False
+    tree, root = parseRootElement()
+    level = (".//*[@name='%s']/table")%profile
+    for elem in root.findall(level):
+         if elem.get('name') == tableName:
+             for child in elem.findall('columns/column'):
+                if child.get('name') == idcol:
+                    is_found = True
+    return is_found
         
 def deleteProfile(profileName):
     tree, root = parseRootElement()

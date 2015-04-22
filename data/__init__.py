@@ -36,7 +36,8 @@ from .xmlconfig_reader import (
                 lookupColumn,
                 lookupTable,
                 profiles,
-                contentGroup
+                contentGroup,
+                table_column_exist
             )
 
 from .xmlconfig_writer import(

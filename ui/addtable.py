@@ -23,7 +23,7 @@ from ui_table import Ui_table
 from PyQt4.QtCore import *
 from PyQt4.QtGui import QDialog, QApplication, QMessageBox
 from stdm.data import writeTable, renameTable,inheritTableColumn, writeTableColumn,writeLookup,\
-checktableExist,ConfigTableReader
+checktableExist,ConfigTableReader, table_column_exist
 from stdm.data.config_utils import setUniversalCode
 
 class TableEditor(QDialog, Ui_table):
@@ -68,13 +68,21 @@ class TableEditor(QDialog, Ui_table):
         self.cboInheritTable.setModel(tableModel)
         
     def setTableData(self):
+        """
+        Create new table if it does not exist
+        :return: XML element : table
+        """
         attrib={}
         self.table=self.setTableName(self.txtTable.text())
         tableDesc=str(self.txtDesc.text())
         attrib['name']=self.table
         attrib['fullname']=tableDesc
-        writeTable(attrib,self.profile,self.table)
-        self.tableCapabilities()
+        if self.checkTableExist() == True:
+            self.ErrorInfoMessage("Table already exist in the configuration file")
+            return
+        else:
+            writeTable(attrib,self.profile,self.table)
+            self.tableCapabilities()
         
     def tableCapabilities(self):
         options=['create', 'select', 'update', 'delete']
@@ -83,6 +91,12 @@ class TableEditor(QDialog, Ui_table):
             capabilities['name'] = opt
             capabilities['code'] = setUniversalCode()
             writeTableColumn(capabilities, self.profile, 'table', self.table, 'contentgroups')
+
+    def checkTableExist(self):
+        """check if the table has been defined already"""
+        tableName = self.setTableName(self.txtTable.text())
+        status = checktableExist(self.profile,tableName)
+        return status
 
     def setLookupTable(self):
         '''def add lookup table'''
@@ -130,7 +144,11 @@ class TableEditor(QDialog, Ui_table):
             'size' : '',
             'key' : '1'
         }
-        writeTableColumn(attrib,self.profile,Node,self.table,'columns')
+        if table_column_exist(self.profile, self.table, 'id'):
+            return
+            QMessageBox.information(self, "ID exist", "Id exisit")
+        else:
+            writeTableColumn(attrib,self.profile,Node,self.table,'columns')
     
     def dataColumnForLookup(self,Node):
         attrib  = {
@@ -141,16 +159,8 @@ class TableEditor(QDialog, Ui_table):
              }
         writeTableColumn(attrib,self.profile,Node,self.table,'columns')
     
-    def checkTableExist(self):
-        """check if the table has been defined already"""
-        tableName=self.setTableName(self.txtTable.text())
-        status=checktableExist(self.profile,tableName)
-        if status == True:
-            QMessageBox.critical(self, QApplication.translate("TableEditor","Table Exist Warning"), 
-                                 QApplication.translate("TableEditor","Table name cannot be defined twice"))
-            self.txtTable.setFocus()
-            return
-                
+
+
     def accept(self):
         if self.txtTable.text()=='':
             self.ErrorInfoMessage(QApplication.translate("TableEditor","Table name is not given"))
