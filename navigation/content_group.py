@@ -190,7 +190,7 @@ class TableContentGroup(ContentGroup):
         """
         Appends group name to the content name
         """
-        return "{0} {1}".format(contentName, self._groupName)
+        return u"{0} {1}".format(contentName, self._groupName)
         
     def createContentItem(self):
         """
