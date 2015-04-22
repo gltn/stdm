@@ -34,7 +34,8 @@ from .entity_browser import (
                             PartyEntitySelector,
                             FarmerEntityBrowser,
                             STDMEntityBrowser,
-                            SurveyEntityBrowser
+                            SurveyEntityBrowser,
+                            ForeignKeyBrowser
                             )
 #from .foreign_key_editors import SpatialCoordinatesEditor
 #from .foreign_key_editors import (
@@ -80,3 +81,5 @@ from .profileDlg import ProfileEditor
 from .lookup_values_dlg import ADDLookupValue
 from .about import AboutSTDMDialog
 from .python_object import class_from_table
+#from .forms import *
+from .fkbase_form import FKMapperDialog

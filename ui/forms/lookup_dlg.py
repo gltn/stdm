@@ -19,13 +19,13 @@ email                : stdm@unhabitat.org
 """
 
 from stdm.utils import readComboSelections
-from stdm.ui.stdmdialog import  DeclareMapping
+from stdm.ui.stdmdialog import DeclareMapping
 
 class LookupModeller(object):
     def __init__(self,):
         self._lookup = []
         self._lookupFormatter = {}
-        self._mapper =  DeclareMapping.instance()
+        self._mapper = DeclareMapping.instance()
 
     def setLookupAttribute(self, attributeName):
         """Add the attribute to the list of attribute in this model"""
@@ -39,7 +39,7 @@ class LookupModeller(object):
 
     def lookupModel(self, tName):
         """
-        ensure the lookup table is mapped to an SQLALchemy model
+        Ensure the lookup table is mapped to an SQLALchemy model
         """
         lkModel = self._mapper.tableMapping(tName.lower())
         self._lookupFormatter[tName.lower()] = lkModel

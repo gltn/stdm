@@ -300,13 +300,13 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
         '''
         try:
             insertPosition = self._tableModel.rowCount()
-            self._tableModel.insertRows(insertPosition,1)
+            self._tableModel.insertRows(insertPosition, 1)
 
             for i,attr in enumerate(self._dbmodel.displayMapping().keys()):
                 propIndex = self._tableModel.index(insertPosition, i)
                 if hasattr(modelObj, attr):
                     attrVal = getattr(modelObj, attr)
-                #QMessageBox.information(self, 'model',"propertyindex;{0}\nattributeVal;{1}".format(str(propIndex), str(attrVal)))
+
                 #Check if there re display formatters and apply if one exists for the given attribute
                 if attr in self._cellFormatters:
                     attrVal = self._cellFormatters[attr](attrVal)
@@ -633,23 +633,25 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
 
 class ForeignKeyBrowser(EntityBrowser):
     '''
-    Browser for foreign records.
+    Browser for  foreign key records.
     '''
 
-    def __init__(self,parent = None,state = VIEW|MANAGE):
-        mapping=DeclareMapping.instance()
-        model = mapping.tableMapping('party')
+    def __init__(self, parent = None, table =None, state = VIEW|MANAGE):
+        self.table = table
+
+        mapping = DeclareMapping.instance()
+        model = mapping.tableMapping(table)
         self._model = model
-        EntityBrowser.__init__(self, parent, model, state)
+        EntityBrowser.__init__(self, parent, self._model, state)
 
     def title(self):
-        return QApplication.translate("ForeignKeyBrowser", "{0} Records".format(self._model.__class__.__name__))
+        return QApplication.translate("ForeignKeyBrowser", "{0} Records".format(self._model.__name__))
 
 class SurveyEntityBrowser(ContentGroupEntityBrowser):
     '''
     Browser for survey records.
     '''
-    def __init__(self,tableContentGroup,parent = None,state = MANAGE):
+    def __init__(self, tableContentGroup, parent = None,state = MANAGE):
         from .survey_editor import SurveyEditor
         
         ContentGroupEntityBrowser.__init__(self, Survey, tableContentGroup, parent, state)

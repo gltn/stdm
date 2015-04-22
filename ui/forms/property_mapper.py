@@ -20,10 +20,9 @@ from collections import OrderedDict
 from stdm.utils import *
 from stdm.data import STDMDb
 from .widgets import widgetCollection
-from stdm.data import lookupData
-from PyQt4.QtGui import *
-from stdm.ui.stdmdialog import  DeclareMapping
-from lookup_dlg import  LookupModeller
+
+from stdm.ui.stdmdialog import DeclareMapping
+from lookup_dlg import LookupModeller
 
 
 class TypePropertyMapper(object):
@@ -67,14 +66,13 @@ class TypePropertyMapper(object):
         return lkupModel
         #except Exception as ex:
            # QMessageBox.information(None,'Lookup choices',
-                                    #QApplication.translate(u'TypePropertyMapper',"Error loading %s lookup values"%str(ex.message)))
+            #QApplication.translate(u'TypePropertyMapper',"Error loading %s lookup values"%str(ex.message)))
         #finally:
        #     self.clearMapping()
         
 
     def lookupItems(self, model):
         modelItems = self.userLookupOptions(model)
-        #QMessageBox.information(None,'modeller', str(model.displayMapping()))
         return modelItems
 
     def clearMapping(self):

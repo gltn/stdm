@@ -21,7 +21,7 @@ from PyQt4.QtCore import QRegExp
 
 from sqlalchemy.sql.expression import text
 
-from stdm.data import STDMDb
+from stdm.data import STDMDb, Base
 from stdm.utils import getIndex
 
 _postGISTables = ["spatial_ref_sys"]
@@ -237,16 +237,26 @@ def delete_table_keys(table):
     capabilities = ["Create", "Select", "Update", "Delete"]
     for action in capabilities:
         init_key = action +" "+ str(table).title()
-        sql = "DELETE FROM content_roles WHERE content_base_id IN (SELECT id FROM content_base WHERE name = '{0}');".format(init_key)
-        sql2 = "DELETE FROM content_base WHERE content_base.id IN (SELECT id FROM content_base WHERE name = '{0}');".format(init_key)
+        sql = "DELETE FROM content_roles WHERE content_base_id IN" \
+              " (SELECT id FROM content_base WHERE name = '{0}');".format(init_key)
+        sql2 = "DELETE FROM content_base WHERE content_base.id IN" \
+               " (SELECT id FROM content_base WHERE name = '{0}');".format(init_key)
         r = text(sql)
         r2 = text(sql2)
         _execute(r)
         _execute(r2)
+        Base.metadata._remove_table(table, 'public')
 
-def clean_delete_table(table):
-    sql = "DROP TABLE {0}".format(table)
-    _execute(text(sql))
+def safely_delete_tables(tables):
+    for table in tables:
+        sql = "DROP TABLE  if exists {0} CASCADE".format(table)
+        _execute(text(sql))
+        Base.metadata._remove_table(table, 'public')
+        flush_session_activity()
+
+def flush_session_activity():
+    STDMDb.instance().session._autoflush()
+    Base.metadata.reflect(STDMDb.instance().engine)
 
 
 

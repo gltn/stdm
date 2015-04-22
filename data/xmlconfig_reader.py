@@ -27,7 +27,7 @@ from collections import OrderedDict
 from configfile_paths import FilePaths
 try:
     xmlobject = FilePaths()
-    doc = xmlobject.XMLFile()
+    #doc = xmlobject.XMLFile()
     xml_doc = xmlobject.setUserXMLFile()
     #xml_doc="C:/Users/SOLOMON/.stdm/stdmConfig.xml"
     html_doc = xmlobject.HtmlFile()
@@ -35,7 +35,7 @@ except:
     pass
 
 def parseRootElement():
-    if xml_doc == None:
+    if not xml_doc:
         return
     else:
         tree = ET()
@@ -229,9 +229,7 @@ def contentGroup(tableName):
     for elem in root.findall('profile/table'):
         if elem.get('name') == tableName:
             childs = elem.find('contentgroups')
-            if childs is not None:
-                for child in childs:
-                    codeList.append(child.get('code'))
-                return codeList
+            if childs:
+                return [(child.get('code')) for child in childs]
             else:
                 return None

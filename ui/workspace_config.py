@@ -28,7 +28,8 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from ui_workspace_config import Ui_STDMWizard
 from stdm.data import ConfigTableReader,deleteProfile,profileFullDescription,tableFullDescription,deleteColumn,\
-deleteTable,lookupData2List,deleteLookupChoice,SQLInsert,LicenseDocument,_execute
+deleteTable,lookupData2List,deleteLookupChoice,SQLInsert,LicenseDocument, safely_delete_tables, pg_tables, \
+    _execute, flush_session_activity
 
 from attribute_editor import AttributeEditor
 from table_propertyDlg import TableProperty
@@ -93,21 +94,18 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
 
         try:
             settings = self.tableHandler.pathSettings()
-            if settings[1].get('Config') == None:
-               self.startId() == 1
-            elif settings[1].get('Config') != None:
+            if not settings[1].get('Config'):
+                self.startId() == 1
+            elif settings[1].get('Config'):
                 self.setStartId(2)
         except:
             pass
         
     def registerFields(self):
         self.setOption(self.HaveHelpButton, True)  
-        pgCount=self.page(1)
+        pgCount = self.page(1)
         pgCount.registerField("Accept",self.rbAccpt)
         pgCount.registerField("Reject",self.rbReject)
-        pgCount2=self.page(4)
-        #pgCount2.registerField("SelectionMenu",self.toolbtn)
-
 
     def validateCurrentPage (self):
         validPage = True
@@ -262,12 +260,12 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         
 
     def showGeometryColumns(self,tableName):
-        '''method to show defined geometry columns '''
+        '''method to show defined geometry columns in a table model'''
         self.tblLookup_2.clearSpans()
         if tableName == None:
             return
-        geometryModel = self.tableHandler.geometryData(tableName)
-        self.tblLookup_2.setModel(geometryModel)
+        geometry_col_model = self.tableHandler.geometry_collection(tableName)
+        self.tblLookup_2.setModel(geometry_col_model)
                
     def relationForTable(self):
         '''Load defined relations for the selected table'''
@@ -543,8 +541,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def rawSQLDefinition(self):
         '''read sql definition on the UI'''
         self.txtHtml.clear()
-        fileN=self.SQLFileView()
-        color=QColor(192, 192, 192)
+        fileN = self.SQLFileView()
+        color = QColor(192, 192, 192)
         self.txtHtml.setTextBackgroundColor(color)
         with open(fileN,'r')as f:
             self.txtHtml.insertPlainText(f.read())
@@ -552,14 +550,14 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             
     def setSqlIsertDefinition(self):
         '''Add insert sql statement for the lookup defined values'''
-        fileN=self.SQLFileView()
+        fileN = self.SQLFileView()
         if self.rbSchemaNew.isChecked():
             self.tableHandler.saveXMLchanges()
-            lookups=self.lookupTables()
+            lookups = self.lookupTables()
             for lookup in lookups:
-                lookupTextList=lookupData2List(self.profile,lookup)
-                sqlInsert=SQLInsert(lookup,lookupTextList)
-                SQLSt=sqlInsert.setInsertStatement()
+                lookupTextList = lookupData2List(self.profile, lookup)
+                sqlInsert = SQLInsert(lookup, lookupTextList)
+                SQLSt = sqlInsert.setInsertStatement()
                 with open(fileN,'a')as f:
                     for row in SQLSt:
                         f.write(row)
@@ -595,6 +593,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                     roleP._execute(sqlSt)
                     self.assignRoles()
                     self.InfoMessage("Changes successfully saved in the STDM database")
+                    flush_session_activity()
                     self.tableHandler.trackXMLChanges()
                     return valid
             except SQLAlchemyError as ex:
@@ -613,15 +612,10 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def DropSchemaTables(self):
         '''Check if table is already defined in pgtables and drop it'''
         if self.rbSchemaNew.isChecked():
-            self.tableList = self.tableHandler.fulltableList()
-            try:
-                for table in self.tableList:
-                    sqlSt = text("drop table if exists " +table+ " cascade;")
-                    _execute(sqlSt)
-            except SQLAlchemyError as ex:
-                return self.ErrorInfoMessage(str(ex.message))
-        else:
-            pass
+            #tables = pg_tables()
+            tables = self.tableHandler.fulltableList()
+            safely_delete_tables(tables)
+
     
     def updateSQLFile(self):
         '''Method to record and save changes whenever the document's content changes'''
@@ -651,17 +645,18 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         action = menu.exec_(self.mapToGlobal(pos))
         if action==self.addAction:
             self.setTableName()
+
         if action==self.editAction:
-            if self.tableName==None:
+            if not self.tableName:
                 self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","No selected table found"))
                 return
             else:
                 self.editTableName()
-                del menu
         if action==self.closeAction:
-            if self.tableName!=None:
+            if self.tableName:
                 if self.warningInfo(QApplication.translate("WorkspaceLoader","Delete (%s) table?")%self.tableName)==QMessageBox.Yes:
                     self.deletedSelectedTable()
+        del menu
         self.readUserTable()
     
     def licenseFile(self):
@@ -684,16 +679,20 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 self.setWorkingDataPath(userpath)
                 self.certificatePath(userpath)
                 self.templatePath()
-        except: 
-            pass
+        except IOError as io:
+            QMessageBox.information(self,
+                                    QApplication.translate("WorkspaceLoader",u"Directory Error",str(io.message)))
     
     def pathSettings(self):
-        '''add the datapath to the setting'''
+        """
+        add user paths to the registry setting and update the new directory with base files
+        :return:
+        """
         dataPath={}
         settings=self.tableHandler.settingsKeys()
         userPath=[self.txtSetting.text(),self.txtDefaultFolder.text(),self.txtCertFolder.text(),self.txtTemplates.text()]
         for i in range(len(settings)):
-            dataPath[settings[i]]=userPath[i]
+            dataPath[settings[i]] = userPath[i]
         self.tableHandler.setProfileSettings(dataPath)
         self.tableHandler.createDir(dataPath.values())
         self.tableHandler.updateDir(self.txtSetting.text())
@@ -796,4 +795,3 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         msg.setDefaultButton(QMessageBox.No)
         msg.setText(message)
         return msg.exec_()
-        
