@@ -300,13 +300,13 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
         '''
         try:
             insertPosition = self._tableModel.rowCount()
-            self._tableModel.insertRows(insertPosition,1)
+            self._tableModel.insertRows(insertPosition, 1)
 
             for i,attr in enumerate(self._dbmodel.displayMapping().keys()):
                 propIndex = self._tableModel.index(insertPosition, i)
                 if hasattr(modelObj, attr):
                     attrVal = getattr(modelObj, attr)
-                #QMessageBox.information(self, 'model',"propertyindex;{0}\nattributeVal;{1}".format(str(propIndex), str(attrVal)))
+
                 #Check if there re display formatters and apply if one exists for the given attribute
                 if attr in self._cellFormatters:
                     attrVal = self._cellFormatters[attr](attrVal)
@@ -642,7 +642,6 @@ class ForeignKeyBrowser(EntityBrowser):
         mapping = DeclareMapping.instance()
         model = mapping.tableMapping(table)
         self._model = model
-        #QMessageBox.information(None, "Table name", "Foreign key dialog")
         EntityBrowser.__init__(self, parent, self._model, state)
 
     def title(self):
@@ -652,7 +651,7 @@ class SurveyEntityBrowser(ContentGroupEntityBrowser):
     '''
     Browser for survey records.
     '''
-    def __init__(self,tableContentGroup,parent = None,state = MANAGE):
+    def __init__(self, tableContentGroup, parent = None,state = MANAGE):
         from .survey_editor import SurveyEditor
         
         ContentGroupEntityBrowser.__init__(self, Survey, tableContentGroup, parent, state)

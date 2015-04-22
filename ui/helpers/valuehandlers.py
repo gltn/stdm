@@ -283,7 +283,10 @@ class SearchWidgetValueHandler(ControlValueHandler):
         return ctlValue
 
     def setValue(self, value):
-        self.control.setText(str(value))
+        if not value:
+            self.control.setText("0")
+        else:
+            self.control.setText(str(value))
 
     def supportsMandatory(self):
         return True

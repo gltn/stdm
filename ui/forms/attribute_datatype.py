@@ -20,7 +20,11 @@ from stdm.data.config_utils import tableColType, foreign_key_columns
 from stdm.ui.stdmdialog import DeclareMapping
 from stdm.data import data_types
 from PyQt4.QtGui import *
+
 class AttributePropretyType(object):
+    """
+
+    """
     def __init__(self, model):
         self.model = model
         self._mapper = DeclareMapping.instance()
@@ -42,7 +46,7 @@ class AttributePropretyType(object):
                                         u"Database columns and configuration table columns do not "
                                         u"match. Database table columns will be used instead\n"
                                         u"Please update configuration tables for complete dialog mapping"))
-                self.table_has_changed(db_mapping, type_mapping)
+                self.table_config_has_changed(db_mapping, type_mapping)
             foreignk_attr = self.foreign_key_attribute_for_model()
             """
             Only the foreign key attributes defined in the configuration shall be considered in the foreign key definition
@@ -62,7 +66,7 @@ class AttributePropretyType(object):
         foreignk_attr = foreign_key_columns(self.model)
         return foreignk_attr
 
-    def table_has_changed(self, dbtablemapping, configtablemapping):
+    def table_config_has_changed(self, dbtablemapping, configtablemapping):
         """
         Method to update the column datatype with the default types pre defined in the STDM: data/enums.py
         :param dbtablemapping:
