@@ -20,6 +20,7 @@ email                : gkahiu@gmail.com
 """
 import sqlalchemy
 from sqlalchemy import create_engine
+from qgis.core import QgsDataSourceURI
 
 class DatabaseConnection(object):
     '''
@@ -62,6 +63,17 @@ class DatabaseConnection(object):
         except Exception as e:
             errMsg = str(e)
         return isValid, errMsg
+
+    def toQgsDataSourceUri(self):
+        """
+        Returns a QgsDataSourceURI object with database connection properties
+        defined.
+        """
+        dt_source = QgsDataSourceURI()
+        dt_source.setConnection(self.Host, self.Port, self.Database,
+                                self.User.UserName, self.User.Password)
+
+        return dt_source
         
         
         
