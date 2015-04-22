@@ -30,7 +30,7 @@ class dbconnDlg(QDialog, Ui_frmDbConn):
     def __init__(self,parent):
         QDialog.__init__(self,parent)
         self.setupUi(self)
-        
+
         #gui initialization
         self.initGui()
         

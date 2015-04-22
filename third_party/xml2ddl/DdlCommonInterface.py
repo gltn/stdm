@@ -33,7 +33,7 @@ class DdlCommonInterface:
             'check_relation'  : ['ALTER TABLE %(tablename)s ADD CONSTRAINT %(checkname)s CHECK (%(checktype)s(%(thiscolumn)s)=%(arguments)s);'],
             'drop_check'      : ['ALTER TABLE %(tablename)s DROP CONSTRAINT IF EXISTS %(checkname)s;'],
             # View
-            #GEometry Column
+            #Geometry Column
             'add_geometry'  : ["SELECT AddGeometryColumn('%(tablename)s', '%(geomname)s', '%(srid)s','%(geomtype)s',%(dimension)s);"],
             'drop_geom'      : ['ALTER TABLE %(tablename)s DROP CONSTRAINT IF EXISTS %(checkname)s;'],
            

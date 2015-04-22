@@ -640,13 +640,13 @@ class ForeignKeyBrowser(EntityBrowser):
         self.table = table
 
         mapping = DeclareMapping.instance()
-        model = mapping.tableMapping(self.table)
+        model = mapping.tableMapping(table)
         self._model = model
-
+        #QMessageBox.information(None, "Table name", "Foreign key dialog")
         EntityBrowser.__init__(self, parent, self._model, state)
 
     def title(self):
-        return QApplication.translate("ForeignKeyBrowser", "{0} Records".format(self._model.__class__.__name__))
+        return QApplication.translate("ForeignKeyBrowser", "{0} Records".format(self._model.__name__))
 
 class SurveyEntityBrowser(ContentGroupEntityBrowser):
     '''
