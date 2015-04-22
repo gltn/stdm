@@ -147,6 +147,7 @@ class MapperMixin(object):
             self._mode = UPDATE
         
         self._attrMappers = []
+        self._attr_mapper_collection={}
         self._dirtyTracker = ControlDirtyTrackerCollection()
         self._notifBar = None
         
@@ -181,12 +182,38 @@ class MapperMixin(object):
         self._dirtyTracker.addControl(attributeMapper.control(), attributeMapper.valueHandler())
             
         self._attrMappers.append(attributeMapper)
+        self._attr_mapper_collection[attributeMapper.attributeName()] = attributeMapper
         
     def saveMode(self):
         '''
         Return the mode that the mapper is currently configured in.
         '''
         return self._mode
+
+    def attribute_mapper(self, attribute_name):
+        """
+        Returns attribute mapper object corresponding to the the given
+        attribute.
+        :param attribute_name: Name of the attribute
+        :type attribute_name: str
+        :return: Attribute mapper
+        :rtype: _AttributeMapper
+        """
+        return self._attr_mapper_collection.get(attribute_name, None)
+
+    def attribute_exists(self, attribute_name):
+        """
+        :param attribute_name: Attribute name
+        :type attribute_name: str
+        :return: True if the attribute exists in the collection. Otherwise,
+        False.
+        :rtype: bool
+        """
+        attr_mapper = self.attribute_exists(attribute_name)
+        if attr_mapper is None:
+            return False
+        else:
+            return True
     
     def setSaveMode(self,mode):
         '''
