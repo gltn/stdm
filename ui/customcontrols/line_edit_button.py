@@ -35,7 +35,6 @@ class SearchableLineEdit(QLineEdit):
         self.button.setIcon(pbIcon)
         self.button.clicked.connect(self.button_click_event)
 
-
     def resizeEvent(self,event):
         rect = self.rect()
         frameWidth = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
@@ -47,8 +46,8 @@ class SearchableLineEdit(QLineEdit):
         self.signal_sender.emit()
 
     def set_value(self, id):
-        key = self.list.get(data)
-        return  key
+        key = self.list.get(id)
+        return key
 
     def fk_id(self, key):
         self.key = key
