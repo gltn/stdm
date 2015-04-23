@@ -256,7 +256,7 @@ def safely_delete_tables(tables):
 
 def flush_session_activity():
     STDMDb.instance().session._autoflush()
-    #Base.metadata.reflect(STDMDb.instance().engine)
+
 
 
 

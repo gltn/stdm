@@ -55,8 +55,12 @@ nullable = {
             'No': 'yes'
           }
 
+stdm_core_tables = ['household', 'spatial_unit', 'party', 'natural_person', 'group', 'social_tenure_relationship', 'supporting_document']
+
 postgres_defaults = ['integer','date','boolean','time with time zone','serial',
                      'geometry','double precision','text']
 
 RESERVED_ID = 'id'
+
+
 

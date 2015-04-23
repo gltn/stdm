@@ -27,8 +27,8 @@ import os
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from ui_workspace_config import Ui_STDMWizard
-from stdm.data import ConfigTableReader,deleteProfile,profileFullDescription,tableFullDescription,deleteColumn,\
-deleteTable,lookupData2List,deleteLookupChoice,SQLInsert,LicenseDocument, safely_delete_tables, pg_tables, \
+from stdm.data import ConfigTableReader,deleteProfile,profileFullDescription,deleteColumn,\
+deleteTable,lookupData2List,deleteLookupChoice,SQLInsert,LicenseDocument, safely_delete_tables, stdm_core_tables, \
     _execute, flush_session_activity
 
 from attribute_editor import AttributeEditor
@@ -194,12 +194,12 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         return self.tableHandler.lookupTable()
     
     def populateLookup(self):   
-        lookupModel=self.tableHandler.lookupTableModel()
+        lookupModel = self.tableHandler.lookupTableModel()
         self.tblLookupList.setModel(lookupModel)
         
     def loadTableData(self,profile,widget):
         '''method returns the model to the passed listview widget'''
-        model=self.tableHandler.profile_tables(profile)
+        model = self.tableHandler.profile_tables(profile)
         #QMessageBox.information(self,"Test",str(type))
         widget.setModel(model)
         widget.resizeColumnToContents(0)
@@ -207,7 +207,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     
     def profileContent(self):
         '''Loads all available content/table from the config for the selected profile'''
-        profiles=self.tableHandler.STDMProfiles()
+        profiles = self.tableHandler.STDMProfiles()
         #for pf in profiles:
         self.cboProfile.clear()
         self.cboProfile.insertItems(0,profiles)
@@ -226,13 +226,13 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def selectionChanged(self):
         '''Listen to user selection for the profile to load the corresponding table'''
         self.tableName=None
-        self.profile=str(self.cboProfile.currentText())
+        self.profile = str(self.cboProfile.currentText())
         self.loadTableData(self.profile, self.pftableView)
         self.registerProfileSettings()
         self.lblDescprition.setText(profileFullDescription(self.profile))
         
     def registerProfileSettings(self):
-        profile=QApplication.translate("WorkspaceLoader","currentProfile")
+        profile = QApplication.translate("WorkspaceLoader","currentProfile")
         self.tableHandler.setProfileSettings({profile:self.profile})      
         
     def loadTableColumns(self, tableName):
@@ -403,6 +403,10 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         #use the delete button to remove the selected table
         if self.tableName==None:
             self.ErrorInfoMessage(QApplication.translate('WorkspaceLoader',"No table is selected for this operation"))
+            return
+        if self.tableName in stdm_core_tables:
+            self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader", "Sorry, the current table is a core table "
+                                                             "and cannot be deleted"))
             return
         else:
             if self.warningInfo(QApplication.translate("WorkspaceLoader","You are about to delete %s table" %self.tableName))==QMessageBox.Yes:
@@ -639,7 +643,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.addAction = menu.addAction(QApplication.translate("WorkspaceLoader","Add Table"))
         menu.addSeparator()
         self.editAction = menu.addAction(QApplication.translate("WorkspaceLoader","Rename Table"))
-        self.closeAction=menu.addAction(QApplication.translate("WorkspaceLoader","Delete Table"))
+        self.delAction=menu.addAction(QApplication.translate("WorkspaceLoader","Delete Table"))
         cursor=QCursor()
         pos=cursor.pos()
         action = menu.exec_(self.mapToGlobal(pos))
@@ -652,9 +656,10 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 return
             else:
                 self.editTableName()
-        if action==self.closeAction:
+        if action==self.delAction:
             if self.tableName:
-                if self.warningInfo(QApplication.translate("WorkspaceLoader","Delete (%s) table?")%self.tableName)==QMessageBox.Yes:
+                if self.warningInfo(QApplication.translate("WorkspaceLoader","Delete (%s) table?")%self.tableName)\
+                       == QMessageBox.Yes:
                     self.deletedSelectedTable()
         del menu
         self.readUserTable()
@@ -667,7 +672,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         
     def configPath(self):
         try:
-            pathKeys,configPath=self.tableHandler.pathSettings()
+            pathKeys, configPath = self.tableHandler.pathSettings()
             if configPath:
                 self.txtSetting.setText(configPath[pathKeys[0]])
                 self.txtDefaultFolder.setText(configPath[pathKeys[1]])

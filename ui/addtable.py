@@ -73,15 +73,15 @@ class TableEditor(QDialog, Ui_table):
         :return: XML element : table
         """
         attrib={}
-        self.table=self.setTableName(self.txtTable.text())
-        tableDesc=str(self.txtDesc.text())
-        attrib['name']=self.table
-        attrib['fullname']=tableDesc
+        self.table = self.setTableName(self.txtTable.text())
+        tableDesc = str(self.txtDesc.text())
+        attrib['name'] = self.table
+        attrib['fullname'] = tableDesc
         if self.checkTableExist() == True:
             self.ErrorInfoMessage("Table already exist in the configuration file")
             return
         else:
-            writeTable(attrib,self.profile,self.table)
+            writeTable(attrib, self.profile, self.table)
             self.tableCapabilities()
         
     def tableCapabilities(self):
@@ -95,21 +95,21 @@ class TableEditor(QDialog, Ui_table):
     def checkTableExist(self):
         """check if the table has been defined already"""
         tableName = self.setTableName(self.txtTable.text())
-        status = checktableExist(self.profile,tableName)
+        status = checktableExist(self.profile, tableName)
         return status
 
     def setLookupTable(self):
         '''def add lookup table'''
-        tableName=self.setTableName(self.txtTable.text())
+        tableName = self.setTableName(self.txtTable.text())
         if str(tableName).startswith("check"):
-            self.table=tableName
+            self.table = tableName
         if not str(tableName).startswith("check"):
             self.table = 'check_'+tableName
         attrib={}
         tableDesc = str(self.txtDesc.text())
         attrib['name'] = self.table
         attrib['fullname'] = tableDesc
-        writeLookup(attrib, self.profile,self.table)
+        writeLookup(attrib, self.profile, self.table)
         self.autoCreatePrimaryKeyColumn('lookup')
         self.dataColumnForLookup('lookup')
     
