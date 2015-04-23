@@ -25,7 +25,7 @@ from stdm.data import STDMDb, Base
 from stdm.utils import getIndex
 
 _postGISTables = ["spatial_ref_sys"]
-_postGISViews = ["geometry_columns","raster_columns","geography_columns","raster_overviews", "social_tenure_relations"]
+_postGISViews = ["geometry_columns","raster_columns","geography_columns","raster_overviews"]
 
 def spatial_tables(excludeViews=False):
     '''
@@ -256,7 +256,7 @@ def safely_delete_tables(tables):
 
 def flush_session_activity():
     STDMDb.instance().session._autoflush()
-    Base.metadata.reflect(STDMDb.instance().engine)
+    #Base.metadata.reflect(STDMDb.instance().engine)
 
 
 
