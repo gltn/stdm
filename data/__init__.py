@@ -68,6 +68,7 @@ from .enums import (
     nullable,
     postgres_defaults,
     geometry_collections,
+    stdm_core_tables,
     RESERVED_ID
 )
 from .config_utils import (
