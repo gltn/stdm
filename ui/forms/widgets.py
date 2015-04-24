@@ -24,7 +24,8 @@ from stdm.ui.customcontrols import SearchableLineEdit
 
 
 class InputWidget(QWidget):
-    data_type = None
+    def __init__(self, parent =None):
+        data_type = None
 
     def Factory(self):
         pass
@@ -144,19 +145,21 @@ class DateEditWidget(InputWidget):
         self.control.setDate(tDate)
         self.control.setMinimumWidth(50)
 
+
 class ForeignKeyEdit(InputWidget):
-    data_type = SearchableLineEdit
+
+    def __init__(self):
+        super(ForeignKeyEdit, self).__init__()
+        self.control = SearchableLineEdit()
+        self.control.signal_sender.connect(self.foreign_key_widget_activated)
 
     def Factory(self):
-        self.control = SearchableLineEdit()
         self.base_id = 0
-        self.control.signal_sender.connect(self.foreign_key_widget_activated)
         return self.control
 
     def adopt(self):
         self.control.setText("0")
         self.control.setReadOnly(True)
-
 
     def foreign_key_widget_activated(self):
         self.on_select_foreignkey()
@@ -166,7 +169,7 @@ class ForeignKeyEdit(InputWidget):
         mapper = FKMapperDialog()
         mapper.foreign_key_modeller()
 
-        if mapper.model_display_value() == None:
+        if not mapper.model_display_value():
             mapper.model_display_value() == self.base_id
         self.control.setText(str(mapper.model_display_value()))
         if not mapper.model_fkid():
@@ -186,7 +189,8 @@ def widgetCollection():
             'choice': ChoiceListWidget,
             'date': DateEditWidget,
             'text': TextAreaWidget,
-            'boolean': BooleanWidget,
-            'foreign key': ForeignKeyEdit
+            'foreign key': ForeignKeyEdit,
+            'boolean': BooleanWidget
+
         }
     return mapping

@@ -26,7 +26,7 @@ from stdm.ui.stdmdialog import DeclareMapping
 class FKMapperDialog(object):
 
     def __init__(self, parent = None):
-        super(FKMapperDialog, self).__init__()
+        #super(FKMapperDialog, self).__init__()
         self.personFKMapper = ForeignKeyMapper()
 
     def foreign_key_modeller(self):

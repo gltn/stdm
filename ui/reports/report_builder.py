@@ -135,6 +135,9 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         try:
             for name, value in self.config.iteritems():
                 self.comboBox.addItem(name, value)
+            index = self.comboBox.findText('Social_Tenure_Relations', Qt.MatchExactly)
+            if index:
+                self.comboBox.removeItem(int(index))
         except Exception as ex:
             self.ErrorInfoMessage(str(ex.message))
         self.initStackWidgets()
