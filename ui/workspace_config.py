@@ -441,11 +441,11 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         try:
             if self.warningInfo(QApplication.translate('WorkspaceLoader',\
                                                        "You are about to delete selected column from table "+\
-                                                       self.tableName))==QMessageBox.Yes:
+                                                       self.tableName))== QMessageBox.Yes:
                 selCols=self.tblEdit.selectionModel().selectedIndexes() 
                 if len(selCols)>0:
-                    item=selCols[0].data()
-                    element="columns"
+                    item = selCols[0].data()
+                    element = "columns"
                     if str(self.tableName).startswith('check'):
                         deleteColumn(self.profile,'lookup',self.tableName,element,'name',str(item))
                         self.lookupColumnsTowidget(self.tableName)
@@ -465,20 +465,20 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def deleteTableRelation(self):
         '''delete defined table relation from the config '''
         if self.warningInfo(QApplication.translate('WorkspaceLoader',\
-                                                       "Are you sure you want to deleted selected relation from table "+\
-                                                       self.tableName))==QMessageBox.Yes:
-            selCols=self.tblEdit_2.selectionModel().selectedIndexes() 
+                                    u"Are you sure you want to deleted selected relation from table"+\
+                                                       self.tableName)) == QMessageBox.Yes:
+            selCols = self.tblEdit_2.selectionModel().selectedIndexes()
             if len(selCols)>0:
-                item=selCols[0].data()
-                element="relations"
+                item = selCols[0].data()
+                element = "relations"
                 deleteColumn(self.profile,'table',self.tableName,element,'name',str(item))
                 self.loadTableRelations(self.tableName)
 
     def delete_geom(self):
         '''delete defined table relation from the config '''
         if self.warningInfo(QApplication.translate('WorkspaceLoader',\
-                                                       u"Are you sure you want to deleted selected geometry column from table "+\
-                                                       self.tableName))==QMessageBox.Yes:
+                                u"Are you sure you want to deleted selected geometry column from table "+\
+                                                       self.tableName)) == QMessageBox.Yes:
             selCols=self.tblLookup_2.selectionModel().selectedIndexes()
             if len(selCols)>0:
                 item=selCols[1].data()
@@ -488,40 +488,40 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         
     def deleteLookupChoice(self): 
         '''remove a text from the lookup choices'''
-        selIndx =self.tblLookup.selectionModel().selectedIndexes()
+        selIndx = self.tblLookup.selectionModel().selectedIndexes()
         if selIndx:
             selItem = selIndx[0]
         else:
             self.ErrorInfoMessage(QApplication.translate('WorkspaceLoader',\
-                                                       "No text is selected from the lookup choices"))
+                                             "No text is selected from the lookup choices"))
             return
         if selItem!=None and not self.tableName.startswith('check'):
             self.ErrorInfoMessage(QApplication.translate('WorkspaceLoader',\
                                                        "selected table is not a lookup table"))
             return
         if self.warningInfo(QApplication.translate('WorkspaceLoader',\
-                                                       "Are you sure you want to delete "+str(selItem.data())+ " choice from "+\
-                                                       self.tableName))==QMessageBox.Yes:
+                            "Are you sure you want to delete "+str(selItem.data())+ " choice from "+\
+                                        self.tableName)) == QMessageBox.Yes:
             if str(self.tableName).startswith('check'):
                 deleteLookupChoice(self.profile,'lookup',self.tableName,'data','value',str(selItem.data()))
                 self.lookupDefinedValues()
         
            
     def addLookupValue(self):
-        if self.tableName==None:
+        if self.tableName == None:
             self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","No table is selected"))
             return
         if self.tableName!=None and self.tableName.startswith("check"):
-            lkDlg=ADDLookupValue(self)
-            if lkDlg.exec_()==QDialog.Accepted:
-                lkName=lkDlg.value
+            lkDlg = ADDLookupValue(self)
+            if lkDlg.exec_() == QDialog.Accepted:
+                lkName = lkDlg.value
                 self.addLookupToWidget(lkName)
         else:
             self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","Selected table is not a lookup"))
     
     def addLookupToWidget(self,lkText):
         '''Add lookup to config list and add it to view widget'''
-        self.tableHandler.addLookupValue(self.tableName,str(lkText).capitalize())
+        self.tableHandler.addLookupValue(self.tableName, str(lkText).capitalize())
         self.lookupDefinedValues()
                 
     def lookupDefinedValues(self):
@@ -574,7 +574,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 
     def SQLFileView(self):
         '''read the SQL in directory'''
-        file=self.tableHandler.sqlTableDefinition()
+        file = self.tableHandler.sqlTableDefinition()
         return file
     
     def setRelation(self,fileN,sql):
@@ -607,8 +607,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     
     def assignRoles(self):
         if self.rbSchemaNew.isChecked():
-            roleP=RoleProvider()
-            roles=roleP.GetSysRoles()
+            roleP = RoleProvider()
+            roles = roleP.GetSysRoles()
             for role in roles:
                 roleSql=text("GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO %s;"%(role))
                 _execute(roleSql)
@@ -694,8 +694,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         :return:
         """
         dataPath={}
-        settings=self.tableHandler.settingsKeys()
-        userPath=[self.txtSetting.text(),self.txtDefaultFolder.text(),self.txtCertFolder.text(),self.txtTemplates.text()]
+        settings = self.tableHandler.settingsKeys()
+        userPath = [self.txtSetting.text(), self.txtDefaultFolder.text(), self.txtCertFolder.text(), self.txtTemplates.text()]
         for i in range(len(settings)):
             dataPath[settings[i]] = userPath[i]
         self.tableHandler.setProfileSettings(dataPath)
@@ -704,9 +704,9 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         
     def settingsPath(self):
         try:
-            dir_name=self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",\
-                                                                      "Select a directory for configuration Settings",\
-                                                                      str(self.txtSetting.text())))
+            dir_name = self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",\
+                        "Select a directory for configuration Settings",\
+                                        str(self.txtSetting.text())))
             dirPath=dir_name[0]
             self.txtSetting.setText(dirPath)
             self.setWorkingDataPath(dirPath)
@@ -719,20 +719,18 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         dir_name=None
         try:
             dir_name=self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",
-                                                                      "Select a directory for STDM data",\
-                                                                      str(self.txtDefaultFolder.text())))
+                                        "Select a directory for STDM data",\
+                                        str(self.txtDefaultFolder.text())))
             dirPath=dir_name[0]
             self.setWorkingDataPath(dirPath)
             self.certificatePath(dirPath)
             self.templatePath()
-
         except:
             pass
     
     def setWorkingDataPath(self, dir_name):
         self.txtDefaultFolder.setText(str(dir_name)+"/Data")
-        
-        
+
     def certificatePath(self,dirP):
         path = str(dirP)+"/Reports"
         self.txtCertFolder.setText(path)
@@ -740,14 +738,14 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         
     def templatePath(self):
         path = self.txtCertFolder.text()
-        path =path+"/Templates"
+        path = path+"/Templates"
         self.txtTemplates.setText(path)
         
     def setCertificatePath(self):
         try:
-            dir_name=self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",
-                                                                      "Select a directory for saving Reports",\
-                                                                      str(self.txtCertFolder.text())))
+            dir_name = self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",
+                                            "Select a directory for saving Reports",\
+                                              str(self.txtCertFolder.text())))
             self.txtCertFolder.setText(str(dir_name[0]))
         except:
             pass
@@ -755,8 +753,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def setTemplatesPath(self):
         try:
             dir_name=self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",
-                                                                      "Select a directory for saving templates",\
-                                                                      str(self.txtCertFolder.text())))
+                                    "Select a directory for saving templates",\
+                                    str(self.txtCertFolder.text())))
             self.txtTemplates.setText(str(dir_name[0]))
         except:
             pass
