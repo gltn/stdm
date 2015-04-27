@@ -118,8 +118,8 @@ class ReportLayout(QWidget,Ui_frmRptLayout):
         ds = dialogSettings
         
         if not ds == None:
-            Utils.setCurrentText(self.cboPageSize, ds.size)
-            Utils.setCurrentText(self.cboPageOrien, ds.orientation)
+            setComboCurrentIndexWithItemData(self.cboPageSize, ds.size)
+            setComboCurrentIndexWithItemData(self.cboPageOrien, ds.orientation)
             self.txtTopMargin.setText(ds.top)
             self.txtLeftMargin.setText(ds.left)            
             self.txtBtMargin.setText(ds.bottom)            
