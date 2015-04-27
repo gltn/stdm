@@ -20,7 +20,7 @@ from datetime import date
 
 from PyQt4.QtGui import *
 
-from stdm.ui.customcontrols import SearchableLineEdit
+from stdm.ui.customcontrols import BrowsableForeingKey
 
 
 class InputWidget(QWidget):
@@ -149,7 +149,7 @@ class DateEditWidget(InputWidget):
 class ForeignKeyEdit(InputWidget):
     #control_type = SearchableLineEdit
     def Factory(self):
-        self.control = SearchableLineEdit()
+        self.control = BrowsableForeingKey()
         self.control.signal_sender.connect(self.foreign_key_widget_activated)
         self.base_id = 0
         return self.control
