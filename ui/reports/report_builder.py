@@ -233,8 +233,15 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         self.btnSave.setEnabled(status)
     
     def loadTabFields(self,comboItemIndex):
-        #Load the associated fields from  specified table name 
-        self.tabName = str(self.comboBox.itemData(comboItemIndex))
+        #Load the associated fields from  specified table name
+        if isinstance(comboItemIndex, str) or isinstance(comboItemIndex, unicode):
+            comboItemIndex = self.comboBox.findData(comboItemIndex)
+
+            if comboItemIndex == -1:
+                QMessageBox.critical(self, QApplication.translate("ReportBuilder", "Report Error"),
+                                        QApplication.translate("ReportBuilder","Table does not exist in the drop-down list"))
+                return
+        self.tabName = self.comboBox.itemData(comboItemIndex)
         self.tabFields = table_column_names(self.tabName)
         self.listWidget.addItems(self.tabFields) 
         
@@ -246,10 +253,10 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         selFields=[]
         if selectAll:
             for i in range(self.listWidget.count()):
-                lstItem=self.listWidget.item(i)   
+                lstItem = self.listWidget.item(i)
                 selFields.append(lstItem.text())   
         else:        
-            selItems=self.listWidget.selectedItems()
+            selItems = self.listWidget.selectedItems()
             for selItem in selItems:
                 selFields.append(selItem.text())
         self.updateSelectedReportFields(selFields)
@@ -263,10 +270,10 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
     
     def remReportFields(self,selectAll=False):
         #Remove items from the report collection
-        selFields=[]
+        selFields = []
         if selectAll:
             for i in range(self.listWidget_2.count()):
-                lstItem=self.listWidget_2.item(i)   
+                lstItem = self.listWidget_2.item(i)
                 selFields.append(lstItem.text())   
         else:    
             selItems=self.listWidget_2.selectedItems()
@@ -863,7 +870,6 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         
         #Create report config object
         rptConfig = STDMReportConfig(self.tabName)
-        
         #Loop through all report elements' settings
         for i in range(self.stackedWidget.count()):
             w = self.stackedWidget.widget(i)
@@ -927,23 +933,24 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
             #QMessageBox.information(self, "List of tables", str(rptConf.table))
             if tabExists:
                 self.showhideProgressDialog("Restoring Report Settings...")              
-                friendlyTabName = self.tabNames[rptConf.table.title()]
+                #friendlyTabName = self.tabNames[rptConf.table]
+                friendlyTabName = rptConf.table
                 
                 #Force builder reset even if the loaded report refers to the previously loaded table            
-                if rptConf.table.title() == self.tabName:
-                    self.tabChanged(friendlyTabName)                  
+                if rptConf.table == self.tabName:
+                    self.tabChanged(friendlyTabName)
                 else:                  
                     self.tabName = rptConf.table
+                    #QMessageBox.information(self, "table name name", str(self.tabName))
                     #Set focus to report table in the drop down menu
-                    setComboCurrentIndexWithText(self.comboBox,friendlyTabName)
-                
+                    setComboCurrentIndexWithItemData(self.comboBox, friendlyTabName)
+
                 #Validate the fields
-                validTabFields = table_column_names(rptConf.table.title())
-                validRptFields, invalidRptFields = compareLists(validTabFields,rptConf.fields)  
+                validTabFields = table_column_names(rptConf.table)
+                validRptFields, invalidRptFields = compareLists(validTabFields, rptConf.fields)
                             
                 #Configure supporting controls
                 self.loadSettings_activateControls(validRptFields)
-                
                 #Set filter statement
                 self.txtSqlParser.setText(rptConf.filter)
                 
