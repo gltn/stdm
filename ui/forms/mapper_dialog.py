@@ -52,7 +52,7 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         
         self.buttonBox.accepted.connect(self.close_event)
         self.buttonBox.rejected.connect(self.cancel)
-        
+        #self.frmLayout.clicked.connect(self.form_event)
         if callable(model):
             self._table = model.__name__
         else:
@@ -77,8 +77,8 @@ class CustomFormDialog(MapperDialog, MapperMixin):
             for attrib, widget_prop in widgets.iteritems():
                 if hasattr(self._model, attrib):
                     self.control_widget(widget_prop)
-                    self.addMapping(attrib, self.control, False, attrib)
-                    self.frmLayout.addRow(self.userLabel(attrib), self.control)
+                    self.addMapping(attrib, self.control_type, False, attrib)
+                    self.frmLayout.addRow(self.userLabel(attrib), self.control_type)
             self.frmLayout.setLabelAlignment(Qt.AlignJustify)
         except Exception as ex:
             self._notifBar.insertWarningNotification(str(ex.message))
@@ -98,7 +98,7 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         Add controls to the form and controls options for lookup choices
         """
         self.widgetCls = prop[0]()
-        self.control = self.widgetCls.Factory()
+        self.control_type = self.widgetCls.Factory()
         if prop[1]:
             self.lookupOptions(self.widgetCls, prop[2])
         self.widgetCls.adopt()
@@ -126,3 +126,4 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         :return: string
         """
         self.setWindowTitle("{0} Entity Editor".format(self._table))
+

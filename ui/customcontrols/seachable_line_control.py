@@ -19,19 +19,13 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 from .line_edit_button import SearchableLineEdit
-from data import STDMDb, Model
 
-class BrowseLineControl(SearchableLineEdit):
+
+class BrowsableForeingKey(SearchableLineEdit):
     """
     Class to implement browsable line control for foreign key references
     """
-    def __init__(self, model = None, parent =None):
+    def __init__(self, model = None, parent = None):
+        SearchableLineEdit.__init__(self, parent)
 
         self._dbmodel = model
-
-    def set_value(self, fk_value):
-        """
-
-        :param fk_value:
-        :return:
-        """

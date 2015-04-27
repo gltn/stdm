@@ -44,7 +44,7 @@ class TypePropertyMapper(object):
 
     def widget(self):
         isLookup = False
-        model =None
+        model = None
         for attr, dataType in self._attr.iteritems():
             if dataType[1]:
                 dataType[0] = 'choice'

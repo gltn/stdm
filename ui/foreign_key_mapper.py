@@ -447,7 +447,6 @@ class ForeignKeyMapper(QWidget):
             entitySelector = self._entitySelector(self, str(self._dbModel.__name__).lower())
             self.connect(entitySelector, SIGNAL("recordSelected(int)"),self._onRecordSelectedEntityBrowser)
                 #self.connect(entitySelector, SIGNAL("destroyed(QObject *)"),self.onEntitySelectorDestroyed)
-
             retStatus = entitySelector.exec_()
             if retStatus == QDialog.Accepted:
                 pass

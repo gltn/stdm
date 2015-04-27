@@ -24,8 +24,8 @@ from stdm.ui.customcontrols import SearchableLineEdit
 
 
 class InputWidget(QWidget):
-    def __init__(self, parent =None):
-        data_type = None
+    #def __init__(self, parent =None):
+    data_type = None
 
     def Factory(self):
         pass
@@ -147,13 +147,10 @@ class DateEditWidget(InputWidget):
 
 
 class ForeignKeyEdit(InputWidget):
-
-    def __init__(self):
-        super(ForeignKeyEdit, self).__init__()
+    #control_type = SearchableLineEdit
+    def Factory(self):
         self.control = SearchableLineEdit()
         self.control.signal_sender.connect(self.foreign_key_widget_activated)
-
-    def Factory(self):
         self.base_id = 0
         return self.control
 

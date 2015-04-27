@@ -108,4 +108,4 @@ class AttributePropretyType(object):
 
     def display_mapping(self):
         #use the mapped table properties
-        lkModel = self._mapper.tableMapping(self.model)
+        self._mapper.tableMapping(self.model)

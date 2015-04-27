@@ -26,7 +26,7 @@ __all__ = ["SearchableLineEdit"]
 class SearchableLineEdit(QLineEdit):
     """Subclass the QLineEdit to support a toolbutton"""
     #signal_sender = pyqtSignal("PyQt_PyObject")
-    signal_sender = pyqtSignal(name = 'Button clicked')
+    signal_sender = pyqtSignal()
     def __init__(self, parent=None):
         QLineEdit.__init__(self, parent)
         self.button = QToolButton(self)
@@ -43,6 +43,7 @@ class SearchableLineEdit(QLineEdit):
         self.button.move(rect.right() - buttonWidth, frameWidth)
 
     def button_click_event(self):
+        #QMessageBox.information(None,"Signal event", "button clicked")
         self.signal_sender.emit()
 
     def set_value(self, id):
