@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_survey.ui'
 #
-# Created: Wed Mar 19 11:15:10 2014
-#      by: PyQt4 UI code generator 4.10.3
+# Created: Wed Apr 29 17:42:49 2015
+#      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -56,6 +56,9 @@ class Ui_frmSurvey(object):
         self.tab_3 = ForeignKeyMapper()
         self.tab_3.setObjectName(_fromUtf8("tab_3"))
         self.tabWidget.addTab(self.tab_3, _fromUtf8(""))
+        self.tab_4 = ForeignKeyMapper()
+        self.tab_4.setObjectName(_fromUtf8("tab_4"))
+        self.tabWidget.addTab(self.tab_4, _fromUtf8(""))
         self.gridLayout.addWidget(self.tabWidget, 3, 0, 1, 2)
         self.buttonBox = QtGui.QDialogButtonBox(frmSurvey)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -78,5 +81,5 @@ class Ui_frmSurvey(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("frmSurvey", "Enumerator", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("frmSurvey", "Respondent", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("frmSurvey", "Witnesses", None))
-
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), _translate("frmSurvey", "Priority Services", None))
 from .foreign_key_mapper import ForeignKeyMapper

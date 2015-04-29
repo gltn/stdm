@@ -33,27 +33,32 @@ class AttributePropretyType(object):
         """Enumerate column and datatype for the selected model
         :return: dict
         """
+        type_mapping = tableColType(self.model)
+        db_mapping = self._mapper.column_data_types(self.model)
+        db_mapping.update(type_mapping)
+
         try:
-            type_mapping = tableColType(self.model)
-            db_mapping = self._mapper.column_data_types(self.model)
-            db_mapping.update(type_mapping)
+
             """
             Compare table columns definition in the database and configuration file.
             """
+
             if cmp(db_mapping, type_mapping) != 0:
                 QMessageBox.information(None,"Table Columns ",
-                                        QApplication.translate(u"AttributePropertyType",
-                                        u"Database columns and configuration table columns do not "
-                                        u"match. Database table columns will be used instead\n"
-                                        u"Please update configuration tables for complete dialog mapping"))
-                self.table_config_has_changed(db_mapping, type_mapping)
-            foreignk_attr = self.foreign_key_attribute_for_model()
-            """
-            Only the foreign key attributes defined in the configuration shall be considered in the foreign key definition
-            """
-            db_mapping.update(foreignk_attr)
+                                QApplication.translate(u"AttributePropertyType",
+                                u"Database columns and configuration table columns do not "
+                                u"match. Database table columns will be used instead\n"
+                                u"Please update configuration tables for complete dialog mapping"))
+            updated_table_mapping = self.table_config_has_changed(db_mapping, type_mapping)
+            if type_mapping:
+                foreignk_attr = self.foreign_key_attribute_for_model()
+                """
+                Only the foreign key attributes defined in the configuration shall be considered in the foreign key definition
+                """
+                if foreignk_attr:
+                    updated_table_mapping.update(foreignk_attr)
+            return updated_table_mapping
 
-            return db_mapping
         except Exception as ex:
                 QMessageBox.information(None, "Reading %s columns"%self.model,
                                         QApplication.translate(u"AttributeDataType", u"Error reading the columns"))
@@ -73,23 +78,37 @@ class AttributePropretyType(object):
         :param configtablemapping:
         :return:
         """
-        try:
-            for col, coltype in dbtablemapping.iteritems():
-                if not col in configtablemapping:
-                    match_type = self. convert_db_data_types(coltype)
-                    if not match_type:
-                        """If the column datatype cannot be matched, use string as the datatype"""
-                        match_type = 'character varying'
-                        dbtablemapping[col] = [match_type, False]
-                    elif len(match_type) < 1:
-                        continue
-                    else:
-                        """Check if the column can be formatted on the fly"""
-                        dbtablemapping[col] = [match_type[0], False]
-        except IndexError as ie:
-            QMessageBox.information(None,
+        if configtablemapping:
+            try:
+                for col, coltype in dbtablemapping.iteritems():
+                    if not col in configtablemapping:
+                        match_type = self. convert_db_data_types(coltype)
+                        if not match_type:
+                            """If the column datatype cannot be matched, use string as the datatype"""
+                            match_type = 'character varying'
+                            dbtablemapping[col] = [match_type, False]
+                        elif len(match_type) < 1:
+                            continue
+                        else:
+                            """Check if the column can be formatted on the fly"""
+                            dbtablemapping[col] = [match_type[0], False]
+            except IndexError as ie:
+                QMessageBox.information(None,
                                     QApplication.translate(u"AttributePropertyType", u"Data Type Error"),
                                     QApplication.translate(u"AttributePropertyType", u"data type error: %s")%str(ie.message))
+        else:
+            for col, coltype in dbtablemapping.iteritems():
+                match_type = self.convert_db_data_types(coltype)
+                if not match_type:
+                    match_type = 'character varying'
+                    dbtablemapping[col] = [match_type, False]
+                elif len(match_type) < 1:
+                    continue
+                else:
+                    """Check if the column can be formatted on the fly"""
+                    dbtablemapping[col] = [match_type[0], False]
+        return dbtablemapping
+
 
     @staticmethod
     def convert_db_data_types(db_type):

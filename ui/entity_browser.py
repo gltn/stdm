@@ -30,7 +30,7 @@ from .helpers import SupportsManageMixin
 from .notification import NotificationBar, ERROR, WARNING,INFO
 from .base_person import WitnessEditor
 from stdm.data import BaseSTDMTableModel
-from stdm.data import STDMDb, tableCols,dateFormatter,tableColType
+from stdm.data import STDMDb, tableCols,dateFormatter, Respondent, Witness, Enumerator, tableColType
 from .stdmdialog import DeclareMapping
 from stdm.ui.forms import (
         CustomFormDialog,
@@ -523,12 +523,18 @@ class ContentGroupEntityBrowser(EntityBrowserWithEditor):
         """
         return self._tableContentGroup
     
-class EnumeratorEntityBrowser(EntityBrowser):
+class EnumeratorEntityBrowser(EntityBrowserWithEditor):
     '''
     Browser for enumerator records.
     '''
     def __init__(self,parent = None,state = VIEW|MANAGE):
-        EntityBrowser.__init__(self, parent, Enumerator, state)
+
+        mapping = DeclareMapping.instance()
+        Enumerator = mapping.tableMapping('enumerator')
+
+        EntityBrowserWithEditor.__init__(self, Enumerator, parent, state)
+
+        self._editorDialog = CustomFormDialog
         
     def title(self):
         return QApplication.translate("EnumeratorEntityBrowser", "Enumerator Records")
@@ -540,24 +546,42 @@ class RespondentEntityBrowser(EntityBrowserWithEditor):
     def __init__(self,parent = None,state = VIEW|MANAGE):
         
         mapping=DeclareMapping.instance()
-        tableCls=mapping.tableMapping('respondent')
+        Respondent=mapping.tableMapping('respondent')
         
-        EntityBrowserWithEditor.__init__(self, tableCls, parent, state)
+        EntityBrowserWithEditor.__init__(self, Respondent, parent, state)
         #self._editorDialog = RespondentEditor  
-        self._editorDialog=CustomFormDialog(self,tableCls)     
+        self._editorDialog = CustomFormDialog
         
     def title(self):
         return QApplication.translate("RespondentEntityBrowser", "Respondent Records")
             
+class PriorityEntityBrowser(EntityBrowserWithEditor):
+    '''
+    Browser for witness records.
+    '''
+    def __init__(self,parent = None,state = VIEW|MANAGE):
+
+        mapping=DeclareMapping.instance()
+        Priority = mapping.tableMapping('priority')
+        EntityBrowserWithEditor.__init__(self, Priority, parent, state)
+        self._editorDialog = CustomFormDialog
+
+    def title(self):
+        return QApplication.translate("WitnessEntityBrowser", "Witness Records")
+
+
+
 class WitnessEntityBrowser(EntityBrowserWithEditor):
     '''
     Browser for witness records.
     '''
     def __init__(self,parent = None,state = VIEW|MANAGE):
-                
+
+        mapping=DeclareMapping.instance()
+        Witness = mapping.tableMapping('witness')
         EntityBrowserWithEditor.__init__(self, Witness, parent, state)
-        self._editorDialog = WitnessEditor  
-        
+        self._editorDialog = CustomFormDialog
+
     def title(self):
         return QApplication.translate("WitnessEntityBrowser", "Witness Records")
     
@@ -575,23 +599,6 @@ class PartyEntitySelector(EntityBrowser):
     def title(self):
         return QApplication.translate("EnumeratorEntityBrowser", "Party Records")
     
-class FarmerEntityBrowser(ContentGroupEntityBrowser):
-    '''
-    Browser for farmer records.
-    '''
-    def __init__(self,tableContentGroup,parent = None,state = MANAGE):
-        ContentGroupEntityBrowser.__init__(self, Farmer, tableContentGroup, parent, state)
-        self._editorDialog = FarmerEditor
-
-    def _setFormatters(self):
-        """
-        Specify formatting mappings.
-        """
-        self.addCellFormatter("GenderID",genderFormatter)
-        self.addCellFormatter("MaritalStatusID",maritalStatusFormatter)
-
-    def title(self):
-        return QApplication.translate("FarmerEntityBrowser", "Farmer Records Manager")
 
 
 

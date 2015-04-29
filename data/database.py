@@ -241,8 +241,24 @@ class Enumerator(Model,Base):
     '''
     __tablename__ = "enumerator"
     id = Column(Integer,primary_key = True)
+    Surname = Column("sur_name",String(50))
+    Givennames = Column("given_names",String(50))
+    Identity = Column("identity",Integer)
+    Level = Column("level",String(50))
     Surveys = relationship("Survey",backref="Enumerator")  
-    
+
+class Respondent(Model,Base):
+    '''
+    Respondent model configuration.
+    No additional attributes from the ones in person base class.
+    '''
+    __tablename__ = "respondent"
+    id = Column(Integer,primary_key = True)
+    Surname = Column("sur_name",String(50))
+    Givennames = Column("family_names",String(50))
+    Identity = Column("identity",Integer)
+    Relation = Column("relationship",String(50))
+
 class Witness(Model,Base):
     '''
     Questionnaire respondent witness.
@@ -309,6 +325,9 @@ class Priority(SupportsRankingMixin,Model,Base):
     '''
     __tablename__ = "priority"
     itemID = Column("item_id",Integer)
+    Name = Column("name",String(50))
+    Type = Column("type",String(50))
+    Management = Column("management",String(50))
     
     @staticmethod
     def displayMapping():

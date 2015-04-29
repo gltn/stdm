@@ -1,12 +1,6 @@
 from .config import DatabaseConfig
 from connection import DatabaseConnection
-from database import STDMDb,Base,Model
-# from database import Content, Role, Enumerator,Respondent, LookupBase, \
-#  SocialTenureRelationshipMixin, BasePersonMixin, Farmer, Witness, \
-#  Survey, Garden, SurveyPointMixin, GardenSurveyPoint, HouseSurveyPoint, FoodCrop, GardenSocialTenureRelationship, \
-#  House, HouseSocialTenureRelationship, Household, HouseholdIncome, HouseholdSaving, SupportsRankingMixin, Priority, \
-#  AdminSpatialUnitSet
-from .database import AdminSpatialUnitSet, Enumerator, Survey, Priority, Content, Role, Witness
+from .database import AdminSpatialUnitSet, Enumerator, Survey, Priority, Content, Role, Witness,STDMDb,Base,Model,Respondent
 from .qtmodels import UsersRolesModel,PersonTableModel, STRTreeViewModel, BaseSTDMTableModel
 from .globals import app_dbconn
 from .modelformatters import respondentRoleFormatter,LookupFormatter,witnessRelationshipFormatter, \

@@ -108,15 +108,15 @@ class DeclareMapping(object):
     def column_mapping_for_table(self, table):
         """
         Method to store all the columns names from the database table into an dict.
-        :param table:
-        :return:
+        :param table: str
+        :return  a list of table column names: dict
         """
         self.attDictionary[table.name] = [column.name for column in table.columns]
 
     def table_columns_metadata(self, table):
         """
         Method to package the table columns and their datatype into a dictionary mapping.
-        :param table:
+        :param  table name :str
         :return dict:
         """
         type_mapping = OrderedDict()

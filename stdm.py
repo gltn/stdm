@@ -33,7 +33,6 @@ from ui import (
                 newSTRWiz,
                 ViewSTRWidget,
                 AdminUnitSelector,
-                FarmerEntityBrowser,
                 STDMEntityBrowser,
                 SurveyEntityBrowser,
                 PersonDocumentGenerator,
@@ -52,7 +51,7 @@ from data import (
                   activeProfile,
                   contentGroup
                   )
-from data.reports import SysFonts
+
 from navigation import (
                         STDMAction,
                         QtContainerLoader,
@@ -64,9 +63,8 @@ from mapping import (
                      )
 from utils import *
 from mapping.utils import pg_layerNamesIDMapping
-from data.pg_utils import delete_table_data
-from composer import ComposerWrapper
 
+from composer import ComposerWrapper
 
 class STDMQGISLoader(object):
 
@@ -515,13 +513,13 @@ class STDMQGISLoader(object):
         self.menubarLoader.addContent(self.rptBuilderCntGroup)
 
         self.toolbarLoader.addContent(tbSeparator)
+        self.toolbarLoader.addContent(self.STRCntGroup)
+        self.menubarLoader.addContent(self.STRCntGroup)
+
         self.toolbarLoader.addContent(self.surveyCntGroup)
         self.menubarLoader.addContent(self.surveyCntGroup)
-
-        self.toolbarLoader.addContent(self.STRCntGroup)
-        self.menubarLoader.addContent(self.spatialEditingCntGroup)
         self.toolbarLoader.addContent(tbSeparator)
-        self.toolbarLoader.addContent(self.spatialEditingCntGroup)
+        #self.toolbarLoader.addContent(self.spatialEditingCntGroup)
         self.toolbarLoader.addContent(self.createFeatureCntGroup)
         self.menubarLoader.addContent(self.createFeatureCntGroup)
         self.menubarLoader.addContent(self.logoutAct)
@@ -927,14 +925,18 @@ class STDMQGISLoader(object):
         '''
         create a handler to read the xml config and return the table list
         '''
-        profile=activeProfile()
-        handler=ConfigTableReader()
+        profile = activeProfile()
+        handler = ConfigTableReader()
         if profile == None:
             """add a default is not provided"""
             default = handler.STDMProfiles()
             profile = str(default[0])
         moduleList = handler.tableNames(profile)
         moduleList.extend(handler.lookupTable())
+        moduleList.append('enumerator')
+        moduleList.append('respondent')
+        moduleList.append('witness')
+        moduleList.append('priority')
         self.pgTableMapper(moduleList)
         if 'spatial_unit' in moduleList:
             moduleList.remove('spatial_unit')

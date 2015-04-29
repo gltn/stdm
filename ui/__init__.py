@@ -32,7 +32,6 @@ from .entity_browser import (
                             ContentGroupEntityBrowser, 
                             WitnessEntityBrowser,
                             PartyEntitySelector,
-                            FarmerEntityBrowser,
                             STDMEntityBrowser,
                             SurveyEntityBrowser,
                             ForeignKeyBrowser
