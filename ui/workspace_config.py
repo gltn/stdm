@@ -32,6 +32,7 @@ deleteTable,lookupData2List,deleteLookupChoice,SQLInsert,LicenseDocument, safely
     _execute, flush_session_activity
 
 from attribute_editor import AttributeEditor
+from .geometry_editor import GeometryEditor
 from table_propertyDlg import TableProperty
 from addtable import TableEditor
 from stdm.security import RoleProvider
@@ -85,7 +86,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.btnDel.clicked.connect(self.deleteTableColumn)
         self.btnPropDel.clicked.connect(self.deleteTableRelation)
         self.btnLkDel.clicked.connect(self.deleteLookupChoice)
-        #self.toolbtn.clicked.connect(self.popup)
+        self.btnGeomEdit.clicked.connect(self.geom_editor)
         self.btnAddLk.clicked.connect(self.addLookupValue)
         self.helpRequested.connect(self.HelpContents)
         self.rbSchema.clicked.connect(self.setSqlIsertDefinition)
@@ -333,7 +334,29 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.loadTableColumns(self.tableName)
         self.loadTableRelations(self.tableName)
         self.populateLookup()
-        
+
+    def geom_editor(self):
+        '''Edit selected geom column from the geometry table'''
+        #QMessageBox.information(self,"Editing geom", "Starting")
+        try:
+            selCols=self.tblLookup_2.selectionModel().selectedIndexes()
+            EditorSession=[]
+            if len(selCols)>0 and self.tableName!=None:
+                EditorSession.append(selCols[1].data())
+                EditorSession.append(selCols[2].data())
+                EditorSession.append(selCols[3].data())
+                colDlg = GeometryEditor(self,str(self.cboProfile.currentText()), self.tableName,args=EditorSession)
+                colDlg.exec_()
+            else:
+                self.InfoMessage(QApplication.translate("WorkSpaceLoader","No table column is selected for editing"))
+                return
+        except Exception as ex:
+            self.ErrorInfoMessage(ex.message)
+            return
+        self.showGeometryColumns(self.tableName)
+
+
+
     def tableRelationEditor(self):
         if self.tableName!=None:
             colDlg=TableProperty(str(self.cboProfile.currentText()),self.tableName,self)
@@ -488,24 +511,26 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         
     def deleteLookupChoice(self): 
         '''remove a text from the lookup choices'''
-        selIndx = self.tblLookup.selectionModel().selectedIndexes()
-        if selIndx:
-            selItem = selIndx[0]
-        else:
-            self.ErrorInfoMessage(QApplication.translate('WorkspaceLoader',\
-                                             "No text is selected from the lookup choices"))
-            return
-        if selItem!=None and not self.tableName.startswith('check'):
-            self.ErrorInfoMessage(QApplication.translate('WorkspaceLoader',\
-                                                       "selected table is not a lookup table"))
-            return
-        if self.warningInfo(QApplication.translate('WorkspaceLoader',\
-                            "Are you sure you want to delete "+str(selItem.data())+ " choice from "+\
-                                        self.tableName)) == QMessageBox.Yes:
-            if str(self.tableName).startswith('check'):
-                deleteLookupChoice(self.profile,'lookup',self.tableName,'data','value',str(selItem.data()))
-                self.lookupDefinedValues()
-        
+        try:
+            selIndx = self.tblLookup.selectionModel().selectedIndexes()
+            if selIndx:
+                selItem = selIndx[0]
+            else:
+                self.ErrorInfoMessage(QApplication.translate('WorkspaceLoader',\
+                                                 "No text is selected from the lookup choices"))
+                return
+            if selItem!=None and not self.tableName.startswith('check'):
+                self.ErrorInfoMessage(QApplication.translate('WorkspaceLoader',\
+                                                           "selected table is not a lookup table"))
+                return
+            if self.warningInfo(QApplication.translate('WorkspaceLoader',\
+                                "Are you sure you want to delete "+str(selItem.data())+ " choice from "+\
+                                            self.tableName)) == QMessageBox.Yes:
+                if str(self.tableName).startswith('check'):
+                    deleteLookupChoice(self.profile,'lookup',self.tableName,'data','value',str(selItem.data()))
+                    self.lookupDefinedValues()
+        except:
+            self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader", "Unable to delete current record"))
            
     def addLookupValue(self):
         if self.tableName == None:

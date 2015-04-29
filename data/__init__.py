@@ -7,7 +7,6 @@ from .modelformatters import respondentRoleFormatter,LookupFormatter,witnessRela
 DoBFormatter,genderFormatter,maritalStatusFormatter,savingOptionFormatter,inputServiceFormatter, \
 socioEconImpactFormatter,foodCropCategoryFormatter,geometryFormatter,respondentNamesFormatter, \
 enumeratorNamesFormatter,dateFormatter
-#from .lookups import initLookups
 from .mapping import MapperMixin,QgsFeatureMapperMixin,SAVE,UPDATE
 
 from .pg_utils import spatial_tables,pg_tables,pg_views,table_column_names,geometryType,_execute
@@ -50,7 +49,8 @@ from .xmlconfig_writer import(
                 deleteLookupChoice,
                 updateSQL,
                 editTableColumn,
-                writeGeomConstraint
+                writeGeomConstraint,
+                edit_geom_column
             )
 
 from .configfile_paths import FilePaths

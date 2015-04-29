@@ -147,6 +147,20 @@ def editTableColumn(profile,tableName, key, value, newValue, type, size, desc):
                         col.set('fullname', desc)
     tree.write(xml_doc, xml_declaration=True, encoding='utf-8')
 
+def edit_geom_column(profile,tableName, key, value, newValue, type, srid):
+    tree, root=parseRootElement()
+    filter = (".//*[@name='%s']/table")%profile
+    for elem in root.findall(filter):
+        if elem.get('name')==tableName:
+            node=elem.find("geometryz")
+            for col in node.findall('geometry'):
+                if col.get(key) == value:
+                    col.set(key, newValue)
+                    col.set('oldname', value)
+                    col.set('type', type)
+                    col.set('srid', srid)
+    tree.write(xml_doc, xml_declaration=True, encoding='utf-8')
+
 def renameTable(profile,oldName, newName, desc):
     tree, root=parseRootElement()
     filter=(".//*[@name='%s']/table")%profile
