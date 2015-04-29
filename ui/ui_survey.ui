@@ -77,6 +77,11 @@
        <string>Witnesses</string>
       </attribute>
      </widget>
+     <widget class="QWidget" name="tab_4">
+      <attribute name="title">
+       <string>Priority Services</string>
+      </attribute>
+     </widget>
     </widget>
    </item>
    <item row="4" column="0" colspan="2">

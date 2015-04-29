@@ -21,16 +21,17 @@ from datetime import datetime
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import Enumerator,Survey,Witness, MapperMixin
+from stdm.data import Survey,Witness, Respondent, MapperMixin
 
 from stdm.utils import randomCodeGenerator
 from .ui_survey import Ui_frmSurvey
 from .admin_unit_manager import VIEW, MANAGE,SELECT
 from .helpers import SupportsManageMixin
 from .entity_browser import EnumeratorEntityBrowser,RespondentEntityBrowser, \
-WitnessEntityBrowser
+WitnessEntityBrowser, PriorityEntityBrowser
 from .notification import NotificationBar
 from .stdmdialog import DeclareMapping
+
 
 __all__ = ["SurveyEditor"]
 
@@ -44,6 +45,7 @@ class SurveyEditor(QDialog,Ui_frmSurvey,MapperMixin):
         MapperMixin.__init__(self,model)
         
         #Connect signals
+        self.mapping = DeclareMapping.instance()
         self.buttonBox.accepted.connect(self.submit)
         self.buttonBox.rejected.connect(self.cancel)
         
@@ -53,49 +55,44 @@ class SurveyEditor(QDialog,Ui_frmSurvey,MapperMixin):
         self.dtEnumDate.setDate(currDate)
         
         self._notifBar = NotificationBar(self.vlNotification)
-        
+
+        Enumerator = self.mapping.tableMapping('enumerator')
         #Configure Enumerator FK mapper
         enumFKMapper = self.tabWidget.widget(0)
         enumFKMapper.setDatabaseModel(Enumerator)
-        enumFKMapper.setEntitySelector(EnumeratorEntityBrowser)
+        enumFKMapper.setEntitySelector(EnumeratorEntityBrowser, VIEW|MANAGE)
         enumFKMapper.setSupportsList(False)
         #enumFKMapper.addCellFormatter("GenderID",genderFormatter)
         #enumFKMapper.addCellFormatter("MaritalStatusID",maritalStatusFormatter)
         enumFKMapper.setNotificationBar(self._notifBar)
         enumFKMapper.initialize()
-        
-        mapping=DeclareMapping.instance()
-        tableCls=mapping.tableMapping('respondent')
-        
-        
+
+        Respondent = self.mapping.tableMapping('respondent')
         respondentFKMapper = self.tabWidget.widget(1)
-        respondentFKMapper.setDatabaseModel(tableCls)
-        respondentFKMapper.setEntitySelector(RespondentEntityBrowser,VIEW|MANAGE)
-        
+        respondentFKMapper.setDatabaseModel(Respondent)
+        respondentFKMapper.setEntitySelector(RespondentEntityBrowser, VIEW|MANAGE)
+
+        respondentFKMapper.setSupportsList(False)
+        respondentFKMapper.setNotificationBar(self._notifBar)
+        respondentFKMapper.initialize()
+
+
+        Witness = self.mapping.tableMapping('witness')
         witnessFKMapper = self.tabWidget.widget(2)
         witnessFKMapper.setDatabaseModel(Witness)
-        witnessFKMapper.setEntitySelector(WitnessEntityBrowser,VIEW|MANAGE)
+        witnessFKMapper.setEntitySelector(WitnessEntityBrowser, VIEW|MANAGE)
         witnessFKMapper.setSupportsList(True)
-        
-#         #Configure Respondent FK mapper
-#         respondentFKMapper = self.tabWidget.widget(1)
-#         #respondentFKMapper.setDatabaseModel(Respondent)
-        
-#         respondentFKMapper.setSupportsList(False)
-#         #respondentFKMapper.addCellFormatter("GenderID",genderFormatter)
-#         #respondentFKMapper.addCellFormatter("MaritalStatusID",maritalStatusFormatter)
-#         #respondentFKMapper.addCellFormatter("RoleID",respondentRoleFormatter)
-        respondentFKMapper.setNotificationBar(self._notifBar)
-#         respondentFKMapper.initialize()
-#         
-#         #Configure Witnesses FK mapper
-         
-#         #witnessFKMapper.addCellFormatter("GenderID",genderFormatter)
-#         #witnessFKMapper.addCellFormatter("MaritalStatusID",maritalStatusFormatter)
-#         #witnessFKMapper.addCellFormatter("RelationshipID",witnessRelationshipFormatter)
         witnessFKMapper.setNotificationBar(self._notifBar)
-#         witnessFKMapper.initialize()
-        
+        witnessFKMapper.initialize()
+
+
+        Priority = self.mapping.tableMapping('priority')
+        prFKMapper = self.tabWidget.widget(3)
+        prFKMapper.setDatabaseModel(Priority)
+        prFKMapper.setEntitySelector(PriorityEntityBrowser, VIEW|MANAGE)
+        prFKMapper.setSupportsList(True)
+        prFKMapper.setNotificationBar(self._notifBar)
+        prFKMapper.initialize()
         #Configure attribute mappings
         self.addMapping("Code", self.txtSurveyCode, preloadfunc = self.codeGenerator())
         self.addMapping("EnumerationDate", self.dtEnumDate)

@@ -47,9 +47,11 @@ class MapperDialog(QDialog,Ui_Dialog):
         
 class CustomFormDialog(MapperDialog, MapperMixin):
     def __init__(self, parent, model=None):
+        self._model = model
+
         MapperDialog.__init__(self, parent)
-        MapperMixin.__init__(self, model)
-        
+        MapperMixin.__init__(self, self._model)
+        #QMessageBox.information(self,"Model instance",str(self._model))
         self.buttonBox.accepted.connect(self.close_event)
         self.buttonBox.rejected.connect(self.cancel)
         #self.frmLayout.clicked.connect(self.form_event)
@@ -67,21 +69,26 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         """
         :return: Mapper dialog form
         """
-        try:
-            self.property = AttributePropretyType(self._table.lower())
-            # start loading table attribute properties
-            table_properties = self.property.attribute_type()
+        #try:
+        self.property = AttributePropretyType(self._table.lower())
+        # start loading table attribute properties
+        table_properties = self.property.attribute_type()
 
-            property_mapper = TypePropertyMapper(table_properties)
-            widgets = property_mapper.setProperty()
-            for attrib, widget_prop in widgets.iteritems():
-                if hasattr(self._model, attrib):
-                    self.control_widget(widget_prop)
-                    self.addMapping(attrib, self.control_type, False, attrib)
-                    self.frmLayout.addRow(self.userLabel(attrib), self.control_type)
-            self.frmLayout.setLabelAlignment(Qt.AlignJustify)
-        except Exception as ex:
-            self._notifBar.insertWarningNotification(str(ex.message))
+        property_mapper = TypePropertyMapper(table_properties)
+        widgets = property_mapper.setProperty()
+        for attrib, widget_prop in widgets.iteritems():
+            if hasattr(self._model, attrib):
+                #self.control_widget(widget_prop)
+                widgetCls = widget_prop[0]()
+                control_type = widgetCls.Factory()
+                if widget_prop[1]:
+                    self.lookupOptions(widgetCls, widget_prop[2])
+                widgetCls.adopt()
+                self.addMapping(attrib, control_type, False, attrib)
+                self.frmLayout.addRow(self.userLabel(attrib), control_type)
+        self.frmLayout.setLabelAlignment(Qt.AlignJustify)
+        #except Exception as ex:
+           # self._notifBar.insertWarningNotification(str(ex.message))
 
     def userLabel(self, attr):
             return attr.replace("_", " ").title()
