@@ -85,10 +85,6 @@ SOURCES = stdm.py \
 			ui/ui_view_str.py \
 			ui/ui_workspace_config.py \
 			ui/view_str.py \
-			ui/forms/mapper_dialog.py \
-			ui/forms/attribute_datatype.py \
-			ui/forms/widgets.py \
-			ui/forms/AttributePropretyType \
 			ui/workspace_config.py \
 			utils/case_insensitive_dict.py\
 			utils/filesize.py \
@@ -108,7 +104,7 @@ SOURCES = stdm.py \
 			security/user.py \
 			security/roleprovider.py \
 			security/membership.py \
-			security/exception.py \
+			security/exception.py\
 			security/authorization.py \
 			network/filemanager.py \
 			navigation/treeloader.py \
@@ -130,7 +126,7 @@ SOURCES = stdm.py \
 			data/data_reader_form.py \
 			data/database.py \
 			data/enums.py \
-			data/globals.py \
+			data/globals.py\
 			data/license_doc.py \
 			data/lookups.py \
 			data/mapping.py \
@@ -142,7 +138,9 @@ SOURCES = stdm.py \
 			data/xmlconfig_reader.py \
 			data/xmlconfig_writer.py \
 			data/xmldata2sql.py \
-			ui/ui_base_form.py
+			ui/ui_base_form.py \
+			ui/report/report_builder.py \
+			ui/report/ui_rpt_builder.py \
 			
 			
 FORMS = ui/ui_changepwd.ui \		  			  	
