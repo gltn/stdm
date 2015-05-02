@@ -2,9 +2,10 @@
 /***************************************************************************
 Name                 : STDM QGIS Loader
 Description          : STDM QGIS Loader
-Date                 : 23/May/2013 
-copyright            : (C) 2013 by John Gitau
-email                : gkahiu@gmail.com
+Date                 : 04-01-2015
+copyright            : (C) 2015 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -25,8 +26,7 @@ from PyQt4.QtGui import *
 
 from qgis.core import *
 from qgis.gui import *
-from ui import (
-                loginDlg,
+from ui import (loginDlg,
                 changePwdDlg,
                 manageAccountsDlg,
                 contentAuthDlg,
@@ -44,23 +44,20 @@ from ui import (
                 )
 from ui.reports import ReportBuilder
 import data
-from data import (
-                  STDMDb,
+from data import (STDMDb,
                   spatial_tables,
                   ConfigTableReader,
                   activeProfile,
                   contentGroup
                   )
 
-from navigation import (
-                        STDMAction,
+from data.reports import SysFonts
+from navigation import (STDMAction,
                         QtContainerLoader,
                         ContentGroup,
                         TableContentGroup
                         )
-from mapping import (
-                     StdmMapToolCreateFeature
-                     )
+from mapping import (StdmMapToolCreateFeature)
 from utils import *
 from mapping.utils import pg_layerNamesIDMapping
 
