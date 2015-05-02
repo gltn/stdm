@@ -275,7 +275,7 @@ def flush_session_activity():
     # resetSql1 = text(rolesSet1)
     # _execute(resetSql1)
 
-def vector_layer(table_name, sql="", key="id"):
+def vector_layer(table_name, sql="", key="id",geom_column=""):
     """
     Returns a QgsVectorLayer based on the specified table name.
     """
@@ -286,8 +286,11 @@ def vector_layer(table_name, sql="", key="id"):
     if conn is None:
         return None
 
+    if not geom_column:
+        geom_column=None
+
     ds_uri = conn.toQgsDataSourceUri()
-    ds_uri.setDataSource("public", table_name, None, sql, key)
+    ds_uri.setDataSource("public", table_name, geom_column, sql, key)
 
     v_layer = QgsVectorLayer(ds_uri.uri(), table_name, "postgres")
 
