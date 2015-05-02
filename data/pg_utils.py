@@ -23,12 +23,8 @@ from qgis.core import *
 
 from sqlalchemy.sql.expression import text
 
-<<<<<<< HEAD
-from stdm.data import STDMDb, Base
-=======
 import stdm.data
-from stdm.data import STDMDb
->>>>>>> 51278e6... Created STDM edit manager dock window
+from stdm.data import STDMDb, Base
 from stdm.utils import getIndex
 
 _postGISTables = ["spatial_ref_sys"]
@@ -237,8 +233,12 @@ def _execute(sql,**kwargs):
 
 def reset_content_roles():
     rolesSet = "truncate table content_base cascade;"
-<<<<<<< HEAD
     _execute(text(rolesSet))
+    resetSql = text(rolesSet)
+    _execute(resetSql)
+    # rolesSet1 = "truncate table content_roles cascade;"
+    # resetSql1 = text(rolesSet1)
+    # _execute(resetSql1)
 
 def delete_table_keys(table):
     #clean_delete_table(table)
@@ -265,16 +265,6 @@ def safely_delete_tables(tables):
 def flush_session_activity():
     STDMDb.instance().session._autoflush()
 
-
-
-
-=======
-    resetSql = text(rolesSet)
-    _execute(resetSql)
-    # rolesSet1 = "truncate table content_roles cascade;"
-    # resetSql1 = text(rolesSet1)
-    # _execute(resetSql1)
-
 def vector_layer(table_name, sql="", key="id",geom_column=""):
     """
     Returns a QgsVectorLayer based on the specified table name.
@@ -295,4 +285,3 @@ def vector_layer(table_name, sql="", key="id",geom_column=""):
     v_layer = QgsVectorLayer(ds_uri.uri(), table_name, "postgres")
 
     return v_layer
->>>>>>> 51278e6... Created STDM edit manager dock window

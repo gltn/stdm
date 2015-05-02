@@ -548,10 +548,12 @@ class STDMQGISLoader(object):
         
         self.toolbarLoader.addContent(self.STRCntGroup)
         self.menubarLoader.addContent(self.spatialEditingCntGroup)
+
         self.menubarLoader.addContent(self.spatialUnitManagerCntGroup)
         self.toolbarLoader.addContent(tbSeparator)
         self.toolbarLoader.addContent(self.spatialEditingCntGroup)
         self.toolbarLoader.addContent(self.spatialUnitManagerCntGroup)
+
         self.toolbarLoader.addContent(self.createFeatureCntGroup)
         self.menubarLoader.addContent(self.createFeatureCntGroup)
         self.menubarLoader.addContent(self.logoutAct)
@@ -879,7 +881,7 @@ class STDMQGISLoader(object):
 
         #Assert if layer is from the SDTM database
         if not self.isSTDMLayer(layer):
-            self.spatialEditorAct.setChecked(False)
+            self.postGISLayerEditor.setChecked(False)
             self.iface.messageBar().clearWidgets()
             self.iface.messageBar().pushMessage(QApplication.translate("STDMPlugin","Non-SDTM Layer"),
                                                 QApplication.translate("STDMPlugin","Selected layer is not from the STDM database."),
@@ -889,8 +891,8 @@ class STDMQGISLoader(object):
 
         if not layer.isEditable() and not layer.isReadOnly():
             if not (layer.dataProvider().capabilities() & QgsVectorDataProvider.EditingCapabilities):
-                self.spatialEditorAct.setChecked(False)
-                self.spatialEditorAct.setEnabled(False)
+                self.postGISLayerEditor.setChecked(False)
+                self.postGISLayerEditor.setEnabled(False)
                 self.iface.messageBar().pushMessage(QApplication.translate("STDMPlugin","Start Editing Failed"),
                                                     QApplication.translate("STDMPlugin","Provider cannot be opened for editing"),
                                                     level=QgsMessageBar.CRITICAL)
