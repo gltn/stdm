@@ -125,4 +125,3 @@ class Ui_frmPersonDocGenerator(object):
 
 from customcontrols import ModelAtrributesView
 from .foreign_key_mapper import ForeignKeyMapper
-import resources_rc

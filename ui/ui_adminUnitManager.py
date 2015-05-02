@@ -93,4 +93,3 @@ class Ui_frmAdminUnitManager(object):
         self.label_2.setText(_translate("frmAdminUnitManager", "Code", None))
 
 from customcontrols import ValidatingLineEdit
-import resources_rc

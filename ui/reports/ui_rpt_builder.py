@@ -377,5 +377,3 @@ class Ui_ReportBuilder(object):
         self.btnRptCancel.setText(_translate("ReportBuilder", "Cancel", None))
         self.btnGenRpt.setText(_translate("ReportBuilder", "Generate Report", None))
         self.btnSave.setText(_translate("ReportBuilder", "Save", None))
-
-import resources_rc
