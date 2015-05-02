@@ -42,13 +42,16 @@ from ui import (loginDlg,
                 ImportData,
                 ExportData
                 )
+from ui.postgisEditorDockWidget import PostgisEditorDockWidgetDialog
 from ui.reports import ReportBuilder
 import data
 from data import (STDMDb,
                   spatial_tables,
                   ConfigTableReader,
                   activeProfile,
-                  contentGroup
+                  contentGroup,
+                  vector_layer,
+                  geometryType
                   )
 
 from data.reports import SysFonts
@@ -197,9 +200,21 @@ class STDMQGISLoader(object):
             #Load logout and change password actions
             self.stdmInitToolbar.insertAction(self.loginAct,self.logoutAct)
             self.stdmInitToolbar.insertAction(self.loginAct,self.changePasswordAct)
-            self.loginAct.setEnabled(False)
 
-            #Get STDM tables
+            self.loginAct.setEnabled(False)   
+            
+            #Get STDM spatial tables
+            # self.stdmTables = spatial_tables()
+            # self.spatial_layers = []
+            # for lyr in self.stdmTables:
+            #    self.spatial_layer = vector_layer(lyr)
+            #    self.spatial_layer_type = geometryType(lyr,"the_geom")
+            #    #self.layer_type = self.spatial_layer.geometryType()
+            #    self.spatial_layers.append(self.spatial_layer_type)
+            # self.layers = str(self.spatial_layers)
+            # QMessageBox.information(self.iface.mainWindow(),"Title", self.layers)
+            #self.loadModules()
+            #resetContentRoles()
             try:
                 self.stdmTables = spatial_tables()
                 self.loadModules()
@@ -294,6 +309,11 @@ class STDMQGISLoader(object):
         QApplication.translate("SpatialEditorAction","Toggle Spatial Unit Editing"), self.iface.mainWindow())
         self.spatialEditorAct.setCheckable(True)
 
+        #Spatial Layer Manager
+        self.spatialLayerManager = QAction(QIcon(":/plugins/stdm/images/icons/edit.png"), \
+        QApplication.translate("SpatialEditorAction","Post GIS Layer Editor"), self.iface.mainWindow())
+        self.spatialLayerManager.setCheckable(True)
+
         self.createFeatureAct = QAction(QIcon(":/plugins/stdm/images/icons/create_feature.png"), \
         QApplication.translate("CreateFeatureAction","Create Spatial Unit"), self.iface.mainWindow())
         self.createFeatureAct.setCheckable(True)
@@ -328,6 +348,7 @@ class STDMQGISLoader(object):
         self.docGeneratorAct.triggered.connect(self.onDocumentGeneratorByPerson)
         self.rptBuilderAct.triggered.connect(self.onReportBuilder)
         self.spatialEditorAct.triggered.connect(self.onToggleSpatialEditing)
+        self.spatialLayerManager.triggered.connect(self.postGISLayerEditorActivate)
         self.saveEditsAct.triggered.connect(self.onSaveEdits)
         self.createFeatureAct.triggered.connect(self.onCreateFeature)
         contentMenu.triggered.connect(self.widgetLoader)
@@ -371,6 +392,9 @@ class STDMQGISLoader(object):
 
         spatialEditingCnt = ContentGroup.contentItemFromQAction(self.spatialEditorAct)
         spatialEditingCnt.code = "4E945EE7-D6F9-4E1C-A4AA-0C7F1BC67224"
+
+        spatialLayerManagerCnt = ContentGroup.contentItemFromQAction(self.spatialLayerManager)
+        spatialLayerManagerCnt.code = "4E945EE7-D6F9-4E1C-X4AA-0C7F1BC67224"
 
         createFeatureCnt = ContentGroup.contentItemFromQAction(self.createFeatureAct)
         createFeatureCnt.code = "71CFDB15-EDB5-410D-82EA-0E982971BC51"
@@ -436,7 +460,11 @@ class STDMQGISLoader(object):
         self.spatialEditingCntGroup.addContentItem(spatialEditingCnt)
         self.spatialEditingCntGroup.register()
 
-        self.createFeatureCntGroup = ContentGroup(username, self.createFeatureAct)
+        self.postGISLayerEditorCntGroup = ContentGroup(username,self.spatialLayerManager)
+        self.postGISLayerEditorCntGroup.addContentItem(spatialLayerManagerCnt)
+        self.postGISLayerEditorCntGroup.register()
+        
+        self.createFeatureCntGroup = ContentGroup(username,self.createFeatureAct)
         self.createFeatureCntGroup.addContentItem(createFeatureCnt)
         self.createFeatureCntGroup.register()
 
@@ -517,8 +545,13 @@ class STDMQGISLoader(object):
 
         self.toolbarLoader.addContent(self.surveyCntGroup)
         self.menubarLoader.addContent(self.surveyCntGroup)
+        
+        self.toolbarLoader.addContent(self.STRCntGroup)
+        self.menubarLoader.addContent(self.spatialEditingCntGroup)
+        self.menubarLoader.addContent(self.postGISLayerEditorCntGroup)
         self.toolbarLoader.addContent(tbSeparator)
-        #self.toolbarLoader.addContent(self.spatialEditingCntGroup)
+        self.toolbarLoader.addContent(self.spatialEditingCntGroup)
+        self.toolbarLoader.addContent(self.postGISLayerEditorCntGroup)
         self.toolbarLoader.addContent(self.createFeatureCntGroup)
         self.menubarLoader.addContent(self.createFeatureCntGroup)
         self.menubarLoader.addContent(self.logoutAct)
@@ -534,7 +567,17 @@ class STDMQGISLoader(object):
         self.menubarLoader.loadContent()
 
         #Quick fix
+        fontPath=None
+        if platform.system() == "Windows":
+            userPath = os.environ["USERPROFILE"]
+            profPath = userPath + "/.stdm"
+            fontPath=str(profPath).replace("\\", "/")+"/font.cache"
+        SysFonts.register(fontPath)
 
+        self.postGISEditLayerDockWidget = PostgisEditorDockWidgetDialog(self.iface)
+        self.postGISEditLayerDockWidget.setWindowTitle('Spatial Unit Manager')
+        self.iface.addDockWidget(Qt.RightDockWidgetArea, self.postGISEditLayerDockWidget)
+        self.postGISEditLayerDockWidget.show()
 
     def configureMapTools(self):
         '''
@@ -721,7 +764,111 @@ class STDMQGISLoader(object):
             self.createFeatureAct.setChecked(False)
             self.createFeatureAct.setVisible(False)
 
+    def onTogglePostGISLayerEditor(self,toggled):
+        '''
+        Slot raised on toggling to activate/deactivate editing, and load corresponding
+        spatial tools.
+        '''
+        currLayer = self.iface.activeLayer()
+
+        if currLayer != None:
+            self.postGISLayertoggleEditing(currLayer)
+
+        else:
+            self.spatialLayerManager.setChecked(False)
+
+        if not toggled:
+            self.createFeatureAct.setChecked(False)
+            self.createFeatureAct.setVisible(False)
+
     def toggleEditing(self,layer):
+        '''
+        Actual implementation which validates and creates/ends edit sessions.
+        '''
+        if not isinstance(layer,QgsVectorLayer):
+            return False
+
+        teResult = True
+
+        #Assert if layer is from the SDTM database
+        if not self.isSTDMLayer(layer):
+            self.spatialLayerManager.setChecked(False)
+            self.iface.messageBar().clearWidgets()
+            self.iface.messageBar().pushMessage(QApplication.translate("STDMPlugin","Non-SDTM Layer"),
+                                                QApplication.translate("STDMPlugin","Selected layer is not from the STDM database."),
+                                                level=QgsMessageBar.CRITICAL)
+
+            return False
+
+        if not layer.isEditable() and not layer.isReadOnly():
+            if not (layer.dataProvider().capabilities() & QgsVectorDataProvider.EditingCapabilities):
+                self.spatialLayerManager.setChecked(False)
+                self.spatialLayerManager.setEnabled(False)
+                self.iface.messageBar().pushMessage(QApplication.translate("STDMPlugin","Start Editing Failed"),
+                                                    QApplication.translate("STDMPlugin","Provider cannot be opened for editing"),
+                                                    level=QgsMessageBar.CRITICAL)
+
+                return False
+
+            #Enable/show spatial editing tools
+            self.createFeatureAct.setVisible(True)
+
+            layer.startEditing()
+
+        elif layer.isModified():
+            saveResult = QMessageBox.information(self.iface.mainWindow(),
+                                                 QApplication.translate("STDMPlugin","Stop Editing"),
+                                                 QApplication.translate("STDMPlugin",
+                                                                        "Do you want to save changes to {0} layer?".format(layer.name())), \
+                                                 QMessageBox.Save|QMessageBox.Discard|QMessageBox.Cancel)
+
+            if saveResult == QMessageBox.Cancel:
+                teResult = False
+
+            elif saveResult == QMessageBox.Save:
+                QApplication.setOverrideCursor(Qt.WaitCursor)
+
+                if not layer.commitChanges():
+                    teResult = False
+
+                layer.triggerRepaint()
+
+                QApplication.restoreOverrideCursor()
+
+            else:
+                QApplication.setOverrideCursor(Qt.WaitCursor)
+
+                self.iface.mapCanvas().freeze(True)
+
+                if not layer.rollBack():
+                    self.iface.messageBar().pushMessage(QApplication.translate("STDMPlugin","Error"),
+                                                    QApplication.translate("STDMPlugin","Problems during rollback"),
+                                                    level = QgsMessageBar.CRITICAL)
+                    teResult = False
+
+                self.iface.mapCanvas().freeze(False)
+
+                layer.triggerRepaint()
+
+                QApplication.restoreOverrideCursor()
+
+        #Layer has not been modified
+        else:
+            self.iface.mapCanvas().freeze(True)
+            layer.rollBack()
+            self.iface.mapCanvas().freeze(False)
+            teResult = True
+            layer.triggerRepaint()
+
+        '''
+        #Disable/hide related tools   
+        if not teResult and layer == self.iface.activeLayer():
+            self.createFeatureAct.setVisible(False)
+        '''
+
+        return teResult
+
+    def postGISLayertoggleEditing(self,layer):
         '''
         Actual implementation which validates and creates/ends edit sessions.
         '''
@@ -783,7 +930,7 @@ class STDMQGISLoader(object):
                 if not layer.rollBack():
                     self.iface.messageBar().pushMessage(QApplication.translate("STDMPlugin","Error"),
                                                     QApplication.translate("STDMPlugin","Problems during rollback"),
-                                                    level = QgsMessageBar.CRITICAL)
+                                                    level=QgsMessageBar.CRITICAL)
                     teResult = False
 
                 self.iface.mapCanvas().freeze(False)
@@ -801,7 +948,7 @@ class STDMQGISLoader(object):
             layer.triggerRepaint()
 
         '''
-        #Disable/hide related tools   
+        #Disable/hide related tools
         if not teResult and layer == self.iface.activeLayer():
             self.createFeatureAct.setVisible(False)
         '''
@@ -962,3 +1109,9 @@ class STDMQGISLoader(object):
         message.setText(message_text)
         message.setStandardButtons(QMessageBox.Ok| QMessageBox.Reset)
         return  message.exec_()
+
+    def postGISLayerEditorActivate(self):
+        if self.postGISEditLayerDockWidget.isVisible():
+            self.postGISEditLayerDockWidget.hide()
+        else:
+            self.postGISEditLayerDockWidget.show()
