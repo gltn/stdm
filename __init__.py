@@ -2,9 +2,10 @@
 /***************************************************************************
 Name                 : Social Tenure Domain Model
 Description          : QGIS Entry Point for Social Tenure Domain Model
-Date                 : 23/May/13
-copyright            : (C) 2013 by John Gitau
-email                : gkahiu@gmail.com
+Date                 : 04-01-2015
+copyright            : (C) 2015 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -15,7 +16,6 @@ email                : gkahiu@gmail.com
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
- This script initializes the plugin, making it known to QGIS.
 """
 import sys
 import os
@@ -31,5 +31,9 @@ if third_party_dir not in sys.path:
 
 
 def classFactory(iface):
+    """
+    Load STDMQGISLoader class from file stdm
+    """
+
     from stdm import STDMQGISLoader
     return STDMQGISLoader(iface)
