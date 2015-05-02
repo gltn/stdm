@@ -19,9 +19,16 @@ email                : gkahiu@gmail.com
 """
 from PyQt4.QtCore import QRegExp
 
+from qgis.core import *
+
 from sqlalchemy.sql.expression import text
 
+<<<<<<< HEAD
 from stdm.data import STDMDb, Base
+=======
+import stdm.data
+from stdm.data import STDMDb
+>>>>>>> 51278e6... Created STDM edit manager dock window
 from stdm.utils import getIndex
 
 _postGISTables = ["spatial_ref_sys"]
@@ -230,6 +237,7 @@ def _execute(sql,**kwargs):
 
 def reset_content_roles():
     rolesSet = "truncate table content_base cascade;"
+<<<<<<< HEAD
     _execute(text(rolesSet))
 
 def delete_table_keys(table):
@@ -260,3 +268,28 @@ def flush_session_activity():
 
 
 
+=======
+    resetSql = text(rolesSet)
+    _execute(resetSql)
+    # rolesSet1 = "truncate table content_roles cascade;"
+    # resetSql1 = text(rolesSet1)
+    # _execute(resetSql1)
+
+def vector_layer(table_name, sql="", key="id"):
+    """
+    Returns a QgsVectorLayer based on the specified table name.
+    """
+    if not table_name:
+        return None
+
+    conn = stdm.data.app_dbconn
+    if conn is None:
+        return None
+
+    ds_uri = conn.toQgsDataSourceUri()
+    ds_uri.setDataSource("public", table_name, None, sql, key)
+
+    v_layer = QgsVectorLayer(ds_uri.uri(), table_name, "postgres")
+
+    return v_layer
+>>>>>>> 51278e6... Created STDM edit manager dock window
