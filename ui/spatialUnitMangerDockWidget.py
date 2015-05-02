@@ -110,7 +110,8 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         layer_map = QgsMapLayerRegistry.instance().mapLayers()
         for name, layer in layer_map.iteritems():
             if layer == self.iface.activeLayer():
-                display_name, ok = QInputDialog.getText(None,"Change Display Name")
+                display_name, ok = QInputDialog.getText(None,"Change Display Name",
+                                                        "Current Name is {0}".format(layer.originalName()))
                 if ok and display_name != "":
                     layer.setLayerName(display_name)
                 elif not ok and display_name == "":
