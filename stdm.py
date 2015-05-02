@@ -42,7 +42,7 @@ from ui import (loginDlg,
                 ImportData,
                 ExportData
                 )
-from ui.postgisEditorDockWidget import PostgisEditorDockWidgetDialog
+from ui.postgisEditorDockWidget import SpatialLayerManagerDockWidget
 from ui.reports import ReportBuilder
 import data
 from data import (STDMDb,
@@ -348,7 +348,7 @@ class STDMQGISLoader(object):
         self.docGeneratorAct.triggered.connect(self.onDocumentGeneratorByPerson)
         self.rptBuilderAct.triggered.connect(self.onReportBuilder)
         self.spatialEditorAct.triggered.connect(self.onToggleSpatialEditing)
-        self.spatialLayerManager.triggered.connect(self.postGISLayerEditorActivate)
+        self.spatialLayerManager.triggered.connect(self.spatialLayerMangerActivate)
         self.saveEditsAct.triggered.connect(self.onSaveEdits)
         self.createFeatureAct.triggered.connect(self.onCreateFeature)
         contentMenu.triggered.connect(self.widgetLoader)
@@ -574,10 +574,10 @@ class STDMQGISLoader(object):
             fontPath=str(profPath).replace("\\", "/")+"/font.cache"
         SysFonts.register(fontPath)
 
-        self.postGISEditLayerDockWidget = PostgisEditorDockWidgetDialog(self.iface)
-        self.postGISEditLayerDockWidget.setWindowTitle('Spatial Unit Manager')
-        self.iface.addDockWidget(Qt.RightDockWidgetArea, self.postGISEditLayerDockWidget)
-        self.postGISEditLayerDockWidget.show()
+        self.spatialLayerMangerDockWidget = SpatialLayerManagerDockWidget(self.iface)
+        self.spatialLayerMangerDockWidget.setWindowTitle('Spatial Unit Manager')
+        self.iface.addDockWidget(Qt.RightDockWidgetArea, self.spatialLayerMangerDockWidget)
+        self.spatialLayerMangerDockWidget.show()
 
     def configureMapTools(self):
         '''
@@ -1110,8 +1110,8 @@ class STDMQGISLoader(object):
         message.setStandardButtons(QMessageBox.Ok| QMessageBox.Reset)
         return  message.exec_()
 
-    def postGISLayerEditorActivate(self):
-        if self.postGISEditLayerDockWidget.isVisible():
-            self.postGISEditLayerDockWidget.hide()
+    def spatialLayerMangerActivate(self):
+        if self.spatialLayerMangerDockWidget.isVisible():
+            self.spatialLayerMangerDockWidget.hide()
         else:
-            self.postGISEditLayerDockWidget.show()
+            self.spatialLayerMangerDockWidget.show()

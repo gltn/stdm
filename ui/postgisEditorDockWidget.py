@@ -33,7 +33,7 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_edit_stdm_layer.ui'))
 
 
-class PostgisEditorDockWidgetDialog(QDockWidget, Ui_PostgisEditorDialogBase):
+class SpatialLayerManagerDockWidget(QDockWidget, Ui_PostgisEditorDialogBase):
     def __init__(self, iface):
         """Constructor."""
         QDockWidget.__init__(self, iface.mainWindow())
