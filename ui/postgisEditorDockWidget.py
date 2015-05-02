@@ -71,6 +71,8 @@ class PostgisEditorDockWidgetDialog(QDockWidget, Ui_SpatialUnitManagerWidget):
                     self.icon = QIcon(":/plugins/stdm/images/icons/layer_line.png")
                 elif geometry_typ == "POINT":
                     self.icon = QIcon(":/plugins/stdm/images/icons/layer_point.png")
+                else:
+                    self.icon = QIcon(":/plugins/stdm/images/icons/table.png")
 
                 #QMessageBox.information(None,"Title",str(geometry_typ))
                 self.stdm_layers_combo.addItem(self.icon, self._format_layer_display_name(sp_col, spt),
