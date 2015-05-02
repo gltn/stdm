@@ -67,41 +67,43 @@ class STDMQGISLoader(object):
 
     viewSTRWin = None
 
-    def __init__(self,iface):
+    def __init__(self, iface):
         self.iface = iface
 
-        #Initialize loader
+        # Initialize loader
         self.toolbarLoader = None
-        self.menubarLoader=None
+        self.menubarLoader = None
 
-        #setup locale
+        # Setup locale
         pluginDir = os.path.dirname(__file__)
         localePath = ""
         locale = QSettings().value("locale/userLocale")[0:2]
         if QFileInfo(pluginDir).exists():
-            #Replace forward slash with backslash
+            # Replace forward slash with backslash
             pluginDir = string.replace(pluginDir, "\\", "/")
-            localePath = pluginDir + "/i18n/stdm_%s.qm"%(locale,)
+            localePath = pluginDir + "/i18n/stdm_%s.qm" % (locale,)
         if QFileInfo(localePath).exists():
             self.translator = QTranslator()
             self.translator.load(localePath)
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
 
-        #Initialize the property management window
+        # Initialize the property management window
         self.propManageWindow = None
 
-        #STDM Tables
+        # STDM Tables
         self.stdmTables = []
 
     def initGui(self):
-        #Initial actions on starting up the application
+        # Initial actions on starting up the application
         self.STDMmenuItems()
-        self.loginAct = STDMAction(QIcon(":/plugins/stdm/images/icons/login.png"), \
-        QApplication.translate("LoginToolbarAction","Login"), self.iface.mainWindow(),
-        "CAA4F0D9-727F-4745-A1FC-C2173101F711")
+        self.loginAct = STDMAction(QIcon(":/plugins/stdm/images/icons/login.png"),
+                                   QApplication.translate("LoginToolbarAction",
+                                                          "Login"),
+                                   self.iface.mainWindow(),
+                                   "CAA4F0D9-727F-4745-A1FC-C2173101F711")
         self.loginAct.setShortcut(QKeySequence(Qt.Key_F2))
-        self.aboutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/information.png"), \
+        self.aboutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/information.png"),
         QApplication.translate("AboutToolbarAction","About"), self.iface.mainWindow(),
         "137FFB1B-90CD-4A6D-B49E-0E99CD46F784")
         #Define actions that are available to all logged in users
