@@ -74,5 +74,8 @@
     <file>images/icons/import.png</file>
     <file>images/icons/stdm.png</file>
     <file>images/icons/stdm_2.png</file>
+    <file>images/icons/layer_point.png</file>
+    <file>images/icons/layer_line.png</file>
+    <file>images/icons/layer_polygon.png</file>
   </qresource>
 </RCC>

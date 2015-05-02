@@ -26,14 +26,20 @@ import os
 from PyQt4 import  uic
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from ui_edit_stdm_layer import Ui_PostgisEditorDialogBase
-from ..data import (spatial_tables, vector_layer, geometryType)
+from qgis.core import *
+from ui_edit_stdm_layer import Ui_SpatialUnitManagerWidget
+from ..data import (
+    spatial_tables,
+    table_column_names,
+    vector_layer,
+    geometryType
+)
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_edit_stdm_layer.ui'))
 
 
-class PostgisEditorDockWidgetDialog(QDockWidget, Ui_PostgisEditorDialogBase):
+class PostgisEditorDockWidgetDialog(QDockWidget, Ui_SpatialUnitManagerWidget):
     def __init__(self, iface):
         """Constructor."""
         QDockWidget.__init__(self, iface.mainWindow())
@@ -43,33 +49,68 @@ class PostgisEditorDockWidgetDialog(QDockWidget, Ui_PostgisEditorDialogBase):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
-        self.populateLayers()
+        self._populate_layers()
+        self.iface = iface
 
-    def populateLayers(self):
-        self.stdmLayersCombo.clear()
-        self.model=QStandardItemModel(self.stdmLayersCombo)
-        self.stdmTables = spatial_tables()
+
+    def _populate_layers(self):
+        self.stdm_layers_combo.clear()
+        self._stdm_tables = {}
         self.spatial_layers = []
-        for layer in self.stdmTables:
-            self.spatial_layer = vector_layer(layer)
-            self.layer_name = self.spatial_layer.name()
-            self.geometry_type = geometryType(layer,"the_geom")[0]
-            if self.geometry_type != '':
-                self.layer_geometry_type = self.geometry_type
-            elif self.geometry_type == '':
-                self.layer_geometry_type = "None"
-            self.loadLayer = self.layer_name + " | " + self.layer_geometry_type
-            self.spatial_layers.append(self.loadLayer)
-        self.stdmLayersCombo.addItems(self.spatial_layers)
-        self.stdmLayersCombo.setCurrentIndex(0)
+        self.layers_info = []
+        for spt in spatial_tables():
+            sp_columns = table_column_names(spt,True)
+            self._stdm_tables[spt]=sp_columns
+            #Add spatial columns to combo box
+            for sp_col in sp_columns:
+                #Get column type and apply the appropriate icon
+                geometry_typ = str(geometryType(spt,sp_col)[0])
 
-    def loadLayerToCanvas(self):
-        self.addToCanvasButton.setEnabled(False)
-        QMessageBox.information(self.iface.mainWindow(),QApplication.translate(""),"")
-        self.addToCanvasButton.setEnabled(True)
+                if geometry_typ == "POLYGON":
+                    self.icon = QIcon(":/plugins/stdm/images/icons/layer_polygon.png")
+                elif geometry_typ == "LINESTRING":
+                    self.icon = QIcon(":/plugins/stdm/images/icons/layer_line.png")
+                elif geometry_typ == "POINT":
+                    self.icon = QIcon(":/plugins/stdm/images/icons/layer_point.png")
 
+                #QMessageBox.information(None,"Title",str(geometry_typ))
+                self.stdm_layers_combo.addItem(self.icon, self._format_layer_display_name(sp_col, spt),
+                                             {"table_name":spt,"col_name": sp_col})
 
-    # def addLayers(self):
-    #     self.comboBox.clear()
-    #     self.layerList = self.populateLayers()
-    #     self.comboBox.addItems(self.layerList)
+    def _format_layer_display_name(self, col, table):
+        return u"{0}.{1}".format(table,col)
+
+    @pyqtSignature("")
+    def on_add_to_canvas_button_clicked(self):
+        '''
+        Method used to add layers to canvas
+        '''
+        if self.stdm_layers_combo.count() == 0:
+            #Return message that there are no layers
+            QMessageBox.warning(None,"No Laers")
+
+        sp_col_info= self.stdm_layers_combo.itemData(self.stdm_layers_combo.currentIndex())
+        if sp_col_info is None:
+            #Message: Spatial column information could not be found
+            QMessageBox.warning(None,"Spatial Column Layer Could not be found")
+
+        table_name,spatial_column = sp_col_info["table_name"],sp_col_info["col_name"]
+
+        curr_layer = vector_layer(table_name,geom_column=spatial_column)
+        #QMessageBox.information(None,"Title",str(geometry_typ))
+        if curr_layer.isValid():
+            QgsMapLayerRegistry.instance().addMapLayer(curr_layer)
+
+    @pyqtSignature("")
+    def on_set_display_name_button_clicked(self):
+        '''
+        Method to change display name
+        '''
+        layer_map = QgsMapLayerRegistry.instance().mapLayers()
+        for name, layer in layer_map.iteritems():
+            if layer == self.iface.activeLayer():
+                display_name, ok = QInputDialog.getText(None,"Change Display Name")
+                if ok and display_name != "":
+                    layer.setLayerName(display_name)
+                elif not ok and display_name == "":
+                    layer.originalName()
