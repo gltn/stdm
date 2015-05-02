@@ -460,9 +460,9 @@ class STDMQGISLoader(object):
         self.spatialEditingCntGroup.addContentItem(spatialEditingCnt)
         self.spatialEditingCntGroup.register()
 
-        self.postGISLayerEditorCntGroup = ContentGroup(username,self.spatialLayerManager)
-        self.postGISLayerEditorCntGroup.addContentItem(spatialLayerManagerCnt)
-        self.postGISLayerEditorCntGroup.register()
+        self.spatialUnitManagerCntGroup = ContentGroup(username,self.spatialLayerManager)
+        self.spatialUnitManagerCntGroup.addContentItem(spatialLayerManagerCnt)
+        self.spatialUnitManagerCntGroup.register()
         
         self.createFeatureCntGroup = ContentGroup(username,self.createFeatureAct)
         self.createFeatureCntGroup.addContentItem(createFeatureCnt)
@@ -548,10 +548,10 @@ class STDMQGISLoader(object):
         
         self.toolbarLoader.addContent(self.STRCntGroup)
         self.menubarLoader.addContent(self.spatialEditingCntGroup)
-        self.menubarLoader.addContent(self.postGISLayerEditorCntGroup)
+        self.menubarLoader.addContent(self.spatialUnitManagerCntGroup)
         self.toolbarLoader.addContent(tbSeparator)
         self.toolbarLoader.addContent(self.spatialEditingCntGroup)
-        self.toolbarLoader.addContent(self.postGISLayerEditorCntGroup)
+        self.toolbarLoader.addContent(self.spatialUnitManagerCntGroup)
         self.toolbarLoader.addContent(self.createFeatureCntGroup)
         self.menubarLoader.addContent(self.createFeatureCntGroup)
         self.menubarLoader.addContent(self.logoutAct)
@@ -764,7 +764,7 @@ class STDMQGISLoader(object):
             self.createFeatureAct.setChecked(False)
             self.createFeatureAct.setVisible(False)
 
-    def onTogglePostGISLayerEditor(self,toggled):
+    def onToggleSpatialUnitManger(self,toggled):
         '''
         Slot raised on toggling to activate/deactivate editing, and load corresponding
         spatial tools.
@@ -772,7 +772,7 @@ class STDMQGISLoader(object):
         currLayer = self.iface.activeLayer()
 
         if currLayer != None:
-            self.postGISLayertoggleEditing(currLayer)
+            self.spatialUnitMangerToggleEditing(currLayer)
 
         else:
             self.spatialLayerManager.setChecked(False)
@@ -868,7 +868,7 @@ class STDMQGISLoader(object):
 
         return teResult
 
-    def postGISLayertoggleEditing(self,layer):
+    def spatialUnitMangerToggleEditing(self,layer):
         '''
         Actual implementation which validates and creates/ends edit sessions.
         '''
