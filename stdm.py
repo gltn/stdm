@@ -42,7 +42,7 @@ from ui import (loginDlg,
                 ImportData,
                 ExportData
                 )
-from ui.postgisEditorDockWidget import SpatialLayerManagerDockWidget
+from ui.spatialUnitMangerDockWidget import SpatialUnitManagerDockWidget
 from ui.reports import ReportBuilder
 import data
 from data import (STDMDb,
@@ -574,7 +574,7 @@ class STDMQGISLoader(object):
             fontPath=str(profPath).replace("\\", "/")+"/font.cache"
         SysFonts.register(fontPath)
 
-        self.spatialLayerMangerDockWidget = SpatialLayerManagerDockWidget(self.iface)
+        self.spatialLayerMangerDockWidget = SpatialUnitManagerDockWidget(self.iface)
         self.spatialLayerMangerDockWidget.setWindowTitle('Spatial Unit Manager')
         self.iface.addDockWidget(Qt.RightDockWidgetArea, self.spatialLayerMangerDockWidget)
         self.spatialLayerMangerDockWidget.show()
