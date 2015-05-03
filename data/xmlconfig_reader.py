@@ -25,6 +25,9 @@
 from xml.etree.ElementTree import ElementTree as ET
 from collections import OrderedDict
 from configfile_paths import FilePaths
+import xml.etree.ElementTree as Elt
+from PyQt4.QtGui import *
+
 try:
     xmlobject = FilePaths()
     #doc = xmlobject.XMLFile()
@@ -244,3 +247,27 @@ def contentGroup(tableName):
                 return [(child.get('code')) for child in childs]
             else:
                 return None
+
+def check_if_display_name_exits(layer_name):
+    """
+    Check if user defined display name exists
+    """
+    tree = Elt.parse(xml_doc)
+    root = tree.getroot()
+
+    for display_name in root.findall('display_names/display_name'):
+        if display_name.get("layer_name") == layer_name:
+            return True
+        else:
+            continue
+    return False
+
+def get_xml_display_name(layer_name):
+    tree = Elt.parse(xml_doc)
+    root = tree.getroot()
+
+    for display_name in root.findall('display_names/display_name'):
+        existing_layer_name = display_name.get("layer_name")
+        if existing_layer_name == layer_name:
+            # QMessageBox.information(None,"Title",display_name.text)
+            return display_name.text

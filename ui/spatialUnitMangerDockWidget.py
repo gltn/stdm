@@ -11,7 +11,7 @@
         email                : e.omwandho@gmail.com
  ***************************************************************************/
 
-/***************************************************************************
+/**********************************************display_name.text*****************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -32,7 +32,11 @@ from ..data import (
     spatial_tables,
     table_column_names,
     vector_layer,
-    geometryType
+    geometryType,
+    write_display_name,
+    check_if_display_name_exits,
+    get_xml_display_name,
+    write_changed_display_name
 )
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -98,9 +102,22 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         table_name,spatial_column = sp_col_info["table_name"],sp_col_info["col_name"]
 
         curr_layer = vector_layer(table_name,geom_column=spatial_column)
-        #QMessageBox.information(None,"Title",str(geometry_typ))
+
         if curr_layer.isValid():
             QgsMapLayerRegistry.instance().addMapLayer(curr_layer)
+
+            # Append column name to spatial table
+            _current_display_name = str(table_name) + "." + str(spatial_column)
+
+            # Get configuration file display name if it exists
+            if check_if_display_name_exits(_current_display_name):
+                xml_display_name = get_xml_display_name(_current_display_name)
+                curr_layer.setLayerName(xml_display_name)
+
+            # Write initial display name as original name of the layer
+            elif not check_if_display_name_exits(_current_display_name):
+                write_display_name(_current_display_name, _current_display_name)
+                curr_layer.setLayerName(_current_display_name)
 
     @pyqtSignature("")
     def on_set_display_name_button_clicked(self):
@@ -110,9 +127,11 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         layer_map = QgsMapLayerRegistry.instance().mapLayers()
         for name, layer in layer_map.iteritems():
             if layer == self.iface.activeLayer():
+                _name = layer.name()
                 display_name, ok = QInputDialog.getText(None,"Change Display Name",
                                                         "Current Name is {0}".format(layer.originalName()))
                 if ok and display_name != "":
                     layer.setLayerName(display_name)
+                    write_changed_display_name(_name, display_name)
                 elif not ok and display_name == "":
                     layer.originalName()

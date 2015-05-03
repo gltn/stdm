@@ -30,7 +30,9 @@ from .xmlconfig_reader import (
                 lookupTable,
                 profiles,
                 contentGroup,
-                table_column_exist
+                table_column_exist,
+                check_if_display_name_exits,
+                get_xml_display_name,
             )
 
 from .xmlconfig_writer import(
@@ -50,7 +52,9 @@ from .xmlconfig_writer import(
                 updateSQL,
                 editTableColumn,
                 writeGeomConstraint,
-                edit_geom_column
+                edit_geom_column,
+                write_display_name,
+                write_changed_display_name
             )
 
 from .configfile_paths import FilePaths
