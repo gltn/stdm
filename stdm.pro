@@ -101,6 +101,7 @@ SOURCES = stdm.py \
 			settings/projectionSelector.py \
 			settings/registryconfig.py \
 			settings/tools_network.py \
+			settings/module_settings.py \
 			security/user.py \
 			security/roleprovider.py \
 			security/membership.py \
@@ -179,7 +180,8 @@ FORMS = ui/ui_changepwd.ui \
 		ui/ui_str_view_entity.ui \
 		ui/ui_view_str.ui \
 		ui/ui_view_str_search_entity.ui \
-		ui/ui_base_form.ui
+		ui/ui_base_form.ui \
+		ui\ 
 	
 TRANSLATIONS    = i18n/stdm_fr.ts 
 

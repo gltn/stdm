@@ -85,7 +85,7 @@ class CustomFormDialog(MapperDialog, MapperMixin):
                     self.lookupOptions(widgetCls, widget_prop[2])
                 widgetCls.adopt()
                 self.addMapping(attrib, control_type, False, attrib)
-                self.frmLayout.addRow(self.userLabel(attrib), control_type)
+                self.frmLayout.addRow(QT_TRANSLATE_NOOP("ModuleSettings",self.userLabel(attrib)), control_type)
         self.frmLayout.setLabelAlignment(Qt.AlignJustify)
         #except Exception as ex:
            # self._notifBar.insertWarningNotification(str(ex.message))

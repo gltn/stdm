@@ -26,7 +26,7 @@
 <context>
     <name>AboutToolbarAction</name>
     <message>
-        <location filename="stdm.py" line="108"/>
+        <location filename="stdm.py" line="111"/>
         <source>About</source>
         <translation>A propos</translation>
     </message>
@@ -139,6 +139,21 @@ Click Yes to delete or No to cancel.</source>
         <source>(%s) is a reserved word and cannot be used for column name</source>
         <translation>(%s) Mot réservé, Il n&apos;est peut être utilisé comme nom d&apos;une colonne </translation>
     </message>
+    <message>
+        <location filename="ui/attribute_editor.py" line="118"/>
+        <source>default for postgres</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/attribute_editor.py" line="121"/>
+        <source>Enter attribute length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui/attribute_editor.py" line="182"/>
+        <source>No lookup is selected for this action</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ChangePasswordDialog</name>
@@ -191,7 +206,7 @@ Click Yes to delete or No to cancel.</source>
 <context>
     <name>ChangePasswordToolbarAction</name>
     <message>
-        <location filename="stdm.py" line="116"/>
+        <location filename="stdm.py" line="119"/>
         <source>Change Password</source>
         <translation>Modifiez mot de passe</translation>
     </message>
@@ -199,7 +214,7 @@ Click Yes to delete or No to cancel.</source>
 <context>
     <name>ConfigTableReader</name>
     <message>
-        <location filename="stdm.py" line="119"/>
+        <location filename="stdm.py" line="122"/>
         <source>Help Contents</source>
         <translation>Sommaire Aide</translation>
     </message>
@@ -207,7 +222,7 @@ Click Yes to delete or No to cancel.</source>
 <context>
     <name>ContentAuthorizationToolbarAction</name>
     <message>
-        <location filename="stdm.py" line="264"/>
+        <location filename="stdm.py" line="279"/>
         <source>Content Authorization</source>
         <translation>Autorisation du contenu</translation>
     </message>
@@ -215,12 +230,12 @@ Click Yes to delete or No to cancel.</source>
 <context>
     <name>CreateFeatureAction</name>
     <message>
-        <location filename="stdm.py" line="299"/>
+        <location filename="stdm.py" line="319"/>
         <source>Create Spatial Unit</source>
         <translation>Créez une unité spatiale</translation>
     </message>
     <message>
-        <location filename="stdm.py" line="306"/>
+        <location filename="stdm.py" line="326"/>
         <source>Save Edits</source>
         <translation>Enregistrez les modifications</translation>
     </message>
@@ -302,7 +317,7 @@ Click Yes to delete or No to cancel.</source>
 <context>
     <name>DocumentDesignerAction</name>
     <message>
-        <location filename="stdm.py" line="285"/>
+        <location filename="stdm.py" line="300"/>
         <source>Document Designer</source>
         <translation>Concepteur de document</translation>
     </message>
@@ -310,7 +325,7 @@ Click Yes to delete or No to cancel.</source>
 <context>
     <name>DocumentGeneratorAction</name>
     <message>
-        <location filename="stdm.py" line="288"/>
+        <location filename="stdm.py" line="303"/>
         <source>Document Generator</source>
         <translation>Générateur de documennt</translation>
     </message>
@@ -518,7 +533,7 @@ Once deleted it cannot be recovered.</source>
 <context>
     <name>ImportAction</name>
     <message>
-        <location filename="stdm.py" line="273"/>
+        <location filename="stdm.py" line="288"/>
         <source>Import Data</source>
         <translation>Importation des données</translation>
     </message>
@@ -581,7 +596,7 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>LoginToolbarAction</name>
     <message>
-        <location filename="stdm.py" line="104"/>
+        <location filename="stdm.py" line="105"/>
         <source>Login</source>
         <translation>S&apos;identifier</translation>
     </message>
@@ -589,7 +604,7 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>LogoutToolbarAction</name>
     <message>
-        <location filename="stdm.py" line="112"/>
+        <location filename="stdm.py" line="115"/>
         <source>Logout</source>
         <translation>Déconnexion</translation>
     </message>
@@ -640,7 +655,7 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>ManageAdminUnitsToolbarAction</name>
     <message>
-        <location filename="stdm.py" line="270"/>
+        <location filename="stdm.py" line="285"/>
         <source>Manage Administrative Units</source>
         <translation>Gérer les unités administratives</translation>
     </message>
@@ -648,7 +663,7 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>ManageUsersToolbarAction</name>
     <message>
-        <location filename="stdm.py" line="267"/>
+        <location filename="stdm.py" line="282"/>
         <source>Manage Users-Roles</source>
         <translation>Gestion des utilisateurs et des rôles - stdm</translation>
     </message>
@@ -656,7 +671,7 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>NewFarmerToolbarAction</name>
     <message>
-        <location filename="stdm.py" line="282"/>
+        <location filename="stdm.py" line="297"/>
         <source>Content</source>
         <translation>Contenu</translation>
     </message>
@@ -664,7 +679,7 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>NewSTRToolbarAction</name>
     <message>
-        <location filename="stdm.py" line="309"/>
+        <location filename="stdm.py" line="329"/>
         <source>New Social Tenure Relationship</source>
         <translation>Nouvelle Relation Sociale Foncière</translation>
     </message>
@@ -672,7 +687,7 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>NewSurveyToolbarAction</name>
     <message>
-        <location filename="stdm.py" line="279"/>
+        <location filename="stdm.py" line="294"/>
         <source>Survey</source>
         <translation>Enquête</translation>
     </message>
@@ -802,12 +817,12 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>ReportBuilderAction</name>
     <message>
-        <location filename="stdm.py" line="276"/>
+        <location filename="stdm.py" line="291"/>
         <source>Export Data</source>
         <translation>Exporter les données</translation>
     </message>
     <message>
-        <location filename="stdm.py" line="291"/>
+        <location filename="stdm.py" line="306"/>
         <source>Report Builder</source>
         <translation>Constructeur de rapport</translation>
     </message>
@@ -834,6 +849,14 @@ Voulez-vous configurer maintenant?</translation>
     </message>
 </context>
 <context>
+    <name>STDMEntityMenu</name>
+    <message>
+        <location filename="stdm.py" line="272"/>
+        <source>Modules</source>
+        <translation type="unfinished">Modules</translation>
+    </message>
+</context>
+<context>
     <name>STDMModule</name>
     <message>
         <location filename="navigation/components.py" line="47"/>
@@ -844,47 +867,47 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>STDMPlugin</name>
     <message>
-        <location filename="stdm.py" line="854"/>
+        <location filename="stdm.py" line="1003"/>
         <source>Loading dialog...</source>
         <translation>Dialogue en cour de chargement...</translation>
     </message>
     <message>
-        <location filename="stdm.py" line="702"/>
+        <location filename="stdm.py" line="747"/>
         <source>Save STDM Layer</source>
         <translation>Sauvegarder de la couche STDM </translation>
     </message>
     <message>
-        <location filename="stdm.py" line="739"/>
+        <location filename="stdm.py" line="888"/>
         <source>Non-SDTM Layer</source>
         <translation>Aucune couche STDM</translation>
     </message>
     <message>
-        <location filename="stdm.py" line="739"/>
+        <location filename="stdm.py" line="888"/>
         <source>Selected layer is not from the STDM database.</source>
         <translation>La couche séléctionnée n&apos;est pas issue de la base des données STDM.</translation>
     </message>
     <message>
-        <location filename="stdm.py" line="749"/>
+        <location filename="stdm.py" line="898"/>
         <source>Start Editing Failed</source>
         <translation>Echec du début de l&apos;édition</translation>
     </message>
     <message>
-        <location filename="stdm.py" line="749"/>
+        <location filename="stdm.py" line="898"/>
         <source>Provider cannot be opened for editing</source>
         <translation>Le fournisseur ne peut  être ouvert pour l&apos;édition</translation>
     </message>
     <message>
-        <location filename="stdm.py" line="761"/>
+        <location filename="stdm.py" line="910"/>
         <source>Stop Editing</source>
         <translation>Arrêter la modification</translation>
     </message>
     <message>
-        <location filename="stdm.py" line="786"/>
+        <location filename="stdm.py" line="935"/>
         <source>Error</source>
         <translation>Erreur</translation>
     </message>
     <message>
-        <location filename="stdm.py" line="786"/>
+        <location filename="stdm.py" line="935"/>
         <source>Problems during rollback</source>
         <translation>Problème pendant l&apos;opération &quot;rollback&quot;</translation>
     </message>
@@ -892,7 +915,7 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>STDMQGISLoader</name>
     <message>
-        <location filename="stdm.py" line="963"/>
+        <location filename="stdm.py" line="1112"/>
         <source>Error Loading Modules</source>
         <translation>Erreur chargement des modules</translation>
     </message>
@@ -1136,9 +1159,14 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>SpatialEditorAction</name>
     <message>
-        <location filename="stdm.py" line="295"/>
+        <location filename="stdm.py" line="310"/>
         <source>Toggle Spatial Unit Editing</source>
         <translation>Basculer vers l&apos;édition de l&apos;unité spatiale</translation>
+    </message>
+    <message>
+        <location filename="stdm.py" line="315"/>
+        <source>Post GIS Layer Editor</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1346,12 +1374,12 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>ToolbarAdminSettings</name>
     <message>
-        <location filename="stdm.py" line="240"/>
+        <location filename="stdm.py" line="255"/>
         <source>Admin Settings</source>
         <translation>Paramètres administrateur</translation>
     </message>
     <message>
-        <location filename="stdm.py" line="244"/>
+        <location filename="stdm.py" line="259"/>
         <source>Module Settings</source>
         <translation>Paramètres du module</translation>
     </message>
@@ -1359,7 +1387,7 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>ViewSTRToolbarAction</name>
     <message>
-        <location filename="stdm.py" line="312"/>
+        <location filename="stdm.py" line="332"/>
         <source>View Social Tenure Relationship</source>
         <translation>Apercu Rélation Sociale sur la tenure</translation>
     </message>
@@ -1375,12 +1403,12 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>WorkspaceConfig</name>
     <message>
-        <location filename="stdm.py" line="315"/>
+        <location filename="stdm.py" line="335"/>
         <source>Design Forms</source>
         <translation>Concevoir des formulaires</translation>
     </message>
     <message>
-        <location filename="stdm.py" line="318"/>
+        <location filename="stdm.py" line="338"/>
         <source>Modules</source>
         <translation>Modules</translation>
     </message>
