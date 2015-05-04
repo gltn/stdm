@@ -20,39 +20,41 @@
  ***************************************************************************/
 """
 from collections import OrderedDict
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 
 geometry_collections = {
-    'Point': 'POINT',
-    'Line': 'LINESTRING',
-    'Polygon': 'POLYGON',
-    'Multipolygon': 'MULTIPOLYGON'
+    QApplication.translate("GeometryProperty",'Point'): 'POINT',
+    QApplication.translate("GeometryProperty",'Line'): 'LINESTRING',
+    QApplication.translate("GeometryProperty",'Polygon'): 'POLYGON',
+    QApplication.translate("GeometryProperty",'Multipolygon'): 'MULTIPOLYGON'
 }
 
 data_types = {
         '': '',
-        'Whole Number': 'integer',
-        'Decimal Number': 'double precision',
-        'Date': 'date',
-        'True/ False': 'boolean',
-        'Short text': 'character varying',
-        'Long text': 'text',
-        'Auto Increment': 'serial',
-        'Geometry': 'geometry'
+        QT_TR_NOOP("Whole Number"): 'integer',
+        QT_TR_NOOP("Decimal Number"): 'double precision',
+        QT_TR_NOOP("Date"): 'date',
+        QT_TR_NOOP("True/ False"): 'boolean',
+        QT_TR_NOOP('Short text'): 'character varying',
+        QT_TR_NOOP('Long text'): 'text',
+        QT_TR_NOOP('Auto Increment'): 'serial',
+        QT_TR_NOOP('Geometry'): 'geometry'
          }
 
 actions = {
-            'CASCADE': 'cascade',
-            'SET NULL': 'setnull'
+            QApplication.translate("TableProperty",'CASCADE'): 'cascade',
+            QApplication.translate("TableProperty",'SET NULL'): 'setnull'
              }
 
 constraints = {
-             'Unique': 'UNIQUE', 
-             'Check': 'CHECK'
+             QApplication.translate("TableProperty",'Unique'): 'UNIQUE',
+             QApplication.translate("TableProperty",'Check'): 'CHECK'
               }
 
 nullable = {
-            'Yes': 'no',
-            'No': 'yes'
+            QApplication.translate("TableProperty",'Yes'): 'no',
+            QApplication.translate("TableProperty",'No'): 'yes'
           }
 
 stdm_core_tables = ['household', 'spatial_unit', 'party', 'natural_person', 'group', 'social_tenure_relationship', 'supporting_document']

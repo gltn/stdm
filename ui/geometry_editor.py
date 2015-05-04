@@ -38,17 +38,17 @@ class GeometryEditor(QDialog):
         self.label = QLabel()
         self.labelName = QLabel()
 
-        self.label.setText("Select Geometry Type")
+        self.label.setText(QApplication .translate("GeometryEditor","Select Geometry Type"))
         self.comboField = QComboBox()
-        self.labelName.setText("Edit Type Name")
+        self.labelName.setText(QApplication .translate("GeometryEditor","Edit Type Name"))
         self.textFieldName = QLineEdit()
         self.sridButton = QPushButton()
-        self.sridButton.setText("Select Coordinate System ")
+        self.sridButton.setText(QApplication .translate("GeometryEditor","Select Coordinate System "))
         self.textField = QLineEdit()
 
         setCollectiontypes(geometry_collections, self.comboField)
        
-        self.buttons=QDialogButtonBox()
+        self.buttons = QDialogButtonBox()
         self.buttons.addButton(QDialogButtonBox.Ok)
         self.buttons.addButton(QDialogButtonBox.Cancel)
         self.sridButton.clicked.connect(self.projectionsSettings)
@@ -62,7 +62,7 @@ class GeometryEditor(QDialog):
         layout.addWidget(self.textField)
         layout.addWidget(self.buttons)
         self.setLayout(layout)
-        self.setWindowTitle("Geometry Column Property")
+        self.setWindowTitle(QApplication .translate("GeometryEditor","Geometry Column Property"))
 
         self.on_edit_session()
         self.buttons.accepted.connect(self.setGeometrySetting)
@@ -70,8 +70,8 @@ class GeometryEditor(QDialog):
         
     def projectionsSettings(self):
         '''let user select the projections for the data'''
-        projSelect=projectionSelector(self)
-        projection=projSelect.loadAvailableSystems()
+        projSelect = projectionSelector(self)
+        projection = projSelect.loadAvailableSystems()
         self.textField.setText(str(projection))
 
     def on_edit_session(self):
@@ -85,7 +85,7 @@ class GeometryEditor(QDialog):
 
     def setGeometrySetting(self):
         if self.textField.text() == '':
-            self.ErrorInfoMessage(QApplication.translate("GeometryProperty", "Projections is not selected"))
+            self.ErrorInfoMessage(QApplication.translate("GeometryEditor", "Projections is not selected"))
             return
         
         self.value = self.textField.text()[5:]
@@ -104,7 +104,7 @@ class GeometryEditor(QDialog):
         # Error Message Box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
-        msg.setWindowTitle(QApplication.translate("GeometryProperty", "Geometry Settings"))
+        msg.setWindowTitle(QApplication.translate("GeometryEditor", "Geometry Settings"))
         msg.setText(Message)
         msg.exec_() 
        

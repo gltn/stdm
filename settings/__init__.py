@@ -16,4 +16,5 @@ from .path_settings import (
                             dataIcon,
                             pbIcon
                             )
+from .module_settings import ModuleSettings
 
