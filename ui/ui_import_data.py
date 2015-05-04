@@ -186,5 +186,3 @@ class Ui_frmImport(object):
         self.btnSrcAll.setText(_translate("frmImport", "&All", None))
         self.btnSrcNone.setText(_translate("frmImport", "Non&e", None))
         self.groupBox_6.setTitle(_translate("frmImport", "Destination Table:", None))
-
-import resources_rc

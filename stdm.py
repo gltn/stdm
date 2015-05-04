@@ -2,9 +2,10 @@
 /***************************************************************************
 Name                 : STDM QGIS Loader
 Description          : STDM QGIS Loader
-Date                 : 23/May/2013 
-copyright            : (C) 2013 by John Gitau
-email                : gkahiu@gmail.com
+Date                 : 04-01-2015
+copyright            : (C) 2015 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -25,8 +26,7 @@ from PyQt4.QtGui import *
 
 from qgis.core import *
 from qgis.gui import *
-from ui import (
-                loginDlg,
+from ui import (loginDlg,
                 changePwdDlg,
                 manageAccountsDlg,
                 contentAuthDlg,
@@ -42,25 +42,25 @@ from ui import (
                 ImportData,
                 ExportData
                 )
+from ui.spatialUnitMangerDockWidget import SpatialUnitManagerDockWidget
 from ui.reports import ReportBuilder
 import data
-from data import (
-                  STDMDb,
+from data import (STDMDb,
                   spatial_tables,
                   ConfigTableReader,
                   activeProfile,
-                  contentGroup
+                  contentGroup,
+                  vector_layer,
+                  geometryType
                   )
 
-from navigation import (
-                        STDMAction,
+from data.reports import SysFonts
+from navigation import (STDMAction,
                         QtContainerLoader,
                         ContentGroup,
                         TableContentGroup
                         )
-from mapping import (
-                     StdmMapToolCreateFeature
-                     )
+from mapping import (StdmMapToolCreateFeature)
 from utils import *
 from mapping.utils import pg_layerNamesIDMapping
 
@@ -70,41 +70,43 @@ class STDMQGISLoader(object):
 
     viewSTRWin = None
 
-    def __init__(self,iface):
+    def __init__(self, iface):
         self.iface = iface
 
-        #Initialize loader
+        # Initialize loader
         self.toolbarLoader = None
-        self.menubarLoader=None
+        self.menubarLoader = None
 
-        #setup locale
+        # Setup locale
         pluginDir = os.path.dirname(__file__)
         localePath = ""
         locale = QSettings().value("locale/userLocale")[0:2]
         if QFileInfo(pluginDir).exists():
-            #Replace forward slash with backslash
+            # Replace forward slash with backslash
             pluginDir = string.replace(pluginDir, "\\", "/")
-            localePath = pluginDir + "/i18n/stdm_%s.qm"%(locale,)
+            localePath = pluginDir + "/i18n/stdm_%s.qm" % (locale,)
         if QFileInfo(localePath).exists():
             self.translator = QTranslator()
             self.translator.load(localePath)
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
 
-        #Initialize the property management window
+        # Initialize the property management window
         self.propManageWindow = None
 
-        #STDM Tables
+        # STDM Tables
         self.stdmTables = []
 
     def initGui(self):
-        #Initial actions on starting up the application
+        # Initial actions on starting up the application
         self.STDMmenuItems()
-        self.loginAct = STDMAction(QIcon(":/plugins/stdm/images/icons/login.png"), \
-        QApplication.translate("LoginToolbarAction","Login"), self.iface.mainWindow(),
-        "CAA4F0D9-727F-4745-A1FC-C2173101F711")
+        self.loginAct = STDMAction(QIcon(":/plugins/stdm/images/icons/login.png"),
+                                   QApplication.translate("LoginToolbarAction",
+                                                          "Login"),
+                                   self.iface.mainWindow(),
+                                   "CAA4F0D9-727F-4745-A1FC-C2173101F711")
         self.loginAct.setShortcut(QKeySequence(Qt.Key_F2))
-        self.aboutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/information.png"), \
+        self.aboutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/information.png"),
         QApplication.translate("AboutToolbarAction","About"), self.iface.mainWindow(),
         "137FFB1B-90CD-4A6D-B49E-0E99CD46F784")
         #Define actions that are available to all logged in users
@@ -198,9 +200,21 @@ class STDMQGISLoader(object):
             #Load logout and change password actions
             self.stdmInitToolbar.insertAction(self.loginAct,self.logoutAct)
             self.stdmInitToolbar.insertAction(self.loginAct,self.changePasswordAct)
-            self.loginAct.setEnabled(False)
 
-            #Get STDM tables
+            self.loginAct.setEnabled(False)   
+            
+            #Get STDM spatial tables
+            # self.stdmTables = spatial_tables()
+            # self.spatial_layers = []
+            # for lyr in self.stdmTables:
+            #    self.spatial_layer = vector_layer(lyr)
+            #    self.spatial_layer_type = geometryType(lyr,"the_geom")
+            #    #self.layer_type = self.spatial_layer.geometryType()
+            #    self.spatial_layers.append(self.spatial_layer_type)
+            # self.layers = str(self.spatial_layers)
+            # QMessageBox.information(self.iface.mainWindow(),"Title", self.layers)
+            #self.loadModules()
+            #resetContentRoles()
             try:
                 self.stdmTables = spatial_tables()
                 self.loadModules()
@@ -295,6 +309,11 @@ class STDMQGISLoader(object):
         QApplication.translate("SpatialEditorAction","Toggle Spatial Unit Editing"), self.iface.mainWindow())
         self.spatialEditorAct.setCheckable(True)
 
+        #Spatial Layer Manager
+        self.spatialLayerManager = QAction(QIcon(":/plugins/stdm/images/icons/edit.png"), \
+        QApplication.translate("SpatialEditorAction","Post GIS Layer Editor"), self.iface.mainWindow())
+        self.spatialLayerManager.setCheckable(True)
+
         self.createFeatureAct = QAction(QIcon(":/plugins/stdm/images/icons/create_feature.png"), \
         QApplication.translate("CreateFeatureAction","Create Spatial Unit"), self.iface.mainWindow())
         self.createFeatureAct.setCheckable(True)
@@ -329,6 +348,7 @@ class STDMQGISLoader(object):
         self.docGeneratorAct.triggered.connect(self.onDocumentGeneratorByPerson)
         self.rptBuilderAct.triggered.connect(self.onReportBuilder)
         self.spatialEditorAct.triggered.connect(self.onToggleSpatialEditing)
+        self.spatialLayerManager.triggered.connect(self.spatialLayerMangerActivate)
         self.saveEditsAct.triggered.connect(self.onSaveEdits)
         self.createFeatureAct.triggered.connect(self.onCreateFeature)
         contentMenu.triggered.connect(self.widgetLoader)
@@ -372,6 +392,9 @@ class STDMQGISLoader(object):
 
         spatialEditingCnt = ContentGroup.contentItemFromQAction(self.spatialEditorAct)
         spatialEditingCnt.code = "4E945EE7-D6F9-4E1C-A4AA-0C7F1BC67224"
+
+        spatialLayerManagerCnt = ContentGroup.contentItemFromQAction(self.spatialLayerManager)
+        spatialLayerManagerCnt.code = "4E945EE7-D6F9-4E1C-X4AA-0C7F1BC67224"
 
         createFeatureCnt = ContentGroup.contentItemFromQAction(self.createFeatureAct)
         createFeatureCnt.code = "71CFDB15-EDB5-410D-82EA-0E982971BC51"
@@ -437,7 +460,11 @@ class STDMQGISLoader(object):
         self.spatialEditingCntGroup.addContentItem(spatialEditingCnt)
         self.spatialEditingCntGroup.register()
 
-        self.createFeatureCntGroup = ContentGroup(username, self.createFeatureAct)
+        self.spatialUnitManagerCntGroup = ContentGroup(username,self.spatialLayerManager)
+        self.spatialUnitManagerCntGroup.addContentItem(spatialLayerManagerCnt)
+        self.spatialUnitManagerCntGroup.register()
+        
+        self.createFeatureCntGroup = ContentGroup(username,self.createFeatureAct)
         self.createFeatureCntGroup.addContentItem(createFeatureCnt)
         self.createFeatureCntGroup.register()
 
@@ -518,8 +545,15 @@ class STDMQGISLoader(object):
 
         self.toolbarLoader.addContent(self.surveyCntGroup)
         self.menubarLoader.addContent(self.surveyCntGroup)
+        
+        self.toolbarLoader.addContent(self.STRCntGroup)
+        self.menubarLoader.addContent(self.spatialEditingCntGroup)
+
+        self.menubarLoader.addContent(self.spatialUnitManagerCntGroup)
         self.toolbarLoader.addContent(tbSeparator)
-        #self.toolbarLoader.addContent(self.spatialEditingCntGroup)
+        self.toolbarLoader.addContent(self.spatialEditingCntGroup)
+        self.toolbarLoader.addContent(self.spatialUnitManagerCntGroup)
+
         self.toolbarLoader.addContent(self.createFeatureCntGroup)
         self.menubarLoader.addContent(self.createFeatureCntGroup)
         self.menubarLoader.addContent(self.logoutAct)
@@ -535,7 +569,17 @@ class STDMQGISLoader(object):
         self.menubarLoader.loadContent()
 
         #Quick fix
+        fontPath=None
+        if platform.system() == "Windows":
+            userPath = os.environ["USERPROFILE"]
+            profPath = userPath + "/.stdm"
+            fontPath=str(profPath).replace("\\", "/")+"/font.cache"
+        SysFonts.register(fontPath)
 
+        self.spatialLayerMangerDockWidget = SpatialUnitManagerDockWidget(self.iface)
+        self.spatialLayerMangerDockWidget.setWindowTitle('Spatial Unit Manager')
+        self.iface.addDockWidget(Qt.RightDockWidgetArea, self.spatialLayerMangerDockWidget)
+        self.spatialLayerMangerDockWidget.show()
 
     def configureMapTools(self):
         '''
@@ -722,6 +766,23 @@ class STDMQGISLoader(object):
             self.createFeatureAct.setChecked(False)
             self.createFeatureAct.setVisible(False)
 
+    def onToggleSpatialUnitManger(self,toggled):
+        '''
+        Slot raised on toggling to activate/deactivate editing, and load corresponding
+        spatial tools.
+        '''
+        currLayer = self.iface.activeLayer()
+
+        if currLayer != None:
+            self.spatialUnitMangerToggleEditing(currLayer)
+
+        else:
+            self.spatialLayerManager.setChecked(False)
+
+        if not toggled:
+            self.createFeatureAct.setChecked(False)
+            self.createFeatureAct.setVisible(False)
+
     def toggleEditing(self,layer):
         '''
         Actual implementation which validates and creates/ends edit sessions.
@@ -733,7 +794,7 @@ class STDMQGISLoader(object):
 
         #Assert if layer is from the SDTM database
         if not self.isSTDMLayer(layer):
-            self.spatialEditorAct.setChecked(False)
+            self.spatialLayerManager.setChecked(False)
             self.iface.messageBar().clearWidgets()
             self.iface.messageBar().pushMessage(QApplication.translate("STDMPlugin","Non-SDTM Layer"),
                                                 QApplication.translate("STDMPlugin","Selected layer is not from the STDM database."),
@@ -743,8 +804,8 @@ class STDMQGISLoader(object):
 
         if not layer.isEditable() and not layer.isReadOnly():
             if not (layer.dataProvider().capabilities() & QgsVectorDataProvider.EditingCapabilities):
-                self.spatialEditorAct.setChecked(False)
-                self.spatialEditorAct.setEnabled(False)
+                self.spatialLayerManager.setChecked(False)
+                self.spatialLayerManager.setEnabled(False)
                 self.iface.messageBar().pushMessage(QApplication.translate("STDMPlugin","Start Editing Failed"),
                                                     QApplication.translate("STDMPlugin","Provider cannot be opened for editing"),
                                                     level=QgsMessageBar.CRITICAL)
@@ -803,6 +864,93 @@ class STDMQGISLoader(object):
 
         '''
         #Disable/hide related tools   
+        if not teResult and layer == self.iface.activeLayer():
+            self.createFeatureAct.setVisible(False)
+        '''
+
+        return teResult
+
+    def spatialUnitMangerToggleEditing(self,layer):
+        '''
+        Actual implementation which validates and creates/ends edit sessions.
+        '''
+        if not isinstance(layer,QgsVectorLayer):
+            return False
+
+        teResult = True
+
+        #Assert if layer is from the SDTM database
+        if not self.isSTDMLayer(layer):
+            self.postGISLayerEditor.setChecked(False)
+            self.iface.messageBar().clearWidgets()
+            self.iface.messageBar().pushMessage(QApplication.translate("STDMPlugin","Non-SDTM Layer"),
+                                                QApplication.translate("STDMPlugin","Selected layer is not from the STDM database."),
+                                                level=QgsMessageBar.CRITICAL)
+
+            return False
+
+        if not layer.isEditable() and not layer.isReadOnly():
+            if not (layer.dataProvider().capabilities() & QgsVectorDataProvider.EditingCapabilities):
+                self.postGISLayerEditor.setChecked(False)
+                self.postGISLayerEditor.setEnabled(False)
+                self.iface.messageBar().pushMessage(QApplication.translate("STDMPlugin","Start Editing Failed"),
+                                                    QApplication.translate("STDMPlugin","Provider cannot be opened for editing"),
+                                                    level=QgsMessageBar.CRITICAL)
+
+                return False
+
+            #Enable/show spatial editing tools
+            self.createFeatureAct.setVisible(True)
+
+            layer.startEditing()
+
+        elif layer.isModified():
+            saveResult = QMessageBox.information(self.iface.mainWindow(),
+                                                 QApplication.translate("STDMPlugin","Stop Editing"),
+                                                 QApplication.translate("STDMPlugin",
+                                                                        "Do you want to save changes to {0} layer?".format(layer.name())), \
+                                                 QMessageBox.Save|QMessageBox.Discard|QMessageBox.Cancel)
+
+            if saveResult == QMessageBox.Cancel:
+                teResult = False
+
+            elif saveResult == QMessageBox.Save:
+                QApplication.setOverrideCursor(Qt.WaitCursor)
+
+                if not layer.commitChanges():
+                    teResult = False
+
+                layer.triggerRepaint()
+
+                QApplication.restoreOverrideCursor()
+
+            else:
+                QApplication.setOverrideCursor(Qt.WaitCursor)
+
+                self.iface.mapCanvas().freeze(True)
+
+                if not layer.rollBack():
+                    self.iface.messageBar().pushMessage(QApplication.translate("STDMPlugin","Error"),
+                                                    QApplication.translate("STDMPlugin","Problems during rollback"),
+                                                    level=QgsMessageBar.CRITICAL)
+                    teResult = False
+
+                self.iface.mapCanvas().freeze(False)
+
+                layer.triggerRepaint()
+
+                QApplication.restoreOverrideCursor()
+
+        #Layer has not been modified
+        else:
+            self.iface.mapCanvas().freeze(True)
+            layer.rollBack()
+            self.iface.mapCanvas().freeze(False)
+            teResult = True
+            layer.triggerRepaint()
+
+        '''
+        #Disable/hide related tools
         if not teResult and layer == self.iface.activeLayer():
             self.createFeatureAct.setVisible(False)
         '''
@@ -963,3 +1111,9 @@ class STDMQGISLoader(object):
         message.setText(message_text)
         message.setStandardButtons(QMessageBox.Ok| QMessageBox.Reset)
         return  message.exec_()
+
+    def spatialLayerMangerActivate(self):
+        if self.spatialLayerMangerDockWidget.isVisible():
+            self.spatialLayerMangerDockWidget.hide()
+        else:
+            self.spatialLayerMangerDockWidget.show()
