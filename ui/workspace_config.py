@@ -112,11 +112,11 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         validPage = True
         if self.currentId()==1:
             if not self.rbAccpt.isChecked():
-                self.InfoMessage(" You must agree to the disclaimer to continue")
+                self.InfoMessage(QApplication.translate("WorkspaceLoader"," You must agree to the disclaimer to continue"))
                 validPage=False
             if self.rbReject.isChecked():
-                self.InfoMessage("Rejecting to comply with disclaimer policy will cause the wizard to exit.\
-                 STDM will no to be accessible")
+                self.InfoMessage(QApplication.translate("WorkspaceLoader","Rejecting to comply with disclaimer policy will cause the wizard to exit.\
+                 STDM will no to be accessible"))
                 validPage=False
         if self.currentId()==2:
             if self.txtDefaultFolder.text()=='' or self.txtCertFolder.text()=='' or self.txtSetting.text()=='':
@@ -240,7 +240,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         '''Get a list of all Columns defined for the given table name'''
         columnModel=None
         if tableName==None:
-            self.ErrorInfoMessage("Table Not defined")
+            self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","Table Not defined"))
             return
         columnModel=self.tableHandler.columns(self.profile,tableName)
         self.tblEdit.clearSpans()
@@ -254,7 +254,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         '''Method to load defined relations for the given table from the config'''
         self.tblEdit_2.clearSpans()
         if tableName==None:
-            self.ErrorInfoMessage("No Table selected")
+            self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","No Table selected"))
             return
         relationModel=self.tableHandler.tableRelation(tableName)
         self.tblEdit_2.setModel(relationModel)
@@ -310,7 +310,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             colDlg.exec_()
             self.loadTableColumns(self.tableName)
         else:
-            self.ErrorInfoMessage("Please select table to add attributes")
+            self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","Please select table to add attributes"))
             return
         self.populateLookup()
     
@@ -363,7 +363,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             colDlg.exec_()
             self.loadTableRelations(self.tableName)
         else:
-            self.ErrorInfoMessage("Please select table to add attributes")
+            self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","Please select table to add attributes"))
             return
     
     def selectedColumnIndex(self):
@@ -382,14 +382,14 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             self.tableName=tableName
             self.lookupDefinedValues()
         else:
-            self.ErrorInfoMessage("No selections")
+            self.ErrorInfoMessage(QApplication.translate("AttributeEditor","No selections"))
             return
         
     def lookupColumnsTowidget(self, tableName):
         '''Get a list of all Columns defined for the given table name'''
         columnModel=None
         if tableName==None:
-            self.ErrorInfoMessage("lookup Not defined")
+            self.ErrorInfoMessage(QApplication.translate("AttributeEditor","lookup Not defined"))
             return
         columnModel=self.tableHandler.lookupColumns(tableName)
         self.tblEdit.clearSpans()
@@ -621,7 +621,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                     roleP=RoleProvider()
                     roleP._execute(sqlSt)
                     self.assignRoles()
-                    self.InfoMessage("Changes successfully saved in the STDM database")
+                    self.InfoMessage(QApplication.translate("WorkspaceLoader","Changes successfully saved in the STDM database"))
                     flush_session_activity()
                     self.tableHandler.trackXMLChanges()
                     return valid
@@ -803,7 +803,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
         msg.setWindowTitle(QApplication.translate("WorkspaceLoader","STDM"))
-        msg.setText(message)
+        msg.setText(QT_TRANSLATE_NOOP("WorkspaceLoader",message))
         msg.exec_()  
                 
     def InfoMessage(self, message):
@@ -811,7 +811,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         msg=QMessageBox()
         msg.setWindowTitle(unicode(self.windowTitle()))
         msg.setIcon(QMessageBox.Information)
-        msg.setText(message)
+        msg.setText(QT_TRANSLATE_NOOP("WorkspaceLoader",message))
         msg.exec_()  
         
     def warningInfo(self, message):
@@ -821,5 +821,5 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         msg.setIcon(QMessageBox.Warning)
         msg.setStandardButtons(QMessageBox.Yes|QMessageBox.No)
         msg.setDefaultButton(QMessageBox.No)
-        msg.setText(message)
+        msg.setText(QT_TRANSLATE_NOOP("WorkspaceLoader",message))
         return msg.exec_()

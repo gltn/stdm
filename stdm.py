@@ -65,6 +65,7 @@ from utils import *
 from mapping.utils import pg_layerNamesIDMapping
 
 from composer import ComposerWrapper
+from settings import ModuleSettings
 
 class STDMQGISLoader(object):
 
@@ -267,7 +268,7 @@ class STDMQGISLoader(object):
         stdmEntityMenu = QMenu(self.stdmMenu)
         stdmEntityMenu.setObjectName("STDMEntityMenu")
         stdmEntityMenu.setIcon(QIcon(":/plugins/stdm/images/icons/entity_management.png"))
-        stdmEntityMenu.setTitle("Modules")
+        stdmEntityMenu.setTitle(QApplication.translate("STDMEntityMenu","Modules"))
 
         #Separator definition
         tbSeparator = QAction(self.iface.mainWindow())
@@ -417,7 +418,7 @@ class STDMQGISLoader(object):
         Format the table names to freiendly format before adding them
         """
         for module in self.configTables():
-            display_name = str(module).replace("_", " ").title()
+            display_name = QT_TRANSLATE_NOOP("ModuleSettings",str(module).replace("_", " ").title())
             self._moduleItems[display_name] = module
         for k, v in self._moduleItems.iteritems():
             content_action = QAction(QIcon(":/plugins/stdm/images/icons/table.png"),
@@ -569,12 +570,12 @@ class STDMQGISLoader(object):
         self.menubarLoader.loadContent()
 
         #Quick fix
-        fontPath=None
-        if platform.system() == "Windows":
-            userPath = os.environ["USERPROFILE"]
-            profPath = userPath + "/.stdm"
-            fontPath=str(profPath).replace("\\", "/")+"/font.cache"
-        SysFonts.register(fontPath)
+        # fontPath=None
+        # if platform.system() == "Windows":
+        #     userPath = os.environ["USERPROFILE"]
+        #     profPath = userPath + "/.stdm"
+        #     fontPath=str(profPath).replace("\\", "/")+"/font.cache"
+        # SysFonts.register(fontPath)
 
         self.spatialLayerMangerDockWidget = SpatialUnitManagerDockWidget(self.iface)
         self.spatialLayerMangerDockWidget.setWindowTitle('Spatial Unit Manager')

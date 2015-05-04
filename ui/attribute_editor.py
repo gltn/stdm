@@ -115,10 +115,10 @@ class AttributeEditor(QDialog,Ui_editor):
         atType = UserData(self.cboDatatype)
         if atType in self.defaults:
             self.txtAttrib.setEnabled(False)
-            self.txtAttrib.setPlaceholderText('default for postgres')
+            self.txtAttrib.setPlaceholderText(QApplication.translate("AttributeEditor",'default for postgres'))
         if atType not in self.defaults:
             self.txtAttrib.setEnabled(True)
-            self.txtAttrib.setPlaceholderText('Enter attribute length')
+            self.txtAttrib.setPlaceholderText(QApplication.translate("AttributeEditor",'Enter attribute length'))
         self.geometryTypeSelected()
         
     def writeAttributeData(self):
@@ -177,7 +177,7 @@ class AttributeEditor(QDialog,Ui_editor):
         if lookUpDlg.exec_() == QDialog.Accepted:
             self.lookup = lookUpDlg.tableName
         else:
-            self.ErrorInfoMessage("Not lookup selected")
+            self.ErrorInfoMessage(QApplication.translate("AttributeEditor","No lookup is selected for this action"))
     
     def geometryTypeSelected(self):        
         atType = UserData(self.cboDatatype)
