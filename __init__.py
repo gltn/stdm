@@ -1,10 +1,11 @@
 """
 /***************************************************************************
 Name                 : Social Tenure Domain Model
-Description          : QGIS Entry Point for Social Tenure Domain Model 
-Date                 : 23/May/13
-copyright            : (C) 2013 by John Gitau
-email                : gkahiu@gmail.com 
+Description          : QGIS Entry Point for Social Tenure Domain Model
+Date                 : 04-01-2015
+copyright            : (C) 2015 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -15,18 +16,24 @@ email                : gkahiu@gmail.com
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
- This script initializes the plugin, making it known to QGIS.
 """
 import sys
 import os
 
-third_party_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ),"third_party"))
-font_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ),"third_party/fontTools"))
+third_party_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                               "third_party"))
+font_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                        "third_party/fontTools"))
 
-if not third_party_dir in sys.path:
+if third_party_dir not in sys.path:
     sys.path.append(third_party_dir)
     sys.path.append(font_dir)
 
-def classFactory(iface): 
-    from stdm import STDMQGISLoader 
+
+def classFactory(iface):
+    """
+    Load STDMQGISLoader class from file stdm
+    """
+
+    from stdm import STDMQGISLoader
     return STDMQGISLoader(iface)

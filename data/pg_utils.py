@@ -19,8 +19,11 @@ email                : gkahiu@gmail.com
 """
 from PyQt4.QtCore import QRegExp
 
+from qgis.core import *
+
 from sqlalchemy.sql.expression import text
 
+import stdm.data
 from stdm.data import STDMDb, Base
 from stdm.utils import getIndex
 
@@ -231,6 +234,11 @@ def _execute(sql,**kwargs):
 def reset_content_roles():
     rolesSet = "truncate table content_base cascade;"
     _execute(text(rolesSet))
+    resetSql = text(rolesSet)
+    _execute(resetSql)
+    # rolesSet1 = "truncate table content_roles cascade;"
+    # resetSql1 = text(rolesSet1)
+    # _execute(resetSql1)
 
 def delete_table_keys(table):
     #clean_delete_table(table)
@@ -257,6 +265,23 @@ def safely_delete_tables(tables):
 def flush_session_activity():
     STDMDb.instance().session._autoflush()
 
+def vector_layer(table_name, sql="", key="id",geom_column=""):
+    """
+    Returns a QgsVectorLayer based on the specified table name.
+    """
+    if not table_name:
+        return None
 
+    conn = stdm.data.app_dbconn
+    if conn is None:
+        return None
 
+    if not geom_column:
+        geom_column=None
 
+    ds_uri = conn.toQgsDataSourceUri()
+    ds_uri.setDataSource("public", table_name, geom_column, sql, key)
+
+    v_layer = QgsVectorLayer(ds_uri.uri(), table_name, "postgres")
+
+    return v_layer

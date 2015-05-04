@@ -24,6 +24,8 @@ from xml2ddl.xml2html import Xml2Html, xml2ddl
 from xml2ddl.diffxml2ddl import DiffXml2Ddl
 from xml2ddl.xml2ddl import Xml2Ddl, readMergeDict
 from xml2ddl.xml2html import Xml2Html
+import xml.etree.ElementTree as Elt
+from PyQt4.QtGui import *
 
 
 from .configfile_paths import FilePaths
@@ -294,3 +296,32 @@ def deleteLookupChoice(level,category,tableName,elemnt,key,value):
         else:
             continue
 
+def write_display_name(layer_name, user_display_name):
+    tree = Elt.parse(xml_doc)
+    root = tree.getroot()
+
+    if not root.findall('display_names'):
+        display_names = Elt.SubElement(root, "display_names")
+
+    elif root.findall('display_names'):
+        display_names = root.findall('display_names')[0]
+
+    display_name = Elt.SubElement(display_names, "display_name")
+    display_name.set('layer_name', layer_name)
+    display_name.text = user_display_name
+
+    tree = Elt.ElementTree(root)
+    tree.write(xml_doc,encoding='utf-8',xml_declaration=True)
+
+def write_changed_display_name(current_layer_name, changed_layer_name):
+    tree = Elt.parse(xml_doc)
+    root = tree.getroot()
+
+    for display_name in root.findall('display_names/display_name'):
+        if display_name.get("layer_name") == current_layer_name:
+            display_name.text = changed_layer_name
+            tree = Elt.ElementTree(root)
+            tree.write(xml_doc,encoding='utf-8',xml_declaration=True)
+            break
+        else:
+            continue
