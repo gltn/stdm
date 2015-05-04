@@ -95,7 +95,7 @@ def setCollectiontypes(collectionType,combo):
         ordDict=OrderedDict(collectionType.items())
         combo.clear()
         for k, v in ordDict.iteritems():
-            combo.addItem(k,v)
+            combo.addItem(QApplication.translate("AttributeEditor",k), v)
             combo.setInsertPolicy(QComboBox.InsertAlphabetically)
         combo.setMaxVisibleItems(len(collectionType))
 
