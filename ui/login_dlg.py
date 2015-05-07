@@ -50,7 +50,7 @@ class loginDlg(QDialog, Ui_frmLogin):
         '''
         #Change the name of the OK button to Login
         btnLogin=self.btnBox.button(QDialogButtonBox.Ok)
-        btnLogin.setText(QApplication.translate("LoginDialog","Login"))
+        btnLogin.setText(QApplication.translate("loginDlg","Login"))
         #Connect slots
         self.connect(self.btnBox, SIGNAL("accepted()"), self.acceptdlg)
         
@@ -66,12 +66,12 @@ class loginDlg(QDialog, Ui_frmLogin):
         self.notifBar.clear()
         
         if self.txtUserName.text() == "":
-            self.notifBar.insertErrorNotification(QApplication.translate("LoginDialog","UserName field cannot be empty"))
+            self.notifBar.insertErrorNotification(QApplication.translate("loginDlg","UserName field cannot be empty"))
             self.txtUserName.setFocus()
             return False
         
         if self.txtPassword.text() == "":
-            self.notifBar.insertErrorNotification(QApplication.translate("LoginDialog","Password field cannot be empty"))
+            self.notifBar.insertErrorNotification(QApplication.translate("loginDlg","Password field cannot be empty"))
             self.txtPassword.setFocus()
             return False 
         
@@ -92,7 +92,7 @@ class loginDlg(QDialog, Ui_frmLogin):
         '''
         self.btnBox.setStandardButtons(QDialogButtonBox.Reset | QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
         btnReset=self.btnBox.button(QDialogButtonBox.Reset)
-        btnReset.setText(QApplication.translate('LoginDialog','Reset Settings'))
+        btnReset.setText(QApplication.translate('loginDlg','Reset Settings'))
 
     def onRegistrySettings(self):
         '''
@@ -131,7 +131,7 @@ class loginDlg(QDialog, Ui_frmLogin):
             dbconfig = DatabaseConfig()
             dbconn = dbconfig.read()
             if not dbconn:
-                msg = QApplication.translate("LoginDialog","The STDM database connection has not been configured in your system.\nWould you like to configure it now?")
+                msg = QApplication.translate("loginDlg","The STDM database connection has not been configured in your system.\nWould you like to configure it now?")
                 response = QMessageBox.warning(self, QApplication.translate("LoginDialog","Database Connection"), 
                                                msg, QMessageBox.Yes|QMessageBox.No, QMessageBox.Yes)
                 if response == QMessageBox.Yes:
@@ -168,8 +168,7 @@ class loginDlg(QDialog, Ui_frmLogin):
 
     def login_operation_error(self, message_text):
         message =QMessageBox()
-        message.setWindowTitle(QApplication.translate("LoginDialog","Authentication Failed"))
+        message.setWindowTitle(QApplication.translate("loginDlg","Authentication Failed"))
         message.setText(message_text)
         message.setStandardButtons(QMessageBox.Ok)
-        message.addButton("Create New", QMessageBox.AcceptRole)
         return  message.exec_()

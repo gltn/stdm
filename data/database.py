@@ -168,8 +168,6 @@ class LookupBase(object):
     '''
     id  = Column(Integer,primary_key = True)
     name = Column(String(50))
-
-
                         
 class Content(Model,Base):
     '''
@@ -291,9 +289,9 @@ class Survey(Model,Base):
     Code = Column("code",String(20))
     EnumerationDate = Column("enumeration_date",Date)  
     EnumeratorID = Column("enumerator_id",Integer,ForeignKey('enumerator.id'))
-    Witnesses = relationship("Witness",backref="Survey",cascade="all, delete-orphan")
-    #RespondentID = Column("respondent_id",Integer,ForeignKey('respondent.id'))
-    #Respondent = relationship("Respondent",uselist = False,single_parent = True,cascade = "all, delete-orphan")
+    #Witnesses = relationship("Witness",backref="Survey",cascade="all, delete-orphan")
+    RespondentID = Column("respondent_id",Integer,ForeignKey('respondent.id'))
+    Respondent = relationship("Respondent",uselist = False,single_parent = True,cascade = "all, delete-orphan")
     
     @staticmethod
     def displayMapping():

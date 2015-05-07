@@ -1,4 +1,5 @@
 SOURCES = stdm.py \
+			ui/view_str.py \
 			navigation/components.py \
 			security/membership.py \
 			ui/about.py \
@@ -6,6 +7,7 @@ SOURCES = stdm.py \
 			ui/admin_unit_manager.py \
 			ui/admin_unit_selector.py \
 			ui/attribute_editor.py \
+			ui/change_pwd_dlg.py \
 			ui/composer_data_source.py \
 			ui/composer_doc_selector.py \
 			ui/composer_field_selector.py \
@@ -19,7 +21,7 @@ SOURCES = stdm.py \
 			ui/foreign_key_editors.py \
 			ui/foreign_key_mapper.py \
 			ui/frmAbout.py \
-			ui/garden_editor.py \
+			ui/geometry_editor.py \
 			ui/geometry.py \
 			ui/import_data.py \
 			ui/login_dlg.py \
@@ -53,6 +55,7 @@ SOURCES = stdm.py \
 			ui/ui_composer_symbol_editor.py \
 			ui/ui_content_auth.py \
 			ui/ui_coordinates_editor.py \
+			ui/workspace_config.py\
 			ui/ui_dbconn.py \
 			ui/ui_dbmanage.py \
 			ui/ui_doc_item.py \
@@ -83,9 +86,7 @@ SOURCES = stdm.py \
 			ui/ui_table_property.py \
 			ui/ui_user_role_manage.py \
 			ui/ui_view_str.py \
-			ui/ui_workspace_config.py \
-			ui/view_str.py \
-			ui/workspace_config.py \
+			ui/ui_workspace_config.py\
 			utils/case_insensitive_dict.py\
 			utils/filesize.py \
 			utils/hashable_mixin.py \
@@ -101,7 +102,6 @@ SOURCES = stdm.py \
 			settings/projectionSelector.py \
 			settings/registryconfig.py \
 			settings/tools_network.py \
-			settings/module_settings.py \
 			security/user.py \
 			security/roleprovider.py \
 			security/membership.py \
@@ -139,13 +139,11 @@ SOURCES = stdm.py \
 			data/xmlconfig_reader.py \
 			data/xmlconfig_writer.py \
 			data/xmldata2sql.py \
-			ui/ui_base_form.py \
-			ui/report/report_builder.py \
-			ui/report/ui_rpt_builder.py \
-			
-			
-FORMS = ui/ui_changepwd.ui \		  			  	
-		ui/ui_dbconn.ui \
+			ui/ui_base_form.py
+					
+FORMS =	ui/reports/ui_rpt_builder.ui \
+		ui/ui_changepwd.ui \	
+  	 	ui/ui_dbconn.ui \
 		ui/ui_dbmanage.ui \
 		ui/ui_login.ui \
 		ui/ui_user_role_manage.ui \
@@ -170,6 +168,7 @@ FORMS = ui/ui_changepwd.ui \
 		ui/ui_main_widget.ui \
 		ui/ui_new_role.ui \
 		ui/ui_new_str.ui \
+		ui/ui_new_user.ui \
 		ui/ui_notif_item.ui \
 		ui/ui_person_doc_generator.ui \
 		ui/ui_profile.ui \
@@ -180,8 +179,7 @@ FORMS = ui/ui_changepwd.ui \
 		ui/ui_str_view_entity.ui \
 		ui/ui_view_str.ui \
 		ui/ui_view_str_search_entity.ui \
-		ui/ui_base_form.ui \
-		ui\ 
+		ui/ui_base_form.ui
 	
 TRANSLATIONS    = i18n/stdm_fr.ts 
 

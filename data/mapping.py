@@ -127,8 +127,10 @@ class _AttributeMapper(object):
         The handler is responsible for adapting Qt and Python types as expected
         and defined by the model.
         '''
-        if hasattr(self._model,self._attrName):
+
+        if hasattr(self._model, self._attrName):
             controlValue = self._valueHandler.value()
+            QMessageBox.information(None,"sedfa", str(controlValue))
             setattr(self._model,self._attrName,controlValue)
     
 class MapperMixin(object):
@@ -364,8 +366,7 @@ class MapperMixin(object):
         if isinstance(self, QDialog):
             self.postSaveUpdate(self._model)
             self.accept()
-        
-                
+
 class _QgsFeatureAttributeMapper(_AttributeMapper):
     '''
     Manages a single instance of the mapping between a QgsFeature attribute and the corresponding UI widget.
@@ -465,10 +466,6 @@ class QgsFeatureMapperMixin(MapperMixin):
     
     
     
-        
-        
-        
-        
         
         
         
