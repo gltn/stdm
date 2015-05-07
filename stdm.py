@@ -136,7 +136,7 @@ class STDMQGISLoader(object):
     def STDMmenuItems(self):
         #Create menu and menu items on the menu bar
         self.stdmMenu=QMenu()
-        self.stdmMenu.setTitle("&STDM")
+        self.stdmMenu.setTitle(QApplication.translate("STDMQGISLoader","STDM"))
         #Initialize the menu bar item
         self.menu_bar=self.iface.mainWindow().menuBar()
         #Create actions
@@ -144,7 +144,7 @@ class STDMQGISLoader(object):
         currAction=actions[len(actions)-1]
         #add actions to the menu bar
         self.menu_bar.insertMenu(currAction, self.stdmMenu)
-        self.stdmMenu.setToolTip("STDM plugin menu.")
+        self.stdmMenu.setToolTip(QApplication.translate("STDMQGISLoader","STDM plugin menu"))
 
 
     def getThemeIcon(self, theName):
@@ -578,7 +578,7 @@ class STDMQGISLoader(object):
         # SysFonts.register(fontPath)
 
         self.spatialLayerMangerDockWidget = SpatialUnitManagerDockWidget(self.iface)
-        self.spatialLayerMangerDockWidget.setWindowTitle('Spatial Unit Manager')
+        self.spatialLayerMangerDockWidget.setWindowTitle(QApplication.translate("STDMQGISLoader",'Spatial Unit Manager'))
         self.iface.addDockWidget(Qt.RightDockWidgetArea, self.spatialLayerMangerDockWidget)
         self.spatialLayerMangerDockWidget.show()
 
@@ -630,7 +630,7 @@ class STDMQGISLoader(object):
         '''
         Slot for customizing user forms
         '''
-        self.wkspDlg=WorkspaceLoader(self.iface.mainWindow())
+        self.wkspDlg = WorkspaceLoader(self.iface.mainWindow())
         self.wkspDlg.exec_()
 
     def changePassword(self):
@@ -678,19 +678,12 @@ class STDMQGISLoader(object):
         surveyBrowser = SurveyEntityBrowser(self.surveyCntGroup,self.iface.mainWindow())
         surveyBrowser.exec_()
 
-    def onManageFarmer(self):
-        '''
-        Slot raised to show form for entering new farmer details.
-        '''
-        farmerBrowser = FarmerEntityBrowser(self.farmerCntGroup,self.iface.mainWindow())
-        farmerBrowser.exec_()
-
     def onDocumentDesigner(self):
         """
         Slot raised to show new print composer with additional tools for designing 
         map-based documents.
         """
-        documentComposer = self.iface.createNewComposer("STDM Document Designer")
+        documentComposer = self.iface.createNewComposer(QApplication.translate("STDMQGISLoader","STDM Document Designer"))
 
         #Embed STDM customizations
         composerWrapper = ComposerWrapper(documentComposer)
@@ -744,7 +737,7 @@ class STDMQGISLoader(object):
         if not currLayer.commitChanges():
             self.iface.messageBar().clearWidgets()
             self.iface.messageBar().pushMessage(QApplication.translate("STDMPlugin","Save STDM Layer"),
-                                                QApplication.translate("STDMPlugin","Could not commit changes to {0} layer.".format(currLayer.name())),
+                                                QApplication.translate("STDMPlugin","Could not commit changes to {0} layer." .format(currLayer.name())),
                                                 level=QgsMessageBar.CRITICAL)
 
         currLayer.startEditing()
@@ -822,7 +815,7 @@ class STDMQGISLoader(object):
             saveResult = QMessageBox.information(self.iface.mainWindow(),
                                                  QApplication.translate("STDMPlugin","Stop Editing"),
                                                  QApplication.translate("STDMPlugin",
-                                                                        "Do you want to save changes to {0} layer?".format(layer.name())), \
+                                                                        "Do you want to save changes to {0} layer?" .format(layer.name())), \
                                                  QMessageBox.Save|QMessageBox.Discard|QMessageBox.Cancel)
 
             if saveResult == QMessageBox.Cancel:
@@ -909,7 +902,7 @@ class STDMQGISLoader(object):
             saveResult = QMessageBox.information(self.iface.mainWindow(),
                                                  QApplication.translate("STDMPlugin","Stop Editing"),
                                                  QApplication.translate("STDMPlugin",
-                                                                        "Do you want to save changes to {0} layer?".format(layer.name())), \
+                                                                        "Do you want to save changes to {0} layer?")).format(layer.name(), \
                                                  QMessageBox.Save|QMessageBox.Discard|QMessageBox.Cancel)
 
             if saveResult == QMessageBox.Cancel:
@@ -1004,7 +997,7 @@ class STDMQGISLoader(object):
                                          QApplication.translate("STDMPlugin",
                                          "Unable to load the table columns in the browser, "
                                          "check if this table and columns exist in configuration file and"
-                                         " database: "+str(ex.message)))
+                                         " database: "))+str(ex.message)
                 finally:
                     STDMDb.instance().session.rollback()
 
@@ -1082,10 +1075,10 @@ class STDMQGISLoader(object):
             profile = str(default[0])
         moduleList = handler.tableNames(profile)
         moduleList.extend(handler.lookupTable())
-        moduleList.append('enumerator')
-        moduleList.append('respondent')
-        moduleList.append('witness')
-        moduleList.append('priority')
+        # moduleList.append('enumerator')
+        # moduleList.append('respondent')
+        # moduleList.append('witness')
+        # moduleList.append('priority')
         self.pgTableMapper(moduleList)
         if 'spatial_unit' in moduleList:
             moduleList.remove('spatial_unit')

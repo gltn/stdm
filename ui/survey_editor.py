@@ -40,9 +40,9 @@ class SurveyEditor(QDialog,Ui_frmSurvey,MapperMixin):
     Dialog for entering new survey information.
     '''
     def __init__(self,parent = None,model = Survey):
-        QDialog.__init__(self,parent)
+        QDialog.__init__(self, parent)
         self.setupUi(self)
-        MapperMixin.__init__(self,model)
+        MapperMixin.__init__(self, model)
         
         #Connect signals
         self.mapping = DeclareMapping.instance()
@@ -96,9 +96,9 @@ class SurveyEditor(QDialog,Ui_frmSurvey,MapperMixin):
         #Configure attribute mappings
         self.addMapping("Code", self.txtSurveyCode, preloadfunc = self.codeGenerator())
         self.addMapping("EnumerationDate", self.dtEnumDate)
-        #self.addMapping("Enumerator", enumFKMapper,True)
-        #self.addMapping("Respondent", respondentFKMapper,True)
-       # self.addMapping("Witnesses", witnessFKMapper,True)
+        #self.addMapping("Enumerator", enumFKMapper,False)
+        self.addMapping("Respondent", respondentFKMapper,True)
+        #self.addMapping("Witnesses", witnessFKMapper,True)
         
     def codeGenerator(self):
         """

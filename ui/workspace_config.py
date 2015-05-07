@@ -112,10 +112,12 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         validPage = True
         if self.currentId()==1:
             if not self.rbAccpt.isChecked():
-                self.InfoMessage(QApplication.translate("WorkspaceLoader"," You must agree to the disclaimer to continue"))
+                message = QApplication.translate("WorkspaceLoader"," You must agree to the disclaimer to continue")
+                self.InfoMessage(message)
                 validPage=False
             if self.rbReject.isChecked():
-                self.InfoMessage(QApplication.translate("WorkspaceLoader","Rejecting to comply with disclaimer policy will cause the wizard to exit.\
+                self.InfoMessage(QApplication.translate("WorkspaceLoader",
+                                                        u"Rejecting to comply with disclaimer policy will cause the wizard to exit.\
                  STDM will no to be accessible"))
                 validPage=False
         if self.currentId()==2:
@@ -327,7 +329,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 colDlg = AttributeEditor(str(self.cboProfile.currentText()),self.tableName,self,args=EditorSession)
                 colDlg.exec_()
             else:
-                self.InfoMessage(QApplication.translate("WorkSpaceLoader","No table column is selected for editing"))
+                self.InfoMessage(QApplication.translate("WorkspaceLoader","No table column is selected for editing"))
                 return
         except:
             pass 
@@ -348,7 +350,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 colDlg = GeometryEditor(self,str(self.cboProfile.currentText()), self.tableName,args=EditorSession)
                 colDlg.exec_()
             else:
-                self.InfoMessage(QApplication.translate("WorkSpaceLoader","No table column is selected for editing"))
+                self.InfoMessage(QApplication.translate("WorkspaceLoader","No table column is selected for editing"))
                 return
         except Exception as ex:
             self.ErrorInfoMessage(ex.message)
@@ -382,14 +384,14 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             self.tableName=tableName
             self.lookupDefinedValues()
         else:
-            self.ErrorInfoMessage(QApplication.translate("AttributeEditor","No selections"))
+            self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","No selections"))
             return
         
     def lookupColumnsTowidget(self, tableName):
         '''Get a list of all Columns defined for the given table name'''
         columnModel=None
         if tableName==None:
-            self.ErrorInfoMessage(QApplication.translate("AttributeEditor","lookup Not defined"))
+            self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","lookup Not defined"))
             return
         columnModel=self.tableHandler.lookupColumns(tableName)
         self.tblEdit.clearSpans()
@@ -432,7 +434,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                                                              "and cannot be deleted"))
             return
         else:
-            if self.warningInfo(QApplication.translate("WorkspaceLoader","You are about to delete %s table" %self.tableName))==QMessageBox.Yes:
+            if self.warningInfo(QApplication.translate("WorkspaceLoader","You are about to delete %s table") %self.tableName)==QMessageBox.Yes:
                 deleteTable(self.profile,self.tableName)
                 self.loadTableData(self.profile, self.pftableView)
                 base_name = self.tableName.title()
@@ -463,8 +465,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         '''ensure we deleted the selected table column only by matching name entry in the config'''
         try:
             if self.warningInfo(QApplication.translate('WorkspaceLoader',\
-                                                       "You are about to delete selected column from table "+\
-                                                       self.tableName))== QMessageBox.Yes:
+                                                       "You are about to delete selected column from table (%)"
+                                                       )%self.tableName) == QMessageBox.Yes:
                 selCols=self.tblEdit.selectionModel().selectedIndexes() 
                 if len(selCols)>0:
                     item = selCols[0].data()
@@ -488,8 +490,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def deleteTableRelation(self):
         '''delete defined table relation from the config '''
         if self.warningInfo(QApplication.translate('WorkspaceLoader',\
-                                    u"Are you sure you want to deleted selected relation from table"+\
-                                                       self.tableName)) == QMessageBox.Yes:
+                                    u"Are you sure you want to deleted selected relation from table (%s)")
+                                                       %self.tableName) == QMessageBox.Yes:
             selCols = self.tblEdit_2.selectionModel().selectedIndexes()
             if len(selCols)>0:
                 item = selCols[0].data()
@@ -500,8 +502,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def delete_geom(self):
         '''delete defined table relation from the config '''
         if self.warningInfo(QApplication.translate('WorkspaceLoader',\
-                                u"Are you sure you want to deleted selected geometry column from table "+\
-                                                       self.tableName)) == QMessageBox.Yes:
+                                u"Are you sure you want to deleted selected geometry column from table (%s)")
+                                                       %self.tableName) == QMessageBox.Yes:
             selCols=self.tblLookup_2.selectionModel().selectedIndexes()
             if len(selCols)>0:
                 item=selCols[1].data()
@@ -524,8 +526,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                                                            "selected table is not a lookup table"))
                 return
             if self.warningInfo(QApplication.translate('WorkspaceLoader',\
-                                "Are you sure you want to delete "+str(selItem.data())+ " choice from "+\
-                                            self.tableName)) == QMessageBox.Yes:
+                                "Are you sure you want to delete (%s) choice from the table (%s)")%(str(selItem.data()), self.tableName)) == QMessageBox.Yes:
                 if str(self.tableName).startswith('check'):
                     deleteLookupChoice(self.profile,'lookup',self.tableName,'data','value',str(selItem.data()))
                     self.lookupDefinedValues()
@@ -565,7 +566,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         else:
             self.rawSQLDefinition()
             self.txtHtml.setVisible(True)
-            self.btnSQL.setText(QApplication.translate("WorskpaceLoader","Close SQL View"))
+            self.btnSQL.setText(QApplication.translate("WorkspaceLoader","Close SQL View"))
     
     def rawSQLDefinition(self):
         '''read sql definition on the UI'''
@@ -803,15 +804,15 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
         msg.setWindowTitle(QApplication.translate("WorkspaceLoader","STDM"))
-        msg.setText(QT_TRANSLATE_NOOP("WorkspaceLoader",message))
-        msg.exec_()  
+        msg.setText(QApplication.translate("WorkspaceLoader",message))
+        msg.exec_()
                 
     def InfoMessage(self, message):
         #Information message box        
         msg=QMessageBox()
         msg.setWindowTitle(unicode(self.windowTitle()))
         msg.setIcon(QMessageBox.Information)
-        msg.setText(QT_TRANSLATE_NOOP("WorkspaceLoader",message))
+        msg.setText(message)
         msg.exec_()  
         
     def warningInfo(self, message):
@@ -821,5 +822,5 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         msg.setIcon(QMessageBox.Warning)
         msg.setStandardButtons(QMessageBox.Yes|QMessageBox.No)
         msg.setDefaultButton(QMessageBox.No)
-        msg.setText(QT_TRANSLATE_NOOP("WorkspaceLoader",message))
+        msg.setText(message)
         return msg.exec_()
