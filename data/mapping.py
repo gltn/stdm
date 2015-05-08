@@ -130,7 +130,6 @@ class _AttributeMapper(object):
 
         if hasattr(self._model, self._attrName):
             controlValue = self._valueHandler.value()
-            QMessageBox.information(None,"sedfa", str(controlValue))
             setattr(self._model,self._attrName,controlValue)
     
 class MapperMixin(object):
@@ -336,7 +335,7 @@ class MapperMixin(object):
             if attrMapper.isMandatory() and attrMapper.valueHandler().supportsMandatory():
                 if attrMapper.valueHandler().value() == attrMapper.valueHandler().default():
                     #Notify user
-                    msg = "{0} is a required field.".format(attrMapper.pseudoName())
+                    msg = QApplication.translate("MappedDialog","(%s) is a required field.")%str(attrMapper.pseudoName())
                     self._notifBar.insertWarningNotification(msg)
                     isValid = False
                 else:
@@ -383,7 +382,7 @@ class _QgsFeatureAttributeMapper(_AttributeMapper):
         except KeyError:
             #If the field is not found then log the message into the console.
             QgsMessageLog.logMessage(QApplication.translate("QgsFeatureAttributeMapper", \
-                                                            "Attribute name '{0}' not found.".format(self._attrName)), \
+                                                            "Attribute name '%s' not found.")%str(self._attrName), \
                                      QgsMessageLog.CRITICAL)
 
     def bindModel(self):
@@ -396,8 +395,8 @@ class _QgsFeatureAttributeMapper(_AttributeMapper):
         except KeyError:
             #If the field is not found then log the message into the console.
             QgsMessageLog.logMessage(QApplication.translate("QgsFeatureAttributeMapper", \
-                                                            "Attribute index '{0}' not found.".format(str(self._attrName))), \
-                                     level = QgsMessageLog.CRITICAL)
+                                                            "Attribute index '%s' not found.")
+                                     %str(self._attrName),level = QgsMessageLog.CRITICAL)
             
 class QgsFeatureMapperMixin(MapperMixin):
     '''

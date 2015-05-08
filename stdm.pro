@@ -1,4 +1,10 @@
 SOURCES = stdm.py \
+			data/configfile_paths.py\
+			ui/reports/report_builder.py\
+			ui/forms/widgets.py\
+			ui/forms/lookup_dlg.py\
+			ui/forms/mapper_dialog.py\
+			ui/forms/attribute_datatype.py\
 			ui/view_str.py \
 			navigation/components.py \
 			security/membership.py \
@@ -55,7 +61,6 @@ SOURCES = stdm.py \
 			ui/ui_composer_symbol_editor.py \
 			ui/ui_content_auth.py \
 			ui/ui_coordinates_editor.py \
-			ui/workspace_config.py\
 			ui/ui_dbconn.py \
 			ui/ui_dbmanage.py \
 			ui/ui_doc_item.py \
@@ -86,7 +91,8 @@ SOURCES = stdm.py \
 			ui/ui_table_property.py \
 			ui/ui_user_role_manage.py \
 			ui/ui_view_str.py \
-			ui/ui_workspace_config.py\
+			ui/ui_workspace_config.py \
+			ui/workspace_config.py \
 			utils/case_insensitive_dict.py\
 			utils/filesize.py \
 			utils/hashable_mixin.py \

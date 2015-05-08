@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_configWizard.ui'
 #
-# Created: Tue Feb 24 20:32:12 2015
+# Created: Thu May 07 15:58:32 2015
 #      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -551,3 +551,6 @@ class Ui_STDMWizard(object):
         self.rbSchema.setText(_translate("STDMWizard", "Update existing STDM database", None))
         self.rbSchemaNew.setText(_translate("STDMWizard", "Create new STDM database", None))
         self.btnSQL.setText(_translate("STDMWizard", "Show generated SQL file", None))
+        self.rbSkip.setText(_translate("STDMWizard", "Skip changes to database", None))
+
+import resources_rc

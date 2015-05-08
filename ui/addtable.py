@@ -44,7 +44,7 @@ class TableEditor(QDialog, Ui_table):
         if self.state==QApplication.translate("TableEditor","Edit Table"):
             self.groupBox.setTitle(self.state +" "+ self.table)
         elif self.state==QApplication.translate("TableEditor","Add Lookup"):
-            self.groupBox.setTitle(self.state + " Note: lookup tables must begin with 'check_' followed by 'table name'")
+            self.groupBox.setTitle(self.state + QApplication.translate("TableEditor"," Note Lookup tables must begin with 'check_' followed by 'table name'"))
             self.chkDefault.setVisible(False)
         else:
             #self.groupBox.setTitle(self.state)
@@ -78,7 +78,7 @@ class TableEditor(QDialog, Ui_table):
         attrib['name'] = self.table
         attrib['fullname'] = tableDesc
         if self.checkTableExist() == True:
-            self.ErrorInfoMessage("Table already exist in the configuration file")
+            self.ErrorInfoMessage(QApplication.translate("TableEditor","Table already exist in the configuration file"))
             return
         else:
             writeTable(attrib, self.profile, self.table)

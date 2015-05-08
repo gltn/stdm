@@ -27,7 +27,7 @@ from .notification import NotificationBar,ERROR
 from stdm.data import DatabaseConfig, DatabaseConnection
 from stdm.settings import RegistryConfig
 from stdm.security import User
-from stdm.data import DatabaseCreator
+
 SUPERUSER = 'postgres'
 class loginDlg(QDialog, Ui_frmLogin):
     '''
@@ -156,15 +156,6 @@ class loginDlg(QDialog, Ui_frmLogin):
                     self.onRegistrySettings()
                 self.txtPassword.setFocus()
                 self.txtPassword.selectAll()
-
-    def on_new_db(self):
-        """
-        Create a new database if the user selects so
-        :return:
-        """
-
-        db_creator = DatabaseCreator()
-        db_creator.createDb()
 
     def login_operation_error(self, message_text):
         message =QMessageBox()

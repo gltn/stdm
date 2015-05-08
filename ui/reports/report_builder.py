@@ -417,7 +417,7 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
             results = process_report_filter(self.tabName,columnList,filterStmnt,sortStmnt)           
            
         except sqlalchemy.exc.ProgrammingError,sqlalchemy.exc.DataError:
-            self.ErrorInfoMessage("The SQL statement is invalid!") 
+            self.ErrorInfoMessage(QApplication.translate("ReportBuilder","The SQL statement is invalid!"))
         
         return results       
    
@@ -440,14 +440,14 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
     def filter_verifyQuery(self):
         #Verify the query expression    
         if len(self.txtSqlParser.toPlainText())==0:
-            self.ErrorInfoMessage("No filter has been defined")
+            self.ErrorInfoMessage(QApplication.translate("ReportBuilder","No filter has been defined"))
             
         else:
             results = self.filter_buildQuery()
             
             if results != None:
                 resLen = results.rowcount
-                msg = "The SQL statement was successfully verified.\n" + str(resLen) + " record(s) returned."
+                msg = QApplication.translate("ReportBuilder","The SQL statement was successfully verified.\n %s record(s) returned.")%str(resLen)
                 self.InfoMessage(msg)
             
     def sorting_updateReportFields(self):
@@ -758,7 +758,7 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         
     def display_titleColor(self):
         #Shows the color dialog and set the title color
-        tColor=QColorDialog.getColor(Qt.darkBlue, self,"Select title color") 
+        tColor=QColorDialog.getColor(Qt.darkBlue, self,QApplication.translate("ReportBuilder","Select title color"))
         if tColor.isValid():
             tPalette=QPalette(tColor)            
             self.lblTitleClr.setPalette(tPalette)
@@ -866,7 +866,7 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
 
     def saveReportSettings(self,file):
         #Helper for saving user report settings to file
-        self.showhideProgressDialog("Saving Report Settings...")
+        self.showhideProgressDialog(QApplication.translate("ReportBuilder","Saving Report Settings..."))
         
         #Create report config object
         rptConfig = STDMReportConfig(self.tabName)
@@ -932,7 +932,7 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
             tabExists = self._tableExists(rptConf.table)
             #QMessageBox.information(self, "List of tables", str(rptConf.table))
             if tabExists:
-                self.showhideProgressDialog("Restoring Report Settings...")              
+                self.showhideProgressDialog(QApplication.translate("ReportBuilder","Restoring Report Settings..."))
                 #friendlyTabName = self.tabNames[rptConf.table]
                 friendlyTabName = rptConf.table
                 
@@ -1001,15 +1001,19 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
                 #Show message of invalid fields
                 if len(invalidRptFields) > 0:
                     fieldsStr = ",".join(invalidRptFields)
-                    self.ErrorInfoMessage(fieldsStr + " columns do not exist in the current table definition.\nThey will not be included in the report") 
+                    msg = QApplication.translate("ReportBuilder"," columns do not exist in the current table definition."
+                                                                                 "\nThey will not be included in the report")
+                    self.ErrorInfoMessage(fieldsStr + msg)
             else:
                 self.showhideProgressDialog("", False)
-                self.ErrorInfoMessage(rptConf.table + " table or view does not exist in the database")
+                msg = QApplication.translate("ReportBuilder"," table or view does not exist in the database")
+                self.ErrorInfoMessage(rptConf.table + msg)
         else:
             self.showhideProgressDialog("", False)
             fileName = str(file.section("/",-1))
-            self.ErrorInfoMessage(fileName + " is not a valid STDM Report Settings file.\n Please validate the" + \
-                                  " source of the file")
+            msg = QApplication.translate("ReportBuilder"," is not a valid STDM Report Settings file.\n "
+                                                                                    "Please validate the source of the file")
+            self.ErrorInfoMessage(fileName +msg )
         
         self.showhideProgressDialog("", False)
       
@@ -1028,13 +1032,15 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
   
     def saveReport(self):
         #Serialize user report settings to file
-        rptConfFile = QFileDialog.getSaveFileName(self,"STDM Report","","STDM Report(*.trs)")
+        rptConfFile = QFileDialog.getSaveFileName(self,QApplication.translate("ReportBuilder","STDM Report")
+                                                  ,"",QApplication.translate("ReportBuilder","STDM Report(*.trs)"))
         if rptConfFile != "":
             self.saveReportSettings(rptConfFile)     
           
     def loadReport(self):
         #Load previously saved report settings
-        rptConfFile = QFileDialog.getOpenFileName(self, "STDM Report","","STDM Report(*.trs)")
+        rptConfFile = QFileDialog.getOpenFileName(self, QApplication.translate("ReportBuilder","STDM Report"),
+                                                  "",QApplication.translate("ReportBuilder","STDM Report(*.trs)"))
         if rptConfFile != "":
             self.loadReportSettings(rptConfFile)
               
@@ -1047,12 +1053,13 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
             #Create query set
             tmpDir,qSet = createQuerySet(self.rptFields,dbResults,self.imageFields)        
             stdmRpt = STDMReport(qSet,self.rptElements)        
-            rptFile = QFileDialog.getSaveFileName(self,"STDM Report","","Report Document(*.pdf)")  
+            rptFile = QFileDialog.getSaveFileName(self,QApplication.translate("ReportBuilder","STDM Report"),
+                                                  "",QApplication.translate("ReportBuilder","Report Document(*.pdf)"))
                   
             if rptFile != "":            
                 rptGenerator=STDMGenerator(stdmRpt,rptFile)
                 rptGenerator.generateReport()            
-                if self.InfoMessage("The report has been successfully created and written to {0}".format(rptFile)) == QMessageBox.Open:
+                if self.InfoMessage(QApplication.translate("ReportBuilder","The report has been successfully created and written to '%s'")%rptFile) == QMessageBox.Open:
                     os.startfile(rptFile,'open')
                 self.close()
                 

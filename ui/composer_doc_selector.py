@@ -146,11 +146,11 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
                 filePathItem.setText(newTemplatePath)
                 
                 self.notifBar.insertInfoNotification(QApplication.translate("TemplateDocumentSelector", \
-                                                                         "'{0}' template has been successfully updated".format(docName)))
+                                                                         "'%s' template has been successfully updated")%docName)
                 
             else:
                 self.notifBar.insertErrorNotification(QApplication.translate("TemplateDocumentSelector", \
-                                                                         "Error: '{0}' template could not be updated".format(templateName)))
+                                                                         "Error: '%s' template could not be updated")%templateName)
             
     def onDeleteTemplate(self):
         """
@@ -168,9 +168,9 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
         result = QMessageBox.warning(self, QApplication.translate("TemplateDocumentSelector", \
                                                                          "Confirm delete"), 
                                      QApplication.translate("TemplateDocumentSelector", \
-                                                                         "Are you sure you want to delete '{0}' template?" \
+                                                                         "Are you sure you want to delete '%s' template?" \
                                                                          "This action cannot be undone.\nClick Yes to proceed " \
-                                                                         "or No to cancel.".format(templateName)), 
+                                                                         "or No to cancel.")%(templateName),
                                      QMessageBox.Yes|QMessageBox.No)
         
         if result == QMessageBox.No:
@@ -184,11 +184,11 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
             row = selectedDocNameIndices[0].row()
             self._docItemModel.removeRow(row)
             self.notifBar.insertInfoNotification(QApplication.translate("TemplateDocumentSelector", \
-                                                                         "'{0}' template has been successfully removed".format(templateName)))
+                                                                         "'%s' template has been successfully removed")%templateName)
         
         else:
             self.notifBar.insertErrorNotification(QApplication.translate("TemplateDocumentSelector", \
-                                                                         "Error: '{0}' template could not be removed".format(templateName)))
+                                                                         "Error: '%s' template could not be removed")%templateName)
     
     def onAccept(self):
         """
