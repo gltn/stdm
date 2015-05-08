@@ -26,6 +26,7 @@ from PyQt4.QtGui import *
 
 from qgis.core import *
 from qgis.gui import *
+#from data.pg_utils import delete_table_keys
 from ui import (loginDlg,
                 changePwdDlg,
                 manageAccountsDlg,
@@ -220,11 +221,13 @@ class STDMQGISLoader(object):
                 self.stdmTables = spatial_tables()
                 self.loadModules()
             except Exception as ex:
-                options = " This error is attributed to authentication " \
+                options = QApplication.translate("STDMQGISLoader"," This error is attributed to authentication " \
                           "/permission on modules or  duplicate keys for the named table(s)" \
                           "Remove content authorization for the modules or " \
-                          "deleted the modules with duplicate keys completely."
+                          "deleted the modules with duplicate keys completely.")
                 self.reset_content_modules_id(str(ex.message + options))
+            #:
+               # delete_table_keys()
 
     def loadModules(self):
         '''
@@ -997,7 +1000,7 @@ class STDMQGISLoader(object):
                                          QApplication.translate("STDMPlugin",
                                          "Unable to load the table columns in the browser, "
                                          "check if this table and columns exist in configuration file and"
-                                         " database: "))+str(ex.message)
+                                         " database: %s")%str(ex.message))
                 finally:
                     STDMDb.instance().session.rollback()
 
@@ -1016,6 +1019,8 @@ class STDMQGISLoader(object):
         self.stdmInitToolbar.removeAction(self.changePasswordAct)
         self.stdmInitToolbar.removeAction(self.wzdAct)
         self.loginAct.setEnabled(True)
+        self.stdmInitToolbar.removeAction(self.spatialLayerManager)
+        self.spatialLayerMangerActivate()
         self.logoutCleanUp()
         self.initMenuItems()
 
@@ -1028,7 +1033,6 @@ class STDMQGISLoader(object):
         for layer in mapLayers:
             if self.isSTDMLayer(layer):
                 QgsMapLayerRegistry.instance().removeMapLayer(layer.id())
-
         self.stdmTables = []
 
     def logoutCleanUp(self):
@@ -1075,10 +1079,6 @@ class STDMQGISLoader(object):
             profile = str(default[0])
         moduleList = handler.tableNames(profile)
         moduleList.extend(handler.lookupTable())
-        # moduleList.append('enumerator')
-        # moduleList.append('respondent')
-        # moduleList.append('witness')
-        # moduleList.append('priority')
         self.pgTableMapper(moduleList)
         if 'spatial_unit' in moduleList:
             moduleList.remove('spatial_unit')
@@ -1103,8 +1103,8 @@ class STDMQGISLoader(object):
         message =QMessageBox()
         message.setWindowTitle(QApplication.translate("STDMQGISLoader", u"Error Loading Modules"))
         message.setText(message_text)
-        message.setStandardButtons(QMessageBox.Ok| QMessageBox.Reset)
-        return  message.exec_()
+        message.setStandardButtons(QMessageBox.Ok)
+        return message.exec_()
 
     def spatialLayerMangerActivate(self):
         if self.spatialLayerMangerDockWidget.isVisible():

@@ -712,7 +712,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 self.templatePath()
         except IOError as io:
             QMessageBox.information(self,
-                                    QApplication.translate("WorkspaceLoader",u"Directory Error",str(io.message)))
+                                    QApplication.translate("WorkspaceLoader",u"Directory Error ")+str(io.message))
     
     def pathSettings(self):
         """
@@ -731,9 +731,10 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def settingsPath(self):
         try:
             dir_name = self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",\
-                        "Select a directory for configuration Settings",\
-                                        str(self.txtSetting.text())))
+                        "Select a directory for configuration Settings")+
+                                        str(self.txtSetting.text()))
             dirPath=dir_name[0]
+            self.tableHandler.check_config_version(dirPath)
             self.txtSetting.setText(dirPath)
             self.setWorkingDataPath(dirPath)
             self.certificatePath(dirPath)
@@ -742,11 +743,11 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             pass
         
     def defWorkDir(self):
-        dir_name=None
+        dir_name = None
         try:
             dir_name=self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",
-                                        "Select a directory for STDM data",\
-                                        str(self.txtDefaultFolder.text())))
+                                        "Select a directory for STDM data"),
+                                        str(self.txtDefaultFolder.text()))
             dirPath=dir_name[0]
             self.setWorkingDataPath(dirPath)
             self.certificatePath(dirPath)
@@ -770,8 +771,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def setCertificatePath(self):
         try:
             dir_name = self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",
-                                            "Select a directory for saving Reports",\
-                                              str(self.txtCertFolder.text())))
+                                            "Select a directory for saving Reports "),
+                                              str(self.txtCertFolder.text()))
             self.txtCertFolder.setText(str(dir_name[0]))
         except:
             pass
@@ -779,8 +780,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def setTemplatesPath(self):
         try:
             dir_name=self.openDirectoryChooser(QApplication.translate("WorkspaceLoader",
-                                    "Select a directory for saving templates",\
-                                    str(self.txtCertFolder.text())))
+                                    "Select a directory for saving templates"),
+                                    str(self.txtCertFolder.text()))
             self.txtTemplates.setText(str(dir_name[0]))
         except:
             pass

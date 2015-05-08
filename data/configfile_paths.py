@@ -22,9 +22,9 @@
 import os
 import shutil
 import platform
-
+import filecmp
 from stdm.utils import PLUGIN_DIR
-from PyQt4.QtGui import QMessageBox
+from PyQt4.QtGui import QApplication, QMessageBox
 FILE="stdmConfig.xml"
 LICENSE="LICENSE.txt"
 HTML="stdm_schema.html"
@@ -48,7 +48,6 @@ class FilePaths(object):
         self.config = RegistryConfig()
         self.checkPreviousSetting()
 
-    
     def checkPreviousSetting(self):    
         self.defaultConfigPath()
         try:
@@ -123,16 +122,43 @@ class FilePaths(object):
     def userConfigPath(self,path=None):
         #Copy template files to the user directory
         try:
-            for fileN in [FILE,HTML,SQL]:
+            #self.compare_config_version(FILE)
+            for fileN in [FILE, HTML, SQL]:
                 if not os.path.isfile(path+'/%s'%fileN):
                     baseFile = self.baseDir +'/%s'%fileN
                     shutil.copy(baseFile,self.userPath)
-            if not os.path.isfile(self.cacheFile()):
-                shutil.copy(self.setUserXMLFile(), self.cacheDir())
             self.localFontPath(path)
         except IOError as io:
             raise io
-    
+
+    def compare_config_version(self, path = None):
+        """
+        Method to check the version of the two files being copied and return the latest one
+        :param newfile: QFile
+        :return: QFile
+        """
+        if not path:
+            path = self.userPath
+        else:
+            path = path
+        base_file = self.baseSQLPath()
+        user_file = path +'/%s'%FILE
+        if os.path.isfile(user_file):
+            if QMessageBox.warning(None, QApplication.translate("FilePaths","User configuration found"),QApplication.translate("FilePaths","Wizard detected configuration exist in the current directory. \n"
+                                               "Do you want to overwrite the existing config?"),QMessageBox.Yes| QMessageBox.No) == QMessageBox.Yes:
+                if filecmp.cmp(base_file, user_file, shallow=False):
+                    pass
+                else:
+                    os.remove(user_file)
+                    shutil.copy(base_file, self.userPath)
+            else:
+                QMessageBox.information(None, QApplication.translate("FilePaths","Configuration Exist"), QApplication.translate("FilePaths","Existing configuration retained"))
+        else:
+            shutil.copy(base_file,user_file)
+        self.createBackup()
+        if not os.path.isfile(self.cacheFile()):
+                shutil.copy(self.setUserXMLFile(), self.cacheDir())
+
     def localFontPath(self, path):
         """ Create a path where fonts will be stored"""
         fontPath=None
