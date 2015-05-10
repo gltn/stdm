@@ -144,15 +144,19 @@ class FilePaths(object):
         base_file = self.baseSQLPath()
         user_file = path +'/%s'%FILE
         if os.path.isfile(user_file):
-            if QMessageBox.warning(None, QApplication.translate("FilePaths","User configuration found"),QApplication.translate("FilePaths","Wizard detected configuration exist in the current directory. \n"
-                                               "Do you want to overwrite the existing config?"),QMessageBox.Yes| QMessageBox.No) == QMessageBox.Yes:
+            if QMessageBox.warning(None, QApplication.translate("FilePaths","User configuration found"),
+                                   QApplication.translate("FilePaths",
+                                                "Wizard detected configuration exist in the current directory."
+                                                "\nDo you want to overwrite the existing config?"),
+                                   QMessageBox.Yes| QMessageBox.No) == QMessageBox.Yes:
                 if filecmp.cmp(base_file, user_file, shallow=False):
                     pass
                 else:
                     os.remove(user_file)
                     shutil.copy(base_file, self.userPath)
             else:
-                QMessageBox.information(None, QApplication.translate("FilePaths","Configuration Exist"), QApplication.translate("FilePaths","Existing configuration retained"))
+                QMessageBox.information(None, QApplication.translate("FilePaths","Configuration Exist"),
+                                        QApplication.translate("FilePaths","Existing configuration retained"))
         else:
             shutil.copy(base_file,user_file)
         self.createBackup()
