@@ -127,6 +127,8 @@ class FilePaths(object):
                 if not os.path.isfile(path+'/%s'%fileN):
                     baseFile = self.baseDir +'/%s'%fileN
                     shutil.copy(baseFile,self.userPath)
+                if not os.path.isfile(self.cacheFile()):
+                    self.createBackup()
             self.localFontPath(path)
         except IOError as io:
             raise io
@@ -160,8 +162,6 @@ class FilePaths(object):
         else:
             shutil.copy(base_file,user_file)
         self.createBackup()
-        if not os.path.isfile(self.cacheFile()):
-                shutil.copy(self.setUserXMLFile(), self.cacheDir())
 
     def localFontPath(self, path):
         """ Create a path where fonts will be stored"""

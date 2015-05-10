@@ -463,29 +463,29 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             
     def deleteTableColumn(self):
         '''ensure we deleted the selected table column only by matching name entry in the config'''
-        try:
-            if self.warningInfo(QApplication.translate('WorkspaceLoader',\
-                                                       "You are about to delete selected column from table (%)"
-                                                       )%self.tableName) == QMessageBox.Yes:
-                selCols=self.tblEdit.selectionModel().selectedIndexes() 
-                if len(selCols)>0:
-                    item = selCols[0].data()
-                    element = "columns"
-                    if str(self.tableName).startswith('check'):
-                        deleteColumn(self.profile,'lookup',self.tableName,element,'name',str(item))
-                        self.lookupColumnsTowidget(self.tableName)
-                    else:
-                        deleteColumn(self.profile,'table',self.tableName,element,'name',str(item))
-                        try:
-                            deleteColumn(self.profile,'table',self.tableName,'constraints','column',str(item))
-                        except Exception as ex:
-                            self.ErrorInfoMessage(str(ex.message))
-                        self.loadTableColumns(self.tableName)
-            else:
-                return
-        except:
-            self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","Unable to delete table"))
+        #try:
+        if self.warningInfo(QApplication.translate('WorkspaceLoader',\
+                                                   "You are about to delete selected column from table (%s)"
+                                                   )%self.tableName) == QMessageBox.Yes:
+            selCols=self.tblEdit.selectionModel().selectedIndexes()
+            if len(selCols)>0:
+                item = selCols[0].data()
+                element = "columns"
+                if str(self.tableName).startswith('check'):
+                    deleteColumn(self.profile,'lookup',self.tableName,element,'name',str(item))
+                    self.lookupColumnsTowidget(self.tableName)
+                else:
+                    deleteColumn(self.profile,'table',self.tableName,element,'name',str(item))
+                    try:
+                        deleteColumn(self.profile,'table',self.tableName,'constraints','column',str(item))
+                    except Exception as ex:
+                        self.ErrorInfoMessage(str(ex.message))
+                    self.loadTableColumns(self.tableName)
+        else:
             return
+        #except:
+         #   self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","Unable to delete table"))
+         #   return
     
     def deleteTableRelation(self):
         '''delete defined table relation from the config '''
