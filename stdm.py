@@ -974,10 +974,11 @@ class STDMQGISLoader(object):
             self.viewSTRWin = None
 
         # Remove properly Spatial Unit Manager
-        if self.spatialLayerMangerDockWidget != None:
-            self.spatialLayerMangerDockWidget.hide()
-        else:
-            pass
+        self.spatialLayerMangerDockWidget.hide()
+        # if self.spatialLayerMangerDockWidget:
+        #     self.spatialLayerMangerDockWidget.hide()
+        # else:
+        #     pass
 
     def configTables(self):
         '''
