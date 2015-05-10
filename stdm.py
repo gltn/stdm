@@ -203,17 +203,7 @@ class STDMQGISLoader(object):
             self.stdmInitToolbar.insertAction(self.loginAct,self.changePasswordAct)
 
             self.loginAct.setEnabled(False)   
-            
-            #Get STDM spatial tables
-            # self.stdmTables = spatial_tables()
-            # self.spatial_layers = []
-            # for lyr in self.stdmTables:
-            #    self.spatial_layer = vector_layer(lyr)
-            #    self.spatial_layer_type = geometryType(lyr,"the_geom")
-            #    #self.layer_type = self.spatial_layer.geometryType()
-            #    self.spatial_layers.append(self.spatial_layer_type)
-            # self.layers = str(self.spatial_layers)
-            # QMessageBox.information(self.iface.mainWindow(),"Title", self.layers)
+
             #self.loadModules()
             #resetContentRoles()
             try:
@@ -982,6 +972,12 @@ class STDMQGISLoader(object):
         if self.viewSTRWin != None:
             del self.viewSTRWin
             self.viewSTRWin = None
+
+        # Remove properly Spatial Unit Manager
+        if self.spatialLayerMangerDockWidget != None:
+            self.spatialLayerMangerDockWidget.hide()
+        else:
+            pass
 
     def configTables(self):
         '''

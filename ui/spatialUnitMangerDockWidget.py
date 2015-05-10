@@ -28,6 +28,7 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from qgis.core import *
 from ui_edit_stdm_layer import Ui_SpatialUnitManagerWidget
+from gps_tool_GUI import GPSToolDialog
 from ..data import (
     spatial_tables,
     table_column_names,
@@ -54,6 +55,7 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         self.setupUi(self)
         self._populate_layers()
         self.iface = iface
+        self.gps_tool_dialog = GPSToolDialog(self.iface.mainWindow())
 
 
     def _populate_layers(self):
@@ -92,7 +94,7 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         '''
         if self.stdm_layers_combo.count() == 0:
             #Return message that there are no layers
-            QMessageBox.warning(None,"No Laers")
+            QMessageBox.warning(None,"No Layers")
 
         sp_col_info= self.stdm_layers_combo.itemData(self.stdm_layers_combo.currentIndex())
         if sp_col_info is None:
@@ -135,3 +137,16 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
                     write_changed_display_name(_name, display_name)
                 elif not ok and display_name == "":
                     layer.originalName()
+            else:
+                continue
+
+    @pyqtSignature("")
+    def on_import_gpx_file_button_clicked(self):
+        """
+        Method to load GPS dialog
+        """
+        layer_map = QgsMapLayerRegistry.instance().mapLayers()
+        if not bool(layer_map):
+            QMessageBox.warning(None,"STDM","You must add a layer first, from Spatial Unit Manager to import GPX to")
+        elif bool(layer_map):
+            self.gps_tool_dialog.show()
