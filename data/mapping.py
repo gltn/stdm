@@ -127,7 +127,8 @@ class _AttributeMapper(object):
         The handler is responsible for adapting Qt and Python types as expected
         and defined by the model.
         '''
-        if hasattr(self._model,self._attrName):
+
+        if hasattr(self._model, self._attrName):
             controlValue = self._valueHandler.value()
             setattr(self._model,self._attrName,controlValue)
     
@@ -334,7 +335,7 @@ class MapperMixin(object):
             if attrMapper.isMandatory() and attrMapper.valueHandler().supportsMandatory():
                 if attrMapper.valueHandler().value() == attrMapper.valueHandler().default():
                     #Notify user
-                    msg = "{0} is a required field.".format(attrMapper.pseudoName())
+                    msg = QApplication.translate("MappedDialog","(%s) is a required field.")%str(attrMapper.pseudoName())
                     self._notifBar.insertWarningNotification(msg)
                     isValid = False
                 else:
@@ -364,8 +365,7 @@ class MapperMixin(object):
         if isinstance(self, QDialog):
             self.postSaveUpdate(self._model)
             self.accept()
-        
-                
+
 class _QgsFeatureAttributeMapper(_AttributeMapper):
     '''
     Manages a single instance of the mapping between a QgsFeature attribute and the corresponding UI widget.
@@ -382,7 +382,7 @@ class _QgsFeatureAttributeMapper(_AttributeMapper):
         except KeyError:
             #If the field is not found then log the message into the console.
             QgsMessageLog.logMessage(QApplication.translate("QgsFeatureAttributeMapper", \
-                                                            "Attribute name '{0}' not found.".format(self._attrName)), \
+                                                            "Attribute name '%s' not found.")%str(self._attrName), \
                                      QgsMessageLog.CRITICAL)
 
     def bindModel(self):
@@ -395,8 +395,8 @@ class _QgsFeatureAttributeMapper(_AttributeMapper):
         except KeyError:
             #If the field is not found then log the message into the console.
             QgsMessageLog.logMessage(QApplication.translate("QgsFeatureAttributeMapper", \
-                                                            "Attribute index '{0}' not found.".format(str(self._attrName))), \
-                                     level = QgsMessageLog.CRITICAL)
+                                                            "Attribute index '%s' not found.")
+                                     %str(self._attrName),level = QgsMessageLog.CRITICAL)
             
 class QgsFeatureMapperMixin(MapperMixin):
     '''
@@ -465,10 +465,6 @@ class QgsFeatureMapperMixin(MapperMixin):
     
     
     
-        
-        
-        
-        
         
         
         

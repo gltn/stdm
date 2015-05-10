@@ -232,4 +232,6 @@ class ConfigTableReader(object):
     
     def trackXMLChanges(self):
         self.fileHandler.createBackup()
-    
+
+    def check_config_version(self, path):
+        self.fileHandler.compare_config_version(path)

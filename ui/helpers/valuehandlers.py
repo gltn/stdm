@@ -214,9 +214,17 @@ class ForeignKeyMapperValueHandler(ControlValueHandler):
     
     def setValue(self,value):
         self.control.setEntities(value)
-    
+
+    def default(self):
+        return None
+
     def supportsMandatory(self):
+
         return True
+
+
+
+
 
     
 ForeignKeyMapperValueHandler.register()

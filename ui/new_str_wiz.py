@@ -58,7 +58,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         
         self.initSTRType()
        
-        #self.initEnjoymentRight()
+        self.init_document_type()
         
         self.initSourceDocument()
         
@@ -133,31 +133,36 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         '''
         Initialize 'Social Tenure Relationship' GUI controls
         '''
-        pty=Table('check_social_tenure_type',Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
-        session=STDMDb.instance().session
-        strTypeFormatter =session.query(pty.c.value).all()
+        # pty=Table('check_social_tenure_type',Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
+        # session=STDMDb.instance().session
+        person = self.mapping.tableMapping('check_social_tenure_type')
+        Person = person()
+        strTypeFormatter =Person.queryObject().all()
         strType=[str(ids[0]) for ids in strTypeFormatter]
-        
-        self.cboSTRType.insertItems(0,strType)
         strType.insert(0, " ")
+        self.cboSTRType.insertItems(0,strType)
+
         self.cboSTRType.setCurrentIndex(-1)
-        #loadComboSelections(self.cboSTRType, CheckSocialTenureRelationship) 
         
         self.notifSTR = NotificationBar(self.vlSTRTypeNotif)
         
         #Register STR selection field
         self.frmWizSTRType.registerField("STR_Type",self.cboSTRType)
     
-    def initEnjoymentRight(self):
+    def init_document_type(self):
         '''
         Initialize 'Right of Enjoyment' GUI controls
         '''
-        self.dtReceivingDate.setMaximumDate(QDate.currentDate())
-        
-        #loadComboSelections(self.cboInheritanceType, CheckInheritanceType) 
-        #loadComboSelections(self.cboDeadAlive, CheckDeadAlive) 
-        
-        self.notifEnjoyment = NotificationBar(self.vlEnjoymentNotif)
+        #self.dtReceivingDate.setMaximumDate(QDate.currentDate())
+        doc_type_model = self.mapping.tableMapping('check_document_type')
+        Docs = doc_type_model()
+        doc_type_list = Docs.queryObject().all()
+        doc_types = [doc.value for doc in doc_type_list]
+        doc_types.insert(0," ")
+        self.cboDocType.insertItems(0,doc_types)
+        self.cboDocType.setCurrentIndex(-1)
+
+        self.vlSourceDocNotif = NotificationBar(self.vlSourceDocNotif)
         
     def initSourceDocument(self):
         '''
@@ -237,9 +242,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         #Check the source documents based on the type of property
         #if self.rbPrivateProperty.isChecked():
         srcDocMapping = self.sourceDocManager.attributeMapping()
-        QMessageBox.information(self, 
-                QApplication.translate("CustomFormDialog", "Document Mapping"), str(srcDocMapping))
-            
+
         summaryTreeLoader.addCollection(srcDocMapping, QApplication.translate("newSTRWiz","Source Documents"), 
                                              ":/plugins/stdm/images/icons/attachment.png") 
       
@@ -283,12 +286,15 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         #Validate source document    
         if currPageIndex == 4:
-            pass
-          #  isValid = self.validateSourceDocuments()
-            
+            currIndex = self.cboDocType.currentIndex()
+            if currIndex ==-1:
+                msg = QApplication.translate("newSTRWiz",
+                                                 "Please select document type from the list")
+                self.notifSourceDoc.clear()
+                self.notifSourceDoc.insertErrorNotification(msg)
+
         if currPageIndex == 5:
             isValid = self.onCreateSTR()
-        
         return isValid
     
     def onCreateSTR(self):

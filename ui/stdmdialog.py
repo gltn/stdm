@@ -53,16 +53,28 @@ class DeclareMapping(object):
         Method to convert a list of table to mapped table object
         :return Mapper calass
         """
-        #Base.metadata.reflect(STDMDb.instance().engine)
         for table in tablist:
-            class_object = self.pythonize_tablename(table)
+
             try:
-                pgtable = Table(table, Base.metadata, autoload=True, autoload_with=STDMDb.instance().engine)
-                mapper(class_object, pgtable)
-                self.table_property(pgtable)
-                self._mapping[table] = class_object
+                self.mapper_for_table(table)
             except:
                 pass
+        Base.metadata.reflect(STDMDb.instance().engine)
+
+    def mapper_for_table(self, table):
+        """
+        Create a slqalchamey table mapping from the table name
+        :param table: string
+        :return: table: slqalchemy table model
+        """
+        try:
+            class_object = self.pythonize_tablename(table)
+            mapper_table = Table(table, Base.metadata, autoload=True, autoload_with=STDMDb.instance().engine)
+            mapper(class_object, mapper_table)
+            self._mapping[table] = class_object
+            self.table_property(mapper_table)
+        except:
+            return None
 
     def pythonize_tablename(self, table):
         """
@@ -84,10 +96,16 @@ class DeclareMapping(object):
         self.table_columns_metadata(reflectedtab)
 
     def tableMapping(self, table):
-        if table in self._mapping:
-            modelCls = self._mapping[table]
-            Model.attrTranslations = self.displayMapping(table)
-            return modelCls
+        """
+        Method to ensure accessor for table finds it well formatted into a sqlalchemy model
+        :param table:
+        :return: reflected table : sqlalchemy table class
+        """
+        if table not in self._mapping:
+            self.mapper_for_table(table)
+        model_cls = self._mapping[table]
+        Model.attrTranslations = self.displayMapping(table)
+        return model_cls
 
     def displayMapping(self, table= None):
         """

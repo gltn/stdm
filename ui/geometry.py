@@ -33,10 +33,10 @@ class GeometryProperty(QDialog):
         
         #add control to the dialog
         self.label = QLabel()
-        self.label.setText("Select Geometry Type")
+        self.label.setText(QApplication.translate("GeometryProperty","Select Geometry Type"))
         self.comboField = QComboBox()
         self.sridButton = QPushButton()
-        self.sridButton.setText("Select Coordinate System ")
+        self.sridButton.setText(QApplication.translate("GeometryProperty","Select Coordinate System "))
         self.textField = QLineEdit()
 
         setCollectiontypes(geometry_collections, self.comboField)
@@ -53,7 +53,7 @@ class GeometryProperty(QDialog):
         layout.addWidget(self.textField)
         layout.addWidget(self.buttons)
         self.setLayout(layout)
-        self.setWindowTitle("Geometry Column Property")
+        self.setWindowTitle(QApplication.translate("GeometryProperty","Geometry Column Property"))
         
         self.buttons.accepted.connect(self.setGeometrySetting)
         self.buttons.rejected.connect(self.cancel)
