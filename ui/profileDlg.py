@@ -44,10 +44,10 @@ class ProfileEditor(QDialog, Ui_Profile):
     def writeProfile(self):
         '''add new profile to the configuration file'''
         if self.txtProfile.text() == str(checkProfile(self.txtProfile.text())):
-            self.ErrorInfoMessage(QApplication.translate("TableEditor","Profile already exist"))
+            self.ErrorInfoMessage(QApplication.translate("ProfileEditor","Profile already exist"))
             return
         if self.profile_formater() == str(checkProfile(self.profile_formater())):
-            self.ErrorInfoMessage(QApplication.translate("TableEditor","Profile already exist"))
+            self.ErrorInfoMessage(QApplication.translate("ProfileEditor","Profile already exist"))
             return
         if self.profile_formater() != str(checkProfile(self.profile_formater())).lower():
             profileData = {}
@@ -58,7 +58,7 @@ class ProfileEditor(QDialog, Ui_Profile):
     def accept(self):
         '''listen to user action on the dialog'''
         if self.txtProfile.text() == '':
-            self.ErrorInfoMessage(QApplication.translate("TableEditor","Profile name is not given"))
+            self.ErrorInfoMessage(QApplication.translate("ProfileEditor","Profile name is not given"))
             return
         self.writeProfile()
         self.close()

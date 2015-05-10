@@ -32,7 +32,6 @@ try:
     xmlobject = FilePaths()
     #doc = xmlobject.XMLFile()
     xml_doc = xmlobject.setUserXMLFile()
-    #xml_doc="C:/Users/SOLOMON/.stdm/stdmConfig.xml"
     html_doc = xmlobject.HtmlFile()
 except:
     pass
