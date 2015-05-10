@@ -55,7 +55,7 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         self.setupUi(self)
         self._populate_layers()
         self.iface = iface
-        self.gps_tool_dialog = GPSToolDialog(self.iface.mainWindow())
+        self.gps_tool_dialog = GPSToolDialog(self.iface)
 
     def _populate_layers(self):
         self.stdm_layers_combo.clear()
