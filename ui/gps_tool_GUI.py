@@ -1,6 +1,7 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
+from qgis.gui import *
 from ui_gps_tool import Ui_Dialog
 from osgeo import ogr
 from ..utils import util
@@ -8,9 +9,10 @@ from gpx_table import GPXTableDialog
 
 class GPSToolDialog(QDialog, Ui_Dialog):
 
-    def __init__(self, parent):
-        QDialog.__init__(self, parent)
+    def __init__(self, iface):
+        QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
+        self.iface = iface
         self.button_ok = self.buttonBox.button(QDialogButtonBox.Ok)
         self.button_cancel = self.buttonBox.button(QDialogButtonBox.Close)
         self.rd_button_group = QButtonGroup()
@@ -19,8 +21,7 @@ class GPSToolDialog(QDialog, Ui_Dialog):
         self.rd_button_group.addButton(self.rd_gpx_routes)
         self.rd_list = [self.rd_gpx_waypoints, self.rd_gpx_tracks, self.rd_gpx_routes]
         self.button_ok.setEnabled(False)
-        self.iface = parent
-        self.gpx_table = GPXTableDialog(parent)
+        self.gpx_table = GPXTableDialog(self.iface)
         self.layer_gpx = None
         self.selected_rd_btn = None
 
@@ -81,6 +82,9 @@ class GPSToolDialog(QDialog, Ui_Dialog):
                         lat, lon, ele = row.GetGeometryRef().GetPoint()
                         item_lat = QTableWidgetItem(str(lat))
                         item_lon = QTableWidgetItem(str(lon))
+
+                        vertex_marker = QgsVertexMarker(self.iface.mapCanvas())
+                        vertex_marker.setCenter(QgsPoint(lat, lon))
 
                         # Center checkbox item
                         chk_bx_widget = QWidget()
