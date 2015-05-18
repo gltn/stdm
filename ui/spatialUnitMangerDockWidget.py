@@ -23,12 +23,12 @@
 
 import os
 
-from PyQt4 import  uic
+from PyQt4 import uic
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from qgis.core import *
 from ui_edit_stdm_layer import Ui_SpatialUnitManagerWidget
-from gps_tool_GUI import GPSToolDialog
+from gps_tool import GPSToolDialog
 from ..data import (
     spatial_tables,
     table_column_names,
