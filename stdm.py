@@ -98,6 +98,7 @@ class STDMQGISLoader(object):
 
         # STDM Tables
         self.stdmTables = []
+        self.spatialLayerMangerDockWidget = None
 
     def initGui(self):
         # Initial actions on starting up the application
@@ -1010,7 +1011,7 @@ class STDMQGISLoader(object):
         self.stdmInitToolbar.removeAction(self.wzdAct)
         self.loginAct.setEnabled(True)
         self.stdmInitToolbar.removeAction(self.spatialLayerManager)
-
+        # self.spatialLayerMangerActivate()
         self.logoutCleanUp()
         self.initMenuItems()
 
@@ -1051,22 +1052,17 @@ class STDMQGISLoader(object):
             self.iface.removeDockWidget(self.propManageWindow)
             del self.propManageWindow
             self.propManageWindow = None
-            #Delete spatial unit manager
-        try:
-            self.spatialLayerMangerActivate()
-        except:
-            pass
+
         #Reset View STR Window
         if self.viewSTRWin != None:
             del self.viewSTRWin
             self.viewSTRWin = None
 
         # Remove properly Spatial Unit Manager
-        self.spatialLayerMangerDockWidget.hide()
-        # if self.spatialLayerMangerDockWidget:
-        #     self.spatialLayerMangerDockWidget.hide()
-        # else:
-        #     pass
+        if self.spatialLayerMangerDockWidget:
+            self.spatialLayerMangerDockWidget.close()
+
+        self.spatialLayerMangerDockWidget = None
 
     def configTables(self):
         '''
