@@ -92,7 +92,7 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         '''
         if self.stdm_layers_combo.count() == 0:
             #Return message that there are no layers
-            QMessageBox.warning(None,"No Laers")
+            QMessageBox.warning(None,"No Layers")
 
         sp_col_info= self.stdm_layers_combo.itemData(self.stdm_layers_combo.currentIndex())
         if sp_col_info is None:

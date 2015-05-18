@@ -98,7 +98,7 @@ class CustomFormDialog(MapperDialog, MapperMixin):
             widget.setOptions(widgetOptions)
         except Exception as ex:
             QMessageBox.information(self, QApplication.translate("CustomFormDialog", "Loading lookup"),
-                                    QApplication.translate("CustomFormDialog","Error loading lookup values: %s")%str(ex.message))
+                                    QApplication.translate("CustomFormDialog","Error loading lookup values: %s")%ex.message)
     def control_widget(self, prop):
         """
         Add controls to the form and controls options for lookup choices
@@ -131,5 +131,5 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         Set the dialog title from the model name
         :return: string
         """
-        self.setWindowTitle(QApplication.translate("CustomFormDialog", "%s Entity Editor")%str(self._table))
+        self.setWindowTitle(QApplication.translate("CustomFormDialog", self._table + " Entity Editor"))
 
