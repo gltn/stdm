@@ -1020,7 +1020,7 @@ class STDMQGISLoader(object):
         self.stdmInitToolbar.removeAction(self.wzdAct)
         self.loginAct.setEnabled(True)
         self.stdmInitToolbar.removeAction(self.spatialLayerManager)
-        self.spatialLayerMangerActivate()
+
         self.logoutCleanUp()
         self.initMenuItems()
 
@@ -1061,7 +1061,11 @@ class STDMQGISLoader(object):
             self.iface.removeDockWidget(self.propManageWindow)
             del self.propManageWindow
             self.propManageWindow = None
-
+            #Delete spatial unit manager
+        try:
+            self.spatialLayerMangerActivate()
+        except:
+            pass
         #Reset View STR Window
         if self.viewSTRWin != None:
             del self.viewSTRWin

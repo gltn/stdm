@@ -138,7 +138,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         person = self.mapping.tableMapping('check_social_tenure_type')
         Person = person()
         strTypeFormatter =Person.queryObject().all()
-        strType=[str(ids[0]) for ids in strTypeFormatter]
+        strType=[ids.value for ids in strTypeFormatter]
         strType.insert(0, " ")
         self.cboSTRType.insertItems(0,strType)
 
