@@ -318,7 +318,8 @@ def write_changed_display_name(current_layer_name, changed_layer_name):
     root = tree.getroot()
 
     for display_name in root.findall('display_names/display_name'):
-        if display_name.get("layer_name") == current_layer_name:
+        # if display_name.get("layer_name") == current_layer_name:
+        if display_name.text == current_layer_name:
             display_name.text = changed_layer_name
             tree = Elt.ElementTree(root)
             tree.write(xml_doc,encoding='utf-8',xml_declaration=True)
