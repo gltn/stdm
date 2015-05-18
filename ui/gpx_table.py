@@ -147,7 +147,7 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
         elif item.checkState() == Qt.Unchecked:
             for row, vertex_layertyp_state in self.vertex_dict.iteritems():
                 if row == item.row():
-                    vertex_layertyp_state[0].setColor(QColor(255, 0, 0))
+                    vertex_layertyp_state.setColor(QColor(255, 0, 0))
                     self.map_canvas.refresh()
 
 
