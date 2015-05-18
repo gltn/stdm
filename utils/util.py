@@ -25,11 +25,14 @@ from collections import OrderedDict
 
 from PyQt4.QtCore import (
                           QDir,
-                          Qt
+                          Qt,
+                           QSettings,
+                           QFileInfo
                           )
-from PyQt4.QtGui import QPixmap
+from PyQt4.QtGui import QPixmap, QFileDialog, QDialog
 
 from stdm.settings import RegistryConfig
+from qgis.gui import QgsEncodingFileDialog
 
 PLUGIN_DIR = os.path.abspath(os.path.join(os.path.dirname( __file__ ), os.path.pardir)).replace("\\", "/")
 CURRENCY_CODE = "" #TODO: Put in the registry
@@ -265,33 +268,18 @@ def documentTemplates():
         
     return docTemplates
         
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-     
-
-
-    
+def openDialog( parent, filtering="GPX (*.gpx)", dialogMode="SingleFile"):
+    settings = QSettings()
+    dirName = settings.value( "/UI/lastShapefileDir" )
+    encode = settings.value( "/UI/encoding" )
+    fileDialog = QgsEncodingFileDialog( parent, "Save output file", dirName, filtering, encode )
+    fileDialog.setFileMode( QFileDialog.ExistingFiles )
+    fileDialog.setAcceptMode( QFileDialog.AcceptOpen )
+    if not fileDialog.exec_() == QDialog.Accepted:
+            return None, None
+    files = fileDialog.selectedFiles()
+    settings.setValue("/UI/lastShapefileDir", QFileInfo( unicode( files[0] ) ).absolutePath() )
+    if dialogMode == "SingleFile":
+      return ( unicode( files[0] ), unicode( fileDialog.encoding() ) )
+    else:
+      return ( files, unicode( fileDialog.encoding() ) )
