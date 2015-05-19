@@ -153,7 +153,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         '''
         Initialize 'Right of Enjoyment' GUI controls
         '''
-        #self.dtReceivingDate.setMaximumDate(QDate.currentDate())
         doc_type_model = self.mapping.tableMapping('check_document_type')
         Docs = doc_type_model()
         doc_type_list = Docs.queryObject().all()
