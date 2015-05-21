@@ -186,17 +186,21 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         self.stackedWidget.addWidget(fnWidg)
         
         #Add Layout Tree Node (Under Elements parent node)
-        elNode=self.trRptSettings.findItems("Elements",Qt.MatchExactly,0)[0]
-        layoutNode = QTreeWidgetItem(["Layout"])
-        elNode.addChild(layoutNode)
+        try:
+            elNode=self.trRptSettings.findItems("Elements",Qt.MatchExactly,0)[0]
+            layoutNode = QTreeWidgetItem(["Layout"])
+            elNode.addChild(layoutNode)
+
         
-        #Add Layout Widget
-        layoutWidg = ReportLayout("Layout")
-        self.stackedWidget.addWidget(layoutWidg)
-        
-        #Select the first item in the tree view    
-        titleNode=elNode.child(0)
-        titleNode.setSelected(True)
+            #Add Layout Widget
+            layoutWidg = ReportLayout("Layout")
+            self.stackedWidget.addWidget(layoutWidg)
+
+            #Select the first item in the tree view
+            titleNode=elNode.child(0)
+            titleNode.setSelected(True)
+        except:
+            pass
 
     def resetControls(self):
         #Reset widgets
@@ -703,18 +707,22 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
                                         
     def display_updateReportFields(self):
         #Update tree fields list in the display section
-        trFields=self.trRptSettings.findItems("Fields",Qt.MatchExactly,0)[0]
-        #Check if a report item has been added into the list or not    
-        for f in self.rptFields:      
-            rWidg=self.display_getChildNode("Fields", f)
-            if rWidg==None:                
-                tr=QTreeWidgetItem([f])
-                trFields.addChild(tr)
-                #Add settings widget as well
-                self.display_addFieldWidget(f)
-        #Clean up the field tree items and associated widgets
-        self.display_cleanUpFieldsList()
-            
+        try:
+            trFields=self.trRptSettings.findItems("Fields",Qt.MatchExactly,0)[0]
+            #Check if a report item has been added into the list or not
+            for f in self.rptFields:
+                rWidg=self.display_getChildNode("Fields", f)
+                if rWidg==None:
+                    tr=QTreeWidgetItem([f])
+                    trFields.addChild(tr)
+                    #Add settings widget as well
+                    self.display_addFieldWidget(f)
+            #Clean up the field tree items and associated widgets
+            self.display_cleanUpFieldsList()
+        except Exception as ex:
+            pass
+            #QApplication.translate("Report Builder","")
+
     def display_cleanUpFieldsList(self):
         #Remove items from the fields tree node that are no longer applicable
         trFields=self.trRptSettings.findItems("Fields",Qt.MatchExactly,0)[0]
