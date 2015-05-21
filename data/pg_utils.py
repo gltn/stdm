@@ -146,7 +146,9 @@ def non_spatial_table_columns(spatial_table):
     """
     all_columns = table_column_names(spatial_table)
 
-    spatial_columns = table_column_names(spatial_table, True)
+    unwanted_columns = [u'id', u'area']
+
+    spatial_columns = table_column_names(spatial_table, True) + unwanted_columns
 
     return [x for x in all_columns if x not in spatial_columns]
 

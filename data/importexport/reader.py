@@ -53,8 +53,12 @@ class _ReflectedModel(object):
     pass
 
 class OGRReader(object):
-    def __init__(self, sourceFile):
-        self._ds = ogr.Open(sourceFile) 
+    def __init__(self, sourceFile = None):
+        # self._ds = ogr.Open(sourceFile)
+        try:
+            self._ds = ogr.Open(sourceFile)
+        except RuntimeError:
+            pass
         self._targetGeomColSRID = -1 
         self._geomType = ""
         self._dbSession = STDMDb.instance().session   
