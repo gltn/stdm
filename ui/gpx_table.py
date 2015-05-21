@@ -217,11 +217,11 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
         elif self.active_layer_geometry_typ == 2:
             geom = QgsGeometry.fromPolygon([geom_list])
 
-        geom_wkb = geom.asWkb()
+        geom_wkb = geom.exportToWkt()
 
         non_sp_colms = non_spatial_table_columns(self.sp_table)
 
-        # QMessageBox.information(None, "STDM", u"{0}".format(non_sp_colms))
+        # QMessageBox.information(None, "STDM", u"{0}".format(geom_wkb))
 
         for key, vertex in self.vertex_dict.iteritems():
             self.map_canvas.scene().removeItem(vertex[0])
