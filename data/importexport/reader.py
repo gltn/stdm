@@ -53,7 +53,7 @@ class _ReflectedModel(object):
     pass
 
 class OGRReader(object):
-    def __init__(self,sourceFile):                            
+    def __init__(self, sourceFile):
         self._ds = ogr.Open(sourceFile) 
         self._targetGeomColSRID = -1 
         self._geomType = ""
