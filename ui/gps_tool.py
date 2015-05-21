@@ -8,12 +8,15 @@ from osgeo import ogr
 from ..utils import util
 from gpx_table import GpxTableWidgetDialog
 
+
 class GPSToolDialog(QDialog, Ui_Dialog):
 
-    def __init__(self, iface):
+    def __init__(self, iface, sp_table, sp_col):
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
         self.iface = iface
+        self.sp_table = sp_table
+        self.sp_col = sp_col
         self.button_ok = self.buttonBox.button(QDialogButtonBox.Ok)
         self.button_cancel = self.buttonBox.button(QDialogButtonBox.Close)
         self.rd_button_group = QButtonGroup()
@@ -81,7 +84,12 @@ class GPSToolDialog(QDialog, Ui_Dialog):
                     self.close_gpx_select_file_gui()
 
                     # QTableWidget dialog
-                    self.gpx_table = GpxTableWidgetDialog(self.iface, self.layer_gpx, active_layer_geometry_typ)
+                    self.gpx_table = GpxTableWidgetDialog(self.iface,
+                                                          self.layer_gpx,
+                                                          active_layer_geometry_typ,
+                                                          self.sp_table,
+                                                          self.sp_col
+                                                          )
                     self.gpx_table.populate_qtable_widget()
                     self.gpx_table.show()
 
