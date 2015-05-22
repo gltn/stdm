@@ -20,8 +20,7 @@ from datetime import date
 
 from PyQt4.QtGui import *
 
-from stdm.ui.customcontrols import BrowsableForeingKey
-
+from stdm.ui.customcontrols import BrowsableForeignKey
 
 class InputWidget(QWidget):
     #def __init__(self, parent =None):
@@ -90,7 +89,6 @@ class ChoiceListWidget(InputWidget):
     def adopt(self):
         try:
             if self.options:
-
                 #self.control.set_value(options)
                 self.control.addItem("")
                 for item in self.options:
@@ -145,12 +143,17 @@ class DateEditWidget(InputWidget):
         self.control.setDate(tDate)
         self.control.setMinimumWidth(50)
 
-
+from stdm.ui.fkbase_form import FKMapperDialog
 class ForeignKeyEdit(InputWidget):
     #control_type = SearchableLineEdit
-    def Factory(self):
-        self.control = BrowsableForeingKey()
+    def __init__(self, parent=None):
+        #InputWidget.__init__(self)
+        super(ForeignKeyEdit,self).__init__()
+        self.control = BrowsableForeignKey()
         self.control.signal_sender.connect(self.foreign_key_widget_activated)
+        #QMessageBox.information(None,"Step of processing work","Not working")
+
+    def Factory(self):
         self.base_id = 0
         return self.control
 
@@ -159,10 +162,12 @@ class ForeignKeyEdit(InputWidget):
         self.control.setReadOnly(True)
 
     def foreign_key_widget_activated(self):
+
         self.on_select_foreignkey()
 
     def on_select_foreignkey(self):
-        from stdm.ui import FKMapperDialog
+
+
         mapper = FKMapperDialog()
         mapper.foreign_key_modeller()
 

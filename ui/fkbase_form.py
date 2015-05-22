@@ -20,20 +20,21 @@ email                : stdm@unhabitat.org
 """
 
 from .foreign_key_mapper import ForeignKeyMapper
-from .entity_browser import ForeignKeyBrowser
+#from stdm.ui import ForeignKeyBrowser
 from stdm.ui.stdmdialog import DeclareMapping
+from PyQt4.QtGui import QMessageBox, QWidget
 
-class FKMapperDialog(object):
-
+class FKMapperDialog(QWidget):
     def __init__(self, parent = None):
-        super(FKMapperDialog, self).__init__()
-        self.personFKMapper = ForeignKeyMapper()
+        QWidget.__init__(self)
+        #self.personFKMapper = ForeignKeyMapper()
         self.attribute = None
 
-    def foreign_key_modeller(self):
+    def foreign_key_modeller(self, editor =None):
         self.model()
+        self.personFKMapper = ForeignKeyMapper()
         self.editor = ForeignKeyBrowser
-
+        #QMessageBox.information(None,"Loading Foreign Key",str(self._dbModel.__name__))
         self.personFKMapper.setDatabaseModel(self._dbModel)
         self.personFKMapper.setEntitySelector(self.editor)
         self.personFKMapper.setSupportsList(True)
@@ -54,7 +55,7 @@ class FKMapperDialog(object):
 
     def model_display_value(self):
         try:
-            if self.personFKMapper.global_id.display_value() == None:
+            if not self.personFKMapper.global_id.display_value():
                 return "0"
             else:
                 return self.personFKMapper.global_id.display_value()

@@ -211,21 +211,18 @@ def columnType(tableName,columnName):
     t = text(sql)
     
     result = _execute(t,tbName = tableName,colName = columnName)
-        
+
     dataType = ""
-       
     for r in result:
         dataType = r["data_type"]
         
         break
-        
     return dataType
     
 def _execute(sql,**kwargs):
     '''
     Execute the passed in sql statement
-    '''        
-
+    '''
     conn = STDMDb.instance().engine.connect()        
     result = conn.execute(sql,**kwargs)
     conn.close()

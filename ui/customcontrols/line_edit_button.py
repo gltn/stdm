@@ -43,7 +43,7 @@ class SearchableLineEdit(QLineEdit):
         self.button.move(rect.right() - buttonWidth, frameWidth)
 
     def button_click_event(self):
-        #QMessageBox.information(None,"Signal event", "button clicked")
+        QMessageBox.information(None,"Signal event", "button clicked")
         self.signal_sender.emit()
 
     def set_value(self, id):
