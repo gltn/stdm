@@ -5,11 +5,13 @@ Created on Mar 28, 2014
 '''
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
+from stdm.settings import tableIcon
+
 
 ALT_COLOR_EVEN = QColor(209, 243, 249)
 ALT_COLOR_ODD = QColor(241,246,245)
 
-itemIcon = QIcon(":/plugins/stdm/images/icons/table.png")
+
 
 class listEntityViewer(QAbstractListModel):
     def __init__(self, list=[], icon =None, parent=None):
@@ -22,9 +24,9 @@ class listEntityViewer(QAbstractListModel):
             if orientation==Qt.Vertical:
                 return  section
             elif orientation == Qt.Horizontal:
-                return "STDM Entities"
+                return QApplication.translate("WorkspaceLoader","STDM Entities")
             else:
-                return "Entities"
+                return QApplication.translate("WorkspaceLoader","Entities")
         
     def rowCount(self,parent):
         if self.__list is not None:
@@ -44,7 +46,7 @@ class listEntityViewer(QAbstractListModel):
             if self._icon is not None:
                 return self._icon
             else:
-                return itemIcon
+                return tableIcon
         
         if role==Qt.DisplayRole:
             row=index.row()

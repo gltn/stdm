@@ -21,3 +21,4 @@ from PyQt4.QtGui import *
 
 dataIcon = QIcon(":/plugins/stdm/images/icons/column.png")
 pbIcon = QIcon(":/plugins/stdm/images/icons/search.png")
+tableIcon = QIcon(":/plugins/stdm/images/icons/table.png")

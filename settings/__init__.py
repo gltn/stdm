@@ -14,7 +14,8 @@ from .registryconfig import (
 from .tools_network import getProxy
 from .path_settings import (
                             dataIcon,
-                            pbIcon
+                            pbIcon,
+                            tableIcon
                             )
 from .module_settings import ModuleSettings
 
