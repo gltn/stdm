@@ -5,6 +5,8 @@ from stdm.data import (geometryType, STDMDb)
 
 from stdm.data.importexport import OGRReader
 
+from stdmdialog import DeclareMapping
+
 from ui_gpx_add_attribute_info import Ui_Dialog
 
 import sqlalchemy
@@ -17,6 +19,7 @@ from sqlalchemy.orm import (
                             class_mapper
                             )
 
+from ..data import columnType
 
 class _ReflectedModel(object):
     """
@@ -70,13 +73,11 @@ class GPXAttributeInfoDialog(QDialog, Ui_Dialog):
 
     def create_attribute_info_gui(self):
 
-        self.geom_type, self.target_geom_col_srid = geometryType(self.sp_table, self.sp_table_colmn)
-
-        self.attribute_dict[self.sp_table_colmn] = "SRID={0!s};{1}".format(self.target_geom_col_srid,
-                                                                           self.geom_column_value)
         grid_column_count = 0
 
         for column in self.non_sp_colmns:
+
+            column_data_type = str(columnType(self.sp_table, column))
 
             label_name = "label_{0}".format(column)
             line_edit_name = "line_edit_name_{0}".format(column)
@@ -88,14 +89,24 @@ class GPXAttributeInfoDialog(QDialog, Ui_Dialog):
 
             self.lineEdit = QLineEdit()
             self.lineEdit.setObjectName(line_edit_name)
-            self.lineEdit.setPlaceholderText("NULL")
+            if column_data_type == 'integer':
+                self.lineEdit.setText("0")
+            elif column_data_type == 'character varying':
+                self.lineEdit.setPlaceholderText("NULL")
+            elif column_data_type == 'double precision':
+                self.lineEdit.setText("0.0")
+            elif column_data_type == 'date':
+                self.lineEdit.setPlaceholderText("1-1-2000")
+            else:
+                self.lineEdit.setPlaceholderText("NULL")
             self.gridLayout.addWidget(self.lineEdit, grid_column_count, 1, 1, 1)
 
             grid_column_count += 1
 
-            self.attribute_dict[self.label.text()] = self.lineEdit.text()
+            self.attribute_dict[self.label.text()] = self.lineEdit
 
     def accept(self):
+
         if self._mapped_class == None:
 
             try:
@@ -107,4 +118,35 @@ class GPXAttributeInfoDialog(QDialog, Ui_Dialog):
 
             self._mapped_class = _ReflectedModel
 
-            self._insert_row(self.attribute_dict)
+        for column, line_edit in self.attribute_dict.iteritems():
+
+            column_data_type = str(columnType(self.sp_table, column))
+
+            if column_data_type == 'integer':
+                if line_edit.text() == '':
+                    self.attribute_dict[column] = int(line_edit.setText('0'))
+                else:
+                    self.attribute_dict[column] = int(line_edit.text())
+            elif column_data_type == 'character varying':
+                if line_edit.text() == '':
+                    self.attribute_dict[column] = line_edit.setText('NULL')
+                else:
+                    self.attribute_dict[column] = line_edit.text()
+            elif column_data_type == 'double precision':
+                if line_edit.text() == '':
+                    self.attribute_dict[column] = float(line_edit.setText('0.0'))
+                else:
+                    self.attribute_dict[column] = float(line_edit.text())
+            elif column_data_type == 'date':
+                self.attribute_dict[column] = int(line_edit.text())
+            else:
+                self.attribute_dict[column] = int(line_edit.text())
+
+        self.geom_type, self.target_geom_col_srid = geometryType(self.sp_table, self.sp_table_colmn)
+
+        self.attribute_dict[self.sp_table_colmn] = "SRID={0!s};{1}".format(self.target_geom_col_srid,
+                                                                           self.geom_column_value)
+
+        self._insert_row(self.attribute_dict)
+
+        self.close()
