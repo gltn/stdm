@@ -79,11 +79,11 @@ class CustomFormDialog(MapperDialog, MapperMixin):
             if hasattr(self._model, attrib):
                 #self.control_widget(widget_prop)
                 form_widget_loader = FormWidgetLoader(widget_prop)
-                control_type = form_widget_loader.control_widget()
-                self.addMapping(attrib, control_type, False, attrib)
+                self.control_type = form_widget_loader.control_widget()
+                self.addMapping(attrib, self.control_type, False, attrib)
 
-                self.frmLayout.addRow(QT_TRANSLATE_NOOP("ModuleSettings",self.userLabel(attrib)), control_type)
-        self.frmLayout.setLabelAlignment(Qt.AlignJustify)
+                self.frmLayout.addRow(QT_TRANSLATE_NOOP("ModuleSettings",self.userLabel(attrib)), self.control_type)
+        #self.frmLayout.setLabelAlignment(Qt.AlignJustify)
         #except Exception as ex:
            # self._notifBar.insertWarningNotification(str(ex.message))
 

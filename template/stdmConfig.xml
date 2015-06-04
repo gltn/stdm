@@ -11,10 +11,9 @@
 				<column fullname="mobile" name="contact_telephone" null="yes" size="25" type="character varying" />
 				<column fullname="" name="age" null="yes" size="" type="integer" />
 				<column fullname="" lookup="check_gender" name="gender" null="yes" size="25" type="character varying" />
-				<column fullname="" name="household_number" null="yes" size="" type="integer" />
-			</columns>
+				</columns>
 			<relations>
-				<relation column="id" fk="household_number" name="personid" ondelete="cascade" onupdate="cascade" table="household_entity" /></relations>
+				<relation column="id" fk="household_number" name="partyhsd" ondelete="cascade" onupdate="cascade" table="household" /></relations>
 			<constraints />
 			<contentgroups fullname="party can be a person household or group" name="party">
 				<contentgroup code="{3337F9B8-4D54-45CD-BDAD-1577FD668BC7}" name="create" />
@@ -170,7 +169,7 @@
 				<value>5000</value>
 			</data>
 		</lookup>
-		<table fullname="Table for household details" name="household_entity">
+		<table fullname="Table for household details" name="household">
 			<columns>
 				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
 				<column fullname="" name="total_persons" null="yes" size="" type="integer" />
@@ -181,7 +180,7 @@
 			</columns>
 			<relations />
 			<constraints />
-			<contentgroups fullname="Table for household details" name="household_entity">
+			<contentgroups fullname="Table for household details" name="household">
 				<contentgroup code="{BFF0B5AB-DF28-4FE2-A2AE-D8381E7C8609}" name="create" />
 				<contentgroup code="{594797EF-C7AE-4C69-81D3-9E9FBF5C1011}" name="select" />
 				<contentgroup code="{D9F64BB6-7ED8-4939-B127-057E786D9182}" name="update" />
