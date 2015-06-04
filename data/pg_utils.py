@@ -139,6 +139,19 @@ def table_column_names(tableName,spatialColumns = False):
            
     return columnNames
 
+def non_spatial_table_columns(spatial_table):
+    """
+    Returns non spatial table columns
+    Uses list comprehension
+    """
+    all_columns = table_column_names(spatial_table)
+
+    excluded_columns = [u'id']
+
+    spatial_columns = table_column_names(spatial_table, True) + excluded_columns
+
+    return [x for x in all_columns if x not in spatial_columns]
+
 def delete_table_data(tableName,cascade = True):
     """
     Delete all the rows in the target table.

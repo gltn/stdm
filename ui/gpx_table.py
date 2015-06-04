@@ -3,23 +3,34 @@ from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
 
+from ..data import (non_spatial_table_columns)
+
 from ui_gpx_table_widget import Ui_Dialog
+
+from gpx_add_attribute_info import GPXAttributeInfoDialog
 
 
 class GpxTableWidgetDialog(QDialog, Ui_Dialog):
-    def __init__(self, iface, gpx_file, active_layer):
+    def __init__(self, iface, gpx_file, active_layer, sp_table, sp_col):
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
         self.iface = iface
+        self.sp_table = sp_table
+        self.sp_col = sp_col
         self.table_widget = self.tableWidget
         self.map_canvas = self.iface.mapCanvas()
         self.layer_gpx = gpx_file
+        self.green = QColor(0, 255, 0)
+        self.red = QColor(255, 0, 0)
+        self.vertex_color = QColor(0, 0, 0)
         self.active_layer_geometry_typ = active_layer
         self.vertex_dict = {}
+        self.reset_vertex_dict = {}
         self.gpx_tw_item_initial_state = Qt.Checked
         self.prv_chkbx_itm_placeholder_dict = {}
         self.table_widget.itemPressed.connect(self.gpx_table_widget_item_pressed)
         self.table_widget.itemClicked.connect(self.gpx_table_widget_item_clicked)
+        self.gpx_add_attribute_info = None
 
     def populate_qtable_widget(self):
         check_box_state = Qt.Checked
@@ -73,10 +84,17 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
             vertex_marker = QgsVertexMarker(self.map_canvas)
             vertex_marker.setCenter(QgsPoint(lat, lon))
             if check_box_state is Qt.Checked:
-                vertex_marker.setColor(QColor(0, 255, 0))
+                vertex_marker.setColor(self.green)
+                self.vertex_color = self.green
             elif check_box_state is Qt.Unchecked:
-                vertex_marker.setColor(QColor(255, 0, 0))
-            self.vertex_dict[row_counter] = vertex_marker
+                vertex_marker.setColor(self.red)
+                self.vertex_color = self.red
+
+            # Add vertex to dictionary
+            self.vertex_dict[row_counter] = [vertex_marker, lon, lat, check_box_state]
+
+            # Add vertex to reset dictionary
+            self.reset_vertex_dict[row_counter] = [vertex_marker, self.vertex_color, chk_bx_tb_widget_item, check_box_state]
 
             if chk_bx_tb_widget_item.checkState() == Qt.Checked:
                 self.prv_chkbx_itm_placeholder_dict[i] = chk_bx_tb_widget_item
@@ -115,39 +133,48 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
 
     @pyqtSlot('QTableWidgetItem')
     def gpx_table_widget_item_pressed(self, item):
+        """
+        Run when table row is selected
+        """
         QMessageBox.information(None,"STDM","{0}".format("item pressed"))
 
     @pyqtSlot('QTableWidgetItem')
     def gpx_table_widget_item_clicked(self, item):
         """
-        Slot run when table item is clicked
+        Run when table item is clicked
         """
         # Check if import layer is a point
         if self.active_layer_geometry_typ == 0:
+
+            # Do not allow deselection of checkbox item if non exists
             for item_row, chkbx_item in self.prv_chkbx_itm_placeholder_dict.iteritems():
                 if chkbx_item.checkState() == Qt.Unchecked:
                     QMessageBox.information(None,"STDM","{0}".format("You must select atleast one point"))
+                    chkbx_item.setCheckState(Qt.Checked)
+
 
         if item.checkState() == Qt.Checked:
             for row, vertex in self.vertex_dict.iteritems():
                 if row == item.row():
-                    vertex.setColor(QColor(0, 255, 0))
+
+                    # Set vertex marker green then refresh the map
+                    vertex[0].setColor(self.green)
                     self.map_canvas.refresh()
 
                     if self.active_layer_geometry_typ == 0:
                         for item_row, chkbx_item in self.prv_chkbx_itm_placeholder_dict.iteritems():
 
-                            # Uncheck previous checkbox item
+                            # Uncheck previous checkbox item and set vertex marker to red
                             chkbx_item.setCheckState(Qt.Unchecked)
-                            self.vertex_dict[item_row].setColor(QColor(255, 0, 0))
+                            self.vertex_dict[item_row][0].setColor(self.red)
 
                     else:
                         pass
 
         elif item.checkState() == Qt.Unchecked:
-            for row, vertex_layertyp_state in self.vertex_dict.iteritems():
+            for row, vertex_lon_lat_state in self.vertex_dict.iteritems():
                 if row == item.row():
-                    vertex_layertyp_state.setColor(QColor(255, 0, 0))
+                    vertex_lon_lat_state[0].setColor(self.red)
                     self.map_canvas.refresh()
 
 
@@ -161,15 +188,46 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
         else:
             pass
 
-    # @pyqtSlot()
-    # def on_button_reset_clicked(self):
-    #     """
-    #     Run when reset button is clicked
-    #     """
-    #     self.table_widget.close()
+    @pyqtSlot()
+    def on_bt_reset_clicked(self):
+        """
+        Run when reset button is clicked
+        """
+        for key, vertex in self.reset_vertex_dict.iteritems():
+            vertex[0].setColor(vertex[1])
+            vertex[2].setCheckState(vertex[3])
+        self.map_canvas.refresh()
+
 
     @pyqtSlot(bool)
     def on_bt_save_clicked(self):
+        """
+        Run when Qtablewidget button save is clicked
+        """
+        geom_list = []
+
         for key, vertex in self.vertex_dict.iteritems():
-            self.map_canvas.scene().removeItem(vertex)
-            self.close()
+            if vertex[3] == Qt.Checked:
+                geom_list.append(QgsPoint(vertex[1], vertex[2]))
+
+        if self.active_layer_geometry_typ == 0:
+            geom = QgsGeometry.fromPoint(geom_list[0])
+        elif self.active_layer_geometry_typ == 1:
+            geom = QgsGeometry.fromPolyline(geom_list)
+        elif self.active_layer_geometry_typ == 2:
+            geom = QgsGeometry.fromPolygon([geom_list])
+
+        geom_wkb = geom.exportToWkt()
+
+        non_sp_colms = non_spatial_table_columns(self.sp_table)
+
+        # QMessageBox.information(None, "STDM", u"{0}".format(geom_wkb))
+
+        for key, vertex in self.vertex_dict.iteritems():
+            self.map_canvas.scene().removeItem(vertex[0])
+        self.close()
+
+        self.gpx_add_attribute_info = GPXAttributeInfoDialog(self.iface, non_sp_colms, self.sp_table, self.sp_col,
+                                                             geom_wkb)
+        self.gpx_add_attribute_info.create_attribute_info_gui()
+        self.gpx_add_attribute_info.show()
