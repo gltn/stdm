@@ -132,7 +132,11 @@ class TitleBase(QWidget,Ui_frmRptTitleBase):
     def setFontType(self):
         #Slot for setting the font type specified in the font dialog            
         (widgFont,ok) = QFontDialog.getFont(self.elFont,self)
-        if ok:self.elFont=widgFont 
+        if ok:
+            if widgFont.family() == "MS Shell Dlg 2":
+                widgFont.setFamily("Times New Roman")
+
+            self.elFont=widgFont
         
     def setHeight(self):
         #Set the height specified by the user
@@ -169,7 +173,7 @@ class TitleBase(QWidget,Ui_frmRptTitleBase):
     
     def setWidth(self):
         #Set the WIDTH specified by the user
-        if str(self.txtTitleWidth.text())!="":
+        if self.txtTitleWidth.text():
             (dWidth,ok)=self.txtTitleWidth.text().toInt()
             if ok:
                 self.elWidth=dWidth
@@ -201,6 +205,9 @@ class TitleBase(QWidget,Ui_frmRptTitleBase):
         '''        
         fontDB = QFontDatabase()        
         matchFont=self.sysFonts.matchingFontName(str(self.elFont.rawName()))
+
+        self.InfoMessage(self.elFont.rawName())
+
         qFontStyle=str(fontDB.styleString(self.elFont))
         matchFontStyle=''
         if qFontStyle.find("Normal")!=-1:            
@@ -220,10 +227,11 @@ class TitleBase(QWidget,Ui_frmRptTitleBase):
             addMapping(matchFont,ps["Bold"],ps["Italic"],ps["Style"])            
             
         dStyle={}                            
-        dStyle["fontName"]=matchFontStyle
+        dStyle["fontName"] = matchFontStyle
         dStyle["fontSize"]=self.elFont.pointSize()
         dStyle["alignment"]=self.hAlign
-        dStyle["textColor"]=HexColor(str(self.elFontColor.name()))        
+        dStyle["textColor"]=HexColor(str(self.elFontColor.name()))
+        #self.InfoMessage(self.ID + "\n" + str(dStyle))
         return dStyle
     
     def _buildFontFamily(self):

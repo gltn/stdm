@@ -160,16 +160,19 @@ class ForeignKeyEdit(InputWidget):
     def adopt(self):
         self.control.setText("0")
         self.control.setReadOnly(True)
+        #self.control.signal_sender.connect(self.foreign_key_widget_activated)
 
     def foreign_key_widget_activated(self):
-
+        QMessageBox.information(None,"Step of processing work","Not working")
         self.on_select_foreignkey()
 
     def on_select_foreignkey(self):
-
-
+        """
+        :return:
+        """
+        from stdm.ui import ForeignKeyBrowser
         mapper = FKMapperDialog()
-        mapper.foreign_key_modeller()
+        mapper.foreign_key_modeller(ForeignKeyBrowser)
 
         if not mapper.model_display_value():
             mapper.model_display_value() == self.base_id
@@ -181,8 +184,13 @@ class ForeignKeyEdit(InputWidget):
             self.control.fk_id(self.base_id)
 
 
-def widgetCollection():
-    mapping = {
+class WidgetCollection(object):
+    """
+    Class initialization
+    """
+    @staticmethod
+    def widget_control_type(data_type):
+        mapping = {
             'character varying': LineEditWidget,
             'integer': IntegerWidget,
             'bigint': IntegerWidget,
@@ -193,6 +201,6 @@ def widgetCollection():
             'text': TextAreaWidget,
             'foreign key': ForeignKeyEdit,
             'boolean': BooleanWidget
-
         }
-    return mapping
+        return mapping[data_type]
+
