@@ -74,6 +74,10 @@ class TitleBase(QWidget,Ui_frmRptTitleBase):
         
         #Initialize control
         self.initControls()
+
+        #Remove option for selecting font until translation issues are fixed
+        self.label_2.setVisible(False)
+        self.btnTitleFont.setVisible(False)
         
         #Event Handlers
         self.btnTitleFont.clicked.connect(self.setFontType)
@@ -206,21 +210,22 @@ class TitleBase(QWidget,Ui_frmRptTitleBase):
         fontDB = QFontDatabase()        
         matchFont=self.sysFonts.matchingFontName(str(self.elFont.rawName()))
 
-        self.InfoMessage(self.elFont.rawName())
-
         qFontStyle=str(fontDB.styleString(self.elFont))
-        matchFontStyle=''
-        if qFontStyle.find("Normal")!=-1:            
-            matchFontStyle=matchFont
+
+        matchFontStyle = ''
+
+        if qFontStyle.find("Normal") != -1:
+            matchFontStyle = matchFont
+
         else:            
-            matchFontStyle=matchFont + " " + qFontStyle
+            #matchFontStyle = matchFont + " " + qFontStyle
+            matchFontStyle = matchFont + " Bold"
         
         #Register the fonts to be used in the report
-        fontStyle=self._buildFontFamily()
+        fontStyle = self._buildFontFamily()
         for k,v in fontStyle.iteritems():
-            #self.InfoMessage(k + ", " + v)
             pdfmetrics.registerFont(TTFont(k,v))
-            
+
         #Add font mappings
         psMappings=self._postScriptMappings(fontStyle)
         for ps in psMappings:
@@ -231,7 +236,7 @@ class TitleBase(QWidget,Ui_frmRptTitleBase):
         dStyle["fontSize"]=self.elFont.pointSize()
         dStyle["alignment"]=self.hAlign
         dStyle["textColor"]=HexColor(str(self.elFontColor.name()))
-        #self.InfoMessage(self.ID + "\n" + str(dStyle))
+
         return dStyle
     
     def _buildFontFamily(self):
