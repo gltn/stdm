@@ -76,6 +76,7 @@ class AttributeEditor(QDialog,Ui_editor):
         self.cboNull.setCurrentIndex(1)
         self.reloadColumnValues()
         self.initializeValidator()
+        self.txtCol.setFocus()
         
     def initializeValidator(self):
         intValidator = QIntValidator(1, 500, self)

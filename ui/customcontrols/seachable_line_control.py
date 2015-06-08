@@ -21,7 +21,7 @@ email                : stdm@unhabitat.org
 from .line_edit_button import SearchableLineEdit
 
 
-class BrowsableForeingKey(SearchableLineEdit):
+class BrowsableForeignKey(SearchableLineEdit):
     """
     Class to implement browsable line control for foreign key references
     """

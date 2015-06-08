@@ -92,7 +92,7 @@ def deleteSelectedProfile(profile):
     
 def setCollectiontypes(collectionType,combo):
         #method to read defult  to a sql relations and constraint type to combo box
-        ordDict=OrderedDict(collectionType.items())
+        ordDict=OrderedDict(collectionType)
         combo.clear()
         for k, v in ordDict.iteritems():
             combo.addItem(QT_TR_NOOP(k), v)
