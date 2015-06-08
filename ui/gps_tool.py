@@ -86,6 +86,7 @@ class GPSToolDialog(QDialog, Ui_Dialog):
                     # QTableWidget dialog
                     self.gpx_table = GpxTableWidgetDialog(self.iface,
                                                           self.layer_gpx,
+                                                          active_layer,
                                                           active_layer_geometry_typ,
                                                           self.sp_table,
                                                           self.sp_col
