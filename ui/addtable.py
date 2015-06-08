@@ -43,8 +43,9 @@ class TableEditor(QDialog, Ui_table):
     def initGui(self):
         if self.state==QApplication.translate("TableEditor","Edit Table"):
             self.groupBox.setTitle(self.state +" "+ self.table)
+            self.txtTable.setText(self.table)
         elif self.state==QApplication.translate("TableEditor","Add Lookup"):
-            self.groupBox.setTitle(self.state + QApplication.translate("TableEditor"," Note Lookup tables must begin with 'check_' followed by 'table name'"))
+            self.groupBox.setTitle(self.state + QApplication.translate("TableEditor","Look up will begin with 'check_' once defined"))
             self.chkDefault.setVisible(False)
         else:
             #self.groupBox.setTitle(self.state)

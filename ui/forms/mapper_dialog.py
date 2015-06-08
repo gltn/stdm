@@ -61,7 +61,6 @@ class CustomFormDialog(MapperDialog, MapperMixin):
             self._table = model.__class__.__name__
         self.set_window_title()
 
-
         self.setLayout(self.frmLayout)
         self.loadMapperDialog()
 
@@ -79,14 +78,12 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         for attrib, widget_prop in widgets.iteritems():
             if hasattr(self._model, attrib):
                 #self.control_widget(widget_prop)
-                widgetCls = widget_prop[0]()
-                control_type = widgetCls.Factory()
-                if widget_prop[1]:
-                    self.lookupOptions(widgetCls, widget_prop[2])
-                widgetCls.adopt()
-                self.addMapping(attrib, control_type, False, attrib)
-                self.frmLayout.addRow(QT_TRANSLATE_NOOP("ModuleSettings",self.userLabel(attrib)), control_type)
-        self.frmLayout.setLabelAlignment(Qt.AlignJustify)
+                form_widget_loader = FormWidgetLoader(widget_prop)
+                self.control_type = form_widget_loader.control_widget()
+                self.addMapping(attrib, self.control_type, False, attrib)
+
+                self.frmLayout.addRow(QT_TRANSLATE_NOOP("ModuleSettings",self.userLabel(attrib)), self.control_type)
+        #self.frmLayout.setLabelAlignment(Qt.AlignJustify)
         #except Exception as ex:
            # self._notifBar.insertWarningNotification(str(ex.message))
 
@@ -99,15 +96,6 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         except Exception as ex:
             QMessageBox.information(self, QApplication.translate("CustomFormDialog", "Loading lookup"),
                                     QApplication.translate("CustomFormDialog","Error loading lookup values: %s")%ex.message)
-    def control_widget(self, prop):
-        """
-        Add controls to the form and controls options for lookup choices
-        """
-        self.widgetCls = prop[0]()
-        self.control_type = self.widgetCls.Factory()
-        if prop[1]:
-            self.lookupOptions(self.widgetCls, prop[2])
-        self.widgetCls.adopt()
 
     def reset_session_mapping(self):
         """Since only one instance of model can be mapped at a time, ensure the current table model has its correct mapping
@@ -133,3 +121,29 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         """
         self.setWindowTitle(QApplication.translate("CustomFormDialog", self._table + " Entity Editor"))
 
+class FormWidgetLoader(object):
+    """
+    Class to format a widget control into data control on the form
+    """
+    def __init__(self, widget_property, parent=None):
+        self.widget_property = widget_property
+
+    def control_widget(self):
+        """
+        Add controls to the form and controls options for lookup choices
+        """
+        self.init_widget_cls = self.widget_property[0]()
+        control_type = self.init_widget_cls.Factory()
+        if self.widget_property[1]:
+            self.lookupOptions(self.init_widget_cls, self.widget_property[2])
+        self.init_widget_cls.adopt()
+        return control_type
+
+    def lookupOptions(self, widget, widgetOptions):
+        """
+        Add lookup items on the widget control
+        :param widget: QObject
+        :param widgetOptions: Sqlalchemy model of the items
+        :return:
+        """
+        widget.setOptions(widgetOptions)

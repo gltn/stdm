@@ -55,7 +55,7 @@ class Groups(TitleBase):
         
     def setWidth(self):
         #Override the WIDTH specified by the user
-        if self.txtTitleWidth.text()!="":
+        if self.txtTitleWidth.text():
             dWidth = float(self.txtTitleWidth.text())
             self.elWidth=dWidth*cm
 

@@ -20,8 +20,7 @@ from datetime import date
 
 from PyQt4.QtGui import *
 
-from stdm.ui.customcontrols import BrowsableForeingKey
-
+from stdm.ui.customcontrols import BrowsableForeignKey
 
 class InputWidget(QWidget):
     #def __init__(self, parent =None):
@@ -90,7 +89,6 @@ class ChoiceListWidget(InputWidget):
     def adopt(self):
         try:
             if self.options:
-
                 #self.control.set_value(options)
                 self.control.addItem("")
                 for item in self.options:
@@ -145,26 +143,36 @@ class DateEditWidget(InputWidget):
         self.control.setDate(tDate)
         self.control.setMinimumWidth(50)
 
-
+from stdm.ui.fkbase_form import FKMapperDialog
 class ForeignKeyEdit(InputWidget):
     #control_type = SearchableLineEdit
-    def Factory(self):
-        self.control = BrowsableForeingKey()
+    def __init__(self, parent=None):
+        #InputWidget.__init__(self)
+        super(ForeignKeyEdit,self).__init__()
+        self.control = BrowsableForeignKey()
         self.control.signal_sender.connect(self.foreign_key_widget_activated)
+        #QMessageBox.information(None,"Step of processing work","Not working")
+
+    def Factory(self):
         self.base_id = 0
         return self.control
 
     def adopt(self):
         self.control.setText("0")
         self.control.setReadOnly(True)
+        #self.control.signal_sender.connect(self.foreign_key_widget_activated)
 
     def foreign_key_widget_activated(self):
+        QMessageBox.information(None,"Step of processing work","Not working")
         self.on_select_foreignkey()
 
     def on_select_foreignkey(self):
-        from stdm.ui import FKMapperDialog
+        """
+        :return:
+        """
+        from stdm.ui import ForeignKeyBrowser
         mapper = FKMapperDialog()
-        mapper.foreign_key_modeller()
+        mapper.foreign_key_modeller(ForeignKeyBrowser)
 
         if not mapper.model_display_value():
             mapper.model_display_value() == self.base_id
@@ -176,8 +184,13 @@ class ForeignKeyEdit(InputWidget):
             self.control.fk_id(self.base_id)
 
 
-def widgetCollection():
-    mapping = {
+class WidgetCollection(object):
+    """
+    Class initialization
+    """
+    @staticmethod
+    def widget_control_type(data_type):
+        mapping = {
             'character varying': LineEditWidget,
             'integer': IntegerWidget,
             'bigint': IntegerWidget,
@@ -188,6 +201,6 @@ def widgetCollection():
             'text': TextAreaWidget,
             'foreign key': ForeignKeyEdit,
             'boolean': BooleanWidget
-
         }
-    return mapping
+        return mapping[data_type]
+
