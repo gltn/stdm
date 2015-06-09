@@ -305,8 +305,8 @@ class STDMQGISLoader(object):
         self.spatialEditorAct.setCheckable(True)
 
         #Spatial Layer Manager
-        self.spatialLayerManager = QAction(QIcon(":/plugins/stdm/images/icons/edit.png"), \
-        QApplication.translate("SpatialEditorAction","Post GIS Layer Editor"), self.iface.mainWindow())
+        self.spatialLayerManager = QAction(QIcon(":/plugins/stdm/images/icons/spatial_unit_manager.png"), \
+        QApplication.translate("SpatialEditorAction","Spatial Unit Manager"), self.iface.mainWindow())
         self.spatialLayerManager.setCheckable(True)
 
         self.createFeatureAct = QAction(QIcon(":/plugins/stdm/images/icons/create_feature.png"), \
