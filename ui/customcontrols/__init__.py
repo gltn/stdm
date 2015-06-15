@@ -6,4 +6,4 @@ from .table_combobox import TableComboBox
 from .line_edit_button import SearchableLineEdit
 from .checkable_combo import MultipleChoiceCombo
 from .fk_browser import FKBrowserProperty
-from .seachable_line_control import BrowsableForeingKey
+from .seachable_line_control import BrowsableForeignKey

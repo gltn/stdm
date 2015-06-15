@@ -37,7 +37,6 @@ destHtml=xmlobject.HtmlFile()
 sourcePath=xml_doc
 oldPath=xmlobject.cacheFile()
 
-
 def writeTable(data,profile,tableName):
     #method to addnew table definition in the config file
     filter=(".//*[@name='%s']/table")%profile

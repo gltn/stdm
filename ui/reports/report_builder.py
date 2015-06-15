@@ -48,7 +48,6 @@ import os
 from stdm.workspace.defaultSetting.config import dbTableConfig
 from stdm.workspace.defaultSetting.map_query import CertificateMap
 '''
- 
 from .report_title_base import TitleBase
 from .field_base import FieldBase
 from .report_title import Title
@@ -182,25 +181,26 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
             self.stackedWidget.addWidget(stWidg)  
             
         #Add Field Names Widget
-        fnWidg = FieldNames("Field Names")
+        fnWidg = FieldNames(QApplication.translate("ReportBuilder","Field Names"))
         self.stackedWidget.addWidget(fnWidg)
         
         #Add Layout Tree Node (Under Elements parent node)
-        try:
-            elNode=self.trRptSettings.findItems("Elements",Qt.MatchExactly,0)[0]
-            layoutNode = QTreeWidgetItem(["Layout"])
+        el_elements = self.trRptSettings.findItems(QApplication.translate
+                                                   ("ReportBuilder","Elements"),Qt.MatchExactly,0)
+        if len(el_elements) > 0:
+            elNode = el_elements[0]
+            lyt_txt = QApplication.translate("ReportBuilder","Layout")
+            layoutNode = QTreeWidgetItem([lyt_txt])
             elNode.addChild(layoutNode)
 
-        
+
             #Add Layout Widget
-            layoutWidg = ReportLayout("Layout")
+            layoutWidg = ReportLayout(lyt_txt)
             self.stackedWidget.addWidget(layoutWidg)
 
             #Select the first item in the tree view
             titleNode=elNode.child(0)
             titleNode.setSelected(True)
-        except:
-            pass
 
     def resetControls(self):
         #Reset widgets
@@ -707,11 +707,14 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
                                         
     def display_updateReportFields(self):
         #Update tree fields list in the display section
-        try:
-            trFields=self.trRptSettings.findItems("Fields",Qt.MatchExactly,0)[0]
+        fields_el = self.trRptSettings.findItems(QApplication.translate
+                                                 ("ReportBuilder","Fields"),Qt.MatchExactly,0)
+        if len(fields_el) > 0:
+            trFields = fields_el[0]
             #Check if a report item has been added into the list or not
             for f in self.rptFields:
-                rWidg=self.display_getChildNode("Fields", f)
+                rWidg=self.display_getChildNode(QApplication.translate
+                                                 ("ReportBuilder","Fields"), f)
                 if rWidg==None:
                     tr=QTreeWidgetItem([f])
                     trFields.addChild(tr)
@@ -719,14 +722,18 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
                     self.display_addFieldWidget(f)
             #Clean up the field tree items and associated widgets
             self.display_cleanUpFieldsList()
-        except Exception as ex:
-            pass
-            #QApplication.translate("Report Builder","")
 
     def display_cleanUpFieldsList(self):
         #Remove items from the fields tree node that are no longer applicable
-        trFields=self.trRptSettings.findItems("Fields",Qt.MatchExactly,0)[0]
+        fields_el = self.trRptSettings.findItems(QApplication.translate
+                                                 ("ReportBuilder","Fields"),Qt.MatchExactly,0)
+        if len(fields_el) == 0:
+            return
+
+        trFields = fields_el[0]
+
         lstFields=[]
+
         for f in range(trFields.childCount()):
             tw=trFields.child(f)
             lstFields.append(tw.text(0))
@@ -737,7 +744,7 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
                 lstFields.remove(str(r))
         #Now clean up the tree node items     
         for obsItem in lstFields:
-            obsNode=self.display_getChildNode("Fields", obsItem)
+            obsNode=self.display_getChildNode(QApplication.translate("ReportBuilder","Fields"), obsItem)
             obsWidg=self.__displayGetStWidget(obsItem)
             if obsNode!=None:
                 trFields.removeChild(obsNode)
@@ -810,9 +817,10 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
     def display_autoWidth(self):
         #automatically compute the field width
         #Get the paper size defined by the user
-        layoutWidg=self.__displayGetStWidget("Layout")
-        w,h=layoutWidg.PageSize()
-        cmWidth=w/(72/2.54)
+        layoutWidg=self.__displayGetStWidget(QApplication.translate(
+            "ReportBuilder","Layout"))
+        w,h = layoutWidg.PageSize()
+        cmWidth = w/(72/2.54)
         return (cmWidth/len(self.rptFields))
 
     def display_CompileSettings(self):
@@ -832,8 +840,10 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         #Get column style settings
         left=0
         width=self.display_autoWidth()
-        colStyle=self.__displayGetStWidget("Field Names").columnStyle()    
-        columnList=self.display_getChildList("Fields")
+        colStyle=self.__displayGetStWidget(QApplication.translate(
+            "ReportBuilder", "Field Names")).columnStyle()
+        columnList=self.display_getChildList(QApplication.translate(
+            "ReportBuilder","Fields"))
         
         for field in columnList:
             fWidg=self.__displayGetStWidget(field)
@@ -1054,8 +1064,20 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
               
     def generateReport(self):
         #Generate report
-        dbResults = self.filter_buildQuery()   
-        if dbResults != None:
+        dbResults = self.filter_buildQuery()
+        if dbResults.rowcount == 0:
+            null_res_msg = QApplication.translate("ReportBuilder","No results "
+                                                                  "were returned "
+                                                                  "from the data "
+                                                                  "source."
+                                                                  "\nThe report "
+                                                                  "will not be "
+                                                                  "generated.")
+            self.ErrorInfoMessage(null_res_msg)
+
+            return
+
+        if not dbResults is None:
             #Get user settings
             self.display_CompileSettings()
             #Create query set
@@ -1064,10 +1086,12 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
             rptFile = QFileDialog.getSaveFileName(self,QApplication.translate("ReportBuilder","STDM Report"),
                                                   "",QApplication.translate("ReportBuilder","Report Document(*.pdf)"))
                   
-            if rptFile != "":            
+            if rptFile:
                 rptGenerator=STDMGenerator(stdmRpt,rptFile)
                 rptGenerator.generateReport()            
-                if self.InfoMessage(QApplication.translate("ReportBuilder","The report has been successfully created and written to '%s'")%rptFile) == QMessageBox.Open:
+                if self.InfoMessage(QApplication.translate("ReportBuilder",
+                                                           "The report has "
+                                                           "been successfully created and written to '%s'")%rptFile) == QMessageBox.Open:
                     os.startfile(rptFile,'open')
                 self.close()
                 

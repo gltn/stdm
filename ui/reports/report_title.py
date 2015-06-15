@@ -25,6 +25,6 @@ class Title(TitleBase):
     
     def getSystemField(self):
         #Construct and return the Title System Field
-        var=10
+        pass
                 
         

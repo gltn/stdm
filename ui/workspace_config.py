@@ -408,6 +408,10 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         if self.tableName==None:
             self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","No table is selected"))
             return
+        if self.tableName in stdm_core_tables:
+            self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader", "Sorry, the current table is a core table "
+                                                             "and cannot be changed"))
+            return
         actionState=[self.profile,QApplication.translate("WorkspaceLoader","Edit Table")]
         self.addTable(actionState) 
         self.loadTableData(self.profile, self.pftableView)

@@ -9,7 +9,16 @@ socioEconImpactFormatter,foodCropCategoryFormatter,geometryFormatter,respondentN
 enumeratorNamesFormatter,dateFormatter
 from .mapping import MapperMixin,QgsFeatureMapperMixin,SAVE,UPDATE
 
-from .pg_utils import spatial_tables,pg_tables,pg_views,table_column_names,geometryType,_execute,vector_layer
+from .pg_utils import (
+                        spatial_tables,
+                       pg_tables,
+                       pg_views,
+                       table_column_names,
+                       geometryType,
+                       _execute,
+                       vector_layer,
+                       non_spatial_table_columns)
+
 
 from .usermodels import listEntityViewer, EntityColumnModel
 
