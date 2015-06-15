@@ -79,5 +79,6 @@
     <file>images/icons/layer_point.png</file>
     <file>images/icons/layer_line.png</file>
     <file>images/icons/layer_polygon.png</file>
+    <file>images/icons/spatial_unit_manager.png</file>
   </qresource>
 </RCC>

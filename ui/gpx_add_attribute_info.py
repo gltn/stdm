@@ -3,10 +3,6 @@ from PyQt4.QtGui import *
 
 from stdm.data import (geometryType, STDMDb)
 
-from stdm.data.importexport import OGRReader
-
-from stdmdialog import DeclareMapping
-
 from ui_gpx_add_attribute_info import Ui_Dialog
 
 import sqlalchemy
@@ -32,6 +28,7 @@ class GPXAttributeInfoDialog(QDialog, Ui_Dialog):
     def __init__(self, iface, non_spatial_columns, sp_table, sp_table_colmn, geom_column_value):
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
+        self.iface = iface
         self._dbSession = STDMDb.instance().session
         self.non_sp_colmns = non_spatial_columns
         self.sp_table = sp_table
@@ -72,7 +69,9 @@ class GPXAttributeInfoDialog(QDialog, Ui_Dialog):
         return dsTable
 
     def create_attribute_info_gui(self):
-
+        """
+        Create attribute info table
+        """
         grid_column_count = 0
 
         for column in self.non_sp_colmns:
@@ -89,6 +88,7 @@ class GPXAttributeInfoDialog(QDialog, Ui_Dialog):
 
             self.lineEdit = QLineEdit()
             self.lineEdit.setObjectName(line_edit_name)
+            # Check data type of column before assigning default value
             if column_data_type == 'integer':
                 self.lineEdit.setText("0")
             elif column_data_type == 'character varying':
@@ -106,7 +106,9 @@ class GPXAttributeInfoDialog(QDialog, Ui_Dialog):
             self.attribute_dict[self.label.text()] = self.lineEdit
 
     def accept(self):
-
+        """
+        Import GPX to db with user supplied attribute information
+        """
         if self._mapped_class == None:
 
             try:
@@ -150,3 +152,5 @@ class GPXAttributeInfoDialog(QDialog, Ui_Dialog):
         self._insert_row(self.attribute_dict)
 
         self.close()
+
+        self.iface.mapCanvas().refresh()
