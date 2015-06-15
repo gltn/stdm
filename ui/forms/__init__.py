@@ -24,10 +24,10 @@ from .widgets import (
             IntegerWidget,
             DoubleWidget,
             ChoiceListWidget,
-            widgetCollection,
             ForeignKeyEdit,
             TextAreaWidget,
-            BooleanWidget
+            BooleanWidget,
+            WidgetCollection
 )
 from .property_mapper import TypePropertyMapper
 from .lookup_dlg import LookupModeller

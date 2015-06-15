@@ -35,7 +35,7 @@ data_types = {
         QT_TR_NOOP("Whole Number"): 'integer',
         QT_TR_NOOP("Decimal Number"): 'double precision',
         QT_TR_NOOP("Date"): 'date',
-        QT_TR_NOOP("True/ False"): 'boolean',
+        QT_TR_NOOP("Yes/ No"): 'boolean',
         QT_TR_NOOP('Short text'): 'character varying',
         QT_TR_NOOP('Long text'): 'text',
         QT_TR_NOOP('Auto Increment'): 'serial',

@@ -24,7 +24,7 @@ from stdm.ui.sourcedocument import SourceDocumentManager
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.customcontrols import CoordinatesWidget
 from stdm.utils import setComboCurrentIndexWithItemData
-from stdm.ui.customcontrols  import MultipleChoiceCombo, BrowsableForeingKey
+from stdm.ui.customcontrols  import MultipleChoiceCombo, BrowsableForeignKey
 
 class ControlValueHandler(object):
     control = None
@@ -284,7 +284,7 @@ class SearchWidgetValueHandler(ControlValueHandler):
     '''
     Value handler for CoordinatesWidget.
     '''
-    controlType = BrowsableForeingKey
+    controlType = BrowsableForeignKey
 
     def value(self):
         ctlValue = self.control.value()

@@ -55,7 +55,9 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         self.setupUi(self)
         self._populate_layers()
         self.iface = iface
-        self.gps_tool_dialog = GPSToolDialog(self.iface)
+        self.gps_tool_dialog = None
+        self.curr_lyr_table = None
+        self.curr_lyr_sp_col = None
 
     def _populate_layers(self):
         self.stdm_layers_combo.clear()
@@ -65,10 +67,12 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         for spt in spatial_tables():
             sp_columns = table_column_names(spt,True)
             self._stdm_tables[spt]=sp_columns
-            #Add spatial columns to combo box
+
+            # Add spatial columns to combo box
             for sp_col in sp_columns:
-                #Get column type and apply the appropriate icon
-                geometry_typ = str(geometryType(spt,sp_col)[0])
+
+                # Get column type and apply the appropriate icon
+                geometry_typ = str(geometryType(spt, sp_col)[0])
 
                 if geometry_typ == "POLYGON":
                     self.icon = QIcon(":/plugins/stdm/images/icons/layer_polygon.png")
@@ -79,7 +83,7 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
                 else:
                     self.icon = QIcon(":/plugins/stdm/images/icons/table.png")
 
-                #QMessageBox.information(None,"Title",str(geometry_typ))
+                # QMessageBox.information(None,"Title",str(geometry_typ))
                 self.stdm_layers_combo.addItem(self.icon, self._format_layer_display_name(sp_col, spt),
                                              {"table_name":spt,"col_name": sp_col})
 
@@ -92,17 +96,21 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         Method used to add layers to canvas
         '''
         if self.stdm_layers_combo.count() == 0:
-            #Return message that there are no layers
+            # Return message that there are no layers
             QMessageBox.warning(None,"No Layers")
 
-        sp_col_info= self.stdm_layers_combo.itemData(self.stdm_layers_combo.currentIndex())
+        sp_col_info = self.stdm_layers_combo.itemData(self.stdm_layers_combo.currentIndex())
         if sp_col_info is None:
-            #Message: Spatial column information could not be found
+            # Message: Spatial column information could not be found
             QMessageBox.warning(None,"Spatial Column Layer Could not be found")
 
-        table_name,spatial_column = sp_col_info["table_name"],sp_col_info["col_name"]
+        table_name, spatial_column = sp_col_info["table_name"], sp_col_info["col_name"]
 
-        curr_layer = vector_layer(table_name,geom_column=spatial_column)
+        # Used in gpx_table.py
+        self.curr_lyr_table = table_name
+        self.curr_lyr_sp_col = spatial_column
+
+        curr_layer = vector_layer(table_name, geom_column=spatial_column)
 
         if curr_layer.isValid():
             QgsMapLayerRegistry.instance().addMapLayer(curr_layer)
@@ -148,4 +156,5 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         if not bool(layer_map):
             QMessageBox.warning(None,"STDM","You must add a layer first, from Spatial Unit Manager to import GPX to")
         elif bool(layer_map):
+            self.gps_tool_dialog = GPSToolDialog(self.iface, self.curr_lyr_table, self.curr_lyr_sp_col)
             self.gps_tool_dialog.show()

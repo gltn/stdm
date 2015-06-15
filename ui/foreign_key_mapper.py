@@ -334,7 +334,6 @@ class ForeignKeyMapper(QWidget):
             modelObj = dbHandler.queryObject().filter(self._dbModel.id == modelId).first()
             if modelObj != None:
                 modelInstances.append(modelObj)
-            
         return modelInstances
         
     def _onRecordSelectedEntityBrowser(self,recid):
@@ -397,8 +396,13 @@ class ForeignKeyMapper(QWidget):
                     return
 
     def onfk_lookup(self, base_id, displayName):
-
-        return FKBrowserProperty(base_id, displayName)
+        """
+        :param base_id:
+        :param displayName:
+        :return:
+        """
+        fk_reference = FKBrowserProperty(base_id, displayName)
+        return fk_reference
 
     def _insertModelToView(self,modelObj):    
         '''

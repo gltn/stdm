@@ -2,7 +2,7 @@ __author__ = 'SOLOMON'
 
 
 class FKBrowserProperty(object):
-    def __init__(self,id, value, parent=None):
+    def __init__(self, id, value, parent=None):
         """
         Initialize class variables
         :param id:
@@ -28,7 +28,7 @@ class FKBrowserProperty(object):
 
         :return:
         """
-        if self._display_value == None:
+        if not self._display_value:
             return 0
         else:
             return self._display_value
