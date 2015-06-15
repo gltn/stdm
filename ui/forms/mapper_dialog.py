@@ -79,10 +79,10 @@ class CustomFormDialog(MapperDialog, MapperMixin):
             if hasattr(self._model, attrib):
                 #self.control_widget(widget_prop)
                 form_widget_loader = FormWidgetLoader(widget_prop)
-                self.control_type = form_widget_loader.control_widget()
-                self.addMapping(attrib, self.control_type, False, attrib)
+                control_type = form_widget_loader.control_widget()
+                self.addMapping(attrib, control_type, False, attrib)
 
-                self.frmLayout.addRow(QT_TRANSLATE_NOOP("ModuleSettings",self.userLabel(attrib)), self.control_type)
+                self.frmLayout.addRow(QT_TRANSLATE_NOOP("ModuleSettings",self.userLabel(attrib)), control_type)
         #self.frmLayout.setLabelAlignment(Qt.AlignJustify)
         #except Exception as ex:
            # self._notifBar.insertWarningNotification(str(ex.message))
@@ -123,7 +123,7 @@ class CustomFormDialog(MapperDialog, MapperMixin):
 
 class FormWidgetLoader(object):
     """
-    Class to format a widget control into data control on the form
+    Class to add widget control and the data  into the user form
     """
     def __init__(self, widget_property, parent=None):
         self.widget_property = widget_property

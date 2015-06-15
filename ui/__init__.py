@@ -36,16 +36,7 @@ from .entity_browser import (
                             SurveyEntityBrowser,
                             ForeignKeyBrowser
                             )
-#from .foreign_key_editors import SpatialCoordinatesEditor
-#from .foreign_key_editors import (
-#                                    SpatialCoordinatesEditor
-#                                   HouseholdIncomeEditor,
-#                                   HouseholdSavingsEditor,
-#                                   PriorityServiceEditor,
-#                                   ImpactEditor,
-#                                   FoodCropEditor,
-#                                   GardenSurveyPointEditor
-#                                   )
+
 from .base_person import (
                          BasePerson,
                          #RespondentEditor,
