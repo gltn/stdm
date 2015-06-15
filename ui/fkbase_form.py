@@ -20,7 +20,6 @@ email                : stdm@unhabitat.org
 """
 
 from .foreign_key_mapper import ForeignKeyMapper
-
 from stdm.ui.stdmdialog import DeclareMapping
 from PyQt4.QtGui import QMessageBox, QWidget
 
@@ -33,7 +32,7 @@ class FKMapperDialog(QWidget):
     def foreign_key_modeller(self, editor =None):
         self.model()
         self.personFKMapper = ForeignKeyMapper()
-        #self.editor = ForeignKeyBrowser
+
         #QMessageBox.information(None,"Loading Foreign Key",str(self._dbModel.__name__))
         self.personFKMapper.setDatabaseModel(self._dbModel)
         self.personFKMapper.setEntitySelector(editor)
