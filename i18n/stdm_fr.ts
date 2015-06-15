@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="fr_FR" sourcelanguage="">
+<!DOCTYPE TS>
+<TS version="2.0" language="fr_FR">
 <context>
     <name>AboutSTDMDialog</name>
     <message>
@@ -506,23 +507,23 @@ Once deleted it cannot be recovered.</source>
     <message>
         <location filename="data/configfile_paths.py" line="151"/>
         <source>User configuration found</source>
-        <translation type="unfinished"></translation>
+        <translation>Configuration de l&apos;utilisateur trouvé</translation>
     </message>
     <message>
         <location filename="data/configfile_paths.py" line="151"/>
         <source>Wizard detected configuration exist in the current directory. 
 Do you want to overwrite the existing config?</source>
-        <translation type="unfinished"></translation>
+        <translation>L&apos;assistant a detecté l&apos;existence ee cette configuration dans le repertoire en cours, Voulez-vous l&apos;ecrasz?</translation>
     </message>
     <message>
         <location filename="data/configfile_paths.py" line="159"/>
         <source>Configuration Exist</source>
-        <translation type="unfinished"></translation>
+        <translation>Cette configuration exixte</translation>
     </message>
     <message>
         <location filename="data/configfile_paths.py" line="159"/>
         <source>Existing configuration retained</source>
-        <translation type="unfinished"></translation>
+        <translation>Configuration existante retenue</translation>
     </message>
 </context>
 <context>
@@ -530,7 +531,7 @@ Do you want to overwrite the existing config?</source>
     <message>
         <location filename="ui/entity_browser.py" line="656"/>
         <source>%s Records</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -1318,7 +1319,7 @@ They will not be included in the report</source>
     <message>
         <location filename="ui/entity_browser.py" line="629"/>
         <source>%s Records Manager</source>
-        <translation type="unfinished"></translation>
+        <translation> Gestionnaire des enregistrements</translation>
     </message>
 </context>
 <context>
@@ -1397,7 +1398,7 @@ They will not be included in the report</source>
     <message>
         <location filename="stdm.py" line="999"/>
         <source>Unable to load the table columns in the browser, check if this table and columns exist in configuration file and database: %s</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de charger les colonnes de la table dans le navigateur, Vérifier si la table et les colonnes existent dans la configuration du fichier et la base des donnée</translation>
     </message>
 </context>
 <context>
@@ -1430,7 +1431,7 @@ They will not be included in the report</source>
     <message>
         <location filename="stdm.py" line="225"/>
         <source> This error is attributed to authentication /permission on modules or  duplicate keys for the named table(s)Remove content authorization for the modules or deleted the modules with duplicate keys completely.</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>

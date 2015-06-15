@@ -817,17 +817,17 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
 
     def display_CompileSettings(self):
         #Compile the user defined settings
-        self.rptElements.headerElements=[]
-        self.rptElements.detailElements=[]
-        self.rptElements.groups=[]
+        self.rptElements.headerElements = []
+        self.rptElements.detailElements = []
+        self.rptElements.groups = []
         
         #Config File Settings
-        self.rptElements.footer=self.config.get("ReportMessages","Footer")
-        self.rptElements.author=self.config.get("ReportMessages","Author")
-        self.rptElements.subject=self.config.get("ReportMessages","Subject")
+        self.rptElements.footer = self.config.get("ReportMessages","Footer")
+        self.rptElements.author = self.config.get("ReportMessages","Author")
+        self.rptElements.subject = self.config.get("ReportMessages","Subject")
         
         #List of image fields
-        self.imageFields=[]
+        self.imageFields = []
         
         #Get column style settings
         left=0
