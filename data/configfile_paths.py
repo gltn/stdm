@@ -154,8 +154,11 @@ class FilePaths(object):
                 if filecmp.cmp(base_file, user_file, shallow=False):
                     pass
                 else:
-                    os.remove(user_file)
-                    shutil.copy(base_file, self.userPath)
+                    try:
+                        os.remove(user_file)
+                        shutil.copy(base_file, self.userPath)
+                    except:
+                        pass
             else:
                 QMessageBox.information(None, QApplication.translate("FilePaths","Configuration Exist"),
                                         QApplication.translate("FilePaths","Existing configuration retained"))
