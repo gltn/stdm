@@ -1272,7 +1272,7 @@ They will not be included in the report</source>
     <message>
         <location filename="ui/reports/report_builder.py" line="1058"/>
         <source>Report Document(*.pdf)</source>
-        <translation>document de rapport (*. pdf)</translation>
+        <translation type="unfinished">document de rapport (*.pdf)</translation>
     </message>
     <message>
         <location filename="ui/reports/report_builder.py" line="1064"/>

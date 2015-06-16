@@ -150,7 +150,7 @@ class ForeignKeyEdit(InputWidget):
         #InputWidget.__init__(self)
         super(ForeignKeyEdit,self).__init__()
         self.control = BrowsableForeignKey()
-        self.control.signal_sender.connect(self.foreign_key_widget_activated)
+        #self.control.signal_sender.connect(self.foreign_key_widget_activated)
         #QMessageBox.information(None,"Step of processing work","Not working")
 
     def Factory(self):
@@ -160,7 +160,7 @@ class ForeignKeyEdit(InputWidget):
     def adopt(self):
         self.control.setText("0")
         self.control.setReadOnly(True)
-        #self.control.signal_sender.connect(self.foreign_key_widget_activated)
+        self.control.signal_sender.connect(self.foreign_key_widget_activated)
 
     def foreign_key_widget_activated(self):
         QMessageBox.information(None,"Step of processing work","Not working")
@@ -188,8 +188,8 @@ class WidgetCollection(object):
     """
     Class initialization
     """
-    @staticmethod
-    def widget_control_type(data_type):
+    #@staticmethod
+    def widget_control_type(self,data_type):
         mapping = {
             'character varying': LineEditWidget,
             'integer': IntegerWidget,

@@ -638,20 +638,20 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
             return lkformatter.setDisplay(lookupvalue)
         return lookupformatter
 
-class ForeignKeyBrowser(EntityBrowser):
+class ForeignKeyBrowser(object):
     '''
     Browser for  foreign key records.
     '''
 
-    def __init__(self, parent = None, table =None, state = VIEW|MANAGE):
+    def __init__(self, parent = None, table =None):
         self.table = table
-        mapping = DeclareMapping.instance()
-        model = mapping.tableMapping('household')
-        self._model = model
-        EntityBrowser.__init__(self, parent, self._model, state)
+        # mapping = DeclareMapping.instance()
+        # model = mapping.tableMapping('household')
+        # self._model = model
+        #EntityBrowser.__init__(self, parent, self._model, state)
 
-    def title(self):
-        return QApplication.translate("ForeignKeyBrowser", "%s Records")%str(self._model.__name__)
+    #def title(self):
+      #  return QApplication.translate("ForeignKeyBrowser", "%s Records")%str(self._model.__name__)
 
 class SurveyEntityBrowser(ContentGroupEntityBrowser):
     '''
