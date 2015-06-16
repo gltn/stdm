@@ -688,9 +688,9 @@ class PropertyNode(BaseSTRNode):
         '''
         Returns the object values as a list.
         '''
-        for prop,label in self.propertyLabels.iteritems():
+        for prop, label in self.propertyLabels.iteritems():
             
-            strText=str(getattr(self.property, prop))
+            strText = unicode(getattr(self.property, prop))
             '''
             if prop == self.propNameUseType:
                 
@@ -789,8 +789,8 @@ class ConflictNode(BaseSTRNode):
         '''
         Returns the object values as a list.
         '''
-        for prop,label in self.propertyLabels.iteritems():
-            strText = str(getattr(self.conflict,prop))
+        for prop, label in self.propertyLabels.iteritems():
+            strText = unicode(getattr(self.conflict,prop))
             self._objValues.append(strText)
     
     def _setChildren(self):
@@ -897,7 +897,7 @@ class TaxationNode(BaseSTRNode):
         #Set object values
         self._setObjectValues()
         
-        self._parentTitle = str(QApplication.translate("TaxationNode","Taxation"))
+        self._parentTitle = unicode(QApplication.translate("TaxationNode","Taxation"))
         
         super(TaxationNode,self).__init__([self._parentTitle],parent, True, styleIfChild)
         
@@ -906,15 +906,15 @@ class TaxationNode(BaseSTRNode):
     def _setDisplayLabels(self):
         if self.taxType == TAX_RECEIPT_PRIVATE:
             self.propertyLabels = OrderedDict({
-                       self.propNameRefDate : str(QApplication.translate("TaxationNode","Last Year CFBP Was Paid")),
-                       self.propNameAmount : str(QApplication.translate("TaxationNode","Amount of CFBP"))
+                       self.propNameRefDate : unicode(QApplication.translate("TaxationNode","Last Year CFBP Was Paid")),
+                       self.propNameAmount : unicode(QApplication.translate("TaxationNode","Amount of CFBP"))
                        })
         else:
             self.propertyLabels = OrderedDict({
-                       self.propNameRefDate : str(QApplication.translate("TaxationNode","Date of Latest Receipt")),
-                       self.propNameAmount : str(QApplication.translate("TaxationNode","Amount of Last Receipt")),
-                       self.propNameLeaseDate : str(QApplication.translate("TaxationNode","Start of Leasing Year")),
-                       self.propNameTaxOffice : str(QApplication.translate("TaxationNode","Tax Office"))
+                       self.propNameRefDate : unicode(QApplication.translate("TaxationNode","Date of Latest Receipt")),
+                       self.propNameAmount : unicode(QApplication.translate("TaxationNode","Amount of Last Receipt")),
+                       self.propNameLeaseDate : unicode(QApplication.translate("TaxationNode","Start of Leasing Year")),
+                       self.propNameTaxOffice : unicode(QApplication.translate("TaxationNode","Tax Office"))
                        })
             
     def _setTaxType(self,tax):
