@@ -20,19 +20,19 @@ email                : stdm@unhabitat.org
 """
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from stdm.settings import pbIcon
+from stdm.settings import tableIcon
 __all__ = ["SearchableLineEdit"]
 
 class SearchableLineEdit(QLineEdit):
     """Subclass the QLineEdit to support a toolbutton"""
-    #signal_sender = pyqtSignal("PyQt_PyObject")
-    signal_sender = pyqtSignal()
+    signal_sender = pyqtSignal(name="SignalPressed")
+    #signal_sender = pyqtSignal()
     def __init__(self, parent=None):
         QLineEdit.__init__(self, parent)
         self.button = QToolButton(self)
         self.button.setCursor(Qt.ArrowCursor)
         self.key = "0"
-        self.button.setIcon(pbIcon)
+        self.button.setIcon(tableIcon)
         self.button.clicked.connect(self.button_click_event)
 
     def resizeEvent(self,event):

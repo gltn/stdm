@@ -15,7 +15,8 @@ from .tools_network import getProxy
 from .path_settings import (
                             dataIcon,
                             pbIcon,
-                            tableIcon
+                            tableIcon,
+                            fk_icon
                             )
 from .module_settings import ModuleSettings
 
