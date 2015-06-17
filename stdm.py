@@ -46,14 +46,16 @@ from ui import (loginDlg,
 from ui.spatialUnitMangerDockWidget import SpatialUnitManagerDockWidget
 from ui.reports import ReportBuilder
 import data
-from data import (STDMDb,
-                  spatial_tables,
-                  ConfigTableReader,
-                  activeProfile,
-                  contentGroup,
-                  vector_layer,
-                  geometryType
-                  )
+from data import (
+    activeProfile,
+    contentGroup,
+    geometryType,
+    NoPostGISError,
+    spatial_tables,
+    STDMDb,
+    ConfigTableReader,
+    vector_layer
+)
 
 from data.reports import SysFonts
 from navigation import (STDMAction,
@@ -202,7 +204,22 @@ class STDMQGISLoader(object):
             data.app_dbconn = frmLogin.dbConn
 
             #Initialize the whole STDM database
-            db = STDMDb.instance()
+            try:
+                db = STDMDb.instance()
+
+            except NoPostGISError:
+                err_msg = QApplication.translate("STDM",
+                            "STDM cannot be loaded because the system has "
+                            "detected that the PostGIS extension is missing "
+                            "in '{0}' database.\nCheck that PostGIS has been "
+                            "installed and the extension enabled in the STDM "
+                            "database. Please contact the system "
+                            "administrator.".format(frmLogin.dbConn.Database))
+                QMessageBox.critical(self.iface.mainWindow(),
+                    QApplication.translate("STDM","Spatial Extension Error"),
+                    err_msg)
+
+                return
 
             #Load logout and change password actions
             self.stdmInitToolbar.insertAction(self.loginAct,self.logoutAct)
@@ -213,8 +230,6 @@ class STDMQGISLoader(object):
 
             self.loginAct.setEnabled(False)   
 
-            #self.loadModules()
-            #resetContentRoles()
             try:
                 self.stdmTables = spatial_tables()
                 self.loadModules()
