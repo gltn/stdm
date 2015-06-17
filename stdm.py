@@ -102,6 +102,8 @@ class STDMQGISLoader(object):
         self.stdmTables = []
         self.spatialLayerMangerDockWidget = None
 
+        self._user_logged_in = False
+
     def initGui(self):
         # Initial actions on starting up the application
         self._menu_items()
@@ -212,9 +214,10 @@ class STDMQGISLoader(object):
                             "STDM cannot be loaded because the system has "
                             "detected that the PostGIS extension is missing "
                             "in '{0}' database.\nCheck that PostGIS has been "
-                            "installed and the extension enabled in the STDM "
-                            "database. Please contact the system "
-                            "administrator.".format(frmLogin.dbConn.Database))
+                            "installed and that the extension has been enabled "
+                            "in the STDM database. Please contact the system "
+                            "administrator for more information."
+                                        .format(frmLogin.dbConn.Database))
                 QMessageBox.critical(self.iface.mainWindow(),
                     QApplication.translate("STDM","Spatial Extension Error"),
                     err_msg)
@@ -228,11 +231,15 @@ class STDMQGISLoader(object):
             self.stdmMenu.insertAction(self.loginAct,self.logoutAct)
             self.stdmMenu.insertAction(self.loginAct,self.changePasswordAct)
 
-            self.loginAct.setEnabled(False)   
+            self.loginAct.setEnabled(False)
+
+            #Fetch STDM tables
+            self.stdmTables = spatial_tables()
 
             try:
-                self.stdmTables = spatial_tables()
                 self.loadModules()
+                self._user_logged_in = True
+
             except Exception as ex:
                 options = QApplication.translate("STDMQGISLoader"," This error is attributed to authentication " \
                           "/permission on modules or  duplicate keys for the named table(s)" \
@@ -1043,11 +1050,14 @@ class STDMQGISLoader(object):
         '''
         Clear database connection references and content items
         '''
+        if not self._user_logged_in:
+            return
+
         #Remove STDM layers
         self.removeSTDMLayers()
 
         #Clear singleton ref for SQLALchemy connections
-        if data.app_dbconn!= None:
+        if not data.app_dbconn is None:
             #clear_mappers()
             STDMDb.cleanUp()
             DeclareMapping.cleanUp()
@@ -1055,23 +1065,23 @@ class STDMQGISLoader(object):
         #Remove database reference
         data.app_dbconn = None
 
-        if self.toolbarLoader != None:
+        if not self.toolbarLoader is None:
             self.toolbarLoader.unloadContent()
-        if self.menubarLoader != None:
+        if not self.menubarLoader is None:
             self.menubarLoader.unloadContent()
             self.stdmMenu.clear()
         #Reset property management window
-        if self.propManageWindow != None:
+        if not self.propManageWindow is None:
             self.iface.removeDockWidget(self.propManageWindow)
             del self.propManageWindow
             self.propManageWindow = None
 
         #Reset View STR Window
-        if self.viewSTRWin != None:
+        if not self.viewSTRWin is None:
             del self.viewSTRWin
             self.viewSTRWin = None
 
-        # Remove properly Spatial Unit Manager
+        #Remove Spatial Unit Manager
         if self.spatialLayerMangerDockWidget:
             self.spatialLayerMangerDockWidget.close()
 
