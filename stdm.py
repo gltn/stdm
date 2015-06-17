@@ -109,7 +109,7 @@ class STDMQGISLoader(object):
                                    self.iface.mainWindow(),
                                    "CAA4F0D9-727F-4745-A1FC-C2173101F711")
         self.loginAct.setShortcut(QKeySequence(Qt.Key_F2))
-        self.aboutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/information.png"),
+        self.aboutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/info.png"),
         QApplication.translate("AboutToolbarAction","About"), self.iface.mainWindow(),
         "137FFB1B-90CD-4A6D-B49E-0E99CD46F784")
         #Define actions that are available to all logged in users
