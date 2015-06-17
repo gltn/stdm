@@ -102,13 +102,14 @@ class STDMQGISLoader(object):
 
     def initGui(self):
         # Initial actions on starting up the application
-        self.STDMmenuItems()
+        self._menu_items()
         self.loginAct = STDMAction(QIcon(":/plugins/stdm/images/icons/login.png"),
                                    QApplication.translate("LoginToolbarAction",
                                                           "Login"),
                                    self.iface.mainWindow(),
                                    "CAA4F0D9-727F-4745-A1FC-C2173101F711")
         self.loginAct.setShortcut(QKeySequence(Qt.Key_F2))
+
         self.aboutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/info.png"),
         QApplication.translate("AboutToolbarAction","About"), self.iface.mainWindow(),
         "137FFB1B-90CD-4A6D-B49E-0E99CD46F784")
@@ -117,6 +118,7 @@ class STDMQGISLoader(object):
         QApplication.translate("LogoutToolbarAction","Logout"), self.iface.mainWindow(),
         "EF3D96AF-F127-4C31-8D9F-381C07E855DD")
         self.logoutAct.setShortcut(QKeySequence(Qt.Key_Delete))
+
         self.changePasswordAct = STDMAction(QIcon(":/plugins/stdm/images/icons/change_password.png"), \
         QApplication.translate("ChangePasswordToolbarAction","Change Password"), self.iface.mainWindow(),
         "8C425E0E-3761-43F5-B0B2-FB8A9C3C8E4B")
@@ -135,7 +137,7 @@ class STDMQGISLoader(object):
         self.initMenuItems()
 
 
-    def STDMmenuItems(self):
+    def _menu_items(self):
         #Create menu and menu items on the menu bar
         self.stdmMenu=QMenu()
         self.stdmMenu.setTitle(QApplication.translate("STDMQGISLoader","STDM"))
@@ -198,11 +200,16 @@ class STDMQGISLoader(object):
         if retstatus == QDialog.Accepted:
             #Assign the connection object
             data.app_dbconn = frmLogin.dbConn
+
             #Initialize the whole STDM database
             db = STDMDb.instance()
+
             #Load logout and change password actions
             self.stdmInitToolbar.insertAction(self.loginAct,self.logoutAct)
             self.stdmInitToolbar.insertAction(self.loginAct,self.changePasswordAct)
+
+            self.stdmMenu.insertAction(self.loginAct,self.logoutAct)
+            self.stdmMenu.insertAction(self.loginAct,self.changePasswordAct)
 
             self.loginAct.setEnabled(False)   
 
@@ -217,15 +224,15 @@ class STDMQGISLoader(object):
                           "Remove content authorization for the modules or " \
                           "deleted the modules with duplicate keys completely.")
                 self.reset_content_modules_id(str(ex.message + options))
-            #:
-               # delete_table_keys()
 
     def loadModules(self):
         '''
         Define and add modules to the menu and/or toolbar using the module loader
         '''
-        self.toolbarLoader = QtContainerLoader(self.iface.mainWindow(),self.stdmInitToolbar,self.logoutAct)
-        self.menubarLoader = QtContainerLoader(self.iface.mainWindow(), self.stdmMenu, self.helpAct)
+        self.toolbarLoader = QtContainerLoader(self.iface.mainWindow(),
+                                               self.stdmInitToolbar,self.logoutAct)
+        self.menubarLoader = QtContainerLoader(self.iface.mainWindow(),
+                                               self.stdmMenu, self.logoutAct)
         #Connect to the content added signal
         #self.toolbarLoader.contentAdded.connect(self.onContentAdded)
 
@@ -315,7 +322,6 @@ class STDMQGISLoader(object):
         self.createFeatureAct.setVisible(False)
 
         #SaveEdits action; will not be registered since it is associated with the
-        #  CreateFeature action in order to be relevant
         self.saveEditsAct = QAction(QIcon(":/plugins/stdm/images/icons/save_tb.png"), \
         QApplication.translate("CreateFeatureAction","Save Edits"), self.iface.mainWindow())
 
@@ -504,13 +510,20 @@ class STDMQGISLoader(object):
 
         self.menubarLoader.addContents(adminSettingsCntGroups, [stdmAdminMenu, stdmAdminMenu])
 
-        self.menubarLoader.addContents(self.moduleContentGroups, [stdmEntityMenu, stdmEntityMenu])
-        self.toolbarLoader.addContents(self.moduleContentGroups, [contentMenu, contentBtn])
-        #self.menubarLoader.addContent(tbSeparator)
-
         self.toolbarLoader.addContent(self.wzdConfigCntGroup)
         self.menubarLoader.addContent(self.wzdConfigCntGroup)
-        self.menubarLoader.addContent(tbSeparator)
+
+        self.menubarLoader.addContent(self._action_separator())
+        self.toolbarLoader.addContent(self._action_separator())
+
+        self.menubarLoader.addContents(self.moduleContentGroups, [stdmEntityMenu, stdmEntityMenu])
+        self.toolbarLoader.addContents(self.moduleContentGroups, [contentMenu, contentBtn])
+
+        self.menubarLoader.addContent(self.spatialUnitManagerCntGroup)
+        self.toolbarLoader.addContent(self.spatialUnitManagerCntGroup)
+
+        self.toolbarLoader.addContent(self.STRCntGroup)
+        self.menubarLoader.addContent(self.STRCntGroup)
 
         self.toolbarLoader.addContent(self.adminUnitsCntGroup)
         self.menubarLoader.addContent(self.adminUnitsCntGroup)
@@ -520,39 +533,18 @@ class STDMQGISLoader(object):
 
         self.toolbarLoader.addContent(self.exportCntGroup)
         self.menubarLoader.addContent(self.exportCntGroup)
-        self.menubarLoader.addContent(tbSeparator)
 
-        self.toolbarLoader.addContent(tbSeparator)
+        self.menubarLoader.addContent(self._action_separator())
+        self.toolbarLoader.addContent(self._action_separator())
 
         self.toolbarLoader.addContent(self.docDesignerCntGroup)
         self.menubarLoader.addContent(self.docDesignerCntGroup)
 
         self.toolbarLoader.addContent(self.docGeneratorCntGroup)
         self.menubarLoader.addContent(self.docGeneratorCntGroup)
-        self.menubarLoader.addContent(tbSeparator)
 
         self.toolbarLoader.addContent(self.rptBuilderCntGroup)
         self.menubarLoader.addContent(self.rptBuilderCntGroup)
-
-        self.toolbarLoader.addContent(tbSeparator)
-        self.toolbarLoader.addContent(self.STRCntGroup)
-        self.menubarLoader.addContent(self.STRCntGroup)
-
-        self.toolbarLoader.addContent(self.surveyCntGroup)
-        self.menubarLoader.addContent(self.surveyCntGroup)
-        
-        self.toolbarLoader.addContent(self.STRCntGroup)
-
-        self.menubarLoader.addContent(self.spatialUnitManagerCntGroup)
-        self.toolbarLoader.addContent(tbSeparator)
-        self.toolbarLoader.addContent(self.spatialUnitManagerCntGroup)
-
-        #self.toolbarLoader.addContent(self.spatialEditingCntGroup)
-        #self.menubarLoader.addContent(self.spatialEditingCntGroup)
-
-        #self.toolbarLoader.addContent(self.createFeatureCntGroup)
-        #self.menubarLoader.addContent(self.createFeatureCntGroup)
-        self.menubarLoader.addContent(self.logoutAct)
 
         #Group spatial editing tools together
         self.spatialEditingGroup = QActionGroup(self.iface.mainWindow())
@@ -572,9 +564,14 @@ class STDMQGISLoader(object):
         #     fontPath=str(profPath).replace("\\", "/")+"/font.cache"
         # SysFonts.register(fontPath)
 
+        self.create_spatial_unit_manager()
+
+    def create_spatial_unit_manager(self):
         self.spatialLayerMangerDockWidget = SpatialUnitManagerDockWidget(self.iface)
-        self.spatialLayerMangerDockWidget.setWindowTitle(QApplication.translate("STDMQGISLoader",'Spatial Unit Manager'))
-        self.iface.addDockWidget(Qt.RightDockWidgetArea, self.spatialLayerMangerDockWidget)
+        self.spatialLayerMangerDockWidget.setWindowTitle(
+            QApplication.translate("STDMQGISLoader", 'Spatial Unit Manager'))
+        self.iface.addDockWidget(Qt.RightDockWidgetArea,
+                                 self.spatialLayerMangerDockWidget)
         self.spatialLayerMangerDockWidget.show()
 
     def configureMapTools(self):
@@ -1103,6 +1100,16 @@ class STDMQGISLoader(object):
         message.setText(message_text)
         message.setStandardButtons(QMessageBox.Ok)
         return message.exec_()
+
+    def _action_separator(self):
+        """
+        :return: Toolbar or menu separator
+        :rtype: QAction
+        """
+        separator = QAction(self.iface.mainWindow())
+        separator.setSeparator(True)
+
+        return separator
 
     def spatialLayerMangerActivate(self):
         if self.spatialLayerMangerDockWidget.isVisible():
