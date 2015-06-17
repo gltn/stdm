@@ -570,7 +570,7 @@ class STDMQGISLoader(object):
         self.spatialLayerMangerDockWidget = SpatialUnitManagerDockWidget(self.iface)
         self.spatialLayerMangerDockWidget.setWindowTitle(
             QApplication.translate("STDMQGISLoader", 'Spatial Unit Manager'))
-        self.iface.addDockWidget(Qt.RightDockWidgetArea,
+        self.iface.addDockWidget(Qt.LeftDockWidgetArea,
                                  self.spatialLayerMangerDockWidget)
         self.spatialLayerMangerDockWidget.show()
 
