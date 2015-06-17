@@ -23,12 +23,34 @@ from collections import OrderedDict
 
 from PyQt4.QtGui import QApplication
 
-from sqlalchemy import create_engine, ForeignKey,Table ,event,func, MetaData
-from sqlalchemy import Column, Date, Integer, String ,Numeric,Text,Boolean
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy import (
+    create_engine,
+    ForeignKey,
+    Table,
+    event,
+    func,
+    MetaData
+)
+from sqlalchemy import (
+    Column,
+    Date,
+    Integer,
+    String,
+    Numeric,
+    Text,
+    Boolean
+)
+from sqlalchemy.ext.declarative import (
+    declarative_base,
+    declared_attr
+)
+from sqlalchemy.orm import (
+    relationship,
+    backref
+)
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.schema import Sequence
+from sqlalchemy.sql.expression import text
 from geoalchemy2 import Geometry
 
 import stdm.data
@@ -36,11 +58,10 @@ import stdm.data
 metadata=MetaData()
 Base = declarative_base(metadata=metadata)
 
-from PyQt4.QtGui import QMessageBox
 class Singleton(object):
-    '''
+    """
     Singleton class
-    '''
+    """
     def __init__(self,decorated):
         self.__decorated = decorated
         
@@ -63,38 +84,71 @@ class Singleton(object):
         '''
         Remove the instance of the referenced singleton class
         '''
-        del self._instance        
+        del self._instance
+
+class NoPostGISError(Exception):
+    """Raised when the PostGIS extension is not installed in the specified
+    STDM database."""
     
 @Singleton
 class STDMDb(object):
-    
-    '''
+    """
     This class will exist only once hence the reason it has a singleton attribute.
-    It will contain the session for managing the unit of work for each class.        
-    '''
+    It will contain the session for managing the unit of work for each class.
+    """
     engine = None
     session = None
-    
+
     def __init__(self):
         #Initialize database engine
-        self.engine = create_engine(stdm.data.app_dbconn.toAlchemyConnection(), echo = False)       
-        Session = sessionmaker(bind = self.engine)
-        self.session = Session() 
-        Base.metadata.create_all(self.engine)
-        #Base.metadata=metadata
-        metadata.reflect(bind=self.engine)
-        
+        self.engine = create_engine(stdm.data.app_dbconn.toAlchemyConnection(), echo=False)
+
+        #Check for PostGIS extension
+        state = self._check_spatial_extension()
+
+        if not state:
+            raise NoPostGISError
+
+        Session = sessionmaker(bind=self.engine)
+        self.session = Session()
+        self.createMetadata()
+
     def createMetadata(self):
-        '''
+        """
         Creates STDM database schema
-        '''
+        """
         Base.metadata.create_all(self.engine)
-            
+
     def instance(self,*args,**kwargs):
-        '''
+        """
         Dummy method. Eclipse IDE cannot handle the Singleton decorator in Python
-        '''
+        """
         pass
+
+    def _check_spatial_extension(self):
+        """Check if the PostGIS exists and if so, check if the extension
+        has been installed in the specified database and raise an error if
+        the extension is not found."""
+        spatial_extension_installed = True
+
+        sql = text("SELECT installed_version FROM pg_available_extensions "
+                   "WHERE name=:ext_name")
+
+        conn = self.engine.connect()
+        result = conn.execute(sql, ext_name='postgis').first()
+
+        if result is None:
+            spatial_extension_installed = False
+
+        else:
+            installed_version = result[0]
+
+            if installed_version is None:
+                spatial_extension_installed = False
+
+        conn.close()
+
+        return spatial_extension_installed
         
 class Model(object):
     '''
@@ -312,32 +366,6 @@ class SupportsRankingMixin(object):
     id = Column(Integer,primary_key=True)
     Rank = Column("rank",Integer)
     OtherItem = Column("other_item",String(30))
-#     
-#     @declared_attr
-#     def FarmerID(cls):
-#         return Column("farmer_id",Integer,ForeignKey("farmer.id"))
-#     
-class Priority(SupportsRankingMixin,Model,Base):
-    '''
-    Priority tools and services as identified by a farmer.
-    '''
-    __tablename__ = "priority"
-    itemID = Column("item_id",Integer)
-    Name = Column("name",String(50))
-    Type = Column("type",String(50))
-    Management = Column("management",String(50))
-    
-    @staticmethod
-    def displayMapping():
-        #Display translation mappings
-        attrTranslations = OrderedDict()
-        attrTranslations["id"] = "ID" 
-        attrTranslations["itemID"] = QApplication.translate("DatabaseMapping","Priority Service") 
-        attrTranslations["OtherItem"] = QApplication.translate("DatabaseMapping","Other Service")
-        attrTranslations["Rank"] = QApplication.translate("DatabaseMapping","Rank")
-        
-        return attrTranslations
-
     
     
     
