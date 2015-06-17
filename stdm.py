@@ -542,15 +542,16 @@ class STDMQGISLoader(object):
         self.menubarLoader.addContent(self.surveyCntGroup)
         
         self.toolbarLoader.addContent(self.STRCntGroup)
-        self.menubarLoader.addContent(self.spatialEditingCntGroup)
 
         self.menubarLoader.addContent(self.spatialUnitManagerCntGroup)
         self.toolbarLoader.addContent(tbSeparator)
-        self.toolbarLoader.addContent(self.spatialEditingCntGroup)
         self.toolbarLoader.addContent(self.spatialUnitManagerCntGroup)
 
-        self.toolbarLoader.addContent(self.createFeatureCntGroup)
-        self.menubarLoader.addContent(self.createFeatureCntGroup)
+        #self.toolbarLoader.addContent(self.spatialEditingCntGroup)
+        #self.menubarLoader.addContent(self.spatialEditingCntGroup)
+
+        #self.toolbarLoader.addContent(self.createFeatureCntGroup)
+        #self.menubarLoader.addContent(self.createFeatureCntGroup)
         self.menubarLoader.addContent(self.logoutAct)
 
         #Group spatial editing tools together
