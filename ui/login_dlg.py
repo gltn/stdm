@@ -66,13 +66,17 @@ class loginDlg(QDialog, Ui_frmLogin):
         self.notifBar.clear()
         
         if self.txtUserName.text() == "":
-            self.notifBar.insertErrorNotification(QApplication.translate("loginDlg","UserName field cannot be empty"))
+            self.notifBar.insertErrorNotification(
+                QApplication.translate("loginDlg","UserName field cannot be empty"))
             self.txtUserName.setFocus()
+
             return False
         
         if self.txtPassword.text() == "":
-            self.notifBar.insertErrorNotification(QApplication.translate("loginDlg","Password field cannot be empty"))
+            self.notifBar.insertErrorNotification(
+                QApplication.translate("loginDlg","Password field cannot be empty"))
             self.txtPassword.setFocus()
+
             return False 
         
         else:
@@ -149,17 +153,13 @@ class loginDlg(QDialog, Ui_frmLogin):
                 self.dbConn = dbconn
                 self.accept()
             else:
-                self.login_operation_error(msg)
-                    #self.on_new_db()
+                QMessageBox.critical(self,
+                                     QApplication.translate("LoginDialog",
+                                "Authentication Failed"),
+                                     msg)
                 if self.User.UserName == SUPERUSER:
                     self.resetSetting()
                     self.onRegistrySettings()
                 self.txtPassword.setFocus()
                 self.txtPassword.selectAll()
 
-    def login_operation_error(self, message_text):
-        message =QMessageBox()
-        message.setWindowTitle(QApplication.translate("loginDlg","Authentication Failed"))
-        message.setText(message_text)
-        message.setStandardButtons(QMessageBox.Ok)
-        return  message.exec_()

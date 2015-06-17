@@ -30,12 +30,12 @@ from .content_group import ContentGroup
 from stdm.security import Authorizer, SecurityException
 
 class QtContainerLoader(QObject):
-    '''
+    """
     Loads actions to the specified container based on the approved roles.
     The loader registers new modules if they do not exist.
     If an actionRef parameter is specified then the action will all be added 
     before the reference action in the corresponding container widget.
-    '''
+    """
     authorized = pyqtSignal(Content)
     finished = pyqtSignal()
     #contentAdded = pyqtSignal(Content)
@@ -53,9 +53,9 @@ class QtContainerLoader(QObject):
         self._separatorAction = None
                 
     def addContent(self, content, parents = None):
-        '''
+        """
         Add ContentGroup and its corresponding parent if available.
-        '''        
+        """
         self._contentGroups[content] = parents
         
         #Connect content group signals
@@ -70,9 +70,9 @@ class QtContainerLoader(QObject):
             self.addContent(cg, parents)
         
     def loadContent(self):
-        '''
+        """
         Add defined items in the specified container.
-        '''
+        """
         #If the user does not belong to any STDM group then the system will raise an error so gracefully terminate
         userRoles = self._authorizer.userRoles
         
@@ -91,7 +91,7 @@ class QtContainerLoader(QObject):
                 allowedContent = k.checkContentAccess()
                 
                 if len(allowedContent) > 0:   
-                    if v == None:
+                    if v is None:
                         #if there is no parent then add directly to container after asserting permissions
                         self._addItemtoContainer(k.containerItem())
                     else:
@@ -106,6 +106,9 @@ class QtContainerLoader(QObject):
         #Add separator
         if isinstance(self._container,QToolBar) or isinstance(self._container,QMenu):            
             self._separatorAction = self._container.insertSeparator(self._actionReference)
+
+        #Remove consecutive separators
+        self._rem_consecutive_separators()
             
         #Emit signal on finishing to load content
         self.finished.emit()
@@ -115,7 +118,26 @@ class QtContainerLoader(QObject):
         Slot raised when a content item has been approved in the content group.
         The signal is propagated to the caller.
         """
-        self.authorized.emit(content)   
+        self.authorized.emit(content)
+
+    def _rem_consecutive_separators(self):
+        """
+        Removes consecutive separator actions.
+        """
+        actions = self._container.actions()
+
+        for i, act in enumerate(actions):
+            prev_idx = i - 1
+            if prev_idx >= 0:
+               prev_act = actions[prev_idx]
+               if prev_act.isSeparator() and act.isSeparator():
+                    self._container.removeAction(act)
+
+        #Check if first action is separator and if so, remove it
+        if len(actions) > 0:
+            first_act = actions[0]
+            if first_act.isSeparator():
+                self._container.removeAction(first_act)
                 
     def _addItemtoContainer(self,content):
         '''
