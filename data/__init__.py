@@ -1,7 +1,26 @@
 from .config import DatabaseConfig
 from connection import DatabaseConnection
-from .database import AdminSpatialUnitSet, Enumerator, Survey, Priority, Content, Role, Witness,STDMDb,Base,Model,Respondent
-from .qtmodels import UsersRolesModel,PersonTableModel, STRTreeViewModel, BaseSTDMTableModel
+from .database import (
+    AdminSpatialUnitSet,
+    Enumerator,
+    Survey,
+    Content,
+    Role,
+    Witness,
+    STDMDb,
+    Base,
+    Model,
+    Respondent
+)
+from .database import (
+    NoPostGISError
+)
+from .qtmodels import (
+    UsersRolesModel,
+    PersonTableModel,
+    STRTreeViewModel,
+    BaseSTDMTableModel
+)
 from .globals import app_dbconn
 from .modelformatters import respondentRoleFormatter,LookupFormatter,witnessRelationshipFormatter, \
 DoBFormatter,genderFormatter,maritalStatusFormatter,savingOptionFormatter,inputServiceFormatter, \
