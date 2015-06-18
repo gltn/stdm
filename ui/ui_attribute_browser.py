@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_attribute_browser.ui'
 #
-# Created: Thu Jun 18 21:30:31 2015
+# Created: Thu Jun 18 22:03:33 2015
 #      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_AttribBrowser(object):
     def setupUi(self, AttribBrowser):
         AttribBrowser.setObjectName(_fromUtf8("AttribBrowser"))
-        AttribBrowser.resize(413, 49)
+        AttribBrowser.resize(421, 41)
         self.gridLayout = QtGui.QGridLayout(AttribBrowser)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.horizontalLayout = QtGui.QHBoxLayout()
