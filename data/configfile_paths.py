@@ -25,10 +25,10 @@ import platform
 import filecmp
 from stdm.utils import PLUGIN_DIR
 from PyQt4.QtGui import QApplication, QMessageBox
-FILE="stdmConfig.xml"
+DEFAULT_CONFIG="stdmConfig.xml"
 LICENSE="LICENSE.txt"
 HTML="stdm_schema.html"
-SQL="stdmConfig.sql"
+BASIC_SQL="stdmConfig.sql"
 CONFIG="Config"
 HELP="stdm.chm"
 
@@ -66,7 +66,7 @@ class FilePaths(object):
 
     def cacheFile(self):
         #To implemented a backup file for comparing edits everytime the user makes changes
-        path = self.userPath+'/temp/%s'%FILE
+        path = self.userPath+'/temp/%s'%DEFAULT_CONFIG
         return path
     
     def cacheDir(self):
@@ -90,11 +90,11 @@ class FilePaths(object):
     
     def SQLFile(self):
         #Read the html representation of the schema
-        self._sql = self.userPath+'/%s'%SQL
+        self._sql = self.userPath+'/%s'%BASIC_SQL
         return self._sql
     
     def baseSQLPath(self):
-        path= self.baseDir+'/%s'%FILE
+        path= self.baseDir+'/%s'%DEFAULT_CONFIG
         #path=self.userPath+'/temp/%s'%FILE
         return path
     
@@ -123,7 +123,7 @@ class FilePaths(object):
         #Copy template files to the user directory
         try:
             #self.compare_config_version(FILE)
-            for fileN in [FILE, HTML, SQL]:
+            for fileN in [DEFAULT_CONFIG, BASIC_SQL]:
                 if not os.path.isfile(path+'/%s'%fileN):
                     baseFile = self.baseDir +'/%s'%fileN
                     shutil.copy(baseFile,self.userPath)
@@ -144,7 +144,7 @@ class FilePaths(object):
         else:
             path = path
         base_file = self.baseSQLPath()
-        user_file = path +'/%s'%FILE
+        user_file = path +'/%s'%DEFAULT_CONFIG
         if os.path.isfile(user_file):
             if QMessageBox.warning(None, QApplication.translate("FilePaths","Previous user configuration found"),
                                    QApplication.translate("FilePaths",
@@ -183,7 +183,7 @@ class FilePaths(object):
         """
         Default path to the config file
         """
-        xml = self.userPath +'/%s'%FILE
+        xml = self.userPath +'/%s'%DEFAULT_CONFIG
         return xml
     
     def localPath(self):
