@@ -1,10 +1,9 @@
 <RCC>
   <qresource prefix="/plugins/stdm">
-    <file>images/icons/fk_icon.png</file>
     <file>images/QGIS Splash.png</file>
     <file>images/icons/edit_settings.png</file>
     <file>images/icons/help-content.png</file>
-    <file>images/icons/information.png</file>
+    <file>images/icons/info.png</file>
     <file>images/icons/login.png</file>
     <file>images/icons/logout.png</file>
     <file>images/icons/settings.png</file>

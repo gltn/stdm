@@ -21,7 +21,7 @@ email                : gkahiu@gmail.com
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import MapperMixin,Enumerator,Witness,Priority,UPDATE
+from stdm.data import MapperMixin,Enumerator,Witness,UPDATE
 from .ui_base_person import Ui_frmBasePerson
 from .ui_farmer import Ui_frmFarmer
 from .ui_household import Ui_frmHousehold
