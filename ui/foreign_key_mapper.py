@@ -343,6 +343,7 @@ class ForeignKeyMapper(QWidget):
         Add the record to the foreign key table using the mappings.
         '''
         #Check if the record exists using the primary key so as to ensure only one instance is added to the table
+
         try:
             recIndex = getIndex(self._recordIds(),id)
             if recIndex != -1:
@@ -352,7 +353,7 @@ class ForeignKeyMapper(QWidget):
         
         dbHandler = self._dbModel()
         modelObj = dbHandler.queryObject().filter(self._dbModel.id == recid).first()
-              
+
         if modelObj != None:
             #Raise before entity added signal
             self.beforeEntityAdded.emit(modelObj)
@@ -386,22 +387,22 @@ class ForeignKeyMapper(QWidget):
                 self._insertModelToView(modelObj)
             else:
                 try:
-                    item_id = getattr(modelObj, 'id')
-                    col_list = self._dbModel.displayMapping().keys()
-                    item_key =getattr(modelObj, str(col_list[1]))
-
-                    self.global_id = self.onfk_lookup(item_id, item_key)
+                    self.global_id = self.onfk_lookup(modelObj)
                 except Exception as ex:
                     QMessageBox.information(self, "Foreign Key Reference", str(ex.message))
                     return
 
-    def onfk_lookup(self, base_id, displayName):
+
+    def onfk_lookup(self,obj, index=None):
         """
-        :param base_id:
-        :param displayName:
+        :param Model obj:
+        :param :
         :return:
         """
-        fk_reference = FKBrowserProperty(base_id, displayName)
+        base_id = getattr(obj, 'id')
+        col_list = self._dbModel.displayMapping().keys()
+        display_name = getattr(obj, 'family_name')
+        fk_reference = FKBrowserProperty(base_id, display_name)
         return fk_reference
 
     def _insertModelToView(self,modelObj):    
@@ -448,7 +449,8 @@ class ForeignKeyMapper(QWidget):
                     self._notifBar.clear()
                     self._notifBar.insertErrorNotification(msg)
         else:
-            entitySelector = self._entitySelector(self, str(self._dbModel.__name__).lower())
+            #entitySelector = self._entitySelector(self, self._entitySelectorState)
+            entitySelector = self._entitySelector(self, str(self._dbModel.__name__).lower(), self._entitySelectorState)
             self.connect(entitySelector, SIGNAL("recordSelected(int)"),self._onRecordSelectedEntityBrowser)
                 #self.connect(entitySelector, SIGNAL("destroyed(QObject *)"),self.onEntitySelectorDestroyed)
             retStatus = entitySelector.exec_()

@@ -21,6 +21,8 @@ from datetime import date
 from PyQt4.QtGui import *
 
 from stdm.ui.customcontrols import BrowsableForeignKey
+from stdm.ui.attribute_browser import AttributeBrowser
+from stdm.ui.fkbase_form import FKMapperDialog
 
 class InputWidget(QWidget):
     #def __init__(self, parent =None):
@@ -143,13 +145,14 @@ class DateEditWidget(InputWidget):
         self.control.setDate(tDate)
         self.control.setMinimumWidth(50)
 
-from stdm.ui.fkbase_form import FKMapperDialog
+#class Administrative
+
 class ForeignKeyEdit(InputWidget):
     #control_type = SearchableLineEdit
     def __init__(self, parent=None):
         #InputWidget.__init__(self)
         super(ForeignKeyEdit,self).__init__()
-        self.control = BrowsableForeignKey()
+        self.control = AttributeBrowser()
         #self.control.signal_sender.connect(self.foreign_key_widget_activated)
         #QMessageBox.information(None,"Step of processing work","Not working")
 
@@ -158,9 +161,9 @@ class ForeignKeyEdit(InputWidget):
         return self.control
 
     def adopt(self):
-        self.control.setText("0")
-        self.control.setReadOnly(True)
-        self.control.signal_sender.connect(self.foreign_key_widget_activated)
+        self.control.txt_attribute.setText("0")
+        #self.control.setReadOnly(True)
+        #self.control.signal_sender.connect(self.foreign_key_widget_activated)
 
     def foreign_key_widget_activated(self):
         QMessageBox.information(None,"Step of processing work","Not working")
@@ -170,10 +173,8 @@ class ForeignKeyEdit(InputWidget):
         """
         :return:
         """
-        from stdm.ui import ForeignKeyBrowser
         mapper = FKMapperDialog()
-        mapper.foreign_key_modeller(ForeignKeyBrowser)
-
+        mapper.foreign_key_modeller()
         if not mapper.model_display_value():
             mapper.model_display_value() == self.base_id
         self.control.setText(str(mapper.model_display_value()))
@@ -182,7 +183,6 @@ class ForeignKeyEdit(InputWidget):
         else:
             self.base_id = mapper.model_fkid()
             self.control.fk_id(self.base_id)
-
 
 class WidgetCollection(object):
     """

@@ -58,6 +58,7 @@ from .composer_spcolumn_styler import (
                                        ComposerSpatialColumnEditor,
                                        SpatialFieldMapping
                                        )
+from .attribute_browser import AttributeBrowser
 from .import_data import ImportData
 from .export_data import ExportData
             

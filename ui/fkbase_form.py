@@ -22,33 +22,42 @@ email                : stdm@unhabitat.org
 from .foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.stdmdialog import DeclareMapping
 from PyQt4.QtGui import QMessageBox, QWidget
+from stdm.ui.customcontrols import FKBrowserProperty
 
 class FKMapperDialog(QWidget):
-    def __init__(self, parent = None):
-        QWidget.__init__(self)
-        #self.personFKMapper = ForeignKeyMapper()
+    def __init__(self, parent = None, model =None):
+        QWidget.__init__(self, parent)
+        self._model = model
+        self._dbModel = model
         self.attribute = None
+        self.mapping = DeclareMapping.instance()
 
-    def foreign_key_modeller(self, editor =None):
+    def foreign_key_modeller(self):
         self.model()
         self.personFKMapper = ForeignKeyMapper()
-
         #QMessageBox.information(None,"Loading Foreign Key",str(self._dbModel.__name__))
+        from stdm.ui.entity_browser import ForeignKeyBrowser
         self.personFKMapper.setDatabaseModel(self._dbModel)
-        self.personFKMapper.setEntitySelector(editor)
+        self.personFKMapper.setEntitySelector(ForeignKeyBrowser)
         self.personFKMapper.setSupportsList(True)
         self.personFKMapper.setDeleteonRemove(False)
         self.personFKMapper.onAddEntity()
         self.personFKMapper.initialize()
 
     def model(self):
-        mapping = DeclareMapping.instance()
-        self._dbModel = mapping.tableMapping('household')
+        if not self._model:
+
+            self._dbModel = self.mapping.tableMapping('household')
+        else:
+            self._dbModel = self.mapping.tableMapping(self._model)
         return self._dbModel
 
     def model_fkid(self):
         try:
-            return self.personFKMapper.global_id.baseid()
+            if not self.personFKMapper.global_id.baseid():
+                return
+            else:
+                return self.personFKMapper.global_id.baseid()
         except:
             pass
 
@@ -60,6 +69,7 @@ class FKMapperDialog(QWidget):
                 return self.personFKMapper.global_id.display_value()
         except:
             pass
+
 
 
 
