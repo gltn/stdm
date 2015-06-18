@@ -153,8 +153,6 @@ class ForeignKeyEdit(InputWidget):
         #InputWidget.__init__(self)
         super(ForeignKeyEdit,self).__init__()
         self.control = AttributeBrowser()
-        #self.control.signal_sender.connect(self.foreign_key_widget_activated)
-        #QMessageBox.information(None,"Step of processing work","Not working")
 
     def Factory(self):
         self.base_id = 0
@@ -162,27 +160,7 @@ class ForeignKeyEdit(InputWidget):
 
     def adopt(self):
         self.control.txt_attribute.setText("0")
-        #self.control.setReadOnly(True)
-        #self.control.signal_sender.connect(self.foreign_key_widget_activated)
 
-    def foreign_key_widget_activated(self):
-        QMessageBox.information(None,"Step of processing work","Not working")
-        self.on_select_foreignkey()
-
-    def on_select_foreignkey(self):
-        """
-        :return:
-        """
-        mapper = FKMapperDialog()
-        mapper.foreign_key_modeller()
-        if not mapper.model_display_value():
-            mapper.model_display_value() == self.base_id
-        self.control.setText(str(mapper.model_display_value()))
-        if not mapper.model_fkid():
-            self.control.fk_id(self.base_id)
-        else:
-            self.base_id = mapper.model_fkid()
-            self.control.fk_id(self.base_id)
 
 class WidgetCollection(object):
     """
