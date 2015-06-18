@@ -11,9 +11,9 @@
 				<column fullname="mobile" name="contact_telephone" null="yes" size="25" type="character varying" />
 				<column fullname="" name="age" null="yes" size="" type="integer" />
 				<column fullname="" lookup="check_gender" name="gender" null="yes" size="25" type="character varying" />
-				</columns>
+				<column fullname="Married or not married" lookup="check_marital_status" name="marital_status" null="yes" size="50" type="character varying" /></columns>
 			<relations>
-				<relation column="id" fk="household_number" name="partyhsd" ondelete="cascade" onupdate="cascade" table="household" /></relations>
+				</relations>
 			<constraints />
 			<contentgroups fullname="party can be a person household or group" name="party">
 				<contentgroup code="{3337F9B8-4D54-45CD-BDAD-1577FD668BC7}" name="create" />
@@ -187,5 +187,5 @@
 				<contentgroup code="{8936D17A-9D91-4D45-9630-D1517D6ACC99}" name="delete" />
 			</contentgroups>
 		</table>
-	</profile>
-</schema>
+	<lookup fullname="" name="check_marital_status"><columns><column fullname="Primary Key" key="1" name="id" size="" type="serial" /><column fullname="Choice list" name="value" size="50" type="character varying" /></columns><data><value>married</value><value>Single</value><value>Divorced</value><value>widow</value></data></lookup></profile>
+<display_names><display_name layer_name="spatial_unit.geom_polygon">spatial_unit.geom_polygon</display_name><display_name layer_name="spatial_unit.geom_line">spatial_unit.geom_line</display_name><display_name layer_name="spatial_unit.geom_point">spatial_unit.geom_point</display_name></display_names></schema>

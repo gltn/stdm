@@ -631,9 +631,11 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                     self.tableHandler.trackXMLChanges()
                     return valid
             except SQLAlchemyError as ex:
-                return self.ErrorInfoMessage(str(ex.message))
+                self.ErrorInfoMessage(str(ex.message))
+                return
             except IOError as ex:
-                return self.ErrorInfoMessage(str(ex.message))
+                self.ErrorInfoMessage(str(ex.message))
+                return
     
     def assignRoles(self):
         if self.rbSchemaNew.isChecked():
