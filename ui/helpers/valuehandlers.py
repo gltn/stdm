@@ -311,7 +311,7 @@ class AttributeBrowserValueHandler(ControlValueHandler):
             self.control.set_values(value)
 
     def supportsMandatory(self):
-        return  True
+        return True
 
 AttributeBrowserValueHandler.register()
 

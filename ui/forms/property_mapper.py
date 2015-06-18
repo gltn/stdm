@@ -51,9 +51,10 @@ class TypePropertyMapper(object):
                 attr_data_type[0] = 'choice'
                 lkModel = self._modeller.lookupModel(attr_data_type[1])
                 lk_items = self.lookupItems(lkModel)
-                if lk_items: isLookup = True
-
-            self.widgetList[attr] = [widget_collection.widget_control_type(attr_data_type[0]), isLookup, lk_items]
+                if lk_items:
+                    isLookup = True
+            controlwidget = widget_collection.widget_control_type(attr_data_type[0])
+            self.widgetList[attr] = [controlwidget, isLookup, lk_items]
 
     def setProperty(self):
             self.widget()
