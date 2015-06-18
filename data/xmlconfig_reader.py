@@ -190,6 +190,7 @@ def tableRelations(tableName,element):
                     ordDict["Foreign column"] = child.get('column')
                     ordDict["On delete"] = child.get('ondelete')
                     ordDict["On update"] = child.get('onupdate')
+                    ordDict["Display field"] = child.get('display_name')
                     relationData.append(ordDict) 
                 return relationData  
             

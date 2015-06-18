@@ -124,7 +124,3 @@ class AttributePropretyType(object):
             return option_type
         else:
             return None
-
-    def display_mapping(self):
-        #use the mapped table properties
-        self._mapper.tableMapping(self.model)

@@ -21,32 +21,36 @@ email                : stdm@unhabitat.org
 
 from .foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.stdmdialog import DeclareMapping
-from PyQt4.QtGui import QMessageBox, QWidget
+from PyQt4.QtGui import QMessageBox, QWidget, QApplication
 from stdm.ui.customcontrols import FKBrowserProperty
-from stdm.ui.entity_browser import ForeignKeyBrowser
+
 class FKMapperDialog(QWidget):
-    def __init__(self, parent = None, model =None):
+    def __init__(self, parent = None, model =None, display_col = None):
         QWidget.__init__(self, parent)
         self._model = model
         self._dbModel = model
         self.attribute = None
+        self.display_col =display_col
         self.mapping = DeclareMapping.instance()
 
     def foreign_key_modeller(self):
+        from stdm.ui import ForeignKeyBrowser
         self.model()
         self.personFKMapper = ForeignKeyMapper()
-
         self.personFKMapper.setDatabaseModel(self._dbModel)
         self.personFKMapper.setEntitySelector(ForeignKeyBrowser)
         self.personFKMapper.setSupportsList(True)
         self.personFKMapper.setDeleteonRemove(False)
         self.personFKMapper.onAddEntity()
         self.personFKMapper.initialize()
+        self.personFKMapper.display_column = self.display_col
 
     def model(self):
         if not self._model:
-
-            self._dbModel = self.mapping.tableMapping('household')
+            QMessageBox.information(None, QApplication.translate("AttributeBrowser","Loading foreign keys"),
+                                    QApplication.translate("AttributeBrowser","Foreign Key cannot be loaded"))
+            return
+            #self._dbModel = self.mapping.tableMapping('party')
         else:
             self._dbModel = self.mapping.tableMapping(self._model)
         return self._dbModel
