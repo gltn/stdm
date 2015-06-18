@@ -39,12 +39,12 @@ from .reports import SysFonts
 
 class FilePaths(object):
     def __init__(self, path=None):
-        self._file=PLUGIN_DIR
-        self.baseDir=None
-        self._html=''
-        self._sql=''
-        self.userPath=None
-        self.cachePath=None
+        self._file = PLUGIN_DIR
+        self.baseDir = None
+        self._html = ''
+        self._sql = ''
+        self.userPath = None
+        self.cachePath = None
         self.config = RegistryConfig()
         self.checkPreviousSetting()
 
@@ -57,7 +57,7 @@ class FilePaths(object):
             else:
                 self.setUserConfigPath()
         except Exception as ex:
-            pass
+            raise ex
                         
     def XMLFile(self):
         #this function returns the default xml file with configuration
@@ -146,9 +146,9 @@ class FilePaths(object):
         base_file = self.baseSQLPath()
         user_file = path +'/%s'%FILE
         if os.path.isfile(user_file):
-            if QMessageBox.warning(None, QApplication.translate("FilePaths","User configuration found"),
+            if QMessageBox.warning(None, QApplication.translate("FilePaths","Previous user configuration found"),
                                    QApplication.translate("FilePaths",
-                                                "Wizard detected configuration exist in the current directory."
+                                                "Wizard detected previous configuration exists in the current directory."
                                                 "\nDo you want to overwrite the existing config?"),
                                    QMessageBox.Yes| QMessageBox.No) == QMessageBox.Yes:
                 if filecmp.cmp(base_file, user_file, shallow=False):
@@ -161,14 +161,14 @@ class FilePaths(object):
                         pass
             else:
                 QMessageBox.information(None, QApplication.translate("FilePaths","Configuration Exist"),
-                                        QApplication.translate("FilePaths","Existing configuration retained"))
+                                        QApplication.translate("FilePaths","Previous configuration retained"))
         else:
-            shutil.copy(base_file,user_file)
+            shutil.copy(base_file, user_file)
         self.createBackup()
 
     def localFontPath(self, path):
         """ Create a path where fonts will be stored"""
-        fontPath=None
+        fontPath = None
         if path == None:
             if platform.system() == "Windows":
                 path = os.environ["USERPROFILE"]

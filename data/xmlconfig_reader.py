@@ -242,7 +242,7 @@ def contentGroup(tableName):
     for elem in root.findall('profile/table'):
         if elem.get('name') == tableName:
             childs = elem.find('contentgroups')
-            if childs:
+            if childs is not None:
                 return [(child.get('code')) for child in childs]
             else:
                 return None
