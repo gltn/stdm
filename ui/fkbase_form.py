@@ -23,7 +23,7 @@ from .foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.stdmdialog import DeclareMapping
 from PyQt4.QtGui import QMessageBox, QWidget
 from stdm.ui.customcontrols import FKBrowserProperty
-
+from stdm.ui.entity_browser import ForeignKeyBrowser
 class FKMapperDialog(QWidget):
     def __init__(self, parent = None, model =None):
         QWidget.__init__(self, parent)
@@ -35,8 +35,7 @@ class FKMapperDialog(QWidget):
     def foreign_key_modeller(self):
         self.model()
         self.personFKMapper = ForeignKeyMapper()
-        #QMessageBox.information(None,"Loading Foreign Key",str(self._dbModel.__name__))
-        from stdm.ui.entity_browser import ForeignKeyBrowser
+
         self.personFKMapper.setDatabaseModel(self._dbModel)
         self.personFKMapper.setEntitySelector(ForeignKeyBrowser)
         self.personFKMapper.setSupportsList(True)
