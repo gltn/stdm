@@ -43,23 +43,18 @@ class TableProperty(QDialog,Ui_TableProperty):
         self.userProfile=usrProf
         self.table_handler=ConfigTableReader()
         self.initControls()
-        
-        QObject.connect(self.rbRelation, SIGNAL('clicked()'), self.propertyType)
-        QObject.connect(self.rbConstrain, SIGNAL('clicked()'), self.propertyType)
+
         QObject.connect(self.cboTable, SIGNAL("currentIndexChanged(int)"), self.relationColumns)
-        QObject.connect(self.cboTable_2, SIGNAL("currentIndexChanged(int)"), self.constraintColumns)
-        #QObject.connect(self.listView,SIGNAL('clicked(QModelIndex)'),self.selectedIndex)
+       #QObject.connect(self.listView,SIGNAL('clicked(QModelIndex)'),self.selectedIndex)
         
     def initControls(self):
         '''Initialize defualt dialog properties'''
-        self.rbRelation.setChecked(True)
-        self.gpConstraint.setVisible(False)
         self.tableList(self.cboTable)
         setCollectiontypes(actions,self.cboDelAct)
         setCollectiontypes(actions,self.cboUpAct)
-        setCollectiontypes(constraints,self.cboType)
         self.table_column_model(self.cboColumn,self.cboTable.currentText())
         self.table_column_model(self.cboRefCol,self.tableName)
+        self.table_column_model(self.cboType, self.tableName)
               
     def tableList(self,comboBox):
         model=self.table_handler.tableListModel(self.userProfile)
@@ -78,23 +73,10 @@ class TableProperty(QDialog,Ui_TableProperty):
         col_list =tableCols(tableName)
         col_model = self.table_handler.column_labels(col_list)
         combo.setModel(col_model)
-    
-    def propertyType(self):
-        if self.rbRelation.isChecked():
-            self.gpRelation.setVisible(True)
-            self.gpConstraint.hide()
-            self.tableList(self.cboTable)
-            self.relationColumns()
-            self.localColumns()
-        if self.rbConstrain.isChecked():
-            self.gpConstraint.setVisible(True)
-            self.gpRelation.hide()
-            self.tableList(self.cboTable_2)
-            self.constraintColumns()
    
     def setCollectiontypes(self,collectionType,combo):
         #method to read defult  to a sql relations and constraint type to combo box
-        ordDict=collections.OrderedDict(collectionType.items())
+        ordDict=collections.OrderedDict(collectionType)
         combo.clear()
         for k, v in ordDict.iteritems():
             combo.addItem(k,v)
@@ -109,12 +91,7 @@ class TableProperty(QDialog,Ui_TableProperty):
     def localColumns(self):
         '''update columns set for the selected table'''
         self.table_column_model(self.cboRefCol,self.tableName)
-        
-    def constraintColumns(self):
-        '''update columns set for the selected table'''
-        referenceTable=self.cboTable_2.currentText()
-        self.table_column_model(self.cboColumn_2,referenceTable)
-        
+
     def selectedData(self,comboBox):
         #get the user data from the combo box display item
         text=comboBox.currentText()
@@ -137,12 +114,17 @@ class TableProperty(QDialog,Ui_TableProperty):
         writeTableColumn(attribDict,self.userProfile,'table',self.tableName,'relations')
         
     def accept(self):
-        if self.rbRelation.isChecked() and self.txtName.text()=='':
+        if self.txtName.text()=='':
             self.ErrorInfoMessage(QApplication.translate("TableProperty","Relation Name is not given"))
             return
-        if self.rbRelation.isChecked():
-            self.setTableRelation()
-            self.close()
+        if self.cboTable.currentText()=="":
+            self.ErrorInfoMessage(QApplication.translate("TableProperty","Referenced Table is not selected"))
+            return
+        if self.cboTable.currentText()== self.tableName:
+            self.ErrorInfoMessage(QApplication.translate("TableProperty","Table cannot draw a reference from itself"))
+            return
+        self.setTableRelation()
+        self.close()
             
     def ErrorInfoMessage(self, Message):
         # Error Message Box
