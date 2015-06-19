@@ -68,18 +68,13 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         """
         :return: Mapper dialog form
         """
-        #try:
-        self.property = AttributePropretyType(self._table.lower())
-        # start loading table attribute properties
-        table_properties = self.property.attribute_type()
-
-        property_mapper = TypePropertyMapper(table_properties)
-        widgets = property_mapper.setProperty()
-        for attrib, widget_prop in widgets.iteritems():
+        self.property_mapper = TypePropertyMapper(self._table.lower())
+        widgets_property_collection = self.property_mapper.setProperty()
+        for attrib, widget_prop in widgets_property_collection.iteritems():
             if hasattr(self._model, attrib):
                 #self.control_widget(widget_prop)
                 form_widget_loader = FormWidgetLoader(widget_prop)
-                control_type = form_widget_loader.control_widget()
+                control_type = form_widget_loader.control_widget(attrib)
                 self.addMapping(attrib, control_type, False, attrib)
 
                 self.frmLayout.addRow(QT_TRANSLATE_NOOP("ModuleSettings",self.userLabel(attrib)), control_type)
@@ -101,7 +96,7 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         """Since only one instance of model can be mapped at a time, ensure the current table model has its correct mapping
         :return table model attribute mapping- dict:
         """
-        self.property.display_mapping()
+        self.property_mapper.display_mapping()
 
     def close_event(self):
         try:
@@ -128,7 +123,7 @@ class FormWidgetLoader(object):
     def __init__(self, widget_property, parent=None):
         self.widget_property = widget_property
 
-    def control_widget(self):
+    def control_widget(self, attr):
         """
         Add controls to the form and controls options for lookup choices
         """
@@ -136,6 +131,9 @@ class FormWidgetLoader(object):
         control_type = self.init_widget_cls.Factory()
         if self.widget_property[1]:
             self.lookupOptions(self.init_widget_cls, self.widget_property[2])
+        if self.widget_property[3]:
+            if self.widget_property[3].add_table_formatters() or len(self.widget_property.add_table_formatters())>0:
+                self.init_widget_cls.foreign_key_formatter(attr, self.widget_property[3].add_table_formatters())
         self.init_widget_cls.adopt()
         return control_type
 

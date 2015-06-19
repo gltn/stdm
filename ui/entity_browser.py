@@ -625,7 +625,7 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
         #self.addCellFormatter("MaritalStatusID",maritalStatusFormatter)
 
     def title(self):
-        return QApplication.translate("STDMEntityBrowser", "%s Records Manager")%str(self.tbEntityClass.title())
+        return QApplication.translate("STDMEntityBrowser", "%s Records Manager")%unicode(self.tbEntityClass.title())
 
     modeller = LookupModeller()
     def create_lookup_setter(self, attr_name):
@@ -644,13 +644,14 @@ class ForeignKeyBrowser(EntityBrowser):
     '''
 
     def __init__(self,parent = None, table = None, state = MANAGE):
+        self.table =table
         mapping=DeclareMapping.instance()
-        model = mapping.tableMapping(table)
+        model = mapping.tableMapping(self.table)
 
         EntityBrowser.__init__(self, parent, model, state)
 
     def title(self):
-        return QApplication.translate("EnumeratorEntityBrowser", "Party Records")
+        return QApplication.translate("EnumeratorEntityBrowser", "%s Entity Records")%unicode(self.table).title()
 
 class SurveyEntityBrowser(ContentGroupEntityBrowser):
     '''
