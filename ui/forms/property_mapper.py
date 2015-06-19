@@ -63,7 +63,7 @@ class TypePropertyMapper(object):
             if attr_data_type[0] == 'foreign key':
                 source_table = foreign_key_table_reference(self._model)
                 self.formatters = AttributeFormatters(attr,source_table[0])
-                self.formatters.display_name(source_table[1])
+                self.formatters.set_display_name(source_table[1])
             self.widgetList[attr] = [control_widget, isLookup, lk_items, self.formatters]
 
     def setProperty(self):

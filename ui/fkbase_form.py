@@ -36,14 +36,15 @@ class FKMapperDialog(QWidget):
     def foreign_key_modeller(self):
         from stdm.ui import ForeignKeyBrowser
         self.model()
+
         self.personFKMapper = ForeignKeyMapper()
         self.personFKMapper.setDatabaseModel(self._dbModel)
+        self.personFKMapper.set_model_display_column(self.display_col)
         self.personFKMapper.setEntitySelector(ForeignKeyBrowser)
         self.personFKMapper.setSupportsList(True)
         self.personFKMapper.setDeleteonRemove(False)
         self.personFKMapper.onAddEntity()
         self.personFKMapper.initialize()
-        self.personFKMapper.display_column = self.display_col
 
     def model(self):
         if not self._model:
