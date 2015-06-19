@@ -19,11 +19,9 @@ email                : stdm@unhabitat.org
 """
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from ui_attribute_browser import Ui_AttribBrowser
+from stdm.ui.ui_attribute_browser import Ui_AttribBrowser
 from fkbase_form import FKMapperDialog
 
-from stdm.ui.stdmdialog import DeclareMapping
-#from stdm.ui import PartyEntitySelector
 
 class AttributeBrowser(QWidget, Ui_AttribBrowser):
     """
@@ -34,6 +32,8 @@ class AttributeBrowser(QWidget, Ui_AttribBrowser):
         self.setupUi(self)
         self.initialize()
         self.base_id = 0
+        self._source =None
+        self._def_col =None
 
         self.btn_browse.clicked.connect(self.browse_for_attribute)
 
@@ -49,9 +49,15 @@ class AttributeBrowser(QWidget, Ui_AttribBrowser):
     def set_values(self, value):
         self.txt_attribute.setText(str(value))
 
+    def parent_table(self, parent):
+        self._source = parent
+
+    def display_column(self, column_name ):
+        self._def_col =column_name
+        return self._def_col
 
     def browse_for_attribute(self):
-        browser_frm = FKMapperDialog(self, "party")
+        browser_frm = FKMapperDialog(self, self._source, self._def_col)
 
         browser_frm.foreign_key_modeller()
         if browser_frm.model_display_value():

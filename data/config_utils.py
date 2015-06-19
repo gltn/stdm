@@ -64,6 +64,19 @@ def tableColType(table):
         colMapping[colLabel] = [col.get('Data type'),col.get('Lookup')]
     return colMapping
 
+def foreign_key_table_reference(table):
+    """
+    get the table that is referenced in the child table foreign key definition
+    :param table:
+    :return:
+    """
+    cols= tableRelations(table,"relations")
+    colMapping=OrderedDict()
+    for col in cols:
+        tableLabel = col.get('Referenced table')
+        display_name = col.get('Display field')
+    return tableLabel, display_name
+
 def foreign_key_columns(table):
     #profileName=activeProfile()
     cols= tableRelations(table,"relations")

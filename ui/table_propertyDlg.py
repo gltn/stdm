@@ -54,7 +54,7 @@ class TableProperty(QDialog,Ui_TableProperty):
         setCollectiontypes(actions,self.cboUpAct)
         self.table_column_model(self.cboColumn,self.cboTable.currentText())
         self.table_column_model(self.cboRefCol,self.tableName)
-        self.table_column_model(self.cboType, self.tableName)
+        self.table_column_model(self.cboType, self.cboTable.currentText())
               
     def tableList(self,comboBox):
         model=self.table_handler.tableListModel(self.userProfile)
@@ -87,6 +87,7 @@ class TableProperty(QDialog,Ui_TableProperty):
         '''update columns set for the selected table'''
         referenceTable=self.cboTable.currentText()
         self.table_column_model(self.cboColumn,referenceTable)
+        self.table_column_model(self.cboType,referenceTable)
         
     def localColumns(self):
         '''update columns set for the selected table'''
@@ -99,6 +100,8 @@ class TableProperty(QDialog,Ui_TableProperty):
         if index!=-1:
             userData=comboBox.itemData(int(index))
             return userData
+
+
         
     def setTableRelation(self):
         '''add new relation to the table in the config file'''
@@ -109,6 +112,7 @@ class TableProperty(QDialog,Ui_TableProperty):
         attribDict['table']=self.cboTable.currentText()
         attribDict['fk']=self.cboRefCol.currentText()
         attribDict['column']=self.cboColumn.currentText()
+        attribDict['display_name']=self.cboType.currentText()
         attribDict['ondelete']=delAct
         attribDict['onupdate']=updateAct
         writeTableColumn(attribDict,self.userProfile,'table',self.tableName,'relations')

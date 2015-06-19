@@ -161,6 +161,11 @@ class ForeignKeyEdit(InputWidget):
     def adopt(self):
         self.control.txt_attribute.setText("0")
 
+    def foreign_key_formatter(self, attr, foreign_key_ids):
+        if foreign_key_ids:
+            parent =foreign_key_ids.get(attr)
+            self.control.parent_table(parent[0])
+            return parent[0]
 
 class WidgetCollection(object):
     """

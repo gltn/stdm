@@ -26,6 +26,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from stdm.data import BaseSTDMTableModel
+from stdm.data.config_utils import foreign_key_table_reference
 from stdm.utils import getIndex
 from .admin_unit_manager import VIEW,MANAGE,SELECT
 from stdm.ui.customcontrols import FKBrowserProperty
@@ -83,6 +84,7 @@ class ForeignKeyMapper(QWidget):
         self._deleteOnRemove = False
         self._uniqueValueColIndices = OrderedDict()
         self.global_id = None
+        self.display_column = None
         
     def initialize(self):
         '''
@@ -399,10 +401,15 @@ class ForeignKeyMapper(QWidget):
         :param :
         :return:
         """
+        #display_col = foreign_key_table_reference()
+        display_label =None
         base_id = getattr(obj, 'id')
         col_list = self._dbModel.displayMapping().keys()
-        display_name = getattr(obj, 'family_name')
-        fk_reference = FKBrowserProperty(base_id, display_name)
+        if self.display_column:
+            display_label = getattr(obj, self.display_column)
+        else:
+            display_label = getattr(obj, col_list[1])
+        fk_reference = FKBrowserProperty(base_id, display_label)
         return fk_reference
 
     def _insertModelToView(self,modelObj):    

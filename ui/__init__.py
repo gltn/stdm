@@ -58,7 +58,6 @@ from .composer_spcolumn_styler import (
                                        ComposerSpatialColumnEditor,
                                        SpatialFieldMapping
                                        )
-from .attribute_browser import AttributeBrowser
 from .import_data import ImportData
 from .export_data import ExportData
             
@@ -74,3 +73,4 @@ from .about import AboutSTDMDialog
 from .python_object import class_from_table
 #from .forms import *
 from .fkbase_form import FKMapperDialog
+from .attribute_browser import AttributeBrowser
