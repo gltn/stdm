@@ -395,13 +395,19 @@ class ForeignKeyMapper(QWidget):
                     return
 
 
+    def set_model_display_column(self, name):
+        """
+
+        :return:
+        """
+        self.display_column = name
+
     def onfk_lookup(self,obj, index=None):
         """
         :param Model obj:
         :param :
         :return:
         """
-        #display_col = foreign_key_table_reference()
         display_label =None
         base_id = getattr(obj, 'id')
         col_list = self._dbModel.displayMapping().keys()

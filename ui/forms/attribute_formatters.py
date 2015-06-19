@@ -17,13 +17,29 @@ class AttributeFormatters(object):
         """
         return setUniversalCode
 
-    def display_name(self, new_name):
+    def set_display_name(self, new_name):
+        """
+        Set the display column name
+        :param new_name:
+        :return:
+        """
         self._display_name = new_name
+        return self._display_name
+
+    def display_name(self):
+        """
+        Method to return the defined display column name
+        :return:
+        """
         return self._display_name
 
     def add_table_formatters(self):
         """
+        Method to read all the foreign key columns and the reference table
         :return:
         """
-        self.table_formatters[self.col_name] = [self.parent_table, self.table_unique_key()]
+        """Add unique key if the identification of column and parent table is confusing"""
+        #self.table_formatters[self.col_name] = [self.parent_table, self.table_unique_key()]
+        """Perhaps there is no conflicts when referencing foreign key, no need for unique Identifier"""
+        self.table_formatters[self.col_name] = self.parent_table
         return self.table_formatters

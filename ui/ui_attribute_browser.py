@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_attribute_browser.ui'
 #
-# Created: Thu Jun 18 22:03:33 2015
+# Created: Fri Jun 19 10:56:57 2015
 #      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,8 @@ except AttributeError:
 class Ui_AttribBrowser(object):
     def setupUi(self, AttribBrowser):
         AttribBrowser.setObjectName(_fromUtf8("AttribBrowser"))
-        AttribBrowser.resize(421, 41)
+        AttribBrowser.resize(412, 40)
+        AttribBrowser.setMaximumSize(QtCore.QSize(16777215, 40))
         self.gridLayout = QtGui.QGridLayout(AttribBrowser)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.horizontalLayout = QtGui.QHBoxLayout()
@@ -36,7 +37,12 @@ class Ui_AttribBrowser(object):
         self.horizontalLayout.addWidget(self.txt_attribute)
         self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 1)
         self.btn_browse = QtGui.QPushButton(AttribBrowser)
-        self.btn_browse.setMaximumSize(QtCore.QSize(30, 16777215))
+        self.btn_browse.setMaximumSize(QtCore.QSize(30, 20))
+        self.btn_browse.setText(_fromUtf8(""))
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/table.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.btn_browse.setIcon(icon)
+        self.btn_browse.setFlat(True)
         self.btn_browse.setObjectName(_fromUtf8("btn_browse"))
         self.gridLayout.addWidget(self.btn_browse, 0, 1, 1, 1)
 
@@ -45,5 +51,5 @@ class Ui_AttribBrowser(object):
 
     def retranslateUi(self, AttribBrowser):
         AttribBrowser.setWindowTitle(_translate("AttribBrowser", "Form", None))
-        self.btn_browse.setText(_translate("AttribBrowser", "...", None))
 
+import resources_rc

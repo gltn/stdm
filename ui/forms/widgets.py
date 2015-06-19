@@ -163,9 +163,9 @@ class ForeignKeyEdit(InputWidget):
 
     def foreign_key_formatter(self, attr, foreign_key_ids):
         if foreign_key_ids:
-            parent =foreign_key_ids.get(attr)
-            self.control.parent_table(parent[0])
-            return parent[0]
+            fk_info = foreign_key_ids.add_table_formatters().get(attr)
+            self.control.set_parent_table(fk_info)
+            self.control.set_display_column(foreign_key_ids.display_name())
 
 class WidgetCollection(object):
     """

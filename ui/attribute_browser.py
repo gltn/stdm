@@ -25,14 +25,14 @@ from fkbase_form import FKMapperDialog
 
 class AttributeBrowser(QWidget, Ui_AttribBrowser):
     """
-    Class initialization
+    Class variables initialization
     """
     def __init__(self, parent= None):
         QWidget.__init__(self)
         self.setupUi(self)
         self.initialize()
         self.base_id = 0
-        self._source =None
+        self._parent_table =None
         self._def_col =None
 
         self.btn_browse.clicked.connect(self.browse_for_attribute)
@@ -42,28 +42,75 @@ class AttributeBrowser(QWidget, Ui_AttribBrowser):
        #self.txt_attribute.setText("Browse attribute")
 
     def values(self):
+        """
+        Method to read the foreign key ids when saving the data to db
+        :return:
+        """
         if self.base_id == 0 and str(self.txt_attribute.text()).isdigit():
-            self.base_id= self.txt_attribute.text()
+            self.base_id = self.txt_attribute.text()
         return self.base_id
 
     def set_values(self, value):
+        """
+        Required method to set db values to the control when loading the form
+        :param value:
+        :return:
+        """
+        """Fetch the column value instead of passed ids"""
+        #modelObj = model.queryObject().filter(self._dbModel.id == value).first()
+        """Temporary load the ids"""
         self.txt_attribute.setText(str(value))
 
-    def parent_table(self, parent):
-        self._source = parent
+    def parent_table(self):
+        """
+        Method to return the foreign key parent table
+        :return:
+        """
+        return self._parent_table
 
-    def display_column(self, column_name ):
-        self._def_col =column_name
+    def set_parent_table(self, parent):
+        """
+        Set foreign key parent table
+        :param parent:
+        :return:
+        """
+        self._parent_table = parent
+
+    def set_display_column(self, column_name):
+        """
+        Method to read default display column when browsing for foreign key
+        :param column_name:
+        :return:
+        """
+        self._def_col = column_name
+        return self._def_col
+
+    def display_column(self):
+        """
+        Return th default display column
+        :return:
+        """
         return self._def_col
 
     def browse_for_attribute(self):
-        browser_frm = FKMapperDialog(self, self._source, self._def_col)
+        """
+        Method to invoke foreign key browser
+        :return: dispaly column value
+        :return: row UUID
+        """
+        #QMessageBox.information(None, "asdfa", str(self._def_col))
+        try:
+            browser_frm = FKMapperDialog(self, self._parent_table, self._def_col)
 
-        browser_frm.foreign_key_modeller()
-        if browser_frm.model_display_value():
-            self.txt_attribute.setText(browser_frm.model_display_value())
-        if browser_frm.model_fkid():
-            self.base_id = browser_frm.model_fkid()
+            browser_frm.foreign_key_modeller()
+            if browser_frm.model_display_value():
+                self.txt_attribute.setText(browser_frm.model_display_value())
+            if browser_frm.model_fkid():
+                self.base_id = browser_frm.model_fkid()
+        except Exception as ex:
+            QMessageBox.information(None,QApplication.translate(u'AttributeBrowser',u'Foreign Keys'),
+            QApplication.translate('TypePropertyMapper',u"Error loading foreign keys"))
+            return
 
 
 
