@@ -53,8 +53,8 @@ constraints = {
               }
 
 nullable = {
-            QApplication.translate("TableProperty",'Yes'): 'no',
-            QApplication.translate("TableProperty",'No'): 'yes'
+            QApplication.translate("TableProperty",'Yes'): 'yes',
+            QApplication.translate("TableProperty",'No'): 'no'
           }
 
 stdm_core_tables = ['household', 'spatial_unit', 'party', 'natural_person', 'group', 'social_tenure_relationship', 'supporting_document']

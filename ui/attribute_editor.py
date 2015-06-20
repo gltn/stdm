@@ -68,6 +68,7 @@ class AttributeEditor(QDialog,Ui_editor):
             self.cboTabList.setCurrentIndex(index)
         setCollectiontypes(data_types, self.cboDatatype)
         setCollectiontypes(nullable, self.cboNull)
+        setCollectiontypes(nullable, self.cboSearchable)
        
         dIndex=self.cboDatatype.findText('Short text',Qt.MatchExactly)
         if dIndex != -1:
@@ -90,7 +91,14 @@ class AttributeEditor(QDialog,Ui_editor):
             self.txtAttrib.setText(self.args[3])
             dIndex = self.cboDatatype.findData(self.args[2],role = Qt.UserRole)
             if dIndex != -1:
-                self.cboDatatype.setCurrentIndex(dIndex)    
+                self.cboDatatype.setCurrentIndex(dIndex)
+            sIndex = self.cboSearchable.findData(self.args[4],role = Qt.UserRole)
+            if sIndex != -1:
+                self.cboSearchable.setCurrentIndex(sIndex)
+            else:
+                self.cboSearchable.setCurrentIndex(1)
+            if self.args[5]:
+                self.lookup = self.args[5]
     
     def attributeData(self,sizeVal):
         #Read the new attribute data from the dialog and pass to config for writing
@@ -109,6 +117,7 @@ class AttributeEditor(QDialog,Ui_editor):
             attribDict['default'] = str(self.txtDefault.text())
         if self.lookup:
             attribDict['lookup'] = self.lookup
+        attribDict['searchable'] = UserData(self.cboSearchable)
         return attribDict
     
     def postgresDataTypeDefaults(self):
@@ -136,7 +145,7 @@ class AttributeEditor(QDialog,Ui_editor):
         else:
             if atType == 'geometry':
                 self.InfoMessage(QApplication.translate("AttributeEditor",
-                    "Geometry column will not appear in the list of column but it is loaded in the background"))
+                    "Geometry column will not appear in the list of column but can be viewed under geometry tab"))
                 self.geomtag()
                 self.enforceProjection()
             else:
@@ -161,9 +170,15 @@ class AttributeEditor(QDialog,Ui_editor):
             sizeval=''
         if atType not in self.defaults:
             sizeval = self.txtAttrib.text()
-        desc = self.txtColDesc.text()
+        desc = str(self.txtColDesc.text())
+        search = UserData(self.cboSearchable)
+        if self.lookup:
+            lookup = self.lookup
+        else:
+            lookup = None
         try:
-            editTableColumn(self.profile, self.tableName, 'name', self.args[0], formatColumnName(self.txtCol.text()),atType,sizeval, desc)
+            editTableColumn(self.profile, self.tableName, 'name', self.args[0],
+                            formatColumnName(self.txtCol.text()),atType,sizeval, desc,search, lookup)
         except:
             self.ErrorInfoMessage(QApplication.translate('AttributeEditor','Unable to update the column data'))
             return
@@ -200,7 +215,7 @@ class AttributeEditor(QDialog,Ui_editor):
             writeTableColumn(geom,self.profile,'table',self.tableName,'geometryz')
     
     def geomtag(self):
-        """Add tag on the table with geometry to ensure that it added correctly
+        """Add geometry tab in the config under the table to ensure that it added correctly
         """
         add_geom_tag = writeGeomConstraint(self.profile, 'table', self.tableName)
         return add_geom_tag
@@ -224,7 +239,7 @@ class AttributeEditor(QDialog,Ui_editor):
     def accept(self):
         if str(self.txtCol.text()).lower()== RESERVED_ID or str(self.txtCol.text()).lower() in self.defaults:
             self.ErrorInfoMessage(QApplication.translate('AttributeEditor',"(%s) "
-                        "is a reserved word and cannot be used for column name")%str(self.txtCol.text()))
+                        "is a reserved word and cannot be used for column name")%(self.txtCol.text()))
             return
         if self.tableName==None:
             self.ErrorInfoMessage(QApplication.translate('AttributeEditor','No selected table found'))
@@ -244,5 +259,3 @@ class AttributeEditor(QDialog,Ui_editor):
 
     def rejectAct(self):
         self.close()
-        
-        

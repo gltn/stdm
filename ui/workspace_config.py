@@ -326,6 +326,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 EditorSession.append(selCols[1].data())
                 EditorSession.append(selCols[2].data())
                 EditorSession.append(selCols[3].data())
+                EditorSession.append(selCols[4].data())
+                EditorSession.append(selCols[5].data())
                 colDlg = AttributeEditor(str(self.cboProfile.currentText()),self.tableName,self,args=EditorSession)
                 colDlg.exec_()
             else:

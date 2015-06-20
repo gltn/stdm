@@ -111,6 +111,7 @@ def tableColumns(profile,tableName):
                 ordDict["Description"] = child.get('fullname')
                 ordDict["Data type"] = child.get('type')
                 ordDict["Length"] = child.get('size')
+                ordDict["Searchable"] = child.get('searchable')
                 if child.get('lookup'):
                     ordDict["Lookup"] = child.get('lookup')
                 else:

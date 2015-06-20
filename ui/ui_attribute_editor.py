@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_attribute_editor.ui'
 #
-# Created: Tue May 13 15:57:55 2014
-#      by: PyQt4 UI code generator 4.10.3
+# Created: Sat Jun 20 13:36:47 2015
+#      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -29,6 +29,11 @@ class Ui_editor(object):
         editor.resize(447, 359)
         self.gridLayout = QtGui.QGridLayout(editor)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.buttonBox = QtGui.QDialogButtonBox(editor)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.gridLayout.addWidget(self.buttonBox, 2, 0, 1, 1)
         self.groupBox = QtGui.QGroupBox(editor)
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
         self.gridLayout_2 = QtGui.QGridLayout(self.groupBox)
@@ -39,10 +44,6 @@ class Ui_editor(object):
         self.label = QtGui.QLabel(self.groupBox)
         self.label.setObjectName(_fromUtf8("label"))
         self.gridLayout_2.addWidget(self.label, 0, 0, 1, 1)
-        self.txtDefault = QtGui.QLineEdit(self.groupBox)
-        self.txtDefault.setText(_fromUtf8(""))
-        self.txtDefault.setObjectName(_fromUtf8("txtDefault"))
-        self.gridLayout_2.addWidget(self.txtDefault, 8, 1, 1, 3)
         self.label_6 = QtGui.QLabel(self.groupBox)
         self.label_6.setObjectName(_fromUtf8("label_6"))
         self.gridLayout_2.addWidget(self.label_6, 5, 0, 1, 1)
@@ -77,9 +78,6 @@ class Ui_editor(object):
         self.checkBox = QtGui.QCheckBox(self.groupBox)
         self.checkBox.setObjectName(_fromUtf8("checkBox"))
         self.gridLayout_2.addWidget(self.checkBox, 7, 1, 1, 1)
-        self.label_8 = QtGui.QLabel(self.groupBox)
-        self.label_8.setObjectName(_fromUtf8("label_8"))
-        self.gridLayout_2.addWidget(self.label_8, 8, 0, 1, 1)
         self.cboNull = QtGui.QComboBox(self.groupBox)
         self.cboNull.setObjectName(_fromUtf8("cboNull"))
         self.gridLayout_2.addWidget(self.cboNull, 6, 1, 1, 3)
@@ -93,12 +91,20 @@ class Ui_editor(object):
         self.btnTableList.setMaximumSize(QtCore.QSize(50, 16777215))
         self.btnTableList.setObjectName(_fromUtf8("btnTableList"))
         self.gridLayout_2.addWidget(self.btnTableList, 7, 2, 1, 1)
+        self.label_8 = QtGui.QLabel(self.groupBox)
+        self.label_8.setObjectName(_fromUtf8("label_8"))
+        self.gridLayout_2.addWidget(self.label_8, 8, 0, 1, 1)
+        self.label_10 = QtGui.QLabel(self.groupBox)
+        self.label_10.setObjectName(_fromUtf8("label_10"))
+        self.gridLayout_2.addWidget(self.label_10, 9, 0, 1, 1)
+        self.txtDefault = QtGui.QLineEdit(self.groupBox)
+        self.txtDefault.setText(_fromUtf8(""))
+        self.txtDefault.setObjectName(_fromUtf8("txtDefault"))
+        self.gridLayout_2.addWidget(self.txtDefault, 8, 1, 1, 3)
+        self.cboSearchable = QtGui.QComboBox(self.groupBox)
+        self.cboSearchable.setObjectName(_fromUtf8("cboSearchable"))
+        self.gridLayout_2.addWidget(self.cboSearchable, 9, 1, 1, 3)
         self.gridLayout.addWidget(self.groupBox, 0, 0, 1, 1)
-        self.buttonBox = QtGui.QDialogButtonBox(editor)
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 1)
 
         self.retranslateUi(editor)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), editor.accept)
@@ -110,7 +116,6 @@ class Ui_editor(object):
         self.groupBox.setTitle(_translate("editor", "Add Table Column", None))
         self.label_9.setText(_translate("editor", "Field is a List (Choice list)", None))
         self.label.setText(_translate("editor", "Table", None))
-        self.txtDefault.setPlaceholderText(_translate("editor", "Default value will be provided if user does not specify", None))
         self.label_6.setText(_translate("editor", "Auto Increment (Primary Key)", None))
         self.txtAttrib.setPlaceholderText(_translate("editor", "default attribute length", None))
         self.label_5.setText(_translate("editor", "Character Length", None))
@@ -120,8 +125,10 @@ class Ui_editor(object):
         self.label_3.setText(_translate("editor", "Description", None))
         self.label_2.setText(_translate("editor", "Column Name", None))
         self.checkBox.setText(_translate("editor", "Yes       I.e Gender (Male/Female)", None))
-        self.label_8.setText(_translate("editor", "Default Value", None))
         self.label_7.setText(_translate("editor", "Is Mandatory Field ", None))
         self.chkPrimaryKey.setText(_translate("editor", "Yes", None))
         self.btnTableList.setText(_translate("editor", "Source", None))
+        self.label_8.setText(_translate("editor", "Default Value", None))
+        self.label_10.setText(_translate("editor", "Is Searchable Field", None))
+        self.txtDefault.setPlaceholderText(_translate("editor", "Default value will be provided if user does not specify", None))
 
