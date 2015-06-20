@@ -132,7 +132,7 @@ def deleteColumn(level,category,tableName,elemnt,key,value):
             continue
             #print "Not founded"+str(profile.attrib)
     
-def editTableColumn(profile,tableName, key, value, newValue, type, size, desc):
+def editTableColumn(profile,tableName, key, value, newValue, type, size, desc,search,lookup):
     tree, root=parseRootElement()
     filter = (".//*[@name='%s']/table")%profile
     for elem in root.findall(filter):
@@ -144,6 +144,9 @@ def editTableColumn(profile,tableName, key, value, newValue, type, size, desc):
                     col.set('oldname', value)
                     col.set('type', type)
                     col.set('size', size)
+                    col.set('searchable',search)
+
+                    #col.set('lookup', lookup)
                     if desc != '':
                         col.set('fullname', desc)
     tree.write(xml_doc, xml_declaration=True, encoding='utf-8')

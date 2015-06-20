@@ -14,6 +14,16 @@
    <string>Table Attributes</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="2" column="0">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0">
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
@@ -31,16 +41,6 @@
        <widget class="QLabel" name="label">
         <property name="text">
          <string>Table</string>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="1" colspan="3">
-       <widget class="QLineEdit" name="txtDefault">
-        <property name="text">
-         <string/>
-        </property>
-        <property name="placeholderText">
-         <string>Default value will be provided if user does not specify</string>
         </property>
        </widget>
       </item>
@@ -117,13 +117,6 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="0">
-       <widget class="QLabel" name="label_8">
-        <property name="text">
-         <string>Default Value</string>
-        </property>
-       </widget>
-      </item>
       <item row="6" column="1" colspan="3">
        <widget class="QComboBox" name="cboNull"/>
       </item>
@@ -154,17 +147,34 @@
         </property>
        </widget>
       </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Default Value</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Is Searchable Field</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1" colspan="3">
+       <widget class="QLineEdit" name="txtDefault">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="placeholderText">
+         <string>Default value will be provided if user does not specify</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="1" colspan="3">
+       <widget class="QComboBox" name="cboSearchable"/>
+      </item>
      </layout>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
     </widget>
    </item>
   </layout>

@@ -171,8 +171,8 @@ class WidgetCollection(object):
     """
     Class initialization
     """
-    #@staticmethod
-    def widget_control_type(self,data_type):
+    @staticmethod
+    def widget_control_type(data_type):
         mapping = {
             'character varying': LineEditWidget,
             'integer': IntegerWidget,
