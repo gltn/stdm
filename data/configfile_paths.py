@@ -168,7 +168,6 @@ class FilePaths(object):
 
     def localFontPath(self, path):
         """ Create a path where fonts will be stored"""
-        fontPath = None
         if path == None:
             if platform.system() == "Windows":
                 path = os.environ["USERPROFILE"]
@@ -176,7 +175,7 @@ class FilePaths(object):
                 path = os.getenv("HOME")
             fontPath = path + "/.stdm/font.cache"
         else:
-            fontPath=str(path).replace("\\", "/")+"/font.cache"
+            fontPath = str(path).replace("\\", "/")+"/font.cache"
         SysFonts.register(fontPath)
     
     def setUserXMLFile(self):
@@ -199,14 +198,14 @@ class FilePaths(object):
             profPath = str(os.getenv('HOME'))+"/.stdm"
         return str(profPath).replace("\\", "/")
     
-    def setLocalPath(self,path=None):
+    def setLocalPath(self, path=None):
         if path:
             self.userPath = path
         if not path:
             self.userPath = self.localPath()
             
-    def createDir(self,dirPath):
-        if os.access(dirPath, os.F_OK) == False:
+    def createDir(self, dirPath):
+        if not os.access(dirPath, os.F_OK):
             os.makedirs(dirPath)
         else:
             return dirPath

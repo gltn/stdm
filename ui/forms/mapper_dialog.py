@@ -132,6 +132,7 @@ class FormWidgetLoader(object):
         if self.widget_property[1]:
             self.lookupOptions(self.init_widget_cls, self.widget_property[2])
         if self.widget_property[3]:
+            #QMessageBox.information(self,"Foreing keys", str(self.widget_property[3]))
             if self.widget_property[3].add_table_formatters() or len(self.widget_property.add_table_formatters())>0:
                 self.init_widget_cls.foreign_key_formatter(attr, self.widget_property[3])
         self.init_widget_cls.adopt()
