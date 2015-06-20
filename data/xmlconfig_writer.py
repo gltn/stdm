@@ -145,8 +145,8 @@ def editTableColumn(profile,tableName, key, value, newValue, type, size, desc,se
                     col.set('type', type)
                     col.set('size', size)
                     col.set('searchable',search)
-
-                    #col.set('lookup', lookup)
+                    if hasattr(col, 'lookup'):
+                        col.set('lookup', lookup)
                     if desc != '':
                         col.set('fullname', desc)
     tree.write(xml_doc, xml_declaration=True, encoding='utf-8')

@@ -102,7 +102,8 @@ from .config_utils import (
                 setCollectiontypes,
                 activeProfile,
                 UserData,
-                tableColType
+                tableColType,
+                table_searchable_cols
 )
 from .license_doc import LicenseDocument
 from .template_database import DatabaseCreator
