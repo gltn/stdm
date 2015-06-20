@@ -35,11 +35,11 @@ class TypePropertyMapper(object):
         self._model = model
         self._mapper = DeclareMapping.instance()
         self._attribute_mapper = AttributePropretyType(self._model)
+        self._attr = self._attribute_mapper.attribute_type()
         self.widgetList = OrderedDict()
         self.hideGUID()
 
     def hideGUID(self):
-        self._attr = self._attribute_mapper.attribute_type()
         try:
             for keys in self._attr.keys():
                 if keys == 'id':
@@ -62,7 +62,7 @@ class TypePropertyMapper(object):
             control_widget = widget_collection.widget_control_type(attr_data_type[0])
             if attr_data_type[0] == 'foreign key':
                 source_table = foreign_key_table_reference(self._model)
-                self.formatters = AttributeFormatters(attr,source_table[0])
+                self.formatters = AttributeFormatters(attr, source_table[0])
                 self.formatters.set_display_name(source_table[1])
             self.widgetList[attr] = [control_widget, isLookup, lk_items, self.formatters]
 
