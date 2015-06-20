@@ -36,8 +36,10 @@ from stdm.data import (
     listEntityViewer,
     EntityColumnModel,
     FilePaths,
-    tableFullDescription
+    tableFullDescription,
+
 )
+from .config_utils import table_searchable_cols
 from stdm.settings import dataIcon
 
 
@@ -139,7 +141,14 @@ class ConfigTableReader(object):
         """
         return listEntityViewer(col_list, icon=dataIcon)
 
-    
+    def table_searchable_columns(self, table):
+        """
+        Method to read all searchable field from the config for the table
+        :param table:
+        :return:
+        """
+        return table_searchable_cols(table)
+
     def tableRelation(self,tableName):
         '''Method to read all defined table relationship in the config file'''
         relationModel = None
