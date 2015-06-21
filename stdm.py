@@ -27,22 +27,24 @@ from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
 #from data.pg_utils import delete_table_keys
-from ui import (loginDlg,
-                changePwdDlg,
-                manageAccountsDlg,
-                contentAuthDlg,
-                newSTRWiz,
-                ViewSTRWidget,
-                AdminUnitSelector,
-                STDMEntityBrowser,
-                SurveyEntityBrowser,
-                PersonDocumentGenerator,
-                AboutSTDMDialog,
-                DeclareMapping,
-                WorkspaceLoader,
-                ImportData,
-                ExportData
-                )
+from ui import (
+    DocumentGeneratorDialog,
+    EntityConfig,
+    loginDlg,
+    changePwdDlg,
+    manageAccountsDlg,
+    contentAuthDlg,
+    newSTRWiz,
+    ViewSTRWidget,
+    AdminUnitSelector,
+    STDMEntityBrowser,
+    SurveyEntityBrowser,
+    AboutSTDMDialog,
+    DeclareMapping,
+    WorkspaceLoader,
+    ImportData,
+    ExportData
+)
 from ui.spatialUnitMangerDockWidget import SpatialUnitManagerDockWidget
 from ui.reports import ReportBuilder
 import data
@@ -697,10 +699,11 @@ class STDMQGISLoader(object):
         Slot raised to show new print composer with additional tools for designing 
         map-based documents.
         """
-        documentComposer = self.iface.createNewComposer(QApplication.translate("STDMQGISLoader","STDM Document Designer"))
+        title = QApplication.translate("STDMPlugin", "STDM Document Designer")
+        documentComposer = self.iface.createNewComposer(title)
 
         #Embed STDM customizations
-        composerWrapper = ComposerWrapper(documentComposer)
+        composerWrapper = ComposerWrapper(documentComposer, self.iface)
         composerWrapper.configure()
 
     def onDocumentGeneratorByPerson(self):

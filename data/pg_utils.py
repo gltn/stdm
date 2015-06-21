@@ -30,6 +30,15 @@ from stdm.utils import getIndex
 _postGISTables = ["spatial_ref_sys"]
 _postGISViews = ["geometry_columns","raster_columns","geography_columns","raster_overviews"]
 
+_pg_numeric_col_types = ["smallint","integer","bigint","double precision",
+                      "numeric","decimal","real","smallserial","serial",
+                      "bigserial"]
+_text_col_types = ["character varying", "text"]
+
+#Flags for specifying data source type
+VIEWS = 2500
+TABLES = 2501
+
 def spatial_tables(excludeViews=False):
     '''
     Returns a list of spatial table names in the STDM database.
@@ -100,6 +109,33 @@ def pg_views(schema="public"):
             pgViews.append(viewName)
             
     return pgViews
+
+def pg_table_exists(table_name, include_views=True, schema="public"):
+    """
+    Checks whether the given table name exists in the current database
+    connection.
+    :param table_name: Name of the table or view. If include_views is False
+    the result will always be False since views have been excluded from the
+    search.
+    :type table_name: str
+    :param include_views: True if view names will be also be included in the
+    search.
+    :type include_views: bool
+    :param schema: Schema to search against. Default is "public" schema.
+    :type schema: str
+    :return: True if the table or view (if include_views is True) exists in
+    currently connected database.
+    :rtype: bool
+    """
+    tables = pg_tables(schema=schema)
+    if include_views:
+        tables.extend(pg_views(schema=schema))
+
+    if getIndex(tables, table_name) == -1:
+        return False
+
+    else:
+        return True
 
 def process_report_filter(tableName,columns,whereStr="",sortStmnt=""):
     #Process the report builder filter    
@@ -177,7 +213,7 @@ def geometryType(tableName,spatialColumnName,schemaName = "public"):
     
     result = _execute(t,tbname = tableName,spcolumn=spatialColumnName,tbschema=schemaName)
         
-    geomType,epsg_code = "",-1
+    geomType,epsg_code = "", -1
        
     for r in result:
         geomType = r["type"]
@@ -231,11 +267,70 @@ def columnType(tableName,columnName):
         
         break
     return dataType
+
+def columns_by_type(table, data_types):
+    """
+    :param table: Name of the database table.
+    :type table: str
+    :param data_types: List containing matching datatypes that should be
+    retrieved from the table.
+    :type data_types: list
+    :return: Returns those columns of given types from the specified
+    database table.
+    :rtype: list
+    """
+    cols = []
+
+    table_cols = table_column_names(table)
+    for tc in table_cols:
+        col_type = columnType(table, tc)
+        type_idx = getIndex(data_types, col_type)
+
+        if type_idx != -1:
+            cols.append(tc)
+
+    return cols
+
+def numeric_columns(table):
+    """
+    :param table: Name of the database table.
+    :type table: str
+    :return: Returns a list of columns that are of number type such as
+    integer, decimal, double etc.
+    :rtype: list
+    """
+    return columns_by_type(table, _pg_numeric_col_types)
+
+def numeric_varchar_columns(table):
+    #Combines numeric and text column types
+    num_char_types = _pg_numeric_col_types + _text_col_types
+
+    return columns_by_type(table, num_char_types)
+
+def qgsgeometry_from_wkbelement(wkb_element):
+    """
+    Convert a geoalchemy object in str or WKBElement format to the a
+    QgsGeometry object.
+    :return: QGIS Geometry object.
+    """
+    if isinstance(wkb_element, WKBElement):
+        db_session = STDMDb.instance().session
+        geom_wkt = db_session.scalar(wkb_element.ST_AsText())
+
+    elif isinstance(wkb_element, str):
+        split_geom = wkb_element.split(";")
+
+        if len(split_geom) < 2:
+            return None
+
+        geom_wkt = split_geom[1]
+
+    return QgsGeometry.fromWkt(geom_wkt)
     
 def _execute(sql,**kwargs):
-    '''
+    """
     Execute the passed in sql statement
-    '''
+    """
     conn = STDMDb.instance().engine.connect()        
     result = conn.execute(sql,**kwargs)
     conn.close()
