@@ -16,38 +16,41 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from PyQt4.QtCore import (
-                          QObject,
-                          Qt,
-                          QFile,
-                          QFileInfo
-                          )
+    QObject,
+    Qt,
+    QFile,
+    QFileInfo
+)
 from PyQt4.QtGui import (
-                         QActionGroup,
-                         QAction,
-                         QIcon,
-                         QApplication,
-                         QMessageBox,
-                         QDialog
-                         )
+    QActionGroup,
+    QAction,
+    QIcon,
+    QApplication,
+    QMessageBox,
+    QDialog
+)
 
 from PyQt4.QtXml import QDomDocument
 
 from qgis.gui import QgsComposerView
 
 from qgis.core import (
-                       QgsComposerArrow,
-                       QgsComposerLabel
-                       )
+   QgsComposerArrow,
+   QgsComposerLabel
+)
 
-from stdm.ui import (
-                     TemplateDocumentSelector
-                     )
+from stdm.ui.composer import (
+    TemplateDocumentSelector
+)
 
 from .item_formatter import (
-                             LineFormatter,
-                             DataLabelFormatter,
-                             MapFormatter
-                             )
+    ChartFormatter,
+    DataLabelFormatter,
+    LineFormatter,
+    MapFormatter,
+    PhotoFormatter,
+    TableFormatter
+ )
 
 class ComposerItemConfig(QObject):
     """
@@ -164,7 +167,7 @@ class LineItemConfig(ComposerItemConfig):
         
     def action(self):
         lineAct = QAction(QIcon(":/plugins/stdm/images/icons/line.png"), \
-        QApplication.translate("LineItemConfig","Add Line"), self.composerView())
+        QApplication.translate("LineItemConfig","Add line"), self.composerView())
         
         return lineAct
 
@@ -202,7 +205,7 @@ class DataLabelConfig(ComposerItemConfig):
         
     def action(self):
         dataLabelAct = QAction(QIcon(":/plugins/stdm/images/icons/db_field.png"), \
-        QApplication.translate("DataLabelConfig","Add Data Label"), self.composerView())
+        QApplication.translate("DataLabelConfig","Add data label"), self.composerView())
         
         return dataLabelAct
     
@@ -230,6 +233,44 @@ class DataLabelConfig(ComposerItemConfig):
     
 DataLabelConfig.register()
 
+class TableConfig(ComposerItemConfig):
+    """
+    Table composer item.
+    """
+    def __init__(self, composer_wrapper):
+        ComposerItemConfig.__init__(self, composer_wrapper)
+        self._itemFormatter = TableFormatter()
+
+    def action(self):
+        tb_act = QAction(QIcon(":/plugins/stdm/images/icons/composer_table.png"), \
+        QApplication.translate("TableConfig","Add attribute table"), self.composerView())
+
+        return tb_act
+
+    def on_action_triggered(self, state):
+        self.composerView().setCurrentTool(QgsComposerView.AddTable)
+
+    def on_action_toggled(self, checked):
+        if checked:
+            self.composerView().selectedItemChanged.connect(self.onSelectItemChanged)
+
+        else:
+            self.composerView().selectedItemChanged.disconnect(self.onSelectItemChanged)
+
+    def onSelectItemChanged(self, selected):
+        """
+        We use this method since there seems to be an issue with QgsComposition not raising
+        signals when new composer items are added in the composition.
+        """
+        sel_items = self.composition().selectedComposerItems()
+        if len(sel_items) == 0:
+            return
+
+        table_item = sel_items[0]
+        self._itemFormatter.apply(table_item, self.composerWrapper())
+
+TableConfig.register()
+
 class MapConfig(ComposerItemConfig):
     """
     Enables users to add a map into the composition as well as define styling for spatial
@@ -241,7 +282,7 @@ class MapConfig(ComposerItemConfig):
         
     def action(self):
         mapAct = QAction(QIcon(":/plugins/stdm/images/icons/add_map.png"), \
-        QApplication.translate("MapConfig","Add Map"), self.composerView())
+        QApplication.translate("MapConfig","Add map"), self.composerView())
         
         return mapAct
     
@@ -268,6 +309,83 @@ class MapConfig(ComposerItemConfig):
         self._itemFormatter.apply(templateMap,self.composerWrapper())   
     
 MapConfig.register()
+
+class PhotoConfig(ComposerItemConfig):
+    """
+    Photo composer item based on type.
+    """
+    def __init__(self,composerWrapper):
+        ComposerItemConfig.__init__(self, composerWrapper)
+        self._itemFormatter = PhotoFormatter()
+
+    def action(self):
+        ph_act = QAction(QIcon(":/plugins/stdm/images/icons/photo_24.png"), \
+        QApplication.translate("PhotoConfig","Add photo"), self.composerView())
+
+        return ph_act
+
+    def on_action_triggered(self, state):
+        self.composerView().setCurrentTool(QgsComposerView.AddPicture)
+
+    def on_action_toggled(self, checked):
+        if checked:
+            self.composerView().selectedItemChanged.connect(self.onSelectItemChanged)
+
+        else:
+            self.composerView().selectedItemChanged.disconnect(self.onSelectItemChanged)
+
+    def onSelectItemChanged(self, selected):
+        """
+        We use this method since there seems to be an issue with QgsComposition not raising
+        signals when new composer items are added in the composition.
+        """
+        sel_items = self.composition().selectedComposerItems()
+        if len(sel_items) == 0:
+            return
+
+        photo_item = sel_items[0]
+        self._itemFormatter.apply(photo_item, self.composerWrapper())
+
+PhotoConfig.register()
+
+class ChartConfig(ComposerItemConfig):
+    """
+    Chart composer item which uses the QgsComposerPicture item for
+    rendering graphs outputted as images.
+    """
+    def __init__(self,composerWrapper):
+        ComposerItemConfig.__init__(self, composerWrapper)
+        self._itemFormatter = ChartFormatter()
+
+    def action(self):
+        chart_act = QAction(QIcon(":/plugins/stdm/images/icons/chart.png"), \
+        QApplication.translate("ChartConfig","Add chart"), self.composerView())
+
+        return chart_act
+
+    def on_action_triggered(self, state):
+        self.composerView().setCurrentTool(QgsComposerView.AddPicture)
+
+    def on_action_toggled(self, checked):
+        if checked:
+            self.composerView().selectedItemChanged.connect(self.onSelectItemChanged)
+
+        else:
+            self.composerView().selectedItemChanged.disconnect(self.onSelectItemChanged)
+
+    def onSelectItemChanged(self, selected):
+        """
+        We use this method since there seems to be an issue with QgsComposition not raising
+        signals when new composer items are added in the composition.
+        """
+        sel_items = self.composition().selectedComposerItems()
+        if len(sel_items) == 0:
+            return
+
+        chart_item = sel_items[0]
+        self._itemFormatter.apply(chart_item, self.composerWrapper())
+
+ChartConfig.register()
 
 class SeparatorConfig(ComposerItemConfig):
     """
@@ -297,7 +415,7 @@ class SaveTemplateConfig(ComposerItemConfig):
         
     def action(self):
         saveTemplateAct = QAction(QIcon(":/plugins/stdm/images/icons/save_tb.png"), \
-        QApplication.translate("SaveTemplateConfig","Save Document Template"), self.composerView())
+        QApplication.translate("SaveTemplateConfig","Save document template"), self.composerView())
         
         return saveTemplateAct
     
@@ -318,7 +436,7 @@ class OpenTemplateConfig(SaveTemplateConfig):
     """
     def action(self):
         openTemplateAct = QAction(QIcon(":/plugins/stdm/images/icons/open_file.png"), \
-        QApplication.translate("OpenTemplateConfig","Open Document Template"), self.composerView())
+        QApplication.translate("OpenTemplateConfig","Open document template"), self.composerView())
         
         return openTemplateAct
       
@@ -329,8 +447,8 @@ class OpenTemplateConfig(SaveTemplateConfig):
         docSelector = TemplateDocumentSelector(self.composerView())
         
         if docSelector.exec_() == QDialog.Accepted:
-            docName,filePath = docSelector.documentMapping()
-            self.composerWrapper().loadTemplate(filePath)  
+            docName, file_path = docSelector.documentMapping()
+            self.composerWrapper().create_new_document_designer(file_path)
             
 OpenTemplateConfig.register()
 
@@ -344,7 +462,7 @@ class ManageTemplatesConfig(ComposerItemConfig):
         
     def action(self):
         manageTemplatesAct = QAction(QIcon(":/plugins/stdm/images/icons/manage_templates.png"), \
-        QApplication.translate("ManageTemplatesConfig","Manage Document Templates"), self.composerView())
+        QApplication.translate("ManageTemplatesConfig","Manage document templates"), self.composerView())
         
         return manageTemplatesAct
     
@@ -359,4 +477,3 @@ class ManageTemplatesConfig(ComposerItemConfig):
         docManager.exec_()
             
 ManageTemplatesConfig.register()
-    

@@ -29,15 +29,22 @@ enumeratorNamesFormatter,dateFormatter
 from .mapping import MapperMixin,QgsFeatureMapperMixin,SAVE,UPDATE
 
 from .pg_utils import (
-                        spatial_tables,
-                       pg_tables,
-                       pg_views,
-                       table_column_names,
-                       geometryType,
-                       _execute,
-                       vector_layer,
-                       non_spatial_table_columns)
-
+    columns_by_type,
+    geometryType,
+    non_spatial_table_columns,
+    numeric_columns,
+    numeric_varchar_columns,
+    pg_table_exists,
+    pg_tables,
+    pg_views,
+    qgsgeometry_from_wkbelement,
+    spatial_tables,
+    table_column_names,
+    vector_layer,
+    TABLES,
+    VIEWS,
+    _execute
+)
 
 from .usermodels import listEntityViewer, EntityColumnModel
 

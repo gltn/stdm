@@ -9,7 +9,6 @@
     <file>images/icons/settings.png</file>
     <file>images/icons/change_password.png</file>
     <file>images/icons/entity_management.png</file>
-    <file>images/icons/worksite.png</file>
     <file>images/icons/content_auth.png</file>
     <file>images/icons/users_manage.png</file>
     <file>images/icons/enumerator.png</file>
@@ -79,5 +78,14 @@
     <file>images/icons/layer_line.png</file>
     <file>images/icons/layer_polygon.png</file>
     <file>images/icons/spatial_unit_manager.png</file>
+    <file>images/icons/chart.png</file>
+    <file>images/icons/chart_bar.png</file>
+    <file>images/icons/chart-512.png</file>
+    <file>images/icons/composer_table.png</file>
+    <file>images/icons/photo.png</file>
+    <file>images/icons/no_photo.png</file>
+    <file>images/icons/photo_24.png</file>
+    <file>images/icons/photo_64.png</file>
+    <file>images/icons/photo_512.png</file>
   </qresource>
 </RCC>
