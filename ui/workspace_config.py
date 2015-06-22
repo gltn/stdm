@@ -125,11 +125,19 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","Data directory paths are not given"))
                 validPage=False
         if self.currentId()==3:
+            social_tenure = SocialTenureParty(self.lstParty, self.on_table_selection())
+            spsocial_tenure =  SocialTenureSpatialunit(self.lstSpatial_unit, self.on_table_selection())
             if self.profile=='':
                 if self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader",\
                                         "You have not selected any default profile for your configuration. \n "\
                                 "The current profile will be used as default instead"))==QMessageBox.No:
                     validPage=False
+
+        if self.currentId() == 4:
+            """
+            """
+
+
         if self.currentId() == 5:
             if self.setDatabaseSchema() == 'success' or self.rbSkip.isChecked():
                 validPage = True
@@ -180,11 +188,19 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         '''Method to check if the right config exist in the directory and then return the table names'''
         tableExist=self.tableHandler.tableListModel(activeProfile)
         return tableExist
-                                 
+
+    def on_table_selection(self):
+        """
+        Method to read and return all the core table from the config for the profile
+        :return:
+        """
+        self.profile = self.cboProfile.currentText()
+        model = self.tableHandler.tableListModel(self.profile)
+        return model
+
     def readUserTable(self):
         '''Start the profile table list for editing attributes'''
-        profile=self.cboProfile.currentText()
-        model=self.tableHandler.tableListModel(self.profile) 
+        model = self.on_table_selection()
         self.lstEntity.setModel(model)
         self.lstEntity_2.setModel(model)
         self.lstEntity.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -833,3 +849,54 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         msg.setDefaultButton(QMessageBox.No)
         msg.setText(message)
         return msg.exec_()
+
+
+class SocialTenureParty(object):
+    """
+    Class variables definitions
+    """
+    def __init__(self, widget, widget_prop, parent = None):
+        """
+        Initialize the global variables
+        :param parent:
+        :return:
+        """
+        self.widget = widget
+        self.party = widget_prop
+        #self.widget.\
+        #self.on_table_selection()
+        self.on_tab_focus()
+
+    def on_tab_focus(self):
+        """
+        Method to load the table names to str party definition control
+        """
+
+        self.widget.setModel(self.party)
+
+
+    def on_table_selection(self, index):
+        """
+        """
+        self.widget.row.setCheckable(index)
+
+
+class SocialTenureSpatialunit(object):
+    """
+    Class variables definitions
+    """
+    def __init__(self, widget, widget_prop, parent = None):
+        """
+        Initialize the global variables
+        :param parent:
+        :return:
+        """
+        self.widget = widget
+        self._party = widget_prop
+        self.on_sp_tab_focus()
+
+    def on_sp_tab_focus(self):
+        """
+        Method to load the table names to str party definition control
+        """
+        self.widget.setModel(self._party)

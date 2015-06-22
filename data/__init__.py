@@ -39,7 +39,7 @@ from .pg_utils import (
                        non_spatial_table_columns)
 
 
-from .usermodels import listEntityViewer, EntityColumnModel
+from .usermodels import listEntityViewer, EntityColumnModel, CheckableListModel
 
 from .xmldata2sql import SQLInsert
 from .xmlconfig_reader import (

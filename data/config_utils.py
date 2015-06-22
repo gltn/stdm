@@ -125,4 +125,3 @@ def getOpenFileChooser(self,message,file_filter):
         except:
             return
         return filePath
-    
