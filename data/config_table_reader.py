@@ -35,6 +35,7 @@ from stdm.data import (
     setLookupValue,updateSQL,
     listEntityViewer,
     EntityColumnModel,
+    CheckableListModel,
     FilePaths,
     tableFullDescription,
 
@@ -66,13 +67,13 @@ class ConfigTableReader(object):
     def profile_tables(self, profile):
         table_desc = tableFullDescription(profile)
         if table_desc:
-            headers= table_desc[0].keys()
-            rowData= [row.values() for row in table_desc]
+            headers = table_desc[0].keys()
+            rowData = [row.values() for row in table_desc]
 
             table_desc_model = EntityColumnModel(headers, rowData)
             return table_desc_model
     
-    def tableNames(self,profile):
+    def tableNames(self, profile):
         tbl_data = XMLTableElement(profile)
         if tbl_data is not None:
 #            if "social_tenure" in tData:
@@ -80,7 +81,7 @@ class ConfigTableReader(object):
             return tbl_data
     
     def fulltableList(self):
-        tbList=tableLookUpCollection()
+        tbList = tableLookUpCollection()
         if tbList is not None:
             return tbList
 
@@ -90,32 +91,31 @@ class ConfigTableReader(object):
         to a combo box
         :return:
         """
-        tbl_list= self.fulltableList()
+        tbl_list = self.fulltableList()
         tbl_model = listEntityViewer(tbl_list)
         return tbl_model
         
     def STDMProfiles(self):
-        pfList=profiles()
+        pfList = profiles()
         return pfList
     
     def lookupTableModel(self):
-        model=listEntityViewer(self.lookupTable())
+        model = listEntityViewer(self.lookupTable())
         return model
     
     def lookupTable(self):
         return lookupTable()
-        
-    
+
     def lookupColumns(self,lookupName):
-        columnModel=None
-        tableAttrib=lookupColumn(lookupName)
+        columnModel = None
+        tableAttrib = lookupColumn(lookupName)
         if len(tableAttrib)>0:
-            colHeaders=tableAttrib[0].keys()
-            colVals= []
+            colHeaders = tableAttrib[0].keys()
+            colVals = []
            # [item.values for item in tableAttrib]
             for item in tableAttrib:
                 colVals.append(item.values())
-            columnModel=EntityColumnModel(colHeaders,colVals)
+            columnModel = EntityColumnModel(colHeaders,colVals)
             return columnModel
         else: 
             return None
