@@ -35,12 +35,10 @@ from stdm.data import (
     setLookupValue,updateSQL,
     listEntityViewer,
     EntityColumnModel,
-    CheckableListModel,
     FilePaths,
-    tableFullDescription,
-
+    tableFullDescription
 )
-from .config_utils import table_searchable_cols
+from .config_utils import table_searchable_cols,activeProfile
 from stdm.settings import dataIcon
 
 
@@ -241,6 +239,9 @@ class ConfigTableReader(object):
     
     def trackXMLChanges(self):
         self.fileHandler.createBackup()
+
+    def active_profile(self):
+        return activeProfile()
 
     #def check_config_version(self, path):
        # self.fileHandler.compare_config_version(path)
