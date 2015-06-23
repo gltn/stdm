@@ -11,7 +11,7 @@ from stdm.settings import tableIcon
 ALT_COLOR_EVEN = QColor(209, 243, 249)
 ALT_COLOR_ODD = QColor(241,246,245)
 
-class CheckableListModel(QStandardItemModel)
+class CheckableListModel(QStandardItemModel):
     def __init__(self, list, icon = None, parent = None):
         QStandardItemModel.__init__(self,parent)
         self.__list = list
@@ -23,20 +23,18 @@ class CheckableListModel(QStandardItemModel)
         else:
             return 0
 
-    def setCheckablea(self, bool):
+    def setCheckable(self, bool):
         chekableItems = []
+        self._icon =tableIcon
         for text in self.__list:
             item = QStandardItem()
             item.setCheckable(bool)
+            item.setCheckState(Qt.Unchecked)
             item.setText(text)
             item.setIcon(self._icon)
-        chekableItems.append(item)
+            chekableItems.append(item)
+        self.appendColumn(chekableItems)
 
-        return chekableItems
-
-    def setCheckable(self, index):
-        self.__list[index].setCheckState(Qt.Unchecked)
-        self.__list[index].setChekable(True)
 
 class listEntityViewer(QAbstractListModel):
     def __init__(self, list=[], icon =None, parent=None):
@@ -88,12 +86,6 @@ class listEntityViewer(QAbstractListModel):
         if not index.isValid():
             return Qt.ItemIsEnabled
         return Qt.ItemIsEditable|Qt.ItemIsSelectable|Qt.ItemIsEnabled
-
-    def setCheckable(self, index):
-        if index and index.isValid():
-            row = index.row()
-            self.__list[ro].setCheckstate(Qt.Unchecked)
-            self.__list[row].setCheckable(True)
      
     def setData(self, index, value, role=Qt.EditRole):
         if index.isValid() and role == Qt.EditRole:                        

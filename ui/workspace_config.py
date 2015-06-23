@@ -29,7 +29,7 @@ from PyQt4.QtCore import *
 from ui_workspace_config import Ui_STDMWizard
 from stdm.data import ConfigTableReader,deleteProfile,profileFullDescription,deleteColumn,\
 deleteTable,lookupData2List,deleteLookupChoice,SQLInsert,LicenseDocument, safely_delete_tables, stdm_core_tables, \
-    _execute, flush_session_activity
+    _execute, flush_session_activity, CheckableListModel
 
 from attribute_editor import AttributeEditor
 from .geometry_editor import GeometryEditor
@@ -65,6 +65,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         QObject.connect(self.tblEdit, SIGNAL('clicked(QModelIndex)'), self.selectedColumnIndex)
         QObject.connect(self.tblEdit_2, SIGNAL('clicked(QModelIndex)'), self.selectedColumnIndex)
         QObject.connect(self.tblLookupList, SIGNAL('clicked(QModelIndex)'), self.lookupColumns)
+        QObject.connect(self.widget, SIGNAL('clicked(QModelIndex)'), self.on_table_selection)
         
         self.btnAdd.clicked.connect(self.addTableColumn)
         self.btnEdit.clicked.connect(self.columnEditor)
@@ -125,8 +126,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","Data directory paths are not given"))
                 validPage=False
         if self.currentId()==3:
-            social_tenure = SocialTenureParty(self.lstParty, self.on_table_selection())
-            spsocial_tenure =  SocialTenureSpatialunit(self.lstSpatial_unit, self.on_table_selection())
+            social_tenure = SocialTenureParty(self.lstParty, self.tableHandler)
+            spsocial_tenure =  SocialTenureSpatialunit(self.lstSpatial_unit, self.tableHandler)
             if self.profile=='':
                 if self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader",\
                                         "You have not selected any default profile for your configuration. \n "\
@@ -320,6 +321,15 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             self.tableName=tabName.data()
         else:
             return None
+
+    def on_table_selection(self):
+        """
+        """
+        QMessageBox.information(None,"Selection", "sfasd")
+        selectIndex = self.widget.selectionBehaviour().selectedIndexes()
+        if len(selectIndex)>0:
+            index = selectIndex[0]
+            QMessageBox.information(None,"Selection", index.data())
 
     def addTableColumn(self):
         '''add new attribute for the table'''
@@ -855,7 +865,7 @@ class SocialTenureParty(object):
     """
     Class variables definitions
     """
-    def __init__(self, widget, widget_prop, parent = None):
+    def __init__(self, widget, handler, parent = None):
         """
         Initialize the global variables
         :param parent:
@@ -863,40 +873,51 @@ class SocialTenureParty(object):
         """
 
         self.widget = widget
-        self.party = widget_prop
+        self.handler = handler
 
         self.on_tab_focus()
+
 
     def on_tab_focus(self):
         """
         Method to load the table names to str party definition control
         """
-
-        self.widget.setModel(self.party)
-
+        profile = self.handler.active_profile()
+        tables = self.handler.tableNames(profile)
+        model = CheckableListModel(tables)
+        model.setCheckable(True)
+        self.widget.setModel(model)
 
     def on_table_selection(self, index):
         """
         """
-        self.widget.row.setCheckable(index)
+        QMessageBox.information(None,"Selection", "sfasd")
+        selectIndex = self.widget.selectionModel().selectedIndexes()
+        if len(selectIndex)>0:
+            index = selectIndex[0]
+            QMessageBox.information(None,"Selection", index.data())
 
 
 class SocialTenureSpatialunit(object):
     """
     Class variables definitions
     """
-    def __init__(self, widget, widget_prop, parent = None):
+    def __init__(self, widget, handler, parent = None):
         """
         Initialize the global variables
         :param parent:
         :return:
         """
+        self.handler = handler
         self.widget = widget
-        self._party = widget_prop
         self.on_sp_tab_focus()
 
     def on_sp_tab_focus(self):
         """
         Method to load the table names to str party definition control
         """
-        self.widget.setModel(self._party)
+        profile = self.handler.active_profile()
+        tables = self.handler.tableNames(profile)
+        model = CheckableListModel(tables)
+        model.setCheckable(True)
+        self.widget.setModel(model)
