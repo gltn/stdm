@@ -65,7 +65,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         QObject.connect(self.tblEdit, SIGNAL('clicked(QModelIndex)'), self.selectedColumnIndex)
         QObject.connect(self.tblEdit_2, SIGNAL('clicked(QModelIndex)'), self.selectedColumnIndex)
         QObject.connect(self.tblLookupList, SIGNAL('clicked(QModelIndex)'), self.lookupColumns)
-        QObject.connect(self.widget, SIGNAL('clicked(QModelIndex)'), self.on_table_selection)
+        QObject.connect(self.lstParty, SIGNAL('clicked(QModelIndex)'), self.on_str_table_selection)
         
         self.btnAdd.clicked.connect(self.addTableColumn)
         self.btnEdit.clicked.connect(self.columnEditor)
@@ -126,13 +126,14 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","Data directory paths are not given"))
                 validPage=False
         if self.currentId()==3:
-            social_tenure = SocialTenureParty(self.lstParty, self.tableHandler)
-            spsocial_tenure =  SocialTenureSpatialunit(self.lstSpatial_unit, self.tableHandler)
+
             if self.profile=='':
                 if self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader",\
                                         "You have not selected any default profile for your configuration. \n "\
                                 "The current profile will be used as default instead"))==QMessageBox.No:
                     validPage=False
+            SocialTenureParty(self.lstParty, self.tableHandler)
+            SocialTenureSpatialunit(self.lstSpatial_unit, self.tableHandler)
 
         if self.currentId() == 4:
             """
@@ -322,14 +323,16 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         else:
             return None
 
-    def on_table_selection(self):
+    def on_str_table_selection(self):
         """
         """
-        QMessageBox.information(None,"Selection", "sfasd")
-        selectIndex = self.widget.selectionBehaviour().selectedIndexes()
+        selectIndex = self.lstParty.selectionModel().selectedIndexes()
         if len(selectIndex)>0:
             index = selectIndex[0]
-            QMessageBox.information(None,"Selection", index.data())
+            columns = self.tableHandler.selected_table_columns(index.data())
+            model = CheckableListModel(columns)
+            model.setCheckable(True)
+            self.col_widget.setModel(model)
 
     def addTableColumn(self):
         '''add new attribute for the table'''
@@ -865,18 +868,17 @@ class SocialTenureParty(object):
     """
     Class variables definitions
     """
-    def __init__(self, widget, handler, parent = None):
+    def __init__(self, table_widget, handler, parent = None):
         """
         Initialize the global variables
         :param parent:
         :return:
         """
 
-        self.widget = widget
+        self.widget = table_widget
         self.handler = handler
 
         self.on_tab_focus()
-
 
     def on_tab_focus(self):
         """
@@ -887,16 +889,6 @@ class SocialTenureParty(object):
         model = CheckableListModel(tables)
         model.setCheckable(True)
         self.widget.setModel(model)
-
-    def on_table_selection(self, index):
-        """
-        """
-        QMessageBox.information(None,"Selection", "sfasd")
-        selectIndex = self.widget.selectionModel().selectedIndexes()
-        if len(selectIndex)>0:
-            index = selectIndex[0]
-            QMessageBox.information(None,"Selection", index.data())
-
 
 class SocialTenureSpatialunit(object):
     """

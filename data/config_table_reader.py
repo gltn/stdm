@@ -38,7 +38,7 @@ from stdm.data import (
     FilePaths,
     tableFullDescription
 )
-from .config_utils import table_searchable_cols,activeProfile
+from .config_utils import table_searchable_cols,activeProfile, tableCols
 from stdm.settings import dataIcon
 
 
@@ -242,6 +242,15 @@ class ConfigTableReader(object):
 
     def active_profile(self):
         return activeProfile()
+
+    def selected_table_columns(self, table):
+        """
+        Method to return the selected table colums as alist
+        :param table name STR:
+        :return: List
+        """
+        return tableCols(table)
+
 
     #def check_config_version(self, path):
        # self.fileHandler.compare_config_version(path)
