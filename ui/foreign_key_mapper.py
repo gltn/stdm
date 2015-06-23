@@ -442,7 +442,6 @@ class ForeignKeyMapper(QWidget):
         Slot raised on selecting to add related entities that will be mapped to the primary
         database model instance.
         '''
-        #QMessageBox.information(None, "Current model", str(self._dbModel))
         if self._tableModel:
             #QMessageBox.information(None, "Current model", str(self._dbModel))
             if self._entitySelector != None:
@@ -462,7 +461,8 @@ class ForeignKeyMapper(QWidget):
                     self._notifBar.clear()
                     self._notifBar.insertErrorNotification(msg)
         else:
-            #entitySelector = self._entitySelector(self, self._entitySelectorState)
+            """Since there is no base model to accepting the model object, the foreign key mapper will return foreign key ids
+            therefore, the foreign key browser expects the name of the model and the state"""
             entitySelector = self._entitySelector(self, str(self._dbModel.__name__).lower(), self._entitySelectorState)
             self.connect(entitySelector, SIGNAL("recordSelected(int)"),self._onRecordSelectedEntityBrowser)
                 #self.connect(entitySelector, SIGNAL("destroyed(QObject *)"),self.onEntitySelectorDestroyed)

@@ -20,7 +20,7 @@ email                : stdm@unhabitat.org
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from stdm.ui.ui_attribute_browser import Ui_AttribBrowser
-from fkbase_form import FKMapperDialog
+from fkbase_form import ForeignKeyMapperDialog
 
 
 class AttributeBrowser(QWidget, Ui_AttribBrowser):
@@ -100,7 +100,7 @@ class AttributeBrowser(QWidget, Ui_AttribBrowser):
         """
         #QMessageBox.information(None, "asdfa", str(self._def_col))
         try:
-            browser_frm = FKMapperDialog(self, self._parent_table, self._def_col)
+            browser_frm = ForeignKeyMapperDialog(self, self._parent_table, self._def_col)
 
             browser_frm.foreign_key_modeller()
             if browser_frm.model_display_value():
