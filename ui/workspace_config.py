@@ -65,7 +65,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         QObject.connect(self.tblEdit, SIGNAL('clicked(QModelIndex)'), self.selectedColumnIndex)
         QObject.connect(self.tblEdit_2, SIGNAL('clicked(QModelIndex)'), self.selectedColumnIndex)
         QObject.connect(self.tblLookupList, SIGNAL('clicked(QModelIndex)'), self.lookupColumns)
-        QObject.connect(self.lstParty, SIGNAL('clicked(QModelIndex)'), self.on_str_table_selection)
+        QObject.connect(self.lstParty, SIGNAL('clicked(QModelIndex)'), self.on_str_party_table_selection)
+        QObject.connect(self.lstSpatial_unit, SIGNAL("clicked(QModelIndex)"),self.on_str_sp_unit_table_selection)
         
         self.btnAdd.clicked.connect(self.addTableColumn)
         self.btnEdit.clicked.connect(self.columnEditor)
@@ -170,10 +171,6 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             except Exception as ex:
                 self.ErrorInfoMessage(ex.message)
             self.tblLookup.setAlternatingRowColors(True)
-
-
-        #if self.currentId() == 6:
-         #   self.set_social_tenure_entities()
 
         if self.currentId()==5:
             self.txtHtml.hide()
@@ -323,7 +320,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         else:
             return None
 
-    def on_str_table_selection(self):
+    def on_str_party_table_selection(self):
         """
         """
         selectIndex = self.lstParty.selectionModel().selectedIndexes()
@@ -332,7 +329,19 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             columns = self.tableHandler.selected_table_columns(index.data())
             model = CheckableListModel(columns)
             model.setCheckable(True)
-            self.col_widget.setModel(model)
+            self.lstTableCol.setModel(model)
+
+    def on_str_sp_unit_table_selection(self):
+        """
+        :return:
+        """
+        selectIndex = self.lstSpatial_unit.selectionModel().selectedIndexes()
+        if len(selectIndex)>0:
+            index = selectIndex[0]
+            columns = self.tableHandler.selected_table_columns(index.data())
+            model = CheckableListModel(columns)
+            model.setCheckable(True)
+            self.lstSpUnit.setModel(model)
 
     def addTableColumn(self):
         '''add new attribute for the table'''
@@ -387,8 +396,6 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             self.ErrorInfoMessage(ex.message)
             return
         self.showGeometryColumns(self.tableName)
-
-
 
     def tableRelationEditor(self):
         if self.tableName!=None:
@@ -890,6 +897,10 @@ class SocialTenureParty(object):
         model.setCheckable(True)
         self.widget.setModel(model)
 
+    def str_party_tables(self):
+        """
+        """
+
 class SocialTenureSpatialunit(object):
     """
     Class variables definitions
@@ -913,3 +924,9 @@ class SocialTenureSpatialunit(object):
         model = CheckableListModel(tables)
         model.setCheckable(True)
         self.widget.setModel(model)
+
+    def str_sp_unit_tables(self):
+        """
+
+        :return:
+        """
