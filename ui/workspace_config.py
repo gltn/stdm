@@ -861,10 +861,10 @@ class SocialTenureParty(object):
         :param parent:
         :return:
         """
+
         self.widget = widget
         self.party = widget_prop
-        #self.widget.\
-        #self.on_table_selection()
+
         self.on_tab_focus()
 
     def on_tab_focus(self):
