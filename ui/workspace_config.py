@@ -133,13 +133,10 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                                         "You have not selected any default profile for your configuration. \n "\
                                 "The current profile will be used as default instead"))==QMessageBox.No:
                     validPage=False
-            SocialTenureParty(self.lstParty, self.tableHandler)
-            SocialTenureSpatialunit(self.lstSpatial_unit, self.tableHandler)
 
         if self.currentId() == 4:
             """
             """
-
 
         if self.currentId() == 5:
             if self.setDatabaseSchema() == 'success' or self.rbSkip.isChecked():
@@ -165,6 +162,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             #self.toolbtn.setPopupMode(QToolButton.InstantPopup)
             self.registerProfileSettings()
             self.readUserTable()
+            self.load_str_tables()
             try:
                 if self.tableName:
                     self.loadTableColumns(self.tableName)
@@ -182,11 +180,16 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                  self.setDatabaseSchema()
             except:
                 return
+
+    def load_str_tables(self):
+        party_str_list = SocialTenureParty(self.lstParty, self.tableHandler)
+        sp_unit_str_lst = SocialTenureSpatialunit(self.lstSpatial_unit, self.tableHandler)
+        return party_str_list, sp_unit_str_lst
     
     def checkTablesExist(self,activeProfile):
         '''Method to check if the right config exist in the directory and then return the table names'''
-        tableExist=self.tableHandler.tableListModel(activeProfile)
-        return tableExist
+        table_exist = self.tableHandler.tableListModel(activeProfile)
+        return table_exist
 
     def on_table_selection(self):
         """
@@ -330,6 +333,12 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             model = CheckableListModel(columns)
             model.setCheckable(True)
             self.lstTableCol.setModel(model)
+
+    def on_str_table_selection(self):
+        selectIndex = self.lstSpatial_unit.selectionModel().selectedIndexes()
+        if len(selectIndex)>0:
+            index = selectIndex[0]
+            columns = self.tableHandler.selected_table_columns(index.data())
 
     def on_str_sp_unit_table_selection(self):
         """
@@ -881,7 +890,7 @@ class SocialTenureParty(object):
         :param parent:
         :return:
         """
-
+        self._party_table_selection = {}
         self.widget = table_widget
         self.handler = handler
 
@@ -911,6 +920,7 @@ class SocialTenureSpatialunit(object):
         :param parent:
         :return:
         """
+        self._spatial_table_selection = {}
         self.handler = handler
         self.widget = widget
         self.on_sp_tab_focus()
@@ -925,8 +935,9 @@ class SocialTenureSpatialunit(object):
         model.setCheckable(True)
         self.widget.setModel(model)
 
-    def str_sp_unit_tables(self):
+    def str_sp_unit_tables(self, table, column):
         """
 
         :return:
         """
+        self._spatial_table_selection[table]=column
