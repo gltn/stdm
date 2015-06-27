@@ -54,6 +54,7 @@ class FKMapperDialog(QWidget):
             #self._dbModel = self.mapping.tableMapping('party')
         else:
             self._dbModel = self.mapping.tableMapping(self._model)
+
         return self._dbModel
 
     def model_fkid(self):

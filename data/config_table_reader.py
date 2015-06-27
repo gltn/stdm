@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
 """
 /***************************************************************************
- stdm
-                                 A QGIS plugin
- Securing land and property rights for all
-                              -------------------
-        begin                : 2014-03-30
-        copyright            : (C) 2014 by GLTN
-        email                : njoroge.solomon@yahoo.com
+Name                 : ConfigTableReader
+Description          : Reads table configuration information in an XML config
+                       file.
+Date                 : 30/March/2014
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -39,49 +38,70 @@ from stdm.data import (
     tableFullDescription,
 
 )
-from .config_utils import table_searchable_cols
+from .config_utils import (
+    activeProfile,
+    ProfileException,
+    table_searchable_cols
+)
 from stdm.settings import dataIcon
 
 
-from stdm.settings import RegistryConfig, PATHKEYS
-
+from stdm.settings import (
+    RegistryConfig,
+    PATHKEYS
+)
 
 class ConfigTableReader(object):
-    def __init__(self,parent=None, args=None):
+    def __init__(self, parent=None, args=None):
         
-        self._doc=''
-        self.args=args
-        self.fileHandler=FilePaths()
+        self._doc = ''
+        self.args = args
+        self.fileHandler = FilePaths()
         self.config = RegistryConfig()   
    
-    def tableListModel(self,profile):
+    def tableListModel(self, profile):
         '''pass the table list to a listview model'''
-        tData=self.tableNames(profile)
-        if tData!= None:
-            model=listEntityViewer(tData)
+        tData = self.tableNames(profile)
+        if not tData is None:
+            model = listEntityViewer(tData)
             return model
+
         else:
             return None
 
     def profile_tables(self, profile):
         table_desc = tableFullDescription(profile)
         if table_desc:
-            headers= table_desc[0].keys()
-            rowData= [row.values() for row in table_desc]
+            headers = table_desc[0].keys()
+            rowData = [row.values() for row in table_desc]
 
             table_desc_model = EntityColumnModel(headers, rowData)
             return table_desc_model
     
-    def tableNames(self,profile):
+    def tableNames(self, profile):
         tbl_data = XMLTableElement(profile)
         if tbl_data is not None:
 #            if "social_tenure" in tData:
 #                tData.remove('social_tenure')
             return tbl_data
+
+    def current_profile_tables(self):
+        """
+        :return: Returns a list containing table names in the current
+        profile.
+        :rtype: list
+        """
+        try:
+            curr_profile = activeProfile()
+
+            return self.tableNames(curr_profile)
+
+        except ProfileException:
+            raise
     
     def fulltableList(self):
-        tbList=tableLookUpCollection()
-        if tbList is not None:
+        tbList = tableLookUpCollection()
+        if not tbList is None:
             return tbList
 
     def on_main_table_selection(self):
@@ -104,19 +124,20 @@ class ConfigTableReader(object):
     
     def lookupTable(self):
         return lookupTable()
-        
-    
+
     def lookupColumns(self,lookupName):
-        columnModel=None
-        tableAttrib=lookupColumn(lookupName)
+        columnModel = None
+        tableAttrib = lookupColumn(lookupName)
         if len(tableAttrib)>0:
-            colHeaders=tableAttrib[0].keys()
+            colHeaders = tableAttrib[0].keys()
             colVals= []
            # [item.values for item in tableAttrib]
             for item in tableAttrib:
                 colVals.append(item.values())
             columnModel=EntityColumnModel(colHeaders,colVals)
+
             return columnModel
+
         else: 
             return None
     

@@ -18,9 +18,9 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from PyQt4.QtGui import (
-                         QWidget,
-                         QMessageBox
-                         )
+     QWidget,
+     QMessageBox
+)
 
 from stdm.data import table_column_names
 

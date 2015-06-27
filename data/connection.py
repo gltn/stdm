@@ -51,9 +51,10 @@ class DatabaseConnection(object):
         '''
         Return whether the connection is valid or not
         '''
-        isValid  = False
+        isValid = False
         errMsg = ""
-        engine = create_engine(self.toAlchemyConnection(), echo = False)
+        engine = create_engine(self.toAlchemyConnection(), echo=False)
+
         try:
             conn = engine.connect()
             conn.close()
@@ -61,7 +62,8 @@ class DatabaseConnection(object):
         except sqlalchemy.exc.OperationalError as oe:
             errMsg = oe.message
         except Exception as e:
-            errMsg = str(e)
+            errMsg = unicode(e)
+
         return isValid, errMsg
 
     def toQgsDataSourceUri(self):
