@@ -63,5 +63,5 @@ from .profileDlg import ProfileEditor
 from .lookup_values_dlg import ADDLookupValue
 from .about import AboutSTDMDialog
 from .python_object import class_from_table
-from .fkbase_form import FKMapperDialog
+from .fkbase_form import ForeignKeyMapperDialog
 from .attribute_browser import AttributeBrowser
