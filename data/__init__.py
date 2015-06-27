@@ -53,7 +53,11 @@ from .pg_utils import (
     _execute
 )
 
-from .usermodels import listEntityViewer, EntityColumnModel, CheckableListModel
+from .usermodels import (
+    listEntityViewer,
+    EntityColumnModel,
+    CheckableListModel
+)
 
 from .xmldata2sql import SQLInsert
 from .xmlconfig_reader import (
