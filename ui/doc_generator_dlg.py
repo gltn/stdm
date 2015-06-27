@@ -50,11 +50,16 @@ from geoalchemy2 import Geometry
 
 from stdm.composer import DocumentGenerator
 from stdm.data import (
+    ConfigTableReader,
+    display_name,
     numeric_varchar_columns,
+    ProfileException,
     _execute
 )
 from stdm.utils import getIndex
 
+from .stdmdialog import DeclareMapping
+from .entity_browser import ForeignKeyBrowser
 from .foreign_key_mapper import ForeignKeyMapper
 from .notification import NotificationBar
 from .ui_doc_generator import Ui_DocumentGeneratorDialog
@@ -72,7 +77,12 @@ class EntityConfig(object):
         self._title = kwargs.pop("title", "")
         self._link_field = kwargs.pop("link_field", "")
         self._display_formatters = kwargs.pop("formatters", OrderedDict())
-        self._base_model = kwargs.pop("model")
+
+        self._data_source = kwargs.pop("data_source", "")
+        self._ds_columns = []
+        self._set_ds_columns()
+
+        self._base_model = kwargs.pop("model", None)
         self._entity_selector = kwargs.pop("entity_selector", None)
         self._expression_builder = kwargs.pop("expression_builder", False)
 
@@ -82,11 +92,29 @@ class EntityConfig(object):
     def set_title(self, title):
         self._title = title
 
+    def _set_ds_columns(self):
+        if not self._data_source:
+            self._ds_columns = []
+
+        else:
+            self._ds_columns = numeric_varchar_columns(self._data_source)
+
     def model(self):
         return self._base_model
 
-    def set_model(self, model):
-        self._base_model = model
+    def data_source(self):
+        return self._data_source
+
+    def data_source_columns(self):
+        """
+        Please note that these are only those columns of numeric or
+        character type variants.
+        """
+        return self._ds_columns
+
+    def set_data_source(self, ds):
+        self._data_source = ds
+        self._set_ds_columns()
 
     def entity_selector(self):
         return self._entity_selector
@@ -111,6 +139,76 @@ class EntityConfig(object):
 
     def set_link_field(self, field):
         self._link_field = field
+
+class DocumentGeneratorDialogWrapper(object):
+    """
+    A utility class that fetches the tables in the active profile
+    and creates the corresponding EntityConfig objects, which are then
+    added to the DocumentGeneratorDialog.
+    """
+    def __init__(self, iface, parent=None):
+        self._iface = iface
+        self._doc_gen_dlg = DocumentGeneratorDialog(self._iface, parent)
+        self._notif_bar = self._doc_gen_dlg.notification_bar()
+        self._config_table_reader = ConfigTableReader()
+
+        #Load entity configurations
+        self._load_entity_configurations()
+
+    def _load_entity_configurations(self):
+        """
+        Uses tables' information in the current profile to create the
+        corresponding EntityConfig objects.
+        """
+        try:
+            tables = self._config_table_reader.current_profile_tables()
+
+            for i, t in enumerate(tables):
+                if i < 1:
+                    entity_cfg = self._entity_config_from_table(t)
+
+                    if not entity_cfg is None:
+                        self._doc_gen_dlg.add_entity_config(entity_cfg)
+
+        except ProfileException as pe:
+            self._notif_bar.clear()
+            self._notif_bar.insertErrorNotification(pe.message)
+
+    def _entity_config_from_table(self, table_name):
+        """
+        Creates an EntityConfig object from the table name.
+        :param table_name: Name of the database table.
+        :type table_name: str
+        :return: Entity configuration object.
+        :rtype: EntityConfig
+        """
+        table_display_name = display_name(table_name)
+        model = DeclareMapping.instance().tableMapping(table_name)
+
+        if model is not None:
+            return EntityConfig(title=table_display_name,
+                            data_source=table_name,
+                            model=model,
+                            expression_builder=True,
+                            entity_selector=ForeignKeyBrowser)
+
+        else:
+            return None
+
+    def dialog(self):
+        """
+        :return: Returns an instance of the DocumentGeneratorDialog.
+        :rtype: DocumentGeneratorDialog
+        """
+        return self._doc_gen_dlg
+
+    def exec_(self):
+        """
+        Show the dialog as a modal dialog.
+        :return: DialogCode result
+        :rtype: int
+        """
+        return self._doc_gen_dlg.exec_()
 
 class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
     """
@@ -156,8 +254,12 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
     def add_entity_configuration(self, **kwargs):
         ent_config = EntityConfig(**kwargs)
 
+        self.add_entity_config(ent_config)
+
+    def add_entity_config(self, ent_config):
         if not self._config_mapping.get(ent_config.title(), ""):
             fk_mapper = self._create_fk_mapper(ent_config)
+
             self.tabWidget.addTab(fk_mapper, ent_config.title())
 
             self._config_mapping[ent_config.title()] = ent_config
@@ -176,10 +278,10 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         config = self.config(index)
 
         if not config is None:
-            self._load_model_columns(config.model())
+            self._load_model_columns(config)
 
             #Set data source name
-            self._data_source = config.model().__table__.name
+            self._data_source = config.data_source()
 
     def on_use_template_datasource(self, state):
         if state == Qt.Checked:
@@ -193,6 +295,13 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
             self.chkUseOutputFolder.setEnabled(True)
             self.chkUseOutputFolder.setChecked(False)
             self.on_tab_index_changed(self.tabWidget.currentIndex())
+
+    def notification_bar(self):
+        """
+        :return: Returns an instance of the notification bar.
+        :rtype: NotificationBar
+        """
+        return self._notif_bar
 
     def config(self, index):
         """
@@ -209,21 +318,16 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         """
         return self.config(self.tabWidget.currentIndex())
 
-    def _load_model_columns(self, model):
+    def _load_model_columns(self, config):
         """
         Load model columns into the view for specifying file output name.
-        If column type cannot be used for file naming (e.g. binary) then
-        the item will not be included in the list.
+        Only those columns of numeric or character type variants will be
+        used.
         """
         model_attr_mapping = OrderedDict()
 
-        disapproved_types = [BINARY,BLOB,Binary,CLOB,LargeBinary,PickleType,
-                             TypeDecorator,VARBINARY]
-
-        for el in model.__table__.c:
-            c_type = el.type
-            if getIndex(disapproved_types, c_type) == -1:
-                model_attr_mapping[el.name] = el.name.replace("_"," ").capitalize()
+        for c in config.data_source_columns():
+            model_attr_mapping[c] = c.replace("_"," ").capitalize()
 
         self.lstDocNaming.load_mapping(model_attr_mapping, True)
 
@@ -243,6 +347,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
     def _create_fk_mapper(self, config):
         fk_mapper = ForeignKeyMapper(self)
         fk_mapper.setDatabaseModel(config.model())
+        fk_mapper.set_data_source_name(config.data_source())
         fk_mapper.setSupportsList(True)
         fk_mapper.setDeleteonRemove(False)
         fk_mapper.set_expression_builder(config.expression_builder())
@@ -489,3 +594,18 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
             id = 1
 
         return [_DummyRecord()]
+
+    def showEvent(self, event):
+        """
+        Notifies if there are not entity configuration objects defined.
+        :param event: Window event
+        :type event: QShowEvent
+        """
+        if len(self._config_mapping) == 0:
+            self._notif_bar.clear()
+
+            msg = QApplication.translate("DocumentGeneratorDialog","Table "
+                "configurations do not exist or have not been configured properly")
+            self._notif_bar.insertErrorNotification(msg)
+
+        return QDialog.showEvent(self, event)

@@ -18,9 +18,9 @@ email                : gkahiu@gmail.com
 """
 
 class SecurityException(Exception):
-    '''
+    """
     Raised when an STDM security condition is not met
-    '''
+    """
     def __init__(self,message):
         self.message = message
         

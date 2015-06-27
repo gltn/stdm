@@ -598,9 +598,6 @@ class PartyEntitySelector(EntityBrowser):
         
     def title(self):
         return QApplication.translate("EnumeratorEntityBrowser", "Party Records")
-    
-
-
 
 class STDMEntityBrowser(ContentGroupEntityBrowser):
     '''
@@ -639,19 +636,26 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
         return lookupformatter
 
 class ForeignKeyBrowser(EntityBrowser):
-    '''
+    """
     Browser for  foreign key records.
-    '''
+    """
 
-    def __init__(self,parent = None, table = None, state = MANAGE):
-        self.table =table
-        mapping=DeclareMapping.instance()
-        model = mapping.tableMapping(self.table)
+    def __init__(self, parent=None, table=None, state=MANAGE):
+        model = table
+
+        if isinstance(table, str):
+            mapping = DeclareMapping.instance()
+            model = mapping.tableMapping(table)
+            self._ds_name = table
+
+        else:
+            self._ds_name = table.__name__
 
         EntityBrowser.__init__(self, parent, model, state)
 
     def title(self):
-        return QApplication.translate("EnumeratorEntityBrowser", "%s Entity Records")%unicode(self.table).title()
+        return QApplication.translate("EnumeratorEntityBrowser",
+                    "%s Entity Records")%(self._ds_name).replace("_"," ").capitalize()
 
 class SurveyEntityBrowser(ContentGroupEntityBrowser):
     '''

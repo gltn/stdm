@@ -148,8 +148,8 @@ class ComposerWrapper(QObject):
         self.mainWindow().addDockWidget(Qt.RightDockWidgetArea,
                                         self._stdmDataSourceDock)
         
-        dataSourceWidget = ComposerDataSourceSelector()
-        self._stdmDataSourceDock.setWidget(dataSourceWidget)
+        self._dataSourceWidget = ComposerDataSourceSelector()
+        self._stdmDataSourceDock.setWidget(self._dataSourceWidget)
         self._stdmDataSourceDock.show()
 
         #Re-insert dock widgets
@@ -194,7 +194,7 @@ class ComposerWrapper(QObject):
             
         #Connect signals
         self.composition().itemRemoved.connect(self._onItemRemoved)
-        dataSourceWidget.cboDataSource.currentIndexChanged[str].connect(
+        self._dataSourceWidget.cboDataSource.currentIndexChanged[str].connect(
             self.propagateDataSourceSelection
         )
         self.composerView().selectedItemChanged.connect(self._onItemSelected)
@@ -362,7 +362,7 @@ class ComposerWrapper(QObject):
         
         return ""
     
-    def propagateDataSourceSelection(self,dataSourceName):
+    def propagateDataSourceSelection(self, dataSourceName):
         """
         Propagates the signal when a user select a data source. Listening objects can hook on to it.
         """

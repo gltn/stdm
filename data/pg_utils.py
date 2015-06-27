@@ -175,16 +175,16 @@ def table_column_names(tableName,spatialColumns = False):
            
     return columnNames
 
-def non_spatial_table_columns(spatial_table):
+def non_spatial_table_columns(table):
     """
     Returns non spatial table columns
     Uses list comprehension
     """
-    all_columns = table_column_names(spatial_table)
+    all_columns = table_column_names(table)
 
     excluded_columns = [u'id']
 
-    spatial_columns = table_column_names(spatial_table, True) + excluded_columns
+    spatial_columns = table_column_names(table, True) + excluded_columns
 
     return [x for x in all_columns if x not in spatial_columns]
 
@@ -370,7 +370,7 @@ def safely_delete_tables(tables):
 def flush_session_activity():
     STDMDb.instance().session._autoflush()
 
-def vector_layer(table_name, sql="", key="id",geom_column=""):
+def vector_layer(table_name, sql="", key="id", geom_column=""):
     """
     Returns a QgsVectorLayer based on the specified table name.
     """
@@ -382,7 +382,7 @@ def vector_layer(table_name, sql="", key="id",geom_column=""):
         return None
 
     if not geom_column:
-        geom_column=None
+        geom_column = None
 
     ds_uri = conn.toQgsDataSourceUri()
     ds_uri.setDataSource("public", table_name, geom_column, sql, key)

@@ -43,15 +43,14 @@ from .entity_browser import (
 
 from .base_person import (
      BasePerson,
-     #RespondentEditor,
-     WitnessEditor,
-     #FarmerEditor
-     )
+     WitnessEditor
+)
 
 from .import_data import ImportData
 from .export_data import ExportData
 from .doc_generator_dlg import (
     DocumentGeneratorDialog,
+    DocumentGeneratorDialogWrapper,
     EntityConfig
 )
 from .addtable import TableEditor
