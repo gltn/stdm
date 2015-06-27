@@ -284,15 +284,15 @@ class SourceDocumentManager(QObject):
         srcDocMapping = {}
 
         for k,v in self.containers.iteritems():
-            if v != None:
+            if not v is None:
                 docItems = OrderedDict()
                 widgCount = v.count()
 
                 for w in range(widgCount):
                     docWidg = v.itemAt(w).widget()
-                    srcFilePath = str(docWidg.fileInfo.absoluteFilePath())
+                    srcFilePath = unicode(docWidg.fileInfo.absoluteFilePath())
                     locTr = QApplication.translate("sourceDocumentManager", "Location")
-                    locTxt = "%s %s"%(locTr,str(w+1))
+                    locTxt = "%s %s"%(locTr, str(w+1))
                     docItems[locTxt] = srcFilePath
 
                 docTypeText = "%s (%s)"%(DOC_TYPE_MAPPING[k],str(widgCount))
