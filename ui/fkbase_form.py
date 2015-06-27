@@ -24,7 +24,10 @@ from stdm.ui.stdmdialog import DeclareMapping
 from PyQt4.QtGui import QMessageBox, QWidget, QApplication
 from stdm.ui.customcontrols import FKBrowserProperty
 
-class FKMapperDialog(QWidget):
+class ForeignKeyMapperDialog(QWidget):
+    """
+    The class initialization expects model name and the model display column
+    """
     def __init__(self, parent = None, model =None, display_col = None):
         QWidget.__init__(self, parent)
         self._model = model
@@ -34,6 +37,11 @@ class FKMapperDialog(QWidget):
         self.mapping = DeclareMapping.instance()
 
     def foreign_key_modeller(self):
+        """
+        Importing Foreign Key browser is causing redundancy due to multiple dialog access
+        Initialize foreign key mapper and pass the browser and display column
+        :return:
+        """
         from stdm.ui import ForeignKeyBrowser
         self.model()
 
@@ -51,10 +59,8 @@ class FKMapperDialog(QWidget):
             QMessageBox.information(None, QApplication.translate("AttributeBrowser","Loading foreign keys"),
                                     QApplication.translate("AttributeBrowser","Foreign Key cannot be loaded"))
             return
-            #self._dbModel = self.mapping.tableMapping('party')
         else:
             self._dbModel = self.mapping.tableMapping(self._model)
-
         return self._dbModel
 
     def model_fkid(self):
@@ -63,8 +69,8 @@ class FKMapperDialog(QWidget):
                 return
             else:
                 return self.personFKMapper.global_id.baseid()
-        except:
-            pass
+        except Exception as ex:
+            raise ex.message
 
     def model_display_value(self):
         try:
@@ -72,8 +78,8 @@ class FKMapperDialog(QWidget):
                 return "0"
             else:
                 return self.personFKMapper.global_id.display_value()
-        except:
-            pass
+        except Exception as ex:
+            raise ex.message
 
 
 

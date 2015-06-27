@@ -19,10 +19,7 @@ email                : njoroge.solomon@yahoo.com
 from datetime import date
 
 from PyQt4.QtGui import *
-
-from stdm.ui.customcontrols import BrowsableForeignKey
 from stdm.ui.attribute_browser import AttributeBrowser
-from stdm.ui.fkbase_form import FKMapperDialog
 
 class InputWidget(QWidget):
     #def __init__(self, parent =None):
