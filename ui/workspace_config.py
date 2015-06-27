@@ -29,7 +29,7 @@ from PyQt4.QtCore import *
 from ui_workspace_config import Ui_STDMWizard
 from stdm.data import ConfigTableReader,deleteProfile,profileFullDescription,deleteColumn,\
 deleteTable,lookupData2List,deleteLookupChoice,SQLInsert,LicenseDocument, safely_delete_tables, stdm_core_tables, \
-    _execute, flush_session_activity
+    _execute, flush_session_activity, CheckableListModel
 
 from attribute_editor import AttributeEditor
 from .geometry_editor import GeometryEditor
@@ -65,6 +65,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         QObject.connect(self.tblEdit, SIGNAL('clicked(QModelIndex)'), self.selectedColumnIndex)
         QObject.connect(self.tblEdit_2, SIGNAL('clicked(QModelIndex)'), self.selectedColumnIndex)
         QObject.connect(self.tblLookupList, SIGNAL('clicked(QModelIndex)'), self.lookupColumns)
+        QObject.connect(self.lstParty, SIGNAL('clicked(QModelIndex)'), self.on_str_party_table_selection)
+        QObject.connect(self.lstSpatial_unit, SIGNAL("clicked(QModelIndex)"),self.on_str_sp_unit_table_selection)
         
         self.btnAdd.clicked.connect(self.addTableColumn)
         self.btnEdit.clicked.connect(self.columnEditor)
@@ -125,11 +127,17 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","Data directory paths are not given"))
                 validPage=False
         if self.currentId()==3:
+
             if self.profile=='':
                 if self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader",\
                                         "You have not selected any default profile for your configuration. \n "\
                                 "The current profile will be used as default instead"))==QMessageBox.No:
                     validPage=False
+
+        if self.currentId() == 4:
+            """
+            """
+
         if self.currentId() == 5:
             if self.setDatabaseSchema() == 'success' or self.rbSkip.isChecked():
                 validPage = True
@@ -154,16 +162,13 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             #self.toolbtn.setPopupMode(QToolButton.InstantPopup)
             self.registerProfileSettings()
             self.readUserTable()
+            self.load_str_tables()
             try:
                 if self.tableName:
                     self.loadTableColumns(self.tableName)
             except Exception as ex:
                 self.ErrorInfoMessage(ex.message)
             self.tblLookup.setAlternatingRowColors(True)
-
-
-        #if self.currentId() == 6:
-         #   self.set_social_tenure_entities()
 
         if self.currentId()==5:
             self.txtHtml.hide()
@@ -175,16 +180,29 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                  self.setDatabaseSchema()
             except:
                 return
+
+    def load_str_tables(self):
+        party_str_list = SocialTenureParty(self.lstParty, self.tableHandler)
+        sp_unit_str_lst = SocialTenureSpatialunit(self.lstSpatial_unit, self.tableHandler)
+        return party_str_list, sp_unit_str_lst
     
     def checkTablesExist(self,activeProfile):
         '''Method to check if the right config exist in the directory and then return the table names'''
-        tableExist=self.tableHandler.tableListModel(activeProfile)
-        return tableExist
-                                 
+        table_exist = self.tableHandler.tableListModel(activeProfile)
+        return table_exist
+
+    def on_table_selection(self):
+        """
+        Method to read and return all the core table from the config for the profile
+        :return:
+        """
+        self.profile = self.cboProfile.currentText()
+        model = self.tableHandler.tableListModel(self.profile)
+        return model
+
     def readUserTable(self):
         '''Start the profile table list for editing attributes'''
-        profile=self.cboProfile.currentText()
-        model=self.tableHandler.tableListModel(self.profile) 
+        model = self.on_table_selection()
         self.lstEntity.setModel(model)
         self.lstEntity_2.setModel(model)
         self.lstEntity.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -305,6 +323,35 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         else:
             return None
 
+    def on_str_party_table_selection(self):
+        """
+        """
+        selectIndex = self.lstParty.selectionModel().selectedIndexes()
+        if len(selectIndex)>0:
+            index = selectIndex[0]
+            columns = self.tableHandler.selected_table_columns(index.data())
+            model = CheckableListModel(columns)
+            model.setCheckable(True)
+            self.lstTableCol.setModel(model)
+
+    def on_str_table_selection(self):
+        selectIndex = self.lstSpatial_unit.selectionModel().selectedIndexes()
+        if len(selectIndex)>0:
+            index = selectIndex[0]
+            columns = self.tableHandler.selected_table_columns(index.data())
+
+    def on_str_sp_unit_table_selection(self):
+        """
+        :return:
+        """
+        selectIndex = self.lstSpatial_unit.selectionModel().selectedIndexes()
+        if len(selectIndex)>0:
+            index = selectIndex[0]
+            columns = self.tableHandler.selected_table_columns(index.data())
+            model = CheckableListModel(columns)
+            model.setCheckable(True)
+            self.lstSpUnit.setModel(model)
+
     def addTableColumn(self):
         '''add new attribute for the table'''
         if self.tableName!=None:
@@ -358,8 +405,6 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             self.ErrorInfoMessage(ex.message)
             return
         self.showGeometryColumns(self.tableName)
-
-
 
     def tableRelationEditor(self):
         if self.tableName!=None:
@@ -833,3 +878,66 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         msg.setDefaultButton(QMessageBox.No)
         msg.setText(message)
         return msg.exec_()
+
+
+class SocialTenureParty(object):
+    """
+    Class variables definitions
+    """
+    def __init__(self, table_widget, handler, parent = None):
+        """
+        Initialize the global variables
+        :param parent:
+        :return:
+        """
+        self._party_table_selection = {}
+        self.widget = table_widget
+        self.handler = handler
+
+        self.on_tab_focus()
+
+    def on_tab_focus(self):
+        """
+        Method to load the table names to str party definition control
+        """
+        profile = self.handler.active_profile()
+        tables = self.handler.tableNames(profile)
+        model = CheckableListModel(tables)
+        model.setCheckable(True)
+        self.widget.setModel(model)
+
+    def str_party_tables(self):
+        """
+        """
+
+class SocialTenureSpatialunit(object):
+    """
+    Class variables definitions
+    """
+    def __init__(self, widget, handler, parent = None):
+        """
+        Initialize the global variables
+        :param parent:
+        :return:
+        """
+        self._spatial_table_selection = {}
+        self.handler = handler
+        self.widget = widget
+        self.on_sp_tab_focus()
+
+    def on_sp_tab_focus(self):
+        """
+        Method to load the table names to str party definition control
+        """
+        profile = self.handler.active_profile()
+        tables = self.handler.tableNames(profile)
+        model = CheckableListModel(tables)
+        model.setCheckable(True)
+        self.widget.setModel(model)
+
+    def str_sp_unit_tables(self, table, column):
+        """
+
+        :return:
+        """
+        self._spatial_table_selection[table]=column
