@@ -15,7 +15,10 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from stdm.utils import getIndex,ReverseDict
+from stdm.utils import (
+    getIndex,
+    ReverseDict
+)
 
 __all__ = ["ComposerDataSource"]
 
@@ -132,7 +135,7 @@ class ComposerDataSource(object):
         """
         dataSourceElem = domDocument.documentElement().firstChildElement("DataSource") 
         
-        if dataSourceElem == None:
+        if dataSourceElem is None:
             return None
         
         dataSourceName = dataSourceElem.attribute("name")
@@ -157,7 +160,7 @@ class ComposerDataSource(object):
         """
         Helper method that creates a data source DOM element from a composer wrapper instance.
         """
-        from stdm.ui import ComposerFieldSelector
+        from stdm.ui.composer import ComposerFieldSelector
         
         dataSourceElement = domDocument.createElement("DataSource")
         dataSourceElement.setAttribute("name",composerWrapper.selectedDataSource())

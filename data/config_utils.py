@@ -1,13 +1,11 @@
-# -*- coding: utf-8 -*-
 """
 /***************************************************************************
- stdm
-                                 A QGIS plugin
- Securing land and property rights for all
-                              -------------------
-        begin                : 2014-03-04
-        copyright            : (C) 2014 by GLTN
-        email                : njoroge.solomon@yahoo.com
+Name                 : config_utils
+Description          : Database config util functions
+Date                 : 30/March/2014
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -29,11 +27,22 @@ from .xmlconfig_reader import (
     tableRelations
 )
 from stdm.settings import RegistryConfig
-regConfig = RegistryConfig()            
-#rofileName=lookupReg['currentProfile']
+
+regConfig = RegistryConfig()
+
+class ProfileException(Exception):
+    """
+    Raised when an there are issues when reading/writing profile
+    information.
+    """
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return repr(self.message)
 
 def formatColumnName(txtName):
-    txtName=str(txtName).strip()
+    txtName = unicode(txtName).strip()
     return txtName.replace(" ", "_").lower()
 
 def setUniversalCode():
@@ -96,12 +105,29 @@ def activeProfile():
     try:
         lookupReg = regConfig.read(['currentProfile'])
         profileName=lookupReg['currentProfile']
+
         return profileName
+
     except:
-        pass
+        msg = QApplication.translate("ProfileException",
+                                     "Error in reading the current profile."
+                                     "\nThe current profile information could "
+                                     "not be read from the registry, please "
+                                     "check your settings.")
+        raise ProfileException(msg)
     
 def tableFullname(table):
     tableFullDescription(table)
+
+def display_name(table):
+    """
+    :param table: Name of table or column.
+    :type table: str
+    :return: Formats the table name to a more friendly display name by
+    capitalizing and removing underscore.
+    :rtype: str
+    """
+    return table.replace("_"," ").capitalize()
     
 def profileDescription(profile):
     profileDescription(profile)
@@ -124,4 +150,5 @@ def getOpenFileChooser(self,message,file_filter):
             filePath=QFileDialog.getOpenFileName(self,message,"/home",file_filter)
         except:
             return
+
         return filePath
