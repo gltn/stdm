@@ -23,13 +23,15 @@ class CheckableListModel(QStandardItemModel):
         else:
             return 0
 
-    def setCheckable(self, bool):
+    def setCheckable(self, bool, default=None):
         chekableItems = []
         self._icon =tableIcon
         for text in self.__list:
             item = QStandardItem()
             item.setCheckable(bool)
             item.setCheckState(Qt.Unchecked)
+            if default and default == text:
+                item.setCheckState(Qt.Checked)
             item.setText(text)
             item.setIcon(self._icon)
             chekableItems.append(item)
@@ -51,7 +53,7 @@ class listEntityViewer(QAbstractListModel):
             else:
                 return QApplication.translate("WorkspaceLoader","Entities")
         
-    def rowCount(self,parent):
+    def rowCount(self,parent=QModelIndex):
         if self.__list is not None:
             return len(self.__list)
         else:

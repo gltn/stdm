@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_configWizard.ui'
 #
-# Created: Mon Jun 22 12:11:35 2015
+# Created: Fri Jun 26 07:34:21 2015
 #      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -507,7 +507,7 @@ class Ui_STDMWizard(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName(_fromUtf8("scrollArea"))
         self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 802, 475))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 659, 136))
         self.scrollAreaWidgetContents.setObjectName(_fromUtf8("scrollAreaWidgetContents"))
         self.gridLayout_21 = QtGui.QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_21.setObjectName(_fromUtf8("gridLayout_21"))
@@ -573,7 +573,7 @@ class Ui_STDMWizard(object):
         self.wizardPage_6.setTitle(_translate("STDMWizard", "Profile Options", None))
         self.wizardPage_6.setSubTitle(_translate("STDMWizard", "Set/ Modify Data Collection Levels (Profiles)", None))
         self.groupBox_17.setTitle(_translate("STDMWizard", "Profiles", None))
-        self.label_3.setText(_translate("STDMWizard", "A profile in STDM tool refers to a description of a survey or forms of survey based on a particular data collection methodology and therefore the methodology workflow need to be customized in these configuration steps. ", None))
+        self.label_3.setText(_translate("STDMWizard", "A profile in STDM tool refers to a series of questions to be used in a particular survey in which order of questions and responses is organized in a modular format for easier analysis and presentation within STDM", None))
         self.label.setText(_translate("STDMWizard", "Select", None))
         self.btnNewP.setText(_translate("STDMWizard", "New Profile", None))
         self.btnPDelete.setText(_translate("STDMWizard", "Delete Selected ", None))

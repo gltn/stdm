@@ -100,7 +100,8 @@ from .xmlconfig_writer import(
     writeGeomConstraint,
     edit_geom_column,
     write_display_name,
-    write_changed_display_name
+    write_changed_display_name,
+    set_str_tables
 )
 
 from .configfile_paths import FilePaths

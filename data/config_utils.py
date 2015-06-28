@@ -136,7 +136,7 @@ def deleteSelectedProfile(profile):
     deleteProfile(profile)
     
 def setCollectiontypes(collectionType,combo):
-        #method to read defult  to a sql relations and constraint type to combo box
+        #method to read default  to a sql relations and constraint type to combo box
         ordDict=OrderedDict(collectionType)
         combo.clear()
         for k, v in ordDict.iteritems():

@@ -36,12 +36,14 @@ from stdm.data import (
     EntityColumnModel,
     FilePaths,
     tableFullDescription,
+    set_str_tables
 
 )
 from .config_utils import (
     activeProfile,
     ProfileException,
-    table_searchable_cols
+    table_searchable_cols,
+    tableCols
 )
 from stdm.settings import dataIcon
 
@@ -276,3 +278,6 @@ class ConfigTableReader(object):
         :return: List
         """
         return tableCols(table)
+
+    def update_str_tables(self, table,level):
+        set_str_tables(activeProfile(),table,level)

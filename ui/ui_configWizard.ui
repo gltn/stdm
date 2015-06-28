@@ -357,7 +357,7 @@
           <enum>QFrame::Box</enum>
          </property>
          <property name="text">
-          <string>A profile in STDM tool refers to a description of a survey or forms of survey based on a particular data collection methodology and therefore the methodology workflow need to be customized in these configuration steps. </string>
+          <string>A profile in STDM tool refers to a series of questions to be used in a particular survey in which order of questions and responses is organized in a modular format for easier analysis and presentation within STDM</string>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
@@ -592,7 +592,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tbSTR">
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -636,7 +636,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab_3">
            <attribute name="title">
@@ -1173,8 +1173,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>802</width>
-         <height>475</height>
+         <width>659</width>
+         <height>136</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout_21">
