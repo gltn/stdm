@@ -33,8 +33,8 @@ try:
     #doc = xmlobject.XMLFile()
     xml_doc = xmlobject.setUserXMLFile()
     html_doc = xmlobject.HtmlFile()
-except:
-    pass
+except Exception as ex:
+    raise ex.message
 
 def parseRootElement():
     if not xml_doc:
