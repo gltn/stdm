@@ -18,19 +18,19 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from PyQt4.QtGui import (
-                         QWidget,
-                         QMessageBox
-                         )
+     QWidget,
+     QMessageBox
+)
 
 from stdm.data import table_column_names
 
 from .ui_composer_data_field import Ui_frmComposerFieldEditor
 
-class ComposerFieldSelector(QWidget,Ui_frmComposerFieldEditor):
+class ComposerFieldSelector(QWidget, Ui_frmComposerFieldEditor):
     """
     Widget for selecting the field from a database table or view. 
     """
-    def __init__(self,composerWrapper,label,parent = None):
+    def __init__(self, composerWrapper, label, parent = None):
         QWidget.__init__(self,parent)
         self.setupUi(self)
         

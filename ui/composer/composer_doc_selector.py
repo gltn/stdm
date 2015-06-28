@@ -40,7 +40,7 @@ from PyQt4.QtXml import QDomDocument
 from stdm.utils import documentTemplates
 from stdm.settings import RegistryConfig
 from stdm import resources_rc
-from notification import (
+from ..notification import (
                              NotificationBar,
                              ERROR
                              )
@@ -146,11 +146,11 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
                 filePathItem.setText(newTemplatePath)
                 
                 self.notifBar.insertInfoNotification(QApplication.translate("TemplateDocumentSelector", \
-                                                                         "'%s' template has been successfully updated")%docName)
+                                                                         "'{0}' template has been successfully updated".format(docName)))
                 
             else:
                 self.notifBar.insertErrorNotification(QApplication.translate("TemplateDocumentSelector", \
-                                                                         "Error: '%s' template could not be updated")%templateName)
+                                                                         "Error: '{0}' template could not be updated".format(templateName)))
             
     def onDeleteTemplate(self):
         """
@@ -168,9 +168,9 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
         result = QMessageBox.warning(self, QApplication.translate("TemplateDocumentSelector", \
                                                                          "Confirm delete"), 
                                      QApplication.translate("TemplateDocumentSelector", \
-                                                                         "Are you sure you want to delete '%s' template?" \
+                                                                         "Are you sure you want to delete '{0}' template?" \
                                                                          "This action cannot be undone.\nClick Yes to proceed " \
-                                                                         "or No to cancel.")%(templateName),
+                                                                         "or No to cancel.".format(templateName)), 
                                      QMessageBox.Yes|QMessageBox.No)
         
         if result == QMessageBox.No:
@@ -184,11 +184,11 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
             row = selectedDocNameIndices[0].row()
             self._docItemModel.removeRow(row)
             self.notifBar.insertInfoNotification(QApplication.translate("TemplateDocumentSelector", \
-                                                                         "'%s' template has been successfully removed")%templateName)
+                                                                         "'{0}' template has been successfully removed".format(templateName)))
         
         else:
             self.notifBar.insertErrorNotification(QApplication.translate("TemplateDocumentSelector", \
-                                                                         "Error: '%s' template could not be removed")%templateName)
+                                                                         "Error: '{0}' template could not be removed".format(templateName)))
     
     def onAccept(self):
         """
@@ -249,7 +249,7 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
         
         if templateDoc.setContent(templateFile):
             composerElement = templateDoc.documentElement()
-            titleAttr = composerElement.attributeNode("title")
+            titleAttr = composerElement.attributeNode("_title")
             if not titleAttr.isNull():
                 titleAttr.setValue(newName)
                 

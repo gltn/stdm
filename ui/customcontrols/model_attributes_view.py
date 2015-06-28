@@ -48,7 +48,7 @@ class ModelAtrributesView(QListView):
     
     def setDataModel(self,dataModel):
         """
-        Sets the data model. Should be a callable class rather than the class
+        Sets the data model. Should be a callable class rather than the class.
         instance.
         """
         if callable(dataModel):
@@ -58,21 +58,19 @@ class ModelAtrributesView(QListView):
             self._dataModel = dataModel.__class__
     
     def modelDisplayMapping(self):
-        '''
-        Returns the colname and display name
-        '''
+        """
+        Returns the column name and display name collection.
+        """
         return self._modelDisplayMapping
     
-    def setModelDisplayMapping(self,dataMapping):   
-        '''
-        Sets the mapping dictory for the table object
-        '''
-        if dataMapping!=None:
+    def setModelDisplayMapping(self, dataMapping):
+        """
+        Sets the mapping dictionary for the table object
+        """
+        if dataMapping != None:
             self._modelDisplayMapping=dataMapping
-        else:
-            return self.modelDisplayMapping   
-        
-    def load(self):
+
+    def load(self, sort=False):
         """
         Load the model's attributes into the list view.
         """
@@ -80,15 +78,30 @@ class ModelAtrributesView(QListView):
             return
         
         try:
-            self._loadAttrs(self._dataModel.displayMapping())
-#           self._loadAttrs(self._modelDisplayMapping)
+            self._loadAttrs(self._dataModel.displayMapping(), sort)
         except AttributeError:
             #Ignore error if model does not contain the displayMapping static method
             pass
+
+    def load_mapping(self, mapping, sort=False):
+        """
+        Load collection containing column name and corresponding display name.
+        """
+        self._modelDisplayMapping = mapping
+
+        self._loadAttrs(mapping, sort)
+
+    def sort(self):
+        """
+        Sorts display name in ascending order.
+        """
+        self._attrModel.sort(0)
         
-    def _loadAttrs(self,attrMapping):
+    def _loadAttrs(self, attrMapping, sort=False):
         """
         Loads display mapping into the list view.
+        Specify to sort display names in ascending order once items have been
+        added to the model.
         """
         self._attrModel.clear()
         self._attrModel.setColumnCount(2)
@@ -103,6 +116,9 @@ class ModelAtrributesView(QListView):
                 self._attrModel.appendRow([displayNameItem,attrNameItem])
             
         self.setModel(self._attrModel)
+
+        if sort:
+            self._attrModel.sort(0)
         
     def selectedMappings(self):
         """

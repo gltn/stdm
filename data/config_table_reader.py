@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
 """
 /***************************************************************************
- stdm
-                                 A QGIS plugin
- Securing land and property rights for all
-                              -------------------
-        begin                : 2014-03-30
-        copyright            : (C) 2014 by GLTN
-        email                : njoroge.solomon@yahoo.com
+Name                 : ConfigTableReader
+Description          : Reads table configuration information in an XML config
+                       file.
+Date                 : 30/March/2014
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -36,29 +35,37 @@ from stdm.data import (
     listEntityViewer,
     EntityColumnModel,
     FilePaths,
-    tableFullDescription
+    tableFullDescription,
+
 )
-from .config_utils import table_searchable_cols,activeProfile, tableCols
+from .config_utils import (
+    activeProfile,
+    ProfileException,
+    table_searchable_cols
+)
 from stdm.settings import dataIcon
 
 
-from stdm.settings import RegistryConfig, PATHKEYS
-
+from stdm.settings import (
+    RegistryConfig,
+    PATHKEYS
+)
 
 class ConfigTableReader(object):
-    def __init__(self,parent=None, args=None):
+    def __init__(self, parent=None, args=None):
         
-        self._doc=''
-        self.args=args
-        self.fileHandler=FilePaths()
+        self._doc = ''
+        self.args = args
+        self.fileHandler = FilePaths()
         self.config = RegistryConfig()   
    
-    def tableListModel(self,profile):
+    def tableListModel(self, profile):
         '''pass the table list to a listview model'''
-        tData=self.tableNames(profile)
-        if tData!= None:
-            model=listEntityViewer(tData)
+        tData = self.tableNames(profile)
+        if not tData is None:
+            model = listEntityViewer(tData)
             return model
+
         else:
             return None
 
@@ -77,10 +84,24 @@ class ConfigTableReader(object):
 #            if "social_tenure" in tData:
 #                tData.remove('social_tenure')
             return tbl_data
+
+    def current_profile_tables(self):
+        """
+        :return: Returns a list containing table names in the current
+        profile.
+        :rtype: list
+        """
+        try:
+            curr_profile = activeProfile()
+
+            return self.tableNames(curr_profile)
+
+        except ProfileException:
+            raise
     
     def fulltableList(self):
         tbList = tableLookUpCollection()
-        if tbList is not None:
+        if not tbList is None:
             return tbList
 
     def on_main_table_selection(self):
@@ -89,16 +110,16 @@ class ConfigTableReader(object):
         to a combo box
         :return:
         """
-        tbl_list = self.fulltableList()
+        tbl_list= self.fulltableList()
         tbl_model = listEntityViewer(tbl_list)
         return tbl_model
         
     def STDMProfiles(self):
-        pfList = profiles()
+        pfList=profiles()
         return pfList
     
     def lookupTableModel(self):
-        model = listEntityViewer(self.lookupTable())
+        model=listEntityViewer(self.lookupTable())
         return model
     
     def lookupTable(self):
@@ -109,12 +130,14 @@ class ConfigTableReader(object):
         tableAttrib = lookupColumn(lookupName)
         if len(tableAttrib)>0:
             colHeaders = tableAttrib[0].keys()
-            colVals = []
+            colVals= []
            # [item.values for item in tableAttrib]
             for item in tableAttrib:
                 colVals.append(item.values())
-            columnModel = EntityColumnModel(colHeaders,colVals)
+            columnModel=EntityColumnModel(colHeaders,colVals)
+
             return columnModel
+
         else: 
             return None
     
@@ -240,6 +263,9 @@ class ConfigTableReader(object):
     def trackXMLChanges(self):
         self.fileHandler.createBackup()
 
+    def check_config_version(self, path):
+        self.fileHandler.compare_config_version(path)
+
     def active_profile(self):
         return activeProfile()
 
@@ -250,7 +276,3 @@ class ConfigTableReader(object):
         :return: List
         """
         return tableCols(table)
-
-
-    #def check_config_version(self, path):
-       # self.fileHandler.compare_config_version(path)

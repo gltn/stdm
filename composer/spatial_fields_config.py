@@ -19,13 +19,13 @@ email                : gkahiu@gmail.com
 from collections import OrderedDict
 
 from qgis.core import (
-                       QgsSymbolLayerV2Registry,
-                       QgsSymbolLayerV2Utils
-                       )
+    QgsSymbolLayerV2Registry,
+    QgsSymbolLayerV2Utils
+)
 
-from stdm.ui import (
-                     ComposerSymbolEditor
-                     )
+from stdm.ui.composer import (
+    ComposerSymbolEditor
+)
 
 __all__ = ["SpatialFieldsConfiguration"]
 
@@ -35,72 +35,72 @@ class SpatialFieldsConfiguration(object):
     """
     def __init__(self):
         #Mapping of map item id and list of spatial field configurations
-        self._spFieldsMapping = OrderedDict()
+        self._sp_fields_mapping_collec = OrderedDict()
         
-    def addSpatialFieldMapping(self,spatialFieldMapping):
+    def addSpatialFieldMapping(self, spatial_field_mapping):
         """
         Add spatial field mapping to the collection
         """
-        itemId = spatialFieldMapping.itemId()
+        item_id = spatial_field_mapping.itemId()
         
-        if itemId == "":
+        if not item_id:
             return
         
-        if itemId in self._spFieldsMapping:
-            self._spFieldsMapping[itemId].append(spatialFieldMapping)
+        if item_id in self._sp_fields_mapping_collec:
+            self._sp_fields_mapping_collec[item_id].append(spatial_field_mapping)
             
         else:
             itemCollection = []
-            itemCollection.append(spatialFieldMapping)
-            self._spFieldsMapping[itemId] = itemCollection
+            itemCollection.append(spatial_field_mapping)
+            self._sp_fields_mapping_collec[item_id] = itemCollection
             
     def spatialFieldsMapping(self):
         """
         Returns an instance of spatial fields mapping.
         """
-        return self._spFieldsMapping
+        return self._sp_fields_mapping_collec
     
-    def itemSpatialFieldsMapping(self,itemId):
+    def itemSpatialFieldsMapping(self, itemId):
         """
         Returns the list of items in the map item with the given id.
         """
-        if itemId in self._spFieldsMapping:
-            return self._spFieldsMapping[itemId]
+        if itemId in self._sp_fields_mapping_collec:
+            return self._sp_fields_mapping_collec[itemId]
         
         else:
             return []
         
     @staticmethod   
-    def domElement(composerWrapper,domDocument):
+    def domElement(composerWrapper, dom_document):
         """
         Helper method that creates a spatial columns DOM element from a composer wrapper instance.
         """
-        spatialColumnsElement = domDocument.createElement("SpatialFields")
+        spatialColumnsElement = dom_document.createElement("SpatialFields")
         
         #Get the configured composer style editors for spatial columns
         for uuid,symbolEditor in composerWrapper.widgetMappings().iteritems():
             composerItem = composerWrapper.composition().getComposerItemByUuid(uuid)
             
-            if composerItem != None:
-                if isinstance(symbolEditor,ComposerSymbolEditor):
-                    spFieldMappings = symbolEditor.spatialFieldMappings()
+            if not composerItem is None:
+                if isinstance(symbolEditor, ComposerSymbolEditor):
+                    spFieldMappings = symbolEditor.spatial_field_mappings()
                     
                     for spfm in spFieldMappings:
                         spfm.setItemId(uuid)
-                        spfmElement = spfm.toDomElement(domDocument)
+                        spfmElement = spfm.toDomElement(dom_document)
                         spatialColumnsElement.appendChild(spfmElement)
                     
         return spatialColumnsElement
     
     @staticmethod    
-    def create(domDocument):
+    def create(dom_document):
         """
         Create an instance of the 'SpatialFieldsConfiguration' object from a DOM document.
-        Returns None if the domDocument is invalid.
+        Returns None if the dom_document is invalid.
         """
-        from stdm.ui import SpatialFieldMapping
+        from stdm.ui.composer import SpatialFieldMapping
         
-        dataSourceElem = domDocument.documentElement().firstChildElement("DataSource") 
+        dataSourceElem = dom_document.documentElement().firstChildElement("DataSource")
         
         if dataSourceElem == None:
             return None
@@ -127,9 +127,9 @@ class SpatialFieldsConfiguration(object):
             spFieldMapping.setSRID(srid)
             spFieldMapping.setGeometryType(geomType)
             spFieldMapping.setZoomLevel(zoom)
-            
+
             symbolElement = spatialFieldMappingElement.firstChildElement("Symbol")
-            if symbolElement != None:
+            if not symbolElement is None:
                 layerType = symbolElement.attribute("layerType")
                 layerProps = QgsSymbolLayerV2Utils.parseProperties(symbolElement)
                 symbolLayer =  QgsSymbolLayerV2Registry.instance().createSymbolLayer(layerType,layerProps)

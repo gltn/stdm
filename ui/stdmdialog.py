@@ -28,7 +28,11 @@ from PyQt4.QtCore import *
 
 from sqlalchemy import Table
 from sqlalchemy.orm import mapper
-from stdm.data import Model, Base, STDMDb
+from stdm.data import (
+    Model,
+    Base,
+    STDMDb
+)
 from .python_object import class_from_table
 from collections import OrderedDict
 import types
@@ -105,9 +109,10 @@ class DeclareMapping(object):
             self.mapper_for_table(table)
         model_cls = self._mapping[table]
         Model.attrTranslations = self.displayMapping(table)
+
         return model_cls
 
-    def displayMapping(self, table= None):
+    def displayMapping(self, table=None):
         """
         Replaces the depreciated method where column names were read from the config.
         column names already stored in a dictionary.
@@ -117,6 +122,7 @@ class DeclareMapping(object):
         attribs = OrderedDict()
         if table:
             col_list = self.attDictionary.get(table)
+
             for col in col_list:
                 attribs[col] = col.replace('_', ' ').title()
         else:

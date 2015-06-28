@@ -27,22 +27,24 @@ from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
 #from data.pg_utils import delete_table_keys
-from ui import (loginDlg,
-                changePwdDlg,
-                manageAccountsDlg,
-                contentAuthDlg,
-                newSTRWiz,
-                ViewSTRWidget,
-                AdminUnitSelector,
-                STDMEntityBrowser,
-                SurveyEntityBrowser,
-                PersonDocumentGenerator,
-                AboutSTDMDialog,
-                DeclareMapping,
-                WorkspaceLoader,
-                ImportData,
-                ExportData
-                )
+from ui import (
+    DocumentGeneratorDialogWrapper,
+    EntityConfig,
+    loginDlg,
+    changePwdDlg,
+    manageAccountsDlg,
+    contentAuthDlg,
+    newSTRWiz,
+    ViewSTRWidget,
+    AdminUnitSelector,
+    STDMEntityBrowser,
+    SurveyEntityBrowser,
+    AboutSTDMDialog,
+    DeclareMapping,
+    WorkspaceLoader,
+    ImportData,
+    ExportData
+)
 from ui.spatialUnitMangerDockWidget import SpatialUnitManagerDockWidget
 from ui.reports import ReportBuilder
 import data
@@ -51,6 +53,7 @@ from data import (
     contentGroup,
     geometryType,
     NoPostGISError,
+    ProfileException,
     spatial_tables,
     STDMDb,
     ConfigTableReader,
@@ -63,7 +66,9 @@ from navigation import (STDMAction,
                         ContentGroup,
                         TableContentGroup
                         )
-from mapping import (StdmMapToolCreateFeature)
+from mapping import (
+    StdmMapToolCreateFeature
+)
 from utils import *
 from mapping.utils import pg_layerNamesIDMapping
 
@@ -240,12 +245,16 @@ class STDMQGISLoader(object):
                 self.loadModules()
                 self._user_logged_in = True
 
+            except ProfileException as pe:
+                self.reset_content_modules_id(pe.message)
+
             except Exception as ex:
-                options = QApplication.translate("STDMQGISLoader"," This error is attributed to authentication " \
-                          "/permission on modules or  duplicate keys for the named table(s)" \
+                msg = QApplication.translate("STDMQGISLoader","\nThis error is attributed to authentication" \
+                          "/permission on modules or duplicate keys for the named table(s).\n" \
                           "Remove content authorization for the modules or " \
                           "deleted the modules with duplicate keys completely.")
-                self.reset_content_modules_id(str(ex.message + options))
+
+                self.reset_content_modules_id(unicode(ex.message + msg))
 
     def loadModules(self):
         '''
@@ -368,7 +377,7 @@ class STDMQGISLoader(object):
         self.importAct.triggered.connect(self.onImportData)
         self.surveyAct.triggered.connect(self.onManageSurvey)
         self.docDesignerAct.triggered.connect(self.onDocumentDesigner)
-        self.docGeneratorAct.triggered.connect(self.onDocumentGeneratorByPerson)
+        self.docGeneratorAct.triggered.connect(self.onDocumentGenerator)
         self.rptBuilderAct.triggered.connect(self.onReportBuilder)
         self.spatialEditorAct.triggered.connect(self.onToggleSpatialEditing)
         self.spatialLayerManager.triggered.connect(self.spatialLayerMangerActivate)
@@ -440,12 +449,15 @@ class STDMQGISLoader(object):
         Format the table names to freiendly format before adding them
         """
         for module in self.configTables():
-            display_name = QT_TRANSLATE_NOOP("ModuleSettings",str(module).replace("_", " ").title())
+            display_name = QT_TRANSLATE_NOOP("ModuleSettings",
+                                unicode(module).replace("_", " ").title())
             self._moduleItems[display_name] = module
+
         for k, v in self._moduleItems.iteritems():
             content_action = QAction(QIcon(":/plugins/stdm/images/icons/table.png"),
                                     k, self.iface.mainWindow())
             capabilities = contentGroup(self._moduleItems[k])
+
             if capabilities:
                 moduleCntGroup = TableContentGroup(username, k, content_action)
                 moduleCntGroup.createContentItem().code = capabilities[0]
@@ -578,14 +590,6 @@ class STDMQGISLoader(object):
         self.toolbarLoader.loadContent()
         self.menubarLoader.loadContent()
 
-        #Quick fix
-        # fontPath=None
-        # if platform.system() == "Windows":
-        #     userPath = os.environ["USERPROFILE"]
-        #     profPath = userPath + "/.stdm"
-        #     fontPath=str(profPath).replace("\\", "/")+"/font.cache"
-        # SysFonts.register(fontPath)
-
         self.create_spatial_unit_manager()
 
     def create_spatial_unit_manager(self):
@@ -697,18 +701,20 @@ class STDMQGISLoader(object):
         Slot raised to show new print composer with additional tools for designing 
         map-based documents.
         """
-        documentComposer = self.iface.createNewComposer(QApplication.translate("STDMQGISLoader","STDM Document Designer"))
+        title = QApplication.translate("STDMPlugin", "STDM Document Designer")
+        documentComposer = self.iface.createNewComposer(title)
 
         #Embed STDM customizations
-        composerWrapper = ComposerWrapper(documentComposer)
+        composerWrapper = ComposerWrapper(documentComposer, self.iface)
         composerWrapper.configure()
 
-    def onDocumentGeneratorByPerson(self):
+    def onDocumentGenerator(self):
         """
         Document generator by person dialog.
         """
-        personDocGenDlg = PersonDocumentGenerator(self.iface,self.iface.mainWindow())
-        personDocGenDlg.exec_()
+        doc_gen_wrapper = DocumentGeneratorDialogWrapper(self.iface,
+                                                         self.iface.mainWindow())
+        doc_gen_wrapper.exec_()
 
     def onReportBuilder(self):
         """
@@ -996,22 +1002,25 @@ class STDMQGISLoader(object):
         tbList=self._moduleItems.values()
 
         dispName=QAction.text()
-        if dispName=='Social Tenure Relationship':
+        if dispName == 'Social Tenure Relationship':
             self.newSTR()
+
         else:
             tableName=self._moduleItems.get(dispName)
             if tableName in tbList:
                 cnt_idx = getIndex(self._reportModules.keys(), dispName)
                 try:
-                    main=STDMEntityBrowser(self.moduleContentGroups[cnt_idx],tableName,self.iface.mainWindow())
+                    main = STDMEntityBrowser(self.moduleContentGroups[cnt_idx],
+                                             tableName, self.iface.mainWindow())
                     main.exec_()
+
                 except Exception as ex:
                     QMessageBox.critical(self.iface.mainWindow(),
                                          QApplication.translate("STDMPlugin","Loading dialog..."),
                                          QApplication.translate("STDMPlugin",
                                          "Unable to load the table columns in the browser, "
                                          "check if this table and columns exist in configuration file and"
-                                         " database: %s")%str(ex.message))
+                                         " database: %s")%unicode(ex.message))
                 finally:
                     STDMDb.instance().session.rollback()
 
@@ -1088,20 +1097,23 @@ class STDMQGISLoader(object):
         self.spatialLayerMangerDockWidget = None
 
     def configTables(self):
-        '''
-        create a handler to read the xml config and return the table list
-        '''
+        """
+        Create a handler to read the xml config and return the table list
+        """
         profile = activeProfile()
         handler = ConfigTableReader()
-        if profile == None:
-            """add a default is not provided"""
+
+        if profile is None:
+            #Add a default is not provided
             default = handler.STDMProfiles()
-            profile = str(default[0])
+            profile = unicode(default[0])
+
         moduleList = handler.tableNames(profile)
         moduleList.extend(handler.lookupTable())
         self.pgTableMapper(moduleList)
         if 'spatial_unit' in moduleList:
             moduleList.remove('spatial_unit')
+
         return moduleList
 
     def pgTableMapper(self, tableList=None):
@@ -1120,11 +1132,10 @@ class STDMQGISLoader(object):
         os.startfile(helpManual,'open')
 
     def reset_content_modules_id(self, message_text):
-        message =QMessageBox()
-        message.setWindowTitle(QApplication.translate("STDMQGISLoader", u"Error Loading Modules"))
-        message.setText(message_text)
-        message.setStandardButtons(QMessageBox.Ok)
-        return message.exec_()
+        return QMessageBox.critical(self.iface.mainWindow(),
+                                    QApplication.translate("STDMQGISLoader",
+                                                           u"Error Loading Modules"),
+                                    message_text)
 
     def _action_separator(self):
         """

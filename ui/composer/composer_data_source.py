@@ -18,14 +18,14 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from PyQt4.QtGui import (
-                         QWidget,
-                         QComboBox
-                         )
+    QWidget,
+    QComboBox
+)
 
 from stdm.data import (
-                       pg_tables,
-                       pg_views
-                       )
+    pg_tables,
+    pg_views
+)
 
 from .ui_composer_data_source import Ui_frmComposerDataSource
 

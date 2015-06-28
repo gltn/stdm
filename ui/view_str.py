@@ -23,19 +23,34 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
 
-from sqlalchemy import func,String, Table
+from sqlalchemy import (
+    func,
+    String,Table
+)
 from sqlalchemy.orm import mapper
 
-
 import stdm.data
-from stdm.data import STRTreeViewModel,app_dbconn, Content, Base, STDMDb
-from stdm.navigation.socialtenure import PersonNodeFormatter,STRNode,BaseSTRNode
+from stdm.data import (
+    STRTreeViewModel,
+    app_dbconn,
+    Content,
+    Base,
+    STDMDb
+)
+from stdm.navigation.socialtenure import (
+    PersonNodeFormatter,
+    STRNode,
+    BaseSTRNode
+)
 from stdm.security import Authorizer
 
 from ui_view_str import Ui_frmViewSTR
 from ui_str_view_entity import Ui_frmSTRViewEntity
 from notification import NotificationBar,ERROR,INFO, WARNING
-from sourcedocument import SourceDocumentManager,docTypeMapping
+from sourcedocument import (
+    SourceDocumentManager,
+    DOC_TYPE_MAPPING
+)
 from .stdmdialog import DeclareMapping
 
 class ViewSTRWidget(QWidget, Ui_frmViewSTR):
