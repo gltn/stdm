@@ -51,7 +51,9 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         #Initialize the xml filehandler
         self.tableHandler = ConfigTableReader()
         self.tableName=None
-        self.tableList=[]
+        self.party_table_list=[]
+        self.spatial_table_list=[]
+        self. str_column_mapping ={}
         self.profile=''
         self.geomEntity=None
 
@@ -101,8 +103,9 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 self.startId() == 1
             elif settings[1].get('Config'):
                 self.setStartId(2)
-        except:
-            pass
+        except Exception as ex:
+            QMessageBox.critical(self,QApplication.translate("WorkspaceLoader","Settings Retrieval"),
+                                    QApplication.translate("WorkspaceLoader","Unable to detect previous settings"+ ex.message))
         
     def registerFields(self):
         self.setOption(self.HaveHelpButton, True)  
@@ -162,7 +165,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             #self.toolbtn.setPopupMode(QToolButton.InstantPopup)
             self.registerProfileSettings()
             self.readUserTable()
-            self.load_str_tables()
+            self.party_str_list = SocialTenureParty(self.lstParty, self.tableHandler)
+            self.sp_unit_str_lst = SocialTenureSpatialunit(self.lstSpatial_unit, self.tableHandler)
             try:
                 if self.tableName:
                     self.loadTableColumns(self.tableName)
@@ -182,9 +186,11 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 return
 
     def load_str_tables(self):
-        party_str_list = SocialTenureParty(self.lstParty, self.tableHandler)
-        sp_unit_str_lst = SocialTenureSpatialunit(self.lstSpatial_unit, self.tableHandler)
-        return party_str_list, sp_unit_str_lst
+        """
+
+        :return:
+        """
+        #return party_str_list, sp_unit_str_lst
     
     def checkTablesExist(self,activeProfile):
         '''Method to check if the right config exist in the directory and then return the table names'''
@@ -325,32 +331,105 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
 
     def on_str_party_table_selection(self):
         """
+        Method to activate table columns for the selected table for social tenure tables: party
         """
         selectIndex = self.lstParty.selectionModel().selectedIndexes()
         if len(selectIndex)>0:
             index = selectIndex[0]
             columns = self.tableHandler.selected_table_columns(index.data())
-            model = CheckableListModel(columns)
-            model.setCheckable(True)
-            self.lstTableCol.setModel(model)
+            column_model = CheckableListModel(columns)
+            column_model.setCheckable(True)
+            self.lstTableCol.setModel(column_model)
+        self.party_str_table_selection(self.lstParty)
 
-    def on_str_table_selection(self):
-        selectIndex = self.lstSpatial_unit.selectionModel().selectedIndexes()
+    def party_str_table_selection(self,parent_view):
+        selectIndex = parent_view.selectionModel().selectedIndexes()
         if len(selectIndex)>0:
-            index = selectIndex[0]
-            columns = self.tableHandler.selected_table_columns(index.data())
+            qitem = selectIndex[0].model().itemFromIndex(selectIndex[0])
+            self.tableName = qitem.text()
+            if parent_view == self.lstParty:
+                if qitem.checkState() == Qt.Checked:
+                    if qitem.text() not in self.party_table_list and qitem.text() not in self.spatial_table_list:
+                        self.party_table_list.append(qitem.text())
+                    else:
+                        qitem.setCheckState(Qt.Unchecked)
+                        self.delected_duplicate_selection(self.party_table_list, qitem.text())
+                        QMessageBox.information(self, QApplication.translate("WorkspaceLoader","Double Selection"),
+                                                QApplication.translate("WorkspaceLoader",
+                                                "The module is already selected or reserved under spatial unit category"))
+                if qitem.checkState() == Qt.Unchecked and qitem.text() in self.party_table_list:
+                    self.delected_duplicate_selection(self.spatial_table_list, qitem.text())
+                #QMessageBox.information(self, "Spatial unit", str(self.party_table_list))
+
+            if parent_view == self.lstSpatial_unit:
+                if qitem.checkState() == Qt.Checked:
+                    if qitem.text() not in self.spatial_table_list and qitem.text() not in self.party_table_list:
+                        self.spatial_table_list.append(qitem.text())
+                    else:
+                        qitem.setCheckState(Qt.Unchecked)
+                        self.delected_duplicate_selection(self.spatial_table_list, qitem.text())
+                        QMessageBox.information(self, QApplication.translate("WorkspaceLoader","Double Selection"),
+                                                QApplication.translate("WorkspaceLoader",
+                                                "The module is already selected or reserved under party category"))
+
+                if qitem.checkState() == Qt.Unchecked and qitem.text() in self.spatial_table_list:
+                    self.spatial_table_list.remove(qitem.text())
+                #QMessageBox.information(self, "Spatial unit", str(self.spatial_table_list))
+
+    def delected_duplicate_selection(self, list, index):
+        """
+
+        :param list:
+        :param index:
+        :return:
+        """
+        try:
+            if index in list:
+                list.remove(index)
+        except Exception as ex:
+            return  ex.message
+
+    def column_selection_for_str_table(self, parent_view):
+        """
+        Method to record all the column selected in STR list
+        :return:
+        """
+        selectIndex = parent_view.selectionModel().selectedIndexes()
+        if len(selectIndex)>0:
+            qitem = selectIndex[0].model().itemFromIndex(selectIndex[0])
+            if parent_view == self.lstParty:
+                if qitem.checkState() == Qt.Checked:
+                    if qitem.text() in self.party_table_list and qitem.text() not in self.party_str_list.col_selection:
+                        self.party_str_list.col_selection.append(qitem.text())
+                    else:
+                        qitem.setCheckState(Qt.Unchecked)
+                        self.delected_duplicate_selection(self.party_table_list, qitem.text())
+                        QMessageBox.information(self, QApplication.translate("WorkspaceLoader","Double Selection"),
+                                                QApplication.translate("WorkspaceLoader",
+                                                "The module is already selected or reserved under spatial unit category"))
+                if qitem.checkState() == Qt.Unchecked and qitem.text() in self.party_table_list:
+                    self.delected_duplicate_selection(self.spatial_table_list, qitem.text())
+                #QMessageBox.information(self, "Spatial unit", str(self.party_table_list))
+
+            if parent_view == self.lstSpatial_unit:
+                if qitem.checkState() == Qt.Checked:
+                    if qitem.text() not in self.spatial_table_list and qitem.text() not in self.party_table_list:
+                        self.spatial_table_list.append(qitem.text())
+
 
     def on_str_sp_unit_table_selection(self):
         """
+        Method to activate table columns for the selected table for social tenure tables: spatial unit
         :return:
         """
         selectIndex = self.lstSpatial_unit.selectionModel().selectedIndexes()
         if len(selectIndex)>0:
             index = selectIndex[0]
             columns = self.tableHandler.selected_table_columns(index.data())
-            model = CheckableListModel(columns)
-            model.setCheckable(True)
-            self.lstSpUnit.setModel(model)
+            column_model = CheckableListModel(columns)
+            column_model.setCheckable(True)
+            self.lstSpUnit.setModel(column_model)
+        self.party_str_table_selection(self.lstSpatial_unit)
 
     def addTableColumn(self):
         '''add new attribute for the table'''
@@ -893,6 +972,7 @@ class SocialTenureParty(object):
         self._party_table_selection = {}
         self.widget = table_widget
         self.handler = handler
+        self.col_selection = []
 
         self.on_tab_focus()
 
@@ -923,6 +1003,7 @@ class SocialTenureSpatialunit(object):
         self._spatial_table_selection = {}
         self.handler = handler
         self.widget = widget
+        self.col_selection = []
         self.on_sp_tab_focus()
 
     def on_sp_tab_focus(self):
