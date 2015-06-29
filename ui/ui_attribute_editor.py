@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_attribute_editor.ui'
 #
-# Created: Sat Jun 20 13:36:47 2015
+# Created: Mon Jun 29 23:55:15 2015
 #      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_editor(object):
     def setupUi(self, editor):
         editor.setObjectName(_fromUtf8("editor"))
-        editor.resize(447, 359)
+        editor.resize(447, 368)
         self.gridLayout = QtGui.QGridLayout(editor)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.buttonBox = QtGui.QDialogButtonBox(editor)
@@ -124,7 +124,7 @@ class Ui_editor(object):
         self.txtColDesc.setPlaceholderText(_translate("editor", "Column Description", None))
         self.label_3.setText(_translate("editor", "Description", None))
         self.label_2.setText(_translate("editor", "Column Name", None))
-        self.checkBox.setText(_translate("editor", "Yes       I.e Gender (Male/Female)", None))
+        self.checkBox.setText(_translate("editor", "Yes       E.g Gender (Male/Female)", None))
         self.label_7.setText(_translate("editor", "Is Mandatory Field ", None))
         self.chkPrimaryKey.setText(_translate("editor", "Yes", None))
         self.btnTableList.setText(_translate("editor", "Source", None))

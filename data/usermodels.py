@@ -23,19 +23,18 @@ class CheckableListModel(QStandardItemModel):
         else:
             return 0
 
-    def setCheckable(self, bool, default=None):
-        chekableItems = []
+    def setCheckable(self, bool, table = None):
         self._icon =tableIcon
+        checkableItems = []
         for text in self.__list:
             item = QStandardItem()
             item.setCheckable(bool)
             item.setCheckState(Qt.Unchecked)
-            if default and default == text:
-                item.setCheckState(Qt.Checked)
             item.setText(text)
             item.setIcon(self._icon)
-            chekableItems.append(item)
-        self.appendColumn(chekableItems)
+            checkableItems.append(item)
+        self.appendColumn(checkableItems)
+
 
 
 class listEntityViewer(QAbstractListModel):

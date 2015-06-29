@@ -166,6 +166,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             self.readUserTable()
 
             self.party_str_list = SocialTenureParty(self.lstParty, self.tableHandler)
+            self.update_social_tenure_tables()
             try:
                 if self.tableName:
                     self.loadTableColumns(self.tableName)
@@ -395,6 +396,17 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             else:
                 self.tableHandler.update_str_tables(aitem.text(),'no')
 
+    def update_social_tenure_tables(self):
+        """
+        Method reload previously selected str tables
+        :return:
+        """
+        str_tables = self.tableHandler.social_tenure_tables()
+        if str_tables:
+            for table in str_tables:
+                rows = self.lstParty.model().findItems(table,Qt.MatchExactly)
+                if len(rows)>0:
+                    rows[0].setCheckState(Qt.Checked)
 
     def addTableColumn(self):
         '''add new attribute for the table'''
@@ -677,6 +689,13 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         '''Add insert sql statement for the lookup defined values'''
         fileN = self.SQLFileView()
         if self.rbSchemaNew.isChecked():
+            if QMessageBox.warning(self, QApplication.translate("WorkspaceLoader","Create New data"),
+                                   QApplication.translate("WorkspaceLoader","All existing data will be lost, "
+                                                                            "do you want to proceed?"),
+            QMessageBox.Yes | QMessageBox.No)== QMessageBox.No:
+                self.rbSchema.setChecked(True)
+                return
+
             self.tableHandler.saveXMLchanges()
             lookups = self.lookupTables()
             for lookup in lookups:
@@ -954,11 +973,7 @@ class SocialTenureParty(object):
         Method to load the table names to str party definition control
         """
         self_model = CheckableListModel(self.profile_tables())
-        if self.handler.social_tenure_tables():
-
-            for table in self.handler.social_tenure_tables():
-                QMessageBox.information(None,"Str tables",table)
-                self_model.setCheckable(True, table)
+        self_model.setCheckable(True)
         self.widget.setModel(self_model)
 
     def str_party_tables(self):

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_workspace_config.ui'
 #
-# Created: Mon Jun 29 20:12:12 2015
+# Created: Mon Jun 29 23:57:34 2015
 #      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -202,7 +202,7 @@ class Ui_STDMWizard(object):
         icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/property_manager.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.btnNewP.setIcon(icon1)
         self.btnNewP.setObjectName(_fromUtf8("btnNewP"))
-        self.gridLayout_24.addWidget(self.btnNewP, 1, 5, 1, 1)
+        self.gridLayout_24.addWidget(self.btnNewP, 1, 0, 1, 1)
         self.btnPDelete = QtGui.QPushButton(self.widget)
         self.btnPDelete.setMinimumSize(QtCore.QSize(25, 30))
         self.btnPDelete.setMaximumSize(QtCore.QSize(150, 16777215))
@@ -210,11 +210,11 @@ class Ui_STDMWizard(object):
         icon2.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/remove.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.btnPDelete.setIcon(icon2)
         self.btnPDelete.setObjectName(_fromUtf8("btnPDelete"))
-        self.gridLayout_24.addWidget(self.btnPDelete, 1, 1, 1, 1)
+        self.gridLayout_24.addWidget(self.btnPDelete, 1, 5, 1, 1)
         self.lblDescprition = QtGui.QLabel(self.widget)
         self.lblDescprition.setStyleSheet(_fromUtf8("color: rgb(0, 85, 0);"))
         self.lblDescprition.setObjectName(_fromUtf8("lblDescprition"))
-        self.gridLayout_24.addWidget(self.lblDescprition, 0, 1, 1, 5)
+        self.gridLayout_24.addWidget(self.lblDescprition, 0, 0, 1, 2)
         self.gridLayout_28.addWidget(self.widget, 2, 1, 1, 2)
         self.gridLayout_26.addWidget(self.groupBox_17, 0, 0, 1, 2)
         self.groupBox_18 = QtGui.QGroupBox(self.wizardPage_6)
