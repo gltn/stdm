@@ -78,6 +78,7 @@ from .xmlconfig_reader import (
     contentGroup,
     table_column_exist,
     check_if_display_name_exits,
+    social_tenure_tables,
     get_xml_display_name
 )
 
