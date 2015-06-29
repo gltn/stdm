@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>447</width>
-    <height>359</height>
+    <height>368</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -113,7 +113,7 @@
       <item row="7" column="1">
        <widget class="QCheckBox" name="checkBox">
         <property name="text">
-         <string>Yes       I.e Gender (Male/Female)</string>
+         <string>Yes       E.g Gender (Male/Female)</string>
         </property>
        </widget>
       </item>
