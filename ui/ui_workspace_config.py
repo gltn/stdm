@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_configWizard.ui'
+# Form implementation generated from reading ui file 'ui_workspace_config.ui'
 #
-# Created: Fri Jun 26 07:34:21 2015
+# Created: Mon Jun 29 20:12:12 2015
 #      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -455,13 +455,14 @@ class Ui_STDMWizard(object):
         self.gridLayout_23 = QtGui.QGridLayout(self.tab_5)
         self.gridLayout_23.setObjectName(_fromUtf8("gridLayout_23"))
         self.groupBox = QtGui.QGroupBox(self.tab_5)
+        self.groupBox.setMinimumSize(QtCore.QSize(300, 0))
         self.groupBox.setMaximumSize(QtCore.QSize(200, 16777215))
         self.groupBox.setFlat(True)
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
         self.gridLayout_13 = QtGui.QGridLayout(self.groupBox)
         self.gridLayout_13.setObjectName(_fromUtf8("gridLayout_13"))
         self.lstParty = QtGui.QListView(self.groupBox)
-        self.lstParty.setMinimumSize(QtCore.QSize(0, 0))
+        self.lstParty.setMinimumSize(QtCore.QSize(300, 0))
         self.lstParty.setMaximumSize(QtCore.QSize(200, 16777215))
         self.lstParty.setObjectName(_fromUtf8("lstParty"))
         self.gridLayout_13.addWidget(self.lstParty, 0, 0, 1, 1)
@@ -472,30 +473,10 @@ class Ui_STDMWizard(object):
         self.gridLayout_31 = QtGui.QGridLayout(self.groupBox_11)
         self.gridLayout_31.setObjectName(_fromUtf8("gridLayout_31"))
         self.lstTableCol = QtGui.QListView(self.groupBox_11)
-        self.lstTableCol.setMinimumSize(QtCore.QSize(300, 0))
+        self.lstTableCol.setMinimumSize(QtCore.QSize(200, 0))
         self.lstTableCol.setObjectName(_fromUtf8("lstTableCol"))
         self.gridLayout_31.addWidget(self.lstTableCol, 0, 0, 1, 1)
         self.gridLayout_23.addWidget(self.groupBox_11, 0, 1, 1, 1)
-        self.groupBox_3 = QtGui.QGroupBox(self.tab_5)
-        self.groupBox_3.setMaximumSize(QtCore.QSize(200, 16777215))
-        self.groupBox_3.setFlat(True)
-        self.groupBox_3.setObjectName(_fromUtf8("groupBox_3"))
-        self.gridLayout_18 = QtGui.QGridLayout(self.groupBox_3)
-        self.gridLayout_18.setObjectName(_fromUtf8("gridLayout_18"))
-        self.lstSpatial_unit = QtGui.QListView(self.groupBox_3)
-        self.lstSpatial_unit.setMaximumSize(QtCore.QSize(200, 16777215))
-        self.lstSpatial_unit.setObjectName(_fromUtf8("lstSpatial_unit"))
-        self.gridLayout_18.addWidget(self.lstSpatial_unit, 0, 0, 1, 1)
-        self.gridLayout_23.addWidget(self.groupBox_3, 1, 0, 1, 1)
-        self.groupBox_20 = QtGui.QGroupBox(self.tab_5)
-        self.groupBox_20.setFlat(True)
-        self.groupBox_20.setObjectName(_fromUtf8("groupBox_20"))
-        self.gridLayout_32 = QtGui.QGridLayout(self.groupBox_20)
-        self.gridLayout_32.setObjectName(_fromUtf8("gridLayout_32"))
-        self.lstSpUnit = QtGui.QListView(self.groupBox_20)
-        self.lstSpUnit.setObjectName(_fromUtf8("lstSpUnit"))
-        self.gridLayout_32.addWidget(self.lstSpUnit, 0, 0, 1, 1)
-        self.gridLayout_23.addWidget(self.groupBox_20, 1, 1, 1, 1)
         self.tbSTR.addTab(self.tab_5, _fromUtf8(""))
         self.gridLayout_30.addWidget(self.tbSTR, 0, 0, 1, 1)
         STDMWizard.addPage(self.wizardPage_3)
@@ -593,10 +574,8 @@ class Ui_STDMWizard(object):
         self.groupBox_10.setTitle(_translate("STDMWizard", "Relations", None))
         self.groupBox_13.setTitle(_translate("STDMWizard", "Actions", None))
         self.tbSTR.setTabText(self.tbSTR.indexOf(self.tab_2), _translate("STDMWizard", "Table relation and constraint", None))
-        self.groupBox.setTitle(_translate("STDMWizard", "Select Party Tables", None))
-        self.groupBox_11.setTitle(_translate("STDMWizard", "List of column(s) from party(ies) participating in STR", None))
-        self.groupBox_3.setTitle(_translate("STDMWizard", "Select Spatial Unit tables", None))
-        self.groupBox_20.setTitle(_translate("STDMWizard", "List of  column from spatial unit table(s) participating in STR ", None))
+        self.groupBox.setTitle(_translate("STDMWizard", "Select tables participating in social Tenure Relation (STR)", None))
+        self.groupBox_11.setTitle(_translate("STDMWizard", "List of column(s) from selected tables participating in STR", None))
         self.tbSTR.setTabText(self.tbSTR.indexOf(self.tab_5), _translate("STDMWizard", "Social Tenure Relation tables", None))
         self.wizardPage_4.setTitle(_translate("STDMWizard", "Update Database", None))
         self.wizardPage_4.setSubTitle(_translate("STDMWizard", "Commit SQL changes to the database", None))

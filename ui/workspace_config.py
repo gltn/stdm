@@ -68,8 +68,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         QObject.connect(self.tblEdit_2, SIGNAL('clicked(QModelIndex)'), self.selectedColumnIndex)
         QObject.connect(self.tblLookupList, SIGNAL('clicked(QModelIndex)'), self.lookupColumns)
         QObject.connect(self.lstParty, SIGNAL('clicked(QModelIndex)'), self.on_str_party_table_selection)
-        QObject.connect(self.lstSpatial_unit, SIGNAL("clicked(QModelIndex)"),self.on_str_sp_unit_table_selection)
-        
+
         self.btnAdd.clicked.connect(self.addTableColumn)
         self.btnEdit.clicked.connect(self.columnEditor)
         self.btnProperty.clicked.connect(self.tableRelationEditor)
@@ -165,8 +164,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             #self.toolbtn.setPopupMode(QToolButton.InstantPopup)
             self.registerProfileSettings()
             self.readUserTable()
+
             self.party_str_list = SocialTenureParty(self.lstParty, self.tableHandler)
-            self.sp_unit_str_lst = SocialTenureSpatialunit(self.lstSpatial_unit, self.tableHandler)
             try:
                 if self.tableName:
                     self.loadTableColumns(self.tableName)
@@ -175,7 +174,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             self.tblLookup.setAlternatingRowColors(True)
 
         if self.currentId()==5:
-            self.selected_party_str_tables()
+            self.selected_str_tables(self.lstParty)
             self.txtHtml.hide()
             self.rbSchema.setChecked(True)
             self.setSqlIsertDefinition()
@@ -350,33 +349,16 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             self.tableName = qitem.text()
             if parent_view == self.lstParty:
                 if qitem.checkState() == Qt.Checked:
-                    if qitem.text() not in self.party_table_list and qitem.text() not in self.spatial_table_list:
+                    if qitem.text() not in self.party_table_list and qitem.text():
                         self.party_table_list.append(qitem.text())
-                        # co_list =self.lstSpatial_unit.model().findItems(qitem.text(), Qt.MatchExactly)
-                        # if len(co_list)>0:
-                        #     self.lstSpatial_unit.model().removeRows(co_list[0].row(),1)
+
                     else:
                         qitem.setCheckState(Qt.Unchecked)
                         self.delected_duplicate_selection(self.party_table_list, qitem.text())
-                        QMessageBox.information(self, QApplication.translate("WorkspaceLoader","Double Selection"),
-                                                QApplication.translate("WorkspaceLoader",
-                                                "The module is already selected or reserved under spatial unit category"))
                 if qitem.checkState() == Qt.Unchecked and qitem.text() in self.party_table_list:
                     self.delected_duplicate_selection(self.party_table_list, qitem.text())
 
-            if parent_view == self.lstSpatial_unit:
-                if qitem.checkState() == Qt.Checked:
-                    if qitem.text() not in self.spatial_table_list and qitem.text() not in self.party_table_list:
-                        self.spatial_table_list.append(qitem.text())
-                    else:
-                        qitem.setCheckState(Qt.Unchecked)
-                        self.delected_duplicate_selection(self.spatial_table_list, qitem.text())
-                        QMessageBox.information(self, QApplication.translate("WorkspaceLoader","Double Selection"),
-                                                QApplication.translate("WorkspaceLoader",
-                                                "The module is already selected or reserved under party category"))
 
-                if qitem.checkState() == Qt.Unchecked and qitem.text() in self.spatial_table_list:
-                    self.spatial_table_list.remove(qitem.text())
 
                 #QMessageBox.information(self, "Spatial unit", str(self.spatial_table_list))
 
@@ -399,52 +381,20 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         :return:
         """
         QMessageBox.information(self, "Selected table", self.tableName)
-        #selectIndex = parent_view.selectionModel().selectedIndexes()
-        # if len(selectIndex)>0:
-        #     qitem = selectIndex[0].model().itemFromIndex(selectIndex[0])
-        #     if parent_view == self.lstParty:
-        #         if qitem.checkState() == Qt.Checked:
-        #             if qitem.text() in self.party_table_list and qitem.text() not in self.party_str_list.col_selection:
-        #                 self.party_str_list.col_selection.append(qitem.text())
-        #             else:
-        #                 qitem.setCheckState(Qt.Unchecked)
-        #                 self.delected_duplicate_selection(self.party_table_list, qitem.text())
-        #                 QMessageBox.information(self, QApplication.translate("WorkspaceLoader","Double Selection"),
-        #                                         QApplication.translate("WorkspaceLoader",
-        #                                         "The module is already selected or reserved under spatial unit category"))
-        #         if qitem.checkState() == Qt.Unchecked and qitem.text() in self.party_table_list:
-        #             self.delected_duplicate_selection(self.spatial_table_list, qitem.text())
-        #         #QMessageBox.information(self, "Spatial unit", str(self.party_table_list))
-        #
-        #     if parent_view == self.lstSpatial_unit:
-        #         if qitem.checkState() == Qt.Checked:
-        #             if qitem.text() not in self.spatial_table_list and qitem.text() not in self.party_table_list:
-        #                 self.spatial_table_list.append(qitem.text())
 
-    def selected_party_str_tables(self):
+    def selected_str_tables(self,model_view):
         """
 
         :return:
         """
-        rows = self.lstParty.model().rowCount()
+        rows = model_view.model().rowCount()
         for row in range(rows):
-            aitem = self.lstParty.model().item(row)
+            aitem = model_view.model().item(row)
             if aitem.checkState() == Qt.Checked:
-                self.tableHandler.update_str_tables(aitem.text(),'party')
+                self.tableHandler.update_str_tables(aitem.text(),'yes')
+            else:
+                self.tableHandler.update_str_tables(aitem.text(),'no')
 
-    def on_str_sp_unit_table_selection(self):
-        """
-        Method to activate table columns for the selected table for social tenure tables: spatial unit
-        :return:
-        """
-        selectIndex = self.lstSpatial_unit.selectionModel().selectedIndexes()
-        if len(selectIndex)>0:
-            index = selectIndex[0]
-            columns = self.tableHandler.selected_table_columns(index.data())
-            column_model = CheckableListModel(columns)
-            column_model.setCheckable(True)
-            self.lstSpUnit.setModel(column_model)
-        self.party_str_table_selection(self.lstSpatial_unit)
 
     def addTableColumn(self):
         '''add new attribute for the table'''
@@ -1004,12 +954,19 @@ class SocialTenureParty(object):
         Method to load the table names to str party definition control
         """
         self_model = CheckableListModel(self.profile_tables())
-        self_model.setCheckable(True, 'party')
+        if self.handler.social_tenure_tables():
+
+            for table in self.handler.social_tenure_tables():
+                QMessageBox.information(None,"Str tables",table)
+                self_model.setCheckable(True, table)
         self.widget.setModel(self_model)
 
     def str_party_tables(self):
         """
+        Method to read all tables previous declared as str tables
         """
+        return self.handler.social_tenure_tables()
+
     def selected_model_items(self):
         """
         """
@@ -1021,37 +978,3 @@ class SocialTenureParty(object):
             return model_items
         else:
             return None
-
-
-class SocialTenureSpatialunit(object):
-    """
-    Class variables definitions
-    """
-    def __init__(self, widget, handler, parent = None):
-        """
-        Initialize the global variables
-        :param parent:
-        :return:
-        """
-        self._spatial_table_selection = {}
-        self.handler = handler
-        self.widget = widget
-        self.col_selection = []
-        self.on_sp_tab_focus()
-
-    def on_sp_tab_focus(self):
-        """
-        Method to load the table names to str party definition control
-        """
-        profile = self.handler.active_profile()
-        tables = self.handler.tableNames(profile)
-        model = CheckableListModel(tables)
-        model.setCheckable(True, 'spatial_unit')
-        self.widget.setModel(model)
-
-    def str_sp_unit_tables(self, table, column):
-        """
-
-        :return:
-        """
-        self._spatial_table_selection[table] = column

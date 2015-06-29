@@ -119,6 +119,18 @@ def tableColumns(profile,tableName):
                 tableData.append(ordDict)                          
     return tableData
 
+def social_tenure_tables(profile):
+    """
+    Method to read tables that are part of STR definition
+    """
+    tree,root = parseRootElement()
+    str_table = []
+    filter = (".//*[@name='%s']/table")%profile
+    for elem in root.findall(filter):
+        if elem.get('is_str_table')== 'yes':
+            str_table.append(elem.get('name'))
+    return str_table
+
 def tableLookUpCollection():
     tree, root = parseRootElement()
     tableDict = ['table','lookup']

@@ -24,7 +24,8 @@ from .xmlconfig_reader import (
     tableColumns,
     deleteProfile,
     tableFullDescription,
-    tableRelations
+    tableRelations,
+    social_tenure_tables
 )
 from stdm.settings import RegistryConfig
 
