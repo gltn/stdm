@@ -36,12 +36,15 @@ from stdm.data import (
     EntityColumnModel,
     FilePaths,
     tableFullDescription,
+    set_str_tables,
+    social_tenure_tables
 
 )
 from .config_utils import (
     activeProfile,
     ProfileException,
-    table_searchable_cols
+    table_searchable_cols,
+    tableCols
 )
 from stdm.settings import dataIcon
 
@@ -166,9 +169,19 @@ class ConfigTableReader(object):
         """
         Method to read all searchable field from the config for the table
         :param table:
-        :return:
+        :return:cols: List
         """
         return table_searchable_cols(table)
+
+    def social_tenure_tables(self):
+        """
+        Method to read all tables participating in STR
+        :return:tables: List
+        """
+        if not social_tenure_tables(activeProfile()):
+            return None
+        else:
+            return social_tenure_tables(activeProfile())
 
     def tableRelation(self,tableName):
         '''Method to read all defined table relationship in the config file'''
@@ -276,3 +289,6 @@ class ConfigTableReader(object):
         :return: List
         """
         return tableCols(table)
+
+    def update_str_tables(self, table,level):
+        set_str_tables(activeProfile(),table,level)

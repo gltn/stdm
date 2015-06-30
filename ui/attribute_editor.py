@@ -61,7 +61,6 @@ class AttributeEditor(QDialog,Ui_editor):
     def initControls(self):
         self.defaults = postgres_defaults
         tableHandler = ConfigTableReader()
-        QMessageBox.information(None, "Searchable",str(table_searchable_cols(self.tableName)))
         model = tableHandler.on_main_table_selection()
         self.cboTabList.setModel(model)
         index = self.cboTabList.findText(self.tableName,Qt.MatchExactly)
