@@ -24,7 +24,8 @@ from .xmlconfig_reader import (
     tableColumns,
     deleteProfile,
     tableFullDescription,
-    tableRelations
+    tableRelations,
+    social_tenure_tables
 )
 from stdm.settings import RegistryConfig
 
@@ -136,7 +137,7 @@ def deleteSelectedProfile(profile):
     deleteProfile(profile)
     
 def setCollectiontypes(collectionType,combo):
-        #method to read defult  to a sql relations and constraint type to combo box
+        #method to read default  to a sql relations and constraint type to combo box
         ordDict=OrderedDict(collectionType)
         combo.clear()
         for k, v in ordDict.iteritems():

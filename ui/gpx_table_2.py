@@ -35,6 +35,8 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
         self.table_widget.itemClicked.connect(self.gpx_table_widget_item_clicked)
         self.table_widget.itemSelectionChanged.connect(self.gpx_table_widget_item_selection_changed)
         self.table_pressed_status = False
+        self.table_clicked_status = False
+        self.table_select_status = False
         self.check_box_clicked_state = False
         self.list_of_selected_rows = []
         self.pressed_item_list = []
@@ -70,7 +72,7 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
 
             # Normal checkbox item
             chk_bx_tb_widget_item = QTableWidgetItem()
-            chk_bx_tb_widget_item.setFlags(Qt.ItemIsUserCheckable | Qt.ItemIsEnabled | Qt.ItemIsSelectable )
+            chk_bx_tb_widget_item.setFlags(Qt.ItemIsUserCheckable | Qt.ItemIsEnabled | Qt.ItemIsSelectable)
             chk_bx_tb_widget_item.setCheckState(check_box_state)
 
             # Spinbox for lat and lon offset
@@ -144,149 +146,70 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
         """
         Run when table row is selected
         """
-        # self.table_pressed_status = True
-        # QMessageBox.information(None, "STDM", "{0} {1}".format("Row pressed", self.table_pressed_status))
+        self.table_pressed_status = True
+        QMessageBox.information(None, "STDM", "{0} \n"
+                                              "Clicked status {1} \n"
+                                              "Pressed status {2} \n"
+                                              "Select status {3}".format("I have been pressed ",
+                                                                         self.table_clicked_status,
+                                                                         self.table_pressed_status,
+                                                                         self.table_select_status))
+        self.table_pressed_status = False
 
     @pyqtSlot('QTableWidgetItem')
     def gpx_table_widget_item_selection_changed(self):
         """
         Signal run when table item selection changes
         """
-        self.table_pressed_status = True
+        self.table_select_status = True
+        QMessageBox.information(None, "STDM", "{0} \n"
+                                              "Clicked status {1} \n"
+                                              "Pressed status {2} \n"
+                                              "Select status {3}".format("Selection has changed",
+                                                                         self.table_clicked_status,
+                                                                         self.table_pressed_status,
+                                                                         self.table_select_status))
 
-        # QMessageBox.information(None, "STDM", "{0} {1}".format("Selection has changed", self.table_pressed_status))
-        self.list_of_selected_rows = []  # Clear selected list row
+        self.table_select_status = False
 
-        self.list_of_selected_items = self.table_widget.selectedItems()
-
-        # Adding selected items to list_of_selected_rows
-        for itm in self.list_of_selected_items:
-            selected_item_row = itm.row()
-            self.list_of_selected_rows.append(selected_item_row)
-
-        # Getting unique row of selected items rows
-        unique_rows = list(OrderedDict.fromkeys(self.list_of_selected_rows))
-
-        # QMessageBox.information(None, "STDM", "{0} {1}".format("Items state", self.vertex_dict))
-
-        for row, vertex in self.vertex_dict.iteritems():
-
-            if row in unique_rows:
-                vertex[0].setColor(self.black)
-                vertex[0].setIconType(3)
-                self.map_canvas.refresh()
-
-            elif row not in unique_rows and self.active_layer_geometry_typ == 0:
-                vertex[0].setColor(self.red)
-                vertex[0].setIconType(2)
-                self.map_canvas.refresh()
-
-            elif row not in unique_rows and self.active_layer_geometry_typ in (1,2):
-                vertex[0].setColor(self.green)
-                vertex[0].setIconType(2)
-                self.map_canvas.refresh()
-
-            if self.active_layer_geometry_typ == 0:
-                for item_row, chkbx_item in self.prv_chkbx_itm_placeholder_dict.iteritems():
-                    if item_row == row:
-                        vertex[0].setColor(self.green)
-                        vertex[0].setIconType(2)
-                        self.map_canvas.refresh()
-                        self.table_pressed_status = False
-
-            # if vertex[3] is Qt.Checked:
-            #     vertex[0].setColor(self.green)
-            #     vertex[0].setIconType(2)
-            #     self.map_canvas.refresh()
-            #
-            # elif vertex[3] is Qt.Unchecked and row in unique_rows:
-            #     vertex[0].setColor(self.black)
-            #     vertex[0].setIconType(3)
-            #     self.map_canvas.refresh()
-
-            # else:
-            #     vertex[0].setColor(self.red)
-            #     vertex[0].setIconType(2)
-            #     self.map_canvas.refresh()
-
-            # vertex[0].setColor(self.red)
-            # vertex[0].setIconType(2)
-            #
-            # if row in unique_rows:
-            #     vertex[0].setColor(self.black)
-            #     vertex[0].setIconType(3)
-            #     self.map_canvas.refresh()
-            #
-            # if self.active_layer_geometry_typ == 0:
-            #     for item_row, chkbx_item in self.prv_chkbx_itm_placeholder_dict.iteritems():
-            #         if item_row == row:
-            #             vertex[0].setColor(self.green)
-            #             vertex[0].setIconType(2)
-            #             self.map_canvas.refresh()
 
     @pyqtSlot('QTableWidgetItem')
     def gpx_table_widget_item_clicked(self, item):
         """
         Run when table checkbox column is clicked
         """
-        # QMessageBox.information(None, "STDM", "{0} table status {1}".format("Checkbox clicked", self.table_pressed_status))
+        self.table_clicked_status = True
+        QMessageBox.information(None, "STDM", "{0} \n"
+                                              "Clicked status {1} \n"
+                                              "Pressed status {2} \n"
+                                              "Select status {3}".format("I have been clicked",
+                                                                         self.table_clicked_status,
+                                                                         self.table_pressed_status,
+                                                                         self.table_select_status))
+        if self.active_layer_geometry_typ == 0:
 
-        # First check if row is pressed to avoid running twice pressed and clicked actions
-        if self.table_pressed_status:
-            pass
+            for item_row, chkbx_item in self.prv_chkbx_itm_placeholder_dict.iteritems():
 
-        elif not self.table_pressed_status:
-            # QMessageBox.information(None, "STDM", "{0} {1}".format("Items state", self.vertex_dict))
-            # If table row is not pressed maintain presses status at False
+                if item.row() == item_row and item.checkState() != chkbx_item.checkState():
+                    QMessageBox.information(None,"STDM","{0}".format("You must select atleast one point"))
+                    chkbx_item.setCheckState(Qt.Checked)
 
-            # Check if import layer is a point
-            if self.active_layer_geometry_typ == 0:
+                elif item.row() != item_row:
 
-                # Do not allow deselection of checkbox item if non exists
-                for item_row, chkbx_item in self.prv_chkbx_itm_placeholder_dict.iteritems():
-                    if chkbx_item.checkState() == Qt.Unchecked:
-                        QMessageBox.information(None,"STDM","{0}".format("You must select atleast one point"))
-                        chkbx_item.setCheckState(Qt.Checked)
-
-
-            if item.checkState() == Qt.Checked:
-                for row, vertex in self.vertex_dict.iteritems():
-                    if row == item.row():
-
-                        # Set vertex marker green then refresh the map
-                        vertex[0].setColor(self.green)
-                        vertex[0].setIconType(2)
-                        vertex[3] = Qt.Checked
-                        self.map_canvas.refresh()
-
-                        if self.active_layer_geometry_typ == 0:
-                            for item_row, chkbx_item in self.prv_chkbx_itm_placeholder_dict.iteritems():
-                                self.vertex_dict[item_row][0].setColor(self.red)
-                                self.vertex_dict[item_row][0].setIconType(2)
-                                self.vertex_dict[item_row][3] = Qt.Unchecked
-                                chkbx_item.setCheckState(Qt.Unchecked)
-                                self.map_canvas.refresh()
-
-                        else:
-                            pass
-
-            elif item.checkState() == Qt.Unchecked:
-                for row, vertex_lon_lat_state in self.vertex_dict.iteritems():
-                    if row == item.row():
-                        vertex_lon_lat_state[0].setColor(self.red)
-                        self.map_canvas.refresh()
+                    chkbx_item.setCheckState(Qt.Unchecked)
+                    self.vertex_dict[item_row][0].setColor(self.red)
+                    self.map_canvas.refresh()
 
 
-            if self.active_layer_geometry_typ == 0:
-                # Empty previous checkbox item place holder
-                self.prv_chkbx_itm_placeholder_dict = {}
 
-                # Add current checked checkbox item
-                self.prv_chkbx_itm_placeholder_dict[item.row()] = item
 
-            else:
-                pass
-        self.table_pressed_status = False
+        elif self.active_layer_geometry_typ in (1,2):
+            for row, vertex in self.vertex_dict.iteritems():
+                if row == item.row():
+                    vertex[0].setColor(self.green)
+                    self.map_canvas.refresh()
+
+        self.table_clicked_status = False
 
     @pyqtSlot()
     def on_bt_reset_clicked(self):
