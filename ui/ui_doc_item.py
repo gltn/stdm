@@ -81,5 +81,3 @@ class Ui_frmDocumentItem(object):
     def retranslateUi(self, frmDocumentItem):
         frmDocumentItem.setWindowTitle(_translate("frmDocumentItem", "Form", None))
         self.lblClose.setToolTip(_translate("frmDocumentItem", "Remove Document", None))
-
-from stdm import resources_rc

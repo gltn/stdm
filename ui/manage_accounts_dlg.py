@@ -19,7 +19,6 @@ email                : gkahiu@gmail.com
 from ui_user_role_manage import Ui_frmSysManageAccounts
 from .new_user_dlg import newUserDlg
 from .new_role_dlg import newRoleDlg
-from stdm import resources_rc
 
 from stdm.security import User, Membership, RoleProvider
 from stdm.data import UsersRolesModel

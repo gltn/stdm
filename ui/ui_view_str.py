@@ -129,4 +129,3 @@ class Ui_frmViewSTR(object):
         self.groupBox_4.setTitle(_translate("frmViewSTR", "Supporting Documents:", None))
 
 from propertyPreview import PropertyPreviewWidget
-from stdm import resources_rc

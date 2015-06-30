@@ -18,8 +18,6 @@ email                : gkahiu@gmail.com
 """
 from PyQt4.QtGui import QTreeWidgetItem, QIcon, QHeaderView
 
-from stdm import resources_rc
-
 class TreeSummaryLoader(object):
     '''
     Load summary information in a dictionary into a tree widget.

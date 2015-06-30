@@ -24,8 +24,6 @@ from PyQt4.QtGui import (
     QApplication
 )
 
-import resources_rc
-
 from .chart_type_editors import (
     VerticalBarGraphEditor
 )

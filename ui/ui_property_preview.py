@@ -68,4 +68,3 @@ class Ui_frmPropertyPreview(object):
 
 from PyQt4 import QtWebKit
 from qgis.gui import QgsMapCanvas
-from stdm import resources_rc
