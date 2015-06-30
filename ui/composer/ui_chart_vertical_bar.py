@@ -98,5 +98,3 @@ class Ui_VerticalBarGraphSettings(object):
         self.groupBox.setTitle(_translate("VerticalBarGraphSettings", "Value Configuration:", None))
         self.label.setText(_translate("VerticalBarGraphSettings", "Value field", None))
         self.btn_reset_value_fields.setText(_translate("VerticalBarGraphSettings", "...", None))
-
-import resources_rc

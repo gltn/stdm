@@ -67,5 +67,3 @@ class Ui_frmComposerSymbolEditor(object):
         self.label.setText(_translate("frmComposerSymbolEditor", "Spatial Field", None))
         self.btnAddField.setToolTip(_translate("frmComposerSymbolEditor", "Add Field", None))
         self.btnClear.setToolTip(_translate("frmComposerSymbolEditor", "Clear Fields", None))
-
-import resources_rc
