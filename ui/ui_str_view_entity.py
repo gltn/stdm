@@ -85,4 +85,3 @@ class Ui_frmSTRViewEntity(object):
         self.btnBrowse.setText(_translate("frmSTRViewEntity", "Load", None))
         self.tbSTRViewEntity.setTabText(self.tbSTRViewEntity.indexOf(self.browse), _translate("frmSTRViewEntity", "Browse", None))
 
-from stdm import resources_rc

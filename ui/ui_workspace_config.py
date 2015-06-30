@@ -604,5 +604,3 @@ class Ui_STDMWizard(object):
         self.rbSchemaNew.setText(_translate("STDMWizard", "Create new STDM database", None))
         self.btnSQL.setText(_translate("STDMWizard", "Show generated SQL file", None))
         self.rbSkip.setText(_translate("STDMWizard", "Skip changes to database", None))
-
-import resources_rc

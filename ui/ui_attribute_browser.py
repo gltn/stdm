@@ -51,5 +51,3 @@ class Ui_AttribBrowser(object):
 
     def retranslateUi(self, AttribBrowser):
         AttribBrowser.setWindowTitle(_translate("AttribBrowser", "Form", None))
-
-import resources_rc
