@@ -11,10 +11,11 @@ from gpx_table import GpxTableWidgetDialog
 
 class GPSToolDialog(QDialog, Ui_Dialog):
 
-    def __init__(self, iface, sp_table, sp_col):
+    def __init__(self, iface, curr_layer, sp_table, sp_col):
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
         self.iface = iface
+        self.curr_layer = curr_layer
         self.sp_table = sp_table
         self.sp_col = sp_col
         self.button_ok = self.buttonBox.button(QDialogButtonBox.Ok)
@@ -85,6 +86,7 @@ class GPSToolDialog(QDialog, Ui_Dialog):
 
                     # QTableWidget dialog
                     self.gpx_table = GpxTableWidgetDialog(self.iface,
+                                                          self.curr_layer,
                                                           self.layer_gpx,
                                                           active_layer,
                                                           active_layer_geometry_typ,
