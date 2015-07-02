@@ -47,12 +47,22 @@ class SQLInsert(object):
             sqlInsert =  r'('+r"'"+value +r"');"
             self.sqlDef.append(INSERTSQL%(self.table,self.keyColAttrib(),str(sqlInsert)))
         return self.sqlDef
-    
+
+    def social_tenure_duplicate_enforce(self):
+        """
+        Method to create constraint to enforce duplicate values in STR tables
+        :return:
+        """
+        return "ALTER TABLE social_tenure_relationship ADD CONSTRAINT social_tenure_relationship_party_spatial_unit_key UNIQUE (party, spatial_unit)"
+
     def spatialRelation(self):
         # needed for creation of map on the composer and reporting on social tenure
         socialTenure = "CREATE OR REPLACE VIEW social_tenure_relations AS SELECT party.id, party.family_name AS party_surname, party.other_names, \
-        party.identification, spatial_unit.spatial_unit_id AS spatial_unit_number, spatial_unit.name AS spatial_unit_name, spatial_unit.geom_polygon AS geometry, \
+        party.identification, spatial_unit.code AS spatial_unit_number, spatial_unit.name AS spatial_unit_name, spatial_unit.geom_polygon AS geometry, \
         social_tenure_relationship.social_tenure_type FROM party, spatial_unit, social_tenure_relationship \
         WHERE spatial_unit.id = social_tenure_relationship.spatial_unit AND party.id = social_tenure_relationship.party; "
             
         return socialTenure
+
+
+

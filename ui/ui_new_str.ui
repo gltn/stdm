@@ -215,7 +215,7 @@
     <item row="1" column="1" rowspan="2">
      <widget class="QGroupBox" name="gpOpenLayers">
       <property name="title">
-       <string>Preview Property:</string>
+       <string>Preview Spatial Unit:</string>
       </property>
       <property name="checkable">
        <bool>true</bool>
@@ -358,7 +358,7 @@
        </size>
       </property>
       <property name="text">
-       <string>STR Type</string>
+       <string>Social Tenure Relation Type</string>
       </property>
      </widget>
     </item>
@@ -369,13 +369,6 @@
         <width>0</width>
         <height>30</height>
        </size>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QCheckBox" name="chkSTRAgreement">
-      <property name="text">
-       <string>A written agreement is available</string>
       </property>
      </widget>
     </item>
@@ -624,7 +617,15 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>100</width>
+      <height>30</height>
+     </rect>
+    </property>
     <layout class="QVBoxLayout" name="vlSourceDocNotif"/>
    </widget>
   </widget>

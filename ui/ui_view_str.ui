@@ -88,7 +88,7 @@
       </sizepolicy>
      </property>
      <property name="title">
-      <string>Property Preview:</string>
+      <string>Spatial unit Preview:</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">

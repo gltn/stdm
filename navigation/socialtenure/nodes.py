@@ -29,7 +29,7 @@ from qgis.core import *
 
 from stdm.utils import *
 #from stdm.data import SocialTenureRelationshipMixin, LookupFormatter
-from stdm.ui.sourcedocument import TITLE_DEED,STATUTORY_REF_PAPER,SURVEYOR_REF,NOTARY_REF,TAX_RECEIPT_PRIVATE, \
+from stdm.ui.sourcedocument import DEFAULT_DOCUMENT,STATUTORY_REF_PAPER,SURVEYOR_REF,NOTARY_REF,TAX_RECEIPT_PRIVATE, \
         TAX_RECEIPT_STATE,SourceDocumentManager
 from stdm.ui.str_editor_dlg import STREditorDialog
 
@@ -349,8 +349,8 @@ class STRNode(BaseSTRNode):
         self.propNameHasAgreement = "AgreementAvailable"
         
         self.propertyLabels = OrderedDict({
-                       self.propNameSTRType : str(QApplication.translate("STRNode","Type")),
-                       self.propNameHasAgreement : str(QApplication.translate("STRNode","Has Agreement"))
+                       self.propNameSTRType : str(QApplication.translate("STRNode","Type"))
+                      # self.propNameHasAgreement : str(QApplication.translate("STRNode","Has Agreement"))
                        })
         
         #Set object values
@@ -399,9 +399,9 @@ class STRNode(BaseSTRNode):
                 strAttrVal = self.strModel.social_tenure_type
                 #strText = str(strLoookupFormatter.setDisplay(strAttrVal).toString())
                 strText=strAttrVal
-            elif prop == self.propNameHasAgreement:
+            #elif prop == self.propNameHasAgreement:
                     #strText = "Yes" if getattr(self.strModel,prop) else "No"
-                    strText = "No"
+                   # strText = "No"
             
             self._objValues.append(strText)
     
@@ -472,9 +472,9 @@ class STRNode(BaseSTRNode):
         self._parentWidget.connect(srcDocManager,SIGNAL("fileUploaded(PyQt_PyObject)"),
                        self._onSourceDocUploaded)
                 
-        if doctype == TITLE_DEED:
+        if doctype == DEFAULT_DOCUMENT:
             dialogTitle = QApplication.translate("STRNode", 
-                                             "Specify Title Deed File Location")
+                                             "Specify Supporting Document File Location")
         elif doctype == STATUTORY_REF_PAPER:
             dialogTitle = QApplication.translate("STRNode", 
                                              "Specify Statutory Reference Paper File Location")
@@ -665,7 +665,7 @@ class PropertyNode(BaseSTRNode):
         #Set object values
         self._setObjectValues()
         
-        self._parentTitle = str(QApplication.translate("PropertyNode","Property"))
+        self._parentTitle = str(QApplication.translate("PropertyNode","Spatial Unit"))
         
         if not isChild:
             super(PropertyNode,self).__init__([self._objValues],parent, isChild, styleIfChild)

@@ -725,10 +725,9 @@ class ForeignKeyMapper(QWidget):
                     msg = QApplication.translate("ForeignKeyMapper","Null instance of entity selector.")
                     self._notifBar.clear()
                     self._notifBar.insertErrorNotification(msg)
-
         else:
             entitySelector = self._entitySelector(self,
-                                                  unicode(self._dbModel.__name__).lower(),
+                                                  self._dbModel,
                                                   self._entitySelectorState)
             entitySelector.recordSelected[int].connect(self._onRecordSelectedEntityBrowser)
 

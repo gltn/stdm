@@ -720,6 +720,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     def setRelation(self,fileN,sql):
         with open(fileN,'a')as f:
             f.write(sql.spatialRelation())
+            f.write(sql.social_tenure_duplicate_enforce())
         f.close()
             
     def setDatabaseSchema(self):    
