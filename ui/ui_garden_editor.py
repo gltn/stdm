@@ -127,4 +127,3 @@ class Ui_frmGardenEditor(object):
         self.tbRelations.setTabText(self.tbRelations.indexOf(self.tab), _translate("frmGardenEditor", "Survey Points", None))
 
 from .foreign_key_mapper import ForeignKeyMapper
-import resources_rc

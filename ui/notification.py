@@ -24,7 +24,6 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from ui_notif_item import Ui_frmNotificationItem
-from stdm import resources_rc
 
 #Enums for type of notification to be displayed
 ERROR = 2005

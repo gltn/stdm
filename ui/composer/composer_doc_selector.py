@@ -39,7 +39,6 @@ from PyQt4.QtXml import QDomDocument
 
 from stdm.utils import documentTemplates
 from stdm.settings import RegistryConfig
-from stdm import resources_rc
 from ..notification import (
                              NotificationBar,
                              ERROR

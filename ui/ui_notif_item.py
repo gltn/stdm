@@ -81,4 +81,3 @@ class Ui_frmNotificationItem(object):
         frmNotificationItem.setWindowTitle(_translate("frmNotificationItem", "Form", None))
         self.lblClose.setToolTip(_translate("frmNotificationItem", "Close Message", None))
 
-from stdm import resources_rc

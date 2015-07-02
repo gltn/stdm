@@ -20,7 +20,6 @@ from PyQt4.QtCore import *
 
 from PyQt4.QtGui import * 
 from ui_aboutSTDM import Ui_frmAbout
-import resources_rc
 import sys,os
 
 class AboutDialog(QDialog):  

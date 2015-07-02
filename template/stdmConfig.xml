@@ -1,17 +1,18 @@
 <?xml version='1.0' encoding='utf-8'?>
 <schema>
 	<profile fullname="STDM Core Modules" name="Basic">
-		<table fullname="party can be a person household or group" name="party">
+		<table fullname="party can be a person household or group" is_str_table="yes" name="party">
 			<columns>
 				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
-				<column fullname="Surname" name="family_name" null="yes" size="25" type="character varying" />
-				<column fullname="other given names" name="other_names" null="yes" size="25" type="character varying" />
+				<column fullname="Surname" name="family_name" null="yes" oldname="family_name" searchable="yes" size="25" type="character varying" />
+				<column fullname="other given names" name="other_names" null="yes" oldname="other_names" searchable="yes" size="25" type="character varying" />
 				<column fullname="address id" name="address" null="yes" size="25" type="character varying" />
-				<column fullname="identity" name="identification" null="yes" oldname="unique_id" size="" type="integer" />
+				<column fullname="identity" name="identification" null="yes" oldname="identification" searchable="yes" size="" type="integer" />
 				<column fullname="mobile" name="contact_telephone" null="yes" size="25" type="character varying" />
-				<column fullname="" name="age" null="yes" size="" type="integer" />
-				<column fullname="" lookup="check_gender" name="gender" null="yes" size="25" type="character varying" />
-				<column fullname="Married or not married" lookup="check_marital_status" name="marital_status" null="yes" size="50" type="character varying" /></columns>
+				<column fullname="date of birth" name="date_of_birth" null="yes" oldname="date_of_birth" searchable="no" size="" type="date" />
+				<column fullname="sex" lookup="check_gender" name="gender" null="yes" oldname="gender" searchable="no" size="25" type="character varying" />
+				<column fullname="Married or not married" lookup="check_marital_status" name="marital_status" null="yes" size="50" type="character varying" />
+				</columns>
 			<relations>
 				</relations>
 			<constraints />
@@ -22,13 +23,13 @@
 				<contentgroup code="{AF0244F9-8831-449F-ACAA-C2096DBE8181}" name="delete" />
 			</contentgroups>
 		</table>
-		<table fullname="spatial unit or a group of spatial unit" name="spatial_unit">
+		<table fullname="spatial unit or a group of spatial unit" is_str_table="yes" name="spatial_unit">
 			<columns>
 				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
-				<column fullname="unique identifier" name="spatial_unit_id" null="yes" oldname="spatial_unit_id" size="25" type="character varying" />
-				<column fullname="Friendly name of the unit" name="name" null="yes" oldname="sp_unit_name" size="25" type="character varying" />
-				<column fullname="type of the unit" lookup="check_type" name="type" null="yes" oldname="type" size="25" type="character varying" />
-				<column fullname="Use" name="sp_unit_use" null="yes" oldname="sp_unit_use" size="50" type="character varying" />
+				<column fullname="unique identifier" name="code" null="yes" oldname="spatial_unit_id" searchable="yes" size="25" type="character varying" />
+				<column fullname="Friendly name of the unit" name="name" null="yes" oldname="name" searchable="yes" size="25" type="character varying" />
+				<column fullname="type of the unit" lookup="check_type" name="type" null="yes" oldname="type" searchable="yes" size="25" type="character varying" />
+				<column fullname="Use" name="sp_unit_use" null="yes" oldname="sp_unit_use" searchable="yes" size="50" type="character varying" />
 			</columns>
 			<relations>
 			</relations>
@@ -46,16 +47,18 @@
 				<geometry arguments="2" column="geom_polygon" srid="4326" table="spatial_unit" type="POLYGON" />
 			</geometryz>
 		</table>
-		<table fullname="Prove of evidence to the defined tenure" name="supporting_document">
+		<table fullname="Prove of evidence to the defined tenure" is_str_table="yes" name="supporting_document">
 			<columns>
 				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
 				<column fullname="" lookup="check_document_type" name="document_type" null="yes" oldname="document_type" size="25" type="character varying" />
 				<column fullname="when it was obtained" name="date_of_recording" null="yes" size="" type="date" />
 				<column fullname="Validity period" name="validity" null="yes" size="50" type="character varying" />
 				<column fullname="From whom/ where" name="source" null="yes" size="50" type="character varying" />
-				<column fullname="" name="document_id" null="yes" size="50" type="character varying" /><column fullname="" name="filename" null="yes" size="50" type="character varying" /></columns>
+				<column fullname="" name="document_id" null="yes" size="50" type="character varying" />
+				<column fullname="" name="filename" null="yes" size="50" type="character varying" />
+			</columns>
 			<relations>
-				</relations>
+			</relations>
 			<constraints />
 			<contentgroups fullname="Prove of evidence to the defined tenure" name="supporting_document">
 				<contentgroup code="{A6FCF613-5442-40BF-96A9-F9BADC6BA647}" name="create" />
@@ -64,10 +67,10 @@
 				<contentgroup code="{30B31A51-065C-4252-969E-54B17805A9FD}" name="delete" />
 			</contentgroups>
 		</table>
-		<table fullname="Relation of the person to spatial unit as supported by supporting documents" name="social_tenure_relationship">
+		<table fullname="Relation of the person to spatial unit as supported by supporting documents" is_str_table="no" name="social_tenure_relationship">
 			<columns>
 				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
-				<column fullname="type of social tenure" lookup="check_social_tenure_type" name="social_tenure_type" null="yes" size="25" type="character varying" />
+				<column fullname="type of social tenure" lookup="check_social_tenure_type" name="social_tenure_type" null="yes" oldname="social_tenure_type" searchable="yes" size="25" type="character varying" />
 				<column fullname="share unit " name="share" null="yes" oldname="share" size="" type="double precision" />
 				<column fullname="party id" name="party" null="yes" size="" type="integer" />
 				<column fullname="spatial unit id" name="spatial_unit" null="yes" oldname="spatial_unit" size="" type="integer" />
@@ -169,15 +172,15 @@
 				<value>5000</value>
 			</data>
 		</lookup>
-		<table fullname="Table for household details" name="household">
+		<table fullname="Table for household details" is_str_table="yes" name="household">
 			<columns>
 				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
 				<column fullname="" name="total_persons" null="yes" size="" type="integer" />
-				<column fullname="" lookup="check_rent" name="rent" null="yes" size="50" type="character varying" />
-				<column fullname="" lookup="check_settlement_reason" name="reason_for_settlement" null="yes" size="50" type="character varying" />
+				<column fullname="" lookup="check_rent" name="rent" null="yes" oldname="rent" searchable="yes" size="50" type="character varying" />
+				<column fullname="" lookup="check_settlement_reason" name="reason_for_settlement" null="yes" oldname="reason_for_settlement" searchable="yes" size="50" type="character varying" />
 				<column fullname="" lookup="check_previous_residence" name="previous_stay" null="yes" size="50" type="character varying" />
 				<column fullname="" lookup="check_montly_income" name="income" null="yes" size="50" type="character varying" />
-			</columns>
+			<column fullname="" name="household_number" null="no" searchable="yes" size="50" type="character varying" /></columns>
 			<relations />
 			<constraints />
 			<contentgroups fullname="Table for household details" name="household">
@@ -187,5 +190,23 @@
 				<contentgroup code="{8936D17A-9D91-4D45-9630-D1517D6ACC99}" name="delete" />
 			</contentgroups>
 		</table>
-	<lookup fullname="" name="check_marital_status"><columns><column fullname="Primary Key" key="1" name="id" size="" type="serial" /><column fullname="Choice list" name="value" size="50" type="character varying" /></columns><data><value>married</value><value>Single</value><value>Divorced</value><value>widow</value></data></lookup></profile>
-<display_names><display_name layer_name="spatial_unit.geom_polygon">spatial_unit.geom_polygon</display_name><display_name layer_name="spatial_unit.geom_line">spatial_unit.geom_line</display_name><display_name layer_name="spatial_unit.geom_point">spatial_unit.geom_point</display_name></display_names></schema>
+		<lookup fullname="" name="check_marital_status">
+			<columns>
+				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
+				<column fullname="Choice list" name="value" size="50" type="character varying" />
+			</columns>
+			<data>
+				<value>married</value>
+				<value>Single</value>
+				<value>Divorced</value>
+				<value>widow</value>
+			</data>
+		</lookup>
+	</profile>
+	<display_names>
+		<display_name layer_name="spatial_unit.geom_polygon">Structures</display_name>
+		<display_name layer_name="spatial_unit.geom_line">spatial_unit.geom_line</display_name>
+		<display_name layer_name="spatial_unit.geom_point">spatial_unit.geom_point</display_name>
+	</display_names>
+	<profile fullname="" name="urban" />
+</schema>

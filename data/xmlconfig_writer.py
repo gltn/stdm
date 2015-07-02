@@ -131,6 +131,13 @@ def deleteColumn(level,category,tableName,elemnt,key,value):
         else:
             continue
             #print "Not founded"+str(profile.attrib)
+def set_str_tables(profile, table, option):
+    tree, root = parseRootElement()
+    filter = (".//*[@name='%s']/table")%profile
+    for elem in root.findall(filter):
+        if elem.get('name')==table:
+            elem.set('is_str_table',option)
+    tree.write(xml_doc, xml_declaration=True, encoding='utf-8')
     
 def editTableColumn(profile,tableName, key, value, newValue, type, size, desc,search,lookup):
     tree, root=parseRootElement()

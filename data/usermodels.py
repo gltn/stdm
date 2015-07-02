@@ -1,8 +1,22 @@
-'''
-Created on Mar 28, 2014
+"""
+/***************************************************************************
+Name                 : CheckableList Model, ListViewModel
+Description          : subclassing of pyqt list and table model to support config table model in widget view items
+Date                 : 24/September/2013
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+ ***************************************************************************/
 
-@author: njogus
-'''
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+"""
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from stdm.settings import tableIcon
@@ -23,20 +37,22 @@ class CheckableListModel(QStandardItemModel):
         else:
             return 0
 
-    def setCheckable(self, bool):
-        chekableItems = []
+    def setCheckable(self, bool, table = None):
         self._icon =tableIcon
+        checkableItems = []
         for text in self.__list:
             item = QStandardItem()
             item.setCheckable(bool)
             item.setCheckState(Qt.Unchecked)
             item.setText(text)
             item.setIcon(self._icon)
-            chekableItems.append(item)
-        self.appendColumn(chekableItems)
-
+            checkableItems.append(item)
+        self.appendColumn(checkableItems)
 
 class listEntityViewer(QAbstractListModel):
+    """
+    Class implementation of list model properties from a python list type
+    """
     def __init__(self, list=[], icon =None, parent=None):
         QAbstractListModel.__init__(self,parent)
         self.__list = list
@@ -51,7 +67,7 @@ class listEntityViewer(QAbstractListModel):
             else:
                 return QApplication.translate("WorkspaceLoader","Entities")
         
-    def rowCount(self,parent):
+    def rowCount(self,parent=QModelIndex):
         if self.__list is not None:
             return len(self.__list)
         else:
@@ -114,6 +130,9 @@ class listEntityViewer(QAbstractListModel):
         
 
 class EntityColumnModel(QAbstractTableModel):
+    """
+    Class implementation of table model for representating table columns
+    """
     def __init__(self, header,data, parent=None):
         QAbstractTableModel.__init__(self,parent)
         self._data=data
@@ -182,7 +201,7 @@ class EntityColumnModel(QAbstractTableModel):
         if position < 0 or position > len(self._data):
             return False
         self.beginRemoveRows(parent,position,position + rows - 1)
-        for i in range(count):            
+        for i in range(rows):
             del self._data[position]
         self.endRemoveRows()
         return True
