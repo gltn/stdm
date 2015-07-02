@@ -35,7 +35,6 @@ from PyQt4.QtCore import SIGNAL
 
 from qgis.core import *
 
-from stdm import resources_rc
 from stdm.utils import *
 
 EDIT_ICON = QIcon(":/plugins/stdm/images/icons/edit.png")

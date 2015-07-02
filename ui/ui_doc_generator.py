@@ -126,4 +126,3 @@ class Ui_DocumentGeneratorDialog(object):
         self.chk_template_datasource.setText(_translate("DocumentGeneratorDialog", "Use matching records in data source defined in document template", None))
 
 from customcontrols import ModelAtrributesView
-import resources_rc

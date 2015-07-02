@@ -399,7 +399,7 @@
        <item row="2" column="1" colspan="2">
         <widget class="QWidget" name="widget" native="true">
          <layout class="QGridLayout" name="gridLayout_24">
-          <item row="1" column="5">
+          <item row="1" column="0">
            <widget class="QPushButton" name="btnNewP">
             <property name="minimumSize">
              <size>
@@ -422,7 +422,7 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="1" column="5">
            <widget class="QPushButton" name="btnPDelete">
             <property name="minimumSize">
              <size>
@@ -445,7 +445,7 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="1" colspan="5">
+          <item row="0" column="0" colspan="2">
            <widget class="QLabel" name="lblDescprition">
             <property name="styleSheet">
              <string notr="true">color: rgb(0, 85, 0);</string>
@@ -1052,6 +1052,12 @@
        <layout class="QGridLayout" name="gridLayout_23">
         <item row="0" column="0">
          <widget class="QGroupBox" name="groupBox">
+          <property name="minimumSize">
+           <size>
+            <width>300</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="maximumSize">
            <size>
             <width>200</width>
@@ -1059,7 +1065,7 @@
            </size>
           </property>
           <property name="title">
-           <string>Select Party Tables</string>
+           <string>Select tables participating in social Tenure Relation (STR)</string>
           </property>
           <property name="flat">
            <bool>true</bool>
@@ -1069,7 +1075,7 @@
             <widget class="QListView" name="lstParty">
              <property name="minimumSize">
               <size>
-               <width>0</width>
+               <width>300</width>
                <height>0</height>
               </size>
              </property>
@@ -1087,7 +1093,7 @@
         <item row="0" column="1">
          <widget class="QGroupBox" name="groupBox_11">
           <property name="title">
-           <string>List of column(s) from party(ies) participating in STR</string>
+           <string>List of column(s) from selected tables participating in STR</string>
           </property>
           <property name="flat">
            <bool>true</bool>
@@ -1097,54 +1103,11 @@
             <widget class="QListView" name="lstTableCol">
              <property name="minimumSize">
               <size>
-               <width>300</width>
+               <width>200</width>
                <height>0</height>
               </size>
              </property>
             </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QGroupBox" name="groupBox_3">
-          <property name="maximumSize">
-           <size>
-            <width>200</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="title">
-           <string>Select Spatial Unit tables</string>
-          </property>
-          <property name="flat">
-           <bool>true</bool>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_18">
-           <item row="0" column="0">
-            <widget class="QListView" name="lstSpatial_unit">
-             <property name="maximumSize">
-              <size>
-               <width>200</width>
-               <height>16777215</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QGroupBox" name="groupBox_20">
-          <property name="title">
-           <string>List of  column from spatial unit table(s) participating in STR </string>
-          </property>
-          <property name="flat">
-           <bool>true</bool>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_32">
-           <item row="0" column="0">
-            <widget class="QListView" name="lstSpUnit"/>
            </item>
           </layout>
          </widget>

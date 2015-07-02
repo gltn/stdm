@@ -1,7 +1,9 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import (geometryType, STDMDb)
+from stdm.data import (geometryType,
+                        vector_layer,
+                       STDMDb)
 
 from ui_gpx_add_attribute_info import Ui_Dialog
 
@@ -25,10 +27,11 @@ class _ReflectedModel(object):
 
 class GPXAttributeInfoDialog(QDialog, Ui_Dialog):
 
-    def __init__(self, iface, non_spatial_columns, sp_table, sp_table_colmn, geom_column_value):
+    def __init__(self, iface, curr_layer, non_spatial_columns, sp_table, sp_table_colmn, geom_column_value):
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
         self.iface = iface
+        self.curr_layer = curr_layer
         self._dbSession = STDMDb.instance().session
         self.non_sp_colmns = non_spatial_columns
         self.sp_table = sp_table
@@ -151,6 +154,10 @@ class GPXAttributeInfoDialog(QDialog, Ui_Dialog):
 
         self._insert_row(self.attribute_dict)
 
-        self.close()
+        self.curr_layer = vector_layer(self.sp_table, geom_column=self.sp_table_colmn)
+
+        self.iface.mapCanvas().setExtent(self.curr_layer.extent())
 
         self.iface.mapCanvas().refresh()
+
+        self.close()

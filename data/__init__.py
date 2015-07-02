@@ -79,6 +79,7 @@ from .xmlconfig_reader import (
     contentGroup,
     table_column_exist,
     check_if_display_name_exits,
+    social_tenure_tables,
     get_xml_display_name
 )
 
@@ -101,7 +102,8 @@ from .xmlconfig_writer import(
     writeGeomConstraint,
     edit_geom_column,
     write_display_name,
-    write_changed_display_name
+    write_changed_display_name,
+    set_str_tables
 )
 
 from .configfile_paths import FilePaths

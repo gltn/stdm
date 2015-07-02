@@ -33,8 +33,8 @@ try:
     #doc = xmlobject.XMLFile()
     xml_doc = xmlobject.setUserXMLFile()
     html_doc = xmlobject.HtmlFile()
-except:
-    pass
+except Exception as ex:
+    raise ex.message
 
 def parseRootElement():
     if not xml_doc:
@@ -118,6 +118,18 @@ def tableColumns(profile,tableName):
                     ordDict["Lookup"] = bool
                 tableData.append(ordDict)                          
     return tableData
+
+def social_tenure_tables(profile):
+    """
+    Method to read tables that are part of STR definition
+    """
+    tree,root = parseRootElement()
+    str_table = []
+    filter = (".//*[@name='%s']/table")%profile
+    for elem in root.findall(filter):
+        if elem.get('is_str_table')== 'yes':
+            str_table.append(elem.get('name'))
+    return str_table
 
 def tableLookUpCollection():
     tree, root = parseRootElement()
