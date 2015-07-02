@@ -113,7 +113,7 @@ class ViewSTRWidget(QWidget, Ui_frmViewSTR):
         personCfg.Title = str(QApplication.translate("ViewSTR", "Person"))
         personCfg.filterColumns["family_name"] = str(QApplication.translate("ViewSTR", "First Name"))
         personCfg.filterColumns["other_names"] = str(QApplication.translate("ViewSTR", "Last Name"))
-        personCfg.filterColumns["unique_id"] = str(QApplication.translate("ViewSTR", "Identification Number"))
+        personCfg.filterColumns["identification"] = str(QApplication.translate("ViewSTR", "Identification Number"))
         Person=self.mapping.tableMapping('party')
         personCfg.STRModel = Person
         personWidget = self.setEntityConfigWidget(personCfg)
@@ -122,8 +122,8 @@ class ViewSTRWidget(QWidget, Ui_frmViewSTR):
         
         #Property configuration
         propertyCfg = EntityConfiguration()
-        propertyCfg.Title = str(QApplication.translate("ViewSTR", "Property"))
-        propertyCfg.filterColumns["PropertyID"] = str(QApplication.translate("ViewSTR", "Property Identifier"))
+        propertyCfg.Title = str(QApplication.translate("ViewSTR", "Spatial Unit"))
+        propertyCfg.filterColumns["code"] = str(QApplication.translate("ViewSTR", "Spatial Unit Code"))
         
         
         Property=self.mapping.tableMapping('spatial_unit')

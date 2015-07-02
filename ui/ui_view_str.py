@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_view_str.ui'
 #
-# Created: Wed Nov 20 11:58:56 2013
-#      by: PyQt4 UI code generator 4.10.3
+# Created: Thu Jul 02 09:56:40 2015
+#      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -123,9 +123,10 @@ class Ui_frmViewSTR(object):
         self.groupBox.setTitle(_translate("frmViewSTR", "Search By:", None))
         self.btnSearch.setText(_translate("frmViewSTR", "Search", None))
         self.btnClearSearch.setText(_translate("frmViewSTR", "Clear Results", None))
-        self.groupBox_3.setTitle(_translate("frmViewSTR", "Property Preview:", None))
+        self.groupBox_3.setTitle(_translate("frmViewSTR", "Spatial unit Preview:", None))
         self.groupBox_2.setTitle(_translate("frmViewSTR", "Search Results:", None))
         self.label_4.setText(_translate("frmViewSTR", "Right click on an item for more details", None))
         self.groupBox_4.setTitle(_translate("frmViewSTR", "Supporting Documents:", None))
 
 from propertyPreview import PropertyPreviewWidget
+import resources_rc
