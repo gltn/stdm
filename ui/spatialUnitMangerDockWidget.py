@@ -58,6 +58,7 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         self.gps_tool_dialog = None
         self.curr_lyr_table = None
         self.curr_lyr_sp_col = None
+        self.curr_layer = None
 
     def _populate_layers(self):
         self.stdm_layers_combo.clear()
@@ -67,6 +68,8 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         for spt in spatial_tables():
             sp_columns = table_column_names(spt,True)
             self._stdm_tables[spt]=sp_columns
+
+            # QMessageBox.information(None,"Title",str(sp_columns))
 
             # Add spatial columns to combo box
             for sp_col in sp_columns:
@@ -110,10 +113,10 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         self.curr_lyr_table = table_name
         self.curr_lyr_sp_col = spatial_column
 
-        curr_layer = vector_layer(table_name, geom_column=spatial_column)
+        self.curr_layer = vector_layer(table_name, geom_column=spatial_column)
 
-        if curr_layer.isValid():
-            QgsMapLayerRegistry.instance().addMapLayer(curr_layer)
+        if self.curr_layer.isValid():
+            QgsMapLayerRegistry.instance().addMapLayer(self.curr_layer)
 
             # Append column name to spatial table
             _current_display_name = str(table_name) + "." + str(spatial_column)
@@ -121,12 +124,12 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
             # Get configuration file display name if it exists
             if check_if_display_name_exits(_current_display_name):
                 xml_display_name = get_xml_display_name(_current_display_name)
-                curr_layer.setLayerName(xml_display_name)
+                self.curr_layer.setLayerName(xml_display_name)
 
             # Write initial display name as original name of the layer
             elif not check_if_display_name_exits(_current_display_name):
                 write_display_name(_current_display_name, _current_display_name)
-                curr_layer.setLayerName(_current_display_name)
+                self.curr_layer.setLayerName(_current_display_name)
 
     @pyqtSignature("")
     def on_set_display_name_button_clicked(self):
@@ -156,5 +159,5 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         if not bool(layer_map):
             QMessageBox.warning(None,"STDM","You must add a layer first, from Spatial Unit Manager to import GPX to")
         elif bool(layer_map):
-            self.gps_tool_dialog = GPSToolDialog(self.iface, self.curr_lyr_table, self.curr_lyr_sp_col)
+            self.gps_tool_dialog = GPSToolDialog(self.iface, self.curr_layer, self.curr_lyr_table, self.curr_lyr_sp_col)
             self.gps_tool_dialog.show()
