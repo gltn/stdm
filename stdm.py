@@ -108,7 +108,7 @@ class STDMQGISLoader(object):
                                    self.iface.mainWindow(),
                                    "CAA4F0D9-727F-4745-A1FC-C2173101F711")
         self.loginAct.setShortcut(QKeySequence(Qt.Key_F2))
-        self.aboutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/information.png"),
+        self.aboutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/info.png"),
         QApplication.translate("AboutToolbarAction","About"), self.iface.mainWindow(),
         "137FFB1B-90CD-4A6D-B49E-0E99CD46F784")
         #Define actions that are available to all logged in users
@@ -145,7 +145,7 @@ class STDMQGISLoader(object):
         currAction=actions[len(actions)-1]
         #add actions to the menu bar
         self.menu_bar.insertMenu(currAction, self.stdmMenu)
-        self.stdmMenu.setToolTip(QApplication.translate("STDMQGISLoader","STDM plugin menu"))
+        self.stdmMenu.setToolTip(QApplication.translate("STDMQGISLoader","STDM plugin"))
 
 
     def getThemeIcon(self, theName):
@@ -497,6 +497,8 @@ class STDMQGISLoader(object):
         self.rptBuilderCntGroup.addContentItem(rptBuilderCnt)
         self.rptBuilderCntGroup.register()
 
+        self.toolbarLoader.addContent(self.wzdConfigCntGroup)
+        self.menubarLoader.addContent(self.wzdConfigCntGroup)
 
         self.toolbarLoader.addContent(self.contentAuthCntGroup, [adminMenu, adminBtn])
         self.toolbarLoader.addContent(self.userRoleCntGroup, [adminMenu, adminBtn])
@@ -507,8 +509,7 @@ class STDMQGISLoader(object):
         self.toolbarLoader.addContents(self.moduleContentGroups, [contentMenu, contentBtn])
         #self.menubarLoader.addContent(tbSeparator)
 
-        self.toolbarLoader.addContent(self.wzdConfigCntGroup)
-        self.menubarLoader.addContent(self.wzdConfigCntGroup)
+
         self.menubarLoader.addContent(tbSeparator)
 
         self.toolbarLoader.addContent(self.adminUnitsCntGroup)
@@ -537,8 +538,8 @@ class STDMQGISLoader(object):
         self.toolbarLoader.addContent(self.STRCntGroup)
         self.menubarLoader.addContent(self.STRCntGroup)
 
-        self.toolbarLoader.addContent(self.surveyCntGroup)
-        self.menubarLoader.addContent(self.surveyCntGroup)
+        #self.toolbarLoader.addContent(self.surveyCntGroup)
+       # self.menubarLoader.addContent(self.surveyCntGroup)
         
         self.toolbarLoader.addContent(self.STRCntGroup)
         self.menubarLoader.addContent(self.spatialEditingCntGroup)

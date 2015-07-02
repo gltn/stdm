@@ -1,8 +1,22 @@
-'''
-Created on Mar 28, 2014
+"""
+/***************************************************************************
+Name                 : CheckableList Model, ListViewModel
+Description          : subclassing of pyqt list and table model to support config table model in widget view items
+Date                 : 24/September/2013
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+ ***************************************************************************/
 
-@author: njogus
-'''
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+"""
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from stdm.settings import tableIcon
@@ -187,7 +201,7 @@ class EntityColumnModel(QAbstractTableModel):
         if position < 0 or position > len(self._data):
             return False
         self.beginRemoveRows(parent,position,position + rows - 1)
-        for i in range(count):            
+        for i in range(rows):
             del self._data[position]
         self.endRemoveRows()
         return True
