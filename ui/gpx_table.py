@@ -44,6 +44,7 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
         self.gpx_add_attribute_info = None
         self.label = None
         self.vl = None
+        self.temp_layer_type = None
 
     def populate_qtable_widget(self):
         check_box_state = Qt.Checked
@@ -58,21 +59,23 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
                                                      # "Lat-Offset",
                                                      # "Long-offset"
                                                      ])
-        self.table_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
         # self.table_widget.setFocusPolicy(Qt.NoFocus)
+        # self.table_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # self.table_widget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         row_counter = 0
         layer_list = []
 
         if self.active_layer_geometry_typ == 0:
-            temp_layer_type = "Point"
+            self.temp_layer_type = "Point"
         elif self.active_layer_geometry_typ == 1:
-            temp_layer_type = "LineString"
+            self.temp_layer_type = "LineString"
         elif self.active_layer_geometry_typ == 2:
-            temp_layer_type = "Polygon"
+            self.temp_layer_type = "Polygon"
 
         # create memory layer
-        self.vl = QgsVectorLayer("%s?crs=epsg:4326&field=id:integer&index=yes".format(temp_layer_type),
+        self.vl = QgsVectorLayer("{0}?crs=epsg:4326&field=id:integer&index=yes".format(self.temp_layer_type),
                             "tmp_layer",
                             "memory")
         pr = self.vl.dataProvider()
@@ -86,7 +89,7 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
             item_lon = QTableWidgetItem(str(lon))
             self.label = QTableWidgetItem(row.GetFieldAsString(4))
 
-            gpx_layer_point = QgsPoint(lat, lon)
+            gpx_layer_point = QgsPoint(lon, lat)
 
             layer_list.append(gpx_layer_point)
 
@@ -151,7 +154,9 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
             elif self.active_layer_geometry_typ == 2:
                 check_box_state = Qt.Checked
 
-
+        # QMessageBox.information(None, "STDM", "{0} {1} {2}".format(layer_list,
+        #                                                    self.active_layer_geometry_typ,
+        #                                                    self.temp_layer_type))
 
         if self.active_layer_geometry_typ == 0:
             for feat in layer_list:
@@ -174,13 +179,15 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
 
         # Align table widget content to fit to header size
         self.table_widget.resizeColumnsToContents()
+        # self.table_widget.resizeRowsToContents()
+        self.table_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         # Enable selection if entire row
         self.table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)
 
         #
         # self.table_widget.setFixedSize(self.table_widget.horizontalHeader().length() + 60, )
-        self.table_widget.setMaximumWidth(self.table_widget.horizontalHeader().length() + 60)
+        # self.table_widget.setMaximumWidth(self.table_widget.horizontalHeader().length() + 60)
 
         # Update Extent to new QgsVertext position
         x_min, x_max, y_min, y_max = self.layer_gpx.GetExtent()
