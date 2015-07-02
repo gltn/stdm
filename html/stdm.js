@@ -38,11 +38,10 @@ function init() {
     map.addLayers([gsat, osm, spatialUnitLayer]);
 
     //TODO: Remove hardcode of map center
-
-    map.setCenter(new OpenLayers.LonLat(-74.184392,4.564353).transform(
+    map.setCenter(new OpenLayers.LonLat(17.241780, 1.280465).transform(
                         new OpenLayers.Projection("EPSG:4326"),
                         map.getProjectionObject()
-                    ), 5);
+                    ), 2);
 
 }
 
