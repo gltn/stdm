@@ -230,8 +230,10 @@ class STDMQGISLoader(object):
                 return
 
             #Load logout and change password actions
-            self.stdmInitToolbar.insertAction(self.loginAct,self.logoutAct)
-            self.stdmInitToolbar.insertAction(self.loginAct,self.changePasswordAct)
+            self.stdmInitToolbar.insertAction(self.loginAct,
+                                              self.logoutAct)
+            self.stdmInitToolbar.insertAction(self.loginAct,
+                                              self.changePasswordAct)
 
             self.stdmMenu.insertAction(self.loginAct,self.logoutAct)
             self.stdmMenu.insertAction(self.loginAct,self.changePasswordAct)
@@ -360,7 +362,8 @@ class STDMQGISLoader(object):
         QApplication.translate("NewSTRToolbarAction","New Social Tenure Relationship"), self.iface.mainWindow())
 
         self.viewSTRAct = QAction(QIcon(":/plugins/stdm/images/icons/view_str.png"), \
-        QApplication.translate("ViewSTRToolbarAction","View Social Tenure Relationship"), self.iface.mainWindow())
+        QApplication.translate("ViewSTRToolbarAction","View Social Tenure Relationship"),
+        self.iface.mainWindow())
 
         self.wzdAct = QAction(QIcon(":/plugins/stdm/images/icons/browse_all.png"),\
                     QApplication.translate("WorkspaceConfig","Design Forms"), self.iface.mainWindow())
@@ -386,10 +389,8 @@ class STDMQGISLoader(object):
         contentMenu.triggered.connect(self.widgetLoader)
         self.wzdAct.triggered.connect(self.workspaceLoader)
 
-
-        QObject.connect(self.newSTRAct, SIGNAL("triggered()"), self.newSTR)
-        QObject.connect(self.viewSTRAct, SIGNAL("triggered()"), self.onViewSTR)
-
+        self.newSTRAct.triggered.connect(self.newSTR)
+        self.viewSTRAct.triggered.connect(self.onViewSTR)
 
         #Create content items
         contentAuthCnt = ContentGroup.contentItemFromQAction(self.contentAuthAct)
@@ -507,11 +508,18 @@ class STDMQGISLoader(object):
         self.wzdConfigCntGroup.addContentItem(wzdConfigCnt)
         self.wzdConfigCntGroup.register()
 
-        self.STRCntGroup = ContentGroup(username, self.viewSTRAct)
-        self.STRCntGroup.addContentItem(strViewCnt)
+        self.STRCntGroup = TableContentGroup(username,
+                                             self.viewSTRAct.text(),
+                                             self.viewSTRAct)
+        self.STRCntGroup.createContentItem().code = "71EC2ED8-5D7F-4A27-8514-CFFE94E1294F"
+        self.STRCntGroup.readContentItem().code = "ED607F24-11A2-427C-B395-2E2A3EBA4EBD"
+        self.STRCntGroup.updateContentItem().code = "5D45A49D-F640-4A48-94D9-A10F502655F5"
+        self.STRCntGroup.deleteContentItem().code = "15E27A59-28F7-42B4-858F-C070E2C3AE10"
         self.STRCntGroup.register()
 
-        self.surveyCntGroup = TableContentGroup(username, self.surveyAct.text(), self.surveyAct)
+        self.surveyCntGroup = TableContentGroup(username,
+                                                self.surveyAct.text(),
+                                                self.surveyAct)
         self.surveyCntGroup.createContentItem().code = "A7783C39-1A5B-4F79-81C2-639C2EA3E8A3"
         self.surveyCntGroup.readContentItem().code = "CADFC838-DA3C-44C5-A6A8-3B2FC4CA8464"
         self.surveyCntGroup.updateContentItem().code = "B42AC2C5-7CF5-48E6-A37F-EAE818FBC9BC"
@@ -747,7 +755,7 @@ class STDMQGISLoader(object):
         if currLayer == None:
             return
 
-        if not isinstance(currLayer,QgsVectorLayer):
+        if not isinstance(currLayer, QgsVectorLayer):
             return
 
         #Assert if layer is from the SDTM database
@@ -982,7 +990,7 @@ class STDMQGISLoader(object):
         Slot for showing widget that enables users to browse 
         existing STRs.
         '''
-        if self.viewSTRWin == None:
+        if self.viewSTRWin is None:
             self.viewSTRWin = ViewSTRWidget(self)
             self.viewSTRWin.show()
         else:

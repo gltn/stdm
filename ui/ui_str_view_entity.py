@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_str_view_entity.ui'
 #
-# Created: Fri Nov 01 11:30:10 2013
+# Created: Fri Oct 17 08:54:19 2014
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -51,26 +51,6 @@ class Ui_frmSTRViewEntity(object):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/filter.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.tbSTRViewEntity.addTab(self.filter, icon, _fromUtf8(""))
-        self.browse = QtGui.QWidget()
-        self.browse.setObjectName(_fromUtf8("browse"))
-        self.verticalLayout_2 = QtGui.QVBoxLayout(self.browse)
-        self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
-        self.lblBrowseDescription = QtGui.QLabel(self.browse)
-        self.lblBrowseDescription.setText(_fromUtf8(""))
-        self.lblBrowseDescription.setAlignment(QtCore.Qt.AlignCenter)
-        self.lblBrowseDescription.setWordWrap(True)
-        self.lblBrowseDescription.setObjectName(_fromUtf8("lblBrowseDescription"))
-        self.verticalLayout_2.addWidget(self.lblBrowseDescription)
-        self.btnBrowse = QtGui.QPushButton(self.browse)
-        self.btnBrowse.setMinimumSize(QtCore.QSize(0, 30))
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/load.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.btnBrowse.setIcon(icon1)
-        self.btnBrowse.setObjectName(_fromUtf8("btnBrowse"))
-        self.verticalLayout_2.addWidget(self.btnBrowse)
-        icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/browse_all.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.tbSTRViewEntity.addTab(self.browse, icon2, _fromUtf8(""))
         self.gridLayout.addWidget(self.tbSTRViewEntity, 0, 0, 1, 1)
 
         self.retranslateUi(frmSTRViewEntity)
@@ -82,7 +62,5 @@ class Ui_frmSTRViewEntity(object):
         self.label.setText(_translate("frmSTRViewEntity", "in column", None))
         self.txtFilterPattern.setPlaceholderText(_translate("frmSTRViewEntity", "Look for", None))
         self.tbSTRViewEntity.setTabText(self.tbSTRViewEntity.indexOf(self.filter), _translate("frmSTRViewEntity", "Filter", None))
-        self.btnBrowse.setText(_translate("frmSTRViewEntity", "Load", None))
-        self.tbSTRViewEntity.setTabText(self.tbSTRViewEntity.indexOf(self.browse), _translate("frmSTRViewEntity", "Browse", None))
 
-from stdm import resources_rc
+import resources_rc

@@ -33,6 +33,7 @@ from .pg_utils import (
     columns_by_type,
     delete_table_data,
     delete_table_keys,
+    foreign_key_parent_tables,
     flush_session_activity,
     geometryType,
     non_spatial_table_columns,
