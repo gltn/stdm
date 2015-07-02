@@ -72,7 +72,7 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
             temp_layer_type = "Polygon"
 
         # create memory layer
-        self.vl = QgsVectorLayer("Point?crs=epsg:4326&field=id:integer&index=yes",
+        self.vl = QgsVectorLayer("%s?crs=epsg:4326&field=id:integer&index=yes".format(temp_layer_type),
                             "tmp_layer",
                             "memory")
         pr = self.vl.dataProvider()
@@ -86,7 +86,9 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
             item_lon = QTableWidgetItem(str(lon))
             self.label = QTableWidgetItem(row.GetFieldAsString(4))
 
-            layer_list.append(QgsPoint(lat, lon))
+            gpx_layer_point = QgsPoint(lat, lon)
+
+            layer_list.append(gpx_layer_point)
 
             # Center checkbox item
             # chk_bx_widget = QWidget()
@@ -149,20 +151,19 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
             elif self.active_layer_geometry_typ == 2:
                 check_box_state = Qt.Checked
 
-        if self.active_layer == 0:
+
+
+        if self.active_layer_geometry_typ == 0:
             for feat in layer_list:
-                fet.setAttributes(0)
                 fet.setGeometry(QgsGeometry.fromPoint(feat))
                 pr.addFeatures([fet])
 
-        elif self.active_layer == 1:
-            fet.setAttributes(0)
+        elif self.active_layer_geometry_typ == 1:
             fet.setGeometry(QgsGeometry.fromPolyline(layer_list))
             pr.addFeatures([fet])
 
-        elif self.active_layer == 2:
+        elif self.active_layer_geometry_typ == 2:
             layer_list.append(layer_list[0])
-            fet.setAttributes(0)
             fet.setGeometry(QgsGeometry.fromPolygon([layer_list]))
             pr.addFeatures([fet])
 
@@ -399,9 +400,9 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
         # self.active_layer.setEditForm()
 
     def closeEvent(self, QCloseEvent):
-        # id = self.vl.id()
+        id = self.vl.id()
         for key, vertex in self.vertex_dict.iteritems():
             self.map_canvas.scene().removeItem(vertex[0])
-        # QgsMapLayerRegistry.instance().removeMapLayer(id)
+        QgsMapLayerRegistry.instance().removeMapLayer(id)
         self.map_canvas.refresh()
         self.close()
