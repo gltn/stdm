@@ -26,10 +26,10 @@
 		<table fullname="spatial unit or a group of spatial unit" is_str_table="yes" name="spatial_unit">
 			<columns>
 				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
-				<column fullname="unique identifier" name="spatial_unit_id" null="yes" oldname="spatial_unit_id" searchable="yes" size="25" type="character varying" />
+				<column fullname="unique identifier" name="code" null="yes" oldname="spatial_unit_id" searchable="yes" size="25" type="character varying" />
 				<column fullname="Friendly name of the unit" name="name" null="yes" oldname="name" searchable="yes" size="25" type="character varying" />
 				<column fullname="type of the unit" lookup="check_type" name="type" null="yes" oldname="type" searchable="yes" size="25" type="character varying" />
-				<column fullname="Use" name="sp_unit_use" null="yes" oldname="sp_unit_use" size="50" type="character varying" />
+				<column fullname="Use" name="sp_unit_use" null="yes" oldname="sp_unit_use" searchable="yes" size="50" type="character varying" />
 			</columns>
 			<relations>
 			</relations>
@@ -47,7 +47,7 @@
 				<geometry arguments="2" column="geom_polygon" srid="4326" table="spatial_unit" type="POLYGON" />
 			</geometryz>
 		</table>
-		<table fullname="Prove of evidence to the defined tenure" is_str_table="no" name="supporting_document">
+		<table fullname="Prove of evidence to the defined tenure" is_str_table="yes" name="supporting_document">
 			<columns>
 				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
 				<column fullname="" lookup="check_document_type" name="document_type" null="yes" oldname="document_type" size="25" type="character varying" />
@@ -172,7 +172,7 @@
 				<value>5000</value>
 			</data>
 		</lookup>
-		<table fullname="Table for household details" is_str_table="no" name="household">
+		<table fullname="Table for household details" is_str_table="yes" name="household">
 			<columns>
 				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
 				<column fullname="" name="total_persons" null="yes" size="" type="integer" />

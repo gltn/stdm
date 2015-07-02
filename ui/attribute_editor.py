@@ -130,6 +130,16 @@ class AttributeEditor(QDialog,Ui_editor):
             self.txtAttrib.setEnabled(True)
             self.txtAttrib.setPlaceholderText(QApplication.translate("AttributeEditor",'Enter attribute length'))
         self.geometryTypeSelected()
+        self.enable_searchable_column()
+
+    def enable_searchable_column(self):
+        searchable =['character varying','integer']
+        col_type = UserData(self.cboDatatype)
+        if col_type not in searchable:
+            self.cboSearchable.setCurrentIndex(1)
+        else:
+            self.cboSearchable.setCurrentIndex(0)
+
         
     def writeAttributeData(self):
         #Flush the new attribute data to the xml file
