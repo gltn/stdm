@@ -445,9 +445,9 @@ class PersonTableModel(QAbstractTableModel):
         return True
     
 class BaseSTDMTableModel(QAbstractTableModel):
-    '''
+    """
     Generic table model for use in STDM table views.
-    '''
+    """
     def __init__(self,initdata,headerdata,parent = None):
         QAbstractTableModel.__init__(self,parent)
         self._initData = initdata
@@ -475,16 +475,7 @@ class BaseSTDMTableModel(QAbstractTableModel):
     
         else:            
             return None
-        
-        '''
-        elif role == Qt.BackgroundRole:
-            if index.row() % 2 == 0:
-                #Orange
-                return ALT_COLOR_EVEN
-            else:
-                #Blue
-                return ALT_COLOR_ODD
-        '''
+
     def headerData(self,col,orientation,role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self._headerdata[col]
@@ -535,56 +526,56 @@ class BaseSTDMTableModel(QAbstractTableModel):
         return True
        
 class STRTreeViewModel(QAbstractItemModel):
-    '''
+    """
     Model for rendering social tenure relationship nodes in a tree view.
-    '''
+    """
     def __init__(self,root,parent=None,view = None):
         QAbstractItemModel.__init__(self,parent)
         self._rootNode = root
         self._view = view
-        
+
     def rowCount(self,parent):
         if not parent.isValid():
             parentNode = self._rootNode
         else:
             parentNode = parent.internalPointer()
-            
+
         return parentNode.childCount()
-    
+
     def columnCount(self,parent=QModelIndex()):
         return self._rootNode.columnCount()
-    
+
     def _getNode(self,index):
-        '''
+        """
         Convenience method for extracting STRNodes from the model index.
-        '''
+        """
         if index.isValid():
             node = index.internalPointer()
             if node:
                 return node
-            
+
         return self._rootNode
-    
+
     def data(self,index,role):
-        '''
+        """
         Data to be displayed in the tree view.
-        '''
+        """
         if not index.isValid():
             return None
-        
+
         node = self._getNode(index)
-        
+
         if role == Qt.DisplayRole or role == Qt.EditRole:
             if index.column() >= node.columnCount():
                 return None
-            
+
             return node.data(index.column())
-        
+
         elif role == Qt.DecorationRole:
             if index.column() == 0:
-                if node.icon() is not None:
+                if not node.icon() is None and node.depth() > 1:
                     return node.icon()
-                
+
         elif role == Qt.FontRole:
             if index.column() == 0:
                 if node.styleIfChild():
@@ -592,35 +583,35 @@ class STRTreeViewModel(QAbstractItemModel):
                         currFont = self._view.font()
                         currFont.setBold(True)
                         return currFont
-                    
+
         elif role == Qt.ToolTipRole:
             if index.column() >= node.columnCount():
                 return None
-            
+
             return node.data(index.column())
-        
+
         else:
             return None
-    
+
     def headerData(self,section,orientation,role):
-        '''
+        """
         Set the column headers to be displayed by the tree view.
-        '''
+        """
         if self._rootNode.columnCount() == 0:
             return
-        
+
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self._rootNode.data(section)
-            
+
         return None
-    
+
     def flags(self,index):
         return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable
-    
+
     def parent(self,index):
-        '''
+        """
         Returns a QModelIndex reference of the parent node.
-        '''       
+        """
         if not index.isValid():
             return QModelIndex() 
         

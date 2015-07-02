@@ -11,8 +11,7 @@ from .valuehandlers import (
                 ForeignKeyMapperValueHandler,
                 SpinBoxValueHandler,
                 DoubleSpinBoxValueHandler,
-                CoordinatesWidgetValueHandler,
-                SearchWidgetValueHandler
+                CoordinatesWidgetValueHandler
 )
 from .datamanagemixin import SupportsManageMixin
 

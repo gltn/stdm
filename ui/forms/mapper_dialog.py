@@ -1,10 +1,11 @@
 """
 /***************************************************************************
-Name                 : Mapper Dialog
+name                 : Mapper Dialog
 Description          : classes for generating form controls at run time from the passed model attributes
 Date                 : 30/June/2014
-copyright            : (C) 2014 by Solomon Njogu
-email                : njoroge.solomon.@yahoo.com
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************

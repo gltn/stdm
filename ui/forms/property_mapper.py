@@ -2,9 +2,10 @@
 /***************************************************************************
 Name                 : Generic application for forms
 Description          : forms generator functions
-Date                 : 30/June/2013 
-copyright            : (C) 2013 by Solomon Njogu
-email                : njoroge.solomon.com
+Date                 : 30/June/2013
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************

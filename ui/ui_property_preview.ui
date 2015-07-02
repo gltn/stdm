@@ -6,12 +6,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>627</width>
-    <height>480</height>
+    <width>545</width>
+    <height>486</height>
    </rect>
   </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>16777215</height>
+   </size>
+  </property>
   <property name="windowTitle">
-   <string>Property Preview</string>
+   <string>Spatial Preview</string>
   </property>
   <property name="tabPosition">
    <enum>QTabWidget::South</enum>
@@ -28,31 +34,8 @@
     <string>Local</string>
    </attribute>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0" colspan="2">
-     <widget class="QgsMapCanvas" name="localMap" native="true"/>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label">
-      <property name="maximumSize">
-       <size>
-        <width>120</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>Map Reference</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QComboBox" name="cboMapReference">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>30</height>
-       </size>
-      </property>
-     </widget>
+    <item row="0" column="0">
+     <widget class="MirrorMap" name="local_map" native="true"/>
     </item>
    </layout>
   </widget>
@@ -64,21 +47,163 @@
    <attribute name="title">
     <string>Web</string>
    </attribute>
-   <widget class="QWebView" name="webView">
-    <property name="geometry">
-     <rect>
-      <x>19</x>
-      <y>19</y>
-      <width>561</width>
-      <height>401</height>
-     </rect>
-    </property>
-    <property name="url">
-     <url>
-      <string>about:blank</string>
-     </url>
-    </property>
-   </widget>
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="4" column="2">
+     <widget class="QPushButton" name="btnSync">
+      <property name="toolTip">
+       <string>Sync extents of web view with local view</string>
+      </property>
+      <property name="text">
+       <string>Sync</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="2">
+     <widget class="QPushButton" name="btnResetMap">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Zoom to spatial unit extents</string>
+      </property>
+      <property name="text">
+       <string>Reset Map</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" colspan="3">
+     <widget class="QLabel" name="lblInfo">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0" colspan="3">
+     <widget class="QGroupBox" name="groupBox">
+      <property name="title">
+       <string/>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <property name="margin">
+        <number>1</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QWebView" name="spatial_web_view">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="url">
+          <url>
+           <string>about:blank</string>
+          </url>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="3" column="1" rowspan="2">
+     <widget class="QFrame" name="frame">
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="margin">
+        <number>1</number>
+       </property>
+       <item>
+        <widget class="QSlider" name="zoomSlider">
+         <property name="minimum">
+          <number>2</number>
+         </property>
+         <property name="maximum">
+          <number>20</number>
+         </property>
+         <property name="value">
+          <number>12</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="tickPosition">
+          <enum>QSlider::TicksBelow</enum>
+         </property>
+         <property name="tickInterval">
+          <number>2</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Zoom level</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="3" column="0" rowspan="2">
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>50</height>
+       </size>
+      </property>
+      <property name="title">
+       <string>Choose Base Layer</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_5">
+       <property name="horizontalSpacing">
+        <number>20</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QRadioButton" name="rbGMaps">
+         <property name="text">
+          <string>Google Maps</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QRadioButton" name="rbOSM">
+         <property name="text">
+          <string>Open Street Maps</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="3">
+     <widget class="QLabel" name="label_2">
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 0, 0);</string>
+      </property>
+      <property name="text">
+       <string>Web overlay may vary from actual representation in the local map.</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <customwidgets>
@@ -88,9 +213,9 @@
    <header>QtWebKit/QWebView</header>
   </customwidget>
   <customwidget>
-   <class>QgsMapCanvas</class>
+   <class>MirrorMap</class>
    <extends>QWidget</extends>
-   <header>qgis.gui</header>
+   <header>mirror_map</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
