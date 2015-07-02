@@ -35,9 +35,10 @@ class CheckableListModel(QStandardItemModel):
             checkableItems.append(item)
         self.appendColumn(checkableItems)
 
-
-
 class listEntityViewer(QAbstractListModel):
+    """
+    Class implementation of list model properties from a python list type
+    """
     def __init__(self, list=[], icon =None, parent=None):
         QAbstractListModel.__init__(self,parent)
         self.__list = list
@@ -115,6 +116,9 @@ class listEntityViewer(QAbstractListModel):
         
 
 class EntityColumnModel(QAbstractTableModel):
+    """
+    Class implementation of table model for representating table columns
+    """
     def __init__(self, header,data, parent=None):
         QAbstractTableModel.__init__(self,parent)
         self._data=data

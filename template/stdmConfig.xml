@@ -9,7 +9,7 @@
 				<column fullname="address id" name="address" null="yes" size="25" type="character varying" />
 				<column fullname="identity" name="identification" null="yes" oldname="identification" searchable="yes" size="" type="integer" />
 				<column fullname="mobile" name="contact_telephone" null="yes" size="25" type="character varying" />
-				<column fullname="date of birth" name="date_of_birth" null="yes" oldname="date_of_birth" searchable="no" size="" type="integer" />
+				<column fullname="date of birth" name="date_of_birth" null="yes" oldname="date_of_birth" searchable="no" size="" type="date" />
 				<column fullname="sex" lookup="check_gender" name="gender" null="yes" oldname="gender" searchable="no" size="25" type="character varying" />
 				<column fullname="Married or not married" lookup="check_marital_status" name="marital_status" null="yes" size="50" type="character varying" />
 				</columns>
