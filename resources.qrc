@@ -87,5 +87,6 @@
     <file>images/icons/photo_24.png</file>
     <file>images/icons/photo_64.png</file>
     <file>images/icons/photo_512.png</file>
+    <file>images/icons/layer.gif</file>
   </qresource>
 </RCC>

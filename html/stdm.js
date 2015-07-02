@@ -1,7 +1,7 @@
 /*
- * STDM OpenLayers property overlay definitions
+ * STDM OpenLayers spatial unit overlay.
 */
-var map, osm, gsat, propertyFeature, propertyLayer, propStyleMap;
+var map, osm, gsat, spatialUnitFeature, spatialUnitLayer, spUnitStyleMap;
 
 var BaseLayerCode = { "GMAPS_SATELLITE": 2010, "OSM": 2011 }
 
@@ -11,29 +11,35 @@ function init() {
         div: "map",
         controls: [
 					new OpenLayers.Control.Navigation({
-						zoomWheelEnabled: false,						
+						zoomWheelEnabled: true,
 						'defaultDblClick': function (event) { 
 							return; 
 						 }
 					}),
                     new OpenLayers.Control.Attribution()
                     ],
-        projection: new OpenLayers.Projection("EPSG:900913")
+        projection: new OpenLayers.Projection("EPSG:900913"),
+        eventListeners:{
+                "moveend": mapEvent,
+                "zoomend": mapEvent
+        }
     });
 
     osm = new OpenLayers.Layer.OSM();
 
     gsat = new OpenLayers.Layer.Google(
                 "Google Satellite",
-                { type: google.maps.MapTypeId.SATELLITE, numZoomLevels: 22 }
+                { type: google.maps.MapTypeId.SATELLITE, numZoomLevels: 24 }
             );
     
     //Contains the property features for overlaying on the basemaps
-    propertyLayer = new OpenLayers.Layer.Vector(); 
+    spatialUnitLayer = new OpenLayers.Layer.Vector();
 
-    map.addLayers([gsat, osm, propertyLayer]);
+    map.addLayers([gsat, osm, spatialUnitLayer]);
 
-    map.setCenter(new OpenLayers.LonLat(-72.3, 18.5).transform(
+    //TODO: Remove hardcode of map center
+
+    map.setCenter(new OpenLayers.LonLat(-74.184392,4.564353).transform(
                         new OpenLayers.Projection("EPSG:4326"),
                         map.getProjectionObject()
                     ), 5);
@@ -50,6 +56,14 @@ function setCenter(x, y, zoom) {
 }
 
 /*
+ * Raised on 'moveend' and 'zoomend' events.
+ */
+function mapEvent(event){
+    zoom_level = map.getZoom();
+    sp_loader.onZoomLevelChanged(zoom_level);
+}
+
+/*
  * Zoom to a specific zoom level
 */
 function zoom(level) {
@@ -61,29 +75,29 @@ function zoom(level) {
 }
 
 /*
- * Update the style of the property
+ * Update the style of the spatial unit.
 */
-function setPropertyStyle(propertyStyle){
+function setSpatialUnitStyle(spUnitStyle){
 	
-	var defaultStyle = new OpenLayers.Style(propertyStyle);
+	var defaultStyle = new OpenLayers.Style(spUnitStyle);
 	
-	propStyleMap = new OpenLayers.StyleMap({
+	spUnitStyleMap = new OpenLayers.StyleMap({
 		'default': defaultStyle
 	});   
 	
-	propertyLayer.styleMap = propStyleMap;
+	spatialUnitLayer.styleMap = spUnitStyleMap;
 	
-	propertyLayer.redraw();
+	spatialUnitLayer.redraw();
 
 }
 
 /*
-* Draw the polygon overlay of the property with an optional
-* label to use for the polygon.
+* Draw the point/line/polygon overlay of the spatial unit with an optional
+* label to use for the spatial unit.
 * 'geometry' - Represents the feature in GeoJSON format.
 * OpenLayers has an issue with raw geometry objects in GeoJSON.
 */
-function drawProperty(geometry, label) {
+function drawSpatialUnit(geometry, label) {
     
     clearOverlays();
 
@@ -93,50 +107,51 @@ function drawProperty(geometry, label) {
     var featObj = new Object();
     featObj["type"] = "Feature";
     featObj["geometry"] = geomObj;
-	
+
 	if (label){
 		featObj["properties"] = label;
-	}	
+	}
 
     var geojson_format = new OpenLayers.Format.GeoJSON();
 
-    propertyFeature = geojson_format.read(featObj);
+    spatialUnitFeature = geojson_format.read(featObj);
 
-    propertyLayer.addFeatures(propertyFeature);
+    spatialUnitLayer.addFeatures(spatialUnitFeature);
 
-    if (Array.isArray(propertyFeature)) {
-        propertyFeature = propertyFeature[0];
+    if (Array.isArray(spatialUnitFeature)) {
+        spatialUnitFeature = spatialUnitFeature[0];
     }
 
-	zoomToPropertyExtent(true);	
+	zoomToSpatialUnitExtent(true);
 	
 	return map.getZoom();
     
 }
 
 /*
- * Zooms to the extents of the last loaded property.
+ * Zooms to the extents of the last loaded spatial unit.
 */
-function zoomToPropertyExtent(doNotReturnLevel){
-	
-	var bounds = propertyFeature.geometry.getBounds();
-	bounds = bounds.scale(1.1);
-	map.zoomToExtent(bounds);
-	
-	if (typeof(doNotReturnLevel) === 'undefined'){	
-		
-		return map.getZoom();
-		
-	}
+function zoomToSpatialUnitExtent(doNotReturnLevel){
+    if (spatialUnitFeature) {
 
+        var bounds = spatialUnitFeature.geometry.getBounds();
+        bounds = bounds.scale(1.2);
+        map.zoomToExtent(bounds);
+
+        if (typeof(doNotReturnLevel) === 'undefined') {
+
+            return map.getZoom();
+
+        }
+    }
 }
 
 /*
  * Removes all overlays in the map
 */
 function clearOverlays() {
-    if (propertyLayer != null){
-        propertyLayer.removeAllFeatures();
+    if (spatialUnitLayer != null){
+        spatialUnitLayer.removeAllFeatures();
     }
 }
 
@@ -156,4 +171,14 @@ function setBaseLayer(code) {
 	
 	return map.getZoom();
 
+}
+/*
+ * Zoom the map extents to the given map bounds specified as an array.
+ */
+function zoomToExtents(extents){
+    bounds = new OpenLayers.Bounds(extents);
+    bounds.transform(new OpenLayers.Projection("EPSG:4326"),
+                        map.getProjectionObject());
+
+    map.zoomToExtent(bounds);
 }

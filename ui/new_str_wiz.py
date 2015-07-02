@@ -31,15 +31,25 @@ from ui_new_str import Ui_frmNewSTR
 from notification import NotificationBar,ERROR,INFO, WARNING
 from sourcedocument import *
 
-from stdm.data import STDMDb, Base, tableCols, UserData
-from stdm.navigation import TreeSummaryLoader, PropertyBrowser, GMAP_SATELLITE, OSM
+from stdm.data import (
+    STDMDb,
+    Base,
+    tableCols,
+    UserData
+)
+from stdm.navigation import (
+    TreeSummaryLoader,
+    WebSpatialLoader,
+    GMAP_SATELLITE,
+    OSM
+)
 from stdm.utils import *
 from .stdmdialog import  DeclareMapping
 
 class newSTRWiz(QWizard, Ui_frmNewSTR):
-    '''
-    This class handles the listing of locality information
-    '''
+    """
+    Wizard for defining new a social tenure relationship.
+    """
     def __init__(self,plugin):
         QWizard.__init__(self,plugin.iface.mainWindow())
         self.setupUi(self)
@@ -51,7 +61,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.conflict = None
         
         #Initialize GUI wizard pages
-        self.mapping=DeclareMapping.instance()
+        self.mapping = DeclareMapping.instance()
         self.initPerson()
         
         self.initProperty()
@@ -68,9 +78,9 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         btnFinish = self.button(QWizard.FinishButton)
         
     def initPerson(self):
-        '''
+        """
         Initialize person config
-        '''
+        """
         self.notifPerson = NotificationBar(self.vlPersonNotif)
         
         self._initPersonFilter()
@@ -112,7 +122,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         #Start background thread
         propertyWorker.start()   
         
-        self.propBrowser = PropertyBrowser(self.propWebView,self)
+        self.propBrowser = WebSpatialLoader(self.propWebView,self)
         self.connect(self.propBrowser,SIGNAL("loadError(QString)"),self._onPropertyBrowserError)
         self.connect(self.propBrowser,SIGNAL("loadProgress(int)"),self._onPropertyBrowserLoading)
         self.connect(self.propBrowser,SIGNAL("loadFinished(bool)"),self._onPropertyBrowserFinished)
@@ -137,7 +147,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         # session=STDMDb.instance().session
         person = self.mapping.tableMapping('check_social_tenure_type')
         Person = person()
-        strTypeFormatter =Person.queryObject().all()
+        strTypeFormatter = Person.queryObject().all()
         strType=[ids.value for ids in strTypeFormatter]
         strType.insert(0, " ")
         self.cboSTRType.insertItems(0,strType)
@@ -170,14 +180,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         #Set currency regular expression and currency prefix
         rx = QRegExp("^\\d{1,12}(([.]\\d{2})*),(\\d{2})$")
         rxValidator = QRegExpValidator(rx,self)
-        '''
-        self.txtCFBPAmount.setValidator(rxValidator)
-        self.txtStateReceiptAmount.setValidator(rxValidator)
-        
-        self.dtLastYearCFBP.setMaximumDate(QDate.currentDate())
-        self.dtStateReceiptDate.setMaximumDate(QDate.currentDate())
-        self.dtStateLeaseYear.setMaximumDate(QDate.currentDate())  
-        '''
         self.notifSourceDoc = NotificationBar(self.vlSourceDocNotif)
         
         #Set source document manager
@@ -185,26 +187,13 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         #self.privateTaxDocManager = SourceDocumentManager()
         #self.stateTaxDocManager = SourceDocumentManager()
         self.sourceDocManager.registerContainer(self.vlDocTitleDeed, TITLE_DEED)
-               
-        '''
-        #Connect signals
-        self.connect(self.rbPrivateProperty, SIGNAL("toggled(bool)"),self.onSelectPrivateProperty)
-        self.connect(self.rbStateland, SIGNAL("toggled(bool)"),self.onSelectStateland)
-        
-        self.connect(self.btnPrivateReceiptScan, SIGNAL("clicked()"),self.onUploadPrivateReceiptScan)
-        self.connect(self.btnPublicReceiptScan, SIGNAL("clicked()"),self.onUploadStateReceiptScan)
-        self.connect(self.btnAddStatRefPaper, SIGNAL("clicked()"),self.onUploadStatutoryRefPaper)
-        self.connect(self.btnAddSurveyorRef, SIGNAL("clicked()"),self.onUploadSurveyorRef)
-        self.connect(self.btnAddNotaryRef, SIGNAL("clicked()"),self.onUploadNotaryRef)
-        '''
+
         self.connect(self.btnAddTitleDeed, SIGNAL("clicked()"),self.onUploadTitleDeed)
-        
-        
+
     def initConflict(self):
         '''
         Initialize 'Conflict' GUI controls
         '''
-        #loadComboSelections(self.cboConflictOccurrence, CheckConflictState) 
         
         self.notifConflict = NotificationBar(self.vlConflictNotif,3000)
         
@@ -308,8 +297,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         progDialog.setRange(0,7)
         progDialog.show()
         
-        
-        socialTenureRel=self.mapping.tableMapping('social_tenure_relationship')
+        socialTenureRel = self.mapping.tableMapping('social_tenure_relationship')
+
         try:
             progDialog.setValue(1)
             socialTenure = socialTenureRel()
@@ -318,7 +307,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             socialTenure.spatial_unit = self.selProperty.id
             progDialog.setValue(3)
             
-            socialTenure.social_tenure_type=str(self.cboSTRType.currentText())
+            socialTenure.social_tenure_type = unicode(self.cboSTRType.currentText())
             progDialog.setValue(6)
                     
             socialTenure.save()
@@ -327,7 +316,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             #source_doc_model = self.sourceDocManager.sourceDocuments(dtype ="TITLE DEED")
             
             #strPerson = "%s %s"%(str(self.selPerson.family_name),str(self.selPerson.other_names))          
-            strMsg = str(QApplication.translate("newSTRWiz", 
+            strMsg = unicode(QApplication.translate("newSTRWiz",
                                             "The social tenure relationship for has been successfully created!"))           
             QMessageBox.information(self, QApplication.translate("newSTRWiz", "STR Creation"),strMsg)
 
@@ -345,6 +334,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         finally:
             STDMDb.instance().session.rollback()
             progDialog.hide()
+
         return isValid
             
     def _loadPersonInfo(self,persons):
@@ -361,7 +351,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         '''
         #Get the items in a tuple and put them in a list
         
-        propertyIds = [str(pid[0]) for pid in propids]
+        propertyIds = [unicode(pid[0]) for pid in propids]
        
         #Configure completer   
         propCompleter = QCompleter(propertyIds,self)         
@@ -387,7 +377,9 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         if progress <= 0 or progress >= 100:
             self.gpOpenLayers.setTitle(self.gpOLTitle)
         else:
-            self.gpOpenLayers.setTitle("%s (Loading...%s%%)"%(str(self.gpOLTitle),str(progress)))
+            self.gpOpenLayers.setTitle("%s (Loading...%s%%)"
+                                       %(unicode(self.gpOLTitle),
+                                         unicode(progress)))
             
     def _onPropertyBrowserFinished(self,status):
         '''
@@ -398,7 +390,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             self.overlayProperty()
         else:
             self.notifProp.clear()
-            msg = QApplication.translate("newSTRWiz", "Error - The property map cannot be loaded.")   
+            msg = QApplication.translate("newSTRWiz", "Error - Spatial unit cannot be loaded.")
             self.notifProp.insertErrorNotification(msg)
         
     def _onEnableOLGroupbox(self,state):
@@ -409,9 +401,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         if state:
             if self.selProperty is None:
                 self.notifProp.clear()
-                msg = QApplication.translate("newSTRWiz", "You need to specify a property in order to be able to preview it.")   
+                msg = QApplication.translate("newSTRWiz",
+                                             "You need to specify a property in order to be able to preview it.")
                 self.notifProp.insertWarningNotification(msg)                
                 self.gpOpenLayers.setChecked(False)
+
                 return  
             
             #Load property overlay
@@ -438,7 +432,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         if 'id' in cols:
             cols.remove('id')
         for col in cols:
-            self.cboPersonFilterCols.addItem(str(QApplication.translate("newSTRWiz",col.replace('_',' ').title())), col)
+            self.cboPersonFilterCols.addItem(unicode(QApplication.translate("newSTRWiz",
+                                                    col.replace('_',' ').title())), col)
         #self.cboPersonFilterCols.addItem(str(QApplication.translate("newSTRWiz","Last Name")), cols[2])
         #self.cboPersonFilterCols.addItem(str(QApplication.translate("newSTRWiz","Nick Name")), "nickname")
         #self.cboPersonFilterCols.addItem(str(QApplication.translate("newSTRWiz","Identification Number")), "unique_id")            
@@ -452,13 +447,13 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.cboFilterPattern.clear()
         self.tvPersonInfo.clear()
         
-        self.currPersonAttr = str(self.cboPersonFilterCols.itemData(index))            
+        self.currPersonAttr = unicode(self.cboPersonFilterCols.itemData(index))
         
         #Create standard model which will always contain the id of the person row then the attribute for use in the completer
         self.cboFilterPattern.addItem("")
         for p in self.persons:
             pVal = getattr(p,self.currPersonAttr)
-            if pVal != "" or pVal != None:
+            if pVal or not pVal is None:
                 self.cboFilterPattern.addItem(pVal,p.id)
 
         self.cboFilterPattern.activated.connect(self._updatePersonSummary)
@@ -534,6 +529,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             propMapping=OrderedDict()
             for attrib,label in colMapping.iteritems():
                 propMapping[label] = getattr(prop,attrib)
+
             return propMapping
         
     def _mapSTRTypeSelection(self):
@@ -543,13 +539,15 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         strTypeSelection=self.cboSTRType.currentText()
         
         strMapping = OrderedDict()
-        strMapping[str(QApplication.translate("newSTRWiz","STR Type"))] = str(strTypeSelection)
+        strMapping[unicode(QApplication.translate("newSTRWiz","STR Type"))] = str(strTypeSelection)
         
         if self.chkSTRAgreement.isChecked():
-            agreementText = str(QApplication.translate("newSTRWiz","Yes"))
+            agreementText = unicode(QApplication.translate("newSTRWiz","Yes"))
         else:
-            agreementText = str(QApplication.translate("newSTRWiz","No"))
-        strMapping[str(QApplication.translate("newSTRWiz","Written Agreement Available"))] = agreementText
+            agreementText = unicode(QApplication.translate("newSTRWiz","No"))
+
+        strMapping[unicode(QApplication.translate("newSTRWiz",
+                                                  "Written Agreement Available"))] = agreementText
         
         return strMapping
     
@@ -558,33 +556,35 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         inheritanceFormatter = LookupFormatter(CheckInheritanceType)
                 
         enjoyRightMapping = OrderedDict()
-        enjoyRightMapping[str(QApplication.translate("newSTRWiz","Inheritance From"))] = str(inheritanceFormatter.setDisplay(enjoyRight.InheritanceType).toString())
-        enjoyRightMapping[str(QApplication.translate("newSTRWiz","State"))] = str(deadAliveFormatter.setDisplay(enjoyRight.State).toString())
-        enjoyRightMapping[str(QApplication.translate("newSTRWiz","Receiving Date"))] = str(enjoyRight.ReceivingDate.year)
+        enjoyRightMapping[unicode(QApplication.translate("newSTRWiz","Inheritance From"))] = \
+            unicode(inheritanceFormatter.setDisplay(enjoyRight.InheritanceType).toString())
+        enjoyRightMapping[unicode(QApplication.translate("newSTRWiz","State"))] = unicode(deadAliveFormatter.setDisplay(enjoyRight.State).toString())
+        enjoyRightMapping[unicode(QApplication.translate("newSTRWiz","Receiving Date"))] = unicode(enjoyRight.ReceivingDate.year)
         
         return enjoyRightMapping
     
     def _mapPrivatePropertyTax(self):
         privateTaxMapping = OrderedDict()
         
-        privateTaxMapping[str(QApplication.translate("newSTRWiz","CFPB Payment Year"))] = str(self.dtLastYearCFBP.date().toPyDate().year)
+        privateTaxMapping[unicode(QApplication.translate("newSTRWiz","CFPB Payment Year"))] = \
+            unicode(self.dtLastYearCFBP.date().toPyDate().year)
         
-        taxDec = Decimal(str(self.txtCFBPAmount.text()))
+        taxDec = Decimal(unicode(self.txtCFBPAmount.text()))
         taxFormatted = moneyfmt(taxDec,curr = CURRENCY_CODE)
-        privateTaxMapping[str(QApplication.translate("newSTRWiz","CFPB Amount"))] = taxFormatted
+        privateTaxMapping[unicode(QApplication.translate("newSTRWiz","CFPB Amount"))] = taxFormatted
         
         return privateTaxMapping
     
     def _mapStatePropertyTax(self):
         stateTaxMapping = OrderedDict()
         
-        stateTaxMapping[str(QApplication.translate("newSTRWiz","Latest Receipt Date"))] = str(self.dtStateReceiptDate.date().toPyDate())
+        stateTaxMapping[unicode(QApplication.translate("newSTRWiz","Latest Receipt Date"))] = unicode(self.dtStateReceiptDate.date().toPyDate())
         
-        taxDec = Decimal(str(self.txtStateReceiptAmount.text()))
+        taxDec = Decimal(unicode(self.txtStateReceiptAmount.text()))
         taxFormatted = moneyfmt(taxDec,curr = CURRENCY_CODE)
-        stateTaxMapping[str(QApplication.translate("newSTRWiz","Amount"))] = taxFormatted
-        stateTaxMapping[str(QApplication.translate("newSTRWiz","Lease Starting Year"))] = str(self.dtStateLeaseYear.date().toPyDate().year)
-        stateTaxMapping[str(QApplication.translate("newSTRWiz","Tax Office"))] = str(self.txtStateTaxOffice.text())
+        stateTaxMapping[unicode(QApplication.translate("newSTRWiz","Amount"))] = taxFormatted
+        stateTaxMapping[unicode(QApplication.translate("newSTRWiz","Lease Starting Year"))] = unicode(self.dtStateLeaseYear.date().toPyDate().year)
+        stateTaxMapping[unicode(QApplication.translate("newSTRWiz","Tax Office"))] = unicode(self.txtStateTaxOffice.text())
         
         return stateTaxMapping
     
@@ -595,13 +595,14 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         if conflict == None:
             return conflictMapping
         
-        conflictMapping[str(QApplication.translate("newSTRWiz","Status"))] = str(conflictFormatter.setDisplay(conflict.StateID).toString())
+        conflictMapping[unicode(QApplication.translate("newSTRWiz","Status"))] = \
+            unicode(conflictFormatter.setDisplay(conflict.StateID).toString())
         
         if conflict.Description:
-            conflictMapping[str(QApplication.translate("newSTRWiz","Description"))] = conflict.Description
+            conflictMapping[unicode(QApplication.translate("newSTRWiz","Description"))] = conflict.Description
             
         if conflict.Solution:
-            conflictMapping[str(QApplication.translate("newSTRWiz","Solution"))] = conflict.Solution
+            conflictMapping[unicode(QApplication.translate("newSTRWiz","Solution"))] = conflict.Solution
          
         return conflictMapping
     
@@ -716,23 +717,23 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         
         if self.cboConflictOccurrence.currentIndex() == occIndex:
             self.notifConflict.clear()
-            if str(self.txtConflictDescription.toPlainText()) == "":
+            if unicode(self.txtConflictDescription.toPlainText()) == "":
                 msg1 = QApplication.translate("newSTRWiz", 
                                              "Please provide a brief description of the conflict.")
                 self.notifConflict.insertErrorNotification(msg1)
                 isValid = False
-            if str(self.txtConflictSolution.toPlainText()) == "":
+            if unicode(self.txtConflictSolution.toPlainText()) == "":
                 msg2 = QApplication.translate("newSTRWiz", 
                                              "Please provide a proposed solution for the specified conflict.")
                 self.notifConflict.insertErrorNotification(msg2)
                 isValid = False
                 
-            if str(self.txtConflictSolution.toPlainText()) != "" and str(self.txtConflictDescription.toPlainText()) != "":
+            if unicode(self.txtConflictSolution.toPlainText()) != "" and unicode(self.txtConflictDescription.toPlainText()) != "":
                 self.conflict = Conflict()
                 stateId,ok = self.cboConflictOccurrence.itemData(occIndex).toInt()
                 self.conflict.StateID = stateId
-                self.conflict.Description = str(self.txtConflictDescription.toPlainText())
-                self.conflict.Solution = str(self.txtConflictSolution.toPlainText())
+                self.conflict.Description = unicode(self.txtConflictDescription.toPlainText())
+                self.conflict.Solution = unicode(self.txtConflictSolution.toPlainText())
                 
         #Set conflict object properties
         if self.cboConflictOccurrence.currentIndex() == nonConflictIndex:
@@ -808,7 +809,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                                              "Specify Receipt Scan File Location")
         scan = self.selectReceiptScanDialog(receiptScan)
         
-        if scan != "" or scan != None:
+        if scan or not scan is None:
             #Ensure that there is only one tax receipt document before inserting
             self.validateReceiptScanInsertion(self.privateTaxDocManager, scan, TAX_RECEIPT_PRIVATE)
             
@@ -838,6 +839,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 docWidget = container.itemAt(0).widget()
                 docWidget.removeDocument()
                 documentmanager.insertDocumentFromFile(scan,containerid)
+
             else:
                 return
         else:
@@ -891,7 +893,9 @@ class PropertyWorker(QThread):
         '''
         Fetch property IDs from the database
         '''
-        pty=Table('spatial_unit',Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
+        pty=Table('spatial_unit',Base.metadata,
+                  autoload=True,
+                  autoload_with=STDMDb.instance().engine)
         session=STDMDb.instance().session
         properties =session.query(pty.c.spatial_unit_id).all()
         #pty = Property()

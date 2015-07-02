@@ -17,7 +17,12 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QRegExp
+from PyQt4.QtCore import (
+    QFile,
+    QIODevice,
+    QRegExp,
+    QTextStream
+)
 
 from qgis.core import *
 
@@ -25,7 +30,10 @@ from sqlalchemy.sql.expression import text
 
 import stdm.data
 from stdm.data import STDMDb, Base
-from stdm.utils import getIndex
+from stdm.utils import (
+    getIndex,
+    PLUGIN_DIR
+)
 
 _postGISTables = ["spatial_ref_sys"]
 _postGISViews = ["geometry_columns","raster_columns","geography_columns","raster_overviews"]
@@ -151,7 +159,7 @@ def process_report_filter(tableName,columns,whereStr="",sortStmnt=""):
     
     return _execute(t)
 
-def table_column_names(tableName,spatialColumns = False):
+def table_column_names(tableName, spatialColumns=False):
     """
     Returns the column names of the given table name. 
     If 'spatialColumns' then the function will lookup for spatial columns in the given 
@@ -204,7 +212,7 @@ def delete_table_data(tableName,cascade = True):
         t = text(sql)
         _execute(t) 
 
-def geometryType(tableName,spatialColumnName,schemaName = "public"):
+def geometryType(tableName, spatialColumnName, schemaName = "public"):
     """
     Returns a tuple of geometry type and EPSG code of the given column name in the table within the given schema.
     """
@@ -301,11 +309,25 @@ def numeric_columns(table):
     """
     return columns_by_type(table, _pg_numeric_col_types)
 
-def numeric_varchar_columns(table):
-    #Combines numeric and text column types
+def numeric_varchar_columns(table, exclude_fk_columns=True):
+    #Combines numeric and text column types mostly used for display columns
     num_char_types = _pg_numeric_col_types + _text_col_types
 
-    return columns_by_type(table, num_char_types)
+    num_char_cols = columns_by_type(table, num_char_types)
+
+    if exclude_fk_columns:
+        fk_refs = foreign_key_parent_tables(table)
+
+        for fk in fk_refs:
+            local_col = fk[0]
+            col_idx = getIndex(num_char_cols, local_col)
+            if col_idx != -1:
+                num_char_cols.remove(local_col)
+
+        return num_char_cols
+
+    else:
+        return num_char_cols
 
 def qgsgeometry_from_wkbelement(wkb_element):
     """
@@ -341,9 +363,6 @@ def reset_content_roles():
     _execute(text(rolesSet))
     resetSql = text(rolesSet)
     _execute(resetSql)
-    # rolesSet1 = "truncate table content_roles cascade;"
-    # resetSql1 = text(rolesSet1)
-    # _execute(resetSql1)
 
 def delete_table_keys(table):
     #clean_delete_table(table)
@@ -390,3 +409,49 @@ def vector_layer(table_name, sql="", key="id", geom_column=""):
     v_layer = QgsVectorLayer(ds_uri.uri(), table_name, "postgres")
 
     return v_layer
+
+def foreign_key_parent_tables(table_name):
+    """
+    Functions that searches for foreign key references in the specified table.
+    :param table_name: Name of the database table.
+    :type table_name: str
+    :return: A list of tuples containing the local column name, foreign table
+    name and corresponding foreign column name.
+    :rtype: list
+    """
+    #Check if the view for listing foreign key references exists
+    fk_ref_view = pg_table_exists("foreign_key_references")
+
+    #Create if it does not exist
+    if not fk_ref_view:
+        script_path = PLUGIN_DIR + "/scripts/foreign_key_references.sql"
+
+        script_file = QFile(script_path)
+        if script_file.exists():
+            if not script_file.open(QIODevice.ReadOnly):
+                return None
+
+            reader = QTextStream(script_file)
+            sql = reader.readAll()
+            if sql:
+                t = text(sql)
+                _execute(t)
+
+        else:
+            return None
+
+    #Fetch foreign key references
+    sql = "SELECT column_name,foreign_table_name,foreign_column_name FROM " \
+          "foreign_key_references where table_name=:tb_name"
+    t = text(sql)
+    result = _execute(t, tb_name=table_name)
+
+    fk_refs = []
+
+    for r in result:
+        fk_ref = r["column_name"], r["foreign_table_name"],\
+                 r["foreign_column_name"]
+        fk_refs.append(fk_ref)
+
+    return fk_refs
+
