@@ -1121,8 +1121,7 @@ class STDMQGISLoader(object):
         moduleList.extend(handler.lookupTable())
         self.pgTableMapper(moduleList)
         for table in exceptions_list:
-            if table in moduleList:
-                moduleList.remove(table)
+            moduleList.remove(table)
         return moduleList
 
     def pgTableMapper(self, tableList=None):

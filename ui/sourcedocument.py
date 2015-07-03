@@ -583,7 +583,7 @@ class DocumentWidget(QWidget,Ui_frmDocumentItem):
         if self._mode == UPLOAD_MODE:
             self.fileInfo = QFileInfo(dfile)
 
-            self._displayName = str(self.fileInfo.fileName())
+            self._displayName = unicode(self.fileInfo.fileName())
             self._docSize = self.fileInfo.size()
 
             self.buildDisplay()

@@ -80,7 +80,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         #Web config
         self._web_spatial_loader = WebSpatialLoader(self.spatial_web_view, self)
 
-        #Connect signal
+        #Connect signals
         self._web_spatial_loader.loadError.connect(self.on_spatial_browser_error)
         self._web_spatial_loader.loadProgress.connect(self.on_spatial_browser_loading)
         self._web_spatial_loader.loadFinished.connect(self.on_spatial_browser_finished)
@@ -90,6 +90,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         self.zoomSlider.sliderReleased.connect(self.on_zoom_changed)
         self.btnResetMap.clicked.connect(self.on_reset_web_map)
         self.btnSync.clicked.connect(self.on_sync_extents)
+        QgsMapLayerRegistry.instance().layersWillBeRemoved.connect(self._on_overlay_to_be_removed)
 
     def set_iface(self, iface):
         self._iface = iface
@@ -289,6 +290,14 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
             self._web_spatial_loader.removeOverlay()
 
             self._overlay_layer = None
+
+    def _on_overlay_to_be_removed(self, layers_ids):
+        """
+        Resets the local layer variable and removes the web overlay.
+        """
+        if not self._overlay_layer is None:
+            if self._overlay_layer.id() in layers_ids:
+                self.remove_layer()
 
     def on_spatial_browser_error(self, err):
         """
