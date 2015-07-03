@@ -22,7 +22,7 @@ from datetime import date
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import Enumerator,Witness,Survey
+from stdm.data import Enumerator,Witness,Survey, table_searchable_cols
 from stdm.navigation import TableContentGroup
 from .admin_unit_manager import VIEW,MANAGE,SELECT
 from .ui_entity_browser import Ui_EntityBrowser
@@ -210,9 +210,11 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
             progressDialog.setValue(numRecords)
         
             self._tableModel = BaseSTDMTableModel(entityRecordsList,headers,self)
-            
+
             #Add filter columns
-            self.cboFilterColumn.addItems(headers)
+            class_name =entity.__class__.__name__.replace(" ","_").lower()
+            if table_searchable_cols(class_name):
+                self.cboFilterColumn.addItems(table_searchable_cols(class_name))
             
             #Use sortfilter proxy model for the view
             self._proxyModel = QSortFilterProxyModel()

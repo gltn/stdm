@@ -418,7 +418,7 @@
             </property>
             <property name="icon">
              <iconset resource="../resources.qrc">
-              <normaloff>:/plugins/stdm/images/icons/property_manager.png</normaloff>:/plugins/stdm/images/icons/property_manager.png</iconset>
+              <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
             </property>
            </widget>
           </item>
@@ -445,17 +445,20 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="0" colspan="2">
-           <widget class="QLabel" name="lblDescprition">
-            <property name="styleSheet">
-             <string notr="true">color: rgb(0, 85, 0);</string>
-            </property>
-            <property name="text">
-             <string>Profile description</string>
-            </property>
-           </widget>
+          <item row="1" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout"/>
           </item>
          </layout>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QLabel" name="lblDescprition">
+         <property name="styleSheet">
+          <string notr="true">color: rgb(0, 85, 0);</string>
+         </property>
+         <property name="text">
+          <string>Profile description</string>
+         </property>
         </widget>
        </item>
       </layout>
@@ -1045,76 +1048,123 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_5">
-       <attribute name="title">
-        <string>Social Tenure Relation tables</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout_23">
-        <item row="0" column="0">
-         <widget class="QGroupBox" name="groupBox">
-          <property name="minimumSize">
-           <size>
-            <width>300</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>200</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="title">
-           <string>Select tables participating in social Tenure Relation (STR)</string>
-          </property>
-          <property name="flat">
-           <bool>true</bool>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_13">
-           <item row="0" column="0">
-            <widget class="QListView" name="lstParty">
-             <property name="minimumSize">
-              <size>
-               <width>300</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>200</width>
-               <height>16777215</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QGroupBox" name="groupBox_11">
-          <property name="title">
-           <string>List of column(s) from selected tables participating in STR</string>
-          </property>
-          <property name="flat">
-           <bool>true</bool>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_31">
-           <item row="0" column="0">
-            <widget class="QListView" name="lstTableCol">
-             <property name="minimumSize">
-              <size>
-               <width>200</width>
-               <height>0</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-       </layout>
-      </widget>
      </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWizardPage" name="wizardPage_2">
+   <property name="title">
+    <string>Defining Social Tenure Tables</string>
+   </property>
+   <property name="subTitle">
+    <string>Define Tables to Participate in Social Tenure Relations Views</string>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_32">
+    <item row="0" column="0">
+     <layout class="QGridLayout" name="gridLayout_18">
+      <item row="2" column="0">
+       <widget class="QComboBox" name="cboParty">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>30</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" rowspan="5">
+       <widget class="QGroupBox" name="groupBox_3">
+        <property name="title">
+         <string>Party table columns participating in STR definition</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_34">
+         <item row="0" column="0">
+          <widget class="QListView" name="lstPartyCol"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="0" column="0" rowspan="2">
+       <widget class="QLabel" name="label_5">
+        <property name="minimumSize">
+         <size>
+          <width>400</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Select table representing party in the Social Tenure Relationship definition</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" rowspan="2">
+       <widget class="QLabel" name="lblPartyDesc">
+        <property name="text">
+         <string>Table Full Description</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="4" column="0">
+     <widget class="Line" name="line">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="Line" name="line_2">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <layout class="QGridLayout" name="gridLayout_33">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="minimumSize">
+         <size>
+          <width>400</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Select table representing spatial unit in the Social Tenure Relationship definition</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" rowspan="3">
+       <widget class="QGroupBox" name="groupBox_4">
+        <property name="title">
+         <string>Spatial unit table columns participating in STR definition</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_35">
+         <item row="0" column="0">
+          <widget class="QListView" name="lstSPCol"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QComboBox" name="cboSPUnit">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>30</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="lblSpDesc">
+        <property name="text">
+         <string>Table Full Description</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -1136,8 +1186,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>659</width>
-         <height>136</height>
+         <width>789</width>
+         <height>475</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout_21">
