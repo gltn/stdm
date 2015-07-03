@@ -40,6 +40,7 @@ from .admin_unit_manager import (
     MANAGE,
     SELECT
 )
+from .stdmdialog import DeclareMapping
 from stdm.ui.customcontrols import FKBrowserProperty
 
 __all__ = ["ForeignKeyMapper", "ForeignKeyMapperExpressionDialog"]
@@ -200,9 +201,19 @@ class ForeignKeyMapper(QWidget):
         """
         Configure the mapper based on the user settings.
         """
+        from stdm.data import numeric_varchar_columns
+
         #Load headers
         if not self._dbModel is None:
-            headers = self._dbModel.displayMapping().values()
+            headers = []
+
+            display_cols = numeric_varchar_columns(self._ds_name)
+
+            #Ensure only displayable values are included
+            for c, dc in self._dbModel.displayMapping().iteritems():
+                if c in display_cols:
+                    headers.append(dc)
+
             self._tableModel = BaseSTDMTableModel([],headers,self)
             self._tbFKEntity.setModel(self._tableModel)
             
@@ -575,7 +586,6 @@ class ForeignKeyMapper(QWidget):
 
     def set_model_display_column(self, name):
         """
-
         :return:
         """
         self.display_column = name
@@ -635,25 +645,6 @@ class ForeignKeyMapper(QWidget):
 
         return True
 
-    def _insertModelToView(self,modelObj):    
-        '''
-        Insert the given database model instance into the view.
-        '''
-        insertPosition = self._tableModel.rowCount()
-        self._tableModel.insertRows(insertPosition, 1)
-        
-        for i,attr in enumerate(self._dbModel.displayMapping().keys()):
-            propIndex = self._tableModel.index(insertPosition,i)
-            attrVal = getattr(modelObj,attr)
-              
-            #Check if there are display formatters and apply if one exists for the given attribute
-            if attr in self._cellFormatters:
-                attrVal = self._cellFormatters[attr](attrVal)
-            self._tableModel.setData(propIndex, attrVal)
-            
-        #Raise signal once entity has been inserted
-        self.afterEntityAdded.emit(modelObj)
-
     def _insertModelToView(self, model_obj, row_number = -1):
         """
         Insert the given database model instance into the view at the given row number position.
@@ -662,9 +653,15 @@ class ForeignKeyMapper(QWidget):
             row_number = self._tableModel.rowCount()
             self._tableModel.insertRows(row_number, 1)
 
+        '''
+        Reset model so that we get the correct table mapping. This is a hack,
+        will get a better solution in the future.
+        '''
+        model = DeclareMapping.instance().tableMapping(self._dbModel.__name__.lower())
+
         for i,attr in enumerate(self._dbModel.displayMapping().keys()):
             propIndex = self._tableModel.index(row_number,i)
-            attrVal = getattr(model_obj,attr)
+            attrVal = getattr(model_obj, attr)
 
             #Check if there are display formatters and apply if one exists for the given attribute
             if attr in self._cellFormatters:
@@ -713,7 +710,7 @@ class ForeignKeyMapper(QWidget):
         """
         if self._tableModel:
             if not self._entitySelector is None:
-                entitySelector = self._entitySelector(self,self._dbModel,
+                entitySelector = self._entitySelector(self, self._dbModel,
                                                     self._entitySelectorState)
 
                 #Cascade cell formatters
@@ -723,6 +720,7 @@ class ForeignKeyMapper(QWidget):
                 retStatus = entitySelector.exec_()
                 if retStatus == QDialog.Accepted:
                     pass
+
             else:
                 if not self._notifBar is None:
                     msg = QApplication.translate("ForeignKeyMapper","Null instance of entity selector.")
