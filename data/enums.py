@@ -62,6 +62,8 @@ stdm_core_tables = ['household', 'spatial_unit', 'party', 'natural_person', 'gro
 postgres_defaults = ['integer','date','boolean','time with time zone','serial',
                      'geometry','double precision','text']
 
+non_editable_tables = ['supporting_document','str_relations']
+
 RESERVED_ID = 'id'
 
 

@@ -546,14 +546,14 @@ class STDMQGISLoader(object):
         self.rptBuilderCntGroup.addContentItem(rptBuilderCnt)
         self.rptBuilderCntGroup.register()
 
+        #Add Design Forms menu and tool bar actions
+        self.toolbarLoader.addContent(self.wzdConfigCntGroup)
+        self.menubarLoader.addContent(self.wzdConfigCntGroup)
 
         self.toolbarLoader.addContent(self.contentAuthCntGroup, [adminMenu, adminBtn])
         self.toolbarLoader.addContent(self.userRoleCntGroup, [adminMenu, adminBtn])
 
         self.menubarLoader.addContents(adminSettingsCntGroups, [stdmAdminMenu, stdmAdminMenu])
-
-        self.toolbarLoader.addContent(self.wzdConfigCntGroup)
-        self.menubarLoader.addContent(self.wzdConfigCntGroup)
 
         self.menubarLoader.addContent(self._action_separator())
         self.toolbarLoader.addContent(self._action_separator())
@@ -1115,13 +1115,12 @@ class STDMQGISLoader(object):
             #Add a default is not provided
             default = handler.STDMProfiles()
             profile = unicode(default[0])
-
+        exceptions_list = ['spatial_unit','str_relations']
         moduleList = handler.tableNames(profile)
         moduleList.extend(handler.lookupTable())
         self.pgTableMapper(moduleList)
-        if 'spatial_unit' in moduleList:
-            moduleList.remove('spatial_unit')
-
+        for table in exceptions_list:
+            moduleList.remove(table)
         return moduleList
 
     def pgTableMapper(self, tableList=None):
