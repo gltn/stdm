@@ -320,13 +320,16 @@ class BaseSTRNode(object):
 
         if self.signalReceivers(self._collapse_action) > 0:
             self._collapse_action.triggered.disconnect()
-
+        #str_editor = STREditor(self._model,self)
         #Connect expand/collapse signals to the respective actions
         self._expand_action.triggered.connect(lambda:self._on_expand(modelindex))
         self._collapse_action.triggered.connect(lambda: self._on_collapse(modelindex))
+        #self.editAction.triggered.connect(lambda :str_editor.onEdit(modelindex))
 
         menu.addAction(self._expand_action)
         menu.addAction(self._collapse_action)
+        #menu.addAction(self.separator)
+        #menu.addAction(self.editAction)
 
     def _on_expand(self, index):
         """
@@ -498,6 +501,8 @@ class SpatialUnitNode(EntityNode):
     """
     def icon(self):
         return QIcon(":/plugins/stdm/images/icons/layer.gif")
+
+
     
         
         

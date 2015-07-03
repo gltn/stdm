@@ -1116,13 +1116,12 @@ class STDMQGISLoader(object):
             #Add a default is not provided
             default = handler.STDMProfiles()
             profile = unicode(default[0])
-
+        exceptions_list = ['spatial_unit','str_relations']
         moduleList = handler.tableNames(profile)
         moduleList.extend(handler.lookupTable())
         self.pgTableMapper(moduleList)
-        if 'spatial_unit' in moduleList:
-            moduleList.remove('spatial_unit')
-
+        for table in exceptions_list:
+            moduleList.remove(table)
         return moduleList
 
     def pgTableMapper(self, tableList=None):
