@@ -394,7 +394,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         rowIndex = self._proxyModel.mapToSource(selRowIndices[0])
         recordid = rowIndex.data()
         self._loadEditorDialog(recordid,rowIndex.row())
-            
+
     def onRemoveEntity(self):
         '''
         Load editor dialog for editing an existing record.
@@ -524,7 +524,23 @@ class ContentGroupEntityBrowser(EntityBrowserWithEditor):
         Returns the content group instance used in the browser.
         """
         return self._tableContentGroup
-    
+
+class SocialTenureEntityBrowser(EntityBrowserWithEditor):
+    '''
+    Browser for enumerator records.
+    '''
+    def __init__(self,model, parent = None,state = VIEW):
+
+        str_model = DeclareMapping.instance().tableMapping('social_tenure_relationship')
+        #str_model = model
+
+        EntityBrowserWithEditor.__init__(self, str_model, parent, state)
+
+        self._editorDialog = CustomFormDialog
+
+    def title(self):
+        return QApplication.translate("SocialTenureEntityBrowser", "Social Tenure Records")
+
 class EnumeratorEntityBrowser(EntityBrowserWithEditor):
     '''
     Browser for enumerator records.
