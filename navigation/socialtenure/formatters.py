@@ -87,6 +87,9 @@ class STRNodeFormatter(object):
         raise NotImplementedError(QApplication.translate("STRFormatterBase",
                                                          "Method should be implemented by subclasses"))
 
+class TestFormatter(STRNodeFormatter):
+    def root(self):
+        return self.rootNode
 
 class EntityNodeFormatter(STRNodeFormatter):
     """

@@ -81,11 +81,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         #set whether currently logged in user has permissions to edit existing STR records
         self._can_edit = self._plugin.STRCntGroup.canUpdate()
 
-        self._new_str_action = QAction(QIcon(":/plugins/stdm/images/icons/add.png"),
-                            QApplication.translate("EntityBrowserWithEditor",
-                                                    "Define New..."),self)
-        self._new_str_action.triggered.connect(self.on_new_str)
-
         '''
         Variable used to store a reference to the currently selected social tenure relationship
         when displaying documents in the supporting documents tab window.
@@ -149,18 +144,17 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Specify the entity configurations.
         """
         try:
-            tables = self._config_table_reader.current_profile_tables()
+            tables = self._config_table_reader.social_tenure_tables()
 
-            for i, t in enumerate(tables):
-                if i < 2:
-                    entity_cfg = self._entity_config_from_table(t)
+            for t in tables:
+                entity_cfg = self._entity_config_from_table(t)
 
-                    if not entity_cfg is None:
-                        entity_widget = self.add_entity_config(entity_cfg)
-                        entity_widget.setNodeFormatter(
-                            EntityNodeFormatter(entity_cfg, self.tvSTRResults,
-                                                self)
-                        )
+                if not entity_cfg is None:
+                    entity_widget = self.add_entity_config(entity_cfg)
+                    entity_widget.setNodeFormatter(
+                        EntityNodeFormatter(entity_cfg, self.tvSTRResults,
+                                            self)
+                    )
 
         except ProfileException as pe:
             self._notif_bar.clear()
@@ -215,6 +209,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         """
         #Get the current widget in the tab container
         entityWidget = self.tbSTREntity.currentWidget()
+
         if isinstance(entityWidget,EntitySearchItem):
             entityWidget.loadAsync()
 
@@ -226,20 +221,22 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         entityWidget = self.tbSTREntity.currentWidget()
         if isinstance(entityWidget,EntitySearchItem):
-            valid,msg = entityWidget.validate()
+            valid, msg = entityWidget.validate()
 
             if not valid:
                 self._notif_search_config.clear()
                 self._notif_search_config.insertErrorNotification(msg)
+
                 return
 
-            formattedNode,results,searchWord = entityWidget.executeSearch()
+            formattedNode, results, searchWord = entityWidget.executeSearch()
 
             #Show error message
             if len(results) == 0:
                 noResultsMsg = QApplication.translate("ViewSTR", "No results found for '" + searchWord + "'")
                 self._notif_search_config.clear()
                 self._notif_search_config.insertErrorNotification(noResultsMsg)
+
                 return
 
             if formattedNode is not None:
@@ -353,13 +350,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             #Load node actions items into the context menu
             node.manageActions(mi,rMenu)
             rMenu.exec_(QCursor.pos())
-
-    def on_new_str(self):
-        """
-        Slot raised to show a dialog for defining new social tenure relationship.
-        """
-        str_editor = SocialTenureEditor(self)
-        str_editor.exec_()
 
     def showEvent(self, event):
         """
@@ -592,7 +582,8 @@ class EntitySearchItem(QObject):
         Implemented when the a search operation is executed.
         Should return tuple of formatted results for render in the tree view,raw object results and search word.
         """
-        raise NotImplementedError(str(QApplication.translate("ViewSTR", "Subclass must implement abstract method.")))
+        raise NotImplementedError(str(QApplication.translate("ViewSTR",
+                                                             "Subclass must implement abstract method.")))
 
     def loadAsync(self):
         """
@@ -646,9 +637,9 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
 
     def loadAsync(self):
         """
-        Asynchronously loads entity attribute values.
+        Asynchronously loads an entity's attribute values.
         """
-        self.emit(SIGNAL("asyncStarted()"))
+        self.asyncStarted.emit()
 
         #Create model worker
         workerThread = QThread(self)
@@ -656,13 +647,13 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         modelWorker.moveToThread(workerThread)
 
         #Connect signals
-        self.connect(modelWorker, SIGNAL("error(QString)"),self.errorHandler)
-        self.connect(workerThread, SIGNAL("started()"),
+        modelWorker.error.connect(self.errorHandler)
+        workerThread.started.connect(
                      lambda: modelWorker.fetch(self.config.STRModel, self.currentFieldName()))
-        self.connect(modelWorker, SIGNAL("retrieved(PyQt_PyObject)"), self._asyncFinished)
-        self.connect(modelWorker, SIGNAL("retrieved(PyQt_PyObject)"), workerThread.quit)
-        self.connect(workerThread, SIGNAL("finished()"), modelWorker.deleteLater)
-        self.connect(workerThread, SIGNAL("finished()"), workerThread.deleteLater)
+        modelWorker.retrieved.connect(self._asyncFinished)
+        modelWorker.retrieved.connect(workerThread.quit)
+        workerThread.finished.connect(modelWorker.deleteLater)
+        workerThread.finished.connect(workerThread.deleteLater)
 
         #Start thread
         workerThread.start()
@@ -711,7 +702,6 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         propType = queryObjProperty.property.columns[0].type
 
         try:
-
             if not isinstance(propType, String):
                 results = modelQueryObj.filter(queryObjProperty == search_term).all()
 
@@ -750,13 +740,13 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         """
         return self.txtFilterPattern.text()
 
-    def _asyncFinished(self,model_values):
+    def _asyncFinished(self, model_values):
         """
         Slot raised when worker has finished retrieving items.
         """
         #Create QCompleter and add values to it.
         self._update_completer(model_values)
-        self.emit(SIGNAL("asyncFinished()"))
+        self.asyncFinished.emit()
 
     def _update_completer(self, values):
         #Get the items in a tuple and put them in a list
@@ -835,24 +825,24 @@ class ModelWorker(QObject):
     """
     Worker for retrieving model attribute values stored in the database.
     """
-    retrieved = pyqtSignal('PyQt_PyObject')
-    error = pyqtSignal('QString')
+    retrieved = pyqtSignal(object)
+    error = pyqtSignal(unicode)
 
-    pyqtSlot("PyQt_PyObject",'QString')
-    def fetch(self,model,fieldname):
+    pyqtSlot(object, unicode)
+    def fetch(self, model, fieldname):
         """
         Fetch attribute values from the database for the specified model
         and corresponding column name.
         """
-        if hasattr(model,fieldname):
+        if hasattr(model, fieldname):
             try:
                 modelInstance = model()
-                obj_property = getattr(model,fieldname)
+                obj_property = getattr(model, fieldname)
                 model_values = modelInstance.queryObject([obj_property]).distinct()
                 self.retrieved.emit(model_values)
 
             except Exception as ex:
-                self.error.emit(QString(ex))
+                self.error.emit(unicode(ex))
 
 class SourceDocumentContainerWidget(QWidget):
     """
