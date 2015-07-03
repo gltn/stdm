@@ -181,12 +181,25 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             entity_cfg.data_source_name = table_name
 
             '''
-            Load filter columns using only those which are of
+            Load filter and display columns using only those which are of
             numeric/varchar type
             '''
             cols = numeric_varchar_columns(table_name)
-            for c in cols:
-                entity_cfg.filterColumns[c] = display_name(c)
+            search_cols = self._config_table_reader.table_searchable_columns(table_name)
+            disp_cols = self._config_table_reader.table_columns(table_name)
+
+            for c in search_cols:
+                #Ensure it is a numeric or text type column
+                if c in cols:
+                    entity_cfg.filterColumns[c] = display_name(c)
+
+            if len(disp_cols) == 0:
+                entity_cfg.displayColumns = entity_cfg.displayColumns
+
+            else:
+                for dc in disp_cols:
+                    if dc in cols:
+                        entity_cfg.displayColumns[dc] = display_name(dc)
 
             return entity_cfg
 
@@ -811,6 +824,7 @@ class EntityConfiguration(object):
     defaultFieldName = ""
     #Format of each dictionary item: property/db column name - display name
     filterColumns = OrderedDict()
+    displayColumns = OrderedDict()
     groupBy = ""
     STRModel = None
     Title = ""
@@ -819,8 +833,9 @@ class EntityConfiguration(object):
     LookupFormatters = {}
 
     def __init__(self):
-        #Reset filter columns container
+        #Reset filter and display columns
         self.filterColumns = OrderedDict()
+        self.displayColumns = OrderedDict()
 
 class ModelWorker(QObject):
     """

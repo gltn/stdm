@@ -61,7 +61,7 @@ def UserData(comboBox):
 
 def tableCols(table):
         #Get table columns from the config file
-        profileName=activeProfile()
+        profileName = activeProfile()
         cols = tableColumns(profileName,table)
         return [col.get('Column label') for col in cols]
 
