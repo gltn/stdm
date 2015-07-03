@@ -255,9 +255,7 @@ class STDMQGISLoader(object):
                           "\permission on modules or duplicate keys for the named table(s).\n" \
                           "Remove content authorization for the modules or " \
                           "deleted the modules with duplicate keys completely.")
-                raise
-
-                #self.reset_content_modules_id(unicode(ex.message + msg))
+                self.reset_content_modules_id(unicode(ex.message + msg))
 
     def loadModules(self):
         '''
