@@ -52,10 +52,10 @@ class CustomFormDialog(MapperDialog, MapperMixin):
 
         MapperDialog.__init__(self, parent)
         MapperMixin.__init__(self, self._model)
-        #QMessageBox.information(self,"Model instance",str(self._model))
+
         self.buttonBox.accepted.connect(self.close_event)
         self.buttonBox.rejected.connect(self.cancel)
-        #self.frmLayout.clicked.connect(self.form_event)
+
         if callable(model):
             self._table = model.__name__
         else:
@@ -69,19 +69,21 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         """
         :return: Mapper dialog form
         """
-        self.property_mapper = TypePropertyMapper(self._table.lower())
-        widgets_property_collection = self.property_mapper.setProperty()
-        for attrib, widget_prop in widgets_property_collection.iteritems():
-            if hasattr(self._model, attrib):
-                #self.control_widget(widget_prop)
-                form_widget_loader = FormWidgetLoader(widget_prop)
-                control_type = form_widget_loader.control_widget(attrib)
-                self.addMapping(attrib, control_type, False, attrib)
+        try:
+            self.property_mapper = TypePropertyMapper(self._table.lower())
+            widgets_property_collection = self.property_mapper.setProperty()
+            for attrib, widget_prop in widgets_property_collection.iteritems():
+                if hasattr(self._model, attrib):
+                    #self.control_widget(widget_prop)
+                    form_widget_loader = FormWidgetLoader(widget_prop)
+                    control_type = form_widget_loader.control_widget(attrib)
+                    self.addMapping(attrib, control_type, False, attrib)
 
-                self.frmLayout.addRow(QT_TRANSLATE_NOOP("ModuleSettings",self.userLabel(attrib)), control_type)
+                    self.frmLayout.addRow(QT_TRANSLATE_NOOP("ModuleSettings",self.userLabel(attrib)), control_type)
         #self.frmLayout.setLabelAlignment(Qt.AlignJustify)
-        #except Exception as ex:
-           # self._notifBar.insertWarningNotification(str(ex.message))
+        except Exception as ex:
+            pass
+           #self._notifBar.insertWarningNotification(str(ex.message))
 
     def userLabel(self, attr):
             return attr.replace("_", " ").title()

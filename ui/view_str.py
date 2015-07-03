@@ -189,6 +189,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             numeric/varchar type
             '''
             cols = numeric_varchar_columns(table_name)
+
             for c in cols:
                 entity_cfg.filterColumns[c] = display_name(c)
 
