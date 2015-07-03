@@ -252,11 +252,12 @@ class STDMQGISLoader(object):
 
             except Exception as ex:
                 msg = QApplication.translate("STDMQGISLoader","\nThis error is attributed to authentication" \
-                          "/permission on modules or duplicate keys for the named table(s).\n" \
+                          "\permission on modules or duplicate keys for the named table(s).\n" \
                           "Remove content authorization for the modules or " \
                           "deleted the modules with duplicate keys completely.")
+                raise
 
-                self.reset_content_modules_id(unicode(ex.message + msg))
+                #self.reset_content_modules_id(unicode(ex.message + msg))
 
     def loadModules(self):
         '''
@@ -1115,12 +1116,17 @@ class STDMQGISLoader(object):
             #Add a default is not provided
             default = handler.STDMProfiles()
             profile = unicode(default[0])
+
         exceptions_list = ['spatial_unit','str_relations']
+        
         moduleList = handler.tableNames(profile)
         moduleList.extend(handler.lookupTable())
         self.pgTableMapper(moduleList)
+
         for table in exceptions_list:
-            moduleList.remove(table)
+            if table in moduleList:
+                moduleList.remove(table)
+
         return moduleList
 
     def pgTableMapper(self, tableList=None):
