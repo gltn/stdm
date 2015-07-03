@@ -523,21 +523,24 @@ class ForeignKeyMapper(QWidget):
         Add the record to the foreign key table using the mappings.
         '''
         #Check if the record exists using the primary key so as to ensure only one instance is added to the table
-        if isinstance(rec, int):
-            recIndex = getIndex(self._recordIds(), rec)
+        try:
+            if isinstance(rec, int):
+                recIndex = getIndex(self._recordIds(), rec)
 
-            if recIndex != -1:
+                if recIndex != -1:
+                    return
+
+
+                dbHandler = self._dbModel()
+                modelObj = dbHandler.queryObject().filter(self._dbModel.id == rec).first()
+
+            elif isinstance(rec, object):
+                modelObj = rec
+
+            else:
                 return
-
-            dbHandler = self._dbModel()
-            modelObj = dbHandler.queryObject().filter(self._dbModel.id == rec).first()
-
-        elif isinstance(rec, object):
-            modelObj = rec
-
-        else:
-            return
-        
+        except:
+            pass
         dbHandler = self._dbModel()
         modelObj = dbHandler.queryObject().filter(self._dbModel.id == rec).first()
 
