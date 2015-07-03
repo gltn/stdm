@@ -510,7 +510,7 @@ class STRNode(EntityNode):
             result = editEntityDlg.exec_()
         except Exception as ex:
             msg = ex.message
-            QMessageBox.information(None,QApplication.translate("STRNode","Updating STR Model"),msg)
+            QMessageBox.critical(None,QApplication.translate("STRNode","Updating STR Model"),msg)
 
 
 class SpatialUnitNode(EntityNode):
