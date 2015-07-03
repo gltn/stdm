@@ -6,5 +6,6 @@ from nodes import (
 )
 from formatters import (
     EntityNodeFormatter,
-    STRNodeFormatter
+    STRNodeFormatter,
+    TestFormatter
 )

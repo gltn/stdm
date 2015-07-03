@@ -366,10 +366,10 @@ class STDMQGISLoader(object):
         QApplication.translate("ViewSTRToolbarAction","View Social Tenure Relationship"),
         self.iface.mainWindow())
 
-        self.wzdAct = QAction(QIcon(":/plugins/stdm/images/icons/browse_all.png"),\
+        self.wzdAct = QAction(QIcon(":/plugins/stdm/images/icons/table_designer.png"),\
                     QApplication.translate("WorkspaceConfig","Design Forms"), self.iface.mainWindow())
         self.wzdAct.setShortcut(Qt.Key_F7)
-        self.ModuleAct = QAction(QIcon(":/plugins/stdm/images/icons/browse_all.png"),\
+        self.ModuleAct = QAction(QIcon(":/plugins/stdm/images/icons/table_designer.png"),\
                     QApplication.translate("WorkspaceConfig","Modules"), self.iface.mainWindow())
 
 
@@ -472,7 +472,6 @@ class STDMQGISLoader(object):
                 # Add core modules to the report configuration
 
         #Create content groups and add items
-
         self.contentAuthCntGroup = ContentGroup(username)
         self.contentAuthCntGroup.addContentItem(contentAuthCnt)
         self.contentAuthCntGroup.setContainerItem(self.contentAuthAct)
