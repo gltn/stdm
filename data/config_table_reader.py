@@ -154,9 +154,12 @@ class ConfigTableReader(object):
             #for item in tableAttrib:
              #   colVals.append(item.values())
             columnModel = EntityColumnModel(colHeaders, colVals)
+
             return columnModel
+
         else: 
             return None
+
     def column_labels(self,col_list):
         """
         Method to read and return the defined column labels for the table as a model
