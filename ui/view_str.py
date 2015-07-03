@@ -47,7 +47,6 @@ from stdm.navigation.socialtenure import (
     EntityNode,
     EntityNodeFormatter,
     SpatialUnitNode,
-    TestFormatter,
     STRNode
 )
 from stdm.security import Authorizer
@@ -240,7 +239,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                 return
 
             if formattedNode is not None:
-                pass #self._load_root_node(formattedNode)
+                self._load_root_node(formattedNode)
 
     def clearSearch(self):
         """
@@ -639,7 +638,6 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         """
         Asynchronously loads an entity's attribute values.
         """
-        '''
         self.asyncStarted.emit()
 
         #Create model worker
@@ -658,8 +656,6 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
 
         #Start thread
         workerThread.start()
-        '''
-        pass
 
     def validate(self):
         """
@@ -718,7 +714,7 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
             self.formatter.setData(results)
             model_root_node = self.formatter.root()
 
-        return model_root_node, [], search_term
+        return model_root_node, results, search_term
 
     def reset(self):
         """
@@ -801,7 +797,7 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         Slot raised when the user selects a different filter column.
         """
         self.txtFilterPattern.clear()
-        #self.loadAsync()
+        self.loadAsync()
 
 class EntityConfiguration(object):
     """
