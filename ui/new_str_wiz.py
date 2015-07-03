@@ -504,7 +504,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         '''       
         propty=Table('spatial_unit',Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
         session=STDMDb.instance().session
-        prop =session.query(propty).filter(propty.c.spatial_unit_id == str(propid)).first()
+        prop =session.query(propty).filter(propty.c.code == unicode(propid)).first()
         if prop:
             propMapping = self._mapPropertyAttributes(prop)
             

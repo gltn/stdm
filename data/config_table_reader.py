@@ -179,7 +179,8 @@ class ConfigTableReader(object):
         :return:tables: List
         """
         if not social_tenure_tables(activeProfile()):
-            return None
+            return []
+
         else:
             return social_tenure_tables(activeProfile())
 

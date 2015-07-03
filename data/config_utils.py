@@ -67,8 +67,8 @@ def tableCols(table):
 
 def table_searchable_cols(table):
         #Get table columns from the config file
-        profileName=activeProfile()
-        cols = tableColumns(profileName,table)
+        profileName = activeProfile()
+        cols = tableColumns(profileName, table)
         return [col.get('Column label') for col in cols if col.get('Searchable') == 'yes']
     
 def tableColType(table):
