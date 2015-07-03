@@ -88,5 +88,6 @@
     <file>images/icons/photo_64.png</file>
     <file>images/icons/photo_512.png</file>
     <file>images/icons/layer.gif</file>
+    <file>images/icons/table_designer.png</file>
   </qresource>
 </RCC>

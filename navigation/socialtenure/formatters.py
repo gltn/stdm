@@ -87,6 +87,9 @@ class STRNodeFormatter(object):
         raise NotImplementedError(QApplication.translate("STRFormatterBase",
                                                          "Method should be implemented by subclasses"))
 
+class TestFormatter(STRNodeFormatter):
+    def root(self):
+        return self.rootNode
 
 class EntityNodeFormatter(STRNodeFormatter):
     """
@@ -329,6 +332,7 @@ class EntityNodeFormatter(STRNodeFormatter):
 
     def root(self):
         for ed in self._data:
+            '''
             disp_mapping = self._format_display_mapping(ed,
                                                         self._config.filterColumns,
                                                         self._numeric_char_cols)
@@ -354,6 +358,8 @@ class EntityNodeFormatter(STRNodeFormatter):
             else:
                 #The parent node now refers to STR data so we render accordingly
                 str_node = self._create_str_node(self.rootNode, ed)
+            '''
+            pass
 
         return self.rootNode
     
