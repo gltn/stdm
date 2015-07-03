@@ -127,6 +127,7 @@ class DeclareMapping(object):
                 attribs[col] = col.replace('_', ' ').title()
         else:
             return None
+
         return attribs
         
     def column_mapping_for_table(self, table):

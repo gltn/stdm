@@ -325,7 +325,7 @@ class SourceDocumentManager(QObject):
             #modelObj =source_documents.get(DEFAULT_DOCUMENT)[0]
         return source_documents
 
-    def save_model_objects(self):
+    def model_objects(self):
         """
         Method to return all the model object for suporting document be inserted into table
         :return:
@@ -334,9 +334,7 @@ class SourceDocumentManager(QObject):
 
         soc_doc = document_type_class.get(DEFAULT_DOCUMENT)()
         if len(self.sourceDocuments().get(DEFAULT_DOCUMENT)) > 0:
-            for model_obj in self.sourceDocuments().get(DEFAULT_DOCUMENT):
-                model_obj.save()
-                QMessageBox.information(None,"Returned Id",str(model_obj.id))
+            return [model_obj for model_obj in self.sourceDocuments().get(DEFAULT_DOCUMENT)]
 
     def clean_up(self):
         """

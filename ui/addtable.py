@@ -78,6 +78,7 @@ class TableEditor(QDialog, Ui_table):
         tableDesc = str(self.txtDesc.text())
         attrib['name'] = self.table
         attrib['fullname'] = tableDesc
+        attrib['editable'] = 'no'
         if self.checkTableExist() == True:
             self.ErrorInfoMessage(QApplication.translate("TableEditor","Table already exist in the configuration file"))
             return
