@@ -35,8 +35,8 @@ from stdm.utils import (
     PLUGIN_DIR
 )
 
-_postGISTables = ["spatial_ref_sys"]
-_postGISViews = ["geometry_columns","raster_columns","geography_columns","raster_overviews"]
+_postGISTables = ["spatial_ref_sys","str_relations","supporting_document"]
+_postGISViews = ["geometry_columns","raster_columns","geography_columns","raster_overviews","foreign_key_references"]
 
 _pg_numeric_col_types = ["smallint","integer","bigint","double precision",
                       "numeric","decimal","real","smallserial","serial",
