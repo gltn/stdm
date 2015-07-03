@@ -161,10 +161,11 @@ class DocumentGeneratorDialogWrapper(object):
         corresponding EntityConfig objects.
         """
         try:
-            tables = self._config_table_reader.current_profile_tables()
+            tables = self._config_table_reader.social_tenure_tables()
 
-            for i, t in enumerate(tables):
-                if i < 1:
+            for t in tables:
+                #Ensure 'supporting_document' table is not in the list
+                if t.find("supporting_document") == -1:
                     entity_cfg = self._entity_config_from_table(t)
 
                     if not entity_cfg is None:

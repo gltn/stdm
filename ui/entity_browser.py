@@ -36,16 +36,15 @@ from stdm.ui.forms import (
         CustomFormDialog,
         LookupModeller
 )
- 
 
 __all__ = ["EntityBrowser","EnumeratorEntityBrowser","EntityBrowserWithEditor", \
            "ContentGroupEntityBrowser","RespondentEntityBrowser","WitnessEntityBrowser", \
            "FarmerEntityBrowser","SurveyEntityBrowser"]
 
 class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
-    '''
-    Database model entity browser.
-    ''' 
+    """
+    Dialog browsing entities in a table view.
+    """
     
     '''
     Custom signal that is raised when the dialog is in SELECT state. It contains
@@ -53,22 +52,23 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
     '''
     recordSelected = pyqtSignal(int)
     
-    def __init__(self,parent=None,dataModel = None,state = MANAGE):
+    def __init__(self, parent=None, dataModel=None, state=MANAGE):
         QDialog.__init__(self,parent)
         self.setupUi(self)
         SupportsManageMixin.__init__(self,state)
-        
-        self._dbmodel = dataModel
+
+        #Refresh data source so that display mapping reference  is correct
+        self._data_source_name = dataModel.__name__.lower()
+        self._dbmodel = DeclareMapping.instance().tableMapping(self._data_source_name)
         self._state = state
         self._tableModel = None
         self._dataInitialized = False
         self._notifBar = NotificationBar(self.vlNotification)
         self._cellFormatters = {}
-        #self._dateFormatter = dateFormatter
         
         #Connect signals
-        self.connect(self.buttonBox,SIGNAL("accepted ()"),self.onAccept)
-        self.connect(self.tbEntity,SIGNAL("doubleClicked (const QModelIndex&)"),self.onDoubleClickView)
+        self.buttonBox.accepted.connect(self.onAccept)
+        self.tbEntity.doubleClicked[QModelIndex].connect(self.onDoubleClickView)
         
     def setDatabaseModel(self,databaseModel):
         '''
@@ -156,7 +156,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
         
         rowStr = "row" if numRecords == 1 else "rows"
         windowTitle = "{0} - {1} {2}".format(str(self.title()), \
-                                                  str(QApplication.translate("EntityBrowser", str(numRecords))),rowStr)
+                                                  unicode(QApplication.translate("EntityBrowser", str(numRecords))),rowStr)
         self.setWindowTitle(windowTitle)
         
         return numRecords
@@ -165,9 +165,10 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
         '''
         Set table model and load data into it.
         '''
-        if self._dbmodel != None:
-            headers = self._dbmodel.displayMapping().values()
-            modelAttrs = self._dbmodel.displayMapping().keys()
+        if not self._dbmodel is None:
+            display_mapping = self._dbmodel.displayMapping()
+            headers = display_mapping.values()
+            modelAttrs = display_mapping.keys()
             
             '''
             Load entity data. There might be a better way in future in order to ensure that
@@ -177,7 +178,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
                         
             #Load progress dialog
             progressLabel = QApplication.translate("EntityBrowser", "Fetching Records...")
-            progressDialog = QProgressDialog(progressLabel,"",0,numRecords,self)
+            progressDialog = QProgressDialog(progressLabel,"", 0,numRecords,self)
             
             entity = self._dbmodel()
             entityRecords = entity.queryObject().filter().all()
@@ -190,7 +191,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
                 progressDialog.setValue(i)
                 try:
                     for attr in modelAttrs:
-                        attrVal = getattr(er,attr)
+                        attrVal = getattr(er, attr)
 
                         #Check if there are display formatters and apply if one exists for the given attribute
                         if attr in self._cellFormatters:
@@ -201,7 +202,8 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
 
                         entityRowInfo.append(attrVal)
                 except Exception as ex:
-                    QMessageBox.information(None, QApplication.translate("EntityBrowser", "Loading dialog"), str(ex.message) )
+                    QMessageBox.critical(self, QApplication.translate("EntityBrowser", "Loading Entity"),
+                                         unicode(ex.message))
                     return
 
                 entityRecordsList.append(entityRowInfo)
@@ -587,8 +589,6 @@ class PriorityEntityBrowser(EntityBrowserWithEditor):
     def title(self):
         return QApplication.translate("WitnessEntityBrowser", "Witness Records")
 
-
-
 class WitnessEntityBrowser(EntityBrowserWithEditor):
     '''
     Browser for witness records.
@@ -661,19 +661,19 @@ class ForeignKeyBrowser(EntityBrowser):
     def __init__(self, parent=None, table=None, state=MANAGE):
         model = table
 
-        if isinstance(table, str):
+        if isinstance(table, str) or isinstance(table, unicode):
             mapping = DeclareMapping.instance()
             model = mapping.tableMapping(table)
-            self._ds_name = table
+            self._data_source_name = table
 
         else:
-            self._ds_name = table.__name__
+            self._data_source_name = table.__name__
 
         EntityBrowser.__init__(self, parent, model, state)
 
     def title(self):
         return QApplication.translate("EnumeratorEntityBrowser",
-                    "%s Entity Records")%(self._ds_name).replace("_"," ").capitalize()
+                    "%s Entity Records")%(self._data_source_name).replace("_"," ").capitalize()
 
 class SurveyEntityBrowser(ContentGroupEntityBrowser):
     '''
