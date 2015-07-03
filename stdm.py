@@ -1118,7 +1118,7 @@ class STDMQGISLoader(object):
             profile = unicode(default[0])
 
         exceptions_list = ['spatial_unit','str_relations']
-        
+
         moduleList = handler.tableNames(profile)
         moduleList.extend(handler.lookupTable())
         self.pgTableMapper(moduleList)

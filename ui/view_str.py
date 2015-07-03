@@ -147,14 +147,16 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             tables = self._config_table_reader.social_tenure_tables()
 
             for t in tables:
-                entity_cfg = self._entity_config_from_table(t)
+                #Ensure 'supporting_document' table is not in the list
+                if t.find("supporting_document") == -1:
+                    entity_cfg = self._entity_config_from_table(t)
 
-                if not entity_cfg is None:
-                    entity_widget = self.add_entity_config(entity_cfg)
-                    entity_widget.setNodeFormatter(
-                        EntityNodeFormatter(entity_cfg, self.tvSTRResults,
-                                            self)
-                    )
+                    if not entity_cfg is None:
+                        entity_widget = self.add_entity_config(entity_cfg)
+                        entity_widget.setNodeFormatter(
+                            EntityNodeFormatter(entity_cfg, self.tvSTRResults,
+                                                self)
+                        )
 
         except ProfileException as pe:
             self._notif_bar.clear()
