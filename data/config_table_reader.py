@@ -101,6 +101,16 @@ class ConfigTableReader(object):
 
         except ProfileException:
             raise
+
+    def table_columns(self, table):
+        """
+        :param table: Name of the table.
+        :type table: str
+        :return: Returns a list of the columns of the specified in order in
+        which they were created.
+        :rtype: list
+        """
+        return tableCols(table)
     
     def fulltableList(self):
         tbList = tableLookUpCollection()

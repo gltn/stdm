@@ -50,7 +50,7 @@ class STRNodeFormatter(object):
     def __init__(self, config, treeview=None, parentwidget=None):
         self._config = config
 
-        headers = self._config.filterColumns.values()
+        headers = self._config.displayColumns.values()
         idx = getIndex(headers, "Id")
         if idx != -1:
             id_ref = headers.pop(idx)
@@ -333,7 +333,7 @@ class EntityNodeFormatter(STRNodeFormatter):
     def root(self):
         for ed in self._data:
             disp_mapping = self._format_display_mapping(ed,
-                                                        self._config.filterColumns,
+                                                        self._config.displayColumns,
                                                         self._numeric_char_cols)
 
             # Get the related STR entities
