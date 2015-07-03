@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_new_str.ui'
 #
-# Created: Thu Feb 19 17:11:23 2015
+# Created: Thu Jul 02 09:58:53 2015
 #      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -170,9 +170,6 @@ class Ui_frmNewSTR(object):
         self.cboSTRType.setMinimumSize(QtCore.QSize(0, 30))
         self.cboSTRType.setObjectName(_fromUtf8("cboSTRType"))
         self.gridLayout_11.addWidget(self.cboSTRType, 1, 1, 1, 1)
-        self.chkSTRAgreement = QtGui.QCheckBox(self.frmWizSTRType)
-        self.chkSTRAgreement.setObjectName(_fromUtf8("chkSTRAgreement"))
-        self.gridLayout_11.addWidget(self.chkSTRAgreement, 2, 1, 1, 1)
         frmNewSTR.addPage(self.frmWizSTRType)
         self.frmWizSourceDocs = QtGui.QWizardPage()
         self.frmWizSourceDocs.setObjectName(_fromUtf8("frmWizSourceDocs"))
@@ -281,9 +278,10 @@ class Ui_frmNewSTR(object):
         self.label_4.setObjectName(_fromUtf8("label_4"))
         self.gridLayout_6.addWidget(self.label_4, 0, 0, 1, 1)
         self.gridLayout.addLayout(self.gridLayout_6, 0, 1, 1, 1)
-        self.widget = QtGui.QWidget(self.frmWizSourceDocs)
-        self.widget.setObjectName(_fromUtf8("widget"))
-        self.vlSourceDocNotif = QtGui.QVBoxLayout(self.widget)
+        self.layoutWidget = QtGui.QWidget(self.frmWizSourceDocs)
+        self.layoutWidget.setGeometry(QtCore.QRect(0, 0, 100, 30))
+        self.layoutWidget.setObjectName(_fromUtf8("layoutWidget"))
+        self.vlSourceDocNotif = QtGui.QVBoxLayout(self.layoutWidget)
         self.vlSourceDocNotif.setMargin(0)
         self.vlSourceDocNotif.setObjectName(_fromUtf8("vlSourceDocNotif"))
         frmNewSTR.addPage(self.frmWizSourceDocs)
@@ -323,7 +321,7 @@ class Ui_frmNewSTR(object):
         self.frmWizProperty.setTitle(_translate("frmNewSTR", "Property information", None))
         self.frmWizProperty.setSubTitle(_translate("frmNewSTR", "Select the land and building information.", None))
         self.txtPropID.setPlaceholderText(_translate("frmNewSTR", "Enter the unique property ID", None))
-        self.gpOpenLayers.setTitle(_translate("frmNewSTR", "Preview Property:", None))
+        self.gpOpenLayers.setTitle(_translate("frmNewSTR", "Preview Spatial Unit:", None))
         self.groupBox_2.setTitle(_translate("frmNewSTR", "Choose Base Layer", None))
         self.rbGMaps.setText(_translate("frmNewSTR", "Google Maps", None))
         self.rbOSM.setText(_translate("frmNewSTR", "Open Street Maps", None))
@@ -333,8 +331,7 @@ class Ui_frmNewSTR(object):
         self.label_9.setText(_translate("frmNewSTR", "+", None))
         self.frmWizSTRType.setTitle(_translate("frmNewSTR", "Social Tenure Relationship (STR) Type", None))
         self.frmWizSTRType.setSubTitle(_translate("frmNewSTR", "Select the type pf relationship that the specified person has with the selected property.", None))
-        self.label_15.setText(_translate("frmNewSTR", "STR Type", None))
-        self.chkSTRAgreement.setText(_translate("frmNewSTR", "A written agreement is available", None))
+        self.label_15.setText(_translate("frmNewSTR", "Social Tenure Relation Type", None))
         self.frmWizSourceDocs.setTitle(_translate("frmNewSTR", "Source Documents", None))
         self.frmWizSourceDocs.setSubTitle(_translate("frmNewSTR", "Upload one or more documents.", None))
         self.groupBox_3.setTitle(_translate("frmNewSTR", "Supporting Documents", None))
@@ -353,3 +350,4 @@ class Ui_frmNewSTR(object):
         self.label_18.setText(_translate("frmNewSTR", "If you want to review or change any selections, click Back. If you are satisified with the selections, click Finish.", None))
 
 from PyQt4 import QtWebKit
+import resources_rc

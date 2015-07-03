@@ -28,7 +28,8 @@ from PyQt4.QtCore import (
     pyqtSignal,
     SIGNAL,
     QEvent,
-    QThread
+    QThread,
+    QDate
 )
 from PyQt4.QtGui import *
 
@@ -42,7 +43,8 @@ from stdm.network import (
     NetworkFileManager,
     DocumentTransferWorker
 )
-#from stdm.data import SourceDocument
+from stdm.ui.stdmdialog import DeclareMapping
+from stdm.data import STDMDb
 from stdmdialog import DeclareMapping
 from stdm.settings import (
     RegistryConfig,
@@ -54,7 +56,7 @@ from .document_viewer import DocumentViewManager
 from ui_doc_item import Ui_frmDocumentItem
 
 #Document Type Enumerations
-TITLE_DEED = 2020
+DEFAULT_DOCUMENT = 2020
 STATUTORY_REF_PAPER = 2021
 SURVEYOR_REF = 2022
 NOTARY_REF = 2023
@@ -63,20 +65,17 @@ TAX_RECEIPT_STATE = 2025
 
 #Display text for document types
 DOC_TYPE_MAPPING = {
-                  TITLE_DEED:str(QApplication.translate("sourceDocument", "Supporting Document")),
-                  STATUTORY_REF_PAPER:str(QApplication.translate("sourceDocument", "Statutory Reference Paper")),
-                  SURVEYOR_REF:str(QApplication.translate("sourceDocument", "Surveyor Reference")),
-                  NOTARY_REF:str(QApplication.translate("sourceDocument", "Notary Reference")),
-                  TAX_RECEIPT_PRIVATE:str(QApplication.translate("sourceDocument", "Tax Receipt")),
-                  TAX_RECEIPT_STATE:str(QApplication.translate("sourceDocument", "Tax Receipt"))
+                  DEFAULT_DOCUMENT:str(QApplication.translate("sourceDocument", "Supporting Document")),
+                  #STATUTORY_REF_PAPER:str(QApplication.translate("sourceDocument", "Statutory Reference Paper")),
+                  #SURVEYOR_REF:str(QApplication.translate("sourceDocument", "Surveyor Reference")),
+                  #NOTARY_REF:str(QApplication.translate("sourceDocument", "Notary Reference")),
+                  #TAX_RECEIPT_PRIVATE:str(QApplication.translate("sourceDocument", "Tax Receipt")),
+                  #TAX_RECEIPT_STATE:str(QApplication.translate("sourceDocument", "Tax Receipt"))
                   }
 
 #Display text for STR document types
 STR_DOC_TYPE_MAPPING = {}
-
-#Register for document types and corresponding db classes
-document_type_class = {}
-
+document_type_class={}
 #Mode for initializing the document widget
 UPLOAD_MODE = 2100
 DOWNLOAD_MODE = 2101
@@ -96,6 +95,10 @@ class SourceDocumentManager(QObject):
         
         #Container for document references based on their unique IDs
         self._docRefs = []
+        mapper = DeclareMapping.instance()
+
+        #STR_DOC_MODEL = mapper.tableMapping('str_relations')
+        #Register for document types and corresponding db classes
 
         #Set default manager for document viewing
         self._doc_view_manager = DocumentViewManager(self.parent_widget())
@@ -213,6 +216,7 @@ class SourceDocumentManager(QObject):
         """
         docWidget = self.sender()
         if isinstance(docWidget, DocumentWidget):
+
             self.fileUploaded.emit(docWidget.sourceDocument())
             self._docRefs.append(docWidget.fileUUID)
             
@@ -222,8 +226,8 @@ class SourceDocumentManager(QObject):
         :type source_docs: list
         """
         for source_doc in source_docs:
-            if hasattr(source_doc, "doc_type"):
-                document_type = source_doc.doc_type
+            if hasattr(source_doc, "document_type"):
+                document_type = source_doc.document_type
 
                 self.insertDocFromModel(source_doc, document_type)
                     
@@ -232,8 +236,7 @@ class SourceDocumentManager(QObject):
         Renders the source document info from a subclass of 'SupportingDocumentMixin'.
         """
         #Check if the document has already been inserted in the manager.
-        docIndex = getIndex(self._docRefs, sourcedoc.doc_identifier)
-
+        docIndex = getIndex(self._docRefs, sourcedoc.document_id)
         if docIndex != -1:
             return
 
@@ -255,7 +258,8 @@ class SourceDocumentManager(QObject):
                 self._linkWidgetRemovedSignal(docWidg)
                 docWidg.setModel(sourcedoc)
                 container.addWidget(docWidg)
-                self._docRefs.append(sourcedoc.doc_identifier)
+                self._docRefs.append(sourcedoc.document_id)
+
 
     def _doc_repository_error(self):
         msg = QApplication.translate("sourceDocumentManager","Document repository could not be found.\nPlease "
@@ -300,7 +304,7 @@ class SourceDocumentManager(QObject):
 
         return srcDocMapping
     
-    def sourceDocuments(self):
+    def sourceDocuments(self,dtype =None):
         """
         Returns all supporting document models based on the file uploads
         contained in the document manager.
@@ -318,8 +322,19 @@ class SourceDocumentManager(QObject):
                 type_docs.append(source_doc)
 
             source_documents[k] = type_docs
-
+            #modelObj =source_documents.get(DEFAULT_DOCUMENT)[0]
         return source_documents
+
+    def model_objects(self):
+        """
+        Method to return all the model object for suporting document be inserted into table
+        :return:
+        """
+        #proxies =STDMDb.instance().engine.connect()
+
+        soc_doc = document_type_class.get(DEFAULT_DOCUMENT)()
+        if len(self.sourceDocuments().get(DEFAULT_DOCUMENT)) > 0:
+            return [model_obj for model_obj in self.sourceDocuments().get(DEFAULT_DOCUMENT)]
 
     def clean_up(self):
         """
@@ -431,6 +446,9 @@ class DocumentWidget(QWidget,Ui_frmDocumentItem):
         self._fileName = ""
         self._canRemove = canRemove
         self._view_manager = view_manager
+        mapper =DeclareMapping.instance()
+        STR_DOC_MODEL = mapper.tableMapping('supporting_document')
+        document_type_class[DEFAULT_DOCUMENT]= STR_DOC_MODEL
 
         self.lblClose.installEventFilter(self)
         self.lblName.installEventFilter(self)
@@ -621,13 +639,13 @@ class DocumentWidget(QWidget,Ui_frmDocumentItem):
             if self._docType in document_type_class:
                 src_doc = document_type_class[self._docType]()
 
-                src_doc.doc_identifier = self.fileUUID
-                src_doc.file_name = self.fileInfo.fileName()
-                src_doc.doc_size = self._docSize
-                src_doc.doc_type = self._docType
-
+                src_doc.document_id = self.fileUUID
+                src_doc.filename = self.fileInfo.fileName()
+                src_doc.file_size = self._docSize
+                #src_doc.source = QDate.currentDate()
+                src_doc.document_type = self._docType
+               # src_doc.validity = QDate.currentDate()
                 self._srcDoc = src_doc
-
         return self._srcDoc
 
     def buildDisplay(self):

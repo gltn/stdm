@@ -155,3 +155,11 @@ class DeclareMapping(object):
         :return:
         """
         return self.tablecol_mapping.get(table)
+
+    def raw_table(self,table):
+        """
+        Method to return a table reflection from postgres to sqlalchemy object: not a mapper
+        :param table:
+        :return:
+        """
+        return Table(table, Base.metadata, autoload=True, autoload_with=STDMDb.instance().engine)

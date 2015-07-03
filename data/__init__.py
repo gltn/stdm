@@ -116,7 +116,8 @@ from .enums import (
     postgres_defaults,
     geometry_collections,
     stdm_core_tables,
-    RESERVED_ID
+    RESERVED_ID,
+    non_editable_tables
 )
 from .config_utils import (
     tableCols,
