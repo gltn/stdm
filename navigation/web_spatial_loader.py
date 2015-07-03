@@ -54,10 +54,10 @@ class OLStyle(object):
         settings = QSettings()
         
         #Use QGIS selection fill color
-        qgs_sel_red = settings.value("/Qgis/default_selection_color_red", 255)
-        qgs_sel_green = settings.value("/Qgis/default_selection_color_green", 255)
-        qgs_sel_blue = settings.value("/Qgis/default_selection_color_blue", 0)
-        qgs_sel_alpha = settings.value("/Qgis/default_selection_color_alpha", 255)
+        qgs_sel_red = settings.value("/Qgis/default_selection_color_red", 255, type=int)
+        qgs_sel_green = settings.value("/Qgis/default_selection_color_green", 255, type=int)
+        qgs_sel_blue = settings.value("/Qgis/default_selection_color_blue", 0, type=int)
+        qgs_sel_alpha = settings.value("/Qgis/default_selection_color_alpha", 255, type=int)
 
         sel_color = QColor(qgs_sel_red, qgs_sel_green, qgs_sel_blue,
                                          qgs_sel_alpha)
@@ -68,12 +68,6 @@ class OLStyle(object):
         self.style["strokeColor"] = "#FE2E64"
         self.style["strokeOpacity"] = 1
         self.style["strokeWidth"] = 1
-
-        '''
-        self.style["label"] = "${id}"
-        self.style["labelOutlineColor"] = "#FFFFFF"
-        self.style["labelOutlineWidth"] = 3
-        '''
 
     def setFillColor(self,color):
         """
