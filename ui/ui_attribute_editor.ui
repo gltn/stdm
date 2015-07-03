@@ -113,7 +113,7 @@
       <item row="7" column="1">
        <widget class="QCheckBox" name="checkBox">
         <property name="text">
-         <string>Yes       E.g Gender (Male/Female)</string>
+         <string>Yes       E.g. Gender (Male/Female)</string>
         </property>
        </widget>
       </item>

@@ -222,10 +222,10 @@ def moneyfmt(value, places=2, curr=CURRENCY_CODE, sep=',', dp='.',
     return ''.join(reversed(result))
         
 def guess_extension(filename):
-    '''
+    """
     Extracts the file extension from the file name. It is also enabled to work with files 
     containing double extensions.
-    '''
+    """
     root,ext = os.path.splitext(filename)
     if any([filename.endswith(x) for x in DOUBLE_FILE_EXTENSIONS]):
         root,first_ext = os.path.splitext(root)
@@ -233,9 +233,9 @@ def guess_extension(filename):
     return root,ext
 
 def gen_random_string(numbytes=10):
-    '''
+    """
     Generates a random string based on the number of bytes specified.
-    '''
+    """
     return binascii.b2a_hex(os.urandom(numbytes))
 
 def randomCodeGenerator(size=8):

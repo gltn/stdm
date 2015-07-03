@@ -11,14 +11,14 @@ from .notification import (
 from .content_auth_dlg import contentAuthDlg
 from .new_str_wiz import newSTRWiz
 from .view_str import ViewSTRWidget
-from .propertyPreview import PropertyPreviewWidget
+from .property_preview import SpatialPreview
 from .sourcedocument import (
     SourceDocumentManager,
     STR_DOC_TYPE_MAPPING,
     network_document_path,
     source_document_location
 )
-from .str_editor_dlg import STREditorDialog
+from .str_editor import SocialTenureEditor
 from .admin_unit_selector import AdminUnitSelector
 from .admin_unit_manager import (
    AdminUnitManager,

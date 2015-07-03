@@ -31,8 +31,8 @@ from ui_new_str import Ui_frmNewSTR
 from notification import NotificationBar,ERROR,INFO, WARNING
 from sourcedocument import *
 
-from stdm.data import STDMDb, Base, tableCols, table_searchable_cols, UserData
-from stdm.navigation import TreeSummaryLoader, PropertyBrowser, GMAP_SATELLITE, OSM
+from stdm.data import STDMDb, Base, tableCols, UserData, table_searchable_cols
+from stdm.navigation import TreeSummaryLoader,WebSpatialLoader, GMAP_SATELLITE, OSM
 from stdm.utils import *
 from .stdmdialog import  DeclareMapping
 
@@ -74,6 +74,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.notifPerson = NotificationBar(self.vlPersonNotif)
         
         self._initPersonFilter()
+        
         #Initialize person worker thread for fetching person objects
         self.personWorker = PersonWorker(self)
         self.connect(self.personWorker, SIGNAL("retrieved(PyQt_PyObject)"),self._loadPersonInfo)
@@ -111,14 +112,14 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         #Start background thread
         propertyWorker.start()   
         
-        self.propBrowser = PropertyBrowser(self.propWebView,self)
+        self.propBrowser = WebSpatialLoader(self.propWebView,self)
         self.connect(self.propBrowser,SIGNAL("loadError(QString)"),self._onPropertyBrowserError)
         self.connect(self.propBrowser,SIGNAL("loadProgress(int)"),self._onPropertyBrowserLoading)
         self.connect(self.propBrowser,SIGNAL("loadFinished(bool)"),self._onPropertyBrowserFinished)
         self.connect(self.propBrowser,SIGNAL("zoomChanged(int)"),self.onMapZoomLevelChanged)
             
         #Connect signals
-        QObject.connect(self.rbGMaps, SIGNAL("toggled(bool)"),self.onLoadGMaps)          
+        QObject.connect(self.rbGMaps, SIGNAL("toggled(bool)"),self.onLoadGMaps)
         QObject.connect(self.rbOSM, SIGNAL("toggled(bool)"),self.onLoadOSM)                               
             
     def initializePage(self,id):
@@ -126,7 +127,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         Initialize summary page based on user selections.
         '''
         if id == 5:
-            self.sourceDocManager.sourceDocuments()
             self.buildSummary()
             
     def initSTRType(self):
@@ -171,23 +171,21 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         rx = QRegExp("^\\d{1,12}(([.]\\d{2})*),(\\d{2})$")
         rxValidator = QRegExpValidator(rx,self)
         '''
-        self.txtCFBPAmount.setValidator(rxValidator)
-        self.txtStateReceiptAmount.setValidator(rxValidator)
-        
-        self.dtLastYearCFBP.setMaximumDate(QDate.currentDate())
-        self.dtStateReceiptDate.setMaximumDate(QDate.currentDate())
-        self.dtStateLeaseYear.setMaximumDate(QDate.currentDate())  
         '''
         self.notifSourceDoc = NotificationBar(self.vlSourceDocNotif)
         
         #Set source document manager
         self.sourceDocManager = SourceDocumentManager()
+        #self.privateTaxDocManager = SourceDocumentManager()
+        #self.stateTaxDocManager = SourceDocumentManager()
         self.sourceDocManager.registerContainer(self.vlDocTitleDeed, DEFAULT_DOCUMENT)
                
-        """
+        '''
         #Connect signals
-        """
+
+        '''
         self.connect(self.btnAddTitleDeed, SIGNAL("clicked()"),self.onUploadTitleDeed)
+        
         
     def initConflict(self):
         '''
@@ -207,7 +205,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         
         #Load summary information in the tree view
         summaryTreeLoader = TreeSummaryLoader(self.twSTRSummary)
-        summaryTreeLoader.addCollection(personMapping, QApplication.translate("newSTRWiz","Occupant Information"), 
+        summaryTreeLoader.addCollection(personMapping, QApplication.translate("newSTRWiz","Party Information"),
                                              ":/plugins/stdm/images/icons/user.png")    
         
         summaryTreeLoader.addCollection(propertyMapping, QApplication.translate("newSTRWiz","Spatial Unit Information"),
@@ -215,20 +213,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                                              
         summaryTreeLoader.addCollection(STRMapping, QApplication.translate("newSTRWiz","Social Tenure Relationship Information"), 
                                              ":/plugins/stdm/images/icons/social_tenure.png")    
-        
-        #Check if enjoyment right is specified
-        heir = QApplication.translate("Lookup","Heir")
-        selIndex= self.cboSTRType.currentIndex()        
-        #Get index of heir item
-        heirIndex = self.cboSTRType.findText(heir)   
-        if selIndex == heirIndex:
-            if self.enjoymentRight != None:
-                enjoyRightMapping = self._mapEnjoyRightSelection(self.enjoymentRight)
-                summaryTreeLoader.addCollection(enjoyRightMapping, QApplication.translate("newSTRWiz","Right of Enjoyment Information"), 
-                                             ":/plugins/stdm/images/icons/inherit.png") 
-                
+
         #Check the source documents based on the type of property
-        #if self.rbPrivateProperty.isChecked():
         srcDocMapping = self.sourceDocManager.attributeMapping()
 
         summaryTreeLoader.addCollection(srcDocMapping, QApplication.translate("newSTRWiz","Source Documents"), 
@@ -282,7 +268,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 self.notifSourceDoc.insertErrorNotification(msg)
 
         if currPageIndex == 5:
-
             isValid = self.onCreateSTR()
         return isValid
     
@@ -300,6 +285,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         
         
         socialTenureRel=self.mapping.tableMapping('social_tenure_relationship')
+        str_relation_table =self.mapping.tableMapping('str_relations')
+        STR_relation = str_relation_table()
         try:
             progDialog.setValue(1)
             socialTenure = socialTenureRel()
@@ -310,11 +297,19 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             
             socialTenure.social_tenure_type=str(self.cboSTRType.currentText())
             progDialog.setValue(6)
-                    
+            """
+            Save new STR relations and supporting documentation
+            """
             socialTenure.save()
-            self.sourceDocManager.save_model_objects()
-
+            model_objs = self.sourceDocManager.model_objects()
+            if len(model_objs)>0:
+                for model_obj in model_objs:
+                    model_obj.save()
+                    STR_relation.social_tenure_id = socialTenure.id
+                    STR_relation.source_doc_id = model_obj.id
+                    STR_relation.save()
             progDialog.setValue(7)
+            #source_doc_model = self.sourceDocManager.sourceDocuments(dtype ="TITLE DEED")
             
             #strPerson = "%s %s"%(str(self.selPerson.family_name),str(self.selPerson.other_names))          
             strMsg = str(QApplication.translate("newSTRWiz", 
@@ -329,7 +324,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         except sqlalchemy.exc.IntegrityError as ie:
             errMsg = ie.message
-            QMessageBox.critical(self, QApplication.translate("newSTRWiz", "Duplicate Values Error"),errMsg)
+            QMessageBox.critical(self, QApplication.translate("newSTRWiz", "Dublicate Relationship Error"),errMsg)
             progDialog.hide()
             isValid = False
             
@@ -424,19 +419,17 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         This is only raised once the user releases the slider with the mouse.
         '''
         zoom = self.zoomSlider.value()        
-        self.propBrowser.zoomTo(zoom)
+        self.propBrowser.zoom_to_level(zoom)
             
     def _initPersonFilter(self):
         '''
         Initializes person filter settings
-        '''         
-        cols = table_searchable_cols('party')
-        if len(cols)>1:
+        '''
+
+        cols=table_searchable_cols('party')
+        if len(cols)>0:
             for col in cols:
                 self.cboPersonFilterCols.addItem(str(QApplication.translate("newSTRWiz",col.replace('_',' ').title())), col)
-        #self.cboPersonFilterCols.addItem(str(QApplication.translate("newSTRWiz","Last Name")), cols[2])
-        #self.cboPersonFilterCols.addItem(str(QApplication.translate("newSTRWiz","Nick Name")), "nickname")
-        #self.cboPersonFilterCols.addItem(str(QApplication.translate("newSTRWiz","Identification Number")), "unique_id")            
         
     def _updatePersonCompleter(self,index):
         '''
@@ -446,7 +439,20 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         #self.txtFilterPattern.clear()
         self.cboFilterPattern.clear()
         self.tvPersonInfo.clear()
-        
+        try:
+            field_name = self.cboPersonFilterCols.currentText().replace(" ","_").lower()
+            data_list =[getattr(array,field_name) for array in self.persons if getattr(array,field_name)!=None]
+            model =QCompleter(data_list)
+            model.setCompletionMode(QCompleter.PopupCompletion)
+            model.setCaseSensitivity(Qt.CaseInsensitive)
+            self.cboFilterPattern.setCompleter(model)
+            self.cboFilterPattern.showPopup()
+        except Exception as ex:
+            msg =ex.message
+            QMessageBox.critical(self,QApplication.translate("SocialTenureRelationship", u"Error Loading values"),
+                                 QApplication.translate("SocialTenureRelationship",
+                                 u"The was an error in sorting the data with the given column, try another %s"%msg))
+            return
         self.currPersonAttr = str(self.cboPersonFilterCols.itemData(index))            
         
         #Create standard model which will always contain the id of the person row then the attribute for use in the completer
@@ -466,6 +472,9 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         Person=self.mapping.tableMapping('party')
         person=Person()
         #Get the id from the model then the value of the ID model index
+
+
+
         index =self.cboFilterPattern.currentIndex()
         personId = self.cboFilterPattern.itemData(index)
         #QMessageBox.information(None,'index',str(data))
@@ -501,12 +510,12 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
     def _updatePropertySummary(self,propid):
         '''
         Update the summary information for the selected property
-        '''       
+        '''
+        property = self.mapping.tableMapping('spatial_unit')
+        Property =property()
         #propty=Table('spatial_unit',Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
         #session=STDMDb.instance().session
-        Property = self.mapping.tableMapping('spatial_unit')
-        prop = Property()
-        prop =prop.queryObject().filter(Property.code == str(propid)).first()
+        prop =Property.queryObject().filter(property.code == unicode(propid)).first()
         if prop:
             propMapping = self._mapPropertyAttributes(prop)
             
@@ -622,13 +631,13 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         Slot raised when the user clicks to reset the property
         location in the map.
         '''
-        self.propBrowser.zoomToPropertyExtents()
+        self.propBrowser.zoom_to_extents()
        
     def overlayProperty(self):
         '''
         Overlay property boundaries on the basemap imagery
         '''                    
-        self.propBrowser.addOverlay(self.selProperty,"name")
+        self.propBrowser.add_overlay(self.selProperty,'geom_polygon')
         
     def validateEnjoymentRight(self): 
         '''
@@ -757,15 +766,97 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         
         for title in titles:
             self.sourceDocManager.insertDocumentFromFile(title,DEFAULT_DOCUMENT)
-
+            
+    def onUploadStatutoryRefPaper(self):
+        '''
+        Slot raised when the user clicks to upload a statutory reference paper
+        '''
+        statStr = QApplication.translate("newSTRWiz", 
+                                             "Specify Statutory Reference Paper File Location")
+        stats = self.selectSourceDocumentDialog(statStr)
+        
+        for stat in stats:
+            self.sourceDocManager.insertDocumentFromFile(stat,STATUTORY_REF_PAPER)
+            
+    def onUploadSurveyorRef(self):
+        '''
+        Slot raised when the user clicks to upload a surveyor reference
+        '''
+        surveyorStr = QApplication.translate("newSTRWiz", 
+                                             "Specify Surveyor Reference File Location")
+        surveyorRefs = self.selectSourceDocumentDialog(surveyorStr)
+        
+        for surveyorRef in surveyorRefs:
+            self.sourceDocManager.insertDocumentFromFile(surveyorRef,SURVEYOR_REF)
+            
+    def onUploadNotaryRef(self):
+        '''
+        Slot raised when the user clicks to upload a notary reference
+        '''
+        notaryStr = QApplication.translate("newSTRWiz", 
+                                             "Specify Notary Reference File Location")
+        notaryRefs = self.selectSourceDocumentDialog(notaryStr)
+        
+        for notaryRef in notaryRefs:
+            self.sourceDocManager.insertDocumentFromFile(notaryRef,NOTARY_REF)
+            
+    def onUploadPrivateReceiptScan(self):
+        '''
+        Slot raised when the user clicks to upload a receipt scan for private property
+        '''
+        receiptScan = QApplication.translate("newSTRWiz", 
+                                             "Specify Receipt Scan File Location")
+        scan = self.selectReceiptScanDialog(receiptScan)
+        
+        if scan != "" or scan != None:
+            #Ensure that there is only one tax receipt document before inserting
+            self.validateReceiptScanInsertion(self.privateTaxDocManager, scan, TAX_RECEIPT_PRIVATE)
+            
+    def onUploadStateReceiptScan(self):
+        '''
+        Slot raised when the user clicks to upload a receipt scan for stateland
+        '''
+        receiptScan = QApplication.translate("newSTRWiz", 
+                                             "Specify Receipt Scan File Location")
+        scan = self.selectReceiptScanDialog(receiptScan)
+        
+        if scan != "" or scan != None:
+            #Ensure that there is only one tax receipt document before inserting
+            self.validateReceiptScanInsertion(self.stateTaxDocManager, scan, TAX_RECEIPT_STATE)
+            
+    def validateReceiptScanInsertion(self,documentmanager,scan,containerid):
+        '''
+        Checks and ensures that only one document exists in the specified container.
+        '''
+        container = documentmanager.container(containerid)
+        if container.count() > 0:
+            msg = QApplication.translate("newSTRWiz", "Only one receipt scan can be uploaded.\nWould you like to replace " \
+                                         "the existing one?")
+            result = QMessageBox.warning(self,QApplication.translate("newSTRWiz","Replace Receipt Scan"),msg, QMessageBox.Yes|
+                                         QMessageBox.No)
+            if result == QMessageBox.Yes:
+                docWidget = container.itemAt(0).widget()
+                docWidget.removeDocument()
+                documentmanager.insertDocumentFromFile(scan,containerid)
+            else:
+                return
+        else:
+            documentmanager.insertDocumentFromFile(scan,containerid)
+        
     def selectSourceDocumentDialog(self,title):
-         '''
-         Displays a file dialog for a user to specify a source document
-         '''
-         last_loc_reference = self.sourceDocManager.networkResource()
-         files = QFileDialog.getOpenFileNames(self,title,last_loc_reference,"Source Documents (*.*)")
-         return files
-
+        '''
+        Displays a file dialog for a user to specify a source document
+        '''
+        files = QFileDialog.getOpenFileNames(self,title,"/home","Source Documents (*.*)")
+        return files
+    
+    def selectReceiptScanDialog(self,title):
+        '''
+        Displays a file dialog for a user to specify a file location of a receipt scan
+        '''
+        file = QFileDialog.getOpenFileName(self,title,"/home","Tax Receipt Scan (*.pdf)")
+        return file
+        
     def uploadDocument(self,path,containerid):
         '''
         Upload source document
@@ -800,10 +891,12 @@ class PropertyWorker(QThread):
         '''
         Fetch property IDs from the database
         '''
-        #mapping=DeclareMapping.instance()
         pty=Table('spatial_unit',Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
         session=STDMDb.instance().session
         properties =session.query(pty.c.code).all()
+        #pty = Property()
+
+        #properties = pty.queryObject([Property.spatial_unit_id]).all()      
         self.emit(SIGNAL("retrieved(PyQt_PyObject)"), properties)
         
         
