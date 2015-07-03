@@ -320,16 +320,17 @@ class BaseSTRNode(object):
 
         if self.signalReceivers(self._collapse_action) > 0:
             self._collapse_action.triggered.disconnect()
-        #str_editor = STREditor(self._model,self)
+
         #Connect expand/collapse signals to the respective actions
         self._expand_action.triggered.connect(lambda:self._on_expand(modelindex))
         self._collapse_action.triggered.connect(lambda: self._on_collapse(modelindex))
-        #self.editAction.triggered.connect(lambda :str_editor.onEdit(modelindex))
+        #Connect editing of STR on the model view
+        self.editAction.triggered.connect(lambda :self.onEdit(modelindex))
 
         menu.addAction(self._expand_action)
         menu.addAction(self._collapse_action)
-        #menu.addAction(self.separator)
-        #menu.addAction(self.editAction)
+        menu.addAction(self.separator)
+        menu.addAction(self.editAction)
 
     def _on_expand(self, index):
         """
@@ -495,6 +496,23 @@ class STRNode(EntityNode):
     def icon(self):
         return QIcon(":/plugins/stdm/images/icons/social_tenure.png")
 
+    def onEdit(self,index):
+        """
+        Method to force STR model editing without browser
+        """
+        #TO DO: need to remove the foreign key from display mapping to avoid the error notification
+
+        from stdm.ui.forms.mapper_dialog import CustomFormDialog
+        try:
+            editorDlg = CustomFormDialog
+            editEntityDlg = editorDlg(self, model=self._model)
+
+            result = editEntityDlg.exec_()
+        except Exception as ex:
+            msg = ex.message
+            QMessageBox.critical(None,QApplication.translate("STRNode","Updating STR Model"),msg)
+
+
 class SpatialUnitNode(EntityNode):
     """
     Node for rendering spatial unit information.
@@ -502,10 +520,6 @@ class SpatialUnitNode(EntityNode):
     def icon(self):
         return QIcon(":/plugins/stdm/images/icons/layer.gif")
 
-
-    
-        
-        
         
         
         
