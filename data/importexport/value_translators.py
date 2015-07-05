@@ -203,12 +203,9 @@ class SourceValueTranslator(object):
         :return: The mapped class that corresponds to the given table name.
         :rtype: object
         """
-        t_mapper = table_mapper(table_name)
+        from stdm.ui import DeclareMapping
 
-        if t_mapper is None:
-            return None
-
-        return t_mapper.class_
+        return DeclareMapping.instance().tableMapping(table_name)
 
     def set_parent(self, parent):
         """
