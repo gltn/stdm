@@ -47,28 +47,28 @@ _text_col_types = ["character varying", "text"]
 VIEWS = 2500
 TABLES = 2501
 
-def spatial_tables(excludeViews=False):
-    '''
+def spatial_tables(exclude_views=False):
+    """
     Returns a list of spatial table names in the STDM database.
-    '''
+    """
     t = text("select DISTINCT f_table_name from geometry_columns")
     result = _execute(t)
-        
+
     spTables = []
     views = pg_views()
-        
+
     for r in result:
         spTable = r["f_table_name"]
-        if excludeViews:
+        if exclude_views:
             tableIndex = getIndex(views,spTable)
             if tableIndex == -1:
                 spTables.append(spTable)
         else:
             spTables.append(spTable)
-            
+
     return spTables
 
-def pg_tables(schema="public",excludeLookups = False):
+def pg_tables(schema="public", exclude_lookups=False):
     """
     Returns all the tables in the given schema minus the default PostGIS tables.
     Views are also excluded. See separate function for retrieving views.
@@ -85,7 +85,7 @@ def pg_tables(schema="public",excludeLookups = False):
         #Remove default PostGIS tables
         tableIndex = getIndex(_postGISTables, tableName)
         if tableIndex == -1:
-            if excludeLookups:
+            if exclude_lookups:
                 #Validate if table is a lookup table and if it is, then omit
                 rx = QRegExp("check_*")
                 rx.setPatternSyntax(QRegExp.Wildcard)

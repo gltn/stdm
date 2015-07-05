@@ -6,9 +6,15 @@ __license__ = 'GNU Lesser General Public License (LGPL)'
 __url__ = 'http://www.unhabitat.org'
 
 from stdm.settings import QGISRegistryConfig
-
+from .exceptions import TranslatorException
 from .reader import OGRReader
 from .writer import OGRWriter
+from .value_translators import (
+    MultipleEnumerationTranslator,
+    SourceValueTranslator,
+    ValueTranslatorManager,
+    RelatedTableTranslator
+)
 
 _UIGroup = "UI"
 _lastVectorDirKey = "lastVectorFileFilterDir"
@@ -31,5 +37,6 @@ def setVectorFileDir(dir):
     """
     qgisReg = QGISRegistryConfig(_UIGroup)
     qgisReg.write({_lastVectorDirKey:dir})
+
     
     

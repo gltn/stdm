@@ -19,7 +19,10 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from datetime import date
-from collections import OrderedDict
+from collections import (
+    defaultdict,
+    OrderedDict
+)
 
 from PyQt4.QtGui import QApplication
 
@@ -46,16 +49,30 @@ from sqlalchemy.ext.declarative import (
 )
 from sqlalchemy.orm import (
     relationship,
-    backref
+    backref,
+    mapper as _mapper
 )
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.schema import Sequence
+from sqlalchemy.exc import (
+    NoSuchTableError
+)
 from sqlalchemy.sql.expression import text
 from geoalchemy2 import Geometry
 
 import stdm.data
 
 metadata=MetaData()
+
+#Registry of table names and corresponding mappers
+table_registry = defaultdict(set)
+
+def mapper(cls, table=None, *args, **kwargs):
+    tb_mapper = _mapper(cls, table, *args, **kwargs)
+    table_registry[table.name].add(tb_mapper)
+
+    return tb_mapper
+
 Base = declarative_base(metadata=metadata)
 
 class Singleton(object):
@@ -72,6 +89,7 @@ class Singleton(object):
         '''
         try:
             return self._instance
+
         #Catch null property exception and create a new instance of the class
         except AttributeError:
             self._instance = self.__decorated(*args,**kwargs)
@@ -149,6 +167,58 @@ class STDMDb(object):
         conn.close()
 
         return spatial_extension_installed
+
+def alchemy_table(table_name):
+    """
+    Get an SQLAlchemy table object based on the table_name of the table in the table..
+    :param table_name: Table Name
+    :type table_name: str
+    """
+    meta = MetaData(bind=STDMDb.instance().engine)
+
+    try:
+        return Table(table_name, meta, autoload=True)
+
+    except NoSuchTableError:
+        return None
+
+def table_mapper(table_name):
+    """
+    :param table_name: Name of the database table.
+    :type table_name: str
+    :return: Mapper for the specified table. None if it does not exist.
+    :rtype: object
+    """
+    mapper_collection = table_registry.get(table_name, None)
+
+    if mapper_collection is None or len(mapper_collection) == 0:
+        return None
+
+    return list(mapper_collection)[0]
+
+def alchemy_table_relationships(table_name):
+    """
+    Returns the relationship items configured for mapper which corresponds
+    to the given table name.
+    :param table_name: Name of the database table.
+    :return: Relationship property objects.
+    :rtype: list
+    """
+    t_mapper = table_mapper(table_name)
+
+    if t_mapper is None:
+        return []
+
+    relationships = t_mapper.relationships
+
+    relationship_names = []
+
+    for r in relationships:
+        r_names = str(r).split(".", 1)
+
+        relationship_names.append(r_names[1])
+
+    return relationship_names
         
 class Model(object):
     '''
