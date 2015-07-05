@@ -2,15 +2,19 @@ from .config import DatabaseConfig
 from connection import DatabaseConnection
 from .database import (
     AdminSpatialUnitSet,
-    Enumerator,
-    Survey,
-    Content,
-    Role,
-    Witness,
-    STDMDb,
+    alchemy_table,
+    alchemy_table_relationships,
     Base,
+    Content,
+    Enumerator,
     Model,
-    Respondent
+    Respondent,
+    Role,
+    STDMDb,
+    Survey,
+    table_mapper,
+    table_registry,
+    Witness
 )
 from .database import (
     NoPostGISError
