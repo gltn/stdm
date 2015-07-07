@@ -284,3 +284,11 @@ def get_xml_display_name(layer_name):
         if existing_layer_name == layer_name:
             # QMessageBox.information(None,"Title",display_name.text)
             return display_name.text
+
+def description_for_table(profile, table):
+    tree,root = parseRootElement()
+    str_table = []
+    filter = (".//*[@name='%s']/table")%profile
+    for elem in root.findall(filter):
+        if elem.get('name')== table:
+            return elem.get('fullname')

@@ -29,7 +29,7 @@ from PyQt4.QtCore import *
 from ui_workspace_config import Ui_STDMWizard
 from stdm.data import ConfigTableReader,deleteProfile,profileFullDescription,deleteColumn,\
 deleteTable,lookupData2List,deleteLookupChoice,SQLInsert,LicenseDocument, safely_delete_tables, stdm_core_tables, \
-    _execute, flush_session_activity, CheckableListModel, non_editable_tables
+    _execute, flush_session_activity, CheckableListModel, non_editable_tables, table_description
 
 from attribute_editor import AttributeEditor
 from .geometry_editor import GeometryEditor
@@ -96,8 +96,8 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.rbSchema.clicked.connect(self.setSqlIsertDefinition)
         self.rbSchemaNew.clicked.connect(self.setSqlIsertDefinition)
         self.btnGeomDel.clicked.connect(self.delete_geom)
-        self.cboParty.currentIndexChanged.connect(self.str_table_selection_changed)
-        self.cboSPUnit.currentIndexChanged.connect(self.str_table_selection_changed)
+        self.cboParty.currentIndexChanged.connect(self.party_str_selection_changed)
+        self.cboSPUnit.currentIndexChanged.connect(self.spatial_str_selection_changed)
 
         try:
             settings = self.tableHandler.pathSettings()
@@ -351,9 +351,14 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         p_index = cbotype.findText(text,Qt.MatchExactly)
         if p_index != -1:
             cbotype.setCurrentIndex(p_index)
+            profile = self.tableHandler.active_profile()
+            if cbotype == self.cboParty:
+                self.lblPartyDesc.setText(table_description(text))
+            else:
+                self.lblSpDesc.setText(table_description(text))
 
         else:
-            cbotype.setCurrentIndex(-1)
+            cbotype.setCurrentIndex(0)
 
     def str_tables_selected(self):
         """
@@ -363,21 +368,60 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.on_str_tables_load(self.cboParty, 'party')
         self.on_str_tables_load(self.cboSPUnit, 'spatial_unit')
 
-    def str_table_selection_changed(self, event):
-        event = Qt.MouseButton
-        if self.cboParty.currentText() == self.cboSPUnit.currentText():
-           return
-        if self.cboParty and self.cboParty.currentIndex()!=-1:
-            self.groupBox_3.setCollapsed(True)
-            self.groupBox_4.setCollapsed(False)
-        elif self.cboSPUnit and self.cboSPUnit.currentIndex()!=-1:
-            self.groupBox_3.setCollapsed(False)
-            self.groupBox_4.setCollapsed(True)
+    def party_str_selection_changed(self):
+        """
+        Method to sync the table details when party table is selected
+        :return:
+        """
+        cur_text = self.cboParty.currentText()
+        self.lblPartyDesc.setText(table_description(cur_text))
+        # if cur_text!= "" and cur_text == self.cboSPUnit.currentText():
+        #     self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader",
+        #                                                  "Party table cannot be same as spatial unit table"))
+        #     return
+        table_cols = self.tableHandler.selected_table_columns(cur_text)
+
+        self.lstPartyCol.setModel(self.table_cols_to_model(table_cols,True))
+        self.groupBox_3.setCollapsed(False)
+
+
+    def spatial_str_selection_changed(self):
+        """
+        Method to sync the table details when party table is selected
+        :return:
+        """
+        cur_text = self.cboSPUnit.currentText()
+        self.lblSpDesc.setText(table_description(cur_text))
+        # if cur_text!= "" and cur_text == self.cboParty.currentText():
+        #     self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader",
+        #                                                  "Spatial unit table cannot be same as party table"))
+        #     return
+        table_cols = self.tableHandler.selected_table_columns(cur_text)
+
+        self.lstSPCol.setModel(self.table_cols_to_model(table_cols,True))
+        self.groupBox_4.setCollapsed(False)
+
+    def table_cols_to_model(self, list, bool):
+        """
+        Method to return passed list to a checkable list model
+        :param bool, list:
+        :return: QAbstractItemModel
+        """
+        model = CheckableListModel(list)
+        model.setCheckable(bool)
+        return model
 
     def selected_str_tables(self):
         """
+        Method to write str selection in the config
         :return:
         """
+        col_collection = self.selected_table_str_column()
+        if len(col_collection.values()[0])>0:
+            self.tableHandler.set_table_str_columns(self.cboParty.currentText(),col_collection.values()[0])
+        if len(col_collection.values()[1])>0:
+            self.tableHandler.set_table_str_columns(self.cboSPUnit.currentText(), col_collection.values()[1])
+
         old_str_tables = self.tableHandler.social_tenure_tables()
         str_tables = [self.cboParty.currentText(), self.cboSPUnit.currentText()]
         if set(old_str_tables).intersection(str_tables) == set(str_tables):
@@ -386,15 +430,42 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             self.update_new_str_action()
             for table in str_tables:
                 self.tableHandler.update_str_tables(table,'yes')
+        self.tableHandler.set_str_type_collection(self.cboParty.currentText(),'party')
+        self.tableHandler.set_str_type_collection(self.cboSPUnit.currentText(),'spatial unit')
 
     def update_new_str_action(self):
         """
         Method to ensure there are no conflict in the current selection
+        Scan through the tables and set unselected tables as non str tables
         :return:
         """
         tables = self.tableHandler.current_profile_tables()
         for table in tables:
             self.tableHandler.update_str_tables(table,'no')
+
+    def selected_table_str_column(self):
+        """
+        Method to read the selected columns for str tables
+        :param table:
+        :return:
+        """
+        colitems = {}
+        plist=[]
+        splist = []
+        p_rows = self.lstPartyCol.model().rowCount()
+        for row in range(p_rows):
+            col_item = self.lstPartyCol.model().item(row)
+            if col_item.checkState()== Qt.Checked:
+                plist.append(col_item.text())
+             # QMessageBox.information(self,"items",col_item.text())
+        sp_rows = self.lstSPCol.model().rowCount()
+        for srow in range(sp_rows):
+            scol_item = self.lstSPCol.model().item(srow)
+            if scol_item.checkState()== Qt.Checked:
+                splist.append(scol_item.text())
+        colitems[self.cboParty.currentText()] = plist
+        colitems[self.cboSPUnit.currentText()] = splist
+        return colitems
 
     def update_social_tenure_tables(self):
         """
@@ -978,3 +1049,4 @@ class SocialTenureRelation(object):
                 config_tables.remove(table)
             else:
                 widget.addItem(table)
+        widget.insertItem(0,"")

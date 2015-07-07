@@ -25,6 +25,7 @@ from .xmlconfig_reader import (
     deleteProfile,
     tableFullDescription,
     tableRelations,
+    description_for_table,
     social_tenure_tables
 )
 from stdm.settings import RegistryConfig
@@ -120,6 +121,14 @@ def activeProfile():
 def tableFullname(table):
     tableFullDescription(table)
 
+def table_description(table):
+    """
+    Method to show the table description for the selected table
+    :param table:
+    :return:
+    """
+    return description_for_table(activeProfile(),table)
+
 def display_name(table):
     """
     :param table: Name of table or column.
@@ -153,3 +162,5 @@ def getOpenFileChooser(self,message,file_filter):
             return
 
         return filePath
+
+

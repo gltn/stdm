@@ -31,7 +31,7 @@ from stdm.data  import (
     nullable,
     ConfigTableReader,
     writeTableColumn,
-    setCollectiontypes,
+    table_column_exist,
     editTableColumn,
     postgres_defaults,
     RESERVED_ID,
@@ -143,6 +143,7 @@ class AttributeEditor(QDialog,Ui_editor):
         
     def writeAttributeData(self):
         #Flush the new attribute data to the xml file
+
         atType = UserData(self.cboDatatype)
         if atType in self.defaults:
             sizeval = ''
@@ -263,7 +264,13 @@ class AttributeEditor(QDialog,Ui_editor):
         if self.args!=None:
             self.updateColumnData()
         if self.args==None:
-            self.writeAttributeData()
+            if table_column_exist(self.profile, self.tableName, formatColumnName(self.txtCol.text())):
+                QMessageBox.critical(self,QApplication.translate("AttributeEditor","Duplicate Column"),
+                                    QApplication.translate("AttributeEditor",
+                                                           "The entered column name already exist"))
+                return
+            else:
+                self.writeAttributeData()
         self.clearControls()
         self.close()
 
