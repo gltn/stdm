@@ -144,6 +144,13 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             """
         if self.currentId() == 5:
             if self.cboParty.currentText()== "" or self.cboSPUnit.currentText() =="":
+                message = QApplication.translate("WorkspaceLoader","Not all str tables are selected")
+                self.ErrorInfoMessage(message)
+                validPage = False
+            if self.cboParty.currentText() == self.cboSPUnit.currentText():
+                msg = QApplication.translate("WorkspaceLoader","Party table cannot be same as "
+                                                                   "spatial unit table")
+                self.ErrorInfoMessage(msg)
                 validPage =False
 
         if self.currentId() == 6:
@@ -362,11 +369,13 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
 
     def str_tables_selected(self):
         """
-        Set default tables loaded
+        Method to read previous str tables from the config and return selected columns
         :return:
         """
         self.on_str_tables_load(self.cboParty, 'party')
         self.on_str_tables_load(self.cboSPUnit, 'spatial_unit')
+        self.update_listveiw_cols(self.lstPartyCol, self.cboParty.currentText())
+        self.update_listveiw_cols(self.lstSPCol, self.cboSPUnit.currentText())
 
     def party_str_selection_changed(self):
         """
@@ -375,35 +384,40 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         """
         cur_text = self.cboParty.currentText()
         self.lblPartyDesc.setText(table_description(cur_text))
-        # if cur_text!= "" and cur_text == self.cboSPUnit.currentText():
-        #     self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader",
-        #                                                  "Party table cannot be same as spatial unit table"))
-        #     return
         table_cols = self.tableHandler.selected_table_columns(cur_text)
-
         self.lstPartyCol.setModel(self.table_cols_to_model(table_cols,True))
+        self.update_listveiw_cols(self.lstPartyCol, cur_text)
         self.groupBox_3.setCollapsed(False)
 
 
     def spatial_str_selection_changed(self):
         """
-        Method to sync the table details when party table is selected
+        Method to sync the table details when spatial table is selected
         :return:
         """
         cur_text = self.cboSPUnit.currentText()
         self.lblSpDesc.setText(table_description(cur_text))
-        # if cur_text!= "" and cur_text == self.cboParty.currentText():
-        #     self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader",
-        #                                                  "Spatial unit table cannot be same as party table"))
-        #     return
         table_cols = self.tableHandler.selected_table_columns(cur_text)
-
         self.lstSPCol.setModel(self.table_cols_to_model(table_cols,True))
+        self.update_listveiw_cols(self.lstSPCol,cur_text)
         self.groupBox_4.setCollapsed(False)
+
+    def update_listveiw_cols(self, col_view, table):
+        """
+        Method to keep track of last checked items as str columns
+        :param table:
+        :return:
+        """
+        col_list = self.tableHandler.social_tenure_col(table)
+        c_rows = col_view.model().rowCount()
+        for row in range(c_rows):
+            col_item = col_view.model().item(row)
+            if col_item.text() in col_list:
+                col_item.setCheckState(Qt.Checked)
 
     def table_cols_to_model(self, list, bool):
         """
-        Method to return passed list to a checkable list model
+        Method to return passed table list to a checkable list model
         :param bool, list:
         :return: QAbstractItemModel
         """
@@ -413,7 +427,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
 
     def selected_str_tables(self):
         """
-        Method to write str selection in the config
+        Method to write str selection tables and columns in the config
         :return:
         """
         col_collection = self.selected_table_str_column()
@@ -457,7 +471,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             col_item = self.lstPartyCol.model().item(row)
             if col_item.checkState()== Qt.Checked:
                 plist.append(col_item.text())
-             # QMessageBox.information(self,"items",col_item.text())
+
         sp_rows = self.lstSPCol.model().rowCount()
         for srow in range(sp_rows):
             scol_item = self.lstSPCol.model().item(srow)
@@ -1049,4 +1063,4 @@ class SocialTenureRelation(object):
                 config_tables.remove(table)
             else:
                 widget.addItem(table)
-        widget.insertItem(0,"")
+        #widget.insertItem(0,"")

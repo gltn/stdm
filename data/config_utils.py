@@ -26,6 +26,7 @@ from .xmlconfig_reader import (
     tableFullDescription,
     tableRelations,
     description_for_table,
+    read_str_col_collection,
     social_tenure_tables
 )
 from stdm.settings import RegistryConfig
@@ -162,5 +163,13 @@ def getOpenFileChooser(self,message,file_filter):
             return
 
         return filePath
+
+def read_social_relation_cols(table):
+    """
+    Method to read and return all the table column participating in str
+    :param table:
+    :return:list
+    """
+    return read_str_col_collection(activeProfile(),table)
 
 

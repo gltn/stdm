@@ -57,7 +57,7 @@ nullable = {
             QApplication.translate("TableProperty",'No'): 'no'
           }
 
-stdm_core_tables = ['household', 'spatial_unit', 'party', 'natural_person', 'group', 'social_tenure_relationship', 'supporting_document']
+stdm_core_tables = ['spatial_unit', 'party', 'natural_person', 'group', 'social_tenure_relationship', 'supporting_document','str_relations']
 
 postgres_defaults = ['integer','date','boolean','time with time zone','serial',
                      'geometry','double precision','text']

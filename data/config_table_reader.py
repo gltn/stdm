@@ -46,7 +46,8 @@ from .config_utils import (
     activeProfile,
     ProfileException,
     table_searchable_cols,
-    tableCols
+    tableCols,
+    read_social_relation_cols
 )
 from stdm.settings import dataIcon
 
@@ -55,6 +56,7 @@ from stdm.settings import (
     RegistryConfig,
     PATHKEYS
 )
+from PyQt4.QtGui import QMessageBox
 
 class ConfigTableReader(object):
     def __init__(self, parent=None, args=None):
@@ -79,7 +81,6 @@ class ConfigTableReader(object):
         if table_desc:
             headers = table_desc[0].keys()
             rowData = [row.values() for row in table_desc]
-
             table_desc_model = EntityColumnModel(headers, rowData)
             return table_desc_model
     
@@ -324,3 +325,11 @@ class ConfigTableReader(object):
         :return:
         """
         str_col_collection(activeProfile(),table,collist)
+
+    def social_tenure_col(self,table):
+        """
+        Method to read str columns from config
+        :param table:
+        :return:
+        """
+        return read_social_relation_cols(table)
