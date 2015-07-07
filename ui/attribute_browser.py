@@ -95,7 +95,7 @@ class AttributeBrowser(QWidget, Ui_AttribBrowser):
     def browse_for_attribute(self):
         """
         Method to invoke foreign key browser
-        :return: dispaly column value
+        :return: display column value
         :return: row UUID
         """
         #QMessageBox.information(None, "asdfa", str(self._def_col))
@@ -108,8 +108,9 @@ class AttributeBrowser(QWidget, Ui_AttribBrowser):
             if browser_frm.model_fkid():
                 self.base_id = browser_frm.model_fkid()
         except Exception as ex:
+            msg =ex.message
             QMessageBox.information(None,QApplication.translate(u'AttributeBrowser',u'Foreign Keys'),
-            QApplication.translate('TypePropertyMapper',u"Error loading foreign keys"))
+            QApplication.translate('TypePropertyMapper',u"Error loading foreign keys"+msg))
             return
 
 

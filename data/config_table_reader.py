@@ -37,7 +37,9 @@ from stdm.data import (
     FilePaths,
     tableFullDescription,
     set_str_tables,
-    social_tenure_tables
+    social_tenure_tables,
+    str_type_tables,
+    str_col_collection
 
 )
 from .config_utils import (
@@ -306,3 +308,19 @@ class ConfigTableReader(object):
 
     def update_str_tables(self, table,level):
         set_str_tables(activeProfile(),table,level)
+
+    def set_str_type_collection(self,table, optiontype):
+        """
+        Method to update the config to show the str type of individual str table
+        :param table:
+        :return:
+        """
+        str_type_tables(activeProfile(), table, optiontype)
+
+    def set_table_str_columns(self, table, collist):
+        """
+        Method to set all the tables column participating in STR
+        :param table:
+        :return:
+        """
+        str_col_collection(activeProfile(),table,collist)

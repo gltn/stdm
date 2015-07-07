@@ -138,7 +138,28 @@ def set_str_tables(profile, table, option):
         if elem.get('name')==table:
             elem.set('is_str_table',option)
     tree.write(xml_doc, xml_declaration=True, encoding='utf-8')
-    
+
+def str_type_tables(profile, table, option):
+    tree, root = parseRootElement()
+    filter = (".//*[@name='%s']/table")%profile
+    for elem in root.findall(filter):
+        if elem.get('name')==table:
+            elem.set('str_type',option)
+    tree.write(xml_doc, xml_declaration=True, encoding='utf-8')
+
+def str_col_collection(profile, table, collist):
+    tree, root = parseRootElement()
+    filter = (".//*[@name='%s']/table")%profile
+    for elem in root.findall(filter):
+        if elem.get('name')==table:
+            node=elem.find("columns")
+            for col in node.findall('column'):
+                if col.get('name') in collist:
+                    col.set('str_col', 'yes')
+                elif col.get('name') not in collist:
+                    col.set('str_col', 'no')
+    tree.write(xml_doc, xml_declaration=True, encoding='utf-8')
+
 def editTableColumn(profile,tableName, key, value, newValue, type, size, desc,search,lookup):
     tree, root=parseRootElement()
     filter = (".//*[@name='%s']/table")%profile
