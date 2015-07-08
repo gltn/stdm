@@ -451,9 +451,10 @@ class ForeignKeyMapper(QWidget):
         '''
         Returns the primary keys of the records in the table.
         '''
+        recordIds = []
+
         if self._tableModel:
             rowCount = self._tableModel.rowCount()
-            recordIds = []
             
             for r in range(rowCount):
                 #Get ID value
@@ -461,25 +462,31 @@ class ForeignKeyMapper(QWidget):
                 modelId = modelIndex.data()
                 recordIds.append(modelId)
                     
-            return recordIds
+        return recordIds
             
     def entities(self):
         '''
         Returns the model instance(s) depending on the configuration specified by the user.
-        '''      
+        '''
         recIds = self._recordIds()
                 
         modelInstances = self._modelInstanceFromIds(recIds)
         
         if len(modelInstances) == 0:
-            return None
+            if self._supportsLists:
+                return []
+
+            else:
+                return None
+
         else:
             if self._supportsLists:
                 return modelInstances
+
             else:
                 return modelInstances[0]
             
-    def setEntities(self,entities):
+    def setEntities(self, entities):
         '''
         Insert entities into the table.
         '''
@@ -490,26 +497,27 @@ class ForeignKeyMapper(QWidget):
         else:
             self._insertModelToView(entities)
             
-    def searchModel(self,columnIndex,columnValue):
+    def searchModel(self, columnIndex, columnValue):
         '''
         Searches for 'columnValue' in the column whose index is specified by 'columnIndex' in all 
         rows contained in the model.
         '''
         if isinstance (columnValue, QVariant):
-            columnValue = str(columnValue.toString())
-            
-        if not isinstance(columnValue, str):
-            columnValue = str(columnValue)
-            
+            columnValue = unicode(columnValue.toString())
+
+        if not isinstance(columnValue, str) or \
+                not isinstance(columnValue, unicode):
+            columnValue = unicode(columnValue)
+
         columnValue = columnValue.strip()
-        
+
         proxy = QSortFilterProxyModel(self)
         proxy.setSourceModel(self._tableModel)
         proxy.setFilterKeyColumn(columnIndex)
         proxy.setFilterFixedString(columnValue)
         #Will return model index containing the primary key.
         matchingIndex = proxy.mapToSource(proxy.index(0,0))
-        
+
         return matchingIndex
     
     def _modelInstanceFromIds(self,ids):
@@ -550,8 +558,10 @@ class ForeignKeyMapper(QWidget):
 
             else:
                 return
+            
         except:
             pass
+
         dbHandler = self._dbModel()
         modelObj = dbHandler.queryObject().filter(self._dbModel.id == rec).first()
 
