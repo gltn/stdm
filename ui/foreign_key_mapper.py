@@ -558,7 +558,7 @@ class ForeignKeyMapper(QWidget):
 
             else:
                 return
-            
+
         except:
             pass
 
