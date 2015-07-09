@@ -134,4 +134,3 @@ class Ui_frmPropertyPreview(object):
 
 from PyQt4 import QtWebKit
 from mirror_map import MirrorMap
-import resources_rc
