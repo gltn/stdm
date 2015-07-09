@@ -37,14 +37,17 @@ from stdm.data import (
     FilePaths,
     tableFullDescription,
     set_str_tables,
-    social_tenure_tables
+    social_tenure_tables,
+    str_type_tables,
+    str_col_collection
 
 )
 from .config_utils import (
     activeProfile,
     ProfileException,
     table_searchable_cols,
-    tableCols
+    tableCols,
+    read_social_relation_cols
 )
 from stdm.settings import dataIcon
 
@@ -53,6 +56,7 @@ from stdm.settings import (
     RegistryConfig,
     PATHKEYS
 )
+from PyQt4.QtGui import QMessageBox
 
 class ConfigTableReader(object):
     def __init__(self, parent=None, args=None):
@@ -77,7 +81,6 @@ class ConfigTableReader(object):
         if table_desc:
             headers = table_desc[0].keys()
             rowData = [row.values() for row in table_desc]
-
             table_desc_model = EntityColumnModel(headers, rowData)
             return table_desc_model
     
@@ -306,3 +309,27 @@ class ConfigTableReader(object):
 
     def update_str_tables(self, table,level):
         set_str_tables(activeProfile(),table,level)
+
+    def set_str_type_collection(self,table, optiontype):
+        """
+        Method to update the config to show the str type of individual str table
+        :param table:
+        :return:
+        """
+        str_type_tables(activeProfile(), table, optiontype)
+
+    def set_table_str_columns(self, table, collist):
+        """
+        Method to set all the tables column participating in STR
+        :param table:
+        :return:
+        """
+        str_col_collection(activeProfile(),table,collist)
+
+    def social_tenure_col(self,table):
+        """
+        Method to read str columns from config
+        :param table:
+        :return:
+        """
+        return read_social_relation_cols(table)

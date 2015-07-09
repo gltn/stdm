@@ -26,6 +26,7 @@ from xml.etree.ElementTree import ElementTree as ET
 from collections import OrderedDict
 from configfile_paths import FilePaths
 import xml.etree.ElementTree as Elt
+from stdm.data.enums import non_editable_tables
 from PyQt4.QtGui import *
 
 try:
@@ -50,7 +51,11 @@ def XMLTableElement(profile):
     tables = []
     level = (".//*[@name='%s']/table")%profile
     for elem in root.findall(level):
-        tables.append(elem.get('name'))
+        if elem.get('name') in non_editable_tables:
+            continue
+        else:
+            tables.append(elem.get('name'))
+
     return tables
 
 def checktableExist(profile,tableName):
@@ -284,3 +289,24 @@ def get_xml_display_name(layer_name):
         if existing_layer_name == layer_name:
             # QMessageBox.information(None,"Title",display_name.text)
             return display_name.text
+
+def description_for_table(profile, table):
+    tree,root = parseRootElement()
+    str_table = []
+    filter = (".//*[@name='%s']/table")%profile
+    for elem in root.findall(filter):
+        if elem.get('name')== table:
+            return elem.get('fullname')
+
+def read_str_col_collection(profile, table):
+    tree, root = parseRootElement()
+    filter = (".//*[@name='%s']/table")%profile
+    str_cols = []
+    for elem in root.findall(filter):
+        if elem.get('name')==table:
+            node=elem.find("columns")
+            for col in node.findall('column'):
+                if col.get('str_col') == 'yes':
+                    str_cols.append(col.get('name'))
+    return str_cols
+

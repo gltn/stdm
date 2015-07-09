@@ -25,6 +25,8 @@ from .xmlconfig_reader import (
     deleteProfile,
     tableFullDescription,
     tableRelations,
+    description_for_table,
+    read_str_col_collection,
     social_tenure_tables
 )
 from stdm.settings import RegistryConfig
@@ -105,20 +107,31 @@ def foreign_key_columns(table):
 def activeProfile():
     try:
         lookupReg = regConfig.read(['currentProfile'])
-        profileName=lookupReg['currentProfile']
-
-        return profileName
-
+        #msg = QApplication.translate("ProfileException",str(lookupReg['currentProfile']))
+        #return msg
+        profile=lookupReg['currentProfile']
+        return profile
     except:
-        msg = QApplication.translate("ProfileException",
-                                     "Error in reading the current profile."
-                                     "\nThe current profile information could "
-                                     "not be read from the registry, please "
-                                     "check your settings.")
-        raise ProfileException(msg)
+        return  None
+
+    # except:
+    #     msg = QApplication.translate("ProfileException",
+    #                                  "Error in reading the current profile."
+    #                                  "\nThe current profile information could "
+    #                                  "not be read from the registry, please "
+    #                                  "check your settings.")
+    #     raise ProfileException(msg)
     
 def tableFullname(table):
     tableFullDescription(table)
+
+def table_description(table):
+    """
+    Method to show the table description for the selected table
+    :param table:
+    :return:
+    """
+    return description_for_table(activeProfile(),table)
 
 def display_name(table):
     """
@@ -153,3 +166,13 @@ def getOpenFileChooser(self,message,file_filter):
             return
 
         return filePath
+
+def read_social_relation_cols(table):
+    """
+    Method to read and return all the table column participating in str
+    :param table:
+    :return:list
+    """
+    return read_str_col_collection(activeProfile(),table)
+
+
