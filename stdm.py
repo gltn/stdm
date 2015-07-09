@@ -1110,12 +1110,13 @@ class STDMQGISLoader(object):
         """
         profile = activeProfile()
         handler = ConfigTableReader()
-
         if profile is None:
+            msg = "STDM has detected that no configuration settings exist. Please run 'Design Forms wizard' and " \
+                  "set the configuration path and other settings to get you started."
+            self.reset_content_modules_id(msg)
             #Add a default is not provided
             default = handler.STDMProfiles()
             profile = unicode(default[0])
-
         exceptions_list = ['spatial_unit','str_relations']
 
         moduleList = handler.tableNames(profile)

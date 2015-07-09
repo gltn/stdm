@@ -107,7 +107,9 @@ from .xmlconfig_writer import(
     edit_geom_column,
     write_display_name,
     write_changed_display_name,
-    set_str_tables
+    set_str_tables,
+    str_type_tables,
+    str_col_collection
 )
 
 from .configfile_paths import FilePaths
@@ -131,6 +133,7 @@ from .config_utils import (
     ProfileException,
     UserData,
     tableColType,
+    table_description,
     table_searchable_cols
 )
 from .license_doc import LicenseDocument
