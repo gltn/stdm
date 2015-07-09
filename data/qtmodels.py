@@ -269,31 +269,24 @@ class QuestionnaireTableModel(QAbstractTableModel):
         return True
     
 class UsersRolesModel(QAbstractListModel):
-    '''
+    """
     Model for showing existing system users/roles/contents in a QListView
-    '''
-    def __init__(self,users):
+    """
+    def __init__(self, users):
         QAbstractListModel.__init__(self)
-        
-        #Cache the users 
+
+        #Cache the users
         self._users = users
-        
-    def rowCount(self,parent = QModelIndex()):
+
+    def rowCount(self, parent=QModelIndex()):
         return len(self._users)
-    
+
     def data(self,index,role = Qt.DisplayRole):
         if role == Qt.DisplayRole:
             return self._users[index.row()]
-        
-        elif role == Qt.BackgroundRole:
-            if index.row() % 2 == 0:
-                #Orange
-                return ALT_COLOR_EVEN
-            else:
-                #Blue
-                return ALT_COLOR_ODD
+
         elif role == Qt.FontRole:
-            lstFont = QFont("Segoe UI", 10);
+            lstFont = QFont("Segoe UI", 10)
             return lstFont
         else:
             return None
