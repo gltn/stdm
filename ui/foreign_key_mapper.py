@@ -130,7 +130,6 @@ class ForeignKeyMapper(QWidget):
     Widget for selecting database records through an entity browser or
     using an ExpressionBuilder for filtering records.
     """
-    
     #Custom signals
     beforeEntityAdded = pyqtSignal("PyQt_PyObject")
     afterEntityAdded = pyqtSignal("PyQt_PyObject")
