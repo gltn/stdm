@@ -233,7 +233,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
             self.tbEntity.hideColumn(0)
             self.cboFilterColumn.removeItem(0)
             
-            self.tbEntity.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+            self.tbEntity.horizontalHeader().setResizeMode(QHeaderView.Interactive)
             
             #Connect signals
             self.connect(self.cboFilterColumn, SIGNAL("currentIndexChanged (int)"),self.onFilterColumnChanged)

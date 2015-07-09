@@ -219,7 +219,7 @@ class ForeignKeyMapper(QWidget):
             #First (ID) column will always be hidden
             self._tbFKEntity.hideColumn(0)
             
-            self._tbFKEntity.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+            self._tbFKEntity.horizontalHeader().setResizeMode(QHeaderView.Interactive)
 
             '''
             If expression builder is enabled then disable edit button since
