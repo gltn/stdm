@@ -112,5 +112,3 @@ class Ui_frmSysManageAccounts(object):
         self.tbUserRole.setTabText(self.tbUserRole.indexOf(self.tab_2), QtGui.QApplication.translate("frmSysManageAccounts", "Roles", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("frmSysManageAccounts", "<html><head/><body><p>Click on a role in the table on the left-hand side below then check/uncheck the users in the table on the right-hand side to add/remove them in this role.</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.tbUserRole.setTabText(self.tbUserRole.indexOf(self.tab_3), QtGui.QApplication.translate("frmSysManageAccounts", "Mappings", None, QtGui.QApplication.UnicodeUTF8))
-
-from stdm import resources_rc
