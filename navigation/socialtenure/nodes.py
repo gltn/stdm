@@ -496,7 +496,7 @@ class STRNode(EntityNode):
     def icon(self):
         return QIcon(":/plugins/stdm/images/icons/social_tenure.png")
 
-    def onEdit(self,index):
+    def onEdit(self, index):
         """
         Method to force STR model editing without browser
         """
