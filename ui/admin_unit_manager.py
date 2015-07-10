@@ -17,35 +17,54 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+from collections import OrderedDict
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import STRTreeViewModel,AdminSpatialUnitSet, STDMDb, Base
-from stdm.navigation.socialtenure import STRNodeFormatter,BaseSTRNode
+from stdm.data import (
+    STRTreeViewModel,
+    AdminSpatialUnitSet,
+    STDMDb,
+    Base
+)
+from stdm.navigation.socialtenure import (
+    STRNodeFormatter,
+    BaseSTRNode
+)
 
 from .ui_adminUnitManager import Ui_frmAdminUnitManager
-from .notification import NotificationBar,ERROR,INFO
+from .notification import NotificationBar
 from sqlalchemy import Table
 
-'''
-Tree view model implementation will be based on the STR formatter architecture.
-See source in 'stdm.navigation.socialtenure' package.
-'''
+class _AdminSpatialUnitConfiguration(object):
+    #Format of each dictionary item: property/db column name - display name
+    displayColumns = OrderedDict()
+
+    def __init__(self):
+        #Reset filter and display columns
+        self.displayColumns = OrderedDict()
+
 class AdminUnitFormatter(STRNodeFormatter):
-    '''
+    """
     Renderer for administrative spatial unit nodes.
-    '''
-    def __init__(self,treeview = None,parentwidget = None):
-        '''
+    """
+    def __init__(self, treeview=None, parentwidget=None):
+        """
         Initialize header labels then call base class constructor.
-        '''
-        headerLabels = [
-                        QApplication.translate("AdminUnitFormatter","Name"),
-                        QApplication.translate("AdminUnitFormatter","Code"),
-                        QApplication.translate("AdminUnitFormatter","ID")
-                        ]
-        
-        super(AdminUnitFormatter,self).__init__(headerLabels,treeview,parentwidget)
+        """
+        aus_cfg = _AdminSpatialUnitConfiguration()
+        aus_cfg.displayColumns["name"] = QApplication.translate(
+            "AdminUnitFormatter","Name"
+        )
+        aus_cfg.displayColumns["code"] = QApplication.translate(
+            "AdminUnitFormatter","Code"
+        )
+        aus_cfg.displayColumns["id"] = QApplication.translate(
+            "AdminUnitFormatter","ID"
+        )
+
+        super(AdminUnitFormatter,self).__init__(aus_cfg, treeview,
+                                                parentwidget)
         
     def root(self):
         '''
@@ -55,11 +74,12 @@ class AdminUnitFormatter(STRNodeFormatter):
         adminSUSet = AdminSpatialUnitSet()
         
         #Get top-level items
-        adminUnits = adminSUSet.queryObject().filter(AdminSpatialUnitSet.Parent == None).order_by(AdminSpatialUnitSet.Name)
+        adminUnits = adminSUSet.queryObject().filter(AdminSpatialUnitSet.Parent
+                                                     == None).order_by(AdminSpatialUnitSet.Name)
        
         for aus in adminUnits:
             nodeData = self._extractAdminUnitSetInfo(aus)
-            ausNode = BaseSTRNode(nodeData,self.rootNode)
+            ausNode = BaseSTRNode(nodeData, self.rootNode)
             self._populateAUSChildren(ausNode, aus)
         
         return self.rootNode
