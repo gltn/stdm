@@ -220,6 +220,7 @@ class ForeignKeyMapper(QWidget):
             self._tbFKEntity.hideColumn(0)
             
             self._tbFKEntity.horizontalHeader().setResizeMode(QHeaderView.Interactive)
+            self._tbFKEntity.verticalHeader().setVisible(True)
 
             '''
             If expression builder is enabled then disable edit button since

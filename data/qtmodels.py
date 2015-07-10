@@ -469,9 +469,12 @@ class BaseSTDMTableModel(QAbstractTableModel):
         else:            
             return None
 
-    def headerData(self,col,orientation,role):
+    def headerData(self, section,orientation,role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return self._headerdata[col]
+            return self._headerdata[section]
+
+        elif orientation == Qt.Vertical and role == Qt.DisplayRole:
+            return section + 1
         
         return None
     
@@ -517,7 +520,19 @@ class BaseSTDMTableModel(QAbstractTableModel):
         self.endRemoveRows()
         
         return True
-       
+
+class VerticalHeaderSortFilterProxyModel(QSortFilterProxyModel):
+    """
+    A sort/filter proxy model that ensures row numbers in vertical headers
+    are ordered correctly.
+    """
+
+    def headerData(self, section, orientation, role):
+        if orientation == Qt.Vertical and role == Qt.DisplayRole:
+            return section + 1
+
+        return super(VerticalHeaderSortFilterProxyModel, self).headerData(section, orientation, role)
+
 class STRTreeViewModel(QAbstractItemModel):
     """
     Model for rendering social tenure relationship nodes in a tree view.
