@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_edit_stdm_layer.ui'
 #
-# Created: Sat May  2 08:22:37 2015
+# Created: Sun Jul  5 19:55:32 2015
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,11 +26,13 @@ except AttributeError:
 class Ui_SpatialUnitManagerWidget(object):
     def setupUi(self, SpatialUnitManagerWidget):
         SpatialUnitManagerWidget.setObjectName(_fromUtf8("SpatialUnitManagerWidget"))
-        SpatialUnitManagerWidget.resize(400, 300)
+        SpatialUnitManagerWidget.resize(405, 392)
         self.dockWidgetContents = QtGui.QWidget()
         self.dockWidgetContents.setObjectName(_fromUtf8("dockWidgetContents"))
         self.gridLayout_2 = QtGui.QGridLayout(self.dockWidgetContents)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
+        spacerItem = QtGui.QSpacerItem(20, 119, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.gridLayout_2.addItem(spacerItem, 3, 0, 1, 1)
         self.groupBox = QtGui.QGroupBox(self.dockWidgetContents)
         self.groupBox.setSizeIncrement(QtCore.QSize(0, 200))
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
@@ -52,12 +54,13 @@ class Ui_SpatialUnitManagerWidget(object):
         self.layerLebel.setMaximumSize(QtCore.QSize(70, 16777215))
         self.layerLebel.setObjectName(_fromUtf8("layerLebel"))
         self.gridLayout.addWidget(self.layerLebel, 0, 0, 1, 1)
-        self.import_gpx_file_button = QtGui.QPushButton(self.groupBox)
-        self.import_gpx_file_button.setObjectName(_fromUtf8("import_gpx_file_button"))
-        self.gridLayout.addWidget(self.import_gpx_file_button, 3, 0, 1, 2)
         self.gridLayout_2.addWidget(self.groupBox, 0, 0, 1, 1)
-        spacerItem = QtGui.QSpacerItem(20, 119, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout_2.addItem(spacerItem, 2, 0, 1, 1)
+        self.groupBox_2 = QtGui.QGroupBox(self.dockWidgetContents)
+        self.groupBox_2.setObjectName(_fromUtf8("groupBox_2"))
+        self.gridLayout_2.addWidget(self.groupBox_2, 1, 0, 1, 1)
+        self.import_gpx_file_button = QtGui.QPushButton(self.dockWidgetContents)
+        self.import_gpx_file_button.setObjectName(_fromUtf8("import_gpx_file_button"))
+        self.gridLayout_2.addWidget(self.import_gpx_file_button, 2, 0, 1, 1)
         SpatialUnitManagerWidget.setWidget(self.dockWidgetContents)
 
         self.retranslateUi(SpatialUnitManagerWidget)
@@ -69,5 +72,16 @@ class Ui_SpatialUnitManagerWidget(object):
         self.add_to_canvas_button.setText(_translate("SpatialUnitManagerWidget", "Add Layer to Canvas", None))
         self.set_display_name_button.setText(_translate("SpatialUnitManagerWidget", "Set Display Name", None))
         self.layerLebel.setText(_translate("SpatialUnitManagerWidget", "Layer", None))
+        self.groupBox_2.setTitle(_translate("SpatialUnitManagerWidget", "Import Features", None))
         self.import_gpx_file_button.setText(_translate("SpatialUnitManagerWidget", "Import GPX File", None))
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtGui.QApplication(sys.argv)
+    SpatialUnitManagerWidget = QtGui.QDockWidget()
+    ui = Ui_SpatialUnitManagerWidget()
+    ui.setupUi(SpatialUnitManagerWidget)
+    SpatialUnitManagerWidget.show()
+    sys.exit(app.exec_())
 

@@ -225,5 +225,3 @@ class Ui_frmImport(object):
         self.btn_add_translator.setWhatsThis(_translate("frmImport", "<html><head/><body><p>Use value translators to transform the value from the corresponding source table column in order to adopt it to a format that adaptible to the destination column.</p></body></html>", None))
         self.btn_edit_translator.setToolTip(_translate("frmImport", "Edit value translator", None))
         self.chk_virtual.setText(_translate("frmImport", "Show virtual fields", None))
-
-import resources_rc
