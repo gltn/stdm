@@ -62,5 +62,3 @@ class Ui_frmSTRViewEntity(object):
         self.label.setText(_translate("frmSTRViewEntity", "in column", None))
         self.txtFilterPattern.setPlaceholderText(_translate("frmSTRViewEntity", "Look for", None))
         self.tbSTRViewEntity.setTabText(self.tbSTRViewEntity.indexOf(self.filter), _translate("frmSTRViewEntity", "Filter", None))
-
-import resources_rc

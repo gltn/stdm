@@ -89,7 +89,7 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
             item_lon = QTableWidgetItem(str(lon))
             self.label = QTableWidgetItem(row.GetFieldAsString(4))
 
-            gpx_layer_point = QgsPoint(lon, lat)
+            gpx_layer_point = QgsPoint(lat, lon)
 
             layer_list.append(gpx_layer_point)
 
