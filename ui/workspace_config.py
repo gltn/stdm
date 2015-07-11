@@ -152,6 +152,12 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                                                                    "spatial unit table")
                 self.ErrorInfoMessage(msg)
                 validPage =False
+            str_table = 'social_tenure_relationship'
+            if self.cboParty.currentText() ==str_table or self.cboSPUnit.currentText()==str_table:
+                msg = QApplication.translate("WorkspaceLoader",str_table+" cannot be selected as  STR table, "
+                                                                         "select another table")
+                self.ErrorInfoMessage(msg)
+                validPage =False
 
         if self.currentId() == 6:
             if self.setDatabaseSchema() == 'success' or self.rbSkip.isChecked():
@@ -372,8 +378,9 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         Method to read previous str tables from the config and return selected columns
         :return:
         """
-        self.on_str_tables_load(self.cboParty, 'party')
-        self.on_str_tables_load(self.cboSPUnit, 'spatial_unit')
+        party, spatial = self.tableHandler.social_tenure_table_types()
+        self.on_str_tables_load(self.cboParty, party)
+        self.on_str_tables_load(self.cboSPUnit, spatial)
         self.update_listveiw_cols(self.lstPartyCol, self.cboParty.currentText())
         self.update_listveiw_cols(self.lstSPCol, self.cboSPUnit.currentText())
 
@@ -388,7 +395,6 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.lstPartyCol.setModel(self.table_cols_to_model(table_cols,True))
         self.update_listveiw_cols(self.lstPartyCol, cur_text)
         self.groupBox_3.setCollapsed(False)
-
 
     def spatial_str_selection_changed(self):
         """
