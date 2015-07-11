@@ -23,7 +23,8 @@ from .qtmodels import (
     UsersRolesModel,
     PersonTableModel,
     STRTreeViewModel,
-    BaseSTDMTableModel
+    BaseSTDMTableModel,
+    VerticalHeaderSortFilterProxyModel
 )
 from .globals import app_dbconn
 from .modelformatters import respondentRoleFormatter,LookupFormatter,witnessRelationshipFormatter, \

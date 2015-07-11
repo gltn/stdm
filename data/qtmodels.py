@@ -269,31 +269,24 @@ class QuestionnaireTableModel(QAbstractTableModel):
         return True
     
 class UsersRolesModel(QAbstractListModel):
-    '''
+    """
     Model for showing existing system users/roles/contents in a QListView
-    '''
-    def __init__(self,users):
+    """
+    def __init__(self, users):
         QAbstractListModel.__init__(self)
-        
-        #Cache the users 
+
+        #Cache the users
         self._users = users
-        
-    def rowCount(self,parent = QModelIndex()):
+
+    def rowCount(self, parent=QModelIndex()):
         return len(self._users)
-    
+
     def data(self,index,role = Qt.DisplayRole):
         if role == Qt.DisplayRole:
             return self._users[index.row()]
-        
-        elif role == Qt.BackgroundRole:
-            if index.row() % 2 == 0:
-                #Orange
-                return ALT_COLOR_EVEN
-            else:
-                #Blue
-                return ALT_COLOR_ODD
+
         elif role == Qt.FontRole:
-            lstFont = QFont("Segoe UI", 10);
+            lstFont = QFont("Segoe UI", 10)
             return lstFont
         else:
             return None
@@ -476,9 +469,12 @@ class BaseSTDMTableModel(QAbstractTableModel):
         else:            
             return None
 
-    def headerData(self,col,orientation,role):
+    def headerData(self, section,orientation,role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return self._headerdata[col]
+            return self._headerdata[section]
+
+        elif orientation == Qt.Vertical and role == Qt.DisplayRole:
+            return section + 1
         
         return None
     
@@ -524,7 +520,19 @@ class BaseSTDMTableModel(QAbstractTableModel):
         self.endRemoveRows()
         
         return True
-       
+
+class VerticalHeaderSortFilterProxyModel(QSortFilterProxyModel):
+    """
+    A sort/filter proxy model that ensures row numbers in vertical headers
+    are ordered correctly.
+    """
+
+    def headerData(self, section, orientation, role):
+        if orientation == Qt.Vertical and role == Qt.DisplayRole:
+            return section + 1
+
+        return super(VerticalHeaderSortFilterProxyModel, self).headerData(section, orientation, role)
+
 class STRTreeViewModel(QAbstractItemModel):
     """
     Model for rendering social tenure relationship nodes in a tree view.
