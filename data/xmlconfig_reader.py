@@ -136,6 +136,21 @@ def social_tenure_tables(profile):
             str_table.append(elem.get('name'))
     return str_table
 
+def social_tenure_tables_type(profile):
+    """
+    Method to read tables that are part of STR definition
+    """
+    tree,root = parseRootElement()
+    party_table =''
+    sp_table = ''
+    filter = (".//*[@name='%s']/table")%profile
+    for elem in root.findall(filter):
+        if elem.get('is_str_table')== 'yes' and elem.get('str_type')=='party':
+            party_table = elem.get('name')
+        if elem.get('is_str_table')== 'yes' and elem.get('str_type')== 'spatial unit':
+            sp_table = elem.get('name')
+    return party_table, sp_table
+
 def tableLookUpCollection():
     tree, root = parseRootElement()
     tableDict = ['table','lookup']
