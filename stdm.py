@@ -57,7 +57,7 @@ from data import (
     spatial_tables,
     STDMDb,
     ConfigTableReader,
-    vector_layer
+    ConfigVersionException
 )
 
 from data.reports import SysFonts
@@ -244,18 +244,23 @@ class STDMQGISLoader(object):
             self.stdmTables = spatial_tables()
 
             try:
+                self.default_config_version()
                 self.loadModules()
                 self._user_logged_in = True
 
+            except ConfigVersionException as cve:
+                title =QApplication.translate("STDMQGISLoader","Error reading Config Version")
+                self.reset_content_modules_id(title,cve.message)
+
             except ProfileException as pe:
-                self.reset_content_modules_id(pe.message)
+                title =QApplication.translate("STDMQGISLoader","Error reading profile settings")
+                self.reset_content_modules_id(title,pe.message)
 
             except Exception as ex:
-                msg = QApplication.translate("STDMQGISLoader","\nThis error is attributed to authentication" \
-                          "\permission on modules or duplicate keys for the named table(s).\n" \
-                          "Remove content authorization for the modules or " \
-                          "deleted the modules with duplicate keys completely.")
-                self.reset_content_modules_id(unicode(ex.message + msg))
+                title =QApplication.translate("STDMQGISLoader","Error reading tables")
+                msg = QApplication.translate("STDMQGISLoader","\nCheck the configuration is okay and" \
+                          "\permission on modules or duplicate keys for the table(s).")
+                self.reset_content_modules_id(title,unicode(ex.message + msg))
 
     def loadModules(self):
         '''
@@ -1067,67 +1072,74 @@ class STDMQGISLoader(object):
         '''
         Clear database connection references and content items
         '''
-        if not self._user_logged_in:
-            return
+        try:
+            if not self._user_logged_in:
+                return
 
-        #Remove STDM layers
-        self.removeSTDMLayers()
+            #Remove STDM layers
+            self.removeSTDMLayers()
 
-        #Clear singleton ref for SQLALchemy connections
-        if not data.app_dbconn is None:
-            #clear_mappers()
-            STDMDb.cleanUp()
-            DeclareMapping.cleanUp()
+            #Clear singleton ref for SQLALchemy connections
+            if not data.app_dbconn is None:
+                #clear_mappers()
+                STDMDb.cleanUp()
+                DeclareMapping.cleanUp()
 
-        #Remove database reference
-        data.app_dbconn = None
+            #Remove database reference
+            data.app_dbconn = None
 
-        if not self.toolbarLoader is None:
-            self.toolbarLoader.unloadContent()
-        if not self.menubarLoader is None:
-            self.menubarLoader.unloadContent()
-            self.stdmMenu.clear()
-        #Reset property management window
-        if not self.propManageWindow is None:
-            self.iface.removeDockWidget(self.propManageWindow)
-            del self.propManageWindow
-            self.propManageWindow = None
+            if not self.toolbarLoader is None:
+                self.toolbarLoader.unloadContent()
+            if not self.menubarLoader is None:
+                self.menubarLoader.unloadContent()
+                self.stdmMenu.clear()
+            #Reset property management window
+            if not self.propManageWindow is None:
+                self.iface.removeDockWidget(self.propManageWindow)
+                del self.propManageWindow
+                self.propManageWindow = None
 
-        #Reset View STR Window
-        if not self.viewSTRWin is None:
-            del self.viewSTRWin
-            self.viewSTRWin = None
+            #Reset View STR Window
+            if not self.viewSTRWin is None:
+                del self.viewSTRWin
+                self.viewSTRWin = None
 
-        #Remove Spatial Unit Manager
-        if self.spatialLayerMangerDockWidget:
-            self.spatialLayerMangerDockWidget.close()
+            #Remove Spatial Unit Manager
+            if self.spatialLayerMangerDockWidget:
+                self.spatialLayerMangerDockWidget.close()
 
-        self.spatialLayerMangerDockWidget = None
+            self.spatialLayerMangerDockWidget = None
+        except:
+            pass
 
     def configTables(self):
         """
         Create a handler to read the xml config and return the table list
         """
-        profile = activeProfile()
-        handler = ConfigTableReader()
-        if profile is None:
+        try:
+            profile = activeProfile()
+            handler = self.config_loader()
+
+            if profile is None:
+
+                #Add a default is not provided
+                default = handler.STDMProfiles()
+                profile = unicode(default[0])
+            exceptions_list = ['spatial_unit','str_relations']
+
+            moduleList = handler.tableNames(profile)
+            moduleList.extend(handler.lookupTable())
+            self.pgTableMapper(moduleList)
+
+            for table in exceptions_list:
+                if table in moduleList:
+                    moduleList.remove(table)
+
+            return moduleList
+        except:
             msg = "STDM has detected that no configuration settings exist. Please run 'Design Forms wizard' and " \
                   "set the configuration path and other settings to get you started."
-            self.reset_content_modules_id(msg)
-            #Add a default is not provided
-            default = handler.STDMProfiles()
-            profile = unicode(default[0])
-        exceptions_list = ['spatial_unit','str_relations']
-
-        moduleList = handler.tableNames(profile)
-        moduleList.extend(handler.lookupTable())
-        self.pgTableMapper(moduleList)
-
-        for table in exceptions_list:
-            if table in moduleList:
-                moduleList.remove(table)
-
-        return moduleList
+            raise ProfileException(msg)
 
     def pgTableMapper(self, tableList=None):
         """
@@ -1140,14 +1152,14 @@ class STDMQGISLoader(object):
         """
         Load and open documentation manual
         """
-        handler = ConfigTableReader()
+        handler = self.config_loader()
         helpManual = handler.setDocumentationPath()
         os.startfile(helpManual,'open')
 
-    def reset_content_modules_id(self, message_text):
+    def reset_content_modules_id(self, title, message_text):
         return QMessageBox.critical(self.iface.mainWindow(),
                                     QApplication.translate("STDMQGISLoader",
-                                                           u"Error Loading Modules"),
+                                                           title),
                                     message_text)
 
     def _action_separator(self):
@@ -1165,3 +1177,31 @@ class STDMQGISLoader(object):
             self.spatialLayerMangerDockWidget.hide()
         else:
             self.spatialLayerMangerDockWidget.show()
+
+    def config_loader(self):
+        """
+        Method to provide access to config elements through the handler class
+        :return:class: config handler class
+        """
+        handler = ConfigTableReader()
+        return handler
+
+    def default_config_version(self):
+            handler = self.config_loader()
+            config_version = handler.read_config_version()
+            if config_version is not None:
+                return config_version
+            if config_version== None:
+                 msg_title = QApplication.translate("STDMQGISLoader","Update config file")
+                 msg = QApplication.translate("STDMQGISLoader","The config version installed is old and outdated."
+                                                               " STDM will try to apply the required updates")
+                 if QMessageBox.information(None,msg_title, msg,QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+                    handler.update_config_file()
+                 else:
+                     err_msg =QApplication.translate("STDMQGISLoader","The config version installed is old and outdated."
+                                                               "Delete existing configuration path or xml file in the "
+                                                                      "it and restart QGIS.")
+                     raise ConfigVersionException(err_msg)
+
+
+
