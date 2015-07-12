@@ -156,8 +156,10 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         Method to load GPS dialog
         """
         layer_map = QgsMapLayerRegistry.instance().mapLayers()
+
         if not bool(layer_map):
             QMessageBox.warning(None,"STDM","You must add a layer first, from Spatial Unit Manager to import GPX to")
+
         elif bool(layer_map):
             self.gps_tool_dialog = GPSToolDialog(self.iface, self.curr_layer, self.curr_lyr_table, self.curr_lyr_sp_col)
             self.gps_tool_dialog.show()

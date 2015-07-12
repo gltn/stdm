@@ -324,13 +324,9 @@ class BaseSTRNode(object):
         #Connect expand/collapse signals to the respective actions
         self._expand_action.triggered.connect(lambda:self._on_expand(modelindex))
         self._collapse_action.triggered.connect(lambda: self._on_collapse(modelindex))
-        #Connect editing of STR on the model view
-        self.editAction.triggered.connect(lambda :self.onEdit(modelindex))
 
         menu.addAction(self._expand_action)
         menu.addAction(self._collapse_action)
-        menu.addAction(self.separator)
-        menu.addAction(self.editAction)
 
     def _on_expand(self, index):
         """
@@ -512,6 +508,31 @@ class STRNode(EntityNode):
             msg = ex.message
             QMessageBox.critical(None,QApplication.translate("STRNode","Updating STR Model"),msg)
 
+    def manageActions(self, model_index, menu):
+        """
+        Returns a menu for managing social tenure relationship information.
+        """
+        super(STRNode, self).manageActions(model_index, menu)
+
+        editReceivers = self.signalReceivers(self.editAction)
+        if editReceivers > 0:
+            self.editAction.triggered.disconnect()
+
+        deleteReceivers = self.signalReceivers(self.deleteAction)
+        if deleteReceivers > 0:
+            self.deleteAction.triggered.disconnect()
+
+        menu.addSeparator()
+        menu.addAction(self.editAction)
+        menu.addSeparator()
+        menu.addAction(self.deleteAction)
+
+        #Disable if the user does not have permission.
+        if not self.parentWidget()._can_edit:
+            menu.setEnabled(False)
+
+        self.editAction.triggered.connect(lambda: self.onEdit(model_index))
+        self.deleteAction.triggered.connect(lambda: self.onDelete(model_index))
 
 class SpatialUnitNode(EntityNode):
     """
