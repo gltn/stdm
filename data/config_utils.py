@@ -44,6 +44,16 @@ class ProfileException(Exception):
     def __str__(self):
         return repr(self.message)
 
+class ConfigVersionException(Exception):
+    """
+    Subclass main exception handler to specific config version problem
+    """
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return repr(self.message)
+
 def formatColumnName(txtName):
     txtName = unicode(txtName).strip()
     return txtName.replace(" ", "_").lower()

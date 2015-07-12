@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <schema>
+<config version ="1.0"/>
 	<profile fullname="STDM Core Modules" name="Basic">
 		<table fullname="Party can be a person household or group" is_str_table="yes" name="party" str_type="party">
 			<columns>
@@ -12,9 +13,9 @@
 				<column fullname="date of birth" name="date_of_birth" null="yes" oldname="date_of_birth" searchable="no" size="" str_col="no" type="date" />
 				<column fullname="sex" lookup="check_gender" name="gender" null="yes" oldname="gender" searchable="no" size="25" str_col="yes" type="character varying" />
 				<column fullname="Married or not married" lookup="check_marital_status" name="marital_status" null="yes" size="50" str_col="no" type="character varying" />
-				</columns>
+			</columns>
 			<relations>
-				</relations>
+			</relations>
 			<constraints />
 			<contentgroups fullname="Party can be a person household or group" name="party">
 				<contentgroup code="{3337F9B8-4D54-45CD-BDAD-1577FD668BC7}" name="create" />
@@ -110,7 +111,10 @@
 				<value>Individual owner</value>
 				<value>Lease</value>
 				<value>Occupant</value>
-				<value>Part ownership</value><value>Shared</value><value>Others</value></data>
+				<value>Part ownership</value>
+				<value>Shared</value>
+				<value>Others</value>
+			</data>
 		</lookup>
 		<lookup fullname="" name="check_gender">
 			<columns>
@@ -134,7 +138,25 @@
 				<value>widow</value>
 			</data>
 		</lookup>
-	<table editable="no" fullname="table to store party and spatial unit relationship id and supporting documents" name="str_relations"><columns><column fullname="Primary Key" key="1" name="id" size="" type="serial" /><column fullname="Social tenure relation primary key" name="social_tenure_id" null="no" searchable="no" size="" type="integer" /><column fullname="Primary key of the supporting document" name="source_doc_id" null="yes" searchable="no" size="" type="integer" /></columns><relations><relation column="id" display_name="id" fk="social_tenure_id" name="str_id" ondelete="cascade" onupdate="cascade" table="social_tenure_relationship" /><relation column="id" display_name="id" fk="source_doc_id" name="support_doc_id" ondelete="cascade" onupdate="cascade" table="supporting_document" /></relations><constraints /><contentgroups editable="no" fullname="table to store party and spatial unit relationship id and supporting documents" name="str_relations"><contentgroup code="{2DF83894-21BF-41EC-8DE8-F07C29DD2663}" name="create" /><contentgroup code="{F59FC301-7879-4279-80C7-41154C3DEE78}" name="select" /><contentgroup code="{D17CC961-6F02-4405-A120-2C81D3EF7FC4}" name="update" /><contentgroup code="{67759748-8586-4FC2-B376-443FD81C991B}" name="delete" /></contentgroups></table></profile>
+		<table editable="no" fullname="table for store str id and supporting documents" name="str_relations">
+			<columns>
+				<column fullname="Primary Key" key="1" name="id" size="" type="serial" />
+				<column fullname="Social tenure relation primary key" name="social_tenure_id" null="no" searchable="no" size="" type="integer" />
+				<column fullname="Primary key of the supporting document" name="source_doc_id" null="yes" searchable="no" size="" type="integer" />
+			</columns>
+			<relations>
+				<relation column="id" display_name="id" fk="social_tenure_id" name="str_id" ondelete="cascade" onupdate="cascade" table="social_tenure_relationship" />
+				<relation column="id" display_name="id" fk="source_doc_id" name="support_doc_id" ondelete="cascade" onupdate="cascade" table="supporting_document" />
+			</relations>
+			<constraints />
+			<contentgroups editable="no" fullname="table to store party and spatial unit relationship id and supporting documents" name="str_relations">
+				<contentgroup code="{2DF83894-21BF-41EC-8DE8-F07C29DD2663}" name="create" />
+				<contentgroup code="{F59FC301-7879-4279-80C7-41154C3DEE78}" name="select" />
+				<contentgroup code="{D17CC961-6F02-4405-A120-2C81D3EF7FC4}" name="update" />
+				<contentgroup code="{67759748-8586-4FC2-B376-443FD81C991B}" name="delete" />
+			</contentgroups>
+		</table>
+	</profile>
 	<display_names>
 		<display_name layer_name="spatial_unit.geom_polygon">Structures</display_name>
 		<display_name layer_name="spatial_unit.geom_line">spatial_unit.geom_line</display_name>

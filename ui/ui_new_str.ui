@@ -142,10 +142,10 @@
   </widget>
   <widget class="QWizardPage" name="frmWizProperty">
    <property name="title">
-    <string>Property information</string>
+    <string>Spatial unit information</string>
    </property>
    <property name="subTitle">
-    <string>Select the land and building information.</string>
+    <string>Select the land or building information.</string>
    </property>
    <attribute name="pageId">
     <string notr="true">property</string>
@@ -208,7 +208,7 @@
        <number>50</number>
       </property>
       <property name="placeholderText">
-       <string>Enter the unique property ID</string>
+       <string>Enter the unique spatial unit ID</string>
       </property>
      </widget>
     </item>

@@ -27,7 +27,7 @@ from stdm.data import (
     profiles,
     tableLookUpCollection,
     lookupData,
-    lookupData2List,
+    config_version,
     geometryColumns,
     writeSQLFile,
     writeHTML,
@@ -342,3 +342,18 @@ class ConfigTableReader(object):
         :return:String
         """
         return social_tenure_tables_type(activeProfile())
+
+    def read_config_version(self):
+        """
+        Method to read and return the config version to avoid obsolete method
+        returning none
+        :return:
+        """
+        return config_version()
+
+    def update_config_file(self):
+        """
+        Try and update the config file if old one is detected
+        :return:
+        """
+        self.fileHandler.change_config()
