@@ -39,7 +39,8 @@ from stdm.data import (
     set_str_tables,
     social_tenure_tables,
     str_type_tables,
-    str_col_collection
+    str_col_collection,
+    social_tenure_tables_type
 
 )
 from .config_utils import (
@@ -333,3 +334,11 @@ class ConfigTableReader(object):
         :return:
         """
         return read_social_relation_cols(table)
+
+    def social_tenure_table_types(self):
+        """
+        Method to read and return the party and spatial unit str tables
+        respectively
+        :return:String
+        """
+        return social_tenure_tables_type(activeProfile())
