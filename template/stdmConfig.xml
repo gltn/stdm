@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <schema>
-<config version ="1.0"/>
+<config version ="1.1"/>
 	<profile fullname="STDM Core Modules" name="Basic">
 		<table fullname="Party can be a person household or group" is_str_table="yes" name="party" str_type="party">
 			<columns>
