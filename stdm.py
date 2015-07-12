@@ -45,7 +45,7 @@ from ui import (
     ImportData,
     ExportData
 )
-from ui.spatialUnitMangerDockWidget import SpatialUnitManagerDockWidget
+from ui.spatial_unit_manager import SpatialUnitManagerDockWidget
 from ui.reports import ReportBuilder
 import data
 from data import (

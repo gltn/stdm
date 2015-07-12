@@ -27,7 +27,7 @@ from PyQt4 import  uic
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from qgis.core import *
-from ui_edit_stdm_layer import Ui_SpatialUnitManagerWidget
+from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
 from ..data import (
     spatial_tables,
     table_column_names,
@@ -36,8 +36,7 @@ from ..data import (
 )
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'ui_edit_stdm_layer.ui'))
-
+    os.path.dirname(__file__), 'ui_spatial_unit_manager.ui'))
 
 class PostgisEditorDockWidgetDialog(QDockWidget, Ui_SpatialUnitManagerWidget):
     def __init__(self, iface):
@@ -52,15 +51,16 @@ class PostgisEditorDockWidgetDialog(QDockWidget, Ui_SpatialUnitManagerWidget):
         self._populate_layers()
         self.iface = iface
 
-
     def _populate_layers(self):
         self.stdm_layers_combo.clear()
         self._stdm_tables = {}
         self.spatial_layers = []
         self.layers_info = []
+
         for spt in spatial_tables():
             sp_columns = table_column_names(spt,True)
-            self._stdm_tables[spt]=sp_columns
+            self._stdm_tables[spt] = sp_columns
+
             #Add spatial columns to combo box
             for sp_col in sp_columns:
                 #Get column type and apply the appropriate icon
@@ -89,12 +89,18 @@ class PostgisEditorDockWidgetDialog(QDockWidget, Ui_SpatialUnitManagerWidget):
         '''
         if self.stdm_layers_combo.count() == 0:
             #Return message that there are no layers
-            QMessageBox.warning(None,"No Laers")
+            QMessageBox.warning(self, QApplication.translate("Spatial Unit Manager","No Spatial Layers"),
+                                QApplication.translate("Spatial Unit Manager","There are "
+                                                                              "no spatial layers in the STDM database."))
 
         sp_col_info= self.stdm_layers_combo.itemData(self.stdm_layers_combo.currentIndex())
         if sp_col_info is None:
             #Message: Spatial column information could not be found
-            QMessageBox.warning(None,"Spatial Column Layer Could not be found")
+            QMessageBox.warning(self,QApplication.translate("Spatial Unit Manager","Geometry Column"),
+                                    QApplication.translate("Spatial Unit Manager",
+                                        "Spatial column layer could not be found"))
+
+            return
 
         table_name,spatial_column = sp_col_info["table_name"],sp_col_info["col_name"]
 
@@ -105,9 +111,9 @@ class PostgisEditorDockWidgetDialog(QDockWidget, Ui_SpatialUnitManagerWidget):
 
     @pyqtSignature("")
     def on_set_display_name_button_clicked(self):
-        '''
+        """
         Method to change display name
-        '''
+        """
         layer_map = QgsMapLayerRegistry.instance().mapLayers()
         for name, layer in layer_map.iteritems():
             if layer == self.iface.activeLayer():
