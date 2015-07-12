@@ -85,7 +85,8 @@ from .xmlconfig_reader import (
     table_column_exist,
     check_if_display_name_exits,
     social_tenure_tables,
-    get_xml_display_name
+    get_xml_display_name,
+    social_tenure_tables_type
 )
 
 from .xmlconfig_writer import(
