@@ -51,13 +51,13 @@ import data
 from data import (
     activeProfile,
     contentGroup,
-    geometryType,
     NoPostGISError,
     ProfileException,
     spatial_tables,
     STDMDb,
     ConfigTableReader,
-    ConfigVersionException
+    ConfigVersionException,
+    Base
 )
 
 from data.reports import SysFonts
@@ -1015,7 +1015,11 @@ class STDMQGISLoader(object):
 
         dispName=QAction.text()
         if dispName == 'Social Tenure Relationship':
-            self.newSTR()
+            if self.check_str_table_exist() in Base.metadata.tables:
+                self.newSTR()
+            else:
+                msg = QApplication.translate("STDMPlugin","some required tables are missing for this function to work")
+                self.reset_content_modules_id("STR",msg)
 
         else:
             tableName=self._moduleItems.get(dispName)
@@ -1047,14 +1051,17 @@ class STDMQGISLoader(object):
         """
         Logout the user and remove default user buttons when logged in
         """
-        self.stdmInitToolbar.removeAction(self.logoutAct)
-        self.stdmInitToolbar.removeAction(self.changePasswordAct)
-        self.stdmInitToolbar.removeAction(self.wzdAct)
-        self.loginAct.setEnabled(True)
-        self.stdmInitToolbar.removeAction(self.spatialLayerManager)
-        # self.spatialLayerMangerActivate()
-        self.logoutCleanUp()
-        self.initMenuItems()
+        try:
+            self.stdmInitToolbar.removeAction(self.logoutAct)
+            self.stdmInitToolbar.removeAction(self.changePasswordAct)
+            self.loginAct.setEnabled(True)
+            self.stdmInitToolbar.removeAction(self.wzdAct)
+            self.stdmInitToolbar.removeAction(self.spatialLayerManager)
+            # self.spatialLayerMangerActivate()
+            self.logoutCleanUp()
+            self.initMenuItems()
+        except:
+            pass
 
     def removeSTDMLayers(self):
         """
@@ -1116,30 +1123,39 @@ class STDMQGISLoader(object):
         """
         Create a handler to read the xml config and return the table list
         """
+        profile = activeProfile()
+        handler = self.config_loader()
+
+        if profile is None:
+
+            #Add a default is not provided
+            default = handler.STDMProfiles()
+            profile = unicode(default[0])
+        exceptions_list = ['spatial_unit','str_relations']
+
+        moduleList = handler.tableNames(profile)
+        moduleList.extend(handler.lookupTable())
+        self.pgTableMapper(moduleList)
+        for table in exceptions_list:
+            if table in moduleList:
+                moduleList.remove(table)
+
+        return moduleList
+
+    def check_str_table_exist(self):
+        """
+        Str table is required to save str. check if it exist before saving data
+        :return:
+        """
+        handler = self.config_loader()
+        str_table = 'str_relations'
         try:
-            profile = activeProfile()
-            handler = self.config_loader()
-
-            if profile is None:
-
-                #Add a default is not provided
-                default = handler.STDMProfiles()
-                profile = unicode(default[0])
-            exceptions_list = ['spatial_unit','str_relations']
-
-            moduleList = handler.tableNames(profile)
-            moduleList.extend(handler.lookupTable())
-            self.pgTableMapper(moduleList)
-
-            for table in exceptions_list:
-                if table in moduleList:
-                    moduleList.remove(table)
-
-            return moduleList
+            if handler.chect_table_exist(str_table):
+                tableMapper = DeclareMapping.instance()
+                tmapper =tableMapper.raw_table('str_relations')
+                return tmapper.key
         except:
-            msg = "STDM has detected that no configuration settings exist. Please run 'Design Forms wizard' and " \
-                  "set the configuration path and other settings to get you started."
-            raise ProfileException(msg)
+            return None
 
     def pgTableMapper(self, tableList=None):
         """
@@ -1147,6 +1163,7 @@ class STDMQGISLoader(object):
         """
         tableMapper = DeclareMapping.instance()
         tableMapper.setTableMapping(tableList)
+
 
     def helpContents(self):
         """
@@ -1198,9 +1215,10 @@ class STDMQGISLoader(object):
                  if QMessageBox.information(None,msg_title, msg,QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
                     handler.update_config_file()
                  else:
-                     err_msg =QApplication.translate("STDMQGISLoader","The config version installed is old and outdated."
-                                                               "Delete existing configuration path or xml file in the "
-                                                                      "it and restart QGIS.")
+                     err_msg =QApplication.translate("STDMQGISLoader","STDM has detected that the version of config"
+                                                                      "  installed is old and outdated."
+                                                                      " Delete existing configuration folder"
+                                                                      " or xml file and restart QGIS.")
                      raise ConfigVersionException(err_msg)
 
 

@@ -138,7 +138,8 @@ from .config_utils import (
     tableColType,
     table_description,
     table_searchable_cols,
-    ConfigVersionException
+    ConfigVersionException,
+    current_table_exist
 )
 from .license_doc import LicenseDocument
 from .template_database import DatabaseCreator
