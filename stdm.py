@@ -1018,7 +1018,8 @@ class STDMQGISLoader(object):
             if self.check_str_table_exist() in Base.metadata.tables:
                 self.newSTR()
             else:
-                msg = QApplication.translate("STDMPlugin","some required tables are missing for this function to work")
+                msg = QApplication.translate("STDMPlugin","Some required tables are missing for this function to work"
+                                                          " 'str_relations' table is not found in the database")
                 self.reset_content_modules_id("STR",msg)
 
         else:
