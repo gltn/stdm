@@ -27,7 +27,7 @@ from stdm.data import (
     profiles,
     tableLookUpCollection,
     lookupData,
-    lookupData2List,
+    config_version,
     geometryColumns,
     writeSQLFile,
     writeHTML,
@@ -40,7 +40,8 @@ from stdm.data import (
     social_tenure_tables,
     str_type_tables,
     str_col_collection,
-    social_tenure_tables_type
+    social_tenure_tables_type,
+
 
 )
 from .config_utils import (
@@ -48,7 +49,8 @@ from .config_utils import (
     ProfileException,
     table_searchable_cols,
     tableCols,
-    read_social_relation_cols
+    read_social_relation_cols,
+    current_table_exist
 )
 from stdm.settings import dataIcon
 
@@ -342,3 +344,29 @@ class ConfigTableReader(object):
         :return:String
         """
         return social_tenure_tables_type(activeProfile())
+
+    def read_config_version(self):
+        """
+        Method to read and return the config version to avoid obsolete method
+        returning none
+        :return:
+        """
+        return config_version()
+
+    def update_config_file(self):
+        """
+        Try and update the config file if old one is detected
+        :return:
+        """
+        self.fileHandler.change_config()
+
+    def chect_table_exist(self, table):
+        """
+        If the table is already defined in config
+        :return:
+        """
+        if current_table_exist(table):
+            return True
+        else:
+            return False
+
