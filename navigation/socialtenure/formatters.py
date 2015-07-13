@@ -136,7 +136,7 @@ class EntityNodeFormatter(STRNodeFormatter):
         for c in display_cols.keys():
             if c != "id" and c in filter_cols:
                 if hasattr(model, c):
-                    k = c, c.replace("_", " ").capitalize()
+                    k = c, c.replace("_", " ").title()
                     disp_mapping[k] = getattr(model, c)
 
         return disp_mapping
