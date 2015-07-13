@@ -31,7 +31,10 @@ from PyQt4.QtGui import (
     QFileDialog,
     QVBoxLayout
 )
-from PyQt4.QtCore import SIGNAL
+from PyQt4.QtCore import (
+    Qt,
+    SIGNAL
+)
 
 from qgis.core import *
 
@@ -389,7 +392,7 @@ class BaseSTRNode(object):
             if prop in formatter:
                 attr_val = formatter[prop](attr_val)
 
-            name_val = "%s: %s" %(prop_display, attr_val)
+            name_val = "%s%s %s" %(prop_display, self.separator, attr_val)
             name_values.append(name_val)
 
         return name_values
@@ -433,9 +436,12 @@ class SupportsDocumentsNode(BaseSTRNode):
     def documents(self):
         return []
 
+    def typeInfo(self):
+        return "SUPPORTING_DOCUMENT_NODE"
+
 class EntityNode(SupportsDocumentsNode):
     """
-    Node for displaying general information purtaining to an entity.
+    Node for displaying general information pertaining to an entity.
     """
     def __init__(self, *args, **kwargs):
         self._colname_display_value = args[0]
@@ -492,21 +498,99 @@ class STRNode(EntityNode):
     def icon(self):
         return QIcon(":/plugins/stdm/images/icons/social_tenure.png")
 
+    def typeInfo(self):
+        return "STR_NODE"
+
+    def _column_name(self, node_data):
+        """
+        Return the column name from the node value.
+        """
+        n_data = unicode(node_data)
+        display_col_name = n_data.split(self.separator)[0]
+
+        return display_col_name.replace(" ", "_").lower(), display_col_name
+
+    def _update_str_node(self, index, model):
+        view_model = self._view.model()
+
+        i = 0
+        for c_node in self._children:
+            row_num = index.row() + i
+
+            if c_node.typeInfo() == "BASE_NODE":
+                idx = view_model.index(row_num, index.column(), index)
+
+                if idx.isValid():
+                    #Get column name from node display information
+                    node_data = c_node.data(0)
+                    col_name, display_name = self._column_name(node_data)
+                    if hasattr(self._model, col_name):
+                        col_value = getattr(self._model, col_name)
+                        node_value = u"{0}{1} {2}".format(display_name, self.separator, col_value)
+                        view_model.setData(idx, node_value, Qt.DisplayRole)
+
+            i += 1
+
     def onEdit(self, index):
         """
         Method to force STR model editing without browser
         """
-        #TO DO: need to remove the foreign key from display mapping to avoid the error notification
-
         from stdm.ui.forms.mapper_dialog import CustomFormDialog
+
+        if self._model is None:
+            msg = QApplication.translate("STRNode","The object representing "
+                                                   "the social tenure "
+                                                   "relationship cannot "
+                                                   "be found")
+            QMessageBox.critical(self._parentWidget,"STDM", msg)
+
+            return
+
         try:
-            editorDlg = CustomFormDialog
-            editEntityDlg = editorDlg(self, model=self._model)
+            editEntityDlg = CustomFormDialog(self, model=self._model)
 
             result = editEntityDlg.exec_()
+            if result == QDialog.Accepted:
+                self._update_str_node(index, editEntityDlg.model())
+
         except Exception as ex:
             msg = ex.message
-            QMessageBox.critical(None,QApplication.translate("STRNode","Updating STR Model"),msg)
+            QMessageBox.critical(self._parentWidget,
+                                 QApplication.translate("STRNode",
+                                                        "Updating STR Model"),
+                                 msg)
+
+    def onDelete(self, index):
+        """
+        Delete STR information.
+        """
+        del_msg = QApplication.translate("STRNode",
+                                     "This action will remove the social tenure relationship and dependent "
+                                     "supporting documents from the database. This action cannot be undone "
+                                     "and once removed, it can"
+                                     " only be recreated through"
+                                     " the  new 'Social Tenure Relationship' "
+                                     "wizard. Would you like to proceed?"
+                                     "\nClick Yes to proceed or No to cancel.")
+        del_result = QMessageBox.warning(self.parentWidget(),
+                                        QApplication.translate("STRNode",
+                                            "Delete Social Tenure Relationship"),
+                                        del_msg,
+                                        QMessageBox.Yes|QMessageBox.No)
+
+        if del_result == QMessageBox.Yes:
+            model = self._view.model()
+            model.removeAllChildren(index.row(), self.childCount(), index.parent())
+
+            #Remove source documents listings
+            self.parentWidget()._deleteSourceDocTabs()
+            self._model.delete()
+
+            #Insert NoSTR node
+            noSTRNode = NoSTRNode(self.parent())
+
+            #Notify model that we have inserted a new child i.e. NoSTRNode
+            model.insertRows(index.row(), 1, index.parent())
 
     def manageActions(self, model_index, menu):
         """
@@ -540,6 +624,9 @@ class SpatialUnitNode(EntityNode):
     """
     def icon(self):
         return QIcon(":/plugins/stdm/images/icons/layer.gif")
+
+    def typeInfo(self):
+        return "SPATIAL_UNIT_NODE"
 
         
         

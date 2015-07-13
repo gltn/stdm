@@ -537,7 +537,7 @@ class STRTreeViewModel(QAbstractItemModel):
     """
     Model for rendering social tenure relationship nodes in a tree view.
     """
-    def __init__(self,root,parent=None,view = None):
+    def __init__(self, root, parent=None, view=None):
         QAbstractItemModel.__init__(self,parent)
         self._rootNode = root
         self._view = view
@@ -545,6 +545,7 @@ class STRTreeViewModel(QAbstractItemModel):
     def rowCount(self,parent):
         if not parent.isValid():
             parentNode = self._rootNode
+
         else:
             parentNode = parent.internalPointer()
 
@@ -564,7 +565,7 @@ class STRTreeViewModel(QAbstractItemModel):
 
         return self._rootNode
 
-    def data(self,index,role):
+    def data(self, index, role):
         """
         Data to be displayed in the tree view.
         """
@@ -601,7 +602,7 @@ class STRTreeViewModel(QAbstractItemModel):
         else:
             return None
 
-    def headerData(self,section,orientation,role):
+    def headerData(self, section, orientation, role):
         """
         Set the column headers to be displayed by the tree view.
         """
@@ -610,6 +611,9 @@ class STRTreeViewModel(QAbstractItemModel):
 
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self._rootNode.data(section)
+
+        elif orientation == Qt.Vertical and role == Qt.DisplayRole:
+            return section + 1
 
         return None
 
@@ -632,7 +636,7 @@ class STRTreeViewModel(QAbstractItemModel):
         
         return self.createIndex(parentNode.row(), 0, parentNode)
     
-    def index(self,row,column,parent):
+    def index(self, row, column, parent):
         if parent.isValid() and parent.column() != 0:
             return QModelIndex()
         
@@ -645,25 +649,25 @@ class STRTreeViewModel(QAbstractItemModel):
         else:
             return QModelIndex()
         
-    def removeAllChildren(self,position,count,parent=QModelIndex()):
-        '''
+    def removeAllChildren(self, position, count, parent=QModelIndex()):
+        """
         Removes all children under the node with the specified parent index.
-        '''
+        """
         parentNode = self._getNode(parent)
         success = True
         
         self.beginRemoveRows(parent, position, position + count - 1)
         
-        success  = parentNode.clear()
+        success = parentNode.clear()
           
         self.endRemoveRows()
         
         return success
         
     def removeRows(self,position,count,parent=QModelIndex()):
-        '''
+        """
         Removes count rows starting with the given position under parent from the model.
-        '''
+        """
         parentNode = self._getNode(parent)
         success = True
         
@@ -677,9 +681,9 @@ class STRTreeViewModel(QAbstractItemModel):
         return success
     
     def insertRows(self,position,count,parent=QModelIndex()):
-        '''
+        """
         Insert children starting at the given position for the given parent item.
-        '''
+        """
         parentNode = self._getNode(parent)
         success = True
         
@@ -708,9 +712,9 @@ class STRTreeViewModel(QAbstractItemModel):
         return success
     
     def clear(self):
-        '''
+        """
         Removes all items (rows and columns) in the model.
-        '''
+        """
         rootChildrenNum = self._rootNode.childCount()
         
         self.beginResetModel()
@@ -725,20 +729,20 @@ class STRTreeViewModel(QAbstractItemModel):
         #TODO: Clear columns
         self.endResetModel()
         
-    def setData(self,index,value,role):
-        '''
+    def setData(self, index, value, role):
+        """
         Sets the role data for the item at index to value.
-        '''
-        if role != Qt.EditRole:
-            return False
-       
-        nodeItem = self._getNode(index)
-        result = nodeItem.setData(index.column(),value)
-        
-        if result:
-            self.dataChanged.emit(index,index)
-            
-        return result
+        """
+        if role == Qt.EditRole or role == Qt.DisplayRole:
+            nodeItem = self._getNode(index)
+            result = nodeItem.setData(index.column(), value)
+
+            if result:
+                self.dataChanged.emit(index,index)
+
+            return result
+
+        return False
         
         
         
