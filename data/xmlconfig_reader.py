@@ -325,3 +325,11 @@ def read_str_col_collection(profile, table):
                     str_cols.append(col.get('name'))
     return str_cols
 
+def config_version():
+    tree, root = parseRootElement()
+    for elem in root.findall('config'):
+        if elem is not None:
+            return elem.get('version')
+        else:
+            return 0
+

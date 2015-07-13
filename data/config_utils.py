@@ -27,7 +27,8 @@ from .xmlconfig_reader import (
     tableRelations,
     description_for_table,
     read_str_col_collection,
-    social_tenure_tables
+    social_tenure_tables,
+    checktableExist
 )
 from stdm.settings import RegistryConfig
 
@@ -37,6 +38,16 @@ class ProfileException(Exception):
     """
     Raised when an there are issues when reading/writing profile
     information.
+    """
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return repr(self.message)
+
+class ConfigVersionException(Exception):
+    """
+    Subclass main exception handler to specific config version problem
     """
     def __init__(self, message):
         self.message = message
@@ -174,5 +185,9 @@ def read_social_relation_cols(table):
     :return:list
     """
     return read_str_col_collection(activeProfile(),table)
+
+def current_table_exist(table):
+
+    return checktableExist(activeProfile(),table)
 
 
