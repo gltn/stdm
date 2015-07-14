@@ -224,3 +224,18 @@ class FilePaths(object):
         if os.path.isfile(self.cacheFile()):
             os.remove(self.cacheFile())
         shutil.copy(self.setUserXMLFile(), self.cacheDir())
+
+    def change_config(self):
+        """
+        Method to update the config file the detected one is old
+        :return:
+        """
+        base_file = self.baseSQLPath()
+        cur_file = self.setUserXMLFile()
+        try:
+            if os.path.isfile(cur_file):
+                os.remove(cur_file)
+            shutil.copy(base_file, self.userPath)
+        except:
+            pass
+

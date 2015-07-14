@@ -63,6 +63,3 @@ class SQLInsert(object):
         WHERE spatial_unit.id = social_tenure_relationship.spatial_unit AND party.id = social_tenure_relationship.party; "
             
         return socialTenure
-
-
-

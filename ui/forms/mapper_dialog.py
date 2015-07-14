@@ -80,10 +80,9 @@ class CustomFormDialog(MapperDialog, MapperMixin):
                     self.addMapping(attrib, control_type, False, attrib)
 
                     self.frmLayout.addRow(QT_TRANSLATE_NOOP("ModuleSettings",self.userLabel(attrib)), control_type)
-        #self.frmLayout.setLabelAlignment(Qt.AlignJustify)
+
         except Exception as ex:
             pass
-           #self._notifBar.insertWarningNotification(str(ex.message))
 
     def userLabel(self, attr):
             return attr.replace("_", " ").title()
@@ -91,6 +90,7 @@ class CustomFormDialog(MapperDialog, MapperMixin):
     def lookupOptions(self, widget, widgetOptions):
         try:
             widget.setOptions(widgetOptions)
+
         except Exception as ex:
             QMessageBox.information(self, QApplication.translate("CustomFormDialog", "Loading lookup"),
                                     QApplication.translate("CustomFormDialog","Error loading lookup values: %s")%ex.message)
@@ -108,7 +108,8 @@ class CustomFormDialog(MapperDialog, MapperMixin):
             self.accept()
 
         except Exception as ex:
-            self._notifBar.insertWarningNotification(str(ex.message))
+            self._notifBar.insertWarningNotification(unicode(ex.message))
+
         finally:
             STDMDb.instance().session.rollback()
 

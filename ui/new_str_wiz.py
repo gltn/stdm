@@ -294,7 +294,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             progDialog.setValue(2)
             socialTenure.spatial_unit = self.selProperty.id
             progDialog.setValue(3)
-            
+
             socialTenure.social_tenure_type=str(self.cboSTRType.currentText())
             progDialog.setValue(6)
             """
@@ -302,18 +302,19 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             """
             socialTenure.save()
             model_objs = self.sourceDocManager.model_objects()
-            if len(model_objs)>0:
-                for model_obj in model_objs:
-                    model_obj.save()
-                    STR_relation.social_tenure_id = socialTenure.id
-                    STR_relation.source_doc_id = model_obj.id
-                    STR_relation.save()
+            if model_objs is not None:
+                if len(model_objs)>0:
+                    for model_obj in model_objs:
+                        model_obj.save()
+                        STR_relation.social_tenure_id = socialTenure.id
+                        STR_relation.source_doc_id = model_obj.id
+                        STR_relation.save()
             progDialog.setValue(7)
             #source_doc_model = self.sourceDocManager.sourceDocuments(dtype ="TITLE DEED")
-            
-            #strPerson = "%s %s"%(str(self.selPerson.family_name),str(self.selPerson.other_names))          
-            strMsg = str(QApplication.translate("newSTRWiz", 
-                                            "The social tenure relationship for has been successfully created!"))           
+
+            #strPerson = "%s %s"%(str(self.selPerson.family_name),str(self.selPerson.other_names))
+            strMsg = str(QApplication.translate("newSTRWiz",
+                                            "The social tenure relationship for has been successfully created!"))
             QMessageBox.information(self, QApplication.translate("newSTRWiz", "STR Creation"),strMsg)
 
         except sqlalchemy.exc.OperationalError as oe:
@@ -327,11 +328,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             QMessageBox.critical(self, QApplication.translate("newSTRWiz", "Dublicate Relationship Error"),errMsg)
             progDialog.hide()
             isValid = False
-            
+
         except Exception as e:
             errMsg = str(e)
             QMessageBox.critical(self, QApplication.translate("newSTRWiz", "Unexpected Error"),errMsg)
-            
+
             isValid = False
         finally:
             STDMDb.instance().session.rollback()
