@@ -22,7 +22,13 @@ from datetime import date
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import Enumerator,Witness,Survey, table_searchable_cols
+from stdm.data import (
+    Enumerator,
+    Witness,
+    Survey,
+    table_searchable_cols,
+    VerticalHeaderSortFilterProxyModel
+)
 from stdm.navigation import TableContentGroup
 from .admin_unit_manager import VIEW,MANAGE,SELECT
 from .ui_entity_browser import Ui_EntityBrowser
@@ -33,8 +39,8 @@ from stdm.data import BaseSTDMTableModel
 from stdm.data import STDMDb, tableCols,dateFormatter, Respondent, Witness, Enumerator, tableColType
 from .stdmdialog import DeclareMapping
 from stdm.ui.forms import (
-        CustomFormDialog,
-        LookupModeller
+    CustomFormDialog,
+    LookupModeller
 )
 
 __all__ = ["EntityBrowser","EnumeratorEntityBrowser","EntityBrowserWithEditor", \
@@ -131,8 +137,9 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
         if self._dataInitialized:
             return
         try:
-            if self._dbmodel != None:
+            if not self._dbmodel is None:
                 self._initializeData()
+
         except Exception as ex:
             pass
             
@@ -155,8 +162,9 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
         numRecords = entity.queryObject().count()
         
         rowStr = "row" if numRecords == 1 else "rows"
-        windowTitle = "{0} - {1} {2}".format(str(self.title()), \
-                                                  unicode(QApplication.translate("EntityBrowser", str(numRecords))),rowStr)
+        windowTitle = "{0} - {1} {2}".format(unicode(self.title()), \
+                                                  unicode(QApplication.translate("EntityBrowser",
+                                                                                 str(numRecords))),rowStr)
         self.setWindowTitle(windowTitle)
         
         return numRecords
@@ -178,7 +186,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
                         
             #Load progress dialog
             progressLabel = QApplication.translate("EntityBrowser", "Fetching Records...")
-            progressDialog = QProgressDialog(progressLabel,"", 0,numRecords,self)
+            progressDialog = QProgressDialog(progressLabel,"", 0, numRecords, self)
             
             entity = self._dbmodel()
             entityRecords = entity.queryObject().filter().all()
@@ -201,6 +209,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
                             attrVal = dateFormatter(attrVal)
 
                         entityRowInfo.append(attrVal)
+
                 except Exception as ex:
                     QMessageBox.critical(self, QApplication.translate("EntityBrowser", "Loading Entity"),
                                          unicode(ex.message))
@@ -219,7 +228,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
                 self.cboFilterColumn.addItems(table_searchable_cols(class_name))
             
             #Use sortfilter proxy model for the view
-            self._proxyModel = QSortFilterProxyModel()
+            self._proxyModel = VerticalHeaderSortFilterProxyModel()
             self._proxyModel.setDynamicSortFilter(True)
             self._proxyModel.setSourceModel(self._tableModel)
             self._proxyModel.setSortCaseSensitivity(Qt.CaseInsensitive)
@@ -233,7 +242,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
             self.tbEntity.hideColumn(0)
             self.cboFilterColumn.removeItem(0)
             
-            self.tbEntity.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+            self.tbEntity.horizontalHeader().setResizeMode(QHeaderView.Interactive)
             
             #Connect signals
             self.connect(self.cboFilterColumn, SIGNAL("currentIndexChanged (int)"),self.onFilterColumnChanged)

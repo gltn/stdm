@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_new_str.ui'
 #
-# Created: Thu Jul 02 09:58:53 2015
-#      by: PyQt4 UI code generator 4.11.1
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -282,7 +281,6 @@ class Ui_frmNewSTR(object):
         self.layoutWidget.setGeometry(QtCore.QRect(0, 0, 100, 30))
         self.layoutWidget.setObjectName(_fromUtf8("layoutWidget"))
         self.vlSourceDocNotif = QtGui.QVBoxLayout(self.layoutWidget)
-        self.vlSourceDocNotif.setMargin(0)
         self.vlSourceDocNotif.setObjectName(_fromUtf8("vlSourceDocNotif"))
         frmNewSTR.addPage(self.frmWizSourceDocs)
         self.frmSTRSummary = QtGui.QWizardPage()
@@ -318,9 +316,9 @@ class Ui_frmNewSTR(object):
         self.groupBox.setTitle(_translate("frmNewSTR", "Search Criteria:", None))
         self.label_3.setText(_translate("frmNewSTR", "Look for....", None))
         self.label_2.setText(_translate("frmNewSTR", "in column:", None))
-        self.frmWizProperty.setTitle(_translate("frmNewSTR", "Property information", None))
-        self.frmWizProperty.setSubTitle(_translate("frmNewSTR", "Select the land and building information.", None))
-        self.txtPropID.setPlaceholderText(_translate("frmNewSTR", "Enter the unique property ID", None))
+        self.frmWizProperty.setTitle(_translate("frmNewSTR", "Spatial unit information", None))
+        self.frmWizProperty.setSubTitle(_translate("frmNewSTR", "Select the land or building information.", None))
+        self.txtPropID.setPlaceholderText(_translate("frmNewSTR", "Enter the unique spatial unit ID", None))
         self.gpOpenLayers.setTitle(_translate("frmNewSTR", "Preview Spatial Unit:", None))
         self.groupBox_2.setTitle(_translate("frmNewSTR", "Choose Base Layer", None))
         self.rbGMaps.setText(_translate("frmNewSTR", "Google Maps", None))
@@ -350,3 +348,4 @@ class Ui_frmNewSTR(object):
         self.label_18.setText(_translate("frmNewSTR", "If you want to review or change any selections, click Back. If you are satisified with the selections, click Finish.", None))
 
 from PyQt4 import QtWebKit
+import resources_rc

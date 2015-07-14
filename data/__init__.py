@@ -23,7 +23,8 @@ from .qtmodels import (
     UsersRolesModel,
     PersonTableModel,
     STRTreeViewModel,
-    BaseSTDMTableModel
+    BaseSTDMTableModel,
+    VerticalHeaderSortFilterProxyModel
 )
 from .globals import app_dbconn
 from .modelformatters import respondentRoleFormatter,LookupFormatter,witnessRelationshipFormatter, \
@@ -84,7 +85,9 @@ from .xmlconfig_reader import (
     table_column_exist,
     check_if_display_name_exits,
     social_tenure_tables,
-    get_xml_display_name
+    get_xml_display_name,
+    social_tenure_tables_type,
+    config_version
 )
 
 from .xmlconfig_writer import(
@@ -134,7 +137,9 @@ from .config_utils import (
     UserData,
     tableColType,
     table_description,
-    table_searchable_cols
+    table_searchable_cols,
+    ConfigVersionException,
+    current_table_exist
 )
 from .license_doc import LicenseDocument
 from .template_database import DatabaseCreator

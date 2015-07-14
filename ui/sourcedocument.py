@@ -330,11 +330,10 @@ class SourceDocumentManager(QObject):
         Method to return all the model object for suporting document be inserted into table
         :return:
         """
-        #proxies =STDMDb.instance().engine.connect()
-
-        soc_doc = document_type_class.get(DEFAULT_DOCUMENT)()
         if len(self.sourceDocuments().get(DEFAULT_DOCUMENT)) > 0:
             return [model_obj for model_obj in self.sourceDocuments().get(DEFAULT_DOCUMENT)]
+        else:
+            return None
 
     def clean_up(self):
         """

@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_user_role_manage.ui'
 #
-# Created: Thu Jun 20 15:47:39 2013
-#      by: PyQt4 UI code generator 4.9.4
+# Created: Wed Jul 08 17:54:46 2015
+#      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_frmSysManageAccounts(object):
     def setupUi(self, frmSysManageAccounts):
@@ -33,6 +42,7 @@ class Ui_frmSysManageAccounts(object):
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
         self.lstUsers = QtGui.QListView(self.tab)
         self.lstUsers.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.lstUsers.setAlternatingRowColors(True)
         self.lstUsers.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.lstUsers.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.lstUsers.setObjectName(_fromUtf8("lstUsers"))
@@ -51,6 +61,7 @@ class Ui_frmSysManageAccounts(object):
         self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
         self.lstRoles = QtGui.QListView(self.tab_2)
         self.lstRoles.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.lstRoles.setAlternatingRowColors(True)
         self.lstRoles.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.lstRoles.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.lstRoles.setObjectName(_fromUtf8("lstRoles"))
@@ -87,11 +98,13 @@ class Ui_frmSysManageAccounts(object):
         self.gridLayout_5.addWidget(self.label, 0, 0, 1, 2)
         self.lstMappingRoles = QtGui.QListView(self.tab_3)
         self.lstMappingRoles.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.lstMappingRoles.setAlternatingRowColors(True)
         self.lstMappingRoles.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.lstMappingRoles.setObjectName(_fromUtf8("lstMappingRoles"))
         self.gridLayout_5.addWidget(self.lstMappingRoles, 1, 0, 1, 1)
         self.lstMappingUsers = QtGui.QListView(self.tab_3)
         self.lstMappingUsers.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.lstMappingUsers.setAlternatingRowColors(True)
         self.lstMappingUsers.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.lstMappingUsers.setObjectName(_fromUtf8("lstMappingUsers"))
         self.gridLayout_5.addWidget(self.lstMappingUsers, 1, 1, 1, 1)
@@ -106,9 +119,11 @@ class Ui_frmSysManageAccounts(object):
         QtCore.QMetaObject.connectSlotsByName(frmSysManageAccounts)
 
     def retranslateUi(self, frmSysManageAccounts):
-        frmSysManageAccounts.setWindowTitle(QtGui.QApplication.translate("frmSysManageAccounts", "Manage System Users and Roles", None, QtGui.QApplication.UnicodeUTF8))
-        self.tbUserRole.setTabText(self.tbUserRole.indexOf(self.tab), QtGui.QApplication.translate("frmSysManageAccounts", "Users", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox.setTitle(QtGui.QApplication.translate("frmSysManageAccounts", "Description:", None, QtGui.QApplication.UnicodeUTF8))
-        self.tbUserRole.setTabText(self.tbUserRole.indexOf(self.tab_2), QtGui.QApplication.translate("frmSysManageAccounts", "Roles", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("frmSysManageAccounts", "<html><head/><body><p>Click on a role in the table on the left-hand side below then check/uncheck the users in the table on the right-hand side to add/remove them in this role.</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.tbUserRole.setTabText(self.tbUserRole.indexOf(self.tab_3), QtGui.QApplication.translate("frmSysManageAccounts", "Mappings", None, QtGui.QApplication.UnicodeUTF8))
+        frmSysManageAccounts.setWindowTitle(_translate("frmSysManageAccounts", "Manage System Users and Roles", None))
+        self.tbUserRole.setTabText(self.tbUserRole.indexOf(self.tab), _translate("frmSysManageAccounts", "Users", None))
+        self.groupBox.setTitle(_translate("frmSysManageAccounts", "Description:", None))
+        self.tbUserRole.setTabText(self.tbUserRole.indexOf(self.tab_2), _translate("frmSysManageAccounts", "Roles", None))
+        self.label.setText(_translate("frmSysManageAccounts", "<html><head/><body><p>Click on a role in the table on the left-hand side below then check/uncheck the users in the table on the right-hand side to add/remove them in this role.</p></body></html>", None))
+        self.tbUserRole.setTabText(self.tbUserRole.indexOf(self.tab_3), _translate("frmSysManageAccounts", "Mappings", None))
+
+import resources_rc
