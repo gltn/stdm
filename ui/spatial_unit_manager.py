@@ -27,7 +27,7 @@ from PyQt4 import uic
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from qgis.core import *
-from ui_edit_stdm_layer import Ui_SpatialUnitManagerWidget
+from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
 from gps_tool import GPSToolDialog
 from ..data import (
     spatial_tables,
@@ -40,8 +40,8 @@ from ..data import (
     write_changed_display_name
 )
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'ui_edit_stdm_layer.ui'))
+# FORM_CLASS, _ = uic.loadUiType(os.path.join(
+#     os.path.dirname(__file__), 'ui_edit_stdm_layer.ui'))
 
 class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
     def __init__(self, iface):
