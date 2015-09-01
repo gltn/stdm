@@ -29,6 +29,7 @@ from PyQt4.QtCore import *
 from qgis.core import *
 from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
 from gps_tool import GPSToolDialog
+
 from ..data import (
     spatial_tables,
     table_column_names,
