@@ -40,8 +40,8 @@ from ..data import (
     write_changed_display_name
 )
 
-# FORM_CLASS, _ = uic.loadUiType(os.path.join(
-#     os.path.dirname(__file__), 'ui_edit_stdm_layer.ui'))
+FORM_CLASS, _ = uic.loadUiType(os.path.join(
+    os.path.dirname(__file__), 'ui_spatial_unit_manager.ui'))
 
 class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
     def __init__(self, iface):
