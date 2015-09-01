@@ -47,7 +47,7 @@ class GPSToolDialog(QDialog, Ui_Dialog):
         Executed when Ok button is pressed
         """
         if self.tx_fl_edit_gpx.text() == "":
-            QMessageBox.information(None,"STDM","Enter or select valid GPX file")
+            QMessageBox.information(None,"STDM", "Enter or select valid GPX file")
 
         else:
             gpx_file = self.tx_fl_edit_gpx.text()
@@ -70,7 +70,7 @@ class GPSToolDialog(QDialog, Ui_Dialog):
 
             # Check if gpx layer has points
             if self.layer_gpx.GetFeatureCount() == 0:
-                QMessageBox.information(None,"STDM","Selected layer has no features")
+                QMessageBox.information(None,"STDM", "The selected feature type has no layer")
 
             else:
                 active_layer = self.iface.activeLayer()
