@@ -28,7 +28,7 @@ class DatabaseConfig(object):
     def __init__(self):
         self.host = "Host"
         self.port = "Port"    
-        self.db_name = "Database"    
+        self.db_name = "Database"   # database name 
         self.reg_config = RegistryConfig()
         
     def read(self):
