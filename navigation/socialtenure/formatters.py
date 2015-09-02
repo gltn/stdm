@@ -42,6 +42,7 @@ from .nodes import (
     STRNode
 )
 
+
 class STRNodeFormatter(object):
     """
     Base class for all STR formatters.
@@ -87,9 +88,12 @@ class STRNodeFormatter(object):
         raise NotImplementedError(QApplication.translate("STRFormatterBase",
                                                          "Method should be implemented by subclasses"))
 
+
 class TestFormatter(STRNodeFormatter):
+
     def root(self):
         return self.rootNode
+
 
 class EntityNodeFormatter(STRNodeFormatter):
     """
@@ -122,7 +126,8 @@ class EntityNodeFormatter(STRNodeFormatter):
         self._str_num_char_cols = numeric_varchar_columns(self._str_ref)
         self._fk_references = foreign_key_parent_tables(self._str_ref)
         self._current_data_source_fk_ref = self._current_data_source_foreign_key_reference()
-        self._numeric_char_cols = numeric_varchar_columns(config.data_source_name)
+        self._numeric_char_cols = numeric_varchar_columns(
+            config.data_source_name)
         self._spatial_data_sources = spatial_tables()
 
     def _format_display_mapping(self, model, display_cols, filter_cols):
@@ -192,11 +197,11 @@ class EntityNodeFormatter(STRNodeFormatter):
             return []
 
         ent_col, str_col = self._current_data_source_fk_ref[0],\
-                           self._current_data_source_fk_ref[1]
+            self._current_data_source_fk_ref[1]
 
         return self._models_from_fk_reference(entity_model, ent_col,
                                               self._str_model,
-                                       str_col)
+                                              str_col)
 
     def is_str_defined(self, entity_model):
         """
@@ -228,13 +233,13 @@ class EntityNodeFormatter(STRNodeFormatter):
         from stdm.data import numeric_varchar_columns
 
         display_mapping = self._format_display_mapping(str_model,
-                                                      self._str_model_disp_mapping,
-                                                      self._str_num_char_cols)
+                                                       self._str_model_disp_mapping,
+                                                       self._str_num_char_cols)
 
         str_node = STRNode(display_mapping, parent=parent_node,
                            model=str_model, **kwargs)
 
-        #Get related entities and create their corresponding nodes
+        # Get related entities and create their corresponding nodes
         for fkr in self._fk_references:
             str_col, mod_table, mod_col = fkr[0], fkr[1], fkr[2]
 
@@ -254,15 +259,15 @@ class EntityNodeFormatter(STRNodeFormatter):
                     node = self._spatial_textual_node(mod_table)
 
                     entity_node = node(dm, parent=str_node,
-                                             header=mod_table.replace('_',
-                                                                      ' ').title(),
-                                             isChild=True,
-                                             model=r)
+                                       header=mod_table.replace('_',
+                                                                ' ').title(),
+                                       isChild=True,
+                                       model=r)
 
         return str_node
 
     def _models_from_fk_reference(self, source_model, source_column,
-                                 referenced_model, referenced_column):
+                                  referenced_model, referenced_column):
         """
         :return: Retrieves data models based on the foreign key reference
         information.
@@ -272,7 +277,7 @@ class EntityNodeFormatter(STRNodeFormatter):
         if hasattr(source_model, source_column):
             source_col_value = getattr(source_model, source_column)
 
-            #Create model if string is used as referenced model
+            # Create model if string is used as referenced model
             if isinstance(ref_model, str) or isinstance(ref_model, unicode):
                 ref_model = DeclareMapping.instance().tableMapping(ref_model)
 
@@ -282,17 +287,20 @@ class EntityNodeFormatter(STRNodeFormatter):
             if hasattr(ref_model, referenced_column):
                 col_prop = getattr(ref_model, referenced_column)
 
-                #Get property type so that the filter can be applied according to the appropriate type
+                # Get property type so that the filter can be applied according
+                # to the appropriate type
                 col_prop_type = col_prop.property.columns[0].type
 
                 ref_model_instance = ref_model()
                 ref_query_obj = ref_model_instance.queryObject()
 
                 if not isinstance(col_prop_type, String):
-                    results = ref_query_obj.filter(col_prop == source_col_value).all()
+                    results = ref_query_obj.filter(
+                        col_prop == source_col_value).all()
 
                 else:
-                    results = ref_query_obj.filter(func.lower(col_prop) == func.lower(source_col_value)).all()
+                    results = ref_query_obj.filter(func.lower(
+                        col_prop) == func.lower(source_col_value)).all()
 
                 if len(results) == 0:
                     return []
@@ -338,13 +346,14 @@ class EntityNodeFormatter(STRNodeFormatter):
 
             # Get the related STR entities
             if self._config.data_source_name != self._str_ref:
-                #Get appropriate node if data source is (non) spatial
-                node = self._spatial_textual_node(self._config.data_source_name)
+                # Get appropriate node if data source is (non) spatial
+                node = self._spatial_textual_node(
+                    self._config.data_source_name)
                 entity_node = node(disp_mapping, parent=self.rootNode,
                                    model=ed)
                 str_entities = self._related_str_models(ed)
 
-                #Show no STR
+                # Show no STR
                 if len(str_entities) == 0:
                     no_str_node = NoSTRNode(entity_node)
 
@@ -355,44 +364,8 @@ class EntityNodeFormatter(STRNodeFormatter):
                                                          header=self._str_title)
 
             else:
-                #The parent node now refers to STR data so we render accordingly
+                # The parent node now refers to STR data so we render
+                # accordingly
                 str_node = self._create_str_node(self.rootNode, ed)
 
         return self.rootNode
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    

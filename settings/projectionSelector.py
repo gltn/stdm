@@ -20,14 +20,14 @@ from qgis.gui import QgsGenericProjectionSelector
 
 
 class projectionSelector(QDialog):
-    def __init__(self,parent):
-        super(projectionSelector,self).__init__(parent)
-        self.parent=parent
-       
-      
+
+    def __init__(self, parent):
+        super(projectionSelector, self).__init__(parent)
+        self.parent = parent
+
     def loadAvailableSystems(self):
-        coordSys=""
-        crsDlg=QgsGenericProjectionSelector(self.parent)
-        if crsDlg.exec_()==QDialog.Accepted:
-            coordSys=str(crsDlg.selectedAuthId())
+        coordSys = ""
+        crsDlg = QgsGenericProjectionSelector(self.parent)
+        if crsDlg.exec_() == QDialog.Accepted:
+            coordSys = str(crsDlg.selectedAuthId())
         return coordSys

@@ -25,4 +25,3 @@ from .path_settings import (
     fk_icon
 )
 from .module_settings import ModuleSettings
-

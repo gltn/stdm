@@ -221,17 +221,17 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
 
         elif self._mode == CAPTURE_LINE or self._mode == CAPTURE_POLYGON:
             # Delete temporary rubber band
-            if self._tempRubberBand is not None:
-                self.canvas.scene().removeItem(self._tempRubberBand)
-                del self._tempRubberBand
-                self._tempRubberBand = None
+            if self._temp_rubber_band is not None:
+                self.canvas.scene().removeItem(self._temp_rubber_band)
+                del self._temp_rubber_band
+                self._temp_rubber_band = None
 
             # Validate geometries using number of points
-            if self._mode == CAPTURE_LINE and len(self._captureList) < 2:
+            if self._mode == CAPTURE_LINE and len(self._capture_list) < 2:
                 self.stop_capturing()
                 return
 
-            if self._mode == CAPTURE_POLYGON and len(self._captureList) < 3:
+            if self._mode == CAPTURE_POLYGON and len(self._capture_list) < 3:
                 self.stop_capturing()
                 return
 
@@ -239,12 +239,12 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                 if layerWKBType == QGis.WKBLineString or layerWKBType == \
                         QGis.WKBLineString25D:
                     self._geometry = QgsGeometry.fromPolyline(
-                        self._captureList)
+                        self._capture_list)
 
                 elif layerWKBType == QGis.WKBMultiLineString or layerWKBType\
                         == QGis.WKBMultiLineString25D:
                     self._geometry = QgsGeometry.fromMultiPolyline(
-                        self._captureList)
+                        self._capture_list)
 
                 else:
                     QMessageBox.critical(self.iface.mainWindow(),
@@ -264,12 +264,12 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                 if layerWKBType == QGis.WKBPolygon or layerWKBType == \
                         QGis.WKBPolygon25D:
                     self._geometry = QgsGeometry.fromPolygon(
-                        [self._captureList])
+                        [self._capture_list])
 
                 elif layerWKBType == QGis.WKBMultiPolygon or layerWKBType ==\
                         QGis.WKBMultiPolygon25D:
                     self._geometry = QgsGeometry.fromMultiPolygon(
-                        [self._captureList])
+                        [self._capture_list])
 
                 else:
                     QMessageBox.critical(self.iface.mainWindow(),

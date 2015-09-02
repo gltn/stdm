@@ -33,11 +33,13 @@ from PyQt4.QtCore import (
     QModelIndex
 )
 
+
 class PairComboBoxDelegate(QStyledItemDelegate):
     """
     Provides a combobox for editing table view data.
     """
-    def __init__(self, parent=None, items_pair=[[],[]]):
+
+    def __init__(self, parent=None, items_pair=[[], []]):
         QStyledItemDelegate.__init__(self, parent)
         self._items_pair = items_pair
 
@@ -51,13 +53,14 @@ class PairComboBoxDelegate(QStyledItemDelegate):
 
     def set_items_pair(self, items_pair, empty_item=True):
         if len(items_pair) < 2:
-            raise RuntimeError("Item columns' list contains less than two sub-lists.")
+            raise RuntimeError(
+                "Item columns' list contains less than two sub-lists.")
 
         if not isinstance(items_pair[0], list) or \
-            not isinstance(items_pair[1], list):
+                not isinstance(items_pair[1], list):
             raise TypeError("Column data should be of type 'list'.")
 
-        #Ensure empty item is only inserted once
+        # Ensure empty item is only inserted once
         if empty_item:
             items_pair[0] = self._insert_empty_item(items_pair[0])
             items_pair[1] = self._insert_empty_item(items_pair[1])
@@ -102,15 +105,17 @@ class PairComboBoxDelegate(QStyledItemDelegate):
     def updateEditorGeometry(self, editor, option, index):
         editor.setGeometry(option.rect)
 
+
 class ListPairTableView(QTableView):
     """
     2-column table view that enables pairing of list data through combo boxes.
     """
+
     def __init__(self, parent=None):
         QTableView.__init__(self, parent)
 
         self.setEditTriggers(QAbstractItemView.DoubleClicked |
-            QAbstractItemView.SelectedClicked)
+                             QAbstractItemView.SelectedClicked)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
 
         self._pair_model = QStandardItemModel(1, 2, self)
@@ -144,7 +149,7 @@ class ListPairTableView(QTableView):
         rows = self._pair_model.rowCount()
         self._pair_model.removeRows(0, rows)
 
-        #Insert blank row
+        # Insert blank row
         self.append_row()
 
     def append_row(self):
@@ -276,17 +281,3 @@ class ListPairTableView(QTableView):
                 col_pairings[col_val_0] = col_val_1
 
         return col_pairings
-
-
-
-
-
-
-
-
-
-
-
-
-
-

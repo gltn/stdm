@@ -2,6 +2,7 @@ __author__ = 'SOLOMON'
 
 
 class FKBrowserProperty(object):
+
     def __init__(self, id, value, parent=None):
         """
         Initialize class variables
@@ -33,15 +34,10 @@ class FKBrowserProperty(object):
         else:
             return self._display_value
 
-    def set_display_value(self,newvalue):
+    def set_display_value(self, newvalue):
         """
 
         :param newvalue:
         :return:
         """
         self._display_value = newvalue
-
-
-
-
-

@@ -20,11 +20,10 @@ from PyQt4.QtGui import QComboBox
 
 __all__ = ["TableComboBox"]
 
-class TableComboBox(QComboBox):     
-    #Class constructor  
-    def __init__(self,row):         
-        QComboBox.__init__(self) 
-        self.row=row
-    
-                
-        
+
+class TableComboBox(QComboBox):
+    # Class constructor
+
+    def __init__(self, row):
+        QComboBox.__init__(self)
+        self.row = row

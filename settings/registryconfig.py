@@ -19,27 +19,30 @@ email                : gkahiu@gmail.com
 """
 from PyQt4.QtCore import QSettings
 
-#Names of registry keys
+# Names of registry keys
 NETWORK_DOC_RESOURCE = "NetDocumentResource"
-PATHKEYS=['Config','NetDocumentResource','ComposerOutputs','ComposerTemplates']
+PATHKEYS = ['Config', 'NetDocumentResource',
+            'ComposerOutputs', 'ComposerTemplates']
 DATABASE_LOOKUP = "LookupInit"
 LOCAL_SOURCE_DOC = "SourceDocuments"
 COMPOSER_OUTPUT = 'ComposerOutputs'
 COMPOSER_TEMPLATE = 'ComposerTemplates'
 
+
 class RegistryConfig(object):
     """
     Utility class for reading and writing STDM user settings in Windows Registry
     """
+
     def __init__(self):
         self.groupPath = "STDM"
-    
-    def read(self,items):
+
+    def read(self, items):
         """
         Get the value of the user defined items from the STDM registry tree
         """
         userKeys = {}
-        settings = QSettings()        
+        settings = QSettings()
         settings.beginGroup("/")
         groups = settings.childGroups()
         for group in groups:
@@ -47,7 +50,7 @@ class RegistryConfig(object):
             if str(group) == self._base_group():
                 for t in items:
                     tKey = self.groupPath + "/" + t
-                    if settings.contains(tKey):                        
+                    if settings.contains(tKey):
                         tValue = settings.value(tKey)
                         userKeys[t] = tValue
                 break
@@ -96,21 +99,23 @@ class RegistryConfig(object):
         stdmGroup = "/" + self.groupPath
         uSettings.beginGroup(stdmGroup)
 
-        for k,v in settings.iteritems():
-            uSettings.setValue(k,v)
+        for k, v in settings.iteritems():
+            uSettings.setValue(k, v)
 
         uSettings.endGroup()
         uSettings.sync()
-        
+
+
 class QGISRegistryConfig(RegistryConfig):
     """
     Class for reading and writing QGIS-wide registry settings.
     The user has to specify the group path which contains the keys.
     """
-    def __init__(self,path):
+
+    def __init__(self, path):
         RegistryConfig.__init__(self)
 
-        #Insert forward slash if it does not exist in the path
+        # Insert forward slash if it does not exist in the path
         if len(path) > 0:
             slash = path[0]
             slash_char = "/"
