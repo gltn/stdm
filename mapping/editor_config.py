@@ -4,8 +4,9 @@ Name                 : Editor Mappings
 Description          : Mapping of STDM table names to the corresponding editor
                        widgets.
 Date                 : 8/April/2014
-copyright            : (C) 2014 by John Gitau
-email                : gkahiu@gmail.com
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                    See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -17,7 +18,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-#from stdm.ui import SpatialGardenEditor,spatialUnitEditor
+# from stdm.ui import SpatialGardenEditor,spatialUnitEditor
 ''''
 spatial_editor_widgets = {
                   "garden": SpatialGardenEditor,

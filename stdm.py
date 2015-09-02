@@ -70,7 +70,7 @@ from mapping import (
     StdmMapToolCreateFeature
 )
 from utils import *
-from mapping.utils import pg_layerNamesIDMapping
+from mapping.utils import pg_layer_names_id_mapping
 
 from composer import ComposerWrapper
 from settings import ModuleSettings
@@ -1005,7 +1005,7 @@ class STDMQGISLoader(object):
         '''
         Return whether the layer is an STDM layer.
         '''
-        if layer.id() in pg_layerNamesIDMapping().reverse:
+        if layer.id() in pg_layer_names_id_mapping().reverse:
             return True
         return False
 

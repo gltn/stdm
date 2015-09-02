@@ -5,6 +5,7 @@ Description          : Map tool for capturing points, lines and polygons.
                        Code has been ported from QGIS source.
 Date                 : 1/April/2014
 copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                    See the accompanying file CONTRIBUTORS.txt in the root
 email                : stdm@unhabitat.org
  ***************************************************************************/
 
@@ -17,8 +18,8 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtCore import QSettings, Qt
+from PyQt4.QtGui import QColor, QApplication
 
 from qgis.gui import *
 from qgis.core import *
@@ -36,6 +37,7 @@ mode = CAPTURE_NONE
 class StdmMapToolCapture(StdmMapToolEdit):
     """
     Map tool for capturing points, lines and polygons.
+    @param StdmMapToolEdit: Inherits from StdmMapToolEdit
     """
 
     def __init__(self, iface, mode=mode):
@@ -45,7 +47,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
 
         # Connect signals
         self.iface.legendInterface().currentLayerChanged.connect(
-            self.onCurrentLayerChanged)
+            self.on_current_layer_changed)
 
         # Instance variables
         self._mode = mode
@@ -66,9 +68,11 @@ class StdmMapToolCapture(StdmMapToolEdit):
 
         self._snappingMarker = None
 
-    def captureMode(self):
+    def capture_mode(self):
         """
         Returns the capture mode that the map tool is currently running in
+        :return: Mode
+        :rtype: int
         """
         return self._mode
 
@@ -80,14 +84,14 @@ class StdmMapToolCapture(StdmMapToolEdit):
 
         StdmMapToolEdit.deactivate(self)
 
-    def clearSnapperMarker(self):
+    def clear_snapper_marker(self):
         if self._snappingMarker is not None:
             self.canvas.scene().removeItem(self._snappingMarker)
 
             del self._snappingMarker
             self._snappingMarker = None
 
-    def createVertexMarker(self):
+    def create_vertex_marker(self):
         """
         Function creates vertex marker that is used for marking new point on
         map.
@@ -107,7 +111,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
 
         return verMarker
 
-    def setCaptureMode(self, layer):
+    def set_capture_mode(self, layer):
         """
         Set the capture mode of the tool.
         """
@@ -134,7 +138,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
 
         snapResults = []
         opResult, snapResults = self._snapper.snapToBackgroundLayers(e.pos())
-        mapPoint = self.snapPointFromResults(snapResults, e.pos())
+        mapPoint = self.snap_point_from_results(snapResults, e.pos())
 
         if len(snapResults) > 0:
             self._snappingMarker = self.createVertexMarker()
@@ -144,13 +148,13 @@ class StdmMapToolCapture(StdmMapToolEdit):
                 and self._capturing:
             self._tempRubberBand.movePoint(mapPoint)
 
-    def onCurrentLayerChanged(self, layer):
+    def on_current_layer_changed(self, layer):
         """
         Slot raised when the map layer in the TOC changes.
         """
-        self.setCaptureMode(layer)
+        self.set_capture_mode(layer)
 
-    def nextPoint(self, point):
+    def next_point(self, point):
         layerPoint = None
         mapPoint = None
 
@@ -184,7 +188,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
             point, snapResults)
 
         if len(snapResults) > 0:
-            mapPoint = self.snapPointFromResults(snapResults, point)
+            mapPoint = self.snap_point_from_results(snapResults, point)
             try:
                 layerPoint = self.toLayerCoordinates(currLayer, mapPoint)
             except QgsCsException:
@@ -196,7 +200,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
 
         return 0, layerPoint, mapPoint
 
-    def addVertex(self, point, isLayerPoint=False):
+    def add_vertex(self, point, isLayerPoint=False):
         """
         Adds a point to the rubber band (in map coordinates) and to the
         capture  list (in layer coordinates) return 0 in case of success,
@@ -213,7 +217,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
             return 2
 
         if not isLayerPoint:
-            result, layerPoint, mapPoint = self.nextPoint(point)
+            result, layerPoint, mapPoint = self.next_point(point)
 
             if result != 0:
                 QgsMessageLog.logMessage(QApplication.translate(
@@ -225,7 +229,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
             # Convert layer point to map coordinates for use in the rubberband
             try:
                 mapPoint = self.toMapCoordinates(
-                    self.currentVectorLayer(), layerPoint)
+                    self.current_vector_layer(), layerPoint)
             except QgsCsException:
                 QgsMessageLog.logMessage(QApplication.translate(
                     "StdmMapToolCapture", "Transformation to map coordinate "
@@ -237,14 +241,14 @@ class StdmMapToolCapture(StdmMapToolEdit):
             else QGis.Line
 
         if self._rubberBand is None:
-            self._rubberBand = self.createRubberBand(geomType)
+            self._rubberBand = self.create_rubber_band(geomType)
             self._rubberBand.show()
 
         self._rubberBand.addPoint(mapPoint)
         self._captureList.append(layerPoint)
 
         if self._tempRubberBand is None:
-            self._tempRubberBand = self.createRubberBand(geomType, True)
+            self._tempRubberBand = self.create_rubber_band(geomType, True)
 
         else:
             self._tempRubberBand.reset(geomType)
@@ -300,10 +304,10 @@ class StdmMapToolCapture(StdmMapToolEdit):
             # Prevent propagation to map canvas
             e.ignore()
 
-    def startCapturing(self):
+    def start_capturing(self):
         self._capturing = True
 
-    def stopCapturing(self):
+    def stop_capturing(self):
         if self._rubberBand is not None:
             self.canvas.scene().removeItem(self._rubberBand)
             del self._rubberBand
@@ -318,7 +322,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
         self._captureList = []
         self.canvas.refresh()
 
-    def closePolygon(self):
+    def close_polygon(self):
         """
         Util function for closing polygon by linking the last point to the
         first one.
