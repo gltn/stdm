@@ -2,10 +2,10 @@
 /***************************************************************************
 Name                 : Database Registry Configuration
 Description          : Class for reading and writing database settings for
-                        STDM stored in the registry
+                       STDM stored in the registry
 Date                 : 24/May/2013 
-copyright            : (C) 2013 by John Gitau
-email                : gkahiu@gmail.com
+copyright            : (C) 2015 by UN-Habitat and Implementing partners
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -26,32 +26,30 @@ class DatabaseConfig(object):
     Reads and writes database settings in the registry
     '''
     def __init__(self):
-        self.dbHost = "Host"
-        self.dbPort = "Port"    
-        self.dbName = "Database"    
-        self.regConfig = RegistryConfig()
+        self.host = "Host"
+        self.port = "Port"    
+        self.db_name = "Database"   # database name 
+        self.reg_config = RegistryConfig()
         
     def read(self):
         '''
         Get the database connection properties
         '''
-        dbProps = self.regConfig.read([self.dbHost,self.dbPort,self.dbName])
-        if len(dbProps) < 3:
+        db_props = self.reg_config.read([self.host, self.port, self.db_name])
+
+        if len(db_props) < 3:
             return None
         else:            
-            return DatabaseConnection(dbProps[self.dbHost], dbProps[self.dbPort], dbProps[self.dbName])
+            return DatabaseConnection(db_props[self.host], db_props[self.port], db_props[self.db_name])
         
-    def write(self,dbconnection):
+    def write(self, db_connection):
         '''
         Writes the database connection settings to the registry
         '''
-        dbSettings = {}
-        dbSettings[self.dbHost] = dbconnection.Host
-        dbSettings[self.dbPort] = dbconnection.Port
-        dbSettings[self.dbName] = dbconnection.Database
-        #Write dictionary to registry
-        self.regConfig.write(dbSettings)
-        
-    
-        
+        db_settings = {}
+        db_settings[self.host] = db_connection.Host
+        db_settings[self.port] = db_connection.Port
+        db_settings[self.dbname] = db_connection.Database
+
+        self.reg_config.write(db_settings)
     
