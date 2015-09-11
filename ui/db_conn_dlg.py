@@ -87,6 +87,6 @@ class dbconnDlg(QDialog, Ui_frmDbConn):
                 #Write DB conn object to the registry
                 dbconfig.write(self.dbconn)
             except Exception as ex:
-                raise ex.message
+                raise ex
 
             self.accept()
