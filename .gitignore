@@ -10,3 +10,6 @@
 *.pyc
 
 /third_party/*
+
+#some local files
+replace.sh
