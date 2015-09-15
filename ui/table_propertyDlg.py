@@ -59,7 +59,7 @@ class TableProperty(QDialog, Ui_TableProperty):
         self.table_column_model(self.cboType, self.cboTable.currentText())
 
     def table_list(self, combo_box):
-        model = self.table_handler.tableListModel(self._user_profile)
+        model = self.table_handler.table_list_model(self._user_profile)
         combo_box.setModel(model)
         index = combo_box.findText(self._table_name, Qt.MatchExactly)
         if index is not -1:

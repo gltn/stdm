@@ -66,10 +66,10 @@ class ConfigTableReader(object):
         
         self._doc = ''
         self.args = args
-        self.fileHandler = FilePaths()
+        self.file_handler = FilePaths()
         self.config = RegistryConfig()   
    
-    def tableListModel(self, profile):
+    def table_list_model(self, profile):
         '''pass the table list to a listview model'''
         tData = self.tableNames(profile)
         if not tData is None:
@@ -233,19 +233,19 @@ class ConfigTableReader(object):
 
     def sqlTableDefinition(self):
         '''load the table definition info in html file'''
-        docfile = self.fileHandler.SQLFile()
+        docfile = self.file_handler.SQLFile()
         return docfile
     
     def htmlTableDefinition(self):
         '''load the table definition info in html file'''
-        docfile = self.fileHandler.HtmlFile()
+        docfile = self.file_handler.HtmlFile()
         return docfile
     
     def userProfileDir(self):
-        return self.fileHandler.STDMSettingsPath()
+        return self.file_handler.STDMSettingsPath()
 
     def updateDir(self, path):
-        return  self.fileHandler.userConfigPath(path)
+        return  self.file_handler.userConfigPath(path)
 
     def saveXMLchanges(self):
         writeSQLFile()
@@ -274,7 +274,7 @@ class ConfigTableReader(object):
     def createDir(self, paths):
         if paths != None:
             for fPath in paths:
-                self.fileHandler.createDir(fPath)
+                self.file_handler.createDir(fPath)
     
     def addLookupValue(self,table,valueText):
         setLookupValue(table,valueText)
@@ -290,14 +290,14 @@ class ConfigTableReader(object):
         
     def setDocumentationPath(self):
         '''get the help contents available to user'''
-        helpFile=self.fileHandler.HelpContents()
+        helpFile=self.file_handler.HelpContents()
         return helpFile
     
     def trackXMLChanges(self):
-        self.fileHandler.createBackup()
+        self.file_handler.createBackup()
 
     def check_config_version(self, path):
-        self.fileHandler.compare_config_version(path)
+        self.file_handler.compare_config_version(path)
 
     def active_profile(self):
         return activeProfile()
@@ -358,7 +358,7 @@ class ConfigTableReader(object):
         Try and update the config file if old one is detected
         :return:
         """
-        self.fileHandler.change_config()
+        self.file_handler.change_config()
 
     def chect_table_exist(self, table):
         """

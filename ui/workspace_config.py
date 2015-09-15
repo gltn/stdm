@@ -221,7 +221,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     
     def checkTablesExist(self,activeProfile):
         '''Method to check if the right config exist in the directory and then return the table names'''
-        table_exist = self.tableHandler.tableListModel(activeProfile)
+        table_exist = self.tableHandler.table_list_model(activeProfile)
         return table_exist
 
     def on_table_selection(self):
@@ -230,7 +230,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         :return:
         """
         self.profile = self.cboProfile.currentText()
-        model = self.tableHandler.tableListModel(self.profile)
+        model = self.tableHandler.table_list_model(self.profile)
         return model
 
     def readUserTable(self):
