@@ -37,10 +37,14 @@ mode = CAPTURE_NONE
 class StdmMapToolCapture(StdmMapToolEdit):
     """
     Map tool for capturing points, lines and polygons.
-    @param StdmMapToolEdit : Inherits from StdmMapToolEdit
+    :type StdmMapToolEdit : Inherits from StdmMapToolEdit
     """
 
     def __init__(self, iface, mode=mode):
+        """
+        :type mode: object
+        :type iface: int
+        """
         self.iface = iface
         self.canvas = self.iface.mapCanvas()
         StdmMapToolEdit.__init__(self, self.iface)
@@ -159,9 +163,9 @@ class StdmMapToolCapture(StdmMapToolEdit):
         layer_point = None
         map_point = None
 
-        currLayer = self.canvas.currentLayer()
+        curr_layer = self.canvas.currentLayer()
 
-        if not isinstance(currLayer, QgsVectorLayer):
+        if not isinstance(curr_layer, QgsVectorLayer):
             QgsMessageLog.logMessage(QApplication.translate(
                 "StdmMapToolCapture", "No Vector Layer Found"),
                 QgsMessageLog.CRITICAL)
@@ -176,7 +180,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
             return 2, layer_point, map_point
 
         try:
-            layer_point = self.toLayerCoordinates(currLayer, point)
+            layer_point = self.toLayerCoordinates(curr_layer, point)
         except QgsCsException:
             QgsMessageLog.logMessage(QApplication.translate(
                 "StdmMapToolCapture",
@@ -191,7 +195,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
         if len(snap_results) > 0:
             map_point = self.snap_point_from_results(snap_results, point)
             try:
-                layer_point = self.toLayerCoordinates(currLayer, map_point)
+                layer_point = self.toLayerCoordinates(curr_layer, map_point)
             except QgsCsException:
                 QgsMessageLog.logMessage(QApplication.translate(
                     "StdmMapToolCapture", "Transformation to layer "
@@ -258,8 +262,8 @@ class StdmMapToolCapture(StdmMapToolEdit):
             self._temp_rubber_band.addPoint(map_point)
 
         elif self.captureMode() == CAPTURE_POLYGON:
-            firstPoint = self._rubber_band.getPoint(0, 0)
-            self._temp_rubber_band.addPoint(firstPoint)
+            first_point = self._rubber_band.getPoint(0, 0)
+            self._temp_rubber_band.addPoint(first_point)
             self._temp_rubber_band.movePoint(map_point)
             self._temp_rubber_band.addPoint(map_point)
             self._temp_rubber_band.addPoint(map_point)

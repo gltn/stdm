@@ -440,7 +440,7 @@ class QgsFeatureMapperMixin(MapperMixin):
         if not isinstance(self._layer,QgsVectorLayer):
             return
         
-        ret = self._layer.addFeature(self._model)
+        ret = self._layer.add_feature(self._model)
         
         if ret:
             if isinstance(self, QDialog):

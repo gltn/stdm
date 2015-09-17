@@ -47,7 +47,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
         self._geometry = None
 
         # Container for pending entities from foreign key mappers
-        self._pendingFKEntities = {}
+        self._pending_fk_entities = {}
 
     def activate(self):
         if self.canvas.isDrawing():
@@ -59,29 +59,29 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
         """
         Add actions to the editing context menu.
         """
-        self.addXYAction = QAction(QApplication.translate(
+        self.add_xy_action = QAction(QApplication.translate(
             "StdmMapToolCreateFeature", "Add X,Y Vertex..."),
             self.iface.mainWindow())
-        self.cancelSketchAction = QAction(QApplication.translate(
+        self.cancel_sketch_action = QAction(QApplication.translate(
             "StdmMapToolCreateFeature", "Cancel Sketch"),
             self.iface.mainWindow())
-        self.finishSketchAction = QAction(QApplication.translate(
+        self.finish_sketch_action = QAction(QApplication.translate(
             "StdmMapToolCreateFeature", "Finish Sketch"),
             self.iface.mainWindow())
 
         if not self._capturing:
-            self.finishSketchAction.setEnabled(False)
-            self.cancelSketchAction.setEnabled(False)
+            self.finish_sketch_action.setEnabled(False)
+            self.cancel_sketch_action.setEnabled(False)
 
         # Connect signals
-        self.addXYAction.triggered.connect(self.onAddXY)
-        self.finishSketchAction.triggered.connect(self.onFinishSketch)
-        self.cancelSketchAction.triggered.connect(self.stop_capturing)
+        self.add_xy_action.triggered.connect(self.on_add_xy)
+        self.finish_sketch_action.triggered.connect(self.on_finish_sketch)
+        self.cancel_sketch_action.triggered.connect(self.stop_capturing)
 
-        menu.addAction(self.addXYAction)
+        menu.addAction(self.add_xy_action)
         menu.addSeparator()
-        menu.addAction(self.finishSketchAction)
-        menu.addAction(self.cancelSketchAction)
+        menu.addAction(self.finish_sketch_action)
+        menu.addAction(self.cancel_sketch_action)
 
     def supportsContextMenu(self):
         """
@@ -89,23 +89,23 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
         """
         return True
 
-    def onAddXY(self):
+    def on_add_xy(self):
         """
         Slot raised to show the coordinates point editor for manually entering
         the X, Y coordinate values.
         """
-        stdmLayer = self.current_vector_layer()
+        stdm_layer = self.current_vector_layer()
 
         # Try to set mode from layer type
         if self._mode == CAPTURE_NONE:
-            self.set_capture_mode(stdmLayer)
+            self.set_capture_mode(stdm_layer)
 
-        if not isinstance(stdmLayer, QgsVectorLayer):
+        if not isinstance(stdm_layer, QgsVectorLayer):
             self.notify_not_vector_layer()
             return
 
-        layerWKBType = stdmLayer.wkbType()
-        provider = stdmLayer.dataProvider()
+        layer_wkb_type = stdm_layer.wkbType()
+        provider = stdm_layer.dataProvider()
 
         if not (provider.capabilities() & QgsVectorDataProvider.AddFeatures):
             QMessageBox.information(self.iface.mainWindow(),
@@ -120,19 +120,19 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                                         "features."))
             return
 
-        if not stdmLayer.isEditable():
+        if not stdm_layer.isEditable():
             self.notify_not_editable_layer()
             return
 
-        coordsEditor = SpatialCoordinatesEditor(self.iface.mainWindow())
-        ret = coordsEditor.exec_()
+        coords_editor = SpatialCoordinatesEditor(self.iface.mainWindow())
+        ret = coords_editor.exec_()
 
         if ret == QDialog.Accepted:
-            layerPoint = coordsEditor.qgsPoint()
+            layerPoint = coords_editor.qgsPoint()
 
             # Spatial unit point capture
             if self._mode == CAPTURE_POINT:
-                if stdmLayer.geometryType() != QGis.Point:
+                if stdm_layer.geometryType() != QGis.Point:
                     QMessageBox.information(self.iface.mainWindow(),
                                             QApplication.translate(
                                                 "StdmMapToolCreateFeature",
@@ -146,15 +146,15 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
 
                 self.start_capturing()
 
-                if layerWKBType == QGis.WKBPoint or layerWKBType == \
+                if layer_wkb_type == QGis.WKBPoint or layer_wkb_type == \
                         QGis.WKBPoint25D:
                     self._geometry = QgsGeometry.fromPoint(layerPoint)
-                elif layerWKBType == QGis.WKBMultiPoint or layerWKBType == \
+                elif layer_wkb_type == QGis.WKBMultiPoint or layer_wkb_type == \
                         QGis.WKBMultiPoint25D:
                     self._geometry = QgsGeometry.fromMultiPoint(layerPoint)
 
             elif self._mode == CAPTURE_LINE or self._mode == CAPTURE_POLYGON:
-                if self._mode == CAPTURE_LINE and stdmLayer.geometryType() \
+                if self._mode == CAPTURE_LINE and stdm_layer.geometryType() \
                         != QGis.Line:
                     QMessageBox.information(self.iface.mainWindow(),
                                             QApplication.translate(
@@ -167,7 +167,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                                                 "vector layer"))
                     return
 
-                if self._mode == CAPTURE_POLYGON and stdmLayer.geometryType(
+                if self._mode == CAPTURE_POLYGON and stdm_layer.geometryType(
 
                 ) != QGis.Polygon:
                     QMessageBox.information(self.iface.mainWindow(),
@@ -207,14 +207,14 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
 
                 self.start_capturing()
 
-    def onFinishSketch(self):
+    def on_finish_sketch(self):
         """
         Slot raised upon selecting to finish drawing the sketch spatial unit.
         """
-        stdmLayer = self.current_vector_layer()
-        layerWKBType = stdmLayer.wkbType()
+        stdm_layer = self.current_vector_layer()
+        layer_wkb_type = stdm_layer.wkbType()
 
-        feature = QgsFeature(stdmLayer.pendingFields())
+        feature = QgsFeature(stdm_layer.pendingFields())
 
         if self._mode == CAPTURE_POINT:
             feature.setGeometry(self._geometry)
@@ -236,12 +236,12 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                 return
 
             if self._mode == CAPTURE_LINE:
-                if layerWKBType == QGis.WKBLineString or layerWKBType == \
+                if layer_wkb_type == QGis.WKBLineString or layer_wkb_type == \
                         QGis.WKBLineString25D:
                     self._geometry = QgsGeometry.fromPolyline(
                         self._capture_list)
 
-                elif layerWKBType == QGis.WKBMultiLineString or layerWKBType\
+                elif layer_wkb_type == QGis.WKBMultiLineString or layer_wkb_type\
                         == QGis.WKBMultiLineString25D:
                     self._geometry = QgsGeometry.fromMultiPolyline(
                         self._capture_list)
@@ -261,12 +261,13 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
 
             # Polygon
             else:
-                if layerWKBType == QGis.WKBPolygon or layerWKBType == \
+                if layer_wkb_type == QGis.WKBPolygon or layer_wkb_type == \
                         QGis.WKBPolygon25D:
                     self._geometry = QgsGeometry.fromPolygon(
                         [self._capture_list])
 
-                elif layerWKBType == QGis.WKBMultiPolygon or layerWKBType ==\
+                elif layer_wkb_type == QGis.WKBMultiPolygon or \
+                        layer_wkb_type == \
                         QGis.WKBMultiPolygon25D:
                     self._geometry = QgsGeometry.fromMultiPolygon(
                         [self._capture_list])
@@ -284,10 +285,10 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
 
                 feature.setGeometry(self._geometry)
 
-                avoidIntersectionsReturn = feature.geometry(
+                avoid_intersections_return = feature.geometry(
                 ).avoidIntersections()
 
-                if avoidIntersectionsReturn == 3:
+                if avoid_intersections_return == 3:
                     QMessageBox.critical(self.iface.mainWindow(),
                                          QApplication.translate(
                                              "StdmMapToolCreateFeature",
@@ -297,11 +298,11 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                                              "An error was reported during "
                                              "intersection removal"))
 
-                polyWkb = feature.geometry().asWkb()
+                poly_wkb = feature.geometry().asWkb()
 
-                if polyWkb is None:
+                if poly_wkb is None:
                     reason = ""
-                    if avoidIntersectionsReturn is not 2:
+                    if avoid_intersections_return is not 2:
                         reason = QApplication.translate(
                             "StdmMapToolCreateFeature", "The feature cannot "
                                                         "be added because "
@@ -324,27 +325,29 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
 
                     self.stop_capturing()
                     del feature
-                    self._resetGeometry()
+                    self._reset_geometry()
                     return
 
-        stdmLayer.beginEditCommand(QApplication.translate(
+        stdm_layer.beginEditCommand(QApplication.translate(
             "StdmMapToolCreateFeature", "Feature Added"))
 
-        if self.addFeature(stdmLayer, feature):
-            stdmLayer.endEditCommand()
+        if self.add_feature(stdm_layer, feature):
+            stdm_layer.endEditCommand()
 
         else:
             del feature
-            self._resetGeometry()
-            stdmLayer.destroyEditCommand()
+            self._reset_geometry()
+            stdm_layer.destroyEditCommand()
 
         self.stop_capturing()
 
         self.canvas.refresh()
 
-    def addFeature(self, stdmlayer, feat):
+    def add_feature(self, stdmlayer, feat):
         """
         Add feature to the vector layer for pending commit.
+        :type feat: QgsFeature
+        :type stdmlayer: QgsVectorLayer
         """
         # Try set the attribute editor
         self._configure_spatial_editor(stdmlayer)
@@ -375,12 +378,12 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
             # Check for pending entities and add to collection
             pendingLayerEntities = spEditor.pendingLayerEntities()
 
-            if not pendingLayerEntities.layerId() in self._pendingFKEntities:
-                self._pendingFKEntities[
+            if not pendingLayerEntities.layerId() in self._pending_fk_entities:
+                self._pending_fk_entities[
                     pendingLayerEntities.layerId()] = pendingLayerEntities
 
             else:
-                self._pendingFKEntities[pendingLayerEntities.layerId()].merge(
+                self._pending_fk_entities[pendingLayerEntities.layerId()].merge(
                     pendingLayerEntities)
 
             return True
@@ -393,8 +396,8 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
         Update the related entities with the FK key from the primary spatial
         unit PK.
         """
-        if layerid in self._pendingFKEntities:
-            pendingLayerEntity = self._pendingFKEntities[layerid]
+        if layerid in self._pending_fk_entities:
+            pendingLayerEntity = self._pending_fk_entities[layerid]
 
             # Get map layer using layerid
             refLayer = QgsMapLayerRegistry.instance().mapLayer(layerid)
@@ -550,6 +553,6 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
 
                 self.start_capturing()
 
-    def _resetGeometry(self):
+    def _reset_geometry(self):
         del self._geometry
         self._geometry = None
