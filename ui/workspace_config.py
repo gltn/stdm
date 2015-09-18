@@ -245,7 +245,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     
     def lookupTables(self):
         '''get the lookup tables'''
-        return self.tableHandler.lookupTable()
+        return self.tableHandler.lookup_table()
     
     def populateLookup(self):   
         lookupModel = self.tableHandler.lookup_table_model()
