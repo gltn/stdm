@@ -260,7 +260,7 @@ class ConfigTableReader(object):
     def path_settings(self):
         path_keys = self.settings_keys()
         path_setting = self.config.read(path_keys)
-        return pathKeys, pathSetting
+        return path_keys, path_setting
     
     def create_dir(self, paths):
         if paths != None:
