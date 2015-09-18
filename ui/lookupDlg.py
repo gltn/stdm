@@ -48,7 +48,7 @@ class LookupDialog(QDialog, Ui_Lookup):
         #perform initialization of controls
         self.profile = activeProfile()
         self.handler = ConfigTableReader()
-        Lkupmodel = self.handler.lookupTableModel()
+        Lkupmodel = self.handler.lookup_table_model()
         self.cboTable.setModel(Lkupmodel)
         self.showDefinedLookupChoices()
     
@@ -56,7 +56,7 @@ class LookupDialog(QDialog, Ui_Lookup):
         '''
         show preview of defined lookup choices when the lookup table is selected
         '''
-        lkChoices = self.handler.readLookupList(self.cboTable.currentText())
+        lkChoices = self.handler.read_lookup_list(self.cboTable.currentText())
         self.lklstView.setModel(lkChoices)
     
     def currentTableChanged(self,int):
@@ -68,7 +68,7 @@ class LookupDialog(QDialog, Ui_Lookup):
         lkDlg = ADDLookupValue(self)
         if lkDlg.exec_()== QDialog.Accepted:
             lkName = lkDlg.value
-            self.handler.addLookupValue(self.cboTable.currentText(), lkName)
+            self.handler.add_lookup_value(self.cboTable.currentText(), lkName)
         self.showDefinedLookupChoices()
           
     def addLookUp(self):     

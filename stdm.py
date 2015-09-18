@@ -50,7 +50,7 @@ from ui.reports import ReportBuilder
 import data
 from data import (
     activeProfile,
-    contentGroup,
+    content_group,
     NoPostGISError,
     ProfileException,
     spatial_tables,
@@ -462,7 +462,7 @@ class STDMQGISLoader(object):
         for k, v in self._moduleItems.iteritems():
             content_action = QAction(QIcon(":/plugins/stdm/images/icons/table.png"),
                                     k, self.iface.mainWindow())
-            capabilities = contentGroup(self._moduleItems[k])
+            capabilities = content_group(self._moduleItems[k])
 
             if capabilities:
                 moduleCntGroup = TableContentGroup(username, k, content_action)
@@ -1130,11 +1130,11 @@ class STDMQGISLoader(object):
         if profile is None:
 
             #Add a default is not provided
-            default = handler.STDMProfiles()
+            default = handler.stdm_profiles()
             profile = unicode(default[0])
         exceptions_list = ['spatial_unit','str_relations']
 
-        moduleList = handler.tableNames(profile)
+        moduleList = handler.table_names(profile)
         moduleList.extend(handler.lookupTable())
         self.pgTableMapper(moduleList)
         for table in exceptions_list:
@@ -1151,7 +1151,7 @@ class STDMQGISLoader(object):
         handler = self.config_loader()
         str_table = 'str_relations'
         try:
-            if handler.chect_table_exist(str_table):
+            if handler.check_table_exist(str_table):
                 tableMapper = DeclareMapping.instance()
                 tmapper =tableMapper.raw_table('str_relations')
                 return tmapper.key
@@ -1171,7 +1171,7 @@ class STDMQGISLoader(object):
         Load and open documentation manual
         """
         handler = self.config_loader()
-        helpManual = handler.setDocumentationPath()
+        helpManual = handler.set_documentation_path()
         os.startfile(helpManual,'open')
 
     def reset_content_modules_id(self, title, message_text):

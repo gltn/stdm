@@ -71,11 +71,10 @@ class ConfigTableReader(object):
    
     def table_list_model(self, profile):
         '''pass the table list to a listview model'''
-        tData = self.tableNames(profile)
+        tdata = self.table_names(profile)
         if not tData is None:
-            model = listEntityViewer(tData)
+            model = listEntityViewer(tdata)
             return model
-
         else:
             return None
 
@@ -83,15 +82,13 @@ class ConfigTableReader(object):
         table_desc = tableFullDescription(profile)
         if table_desc:
             headers = table_desc[0].keys()
-            rowData = [row.values() for row in table_desc]
-            table_desc_model = EntityColumnModel(headers, rowData)
+            row_data = [row.values() for row in table_desc]
+            table_desc_model = EntityColumnModel(headers, row_data)
             return table_desc_model
     
-    def tableNames(self, profile):
+    def table_names(self, profile):
         tbl_data = XMLTableElement(profile)
         if tbl_data is not None:
-#            if "social_tenure" in tData:
-#                tData.remove('social_tenure')
             return tbl_data
 
     def current_profile_tables(self):
@@ -102,9 +99,7 @@ class ConfigTableReader(object):
         """
         try:
             curr_profile = activeProfile()
-
-            return self.tableNames(curr_profile)
-
+            return self.table_names(curr_profile)
         except ProfileException:
             raise
 
@@ -118,10 +113,10 @@ class ConfigTableReader(object):
         """
         return tableCols(table)
     
-    def fulltableList(self):
-        tbList = tableLookUpCollection()
-        if not tbList is None:
-            return tbList
+    def full_table_list(self):
+        tbl_list = tableLookUpCollection()
+        if not tbl_list is None:
+            return tbl_list
 
     def on_main_table_selection(self):
         """
@@ -129,54 +124,51 @@ class ConfigTableReader(object):
         to a combo box
         :return:
         """
-        tbl_list= self.fulltableList()
+        tbl_list= self.full_table_list()
         tbl_model = listEntityViewer(tbl_list)
         return tbl_model
         
-    def STDMProfiles(self):
-        pfList=profiles()
-        return pfList
+    def stdm_profiles(self):
+        prof_list=profiles()
+        return prof_list
     
-    def lookupTableModel(self):
-        model=listEntityViewer(self.lookupTable())
+    def lookup_table_model(self):
+        model=listEntityViewer(self.lookup_table())
         return model
     
-    def lookupTable(self):
+    def lookup_table(self):
         return lookupTable()
 
-    def lookupColumns(self,lookupName):
-        columnModel = None
-        tableAttrib = lookupColumn(lookupName)
-        if len(tableAttrib)>0:
-            colHeaders = tableAttrib[0].keys()
-            colVals= []
-           # [item.values for item in tableAttrib]
-            for item in tableAttrib:
-                colVals.append(item.values())
-            columnModel=EntityColumnModel(colHeaders,colVals)
+    def lookup_columns(self, lookup_name):
+        column_model = None
+        table_attrib = lookupColumn(lookup_name)
+        if len(table_attrib)>0:
+            col_headers = table_attrib[0].keys()
+            col_vals= []
+            for item in table_attrib:
+                col_vals.append(item.values())
+            column_model=EntityColumnModel(col_headers, col_vals)
 
-            return columnModel
+            return column_model
 
         else: 
             return None
     
-    def columns(self,profile,tableName):
+    def columns(self, profile, table_name):
         '''Functions to read columns details from the config for the given table''' 
-        columnModel = None
-        tableAttrib = tableColumns(profile,tableName)
-        if len(tableAttrib) > 0:
-            colHeaders = tableAttrib[0].keys()
-            colVals = [item.values() for item in tableAttrib]
-            #for item in tableAttrib:
-             #   colVals.append(item.values())
-            columnModel = EntityColumnModel(colHeaders, colVals)
+        column_model = None
+        table_attrib = tableColumns(profile,tableName)
+        if len(table_attrib) > 0:
+            col_headers = table_attrib[0].keys()
+            col_vals = [item.values() for item in table_attrib]
+            column_model = EntityColumnModel(col_headers, col_vals)
 
-            return columnModel
+            return column_model
 
         else: 
             return None
 
-    def column_labels(self,col_list):
+    def column_labels(self, col_list):
         """
         Method to read and return the defined column labels for the table as a model
         :param list:
@@ -203,97 +195,96 @@ class ConfigTableReader(object):
         else:
             return social_tenure_tables(activeProfile())
 
-    def tableRelation(self,tableName):
+    def table_relation(self, table_name):
         '''Method to read all defined table relationship in the config file'''
-        relationModel = None
-        tableAttrib = tableRelations(tableName,"relations")
-        if tableAttrib is None:
-            return tableAttrib
-        if len(tableAttrib)>0:
-            colHeaders = tableAttrib[0].keys()
-            colVals = []
-            for item in tableAttrib:
-                colVals.append(item.values())
-            relationModel = EntityColumnModel(colHeaders,colVals)
-            return relationModel
+        relation_model = None
+        table_attrib = tableRelations(tableName, "relations")
+        if table_attrib is None:
+            return table_attrib
+        if len(table_attrib)>0:
+            col_headers = table_attrib[0].keys()
+            col_vals = []
+            for item in table_attrib:
+                col_vals.append(item.values())
+            relation_model = EntityColumnModel(col_headers, col_vals)
+            return relation_model
         
-    def geometry_collection(self,tableName):
+    def geometry_collection(self, table_name):
         '''Method to read all defined table relationship in the config file'''
-        geometryModel = None
-        geomAttrib = geometryColumns(tableName, 'geometryz')
-        if geomAttrib == None:
-            return geomAttrib
-        if len(geomAttrib) > 0:
-            colHeaders = geomAttrib[0].keys()
-            colVals = []
-            for item in geomAttrib:
-                colVals.append(item.values())
-            geometryModel = EntityColumnModel(colHeaders, colVals)
-            return geometryModel
+        geometry_model = None
+        geom_attrib = geometryColumns(tableName, 'geometryz')
+        if geom_attrib == None:
+            return geom_attrib
+        if len(geom_attrib) > 0:
+            col_headers = geom_attrib[0].keys()
+            col_vals = []
+            for item in geom_attrib:
+                col_vals.append(item.values())
+            geometry_model = EntityColumnModel(col_headers, col_vals)
+            return geometry_model
 
-    def sqlTableDefinition(self):
+    def sql_table_definition(self):
         '''load the table definition info in html file'''
-        docfile = self.file_handler.SQLFile()
-        return docfile
+        doc_file = self.file_handler.SQLFile()
+        return doc_file
     
-    def htmlTableDefinition(self):
+    def html_table_definition(self):
         '''load the table definition info in html file'''
-        docfile = self.file_handler.HtmlFile()
-        return docfile
+        doc_file = self.file_handler.HtmlFile()
+        return doc_file
     
-    def userProfileDir(self):
+    def user_profile_dir(self):
         return self.file_handler.STDMSettingsPath()
 
-    def updateDir(self, path):
+    def update_dir(self, path):
         return  self.file_handler.userConfigPath(path)
 
-    def saveXMLchanges(self):
+    def save_xml_changes(self):
         writeSQLFile()
         writeHTML()
                 
-    def upDateSQLSchema(self):
+    def update_sql_schema(self):
         #To be implemented to allow updating of schema
         updateSQL()
         
-        
-    def setProfileSettings(self,profileData):
+    def set_profile_settings(self, profile_data):
         '''write the current profile in Qsettings'''            
-        self.config.write(profileData) 
+        self.config.write(profile_data) 
     
-    def settingsKeys(self):
+    def settings_keys(self):
         '''
         Keys used to store directory paths in the database
         '''
         return PATHKEYS
     
-    def pathSettings(self):
-        pathKeys = self.settingsKeys()
-        pathSetting = self.config.read(pathKeys)
+    def path_settings(self):
+        path_keys = self.settings_keys()
+        path_setting = self.config.read(path_keys)
         return pathKeys, pathSetting
     
-    def createDir(self, paths):
+    def create_dir(self, paths):
         if paths != None:
-            for fPath in paths:
-                self.file_handler.createDir(fPath)
+            for file_path in paths:
+                self.file_handler.createDir(file_path)
     
-    def addLookupValue(self,table,valueText):
-        setLookupValue(table,valueText)
+    def add_lookup_value(self, table, value_text):
+        setLookupValue(table, value_text)
         
-    def readLookupList(self,table):
-        lookupList=[]
+    def read_lookup_list(self, table):
+        lookup_list=[]
         try:
-            lookupList=lookupData(table)
+            lookup_list=lookupData(table)
         except:
             pass
-        lookupModel = listEntityViewer(lookupList, icon=dataIcon)
-        return lookupModel
+        lookup_model = listEntityViewer(lookup_list, icon=dataIcon)
+        return lookup_model
         
-    def setDocumentationPath(self):
+    def set_documentation_path(self):
         '''get the help contents available to user'''
-        helpFile=self.file_handler.HelpContents()
-        return helpFile
+        help_file=self.file_handler.HelpContents()
+        return help_file
     
-    def trackXMLChanges(self):
+    def track_xml_changes(self):
         self.file_handler.createBackup()
 
     def check_config_version(self, path):
@@ -310,26 +301,26 @@ class ConfigTableReader(object):
         """
         return tableCols(table)
 
-    def update_str_tables(self, table,level):
-        set_str_tables(activeProfile(),table,level)
+    def update_str_tables(self, table, level):
+        set_str_tables(activeProfile(), table, level)
 
-    def set_str_type_collection(self,table, optiontype):
+    def set_str_type_collection(self, table, option_type):
         """
         Method to update the config to show the str type of individual str table
         :param table:
         :return:
         """
-        str_type_tables(activeProfile(), table, optiontype)
+        str_type_tables(activeProfile(), table, option_type)
 
-    def set_table_str_columns(self, table, collist):
+    def set_table_str_columns(self, table, col_list):
         """
         Method to set all the tables column participating in STR
         :param table:
         :return:
         """
-        str_col_collection(activeProfile(),table,collist)
+        str_col_collection(activeProfile(), table, col_list)
 
-    def social_tenure_col(self,table):
+    def social_tenure_col(self, table):
         """
         Method to read str columns from config
         :param table:
@@ -360,7 +351,7 @@ class ConfigTableReader(object):
         """
         self.file_handler.change_config()
 
-    def chect_table_exist(self, table):
+    def check_table_exist(self, table):
         """
         If the table is already defined in config
         :return:

@@ -66,13 +66,13 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         QObject.connect(self.lstEntity_2,SIGNAL('clicked(QModelIndex)'),self.relationForTable)       
         QObject.connect(self.tblEdit, SIGNAL('clicked(QModelIndex)'), self.selectedColumnIndex)
         QObject.connect(self.tblEdit_2, SIGNAL('clicked(QModelIndex)'), self.selectedColumnIndex)
-        QObject.connect(self.tblLookupList, SIGNAL('clicked(QModelIndex)'), self.lookupColumns)
+        QObject.connect(self.tblLookupList, SIGNAL('clicked(QModelIndex)'), self.lookup_columns)
         #QObject.connect(self.lstParty, SIGNAL('clicked(QModelIndex)'), self.on_str_party_table_selection)
         #QObject.connect(self.lstParty, SIGNAL('clicked(QModelIndex)'), self.on_str_party_table_selection)
 
         self.btnAdd.clicked.connect(self.addTableColumn)
         self.btnEdit.clicked.connect(self.columnEditor)
-        self.btnProperty.clicked.connect(self.tableRelationEditor)
+        self.btnProperty.clicked.connect(self.table_relationEditor)
         self.btnDelete.clicked.connect(self.deletedSelectedTable)
         self.btnSQL.clicked.connect(self.schemaPreview)
         #self.btnHTML.clicked.connect(self.HTMLFileView)
@@ -100,7 +100,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.cboSPUnit.currentIndexChanged.connect(self.spatial_str_selection_changed)
 
         try:
-            settings = self.tableHandler.pathSettings()
+            settings = self.tableHandler.path_settings()
             if not settings[1].get('Config'):
                 self.startId() == 1
             elif settings[1].get('Config'):
@@ -177,7 +177,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             self.configPath()
 
         if self.currentId()==3:
-            self.pathSettings()
+            self.path_settings()
             self.profileContent()
         if self.currentId()==4:
             #self.toolbtn.setPopupMode(QToolButton.InstantPopup)
@@ -248,7 +248,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         return self.tableHandler.lookupTable()
     
     def populateLookup(self):   
-        lookupModel = self.tableHandler.lookupTableModel()
+        lookupModel = self.tableHandler.lookup_table_model()
         self.tblLookupList.setModel(lookupModel)
         
     def loadTableData(self,profile,widget):
@@ -261,7 +261,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     
     def profileContent(self):
         '''Loads all available content/table from the config for the selected profile'''
-        profiles = self.tableHandler.STDMProfiles()
+        profiles = self.tableHandler.stdm_profiles()
         #for pf in profiles:
         self.cboProfile.clear()
         self.cboProfile.insertItems(0,profiles)
@@ -287,7 +287,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         
     def registerProfileSettings(self):
         profile = QApplication.translate("WorkspaceLoader","currentProfile")
-        self.tableHandler.setProfileSettings({profile:self.profile})      
+        self.tableHandler.set_profile_settings({profile:self.profile})      
         
     def loadTableColumns(self, tableName):
         '''Get a list of all Columns defined for the given table name'''
@@ -309,7 +309,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         if tableName==None:
             self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","No Table selected"))
             return
-        relationModel=self.tableHandler.tableRelation(tableName)
+        relationModel=self.tableHandler.table_relation(tableName)
         self.tblEdit_2.setModel(relationModel)
         
 
@@ -555,7 +555,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             return
         self.showGeometryColumns(self.tableName)
 
-    def tableRelationEditor(self):
+    def table_relationEditor(self):
         if self.tableName!=None:
             colDlg=TableProperty(str(self.cboProfile.currentText()),self.tableName,self)
             colDlg.exec_()
@@ -571,25 +571,25 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             item=selCols[0].data()     
         else:
             return
-    def lookupColumns(self):
+    def lookup_columns(self):
 
         selCols=self.tblLookupList.selectionModel().selectedIndexes() 
         if len(selCols)>0:
             tableName=selCols[0].data()    
-            self.lookupColumnsTowidget(tableName) 
+            self.lookup_columnsTowidget(tableName) 
             self.tableName=tableName
             self.lookupDefinedValues()
         else:
             self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","No selections"))
             return
         
-    def lookupColumnsTowidget(self, tableName):
+    def lookup_columnsTowidget(self, tableName):
         '''Get a list of all Columns defined for the given table name'''
         columnModel=None
         if tableName==None:
             self.ErrorInfoMessage(QApplication.translate("WorkspaceLoader","lookup Not defined"))
             return
-        columnModel=self.tableHandler.lookupColumns(tableName)
+        columnModel=self.tableHandler.lookup_columns(tableName)
         self.tblEdit.clearSpans()
         self.tblEdit.setModel(columnModel)
         self.loadTableRelations(tableName)
@@ -673,7 +673,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 element = "columns"
                 if str(self.tableName).startswith('check'):
                     deleteColumn(self.profile,'lookup',self.tableName,element,'name',str(item))
-                    self.lookupColumnsTowidget(self.tableName)
+                    self.lookup_columnsTowidget(self.tableName)
                 else:
                     deleteColumn(self.profile,'table',self.tableName,element,'name',str(item))
                     try:
@@ -747,12 +747,12 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     
     def addLookupToWidget(self,lkText):
         '''Add lookup to config list and add it to view widget'''
-        self.tableHandler.addLookupValue(self.tableName, str(lkText).capitalize())
+        self.tableHandler.add_lookup_value(self.tableName, str(lkText).capitalize())
         self.lookupDefinedValues()
                 
     def lookupDefinedValues(self):
         '''load all defined lookup choices for the selected table'''
-        lookUpModel = self.tableHandler.readLookupList(self.tableName)
+        lookUpModel = self.tableHandler.read_lookup_list(self.tableName)
         self.tblLookup.clearFocus()
         self.tblLookup.setModel(lookUpModel)
 
@@ -789,7 +789,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 self.rbSchema.setChecked(True)
                 return
 
-            self.tableHandler.saveXMLchanges()
+            self.tableHandler.save_xml_changes()
             lookups = self.lookupTables()
             for lookup in lookups:
                 lookupTextList = lookupData2List(self.profile, lookup)
@@ -802,12 +802,12 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 f. close()
             self.setRelation(fileN,sqlInsert)
         if self.rbSchema.isChecked():
-            self.tableHandler.upDateSQLSchema()
+            self.tableHandler.update_sql_schema()
         self.rawSQLDefinition()
                 
     def SQLFileView(self):
         '''read the SQL in directory'''
-        file = self.tableHandler.sqlTableDefinition()
+        file = self.tableHandler.sql_table_definition()
         return file
     
     def setRelation(self,fileN,sql):
@@ -832,7 +832,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                     self.assignRoles()
                     self.InfoMessage(QApplication.translate("WorkspaceLoader","Changes successfully saved in the STDM database"))
                     flush_session_activity()
-                    self.tableHandler.trackXMLChanges()
+                    self.tableHandler.track_xml_changes()
                     return valid
             except SQLAlchemyError as ex:
                 self.ErrorInfoMessage(str(ex.message))
@@ -853,7 +853,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         '''Check if table is already defined in pgtables and drop it'''
         if self.rbSchemaNew.isChecked():
             #tables = pg_tables()
-            tables = self.tableHandler.fulltableList()
+            tables = self.tableHandler.full_table_list()
             safely_delete_tables(tables)
 
     
@@ -908,14 +908,14 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         
     def configPath(self):
         try:
-            pathKeys, configPath = self.tableHandler.pathSettings()
+            pathKeys, configPath = self.tableHandler.path_settings()
             if configPath:
                 self.txtSetting.setText(configPath[pathKeys[0]])
                 self.txtDefaultFolder.setText(configPath[pathKeys[1]])
                 self.txtCertFolder.setText(configPath[pathKeys[2]])
                 self.txtTemplates.setText(configPath[pathKeys[3]])
             else:
-                userpath = self.tableHandler.userProfileDir()
+                userpath = self.tableHandler.user_profile_dir()
                 self.txtSetting.setText(userpath)
                 self.setWorkingDataPath(userpath)
                 self.certificatePath(userpath)
@@ -924,19 +924,19 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             QMessageBox.information(self,
                                     QApplication.translate("WorkspaceLoader",u"Directory Error ")+str(io.message))
     
-    def pathSettings(self):
+    def path_settings(self):
         """
         add user paths to the registry setting and update the new directory with base files
         :return:
         """
         dataPath={}
-        settings = self.tableHandler.settingsKeys()
+        settings = self.tableHandler.settings_keys()
         userPath = [self.txtSetting.text(), self.txtDefaultFolder.text(), self.txtCertFolder.text(), self.txtTemplates.text()]
         for i in range(len(settings)):
             dataPath[settings[i]] = userPath[i]
-        self.tableHandler.setProfileSettings(dataPath)
+        self.tableHandler.set_profile_settings(dataPath)
         self.tableHandler.createDir(dataPath.values())
-        self.tableHandler.updateDir(self.txtSetting.text())
+        self.tableHandler.update_dir(self.txtSetting.text())
         
     def settingsPath(self):
         try:
@@ -1007,7 +1007,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                 return selDir  
         
     def HelpContents(self):
-        normPath = self.tableHandler.setDocumentationPath() 
+        normPath = self.tableHandler.set_documentation_path() 
         os.startfile(normPath,'open')
                                         
     def ErrorInfoMessage(self, message):
@@ -1055,7 +1055,7 @@ class SocialTenureRelation(object):
         """
         """
         profile = self.handler.active_profile()
-        tables = self.handler.tableNames(profile)
+        tables = self.handler.table_names(profile)
         return tables
 
     def on_tab_focus(self, widget):
