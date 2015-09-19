@@ -31,8 +31,8 @@ from PyQt4.QtGui import *
 
 try:
     xmlobject = FilePaths()
-    #doc = xmlobject.XMLFile()
-    xml_doc = xmlobject.setUserXMLFile()
+    #doc = xmlobject.xml_file()
+    xml_doc = xmlobject.set_user_xml_file()
     html_doc = xmlobject.HtmlFile()
 except Exception as ex:
     raise ex.message

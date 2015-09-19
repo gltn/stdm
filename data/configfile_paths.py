@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- stdm
-                                 A QGIS plugin
- Securing land and property rights for all
-                              -------------------
-        begin                : 2014-03-04
-        copyright            : (C) 2014 by GLTN
-        email                : njoroge.solomon@yahoo.com
+Name                 : Configfile_paths
+Description          : Reads table configuration information in an XML config
+                       file.
+Date                 : 30/March/2014
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -19,12 +19,18 @@
  *                                                                         *
  ***************************************************************************/
 """
+
 import os
 import shutil
 import platform
 import filecmp
-from stdm.utils import PLUGIN_DIR
+
 from PyQt4.QtGui import QApplication, QMessageBox
+
+from stdm.utils import PLUGIN_DIR
+from stdm.settings import RegistryConfig
+from .reports import SysFonts
+
 DEFAULT_CONFIG="stdmConfig.xml"
 LICENSE="LICENSE.txt"
 HTML="stdm_schema.html"
@@ -33,91 +39,89 @@ CONFIG="Config"
 HELP="stdm.chm"
 
 xmldoc=os.path.dirname(os.path.abspath(__file__))
-#from stdm.config import activeProfile
-from stdm.settings import RegistryConfig
-from .reports import SysFonts
 
 class FilePaths(object):
     def __init__(self, path=None):
         self._file = PLUGIN_DIR
-        self.baseDir = None
+        self.base_dir = None
         self._html = ''
         self._sql = ''
-        self.userPath = None
-        self.cachePath = None
+        self.user_path = None
+        self.cache_path = None
         self.config = RegistryConfig()
-        self.checkPreviousSetting()
+        self.check_previous_setting()
 
-    def checkPreviousSetting(self):    
-        self.defaultConfigPath()
+    def check_previous_setting(self):    
+        self.default_config_path()
         try:
-            pathSettings = self.config.read([CONFIG])
-            if pathSettings:
-                self.setUserConfigPath(pathSettings[CONFIG])
+            path_settings = self.config.read([CONFIG])
+            if path_settings:
+                self.set_user_config_path(path_settings[CONFIG])
             else:
-                self.setUserConfigPath()
+                self.set_user_config_path()
         except Exception as ex:
             raise ex
                         
-    def XMLFile(self):
-        #this function returns the default xml file with configuration
+    def xml_file(self):
+        ''' Function returns the default xml file with configuration '''
         #self.setConfigPath()
         return self._file
 
-    def cacheFile(self):
-        #To implemented a backup file for comparing edits everytime the user makes changes
-        path = self.userPath+'/temp/%s'%DEFAULT_CONFIG
+    def cache_file(self):
+        ''' To implemented a backup file for comparing edits everytime the user makes changes '''
+        path = self.user_path+'/temp/%s'%DEFAULT_CONFIG
         return path
     
-    def cacheDir(self):
-        return self.cachePath
+    def cache_dir(self):
+        return self.cache_path
     
-    def setCacheDir(self,path=None):
+    def set_cache_dir(self, path=None):
         if path:
-            self.cachePath = self.userPath+"/%s"%path
+            self.cache_path = self.user_path+"/%s"%path
         else:
-            self.cachePath = self.userPath+"/temp"
-        self.createDir(self.cachePath)
+            self.cache_path = self.user_path+"/temp"
 
-    def STDMSettingsPath(self):
+        self.create_dir(self.cache_path)
+
+    def stdm_settings_path(self):
         #To be implemented to write new file with user edits
-        return self.userPath
+        return self.user_path
     
-    def HtmlFile(self):
+    def html_file(self):
         #Read the html representation of the schema
-        self._html = self.userPath+'/%s'%HTML
+        self._html = self.user_path+'/%s'%HTML
         return self._html
     
-    def SQLFile(self):
+    def sql_file(self):
         #Read the html representation of the schema
-        self._sql = self.userPath+'/%s'%BASIC_SQL
+        self._sql = self.user_path+'/%s'%BASIC_SQL
         return self._sql
     
-    def baseSQLPath(self):
-        path= self.baseDir+'/%s'%DEFAULT_CONFIG
-        #path=self.userPath+'/temp/%s'%FILE
+    def base_sql_path(self):
+        path= self.base_dir+'/%s'%DEFAULT_CONFIG
+        #path=self.user_path+'/temp/%s'%FILE
         return path
     
     def HelpContents(self):
         """Method to load help contents file"""
         return self._file+'/%s'%HELP
         
-    def defaultConfigPath(self):
+    def default_config_path(self):
         """
         returns the path with base configuration file
         """
-        self.baseDir = self._file+"/template/"       
+        self.base_dir = self._file+"/template/"       
     
-    def setUserConfigPath(self,path=None):
+    def set_user_config_path(self,path=None):
         ''' set new path with user configuration'''
         if path is not None:
-            self.userPath= path
+            self.user_path= path
         else:
-            self.userPath = self.localPath()
-        self.createDir(self.userPath)
-        self.cachePath = self.userPath+'/temp'
-        self.createDir(self.cachePath)
-        self.userConfigPath(self.userPath)
+            self.user_path = self.localPath()
+        self.create_dir(self.user_path)
+        self.cache_path = self.user_path+'/temp'
+        self.create_dir(self.cache_path)
+        self.userConfigPath(self.user_path)
     
     def userConfigPath(self,path=None):
         #Copy template files to the user directory
@@ -125,10 +129,10 @@ class FilePaths(object):
             #self.compare_config_version(FILE)
             for fileN in [DEFAULT_CONFIG, BASIC_SQL]:
                 if not os.path.isfile(path+'/%s'%fileN):
-                    baseFile = self.baseDir +'/%s'%fileN
-                    shutil.copy(baseFile,self.userPath)
-                if not os.path.isfile(self.cacheFile()):
-                    self.createBackup()
+                    baseFile = self.base_dir +'/%s'%fileN
+                    shutil.copy(baseFile,self.user_path)
+                if not os.path.isfile(self.cache_file()):
+                    self.create_backup()
             self.localFontPath(path)
         except IOError as io:
             raise io
@@ -140,10 +144,10 @@ class FilePaths(object):
         :return: QFile
         """
         if not path:
-            path = self.userPath
+            path = self.user_path
         else:
             path = path
-        base_file = self.baseSQLPath()
+        base_file = self.base_sql_path()
         user_file = path +'/%s'%DEFAULT_CONFIG
         if os.path.isfile(user_file):
             if QMessageBox.warning(None, QApplication.translate("FilePaths","Previous user configuration found"),
@@ -156,7 +160,7 @@ class FilePaths(object):
                 else:
                     try:
                         os.remove(user_file)
-                        shutil.copy(base_file, self.userPath)
+                        shutil.copy(base_file, self.user_path)
                     except:
                         pass
             else:
@@ -164,7 +168,7 @@ class FilePaths(object):
                                         QApplication.translate("FilePaths","Previous configuration retained"))
         else:
             shutil.copy(base_file, user_file)
-        self.createBackup()
+        self.create_backup()
 
     def localFontPath(self, path):
         """ Create a path where fonts will be stored"""
@@ -178,11 +182,11 @@ class FilePaths(object):
             fontPath = str(path).replace("\\", "/")+"/font.cache"
         SysFonts.register(fontPath)
     
-    def setUserXMLFile(self):
+    def set_user_xml_file(self):
         """
         Default path to the config file
         """
-        xml = self.userPath +'/%s'%DEFAULT_CONFIG
+        xml = self.user_path +'/%s'%DEFAULT_CONFIG
         return xml
     
     def localPath(self):
@@ -200,42 +204,42 @@ class FilePaths(object):
     
     def setLocalPath(self, path=None):
         if path:
-            self.userPath = path
+            self.user_path = path
         if not path:
-            self.userPath = self.localPath()
+            self.user_path = self.localPath()
             
-    def createDir(self, dirPath):
-        if not os.access(dirPath, os.F_OK):
-            os.makedirs(dirPath)
+    def create_dir(self, dir_path):
+        if not os.access(dir_path, os.F_OK):
+            os.makedirs(dir_path)
         else:
-            return dirPath
+            return dir_path
     
-    def STDMLicenseDoc(self):
+    def stdm_license_doc(self):
         """
         load STDM license file for viewing
         """
         return self._file+'/%s'%LICENSE
         
-    def createBackup(self):
+    def create_backup(self):
         """
         Incase the user want to keep track of the old file when current file changes
         :return:
         """
-        if os.path.isfile(self.cacheFile()):
-            os.remove(self.cacheFile())
-        shutil.copy(self.setUserXMLFile(), self.cacheDir())
+        if os.path.isfile(self.cache_file()):
+            os.remove(self.cache_file())
+        shutil.copy(self.set_user_xml_file(), self.cache_dir())
 
     def change_config(self):
         """
         Method to update the config file the detected one is old
         :return:
         """
-        base_file = self.baseSQLPath()
-        cur_file = self.setUserXMLFile()
+        base_file = self.base_sql_path()
+        cur_file = self.set_user_xml_file()
         try:
             if os.path.isfile(cur_file):
                 os.remove(cur_file)
-            shutil.copy(base_file, self.userPath)
+            shutil.copy(base_file, self.user_path)
         except:
             pass
 

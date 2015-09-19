@@ -20,6 +20,7 @@ email                : stdm@unhabitat.org
 from collections import OrderedDict
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+
 from .xmlconfig_reader import (
     tableColumns,
     deleteProfile,
@@ -30,6 +31,7 @@ from .xmlconfig_reader import (
     social_tenure_tables,
     checktableExist
 )
+
 from stdm.settings import RegistryConfig
 
 regConfig = RegistryConfig()

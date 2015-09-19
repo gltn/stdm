@@ -29,7 +29,7 @@ class LicenseDocument(object):
         
     def open_license_file(self):
         '''get the path to the license file'''
-        self.file = self.filehandler.STDMLicenseDoc()
+        self.file = self.filehandler.stdm_license_doc()
         #self.file=docFile
     
     def read_license_info(self):

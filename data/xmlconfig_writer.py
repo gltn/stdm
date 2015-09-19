@@ -30,12 +30,12 @@ from PyQt4.QtGui import *
 
 from .configfile_paths import FilePaths
 xmlobject=FilePaths()
-xml_doc=xmlobject.setUserXMLFile()
-#xml_doc=xmlobject.XMLFile()
-destPath=xmlobject.SQLFile()
+xml_doc=xmlobject.set_user_xml_file()
+#xml_doc=xmlobject.xml_file()
+destPath=xmlobject.sql_file()
 destHtml=xmlobject.HtmlFile()
 sourcePath=xml_doc
-oldPath=xmlobject.cacheFile()
+oldPath=xmlobject.cache_file()
 
 def writeTable(data,profile,tableName):
     #method to addnew table definition in the config file
