@@ -22,20 +22,21 @@
 #from lxml import  objectify
 
 
+from PyQt4.QtGui import *
+
 from xml.etree.ElementTree import ElementTree as ET
 from collections import OrderedDict
 from configfile_paths import FilePaths
 import xml.etree.ElementTree as Elt
 from stdm.data.enums import non_editable_tables
-from PyQt4.QtGui import *
 
 try:
     xmlobject = FilePaths()
     #doc = xmlobject.xml_file()
     xml_doc = xmlobject.set_user_xml_file()
-    html_doc = xmlobject.HtmlFile()
+    html_doc = xmlobject.html_file()
 except Exception as ex:
-    raise ex.message
+    raise ex
 
 def parseRootElement():
     if not xml_doc:
