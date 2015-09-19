@@ -33,7 +33,7 @@ xmlobject=FilePaths()
 xml_doc=xmlobject.set_user_xml_file()
 #xml_doc=xmlobject.xml_file()
 destPath=xmlobject.sql_file()
-destHtml=xmlobject.HtmlFile()
+destHtml=xmlobject.html_file()
 sourcePath=xml_doc
 oldPath=xmlobject.cache_file()
 
