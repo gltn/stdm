@@ -146,7 +146,7 @@ class loginDlg(QDialog, Ui_frmLogin):
                 #Whatever the outcome of the database settings definition process                
                 if dbconn == None:
                     return                
-            dbconn.User = self.User
+            dbconn.user = self.User
             #Test connection
             success, msg = dbconn.validate_connection()
             if success:
