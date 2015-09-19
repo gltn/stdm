@@ -935,7 +935,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         for i in range(len(settings)):
             dataPath[settings[i]] = userPath[i]
         self.tableHandler.set_profile_settings(dataPath)
-        self.tableHandler.createDir(dataPath.values())
+        self.tableHandler.create_dir(dataPath.values())
         self.tableHandler.update_dir(self.txtSetting.text())
         
     def settingsPath(self):
