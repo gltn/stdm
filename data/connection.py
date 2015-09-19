@@ -1,12 +1,13 @@
 """
 /***************************************************************************
-Name                 : Database Connection
+Name                 : database Connection
 Description          : Class that represents the minimum properties for
-                        connecting to a PostgreSQL database. The username and
-                        password will not be persisted in this class
+                       connecting to a PostgreSQL database. The username and
+                       password will not be persisted in this class
 Date                 : 25/May/2013 
-copyright            : (C) 2013 by John Gitau
-email                : gkahiu@gmail.com
+copyright            : C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.com
  ***************************************************************************/
 
 /***************************************************************************
@@ -22,65 +23,59 @@ import sqlalchemy
 from sqlalchemy import create_engine
 from qgis.core import QgsDataSourceURI
 
-class DatabaseConnection(object):
+class databaseConnection(object):
     '''
     Class for capturing the minimum database connection properties
     '''
-    def __init__(self,Host,Port,Database):
-        self.Host = Host
-        self.Port = Port
-        self.Database = Database
-        self.User = None
+    def __init__(self, host, port, database):
+        self.host = host
+        self.port = port
+        self.database = database
+        self.user = None
         
-    def toAlchemyConnection(self):
+    def to_alchemy_connection(self):
         '''
         Returns the corresponding connection string in SQLAlchemy format
         '''
-        if self.User:
-            return "postgresql+psycopg2://%s:%s@%s:%s/%s"%(self.User.UserName,self.User.Password,self.Host,self.Port,self.Database)
+        if self.user:
+            return "postgresql+psycopg2://%s:%s@%s:%s/%s" %
+                 (self.user.userName, self.user.Password, self.host, self.port, self.database)
         else:
             return None
     
-    def toPsycopg2Connection(self):
+    def to_psycopg2_connection(self):
         '''
         Returns the corresponding connection string in Psycopg2 format
         '''
         pass
     
-    def validateConnection(self):
+    def validate_connection(self):
         '''
         Return whether the connection is valid or not
         '''
-        isValid = False
-        errMsg = ""
-        engine = create_engine(self.toAlchemyConnection(), echo=False)
+        isvalid = False
+        errmsg = ""
+        engine = create_engine(self.to_alchemy_connection(), echo=False)
 
         try:
             conn = engine.connect()
             conn.close()
-            isValid = True
+            isvalid = True
         except sqlalchemy.exc.OperationalError as oe:
-            errMsg = oe.message
+            errmsg = oe.message
         except Exception as e:
-            errMsg = unicode(e)
+            errmsg = unicode(e)
 
-        return isValid, errMsg
+        return isvalid, errmsg
 
-    def toQgsDataSourceUri(self):
+    def to_qgs_datasource_Uri(self):
         """
         Returns a QgsDataSourceURI object with database connection properties
         defined.
         """
         dt_source = QgsDataSourceURI()
-        dt_source.setConnection(self.Host, self.Port, self.Database,
-                                self.User.UserName, self.User.Password)
+        dt_source.setConnection(self.host, self.port, self.database,
+                                self.user.userName, self.user.Password)
 
         return dt_source
-        
-        
-        
-        
-        
-        
-    
     

@@ -119,7 +119,7 @@ class STDMDb(object):
 
     def __init__(self):
         #Initialize database engine
-        self.engine = create_engine(stdm.data.app_dbconn.toAlchemyConnection(), echo=False)
+        self.engine = create_engine(stdm.data.app_dbconn.to_alchemy_connection(), echo=False)
 
         #Check for PostGIS extension
         state = self._check_spatial_extension()

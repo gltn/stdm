@@ -403,7 +403,7 @@ def vector_layer(table_name, sql="", key="id", geom_column=""):
     if not geom_column:
         geom_column = None
 
-    ds_uri = conn.toQgsDataSourceUri()
+    ds_uri = conn.to_qgs_datasource_uri()
     ds_uri.setDataSource("public", table_name, geom_column, sql, key)
 
     v_layer = QgsVectorLayer(ds_uri.uri(), table_name, "postgres")

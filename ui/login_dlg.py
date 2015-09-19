@@ -148,7 +148,7 @@ class loginDlg(QDialog, Ui_frmLogin):
                     return                
             dbconn.User = self.User
             #Test connection
-            success, msg = dbconn.validateConnection()
+            success, msg = dbconn.validate_connection()
             if success:
                 self.dbConn = dbconn
                 self.accept()
