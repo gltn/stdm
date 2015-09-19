@@ -265,7 +265,7 @@ class ConfigTableReader(object):
     def create_dir(self, paths):
         if paths != None:
             for file_path in paths:
-                self.file_handler.createDir(file_path)
+                self.file_handler.create_dir(file_path)
     
     def add_lookup_value(self, table, value_text):
         setLookupValue(table, value_text)
