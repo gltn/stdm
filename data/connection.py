@@ -23,7 +23,7 @@ import sqlalchemy
 from sqlalchemy import create_engine
 from qgis.core import QgsDataSourceURI
 
-class databaseConnection(object):
+class DatabaseConnection(object):
     '''
     Class for capturing the minimum database connection properties
     '''
