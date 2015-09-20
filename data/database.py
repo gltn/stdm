@@ -5,8 +5,9 @@ Description          : -Contains STDM data models
                        -Manages SQLAlchemy core objects for connecting to the 
                         database using the singleton pattern
 Date                 : 28/May/2013 
-copyright            : (C) 2013 by John Gitau
-email                : gkahiu@gmail.com
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -19,6 +20,7 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from datetime import date
+
 from collections import (
     defaultdict,
     OrderedDict
@@ -34,6 +36,7 @@ from sqlalchemy import (
     func,
     MetaData
 )
+
 from sqlalchemy import (
     Column,
     Date,
@@ -62,7 +65,7 @@ from geoalchemy2 import Geometry
 
 import stdm.data
 
-metadata=MetaData()
+metadata = MetaData()
 
 #Registry of table names and corresponding mappers
 table_registry = defaultdict(set)
@@ -73,13 +76,13 @@ def mapper(cls, table=None, *args, **kwargs):
 
     return tb_mapper
 
-Base = declarative_base(metadata=metadata)
+Base = declarative_base(metadata = metadata)
 
 class Singleton(object):
     """
     Singleton class
     """
-    def __init__(self,decorated):
+    def __init__(self, decorated):
         self.__decorated = decorated
         
     def instance(self,*args,**kwargs):
@@ -129,15 +132,15 @@ class STDMDb(object):
 
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
-        self.createMetadata()
+        self.create_metadata()
 
-    def createMetadata(self):
+    def create_metadata(self):
         """
         Creates STDM database schema
         """
         Base.metadata.create_all(self.engine)
 
-    def instance(self,*args,**kwargs):
+    def instance(self, *args, **kwargs):
         """
         Dummy method. Eclipse IDE cannot handle the Singleton decorator in Python
         """
@@ -157,7 +160,6 @@ class STDMDb(object):
 
         if result is None:
             spatial_extension_installed = False
-
         else:
             installed_version = result[0]
 
@@ -178,7 +180,6 @@ def alchemy_table(table_name):
 
     try:
         return Table(table_name, meta, autoload=True)
-
     except NoSuchTableError:
         return None
 
@@ -250,7 +251,7 @@ class Model(object):
         db.session.delete(self)
         db.session.commit()
         
-    def queryObject(self,args=[]):
+    def queryObject(self, args=[]):
         '''
         The 'args' specifies the attributes/columns that will be returned in the query in a tuple;
         Else, the full model object will be returned.
@@ -290,7 +291,7 @@ class LookupBase(object):
     '''
     Base class for all lookup objects.
     '''
-    id  = Column(Integer,primary_key = True)
+    id = Column(Integer, primary_key = True)
     name = Column(String(50))
                         
 class Content(Model,Base):
@@ -299,18 +300,18 @@ class Content(Model,Base):
     on the scope of the particular instance of STDM customization.    
     '''
     __tablename__ = "content_base"
-    id = Column(Integer,primary_key = True)
+    id = Column(Integer, primary_key = True)
     name = Column(String(100), unique = True)
-    code = Column(String(100),unique = True) 
+    code = Column(String(100), unique = True) 
     roles = relationship("Role", secondary = "content_roles", backref = "contents")
     
-class Role(Model,Base):
+class Role(Model, Base):
     '''
     Model for the database-wide system roles. These are manually synced with the roles in the
     system catalog.
     '''
     __tablename__ = "role"
-    id = Column(Integer,primary_key =True)
+    id = Column(Integer, primary_key =True)
     name = Column(String(100), unique = True)
     description = Column(String)
 
@@ -320,41 +321,40 @@ content_roles_table = Table("content_roles", Base.metadata,
                             Column('role_id',Integer, ForeignKey('role.id'), primary_key = True)
                             )
 
-class AdminSpatialUnitSet(Model,Base):
+class AdminSpatialUnitSet(Model, Base):
     '''
     Hierarchy of administrative units.
     '''
     __tablename__ = "admin_spatial_unit_set"
+
     id = Column(Integer,primary_key=True)
-    ParentID = Column("parent_id",Integer,ForeignKey("admin_spatial_unit_set.id"))
+    ParentID = Column("parent_id", Integer, ForeignKey("admin_spatial_unit_set.id"))
     Name = Column("name",String(50))
     Code = Column("code",String(10))
-    Children = relationship("AdminSpatialUnitSet",backref=backref("Parent",remote_side=[id]),
+    Children = relationship("AdminSpatialUnitSet", backref=backref("Parent", remote_side=[id]),
                             cascade = "all, delete-orphan")
     
-    def __init__(self,name="",code="",parent=None):
+    def __init__(self, name="",code="",parent=None):
         self.Name = name
         self.Code = code
         self.Parent = parent
         
-    def hierarchyCode(self,separator = "/"):
+    def hierarchyCode(self, separator = "/"):
         '''
         Returns a string constituted of codes aggregated from the class instance, prior to which
         there are codes of the parent administrative units in the hierarchy.
         '''
-        codeList = []
-        codeList.append(self.Code)
+        codes = []
+        codes.append(self.Code)
         
         parent = self.Parent        
         while parent != None:
-            codeList.append(parent.Code)
+            codes.append(parent.Code)
             parent = parent.Parent
-            
         #Reverse the items so that the last item added becomes the prefix of the hierarchy code
-        reverseCode = list(reversed(codeList))
+        reverse_codes = list(reversed(codes))
             
-        return separator.join(reverseCode)
-
+        return separator.join(reverse_codes)
         
 class Enumerator(Model,Base):
     '''
@@ -362,12 +362,13 @@ class Enumerator(Model,Base):
     No additional attributes from the ones in person base class.
     '''
     __tablename__ = "enumerator"
-    id = Column(Integer,primary_key = True)
-    Surname = Column("sur_name",String(50))
-    Givennames = Column("given_names",String(50))
-    Identity = Column("identity",Integer)
-    Level = Column("level",String(50))
-    Surveys = relationship("Survey",backref="Enumerator")  
+
+    id = Column(Integer, primary_key = True)
+    Surname = Column("sur_name", String(50))
+    Givennames = Column("given_names", String(50))
+    Identity = Column("identity", Integer)
+    Level = Column("level", String(50))
+    Surveys = relationship("Survey", backref="Enumerator")  
 
 class Respondent(Model,Base):
     '''
@@ -375,6 +376,7 @@ class Respondent(Model,Base):
     No additional attributes from the ones in person base class.
     '''
     __tablename__ = "respondent"
+
     id = Column(Integer,primary_key = True)
     Surname = Column("sur_name",String(50))
     Givennames = Column("family_names",String(50))
@@ -386,6 +388,7 @@ class Witness(Model,Base):
     Questionnaire respondent witness.
     '''
     __tablename__ = "witness"
+
     id = Column(Integer,primary_key = True)
     RelationshipID = Column("relationship_id",Integer)
     OtherRelationship = Column("other_relationship",String(50))
@@ -409,11 +412,11 @@ class Survey(Model,Base):
     Metadata about the questionnaire interview process.
     '''
     __tablename__ = "survey"
+
     id = Column(Integer,primary_key = True)
     Code = Column("code",String(20))
     EnumerationDate = Column("enumeration_date",Date)  
     EnumeratorID = Column("enumerator_id",Integer,ForeignKey('enumerator.id'))
-    #Witnesses = relationship("Witness",backref="Survey",cascade="all, delete-orphan")
     RespondentID = Column("respondent_id",Integer,ForeignKey('respondent.id'))
     Respondent = relationship("Respondent",uselist = False,single_parent = True,cascade = "all, delete-orphan")
     
@@ -425,7 +428,6 @@ class Survey(Model,Base):
         attrTranslations["Code"] = QApplication.translate("DatabaseMapping","Code") 
         attrTranslations["EnumerationDate"] = QApplication.translate("DatabaseMapping","Enumeration Date")
         attrTranslations["EnumeratorID"] = QApplication.translate("DatabaseMapping","Enumerator")
-        #attrTranslations["RespondentID"] = QApplication.translate("DatabaseMapping","Respondent")
         
         return attrTranslations
    
@@ -436,31 +438,4 @@ class SupportsRankingMixin(object):
     id = Column(Integer,primary_key=True)
     Rank = Column("rank",Integer)
     OtherItem = Column("other_item",String(30))
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-
-            
-            
-            
-            
-            
-            
-        
-        
-        
-        
         
