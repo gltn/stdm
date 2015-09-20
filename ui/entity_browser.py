@@ -326,7 +326,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
                 if not attr in self._cellFormatters and isinstance(attrVal, date):
                     attrVal = dateFormatter(attrVal)
 
-                self._tableModel.setData(propIndex, attrVal)
+                self._tableModel.set_data(propIndex, attrVal)
         except Exception as ex:
             QMessageBox.information(self, QApplication.translate("EntityBrowser", "Updating row"), str(ex.message))
             return
@@ -445,7 +445,7 @@ class EntityBrowserWithEditor(EntityBrowser):
                 #Check if there re display formatters and apply if one exists for the given attribute
                 if attr in self._cellFormatters:
                     attrVal = self._cellFormatters[attr](attrVal)
-                self._tableModel.setData(propIndex, attrVal)
+                self._tableModel.set_data(propIndex, attrVal)
         
     def _deleteRecord(self, recid, rownumber):
         '''

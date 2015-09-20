@@ -677,7 +677,7 @@ class ForeignKeyMapper(QWidget):
             if attr in self._cellFormatters:
                 attrVal = self._cellFormatters[attr](attrVal)
 
-            self._tableModel.setData(propIndex, attrVal)
+            self._tableModel.set_data(propIndex, attrVal)
 
         #Raise signal once entity has been inserted
         self.afterEntityAdded.emit(model_obj)

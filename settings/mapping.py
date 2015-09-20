@@ -73,13 +73,13 @@ class SettingMapper(object):
         self._set_func = set_func
         self._mandatory = mandatory
 
-        if not custom_value_handler is None:
+        if custom_value_handler is not None:
             self._value_handler = custom_value_handler()
 
         else:
             self._value_handler = valueHandler(self._control)()
 
-        if not self._value_handler is None:
+        if self._value_handler is not None:
             self._value_handler.setControl(self._control)
 
     def setting_key(self):
@@ -136,7 +136,8 @@ class SettingMapper(object):
 
     def configuration_value(self):
         """
-        :return: Value of the configuration key. To be implemented by subclasses.
+        :return: Value of the configuration key. To be implemented by
+        subclasses.
         :rtype: object
         """
         raise NotImplementedError
@@ -153,7 +154,7 @@ class SettingMapper(object):
         """
         conf_value = self.configuration_value()
 
-        if not conf_value is None:
+        if conf_value is not None:
             self._value_handler.setValue(conf_value, self._set_func)
 
     def bind_configuration_value(self):
@@ -208,8 +209,8 @@ class RegistrySettingMapper(SettingMapper):
 
 class SettingsWidgetMapper(object):
     """
-    Mixin class that enables settings' widgets/dialogs to conveniently read/write
-    application settings using a standard approach.
+    Mixin class that enables settings' widgets/dialogs to conveniently
+    read/write application settings using a standard approach.
     """
 
     def __init__(self, context, parent=None):
@@ -223,7 +224,8 @@ class SettingsWidgetMapper(object):
 
     def context(self):
         """
-        :return: Word(s) that summarize the collection of configuration settings
+        :return: Word(s) that summarize the collection of configuration
+        settings
         """
         return self._context
 
@@ -281,5 +283,7 @@ class SettingsWidgetMapper(object):
             s.bind_configuration_value()
 
         msg = INFO, QApplication.translate("SettingsWidgetMapper",
-                                           "%s settings successfully updated." % (self._capitalize_first_char(self._context),))
+                                           "%s settings successfully updated."
+                                           % (self._capitalize_first_char(
+                                               self._context),))
         self.notified.emit([msg])

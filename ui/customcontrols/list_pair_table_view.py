@@ -100,7 +100,7 @@ class PairComboBoxDelegate(QStyledItemDelegate):
         item_text = combo_box.currentText()
 
         if combo_box.count() > 0:
-            model.setData(index, item_text)
+            model.set_data(index, item_text)
 
     def updateEditorGeometry(self, editor, option, index):
         editor.setGeometry(option.rect)

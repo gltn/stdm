@@ -1,10 +1,9 @@
 """
 /***************************************************************************
 Name                 : STR Formatters
-Description          : Module that provides formatters for defining how 
+Description          : Module that provides formatters for defining how
                        social tenure relationship information is represented
-                       in the tree view.
-                       the 
+                       in the tree view
 Date                 : 11/November/2014
 copyright            : (C) 2014 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
@@ -59,12 +58,13 @@ class STRNodeFormatter(object):
 
         self._data = []
 
-        self.rootNode = BaseSTRNode(self._headers, view=treeview,
-                                    parentWidget=parentwidget)
+        self.root_node = BaseSTRNode(self._headers, view=treeview,
+                                     parentWidget=parentwidget)
 
-    def setData(self, data):
+    def set_data(self, data):
         """
         Set the data to be formatted through the nodes.
+        :param data: list
         """
         self._data = data
 
@@ -74,9 +74,10 @@ class STRNodeFormatter(object):
         """
         return self._config
 
-    def headerData(self):
+    def header_data(self):
         """
         Header labels.
+        :rtype : str
         """
         return self._headers
 
@@ -85,14 +86,14 @@ class STRNodeFormatter(object):
         To be implemented by subclasses.
         Should return an object of type 'stdm.navigation.BaseSTRNode'
         """
-        raise NotImplementedError(QApplication.translate("STRFormatterBase",
-                                                         "Method should be implemented by subclasses"))
+        raise NotImplementedError(QApplication.translate(
+            "STRFormatterBase", "Method should be implemented by subclasses"))
 
 
 class TestFormatter(STRNodeFormatter):
 
     def root(self):
-        return self.rootNode
+        return self.root_node
 
 
 class EntityNodeFormatter(STRNodeFormatter):
@@ -120,12 +121,13 @@ class EntityNodeFormatter(STRNodeFormatter):
         function
         '''
         self._str_model_disp_mapping = {}
-        if not self._str_model is None:
+        if self._str_model is not None:
             self._str_model_disp_mapping = self._str_model.displayMapping()
 
         self._str_num_char_cols = numeric_varchar_columns(self._str_ref)
         self._fk_references = foreign_key_parent_tables(self._str_ref)
-        self._current_data_source_fk_ref = self._current_data_source_foreign_key_reference()
+        self._current_data_source_fk_ref = \
+            self._current_data_source_foreign_key_reference()
         self._numeric_char_cols = numeric_varchar_columns(
             config.data_source_name)
         self._spatial_data_sources = spatial_tables()
@@ -134,7 +136,12 @@ class EntityNodeFormatter(STRNodeFormatter):
         """
         Creates a collection containing a tuple of column name and display
         name as the key and value (from the model) as the value.
-        :return:
+        :rtype : OrderedDict
+        :param model:
+        :param display_cols:
+        :param filter_cols:
+        :return: Ordered Dictionary of Column name and Display name as key,
+        value
         """
         disp_mapping = OrderedDict()
 
@@ -148,6 +155,8 @@ class EntityNodeFormatter(STRNodeFormatter):
 
     def _foreign_key_reference_by_tablename(self, table_name):
         """
+
+        :rtype : str
         :param table_name:
         :return: Returns foreign key information for the specified table name
         which participates in the definition of a social tenure relationship.
@@ -173,7 +182,8 @@ class EntityNodeFormatter(STRNodeFormatter):
         foreign key column in the social_tenure_relationship table.
         :rtype: tuple
         """
-        return self._foreign_key_reference_by_tablename(self._config.data_source_name)
+        return self._foreign_key_reference_by_tablename(
+            self._config.data_source_name)
 
     def foreign_key_references(self):
         """
@@ -232,9 +242,8 @@ class EntityNodeFormatter(STRNodeFormatter):
         """
         from stdm.data import numeric_varchar_columns
 
-        display_mapping = self._format_display_mapping(str_model,
-                                                       self._str_model_disp_mapping,
-                                                       self._str_num_char_cols)
+        display_mapping = self._format_display_mapping(
+            str_model, self._str_model_disp_mapping, self._str_num_char_cols)
 
         str_node = STRNode(display_mapping, parent=parent_node,
                            model=str_model, **kwargs)
@@ -252,9 +261,8 @@ class EntityNodeFormatter(STRNodeFormatter):
                 entity_display_cols = numeric_varchar_columns(mod_table)
 
                 for r in r_entities:
-                    dm = self._format_display_mapping(r,
-                                                      r.__class__.displayMapping(),
-                                                      entity_display_cols)
+                    dm = self._format_display_mapping(
+                        r, r.__class__.displayMapping(), entity_display_cols)
 
                     node = self._spatial_textual_node(mod_table)
 
@@ -340,16 +348,15 @@ class EntityNodeFormatter(STRNodeFormatter):
 
     def root(self):
         for ed in self._data:
-            disp_mapping = self._format_display_mapping(ed,
-                                                        self._config.displayColumns,
-                                                        self._numeric_char_cols)
+            disp_mapping = self._format_display_mapping(
+                ed, self._config.displayColumns, self._numeric_char_cols)
 
             # Get the related STR entities
             if self._config.data_source_name != self._str_ref:
                 # Get appropriate node if data source is (non) spatial
                 node = self._spatial_textual_node(
                     self._config.data_source_name)
-                entity_node = node(disp_mapping, parent=self.rootNode,
+                entity_node = node(disp_mapping, parent=self.root_node,
                                    model=ed)
                 str_entities = self._related_str_models(ed)
 
@@ -359,13 +366,13 @@ class EntityNodeFormatter(STRNodeFormatter):
 
                 else:
                     for s in str_entities:
-                        str_node = self._create_str_node(entity_node, s,
-                                                         isChild=True,
-                                                         header=self._str_title)
+                        str_node = self._create_str_node(
+                            entity_node, s, isChild=True,
+                            header=self._str_title)
 
             else:
                 # The parent node now refers to STR data so we render
                 # accordingly
-                str_node = self._create_str_node(self.rootNode, ed)
+                str_node = self._create_str_node(self.root_node, ed)
 
-        return self.rootNode
+        return self.root_node

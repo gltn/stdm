@@ -18,36 +18,41 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtNetwork import *
+from PyQt4.QtCore import QSettings, QT_VERSION
+from PyQt4.QtNetwork import QNetworkProxy
 
 
-def getProxy():
+def get_proxy():
 
     # Adaption by source of "Plugin Installer - Version 1.0.10"
+    """
+    :rtype : QNetworkProxy
+    :return: Proxy
+    """
     proxy = None
     settings = QSettings()
     settings.beginGroup("proxy")
 
     # Check if the 'proxy' group exists
-    proxyKeys = settings.childKeys()
-    if len(proxyKeys) == 0:
+    proxy_keys = settings.childKeys()
+    if len(proxy_keys) == 0:
         return
 
     if settings.value("/proxyEnabled", type=bool):
         proxy = QNetworkProxy()
-        proxyType = settings.value("/proxyType", "")
-        # if len(args)>0 and settings.value("/proxyExcludedUrls").toString().contains(args[0]):
-        #  proxyType = "NoProxy"
-        if proxyType in ["1", "Socks5Proxy"]:
+        proxy_type = settings.value("/proxyType", "")
+        # if len(args)>0 and settings.value("/proxyExcludedUrls").toString()
+        # .contains(args[0]):
+        # proxyType = "NoProxy"
+        if proxy_type in ["1", "Socks5Proxy"]:
             proxy.setType(QNetworkProxy.Socks5Proxy)
-        elif proxyType in ["2", "NoProxy"]:
+        elif proxy_type in ["2", "NoProxy"]:
             proxy.setType(QNetworkProxy.NoProxy)
-        elif proxyType in ["3", "HttpProxy"]:
+        elif proxy_type in ["3", "HttpProxy"]:
             proxy.setType(QNetworkProxy.HttpProxy)
-        elif proxyType in ["4", "HttpCachingProxy"] and QT_VERSION >= 0X040400:
+        elif proxy_type in ["4", "HttpCachingProxy"] and QT_VERSION >= 0X040400:
             proxy.setType(QNetworkProxy.HttpCachingProxy)
-        elif proxyType in ["5", "FtpCachingProxy"] and QT_VERSION >= 0X040400:
+        elif proxy_type in ["5", "FtpCachingProxy"] and QT_VERSION >= 0X040400:
             proxy.setType(QNetworkProxy.FtpCachingProxy)
         else:
             proxy.setType(QNetworkProxy.DefaultProxy)

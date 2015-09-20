@@ -726,7 +726,7 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
             return model_root_node, [], search_term
 
         if self.formatter is not None:
-            self.formatter.setData(results)
+            self.formatter.set_data(results)
             model_root_node = self.formatter.root()
 
         return model_root_node, results, search_term

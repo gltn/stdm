@@ -1,12 +1,12 @@
 """
 /***************************************************************************
- stdmDialog
-                                 A QGIS plugin
- Securing land and property rights for all
-                             -------------------
-        begin                : 2014-03-04
-        copyright            : (C) 2014 by GLTN
-        email                : gltn_stdm@unhabitat.org
+Name                 : Module Settings
+Description          : GUI classes for managing and viewing supporting
+                       documents.
+Date                 : 04/03/2014
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -18,7 +18,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import *
+from PyQt4.QtGui import QApplication
 
 
 class ModuleSettings(object):

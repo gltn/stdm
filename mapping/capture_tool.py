@@ -19,10 +19,10 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 from PyQt4.QtCore import QSettings, Qt
-from PyQt4.QtGui import QColor, QApplication
+from PyQt4.QtGui import QColor, QApplication, QMouseEvent, QKeyEvent
 
-from qgis.gui import *
-from qgis.core import *
+from qgis.gui import QgsVertexMarker
+from qgis.core import QgsVectorLayer, QGis, QgsMessageLog, QgsCsException
 
 from .edit_tool import StdmMapToolEdit
 
@@ -42,15 +42,15 @@ class StdmMapToolCapture(StdmMapToolEdit):
 
     def __init__(self, iface, mode=mode):
         """
-        :type mode: object
-        :type iface: int
+        :param mode: object
+        :param iface: int
         """
-        self.iface = iface
-        self.canvas = self.iface.mapCanvas()
-        StdmMapToolEdit.__init__(self, self.iface)
+        self._iface = iface
+        self._canvas = self._iface.mapCanvas()
+        StdmMapToolEdit.__init__(self, self._iface)
 
         # Connect signals
-        self.iface.legendInterface().currentLayerChanged.connect(
+        self._iface.legendInterface().currentLayerChanged.connect(
             self.on_current_layer_changed)
 
         # Instance variables
@@ -83,14 +83,18 @@ class StdmMapToolCapture(StdmMapToolEdit):
     def deactivate(self):
         """
         Called when the map tool is deactivated.
+        :rtype : None
         """
         self._snapping_marker = None
 
         StdmMapToolEdit.deactivate(self)
 
     def clear_snapper_marker(self):
+        """
+        Clears vertex marker from canvas
+        """
         if self._snapping_marker is not None:
-            self.canvas.scene().removeItem(self._snapping_marker)
+            self._canvas.scene().removeItem(self._snapping_marker)
 
             del self._snapping_marker
             self._snapping_marker = None
@@ -99,6 +103,8 @@ class StdmMapToolCapture(StdmMapToolEdit):
         """
         Function creates vertex marker that is used for marking new point on
         map.
+        :return : ver_marker
+        :rtype : QgsVertexMarker
         """
         # get qgis settings
         settings = QSettings()
@@ -107,7 +113,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
         qgs_line_blue = settings.value('/Qgis/digitizing/line_color_blue', 0)
         qgs_marker_size = settings.value('/Qgis/digitizing/marker_size', 5)
 
-        ver_marker = QgsVertexMarker(self.canvas)
+        ver_marker = QgsVertexMarker(self._canvas)
         ver_marker.setIconSize(13)
         ver_marker.setIconType(QgsVertexMarker.ICON_CROSS)
         ver_marker.setColor(QColor(
@@ -119,6 +125,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
     def set_capture_mode(self, layer):
         """
         Set the capture mode of the tool.
+        :param layer: QgsVectorLayer
         """
         self._mode = CAPTURE_NONE
 
@@ -138,6 +145,8 @@ class StdmMapToolCapture(StdmMapToolEdit):
     def canvasMoveEvent(self, e):
         """
         Mouse move event override.
+        :rtype :
+        :param e: QMouseEvent
         """
         self.clearSnapperMarker()
 
@@ -156,6 +165,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
     def on_current_layer_changed(self, layer):
         """
         Slot raised when the map layer in the TOC changes.
+        :param layer: QgsVectorLayer
         """
         self.set_capture_mode(layer)
 
@@ -163,7 +173,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
         layer_point = None
         map_point = None
 
-        curr_layer = self.canvas.currentLayer()
+        curr_layer = self._canvas.currentLayer()
 
         if not isinstance(curr_layer, QgsVectorLayer):
             QgsMessageLog.logMessage(QApplication.translate(
@@ -210,7 +220,10 @@ class StdmMapToolCapture(StdmMapToolEdit):
         Adds a point to the rubber band (in map coordinates) and to the
         capture  list (in layer coordinates) return 0 in case of success,
         1 if current layer is not a vector layer, 2 if layer coordinate
-        transformation failed, 3 if map coordinate transformation failed.
+        transformation failed, 3 if map coordinate transformation failed
+        :rtype : int
+        :type is_layer_point: bool
+        :type point: QMouseEvent
         """
         layer_point = None
         map_point = None
@@ -275,6 +288,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
     def undo(self):
         """
         Removes the last vertex from mRubberBand and mCaptureList
+        :rtype : None
         """
         if self._rubber_band is not None:
             if len(self._capture_list) is 0 or \
@@ -302,6 +316,8 @@ class StdmMapToolCapture(StdmMapToolEdit):
     def keyPressEvent(self, e):
         """
         Remove the last point  if the user hits the Del or Backspace key
+        :rtype : None
+        :param e: QKeyEvent
         """
         if e.key() == Qt.Key_Backspace or e.key() == Qt.Key_Delete:
             self.undo()
@@ -310,26 +326,35 @@ class StdmMapToolCapture(StdmMapToolEdit):
             e.ignore()
 
     def start_capturing(self):
+        """
+        Method to initiate capturing event
+        :rtype : None
+        """
         self._capturing = True
 
     def stop_capturing(self):
+        """
+        Method to stop capturing event
+        :rtype : None
+        """
         if self._rubber_band is not None:
-            self.canvas.scene().removeItem(self._rubber_band)
+            self._canvas.scene().removeItem(self._rubber_band)
             del self._rubber_band
             self._rubber_band = None
 
         if self._temp_rubber_band is not None:
-            self.canvas.scene().removeItem(self._temp_rubber_band)
+            self._canvas.scene().removeItem(self._temp_rubber_band)
             del self._temp_rubber_band
             self._temp_rubber_band = None
 
         self._capturing = False
         self._capture_list = []
-        self.canvas.refresh()
+        self._canvas.refresh()
 
     def close_polygon(self):
         """
         Util function for closing polygon by linking the last point to the
         first one.
+        :rtype : None
         """
         self._capture_list.append(self._capture_list[0])

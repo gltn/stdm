@@ -18,11 +18,12 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtCore import Qt, QSettings
+from PyQt4.QtGui import QMenu, QCursor, QColor, QApplication
 
-from qgis.gui import *
-from qgis.core import *
+from qgis.gui import QgsMapTool, QgsMapCanvasSnapper, QgsRubberBand, \
+    QgsVertexMarker
+from qgis.core import QGis, QgsGeometry, QgsVectorLayer
 
 from .utils import pg_layer_names_id_mapping
 # from .editor_config import spatial_editor_widgets
@@ -34,45 +35,60 @@ class StdmMapToolEdit(QgsMapTool):
     """
 
     def __init__(self, iface):
-        self.iface = iface
-        self.canvas = self.iface.mapCanvas()
-        QgsMapTool.__init__(self, self.canvas)
+        self._iface = iface
+        self._canvas = self._iface.mapCanvas()
+        QgsMapTool.__init__(self, self._canvas)
 
         # Snapper object that reads the settings from project and applies to
         # the map canvas
-        self._snapper = QgsMapCanvasSnapper(self.canvas)
+        self._snapper = QgsMapCanvasSnapper(self._canvas)
 
         # Dialog for setting textual attributes of the spatial unit being
         # digitized.
         self._editorWidget = None
 
         # Initial context menu state of the map canvas
-        self._mpCanvasContentMenuPolicy = self.canvas.contextMenuPolicy()
+        self._mpCanvasContentMenuPolicy = self._canvas.contextMenuPolicy()
 
     def isEditTool(self):
+        """
+        Check edit tool status
+        :rtype : bool
+        :return: True
+        """
         return True
 
     def activate(self):
+        """
+        Activates Map tool
+        :rtype : None
+        """
         QgsMapTool.activate(self)
 
         if self.supportsContextMenu():
-            self.canvas.setContextMenuPolicy(Qt.CustomContextMenu)
-            self.canvas.customContextMenuRequested.connect(
+            self._canvas.setContextMenuPolicy(Qt.CustomContextMenu)
+            self._canvas.customContextMenuRequested.connect(
                 self.on_map_context_menu_requested)
 
     def deactivate(self):
+        """
+        Deactivates Map tool
+        :rtype : None
+        """
         if self.supportsContextMenu():
-            self.canvas.setContextMenuPolicy(self._mpCanvasContentMenuPolicy)
-            self.canvas.customContextMenuRequested.disconnect(
+            self._canvas.setContextMenuPolicy(self._mpCanvasContentMenuPolicy)
+            self._canvas.customContextMenuRequested.disconnect(
                 self.on_map_context_menu_requested)
 
         QgsMapTool.deactivate(self)
 
     def on_map_context_menu_requested(self, pnt):
-        '''
+        """
         Slot raised upon right-clicking the map canvas.
-        '''
-        editMenu = QMenu(self.iface.mainWindow())
+        :param pnt:
+        :rtype : None
+        """
+        editMenu = QMenu(self._iface.mainWindow())
         self.mapContextMenuRequested(pnt, editMenu)
 
         if not editMenu.isEmpty():
@@ -83,6 +99,9 @@ class StdmMapToolEdit(QgsMapTool):
         Protected function to be implemented by subclasses for adding edit
         actions into the context menu.
         Default does nothing.
+        :rtype : None
+        :param pnt:
+        :param menu:
         """
         pass
 
@@ -92,43 +111,50 @@ class StdmMapToolEdit(QgsMapTool):
         additional  mapping functionality
         on edit mode.
         To be implemented by sub-classes.
+        :rtype : bool
         """
         return False
 
-    def snap_point_from_results(self, snapResults, screenCoords):
+    def snap_point_from_results(self, snap_results, screen_coords):
         """
         Extracts a single snapping point from a set of snapping results.
         This is useful for snapping operations that just require a position
         to  snap to and not all the snapping results. If the list is empty,
         the screen coordinates are transformed into map coordinates and
         returned.
+        :rtype : QgsVertexMarker
+        :param snap_results: list
+        :param screen_coords: QMouseEvent
         """
-        if len(snapResults) == 0:
-            return self.toMapCoordinates(screenCoords)
+        if len(snap_results) == 0:
+            return self.toMapCoordinates(screen_coords)
 
         else:
-            return snapResults[0].snappedVertex
+            return snap_results[0].snappedVertex
 
-    def create_rubber_band(self, geomType, alternativeBand=False):
+    def create_rubber_band(self, geom_type, alternative_band=False):
         """
         Creates a rubber band with the color/line width from the QGIS settings.
+        :rtype : QgsRubberBand
+        :param geom_type: QgsGeometry
+        :param alternative_band: bool
         """
         settings = QSettings()
-        rb = QgsRubberBand(self.canvas, geomType)
+        rb = QgsRubberBand(self._canvas, geom_type)
         rb.setWidth(settings.value("/Qgis/digitizing/line_width", 1))
         color = QColor(settings.value("/Qgis/digitizing/line_color_red", 255),
                        settings.value("/Qgis/digitizing/line_color_green", 0),
                        settings.value("/Qgis/digitizing/line_color_blue", 0))
 
-        myAlpha = settings.value(
+        my_alpha = settings.value(
             "/Qgis/digitizing/line_color_alpha", 200) / 255.0
 
-        if alternativeBand:
-            myAlpha = myAlpha * 0.75
+        if alternative_band:
+            my_alpha = my_alpha * 0.75
             rb.setLineStyle(Qt.DotLine)
 
-        if geomType == QGis.Polygon:
-            color.setAlphaF(myAlpha)
+        if geom_type == QGis.Polygon:
+            color.setAlphaF(my_alpha)
 
         rb.setColor(color)
         rb.show()
@@ -138,12 +164,14 @@ class StdmMapToolEdit(QgsMapTool):
     def current_vector_layer(self):
         """
         Returns the current vector layer of the map canvas or None
+        :rtype : QgsVectorLayer
         """
-        return self.canvas.currentLayer()
+        return self._canvas.currentLayer()
 
     def notify_not_vector_layer(self):
         """
         Display a timed message bar noting the active layer is not vector.
+        :rtype : None
         """
         self.messageEmitted.emit(QApplication.translate(
             "StdmMapToolEdit", "No active vector layer"))
@@ -152,25 +180,31 @@ class StdmMapToolEdit(QgsMapTool):
         """
         Display a timed message bar noting the active vector layer is not
         editable.
+        :rtype : None
         """
         self.messageEmitted.emit(QApplication.translate(
             "StdmMapToolEdit", "Layer not editable"))
 
-    def setEditorWidget(self, editorWidget):
+    def set_editor_widget(self, editor_widget):
         """
         Set the widget for editing attributing values
+        :rtype : None
+        :param editor_widget:
+        :type editor_widget: object
         """
-        self._editorWidget = editorWidget
+        self._editorWidget = editor_widget
 
     def _configure_spatial_editor(self, layer):
         """
         Factory method that sets the spatial editor dialog using the
         configuration specified in the
         editor_config module.
+        :rtype : None
+        :param layer: QgsVectorLayer
         """
-        layerId = layer.id()
-        if layerId in pg_layer_names_id_mapping().reverse:
-            tableName = pg_layer_names_id_mapping().reverse[layerId]
+        layer_id = layer.id()
+        if layer_id in pg_layer_names_id_mapping().reverse:
+            table_name = pg_layer_names_id_mapping().reverse[layer_id]
             # Get corresponding editor widget from the config
-            if tableName in spatial_editor_widgets:
-                self._editorWidget = spatial_editor_widgets[tableName]
+            # if tableName in spatial_editor_widgets:
+            #     self._editorWidget = spatial_editor_widgets[tableName]

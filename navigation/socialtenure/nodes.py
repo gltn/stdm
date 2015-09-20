@@ -4,9 +4,10 @@ Name                 : STR Nodes
 Description          : Module provides classes which act as proxies for
                        representing social tenure relationship information
                        in a QTreeView
-Date                 : 10/November/2013 
-copyright            : (C) 2013 by John Gitau
-email                : gkahiu@gmail.com
+Date                 : 10/November/2013
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -18,8 +19,6 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from collections import OrderedDict
-from decimal import Decimal
 
 from PyQt4.QtGui import (
     QIcon,
@@ -27,16 +26,11 @@ from PyQt4.QtGui import (
     QAction,
     QDialog,
     QMessageBox,
-    QMenu,
-    QFileDialog,
-    QVBoxLayout
 )
 from PyQt4.QtCore import (
     Qt,
     SIGNAL
 )
-
-from qgis.core import *
 
 from stdm.utils import *
 
@@ -88,15 +82,17 @@ class BaseSTRNode(object):
 
         # Default actions that will be most commonly used by the nodes with
         # data management capabilities
-        self.editAction = QAction(EDIT_ICON,
-                                  QApplication.translate("BaseSTRNode", "Edit..."), None)
-        self.deleteAction = QAction(DELETE_ICON,
-                                    QApplication.translate("BaseSTRNode", "Delete"), None)
+        self.editAction = QAction(
+            EDIT_ICON, QApplication.translate("BaseSTRNode", "Edit..."), None)
+        self.deleteAction = QAction(
+            DELETE_ICON, QApplication.translate("BaseSTRNode", "Delete"), None)
 
-        self._expand_action = QAction(QApplication.translate("BaseSTRNode", "Expand"),
-                                      self._parentWidget)
-        self._collapse_action = QAction(QApplication.translate("BaseSTRNode", "Collapse"),
-                                        self._parentWidget)
+        self._expand_action = QAction(
+            QApplication.translate("BaseSTRNode", "Expand"),
+            self._parentWidget)
+        self._collapse_action = QAction(
+            QApplication.translate("BaseSTRNode", "Collapse"),
+            self._parentWidget)
 
     def addChild(self, child):
         '''
@@ -179,7 +175,8 @@ class BaseSTRNode(object):
 
     def parentWidget(self):
         '''
-        Returns the main widget that displays the social tenure relationship information.
+        Returns the main widget that displays the social tenure relationship
+        information.
         '''
         return self._parentWidget
 
@@ -220,7 +217,8 @@ class BaseSTRNode(object):
 
     def rootHash(self):
         '''
-        Returns a hash key that is used to identify the lineage of the child nodes i.e.
+        Returns a hash key that is used to identify the lineage of the child
+        nodes i.e.
         which node exactly is the 'forefather'.
         '''
         return self._rootNodeHash
@@ -234,7 +232,8 @@ class BaseSTRNode(object):
 
     def data(self, column):
         '''
-        Returns the data item in the specified specified column index within the list.
+        Returns the data item in the specified specified column index within
+        the list.
         '''
         if column < 0 or column >= len(self._data):
             raise IndexError
@@ -312,7 +311,7 @@ class BaseSTRNode(object):
                              self.parentWidget())
         nullAction.setEnabled(False)
 
-        if not self._view is None:
+        if self._view is not None:
             if self._view.isExpanded(modelindex):
                 self._expand_action.setEnabled(False)
                 self._collapse_action.setEnabled(True)
@@ -359,28 +358,32 @@ class BaseSTRNode(object):
 
     def onEdit(self, index):
         '''
-        Slot triggered when the Edit action of the node is triggered by the user.
+        Slot triggered when the Edit action of the node is triggered by the
+        user.
         Subclasses to implement.
         '''
         pass
 
     def onDelete(self, index):
         '''
-        Slot triggered when the Delete action of the node is triggered by the user.
+        Slot triggered when the Delete action of the node is triggered by
+        the user.
         Subclasses to implement.
         '''
         pass
 
     def signalReceivers(self, action, signal="triggered()"):
         '''
-        Convenience method that returns the number of receivers connected to the signal of the action object.
+        Convenience method that returns the number of receivers connected to
+        the signal of the action object.
         '''
         return action.receivers(SIGNAL(signal))
 
     def _concat_names_values(self, display_mapping, formatter):
         """
         Extract model values based on the properties defined by display mapping
-        and concatenates the display-friendly property name with its corresponding
+        and concatenates the display-friendly property name with its
+        corresponding
         value.
         :param display_mapping: Collection containing a tuple of column name
         and display name as key and column value.
@@ -405,9 +408,11 @@ class BaseSTRNode(object):
 
     def _property_values(self, model, display_mapping, formatter):
         """
-        Extract model values based on the properties defined by display_mapping.
+        Extract model values based on the properties defined by
+        display_mapping.
         :param model: Instance of database model.
-        :param display_mapping: property names and corresponding display-friendly
+        :param display_mapping: property names and corresponding
+        display-friendly
         names.
         :type display_mapping: dict
         :param formatter: Collections of functions mapped to the property names
@@ -480,8 +485,8 @@ class EntityNode(SupportsDocumentsNode):
         Add text information as children to this node displaying more
         information on the given entity.
         """
-        prop_val_mapping = self._concat_names_values(self._colname_display_value,
-                                                     self._value_formatters)
+        prop_val_mapping = self._concat_names_values(
+            self._colname_display_value, self._value_formatters)
         for p_val in prop_val_mapping:
             ch_ent_node = BaseSTRNode([p_val], self)
 
@@ -542,7 +547,7 @@ class STRNode(EntityNode):
                         col_value = getattr(self._model, col_name)
                         node_value = u"{0}{1} {2}".format(
                             display_name, self.separator, col_value)
-                        view_model.setData(idx, node_value, Qt.DisplayRole)
+                        view_model.set_data(idx, node_value, Qt.DisplayRole)
 
             i += 1
 
@@ -579,17 +584,18 @@ class STRNode(EntityNode):
         """
         Delete STR information.
         """
-        del_msg = QApplication.translate("STRNode",
-                                         "This action will remove the social tenure relationship and dependent "
-                                         "supporting documents from the database. This action cannot be undone "
-                                         "and once removed, it can"
-                                         " only be recreated through"
-                                         " the  new 'Social Tenure Relationship' "
-                                         "wizard. Would you like to proceed?"
-                                         "\nClick Yes to proceed or No to cancel.")
+        del_msg = QApplication.translate(
+            "STRNode", "This action will remove the social tenure "
+                       "relationship and dependent  supporting documents "
+                       "from the database. This action cannot be undone and "
+                       "once removed, it can only be recreated through the  "
+                       "new 'Social Tenure Relationship'  wizard. Would you "
+                       "like to proceed? \nClick Yes to proceed or No to "
+                       "cancel.")
         del_result = QMessageBox.warning(self.parentWidget(),
-                                         QApplication.translate("STRNode",
-                                                                "Delete Social Tenure Relationship"),
+                                         QApplication.translate(
+                                             "STRNode", "Delete Social "
+                                                        "Tenure Relationship"),
                                          del_msg,
                                          QMessageBox.Yes | QMessageBox.No)
 

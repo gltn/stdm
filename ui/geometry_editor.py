@@ -71,7 +71,7 @@ class GeometryEditor(QDialog):
     def projectionsSettings(self):
         '''let user select the projections for the data'''
         projSelect = projectionSelector(self)
-        projection = projSelect.loadAvailableSystems()
+        projection = projSelect.load_available_systems()
         self.textField.setText(str(projection))
 
     def on_edit_session(self):

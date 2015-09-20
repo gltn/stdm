@@ -20,7 +20,7 @@ email                : stdm@unhabitat.org
 """
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QAction, QApplication, QDialog, QMessageBox, \
-    QProgressDialog
+    QProgressDialog, QMenu, QMouseEvent
 
 from qgis.core import QgsVectorLayer, QGis, QgsVectorDataProvider, \
     QgsGeometry, QgsFeature, QgsMapLayerRegistry, QgsCsException
@@ -39,9 +39,9 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
     """
 
     def __init__(self, iface):
-        self.iface = iface
-        self.canvas = self.iface.mapCanvas()
-        StdmMapToolCapture.__init__(self, self.iface)
+        self._iface = iface
+        self._canvas = self._iface.mapCanvas()
+        StdmMapToolCapture.__init__(self, self._iface)
 
         # Store the geometry of the sketch
         self._geometry = None
@@ -50,24 +50,32 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
         self._pending_fk_entities = {}
 
     def activate(self):
-        if self.canvas.isDrawing():
+        """
+        Make STDM edit session active
+        :rtype : None
+        :return:
+        """
+        if self._canvas.isDrawing():
             return
 
         StdmMapToolEdit.activate(self)
 
     def mapContextMenuRequested(self, pnt, menu):
         """
-        Add actions to the editing context menu.
+        Method to add edit actions into the context menu.
+        :rtype : None
+        :param pnt:
+        :param menu: QMenu
         """
         self.add_xy_action = QAction(QApplication.translate(
             "StdmMapToolCreateFeature", "Add X,Y Vertex..."),
-            self.iface.mainWindow())
+            self._iface.mainWindow())
         self.cancel_sketch_action = QAction(QApplication.translate(
             "StdmMapToolCreateFeature", "Cancel Sketch"),
-            self.iface.mainWindow())
+            self._iface.mainWindow())
         self.finish_sketch_action = QAction(QApplication.translate(
             "StdmMapToolCreateFeature", "Finish Sketch"),
-            self.iface.mainWindow())
+            self._iface.mainWindow())
 
         if not self._capturing:
             self.finish_sketch_action.setEnabled(False)
@@ -86,6 +94,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
     def supportsContextMenu(self):
         """
         This map tool supports an editing context menu.
+        :rtype : bool
         """
         return True
 
@@ -93,6 +102,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
         """
         Slot raised to show the coordinates point editor for manually entering
         the X, Y coordinate values.
+        :rtype : None
         """
         stdm_layer = self.current_vector_layer()
 
@@ -108,7 +118,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
         provider = stdm_layer.dataProvider()
 
         if not (provider.capabilities() & QgsVectorDataProvider.AddFeatures):
-            QMessageBox.information(self.iface.mainWindow(),
+            QMessageBox.information(self._iface.mainWindow(),
                                     QApplication.translate(
                                         "StdmMapToolCreateFeature", "Cannot "
                                                                     "add to "
@@ -124,16 +134,16 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
             self.notify_not_editable_layer()
             return
 
-        coords_editor = SpatialCoordinatesEditor(self.iface.mainWindow())
+        coords_editor = SpatialCoordinatesEditor(self._iface.mainWindow())
         ret = coords_editor.exec_()
 
         if ret == QDialog.Accepted:
-            layerPoint = coords_editor.qgsPoint()
+            layer_point = coords_editor.qgsPoint()
 
             # Spatial unit point capture
             if self._mode == CAPTURE_POINT:
                 if stdm_layer.geometryType() != QGis.Point:
-                    QMessageBox.information(self.iface.mainWindow(),
+                    QMessageBox.information(self._iface.mainWindow(),
                                             QApplication.translate(
                                                 "StdmMapToolCreateFeature",
                                                 "Wrong create tool"),
@@ -148,15 +158,15 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
 
                 if layer_wkb_type == QGis.WKBPoint or layer_wkb_type == \
                         QGis.WKBPoint25D:
-                    self._geometry = QgsGeometry.fromPoint(layerPoint)
-                elif layer_wkb_type == QGis.WKBMultiPoint or layer_wkb_type == \
-                        QGis.WKBMultiPoint25D:
-                    self._geometry = QgsGeometry.fromMultiPoint(layerPoint)
+                    self._geometry = QgsGeometry.fromPoint(layer_point)
+                elif layer_wkb_type == QGis.WKBMultiPoint or layer_wkb_type \
+                        == QGis.WKBMultiPoint25D:
+                    self._geometry = QgsGeometry.fromMultiPoint(layer_point)
 
             elif self._mode == CAPTURE_LINE or self._mode == CAPTURE_POLYGON:
                 if self._mode == CAPTURE_LINE and stdm_layer.geometryType() \
                         != QGis.Line:
-                    QMessageBox.information(self.iface.mainWindow(),
+                    QMessageBox.information(self._iface.mainWindow(),
                                             QApplication.translate(
                                                 "StdmMapToolCreateFeature",
                                                 "Wrong create tool"),
@@ -170,7 +180,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                 if self._mode == CAPTURE_POLYGON and stdm_layer.geometryType(
 
                 ) != QGis.Polygon:
-                    QMessageBox.information(self.iface.mainWindow(),
+                    QMessageBox.information(self._iface.mainWindow(),
                                             QApplication.translate(
                                                 "StdmMapToolCreateFeature",
                                                 "Wrong create tool"),
@@ -181,10 +191,10 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                                                 "this vector layer"))
                     return
 
-                error = self.add_vertex(layerPoint, True)
+                error = self.add_vertex(layer_point, True)
 
                 if error == 2:
-                    QMessageBox.critical(self.iface.mainWindow(),
+                    QMessageBox.critical(self._iface.mainWindow(),
                                          QApplication.translate(
                                              "StdmMapToolCreateFeature",
                                              "Coordinate transform error"),
@@ -194,7 +204,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                                              "the layer's coordinate system"))
                     return
                 elif error == 3:
-                    QMessageBox.critical(self.iface.mainWindow(),
+                    QMessageBox.critical(self._iface.mainWindow(),
                                          QApplication.translate(
                                              "StdmMapToolCreateFeature",
                                              "Coordinate transform error"),
@@ -210,6 +220,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
     def on_finish_sketch(self):
         """
         Slot raised upon selecting to finish drawing the sketch spatial unit.
+        :rtype : None
         """
         stdm_layer = self.current_vector_layer()
         layer_wkb_type = stdm_layer.wkbType()
@@ -222,7 +233,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
         elif self._mode == CAPTURE_LINE or self._mode == CAPTURE_POLYGON:
             # Delete temporary rubber band
             if self._temp_rubber_band is not None:
-                self.canvas.scene().removeItem(self._temp_rubber_band)
+                self._canvas.scene().removeItem(self._temp_rubber_band)
                 del self._temp_rubber_band
                 self._temp_rubber_band = None
 
@@ -247,7 +258,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                         self._capture_list)
 
                 else:
-                    QMessageBox.critical(self.iface.mainWindow(),
+                    QMessageBox.critical(self._iface.mainWindow(),
                                          QApplication.translate(
                                              "StdmMapToolCreateFeature",
                                              "WKB Type Error"),
@@ -273,7 +284,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                         [self._capture_list])
 
                 else:
-                    QMessageBox.critical(self.iface.mainWindow(),
+                    QMessageBox.critical(self._iface.mainWindow(),
                                          QApplication.translate(
                                              "StdmMapToolCreateFeature",
                                              "WKB Type Error"),
@@ -289,7 +300,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                 ).avoidIntersections()
 
                 if avoid_intersections_return == 3:
-                    QMessageBox.critical(self.iface.mainWindow(),
+                    QMessageBox.critical(self._iface.mainWindow(),
                                          QApplication.translate(
                                              "StdmMapToolCreateFeature",
                                              "Error"),
@@ -317,7 +328,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                                                         "intersection "
                                                         "avoidance")
 
-                    QMessageBox.critical(self.iface.mainWindow(),
+                    QMessageBox.critical(self._iface.mainWindow(),
                                          QApplication.translate(
                                              "StdmMapToolCreateFeature",
                                              "Error"),
@@ -341,19 +352,20 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
 
         self.stop_capturing()
 
-        self.canvas.refresh()
+        self._canvas.refresh()
 
-    def add_feature(self, stdmlayer, feat):
+    def add_feature(self, stdm_layer, feat):
         """
         Add feature to the vector layer for pending commit.
-        :type feat: QgsFeature
-        :type stdmlayer: QgsVectorLayer
+        :rtype : bool
+        :param stdm_layer: QgsVectorLayer
+        :param feat: QgsFeature
         """
         # Try set the attribute editor
-        self._configure_spatial_editor(stdmlayer)
+        self._configure_spatial_editor(stdm_layer)
 
         if self._editorWidget is None:
-            QMessageBox.critical(self.iface.mainWindow(),
+            QMessageBox.critical(self._iface.mainWindow(),
                                  QApplication.translate(
                                      "StdmMapToolCreateFeature", "Cannot "
                                                                  "open "
@@ -370,77 +382,84 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
 
         # Connect commitChanges signals so that the relation of foreign key
         # entities can be updated accordingly.
-        stdmlayer.committedFeaturesAdded.connect(self.onFeaturesCommitted)
+        stdm_layer.committedFeaturesAdded.connect(self.on_features_committed)
 
-        spEditor = self._editorWidget(self.iface.mainWindow(), stdmlayer, feat)
+        sp_editor = self._editorWidget(self._iface.mainWindow(), stdm_layer,
+                                       feat)
 
-        if spEditor.exec_() is QDialog.Accepted:
+        if sp_editor.exec_() is QDialog.Accepted:
             # Check for pending entities and add to collection
-            pendingLayerEntities = spEditor.pendingLayerEntities()
+            pending_layer_entities = sp_editor.pendingLayerEntities()
 
-            if not pendingLayerEntities.layerId() in self._pending_fk_entities:
+            if not pending_layer_entities.layerId() in \
+                    self._pending_fk_entities:
                 self._pending_fk_entities[
-                    pendingLayerEntities.layerId()] = pendingLayerEntities
+                    pending_layer_entities.layerId()] = pending_layer_entities
 
             else:
-                self._pending_fk_entities[pendingLayerEntities.layerId()].merge(
-                    pendingLayerEntities)
+                self._pending_fk_entities[pending_layer_entities.layerId()].\
+                    merge(pending_layer_entities)
 
             return True
 
         else:
             return False
 
-    def onFeaturesCommitted(self, layerid, features):
+    def on_features_committed(self, layer_id, features):
         """
         Update the related entities with the FK key from the primary spatial
         unit PK.
+        :rtype : None
+        :param layer_id: int
+        :param features:
         """
-        if layerid in self._pending_fk_entities:
-            pendingLayerEntity = self._pending_fk_entities[layerid]
+        if layer_id in self._pending_fk_entities:
+            pending_layer_entity = self._pending_fk_entities[layer_id]
 
-            # Get map layer using layerid
-            refLayer = QgsMapLayerRegistry.instance().mapLayer(layerid)
+            # Get map layer using layer_id
+            ref_layer = QgsMapLayerRegistry.instance().mapLayer(layer_id)
 
-            if refLayer is not None:
-                fidx = refLayer.fieldNameIndex(
-                    pendingLayerEntity.featureAttributeName())
+            if ref_layer is not None:
+                fid_x = ref_layer.fieldNameIndex(
+                    pending_layer_entity.featureAttributeName())
 
                 # Show progress dialog for updating the features.
-                progressLabel = QApplication.translate(
+                progress_label = QApplication.translate(
                     "StdmMapToolCreateFeature", "Updating related entities...")
-                progressDlg = QProgressDialog(
-                    progressLabel, "", 0, len(features),
-                    self.iface.mainWindow())
-                progressDlg.setWindowModality(Qt.WindowModal)
+                progress_dlg = QProgressDialog(
+                    progress_label, "", 0, len(features),
+                    self._iface.mainWindow())
+                progress_dlg.setWindowModality(Qt.WindowModal)
 
                 for i, feat in enumerate(features):
-                    progressDlg.setValue(i)
-                    uniqueAttrValue = feat.attributes()[fidx]
-                    pendingLayerEntity.setPrimaryKey(
-                        uniqueAttrValue, int(feat.id()))
+                    progress_dlg.setValue(i)
+                    uniqueAttr_value = feat.attributes()[fid_x]
+                    pending_layer_entity.setPrimaryKey(
+                        uniqueAttr_value, int(feat.id()))
 
-                progressDlg.setValue(len(features))
+                progress_dlg.setValue(len(features))
 
     def canvasReleaseEvent(self, e):
         """
         Base class override.
+        :rtype : None
+        :param e: QMouseEvent
         """
-        stdmLayer = self.current_vector_layer()
+        stdm_layer = self.current_vector_layer()
 
         # Try to set mode from layer type
         if self._mode is CAPTURE_NONE:
-            self.set_capture_mode(stdmLayer)
+            self.set_capture_mode(stdm_layer)
 
-        if not isinstance(stdmLayer, QgsVectorLayer):
+        if not isinstance(stdm_layer, QgsVectorLayer):
             self.notify_not_vector_layer()
             return
 
-        layerWKBType = stdmLayer.wkbType()
-        provider = stdmLayer.dataProvider()
+        layer_wkb_type = stdm_layer.wkbType()
+        provider = stdm_layer.dataProvider()
 
         if not (provider.capabilities() & QgsVectorDataProvider.AddFeatures):
-            QMessageBox.information(self.iface.mainWindow(),
+            QMessageBox.information(self._iface.mainWindow(),
                                     QApplication.translate(
                                         "StdmMapToolCreateFeature", "Cannot "
                                                                     "add to "
@@ -452,14 +471,14 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                                         "features."))
             return
 
-        if not stdmLayer.isEditable():
+        if not stdm_layer.isEditable():
             self.notify_not_editable_layer()
             return
 
         # Spatial unit point capture
         if self._mode is CAPTURE_POINT:
-            if stdmLayer.geometryType() is not QGis.Point:
-                QMessageBox.information(self.iface.mainWindow(),
+            if stdm_layer.geometryType() is not QGis.Point:
+                QMessageBox.information(self._iface.mainWindow(),
                                         QApplication.translate(
                                             "StdmMapToolCreateFeature",
                                             "Wrong create tool"),
@@ -473,24 +492,24 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
             self.start_capturing()
 
             # Point in map coordinates
-            mapPoint = None
-            snapResults = []
+            map_point = None
+            snap_results = []
             # Point in layer coordinates
-            layerPoint = None
+            layer_point = None
 
-            opResult, snapResults = self._snapper.snapToBackgroundLayers(
+            op_result, snap_results = self._snapper.snapToBackgroundLayers(
                 e.pos())
 
-            if len(snapResults) > 0:
-                mapPoint = self.snap_point_from_results(snapResults, e.pos())
+            if len(snap_results) > 0:
+                map_point = self.snap_point_from_results(snap_results, e.pos())
 
             else:
-                mapPoint = self.toMapCoordinates(e.pos())
+                map_point = self.toMapCoordinates(e.pos())
 
             try:
-                layerPoint = self.toLayerCoordinates(stdmLayer, mapPoint)
+                layer_point = self.toLayerCoordinates(stdm_layer, map_point)
             except QgsCsException:
-                QMessageBox.information(self.iface.mainWindow(),
+                QMessageBox.information(self._iface.mainWindow(),
                                         QApplication.translate(
                                             "StdmMapToolCreateFeature",
                                             "Coordinate transform error"),
@@ -501,18 +520,18 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                 self._capturing = False
                 return
 
-            if layerWKBType is QGis.WKBPoint or layerWKBType is \
+            if layer_wkb_type is QGis.WKBPoint or layer_wkb_type is \
                     QGis.WKBPoint25D:
-                self._geometry = QgsGeometry.fromPoint(layerPoint)
-            elif layerWKBType is QGis.WKBMultiPoint or layerWKBType is \
+                self._geometry = QgsGeometry.fromPoint(layer_point)
+            elif layer_wkb_type is QGis.WKBMultiPoint or layer_wkb_type is \
                     QGis.WKBMultiPoint25D:
-                self._geometry = QgsGeometry.fromMultiPoint(layerPoint)
+                self._geometry = QgsGeometry.fromMultiPoint(layer_point)
 
         # Line and polygon capturing
         elif self._mode is CAPTURE_LINE or self._mode is CAPTURE_POLYGON:
-            if self._mode is CAPTURE_LINE and stdmLayer.geometryType() is not \
+            if self._mode is CAPTURE_LINE and stdm_layer.geometryType() is not \
                     QGis.Line:
-                QMessageBox.information(self.iface.mainWindow(),
+                QMessageBox.information(self._iface.mainWindow(),
                                         QApplication.translate(
                                             "StdmMapToolCreateFeature",
                                             "Wrong create tool"),
@@ -523,10 +542,10 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                                             "layer"))
                 return
 
-            if self._mode is CAPTURE_POLYGON and stdmLayer.geometryType() is\
+            if self._mode is CAPTURE_POLYGON and stdm_layer.geometryType() is\
                     not\
                     QGis.Polygon:
-                QMessageBox.information(self.iface.mainWindow(),
+                QMessageBox.information(self._iface.mainWindow(),
                                         QApplication.translate(
                                             "StdmMapToolCreateFeature",
                                             "Wrong create tool"),
@@ -541,7 +560,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                 error = self.add_vertex(e.pos())
 
                 if error is 2:
-                    QMessageBox.critical(self.iface.mainWindow(),
+                    QMessageBox.critical(self._iface.mainWindow(),
                                          QApplication.translate(
                                              "StdmMapToolCreateFeature",
                                              "Coordinate transform error"),

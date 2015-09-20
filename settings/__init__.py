@@ -1,5 +1,5 @@
-from .tools_network import getProxy
-from .projectionSelector import projectionSelector
+from .tools_network import get_proxy
+from .ProjectionSelector import ProjectionSelector
 
 from .registryconfig import (
     RegistryConfig,
@@ -17,7 +17,7 @@ from .mapping import (
     SettingsWidgetMapper
 )
 
-from .tools_network import getProxy
+from .tools_network import get_proxy
 from .path_settings import (
     dataIcon,
     pbIcon,

@@ -735,7 +735,7 @@ class STRTreeViewModel(QAbstractItemModel):
         """
         if role == Qt.EditRole or role == Qt.DisplayRole:
             nodeItem = self._getNode(index)
-            result = nodeItem.setData(index.column(), value)
+            result = nodeItem.set_data(index.column(), value)
 
             if result:
                 self.dataChanged.emit(index,index)

@@ -3,9 +3,10 @@
 Name                 : Registry Configuration
 Description          : Class for reading and writing generic KVP settings for
                         STDM stored in the registry
-Date                 : 24/May/2013 
-copyright            : (C) 2013 by John Gitau
-email                : gkahiu@gmail.com
+Date                 : 24/May/2013
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -31,31 +32,35 @@ COMPOSER_TEMPLATE = 'ComposerTemplates'
 
 class RegistryConfig(object):
     """
-    Utility class for reading and writing STDM user settings in Windows Registry
+    Utility class for reading and writing STDM user settings in Windows
+    Registry
     """
 
     def __init__(self):
-        self.groupPath = "STDM"
+        self._group_path = "STDM"
 
     def read(self, items):
         """
         Get the value of the user defined items from the STDM registry tree
+        :return : User Keys
+        :rtype : dict
+        :param items: list
         """
-        userKeys = {}
+        user_keys = {}
         settings = QSettings()
         settings.beginGroup("/")
         groups = settings.childGroups()
         for group in groups:
-            #QMessageBox.information(None, "Info", group)
+            # QMessageBox.information(None, "Info", group)
             if str(group) == self._base_group():
                 for t in items:
-                    tKey = self.groupPath + "/" + t
+                    tKey = self._group_path + "/" + t
                     if settings.contains(tKey):
                         tValue = settings.value(tKey)
-                        userKeys[t] = tValue
+                        user_keys[t] = tValue
                 break
 
-        return userKeys
+        return user_keys
 
     def _base_group(self):
         """
@@ -63,15 +68,15 @@ class RegistryConfig(object):
         of the class.
         :rtype: str
         """
-        if not self.groupPath:
-            return self.groupPath
+        if not self._group_path:
+            return self._group_path
 
         slash_char = "/"
 
-        group_path = self.groupPath
+        group_path = self._group_path
 
-        if self.groupPath[0] == slash_char:
-            group_path = self.groupPath[1:]
+        if self._group_path[0] == slash_char:
+            group_path = self._group_path[1:]
 
         groups = group_path.split(slash_char)
 
@@ -79,11 +84,12 @@ class RegistryConfig(object):
 
     def group_children(self):
         """
-        :return: Names of the child groups in the path specified in the constructor.
+        :return: Names of the child groups in the path specified in the
+        constructor.
         :rtype: list
         """
         settings = QSettings()
-        settings.beginGroup(self.groupPath)
+        settings.beginGroup(self._group_path)
 
         group_children = settings.childGroups()
 
@@ -95,15 +101,15 @@ class RegistryConfig(object):
         """
         Write items in settings dictionary to the STDM registry
         """
-        uSettings = QSettings()
-        stdmGroup = "/" + self.groupPath
-        uSettings.beginGroup(stdmGroup)
+        u_settings = QSettings()
+        stdm_group = "/" + self._group_path
+        u_settings.beginGroup(stdm_group)
 
         for k, v in settings.iteritems():
-            uSettings.setValue(k, v)
+            u_settings.setValue(k, v)
 
-        uSettings.endGroup()
-        uSettings.sync()
+        u_settings.endGroup()
+        u_settings.sync()
 
 
 class QGISRegistryConfig(RegistryConfig):
@@ -123,4 +129,4 @@ class QGISRegistryConfig(RegistryConfig):
             if slash != slash_char:
                 path = slash_char + path
 
-        self.groupPath = path
+        self._group_path = path

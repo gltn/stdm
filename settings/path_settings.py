@@ -1,7 +1,8 @@
 """
 /***************************************************************************
 Name                 : Lookup
-Description          : class for handling lookup and lookup table models for the forms
+Description          : class for handling lookup and lookup table models for
+                       the forms
 Date                 : 24/September/2014
 copyright            : (C) 2014 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
@@ -17,7 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import *
+from PyQt4.QtGui import QIcon
 
 dataIcon = QIcon(":/plugins/stdm/images/icons/column.png")
 pbIcon = QIcon(":/plugins/stdm/images/icons/search.png")

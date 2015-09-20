@@ -38,8 +38,8 @@ def pg_layer_names_id_mapping():
     for name, layer in layers.iteritems():
         if hasattr(layer, 'dataProvider'):
             if layer.dataProvider().name() == 'postgres':
-                layerConnStr = layer.dataProvider().dataSourceUri()
-                dataSourceURI = QgsDataSourceURI(layerConnStr)
-                mapping[dataSourceURI.table()] = layer.id()
+                layer_conn_str = layer.dataProvider().dataSourceUri()
+                data_source_uri = QgsDataSourceURI(layer_conn_str)
+                mapping[data_source_uri.table()] = layer.id()
 
     return mapping
