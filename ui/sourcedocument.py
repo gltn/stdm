@@ -65,13 +65,9 @@ TAX_RECEIPT_STATE = 2025
 
 #Display text for document types
 DOC_TYPE_MAPPING = {
-                  DEFAULT_DOCUMENT:str(QApplication.translate("sourceDocument", "Supporting Document")),
-                  #STATUTORY_REF_PAPER:str(QApplication.translate("sourceDocument", "Statutory Reference Paper")),
-                  #SURVEYOR_REF:str(QApplication.translate("sourceDocument", "Surveyor Reference")),
-                  #NOTARY_REF:str(QApplication.translate("sourceDocument", "Notary Reference")),
-                  #TAX_RECEIPT_PRIVATE:str(QApplication.translate("sourceDocument", "Tax Receipt")),
-                  #TAX_RECEIPT_STATE:str(QApplication.translate("sourceDocument", "Tax Receipt"))
-                  }
+    DEFAULT_DOCUMENT: unicode(QApplication.translate("sourceDocument",
+                                                     "Supporting Document"))
+}
 
 #Display text for STR document types
 STR_DOC_TYPE_MAPPING = {}
@@ -81,15 +77,15 @@ UPLOAD_MODE = 2100
 DOWNLOAD_MODE = 2101
 
 class SourceDocumentManager(QObject):
-    '''
+    """
     Manages the display of source documents in vertical layout container(s).
-    '''
+    """
     #Signal raised when a document is removed from its container.
     documentRemoved = pyqtSignal(int)
     fileUploaded = pyqtSignal('PyQt_PyObject')
     
-    def __init__(self,parent = None):
-        QObject.__init__(self,parent)
+    def __init__(self, parent=None):
+        QObject.__init__(self, parent)
         self.containers = OrderedDict()
         self._canEdit = True
         
@@ -174,12 +170,14 @@ class SourceDocumentManager(QObject):
 
                     network_location = network_document_path()
 
-                    if network_location == "":
+                    if not network_location:
                         self._doc_repository_error()
+
                         return
 
                     #Check if the directory exists
                     doc_dir = QDir(network_location)
+
                     if not doc_dir.exists():
                         msg = QApplication.translate("sourceDocumentManager",
                                                      u"The root document "
@@ -189,6 +187,7 @@ class SourceDocumentManager(QObject):
                         parent = self.parent()
                         if not isinstance(parent, QWidget):
                             parent = None
+
                         QMessageBox.critical(parent,
                                              QApplication.translate("sourceDocumentManager","Document Manager"),
                                              msg.format(network_location))
@@ -199,13 +198,13 @@ class SourceDocumentManager(QObject):
                     networkManager = NetworkFileManager(network_location,self.parent())
 
                     #Add document widget
-                    docWidg = DocumentWidget(networkManager, parent = self.parent(),
-                                             view_manager = self._doc_view_manager)
+                    docWidg = DocumentWidget(networkManager, parent=self.parent(),
+                                             view_manager=self._doc_view_manager)
 
                     #Connect slot once the document has been successfully uploaded.
                     docWidg.fileUploadComplete.connect(lambda: self.onFileUploadComplete(containerid))
                     self._linkWidgetRemovedSignal(docWidg)
-                    docWidg.setFile(path,containerid)
+                    docWidg.setFile(path, containerid)
                     container.addWidget(docWidg) 
                     
     def onFileUploadComplete(self, documenttype):
@@ -220,7 +219,7 @@ class SourceDocumentManager(QObject):
             self.fileUploaded.emit(docWidget.sourceDocument())
             self._docRefs.append(docWidget.fileUUID)
             
-    def set_source_documents(self,source_docs):
+    def set_source_documents(self, source_docs):
         """
         :param source_docs: Supporting document objects to be inserted in their respective containers.
         :type source_docs: list
@@ -228,10 +227,9 @@ class SourceDocumentManager(QObject):
         for source_doc in source_docs:
             if hasattr(source_doc, "document_type"):
                 document_type = source_doc.document_type
-
                 self.insertDocFromModel(source_doc, document_type)
                     
-    def insertDocFromModel(self,sourcedoc,containerid):
+    def insertDocFromModel(self, sourcedoc, containerid):
         """
         Renders the source document info from a subclass of 'SupportingDocumentMixin'.
         """
@@ -246,25 +244,27 @@ class SourceDocumentManager(QObject):
 
                 network_location = source_document_location("")
 
-                if network_location == "":
+                if not network_location:
                     self._doc_repository_error()
+
                     return
 
                 networkManager = NetworkFileManager(network_document_path())
                 #Add document widget
-                docWidg = DocumentWidget(networkManager,mode = DOWNLOAD_MODE,
-                                         canRemove = self._canEdit,
-                                         view_manager = self._doc_view_manager)
+                docWidg = DocumentWidget(networkManager, mode=DOWNLOAD_MODE,
+                                         canRemove=self._canEdit,
+                                         view_manager=self._doc_view_manager)
                 self._linkWidgetRemovedSignal(docWidg)
                 docWidg.setModel(sourcedoc)
                 container.addWidget(docWidg)
                 self._docRefs.append(sourcedoc.document_id)
 
-
     def _doc_repository_error(self):
         msg = QApplication.translate("sourceDocumentManager","Document repository could not be found.\nPlease "
                                                              "check the path settings.")
-        QMessageBox.critical(None,QApplication.translate("sourceDocumentManager","Document Manager"),msg)
+        QMessageBox.critical(None,
+                            QApplication.translate("sourceDocumentManager",
+                                                   "Document Manager"),msg)
                     
     def networkResource(self): 
         '''
@@ -304,7 +304,7 @@ class SourceDocumentManager(QObject):
 
         return srcDocMapping
     
-    def sourceDocuments(self,dtype =None):
+    def sourceDocuments(self, dtype=None):
         """
         Returns all supporting document models based on the file uploads
         contained in the document manager.
@@ -327,14 +327,17 @@ class SourceDocumentManager(QObject):
 
     def model_objects(self):
         """
-        Method to return all the model object for suporting document be inserted into table
+        Method to return all the model object for supporting document be inserted into table
         :return:
         """
         #proxies =STDMDb.instance().engine.connect()
 
         soc_doc = document_type_class.get(DEFAULT_DOCUMENT)()
+
         if len(self.sourceDocuments().get(DEFAULT_DOCUMENT)) > 0:
             return [model_obj for model_obj in self.sourceDocuments().get(DEFAULT_DOCUMENT)]
+
+        return []
 
     def clean_up(self):
         """
@@ -423,7 +426,7 @@ class SourceDocumentManager(QObject):
         """
         widget.referencesRemoved.connect(self.onDocumentRemoved)
         
-class DocumentWidget(QWidget,Ui_frmDocumentItem):
+class DocumentWidget(QWidget, Ui_frmDocumentItem):
     """
     Widget for displaying source document details
     """
@@ -446,7 +449,7 @@ class DocumentWidget(QWidget,Ui_frmDocumentItem):
         self._fileName = ""
         self._canRemove = canRemove
         self._view_manager = view_manager
-        mapper =DeclareMapping.instance()
+        mapper = DeclareMapping.instance()
         STR_DOC_MODEL = mapper.tableMapping('supporting_document')
         document_type_class[DEFAULT_DOCUMENT]= STR_DOC_MODEL
 
@@ -522,7 +525,7 @@ class DocumentWidget(QWidget,Ui_frmDocumentItem):
 
         return True
 
-    def _remove_doc(self,suppress_messages = False):
+    def _remove_doc(self, suppress_messages=False):
         """
         :param suppress_messages: Set whether user messages should be displayed or the system should continue with
         execution.
@@ -575,7 +578,7 @@ class DocumentWidget(QWidget,Ui_frmDocumentItem):
         """
         self.lblClose.setVisible(state)
 
-    def setFile(self,dfile,documenttype):
+    def setFile(self, dfile, documenttype):
         """
         Set the absolute file path including the name, that is to be associated
         with the document widget.
@@ -598,13 +601,13 @@ class DocumentWidget(QWidget,Ui_frmDocumentItem):
         self.pgBar.setVisible(False)
 
         if self._mode == DOWNLOAD_MODE:
-            self._displayName = sourcedoc.file_name
+            self._displayName = sourcedoc.filename
             self._docSize = sourcedoc.doc_size
-            self.fileUUID = sourcedoc.doc_identifier
+            self.fileUUID = sourcedoc.document_id
 
             self.buildDisplay()
             self._srcDoc = sourcedoc
-            self._docType = sourcedoc.doc_type
+            self._docType = sourcedoc.document_type
 
     def documentType(self):
         """
@@ -641,20 +644,26 @@ class DocumentWidget(QWidget,Ui_frmDocumentItem):
 
                 src_doc.document_id = self.fileUUID
                 src_doc.filename = self.fileInfo.fileName()
-                src_doc.file_size = self._docSize
+                src_doc.doc_size = self._docSize
                 #src_doc.source = QDate.currentDate()
                 src_doc.document_type = self._docType
                # src_doc.validity = QDate.currentDate()
                 self._srcDoc = src_doc
+
         return self._srcDoc
 
     def buildDisplay(self):
         """
         Build html text for displaying file information.
         """
+        if not self._docSize is None:
+            display_doc_size = str(size(self._docSize))
+        else:
+            display_doc_size = '0'
+
         html = '<html><head/><body><p><span style="font-weight:600;text-decoration: underline;' + \
         'color:#5555ff;">'+ str(self._displayName) + '</span><span style="font-weight:600;color:#8f8f8f;">&nbsp;(' + \
-        str(size(self._docSize)) + ')</span></p></body></html>'
+        display_doc_size + ')</span></p></body></html>'
         self.lblName.setText(html)
 
         #Enable/disable close

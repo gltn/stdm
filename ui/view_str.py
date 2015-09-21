@@ -47,7 +47,8 @@ from stdm.navigation.socialtenure import (
     EntityNode,
     EntityNodeFormatter,
     SpatialUnitNode,
-    STRNode
+    STRNode,
+    SupportsDocumentsNode
 )
 from stdm.security import Authorizer
 
@@ -105,7 +106,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self.tb_actions.setVisible(False)
         self._load_entity_configurations()
 
-        self.gb_supporting_docs.setCollapsed(True)
+        #self.gb_supporting_docs.setCollapsed(True)
 
         #Connect signals
         self.tbSTREntity.currentChanged.connect(self.entityTabIndexChanged)
@@ -292,7 +293,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                     #Assert if node represents another entity has been clicked
                     self._on_node_reference_changed(node.rootHash())
 
-                    if isinstance(node, STRNode):
+                    if isinstance(node, SupportsDocumentsNode):
                         src_docs = node.documents()
                         str_id = node.id()
 
@@ -300,9 +301,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                             self._strID = str_id
                             self._load_source_documents(src_docs)
 
-                        break
-
-                    elif isinstance(node, SpatialUnitNode):
+                    if isinstance(node, SpatialUnitNode):
                         self.draw_spatial_unit(node.model())
 
     def onSourceDocumentRemoved(self, container_id):
@@ -503,7 +502,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         for i,doc in enumerate(source_docs):
             progressDialog.setValue(i)
-            type_id = doc.doc_type
+            type_id = doc.document_type
             container = self._source_doc_manager.container(type_id)
 
             #Check if a container has been defined and create if None is found

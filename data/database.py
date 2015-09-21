@@ -428,6 +428,18 @@ class Survey(Model,Base):
         #attrTranslations["RespondentID"] = QApplication.translate("DatabaseMapping","Respondent")
         
         return attrTranslations
+
+class SupportingDocument(Base, Model):
+    """
+    Mixin class for storing metadata for supporting documents.
+    """
+    __tablename__ = "supporting_document"
+
+    id = Column(Integer, primary_key=True)
+    document_id = Column(String(50), unique=True)
+    filename = Column(String(200))
+    doc_size = Column(Integer)
+    document_type = Column(Integer)
    
 class SupportsRankingMixin(object):
     '''

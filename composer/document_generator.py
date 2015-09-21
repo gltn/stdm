@@ -596,8 +596,8 @@ class DocumentGenerator(QObject):
                                                           "id", r.id)
 
                 for dr in doc_results:
-                    self._build_photo_path(composition, conf.item_id(), dr.doc_type,
-                                           dr.doc_identifier, dr.file_name)
+                    self._build_photo_path(composition, conf.item_id(), dr.document_type,
+                                           dr.document_id, dr.filename)
 
                 #TODO: Only interested in one photograph, should support more?
                 break
@@ -617,7 +617,7 @@ class DocumentGenerator(QObject):
             return
 
         img_extension = extensions[1]
-        abs_path = u"{0}/{1}/{2}.{3}".format(network_ph_path, "%d"%(doc_type),
+        abs_path = u"{0}/{1}/{2}.{3}".format(network_ph_path, doc_type,
                                              doc_id, img_extension)
 
         if QFile.exists(abs_path):

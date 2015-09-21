@@ -465,7 +465,7 @@ class DocumentViewManager(QMainWindow):
         if not file_manager is None:
             network_repository = file_manager.networkPath
             file_id = document_widget.file_identifier()
-            doc_type = "%d"%(document_widget.documentType())
+            doc_type = document_widget.documentType()
             file_name, file_extension = guess_extension(document_widget.displayName())
 
             abs_path = network_repository + "/" + doc_type + "/" +\

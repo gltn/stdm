@@ -69,7 +69,7 @@ class DatabaseCreator(object):
                 ext_sql = ('CREATE EXTENSION postgis')
             _execute(ext_sql)
         except Exception as ex:
-            QMessageBox.information(None, "Database Operation", str(ex.message))
+            QMessageBox.information(None, "Database Operation", unicode(ex.message))
 
     def update_registry(self):
         """ If the user want to use the new database for the current work
