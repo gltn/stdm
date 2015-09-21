@@ -74,7 +74,7 @@ class DatabaseConnection(object):
         """
         dt_source = QgsDataSourceURI()
         dt_source.setConnection(self.host, self.port, self.database,
-                                self.user.userName, self.user.Password)
+                                self.user.UserName, self.user.Password)
 
         return dt_source
     
