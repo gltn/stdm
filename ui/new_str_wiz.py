@@ -205,19 +205,19 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         
         #Load summary information in the tree view
         summaryTreeLoader = TreeSummaryLoader(self.twSTRSummary)
-        summaryTreeLoader.addCollection(personMapping, QApplication.translate("newSTRWiz","Party Information"),
+        summaryTreeLoader.add_collection(personMapping, QApplication.translate("newSTRWiz","Party Information"),
                                              ":/plugins/stdm/images/icons/user.png")    
         
-        summaryTreeLoader.addCollection(propertyMapping, QApplication.translate("newSTRWiz","Spatial Unit Information"),
+        summaryTreeLoader.add_collection(propertyMapping, QApplication.translate("newSTRWiz","Spatial Unit Information"),
                                              ":/plugins/stdm/images/icons/property.png")
                                              
-        summaryTreeLoader.addCollection(STRMapping, QApplication.translate("newSTRWiz","Social Tenure Relationship Information"), 
+        summaryTreeLoader.add_collection(STRMapping, QApplication.translate("newSTRWiz","Social Tenure Relationship Information"),
                                              ":/plugins/stdm/images/icons/social_tenure.png")    
 
         #Check the source documents based on the type of property
         srcDocMapping = self.sourceDocManager.attributeMapping()
 
-        summaryTreeLoader.addCollection(srcDocMapping, QApplication.translate("newSTRWiz","Source Documents"), 
+        summaryTreeLoader.add_collection(srcDocMapping, QApplication.translate("newSTRWiz","Source Documents"),
                                              ":/plugins/stdm/images/icons/attachment.png") 
       
         summaryTreeLoader.display()  
@@ -412,7 +412,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                    
         else:
             #Remove overlay
-            self.propBrowser.removeOverlay()     
+            self.propBrowser.remove_overlay()
             
     def _onZoomChanged(self):
         '''
@@ -487,7 +487,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 self.selPerson = p
                 personInfoMapping = self._mapPersonAttributes(p)
                 personTreeLoader = TreeSummaryLoader(self.tvPersonInfo)
-                personTreeLoader.addCollection(personInfoMapping, QApplication.translate("newSTRWiz","Party Information"),
+                personTreeLoader.add_collection(personInfoMapping, QApplication.translate("newSTRWiz","Party Information"),
                                                ":/plugins/stdm/images/icons/user.png")
                 personTreeLoader.display()
             
@@ -522,7 +522,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             
             #Load information in the tree view
             propertyTreeLoader = TreeSummaryLoader(self.tvPropInfo)
-            propertyTreeLoader.addCollection(propMapping, QApplication.translate("newSTRWiz","Spatial Unit Information"),
+            propertyTreeLoader.add_collection(propMapping, QApplication.translate("newSTRWiz","Spatial Unit Information"),
                                              ":/plugins/stdm/images/icons/property.png")       
             propertyTreeLoader.display()  
             
@@ -612,14 +612,14 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         as the base layer
         '''
         if state:                     
-            self.propBrowser.setBaseLayer(GMAP_SATELLITE)
+            self.propBrowser._set_base_layer(GMAP_SATELLITE)
         
     def onLoadOSM(self,state):
         '''
         Slot raised when a user clicks to set OSM as the base layer
         '''
         if state:                     
-            self.propBrowser.setBaseLayer(OSM)
+            self.propBrowser._set_base_layer(OSM)
             
     def onMapZoomLevelChanged(self,level):
         '''

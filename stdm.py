@@ -398,49 +398,49 @@ class STDMQGISLoader(object):
         self.viewSTRAct.triggered.connect(self.onViewSTR)
 
         #Create content items
-        contentAuthCnt = ContentGroup.contentItemFromQAction(self.contentAuthAct)
+        contentAuthCnt = ContentGroup.content_item_from_qaction(self.contentAuthAct)
         contentAuthCnt.code = "E59F7CC1-0D0E-4EA2-9996-89DACBD07A83"
 
-        userRoleMngtCnt = ContentGroup.contentItemFromQAction(self.usersAct)
+        userRoleMngtCnt = ContentGroup.content_item_from_qaction(self.usersAct)
         userRoleMngtCnt.code = "0CC4FB8F-70BA-4DE8-8599-FD344A564EB5"
 
-        adminUnitsCnt = ContentGroup.contentItemFromQAction(self.manageAdminUnitsAct)
+        adminUnitsCnt = ContentGroup.content_item_from_qaction(self.manageAdminUnitsAct)
         adminUnitsCnt.code = "770EAC75-2BEC-492E-8703-34674054C246"
 
-        importCnt = ContentGroup.contentItemFromQAction(self.importAct)
+        importCnt = ContentGroup.content_item_from_qaction(self.importAct)
         importCnt.code = "3BBD6347-4A37-45D0-9B41-36D68D2CA4DB"
 
-        exportCnt = ContentGroup.contentItemFromQAction(self.exportAct)
+        exportCnt = ContentGroup.content_item_from_qaction(self.exportAct)
         exportCnt.code = "D0C34436-619D-434E-928C-2CBBDA79C060"
 
-        surveyCnt = ContentGroup.contentItemFromQAction(self.surveyAct)
+        surveyCnt = ContentGroup.content_item_from_qaction(self.surveyAct)
         surveyCnt.code = "5620049B-983A-4F85-B0D6-9D83925CC45E"
 
-        farmerCnt = ContentGroup.contentItemFromQAction(self.farmerAct)
+        farmerCnt = ContentGroup.content_item_from_qaction(self.farmerAct)
         farmerCnt.code = "99EA7671-85CF-40D6-B417-A3CC49D5A594"
 
-        documentDesignerCnt = ContentGroup.contentItemFromQAction(self.docDesignerAct)
+        documentDesignerCnt = ContentGroup.content_item_from_qaction(self.docDesignerAct)
         documentDesignerCnt.code = "C4826C19-2AE3-486E-9FF0-32C00A0A517F"
 
-        documentGeneratorCnt = ContentGroup.contentItemFromQAction(self.docGeneratorAct)
+        documentGeneratorCnt = ContentGroup.content_item_from_qaction(self.docGeneratorAct)
         documentGeneratorCnt.code = "4C0C7EF2-5914-4FDE-96CB-089D44EDDA5A"
 
-        rptBuilderCnt = ContentGroup.contentItemFromQAction(self.rptBuilderAct)
+        rptBuilderCnt = ContentGroup.content_item_from_qaction(self.rptBuilderAct)
         rptBuilderCnt.code = "E60A9143-FFA5-4422-985A-0C43C71323BE"
 
-        spatialEditingCnt = ContentGroup.contentItemFromQAction(self.spatialEditorAct)
+        spatialEditingCnt = ContentGroup.content_item_from_qaction(self.spatialEditorAct)
         spatialEditingCnt.code = "4E945EE7-D6F9-4E1C-A4AA-0C7F1BC67224"
 
-        spatialLayerManagerCnt = ContentGroup.contentItemFromQAction(self.spatialLayerManager)
+        spatialLayerManagerCnt = ContentGroup.content_item_from_qaction(self.spatialLayerManager)
         spatialLayerManagerCnt.code = "4E945EE7-D6F9-4E1C-X4AA-0C7F1BC67224"
 
-        createFeatureCnt = ContentGroup.contentItemFromQAction(self.createFeatureAct)
+        createFeatureCnt = ContentGroup.content_item_from_qaction(self.createFeatureAct)
         createFeatureCnt.code = "71CFDB15-EDB5-410D-82EA-0E982971BC51"
 
-        wzdConfigCnt = ContentGroup.contentItemFromQAction(self.wzdAct)
+        wzdConfigCnt = ContentGroup.content_item_from_qaction(self.wzdAct)
         wzdConfigCnt.code = "F16CA4AC-3E8C-49C8-BD3C-96111EA74206"
 
-        strViewCnt=ContentGroup.contentItemFromQAction(self.viewSTRAct)
+        strViewCnt=ContentGroup.content_item_from_qaction(self.viewSTRAct)
         strViewCnt.code="D13B0415-30B4-4497-B471-D98CA98CD841"
 
         username = data.app_dbconn.User.UserName
@@ -466,10 +466,10 @@ class STDMQGISLoader(object):
 
             if capabilities:
                 moduleCntGroup = TableContentGroup(username, k, content_action)
-                moduleCntGroup.createContentItem().code = capabilities[0]
-                moduleCntGroup.readContentItem().code = capabilities[1]
-                moduleCntGroup.updateContentItem().code = capabilities[2]
-                moduleCntGroup.deleteContentItem().code = capabilities[3]
+                moduleCntGroup.create_content_item().code = capabilities[0]
+                moduleCntGroup.read_content_item().code = capabilities[1]
+                moduleCntGroup.update_content_item().code = capabilities[2]
+                moduleCntGroup.delete_content_item().code = capabilities[3]
                 moduleCntGroup.register()
                 self._reportModules[k] = self._moduleItems.get(k)
                 self.moduleContentGroups.append(moduleCntGroup)
@@ -477,13 +477,13 @@ class STDMQGISLoader(object):
 
         #Create content groups and add items
         self.contentAuthCntGroup = ContentGroup(username)
-        self.contentAuthCntGroup.addContentItem(contentAuthCnt)
-        self.contentAuthCntGroup.setContainerItem(self.contentAuthAct)
+        self.contentAuthCntGroup.add_content_item(contentAuthCnt)
+        self.contentAuthCntGroup.set_container_item(self.contentAuthAct)
         self.contentAuthCntGroup.register()
 
         self.userRoleCntGroup = ContentGroup(username)
-        self.userRoleCntGroup.addContentItem(userRoleMngtCnt)
-        self.userRoleCntGroup.setContainerItem(self.usersAct)
+        self.userRoleCntGroup.add_content_item(userRoleMngtCnt)
+        self.userRoleCntGroup.set_container_item(self.usersAct)
         self.userRoleCntGroup.register()
 
         #Group admin settings content groups
@@ -492,105 +492,105 @@ class STDMQGISLoader(object):
         adminSettingsCntGroups.append(self.userRoleCntGroup)
 
         self.adminUnitsCntGroup = ContentGroup(username)
-        self.adminUnitsCntGroup.addContentItem(adminUnitsCnt)
-        self.adminUnitsCntGroup.setContainerItem(self.manageAdminUnitsAct)
+        self.adminUnitsCntGroup.add_content_item(adminUnitsCnt)
+        self.adminUnitsCntGroup.set_container_item(self.manageAdminUnitsAct)
         self.adminUnitsCntGroup.register()
 
         self.spatialEditingCntGroup = ContentGroup(username, self.spatialEditorAct)
-        self.spatialEditingCntGroup.addContentItem(spatialEditingCnt)
+        self.spatialEditingCntGroup.add_content_item(spatialEditingCnt)
         self.spatialEditingCntGroup.register()
 
         self.spatialUnitManagerCntGroup = ContentGroup(username,self.spatialLayerManager)
-        self.spatialUnitManagerCntGroup.addContentItem(spatialLayerManagerCnt)
+        self.spatialUnitManagerCntGroup.add_content_item(spatialLayerManagerCnt)
         self.spatialUnitManagerCntGroup.register()
         
         self.createFeatureCntGroup = ContentGroup(username,self.createFeatureAct)
-        self.createFeatureCntGroup.addContentItem(createFeatureCnt)
+        self.createFeatureCntGroup.add_content_item(createFeatureCnt)
         self.createFeatureCntGroup.register()
 
         self.wzdConfigCntGroup = ContentGroup(username, self.wzdAct)
-        self.wzdConfigCntGroup.addContentItem(wzdConfigCnt)
+        self.wzdConfigCntGroup.add_content_item(wzdConfigCnt)
         self.wzdConfigCntGroup.register()
 
         self.STRCntGroup = TableContentGroup(username,
                                              self.viewSTRAct.text(),
                                              self.viewSTRAct)
-        self.STRCntGroup.createContentItem().code = "71EC2ED8-5D7F-4A27-8514-CFFE94E1294F"
-        self.STRCntGroup.readContentItem().code = "ED607F24-11A2-427C-B395-2E2A3EBA4EBD"
-        self.STRCntGroup.updateContentItem().code = "5D45A49D-F640-4A48-94D9-A10F502655F5"
-        self.STRCntGroup.deleteContentItem().code = "15E27A59-28F7-42B4-858F-C070E2C3AE10"
+        self.STRCntGroup.create_content_item().code = "71EC2ED8-5D7F-4A27-8514-CFFE94E1294F"
+        self.STRCntGroup.read_content_item().code = "ED607F24-11A2-427C-B395-2E2A3EBA4EBD"
+        self.STRCntGroup.update_content_item().code = "5D45A49D-F640-4A48-94D9-A10F502655F5"
+        self.STRCntGroup.delete_content_item().code = "15E27A59-28F7-42B4-858F-C070E2C3AE10"
         self.STRCntGroup.register()
 
         self.surveyCntGroup = TableContentGroup(username,
                                                 self.surveyAct.text(),
                                                 self.surveyAct)
-        self.surveyCntGroup.createContentItem().code = "A7783C39-1A5B-4F79-81C2-639C2EA3E8A3"
-        self.surveyCntGroup.readContentItem().code = "CADFC838-DA3C-44C5-A6A8-3B2FC4CA8464"
-        self.surveyCntGroup.updateContentItem().code = "B42AC2C5-7CF5-48E6-A37F-EAE818FBC9BC"
-        self.surveyCntGroup.deleteContentItem().code = "C916ACF3-30E6-45C3-B8E1-22E56D0AFB3E"
+        self.surveyCntGroup.create_content_item().code = "A7783C39-1A5B-4F79-81C2-639C2EA3E8A3"
+        self.surveyCntGroup.read_content_item().code = "CADFC838-DA3C-44C5-A6A8-3B2FC4CA8464"
+        self.surveyCntGroup.update_content_item().code = "B42AC2C5-7CF5-48E6-A37F-EAE818FBC9BC"
+        self.surveyCntGroup.delete_content_item().code = "C916ACF3-30E6-45C3-B8E1-22E56D0AFB3E"
         self.surveyCntGroup.register()
 
         self.docDesignerCntGroup = ContentGroup(username, self.docDesignerAct)
-        self.docDesignerCntGroup.addContentItem(documentDesignerCnt)
+        self.docDesignerCntGroup.add_content_item(documentDesignerCnt)
         self.docDesignerCntGroup.register()
 
         self.docGeneratorCntGroup = ContentGroup(username, self.docGeneratorAct)
-        self.docGeneratorCntGroup.addContentItem(documentGeneratorCnt)
+        self.docGeneratorCntGroup.add_content_item(documentGeneratorCnt)
         self.docGeneratorCntGroup.register()
 
         self.importCntGroup = ContentGroup(username, self.importAct)
-        self.importCntGroup.addContentItem(importCnt)
+        self.importCntGroup.add_content_item(importCnt)
         self.importCntGroup.register()
 
         self.exportCntGroup = ContentGroup(username, self.exportAct)
-        self.exportCntGroup.addContentItem(exportCnt)
+        self.exportCntGroup.add_content_item(exportCnt)
         self.exportCntGroup.register()
 
         self.rptBuilderCntGroup = ContentGroup(username, self.rptBuilderAct)
-        self.rptBuilderCntGroup.addContentItem(rptBuilderCnt)
+        self.rptBuilderCntGroup.add_content_item(rptBuilderCnt)
         self.rptBuilderCntGroup.register()
 
         #Add Design Forms menu and tool bar actions
-        self.toolbarLoader.addContent(self.wzdConfigCntGroup)
-        self.menubarLoader.addContent(self.wzdConfigCntGroup)
+        self.toolbarLoader.add_content(self.wzdConfigCntGroup)
+        self.menubarLoader.add_content(self.wzdConfigCntGroup)
 
-        self.toolbarLoader.addContent(self.contentAuthCntGroup, [adminMenu, adminBtn])
-        self.toolbarLoader.addContent(self.userRoleCntGroup, [adminMenu, adminBtn])
+        self.toolbarLoader.add_content(self.contentAuthCntGroup, [adminMenu, adminBtn])
+        self.toolbarLoader.add_content(self.userRoleCntGroup, [adminMenu, adminBtn])
 
-        self.menubarLoader.addContents(adminSettingsCntGroups, [stdmAdminMenu, stdmAdminMenu])
+        self.menubarLoader.add_contents(adminSettingsCntGroups, [stdmAdminMenu, stdmAdminMenu])
 
-        self.menubarLoader.addContent(self._action_separator())
-        self.toolbarLoader.addContent(self._action_separator())
+        self.menubarLoader.add_content(self._action_separator())
+        self.toolbarLoader.add_content(self._action_separator())
 
-        self.menubarLoader.addContents(self.moduleContentGroups, [stdmEntityMenu, stdmEntityMenu])
-        self.toolbarLoader.addContents(self.moduleContentGroups, [contentMenu, contentBtn])
+        self.menubarLoader.add_contents(self.moduleContentGroups, [stdmEntityMenu, stdmEntityMenu])
+        self.toolbarLoader.add_contents(self.moduleContentGroups, [contentMenu, contentBtn])
 
-        self.menubarLoader.addContent(self.spatialUnitManagerCntGroup)
-        self.toolbarLoader.addContent(self.spatialUnitManagerCntGroup)
+        self.menubarLoader.add_content(self.spatialUnitManagerCntGroup)
+        self.toolbarLoader.add_content(self.spatialUnitManagerCntGroup)
 
-        self.toolbarLoader.addContent(self.STRCntGroup)
-        self.menubarLoader.addContent(self.STRCntGroup)
+        self.toolbarLoader.add_content(self.STRCntGroup)
+        self.menubarLoader.add_content(self.STRCntGroup)
 
-        self.toolbarLoader.addContent(self.adminUnitsCntGroup)
-        self.menubarLoader.addContent(self.adminUnitsCntGroup)
+        self.toolbarLoader.add_content(self.adminUnitsCntGroup)
+        self.menubarLoader.add_content(self.adminUnitsCntGroup)
 
-        self.toolbarLoader.addContent(self.importCntGroup)
-        self.menubarLoader.addContent(self.importCntGroup)
+        self.toolbarLoader.add_content(self.importCntGroup)
+        self.menubarLoader.add_content(self.importCntGroup)
 
-        self.toolbarLoader.addContent(self.exportCntGroup)
-        self.menubarLoader.addContent(self.exportCntGroup)
+        self.toolbarLoader.add_content(self.exportCntGroup)
+        self.menubarLoader.add_content(self.exportCntGroup)
 
-        self.menubarLoader.addContent(self._action_separator())
-        self.toolbarLoader.addContent(self._action_separator())
+        self.menubarLoader.add_content(self._action_separator())
+        self.toolbarLoader.add_content(self._action_separator())
 
-        self.toolbarLoader.addContent(self.docDesignerCntGroup)
-        self.menubarLoader.addContent(self.docDesignerCntGroup)
+        self.toolbarLoader.add_content(self.docDesignerCntGroup)
+        self.menubarLoader.add_content(self.docDesignerCntGroup)
 
-        self.toolbarLoader.addContent(self.docGeneratorCntGroup)
-        self.menubarLoader.addContent(self.docGeneratorCntGroup)
+        self.toolbarLoader.add_content(self.docGeneratorCntGroup)
+        self.menubarLoader.add_content(self.docGeneratorCntGroup)
 
-        self.toolbarLoader.addContent(self.rptBuilderCntGroup)
-        self.menubarLoader.addContent(self.rptBuilderCntGroup)
+        self.toolbarLoader.add_content(self.rptBuilderCntGroup)
+        self.menubarLoader.add_content(self.rptBuilderCntGroup)
 
         #Group spatial editing tools together
         self.spatialEditingGroup = QActionGroup(self.iface.mainWindow())
@@ -599,8 +599,8 @@ class STDMQGISLoader(object):
         self.configureMapTools()
 
         #Load all the content in the container
-        self.toolbarLoader.loadContent()
-        self.menubarLoader.loadContent()
+        self.toolbarLoader.load_content()
+        self.menubarLoader.load_content()
 
         self.create_spatial_unit_manager()
 
@@ -1025,7 +1025,7 @@ class STDMQGISLoader(object):
         else:
             tableName=self._moduleItems.get(dispName)
             if tableName in tbList:
-                cnt_idx = getIndex(self._reportModules.keys(), dispName)
+                cnt_idx = get_index(self._reportModules.keys(), dispName)
                 try:
                     main = STDMEntityBrowser(self.moduleContentGroups[cnt_idx],
                                              tableName, self.iface.mainWindow())
@@ -1097,9 +1097,9 @@ class STDMQGISLoader(object):
             data.app_dbconn = None
 
             if not self.toolbarLoader is None:
-                self.toolbarLoader.unloadContent()
+                self.toolbarLoader.unload_content()
             if not self.menubarLoader is None:
-                self.menubarLoader.unloadContent()
+                self.menubarLoader.unload_content()
                 self.stdmMenu.clear()
             #Reset property management window
             if not self.propManageWindow is None:

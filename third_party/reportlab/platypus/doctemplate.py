@@ -1170,7 +1170,7 @@ if __name__ == '__main__':
         from reportlab.lib.colors import red
         PAGE_HEIGHT = canvas._pagesize[1]
         canvas.saveState()
-        canvas.setStrokeColor(red)
+        canvas.set_stroke_color(red)
         canvas.setLineWidth(5)
         canvas.line(66,72,66,PAGE_HEIGHT-72)
         canvas.setFont(_baseFontNameB,24)
@@ -1183,7 +1183,7 @@ if __name__ == '__main__':
         from reportlab.lib.colors import red
         PAGE_HEIGHT = canvas._pagesize[1]
         canvas.saveState()
-        canvas.setStrokeColor(red)
+        canvas.set_stroke_color(red)
         canvas.setLineWidth(5)
         canvas.line(66,72,66,PAGE_HEIGHT-72)
         canvas.setFont(_baseFontName,12)

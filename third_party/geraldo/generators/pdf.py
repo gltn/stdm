@@ -285,11 +285,11 @@ class PDFGenerator(ReportGenerator):
 
     def set_fill_color(self, color):
         """Sets the current fill on canvas. Used for fonts and shape fills"""
-        self.canvas.setFillColor(color)
+        self.canvas.set_fill_color(color)
     
     def set_stroke_color(self, color):
         """Sets the current stroke on canvas"""
-        self.canvas.setStrokeColor(color)
+        self.canvas.set_stroke_color(color)
 
     def set_stroke_width(self, width):
         """Sets the stroke/line width for shapes"""

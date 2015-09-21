@@ -60,7 +60,7 @@ class Authorizer(object):
         item with the gien code. 
         '''        
         hasPermission = False
-        #Get roles with permission        
+        #Get roles with permission
         try:
             cnt = Content()                       
             qo = cnt.queryObject()

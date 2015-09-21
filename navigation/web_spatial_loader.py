@@ -2,8 +2,8 @@
 /***************************************************************************
 Name                 : WebSpatialLoader
 Description          : Class that provides functions for overlaying property
-                       boundaries in either a Google Maps Satellite view or 
-                       OpenStreetMaps.
+                       boundaries in either a Google Maps Satellite view or
+                       OpenStreetMaps
 Date                 : 8/July/2014
 copyright            : (C) 2014 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
@@ -19,18 +19,17 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-import os.path
+import json
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtWebKit import *
-from PyQt4.QtNetwork import *
+from PyQt4.QtCore import pyqtSignal, QObject, QFile, QUrl, SIGNAL, pyqtSlot,\
+    qDebug, QSettings
+from PyQt4.QtGui import QColor, QApplication
+from PyQt4.QtWebKit import QWebPage
+from PyQt4.QtNetwork import QNetworkAccessManager
 
-from qgis.core import *
-
-from stdm.settings import getProxy
-from stdm.utils import PLUGIN_DIR
-from stdm.data import STDMDb
+from settings import get_proxy
+from utils import PLUGIN_DIR
+from data import STDMDb
 
 from geoalchemy2 import WKBElement
 
@@ -50,8 +49,9 @@ class OLStyle(object):
         Instantiate styling dictionary. This will be
         serialized to a JSON object and passed to
         OpenLayers.
+        :param style:
         """
-        self.style = style
+        self._style = style
 
         settings = QSettings()
 
@@ -69,41 +69,44 @@ class OLStyle(object):
                            qgs_sel_alpha)
 
         # Set defaults
-        self.style["fillColor"] = sel_color.name()
-        self.style["fillOpacity"] = 0.5
-        self.style["strokeColor"] = "#FE2E64"
-        self.style["strokeOpacity"] = 1
-        self.style["strokeWidth"] = 1
+        self._style["fillColor"] = sel_color.name()
+        self._style["fillOpacity"] = 0.5
+        self._style["strokeColor"] = "#FE2E64"
+        self._style["strokeOpacity"] = 1
+        self._style["strokeWidth"] = 1
 
-    def setFillColor(self, color):
+    def set_fill_color(self, color):
         """
         'color' can be a string or QColor
+        :param color:
         """
         if isinstance(color, QColor):
             color = str(color.name())
 
-        self.style["fillColor"] = color
+        self._style["fillColor"] = color
 
-    def setFillOpacity(self, opacity):
+    def set_fill_opacity(self, opacity):
         """
         Set opacity of the fill color.
         Ranges from 0-1.
+        :param opacity:
         """
         if opacity < 0 or opacity > 1:
             return
 
-        self.style["fillOpacity"] = opacity
+        self._style["fillOpacity"] = opacity
 
-    def setStrokeColor(self, color):
+    def set_stroke_color(self, color):
         """
         'color' can be a string or QColor.
+        :param color:
         """
         if isinstance(color, QColor):
             color = color.name()
 
-        self.style["strokeColor"] = color
+        self._style["strokeColor"] = color
 
-    def setStrokeOpacity(self, opacity):
+    def set_stroke_opacity(self, opacity):
         """
         Set opacity of the the outline.
         Ranges from 0-1.
@@ -111,27 +114,30 @@ class OLStyle(object):
         if opacity < 0 or opacity > 1:
             return
 
-        self.style["strokeOpacity"] = opacity
+        self._style["strokeOpacity"] = opacity
 
-    def setStrokeWidth(self, width):
+    def set_stroke_width(self, width):
         """
         Set the width of the outline.
+        :param width:
         """
-        self.style["strokeWidth"] = width
+        self._style["strokeWidth"] = width
 
-    def setLabelField(self, label_field):
+    def set_label_field(self, label_field):
         """
-        Set the name of the attribute whose value should be 
-        used for labeling the property.
+        Set the name of the attribute whose value should be used for
+        labeling the property.
+        :rtype : str
+        :param label_field:
         """
-        self.style["label"] = "${%s}" % (label_field,)
+        self._style["label"] = "${%s}" % (label_field,)
 
-    def toJson(self):
+    def to_json(self):
         """
         Returns the corresponding style object in JSON format
+        :rtype : json
         """
-        import json
-        return json.dumps(self.style)
+        return json.dumps(self._style)
 
 
 class WebSpatialLoader(QObject):
@@ -139,32 +145,33 @@ class WebSpatialLoader(QObject):
     Overlays geometries in either on Google Maps Satellite view or
     OpenStreetMaps on the QWebView control specified.
     """
-    loadError = pyqtSignal(str)
-    loadStarted = pyqtSignal()
-    loadFinished = pyqtSignal(bool)
-    loadProgress = pyqtSignal(int)
-    zoomChanged = pyqtSignal(int)
+    _load_error = pyqtSignal(str)
+    _load_started = pyqtSignal()
+    _load_finished = pyqtSignal(bool)
+    _load_progress = pyqtSignal(int)
+    _zoom_changed = pyqtSignal(int)
 
-    def __init__(self, webview, parent=None, style=OLStyle()):
+    def __init__(self, web_view, parent=None, style=OLStyle()):
         QObject.__init__(self, parent)
         self._base_html = "spatial_unit_overlay.html"
-        self.webview = webview
-        self.dbSession = STDMDb.instance().session
+        self._web_view = web_view
+        self._db_session = STDMDb.instance().session
 
-        self.olPage = ProxyWebPage(self)
+        self._ol_page = ProxyWebPage(self)
 
         # Property Style
         self._style = style
 
         # Connect slots
-        self.olPage.loadFinished.connect(self.onFinishLoading)
-        self.olPage.loadProgress.connect(self.onLoadingProgress)
-        self.olPage.loadStarted.connect(self.onStartLoading)
+        self._ol_page.loadFinished.connect(self._on_finish_loading)
+        self._ol_page.loadProgress.connect(self._on_loading_progress)
+        self._ol_page.loadStarted.connect(self._on_start_loading)
 
     def url(self):
         """
         Returns both the normal and URL paths of the base HTML file to load.
         The HTML file has to be located in the 'html' folder of the plugin.
+        :rtype : str
         """
         abs_norm_path = PLUGIN_DIR + "/html/" + self._base_html
         browser_path = "file:///" + abs_norm_path
@@ -174,81 +181,94 @@ class WebSpatialLoader(QObject):
     def load(self):
         """
         Loads the spatial overlay page into the QWebView.
-        This method is only called once on initializing the view. Subsequent object calls
-        are made to the 'addOverlay' method.
+        This method is only called once on initializing the view. Subsequent
+        object calls are made to the 'addOverlay' method.
         """
         if not QFile.exists(self.url()[0]):
             errmsg = QApplication.translate("WebSpatialLoader",
-                                            "The source HTML file could not be found.")
-            self.loadError.emit(errmsg)
+                                            "The source HTML file could not "
+                                            "be found.")
+            self._load_error.emit(errmsg)
 
             return
 
-        self.olPage.mainFrame().load(QUrl(self.url()[1]))
-        self.webview.setPage(self.olPage)
+        self._ol_page.mainFrame().load(QUrl(self.url()[1]))
+        self._web_view.setPage(self._ol_page)
 
-        receivers = self.olPage.mainFrame().receivers(
+        receivers = self._ol_page.mainFrame().receivers(
             SIGNAL("javaScriptWindowObjectCleared()"))
         if receivers > 0:
-            self.olPage.mainFrame().javaScriptWindowObjectCleared.disconnect()
+            self._ol_page.mainFrame().\
+                javaScriptWindowObjectCleared.disconnect()
 
-        self.olPage.mainFrame().javaScriptWindowObjectCleared.connect(
-            self._populate_js_window_object
-        )
+        self._ol_page.mainFrame().javaScriptWindowObjectCleared.connect(
+            self._populate_js_window_object)
 
     @pyqtSlot()
-    def onStartLoading(self):
+    def _on_start_loading(self):
         """
         Propagate the page loading events
         """
-        self.loadStarted.emit()
+        self._load_started.emit()
 
     @pyqtSlot(bool)
-    def onFinishLoading(self, status):
+    def _on_finish_loading(self, status):
         """
         Propagate signal
+        :rtype : pyqtSignal
+        :param status:
         """
-        self.loadFinished.emit(status)
+        self._load_finished.emit(status)
 
     @pyqtSlot(int)
-    def onLoadingProgress(self, prog):
+    def _on_loading_progress(self, prog):
         """
         Propagate signal
+        :param prog:
+        :rtype : pyqtSignal
         """
-        self.loadProgress.emit(prog)
+        self._load_progress.emit(prog)
 
     @pyqtSlot(int)
-    def onZoomLevelChanged(self, level):
+    def _on_zoom_level_changed(self, level):
         """
         Signal raised when the zoom level of the map changes.
         This signal is only raised in certain circumstances.
         (Enumerate the levels)
+        :param level:
+        :rtype : pyqtSignal
         """
-        self.zoomChanged.emit(level)
+        self._zoom_changed.emit(level)
 
-    def setBaseLayer(self, layertype):
+    def _set_base_layer(self, layer_type):
         """
         Set the base layer to either Google Maps or OpenStreetMaps
+        :param layer_type:
+         :rtype : pyqtSignal
         """
-        changeBaseJS = "setBaseLayer(%s)" % (layertype)
-        zoomLevel = self._setJS(changeBaseJS)
+        change_base_js = "setBaseLayer(%s)" % (layer_type)
+        zoom_level = self._set_js(change_base_js)
 
         # Raise map zoom changed event
-        self.onZoomLevelChanged(zoomLevel)
+        self._on_zoom_level_changed(zoom_level)
 
-    def setCenter(self, x, y, zoom=12):
+    def set_center(self, x, y, zoom=12):
         """
         Set the center of the map with an optional zoom level
+        :param x:
+        :param y:
+        :param zoom:
         """
-        setCenterJS = "setCenter(%s,%s,%s)" % (x, y, zoom)
-        self._setJS(setCenterJS)
+        set_center_js = "setCenter(%s,%s,%s)" % (x, y, zoom)
+        self._set_js(set_center_js)
 
     def zoom_to_level(self, level):
         """
         Zoom to a specific level
+        :param level:
         """
-        zoomJS = "zoom(%s)" % (level)
-        zoomLevel = self._setJS(zoomJS)
+        zoom_js = "zoom(%s)" % (level)
+        zoom_level = self._set_js(zoom_js)
 
     def zoom_to_map_extents(self, extents):
         """
@@ -261,27 +281,30 @@ class WebSpatialLoader(QObject):
         right = extents.xMaximum()
         top = extents.yMaximum()
 
-        zoom_to_extents_JS = "zoomToExtents([{0},{1},{2},{3}])".format(left,
-                                                                       bottom, right, top)
-        self._setJS(zoom_to_extents_JS)
+        zoom_to_extents_JS = "zoomToExtents([{0},{1},{2},{3}])".format(
+            left, bottom, right, top)
+        self._set_js(zoom_to_extents_JS)
 
     def zoom_to_extents(self):
         """
         Zoom to the boundary extents of the last loaded
         property.
         """
-        zoomToExtentsJS = "zoomToSpatialUnitExtent()"
-        zoomLevel = self._setJS(zoomToExtentsJS)
+        zoom_to_extents_js = "zoomToSpatialUnitExtent()"
+        zoom_level = self._set_js(zoom_to_extents_js)
 
         # Raise map zoom changed event
-        self.onZoomLevelChanged(zoomLevel)
+        self._on_zoom_level_changed(zoom_level)
 
-    def add_overlay(self, sp_unit, geometry_col, labelfield=""):
+    def add_overlay(self, sp_unit, geometry_col, label_field=""):
         """
-        Overlay a point/line/polygon onto the baselayer and set the label to use for the
-        feature.
+        Overlay a point/line/polygon onto the baselayer and set the label to
+        use for the feature.
         The feature will be transported in GeoJSON format since it is the most
         efficient format for AJAX loading.
+        :param sp_unit:
+        :param geometry_col:
+        :param label_field:
         """
         if sp_unit is None:
             return
@@ -290,62 +313,65 @@ class WebSpatialLoader(QObject):
         # self._style.setLabelField(labelfield)
 
         # Update the style of the property on each overlay operation
-        self._updateLayerStyle()
+        self._update_layer_style()
 
         # Set label object
         label_js_object = "null"
-        if hasattr(sp_unit, labelfield):
-            lbl_val = getattr(sp_unit, labelfield)
-            label_js_object = "{'%s':'%s'}" % (labelfield, str(lbl_val))
+        if hasattr(sp_unit, label_field):
+            lbl_val = getattr(sp_unit, label_field)
+            label_js_object = "{'%s':'%s'}" % (label_field, str(lbl_val))
 
         # Reproject to web mercator
         # TODO: Remove hardcode of geometry field name
         geom = getattr(sp_unit, geometry_col)
-        sp_unit_wkb = self.dbSession.scalar(geom.ST_Transform(900913))
+        sp_unit_wkb = self._db_session.scalar(geom.ST_Transform(900913))
 
         web_geom = WKBElement(sp_unit_wkb)
-        sp_unit_geo_json = self.dbSession.scalar(web_geom.ST_AsGeoJSON())
+        sp_unit_geo_json = self._db_session.scalar(web_geom.ST_AsGeoJSON())
 
         overlay_js = "drawSpatialUnit('%s',%s);" % (
             sp_unit_geo_json, label_js_object)
-        zoom_level = self._setJS(overlay_js)
+        zoom_level = self._set_js(overlay_js)
 
         # Raise map zoom changed event
-        self.onZoomLevelChanged(zoom_level)
+        self._on_zoom_level_changed(zoom_level)
 
-    def removeOverlay(self):
+    def remove_overlay(self):
         """
         Removes all spatial unit overlays.
         """
-        overlayRemJS = "clearOverlays()"
-        self._setJS(overlayRemJS)
+        overlay_rem_js = "clearOverlays()"
+        self._set_js(overlay_rem_js)
 
-    def setStyle(self, style):
+    def set_style(self, style):
         """
         Set the style of the property
+        :param style:
         """
         self._style = style
 
-    def _updateLayerStyle(self):
+    def _update_layer_style(self):
         """
         Updates the style of the property vector layer
         in the map.
         """
-        olStyle = self._style.toJson()
-        updateStyleJS = "setSpatialUnitStyle(%s)" % (olStyle,)
-        self._setJS(updateStyleJS)
+        ol_style = self._style.to_json()
+        update_style_js = "setSpatialUnitStyle(%s)" % (ol_style,)
+        self._set_js(update_style_js)
 
-    def _setJS(self, javascript):
+    def _set_js(self, javascript):
         """
         Set the JavaScript code to be executed.
+        :rtype : object
+        :param javascript:
         """
-        frame = self.olPage.mainFrame()
+        frame = self._ol_page.mainFrame()
 
         return frame.evaluateJavaScript(javascript)
 
     def _populate_js_window_object(self):
-        self.olPage.mainFrame().addToJavaScriptWindowObject("sp_loader",
-                                                            self)
+        self._ol_page.mainFrame().addToJavaScriptWindowObject(
+            "sp_loader", self)
 
 
 class ProxyWebPage(QWebPage):
@@ -359,17 +385,22 @@ class ProxyWebPage(QWebPage):
         self._manager = None
 
         # Set proxy in webpage
-        proxy = getProxy()
+        proxy = get_proxy()
 
-        if not proxy is None:
+        if proxy is not None:
             self._manager = QNetworkAccessManager()
             self._manager.setProxy(proxy)
             self.setNetworkAccessManager(self._manager)
 
-    def javaScriptConsoleMessage(self, message, lineNumber, sourceID):
+    def javaScriptConsoleMessage(self, message, line_number, source_id):
         # For debugging purposes
-        logEntry = "%s[%d]: %s" % (sourceID, lineNumber, message)
-        qDebug(logEntry)
+        """
+        :param message:
+        :param line_number:
+        :param source_id:
+        """
+        log_entry = "%s[%d]: %s" % (source_id, line_number, message)
+        qDebug(log_entry)
         '''
         Log console messages to file for debugging purposes.
 

@@ -3,8 +3,9 @@
 Name                 : ContentGroup
 Description          : Groups related content items together
 Date                 : 29/April/2014
-copyright            : (C) 2014 by John Gitau
-email                : gkahiu@gmail.com
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -19,10 +20,9 @@ email                : gkahiu@gmail.com
 from PyQt4.QtGui import QApplication
 from PyQt4.QtCore import pyqtSignal, QObject
 
-from stdm.security import Authorizer, SecurityException
-from stdm.data import Content, Role, STDMDb, Base
-from stdm.utils import randomCodeGenerator, HashableMixin
-from sqlalchemy import Table
+from security import Authorizer
+from stdm.data import Content, Role
+from utils import HashableMixin
 
 __all__ = ["ContentGroup,TableContentGroup"]
 
@@ -31,123 +31,139 @@ class ContentGroup(QObject, HashableMixin):
     """
     Groups related content items together.
     """
-    contentAuthorized = pyqtSignal(Content)
+    content_authorized = pyqtSignal(Content)
 
-    def __init__(self, username, containerItem=None, parent=None):
+    def __init__(self, username, container_item=None, parent=None):
         QObject.__init__(self, parent)
         HashableMixin.__init__(self)
-        self._username = username
-        self._contentItems = []
-        self._authorizer = Authorizer(self._username)
-        self._containerItem = containerItem
+        self._user_name = username
+        self._content_items = []
+        self._authorizer = Authorizer(self._user_name)
+        self._container_item = container_item
 
-    def hasPermission(self, content):
+    def has_permission(self, content):
         """
         Checks whether the currently logged in user has permissions to access
         the given content item.
+        :rtype : bool
+        :param content:
         """
         return self._authorizer.CheckAccess(content.code)
 
     @staticmethod
-    def contentItemFromQAction(qAction):
+    def content_item_from_qaction(qaction):
         """
         Creates a Content object from a QAction object.
+        :rtype : object
+        :param qaction:
         """
         cnt = Content()
-        cnt.name = qAction.text()
+        cnt.name = qaction.text()
 
         return cnt
 
-    def contentItems(self):
+    def content_items(self):
         """
         Returns a list of content items in the group.
+        :rtype : list
         """
-        return self._contentItems
+        return self._content_items
 
-    def addContent(self, name, code):
+    def add_content(self, name, code):
         """
         Create a new Content item and add it to the collection.
+        :param name:
+        :param code:
         """
         cnt = Content()
         cnt.name = name
         cnt.code = code
 
-        self._contentItems.append(cnt)
+        self._content_items.append(cnt)
 
-    def addContentItems(self, contents):
+    def add_content_items(self, contents):
         """
         Append list of content items to the group's collection.
+        :param contents:
         """
-        self._contentItems.extend(contents)
+        self._content_items.extend(contents)
 
-    def addContentItem(self, content):
+    def add_content_item(self, content):
         """
         Adds a Content instance to the collection.
+        :param content:
         """
-        self._contentItems.append(content)
+        self._content_items.append(content)
 
-    def setContainerItem(self, containerItem):
+    def set_container_item(self, container_item):
         """
-        ContainerItem can be a QAction, QListWidgetItem, etc. that can be associated with the group.
+        ContainerItem can be a QAction, QListWidgetItem, etc. that can be
+        associated with the group.
+        :param container_item:
         """
-        self._containerItem = containerItem
+        self._container_item = container_item
 
-    def containerItem(self):
+    def container_item(self):
         """
         Returns an instance of a ContainerItem associated with this group.
+        :rtype : object
         """
-        return self._containerItem
+        return self._container_item
 
-    def checkContentAccess(self):
+    def check_content_access(self):
         """
-        Asserts whether each content item(s) in the group has access permissions.
-        For each item that has permission then a signal is raised containing the
+        Asserts whether each content item(s) in the group has access
+        permissions. For each item that has permission then a signal is
+        raised containing the
         Content item as an argument.
-        Those items which have been granted permission will be returned in a list.
+        Those items which have been granted permission will be returned in a
+        list.
+        :rtype : list
         """
-        allowedContent = []
+        allowed_content = []
 
-        for c in self.contentItems():
-            hasPerm = self.hasPermission(c)
-            if hasPerm:
-                allowedContent.append(c)
-                self.contentAuthorized.emit(c)
+        for c in self.content_items():
+            has_perm = self.has_permission(c)
+            if has_perm:
+                allowed_content.append(c)
+                self.content_authorized.emit(c)
 
-        return allowedContent
+        return allowed_content
 
     def register(self):
         """
-        Registers the content items into the database. Registration only works for a 
-        postgres user account.
+        Registers the content items into the database. Registration only
+        works for a postgres user account.
         """
         pg_account = "postgres"
 
-        if self._username == pg_account:
-            for c in self.contentItems():
+        if self._user_name == pg_account:
+            for c in self.content_items():
                 if isinstance(c, Content):
                     cnt = Content()
-                    # self.content=Table('content_base',Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
+                    # self.content=Table('content_base',Base.metadata,
+                    # autoload=True,autoload_with=STDMDb.instance().engine)
                     qo = cnt.queryObject()
                     cn = qo.filter(Content.code == c.code).first()
 
                     # If content not found then add
-                    if cn == None:
+                    if cn is None:
                         # Check if the 'postgres' role is defined, if not then
                         # create one
                         rl = Role()
-                        rolequery = rl.queryObject()
-                        role = rolequery.filter(
+                        role_query = rl.queryObject()
+                        role = role_query.filter(
                             Role.name == pg_account).first()
 
-                        if role == None:
+                        if role is None:
                             rl.name = pg_account
                             rl.contents = [c]
                             rl.save()
                         else:
-                            existingContents = role.contents
+                            existing_contents = role.contents
                             # Append new content to existing
-                            existingContents.append(c)
-                            role.contents = existingContents
+                            existing_contents.append(c)
+                            role.contents = existing_contents
                             role.update()
 
             # Initialize lookup values
@@ -164,82 +180,92 @@ class TableContentGroup(ContentGroup):
     update_op = QApplication.translate("DatabaseContentGroup", "Update")
     delete_op = QApplication.translate("DatabaseContentGroup", "Delete")
 
-    def __init__(self, username, groupName, action=None):
-        ContentGroup.__init__(self, username, action)
-        self._groupName = groupName
-        self._createDbOpContent()
+    def __init__(self, user_name, group_name, action=None):
+        ContentGroup.__init__(self, user_name, action)
+        self._group_name = group_name
+        self._create_db_op_content()
 
-    def _createDbOpContent(self):
+    def _create_db_op_content(self):
         """
         Create content for database operations.
         The code for each content needs to be set by the caller.
         """
-        self._createCnt = Content()
-        self._createCnt.name = self._buildName(self.create_op)
-        self.addContentItem(self._createCnt)
+        self._create_cnt = Content()
+        self._create_cnt.name = self._build_name(self.create_op)
+        self.add_content_item(self._create_cnt)
 
-        self._readCnt = Content()
-        self._readCnt.name = self._buildName(self.read_op)
-        self.addContentItem(self._readCnt)
+        self._read_cnt = Content()
+        self._read_cnt.name = self._build_name(self.read_op)
+        self.add_content_item(self._read_cnt)
 
-        self._updateCnt = Content()
-        self._updateCnt.name = self._buildName(self.update_op)
-        self.addContentItem(self._updateCnt)
+        self._update_cnt = Content()
+        self._update_cnt.name = self._build_name(self.update_op)
+        self.add_content_item(self._update_cnt)
 
-        self._deleteCnt = Content()
-        self._deleteCnt.name = self._buildName(self.delete_op)
-        self.addContentItem(self._deleteCnt)
+        self._delete_cnt = Content()
+        self._delete_cnt.name = self._build_name(self.delete_op)
+        self.add_content_item(self._delete_cnt)
 
-    def _buildName(self, contentName):
+    def _build_name(self, content_name):
         """
         Appends group name to the content name
+        :rtype : unicode
+        :param content_name:
         """
-        return u"{0} {1}".format(contentName, self._groupName)
+        return u"{0} {1}".format(content_name, self._group_name)
 
-    def createContentItem(self):
+    def create_content_item(self):
         """
         Returns Create content item.
+        :rtype : object
         """
-        return self._createCnt
+        return self._create_cnt
 
-    def readContentItem(self):
+    def read_content_item(self):
         """
         Returns Read/Select content item.
+        :rtype : object
         """
-        return self._readCnt
+        return self._read_cnt
 
-    def updateContentItem(self):
+    def update_content_item(self):
         """
         Returns Update content item.
+        :rtype : object
         """
-        return self._updateCnt
+        return self._update_cnt
 
-    def deleteContentItem(self):
+    def delete_content_item(self):
         """
         Returns Delete content item.
+        :rtype : object
         """
-        return self._deleteCnt
+        return self._delete_cnt
 
-    def canRead(self):
+    def can_read(self):
         """
         Returns whether the current user has read permissions.
+        :rtype : bool
         """
-        return self.hasPermission(self._readCnt)
+        return self.has_permission(self._read_cnt)
 
-    def canCreate(self):
+    def can_create(self):
         """
         Returns whether the current user has create permissions.
+        :rtype : bool
         """
-        return self.hasPermission(self._createCnt)
+        return self.has_permission(self._create_cnt)
 
-    def canUpdate(self):
+    def can_update(self):
         """
         Returns whether the current user has update permissions.
+        :rtype : bool
         """
-        return self.hasPermission(self._updateCnt)
+        return self.has_permission(self._update_cnt)
 
-    def canDelete(self):
+    def can_delete(self):
         """
         Returns whether the current user has delete permissions.
+        :rtype : bool
         """
-        return self.hasPermission(self._deleteCnt)
+        return self.has_permission(self._delete_cnt)

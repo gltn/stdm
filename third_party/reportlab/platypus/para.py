@@ -674,7 +674,7 @@ class paragraphEngine:
         size = None
         # be sure to set them before using them (done lazily below)
         #textobject.setFont(self.fontName, self.fontSize)
-        textobject.setFillColor(self.fontColor)
+        textobject.set_fill_color(self.fontColor)
         xstart = self.x
         thislineindent = self.indent
         thislinerightIndent = self.rightIndent
@@ -741,7 +741,7 @@ class paragraphEngine:
                     #from reportlab.lib.colors import green
                     #if color is green: print "color is green"
                     if color!=oldcolor:
-                        textobject.setFillColor(color)
+                        textobject.set_fill_color(color)
                 elif indicator=="face":
                     # change font face
                     (i, fontname) = opcode
@@ -782,7 +782,7 @@ class paragraphEngine:
                     #if CAUSEERROR or oldfont!=self.fontName or oldsize!=self.fontSize:
                     #    textobject.setFont(self.fontName, self.fontSize)
                     if oldcolor!=self.fontColor:
-                        textobject.setFillColor(self.fontColor)
+                        textobject.set_fill_color(self.fontColor)
                 elif indicator=="wordSpacing":
                     (i, ws) = opcode
                     textobject.setWordSpace(ws)
@@ -1141,7 +1141,7 @@ class FastPara(Flowable):
         #textobject.setTextOrigin(0,firstindent)
         textobject.setFont(font, size)
         if style.textColor:
-            textobject.setFillColor(style.textColor)
+            textobject.set_fill_color(style.textColor)
         first = 1
         y = 0
         basicWidth = self.availableWidth - rightIndent
@@ -2093,7 +2093,7 @@ class UnderLineHandler:
         color = self.color
         if self.color is None:
             color = para.fontColor
-        canvas.setStrokeColor(color)
+        canvas.set_stroke_color(color)
         canvas.line(self.xStart, self.yStart-offset, x,y-offset)
         canvas.restoreState()
 

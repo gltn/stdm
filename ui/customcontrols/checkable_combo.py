@@ -18,8 +18,9 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt4.QtGui import QComboBox, QStandardItemModel, QStandardItem, \
+    QVBoxLayout, QDialog, QPushButton, QMessageBox
+from PyQt4.QtCore import Qt
 
 
 class MultipleChoiceCombo(QComboBox):
@@ -44,11 +45,12 @@ class MultipleChoiceCombo(QComboBox):
         else:
             current_index.setCheckState(Qt.Checked)
 
-        self.check_items_2list(current_index)
+        self.check_items_2_list(current_index)
 
-    def check_items_2list(self, item):
+    def check_items_2_list(self, item):
         """
         Keep a list of all the selected item
+        :param item:
         :return:
         """
 
@@ -99,30 +101,36 @@ class Dialog(QDialog):
     def __init__(self):
         super(Dialog, self).__init__()
 
-        boxLayout = QVBoxLayout()
-        self.setLayout(boxLayout)
+        box_layout = QVBoxLayout()
+        self.setLayout(box_layout)
 
-        self.combo = MultipleChoiceCombo(self)
-        self.button = QPushButton(self)
-        self.button1 = QPushButton(self)
-        self.button1.setText("join")
-        self.button.clicked.connect(self.setdataset)
-        self.button1.clicked.connect(self.joined)
+        self._combo = MultipleChoiceCombo(self)
+        self._button = QPushButton(self)
+        self._button1 = QPushButton(self)
+        self._button1.setText("join")
+        self._button.clicked.connect(self._set_dataset)
+        self._button1.clicked.connect(self.joined)
         for i in range(3):
-            self.combo.addItem("added item " + str(i))
-            #self.combo.model().appendRow("added item "+ str(i))
-            item = self.combo.model().item(i, 0)
+            self._combo.addItem("added item " + str(i))
+            # self.combo.model().appendRow("added item "+ str(i))
+            item = self._combo.model().item(i, 0)
             item.setCheckState(Qt.Unchecked)
         # self.combo.setModel(self.model())
-        boxLayout.addWidget(self.combo)
-        boxLayout.addWidget(self.button)
-        boxLayout.addWidget(self.button1)
+        box_layout.addWidget(self._combo)
+        box_layout.addWidget(self._button)
+        box_layout.addWidget(self._button1)
         self.resize(100, 300)
 
-    def setdataset(self):
-        list = "solomon, njogu, njoroge"
-        self.combo.set_values(list)
+    def _set_dataset(self):
+        """
+        Set dataset
+        """
+        set_dataset_list = "solomon, njogu, njoroge"
+        self._combo.set_values(set_dataset_list)
 
     def joined(self):
-        listed = self.combo.values()
+        """
+        Join
+        """
+        listed = self._combo.values()
         QMessageBox.information(None, "Value", str(listed))

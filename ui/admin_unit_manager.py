@@ -263,7 +263,7 @@ class AdminUnitManager(QWidget,Ui_frmAdminUnitManager):
         childNode = BaseSTRNode(ausProps, parentNode)
         
         #Insert row into the view
-        self._adminUnitTreeModel.insertRows(parentNode.childCount(), 1, parentModelIndex)
+        self._adminUnitTreeModel.insertRows(parentNode.child_count(), 1, parentModelIndex)
         
         self.clearInputs()
         

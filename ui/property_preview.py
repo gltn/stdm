@@ -287,7 +287,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
             QgsProject.instance().layerTreeRoot().removeLayer(self._overlay_layer)
 
             #Clear web overlays
-            self._web_spatial_loader.removeOverlay()
+            self._web_spatial_loader.remove_overlay()
 
             self._overlay_layer = None
 
@@ -348,14 +348,14 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         as the base layer
         """
         if state:
-            self._web_spatial_loader.setBaseLayer(GMAP_SATELLITE)
+            self._web_spatial_loader._set_base_layer(GMAP_SATELLITE)
 
     def on_load_OSM(self, state):
         """
         Slot raised when a user clicks to set OSM as the base layer
         """
         if state:
-            self._web_spatial_loader.setBaseLayer(OSM)
+            self._web_spatial_loader._set_base_layer(OSM)
 
     def on_map_zoom_level_changed(self, level):
         """

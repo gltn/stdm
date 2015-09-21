@@ -1114,7 +1114,7 @@ class Table(Flowable):
 
     def _prepLine(self, weight, color):
         if color != self._curcolor:
-            self.canv.setStrokeColor(color)
+            self.canv.set_stroke_color(color)
             self._curcolor = color
         if weight != self._curweight:
             self.canv.setLineWidth(weight)
@@ -1411,7 +1411,7 @@ class Table(Flowable):
                     color = colorCycle[i%count]
                     h = rowHeights[sr + i]
                     if color:
-                        canv.setFillColor(color)
+                        canv.set_fill_color(color)
                         canv.rect(x0, y0, w, -h, stroke=0,fill=1)
                     y0 = y0 - h
             elif cmd == 'COLBACKGROUNDS':
@@ -1423,7 +1423,7 @@ class Table(Flowable):
                     color = colorCycle[i%count]
                     w = colWidths[sc + i]
                     if color:
-                        canv.setFillColor(color)
+                        canv.set_fill_color(color)
                         canv.rect(x0, y0, w, h, stroke=0,fill=1)
                     x0 = x0 +w
             else:   #cmd=='BACKGROUND'
@@ -1434,7 +1434,7 @@ class Table(Flowable):
                         if xywh:
                             #it's a single cell
                             x0, y0, w, h = xywh
-                    canv.setFillColor(color)
+                    canv.set_fill_color(color)
                     canv.rect(x0, y0, w, h, stroke=0,fill=1)
 
     def _drawCell(self, cellval, cellstyle, pos, size):
@@ -1443,7 +1443,7 @@ class Table(Flowable):
         if self._curcellstyle is not cellstyle:
             cur = self._curcellstyle
             if cur is None or cellstyle.color != cur.color:
-                self.canv.setFillColor(cellstyle.color)
+                self.canv.set_fill_color(cellstyle.color)
             if cur is None or cellstyle.leading != cur.leading or cellstyle.fontname != cur.fontname or cellstyle.fontsize != cur.fontsize:
                 self.canv.setFont(cellstyle.fontname, cellstyle.fontsize, cellstyle.leading)
             self._curcellstyle = cellstyle

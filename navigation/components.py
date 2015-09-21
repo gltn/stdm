@@ -2,11 +2,12 @@
 /***************************************************************************
 Name                 : Qt UI Components
 Description          : Extension of Qt UI classes that are used to capture
-                        the settings of selected STDM components for access 
+                        the settings of selected STDM components for access
                         authorization services
-Date                 : 28/May/2013 
-copyright            : (C) 2013 by John Gitau
-email                : gkahiu@gmail.com
+Date                 : 28/May/2013
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -20,14 +21,13 @@ email                : gkahiu@gmail.com
 """
 
 from PyQt4.QtGui import QAction, QListWidgetItem, QApplication
-from stdm.data import Content
 
 
 class STDMContent(object):
-    '''
-    Abstract class for welding custom attributes to 
+    """
+    Abstract class for welding custom attributes to
     a navigation item.
-    '''
+    """
 
     def __init__(self, code):
         self.Name = ""
@@ -36,12 +36,12 @@ class STDMContent(object):
 
 
 class STDMAction(QAction, STDMContent):
-    '''
+    """
     Custom STDM Actions for inclusion in toolbars and/or menus
-    '''
+    """
 
     def __init__(self, icon, text, parent, code):
-        if icon == None:
+        if icon is None:
             QAction.__init__(self, text, parent)
         else:
             QAction.__init__(self, icon, text, parent)
@@ -50,20 +50,20 @@ class STDMAction(QAction, STDMContent):
 
 
 class STDMListWidgetItem(QListWidgetItem, STDMContent):
-    '''
+    """
     Custom list widget items which attaches a 'Name' attribute
-    that is subsequently used for registering the item as a 
+    that is subsequently used for registering the item as a
     content type
-    '''
+    """
 
     def __init__(self, text, name, icon, parent, code):
         QListWidgetItem.__init__(self, icon, text, parent)
         STDMContent.__init__(self, code)
         self.Name = name + " " + QApplication.translate("STDMEntity", "Entity")
 
-'''
-Define enumerations for all administrative unit levels
-'''
+
+# Define enumerations for all administrative unit levels
+
 DEPARTMENT = 2001
 MUNICIPALITY = 2002
 MUNICIPALITY_SECTION = 2003

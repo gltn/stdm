@@ -1,11 +1,13 @@
 """
 /***************************************************************************
 Name                 : STDM Signals
-Description          : Custom STDM signals raised by custom navigation components
+Description          : Custom STDM signals raised by custom navigation
+                        components
                         when the item is authorized in the given context
-Date                 : 3/June/2013 
-copyright            : (C) 2013 by John Gitau
-email                : gkahiu@gmail.com
+Date                 : 3/June/2013
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -21,8 +23,8 @@ from PyQt4.QtCore import QObject, pyqtSignal
 
 
 class STDMContentSignal(QObject):
-    '''
+    """
     Name of the STDM content item
-    '''
+    """
     authorized = pyqtSignal('QString')
     finished = pyqtSignal()

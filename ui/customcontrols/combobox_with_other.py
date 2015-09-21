@@ -4,8 +4,9 @@ Name                 : ComboBox with other
 Description          : Custom QComboBox which activates a QLineEdit control
                        for entering those items that are not in the list. 
 Date                 : 24/March/2014
-copyright            : (C) 2014 by John Gitau
-email                : gkahiu@gmail.com
+copyright            : (C) 2015 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -17,15 +18,16 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtCore import QSize, SIGNAL
+from PyQt4.QtGui import QWidget, QSizePolicy, QApplication, QVBoxLayout, \
+    QComboBox, QLineEdit
 
 
 class ComboBoxWithOther(QWidget):
-    '''
+    """
     Custom QComboBox which activates a QLineEdit control
-    for entering those items that are not in the list. 
-    '''
+    for entering those items that are not in the list.
+    """
 
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)

@@ -74,7 +74,7 @@ class _PMRenderer(Renderer):
         alpha = s['strokeOpacity']
         if alpha is not None:
             self._canvas.strokeOpacity = alpha
-        self._canvas.setStrokeColor(s['strokeColor'])
+        self._canvas.set_stroke_color(s['strokeColor'])
         self._canvas.lineCap = s['strokeLineCap']
         self._canvas.lineJoin = s['strokeLineJoin']
         da = s['strokeDashArray']
@@ -89,7 +89,7 @@ class _PMRenderer(Renderer):
         alpha = s['fillOpacity']
         if alpha is not None:
             self._canvas.fillOpacity = alpha
-        self._canvas.setFillColor(s['fillColor'])
+        self._canvas.set_fill_color(s['fillColor'])
         self._canvas.setFont(s['fontName'], s['fontSize'])
 
     def initState(self,x,y):

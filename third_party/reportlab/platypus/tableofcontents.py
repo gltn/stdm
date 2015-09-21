@@ -117,7 +117,7 @@ def drawPageNumbers(canvas, style, pages, availWidth, availHeight, dot=' . '):
 
     tx = canvas.beginText(newx, y)
     tx.setFont(style.fontName, fontSize)
-    tx.setFillColor(style.textColor)
+    tx.set_fill_color(style.textColor)
     tx.textLine(text)
     canvas.drawText(tx)
 

@@ -1,12 +1,13 @@
 """
 /***************************************************************************
 Name                 : ReverseDict
-Description          : A dictionary which can lookup values by key, and keys 
-                       by value. All values and keys must be hashable, and 
-                       unique.
+Description          : A dictionary which can lookup values by key, and keys
+                       by value. All values and keys must be hashable, and
+                       unique
 Date                 : 8/April/2014
-copyright            : (C) 2014 by John Gitau
-email                : gkahiu@gmail.com
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -18,15 +19,18 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+
+
 class ReverseDict(dict):
-    '''
+    """
     A dictionary which can lookup values by key, and keys by value.
     All values and keys must be hashable, and unique.
-    '''
-    def __init__(self,*args,**kw):
-        dict.__init__(self,*args,**kw)
-        self.reverse = dict((reversed(list(i)) for i in self.items()))
-    def __setitem__(self,key,value):
-        dict.__setitem__(self,key,value)
-        self.reverse[value] = key
+    """
 
+    def __init__(self, *args, **kw):
+        dict.__init__(self, *args, **kw)
+        self.reverse = dict((reversed(list(i)) for i in self.items()))
+
+    def __setitem__(self, key, value):
+        dict.__setitem__(self, key, value)
+        self.reverse[value] = key

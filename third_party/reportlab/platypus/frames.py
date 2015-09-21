@@ -223,7 +223,7 @@ class Frame:
             ss = c is not self
         if ss:
             canv.saveState()
-            canv.setStrokeColor(c)
+            canv.set_stroke_color(c)
             if w>=0:
                 canv.setLineWidth(w)
         canv.rect(

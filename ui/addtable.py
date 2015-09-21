@@ -61,7 +61,7 @@ class TableEditor(QDialog, Ui_table):
             self.widget.hide()
             items=self.cboInheritTable.count()
             model=self.cboInheritTable.model()
-            model.removeColumns(0,items)
+            model.remove_columns(0,items)
         
     def tableModel(self):
         tableHandler = ConfigTableReader()

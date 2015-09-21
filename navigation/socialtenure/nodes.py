@@ -32,7 +32,7 @@ from PyQt4.QtCore import (
     SIGNAL
 )
 
-from stdm.utils import *
+from utils import *
 
 EDIT_ICON = QIcon(":/plugins/stdm/images/icons/edit.png")
 DELETE_ICON = QIcon(":/plugins/stdm/images/icons/delete.png")
@@ -56,20 +56,19 @@ class BaseSTRNode(object):
         self._model = model
 
         if parent is not None:
-            parent.addChild(self)
+            parent.add_child(self)
             # Inherit view from parent
-            self._view = parent.treeView()
-            self._parentWidget = parent.parentWidget()
+            self._view = parent.tree_view()
+            self._parentWidget = parent.parent_widget()
 
-        '''
-        Set the hash of the node that will be taken as the root parent node.
-        In this case it will be level one.
-        Level zero will not have any hash specified (just be an empty string).
-        '''
+        # Set the hash of the node that will be taken as the root parent node.
+        # In this case it will be level one.
+        # Level zero will not have any hash specified (just be an empty string)
+
         if self.depth() == rootDepthForHash:
             self._rootNodeHash = gen_random_string()
         elif self.depth() > rootDepthForHash:
-            self._rootNodeHash = self._parent.rootHash()
+            self._rootNodeHash = self._parent.root_hash()
 
         # Separator for child text
         self.separator = " : "
@@ -94,16 +93,20 @@ class BaseSTRNode(object):
             QApplication.translate("BaseSTRNode", "Collapse"),
             self._parentWidget)
 
-    def addChild(self, child):
-        '''
+    def add_child(self, child):
+        """
         Add child to the parent node.
-        '''
+        :param child:
+        """
         self._children.append(child)
 
-    def insertChild(self, position, child):
-        '''
+    def insert_child(self, position, child):
+        """
         Append child at the specified position in the list
-        '''
+        :rtype : bool
+        :param position:
+        :param child:
+        """
         if position < 0 or position > len(self._children):
             return False
 
@@ -112,10 +115,12 @@ class BaseSTRNode(object):
 
         return True
 
-    def removeChild(self, position):
-        '''
+    def remove_child(self, position):
+        """
         Remove child at the specified position.
-        '''
+        :rtype : bool
+        :param position:
+        """
         if position < 0 or position >= len(self._children):
             return False
 
@@ -125,9 +130,10 @@ class BaseSTRNode(object):
         return True
 
     def clear(self):
-        '''
+        """
         Removes all children in the node.
-        '''
+        :rtype : bool
+        """
         try:
             del self._children[:]
             return True
@@ -135,77 +141,89 @@ class BaseSTRNode(object):
             return False
 
     def child(self, row):
-        '''
+        """
         Get the child node at the specified row.
-        '''
+        :rtype : None
+        :param row:
+        """
         if row < 0 or row >= len(self._children):
             return None
 
         return self._children[row]
 
-    def childCount(self):
-        '''
+    def child_count(self):
+        """
         Number of children node with the current node as the parent.
-        '''
+        :rtype : int
+        """
         return len(self._children)
 
     def children(self):
-        '''
+        """
         Returns all the node's children as a list.
-        '''
+        :rtype : list
+        """
         return self._children
 
-    def hasParent(self):
-        '''
+    def has_parent(self):
+        """
         True if the node has a parent. Otherwise returns False.
-        '''
+        :rtype : bool
+        """
         return True if self._parent else False
 
     def parent(self):
-        '''
+        """
         The parent of this node.
-        '''
+        :rtype : object
+        """
         return self._parent
 
-    def treeView(self):
-        '''
+    def tree_view(self):
+        """
         Returns the tree view that contains this node.
-        '''
+        :rtype : object
+        """
         return self._view
 
-    def parentWidget(self):
-        '''
+    def parent_widget(self):
+        """
         Returns the main widget that displays the social tenure relationship
         information.
-        '''
+        :rtype : object
+        """
         return self._parentWidget
 
     def row(self):
-        '''
+        """
         Return the position of this node in the parent container.
-        '''
+        :rtype : object
+        """
         if self._parent:
             return self.parent()._children.index(self)
 
         return 0
 
     def icon(self):
-        '''
+        """
         Return a QIcon for decorating the node.
         To be implemented by subclasses.
-        '''
+        :rtype : None
+        """
         return None
 
     def id(self):
-        '''
+        """
         Returns the ID of the model it represents.
-        '''
+        :rtype : int
+        """
         return -1
 
     def depth(self):
-        '''
+        """
         Returns the depth/hierarchy of this node.
-        '''
+        :rtype : int
+        """
         depth = 0
         item = self.parent()
 
@@ -215,35 +233,42 @@ class BaseSTRNode(object):
 
         return depth
 
-    def rootHash(self):
-        '''
+    def root_hash(self):
+        """
         Returns a hash key that is used to identify the lineage of the child
         nodes i.e.
         which node exactly is the 'forefather'.
-        '''
+        :rtype : object
+        """
         return self._rootNodeHash
 
-    def styleIfChild(self):
-        '''
+    def style_if_child(self):
+        """
         Style the parent _title if set to 'True'.
         This is a read only property.
-        '''
+        :rtype : object
+        """
         return self._styleIfChild
 
     def data(self, column):
-        '''
+        """
         Returns the data item in the specified specified column index within
         the list.
-        '''
+        :rtype : object
+        :param column:
+        """
         if column < 0 or column >= len(self._data):
             raise IndexError
 
         return self._data[column]
 
-    def setData(self, column, value):
-        '''
+    def set_data(self, column, value):
+        """
         Set the value of the node data at the given column index.
-        '''
+        :rtype : bool
+        :param column:
+        :param value:
+        """
         if column < 0 or column >= len(self._data):
             return False
 
@@ -259,25 +284,31 @@ class BaseSTRNode(object):
         """
         return self._model
 
-    def columnCount(self):
-        '''
+    def column_count(self):
+        """
         Return the number of columns.
-        '''
+        :rtype : object
+        """
         return len(self._data)
 
     def column(self, position):
-        '''
+        """
         Get the data in the specified column.
-        '''
+        :rtype : int
+        :param position:
+        """
         if position < 0 and position >= len(self._data):
             return None
 
         return self._data[position]
 
-    def removeColumns(self, position, columns):
-        '''
+    def remove_columns(self, position, columns):
+        """
         Removes columns in the STR node.
-        '''
+        :rtype : bool
+        :param position:
+        :param columns:
+        """
         if position < 0 or position >= len(self._data):
             return False
 
@@ -286,33 +317,38 @@ class BaseSTRNode(object):
 
         return True
 
-    def clearColumns(self):
-        '''
+    def clear_columns(self):
+        """
         Removes all columns in the node.
-        '''
+        """
         del self._data[:]
 
-    def typeInfo(self):
+    def type_info(self):
+        """
+        :rtype : str
+        """
         return "BASE_NODE"
 
     def __repr__(self):
-        return self.typeInfo()
+        return self.type_info()
 
-    def manageActions(self, modelindex, menu):
+    def manageActions(self, model_index, menu):
         """
         Returns the list of actions to be loaded into the context menu
         of this node when a user right clicks in the treeview.
         Default actions are for expanding/collapsing child nodes.
         To be inherited by subclasses for additional custom actions.
+        :param model_index:
+        :param menu:
         """
-        nullAction = QAction(NO_ACTION_ICON,
+        null_action = QAction(NO_ACTION_ICON,
                              QApplication.translate(
                                  "BaseSTRNode", "No User Action"),
-                             self.parentWidget())
-        nullAction.setEnabled(False)
+                             self.parent_widget())
+        null_action.setEnabled(False)
 
         if self._view is not None:
-            if self._view.isExpanded(modelindex):
+            if self._view.isExpanded(model_index):
                 self._expand_action.setEnabled(False)
                 self._collapse_action.setEnabled(True)
 
@@ -321,17 +357,17 @@ class BaseSTRNode(object):
                 self._collapse_action.setEnabled(False)
 
         # Disconnect then reconnect signals
-        if self.signalReceivers(self._expand_action) > 0:
+        if self.signal_receivers(self._expand_action) > 0:
             self._expand_action.triggered.disconnect()
 
-        if self.signalReceivers(self._collapse_action) > 0:
+        if self.signal_receivers(self._collapse_action) > 0:
             self._collapse_action.triggered.disconnect()
 
         # Connect expand/collapse signals to the respective actions
         self._expand_action.triggered.connect(
-            lambda: self._on_expand(modelindex))
+            lambda: self._on_expand(model_index))
         self._collapse_action.triggered.connect(
-            lambda: self._on_collapse(modelindex))
+            lambda: self._on_collapse(model_index))
 
         menu.addAction(self._expand_action)
         menu.addAction(self._collapse_action)
@@ -357,26 +393,29 @@ class BaseSTRNode(object):
             self._view.collapse(index)
 
     def onEdit(self, index):
-        '''
+        """
         Slot triggered when the Edit action of the node is triggered by the
         user.
         Subclasses to implement.
-        '''
+        """
         pass
 
     def onDelete(self, index):
-        '''
+        """
         Slot triggered when the Delete action of the node is triggered by
         the user.
         Subclasses to implement.
-        '''
+        """
         pass
 
-    def signalReceivers(self, action, signal="triggered()"):
-        '''
+    def signal_receivers(self, action, signal="triggered()"):
+        """
         Convenience method that returns the number of receivers connected to
         the signal of the action object.
-        '''
+        :rtype : object
+        :param action:
+        :param signal:
+        """
         return action.receivers(SIGNAL(signal))
 
     def _concat_names_values(self, display_mapping, formatter):
@@ -447,9 +486,15 @@ class SupportsDocumentsNode(BaseSTRNode):
     """
 
     def documents(self):
+        """
+        :rtype : list
+        """
         return []
 
-    def typeInfo(self):
+    def type_info(self):
+        """
+        :rtype : str
+        """
         return "SUPPORTING_DOCUMENT_NODE"
 
 
@@ -475,9 +520,15 @@ class EntityNode(SupportsDocumentsNode):
             self._set_children()
 
     def icon(self):
+        """
+        :rtype : QIcon
+        """
         return QIcon(":/plugins/stdm/images/icons/table.png")
 
-    def typeInfo(self):
+    def type_info(self):
+        """
+        :rtype : str
+        """
         return "ENTITY_NODE"
 
     def _set_children(self):
@@ -497,15 +548,21 @@ class NoSTRNode(BaseSTRNode):
     """
 
     def __init__(self, parent=None):
-        noSTRText = unicode(QApplication.translate("NoSTRNode",
+        no_str_text = unicode(QApplication.translate("NoSTRNode",
                                                    "No STR Defined"))
 
-        super(NoSTRNode, self).__init__([noSTRText], parent)
+        super(NoSTRNode, self).__init__([no_str_text], parent)
 
     def icon(self):
+        """
+        :rtype : QIcon
+        """
         return QIcon(":/plugins/stdm/images/icons/remove.png")
 
-    def typeInfo(self):
+    def type_info(self):
+        """
+        :rtype : str
+        """
         return "NO_STR_NODE"
 
 
@@ -515,14 +572,22 @@ class STRNode(EntityNode):
     """
 
     def icon(self):
+        """
+        :rtype : QIcon
+        """
         return QIcon(":/plugins/stdm/images/icons/social_tenure.png")
 
-    def typeInfo(self):
+    def type_info(self):
+        """
+        :rtype : str
+        """
         return "STR_NODE"
 
     def _column_name(self, node_data):
         """
         Return the column name from the node value.
+        :rtype : str
+        :param node_data:
         """
         n_data = unicode(node_data)
         display_col_name = n_data.split(self.separator)[0]
@@ -530,13 +595,17 @@ class STRNode(EntityNode):
         return display_col_name.replace(" ", "_").lower(), display_col_name
 
     def _update_str_node(self, index, model):
+        """
+        :param index:
+        :param model:
+        """
         view_model = self._view.model()
 
         i = 0
         for c_node in self._children:
             row_num = index.row() + i
 
-            if c_node.typeInfo() == "BASE_NODE":
+            if c_node.type_info() == "BASE_NODE":
                 idx = view_model.index(row_num, index.column(), index)
 
                 if idx.isValid():
@@ -554,8 +623,10 @@ class STRNode(EntityNode):
     def onEdit(self, index):
         """
         Method to force STR model editing without browser
+        :rtype : object
+        :param index:
         """
-        from stdm.ui.forms.mapper_dialog import CustomFormDialog
+        from ui.forms.mapper_dialog import CustomFormDialog
 
         if self._model is None:
             msg = QApplication.translate("STRNode", "The object representing "
@@ -583,6 +654,8 @@ class STRNode(EntityNode):
     def onDelete(self, index):
         """
         Delete STR information.
+        :rtype : object
+        :param index:
         """
         del_msg = QApplication.translate(
             "STRNode", "This action will remove the social tenure "
@@ -592,7 +665,7 @@ class STRNode(EntityNode):
                        "new 'Social Tenure Relationship'  wizard. Would you "
                        "like to proceed? \nClick Yes to proceed or No to "
                        "cancel.")
-        del_result = QMessageBox.warning(self.parentWidget(),
+        del_result = QMessageBox.warning(self.parent_widget(),
                                          QApplication.translate(
                                              "STRNode", "Delete Social "
                                                         "Tenure Relationship"),
@@ -602,10 +675,10 @@ class STRNode(EntityNode):
         if del_result == QMessageBox.Yes:
             model = self._view.model()
             model.removeAllChildren(
-                index.row(), self.childCount(), index.parent())
+                index.row(), self.child_count(), index.parent())
 
             # Remove source documents listings
-            self.parentWidget()._deleteSourceDocTabs()
+            self.parent_widget()._deleteSourceDocTabs()
             self._model.delete()
 
             # Insert NoSTR node
@@ -617,14 +690,17 @@ class STRNode(EntityNode):
     def manageActions(self, model_index, menu):
         """
         Returns a menu for managing social tenure relationship information.
+        :rtype : object
+        :param model_index:
+        :param menu:
         """
         super(STRNode, self).manageActions(model_index, menu)
 
-        editReceivers = self.signalReceivers(self.editAction)
+        editReceivers = self.signal_receivers(self.editAction)
         if editReceivers > 0:
             self.editAction.triggered.disconnect()
 
-        deleteReceivers = self.signalReceivers(self.deleteAction)
+        deleteReceivers = self.signal_receivers(self.deleteAction)
         if deleteReceivers > 0:
             self.deleteAction.triggered.disconnect()
 
@@ -634,7 +710,7 @@ class STRNode(EntityNode):
         menu.addAction(self.deleteAction)
 
         # Disable if the user does not have permission.
-        if not self.parentWidget()._can_edit:
+        if not self.parent_widget()._can_edit:
             menu.setEnabled(False)
 
         self.editAction.triggered.connect(lambda: self.onEdit(model_index))
@@ -647,7 +723,17 @@ class SpatialUnitNode(EntityNode):
     """
 
     def icon(self):
+        """
+
+        :rtype : QIcon
+        :return:
+        """
         return QIcon(":/plugins/stdm/images/icons/layer.gif")
 
-    def typeInfo(self):
+    def type_info(self):
+        """
+
+        :rtype : str
+        :return:
+        """
         return "SPATIAL_UNIT_NODE"

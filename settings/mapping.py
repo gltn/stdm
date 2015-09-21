@@ -24,8 +24,7 @@ from PyQt4.QtGui import (
     QApplication
 )
 
-from stdm.ui.notification import (
-    ERROR,
+from ui.notification import (
     WARNING,
     INFO
 )
@@ -62,9 +61,8 @@ class SettingMapper(object):
         the input control.
         :type mandatory: bool
         """
-        from stdm.ui.helpers import (
-            valueHandler,
-            ControlValueHandler
+        from ui.helpers import (
+            valueHandler
         )
         self._key = setting_key
         self._control = widget

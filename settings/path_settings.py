@@ -20,7 +20,7 @@ email                : stdm@unhabitat.org
 """
 from PyQt4.QtGui import QIcon
 
-dataIcon = QIcon(":/plugins/stdm/images/icons/column.png")
-pbIcon = QIcon(":/plugins/stdm/images/icons/search.png")
-tableIcon = QIcon(":/plugins/stdm/images/icons/table.png")
+data_icon = QIcon(":/plugins/stdm/images/icons/column.png")
+pb_icon = QIcon(":/plugins/stdm/images/icons/search.png")
+table_icon = QIcon(":/plugins/stdm/images/icons/table.png")
 fk_icon = QIcon(":/plugins/stdm/images/icons/fk_icon.png")

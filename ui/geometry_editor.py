@@ -24,7 +24,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from stdm.data  import data_types, setCollectiontypes, geometry_collections, edit_geom_column
 from stdm.data.config_utils import UserData
-from stdm.settings import projectionSelector
+from stdm.settings import ProjectionSelector
 
 class GeometryEditor(QDialog):
     def __init__(self,parent,profile, table, args= None):
@@ -70,7 +70,7 @@ class GeometryEditor(QDialog):
         
     def projectionsSettings(self):
         '''let user select the projections for the data'''
-        projSelect = projectionSelector(self)
+        projSelect = ProjectionSelector(self)
         projection = projSelect.load_available_systems()
         self.textField.setText(str(projection))
 

@@ -156,7 +156,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
 
         if len(snap_results) > 0:
             self._snapping_marker = self.createVertexMarker()
-            self._snapping_marker.setCenter(map_point)
+            self._snapping_marker.set_center(map_point)
 
         if self._mode != CAPTURE_POINT and self._temp_rubber_band is not None \
                 and self._capturing:

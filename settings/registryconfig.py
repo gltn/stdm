@@ -22,8 +22,8 @@ from PyQt4.QtCore import QSettings
 
 # Names of registry keys
 NETWORK_DOC_RESOURCE = "NetDocumentResource"
-PATHKEYS = ['Config', 'NetDocumentResource',
-            'ComposerOutputs', 'ComposerTemplates']
+PATHKEYS = ['Config', 'NetDocumentResource', 'ComposerOutputs',
+            'ComposerTemplates']
 DATABASE_LOOKUP = "LookupInit"
 LOCAL_SOURCE_DOC = "SourceDocuments"
 COMPOSER_OUTPUT = 'ComposerOutputs'
@@ -54,10 +54,10 @@ class RegistryConfig(object):
             # QMessageBox.information(None, "Info", group)
             if str(group) == self._base_group():
                 for t in items:
-                    tKey = self._group_path + "/" + t
-                    if settings.contains(tKey):
-                        tValue = settings.value(tKey)
-                        user_keys[t] = tValue
+                    t_key = self._group_path + "/" + t
+                    if settings.contains(t_key):
+                        t_value = settings.value(t_key)
+                        user_keys[t] = t_value
                 break
 
         return user_keys

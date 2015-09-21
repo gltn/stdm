@@ -21,8 +21,7 @@ email                : stdm@unhabitat.org
 """
 from collections import OrderedDict
 from PyQt4.QtGui import (
-    QApplication,
-    QMessageBox
+    QApplication
 )
 
 from sqlalchemy import (
@@ -30,8 +29,8 @@ from sqlalchemy import (
     String
 )
 
-from stdm.ui.stdmdialog import DeclareMapping
-from stdm.utils import getIndex
+from ui.stdmdialog import DeclareMapping
+from utils import get_index
 
 from .nodes import (
     BaseSTRNode,
@@ -47,19 +46,19 @@ class STRNodeFormatter(object):
     Base class for all STR formatters.
     """
 
-    def __init__(self, config, treeview=None, parentwidget=None):
+    def __init__(self, config, tree_view=None, parent_widget=None):
         self._config = config
 
         headers = self._config.displayColumns.values()
-        idx = getIndex(headers, "Id")
-        if idx != -1:
+        idx = get_index(headers, "Id")
+        if idx is not -1:
             id_ref = headers.pop(idx)
         self._headers = headers
 
         self._data = []
 
-        self.root_node = BaseSTRNode(self._headers, view=treeview,
-                                     parentWidget=parentwidget)
+        self.root_node = BaseSTRNode(self._headers, view=tree_view,
+                                     parentWidget=parent_widget)
 
     def set_data(self, data):
         """
@@ -93,6 +92,10 @@ class STRNodeFormatter(object):
 class TestFormatter(STRNodeFormatter):
 
     def root(self):
+        """
+        :rtype : object
+        :return:
+        """
         return self.root_node
 
 
@@ -101,14 +104,14 @@ class EntityNodeFormatter(STRNodeFormatter):
     Generic formatter for rendering an STR entity's values and dependent nodes.
     """
 
-    def __init__(self, config, treeview, parent=None):
+    def __init__(self, config, tree_view, parent=None):
         from stdm.data import (
             foreign_key_parent_tables,
             numeric_varchar_columns,
             spatial_tables
         )
 
-        super(EntityNodeFormatter, self).__init__(config, treeview, parent)
+        super(EntityNodeFormatter, self).__init__(config, tree_view, parent)
 
         self._str_ref = "social_tenure_relationship"
         self._str_title = QApplication.translate("STRFormatterBase",
@@ -326,7 +329,7 @@ class EntityNodeFormatter(STRNodeFormatter):
         :return: True if 'ds' is a spatial table, otherwise False.
         :rtype: bool
         """
-        sp_idx = getIndex(self._spatial_data_sources, ds)
+        sp_idx = get_index(self._spatial_data_sources, ds)
 
         if sp_idx == -1:
             return False

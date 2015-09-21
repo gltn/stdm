@@ -1,9 +1,9 @@
 """
 /***************************************************************************
 Name                 : Module Loader
-Description          : Loads content items (toolbars, stackwidget items, etc.) 
+Description          : Loads content items (toolbars, stackwidget items, etc.)
                         based on the approved role(s) of the item
-Date                 : 27/May/2013 
+Date                 : 27/May/2013
 copyright            : (C) 2013 by John Gitau
 email                : gkahiu@gmail.com
  ***************************************************************************/
@@ -23,93 +23,101 @@ from PyQt4.QtCore import QObject, pyqtSignal
 
 from collections import OrderedDict
 
-from stdm.utils import *
+from utils import get_index
 import stdm.data
 from stdm.data import Content, Role
 from .content_group import ContentGroup
-from stdm.security import Authorizer, SecurityException
+from security import Authorizer, SecurityException
 
 
 class QtContainerLoader(QObject):
     """
     Loads actions to the specified container based on the approved roles.
-    The loader registers new modules if they do not exist.
-    If an actionRef parameter is specified then the action will all be added 
+    The loader registers new modules if they do not exist
+    If an actionRef parameter is specified then the action will all be added
     before the reference action in the corresponding container widget.
     """
     authorized = pyqtSignal(Content)
     finished = pyqtSignal()
-    #contentAdded = pyqtSignal(Content)
+    # contentAdded = pyqtSignal(Content)
 
-    def __init__(self, parent, container, actionRef=None, register=False):
+    def __init__(self, parent, container, action_ref=None, register=False):
         QObject.__init__(self, parent)
         self._container = container
         self._register = register
-        self._actionReference = actionRef
-        self._contentGroups = OrderedDict()
+        self._action_reference = action_ref
+        self._content_groups = OrderedDict()
         self._widgets = []
-        self._userName = stdm.data.app_dbconn.User.UserName
+        self._user_name = stdm.data.app_dbconn.User.UserName
         self._authorizer = Authorizer(stdm.data.app_dbconn.User.UserName)
         self._iter = 0
-        self._separatorAction = None
+        self._separator_action = None
 
-    def addContent(self, content, parents=None):
+    def add_content(self, content, parents=None):
         """
         Add ContentGroup and its corresponding parent if available.
+        :param content:
+        :param parents:
         """
-        self._contentGroups[content] = parents
+        self._content_groups[content] = parents
 
         # Connect content group signals
         if isinstance(content, ContentGroup):
-            content.contentAuthorized.connect(self._onContentAuthorized)
+            content.content_authorized.connect(self._on_content_authorized)
 
-    def addContents(self, contentGroups, parents=None):
+    def add_contents(self, contentGroups, parents=None):
         """
         Append multiple content groups which share the same parent widgets.
+        :param contentGroups:
+        :param parents:
         """
         for cg in contentGroups:
-            self.addContent(cg, parents)
+            self.add_content(cg, parents)
 
-    def loadContent(self):
+    def load_content(self):
         """
         Add defined items in the specified container.
         """
         # If the user does not belong to any STDM group then the system will
         # raise an error so gracefully terminate
-        userRoles = self._authorizer.userRoles
+        user_roles = self._authorizer.userRoles
 
-        if len(userRoles) == 0:
-            msg = QApplication.translate("ModuleLoader", "'%s' must be a member of at least one STDM role in order to access the modules.\nPlease contact "
-                                         "the system administrator for more information." % (self._userName,))
+        if len(user_roles) == 0:
+            msg = QApplication.translate(
+                "ModuleLoader", "'%s' must be a member of at least one STDM "
+                                "role in order to access the "
+                                "modules.\nPlease contact the system "
+                                "administrator for more information." %
+                                (self._user_name,))
             raise SecurityException(msg)
 
-        for k, v in self._contentGroups.iteritems():
+        for k, v in self._content_groups.iteritems():
             # Generic content items
             if not isinstance(k, ContentGroup):
-                self._addItemtoContainer(k)
+                self._add_item_to_container(k)
 
             else:
                 # Assert permissions then add to container
-                allowedContent = k.checkContentAccess()
+                allowedContent = k.check_content_access()
 
                 if len(allowedContent) > 0:
                     if v is None:
                         # if there is no parent then add directly to container
                         # after asserting permissions
-                        self._addItemtoContainer(k.containerItem())
+                        self._add_item_to_container(k.container_item())
                     else:
-                        v[0].addAction(k.containerItem())
-                        self._insertWidgettoContainer(v[1])
+                        v[0].addAction(k.container_item())
+                        self._insert_widget_to_container(v[1])
 
-                    '''
-                    Raise signal to indicate that an STDMAction has been added to the container
-                    self.contentAdded.emit(k)
-                    '''
+                    # Raise signal to indicate that an STDMAction has been
+                    # added to the container
+                    # self.contentAdded.emit(k)
 
         # Add separator
-        if isinstance(self._container, QToolBar) or isinstance(self._container, QMenu):
-            self._separatorAction = self._container.insertSeparator(
-                self._actionReference)
+        if isinstance(self._container, QToolBar) or isinstance(
+                self._container, QMenu):
+            self._separator_action = self._container.insertSeparator(
+                self._action_reference)
 
         # Remove consecutive separators
         self._rem_consecutive_separators()
@@ -117,10 +125,11 @@ class QtContainerLoader(QObject):
         # Emit signal on finishing to load content
         self.finished.emit()
 
-    def _onContentAuthorized(self, content):
+    def _on_content_authorized(self, content):
         """
         Slot raised when a content item has been approved in the content group.
         The signal is propagated to the caller.
+        :param content:
         """
         self.authorized.emit(content)
 
@@ -143,13 +152,15 @@ class QtContainerLoader(QObject):
             if first_act.isSeparator():
                 self._container.removeAction(first_act)
 
-    def _addItemtoContainer(self, content):
-        '''
+    def _add_item_to_container(self, content):
+        """
         Adds items to specific container
-        '''
-        if isinstance(self._container, QToolBar) or isinstance(self._container, QMenu):
-            if self._actionReference != None:
-                self._container.insertAction(self._actionReference, content)
+        :param content:
+        """
+        if isinstance(self._container, QToolBar) or isinstance(
+                self._container, QMenu):
+            if self._action_reference is not None:
+                self._container.insertAction(self._action_reference, content)
             else:
                 self._container.addAction(content)
 
@@ -157,37 +168,39 @@ class QtContainerLoader(QObject):
             self._container.insertItem(self._iter, content)
             self._iter += 1
 
-    def _insertWidgettoContainer(self, widget):
-        '''
-        This method inserts the parent widget to the container for those actions
-        that have parents defined. But it ensures that only one instance of the parent widget
-        is inserted.
-        '''
-        objName = widget.objectName()
+    def _insert_widget_to_container(self, widget):
+        """
+        This method inserts the parent widget to the container for those
+        actions that have parents defined. But it ensures that only one
+        instance of the parent widget is inserted.
+        :param widget:
+        """
+        obj_name = widget.objectName()
         # Determine if the widget is already in the container
-        if getIndex(self._widgets, objName) == -1:
+        if get_index(self._widgets, obj_name) == -1:
             if isinstance(self._container, QToolBar):
-                self._container.insertWidget(self._actionReference, widget)
+                self._container.insertWidget(self._action_reference, widget)
             elif isinstance(self._container, QMenu):
-                self._container.insertMenu(self._actionReference, widget)
+                self._container.insertMenu(self._action_reference, widget)
 
-            self._widgets.append(objName)
+            self._widgets.append(obj_name)
 
-    def unloadContent(self):
-        '''
+    def unload_content(self):
+        """
         Remove all items in the container.
-        '''
-        for k, v in self._contentGroups.iteritems():
-            if isinstance(self._container, QToolBar) or isinstance(self._container, QMenu):
+        """
+        for k, v in self._content_groups.iteritems():
+            if isinstance(self._container, QToolBar) or isinstance(
+                    self._container, QMenu):
                 # If there is a parent then delete the widget
-                if v != None:
+                if v is not None:
                     v[1].setParent(None)
                 else:
                     if isinstance(k, ContentGroup):
-                        k = k.containerItem()
+                        k = k.container_item()
 
                     self._container.removeAction(k)
 
         # Remove separator
-        if self._separatorAction != None:
-            self._container.removeAction(self._separatorAction)
+        if self._separator_action is not None:
+            self._container.removeAction(self._separator_action)

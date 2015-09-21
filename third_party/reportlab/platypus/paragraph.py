@@ -267,7 +267,7 @@ def _putFragLine(cur_x, tx, line, last, pKind):
                 tx._setFont(f.fontName, f.fontSize)
             if xs.textColor!=f.textColor:
                 xs.textColor = f.textColor
-                tx.setFillColor(f.textColor)
+                tx.set_fill_color(f.textColor)
             if xs.rise!=f.rise:
                 xs.rise=f.rise
                 tx.setRise(f.rise)
@@ -355,7 +355,7 @@ def _do_dots_frag(cur_x, cur_x_s, maxWidth, xs, tx):
         n = int((maxWidth-cur_x_s)/txtlen)
         setXPos(tx,maxWidth - txtlen*n)
         if xs.textColor!=textColor:
-            tx.setFillColor(textColor)
+            tx.set_fill_color(textColor)
         if backColor: xs.backColors.append((cur_x,maxWidth,backColor))
         tx._textOut(n*text,1)
         if dy: tx.setTextOrigin(tx._x0,xs.cur_y-dy)
@@ -514,13 +514,13 @@ def _drawBullet(canvas, offset, cur_y, bulletText, style):
     '''draw a bullet text could be a simple string or a frag list'''
     tx2 = canvas.beginText(style.bulletIndent, cur_y+getattr(style,"bulletOffsetY",0))
     tx2.setFont(style.bulletFontName, style.bulletFontSize)
-    tx2.setFillColor(hasattr(style,'bulletColor') and style.bulletColor or style.textColor)
+    tx2.set_fill_color(hasattr(style,'bulletColor') and style.bulletColor or style.textColor)
     if isinstance(bulletText,basestring):
         tx2.textOut(bulletText)
     else:
         for f in bulletText:
             tx2.setFont(f.fontName, f.fontSize)
-            tx2.setFillColor(f.textColor)
+            tx2.set_fill_color(f.textColor)
             tx2.textOut(f.text)
 
     canvas.drawText(tx2)
@@ -649,7 +649,7 @@ def _do_post_text(tx):
     csc = None
     for x1,x2,c in xs.underlines:
         if c!=csc:
-            tx._canvas.setStrokeColor(c)
+            tx._canvas.set_stroke_color(c)
             csc = c
         tx._canvas.line(x1, y, x2, y)
     xs.underlines = []
@@ -659,7 +659,7 @@ def _do_post_text(tx):
     ys = y0 + 2*ff
     for x1,x2,c in xs.strikes:
         if c!=csc:
-            tx._canvas.setStrokeColor(c)
+            tx._canvas.set_stroke_color(c)
             csc = c
         tx._canvas.line(x1, ys, x2, ys)
     xs.strikes = []
@@ -670,7 +670,7 @@ def _do_post_text(tx):
     for x1,x2,link,c in xs.links:
         if platypus_link_underline:
             if c!=csc:
-                tx._canvas.setStrokeColor(c)
+                tx._canvas.set_stroke_color(c)
                 csc = c
             tx._canvas.line(x1, y, x2, y)
         _doLink(tx, link, (x1, y, x2, yl))
@@ -679,7 +679,7 @@ def _do_post_text(tx):
     xs.linkColor=None
 
     for x1,x2,c in xs.backColors:
-        tx._canvas.setFillColor(c)
+        tx._canvas.set_fill_color(c)
         tx._canvas.rect(x1,y,x2-x1,yl-y,stroke=0,fill=1)
 
     xs.backColors=[]
@@ -1427,7 +1427,7 @@ class Paragraph(Flowable):
             op = canvas.rect
             kwds = dict(fill=0,stroke=0)
             if bc and bw:
-                canvas.setStrokeColor(bc)
+                canvas.set_stroke_color(bc)
                 canvas.setLineWidth(bw)
                 kwds['stroke'] = 1
                 br = getattr(style,'borderRadius',0)
@@ -1435,7 +1435,7 @@ class Paragraph(Flowable):
                     op = canvas.roundRect
                     kwds['radius'] = br
             if bg:
-                canvas.setFillColor(bg)
+                canvas.set_fill_color(bg)
                 kwds['fill'] = 1
             bp = getattr(style,'borderPadding',0)
             tbp, rbp, bbp, lbp = normalizeTRBL(bp)
@@ -1476,7 +1476,7 @@ class Paragraph(Flowable):
                     offset = _drawBullet(canvas,offset,cur_y,bulletText,style)
 
                 #set up the font etc.
-                canvas.setFillColor(f.textColor)
+                canvas.set_fill_color(f.textColor)
 
                 tx = self.beginText(cur_x, cur_y)
                 if autoLeading=='max':
@@ -1502,7 +1502,7 @@ class Paragraph(Flowable):
                     xs.link=f.link
                     xs.textColor = f.textColor
                     xs.backColors = []
-                    canvas.setStrokeColor(f.textColor)
+                    canvas.set_stroke_color(f.textColor)
                     dx = t_off+leftIndent
                     if dpl!=_justifyDrawParaLine: ws = 0
                     underline = f.underline or (f.link and platypus_link_underline)

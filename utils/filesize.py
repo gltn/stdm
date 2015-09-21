@@ -1,56 +1,76 @@
+"""
+/***************************************************************************
+Name                 : File Size
+Description          :
+Date                 : 11/November/2014
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+"""
 
 traditional = [
     (1024 ** 5, 'P'),
-    (1024 ** 4, 'T'), 
-    (1024 ** 3, 'G'), 
-    (1024 ** 2, 'M'), 
+    (1024 ** 4, 'T'),
+    (1024 ** 3, 'G'),
+    (1024 ** 2, 'M'),
     (1024 ** 1, 'K'),
     (1024 ** 0, 'B'),
-    ]
+]
 
 alternative = [
     (1024 ** 5, ' PB'),
-    (1024 ** 4, ' TB'), 
-    (1024 ** 3, ' GB'), 
-    (1024 ** 2, ' MB'), 
+    (1024 ** 4, ' TB'),
+    (1024 ** 3, ' GB'),
+    (1024 ** 2, ' MB'),
     (1024 ** 1, ' KB'),
     (1024 ** 0, (' byte', ' bytes')),
-    ]
+]
 
 verbose = [
     (1024 ** 5, (' petabyte', ' petabytes')),
-    (1024 ** 4, (' terabyte', ' terabytes')), 
-    (1024 ** 3, (' gigabyte', ' gigabytes')), 
-    (1024 ** 2, (' megabyte', ' megabytes')), 
+    (1024 ** 4, (' terabyte', ' terabytes')),
+    (1024 ** 3, (' gigabyte', ' gigabytes')),
+    (1024 ** 2, (' megabyte', ' megabytes')),
     (1024 ** 1, (' kilobyte', ' kilobytes')),
     (1024 ** 0, (' byte', ' bytes')),
-    ]
+]
 
 iec = [
     (1024 ** 5, 'Pi'),
     (1024 ** 4, 'Ti'),
-    (1024 ** 3, 'Gi'), 
-    (1024 ** 2, 'Mi'), 
+    (1024 ** 3, 'Gi'),
+    (1024 ** 2, 'Mi'),
     (1024 ** 1, 'Ki'),
     (1024 ** 0, ''),
-    ]
+]
 
 si = [
     (1000 ** 5, 'P'),
-    (1000 ** 4, 'T'), 
-    (1000 ** 3, 'G'), 
-    (1000 ** 2, 'M'), 
+    (1000 ** 4, 'T'),
+    (1000 ** 3, 'G'),
+    (1000 ** 2, 'M'),
     (1000 ** 1, 'K'),
     (1000 ** 0, 'B'),
-    ]
-
+]
 
 
 def size(bytes, system=traditional):
     """Human-readable file size.
-
+    :rtype : str
+    :param bytes:
+    :param system:
     Using the traditional system, where a factor of 1024 is used::
-    
+
     >>> size(10)
     '10B'
     >>> size(100)
@@ -71,7 +91,7 @@ def size(bytes, system=traditional):
     '976K'
     >>> size(2000000)
     '1M'
-    
+
     Using the SI system, with a factor 1000::
 
     >>> size(10, system=si)
@@ -94,12 +114,12 @@ def size(bytes, system=traditional):
     '1M'
     >>> size(2000000, system=si)
     '2M'
-    
+
     """
     for factor, suffix in system:
         if bytes >= factor:
             break
-    amount = int(bytes/factor)
+    amount = int(bytes / factor)
     if isinstance(suffix, tuple):
         singular, multiple = suffix
         if amount == 1:
@@ -107,4 +127,3 @@ def size(bytes, system=traditional):
         else:
             suffix = multiple
     return str(amount) + suffix
-

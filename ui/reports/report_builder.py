@@ -191,7 +191,7 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
             elNode = el_elements[0]
             lyt_txt = QApplication.translate("ReportBuilder","Layout")
             layoutNode = QTreeWidgetItem([lyt_txt])
-            elNode.addChild(layoutNode)
+            elNode.add_child(layoutNode)
 
 
             #Add Layout Widget
@@ -674,13 +674,13 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         #Add group field node to the tree view
         trGroups=self.trRptSettings.findItems("Groups",Qt.MatchExactly,0)[0]
         trn = QTreeWidgetItem([groupfield])
-        trGroups.addChild(trn)
+        trGroups.add_child(trn)
     
     def grouping_removeFieldNode(self,groupfield):
         #Remove group field node in the tree view 
         trGroups=self.trRptSettings.findItems("Groups",Qt.MatchExactly,0)[0]
         trn=self.display_getChildNode("Groups", groupfield)
-        trGroups.removeChild(trn)
+        trGroups.remove_child(trn)
     
     def grouping_orderQuery(self):
         #Order results by the specified grouping fields
@@ -717,7 +717,7 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
                                                  ("ReportBuilder","Fields"), f)
                 if rWidg==None:
                     tr=QTreeWidgetItem([f])
-                    trFields.addChild(tr)
+                    trFields.add_child(tr)
                     #Add settings widget as well
                     self.display_addFieldWidget(f)
             #Clean up the field tree items and associated widgets
@@ -734,7 +734,7 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
 
         lstFields=[]
 
-        for f in range(trFields.childCount()):
+        for f in range(trFields.child_count()):
             tw=trFields.child(f)
             lstFields.append(tw.text(0))
         #Remove (from the list) those items that exist for both report and tree instances
@@ -747,7 +747,7 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
             obsNode=self.display_getChildNode(QApplication.translate("ReportBuilder","Fields"), obsItem)
             obsWidg=self.__displayGetStWidget(obsItem)
             if obsNode!=None:
-                trFields.removeChild(obsNode)
+                trFields.remove_child(obsNode)
             if obsWidg!=None:
                 self.stackedWidget.removeWidget(obsWidg)    
         
@@ -755,7 +755,7 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         #Get the tree item based on the parent and child texts respectively
         trParent=self.trRptSettings.findItems(parentStr,Qt.MatchExactly,0)[0]
         cNode=None
-        for t in range(trParent.childCount()):
+        for t in range(trParent.child_count()):
             trChild=trParent.child(t)
             if trChild.text(0)==childStr:
                 cNode=trChild
@@ -766,7 +766,7 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         #Get the names list of the child nodes for the specified parent node
         trParent=self.trRptSettings.findItems(parentStr,Qt.MatchExactly,0)[0]
         childNodes=[]
-        for t in range(trParent.childCount()):
+        for t in range(trParent.child_count()):
             trChild=trParent.child(t)
             childNodes.append(str(trChild.text(0)))
         return childNodes

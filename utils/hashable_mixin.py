@@ -5,8 +5,9 @@ Description          : Mixin class that enables custom objects to be hashable
                        using a concatenation of current date and a randomly
                        generated code.
 Date                 : 30/April/2014
-copyright            : (C) 2014 by John Gitau
-email                : gkahiu@gmail.com
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -20,9 +21,10 @@ email                : gkahiu@gmail.com
 """
 from PyQt4.QtCore import QDate
 
-from util import randomCodeGenerator
+from util import random_code_generator
 
 __all__ = ["HashableMixin"]
+
 
 class HashableMixin(object):
     """
@@ -30,15 +32,11 @@ class HashableMixin(object):
     current date and a randomly generated code.
     """
     def __init__(self):
-        currDate = QDate.currentDate().toString()
-        self._code = currDate + randomCodeGenerator()
+        curr_date = QDate.currentDate().toString()
+        self._code = curr_date + random_code_generator()
 
     def __hash__(self):
         return hash(self._code)
-    
-    def __cmp__(self,other):
-        return cmp(self._code,other._code)
 
-        
-    
-        
+    def __cmp__(self, other):
+        return cmp(self._code, other._code)

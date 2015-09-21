@@ -63,7 +63,7 @@ class GPSToolDialog(QDialog, Ui_Dialog):
         Run when browse button is pressed
         """
         self.tx_fl_edit_gpx.clear()
-        (gpx_file, encoding) = util.openDialog(self)
+        (gpx_file, encoding) = util.open_dialog(self)
         self.tx_fl_edit_gpx.setText(gpx_file)
         self._button_ok.setEnabled(True)
 

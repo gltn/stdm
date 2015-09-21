@@ -110,7 +110,7 @@ class _SimpleFillSymbolLayerProxyWidget(QgsSimpleFillSymbolLayerV2Widget,
             self._btnFillColor.colorChanged.connect(self.onSetFillColor)
             
     def onSetFillColor(self,color):
-        self.symbolLayer().setFillColor(color)
+        self.symbolLayer().set_fill_color(color)
         
 class ComposerSymbolEditor(QWidget,Ui_frmComposerSymbolEditor):
     """

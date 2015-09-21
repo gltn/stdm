@@ -1,6 +1,23 @@
 """
-Package for navigation classes
+/***************************************************************************
+Name                 : Package for navigation classes
+Description          : Package for navigation classes
+Date                 : 11/November/2014
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
 """
+
 from components import (
     STDMAction,
     STDMListWidgetItem,
@@ -18,4 +35,5 @@ from web_spatial_loader import (
     WebSpatialLoader
 )
 from content_group import ContentGroup, TableContentGroup
-#from socialtenure import PersonNodeFormatter,BaseSTRNode, STRNode, PropertyNode, ConflictNode
+# from socialtenure import PersonNodeFormatter,BaseSTRNode, STRNode,
+# PropertyNode, ConflictNode

@@ -1,5 +1,5 @@
 from .tools_network import get_proxy
-from .ProjectionSelector import ProjectionSelector
+from .projectionSelector import ProjectionSelector
 
 from .registryconfig import (
     RegistryConfig,
@@ -17,11 +17,10 @@ from .mapping import (
     SettingsWidgetMapper
 )
 
-from .tools_network import get_proxy
 from .path_settings import (
-    dataIcon,
-    pbIcon,
-    tableIcon,
+    data_icon,
+    pb_icon,
+    table_icon,
     fk_icon
 )
 from .module_settings import ModuleSettings

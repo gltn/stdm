@@ -100,7 +100,7 @@ class Figure(Flowable):
 
     def _doBackground(self, color):
         self.canv.saveState()
-        self.canv.setFillColor(self.background)
+        self.canv.set_fill_color(self.background)
         self.canv.rect(0, 0, self.width, self.figureHeight, fill=1)
         self.canv.restoreState()
 

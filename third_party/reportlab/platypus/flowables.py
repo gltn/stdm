@@ -109,7 +109,7 @@ class Flowable:
         self._drawOn(canvas)
         if hasattr(self, '_showBoundary') and self._showBoundary:
             #diagnostic tool support
-            canvas.setStrokeColor(gray)
+            canvas.set_stroke_color(gray)
             canvas.rect(0,0,self.width, self.height)
         canvas.restoreState()
 
@@ -368,7 +368,7 @@ class Preformatted(Flowable):
         cur_y = self.height - self.style.fontSize
         self.canv.addLiteral('%PreformattedPara')
         if self.style.textColor:
-            self.canv.setFillColor(self.style.textColor)
+            self.canv.set_fill_color(self.style.textColor)
         tx = self.canv.beginText(cur_x, cur_y)
         #set up the font etc.
         tx.setFont( self.style.fontName,
@@ -806,7 +806,7 @@ class HRFlowable(Flowable):
         canv.saveState()
         canv.setLineWidth(self.lineWidth)
         canv.setLineCap({'butt':0,'round':1, 'square': 2}[self.lineCap.lower()])
-        canv.setStrokeColor(self.color)
+        canv.set_stroke_color(self.color)
         if self.dash: canv.setDash(self.dash)
         canv.line(0, 0, self._width, self.height)
         canv.restoreState()
@@ -1361,7 +1361,7 @@ class BulletDrawer:
         else:
             x = indenter._leftIndent - self._bulletDedent
         canv.setFont(self._bulletFontName,self._bulletFontSize)
-        canv.setFillColor(self._bulletColor)
+        canv.set_fill_color(self._bulletColor)
         bulletAlign = self._bulletAlign
         value = _bulletFormat(value,self._bulletType,self._bulletFormat)
 

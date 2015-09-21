@@ -824,7 +824,7 @@ class _PSRenderer(Renderer):
                 #this has different semantics in PDF to SVG;
                 #we always have a color, and either do or do
                 #not apply it; in SVG one can have a 'None' color
-                self._canvas.setStrokeColor(value)
+                self._canvas.set_stroke_color(value)
             elif key == 'strokeWidth':
                 self._canvas.setLineWidth(value)
             elif key == 'strokeLineCap':  #0,1,2
@@ -847,7 +847,7 @@ class _PSRenderer(Renderer):
                 #this has different semantics in PDF to SVG;
                 #we always have a color, and either do or do
                 #not apply it; in SVG one can have a 'None' color
-                self._canvas.setFillColor(value)
+                self._canvas.set_fill_color(value)
 ##          elif key == 'fill_rule':
 ##              warnOnce('Fill rules not done yet')
 ##          elif key == 'fill_opacity':

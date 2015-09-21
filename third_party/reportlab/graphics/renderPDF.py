@@ -187,10 +187,10 @@ class _PDFRenderer(Renderer):
                         stroke=self._stroke)
 
     def setStrokeColor(self,c):
-        self._canvas.setStrokeColor(c)
+        self._canvas.set_stroke_color(c)
 
     def setFillColor(self,c):
-        self._canvas.setFillColor(c)
+        self._canvas.set_fill_color(c)
 
     def applyStateChanges(self, delta, newState):
         """This takes a set of states, and outputs the PDF operators

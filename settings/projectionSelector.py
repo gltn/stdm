@@ -24,14 +24,14 @@ class ProjectionSelector(QDialog):
 
     def __init__(self, parent):
         super(ProjectionSelector, self).__init__(parent)
-        self.parent = parent
+        self._parent = parent
 
     def load_available_systems(self):
         """
         :return:
         """
         coord_sys = ""
-        crs_dlg = QgsGenericProjectionSelector(self.parent)
+        crs_dlg = QgsGenericProjectionSelector(self._parent)
         if crs_dlg.exec_() == QDialog.Accepted:
             coord_sys = str(crs_dlg.selectedAuthId())
         return coord_sys

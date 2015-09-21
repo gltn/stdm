@@ -855,7 +855,7 @@ class _SVGRenderer(Renderer):
                 pass
                 #self._canvas.transform(value[0], value[1], value[2], value[3], value[4], value[5])
             elif key == 'strokeColor':
-                self._canvas.setStrokeColor(value)
+                self._canvas.set_stroke_color(value)
             elif key == 'strokeWidth':
                 self._canvas.setLineWidth(value)
             elif key == 'strokeLineCap':  #0,1,2
@@ -873,7 +873,7 @@ class _SVGRenderer(Renderer):
                 else:
                     self._canvas.setDash()
             elif key == 'fillColor':
-                self._canvas.setFillColor(value)
+                self._canvas.set_fill_color(value)
             elif key in ['fontSize', 'fontName']:
                 fontname = delta.get('fontName', self._canvas._font)
                 fontsize = delta.get('fontSize', self._canvas._fontSize)

@@ -549,10 +549,10 @@ class STRTreeViewModel(QAbstractItemModel):
         else:
             parentNode = parent.internalPointer()
 
-        return parentNode.childCount()
+        return parentNode.child_count()
 
     def columnCount(self,parent=QModelIndex()):
-        return self._rootNode.columnCount()
+        return self._rootNode.column_count()
 
     def _getNode(self,index):
         """
@@ -575,7 +575,7 @@ class STRTreeViewModel(QAbstractItemModel):
         node = self._getNode(index)
 
         if role == Qt.DisplayRole or role == Qt.EditRole:
-            if index.column() >= node.columnCount():
+            if index.column() >= node.column_count():
                 return None
 
             return node.data(index.column())
@@ -587,14 +587,14 @@ class STRTreeViewModel(QAbstractItemModel):
 
         elif role == Qt.FontRole:
             if index.column() == 0:
-                if node.styleIfChild():
+                if node.style_if_child():
                     if self._view is not None:
                         currFont = self._view.font()
                         currFont.setBold(True)
                         return currFont
 
         elif role == Qt.ToolTipRole:
-            if index.column() >= node.columnCount():
+            if index.column() >= node.column_count():
                 return None
 
             return node.data(index.column())
@@ -606,7 +606,7 @@ class STRTreeViewModel(QAbstractItemModel):
         """
         Set the column headers to be displayed by the tree view.
         """
-        if self._rootNode.columnCount() == 0:
+        if self._rootNode.column_count() == 0:
             return
 
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
@@ -674,7 +674,7 @@ class STRTreeViewModel(QAbstractItemModel):
         self.beginRemoveRows(parent, position, position + count - 1)
         
         for row in range(count):
-            success = parentNode.removeChild(position)
+            success = parentNode.remove_child(position)
           
         self.endRemoveRows()
         
@@ -703,10 +703,10 @@ class STRTreeViewModel(QAbstractItemModel):
         success = True
         
         self.beginRemoveColumns(parent, position, position + columnCount-1)
-        success = self._rootNode.removeColumns(position, columnCount)
+        success = self._rootNode.remove_columns(position, columnCount)
         self.endRemoveColumns()
         
-        if self._rootNode.columnCount() == 0:
+        if self._rootNode.column_count() == 0:
             self.removeRows(0, self.rowCount())
         
         return success
@@ -715,7 +715,7 @@ class STRTreeViewModel(QAbstractItemModel):
         """
         Removes all items (rows and columns) in the model.
         """
-        rootChildrenNum = self._rootNode.childCount()
+        rootChildrenNum = self._rootNode.child_count()
         
         self.beginResetModel()
         

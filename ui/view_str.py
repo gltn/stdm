@@ -79,7 +79,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self.move(QDesktopWidget().availableGeometry().center() - self.frameGeometry().center())
 
         #set whether currently logged in user has permissions to edit existing STR records
-        self._can_edit = self._plugin.STRCntGroup.canUpdate()
+        self._can_edit = self._plugin.STRCntGroup.can_update()
 
         '''
         Variable used to store a reference to the currently selected social tenure relationship
@@ -290,7 +290,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
                 if mi.column() == 0:
                     #Assert if node represents another entity has been clicked
-                    self._on_node_reference_changed(node.rootHash())
+                    self._on_node_reference_changed(node.root_hash())
 
                     if isinstance(node, STRNode):
                         src_docs = node.documents()
@@ -349,7 +349,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         if modelindex.isValid():
             node = modelindex.internalPointer()
             #Assert if node representing another entity has been clicked
-            self._on_node_reference_changed(node.rootHash())
+            self._on_node_reference_changed(node.root_hash())
 
     def onResultsContextMenuRequested(self,pnt):
         """
@@ -482,7 +482,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Adjusts the column sizes to fit its contents
         """
         qModel = self.tvSTRResults.model()
-        columnCount = qModel.columnCount()
+        columnCount = qModel.column_count()
 
         for i in range(columnCount):
             self.tvSTRResults.resizeColumnToContents(i)

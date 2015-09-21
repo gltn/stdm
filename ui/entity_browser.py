@@ -505,13 +505,13 @@ class ContentGroupEntityBrowser(EntityBrowserWithEditor):
         
         #Enable/disable tools based on permissions
         if (state & MANAGE) != 0:
-            if not self._tableContentGroup.canCreate():
+            if not self._tableContentGroup.can_create():
                 self._newEntityAction.setVisible(False)
                     
-            if not self._tableContentGroup.canUpdate():
+            if not self._tableContentGroup.can_update():
                 self._editEntityAction.setVisible(False)
                     
-            if not self._tableContentGroup.canDelete():
+            if not self._tableContentGroup.can_delete():
                 self._removeEntityAction.setVisible(False)
                 
         self._setFormatters() 
@@ -527,7 +527,7 @@ class ContentGroupEntityBrowser(EntityBrowserWithEditor):
         """
         Checks if user has permission to edit.
         """
-        if self._tableContentGroup.canUpdate():
+        if self._tableContentGroup.can_update():
             super(ContentGroupEntityBrowser,self).onDoubleClickView(modelindex)
     
     def tableContentGroup(self):
