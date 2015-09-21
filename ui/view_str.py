@@ -556,7 +556,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         If true, then the system assumes that they can also edit STR records.
         """
         canEdit = False
-        userName = stdm.data.app_dbconn.User.UserName
+        userName = stdm.data.app_dbconn.user.UserName
         authorizer = Authorizer(userName)
         newSTRCode = "9576A88D-C434-40A6-A318-F830216CA15A"
 
