@@ -431,10 +431,24 @@ class BaseSTRNode(object):
 
 class SupportsDocumentsNode(BaseSTRNode):
     """
-    Node for those entities which support documents to be attached.
+    Node for those entities with supporting documents.
     """
+    def __init__(self, *args, **kwargs):
+        self._doc_models = kwargs.pop('document_models', [])
+        super(SupportsDocumentsNode, self).__init__(*args, **kwargs)
+
     def documents(self):
-        return []
+        """
+        Returns a list of supporting document models for the given entity
+        represented by the node.
+        """
+        return self._doc_models
+
+    def add_document_model(self, doc_model):
+        self._doc_models.append(doc_model)
+
+    def set_document_models(self, doc_models):
+        self._doc_models = doc_models
 
     def typeInfo(self):
         return "SUPPORTING_DOCUMENT_NODE"

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_view_str.ui'
 #
-# Created: Wed Jul 01 20:15:19 2015
+# Created: Sun Sep 20 13:45:38 2015
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -101,7 +101,7 @@ class Ui_frmManageSTR(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.gb_supporting_docs.sizePolicy().hasHeightForWidth())
         self.gb_supporting_docs.setSizePolicy(sizePolicy)
-        self.gb_supporting_docs.setMinimumSize(QtCore.QSize(0, 100))
+        self.gb_supporting_docs.setMinimumSize(QtCore.QSize(0, 140))
         self.gb_supporting_docs.setMaximumSize(QtCore.QSize(16777215, 1677215))
         self.gb_supporting_docs.setObjectName(_fromUtf8("gb_supporting_docs"))
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.gb_supporting_docs)
@@ -152,3 +152,4 @@ class Ui_frmManageSTR(object):
 
 from qgis.gui import QgsCollapsibleGroupBoxBasic
 from .property_preview import SpatialPreview
+import resources_rc

@@ -25,6 +25,8 @@ from PyQt4.QtCore import QRegExp
 
 from qgis.core import QgsComposerPicture
 
+from stdm.data import supporting_doc_tables_regexp
+
 from ..notification import (
                              NotificationBar,
                              ERROR
@@ -45,10 +47,11 @@ class ComposerPhotoDataSourceEditor(QWidget, Ui_PhotoDataSourceEditor):
         ds_name = self._composer_wrapper.selectedDataSource()
         self.ref_table.load_data_source_fields(ds_name)
 
-        #Load referenced table list and filter so to only load photo tables
-        rx = QRegExp("*_photo")
-        rx.setPatternSyntax(QRegExp.Wildcard)
-        self.ref_table.load_link_tables(rx)
+        '''
+        Load referenced table list and filter so to only load supporting
+        doc tables.
+        '''
+        self.ref_table.load_link_tables(supporting_doc_tables_regexp())
 
         #Connect signals
         self._composer_wrapper.dataSourceSelected.connect(self.ref_table.on_data_source_changed)

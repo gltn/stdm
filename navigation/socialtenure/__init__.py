@@ -2,7 +2,8 @@ from nodes import (
     BaseSTRNode,
     EntityNode,
     SpatialUnitNode,
-    STRNode
+    STRNode,
+    SupportsDocumentsNode
 )
 from formatters import (
     EntityNodeFormatter,
