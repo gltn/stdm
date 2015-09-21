@@ -134,13 +134,6 @@ class loginDlg(QDialog, Ui_frmLogin):
             #Get DB connection
             dbconfig = DatabaseConfig()
             dbconn = dbconfig.read()
-
-	    ##### test
-
-	    QMessageBox.about(self, "Here I Are!")
-
-	    #####
-
 	    
             if not dbconn:
                 msg = QApplication.translate("loginDlg","The STDM database connection has not been configured in your system.\nWould you like to configure it now?")
