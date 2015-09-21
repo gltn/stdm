@@ -371,7 +371,7 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
 
         for key, vertex in self.vertex_dict.iteritems():
             if vertex[3] == Qt.Checked:
-                geom_list.append(QgsPoint(vertex[1], vertex[2]))
+                geom_list.append(QgsPoint(vertex[2], vertex[1]))
 
         if self.active_layer_geometry_typ == 0:
             geom = QgsGeometry.fromPoint(geom_list[0])

@@ -1,5 +1,6 @@
 from .config import DatabaseConfig
 from connection import DatabaseConnection
+
 from .database import (
     AdminSpatialUnitSet,
     alchemy_table,
@@ -17,9 +18,9 @@ from .database import (
     table_registry,
     Witness
 )
-from .database import (
-    NoPostGISError
-)
+
+from .database import NoPostGISError
+
 from .qtmodels import (
     UsersRolesModel,
     PersonTableModel,
@@ -27,12 +28,32 @@ from .qtmodels import (
     BaseSTDMTableModel,
     VerticalHeaderSortFilterProxyModel
 )
+
 from .globals import app_dbconn
-from .modelformatters import respondentRoleFormatter,LookupFormatter,witnessRelationshipFormatter, \
-DoBFormatter,genderFormatter,maritalStatusFormatter,savingOptionFormatter,inputServiceFormatter, \
-socioEconImpactFormatter,foodCropCategoryFormatter,geometryFormatter,respondentNamesFormatter, \
-enumeratorNamesFormatter,dateFormatter
-from .mapping import MapperMixin,QgsFeatureMapperMixin,SAVE,UPDATE
+
+from .modelformatters import (
+    respondentRoleFormatter,
+    LookupFormatter,
+    witnessRelationshipFormatter,
+    DoBFormatter,
+    genderFormatter,
+    maritalStatusFormatter,
+    savingOptionFormatter,
+    inputServiceFormatter, 
+    socioEconImpactFormatter,
+    foodCropCategoryFormatter,
+    geometryFormatter,
+    respondentNamesFormatter,
+    enumeratorNamesFormatter,
+    dateFormatter
+)
+
+from .mapping import (
+    MapperMixin,
+    QgsFeatureMapperMixin,
+    SAVE,
+    UPDATE
+)
 
 from .pg_utils import (
     columnType,
@@ -74,6 +95,7 @@ from .usermodels import (
 )
 
 from .xmldata2sql import SQLInsert
+
 from .xmlconfig_reader import (
     XMLTableElement,
     tableColumns,
@@ -125,6 +147,7 @@ from .xmlconfig_writer import(
 
 from .configfile_paths import FilePaths
 from .config_table_reader import ConfigTableReader
+
 from .enums import (
     data_types,
     actions,
@@ -136,6 +159,7 @@ from .enums import (
     RESERVED_ID,
     non_editable_tables
 )
+
 from .config_utils import (
     tableCols,
     setCollectiontypes,
@@ -149,6 +173,7 @@ from .config_utils import (
     ConfigVersionException,
     current_table_exist
 )
+
 from .license_doc import LicenseDocument
 from .template_database import DatabaseCreator
 

@@ -29,6 +29,7 @@ from PyQt4.QtCore import *
 from qgis.core import *
 from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
 from gps_tool import GPSToolDialog
+
 from ..data import (
     spatial_tables,
     table_column_names,
@@ -66,8 +67,8 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         self.spatial_layers = []
         self.layers_info = []
         for spt in spatial_tables():
-            sp_columns = table_column_names(spt, True)
-            self._stdm_tables[spt] = sp_columns
+            sp_columns = table_column_names(spt,True)
+            self._stdm_tables[spt]=sp_columns
 
             # QMessageBox.information(None,"Title",str(sp_columns))
 
@@ -156,10 +157,8 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         Method to load GPS dialog
         """
         layer_map = QgsMapLayerRegistry.instance().mapLayers()
-
         if not bool(layer_map):
             QMessageBox.warning(None,"STDM","You must add a layer first, from Spatial Unit Manager to import GPX to")
-
         elif bool(layer_map):
             self.gps_tool_dialog = GPSToolDialog(self.iface, self.curr_layer, self.curr_lyr_table, self.curr_lyr_sp_col)
             self.gps_tool_dialog.show()
