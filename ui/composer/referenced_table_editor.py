@@ -25,6 +25,7 @@ from PyQt4.QtGui import (
     QComboBox,
     QGridLayout,
     QLabel,
+    QMessageBox,
     QWidget
 )
 from PyQt4.QtCore import (
@@ -206,9 +207,10 @@ class ReferencedTableEditor(QWidget):
         self.cbo_ref_table.addItem("")
 
         ref_tables = []
+
         #Table source
         if (TABLES & source) == TABLES:
-            ref_tables.extend(pg_tables())
+            ref_tables.extend(pg_tables(exclude_lookups=True))
 
         #View source
         if (VIEWS & source) == VIEWS:
@@ -217,7 +219,7 @@ class ReferencedTableEditor(QWidget):
         source_tables = []
         for t in ref_tables:
             if not reg_exp is None:
-                if reg_exp.exactMatch(t):
+                if reg_exp.indexIn(t) >= 0:
                     source_tables.append(t)
 
             else:

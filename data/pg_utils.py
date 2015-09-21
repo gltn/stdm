@@ -35,8 +35,9 @@ from stdm.utils import (
     PLUGIN_DIR
 )
 
-_postGISTables = ["spatial_ref_sys","str_relations","supporting_document"]
-_postGISViews = ["geometry_columns","raster_columns","geography_columns","raster_overviews","foreign_key_references"]
+_postGISTables = ["spatial_ref_sys", "supporting_document"]
+_postGISViews = ["geometry_columns","raster_columns","geography_columns",
+                 "raster_overviews","foreign_key_references"]
 
 _pg_numeric_col_types = ["smallint","integer","bigint","double precision",
                       "numeric","decimal","real","smallserial","serial",
@@ -212,11 +213,12 @@ def delete_table_data(tableName,cascade = True):
         t = text(sql)
         _execute(t) 
 
-def geometryType(tableName, spatialColumnName, schemaName = "public"):
+def geometryType(tableName, spatialColumnName, schemaName="public"):
     """
     Returns a tuple of geometry type and EPSG code of the given column name in the table within the given schema.
     """
-    sql = "select type,srid from geometry_columns where f_table_name = :tbname and f_geometry_column = :spcolumn and f_table_schema = :tbschema"
+    sql = "select type,srid from geometry_columns where f_table_name = :tbname " \
+          "and f_geometry_column = :spcolumn and f_table_schema = :tbschema"
     t = text(sql)
     
     result = _execute(t,tbname = tableName,spcolumn=spatialColumnName,tbschema=schemaName)
@@ -410,11 +412,17 @@ def vector_layer(table_name, sql="", key="id", geom_column=""):
 
     return v_layer
 
-def foreign_key_parent_tables(table_name):
+def foreign_key_parent_tables(table_name, search_parent=True, filter_exp=None):
     """
     Functions that searches for foreign key references in the specified table.
     :param table_name: Name of the database table.
     :type table_name: str
+    :param search_parent: Select True if table_name is the child and
+    parent tables are to be retrieved, else child tables will be
+    returned.
+    :type search_parent: bool
+    :param filter_exp: A regex expression to filter related table names.
+    :type filter_exp: QRegExp
     :return: A list of tuples containing the local column name, foreign table
     name and corresponding foreign column name.
     :rtype: list
@@ -440,17 +448,34 @@ def foreign_key_parent_tables(table_name):
         else:
             return None
 
+    if search_parent:
+        ref_table = "foreign_table_name"
+        search_table = "table_name"
+    else:
+        ref_table = "table_name"
+        search_table = "foreign_table_name"
+
     #Fetch foreign key references
-    sql = "SELECT column_name,foreign_table_name,foreign_column_name FROM " \
-          "foreign_key_references where table_name=:tb_name"
+    sql = u"SELECT column_name,{0},foreign_column_name FROM " \
+          u"foreign_key_references where {1} =:tb_name".format(ref_table,
+                                                               search_table)
     t = text(sql)
     result = _execute(t, tb_name=table_name)
 
     fk_refs = []
 
     for r in result:
-        fk_ref = r["column_name"], r["foreign_table_name"],\
+        rel_table = r[ref_table]
+
+        fk_ref = r["column_name"], rel_table,\
                  r["foreign_column_name"]
+
+        if not filter_exp is None:
+            if filter_exp.indexIn(rel_table) >= 0:
+                fk_refs.append(fk_ref)
+
+                continue
+
         fk_refs.append(fk_ref)
 
     return fk_refs

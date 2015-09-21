@@ -46,7 +46,6 @@ class STRNodeFormatter(object):
     """
     Base class for all STR formatters.
     """
-
     def __init__(self, config, treeview=None, parentwidget=None):
         self._config = config
 
@@ -87,15 +86,10 @@ class STRNodeFormatter(object):
         raise NotImplementedError(QApplication.translate("STRFormatterBase",
                                                          "Method should be implemented by subclasses"))
 
-class TestFormatter(STRNodeFormatter):
-    def root(self):
-        return self.rootNode
-
 class EntityNodeFormatter(STRNodeFormatter):
     """
     Generic formatter for rendering an STR entity's values and dependent nodes.
     """
-
     def __init__(self, config, treeview, parent=None):
         from stdm.data import (
             foreign_key_parent_tables,
@@ -106,10 +100,17 @@ class EntityNodeFormatter(STRNodeFormatter):
         super(EntityNodeFormatter, self).__init__(config, treeview, parent)
 
         self._str_ref = "social_tenure_relationship"
+
         self._str_title = QApplication.translate("STRFormatterBase",
                                                  "Social Tenure Relationship")
 
         self._str_model = DeclareMapping.instance().tableMapping(self._str_ref)
+
+        '''
+        Cache for entity supporting document tables.
+        [table_name]:[list of supporting document tables]
+        '''
+        self._entity_supporting_doc_tables = {}
 
         '''
         Set STR display mapping due to a bug in the 'displayMapping'
@@ -121,6 +122,7 @@ class EntityNodeFormatter(STRNodeFormatter):
 
         self._str_num_char_cols = numeric_varchar_columns(self._str_ref)
         self._fk_references = foreign_key_parent_tables(self._str_ref)
+
         self._current_data_source_fk_ref = self._current_data_source_foreign_key_reference()
         self._numeric_char_cols = numeric_varchar_columns(config.data_source_name)
         self._spatial_data_sources = spatial_tables()
@@ -215,6 +217,41 @@ class EntityNodeFormatter(STRNodeFormatter):
         else:
             return True
 
+    def _supporting_doc_models(self, entity_table, model_obj):
+        """
+        Creates supporting document models using information from the
+        entity table and values in the model object.
+        :param entity_table: Name of the entity table.
+        :type entity_table: str
+        :param model_obj: Model instance.
+        :type model_obj: object
+        :return: Supporting document models.
+        :rtype: list
+        """
+        from stdm.data import (
+            supporting_doc_tables,
+            document_models
+        )
+
+        #Only one document table per entity for now
+        if entity_table in self._entity_supporting_doc_tables:
+            doc_table_ref = self._entity_supporting_doc_tables[entity_table]
+        else:
+            doc_tables = supporting_doc_tables(entity_table)
+            if len(doc_tables) > 0:
+                doc_table_ref = doc_tables[0]
+                self._entity_supporting_doc_tables[entity_table] = doc_table_ref
+
+            else:
+                return []
+
+        doc_link_col, doc_link_table = doc_table_ref[0], doc_table_ref[1]
+
+        if not hasattr(model_obj, 'id'):
+            return []
+
+        return document_models(doc_link_table, doc_link_col, model_obj.id)
+
     def _create_str_node(self, parent_node, str_model, **kwargs):
         """
         Creates an STR Node and corresponding child nodes (from related
@@ -225,13 +262,18 @@ class EntityNodeFormatter(STRNodeFormatter):
         :return: STR Node
         :rtype: STRNode
         """
-        from stdm.data import numeric_varchar_columns
+        from stdm.data import (
+            numeric_varchar_columns
+        )
 
         display_mapping = self._format_display_mapping(str_model,
                                                       self._str_model_disp_mapping,
                                                       self._str_num_char_cols)
 
+        doc_models = self._supporting_doc_models(self._str_ref, str_model)
+
         str_node = STRNode(display_mapping, parent=parent_node,
+                           document_models=doc_models,
                            model=str_model, **kwargs)
 
         #Get related entities and create their corresponding nodes

@@ -66,8 +66,8 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         self.spatial_layers = []
         self.layers_info = []
         for spt in spatial_tables():
-            sp_columns = table_column_names(spt,True)
-            self._stdm_tables[spt]=sp_columns
+            sp_columns = table_column_names(spt, True)
+            self._stdm_tables[spt] = sp_columns
 
             # QMessageBox.information(None,"Title",str(sp_columns))
 

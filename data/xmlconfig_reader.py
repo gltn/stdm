@@ -291,8 +291,10 @@ def check_if_display_name_exits(layer_name):
     for display_name in root.findall('display_names/display_name'):
         if display_name.get("layer_name") == layer_name:
             return True
+
         else:
             continue
+
     return False
 
 def get_xml_display_name(layer_name):
@@ -304,6 +306,8 @@ def get_xml_display_name(layer_name):
         if existing_layer_name == layer_name:
             # QMessageBox.information(None,"Title",display_name.text)
             return display_name.text
+
+    return ""
 
 def description_for_table(profile, table):
     tree,root = parseRootElement()
