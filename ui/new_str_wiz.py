@@ -122,7 +122,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         QObject.connect(self.rbGMaps, SIGNAL("toggled(bool)"),self.onLoadGMaps)
         QObject.connect(self.rbOSM, SIGNAL("toggled(bool)"),self.onLoadOSM)                               
             
-    def initializePage(self,id):
+    def initializePage(self, id):
         '''
         Initialize summary page based on user selections.
         '''
@@ -133,8 +133,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         '''
         Initialize 'Social Tenure Relationship' GUI controls
         '''
-        # pty=Table('check_social_tenure_type',Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
-        # session=STDMDb.instance().session
         person = self.mapping.tableMapping('check_social_tenure_type')
         Person = person()
         strTypeFormatter =Person.queryObject().all()
@@ -176,17 +174,9 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         
         #Set source document manager
         self.sourceDocManager = SourceDocumentManager()
-        #self.privateTaxDocManager = SourceDocumentManager()
-        #self.stateTaxDocManager = SourceDocumentManager()
         self.sourceDocManager.registerContainer(self.vlDocTitleDeed, DEFAULT_DOCUMENT)
-               
-        '''
-        #Connect signals
-
-        '''
         self.connect(self.btnAddTitleDeed, SIGNAL("clicked()"),self.onUploadTitleDeed)
-        
-        
+
     def initConflict(self):
         '''
         Initialize 'Conflict' GUI controls
@@ -280,13 +270,13 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         #Create a progress dialog
         progDialog = QProgressDialog(self)
         progDialog.setWindowTitle(QApplication.translate("newSTRWiz", "Creating New STR"))
-        progDialog.setRange(0,7)
+        progDialog.setRange(0, 7)
         progDialog.show()
-        
-        
-        socialTenureRel=self.mapping.tableMapping('social_tenure_relationship')
-        str_relation_table =self.mapping.tableMapping('str_relations')
+
+        socialTenureRel = self.mapping.tableMapping('social_tenure_relationship')
+        str_relation_table = self.mapping.tableMapping('str_relations')
         STR_relation = str_relation_table()
+
         try:
             progDialog.setValue(1)
             socialTenure = socialTenureRel()
@@ -295,36 +285,39 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             socialTenure.spatial_unit = self.selProperty.id
             progDialog.setValue(3)
             
-            socialTenure.social_tenure_type=str(self.cboSTRType.currentText())
+            socialTenure.social_tenure_type = unicode(self.cboSTRType.currentText())
             progDialog.setValue(6)
+
             """
             Save new STR relations and supporting documentation
             """
             socialTenure.save()
             model_objs = self.sourceDocManager.model_objects()
-            if len(model_objs)>0:
+
+            if len(model_objs) > 0:
                 for model_obj in model_objs:
                     model_obj.save()
                     STR_relation.social_tenure_id = socialTenure.id
                     STR_relation.source_doc_id = model_obj.id
                     STR_relation.save()
+
             progDialog.setValue(7)
-            #source_doc_model = self.sourceDocManager.sourceDocuments(dtype ="TITLE DEED")
-            
-            #strPerson = "%s %s"%(str(self.selPerson.family_name),str(self.selPerson.other_names))          
-            strMsg = str(QApplication.translate("newSTRWiz", 
-                                            "The social tenure relationship for has been successfully created!"))           
-            QMessageBox.information(self, QApplication.translate("newSTRWiz", "STR Creation"),strMsg)
+
+            strMsg = unicode(QApplication.translate("newSTRWiz",
+                                            "The social tenure relationship has been successfully created!"))
+            QMessageBox.information(self, QApplication.translate("newSTRWiz", "STR Creation"),
+                                    strMsg)
 
         except sqlalchemy.exc.OperationalError as oe:
             errMsg = oe.message
-            QMessageBox.critical(self, QApplication.translate("newSTRWiz", "Unexpected Error"),errMsg)
+            QMessageBox.critical(self, QApplication.translate("newSTRWiz", "Unexpected Error"),
+                                 errMsg)
             progDialog.hide()
             isValid = False
 
         except sqlalchemy.exc.IntegrityError as ie:
             errMsg = ie.message
-            QMessageBox.critical(self, QApplication.translate("newSTRWiz", "Dublicate Relationship Error"),errMsg)
+            QMessageBox.critical(self, QApplication.translate("newSTRWiz", "Duplicate Relationship Error"),errMsg)
             progDialog.hide()
             isValid = False
             
@@ -336,6 +329,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         finally:
             STDMDb.instance().session.rollback()
             progDialog.hide()
+
         return isValid
             
     def _loadPersonInfo(self,persons):
@@ -799,31 +793,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         
         for notaryRef in notaryRefs:
             self.sourceDocManager.insertDocumentFromFile(notaryRef,NOTARY_REF)
-            
-    def onUploadPrivateReceiptScan(self):
-        '''
-        Slot raised when the user clicks to upload a receipt scan for private property
-        '''
-        receiptScan = QApplication.translate("newSTRWiz", 
-                                             "Specify Receipt Scan File Location")
-        scan = self.selectReceiptScanDialog(receiptScan)
-        
-        if scan != "" or scan != None:
-            #Ensure that there is only one tax receipt document before inserting
-            self.validateReceiptScanInsertion(self.privateTaxDocManager, scan, TAX_RECEIPT_PRIVATE)
-            
-    def onUploadStateReceiptScan(self):
-        '''
-        Slot raised when the user clicks to upload a receipt scan for stateland
-        '''
-        receiptScan = QApplication.translate("newSTRWiz", 
-                                             "Specify Receipt Scan File Location")
-        scan = self.selectReceiptScanDialog(receiptScan)
-        
-        if scan != "" or scan != None:
-            #Ensure that there is only one tax receipt document before inserting
-            self.validateReceiptScanInsertion(self.stateTaxDocManager, scan, TAX_RECEIPT_STATE)
-            
+
     def validateReceiptScanInsertion(self,documentmanager,scan,containerid):
         '''
         Checks and ensures that only one document exists in the specified container.
@@ -847,15 +817,9 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         '''
         Displays a file dialog for a user to specify a source document
         '''
-        files = QFileDialog.getOpenFileNames(self,title,"/home","Source Documents (*.*)")
+        files = QFileDialog.getOpenFileNames(self,title,"/home","Source "
+                                                                "Documents (*.jpg *.jpeg *.png *.bmp *.tiff *.svg)")
         return files
-    
-    def selectReceiptScanDialog(self,title):
-        '''
-        Displays a file dialog for a user to specify a file location of a receipt scan
-        '''
-        file = QFileDialog.getOpenFileName(self,title,"/home","Tax Receipt Scan (*.pdf)")
-        return file
         
     def uploadDocument(self,path,containerid):
         '''

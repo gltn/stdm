@@ -11,6 +11,7 @@ from .database import (
     Respondent,
     Role,
     STDMDb,
+    SupportingDocument,
     Survey,
     table_mapper,
     table_registry,
@@ -57,6 +58,13 @@ from .pg_utils import (
     TABLES,
     VIEWS,
     _execute
+)
+
+from .supporting_documents import (
+    document_models,
+    SUPPORTING_DOC_TAGS,
+    supporting_doc_tables,
+    supporting_doc_tables_regexp
 )
 
 from .usermodels import (
