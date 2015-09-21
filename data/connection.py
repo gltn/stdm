@@ -38,7 +38,7 @@ class DatabaseConnection(object):
         Returns the corresponding connection string in SQLAlchemy format
         '''
         if self.user:
-            return "postgresql+psycopg2://%s:%s@%s:%s/%s" % (self.user.userName, self.user.Password, self.host, self.port, self.database)
+            return "postgresql+psycopg2://%s:%s@%s:%s/%s" % (self.user.UserName, self.user.Password, self.host, self.port, self.database)
         else:
             return None
     
