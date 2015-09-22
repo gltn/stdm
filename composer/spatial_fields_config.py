@@ -124,7 +124,7 @@ class SpatialFieldsConfiguration(object):
             #Create spatial field mapping
             spFieldMapping = SpatialFieldMapping(spatialField,labelField) 
             spFieldMapping.setItemId(itemId)
-            spFieldMapping.setSRID(srid)
+            spFieldMapping.set_srid(srid)
             spFieldMapping.setGeometryType(geomType)
             spFieldMapping.setZoomLevel(zoom)
 

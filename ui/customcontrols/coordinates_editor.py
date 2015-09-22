@@ -1,10 +1,11 @@
 """
 /***************************************************************************
 Name                 : Coordinates Editor
-Description          : Custom widget for entering an X,Y coordinate pair. 
+Description          : Custom widget for entering an X,Y coordinate pair.
 Date                 : 16/April/2014
-copyright            : (C) 2014 by John Gitau
-email                : gkahiu@gmail.com
+copyright            : (C) 2015 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -16,8 +17,9 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtCore import QSize
+from PyQt4.QtGui import QWidget, QGridLayout, QDoubleSpinBox, QLabel, \
+    QApplication, QVBoxLayout
 
 from qgis.core import QgsPoint
 
@@ -33,34 +35,34 @@ class CoordinatesWidget(QWidget):
         QWidget.__init__(self, parent)
         self.resize(270, 130)
 
-        self._gridLayout = QGridLayout(self)
-        self._sbYCoord = QDoubleSpinBox(self)
-        self._sbYCoord.setMinimumSize(QSize(0, 30))
-        self._sbYCoord.setDecimals(5)
-        self._sbYCoord.setMinimum(-180.0)
-        self._sbYCoord.setMaximum(180.0)
-        self._gridLayout.addWidget(self._sbYCoord, 2, 1, 1, 1)
+        self._grid_layout = QGridLayout(self)
+        self._sb_ycoord = QDoubleSpinBox(self)
+        self._sb_ycoord.setMinimumSize(QSize(0, 30))
+        self._sb_ycoord.setDecimals(5)
+        self._sb_ycoord.setMinimum(-180.0)
+        self._sb_ycoord.setMaximum(180.0)
+        self._grid_layout.addWidget(self._sb_ycoord, 2, 1, 1, 1)
         self._label_2 = QLabel(self)
         self._label_2.setText(QApplication.translate(
             "CoordinatesWidget", "Y-Coordinate"))
-        self._gridLayout.addWidget(self._label_2, 2, 0, 1, 1)
+        self._grid_layout.addWidget(self._label_2, 2, 0, 1, 1)
         self._label = QLabel(self)
         self._label.setMaximumSize(QSize(80, 16777215))
         self._label.setText(QApplication.translate(
             "CoordinatesWidget", "X-Coordinate"))
-        self._gridLayout.addWidget(self._label, 1, 0, 1, 1)
-        self._sbXCoord = QDoubleSpinBox(self)
-        self._sbXCoord.setMinimumSize(QSize(0, 30))
-        self._sbXCoord.setDecimals(5)
-        self._sbXCoord.setMinimum(-180.0)
-        self._sbXCoord.setMaximum(180.0)
-        self._gridLayout.addWidget(self._sbXCoord, 1, 1, 1, 1)
-        self.vlNotification = QVBoxLayout()
-        self._gridLayout.addLayout(self.vlNotification, 0, 0, 1, 2)
+        self._grid_layout.addWidget(self._label, 1, 0, 1, 1)
+        self._sb_xcoord = QDoubleSpinBox(self)
+        self._sb_xcoord.setMinimumSize(QSize(0, 30))
+        self._sb_xcoord.setDecimals(5)
+        self._sb_xcoord.setMinimum(-180.0)
+        self._sb_xcoord.setMaximum(180.0)
+        self._grid_layout.addWidget(self._sb_xcoord, 1, 1, 1, 1)
+        self.vl_notification = QVBoxLayout()
+        self._grid_layout.addLayout(self.vl_notification, 0, 0, 1, 2)
 
         # Set X and Y values
-        self._sbXCoord.setValue(float(x))
-        self._sbYCoord.setValue(float(y))
+        self._sb_xcoord.setValue(float(x))
+        self._sb_ycoord.setValue(float(y))
 
         self._geomPoint = QgsPoint(x, y)
 
@@ -68,60 +70,79 @@ class CoordinatesWidget(QWidget):
         self._srid = 4326
 
         # Connect signals
-        self._sbXCoord.valueChanged.connect(self.onXCoordValueChanged)
-        self._sbYCoord.valueChanged.connect(self.onYCoordValueChanged)
+        self._sb_xcoord.valueChanged.connect(self.on_x_coord_value_changed)
+        self._sb_ycoord.valueChanged.connect(self.on_y_coord_value_changed)
 
-    def onXCoordValueChanged(self, value):
+    def on_x_coord_value_changed(self, value):
         """
         Slot raised when the value of the X-Coordinate spinbox changes
+        :param value:
         """
         self._geomPoint.setX(value)
 
-    def onYCoordValueChanged(self, value):
+    def on_y_coord_value_changed(self, value):
         """
         Slot raised when the value of the Y-Coordinate spinbox changes
+        :param value:
         """
         self._geomPoint.setY(value)
 
-    def xCoord(self):
+    def x_coord(self):
+        """
+        :rtype : QgsPoint
+        :return: Geometry Point
+        """
         return self._geomPoint.x()
 
-    def yCoord(self):
+    def y_coord(self):
+        """
+        :rtype : QgsPoint
+        :return: Geometry Point
+        """
         return self._geomPoint.y()
 
-    def XY(self):
-        return (self.xCoord(), self.yCoord())
+    def x_y(self):
+        """
+        :rtype : Tuple
+        :return: Geometry Points
+        """
+        return (self.x_coord(), self.y_coord())
 
-    def setX(self, xCoord):
-        self._sbXCoord.setValue(xCoord)
+    def set_x(self, x_coord):
+        self._sb_xcoord.setValue(x_coord)
 
-    def setY(self, yCoord):
-        self._sbYCoord.setValue(yCoord)
+    def set_y(self, y_coord):
+        self._sb_ycoord.setValue(y_coord)
 
-    def setXY(self, x, y):
+    def set_x_y(self, x, y):
         """
         Set both X and Y coordinate values.
         """
-        self.setX(x)
-        self.setY(y)
+        self.set_x(x)
+        self.set_y(y)
 
-    def geomPoint(self):
+    def geom_point(self):
         """
         Returns the coordinate representation as a QgsPoint.
+        :rtype : QgsPoint
         """
         return self._geomPoint
 
-    def setSRID(self, geoModel):
+    def set_srid(self, geo_model):
         """
-        Set the SRID using the SRID by using that one specified in the geometry column of 
-        an sqlalchemy object.
+        Set the SRID using the SRID by using that one specified in the
+        geometry column of an sqlalchemy object.
+        :param geo_model:
         """
-        if hasattr(geoModel, "SRID"):
-            self._srid = geoModel.SRID()
+        if hasattr(geo_model, "SRID"):
+            self._srid = geo_model.SRID()
 
-    def toEWKT(self):
+    def to_ewkt(self):
         """
-        Returns the specified X,Y point as an extended well-known text representation.
-        PostGIS 2.0 requires geometry to be in EWKT specification.
+        Returns the specified X,Y point as an extended well-known text
+        representation. PostGIS 2.0 requires geometry to be in EWKT
+        specification.
+        :rtype : str
         """
-        return "SRID={0};{1}".format(str(self._srid), self._geomPoint.wellKnownText())
+        return "SRID={0};{1}".format(
+            str(self._srid), self._geomPoint.wellKnownText())

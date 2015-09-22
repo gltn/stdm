@@ -432,7 +432,7 @@ class DocumentGenerator(QObject):
         if mode == QgsComposerMap.Rectangle:
             tree_layers = QgsProject.instance().layerTreeRoot().findLayers()
             layer_ids = [lyt.layerId() for lyt in tree_layers]
-            map_item.setLayerSet(layer_ids)
+            map_item.set_layer_set(layer_ids)
             map_item.zoomToExtent(self._map_renderer.extent())
 
     def _refresh_composer_maps(self, composition, ignore_ids):

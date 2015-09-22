@@ -2,10 +2,11 @@
 /***************************************************************************
 Name                 : Validating Line Edit
 Description          : Custom QLineEdit control that validates user input
-                       against database values as the user types. 
+                       against database values as the user types.
 Date                 : 1/March/2014
-copyright            : (C) 2014 by John Gitau
-email                : gkahiu@gmail.com
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -17,8 +18,8 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtCore import pyqtSignal, QTimer, SIGNAL
+from PyQt4.QtGui import QLineEdit
 
 from sqlalchemy import func
 
@@ -26,133 +27,144 @@ INVALIDATESTYLESHEET = "background-color: rgba(255, 0, 0, 100);"
 
 
 class ValidatingLineEdit(QLineEdit):
-    '''
-    Custom QLineEdit control that validates user input against database 
+    """
+    Custom QLineEdit control that validates user input against database
     values as the user types.
-    '''
+    """
     # Signal raised when the user input is invalid.
     invalidatedInput = pyqtSignal()
 
-    def __init__(self, parent=None, notificationbar=None, dbmodel=None, attrname=None):
+    def __init__(self, parent=None, notification_bar=None, db_model=None,
+                 attr_name=None):
         '''
         :param parent: Parent widget
-        :param notificationbar: instance of stdm.ui.NotificationBar class.
+        :param notification_bar: instance of stdm.ui.NotificationBar class.
         '''
         QLineEdit.__init__(self, parent)
-        self._notifBar = notificationbar
-        self._dbmodel = None
-        self._attrName = None
+        self._notif_bar = notification_bar
+        self._db_model = None
+        self._attr_name = None
         self._timer = QTimer(self)
         self._timer.setInterval(800)
         self._timer.setSingleShot(True)
-        self._invalidMsg = ""
-        self._filterOperator = "="
-        self._defaultStyleSheet = self.styleSheet()
-        self._isValid = True
-        self._currInvalidMsg = ""
+        self._invalid_msg = ""
+        self._filter_operator = "="
+        self._default_style_sheet = self.styleSheet()
+        self._is_valid = True
+        self._curr_invalid_msg = ""
 
         # Connect signals
-        self.connect(self._timer, SIGNAL("timeout()"), self.validateInput)
+        self.connect(self._timer, SIGNAL("timeout()"), self.validate_input)
         self.connect(self, SIGNAL("textChanged(const QString&)"),
-                     self.onTextChanged)
+                     self.on_text_changed)
 
-    def validateInput(self):
-        '''
+    def validate_input(self):
+        """
         Validate user input.
-        '''
-        if self._dbmodel:
-            if callable(self._dbmodel):
-                modelObj = self._dbmodel()
+        """
+        if self._db_model:
+            if callable(self._db_model):
+                model_obj = self._db_model()
 
             # Then it is a class instance
             else:
-                modelObj = self._dbmodel
-                self._dbmodel = self._dbmodel.__class__
+                model_obj = self._db_model
+                self._db_model = self._db_model.__class__
 
-            objQueryProperty = getattr(self._dbmodel, self._attrName)
-            modelRecord = modelObj.queryObject().filter(func.lower(
-                objQueryProperty) == func.lower(self.text())).first()
+            obj_query_property = getattr(self._db_model, self._attr_name)
+            model_record = model_obj.queryObject().filter(func.lower(
+                obj_query_property) == func.lower(self.text())).first()
 
-            if modelRecord != None:
+            if model_record is not None:
                 self.setStyleSheet(INVALIDATESTYLESHEET)
-                self._currInvalidMsg = self._invalidMsg.format(
+                self._curr_invalid_msg = self._invalid_msg.format(
                     "'" + self.text() + "'")
-                self._isValid = False
+                self._is_valid = False
 
-                if self._notifBar:
-                    self._notifBar.insertErrorNotification(
-                        self._currInvalidMsg)
+                if self._notif_bar:
+                    self._notif_bar.insertErrorNotification(
+                        self._curr_invalid_msg)
 
-    def setInvalidMessage(self, message):
-        '''
+    def set_invalid_message(self, message):
+        """
         The message to be displayed when the user input is invalid.
-        '''
-        self._invalidMsg = message
+        :param message:
+        """
+        self._invalid_msg = message
 
-    def invalidMessage(self):
-        '''
+    def invalid_message(self):
+        """
         Returns the invalidation message for the control.
-        '''
-        return self._invalidMsg
+        """
+        return self._invalid_msg
 
-    def setDatabaseModel(self, dbmodel):
-        '''
+    def set_database_model(self, db_model):
+        """
         Set database model which should be callable.
-        '''
-        self._dbmodel = dbmodel
+        :param db_model:
+        """
+        self._db_model = db_model
 
-    def setAttributeName(self, attrname):
-        '''
+    def set_attribute_name(self, attr_name):
+        """
         Attribute name of the database model for validating against.
-        '''
-        self._attrName = attrname
+        :param attr_name:
+        """
+        self._attr_name = attr_name
 
-    def setModelAttr(self, model, attributeName):
-        '''
+    def set_model_attr(self, model, attribute_name):
+        """
         Set a callable model class and attribute name.
-        '''
-        self._dbmodel = model
-        self._attrName = attributeName
+        :param model:
+        :param attribute_name:
+        """
+        self._db_model = model
+        self._attr_name = attribute_name
 
-    def setNotificationBar(self, notifBar):
-        '''
+    def set_notification_bar(self, notif_bar):
+        """
         Sets the notification bar.
-        '''
-        self._notifBar = notifBar
+        :param notif_bar:
+        """
+        self._notif_bar = notif_bar
 
-    def setQueryOperator(self, queryOp):
-        '''
+    def set_query_operator(self, query_op):
+        """
         Specify a string-based value for the filter operator that validates
         the user input.
-        '''
-        self._filterOperator = queryOp
+        :param query_op:
+        """
+        self._filter_operator = query_op
 
-    def queryOperator(self):
-        '''
+    def query_operator(self):
+        """
         Return the current query operator. Default is '=' operator.
-        '''
-        return self._filterOperator
+        """
+        return self._filter_operator
 
     def validate(self):
-        '''
-        Convenience method that can be used to validate the current state of the control.
-        '''
-        if not self._isValid:
-            if self._notifBar:
-                self._notifBar.insertErrorNotification(self._currInvalidMsg)
+        """
+        Convenience method that can be used to validate the current state of
+        the control.
+        :rtype : bool
+        """
+        if not self._is_valid:
+            if self._notif_bar:
+                self._notif_bar.insertErrorNotification(self._curr_invalid_msg)
             return False
 
         else:
             return True
 
-    def onTextChanged(self, userText):
-        '''
+    def on_text_changed(self, user_text):
+        """
         Slot raised whenever the text changes in the control.
-        '''
-        self.setStyleSheet(self._defaultStyleSheet)
-        self._isValid = True
+        :param user_text:
+        """
+        self.setStyleSheet(self._default_style_sheet)
+        self._is_valid = True
 
-        if self._notifBar != None:
-            self._notifBar.clear()
+        if self._notif_bar is not None:
+            self._notif_bar.clear()
 
         self._timer.start()

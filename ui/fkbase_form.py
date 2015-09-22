@@ -65,10 +65,10 @@ class ForeignKeyMapperDialog(QWidget):
 
     def model_fkid(self):
         try:
-            if not self.personFKMapper.global_id.baseid():
+            if not self.personFKMapper.global_id.base_id():
                 return
             else:
-                return self.personFKMapper.global_id.baseid()
+                return self.personFKMapper.global_id.base_id()
         except Exception as ex:
             raise ex.message
 

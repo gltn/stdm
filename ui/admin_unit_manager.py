@@ -126,12 +126,12 @@ class AdminUnitManager(QWidget,Ui_frmAdminUnitManager):
         
         #Configure validating line edit controls
         invalidMsg = "{} already exists."
-        self.txtUnitName.setModelAttr(AdminSpatialUnitSet,"Name")
-        self.txtUnitName.setInvalidMessage(invalidMsg)
-        self.txtUnitName.setNotificationBar(self._notifBar)
-        self.txtUnitCode.setModelAttr(AdminSpatialUnitSet,"Code")
-        self.txtUnitCode.setInvalidMessage(invalidMsg)
-        self.txtUnitCode.setNotificationBar(self._notifBar)
+        self.txtUnitName.set_model_attr(AdminSpatialUnitSet,"Name")
+        self.txtUnitName.set_invalid_message(invalidMsg)
+        self.txtUnitName.set_notification_bar(self._notifBar)
+        self.txtUnitCode.set_model_attr(AdminSpatialUnitSet,"Code")
+        self.txtUnitCode.set_invalid_message(invalidMsg)
+        self.txtUnitCode.set_notification_bar(self._notifBar)
         
         '''
         Initialize formatter for the rendering the admin unit nodes and insert

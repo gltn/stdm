@@ -22,14 +22,12 @@ from PyQt4.QtGui import (
     QAbstractItemView,
     QComboBox,
     QHeaderView,
-    QMessageBox,
     QStyledItemDelegate,
     QStandardItem,
     QStandardItemModel,
     QTableView
 )
 from PyQt4.QtCore import (
-    Qt,
     QModelIndex
 )
 
@@ -44,6 +42,11 @@ class PairComboBoxDelegate(QStyledItemDelegate):
         self._items_pair = items_pair
 
     def _insert_empty_item(self, items_lst):
+        """
+        :rtype : list
+        :param items_lst:
+        :return:
+        """
         if len(items_lst) > 0:
             first_item = items_lst[0]
             if first_item != "":
@@ -52,6 +55,12 @@ class PairComboBoxDelegate(QStyledItemDelegate):
         return items_lst
 
     def set_items_pair(self, items_pair, empty_item=True):
+        """
+        Sets item pair
+        :param items_pair:
+        :param empty_item: bool
+        :raise TypeError: TypeError
+        """
         if len(items_pair) < 2:
             raise RuntimeError(
                 "Item columns' list contains less than two sub-lists.")
@@ -71,6 +80,12 @@ class PairComboBoxDelegate(QStyledItemDelegate):
         return self._items_pair
 
     def createEditor(self, parent, option, index):
+        """
+        :param parent:
+        :param option:
+        :param index:
+        :rtype : QComboBox
+        """
         editor = QComboBox(parent)
 
         if index.column() == 0:
@@ -84,6 +99,10 @@ class PairComboBoxDelegate(QStyledItemDelegate):
         return editor
 
     def setEditorData(self, combo_box, index):
+        """
+        :param combo_box:
+        :param index:
+        """
         item_text = index.model().data(index)
 
         if item_text:
@@ -97,6 +116,11 @@ class PairComboBoxDelegate(QStyledItemDelegate):
                 combo_box.setCurrentIndex(0)
 
     def setModelData(self, combo_box, model, index):
+        """
+        :param combo_box:
+        :param model:
+        :param index:
+        """
         item_text = combo_box.currentText()
 
         if combo_box.count() > 0:
@@ -130,17 +154,18 @@ class ListPairTableView(QTableView):
     def set_header_labels(self, labels):
         """
         Set the table's header labels using labels.
+        :rtype : None
         :param labels: Header labels.
         :type labels: list
         """
         if len(labels) < 2:
             return
 
-        lbls = []
+        lb_ls = []
         for i in range(2):
-            lbls.append(labels[i])
+            lb_ls.append(labels[i])
 
-        self._pair_model.setHorizontalHeaderLabels(lbls)
+        self._pair_model.setHorizontalHeaderLabels(lb_ls)
 
     def clear_view(self):
         """
@@ -270,7 +295,8 @@ class ListPairTableView(QTableView):
 
     def column_pairings(self):
         """
-        :return: Collection of column matchings specified as specified by the user.
+        :return: Collection of column matchings specified as specified by
+        the user.
         :rtype: dict
         """
         col_pairings = {}

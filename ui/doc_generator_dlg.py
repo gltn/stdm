@@ -463,7 +463,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
 
             return
         
-        documentNamingAttrs = self.lstDocNaming.selectedMappings()
+        documentNamingAttrs = self.lstDocNaming.selected_mappings()
         
         if self.chkUseOutputFolder.checkState() == Qt.Checked and len(documentNamingAttrs) == 0:
             self._notif_bar.insertErrorNotification(QApplication.translate("DocumentGeneratorDialog", \

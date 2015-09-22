@@ -1,10 +1,12 @@
 """
 /***************************************************************************
 Name                 : QTableWidget Combo Box
-Description          : Custom Combo Box that stores the row number of its container
-Date                 : 14/October/11 
-copyright            : (C) 2011 by John Gitau
-email                : gkahiu@gmail.com 
+Description          : Custom Combo Box that stores the row number of its
+                        container
+Date                 : 14/October/11
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************

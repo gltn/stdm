@@ -59,39 +59,39 @@ class SurveyEditor(QDialog,Ui_frmSurvey,MapperMixin):
         Enumerator = self.mapping.tableMapping('enumerator')
         #Configure Enumerator FK mapper
         enumFKMapper = self.tabWidget.widget(0)
-        enumFKMapper.setDatabaseModel(Enumerator)
+        enumFKMapper.set_database_model(Enumerator)
         enumFKMapper.setEntitySelector(EnumeratorEntityBrowser, VIEW|MANAGE)
         enumFKMapper.setSupportsList(False)
         #enumFKMapper.addCellFormatter("GenderID",genderFormatter)
         #enumFKMapper.addCellFormatter("MaritalStatusID",maritalStatusFormatter)
-        enumFKMapper.setNotificationBar(self._notifBar)
+        enumFKMapper.set_notification_bar(self._notifBar)
         enumFKMapper.initialize()
 
         Respondent = self.mapping.tableMapping('respondent')
         respondentFKMapper = self.tabWidget.widget(1)
-        respondentFKMapper.setDatabaseModel(Respondent)
+        respondentFKMapper.set_database_model(Respondent)
         respondentFKMapper.setEntitySelector(RespondentEntityBrowser, VIEW|MANAGE)
 
         respondentFKMapper.setSupportsList(False)
-        respondentFKMapper.setNotificationBar(self._notifBar)
+        respondentFKMapper.set_notification_bar(self._notifBar)
         respondentFKMapper.initialize()
 
 
         Witness = self.mapping.tableMapping('witness')
         witnessFKMapper = self.tabWidget.widget(2)
-        witnessFKMapper.setDatabaseModel(Witness)
+        witnessFKMapper.set_database_model(Witness)
         witnessFKMapper.setEntitySelector(WitnessEntityBrowser, VIEW|MANAGE)
         witnessFKMapper.setSupportsList(True)
-        witnessFKMapper.setNotificationBar(self._notifBar)
+        witnessFKMapper.set_notification_bar(self._notifBar)
         witnessFKMapper.initialize()
 
 
         Priority = self.mapping.tableMapping('priority')
         prFKMapper = self.tabWidget.widget(3)
-        prFKMapper.setDatabaseModel(Priority)
+        prFKMapper.set_database_model(Priority)
         prFKMapper.setEntitySelector(PriorityEntityBrowser, VIEW|MANAGE)
         prFKMapper.setSupportsList(True)
-        prFKMapper.setNotificationBar(self._notifBar)
+        prFKMapper.set_notification_bar(self._notifBar)
         prFKMapper.initialize()
         #Configure attribute mappings
         self.addMapping("Code", self.txtSurveyCode, preloadfunc = self.codeGenerator())

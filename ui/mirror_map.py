@@ -3,7 +3,7 @@
 /***************************************************************************
 Name                 : Dockable MirrorMap
 Description          : Creates a dockable map canvas
-Date                 : February 1, 2011 
+Date                 : February 1, 2011
 copyright            : (C) 2011 by Giuseppe Sucameli (Faunalia)
 email                : brush.tyler@gmail.com
 
@@ -19,11 +19,12 @@ email                : brush.tyler@gmail.com
  ***************************************************************************/
 """
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtCore import SIGNAL, QSettings, Qt
+from PyQt4.QtGui import QWidget, QGridLayout, QIcon, QToolButton, QColor, \
+    QCheckBox, QLabel, QDoubleSpinBox
 
-from qgis.core import *
-from qgis.gui import *
+from qgis.core import QgsMapLayerRegistry
+from qgis.gui import QgsMapCanvas, QgsMapToolPan, QgsMapCanvasLayer
 
 
 class MirrorMap(QWidget):
@@ -32,34 +33,49 @@ class MirrorMap(QWidget):
         QWidget.__init__(self, parent)
         # self.setAttribute(Qt.WA_DeleteOnClose)
 
-        self.iface = iface
-        self.layerId2canvasLayer = {}
-        self.canvasLayers = []
+        self._iface = iface
+        self._layer_id_2_canvas_layer = {}
+        self.canvas_layers = []
 
-        self.setupUi()
+        self._set_up_ui()
 
     def closeEvent(self, event):
-        self.scaleFactor.valueChanged.disconnect(self.onExtentsChanged)
+        """
+        Closes Window
+        :rtype : QWidget
+        :param event:
+        :return:
+        """
+        self.scale_factor.valueChanged.disconnect(self.on_extents_changed)
 
-        if not self.iface is None:
-            self.iface.mapCanvas().extentsChanged.discconnect(self.onExtentsChanged)
-            self.iface.mapCanvas().mapRenderer().destinationCrsChanged.disconnect(self.onCrsChanged)
-            self.iface.mapCanvas().mapRenderer().mapUnitsChanged.disconnect(self.onCrsChanged)
-            self.iface.mapCanvas().mapRenderer().hasCrsTransformEnabled.disconnect(
-                self.onCrsTransformEnabled)
-            QgsMapLayerRegistry.instance().layerWillBeRemoved.disconnect(self.delLayer)
-            self.iface.currentLayerChanged.disconnect(self.refreshLayerButtons)
+        if self._iface is not None:
+            self._iface.mapCanvas().extentsChanged.discconnect(
+                self.on_extents_changed)
+            self._iface.mapCanvas().mapRenderer(). \
+                destinationCrsChanged.disconnect(self.on_crs_changed)
+            self._iface.mapCanvas().mapRenderer(). \
+                mapUnitsChanged.disconnect(self.on_crs_changed)
+            self._iface.mapCanvas().mapRenderer(). \
+                hasCrsTransformEnabled.disconnect(
+                self.on_crs_trans_form_enabled)
+            QgsMapLayerRegistry.instance(). layerWillBeRemoved.disconnect(
+                self.del_layer)
+            self._iface.currentLayerChanged.disconnect(
+                self.refresh_layer_buttons)
 
         self.emit(SIGNAL("closed(PyQt_PyObject)"), self)
 
         return QWidget.closeEvent(self, event)
 
-    def setupUi(self):
+    def _set_up_ui(self):
+        """
+        Sets up UI elements
+        """
         self.setObjectName("mirrormap")
 
-        gridLayout = QGridLayout(self)
-        gridLayout.setContentsMargins(
-            0, 0, gridLayout.verticalSpacing(), gridLayout.verticalSpacing())
+        grid_layout = QGridLayout(self)
+        grid_layout.setContentsMargins(
+            0, 0, grid_layout.verticalSpacing(), grid_layout.verticalSpacing())
 
         self.canvas = QgsMapCanvas(self)
         self.canvas.setCanvasColor(QColor(255, 255, 255))
@@ -69,53 +85,57 @@ class MirrorMap(QWidget):
         self.canvas.useImageToRender(settings.value(
             "/qgis/use_qimage_to_render", False, type=bool))
         action = settings.value("/qgis/wheel_action", 0, type=int)
-        zoomFactor = settings.value("/qgis/zoom_factor", 2.0, type=float)
+        zoom_factor = settings.value("/qgis/zoom_factor", 2.0, type=float)
         self.canvas.setWheelAction(
-            QgsMapCanvas.WheelAction(action), zoomFactor)
-        gridLayout.addWidget(self.canvas, 0, 0, 1, 5)
+            QgsMapCanvas.WheelAction(action), zoom_factor)
+        grid_layout.addWidget(self.canvas, 0, 0, 1, 5)
 
-        self.addLayerBtn = QToolButton(self)
-        #self.addLayerBtn.setToolButtonStyle( Qt.ToolButtonTextBesideIcon )
-        #self.addLayerBtn.setText("Add current layer")
-        self.addLayerBtn.setIcon(QIcon(":/plugins/stdm/images/icons/add.png"))
-        self.addLayerBtn.clicked.connect(self.tool_add_layer)
-        gridLayout.addWidget(self.addLayerBtn, 1, 0, 1, 1)
+        self.add_layer_btn = QToolButton(self)
+        # self.addLayerBtn.setToolButtonStyle( Qt.ToolButtonTextBesideIcon )
+        # self.addLayerBtn.setText("Add current layer")
+        self.add_layer_btn.setIcon(
+            QIcon(":/plugins/stdm/images/icons/add.png"))
+        self.add_layer_btn.clicked.connect(self.tool_add_layer)
+        grid_layout.addWidget(self.add_layer_btn, 1, 0, 1, 1)
 
-        self.delLayerBtn = QToolButton(self)
-        #self.delLayerBtn.setToolButtonStyle( Qt.ToolButtonTextBesideIcon )
-        #self.delLayerBtn.setText("Remove current layer")
-        self.delLayerBtn.setIcon(
+        self.del_layer_btn = QToolButton(self)
+        # self.delLayerBtn.setToolButtonStyle( Qt.ToolButtonTextBesideIcon )
+        # self.delLayerBtn.setText("Remove current layer")
+        self.del_layer_btn.setIcon(
             QIcon(":/plugins/stdm/images/icons/remove.png"))
-        self.delLayerBtn.clicked.connect(self.tool_remove_layer)
-        gridLayout.addWidget(self.delLayerBtn, 1, 1, 1, 1)
+        self.del_layer_btn.clicked.connect(self.tool_remove_layer)
+        grid_layout.addWidget(self.del_layer_btn, 1, 1, 1, 1)
 
-        self.renderCheck = QCheckBox("Render", self)
-        self.renderCheck.toggled.connect(self.toggleRender)
-        self.renderCheck.setChecked(True)
-        gridLayout.addWidget(self.renderCheck, 1, 2, 1, 1)
+        self.render_check = QCheckBox("Render", self)
+        self.render_check.toggled.connect(self.toggle_render)
+        self.render_check.setChecked(True)
+        grid_layout.addWidget(self.render_check, 1, 2, 1, 1)
 
-        self.scaleFactorLabel = QLabel(self)
-        self.scaleFactorLabel.setText("Scale factor:")
-        self.scaleFactorLabel.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        gridLayout.addWidget(self.scaleFactorLabel, 1, 3, 1, 1)
-        self.scaleFactor = QDoubleSpinBox(self)
-        self.scaleFactor.setMinimum(0.0)
-        self.scaleFactor.setMaximum(1000.0)
-        self.scaleFactor.setDecimals(3)
-        self.scaleFactor.setValue(1)
-        self.scaleFactor.setObjectName("scaleFactor")
-        self.scaleFactor.setSingleStep(.05)
-        gridLayout.addWidget(self.scaleFactor, 1, 4, 1, 1)
-        self.scaleFactor.valueChanged.connect(self.onExtentsChanged)
+        self.scale_factor_label = QLabel(self)
+        self.scale_factor_label.setText("Scale factor:")
+        self.scale_factor_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        grid_layout.addWidget(self.scale_factor_label, 1, 3, 1, 1)
+        self.scale_factor = QDoubleSpinBox(self)
+        self.scale_factor.setMinimum(0.0)
+        self.scale_factor.setMaximum(1000.0)
+        self.scale_factor.setDecimals(3)
+        self.scale_factor.setValue(1)
+        self.scale_factor.setObjectName("scaleFactor")
+        self.scale_factor.setSingleStep(.05)
+        grid_layout.addWidget(self.scale_factor, 1, 4, 1, 1)
+        self.scale_factor.valueChanged.connect(self.on_extents_changed)
 
         # Add a default pan tool
         self.toolPan = QgsMapToolPan(self.canvas)
         self.canvas.setMapTool(self.toolPan)
 
-        self.scaleFactor.valueChanged.connect(self.onExtentsChanged)
-        self.set_iface(self.iface)
+        self.scale_factor.valueChanged.connect(self.on_extents_changed)
+        self.set_iface(self._iface)
 
-    def toggleRender(self, enabled):
+    def toggle_render(self, enabled):
+        """
+        :param enabled:
+        """
         self.canvas.setRenderFlag(enabled)
 
     def extent(self):
@@ -129,7 +149,7 @@ class MirrorMap(QWidget):
         :return: Layers currently in the canvas.
         :rtype: list
         """
-        return self.canvasLayers
+        return self.canvas_layers
 
     def on_canvas_refreshed(self):
         """
@@ -137,175 +157,221 @@ class MirrorMap(QWidget):
         self.refresh_layers()
 
     def tool_add_layer(self):
-        self.addLayer()
+        self.add_layer()
 
     def tool_remove_layer(self):
-        self.delLayer()
+        self.del_layer()
 
     def set_iface(self, iface):
         if iface is None:
             return
 
-        self.iface = iface
-        self.iface.mapCanvas().extentsChanged.connect(self.onExtentsChanged)
-        # self.iface.mapCanvas().mapCanvasRefreshed.connect(self.on_canvas_refreshed)
-        self.iface.mapCanvas().mapRenderer().destinationSrsChanged.connect(self.onCrsChanged)
-        self.iface.mapCanvas().mapRenderer().mapUnitsChanged.connect(self.onCrsChanged)
-        self.iface.mapCanvas().mapRenderer().hasCrsTransformEnabled.connect(
-            self.onCrsTransformEnabled)
-        QgsMapLayerRegistry.instance().layerWillBeRemoved.connect(self.delLayer)
-        self.iface.currentLayerChanged.connect(self.refreshLayerButtons)
+        self._iface = iface
+        self._iface.mapCanvas().extentsChanged.connect(self.on_extents_changed)
+        # self.iface.mapCanvas().mapCanvasRefreshed.connect(
+        # self.on_canvas_refreshed)
+        self._iface.mapCanvas().mapRenderer().destinationSrsChanged.connect(
+            self.on_crs_changed)
+        self._iface.mapCanvas().mapRenderer().mapUnitsChanged.connect(
+            self.on_crs_changed)
+        self._iface.mapCanvas().mapRenderer().hasCrsTransformEnabled.connect(
+            self.on_crs_trans_form_enabled)
+        QgsMapLayerRegistry.instance().layerWillBeRemoved.connect(
+            self.del_layer)
+        self._iface.currentLayerChanged.connect(self.refresh_layer_buttons)
 
-        self.refreshLayerButtons()
+        self.refresh_layer_buttons()
 
-        self.onExtentsChanged()
-        self.onCrsChanged()
-        self.onCrsTransformEnabled(
-            self.iface.mapCanvas().hasCrsTransformEnabled())
+        self.on_extents_changed()
+        self.on_crs_changed()
+        self.on_crs_trans_form_enabled(
+            self._iface.mapCanvas().hasCrsTransformEnabled())
 
     def refresh_layers(self):
         """
         Checks if the layers in the canvas list have already been added.
         If not, then add to the property viewer canvas.
         """
-        for ly in self.iface.legendInterface().layers():
-            layer_id = self._layerId(ly)
-            if not self.layerId2canvasLayer.has_key(layer_id):
-                self.addLayer(layer_id)
-        # QCoreApplication.processEvents(QEventLoop.ExcludeSocketNotifiers|QEventLoop.ExcludeUserInputEvents)
+        for ly in self._iface.legendInterface().layers():
+            layer_id = self._layer_id(ly)
+            if layer_id not in self._layer_id_2_canvas_layer:
+                self.add_layer(layer_id)
+        # QCoreApplication.processEvents(
+        # QEventLoop.ExcludeSocketNotifiers|QEventLoop.ExcludeUserInputEvents)
 
-    def onExtentsChanged(self):
-        prevFlag = self.canvas.renderFlag()
+    def on_extents_changed(self):
+        """
+        Implemented when extent changes
+        """
+        prev_flag = self.canvas.renderFlag()
         self.canvas.setRenderFlag(False)
 
-        self.canvas.setExtent(self.iface.mapCanvas().extent())
-        self.canvas.zoomByFactor(self.scaleFactor.value())
+        self.canvas.setExtent(self._iface.mapCanvas().extent())
+        self.canvas.zoomByFactor(self.scale_factor.value())
         # self.canvas.refresh()
 
-        self.canvas.setRenderFlag(prevFlag)
+        self.canvas.setRenderFlag(prev_flag)
 
-    def onCrsChanged(self):
-        prevFlag = self.canvas.renderFlag()
+    def on_crs_changed(self):
+        """
+        Implemented when CRS changes
+        """
+        prev_flag = self.canvas.renderFlag()
         self.canvas.setRenderFlag(False)
 
-        renderer = self.iface.mapCanvas().mapRenderer()
-        self._setRendererCrs(self.canvas.mapRenderer(),
-                             self._rendererCrs(renderer))
+        renderer = self._iface.mapCanvas().mapRenderer()
+        self._set_renderer_crs(
+            self.canvas.mapRenderer(), self._renderer_crs(renderer))
         self.canvas.mapRenderer().setMapUnits(renderer.mapUnits())
 
-        self.canvas.setRenderFlag(prevFlag)
+        self.canvas.setRenderFlag(prev_flag)
 
-    def onCrsTransformEnabled(self, enabled):
-        prevFlag = self.canvas.renderFlag()
+    def on_crs_trans_form_enabled(self, enabled):
+        """
+        :param enabled:
+        """
+        prev_flag = self.canvas.renderFlag()
         self.canvas.setRenderFlag(False)
 
         self.canvas.mapRenderer().setProjectionsEnabled(enabled)
 
-        self.canvas.setRenderFlag(prevFlag)
+        self.canvas.setRenderFlag(prev_flag)
 
-    def refreshLayerButtons(self):
-        layer = self.iface.activeLayer()
+    def refresh_layer_buttons(self):
+        layer = self._iface.activeLayer()
 
-        isLayerSelected = layer != None
-        hasLayer = False
+        is_layer_selected = layer is not None
+        has_layer = False
         for l in self.canvas.layers():
-            if l == layer:
-                hasLayer = True
+            if l is layer:
+                has_layer = True
                 break
 
-        self.addLayerBtn.setEnabled(isLayerSelected and not hasLayer)
-        self.delLayerBtn.setEnabled(isLayerSelected and hasLayer)
+        self.add_layer_btn.setEnabled(is_layer_selected and not has_layer)
+        self.del_layer_btn.setEnabled(is_layer_selected and has_layer)
 
-    def getLayerSet(self):
-        return map(lambda x: self._layerId(x.layer()), self.canvasLayers)
+    def get_layer_set(self):
+        """
+        Gets Lay set
+        :rtype : map
+        :return:
+        """
+        return map(lambda x: self._layer_id(x.layer()), self.canvas_layers)
 
-    def setLayerSet(self, layerIds=None):
-        prevFlag = self.canvas.renderFlag()
+    def set_layer_set(self, layer_ids=None):
+        """
+        :param layer_ids:
+        """
+        prev_flag = self.canvas.renderFlag()
         self.canvas.setRenderFlag(False)
 
-        if layerIds == None:
-            self.layerId2canvasLayer = {}
-            self.canvasLayers = []
+        if layer_ids is None:
+            self._layer_id_2_canvas_layer = {}
+            self.canvas_layers = []
             self.canvas.setLayerSet([])
 
         else:
-            for lid in layerIds:
-                self.addLayer(lid)
+            for lid in layer_ids:
+                self.add_layer(lid)
 
-        self.refreshLayerButtons()
-        self.onExtentsChanged()
-        self.canvas.setRenderFlag(prevFlag)
+        self.refresh_layer_buttons()
+        self.on_extents_changed()
+        self.canvas.setRenderFlag(prev_flag)
 
-    def addLayer(self, layerId=None):
-        if layerId == None:
-            layer = self.iface.activeLayer()
+    def add_layer(self, layer_id=None):
+        """
+        Add layer
+        :param layer_id:
+        :return:
+        """
+        if layer_id is None:
+            layer = self._iface.activeLayer()
         else:
-            layer = QgsMapLayerRegistry.instance().mapLayer(layerId)
+            layer = QgsMapLayerRegistry.instance().mapLayer(layer_id)
 
-        if layer == None:
+        if layer is None:
             return
 
-        prevFlag = self.canvas.renderFlag()
+        prev_flag = self.canvas.renderFlag()
         self.canvas.setRenderFlag(False)
 
         # add the layer to the map canvas layer set
-        self.canvasLayers = []
+        self.canvas_layers = []
         id2cl_dict = {}
-        for l in self.iface.legendInterface().layers():
-            lid = self._layerId(l)
-            if self.layerId2canvasLayer.has_key(lid):  # previously added
-                cl = self.layerId2canvasLayer[lid]
+        for l in self._iface.legendInterface().layers():
+            lid = self._layer_id(l)
+            # previously added
+            if lid in self._layer_id_2_canvas_layer:
+                cl = self._layer_id_2_canvas_layer[lid]
             elif l == layer:  # Selected layer
                 cl = QgsMapCanvasLayer(layer)
             else:
                 continue
 
             id2cl_dict[lid] = cl
-            self.canvasLayers.append(cl)
+            self.canvas_layers.append(cl)
 
-        self.layerId2canvasLayer = id2cl_dict
-        self.canvas.setLayerSet(self.canvasLayers)
+        self._layer_id_2_canvas_layer = id2cl_dict
+        self.canvas.setLayerSet(self.canvas_layers)
 
-        self.refreshLayerButtons()
-        self.onExtentsChanged()
-        self.canvas.setRenderFlag(prevFlag)
+        self.refresh_layer_buttons()
+        self.on_extents_changed()
+        self.canvas.setRenderFlag(prev_flag)
 
-    def delLayer(self, layerId=None):
-        if layerId == None:
-            layer = self.iface.activeLayer()
-            if layer == None:
+    def del_layer(self, layer_id=None):
+        """
+        :param layer_id:
+        :return:
+        """
+        if layer_id is None:
+            layer = self._iface.activeLayer()
+            if layer is None:
                 return
-            layerId = self._layerId(layer)
+            layer_id = self._layer_id(layer)
 
         # remove the layer from the map canvas layer set
-        if not self.layerId2canvasLayer.has_key(layerId):
+        if layer_id not in self._layer_id_2_canvas_layer:
             return
 
-        prevFlag = self.canvas.renderFlag()
+        prev_flag = self.canvas.renderFlag()
         self.canvas.setRenderFlag(False)
 
-        cl = self.layerId2canvasLayer[layerId]
-        del self.layerId2canvasLayer[layerId]
-        self.canvasLayers.remove(cl)
-        self.canvas.setLayerSet(self.canvasLayers)
+        cl = self._layer_id_2_canvas_layer[layer_id]
+        del self._layer_id_2_canvas_layer[layer_id]
+        self.canvas_layers.remove(cl)
+        self.canvas.setLayerSet(self.canvas_layers)
         del cl
 
-        self.refreshLayerButtons()
-        self.onExtentsChanged()
-        self.canvas.setRenderFlag(prevFlag)
+        self.refresh_layer_buttons()
+        self.on_extents_changed()
+        self.canvas.setRenderFlag(prev_flag)
 
-    def _layerId(self, layer):
+    def _layer_id(self, layer):
+        """
+        :rtype : int
+        :param layer:
+        :return:
+        """
         if hasattr(layer, 'id'):
             return layer.id()
 
         return layer.getLayerID()
 
-    def _rendererCrs(self, renderer):
+    def _renderer_crs(self, renderer):
+        """
+        :param renderer:
+        :return:
+        """
         if hasattr(renderer, 'destinationCrs'):
             return renderer.destinationCrs()
         return renderer.destinationSrs()
 
-    def _setRendererCrs(self, renderer, crs):
+    def _set_renderer_crs(self, renderer, crs):
+        """
+        :param renderer:
+        :param crs:
+        :return:
+        """
         if hasattr(renderer, 'setDestinationCrs'):
             return renderer.setDestinationCrs(crs)
 

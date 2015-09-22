@@ -139,12 +139,12 @@ class HouseholdSavingsEditor(QDialog,MapperMixin):
         self.gridLayout.addWidget(self.buttonBox,3,0,1,2)
         
         #Load saving options
-        loadComboSelections(self.cboSavingsOption.comboBox(),CheckSavingsOption)
+        loadComboSelections(self.cboSavingsOption.combo_box(),CheckSavingsOption)
         
         #Configure mappings
-        self.addMapping("OptionID",self.cboSavingsOption.comboBox(),True, \
+        self.addMapping("OptionID",self.cboSavingsOption.combo_box(),True, \
                         pseudoname=QApplication.translate("HouseholdSavingEditor","Saving option type"))
-        self.addMapping("OtherOption",self.cboSavingsOption.lineEdit())
+        self.addMapping("OtherOption",self.cboSavingsOption.line_edit())
         
         #Connect signals
         self.connect(self.buttonBox, SIGNAL("accepted()"),self.submit)
@@ -203,7 +203,7 @@ class PriorityServiceEditor(QDialog,MapperMixin):
         self.gridLayout.addWidget(self.lblPService,1,0,1,1)
         
         self.cboPService = ComboBoxWithOther(self)
-        self.cboPService.lineEdit().setMaxLength(30)
+        self.cboPService.line_edit().setMaxLength(30)
         self.gridLayout.addWidget(self.cboPService,1,1,1,1)
         
         self.lblRank = QLabel(self)
@@ -220,16 +220,16 @@ class PriorityServiceEditor(QDialog,MapperMixin):
         self.gridLayout.addWidget(self.buttonBox,3,0,1,2)
         
         #Load combobox options
-        loadComboSelections(self.cboPService.comboBox(),CheckInputService)
+        loadComboSelections(self.cboPService.combo_box(),CheckInputService)
         self.cboRank.addItem("")
         self.cboRank.addItem(QApplication.translate("PriorityServiceEditor","3 (Highest)"), 3)
         self.cboRank.addItem("2", 2)
         self.cboRank.addItem(QApplication.translate("PriorityServiceEditor","1 (Lowest)"), 1)
         
         #Configure mappings
-        self.addMapping("itemID",self.cboPService.comboBox(),True, \
+        self.addMapping("itemID",self.cboPService.combo_box(),True, \
                         pseudoname=QApplication.translate("PriorityServiceEditor","Priority Service"))
-        self.addMapping("OtherItem",self.cboPService.lineEdit())
+        self.addMapping("OtherItem",self.cboPService.line_edit())
         self.addMapping("Rank",self.cboRank,True)
         
         #Connect signals
@@ -398,7 +398,7 @@ class SpatialCoordinatesEditor(QDialog,Ui_frmCoordinatesEditor):
         self.buttonBox.rejected.connect(self.reject)
         
         #Set coordinate values
-        self.coordWidget.setXY(x, y)
+        self.coordWidget.set_x_y(x, y)
         
     def xCoord(self):
         return self.sbXCoord.value()
@@ -410,7 +410,7 @@ class SpatialCoordinatesEditor(QDialog,Ui_frmCoordinatesEditor):
         return (self.xCoord(),self.yCoord())
     
     def qgsPoint(self):
-        return self.coordWidget.geomPoint()
+        return self.coordWidget.geom_point()
     
 class GardenSurveyPointEditor(QDialog,Ui_frmCoordinatesEditor,MapperMixin):
     '''
@@ -428,7 +428,7 @@ class GardenSurveyPointEditor(QDialog,Ui_frmCoordinatesEditor,MapperMixin):
         self.buttonBox.accepted.connect(self.submit)
         self.buttonBox.rejected.connect(self.cancel)
         
-        self.coordWidget.setSRID(GardenSurveyPoint)
+        self.coordWidget.set_srid(GardenSurveyPoint)
         
         #Define mappings
         self.addMapping("Geom", self.coordWidget)

@@ -2,7 +2,7 @@
 /***************************************************************************
 Name                 : ComboBox with other
 Description          : Custom QComboBox which activates a QLineEdit control
-                       for entering those items that are not in the list. 
+                       for entering those items that are not in the list.
 Date                 : 24/March/2014
 copyright            : (C) 2015 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
@@ -33,90 +33,104 @@ class ComboBoxWithOther(QWidget):
         QWidget.__init__(self, parent)
         self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
 
-        self._vboxLayout = QVBoxLayout(self)
-        self._vboxLayout.setMargin(0)
+        self._v_box_layout = QVBoxLayout(self)
+        self._v_box_layout.setMargin(0)
 
-        self._cboItem = QComboBox(self)
-        self._cboItem.setMinimumSize(QSize(0, 30))
-        self._vboxLayout.addWidget(self._cboItem)
+        self._combo_Item = QComboBox(self)
+        self._combo_Item.setMinimumSize(QSize(0, 30))
+        self._v_box_layout.addWidget(self._combo_Item)
 
-        self._txtOther = QLineEdit(self)
-        self._txtOther.setMinimumSize(QSize(0, 30))
-        self._txtOther.setVisible(False)
-        self._vboxLayout.addWidget(self._txtOther)
+        self._txt_other = QLineEdit(self)
+        self._txt_other.setMinimumSize(QSize(0, 30))
+        self._txt_other.setVisible(False)
+        self._v_box_layout.addWidget(self._txt_other)
 
         # We are using random text here so that the custom line edit is not
         # shown on selecting a blank item in the list.
-        self._activatorText = QApplication.translate(
+        self._activator_text = QApplication.translate(
             "ComboBoxWithOther", "Other")
 
         # Connect signals
-        self.connect(self._cboItem, SIGNAL(
-            "currentIndexChanged(const QString&)"), self.onComboIndexChanged)
+        self.connect(
+            self._combo_Item, SIGNAL("currentIndexChanged(const QString&)"),
+            self.on_combo_index_changed)
 
     def sizeHint(self):
-        '''
+        """
         Size hint for the control.
-        '''
+        :rtype : QSize
+        """
         return QSize(190, 80)
 
     def minimumHeight(self):
-        '''
+        """
         Minimum widget height.
-        '''
+        :rtype : int
+        """
         return 70
 
-    def comboBox(self):
-        '''
+    def combo_box(self):
+        """
         Returns a reference to the combobox control.
-        '''
-        return self._cboItem
+        :rtype : QComboBox
+        """
+        return self._combo_Item
 
-    def lineEdit(self):
-        '''
+    def line_edit(self):
+        """
         Returns a reference to the line edit control.
-        '''
-        return self._txtOther
+        :rtype : QLineEdit
+        """
+        return self._txt_other
 
-    def activatorText(self):
-        '''
-        Returns the text that is used to display the line edit control that enables the user to
-        enter values that are not available in the combobox list.
-        '''
-        return self._activatorText
+    def activator_text(self):
+        """
+        Returns the text that is used to display the line edit control that
+        enables the user to enter values that are not available in the
+        combobox list.
+        :rtype : QApplication
+        """
+        return self._activator_text
 
-    def setActivatorText(self, activatorText):
-        '''
-        Set the text that will be used to display the line edit control that enables the user to
-        enter values that are not available in the combobox list.
-        '''
-        if not isinstance(activatorText, str):
-            self._activatorText = str(activatorText)
+    def set_activator_text(self, activator_text):
+        """
+        Set the text that will be used to display the line edit control that
+        enables the user to enter values that are not available in the
+        combobox list.
+        :param activator_text:
+        """
+        if not isinstance(activator_text, str):
+            self._activator_text = str(activator_text)
         else:
-            self._activatorText = activatorText
+            self._activator_text = activator_text
 
-    def onComboIndexChanged(self, indexText):
-        '''
-        Slot raised when the current index of the combobox changes. This searches for the activator text
-        and loads the line edit for entering 'Other' value.
-        '''
-        self._txtOther.clear()
+    def on_combo_index_changed(self, index_text):
+        """
+        Slot raised when the current index of the combobox changes. This
+        searches for the activator text and loads the line edit for entering
+        'Other' value.
+        :param index_text:
+        """
+        self._txt_other.clear()
 
-        if indexText == self._activatorText:
-            self._txtOther.setVisible(True)
+        if index_text == self._activator_text:
+            self._txt_other.setVisible(True)
         else:
-            self._txtOther.setVisible(False)
+            self._txt_other.setVisible(False)
 
     def validate(self):
-        '''
+        """
         Validates the state of the control
-        '''
-        isValid = True
+        :rtype : bool, str
+        """
+        is_valid = True
         msg = ""
 
-        if self._cboItem.currentText() == self._activatorText and self._txtOther.text() == "":
-            msg = QApplication.translate("ComboBoxWithOther",
-                                         "'{0}' text cannot be empty.".format(unicode(self._activatorText)))
-            isValid = False
+        if self._combo_Item.currentText() is self._activator_text \
+                and self._txt_other.text() is "":
+            msg = QApplication.translate(
+                "ComboBoxWithOther", "'{0}' text cannot be empty.".format(
+                    unicode(self._activator_text)))
+            is_valid = False
 
-        return isValid, msg
+        return is_valid, msg

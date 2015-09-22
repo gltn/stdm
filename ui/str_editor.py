@@ -135,15 +135,15 @@ class SocialTenureEditor(QDialog, Ui_frmSTREditor, MapperMixin):
         #Connect signals
         self.buttonBox.accepted.connect(self.submit)
         self.buttonBox.rejected.connect(self.cancel)
-        self.cbo_str_type.comboBox().currentIndexChanged.connect(self._on_str_changed)
+        self.cbo_str_type.combo_box().currentIndexChanged.connect(self._on_str_changed)
         self.gb_conflict.toggled.connect(self._on_conflict_selected)
         self.cbo_doc_type.currentIndexChanged.connect(self._on_document_type_changed)
         self.btn_add_doc.clicked.connect(self.load_str_document_selector)
 
-        self.addMapping("type", self.cbo_str_type.comboBox(), True,
+        self.addMapping("type", self.cbo_str_type.combo_box(), True,
                         pseudoname = QApplication.translate("SocialTenureEditor",
                                                             "Social Tenure Relationship Type"))
-        self.addMapping("other_type", self.cbo_str_type.lineEdit())
+        self.addMapping("other_type", self.cbo_str_type.line_edit())
         self.addMapping("pay_land_taxes", self.chk_land_taxes)
         self.addMapping("has_conflict", self.gb_conflict)
         self.addMapping("conflict_party", self.txt_conflict_party)
@@ -157,7 +157,7 @@ class SocialTenureEditor(QDialog, Ui_frmSTREditor, MapperMixin):
         self.addMapping("property_docs", self.doc_manager, get_func=property_deed_filter)
 
     def _on_str_changed(self, index):
-        str_type = self.cbo_str_type.comboBox().currentText()
+        str_type = self.cbo_str_type.combo_box().currentText()
 
         #Land taxes condition
         if str_type == SocialTenureRelationshipType.ownership.description or \
@@ -201,21 +201,21 @@ class SocialTenureEditor(QDialog, Ui_frmSTREditor, MapperMixin):
         )
 
         #Houseunit
-        self.fk_house_unit.setDatabaseModel(HouseUnit)
+        self.fk_house_unit.set_database_model(HouseUnit)
         self.fk_house_unit.setEntitySelector(HouseUnitEntityBrowser)
         self.fk_house_unit.setSupportsList(False)
         self.fk_house_unit.setCellFormatters(house_unit_formatters())
-        self.fk_house_unit.setNotificationBar(self._notifBar)
+        self.fk_house_unit.set_notification_bar(self._notifBar)
         self.fk_house_unit.initialize()
         self.addMapping("houseunit", self.fk_house_unit, True,
                         pseudoname = QApplication.translate("SocialTenureEditor", "Houseunit"))
 
         #Household
-        self.fk_household.setDatabaseModel(Household)
+        self.fk_household.set_database_model(Household)
         self.fk_household.setEntitySelector(HouseholdEntityBrowser)
         self.fk_household.setSupportsList(False)
         self.fk_household.setCellFormatters(household_formatters())
-        self.fk_household.setNotificationBar(self._notifBar)
+        self.fk_household.set_notification_bar(self._notifBar)
         self.fk_household.initialize()
         self.addMapping("household", self.fk_household, True,
                         pseudoname = QApplication.translate("SocialTenureEditor", "Household"))

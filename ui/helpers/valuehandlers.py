@@ -264,7 +264,7 @@ class CoordinatesWidgetValueHandler(ControlValueHandler):
     controlType = CoordinatesWidget
     
     def value(self):
-        return self.control.toEWKT()
+        return self.control.to_ewkt()
     
     def setValue(self,value):
         pass
