@@ -198,7 +198,7 @@ class ConfigTableReader(object):
     def table_relation(self, table_name):
         '''Method to read all defined table relationship in the config file'''
         relation_model = None
-        table_attrib = tableRelations(tableName, "relations")
+        table_attrib = tableRelations(table_name, "relations")
         if table_attrib is None:
             return table_attrib
         if len(table_attrib)>0:
@@ -212,7 +212,7 @@ class ConfigTableReader(object):
     def geometry_collection(self, table_name):
         '''Method to read all defined table relationship in the config file'''
         geometry_model = None
-        geom_attrib = geometryColumns(tableName, 'geometryz')
+        geom_attrib = geometryColumns(table_name, 'geometryz')
         if geom_attrib == None:
             return geom_attrib
         if len(geom_attrib) > 0:
