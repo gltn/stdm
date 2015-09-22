@@ -157,7 +157,7 @@ class ConfigTableReader(object):
     def columns(self, profile, table_name):
         '''Functions to read columns details from the config for the given table''' 
         column_model = None
-        table_attrib = tableColumns(profile,tableName)
+        table_attrib = tableColumns(profile, table_name)
         if len(table_attrib) > 0:
             col_headers = table_attrib[0].keys()
             col_vals = [item.values() for item in table_attrib]
