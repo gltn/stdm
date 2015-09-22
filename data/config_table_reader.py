@@ -72,7 +72,7 @@ class ConfigTableReader(object):
     def table_list_model(self, profile):
         '''pass the table list to a listview model'''
         tdata = self.table_names(profile)
-        if not tData is None:
+        if not tdata is None:
             model = listEntityViewer(tdata)
             return model
         else:
@@ -124,16 +124,16 @@ class ConfigTableReader(object):
         to a combo box
         :return:
         """
-        tbl_list= self.full_table_list()
+        tbl_list = self.full_table_list()
         tbl_model = listEntityViewer(tbl_list)
         return tbl_model
         
     def stdm_profiles(self):
-        prof_list=profiles()
+        prof_list = profiles()
         return prof_list
     
     def lookup_table_model(self):
-        model=listEntityViewer(self.lookup_table())
+        model = listEntityViewer(self.lookup_table())
         return model
     
     def lookup_table(self):

@@ -229,7 +229,7 @@ def tableRelations(tableName,element):
                 return relationData  
             
 def geometryColumns(tableName, element):
-    tree,root = parseRootElement()
+    tree, root = parseRootElement()
     geomData = []
     for elem in root.findall('profile/table'):
         if elem.get('name') == tableName:
