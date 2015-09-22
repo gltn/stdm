@@ -8,8 +8,9 @@ Description          : Lookup values for tables. This is a quickfix for
                        defining lookup values. This will be used to complement
                        a lookup management module in the future.
 Date                 : 22/June/2013 
-copyright            : (C) 2013 by John Gitau
-email                : gkahiu@gmail.com
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -87,67 +88,40 @@ stdm_lookups = {
                                         QApplication.translate("Lookup","Other")]
                }
 
-def initLookups():
+def init_lookups():
     '''
     Loads the initial lookup values into the STDM database.
     First check if there is a flag in the registry for asserting whether the lookup values have been initialized.
     If False or the key does not exist then initialize then set key to True
     '''                
-    regConfig = RegistryConfig()            
-    lookupReg = regConfig.read([DATABASE_LOOKUP])
+    reg_config = RegistryConfig()            
+    lookup_reg = reg_config.read([DATABASE_LOOKUP])
     
-    if len(lookupReg) == 0 :
-        loadLookups()  
+    if len(lookup_reg) == 0:
+        load_lookups()  
     else:
-        lookupState = lookupReg[DATABASE_LOOKUP].lower()  
-        if lookupState == "false":loadLookups()            
+        lookup_state = lookup_reg[DATABASE_LOOKUP].lower()  
+        if lookup_state == "false":load_lookups()            
                                                 
-def loadLookups():
+def load_lookups():
     for k,v in stdm_lookups.iteritems():
-            modelName = k
-            Values = v
-            model = globals()[modelName]
-            modelInstance = model()
-            queryObj = modelInstance.queryObject()
+            model_name = k
+            values = v
+            model = globals()[model_name]
+            model_instance = model()
+            query_obj = model_instance.queryObject()
             
             #Ensure item does not exist before being inserted
             for lk in v:
                 #Convert QString to Python string
                 lk = unicode(lk)
-                lkObj = queryObj.filter(model.name == lk).first()
+                lkObj = query_obj.filter(model.name == lk).first()
                 if lkObj == None:
                     lkInst = model()                
                     lkInst.name = lk
                     lkInst.save()  
     
     #Update registry
-    regConfig = RegistryConfig()            
-    regConfig.write({DATABASE_LOOKUP:str(True)})  
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    reg_config = RegistryConfig()            
+    reg_config.write({DATABASE_LOOKUP:str(True)})  
     
