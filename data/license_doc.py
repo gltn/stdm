@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- stdm
-                                 A QGIS plugin
- Securing land and property rights for all
-                              -------------------
-        begin                : 2014-03-04
-        copyright            : (C) 2014 by GLTN
-        email                : njoroge.solomon@yahoo.com
+Name                 : STDM license file
+Description          : - ??
+Date                 : 28/May/2013 
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -19,9 +18,12 @@
  *                                                                         *
  ***************************************************************************/
 """
-from stdm.data import FilePaths 
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+
+from stdm.data import FilePaths 
+
 class LicenseDocument(object):
     def __init__(self):
         self.file = None
@@ -30,7 +32,6 @@ class LicenseDocument(object):
     def open_license_file(self):
         '''get the path to the license file'''
         self.file = self.filehandler.stdm_license_doc()
-        #self.file=docFile
     
     def read_license_info(self):
         '''read license information for user '''
@@ -45,5 +46,4 @@ class LicenseDocument(object):
     def text_font(self):
         '''set document font'''
         doc_font=QFont('Helvetica [Cronyx]',10,QFont.Bold)
-        #docFont.setBold(True)
         return doc_font
