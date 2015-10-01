@@ -58,7 +58,7 @@ class SQLInsert(object):
     def spatialRelation(self):
         # needed for creation of map on the composer and reporting on social tenure
         socialTenure = "CREATE OR REPLACE VIEW social_tenure_relations AS SELECT party.id, party.family_name AS party_surname, party.other_names, \
-        party.identification, spatial_unit.code AS spatial_unit_number, spatial_unit.name AS spatial_unit_name, spatial_unit.geom_polygon AS geometry, \
+        party.identification, spatial_unit.code AS spatial_unit_code, spatial_unit.geom_polygon AS geometry, social_tenure_relationship.id AS social_tenure_id, \
         social_tenure_relationship.social_tenure_type FROM party, spatial_unit, social_tenure_relationship \
         WHERE spatial_unit.id = social_tenure_relationship.spatial_unit AND party.id = social_tenure_relationship.party; "
             

@@ -348,4 +348,4 @@ class Ui_frmNewSTR(object):
         self.label_18.setText(_translate("frmNewSTR", "If you want to review or change any selections, click Back. If you are satisified with the selections, click Finish.", None))
 
 from PyQt4 import QtWebKit
-import resources_rc
+from stdm import resources_rc

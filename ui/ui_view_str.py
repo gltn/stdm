@@ -152,4 +152,4 @@ class Ui_frmManageSTR(object):
 
 from qgis.gui import QgsCollapsibleGroupBoxBasic
 from .property_preview import SpatialPreview
-import resources_rc
+from stdm import resources_rc

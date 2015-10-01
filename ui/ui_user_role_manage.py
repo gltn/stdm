@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_user_role_manage.ui'
 #
-# Created: Wed Jul 08 17:54:46 2015
-#      by: PyQt4 UI code generator 4.10.3
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -126,4 +125,4 @@ class Ui_frmSysManageAccounts(object):
         self.label.setText(_translate("frmSysManageAccounts", "<html><head/><body><p>Click on a role in the table on the left-hand side below then check/uncheck the users in the table on the right-hand side to add/remove them in this role.</p></body></html>", None))
         self.tbUserRole.setTabText(self.tbUserRole.indexOf(self.tab_3), _translate("frmSysManageAccounts", "Mappings", None))
 
-import resources_rc
+from stdm import resources_rc
