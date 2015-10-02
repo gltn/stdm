@@ -124,8 +124,5 @@ class Ui_frmSysManageAccounts(object):
         self.tbUserRole.setTabText(self.tbUserRole.indexOf(self.tab_2), _translate("frmSysManageAccounts", "Roles", None))
         self.label.setText(_translate("frmSysManageAccounts", "<html><head/><body><p>Click on a role in the table on the left-hand side below then check/uncheck the users in the table on the right-hand side to add/remove them in this role.</p></body></html>", None))
         self.tbUserRole.setTabText(self.tbUserRole.indexOf(self.tab_3), _translate("frmSysManageAccounts", "Mappings", None))
-<<<<<<< HEAD
-=======
 
 from stdm import resources_rc
->>>>>>> rel-1_1_2
