@@ -8,7 +8,7 @@
 				<column fullname="Surname" name="family_name" null="yes" oldname="family_name" searchable="yes" size="25" str_col="yes" type="character varying" />
 				<column fullname="other given names" name="other_names" null="yes" oldname="other_names" searchable="yes" size="25" str_col="yes" type="character varying" />
 				<column fullname="address id" name="address" null="yes" size="25" str_col="no" type="character varying" />
-				<column fullname="identity" name="identification" null="yes" oldname="identification" searchable="yes" size="" str_col="yes" type="integer" />
+				<column fullname="Identification" name="identification" null="yes" oldname="identification" searchable="yes" size="50" str_col="yes" type="character varying" />
 				<column fullname="mobile" name="contact_telephone" null="yes" size="25" str_col="no" type="character varying" />
 				<column fullname="date of birth" name="date_of_birth" null="yes" oldname="date_of_birth" searchable="no" size="" str_col="no" type="date" />
 				<column fullname="sex" lookup="check_gender" name="gender" null="yes" oldname="gender" searchable="no" size="25" str_col="yes" type="character varying" />
@@ -57,6 +57,7 @@
 				<column fullname="From whom/ where" name="source" null="yes" size="50" type="character varying" />
 				<column fullname="" name="document_id" null="yes" size="50" type="character varying" />
 				<column fullname="" name="filename" null="yes" size="50" type="character varying" />
+				<column fullname="Document Size" name="doc_size" null="yes" size="" type="integer" />
 			</columns>
 			<relations>
 			</relations>
@@ -158,9 +159,9 @@
 		</table>
 	</profile>
 	<display_names>
-		<display_name layer_name="spatial_unit.geom_polygon">Structures</display_name>
-		<display_name layer_name="spatial_unit.geom_line">spatial_unit.geom_line</display_name>
-		<display_name layer_name="spatial_unit.geom_point">spatial_unit.geom_point</display_name>
+		<display_name layer_name="spatial_unit.geom_polygon">Spatial Unit Polygon</display_name>
+		<display_name layer_name="spatial_unit.geom_line">Spatial Unit Polyline</display_name>
+		<display_name layer_name="spatial_unit.geom_point">Spatial Unit Point</display_name>
 	</display_names>
 	<profile fullname="" name="urban" />
 </schema>
