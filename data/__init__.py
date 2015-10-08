@@ -33,7 +33,7 @@ from .globals import app_dbconn
 from .modelformatters import (
     respondent_role_formatter,
     LookupFormatter,
-    witness_reletionship_formatter,
+    witness_relationship_formatter,
     DoBFormatter,
     gender_formatter,
     marital_status_formatter,
