@@ -62,8 +62,8 @@ class SurveyEditor(QDialog,Ui_frmSurvey,MapperMixin):
         enumFKMapper.set_database_model(Enumerator)
         enumFKMapper.setEntitySelector(EnumeratorEntityBrowser, VIEW|MANAGE)
         enumFKMapper.setSupportsList(False)
-        #enumFKMapper.addCellFormatter("GenderID",genderFormatter)
-        #enumFKMapper.addCellFormatter("MaritalStatusID",maritalStatusFormatter)
+        #enumFKMapper.addCellFormatter("GenderID",gender_formatter)
+        #enumFKMapper.addCellFormatter("MaritalStatusID",marital_status_formatter)
         enumFKMapper.set_notification_bar(self._notifBar)
         enumFKMapper.initialize()
 
@@ -110,7 +110,6 @@ class SurveyEditor(QDialog,Ui_frmSurvey,MapperMixin):
         currDateStr = currDate.strftime("%Y%m%d%H%M")[:-1]
         
         return "{0}-{1}".format(currDateStr,rdCode)
-        
         
         
         

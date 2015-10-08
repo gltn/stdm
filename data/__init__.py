@@ -31,20 +31,20 @@ from .qtmodels import (
 from .globals import app_dbconn
 
 from .modelformatters import (
-    respondentRoleFormatter,
+    respondent_role_formatter,
     LookupFormatter,
-    witnessRelationshipFormatter,
+    witness_reletionship_formatter,
     DoBFormatter,
-    genderFormatter,
-    maritalStatusFormatter,
-    savingOptionFormatter,
-    inputServiceFormatter, 
-    socioEconImpactFormatter,
-    foodCropCategoryFormatter,
-    geometryFormatter,
-    respondentNamesFormatter,
-    enumeratorNamesFormatter,
-    dateFormatter
+    gender_formatter,
+    marital_status_formatter,
+    saving_option_formatter,
+    input_service_formatter, 
+    socio_econ_impact_formatter,
+    food_crop_category_formatter,
+    geometry_formatter,
+    respondent_names_formatter,
+    enumerator_names_formatter,
+    date_formatter
 )
 
 from .mapping import (

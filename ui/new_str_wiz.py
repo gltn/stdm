@@ -559,8 +559,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         inheritanceFormatter = LookupFormatter(CheckInheritanceType)
                 
         enjoyRightMapping = OrderedDict()
-        enjoyRightMapping[str(QApplication.translate("newSTRWiz","Inheritance From"))] = str(inheritanceFormatter.setDisplay(enjoyRight.InheritanceType).toString())
-        enjoyRightMapping[str(QApplication.translate("newSTRWiz","State"))] = str(deadAliveFormatter.setDisplay(enjoyRight.State).toString())
+        enjoyRightMapping[str(QApplication.translate("newSTRWiz","Inheritance From"))] = str(inheritanceFormatter.set_display(enjoyRight.InheritanceType).toString())
+        enjoyRightMapping[str(QApplication.translate("newSTRWiz","State"))] = str(deadAliveFormatter.set_display(enjoyRight.State).toString())
         enjoyRightMapping[str(QApplication.translate("newSTRWiz","Receiving Date"))] = str(enjoyRight.ReceivingDate.year)
         
         return enjoyRightMapping
@@ -596,7 +596,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         if conflict == None:
             return conflictMapping
         
-        conflictMapping[str(QApplication.translate("newSTRWiz","Status"))] = str(conflictFormatter.setDisplay(conflict.StateID).toString())
+        conflictMapping[str(QApplication.translate("newSTRWiz","Status"))] = str(conflictFormatter.set_display(conflict.StateID).toString())
         
         if conflict.Description:
             conflictMapping[str(QApplication.translate("newSTRWiz","Description"))] = conflict.Description
@@ -925,5 +925,3 @@ class PropertyWorker(QThread):
         
         
         
-        
-            

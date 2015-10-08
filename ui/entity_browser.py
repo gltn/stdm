@@ -36,7 +36,7 @@ from .helpers import SupportsManageMixin
 from .notification import NotificationBar, ERROR, WARNING,INFO
 from .base_person import WitnessEditor
 from stdm.data import BaseSTDMTableModel
-from stdm.data import STDMDb, tableCols,dateFormatter, Respondent, Witness, Enumerator, tableColType
+from stdm.data import STDMDb, tableCols,date_formatter, Respondent, Witness, Enumerator, tableColType
 from .stdmdialog import DeclareMapping
 from stdm.ui.forms import (
     CustomFormDialog,
@@ -206,7 +206,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
                             attrVal = self._cellFormatters[attr](attrVal)
 
                         if not attr in self._cellFormatters and isinstance(attrVal,date):
-                            attrVal = dateFormatter(attrVal)
+                            attrVal = date_formatter(attrVal)
 
                         entityRowInfo.append(attrVal)
 
@@ -324,7 +324,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
                 if attr in self._cellFormatters:
                     attrVal = self._cellFormatters[attr](attrVal)
                 if not attr in self._cellFormatters and isinstance(attrVal, date):
-                    attrVal = dateFormatter(attrVal)
+                    attrVal = date_formatter(attrVal)
 
                 self._tableModel.set_data(propIndex, attrVal)
         except Exception as ex:
@@ -646,7 +646,7 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
         """
         lk_function= self.create_lookup_setter('gender')
         self.addCellFormatter('Female',lk_function)
-        #self.addCellFormatter("MaritalStatusID",maritalStatusFormatter)
+        #self.addCellFormatter("MaritalStatusID",marital_status_formatter)
 
     def title(self):
         return QApplication.translate("STDMEntityBrowser", "%s Records Manager")%unicode(self.tbEntityClass.title())
@@ -659,7 +659,7 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
         lkName ='gender'
         def lookupformatter(lookupvalue):
             lkformatter = modeller.lookupModel('check_gender')
-            return lkformatter.setDisplay(lookupvalue)
+            return lkformatter.set_display(lookupvalue)
         return lookupformatter
 
 class ForeignKeyBrowser(EntityBrowser):
@@ -699,8 +699,8 @@ class SurveyEntityBrowser(ContentGroupEntityBrowser):
         
         Specify formatting mappings.
         """   
-        #self.addCellFormatter("EnumeratorID",enumeratorNamesFormatter)
-        # self.addCellFormatter("RespondentID",respondentNamesFormatter)
+        #self.addCellFormatter("EnumeratorID",enumerator_names_formatter)
+        # self.addCellFormatter("RespondentID",respondent_names_formatter)
         pass
         
     def title(self):
@@ -738,4 +738,3 @@ class SurveyEntityBrowser(ContentGroupEntityBrowser):
         
         
         
-    

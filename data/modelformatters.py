@@ -8,8 +8,9 @@ Description          : When using foreign key relations in a table model, it
                        in Qt models for displaying the text/or custom object
                        properties as well as setting the model data
 Date                 : 13/June/2013 
-copyright            : (C) 2013 by John Gitau
-email                : gkahiu@gmail.com
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -24,11 +25,7 @@ email                : gkahiu@gmail.com
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-# from .database import Enumerator, Respondent, CheckGender,CheckMaritalStatus, \
-# CheckRespondentType,CheckWitnessRelationship,CheckSavingsOption,CheckInputService, \
-# CheckSocioEconomicImpact,CheckFoodCropCategory,STDMDb
-
-def intFromQType(intitem):
+def int_from_qtype(intitem):
     '''
     OBSOLETE:Converts integer from QVariant or QString to Python int, otherwise returns -1
     '''
@@ -39,7 +36,7 @@ def intFromQType(intitem):
             pyint = qint
     return pyint
 
-def dateFromQType(dateitem):
+def date_from_qtype(dateitem):
     '''
     Converts date from QVariant or QDate to Python Date
     '''
@@ -57,13 +54,13 @@ class LookupFormatter(object):
     """
     def __init__(self,model):
         self._model = model
-        self._modelInstance = self._model()
+        self._model_instance = self._model()
         
-    def setDisplay(self,itemid):
+    def set_display(self, itemid):
         """
         Set display information
         """
-        md = self._modelInstance.queryObject().filter(self._model.id == itemid).first()
+        md = self._model_instance.queryObject().filter(self._model.id == itemid).first()
         if md:            
             return md.name
         else:
@@ -74,82 +71,82 @@ class BasePersonFormatter(LookupFormatter):
     Formatter for classes that implement base person mixin. It formats the object to
     return a string containing the first and last names.
     """
-    def setDisplay(self, itemid):
-        md = self._modelInstance.queryObject().filter(self._model.id == itemid).first()
+    def set_display(self, itemid):
+        md = self._model_instance.queryObject().filter(self._model.id == itemid).first()
         if md:            
             return "{0} {1}".format(md.FirstName,md.LastName)
         else:
             return QPyNullVariant
 
-def geometryFormatter(geom):
+def geometry_formatter(geom):
     '''
     Reads point data in WKB format to X,Y coordinate value.
     '''
     x = y = 0
     
     dbSession = STDMDb.instance().session
-    geomType = dbSession.scalar(geom.ST_GeometryType())
-    if geomType == "ST_Point":
+    geom_type = dbSession.scalar(geom.ST_GeometryType())
+    if geom_type == "ST_Point":
         x = dbSession.scalar(geom.ST_X())
         y = dbSession.scalar(geom.ST_Y())
     
     return "X: {0}, Y: {1}".format(str(x),str(y))
 
-def dateFormatter(dt):
+def date_formatter(dt):
     """
     Formats the date object to a string representation.
     """
     return dt.strftime("%d-%b-%Y")
             
-def respondentRoleFormatter(roleId):
-    lkFormatter = LookupFormatter(CheckRespondentType)
-    return lkFormatter.setDisplay(roleId)
+def respondent_role_formatter(role_id):
+    lk_formatter = LookupFormatter(CheckRespondentType)
+    return lk_formatter.set_display(role_id)
 
-def respondentNamesFormatter(respondentId):
-    bpFormatter = BasePersonFormatter(Respondent)
-    return bpFormatter.setDisplay(respondentId)
+def respondent_names_formatter(respondent_id):
+    bp_formatter = BasePersonFormatter(Respondent)
+    return bp_formatter.set_display(respondent_id)
 
-def enumeratorNamesFormatter(enumeratorId):
-    bpFormatter = BasePersonFormatter(Enumerator)
-    return bpFormatter.setDisplay(enumeratorId)
+def enumerator_names_formatter(enumerator_id):
+    bp_formatter = BasePersonFormatter(Enumerator)
+    return bp_formatter.set_display(enumerator_id)
 
-def witnessRelationshipFormatter(relationshipId):
-    lkFormatter = LookupFormatter(CheckWitnessRelationship)
-    return lkFormatter.setDisplay(relationshipId)
+def witness_relationship_formatter(relationship_id):
+    lk_formatter = LookupFormatter(CheckWitnessRelationship)
+    return lk_formatter.set_display(relationship_id)
 
-def genderFormatter(genderId):
-    lkFormatter = LookupFormatter(CheckGender)
-    return lkFormatter.setDisplay(genderId)
+def gender_formatter(gender_id):
+    lk_formatter = LookupFormatter(CheckGender)
+    return lk_formatter.set_display(gender_id)
 
-def maritalStatusFormatter(mStatusId):
-    lkFormatter = LookupFormatter(CheckMaritalStatus)
-    return lkFormatter.setDisplay(mStatusId)
+def marital_status_formatter(mStatus_id):
+    lk_formatter = LookupFormatter(CheckMaritalStatus)
+    return lk_formatter.set_display(mStatus_id)
 
-def savingOptionFormatter(optionId):
-    lkFormatter = LookupFormatter(CheckSavingsOption)
-    return lkFormatter.setDisplay(optionId)
+def saving_option_formatter(option_id):
+    lk_formatter = LookupFormatter(CheckSavingsOption)
+    return lk_formatter.set_display(option_id)
 
-def inputServiceFormatter(serviceId):
-    lkFormatter = LookupFormatter(CheckInputService)
-    return lkFormatter.setDisplay(serviceId)
+def input_service_formatter(service_id):
+    lk_formatter = LookupFormatter(CheckInputService)
+    return lk_formatter.set_display(service_id)
 
-def socioEconImpactFormatter(impactId):
-    lkFormatter = LookupFormatter(CheckSocioEconomicImpact)
-    return lkFormatter.setDisplay(impactId)
+def socio_econ_impact_formatter(impact_id):
+    lk_formatter = LookupFormatter(CheckSocioEconomicImpact)
+    return lk_formatter.set_display(impact_id)
 
-def foodCropCategoryFormatter(foodCropId):
-    lkFormatter = LookupFormatter(CheckFoodCropCategory)
-    return lkFormatter.setDisplay(foodCropId)
+def food_crop_category_formatter(food_crop_id):
+    lk_formatter = LookupFormatter(CheckFoodCropCategory)
+    return lk_formatter.set_display(food_crop_id)
     
 class DoBFormatter(object):
     '''
     Formatter for displaying the current age (in years) calculated from the date of birth
     '''
-    def setDisplay(self,dob):
+    def set_display(self,dob):
         '''
         Set display information
         '''
-        dob = dateFromQType(dob)        
+        dob = date_from_qtype(dob)        
         if dob > QDate.currentDate().toPyDate():
             return QVariant()
         
@@ -166,7 +163,7 @@ class LocalityFormatter(object):
     def __init__(self):
         self.locality = Locality()
         
-    def setDisplay(self,locality):
+    def set_display(self,locality):
         '''
         Display the area name and street number
         '''
@@ -180,15 +177,4 @@ class LocalityFormatter(object):
         localityInfo = ("%s - %s")%(locality.area,locality.street_number)
         
         return QVariant(localityInfo)
-        
-        
-            
-    
-    
-    
-    
-        
-        
-        
-        
         
