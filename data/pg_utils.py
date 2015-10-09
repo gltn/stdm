@@ -77,7 +77,7 @@ def pg_tables(schema="public", exclude_lookups=False):
     """
     t = text("SELECT table_name FROM information_schema.tables WHERE table_schema = :tschema and table_type = :tbtype " \
              "ORDER BY table_name ASC")
-    result = _execute(t, tschema=schema, tbtype = "BASE TABLE")
+    result = _execute(t, tschema=schema, tbtype="BASE TABLE")
         
     pg_tables = []
         
@@ -268,7 +268,7 @@ def column_type(table_name, column_name):
     sql = "SELECT data_type FROM information_schema.columns where table_name=:tbName AND column_name=:colName"
     t = text(sql)
     
-    result = _execute(t,tbName=table_name, col_name=column_name)
+    result = _execute(t,tbName=table_name, colName=column_name)
 
     dataType = ""
     for r in result:
@@ -349,12 +349,12 @@ def qgsgeometry_from_wkbelement(wkb_element):
 
     return QgsGeometry.fromWkt(geom_wkt)
     
-def _execute(sql,**kwargs):
+def _execute(sql, **kwargs):
     """
     Execute the passed in sql statement
     """
     conn = STDMDb.instance().engine.connect()        
-    result = conn.execute(sql,**kwargs)
+    result = conn.execute(sql, **kwargs)
     conn.close()
     return result
 
