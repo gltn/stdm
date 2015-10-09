@@ -101,7 +101,7 @@ class GPSToolDialog(QDialog, Ui_Dialog):
 
             else:
                 active_layer = self._iface.activeLayer()
-                active_layer_geometry_typ = int(active_layer.geometryType())
+                active_layer_geometry_typ = int(active_layer.geometry_type())
 
                 if not active_layer.isEditable():
                     QMessageBox.warning(

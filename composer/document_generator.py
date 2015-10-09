@@ -65,7 +65,7 @@ from geoalchemy2 import Geometry
 
 from stdm.settings import RegistryConfig
 from stdm.data import (
-    geometryType,
+    geometry_type,
     pg_table_exists,
     STDMDb,
     vector_layer
@@ -343,7 +343,7 @@ class DocumentGenerator(QObject):
                             geomWKT = self._dbSession.scalar(geom_func)
 
                             #Get geometry type
-                            geom_type, srid = geometryType(composerDS.name(),
+                            geom_type, srid = geometry_type(composerDS.name(),
                                                           spatial_field)
                             
                             #Create reference layer with feature
@@ -773,4 +773,3 @@ class DocumentGenerator(QObject):
                 composer_item.setPictureFile(value)
 
             
-    

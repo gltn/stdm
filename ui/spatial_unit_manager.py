@@ -34,7 +34,7 @@ from ..data import (
     spatial_tables,
     table_column_names,
     vector_layer,
-    geometryType,
+    geometry_type,
     write_display_name,
     check_if_display_name_exits,
     get_xml_display_name,
@@ -85,7 +85,7 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
             for sp_col in sp_columns:
 
                 # Get column type and apply the appropriate icon
-                geometry_typ = str(geometryType(spt, sp_col)[0])
+                geometry_typ = str(geometry_type(spt, sp_col)[0])
 
                 if geometry_typ == "POLYGON":
                     self.icon = QIcon(

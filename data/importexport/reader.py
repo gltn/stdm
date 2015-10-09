@@ -43,7 +43,7 @@ from sqlalchemy.orm import (
 
 from stdm.data import (
     delete_table_data,
-    geometryType,
+    geometry_type,
     STDMDb,
     table_mapper
 )
@@ -234,7 +234,7 @@ class OGRReader(object):
                                 column_value_mapping[geomColumn] = None
                                 
                                 #Use geometry column SRID in the target table
-                                self._geomType,self._targetGeomColSRID = geometryType(targettable,
+                                self._geomType,self._targetGeomColSRID = geometry_type(targettable,
                                                                                       geomColumn)
 
                             mapped_class = self._get_mapped_class(targettable)

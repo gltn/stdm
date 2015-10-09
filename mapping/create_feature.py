@@ -142,7 +142,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
 
             # Spatial unit point capture
             if self._mode == CAPTURE_POINT:
-                if stdm_layer.geometryType() != QGis.Point:
+                if stdm_layer.geometry_type() != QGis.Point:
                     QMessageBox.information(self._iface.mainWindow(),
                                             QApplication.translate(
                                                 "StdmMapToolCreateFeature",
@@ -164,7 +164,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                     self._geometry = QgsGeometry.fromMultiPoint(layer_point)
 
             elif self._mode == CAPTURE_LINE or self._mode == CAPTURE_POLYGON:
-                if self._mode == CAPTURE_LINE and stdm_layer.geometryType() \
+                if self._mode == CAPTURE_LINE and stdm_layer.geometry_type() \
                         != QGis.Line:
                     QMessageBox.information(self._iface.mainWindow(),
                                             QApplication.translate(
@@ -177,7 +177,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                                                 "vector layer"))
                     return
 
-                if self._mode == CAPTURE_POLYGON and stdm_layer.geometryType(
+                if self._mode == CAPTURE_POLYGON and stdm_layer.geometry_type(
 
                 ) != QGis.Polygon:
                     QMessageBox.information(self._iface.mainWindow(),
@@ -477,7 +477,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
 
         # Spatial unit point capture
         if self._mode is CAPTURE_POINT:
-            if stdm_layer.geometryType() is not QGis.Point:
+            if stdm_layer.geometry_type() is not QGis.Point:
                 QMessageBox.information(self._iface.mainWindow(),
                                         QApplication.translate(
                                             "StdmMapToolCreateFeature",
@@ -529,7 +529,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
 
         # Line and polygon capturing
         elif self._mode is CAPTURE_LINE or self._mode is CAPTURE_POLYGON:
-            if self._mode is CAPTURE_LINE and stdm_layer.geometryType() is not \
+            if self._mode is CAPTURE_LINE and stdm_layer.geometry_type() is not \
                     QGis.Line:
                 QMessageBox.information(self._iface.mainWindow(),
                                         QApplication.translate(
@@ -542,7 +542,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                                             "layer"))
                 return
 
-            if self._mode is CAPTURE_POLYGON and stdm_layer.geometryType() is\
+            if self._mode is CAPTURE_POLYGON and stdm_layer.geometry_type() is\
                     not\
                     QGis.Polygon:
                 QMessageBox.information(self._iface.mainWindow(),

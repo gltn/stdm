@@ -39,7 +39,7 @@ from qgis.gui import (
 
 from stdm.data import (
    table_column_names,
-   geometryType
+   geometry_type
 )
 
 from .ui_composer_symbol_editor import Ui_frmComposerSymbolEditor
@@ -223,7 +223,7 @@ class ComposerSymbolEditor(QWidget,Ui_frmComposerSymbolEditor):
         """
         Build symbol widget based on geometry type.
         """
-        geom_type,srid = geometryType(self._ds_name, sp_column_name)
+        geom_type,srid = geometry_type(self._ds_name, sp_column_name)
 
         if not geom_type:
             return None
@@ -262,4 +262,3 @@ class ComposerSymbolEditor(QWidget,Ui_frmComposerSymbolEditor):
         self.cboSpatialFields.clear()
         self.cboSpatialFields.addItem("")
         
-        self.cboSpatialFields.addItems(spatialColumns)

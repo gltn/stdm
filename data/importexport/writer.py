@@ -16,8 +16,8 @@ except:
     import ogr
 
 from stdm.data import (
-                       columnType,
-                       geometryType
+                       column_type,
+                       geometry_type
                        )
 from enums import *
 
@@ -46,7 +46,7 @@ class OGRWriter():
     
     def createField(self,table,field):
         #Creates an OGR field
-        colType = columnType(table,field)
+        colType = column_type(table,field)
         
         #Get OGR type
         ogrType = ogrTypes[colType]
@@ -68,7 +68,7 @@ class OGRWriter():
         
         #Create layer
         if geom != "":
-            pgGeomType,srid = geometryType(table,geom)
+            pgGeomType,srid = geometry_type(table,geom)
             geomType = wkbTypes[pgGeomType]
             
         else:

@@ -55,13 +55,13 @@ from .mapping import (
 )
 
 from .pg_utils import (
-    columnType,
+    column_type,
     columns_by_type,
     delete_table_data,
     delete_table_keys,
     foreign_key_parent_tables,
     flush_session_activity,
-    geometryType,
+    geometry_type,
     non_spatial_table_columns,
     numeric_columns,
     numeric_varchar_columns,

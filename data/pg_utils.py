@@ -4,8 +4,9 @@ Name                 : PostgreSQL/PostGIS util functions
 Description          : Contains generic util functions for accessing the 
                        PostgreSQL/PostGIS STDM database.
 Date                 : 1/April/2014
-copyright            : (C) 2014 by John Gitau
-email                : gkahiu@gmail.com
+opyright             : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -35,16 +36,17 @@ from stdm.utils import (
     PLUGIN_DIR
 )
 
-_postGISTables = ["spatial_ref_sys","str_relations","supporting_document"]
-_postGISViews = ["geometry_columns","raster_columns","geography_columns","raster_overviews","foreign_key_references"]
+_postGISTables = ["spatial_ref_sys", "str_relations", "supporting_document"]
 
-_pg_numeric_col_types = ["smallint","integer","bigint","double precision",
-                      "numeric","decimal","real","smallserial","serial",
-                      "bigserial"]
+_postGISViews = ["geometry_columns", "raster_columns", "geography_columns", "raster_overviews", "foreign_key_references"]
+
+_pg_numeric_col_types = ["smallint", "integer", "bigint", "double precision",
+                      "numeric", "decimal", "real", "smallserial", "serial", "bigserial"] 
+
 _text_col_types = ["character varying", "text"]
 
 #Flags for specifying data source type
-VIEWS = 2500
+VIEWS  = 2500
 TABLES = 2501
 
 def spatial_tables(exclude_views=False):
@@ -54,19 +56,19 @@ def spatial_tables(exclude_views=False):
     t = text("select DISTINCT f_table_name from geometry_columns")
     result = _execute(t)
 
-    spTables = []
+    sp_tables = []
     views = pg_views()
 
     for r in result:
-        spTable = r["f_table_name"]
+        sp_table = r["f_table_name"]
         if exclude_views:
-            tableIndex = getIndex(views,spTable)
-            if tableIndex == -1:
-                spTables.append(spTable)
+            table_index = getIndex(views, sp_table)
+            if table_index == -1:
+                sp_tables.append(sp_table)
         else:
-            spTables.append(spTable)
+            sp_tables.append(sp_table)
 
-    return spTables
+    return sp_tables
 
 def pg_tables(schema="public", exclude_lookups=False):
     """
@@ -75,28 +77,28 @@ def pg_tables(schema="public", exclude_lookups=False):
     """
     t = text("SELECT table_name FROM information_schema.tables WHERE table_schema = :tschema and table_type = :tbtype " \
              "ORDER BY table_name ASC")
-    result = _execute(t,tschema = schema,tbtype = "BASE TABLE")
+    result = _execute(t,t schema = schema,tbtype = "BASE TABLE")
         
-    pgTables = []
+    pg_tables = []
         
     for r in result:
-        tableName = r["table_name"]
+        table_name = r["table_name"]
         
         #Remove default PostGIS tables
-        tableIndex = getIndex(_postGISTables, tableName)
-        if tableIndex == -1:
+        table_index = getIndex(_postGISTables, table_name)
+        if table_index == -1:
             if exclude_lookups:
                 #Validate if table is a lookup table and if it is, then omit
                 rx = QRegExp("check_*")
                 rx.setPatternSyntax(QRegExp.Wildcard)
                 
-                if not rx.exactMatch(tableName):
-                    pgTables.append(tableName)
+                if not rx.exactMatch(table_name):
+                    pg_tables.append(table_name)
                     
             else:
-                pgTables.append(tableName)
+                pg_tables.append(table_name)
             
-    return pgTables
+    return pg_tables
 
 def pg_views(schema="public"):
     """
@@ -104,19 +106,18 @@ def pg_views(schema="public"):
     """
     t = text("SELECT table_name FROM information_schema.tables WHERE table_schema = :tschema and table_type = :tbtype " \
              "ORDER BY table_name ASC")
-    result = _execute(t,tschema = schema,tbtype = "VIEW")
+    result = _execute(t, tschema=schema, tbtype="VIEW")
         
-    pgViews = []
+    pg_views = []
         
     for r in result:
-        viewName = r["table_name"]
-        
+        view_name = r["table_name"]
         #Remove default PostGIS tables
-        viewIndex = getIndex(_postGISViews, viewName)
-        if viewIndex == -1:
-            pgViews.append(viewName)
+        view_index = getIndex(_postGISViews, view_name)
+        if view_index == -1:
+            pg_views.append(view_name)
             
-    return pgViews
+    return pg_views
 
 def pg_table_exists(table_name, include_views=True, schema="public"):
     """
@@ -145,43 +146,43 @@ def pg_table_exists(table_name, include_views=True, schema="public"):
     else:
         return True
 
-def process_report_filter(tableName,columns,whereStr="",sortStmnt=""):
+def process_report_filter(table_name, columns, where_str="", sort_stmnt=""):
     #Process the report builder filter    
-    sql = "SELECT {0} FROM {1}".format(columns,tableName)
+    sql = "SELECT {0} FROM {1}".format(columns, table_name)
     
-    if whereStr != "":
-        sql += " WHERE {0} ".format(whereStr)
+    if where_str != "":
+        sql += " WHERE {0} ".format(where_str)
         
-    if sortStmnt !="":
-        sql += sortStmnt
+    if sort_stmnt !="":
+        sql += sort_stmnt
         
     t = text(sql)
     
     return _execute(t)
 
-def table_column_names(tableName, spatialColumns=False):
+def table_column_names(table_name, spatial_columns=False):
     """
     Returns the column names of the given table name. 
     If 'spatialColumns' then the function will lookup for spatial columns in the given 
     table or view.
     """
-    if spatialColumns:
+    if spatial_columns:
         sql = "select f_geometry_column from geometry_columns where f_table_name = :tbname ORDER BY f_geometry_column ASC"
-        columnName = "f_geometry_column"
+        column_name = "f_geometry_column"
     else:
         sql = "select column_name from information_schema.columns where table_name = :tbname ORDER BY column_name ASC"
-        columnName = "column_name"
+        column_name = "column_name"
         
     t = text(sql)
-    result = _execute(t,tbname = tableName)
+    result = _execute(t, tbname=table_name)
         
-    columnNames = []
+    column_names = []
        
     for r in result:
-        colName = r[columnName]
-        columnNames.append(colName)
+        col_name = r[column_name]
+        column_names.append(col_name)
            
-    return columnNames
+    return column_names
 
 def non_spatial_table_columns(table):
     """
@@ -196,15 +197,15 @@ def non_spatial_table_columns(table):
 
     return [x for x in all_columns if x not in spatial_columns]
 
-def delete_table_data(tableName,cascade = True):
+def delete_table_data(table_name, cascade=True):
     """
     Delete all the rows in the target table.
     """
     tables = pg_tables()
-    tableIndex = getIndex(tables, tableName)
+    table_index = getIndex(tables, table_name)
     
-    if tableIndex != -1:
-        sql = "DELETE FROM {0}".format(tableName)
+    if table_index != -1:
+        sql = "DELETE FROM {0}".format(table_name)
         
         if cascade:
             sql += " CASCADE"
@@ -212,69 +213,68 @@ def delete_table_data(tableName,cascade = True):
         t = text(sql)
         _execute(t) 
 
-def geometryType(tableName, spatialColumnName, schemaName = "public"):
+def geometry_type(table_name, spatial_column_name, schema_name="public"):
     """
     Returns a tuple of geometry type and EPSG code of the given column name in the table within the given schema.
     """
     sql = "select type,srid from geometry_columns where f_table_name = :tbname and f_geometry_column = :spcolumn and f_table_schema = :tbschema"
     t = text(sql)
     
-    result = _execute(t,tbname = tableName,spcolumn=spatialColumnName,tbschema=schemaName)
+    result = _execute(t,tbname=table_name, spcolumn=spatial_column_name, tbschema=schema_name)
         
     geomType,epsg_code = "", -1
        
     for r in result:
-        geomType = r["type"]
+        geom_type = r["type"]
         epsg_code = r["srid"]
         
         break
         
-    return (geomType,epsg_code)
+    return (geom_type, epsg_code)
 
-def unique_column_values(tableName,columnName,quoteDataTypes=["character varying"]):
+def unique_column_values(table_name, column_name, quote_data_types=["character varying"]):
     """
     Select unique row values in the specified column.
     Specify the data types of row values which need to be quoted. Default is varchar.
     """
-    dataType = columnType(tableName,columnName)
-    quoteRequired = getIndex(quoteDataTypes, dataType)
+    data_type = column_type(table_name, column_name)
+    quote_required = getIndex(quote_data_types, data_type)
     
-    sql = "SELECT DISTINCT {0} FROM {1}".format(columnName,tableName)
+    sql = "SELECT DISTINCT {0} FROM {1}".format(column_name, table_name)
     t = text(sql)
     result = _execute(t)
     
-    uniqueVals = []
+    unique_vals = []
     
     for r in result:
-        if r[columnName] == None:
-            if quoteRequired == -1:
-                uniqueVals.append("NULL")
+        if r[column_name] == None:
+            if quote_required == -1:
+                unique_vals.append("NULL")
             else:
-                uniqueVals.append("''")
+                unique_vals.append("''")
                 
         else:
-            if quoteRequired == -1:
-                uniqueVals.append(str(r[columnName]))
+            if quote_required == -1:
+                unique_vals.append(str(r[column_name]))
             else:
-                uniqueVals.append("'{0}'".format(str(r[columnName])))
+                unique_vals.append("'{0}'".format(str(r[column_name])))
                 
-    return uniqueVals
+    return unique_vals
 
-def columnType(tableName,columnName):
+def column_type(table_name, column_name):
     """
     Returns the PostgreSQL data type of the specified column.
     """
     sql = "SELECT data_type FROM information_schema.columns where table_name=:tbName AND column_name=:colName"
     t = text(sql)
     
-    result = _execute(t,tbName = tableName,colName = columnName)
+    result = _execute(t,tbName=table_name, col_name=column_name)
 
     dataType = ""
     for r in result:
-        dataType = r["data_type"]
-        
+        data_type = r["data_type"]
         break
-    return dataType
+    return data_type
 
 def columns_by_type(table, data_types):
     """
@@ -291,7 +291,7 @@ def columns_by_type(table, data_types):
 
     table_cols = table_column_names(table)
     for tc in table_cols:
-        col_type = columnType(table, tc)
+        col_type = column_type(table, tc)
         type_idx = getIndex(data_types, col_type)
 
         if type_idx != -1:
@@ -359,10 +359,10 @@ def _execute(sql,**kwargs):
     return result
 
 def reset_content_roles():
-    rolesSet = "truncate table content_base cascade;"
-    _execute(text(rolesSet))
-    resetSql = text(rolesSet)
-    _execute(resetSql)
+    roles_set = "truncate table content_base cascade;"
+    _execute(text(roles_set))
+    reset_sql = text(roles_set)
+    _execute(reset_sql)
 
 def delete_table_keys(table):
     #clean_delete_table(table)

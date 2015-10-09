@@ -24,7 +24,7 @@
 
 from PyQt4.QtGui import QDialog, QLabel, QLineEdit
 
-from stdm.data import (geometryType,
+from stdm.data import (geometry_type,
                        vector_layer,
                        STDMDb)
 
@@ -40,7 +40,7 @@ from sqlalchemy.orm import (
     class_mapper
 )
 
-from ..data import columnType
+from ..data import column_type
 
 
 class _ReflectedModel(object):
@@ -105,7 +105,7 @@ class GPXAttributeInfoDialog(QDialog, Ui_Dialog):
 
         for column in self._non_sp_colmns:
 
-            column_data_type = str(columnType(self._sp_table, column))
+            column_data_type = str(column_type(self._sp_table, column))
 
             label_name = "label_{0}".format(column)
             line_edit_name = "line_edit_name_{0}".format(column)
@@ -153,7 +153,7 @@ class GPXAttributeInfoDialog(QDialog, Ui_Dialog):
 
         for column, line_edit in self._attribute_dict.iteritems():
 
-            column_data_type = str(columnType(self._sp_table, column))
+            column_data_type = str(column_type(self._sp_table, column))
 
             if column_data_type == 'integer':
                 if line_edit.text() == '':
@@ -176,7 +176,7 @@ class GPXAttributeInfoDialog(QDialog, Ui_Dialog):
             else:
                 self._attribute_dict[column] = int(line_edit.text())
 
-        self._geom_type, self._target_geom_col_srid = geometryType(
+        self._geom_type, self._target_geom_col_srid = geometry_type(
             self._sp_table, self._sp_table_colmn)
 
         self._attribute_dict[self._sp_table_colmn] = "SRID={0!s};{1}".format(

@@ -46,7 +46,7 @@ from stdm.navigation import (
 )
 
 from stdm.data import(
-    geometryType,
+    geometry_type,
     pg_table_exists,
     STDMDb,
     table_column_names
@@ -215,7 +215,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
 
             return
 
-        geom_type, epsg_code = geometryType(table_name, geom_col)
+        geom_type, epsg_code = geometry_type(table_name, geom_col)
 
         if self._overlay_layer is None:
             self._create_vector_layer(geom_type, epsg_code)
@@ -387,4 +387,3 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         return self.local_map.extent()
 
     def canvas_zoom_to_extent(self, extent):
-        self.local_map.canvas.setExtent(extent)

@@ -132,7 +132,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
         if not isinstance(layer, QgsVectorLayer):
             return
 
-        geom_type = layer.geometryType()
+        geom_type = layer.geometry_type()
         if geom_type == QGis.Point:
             self._mode = CAPTURE_POINT
         elif geom_type == QGis.Line:
