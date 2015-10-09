@@ -77,7 +77,7 @@ def pg_tables(schema="public", exclude_lookups=False):
     """
     t = text("SELECT table_name FROM information_schema.tables WHERE table_schema = :tschema and table_type = :tbtype " \
              "ORDER BY table_name ASC")
-    result = _execute(t,t schema = schema,tbtype = "BASE TABLE")
+    result = _execute(t, tschema=schema, tbtype = "BASE TABLE")
         
     pg_tables = []
         
