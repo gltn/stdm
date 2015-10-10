@@ -17,11 +17,12 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from stdm.data import STDMDb
 
-from sqlalchemy.orm import sessionmaker
-from stdm.data import _execute
 from PyQt4.QtGui import QMessageBox
+from sqlalchemy.orm import sessionmaker
+
+from stdm.data import _execute
+from stdm.data import STDMDb
 
 dbStmt = ("CREATE DATABASE %s WITH ENCODING='UTF8'")
 dbExt = ("CREATE DATABASE %s WITH ENCODING='UTF8' TEMPLATE=%s")
@@ -37,7 +38,7 @@ class DatabaseCreator(object):
         self.template = template
         self._engine = STDMDb.instance().engine
 
-    def dbExistCheck(self):
+    def db_exist_check(self):
         """Check if the suggested db exist"""
         """To be implemented"""
         pass
@@ -56,7 +57,7 @@ class DatabaseCreator(object):
         session.execute(statement)
         session.connection().connection.set_isolation_level(1)
 
-    def createDbExtension(self):
+    def create_db_extension(self):
         """
         Create postgis extension in the new database
         :return:
@@ -77,7 +78,6 @@ class DatabaseCreator(object):
 
         """
         pass
-
 
 
 
