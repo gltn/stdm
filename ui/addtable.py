@@ -23,7 +23,7 @@ from ui_table import Ui_table
 from PyQt4.QtCore import *
 from PyQt4.QtGui import QDialog, QApplication, QMessageBox
 from stdm.data import writeTable, renameTable,inheritTableColumn, writeTableColumn,writeLookup,\
-checktableExist,ConfigTableReader, table_column_exist
+check_table_exist, ConfigTableReader, table_column_exist
 from stdm.data.config_utils import setUniversalCode
 
 class TableEditor(QDialog, Ui_table):
@@ -97,7 +97,7 @@ class TableEditor(QDialog, Ui_table):
     def checkTableExist(self):
         """check if the table has been defined already"""
         tableName = self.setTableName(self.txtTable.text())
-        status = checktableExist(self.profile, tableName)
+        status = check_table_exist(self.profile, tableName)
         return status
 
     def setLookupTable(self):

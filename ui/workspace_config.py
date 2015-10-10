@@ -27,8 +27,8 @@ import os
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from ui_workspace_config import Ui_STDMWizard
-from stdm.data import ConfigTableReader,deleteProfile,profileFullDescription,deleteColumn,\
-deleteTable,lookupData2List,deleteLookupChoice,SQLInsert,LicenseDocument, safely_delete_tables, stdm_core_tables, \
+from stdm.data import ConfigTableReader,delete_profile,profile_full_description,deleteColumn,\
+deleteTable,lookup_data2_list,deleteLookupChoice,SQLInsert,LicenseDocument, safely_delete_tables, stdm_core_tables, \
     _execute, flush_session_activity, CheckableListModel, non_editable_tables, table_description
 
 from attribute_editor import AttributeEditor
@@ -283,7 +283,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.profile = str(self.cboProfile.currentText())
         self.loadTableData(self.profile, self.pftableView)
         self.registerProfileSettings()
-        self.lblDescprition.setText(profileFullDescription(self.profile))
+        self.lblDescprition.setText(profile_full_description(self.profile))
         
     def registerProfileSettings(self):
         profile = QApplication.translate("WorkspaceLoader","currentProfile")
@@ -657,7 +657,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             return
         else:
             if self.warningInfo(QApplication.translate("WorkspaceLoader","You are about to delete current profile"))==QMessageBox.Yes:
-                deleteProfile(self.profile)
+                delete_profile(self.profile)
             else: return
             self.profileContent()
             

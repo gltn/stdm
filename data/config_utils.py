@@ -22,14 +22,14 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from .xmlconfig_reader import (
-    tableColumns,
-    deleteProfile,
-    tableFullDescription,
-    tableRelations,
+    table_columns,
+    delete_profile,
+    table_full_description,
+    table_relations,
     description_for_table,
     read_str_col_collection,
     social_tenure_tables,
-    checktableExist
+    check_table_exist
 )
 
 from stdm.settings import RegistryConfig
@@ -77,18 +77,18 @@ def UserData(comboBox):
 def tableCols(table):
         #Get table columns from the config file
         profileName = activeProfile()
-        cols = tableColumns(profileName,table)
+        cols = table_columns(profileName,table)
         return [col.get('Column label') for col in cols]
 
 def table_searchable_cols(table):
         #Get table columns from the config file
         profileName = activeProfile()
-        cols = tableColumns(profileName, table)
+        cols = table_columns(profileName, table)
         return [col.get('Column label') for col in cols if col.get('Searchable') == 'yes']
     
 def tableColType(table):
     profileName=activeProfile()
-    cols=tableColumns(profileName,table)
+    cols=table_columns(profileName,table)
     colMapping=OrderedDict()
     for col in cols:
         colLabel = col.get('Column label')
@@ -101,7 +101,7 @@ def foreign_key_table_reference(table):
     :param table:
     :return:
     """
-    cols= tableRelations(table,"relations")
+    cols= table_relations(table,"relations")
     colMapping=OrderedDict()
     for col in cols:
         tableLabel = col.get('Referenced table')
@@ -110,7 +110,7 @@ def foreign_key_table_reference(table):
 
 def foreign_key_columns(table):
     #profileName=activeProfile()
-    cols= tableRelations(table,"relations")
+    cols= table_relations(table,"relations")
     colMapping=OrderedDict()
     for col in cols:
         colLabel = col.get('Local column')
@@ -136,7 +136,7 @@ def activeProfile():
     #     raise ProfileException(msg)
     
 def tableFullname(table):
-    tableFullDescription(table)
+    table_full_description(table)
 
 def table_description(table):
     """
@@ -160,7 +160,7 @@ def profileDescription(profile):
     profileDescription(profile)
     
 def deleteSelectedProfile(profile):
-    deleteProfile(profile)
+    delete_profile(profile)
     
 def setCollectiontypes(collectionType,combo):
         #method to read default  to a sql relations and constraint type to combo box
@@ -190,6 +190,6 @@ def read_social_relation_cols(table):
 
 def current_table_exist(table):
 
-    return checktableExist(activeProfile(),table)
+    return check_table_exist(activeProfile(),table)
 
 

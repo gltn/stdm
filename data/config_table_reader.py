@@ -19,23 +19,23 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 from stdm.data import (
-    XMLTableElement,
-    tableColumns,
-    tableRelations,
-    lookupTable,
-    lookupColumn,
+    xml_table_element,
+    table_columns,
+    table_relations,
+    lookup_table,
+    lookup_column,
     profiles,
     tableLookUpCollection,
-    lookupData,
+    lookup_data,
     config_version,
-    geometryColumns,
+    geometry_columns,
     writeSQLFile,
     writeHTML,
     setLookupValue,updateSQL,
     listEntityViewer,
     EntityColumnModel,
     FilePaths,
-    tableFullDescription,
+    table_full_description,
     set_str_tables,
     social_tenure_tables,
     str_type_tables,
@@ -79,7 +79,7 @@ class ConfigTableReader(object):
             return None
 
     def profile_tables(self, profile):
-        table_desc = tableFullDescription(profile)
+        table_desc = table_full_description(profile)
         if table_desc:
             headers = table_desc[0].keys()
             row_data = [row.values() for row in table_desc]
@@ -87,7 +87,7 @@ class ConfigTableReader(object):
             return table_desc_model
     
     def table_names(self, profile):
-        tbl_data = XMLTableElement(profile)
+        tbl_data = xml_table_element(profile)
         if tbl_data is not None:
             return tbl_data
 
@@ -137,11 +137,11 @@ class ConfigTableReader(object):
         return model
     
     def lookup_table(self):
-        return lookupTable()
+        return lookup_table()
 
     def lookup_columns(self, lookup_name):
         column_model = None
-        table_attrib = lookupColumn(lookup_name)
+        table_attrib = lookup_column(lookup_name)
         if len(table_attrib)>0:
             col_headers = table_attrib[0].keys()
             col_vals= []
@@ -157,7 +157,7 @@ class ConfigTableReader(object):
     def columns(self, profile, table_name):
         '''Functions to read columns details from the config for the given table''' 
         column_model = None
-        table_attrib = tableColumns(profile, table_name)
+        table_attrib = table_columns(profile, table_name)
         if len(table_attrib) > 0:
             col_headers = table_attrib[0].keys()
             col_vals = [item.values() for item in table_attrib]
@@ -198,7 +198,7 @@ class ConfigTableReader(object):
     def table_relation(self, table_name):
         '''Method to read all defined table relationship in the config file'''
         relation_model = None
-        table_attrib = tableRelations(table_name, "relations")
+        table_attrib = table_relations(table_name, "relations")
         if table_attrib is None:
             return table_attrib
         if len(table_attrib)>0:
@@ -212,7 +212,7 @@ class ConfigTableReader(object):
     def geometry_collection(self, table_name):
         '''Method to read all defined table relationship in the config file'''
         geometry_model = None
-        geom_attrib = geometryColumns(table_name, 'geometryz')
+        geom_attrib = geometry_columns(table_name, 'geometryz')
         if geom_attrib == None:
             return geom_attrib
         if len(geom_attrib) > 0:
@@ -273,7 +273,7 @@ class ConfigTableReader(object):
     def read_lookup_list(self, table):
         lookup_list=[]
         try:
-            lookup_list=lookupData(table)
+            lookup_list=lookup_data(table)
         except:
             pass
         lookup_model = listEntityViewer(lookup_list, icon=dataIcon)

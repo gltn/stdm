@@ -41,7 +41,7 @@ def writeTable(data,profile,tableName):
     #method to addnew table definition in the config file
     filter=(".//*[@name='%s']/table")%profile
     try:
-        tree, root=parseRootElement()
+        tree, root=parse_root_element()
         for elem in root.findall(filter):
             #Check if the table has been defined already
             if elem.get('name')==tableName:
@@ -61,7 +61,7 @@ def writeLookup(data,profile,tableName):
     #method to addnew table definition in the config file
     filter=(".//*[@name='%s']/lookup")%profile
     try:
-        tree, root=parseRootElement()
+        tree, root=parse_root_element()
         for elem in root.findall(filter):
             #Check if the table has been defined already
             if elem.get('name')==tableName:
@@ -77,7 +77,7 @@ def writeLookup(data,profile,tableName):
 def writeTableColumn(data,profile,category,tableName,tableNode):
     #Get new data to write to the config as a table column
     #node=None
-    tree, root=parseRootElement()
+    tree, root=parse_root_element()
     filters=(".//*[@name='%s']/%s")%(profile,category)
     for elem in root.findall(filters):
         if elem.get('name')==tableName:
@@ -96,7 +96,7 @@ def writeTableColumn(data,profile,category,tableName,tableNode):
 def writeGeomConstraint(profile,level,tableName,data = None):
     #Get new data to write to the config as a table column
     #node=None
-    tree, root=parseRootElement()
+    tree, root=parse_root_element()
     filters=(".//*[@name='%s']/%s")%(profile,level)
     for elem in root.findall(filters):
         if elem.get('name')==tableName:
@@ -116,7 +116,7 @@ def parseRootElement():
         return tree, root   
 
 def deleteColumn(level,category,tableName,elemnt,key,value):
-    tree, root=parseRootElement()
+    tree, root=parse_root_element()
     for profile in root.findall('profile'):
         if profile.get('name')==level:
             tables=profile.findall(category)
@@ -132,7 +132,7 @@ def deleteColumn(level,category,tableName,elemnt,key,value):
             continue
             #print "Not founded"+str(profile.attrib)
 def set_str_tables(profile, table, option):
-    tree, root = parseRootElement()
+    tree, root = parse_root_element()
     filter = (".//*[@name='%s']/table")%profile
     for elem in root.findall(filter):
         if elem.get('name')==table:
@@ -140,7 +140,7 @@ def set_str_tables(profile, table, option):
     tree.write(xml_doc, xml_declaration=True, encoding='utf-8')
 
 def str_type_tables(profile, table, option):
-    tree, root = parseRootElement()
+    tree, root = parse_root_element()
     filter = (".//*[@name='%s']/table")%profile
     for elem in root.findall(filter):
         if elem.get('name')==table:
@@ -148,7 +148,7 @@ def str_type_tables(profile, table, option):
     tree.write(xml_doc, xml_declaration=True, encoding='utf-8')
 
 def str_col_collection(profile, table, collist):
-    tree, root = parseRootElement()
+    tree, root = parse_root_element()
     filter = (".//*[@name='%s']/table")%profile
     for elem in root.findall(filter):
         if elem.get('name')==table:
@@ -161,7 +161,7 @@ def str_col_collection(profile, table, collist):
     tree.write(xml_doc, xml_declaration=True, encoding='utf-8')
 
 def editTableColumn(profile,tableName, key, value, newValue, type, size, desc,search,lookup):
-    tree, root=parseRootElement()
+    tree, root=parse_root_element()
     filter = (".//*[@name='%s']/table")%profile
     for elem in root.findall(filter):
         if elem.get('name')==tableName:
@@ -180,7 +180,7 @@ def editTableColumn(profile,tableName, key, value, newValue, type, size, desc,se
     tree.write(xml_doc, xml_declaration=True, encoding='utf-8')
 
 def edit_geom_column(profile,tableName, key, value, newValue, type, srid):
-    tree, root=parseRootElement()
+    tree, root=parse_root_element()
     filter = (".//*[@name='%s']/table")%profile
     for elem in root.findall(filter):
         if elem.get('name')==tableName:
@@ -194,7 +194,7 @@ def edit_geom_column(profile,tableName, key, value, newValue, type, srid):
     tree.write(xml_doc, xml_declaration=True, encoding='utf-8')
 
 def renameTable(profile,oldName, newName, desc):
-    tree, root=parseRootElement()
+    tree, root=parse_root_element()
     filter=(".//*[@name='%s']/table")%profile
     for elem in root.findall(filter):
         if elem.get('name')==oldName:
@@ -211,7 +211,7 @@ def renameTable(profile,oldName, newName, desc):
 
 
 def deleteTable(level,tableName):
-    tree, root=parseRootElement()
+    tree, root=parse_root_element()
     for profile in root.findall('profile'):
         if profile.get('name')==level:
             tables=profile.findall('table')
@@ -227,7 +227,7 @@ def deleteTable(level,tableName):
     tree.write(xml_doc, xml_declaration=True, encoding='utf-8')
     
 def inheritTableColumn(profile,sourceTable,destTable):
-    tree, root=parseRootElement()
+    tree, root=parse_root_element()
     filter=(".//*[@name='%s']/table")%profile
     for elem in root.findall(filter):
         if elem.get('name')==sourceTable:
@@ -241,12 +241,12 @@ def inheritTableColumn(profile,sourceTable,destTable):
 
 def writeProfile(data):
     '''Add user defined profile'''
-    tree, root=parseRootElement()
+    tree, root=parse_root_element()
     profile=SubElement(root,'profile',data)
     tree.write(xml_doc,xml_declaration=True, encoding='utf-8')
 
 def checkProfile(profile_name):
-    tree, root = parseRootElement()
+    tree, root = parse_root_element()
     for profile in root.findall('profile'):
         if profile.get('name') == profile_name:
             return profile.get('name')
@@ -298,7 +298,7 @@ def setLookupValue(tableName, valueText):
     '''add lookup value specified by the user
     :type tableName: object
     '''
-    tree, root = parseRootElement()
+    tree, root = parse_root_element()
     node = None
     for elem in root.findall('profile/lookup'):
         if elem.get('name') == tableName:
@@ -312,7 +312,7 @@ def setLookupValue(tableName, valueText):
     tree.write(xml_doc, xml_declaration=True, encoding='utf-8')
 
 def deleteLookupChoice(level,category,tableName,elemnt,key,value):
-    tree, root = parseRootElement()
+    tree, root = parse_root_element()
     for profile in root.findall('profile'):
         if profile.get('name') == level:
             tables = profile.findall(category)

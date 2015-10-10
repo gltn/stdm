@@ -19,26 +19,25 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-#from lxml import  objectify
 
 
+from collections import OrderedDict
 from PyQt4.QtGui import *
 
 from xml.etree.ElementTree import ElementTree as ET
-from collections import OrderedDict
-from configfile_paths import FilePaths
 import xml.etree.ElementTree as Elt
+
+from configfile_paths import FilePaths
 from stdm.data.enums import non_editable_tables
 
 try:
-    xmlobject = FilePaths()
-    #doc = xmlobject.xml_file()
-    xml_doc = xmlobject.set_user_xml_file()
-    html_doc = xmlobject.html_file()
+    xml_object = FilePaths()
+    xml_doc = xml_object.set_user_xml_file()
+    html_doc = xml_object.html_file()
 except Exception as ex:
     raise ex
 
-def parseRootElement():
+def parse_root_element():
     if not xml_doc:
         return
     else:
@@ -46,7 +45,7 @@ def parseRootElement():
         root = tree.parse(xml_doc)
         return tree, root   
 
-def XMLTableElement(profile):
+def xml_table_element(profile):
     tree = ET()
     root = tree.parse(xml_doc)
     tables = []
@@ -59,58 +58,58 @@ def XMLTableElement(profile):
 
     return tables
 
-def checktableExist(profile,tableName):
+def check_table_exist(profile, table_name):
     is_found = False
-    tree, root = parseRootElement()
+    tree, root = parse_root_element()
     level = (".//*[@name='%s']/table")%profile
     for elem in root.findall(level):
-         if elem.get('name') == tableName:
+         if elem.get('name') == table_name:
              is_found = True
     return is_found
 
-def table_column_exist(profile, tableName, idcol):
+def table_column_exist(profile, table_name, idcol):
     is_found = False
-    tree, root = parseRootElement()
+    tree, root = parse_root_element()
     level = (".//*[@name='%s']/table")%profile
     for elem in root.findall(level):
-         if elem.get('name') == tableName:
+         if elem.get('name') == table_name:
              for child in elem.findall('columns/column'):
                 if child.get('name') == idcol:
                     is_found = True
     return is_found
         
-def deleteProfile(profileName):
-    tree, root = parseRootElement()
+def delete_profile(profile_name):
+    tree, root = parse_root_element()
     for elem in root.findall('profile'):
-        if elem.get('name') == profileName:
+        if elem.get('name') == profile_name:
             root.remove(elem)
     tree.write(xml_doc)
 
-def profileFullDescription(profile):
-    tree, root = parseRootElement()
+def profile_full_description(profile):
+    tree, root = parse_root_element()
     for elem in root.findall('profile'):
         if elem.get('name') == profile:
             return elem.get('fullname')
 
-def tableFullDescription(profile):
-    tree,root = parseRootElement()
-    tablDesc = []
+def table_full_description(profile):
+    tree, root = parse_root_element()
+    table_desc = []
     filter = (".//*[@name='%s']/table")%profile
     for elem in root.findall(filter):
         ordDict = OrderedDict()
         ordDict["Name"] = elem.get('name')
         ordDict["Description"]= elem.get('fullname')
-        tablDesc.append(ordDict)
-    return tablDesc
+        table_desc.append(ordDict)
+    return table_desc
 
-def tableColumns(profile,tableName):
+def table_columns(profile, table_name):
     #scan the xml file and return all the table defined columns information
-    tree,root = parseRootElement()
-    tableData = []
+    tree, root = parse_root_element()
+    table_data = []
     bool = False
     filter = (".//*[@name='%s']/table")%profile
     for elem in root.findall(filter):
-        if elem.get('name') == tableName:
+        if elem.get('name') == table_name:
             for child in elem.findall('columns/column'):
                 ordDict = OrderedDict()
                 ordDict["Column label"] = child.get('name')
@@ -122,14 +121,14 @@ def tableColumns(profile,tableName):
                     ordDict["Lookup"] = child.get('lookup')
                 else:
                     ordDict["Lookup"] = bool
-                tableData.append(ordDict)                          
-    return tableData
+                table_data.append(ordDict)                          
+    return table_data
 
 def social_tenure_tables(profile):
     """
     Method to read tables that are part of STR definition
     """
-    tree,root = parseRootElement()
+    tree,root = parse_root_element()
     str_table = []
     filter = (".//*[@name='%s']/table")%profile
     for elem in root.findall(filter):
@@ -141,7 +140,7 @@ def social_tenure_tables_type(profile):
     """
     Method to read tables that are part of STR definition
     """
-    tree,root = parseRootElement()
+    tree,root = parse_root_element()
     party_table =''
     sp_table = ''
     filter = (".//*[@name='%s']/table")%profile
@@ -152,8 +151,8 @@ def social_tenure_tables_type(profile):
             sp_table = elem.get('name')
     return party_table, sp_table
 
-def tableLookUpCollection():
-    tree, root = parseRootElement()
+def table_lookup_collection():
+    tree, root = parse_root_element()
     tableDict = ['table','lookup']
     table=[]
     for name in tableDict:
@@ -162,13 +161,13 @@ def tableLookUpCollection():
             table.append(elem.get('name'))
     return table
 
-def lookupColumn(tableName):
+def lookup_column(table_name):
     #scan the xml file and return all the table defined columns information
     tree = ET()
     root = tree.parse(xml_doc)
-    tableData = []
+    table_data = []
     for elem in root.findall("profile/lookup"):
-        if elem.get('name') == tableName:
+        if elem.get('name') == table_name:
             for child in elem[0]:
                 ordDict=OrderedDict()
                 ordDict["Column label"] = child.get('name')
@@ -176,10 +175,10 @@ def lookupColumn(tableName):
                 ordDict["Data type"] = child.get('type')
                 ordDict["Length"] = child.get('size')
                 ordDict["Lookups"] = bool
-                tableData.append(ordDict)                           
-    return tableData
+                table_data.append(ordDict)                           
+    return table_data
 
-def lookupTable():
+def lookup_table():
     tree = ET()
     root = tree.parse(xml_doc)
     table = []
@@ -187,31 +186,30 @@ def lookupTable():
         table.append(elem.get('name'))
     return table
     
-def columns(tableName):
+def columns(table_name):
     #scan the xml file and return all the table defined columns information
     tree = ET()
-    root= tree.parse(xml_doc)
-    tabCols={}
+    root = tree.parse(xml_doc)
+    tab_cols={}
     bool=False
     for elem in root.findall('table'):
-        if elem.get('name') == tableName:
+        if elem.get('name') == table_name:
             for child in elem[0]:
-                tabCols = child.attrib
-    return tabCols
+                tab_cols = child.attrib
+    return tab_cols
 
 def profiles():
-    tree, root = parseRootElement()
+    tree, root = parse_root_element()
     pfList = []
     for profile in root.findall('profile'):
         pfList.append(profile.get('name'))
     return pfList
-
     
-def tableRelations(tableName,element):
-    tree,root = parseRootElement()
-    relationData = []
+def table_relations(table_name, element):
+    tree,root = parse_root_element()
+    relation_data = []
     for elem in root.findall('profile/table'):
-        if elem.get('name') == tableName:
+        if elem.get('name') == table_name:
             child = elem.find(element)
             if child is None:
                 return None
@@ -225,14 +223,14 @@ def tableRelations(tableName,element):
                     ordDict["On delete"] = child.get('ondelete')
                     ordDict["On update"] = child.get('onupdate')
                     ordDict["Display field"] = child.get('display_name')
-                    relationData.append(ordDict) 
-                return relationData  
+                    relation_data.append(ordDict) 
+                return relation_data  
             
-def geometryColumns(tableName, element):
-    tree, root = parseRootElement()
-    geomData = []
+def geometry_columns(table_name, element):
+    tree, root = parse_root_element()
+    geom_data = []
     for elem in root.findall('profile/table'):
-        if elem.get('name') == tableName:
+        if elem.get('name') == table_name:
             childs = elem.find(element)
             if childs:
                 for child in childs:
@@ -242,40 +240,40 @@ def geometryColumns(tableName, element):
                     ordDict["Geometry Type"] = child.get('type')
                     ordDict["Projection"] = child.get('srid')
                     ordDict["Schema"] = 'default'
-                    geomData.append(ordDict) 
-    return geomData
+                    geom_data.append(ordDict) 
+    return geom_data
 
-def lookupData(tableName):    
-    lstLookup = []
-    tree, root = parseRootElement()
+def lookup_data(table_name):    
+    lst_lookup = []
+    tree, root = parse_root_element()
     for elem in root.findall('profile/lookup'):
-        if elem.get('name') == tableName:
+        if elem.get('name') == table_name:
             child = elem.find('data')
             if child is None:
                 return
             else:
                 lookups = child.findall('value')
                 for text in lookups:
-                    lstLookup.append(text.text)
-            return lstLookup
+                    lst_lookup.append(text.text)
+            return lst_lookup
 
-def lookupData2List(profile, tableName):
+def lookup_data2_list(profile, table_name):
     '''read lookup data list values for generation of insert statement'''
-    tree, root = parseRootElement()
-    lkVals = []
+    tree, root = parse_root_element()
+    lk_vals = []
     filter = (".//*[@name='%s']/lookup")%profile
     for elem in root.findall(filter):
-        if elem.get('name') == tableName:
+        if elem.get('name') == table_name:
             for child in elem.findall('data'):
                 for node in child.findall('value'):
-                    lkVals.append(node.text)
-    return lkVals
+                    lk_vals.append(node.text)
+    return lk_vals
 
-def contentGroup(tableName):
-    tree,root = parseRootElement()
-    codeList = []
+def content_group(table_name):
+    tree, root = parse_root_element()
+    code_list = []
     for elem in root.findall('profile/table'):
-        if elem.get('name') == tableName:
+        if elem.get('name') == table_name:
             childs = elem.find('contentgroups')
             if childs is not None:
                 return [(child.get('code')) for child in childs]
@@ -307,7 +305,7 @@ def get_xml_display_name(layer_name):
             return display_name.text
 
 def description_for_table(profile, table):
-    tree,root = parseRootElement()
+    tree,root = parse_root_element()
     str_table = []
     filter = (".//*[@name='%s']/table")%profile
     for elem in root.findall(filter):
@@ -315,7 +313,7 @@ def description_for_table(profile, table):
             return elem.get('fullname')
 
 def read_str_col_collection(profile, table):
-    tree, root = parseRootElement()
+    tree, root = parse_root_element()
     filter = (".//*[@name='%s']/table")%profile
     str_cols = []
     for elem in root.findall(filter):
@@ -327,7 +325,7 @@ def read_str_col_collection(profile, table):
     return str_cols
 
 def config_version():
-    tree, root = parseRootElement()
+    tree, root = parse_root_element()
     for elem in root.findall('config'):
         if elem is not None:
             return elem.get('version')
