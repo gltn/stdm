@@ -606,7 +606,7 @@ class STRTreeViewModel(QAbstractItemModel):
         """
         Set the column headers to be displayed by the tree view.
         """
-        if self._rootNode.columnCount() == 0:
+        if self._root_node.columnCount() == 0:
             return
 
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
