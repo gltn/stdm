@@ -19,6 +19,7 @@ email                : stdm@unhabitat.org
 """
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
+
 from stdm.settings import tableIcon
 
 
@@ -28,7 +29,7 @@ ALT_COLOR_EVEN = QColor(255, 255, 255)
 ALT_COLOR_ODD = QColor( 248, 248, 248)
 
 class CheckableListModel(QStandardItemModel):
-    def __init__(self, list, icon = None, parent = None):
+    def __init__(self, list, icon=None, parent=None):
         QStandardItemModel.__init__(self,parent)
         self.__list = list
         self._icon = icon
@@ -39,43 +40,43 @@ class CheckableListModel(QStandardItemModel):
         else:
             return 0
 
-    def setCheckable(self, bool, table = None):
-        self._icon =tableIcon
-        checkableItems = []
+    def setCheckable(self, bool, table=None):
+        self._icon = tableIcon
+        checkable_items = []
         for text in self.__list:
             item = QStandardItem()
             item.setCheckable(bool)
             item.setCheckState(Qt.Unchecked)
             item.setText(text)
             item.setIcon(self._icon)
-            checkableItems.append(item)
-        self.appendColumn(checkableItems)
+            checkable_items.append(item)
+        self.appendColumn(checkable_items)
 
 class listEntityViewer(QAbstractListModel):
     """
     Class implementation of list model properties from a python list type
     """
-    def __init__(self, list=[], icon =None, parent=None):
-        QAbstractListModel.__init__(self,parent)
+    def __init__(self, list=[], icon=None, parent=None):
+        QAbstractListModel.__init__(self, parent)
         self.__list = list
         self._icon = icon
      
-    def headerData(self,section, orientation, role):
+    def headerData(self, section, orientation, role):
         if role==Qt.DisplayRole:
             if orientation==Qt.Vertical:
-                return  section
+                return section
             elif orientation == Qt.Horizontal:
                 return QApplication.translate("WorkspaceLoader","STDM Entities")
             else:
                 return QApplication.translate("WorkspaceLoader","Entities")
         
-    def rowCount(self,parent=QModelIndex):
+    def rowCount(self, parent=QModelIndex):
         if self.__list is not None:
             return len(self.__list)
         else:
             return 0
     
-    def data(self,index,role):
+    def data(self, index, role):
         if role==Qt.ToolTipRole:
             return  self.__list[index.row()]
         
@@ -113,7 +114,7 @@ class listEntityViewer(QAbstractListModel):
         else:
             return False
             
-    def insertRows(self, position,rows,parent):
+    def insertRows(self, position, rows, parent):
         if position < 0:
             return False    
         self.beginInsertRows(parent, position, position + rows - 1)
@@ -121,39 +122,38 @@ class listEntityViewer(QAbstractListModel):
             self.__list.insert[position]
         self.endInsertRows()
         
-    def removeRows(self, rows,count, parent=QModelIndex):
+    def removeRows(self, rows, count, parent=QModelIndex):
         if rows < 0 or rows > len(self.__list):
             return
-        self.beginRemoveRows(parent,rows,count- 1)
+        self.beginRemoveRows(parent, rows, count- 1)
         while count != 0:
             del self.__list[rows]
             count -= 1
         self.endRemoveRows()
-        
 
 class EntityColumnModel(QAbstractTableModel):
     """
     Class implementation of table model for representating table columns
     """
-    def __init__(self, header,data, parent=None):
+    def __init__(self, header, data, parent=None):
         QAbstractTableModel.__init__(self,parent)
         self._data=data
         self._header=header
                
-    def headerData(self,col, orientation, role):
+    def headerData(self, col, orientation, role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self._header[col]
         if orientation == Qt.Vertical and role == Qt.DisplayRole:
             return col+1
         
-    def rowCount(self,parent):
+    def rowCount(self, parent):
         return len(self._data) 
     
     def columnCount(self, parent):
         #return len(self.__list)
         return len(self._header)
     
-    def data(self,index,role):
+    def data(self, index, role):
         if not index.isValid():
             return QPyNullVariant
         elif role == Qt.EditRole:
@@ -187,7 +187,7 @@ class EntityColumnModel(QAbstractTableModel):
             return True
         return False   
                         
-    def insertRows(self,position,rows,parent = QModelIndex()):
+    def insertRows(self, position, rows, parent=QModelIndex()):
         if position < 0 or position > len(self._data):
             return False
                 
@@ -199,10 +199,10 @@ class EntityColumnModel(QAbstractTableModel):
         self.endInsertRows()
         return True
 
-    def removeRows(self, position,rows, parent=QModelIndex):
+    def removeRows(self, position, rows, parent=QModelIndex):
         if position < 0 or position > len(self._data):
             return False
-        self.beginRemoveRows(parent,position,position + rows - 1)
+        self.beginRemoveRows(parent, position, position + rows - 1)
         for i in range(rows):
             del self._data[position]
         self.endRemoveRows()
