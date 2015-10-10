@@ -95,7 +95,7 @@ from .xmlconfig_reader import (
     table_full_description,
     profile_full_description,
     delete_profile,
-    tableLookUpCollection,
+    table_lookup_collection,
     check_table_exist,
     lookup_data,
     lookup_data2_list,
