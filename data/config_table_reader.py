@@ -25,7 +25,7 @@ from stdm.data import (
     lookup_table,
     lookup_column,
     profiles,
-    tableLookUpCollection,
+    table_lookup_collection,
     lookup_data,
     config_version,
     geometry_columns,
