@@ -20,7 +20,7 @@
  ***************************************************************************/
 """
 import sys
-from stdm.data import xml_table_element, table_columns, table_relations, ConfigTableReader, activeProfile,writeLookup
+from stdm.data import xml_table_element, table_columns, table_relations, ConfigTableReader, activeProfile,write_lookup
 
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *

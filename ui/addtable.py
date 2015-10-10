@@ -22,7 +22,7 @@
 from ui_table import Ui_table
 from PyQt4.QtCore import *
 from PyQt4.QtGui import QDialog, QApplication, QMessageBox
-from stdm.data import writeTable, renameTable,inheritTableColumn, writeTableColumn,writeLookup,\
+from stdm.data import write_table, rename_table,inherit_table_column, write_table_column,write_lookup,\
 check_table_exist, ConfigTableReader, table_column_exist
 from stdm.data.config_utils import setUniversalCode
 
@@ -150,7 +150,7 @@ class TableEditor(QDialog, Ui_table):
             return
             QMessageBox.information(self, "ID exist", "Id exisit")
         else:
-            writeTableColumn(attrib,self.profile,Node,self.table,'columns')
+            write_table_column(attrib,self.profile,Node,self.table,'columns')
     
     def dataColumnForLookup(self,Node):
         attrib  = {
@@ -159,7 +159,7 @@ class TableEditor(QDialog, Ui_table):
             'type' : 'character varying',
             'size' : '50'
              }
-        writeTableColumn(attrib,self.profile,Node,self.table,'columns')
+        write_table_column(attrib,self.profile,Node,self.table,'columns')
     
 
 

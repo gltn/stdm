@@ -29,9 +29,9 @@ from stdm.data import (
     lookup_data,
     config_version,
     geometry_columns,
-    writeSQLFile,
-    writeHTML,
-    setLookupValue,updateSQL,
+    write_sql_file,
+    write_html,
+    set_lookup_value,update_sql,
     listEntityViewer,
     EntityColumnModel,
     FilePaths,
@@ -240,12 +240,12 @@ class ConfigTableReader(object):
         return  self.file_handler.userConfigPath(path)
 
     def save_xml_changes(self):
-        writeSQLFile()
-        writeHTML()
+        write_sql_file()
+        write_html()
                 
     def update_sql_schema(self):
         #To be implemented to allow updating of schema
-        updateSQL()
+        update_sql()
         
     def set_profile_settings(self, profile_data):
         '''write the current profile in Qsettings'''            
@@ -268,7 +268,7 @@ class ConfigTableReader(object):
                 self.file_handler.create_dir(file_path)
     
     def add_lookup_value(self, table, value_text):
-        setLookupValue(table, value_text)
+        set_lookup_value(table, value_text)
         
     def read_lookup_list(self, table):
         lookup_list=[]

@@ -22,7 +22,7 @@
 from ui_profile import Ui_Profile
 from PyQt4.QtCore import *
 from PyQt4.QtGui import QDialog, QApplication, QMessageBox
-from stdm.data import writeProfile, checkProfile
+from stdm.data import write_profile, check_profile
 
 class ProfileEditor(QDialog, Ui_Profile):
     def __init__(self, parent):
@@ -43,17 +43,17 @@ class ProfileEditor(QDialog, Ui_Profile):
     
     def writeProfile(self):
         '''add new profile to the configuration file'''
-        if self.txtProfile.text() == str(checkProfile(self.txtProfile.text())):
+        if self.txtProfile.text() == str(check_profile(self.txtProfile.text())):
             self.ErrorInfoMessage(QApplication.translate("ProfileEditor","Profile already exist"))
             return
-        if self.profile_formater() == str(checkProfile(self.profile_formater())):
+        if self.profile_formater() == str(check_profile(self.profile_formater())):
             self.ErrorInfoMessage(QApplication.translate("ProfileEditor","Profile already exist"))
             return
-        if self.profile_formater() != str(checkProfile(self.profile_formater())).lower():
+        if self.profile_formater() != str(check_profile(self.profile_formater())).lower():
             profileData = {}
             profileData['name'] = str(self.profile_formater())
             profileData['fullname'] = str(self.txtDesc.text())
-            writeProfile(profileData)
+            write_profile(profileData)
         
     def accept(self):
         '''listen to user action on the dialog'''

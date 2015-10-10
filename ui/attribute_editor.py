@@ -30,12 +30,12 @@ from stdm.data  import (
     data_types,
     nullable,
     ConfigTableReader,
-    writeTableColumn,
+    write_table_column,
     table_column_exist,
-    editTableColumn,
+    edit_table_column,
     postgres_defaults,
     RESERVED_ID,
-    writeGeomConstraint
+    write_geom_constraint
 )
 from stdm.data.config_utils import *
 from .geometry import GeometryProperty
@@ -152,7 +152,7 @@ class AttributeEditor(QDialog,Ui_editor):
         attribData = self.attributeData(sizeval)
         self.tableName = self.cboTabList.currentText()
         if str(self.tableName).startswith("check"):
-            writeTableColumn(attribData,self.profile,'lookup',self.tableName,'columns')
+            write_table_column(attribData,self.profile,'lookup',self.tableName,'columns')
         else:
             if atType == 'geometry':
                 self.InfoMessage(QApplication.translate("AttributeEditor",
@@ -160,7 +160,7 @@ class AttributeEditor(QDialog,Ui_editor):
                 self.geomtag()
                 self.enforceProjection()
             else:
-                writeTableColumn(attribData,self.profile,'table',self.tableName,'columns')
+                write_table_column(attribData,self.profile,'table',self.tableName,'columns')
     
     def setTableRelation(self):
         '''add new relation to the table in the config file'''
@@ -171,7 +171,7 @@ class AttributeEditor(QDialog,Ui_editor):
         attribDict['column'] = "id"
         attribDict['ondelete'] = "NO ACTION"
         attribDict['onupdate'] = "NO ACTION"
-        writeTableColumn(attribDict,self.profile,'table',self.tableName,'relations')            
+        write_table_column(attribDict,self.profile,'table',self.tableName,'relations')            
         
                 
     def updateColumnData(self):
@@ -188,7 +188,7 @@ class AttributeEditor(QDialog,Ui_editor):
         else:
             lookup = None
         try:
-            editTableColumn(self.profile, self.tableName, 'name', self.args[0],
+            edit_table_column(self.profile, self.tableName, 'name', self.args[0],
                             formatColumnName(self.txtCol.text()),atType,sizeval, desc,search, lookup)
         except:
             self.ErrorInfoMessage(QApplication.translate('AttributeEditor','Unable to update the column data'))
@@ -223,12 +223,12 @@ class AttributeEditor(QDialog,Ui_editor):
             geom['column'] = formatColumnName(self.txtCol.text())
             geom['type'] = self.geomCollection[1]
             geom['arguments'] = '2'
-            writeTableColumn(geom,self.profile,'table',self.tableName,'geometryz')
+            write_table_column(geom,self.profile,'table',self.tableName,'geometryz')
     
     def geomtag(self):
         """Add geometry tab in the config under the table to ensure that it added correctly
         """
-        add_geom_tag = writeGeomConstraint(self.profile, 'table', self.tableName)
+        add_geom_tag = write_geom_constraint(self.profile, 'table', self.tableName)
         return add_geom_tag
             
     def ErrorInfoMessage(self, Message):

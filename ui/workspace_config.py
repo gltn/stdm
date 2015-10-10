@@ -27,8 +27,8 @@ import os
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from ui_workspace_config import Ui_STDMWizard
-from stdm.data import ConfigTableReader,delete_profile,profile_full_description,deleteColumn,\
-deleteTable,lookup_data2_list,deleteLookupChoice,SQLInsert,LicenseDocument, safely_delete_tables, stdm_core_tables, \
+from stdm.data import ConfigTableReader,delete_profile,profile_full_description,delete_column,\
+delete_table,lookup_data2_list,delete_lookup_choice,SQLInsert,LicenseDocument, safely_delete_tables, stdm_core_tables, \
     _execute, flush_session_activity, CheckableListModel, non_editable_tables, table_description
 
 from attribute_editor import AttributeEditor
@@ -675,9 +675,9 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
                     deleteColumn(self.profile,'lookup',self.tableName,element,'name',str(item))
                     self.lookup_columnsTowidget(self.tableName)
                 else:
-                    deleteColumn(self.profile,'table',self.tableName,element,'name',str(item))
+                    delete_column(self.profile,'table',self.tableName,element,'name',str(item))
                     try:
-                        deleteColumn(self.profile,'table',self.tableName,'constraints','column',str(item))
+                        delete_column(self.profile,'table',self.tableName,'constraints','column',str(item))
                     except Exception as ex:
                         self.ErrorInfoMessage(str(ex.message))
                     self.loadTableColumns(self.tableName)
@@ -696,7 +696,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             if len(selCols)>0:
                 item = selCols[0].data()
                 element = "relations"
-                deleteColumn(self.profile,'table',self.tableName,element,'name',str(item))
+                delete_column(self.profile,'table',self.tableName,element,'name',str(item))
                 self.loadTableRelations(self.tableName)
 
     def delete_geom(self):
@@ -708,7 +708,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             if len(selCols)>0:
                 item=selCols[1].data()
                 element="geometryz"
-                deleteColumn(self.profile,'table',self.tableName,element,'column',str(item))
+                delete_column(self.profile,'table',self.tableName,element,'column',str(item))
                 self.loadTableRelations(self.tableName)
         
     def deleteLookupChoice(self): 
