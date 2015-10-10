@@ -794,7 +794,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
             for lookup in lookups:
                 lookupTextList = lookupData2List(self.profile, lookup)
                 sqlInsert = SQLInsert(lookup, lookupTextList)
-                SQLSt = sqlInsert.setInsertStatement()
+                SQLSt = sqlInsert.set_insert_statement()
                 with open(fileN,'a')as f:
                     for row in SQLSt:
                         f.write(row)
@@ -812,7 +812,7 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
     
     def setRelation(self,fileN,sql):
         with open(fileN,'a')as f:
-            f.write(sql.spatialRelation())
+            f.write(sql.spatial_relation())
             f.write(sql.social_tenure_duplicate_enforce())
         f.close()
             

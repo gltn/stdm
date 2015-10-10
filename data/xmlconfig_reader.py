@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- stdm
-                                 A QGIS plugin
- Securing land and property rights for all
-                              -------------------
-        begin                : 2014-03-04
-        copyright            : (C) 2014 by GLTN
-        email                : njoroge.solomon@yahoo.com
+Name                 : xmlconfig_reader
+Description          :
+Date                 : 24/September/2013
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+
  ***************************************************************************/
 
 /***************************************************************************
