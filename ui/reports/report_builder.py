@@ -3,8 +3,9 @@
 Name                 : STDM Report Builder - LEGACY CODE, NEEDS UPDATE
 Description          : Report Builder Dialog
 Date                 : 07/September/11 
-copyright            : (C) 2011 by John Gitau
-email                : gkahiu@gmail.com 
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************

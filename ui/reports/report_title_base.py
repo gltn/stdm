@@ -3,9 +3,10 @@
 Name                 : STDM Report Builder
 Description          : Report Builder Dialog
 Date                 : 07/September/11 
-copyright            : (C) 2011 by John Gitau
-email                : gkahiu@gmail.com 
- ***************************************************************************/
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+***************************************************************************/
 
 /***************************************************************************
  *                                                                         *
@@ -54,9 +55,9 @@ from stdm.data.reports import (
     
 from .ui_rpt_title_base import Ui_frmRptTitleBase
 
-class TitleBase(QWidget,Ui_frmRptTitleBase):      
-    def __init__(self,id,parent = None):         
-        QWidget.__init__(self,parent)
+class TitleBase(QWidget, Ui_frmRptTitleBase):      
+    def __init__(self,id, parent=None):         
+        QWidget.__init__(self, parent)
         self.setupUi(self)  
         
         #Form identifier  
@@ -73,7 +74,7 @@ class TitleBase(QWidget,Ui_frmRptTitleBase):
         self.initVars()
         
         #Initialize control
-        self.initControls()
+        self.init_controls()
 
         #Remove option for selecting font until translation issues are fixed
         self.label_2.setVisible(False)
@@ -81,7 +82,7 @@ class TitleBase(QWidget,Ui_frmRptTitleBase):
         
         #Event Handlers
         self.btnTitleFont.clicked.connect(self.setFontType)
-        self.btnTitleColor.clicked.connect(self.setFontColor)
+        self.btnTitleColor.clicked.connect(self.set_font_color)
     
     def initVars(self):
         #Font
@@ -107,174 +108,174 @@ class TitleBase(QWidget,Ui_frmRptTitleBase):
         self.elTop=0        
         self.elBorder={"all":None} 
         
-    def initControls(self):
+    def init_controls(self):
         #Initialize the controls' settings
-        settingVal = QDoubleValidator(0,10,2,self)
-        self.txtTitleHeight.setValidator(settingVal)
-        self.txtTitleLeft.setValidator(settingVal)
-        self.txtTitleTop.setValidator(settingVal)
-        self.txtTitleWidth.setValidator(settingVal)
+        setting_val = QDoubleValidator(0, 10, 2, self)
+        self.txtTitleHeight.setValidator(setting_val)
+        self.txtTitleLeft.setValidator(setting_val)
+        self.txtTitleTop.setValidator(setting_val)
+        self.txtTitleWidth.setValidator(setting_val)
         self.btnTitleColor.setColor(self.elFontColor)
         
-    def setBorder(self):
+    def set_border(self):
         #Set the border
-        dBorder=self.cboBorder.currentText()
-        if dBorder=="All":self.elBorder={"all":True} 
-        elif dBorder=="Top":self.elBorder={"top":True}    
-        elif dBorder=="Right":self.elBorder={"right":True}
-        elif dBorder=="Bottom":self.elBorder={"bottom":True}
-        elif dBorder=="Left":self.elBorder={"left":True}
-        elif dBorder=="None":self.elBorder={"all":False}
+        d_border = self.cboBorder.currentText()
+        if d_border == "All":self.elBorder = {"all":True} 
+        elif d_border == "Top":self.elBorder = {"top":True}    
+        elif d_border == "Right":self.elBorder = {"right":True}
+        elif d_border == "Bottom":self.elBorder = {"bottom":True}
+        elif d_border == "Left":self.elBorder = {"left":True}
+        elif d_border == "None":self.elBorder = {"all":False}
         
-    def setFontColor(self):
+    def set_font_color(self):
         #Slot for setting the font color from the color dialog
-        widgClr = QColorDialog.getColor(self.elFontColor, self)
-        if widgClr.isValid():
-            self.elFontColor=widgClr
-            self.btnTitleColor.setColor(widgClr)
+        widg_clr = QColorDialog.getColor(self.elFontColor, self)
+        if widg_clr.isValid():
+            self.elFontColor = widg_clr
+            self.btnTitleColor.setColor(widg_clr)
         
-    def setFontType(self):
+    def set_font_type(self):
         #Slot for setting the font type specified in the font dialog            
-        (widgFont,ok) = QFontDialog.getFont(self.elFont,self)
+        (widg_font, ok) = QFontDialog.getFont(self.elFont, self)
         if ok:
-            if widgFont.family() == "MS Shell Dlg 2":
-                widgFont.setFamily("Times New Roman")
+            if widg_font.family() == "MS Shell Dlg 2":
+                widg_font.setFamily("Times New Roman")
 
-            self.elFont=widgFont
+            self.elFont = widg_font
         
-    def setHeight(self):
+    def set_height(self):
         #Set the height specified by the user
-        if str(self.txtTitleHeight.text())!="":
-            (dHeight,ok)=self.txtTitleHeight.text().toInt()
+        if str(self.txtTitleHeight.text()) != "":
+            (d_height, ok) = self.txtTitleHeight.text().toInt()
             if ok:
-                self.elHeight=dHeight
+                self.elHeight = d_height
                 
-    def setHAlign(self):
+    def set_h_align(self):
         #Set Horizontal Alignment
-        hAl=self.cboTitleHAlign.currentText()
-        if hAl=="Left":self.hAlign=TA_LEFT
-        elif hAl=="Right":self.hAlign=TA_RIGHT
-        elif hAl=="Center":self.hAlign=TA_CENTER
+        h_al = self.cboTitleHAlign.currentText()
+        if h_al == "Left":self.hAlign = TA_LEFT
+        elif h_al == "Right":self.hAlign = TA_RIGHT
+        elif h_al == "Center":self.hAlign = TA_CENTER
         
-    def setLeft(self):
+    def set_left(self):
         #Set the LEFT specified by the user
         if str(self.txtTitleLeft.text())!="":
-            (dLeft,ok)=self.txtTitleLeft.text().toInt()
+            (d_left, ok) = self.txtTitleLeft.text().toInt()
             if ok:
-                self.elLeft=dLeft
+                self.elLeft = d_left
                 
-    def setUserText(self):
+    def set_user_text(self):
         #Set the text specified by the user
-        if str(self.txtTitleText.text())!="":            
+        if str(self.txtTitleText.text()) != "":            
             self.elText=str(self.txtTitleText.text())
         
-    def setTop(self):
+    def set_top(self):
         #Set the TOP specified by the user
         if str(self.txtTitleTop.text())!="":
-            (dTop,ok)=self.txtTitleTop.text().toInt()
+            (d_top, ok) = self.txtTitleTop.text().toInt()
             if ok:
-                self.elTop=dTop
+                self.elTop = d_top
     
-    def setWidth(self):
+    def set_width(self):
         #Set the WIDTH specified by the user
         if self.txtTitleWidth.text():
-            (dWidth,ok)=self.txtTitleWidth.text().toInt()
+            (d_width, ok) = self.txtTitleWidth.text().toInt()
             if ok:
-                self.elWidth=dWidth
+                self.elWidth = d_width
                 
-    def compileEntry(self): 
+    def compile_entry(self): 
         #Compile the user specified values
-        self.setBorder()
-        self.setHeight()
-        self.setHAlign()
-        self.setLeft()
-        self.setUserText()
-        self.setTop()
-        self.setWidth()    
+        self.set_border()
+        self.set_height()
+        self.set_h_align()
+        self.set_left()
+        self.set_user_text()
+        self.set_top()
+        self.set_width()    
         
     def systemExpression(self,sysExpression="%(report_title)s"):
         '''
         Build a GERALDO-STYLE system expression with the TITLE 
         set as the default field
         '''         
-        self.compileEntry()
+        self.compile_entry()
         sysExp=SystemField(expression=sysExpression, top=self.elTop*cm, left=self.elLeft*cm,\
-                           width=self.elWidth,height=self.elHeight*cm,style=self.getStyle())
+                           width=self.elWidth,height=self.elHeight*cm,style=self.get_style())
         return sysExp    
         
-    def getStyle(self):
+    def get_style(self):
         '''
         Returns the style (color and font details) specified 
         by the user through a dictionary
         '''        
-        fontDB = QFontDatabase()        
-        matchFont=self.sysFonts.matchingFontName(str(self.elFont.rawName()))
+        font_db = QFontDatabase()        
+        match_font = self.sysFonts.matchingFontName(str(self.elFont.rawName()))
 
-        qFontStyle=str(fontDB.styleString(self.elFont))
+        q_font_style = str(font_db.styleString(self.elFont))
 
-        matchFontStyle = ''
+        match_font_style = ''
 
-        if qFontStyle.find("Normal") != -1:
-            matchFontStyle = matchFont
+        if q_font_style.find("Normal") != -1:
+            match_font_style = match_font
 
         else:            
             #matchFontStyle = matchFont + " " + qFontStyle
-            matchFontStyle = matchFont + " Bold"
+            match_font_style = match_font + " Bold"
         
         #Register the fonts to be used in the report
-        fontStyle = self._buildFontFamily()
-        for k,v in fontStyle.iteritems():
+        font_style = self._build_font_family()
+        for k,v in font_style.iteritems():
             pdfmetrics.registerFont(TTFont(k,v))
 
         #Add font mappings
-        psMappings=self._postScriptMappings(fontStyle)
-        for ps in psMappings:
-            addMapping(matchFont,ps["Bold"],ps["Italic"],ps["Style"])            
+        ps_mappings = self._post_script_mappings(font_style)
+        for ps in ps_mappings:
+            addMapping(match_font, ps["Bold"], ps["Italic"], ps["Style"])            
             
-        dStyle={}                            
-        dStyle["fontName"] = matchFontStyle
-        dStyle["fontSize"]=self.elFont.pointSize()
-        dStyle["alignment"]=self.hAlign
-        dStyle["textColor"]=HexColor(str(self.elFontColor.name()))
+        d_style = {}                            
+        d_style["fontName"] = match_font_style
+        d_style["fontSize"] = self.elFont.pointSize()
+        d_style["alignment"] = self.hAlign
+        d_style["textColor"] = HexColor(str(self.elFontColor.name()))
 
-        return dStyle
+        return d_style
     
-    def _buildFontFamily(self):
+    def _build_font_family(self):
         #Dictionary containing the font style names and corresponding file names
-        styleMapping={}
-        fontMembers=self.sysFonts.fontMembers(str(self.elFont.rawName()))
-        if len(fontMembers)>0:
-            for f in fontMembers:
-                fontFile=self.sysFonts.fontFile(f)
-                styleMapping[f]=fontFile                
-        return styleMapping
+        style_mapping = {}
+        font_members = self.sysFonts.fontMembers(str(self.elFont.rawName()))
+        if len(font_members) > 0:
+            for f in font_members:
+                font_file = self.sysFonts.fontFile(f)
+                style_mapping[f] = font_file                
+        return style_mapping
     
-    def _postScriptMappings(self,fontStyle):
+    def _post_script_mappings(self, font_style):
         #Build post script mappings
-        psMappings=[]
-        for s in fontStyle.keys():
-            ps={}
-            ps["Style"]=s
-            if s.find("Bold")!=-1 and s.find("Italic")==-1:
-                ps["Bold"]=1
-                ps["Italic"]=0                
-            elif s.find("Bold")==-1 and s.find("Italic")!=-1:
-                ps["Bold"]=0
-                ps["Italic"]=1
-            elif s.find("Bold")!=-1 and s.find("Italic")!=-1:
-                ps["Bold"]=1
-                ps["Italic"]=1
+        ps_mappings = []
+        for s in font_style.keys():
+            ps = {}
+            ps["Style"] = s
+            if s.find("Bold") != -1 and s.find("Italic") == -1:
+                ps["Bold"] = 1
+                ps["Italic"] = 0                
+            elif s.find("Bold") == -1 and s.find("Italic") != -1:
+                ps["Bold"] = 0
+                ps["Italic"] = 1
+            elif s.find("Bold") != -1 and s.find("Italic") != -1:
+                ps["Bold"] = 1
+                ps["Italic"] = 1
             else:
-                ps["Bold"]=0
-                ps["Italic"]=0 
-            psMappings.append(ps)
-        return psMappings 
+                ps["Bold"] = 0
+                ps["Italic"] = 0 
+            ps_mappings.append(ps)
+        return ps_mappings 
     
-    def loadSettings(self,dialogSettings):
+    def load_settings(self, dialog_settings):
         '''
         Load report dialog settings stored for the given report element
         '''
-        ds = dialogSettings
+        ds = dialog_settings
         
         if not ds:
             self.txtTitleTop.setText(ds.top)
@@ -290,31 +291,31 @@ class TitleBase(QWidget,Ui_frmRptTitleBase):
             #Immediately update the color displayed by the font color button
             self.btnTitleColor.setColor(self.elFontColor)
     
-    def getSettings(self):
+    def get_settings(self):
         '''
         Capture the user settings 
         '''
-        dlgSt = TitleDialogSettings()
-        dlgSt.top = str(self.txtTitleTop.text())
-        dlgSt.left = str(self.txtTitleLeft.text())
-        dlgSt.border = str(self.cboBorder.currentText())
-        dlgSt.foreColor = self.elFontColor
-        dlgSt.font = SFont(self.elFont)
-        dlgSt.height = str(self.txtTitleHeight.text())
-        dlgSt.hAlighment = str(self.cboTitleHAlign.currentText())
-        dlgSt.displayName = str(self.txtTitleText.text())
-        dlgSt.vAlignment = str(self.cboTitleVAlign.currentText())
-        dlgSt.width = str(self.txtTitleWidth.text())        
+        dlg_st = TitleDialogSettings()
+        dlg_st.top = str(self.txtTitleTop.text())
+        dlg_st.left = str(self.txtTitleLeft.text())
+        dlg_st.border = str(self.cboBorder.currentText())
+        dlg_st.foreColor = self.elFontColor
+        dlg_st.font = SFont(self.elFont)
+        dlg_st.height = str(self.txtTitleHeight.text())
+        dlg_st.hAlighment = str(self.cboTitleHAlign.currentText())
+        dlg_st.displayName = str(self.txtTitleText.text())
+        dlg_st.vAlignment = str(self.cboTitleVAlign.currentText())
+        dlg_st.width = str(self.txtTitleWidth.text())        
         
-        self._rptEl.dialogSettings = dlgSt
+        self._rptEl.dialogSettings = dlg_st
             
         return self._rptEl
     
-    def InfoMessage(self,Message):            
+    def info_message(self, message):            
         #General Info Message Box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
-        msg.setText(Message)
+        msg.setText(message)
         msg.exec_()   
                            
         
