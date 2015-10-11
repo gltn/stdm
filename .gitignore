@@ -20,3 +20,6 @@ where_used.sh
 hist
 sed.exe.stackdump
 xx.sh
+form_funcs
+report_funcs
+network_funcs

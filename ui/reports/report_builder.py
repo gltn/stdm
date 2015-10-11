@@ -17,10 +17,16 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+import os
+
+import sqlalchemy
+from sqlalchemy.exc import SQLAlchemyError
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-import sqlalchemy
+from qgis.core import *
+from qgis.gui import *
 
 from stdm.utils import *
 from stdm.data.reports import (
@@ -42,9 +48,8 @@ from stdm.data import (
                        pg_views,
                        process_report_filter
                        )
+
 from stdm.ui.customcontrols import TableComboBox
-from sqlalchemy.exc import SQLAlchemyError
-import os
 '''
 from stdm.workspace.defaultSetting.config import dbTableConfig
 from stdm.workspace.defaultSetting.map_query import CertificateMap
@@ -58,80 +63,73 @@ from .report_layout import ReportLayout
 from .highlighter import SqlHighlighter
 from stdm.data import pg_views
 
-from qgis.core import *
-from qgis.gui import *
-
 from .ui_rpt_builder import Ui_ReportBuilder
 
-class ReportBuilder(QDialog,Ui_ReportBuilder):   
-    def __init__(self,config,parent = None): 
-        QDialog.__init__(self,parent)
+class ReportBuilder(QDialog, Ui_ReportBuilder):   
+    def __init__(self, config, parent=None): 
+        QDialog.__init__(self, parent)
         
         self.setupUi(self)
         
         #Disable supporting tabs
-        self.enableSupportingTabs(False)
+        self.enable_supporting_tabs(False)
         
         #Dynamic class for placing report elements
-        self.rptElements = ReportElements()
+        self.rpt_elements = ReportElements()
         
         #Get instance of config object    
         self.config = config
-        self.progressDlg = QProgressDialog(self)
+        self.progress_dlg = QProgressDialog(self)
         
         #Event handlers
         #Fields Section
         self.btnRptCancel.clicked.connect(self.close)
-        self.btnSave.clicked.connect(self.saveReport)
-        self.btnLoad.clicked.connect(self.loadReport)
-        self.comboBox.currentIndexChanged[int].connect(self.tabChanged)
-        self.btnAddField.clicked.connect(self.addReportFields)
-        self.btnAddAllFields.clicked.connect(self.addAllFields)
-        self.btnRemField.clicked.connect(self.remReportFields)
-        self.btnRemAllFields.clicked.connect(self.remAllFields)
-        self.btnUniqVals.clicked.connect(self.fields_getUniqueVals)
+        self.btnSave.clicked.connect(self.save_report)
+        self.btnLoad.clicked.connect(self.load_report)
+        self.comboBox.currentIndexChanged[int].connect(self.tab_changed)
+        self.btnAddField.clicked.connect(self.add_report_fields)
+        self.btnAddAllFields.clicked.connect(self.add_all_fields)
+        self.btnRemField.clicked.connect(self.rem_report_fields)
+        self.btnRemAllFields.clicked.connect(self.rem_all_fields)
+        self.btnUniqVals.clicked.connect(self.fields_get_unique_vals)
         
         #Filter Section
-        self.lstFields.itemDoubleClicked.connect(self.filter_insertRptFields)
-        self.lstUniqVal.itemDoubleClicked.connect(self.filter_insertRptFields)
-        self.btnOpEqual.clicked.connect(self.filter_insertEq)
-        self.btnOpNotEqual.clicked.connect(self.filter_insertNotEq)
-        self.btnOpLike.clicked.connect(self.filter_insertLike)
-        self.btnOpGreater.clicked.connect(self.filter_greaterThan)
-        self.btnOpGreaterEq.clicked.connect(self.filter_greaterEq)
-        self.btnOpAnd.clicked.connect(self.filter_insertAnd)
-        self.btnOpLess.clicked.connect(self.filter_insertLess)
-        self.btnOpLess_2.clicked.connect(self.filter_insertLessEq)
-        self.btnOpOr.clicked.connect(self.filter_insertOR)
-        self.btnSQLClr.clicked.connect(self.filter_ClearText)
-        self.btnSQLVer.clicked.connect(self.filter_verifyQuery)    
-        self.btnGenRpt.clicked.connect(self.generateReport)  
+        self.lstFields.itemDoubleClicked.connect(self.filter_insert_rpt_fields)
+        self.lstUniqVal.itemDoubleClicked.connect(self.filter_insert_rpt_fields)
+        self.btnOpEqual.clicked.connect(self.filter_insert_eq)
+        self.btnOpNotEqual.clicked.connect(self.filter_insert_not_eq)
+        self.btnOpLike.clicked.connect(self.filter_insert_like)
+        self.btnOpGreater.clicked.connect(self.filter_greater_than)
+        self.btnOpGreaterEq.clicked.connect(self.filter_greater_eq)
+        self.btnOpAnd.clicked.connect(self.filter_insert_and)
+        self.btnOpLess.clicked.connect(self.filter_insert_less)
+        self.btnOpLess_2.clicked.connect(self.filter_insert_lessEq)
+        self.btnOpOr.clicked.connect(self.filter_insert_or)
+        self.btnSQLClr.clicked.connect(self.filter_clear_text)
+        self.btnSQLVer.clicked.connect(self.filter_verify_query)    
+        self.btnGenRpt.clicked.connect(self.generate_report)  
         
         #Display Section
-        #self.lblTitleClr.clicked.connect(self.display_titleColor)
-        self.trRptSettings.itemSelectionChanged.connect(self.display_treeViewSelection)
+        #self.lblTitleClr.clicked.connect(self.display_title_color)
+        self.trRptSettings.itemSelectionChanged.connect(self.display_tree_view_selection)
         
         #Grouping section
-        self.btnAddGpField.clicked.connect(self.grouping_addField)
-        self.btnRemGpField.clicked.connect(self.grouping_removeField)
+        self.btnAddGpField.clicked.connect(self.grouping_add_field)
+        self.btnRemGpField.clicked.connect(self.grouping_remove_field)
         
         #Show on Map
-        self.btnMap.clicked.connect(self.map_query_fromFilter)
+        self.btnMap.clicked.connect(self.map_query_from_filter)
         #Initialize dialog with table names
-        self.initRptDialog()   
-        
-        #self.btnSQLApply.setVisible(False) 
+        self.init_rpt_dialog()   
     
-    def initRptDialog(self):
+    def init_rpt_dialog(self):
         #Initialize the dialog with table names
-        self.tabNames = self.config
-        #tabList=self.config.items("ReportFields")
-        #tabList=self.config.items()
+        self.tab_names = self.config
         user_views = pg_views()
         if user_views:
             for view_name in user_views:
                 self.config[view_name.title()] = view_name
-        self.tabNames['Social Tenure Relationship'] = 'social_tenure_relations'
+        self.tab_names['Social Tenure Relationship'] = 'social_tenure_relations'
         try:
             for name, value in self.config.iteritems():
                 self.comboBox.addItem(name, value)
@@ -139,8 +137,8 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
             if index:
                 self.comboBox.removeItem(int(index))
         except Exception as ex:
-            self.ErrorInfoMessage(str(ex.message))
-        self.initStackWidgets()
+            self.error_info_message(str(ex.message))
+        self.init_stack_widgets()
         
         #Sorting
         self.tbSortFields.verticalHeader().setVisible(False) 
@@ -168,64 +166,63 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         self.tbGroupFields.setAlternatingRowColors(True)
         self.tbGroupFields.setEditTriggers(QAbstractItemView.NoEditTriggers)
         
-        self.initVars()
+        self.init_vars()
     
-    def initVars(self):
+    def init_vars(self):
         #Initialize data variables   
         self._sortOrder = 0
     
-    def initStackWidgets(self):
+    def init_stack_widgets(self):
         #Instantiate new report display widgets
-        titleWidgets=["Title"]
-        for t in titleWidgets:
+        title_widgets=["Title"]
+        for t in title_widgets:
             stWidg = Title(t)   
             self.stackedWidget.addWidget(stWidg)  
             
         #Add Field Names Widget
-        fnWidg = FieldNames(QApplication.translate("ReportBuilder","Field Names"))
-        self.stackedWidget.addWidget(fnWidg)
+        fn_widget = FieldNames(QApplication.translate("ReportBuilder", "Field Names"))
+        self.stackedWidget.addWidget(fn_widget)
         
         #Add Layout Tree Node (Under Elements parent node)
         el_elements = self.trRptSettings.findItems(QApplication.translate
-                                                   ("ReportBuilder","Elements"),Qt.MatchExactly,0)
+                                                   ("ReportBuilder", "Elements"), Qt.MatchExactly, 0)
         if len(el_elements) > 0:
-            elNode = el_elements[0]
+            el_node = el_elements[0]
             lyt_txt = QApplication.translate("ReportBuilder","Layout")
-            layoutNode = QTreeWidgetItem([lyt_txt])
-            elNode.add_child(layoutNode)
-
+            layout_node = QTreeWidgetItem([lyt_txt])
+            el_node.addChild(layout_node)
 
             #Add Layout Widget
-            layoutWidg = ReportLayout(lyt_txt)
-            self.stackedWidget.addWidget(layoutWidg)
+            layout_widget = ReportLayout(lyt_txt)
+            self.stackedWidget.addWidget(layout_widget)
 
             #Select the first item in the tree view
-            titleNode=elNode.child(0)
-            titleNode.setSelected(True)
+            title_node=elNode.child(0)
+            title_node.setSelected(True)
 
-    def resetControls(self):
+    def reset_controls(self):
         #Reset widgets
         self.listWidget_2.clear()
         self.listWidget.clear()
-        self.enableSupportingTabs(False)
+        self.enable_supporting_tabs(False)
         self.txtSqlParser.clear()
         self.lstUniqVal.clear()
         self.lstFields.clear()
-        self.grouping_cleanUpFields()
+        self.grouping_cleanup_fields()
         self.lstRptFields.clear()  
-        self.display_updateReportFields() 
-        self.sorting_updateReportFields()  
-        self.initVars()  
+        self.display_update_report_fields() 
+        self.sorting_update_report_fields()  
+        self.init_vars()  
     
-    def tabChanged(self,itemIndex):
+    def tab_changed(self, item_index):
         #Handler when the table names' combo box items changes    
         self.tabFields=[]
         self.rptFields=[]
-        self.resetControls()
-        self.loadTabFields(itemIndex)
-        self.selectAvailFieldItem()
+        self.reset_controls()
+        self.load_tab_fields(item_index)
+        self.select_avail_field_item()
     
-    def enableSupportingTabs(self,status):
+    def enable_supporting_tabs(self, status):
         '''
         Enable/Disable other tabs only when the report fields
         have been defined by the user
@@ -237,91 +234,91 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         self.btnGenRpt.setEnabled(status)
         self.btnSave.setEnabled(status)
     
-    def loadTabFields(self,comboItemIndex):
+    def load_tab_fields(self, combo_item_index):
         #Load the associated fields from  specified table name
-        if isinstance(comboItemIndex, str) or isinstance(comboItemIndex, unicode):
-            comboItemIndex = self.comboBox.findData(comboItemIndex)
+        if isinstance(combo_item_index, str) or isinstance(combo_item_index, unicode):
+            combo_item_index = self.comboBox.findData(combo_item_index)
 
-            if comboItemIndex == -1:
+            if combo_item_index == -1:
                 QMessageBox.critical(self, QApplication.translate("ReportBuilder", "Report Error"),
                                         QApplication.translate("ReportBuilder","Table does not exist in the drop-down list"))
                 return
-        self.tabName = self.comboBox.itemData(comboItemIndex)
+        self.tabName = self.comboBox.itemData(combo_item_index)
         self.tabFields = table_column_names(self.tabName)
         self.listWidget.addItems(self.tabFields) 
         
         #Set table name in the Fields Query Builder
         self.lblSqlEntity.setText("Select * FROM " + self.tabName + " WHERE:")   
     
-    def addReportFields(self,selectAll=False):
+    def add_report_fields(self, select_all=False):
         # get selected fields and add to the report collection
-        selFields=[]
-        if selectAll:
+        sel_fields = []
+        if select_all:
             for i in range(self.listWidget.count()):
-                lstItem = self.listWidget.item(i)
-                selFields.append(lstItem.text())   
+                lst_item = self.listWidget.item(i)
+                sel_fields.append(lst_item.text())   
         else:        
-            selItems = self.listWidget.selectedItems()
-            for selItem in selItems:
-                selFields.append(selItem.text())
-        self.updateSelectedReportFields(selFields)
+            sel_items = self.listWidget.selectedItems()
+            for sel_item in sel_items:
+                sel_fields.append(sel_item.text())
+        self.update_selected_report_fields(sel_fields)
 
-    def updateSelectedReportFields(self,rptFields):
+    def update_selected_report_fields(self, rpt_fields):
         #Updates the user defined report fields
-        for r in rptFields:
-            self.rptFields.append(r)
-            self.tabFields.remove(r)            
-        self.updateFieldViews()
+        for rf in rpt_fields:
+            self.rptFields.append(rf)
+            self.tabFields.remove(rf)            
+        self.update_field_views()
     
-    def remReportFields(self,selectAll=False):
+    def rem_report_fields(self, select_all=False):
         #Remove items from the report collection
-        selFields = []
-        if selectAll:
+        sel_fields = []
+        if select_all:
             for i in range(self.listWidget_2.count()):
-                lstItem = self.listWidget_2.item(i)
-                selFields.append(lstItem.text())   
+                lst_item = self.listWidget_2.item(i)
+                sel_fields.append(lst_item.text())   
         else:    
-            selItems=self.listWidget_2.selectedItems()
-            for selItem in selItems:
-                selFields.append(selItem.text())
+            sel_items=self.listWidget_2.selectedItems()
+            for sel_item in sel_items:
+                sel_fields.append(sel_item.text())
                 
-        for s in selFields:           
-            self.rptFields.remove(s)
-            self.tabFields.append(s)            
+        for sf in sel_fields:           
+            self.rptFields.remove(sf)
+            self.tabFields.append(sf)            
         
-        self.updateFieldViews()
+        self.update_field_views()
     
-    def selectAvailFieldItem(self,index=0):
+    def select_avail_field_item(self, index=0):
         #Select an item in available fields view
         if index==0:
-            selItem=self.listWidget.item(0)
-            self.listWidget.setCurrentItem(selItem)
+            sel_item=self.listWidget.item(0)
+            self.listWidget.setCurrentItem(sel_item)
         
-    def loadRptFieldsWidgets(self):
+    def load_rpt_fields_widgets(self):
         '''
         Populate report fields widgets defined in the supporting
         tabs
         '''
-        self.reloadRptListWidgets(self.lstFields)
-        self.reloadRptListWidgets(self.lstRptFields)
-        self.grouping_cleanUpFields()  
-        self.display_updateReportFields() 
-        self.sorting_updateReportFields()
+        self.reload_rpt_list_widgets(self.lstFields)
+        self.reload_rpt_list_widgets(self.lstRptFields)
+        self.grouping_cleanup_fields()  
+        self.display_update_report_fields() 
+        self.sorting_update_report_fields()
     
-    def reloadRptListWidgets(self,lstwidgetobj):
+    def reload_rpt_list_widgets(self, lst_widget_obj):
         #clear and reload report fields widgets
-        lstwidgetobj.clear()
-        lstwidgetobj.addItems(self.rptFields)
+        lst_widget_obj.clear()
+        lst_widget_obj.addItems(self.rptFields)
   
-    def addAllFields(self):
+    def add_all_fields(self):
         #Handler when the add all fields button is clicked
-        self.addReportFields(True)
+        self.add_report_fields(True)
     
-    def remAllFields(self):
+    def rem_all_fields(self):
         #Handler when the remove all report fields button is clicked
-        self.remReportFields(True)
+        self.rem_report_fields(True)
   
-    def updateFieldViews(self):
+    def update_field_views(self):
         #Update the available and report fields' widgets
         self.listWidget.clear()
         self.listWidget.addItems(self.tabFields)
@@ -332,234 +329,232 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         and enable the supporting tabs
         '''
         if len(self.rptFields)>0:
-            self.enableSupportingTabs(True)
-            self.loadRptFieldsWidgets()
+            self.enable_supporting_tabs(True)
+            self.load_rpt_fields_widgets()
         else:
-            self.enableSupportingTabs(False)        
+            self.enable_supporting_tabs(False)        
         
-    def fields_getUniqueVals(self):
+    def fields_get_unique_vals(self):
         #Raised when the get unique values button is clicked
-        selItems=self.lstFields.selectedItems()
-        if len(selItems)>0:
-            columnName = selItems[0].text()
-            self.fields_loadUniqueVals(self.tabName, str(columnName))
+        sel_items = self.lstFields.selectedItems()
+        if len(sel_items)>0:
+            column_name = sel_items[0].text()
+            self.fields_load_unique_vals(self.tabName, str(column_name))
         
-    def fields_loadUniqueVals(self,tableName,columnName):
+    def fields_load_unique_vals(self, table_name, column_name):
         #Get unique column values and load the list
-        uniqueVals = unique_column_values(tableName,columnName)
+        unique_vals = unique_column_values(table_name, column_name)
         self.lstUniqVal.clear()
-        self.lstUniqVal.addItems(uniqueVals)
+        self.lstUniqVal.addItems(unique_vals)
         self.lstUniqVal.sortItems()    
     
-    def filter_ClearText(self):
+    def filter_clear_text(self):
         #Deletes all the text in the text edit
         self.txtSqlParser.clear()
     
-    def filter_insertRptFields(self,lstItem):
+    def filter_insert_rpt_fields(self, lst_item):
         '''
         Inserts the clicked report field item into the
         SQL parser text edit.
         '''
-        self.txtSqlParser.insertPlainText(lstItem.text())    
+        self.txtSqlParser.insertPlainText(lst_item.text())    
     
-    def filter_insertEq(self):
+    def filter_insert_eq(self):
         #Insert Equal operator
         self.txtSqlParser.insertPlainText(" = ")
      
-    def filter_insertNotEq(self):
+    def filter_insert_not_eq(self):
         #Insert Not Equal to
         self.txtSqlParser.insertPlainText(" <> ")
     
-    def filter_insertLike(self):
+    def filter_insert_like(self):
         #Insert LIKE operator
         self.txtSqlParser.insertPlainText(" LIKE ")
     
-    def filter_greaterThan(self):
+    def filter_greater_than(self):
         #Insert greater than
         self.txtSqlParser.insertPlainText(" > ")
     
-    def filter_greaterEq(self):
+    def filter_greater_eq(self):
         #Insert Greater than or equal to
         self.txtSqlParser.insertPlainText(" >= ")
     
-    def filter_insertAnd(self):
+    def filter_insert_and(self):
         #Insert AND
         #self.filter_AppendOpHTML("AND")    
         self.txtSqlParser.insertPlainText(" AND ")
     
-    def filter_insertLess(self):
+    def filter_insert_less(self):
         self.txtSqlParser.insertPlainText(" < ")
     
-    def filter_insertLessEq(self):
+    def filter_insert_lessEq(self):
         self.txtSqlParser.insertPlainText(" <= ")
     
-    def filter_insertOR(self):
+    def filter_insert_or(self):
         self.txtSqlParser.insertPlainText(" OR ")    
     
-    def filter_buildQuery(self):
+    def filter_build_query(self):
         #Build query set and return results
-        columnList = ",".join(self.rptFields)
-        filterStmnt = self.txtSqlParser.toPlainText()
+        column_list = ",".join(self.rptFields)
+        filter_stmnt = self.txtSqlParser.toPlainText()
         
         #Check if sorting has been defined
-        stLen,stSQL = self.sorting_compileSort()
+        st_len, st_sql = self.sorting_compile_sort()
         
         #Check if grouping has been defined
-        gpLen,gpQuery = self.grouping_orderQuery()
-        sortStmnt=''
-        if gpLen > 0:          
-            sortStmnt = gpQuery
-            if stLen>0:
-                stSQL = stSQL.replace(" ORDER BY","")
-                sortStmnt = sortStmnt+"," + stSQL
+        gp_len, gp_query = self.grouping_orderQuery()
+        sort_stmnt=''
+        if gp_len > 0:          
+            sort_stmnt = gp_query
+            if st_len>0:
+                st_sql = st_sql.replace(" ORDER BY","")
+                sort_stmnt = sort_stmnt+"," + st_sql
         else:        
-            if stLen>0:
-                sortStmnt = stSQL
+            if st_len>0:
+                sort_stmnt = st_sql
                 
         results=None  
         
         try:        
-            results = process_report_filter(self.tabName,columnList,filterStmnt,sortStmnt)           
+            results = process_report_filter(self.tabName, column_list, filter_stmnt, sort_stmnt)           
            
-        except sqlalchemy.exc.ProgrammingError,sqlalchemy.exc.DataError:
-            self.ErrorInfoMessage(QApplication.translate("ReportBuilder","The SQL statement is invalid!"))
+        except sqlalchemy.exc.ProgrammingError, sqlalchemy.exc.DataError:
+            self.error_info_message(QApplication.translate("ReportBuilder","The SQL statement is invalid!"))
         
         return results       
    
-    def map_query_fromFilter(self):
-        strQuery=self.txtSqlParser.toPlainText()
-        unitArray=[]
-       # QMessageBox.information(None,"mapping",self.tabName)
+    def map_query_from_filter(self):
+        str_query = self.txtSqlParser.toPlainText()
+        unit_array = []
         if self.tabName == 'social_tenure_relations':
-            #try:
-                mpPartQry = self.tabName+".spatial_unit_number = spatial_unit.spatial_unit_id"
-                if strQuery != "":
-                    mpPartQry +=" AND "+ self.tabName+"."+strQuery
+                mp_part_qry = self.tabName+".spatial_unit_number = spatial_unit.spatial_unit_id"
+                if str_query != "":
+                    mp_part_qry +=" AND "+ self.tabName+"."+str_query
                 else:
-                    mpPartQry = mpPartQry
+                    mp_part_qry = mp_part_qry
 
-            #except Exception as ex:
-              #  self.ErrorInfoMessage(str(ex.message))
-               # return
                 
-    def filter_verifyQuery(self):
+    def filter_verify_query(self):
         #Verify the query expression    
         if len(self.txtSqlParser.toPlainText())==0:
-            self.ErrorInfoMessage(QApplication.translate("ReportBuilder","No filter has been defined"))
+            self.error_info_message(QApplication.translate("ReportBuilder","No filter has been defined"))
             
         else:
-            results = self.filter_buildQuery()
+            results = self.filter_build_query()
             
             if results != None:
-                resLen = results.rowcount
+                res_len = results.rowcount
                 msg = QApplication.translate("ReportBuilder","The SQL statement was successfully verified.\n %s record(s) returned.")%str(resLen)
-                self.InfoMessage(msg)
+                self.info_message(msg)
             
-    def sorting_updateReportFields(self):
+    def sorting_update_report_fields(self):
         #Update the fields available in the sorting section    
-        sortItems=["Ascending","Descending","None"]
+        sort_items=["Ascending", "Descending", "None"]
         
         #Important! Ensure only new values are added without overriding the existing rows
-        row=self.tbSortFields.rowCount()
+        row = self.tbSortFields.rowCount()
         
         for l in range(len(self.rptFields)):
-            f=self.rptFields[l]
-            item=self.sorting_getFieldItem(f)
-            if item==None:            
+            f = self.rptFields[l]
+            item = self.sorting_get_field_item(f)
+            if item == None:            
                 #Instantiate row widgets
-                fieldItem = QTableWidgetItem()
-                fieldItem.setText(f)
+                field_item = QTableWidgetItem()
+                field_item.setText(f)
                 
-                sortWidg = TableComboBox(row)            
-                sortWidg.addItems(sortItems)            
-                sortWidg.setCurrentIndex(2)
-                sortWidg.currentIndexChanged.connect(lambda:self.sorting_sortOrderChanged())
+                sort_widget = TableComboBox(row)            
+                sort_widget.addItems(sortItems)            
+                sort_widget.setCurrentIndex(2)
+                sort_widget.currentIndexChanged.connect(lambda:self.sorting_sort_order_changed())
                 
-                orderItem = QTableWidgetItem()
-                orderItem.setText("") 
+                order_item = QTableWidgetItem()
+                order_item.setText("") 
                 
                 #Add widgets to the row 
                 self.tbSortFields.insertRow(row)           
-                self.tbSortFields.setItem(row,0,fieldItem)
-                self.tbSortFields.setCellWidget(row,1,sortWidg)
-                self.tbSortFields.setItem(row,2,orderItem)
+                self.tbSortFields.setItem(row, 0, field_item)
+                self.tbSortFields.setCellWidget(row, 1, sort_widget)
+                self.tbSortFields.setItem(row, 2, order_item)
                 row+=1  
                 
-        self.sorting_cleanUpFieldsList()  
+        self.sorting_cleanup_fields_list()  
     
-    def sorting_sortOrderChanged(self):
+    def sorting_sort_order_changed(self):
         #Slot method when the user defines a sort order 
-        cboSender=self.sender()  
-        sortOrder=str(cboSender.currentText())
-        row=cboSender.row
-        orderWidg=self.tbSortFields.item(row,2)
+        cbo_sender = self.sender()  
+        sort_order = str(cbo_sender.currentText())
+        row = cbo_sender.row
+        order_widget = self.tbSortFields.item(row,2)
         
-        if sortOrder=="None":
+        if sort_order == "None":
             if self._sortOrder>0:
                 self._sortOrder-=1
                 #Get the removed sort order value
-                remVal=int(orderWidg.text())
-                self.sorting_setSortOrderWidget(row, "") 
-                self.sorting_updateSortOrder(remVal)           
+                rem_val = int(order_widget.text())
+                self.sorting_set_sort_order_widget(row, "") 
+                self.sorting_update_sort_order(rem_val)           
         else:        
-            if str(orderWidg.text())is "":            
+            if str(order_widget.text()) is "":            
                 self._sortOrder+=1 
-                self.sorting_setSortOrderWidget(row, str(self._sortOrder))   
+                self.sorting_set_sort_order_widget(row, str(self._sortOrder))   
         
-    def sorting_updateSortOrder(self,startVal):
+    def sorting_update_sort_order(self, start_val):
         '''
         Update the values of the sorting order when a field
         becomes ineligible 
         ''' 
-        numRows = self.tbSortFields.rowCount()
-        for r in range(numRows):
-            orderWidg = self.tbSortFields.item(r,2)
-            widgTxt = orderWidg.text()
-            if str(widgTxt)is not "" and int(widgTxt)>startVal:                            
-                oldval = int(widgTxt)
-                newval = oldval-1
-                orderWidg.setText(str(newval)) 
+        num_rows = self.tbSortFields.rowCount()
+        for r in range(num_rows):
+            order_widget = self.tbSortFields.item(r, 2)
+            widg_txt = order_widget.text()
+            if str(widg_txt) is not "" and int(widg_txt) > start_val:                            
+                old_val = int(widg_txt)
+                new_val = old_val-1
+                order_widget.setText(str(new_val)) 
   
-    def sorting_setSortOrderWidget(self,row,text):
+    def sorting_set_sort_order_widget(self, row, text):
         '''
         Set the sort order value for the specified table widget item
         extracted from the row number in the widget's collection
         ''' 
-        orderWidg=self.tbSortFields.item(row,2)
-        orderWidg.setText(text)
+        order_widg = self.tbSortFields.item(row, 2)
+        order_widg.setText(text)
         
-    def sorting_getFieldItem(self,text):
+    def sorting_get_field_item(self, text):
         #Get the table widget item based on its text attribute
-        tabItem=None
-        items=self.tbSortFields.findItems(text,Qt.MatchExactly)
+        tab_item = None
+        items = self.tbSortFields.findItems(text, Qt.MatchExactly)
         for it in items:
-            if str(it.text())==text:
-                tabItem=it
+            if str(it.text()) == text:
+                tab_item = it
                 break
-        return tabItem
+        return tab_item
 
-    def sorting_cleanUpFieldsList(self):
+    def sorting_cleanup_fields_list(self):
         #Remove inapplicable rows from the sort collection
-        remFields=[]
+        rem_fields = []
+
         for i in range(self.tbSortFields.rowCount()):
-            fieldItem=self.tbSortFields.item(i,0)
-            remFields.append(str(fieldItem.text()))
+            field_item = self.tbSortFields.item(i,0)
+            rem_fields.append(str(field_item.text()))
+
         for f in self.rptFields:
-            fIndex = getIndex(remFields,str(f))
+            fIndex = getIndex(rem_fields,str(f))
             if fIndex!=-1:
-                remFields.remove(str(f))
-        for r in remFields:
-            remItem=self.sorting_getFieldItem(r)
-            if remItem is not None:
-                row=remItem.row()
+                rem_fields.remove(str(f))
+
+        for r in rem_fields:
+            rem_item = self.sorting_get_field_item(r)
+            if rem_item is not None:
+                row = rem_item.row()
                 self.tbSortFields.removeRow(row)
 
-    def sorting_getFieldConfig(self,field):    
+    def sorting_get_field_config(self, field):    
         #Get field SortInfo
         fs = None
         for r in range(self.tbSortFields.rowCount()):
-            fieldWidg = self.tbSortFields.item(r,0)          
-            if field == str(fieldWidg.text()):              
+            field_widg = self.tbSortFields.item(r,0)          
+            if field == str(field_widg.text()):              
                 fs = FieldSort()                        
                 dir = str(self.tbSortFields.cellWidget(r,1).currentText())
                 if not dir == "None":  
@@ -570,503 +565,504 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
                         fs.direction = SortDir.Descending
         return fs  
          
-    def sorting_compileSort(self):
+    def sorting_compile_sort(self):
         #Compile the user-defined sorting fields to a standard SQL command
-        sortSQL=' ORDER BY '
-        rowNumOrder=[]
-        rows=self.tbSortFields.rowCount()
+        sort_sql =' ORDER BY '
+        row_num_order = []
+        rows = self.tbSortFields.rowCount()
         #Loop through to put row numbers based on the sort order defined by the user    
         for r in range(rows):
-            orderWidg=self.tbSortFields.item(r,2)
-            orderTxt=str(orderWidg.text())
-            if orderTxt is not "":
-                rowIndex=int(orderTxt)-1  
-                rowNumOrder.insert(rowIndex, r) 
+            order_widg = self.tbSortFields.item(r, 2)
+            order_txt = str(order_widg.text())
+            if order_txt is not "":
+                row_index = int(order_txt)-1  
+                row_num_order.insert(row_index, r) 
                 
-        for rn in rowNumOrder:
-            fieldWidg=self.tbSortFields.item(rn,0)
-            sortField=str(fieldWidg.text())   
-            cboOrder=self.tbSortFields.cellWidget(rn,1)
-            sortOrder=str(cboOrder.currentText())
-            sqlSortOrder=''
-            if sortOrder=="Ascending":
-                sqlSortOrder=' ASC,'
-            else:
-                sqlSortOrder=' DESC,'
-            sortSQL+=sortField + sqlSortOrder
-        sortSQL=sortSQL.rstrip(',')
-        
-        return (len(rowNumOrder),sortSQL)
+        for rn in row_num_order:
+            field_widg = self.tbSortFields.item(rn,0)
+            sort_field = str(field_widg.text())   
+            cbo_order = self.tbSortFields.cellWidget(rn,1)
+            sort_order = str(cbo_order.currentText())
+            sql_sort_order = ''
 
-    def grouping_addField(self):
+            if sort_order == "Ascending":
+                sql_sort_order =' ASC,'
+            else:
+                sql_sort_order =' DESC,'
+
+            sort_sql += sort_field + sql_sort_order
+        sort_sql = sort_sql.rstrip(',')
+        
+        return (len(row_num_order), sort_sql)
+
+    def grouping_add_field(self):
         #Add a report field for grouping
-        numrows=self.tbGroupFields.rowCount()
+        num_rows = self.tbGroupFields.rowCount()
         
         #Get selected item in the report fields list box
-        selItems=self.lstRptFields.selectedItems()
-        for selItem in selItems:
-            selText=selItem.text()
-            self.grouping_addFieldByName(str(selText))
+        sel_items = self.lstRptFields.selectedItems()
+        for sel_item in sel_items:
+            sel_text = sel_item.text()
+            self.grouping_add_fieldByName(str(sel_text))
         
-    def grouping_addFieldByName(self,field):
+    def grouping_add_fieldByName(self, field):
         
         #Method does the heavy lifting of adding the field in the grouping list box and corresponding widget
-        tabFields=[] 
+        tab_fields = [] 
           
         #updatedFields=self.rptFields
-        numrows=self.tbGroupFields.rowCount()      
-        tabFields.append(field)
+        num_rows = self.tbGroupFields.rowCount()      
+        tab_fields.append(field)
             
-        fieldItem = QTableWidgetItem()
-        fieldItem.setText(field)
+        field_item = QTableWidgetItem()
+        field_item.setText(field)
         
         #Add row
-        self.tbGroupFields.insertRow(numrows)
-        self.tbGroupFields.setItem(numrows,0,fieldItem)
-        numrows+=1
+        self.tbGroupFields.insertRow(num_rows)
+        self.tbGroupFields.setItem(num_rows, 0, field_item)
+        num_rows += 1
         
         #Add Widget
-        gpWidg = Groups("gp_" + field)
-        self.stackedWidget.addWidget(gpWidg) 
-        self.grouping_addFieldNode(field)
+        gp_widg = Groups("gp_" + field)
+        self.stackedWidget.addWidget(gp_widg) 
+        self.grouping_add_field_node(field)
           
         #Clean up
-        for t in tabFields:                
+        for t in tab_fields:                
             #updatedFields.remove(t)
-            listItems=self.lstRptFields.findItems(t,Qt.MatchExactly)
-            for listItem in listItems:              
-                self.lstRptFields.takeItem(self.lstRptFields.row(listItem))
+            list_items = self.lstRptFields.findItems(t, Qt.MatchExactly)
+            for list_item in list_items:              
+                self.lstRptFields.takeItem(self.lstRptFields.row(list_item))
                 
-        return gpWidg          
+        return gp_widg          
 
-    def grouping_removeField(self):
+    def grouping_remove_field(self):
         #Remove the selected group field
-        selRows=self.tbGroupFields.selectedItems()
-        for selRow in selRows:
-            selText=str(selRow.text())
-            self.grouping_removeFieldReferences(selText)
+        sel_rows = self.tbGroupFields.selectedItems()
+        for sel_row in sel_rows:
+            sel_text = str(sel_row.text())
+            self.grouping_remove_field_references(sel_text)
 
-    def grouping_cleanUpFields(self):
+    def grouping_cleanup_fields(self):
         #Remove all grouping fields and their references
-        gpRows = self.tbGroupFields.rowCount()
-        for g in range(gpRows):
-            gpItem = self.tbGroupFields.item(g,0)
-            fieldName = str(gpItem.text())
-            self.grouping_removeFieldReferences(fieldName)
+        gp_rows = self.tbGroupFields.rowCount()
+        for g in range(gp_rows):
+            gp_item = self.tbGroupFields.item(g,0)
+            field_name = str(gp_item.text())
+            self.grouping_remove_field_references(field_name)
             self.tbGroupFields.removeRow(g)
                 
-    def grouping_removeFieldReferences(self,field):
+    def grouping_remove_field_references(self, field):
         #Remove grouping widget, tree view item and row
         
         #Remove Item
-        gpItems = self.tbGroupFields.findItems(field,Qt.MatchExactly)
-        if len(gpItems) > 0:
-            remItem = gpItems[0]
-            self.tbGroupFields.removeRow(remItem.row())        
+        gp_items = self.tbGroupFields.findItems(field, Qt.MatchExactly)
+        if len(gp_items) > 0:
+            rem_item = gp_items[0]
+            self.tbGroupFields.removeRow(rem_item.row())        
         #Insert list item
         self.lstRptFields.addItem(field)        
         #Remove settings widget
-        gpWidg=self.__displayGetStWidget("gp_" + field)
-        self.stackedWidget.removeWidget(gpWidg)        
+        gp_widg = self.__display_get_st_widget("gp_" + field)
+        self.stackedWidget.removeWidget(gp_widg)        
         #Remove tree node
-        self.grouping_removeFieldNode(field)
+        self.grouping_remove_field_node(field)
         
-    def grouping_addFieldNode(self,groupfield):
+    def grouping_add_field_node(self, group_field):
         #Add group field node to the tree view
-        trGroups=self.trRptSettings.findItems("Groups",Qt.MatchExactly,0)[0]
-        trn = QTreeWidgetItem([groupfield])
-        trGroups.add_child(trn)
+        tr_groups = self.trRptSettings.findItems("Groups", Qt.MatchExactly,0)[0]
+        trn = QTreeWidgetItem([group_field])
+        tr_groups.addChild(trn)
     
-    def grouping_removeFieldNode(self,groupfield):
+    def grouping_remove_field_node(self, group_field):
         #Remove group field node in the tree view 
-        trGroups=self.trRptSettings.findItems("Groups",Qt.MatchExactly,0)[0]
-        trn=self.display_getChildNode("Groups", groupfield)
-        trGroups.remove_child(trn)
+        tr_groups = self.trRptSettings.findItems("Groups", Qt.MatchExactly,0)[0]
+        trn = self.display_get_child_node("Groups", group_field)
+        tr_groups.removeChild(trn)
     
-    def grouping_orderQuery(self):
+    def grouping_order_query(self):
         #Order results by the specified grouping fields
-        sortSQL=" ORDER BY "
-        rowCount=self.tbGroupFields.rowCount()
-        for r in range(rowCount):
-            cellItem=self.tbGroupFields.item(r,0)
-            cellTxt=str(cellItem.text())
-            sortSQL+=cellTxt + " ASC,"
-        sortSQL=sortSQL.rstrip(',')
-        return (rowCount,sortSQL)
+        sort_sql = " ORDER BY "
+        row_count = self.tbGroupFields.rowCount()
+        for r in range(row_count):
+            cell_item = self.tbGroupFields.item(r,0)
+            cell_txt = str(cell_item.text())
+            sort_sql += cell_txt + " ASC,"
+        sort_sql = sort_sql.rstrip(',')
+        return (row_count, sort_sql)
 
-    def grouping_getFieldConfig(self,field):
+    def grouping_get_field_config(self, field):
         #Get the group settings for the specified field 
         gs = None      
         for r in range(self.tbGroupFields.rowCount()):
-            groupItem = self.tbGroupFields.item(r,0)
-            groupText = str(groupItem.text())
-            if groupText == field:              
+            group_item = self.tbGroupFields.item(r,0)
+            group_text = str(group_item.text())
+            if group_text == field:              
                 gs = GroupSettings()
                 gs.isInGroup = True
                 gs.order = r              
         return gs
                                         
-    def display_updateReportFields(self):
+    def display_update_report_fields(self):
         #Update tree fields list in the display section
         fields_el = self.trRptSettings.findItems(QApplication.translate
-                                                 ("ReportBuilder","Fields"),Qt.MatchExactly,0)
+                                                 ("ReportBuilder", "Fields"), Qt.MatchExactly,0)
         if len(fields_el) > 0:
-            trFields = fields_el[0]
+            tr_fields = fields_el[0]
             #Check if a report item has been added into the list or not
             for f in self.rptFields:
-                rWidg=self.display_getChildNode(QApplication.translate
-                                                 ("ReportBuilder","Fields"), f)
-                if rWidg==None:
-                    tr=QTreeWidgetItem([f])
-                    trFields.add_child(tr)
+                rWidg = self.display_get_child_node(QApplication.translate
+                                                 ("ReportBuilder", "Fields"), f)
+                if rWidg == None:
+                    tr = QTreeWidgetItem([f])
+                    tr_fields.addChild(tr)
                     #Add settings widget as well
-                    self.display_addFieldWidget(f)
+                    self.display_add_field_widget(f)
             #Clean up the field tree items and associated widgets
-            self.display_cleanUpFieldsList()
+            self.display_cleanup_fields_list()
 
-    def display_cleanUpFieldsList(self):
+    def display_cleanup_fields_list(self):
         #Remove items from the fields tree node that are no longer applicable
         fields_el = self.trRptSettings.findItems(QApplication.translate
-                                                 ("ReportBuilder","Fields"),Qt.MatchExactly,0)
+                                                 ("ReportBuilder","Fields"), Qt.MatchExactly,0)
         if len(fields_el) == 0:
             return
 
-        trFields = fields_el[0]
+        tr_fields = fields_el[0]
 
-        lstFields=[]
+        lst_fields = []
 
-        for f in range(trFields.child_count()):
-            tw=trFields.child(f)
-            lstFields.append(tw.text(0))
+        for f in range(tr_fields.child_count()):
+            tw = tr_fields.child(f)
+            lst_fields.append(tw.text(0))
         #Remove (from the list) those items that exist for both report and tree instances
         for r in self.rptFields: 
-            fIndex = getIndex(lstFields,str(r))
-            if fIndex!=-1:
-                lstFields.remove(str(r))
+            fIndex = getIndex(lst_fields, str(r))
+            if fIndex != -1:
+                lst_fields.remove(str(r))
         #Now clean up the tree node items     
-        for obsItem in lstFields:
-            obsNode=self.display_getChildNode(QApplication.translate("ReportBuilder","Fields"), obsItem)
-            obsWidg=self.__displayGetStWidget(obsItem)
-            if obsNode!=None:
-                trFields.remove_child(obsNode)
-            if obsWidg!=None:
-                self.stackedWidget.removeWidget(obsWidg)    
+        for obs_item in lst_fields:
+            obs_node = self.display_get_child_node(QApplication.translate("ReportBuilder","Fields"), obs_item)
+            obs_widg = self.__display_get_st_widget(obs_item)
+            if obs_node != None:
+                tr_fields.removeChild(obs_node)
+            if obs_widg != None:
+                self.stackedWidget.removeWidget(obs_widg)    
         
-    def display_getChildNode(self,parentStr,childStr):
+    def display_get_child_node(self, parent_str, child_str):
         #Get the tree item based on the parent and child texts respectively
-        trParent=self.trRptSettings.findItems(parentStr,Qt.MatchExactly,0)[0]
-        cNode=None
-        for t in range(trParent.child_count()):
-            trChild=trParent.child(t)
-            if trChild.text(0)==childStr:
-                cNode=trChild
+        tr_parent = self.trRptSettings.findItems(parent_str, Qt.MatchExactly,0)[0]
+        c_node=None
+        for t in range(tr_parent.childCount()):
+            tr_child = tr_parent.child(t)
+            if tr_child.text(0) == child_str:
+                c_node = tr_child
                 break
-        return cNode
+        return c_node
 
-    def display_getChildList(self,parentStr):
+    def display_get_child_list(self, parent_str):
         #Get the names list of the child nodes for the specified parent node
-        trParent=self.trRptSettings.findItems(parentStr,Qt.MatchExactly,0)[0]
-        childNodes=[]
-        for t in range(trParent.child_count()):
-            trChild=trParent.child(t)
-            childNodes.append(str(trChild.text(0)))
-        return childNodes
+        tr_parent = self.trRptSettings.findItems(parent_str, Qt.MatchExactly,0)[0]
+        child_nodes = []
+        for t in range(tr_parent.childCount()):
+            tr_child = tr_parent.child(t)
+            child_nodes.append(str(tr_child.text(0)))
+        return child_nodes
         
-    def display_titleColor(self):
+    def display_title_color(self):
         #Shows the color dialog and set the title color
-        tColor=QColorDialog.getColor(Qt.darkBlue, self,QApplication.translate("ReportBuilder","Select title color"))
-        if tColor.isValid():
-            tPalette=QPalette(tColor)            
-            self.lblTitleClr.setPalette(tPalette)
+        t_color = QColorDialog.getColor(Qt.darkBlue, self,QApplication.translate("ReportBuilder","Select title color"))
+        if t_color.isValid():
+            t_palette = QPalette(t_color)            
+            self.lblTitleClr.setPalette(t_palette)
         
-    def display_treeViewSelection(self):
+    def display_tree_view_selection(self):
         #Load appropriate widget when the report display's tree view selection changes
-        trSel=self.trRptSettings.selectedItems()[0]
-        searchTxt=trSel.text(0)
+        tr_sel = self.trRptSettings.selectedItems()[0]
+        search_txt = tr_sel.text(0)
         #Since the groups and field have the same name,return the correct widget
-        trParent=trSel.parent()
-        if not trParent is None:
-            if trParent.text(0)=="Groups":
-                searchTxt="gp_" + searchTxt
+        tr_parent = tr_sel.parent()
+        if not tr_parent is None:
+            if tr_parent.text(0)=="Groups":
+                search_txt="gp_" + search_txt
         #Retrieve widget from the stack widget based on the selected item
         for w in range(self.stackedWidget.count()):
-            widg=self.stackedWidget.widget(w)                
-            if widg.ID==searchTxt:                     
+            widg = self.stackedWidget.widget(w)                
+            if widg.ID == search_txt:                     
                 self.stackedWidget.setCurrentWidget(widg)
                 break    
         
-    def display_addFieldWidget(self,reportItem):
+    def display_add_field_widget(self, report_item):
         '''
         Create a widget for each report field added by the user and add it to the stack
         only if it does not exist.
         '''
-        elWidg=self.__displayGetStWidget(reportItem)
-        if elWidg==None:        
-            fieldWidg = FieldBase(reportItem)    
-            self.stackedWidget.addWidget(fieldWidg)
+        el_widg = self.__display_get_st_widget(report_item)
+        if el_widg == None:        
+            field_widg = FieldBase(report_item)    
+            self.stackedWidget.addWidget(field_widg)
     
-    def __displayGetStWidget(self,widgetID):
+    def __display_get_st_widget(self, widget_id):
         #Get a widget in the stack widget control based on the form identifier
-        stWidg=None
+        st_widg = None
         for s in range(self.stackedWidget.count()):
-            widg=self.stackedWidget.widget(s)
-            if widg.ID==widgetID:
-                stWidg=widg
+            widg = self.stackedWidget.widget(s)
+            if widg.ID == widget_id:
+                st_widg = widg
                 break
-        return stWidg
+        return st_widg
 
-    def display_autoWidth(self):
+    def display_auto_width(self):
         #automatically compute the field width
         #Get the paper size defined by the user
-        layoutWidg=self.__displayGetStWidget(QApplication.translate(
-            "ReportBuilder","Layout"))
-        w,h = layoutWidg.PageSize()
-        cmWidth = w/(72/2.54)
-        return (cmWidth/len(self.rptFields))
+        layout_widg = self.__display_get_st_widget(QApplication.translate(
+                             "ReportBuilder","Layout"))
+        w, h = layoutWidg.PageSize()
+        cm_width = w/(72/2.54)
+        return (cm_width / len(self.rptFields))
 
-    def display_CompileSettings(self):
+    def display_compile_settings(self):
         #Compile the user defined settings
-        self.rptElements.headerElements = []
-        self.rptElements.detailElements = []
-        self.rptElements.groups = []
+        self.rpt_elements.headerElements = []
+        self.rpt_elements.detailElements = []
+        self.rpt_elements.groups = []
         
         #Config File Settings
-        self.rptElements.footer = self.config.get("ReportMessages","Footer")
-        self.rptElements.author = self.config.get("ReportMessages","Author")
-        self.rptElements.subject = self.config.get("ReportMessages","Subject")
+        self.rpt_elements.footer = self.config.get("ReportMessages","Footer")
+        self.rpt_elements.author = self.config.get("ReportMessages","Author")
+        self.rpt_elements.subject = self.config.get("ReportMessages","Subject")
         
         #List of image fields
         self.imageFields = []
         
         #Get column style settings
-        left=0
-        width=self.display_autoWidth()
-        colStyle=self.__displayGetStWidget(QApplication.translate(
-            "ReportBuilder", "Field Names")).columnStyle()
-        columnList=self.display_getChildList(QApplication.translate(
-            "ReportBuilder","Fields"))
+        left = 0
+        width = self.display_auto_width()
+        col_style = self.__display_get_st_widget(QApplication.translate(
+                  "ReportBuilder", "Field Names")).columnStyle()
+        column_list = self.display_get_child_list(QApplication.translate(
+                    "ReportBuilder", "Fields"))
         
-        for field in columnList:
-            fWidg=self.__displayGetStWidget(field)
-            fWidg.elLeft=left
-            fWidg.elWidth=width
-            fWidg.columnStyle=colStyle
-            left+=width
+        for field in column_list:
+            f_widg = self.__display_get_st_widget(field)
+            f_widg.elLeft = left
+            f_widg.elWidth = width
+            f_widg.columnStyle = col_style
+            left += width
             
         for i in range(self.stackedWidget.count()):
-            w=self.stackedWidget.widget(i)
-            if isinstance(w,Title):
-                self.rptElements.headerElements.append(w.systemExpression())
-                self.rptElements.title=w.elText
-                self.rptElements.headerBorders=w.elBorder
+            w = self.stackedWidget.widget(i)
+            if isinstance(w, Title):
+                self.rpt_elements.headerElements.append(w.systemExpression())
+                self.rpt_elements.title = w.elText
+                self.rpt_elements.headerBorders = w.elBorder
                 
-            elif isinstance(w,FieldBase):            
-                self.rptElements.detailElements.append(w.getObjectValue()) 
-                self.rptElements.headerElements.append(w.getLabel())                       
-                self.rptElements.detailBorders=w.elBorder
+            elif isinstance(w, FieldBase):            
+                self.rpt_elements.detailElements.append(w.getObjectValue()) 
+                self.rpt_elements.headerElements.append(w.getLabel())                       
+                self.rpt_elements.detailBorders = w.elBorder
                 
                 #Check if it is an image field
                 if w.isImageField():
                     self.imageFields.append(str(w.ID))
                     
             elif isinstance(w,Groups):            
-                self.rptElements.groups.append(w.getReportGroup())
+                self.rpt_elements.groups.append(w.getReportGroup())
                 
             elif isinstance(w,ReportLayout):
-                self.rptElements.page_size=w.PageSize()
-                self.rptElements.margin_top=w.TopMargin()
-                self.rptElements.margin_bottom=w.BottomMargin()
-                self.rptElements.margin_left=w.LeftMargin()
-                self.rptElements.margin_right=w.RightMargin()
+                self.rpt_elements.page_size = w.PageSize()
+                self.rpt_elements.margin_top = w.TopMargin()
+                self.rpt_elements.margin_bottom = w.BottomMargin()
+                self.rpt_elements.margin_left = w.LeftMargin()
+                self.rpt_elements.margin_right = w.RightMargin()
             '''
             elif isinstance(w,frmFieldNames):
-                self.rptElements.headerElements.append(w.getLabel())
+                self.rpt_elements.headerElements.append(w.getLabel())
         '''
 
-    def saveReportSettings(self,file):
+    def save_report_settings(self, file):
         #Helper for saving user report settings to file
-        self.showhideProgressDialog(QApplication.translate("ReportBuilder","Saving Report Settings..."))
+        self.show_hide_progress_dialog(QApplication.translate("ReportBuilder","Saving Report Settings..."))
         
         #Create report config object
-        rptConfig = STDMReportConfig(self.tabName)
+        rpt_config = STDMReportConfig(self.tabName)
         #Loop through all report elements' settings
         for i in range(self.stackedWidget.count()):
             w = self.stackedWidget.widget(i)
             
             #Get report element 
-            rptEl = w.getSettings()
+            rpt_el = w.getSettings()
             
             #Group dialog settings are not added directly to the collection but through the DBField proxy
-            if not rptEl.parent == "Groups":               
+            if not rpt_el.parent == "Groups":               
                 #Check if it is a definition for database fields
-                if rptEl.parent == "Fields":
+                if rpt_el.parent == "Fields":
                     df = DbField()   
                                    
                     #copy attributes from ReportElement base to DbField object
-                    copyattrs(rptEl,df,["dialogSettings","parent","name"])   
+                    copyattrs(rpt_el, df, ["dialogSettings", "parent", "name"])   
                                                                  
                     #Set field configuration
                     fc = FieldConfig()
-                    fc.sortInfo = self.sorting_getFieldConfig(rptEl.name)
+                    fc.sortInfo = self.sorting_get_field_config(rpt_el.name)
                     
                     #Set grouping information
-                    gi = self.grouping_getFieldConfig(rptEl.name)
+                    gi = self.grouping_get_field_config(rpt_el.name)
                     if not gi == None:
-                        gpDialog = self.__displayGetStWidget("gp_" + rptEl.name)
-                        if gpDialog != None:                          
-                            gi.dialogSettings = gpDialog.getSettings().dialogSettings
+                        gp_dialog = self.__display_get_st_widget("gp_" + rpt_el.name)
+                        if gp_dialog != None:                          
+                            gi.dialogSettings = gp_dialog.getSettings().dialogSettings
                             fc.groupingInfo = gi
                             
                     #Get field index
-                    fc.reportOrder = self.rptFields.index(rptEl.name)
+                    fc.reportOrder = self.rptFields.index(rpt_el.name)
                     df.uiConfiguration = fc              
-                    rptEl = df
-                rptConfig.addElement(rptEl)   
+                    rpt_el = df
+                rpt_config.addElement(rpt_el)   
                        
-        rptConfig.setFilter(str(self.txtSqlParser.toPlainText()))
-        rptConfig.setVersion(1.1)
+        rpt_config.setFilter(str(self.txtSqlParser.toPlainText()))
+        rpt_config.setVersion(1.1)
         
         #Serialize to file 
-        rptSerializer = ReportSerializer(file) 
-        rptSerializer.serialize(rptConfig)
-        self.showhideProgressDialog("",False)
+        rpt_serializer = ReportSerializer(file) 
+        rpt_serializer.serialize(rpt_config)
+        self.show_hide_progress_dialog("", False)
 
-    def loadSettings_activateControls(self,reportFields):
+    def load_settings_activate_controls(self, report_fields):
         #Enable supporting controls in the report builder widget          
                 
         #Load report fields
-        self.updateSelectedReportFields(reportFields)
+        self.update_selected_report_fields(report_fields)
         #Select the first item in the list    
-        self.selectAvailFieldItem()
+        self.select_avail_field_item()
 
-    def loadReportSettings(self,file):
+    def load_report_settings(self, file):
         #Helper for restoring previously saved report settings
         
         #Deserialize report settings 
-        rptSerializer = ReportSerializer(file) 
-        rptValid, rptConf = rptSerializer.deserialize()
+        rpt_serializer = ReportSerializer(file) 
+        rpt_valid, rpt_conf = rpt_serializer.deserialize()
         #Validate if the object is an STDM Report Settings file      
-        if rptValid:          
+        if rpt_valid:          
             #Check if the table exists
-            tabExists = self._tableExists(rptConf.table)
-            #QMessageBox.information(self, "List of tables", str(rptConf.table))
-            if tabExists:
-                self.showhideProgressDialog(QApplication.translate("ReportBuilder","Restoring Report Settings..."))
-                #friendlyTabName = self.tabNames[rptConf.table]
-                friendlyTabName = rptConf.table
+            tab_exists = self._table_exists(rptConf.table)
+            if tab_exists:
+                self.show_hide_progress_dialog(QApplication.translate("ReportBuilder", "Restoring Report Settings..."))
+                friendly_tabname = rptConf.table
                 
                 #Force builder reset even if the loaded report refers to the previously loaded table            
                 if rptConf.table == self.tabName:
-                    self.tabChanged(friendlyTabName)
+                    self.tab_changed(friendly_tabname)
                 else:                  
                     self.tabName = rptConf.table
-                    #QMessageBox.information(self, "table name name", str(self.tabName))
                     #Set focus to report table in the drop down menu
-                    setComboCurrentIndexWithItemData(self.comboBox, friendlyTabName)
+                    setComboCurrentIndexWithItemData(self.comboBox, friendly_tabname)
 
                 #Validate the fields
-                validTabFields = table_column_names(rptConf.table)
-                validRptFields, invalidRptFields = compareLists(validTabFields, rptConf.fields)
+                valid_tab_fields = table_column_names(rptConf.table)
+                valid_rpt_fields, invalid_rpt_fields = compareLists(valid_tab_fields, rptConf.fields)
                             
                 #Configure supporting controls
-                self.loadSettings_activateControls(validRptFields)
+                self.load_settings_activate_controls(valid_rpt_fields)
                 #Set filter statement
                 self.txtSqlParser.setText(rptConf.filter)
                 
                 #Group order container
-                gpInfoCollection =[]
+                gp_info_collection = []
                 
                 #Sort info container
-                sortInfoCollection =[]
+                sort_info_collection = []
                 
                 #Iterate report elements
                 for r in rptConf.reportElementCollection:
                     if r.parent != "Groups":
                         #Get corresponding widget and load the settings
-                        rptWidg = self.__displayGetStWidget(r.name)
-                        if not rptWidg == None:
-                            rptWidg.loadSettings(r.dialogSettings)
+                        rpt_widg = self.__display_get_st_widget(r.name)
+                        if not rpt_widg == None:
+                            rpt_widg.loadSettings(r.dialogSettings)
                             
                         #Set grouping and sorting configuration
                         if r.parent == "Fields":
-                            gpInfo = r.uiConfiguration.groupingInfo
-                            if gpInfo != None:
-                                gpInfo.field = r.name
+                            gp_info = r.uiConfiguration.groupingInfo
+                            if gp_info != None:
+                                gp_info.field = r.name
                                 gpInfoCollection.append(gpInfo)
-                            fieldSort = r.uiConfiguration.sortInfo
+                            field_sort = r.uiConfiguration.sortInfo
                             
-                            if fieldSort.direction != SortDir.Null:
-                                fieldSort.field = r.name
+                            if field_sort.direction != SortDir.Null:
+                                field_sort.field = r.name
                                 sortInfoCollection.append(fieldSort) 
                                                            
                 #Sort GROUPINFO items using the order attribute then add fields to the report builder controls
                 gpInfoCollection.sort(key=lambda g: g.order)
                 for g in gpInfoCollection:
-                    groupDlg = self.grouping_addFieldByName(g.field)
-                    groupDlg.loadSettings(g.dialogSettings) 
+                    group_dlg = self.grouping_add_fieldByName(g.field)
+                    group_dlg.loadSettings(g.dialogSettings) 
                     
                 #Order SORTINFO items using the order attribute then add fields to the report builder controls
                 sortInfoCollection.sort(key=lambda s: s.order)
                 for s in sortInfoCollection:
-                    sortItem = self.sorting_getFieldItem(s.field)
-                    if sortItem is not None:
-                        rowIndex = sortItem.row()
-                        dirCombo = self.tbSortFields.cellWidget(rowIndex,1)
+                    sort_item = self.sorting_get_field_item(s.field)
+                    if sort_item is not None:
+                        row_index = sortItem.row()
+                        dir_combo = self.tbSortFields.cellWidget(row_index,1)
+
                         if s.direction == SortDir.Ascending:
-                            setComboCurrentIndexWithText(dirCombo, "Ascending")
+                            setComboCurrentIndexWithText(dir_combo, "Ascending")
+
                         elif s.direction == SortDir.Descending:
                             setComboCurrentIndexWithText(dirCombo, "Descending")    
                                                                  
                 #Show message of invalid fields
-                if len(invalidRptFields) > 0:
-                    fieldsStr = ",".join(invalidRptFields)
+                if len(invalid_rpt_fields) > 0:
+                    fields_str = ",".join(invalid_rpt_fields)
                     msg = QApplication.translate("ReportBuilder"," columns do not exist in the current table definition."
                                                                                  "\nThey will not be included in the report")
-                    self.ErrorInfoMessage(fieldsStr + msg)
+                    self.error_info_message(field_str + msg)
             else:
-                self.showhideProgressDialog("", False)
+                self.show_hide_progress_dialog("", False)
                 msg = QApplication.translate("ReportBuilder"," table or view does not exist in the database")
-                self.ErrorInfoMessage(rptConf.table + msg)
+                self.error_info_message(rptConf.table + msg)
         else:
-            self.showhideProgressDialog("", False)
-            fileName = str(file.section("/",-1))
+            self.show_hide_progress_dialog("", False)
+            filename = str(file.section("/",-1))
             msg = QApplication.translate("ReportBuilder"," is not a valid STDM Report Settings file.\n "
                                                                                     "Please validate the source of the file")
-            self.ErrorInfoMessage(fileName +msg )
+            self.error_info_message(filename + msg)
         
-        self.showhideProgressDialog("", False)
+        self.show_hide_progress_dialog("", False)
       
-    def showhideProgressDialog(self,message,show = True):
+    def show_hide_progress_dialog(self, message, show=True):
         #Generic progress dialog for the report builder window    
         if show:
-            self.progressDlg.setWindowModality(Qt.WindowModal)
-            self.progressDlg.setLabelText(message) 
-            self.progressDlg.setCancelButtonText("")
-            self.progressDlg.setMaximum(0)
-            self.progressDlg.setMinimum(0)
-            self.progressDlg.show()
+            self.progress_dlg.setWindowModality(Qt.WindowModal)
+            self.progress_dlg.setLabelText(message) 
+            self.progress_dlg.setCancelButtonText("")
+            self.progress_dlg.setMaximum(0)
+            self.progress_dlg.setMinimum(0)
+            self.progress_dlg.show()
         else:
-            self.progressDlg.close()
-            self.progressDlg.reset()
+            self.progress_dlg.close()
+            self.progress_dlg.reset()
   
-    def saveReport(self):
+    def save_report(self):
         #Serialize user report settings to file
-        rptConfFile = QFileDialog.getSaveFileName(self,QApplication.translate("ReportBuilder","STDM Report")
+        rpt_conf_file = QFileDialog.getSaveFileName(self,QApplication.translate("ReportBuilder","STDM Report")
                                                   ,"",QApplication.translate("ReportBuilder","STDM Report(*.trs)"))
-        if rptConfFile != "":
-            self.saveReportSettings(rptConfFile)     
+        if rpt_conf_file != "":
+            self.save_report_settings(rpt_conf_file)     
           
-    def loadReport(self):
+    def load_report(self):
         #Load previously saved report settings
-        rptConfFile = QFileDialog.getOpenFileName(self, QApplication.translate("ReportBuilder","STDM Report"),
+        rpt_conf_file = QFileDialog.getOpenFileName(self, QApplication.translate("ReportBuilder","STDM Report"),
                                                   "",QApplication.translate("ReportBuilder","STDM Report(*.trs)"))
-        if rptConfFile != "":
-            self.loadReportSettings(rptConfFile)
+        if rpt_conf_file != "":
+            self.load_report_settings(rpt_conf_file)
               
-    def generateReport(self):
+    def generate_report(self):
         #Generate report
-        dbResults = self.filter_buildQuery()
-        if dbResults.rowcount == 0:
+        db_results = self.filter_build_query()
+        if db_results.rowcount == 0:
             null_res_msg = QApplication.translate("ReportBuilder","No results "
                                                                   "were returned "
                                                                   "from the data "
@@ -1074,29 +1070,29 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
                                                                   "\nThe report "
                                                                   "will not be "
                                                                   "generated.")
-            self.ErrorInfoMessage(null_res_msg)
+            self.error_info_message(null_res_msg)
 
             return
 
-        if not dbResults is None:
+        if not db_results is None:
             #Get user settings
-            self.display_CompileSettings()
+            self.display_compile_settings()
             #Create query set
-            tmpDir,qSet = createQuerySet(self.rptFields,dbResults,self.imageFields)        
-            stdmRpt = STDMReport(qSet,self.rptElements)        
-            rptFile = QFileDialog.getSaveFileName(self,QApplication.translate("ReportBuilder","STDM Report"),
+            tmp_dir, qset = createQuerySet(self.rptFields, db_results, self.imageFields)        
+            stdm_rpt = STDMReport(qset, self.rpt_elements)        
+            rpt_file = QFileDialog.getSaveFileName(self,QApplication.translate("ReportBuilder","STDM Report"),
                                                   "",QApplication.translate("ReportBuilder","Report Document(*.pdf)"))
                   
-            if rptFile:
-                rptGenerator=STDMGenerator(stdmRpt,rptFile)
-                rptGenerator.generateReport()            
-                if self.InfoMessage(QApplication.translate("ReportBuilder",
+            if rpt_file:
+                rpt_generator = STDMGenerator(stdm_rpt, rpt_file)
+                rpt_generator.generate_report()            
+                if self.info_message(QApplication.translate("ReportBuilder",
                                                            "The report has "
-                                                           "been successfully created and written to '%s'")%rptFile) == QMessageBox.Open:
-                    os.startfile(rptFile,'open')
+                                                           "been successfully created and written to '%s'") % rpt_file) == QMessageBox.Open:
+                    os.startfile(rpt_file,'open')
                 self.close()
                 
-    def _tableExists(self,tableName):
+    def _table_exists(self, table_name):
         """
         Assert whether the a table or view with the given name exists in the 'public' schema.
         """
@@ -1104,21 +1100,21 @@ class ReportBuilder(QDialog,Ui_ReportBuilder):
         views = pg_views()
         tables.extend(views)
         
-        tableIndex = getIndex(tables, tableName)
+        table_index = getIndex(tables, table_name)
         
-        return False if tableIndex == -1 else True
+        return False if table_index == -1 else True
         
-    def ErrorInfoMessage(self,Message):      
+    def error_info_message(self, message):      
         #Error Message Box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
-        msg.setText(Message)
+        msg.setText(message)
         msg.exec_() 
     
-    def InfoMessage(self,Message):      
+    def info_message(self, message):      
         #General Info Message Box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
-        msg.setText(Message)
+        msg.setText(message)
         msg.setStandardButtons(QMessageBox.Ok|QMessageBox.Open)
         return msg.exec_()
