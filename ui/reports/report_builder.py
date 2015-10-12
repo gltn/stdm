@@ -402,8 +402,8 @@ class ReportBuilder(QDialog, Ui_ReportBuilder):
         st_len, st_sql = self.sorting_compile_sort()
         
         #Check if grouping has been defined
-        gp_len, gp_query = self.grouping_orderQuery()
-        sort_stmnt=''
+        gp_len, gp_query = self.grouping_order_query()
+        sort_stmnt = ''
         if gp_len > 0:          
             sort_stmnt = gp_query
             if st_len>0:
