@@ -55,7 +55,7 @@ class SqlHighlighter(QSyntaxHighlighter):
             rule = HighlightingRule(reg_exp, sql_operator)
             self.highlightingRules.append(rule)
                 
-    def highlight_block(self, text):
+    def highlightBlock(self, text):  # overriden 
         for rule in self.highlightingRules:
             expression = QRegExp(rule.pattern)
             index = expression.indexIn(text)
