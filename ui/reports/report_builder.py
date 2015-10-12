@@ -197,7 +197,7 @@ class ReportBuilder(QDialog, Ui_ReportBuilder):
             self.stackedWidget.addWidget(layout_widget)
 
             #Select the first item in the tree view
-            title_node=elNode.child(0)
+            title_node = el_node.child(0)
             title_node.setSelected(True)
 
     def reset_controls(self):
