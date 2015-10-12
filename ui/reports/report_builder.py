@@ -463,7 +463,7 @@ class ReportBuilder(QDialog, Ui_ReportBuilder):
                 field_item.setText(f)
                 
                 sort_widget = TableComboBox(row)            
-                sort_widget.addItems(sortItems)            
+                sort_widget.addItems(sort_items)            
                 sort_widget.setCurrentIndex(2)
                 sort_widget.currentIndexChanged.connect(lambda:self.sorting_sort_order_changed())
                 
