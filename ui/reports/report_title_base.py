@@ -81,7 +81,7 @@ class TitleBase(QWidget, Ui_frmRptTitleBase):
         self.btnTitleFont.setVisible(False)
         
         #Event Handlers
-        self.btnTitleFont.clicked.connect(self.setFontType)
+        self.btnTitleFont.clicked.connect(self.set_font_type)
         self.btnTitleColor.clicked.connect(self.set_font_color)
     
     def initVars(self):
