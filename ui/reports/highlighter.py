@@ -42,7 +42,7 @@ class SqlHighlighter(QSyntaxHighlighter):
         sql_keyword.setForeground(Qt.blue)
         
         sql_keywords = ["AND", "OR", "LIKE"]
-        for word in sqlKeywords:
+        for word in sql_keywords:
             reg_exp = QRegExp("\\b" + word + "\\b", Qt.CaseInsensitive)
             rule = HighlightingRule(reg_exp, sql_keyword)
             self.highlightingRules.append(rule)
