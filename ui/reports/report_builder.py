@@ -867,7 +867,7 @@ class ReportBuilder(QDialog, Ui_ReportBuilder):
                     self.imageFields.append(str(w.ID))
                     
             elif isinstance(w,Groups):            
-                self.rpt_elements.groups.append(w.getReportGroup())
+                self.rpt_elements.groups.append(w.get_report_group())
                 
             elif isinstance(w,ReportLayout):
                 self.rpt_elements.page_size = w.PageSize()

@@ -4,9 +4,10 @@ Name                 : STDM Report Builder Field Settings Dialog
 Description          : Dialog for enabling the user to configure display 
                        settings for the define groups
 Date                 : 10th/November/11 
-copyright            : (C) 2011 by John Gitau
-email                : gkahiu@gmail.com 
- ***************************************************************************/
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+***************************************************************************/
 
 /***************************************************************************
  *                                                                         *
@@ -39,8 +40,8 @@ from .report_title_base import TitleBase
 
 class Groups(TitleBase):     
     #Class constructor  
-    def __init__(self,id,parent = None):              
-        TitleBase.__init__(self,id,parent)
+    def __init__(self, id, parent=None):              
+        TitleBase.__init__(self, id, parent)
         
         #Set report element parent
         self._rptEl.parent = "Groups"
@@ -53,27 +54,29 @@ class Groups(TitleBase):
         self.elWidth = BAND_WIDTH
         self.cboBorder.setCurrentIndex(4)
         
-    def setWidth(self):
+    def set_width(self):
         #Override the WIDTH specified by the user
         if self.txtTitleWidth.text():
-            dWidth = float(self.txtTitleWidth.text())
-            self.elWidth=dWidth*cm
+            d_width = float(self.txtTitleWidth.text())
+            self.elWidth = d_width * cm
 
-    def getReportGroup(self):
+    def get_report_group(self):
         '''
         Get the Geraldo report group object
         '''
         self.compileEntry()
-        attName=str(self.ID)
-        attName=attName.replace("gp_", "")
-        gpStyle=self.getStyle()  
-        gpStyle["backColor"]= blue    
-        gpStyle["borderRadius"]=2
-        gpStyle["borderPadding"]=2
-        rptGroup=ReportGroup(attribute_name=attName,\
+        att_name = str(self.ID)
+        att_name = att_name.replace("gp_", "")
+        gp_style = self.getStyle()  
+        gp_style["backColor"] = blue    
+        gp_style["borderRadius"] = 2
+        gp_style["borderPadding"] = 2
+
+        rpt_group = ReportGroup(attribute_name=att_name,\
             band_header=ReportBand(\
                 height=0.6*cm,\
-                elements=[ObjectValue(attribute_name=attName,top=(self.elTop)*cm,left=self.elLeft*cm,width=self.elWidth,height=self.elHeight*cm,
+                elements=[ObjectValue(attribute_name=attName, top=(self.elTop)*cm,
+			 left=self.elLeft*cm, width=self.elWidth, height=self.elHeight*cm,
                         style=gpStyle)],
                 borders=self.elBorder))
         return rptGroup

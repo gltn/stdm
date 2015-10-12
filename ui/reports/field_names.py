@@ -4,9 +4,10 @@ Name                 : STDM Report Builder Field Names Settings Dialog
 Description          : Dialog for enabling the user to configure display 
                        settings for the collective field names
 Date                 : 07/September/11 
-copyright            : (C) 2011 by John Gitau
-email                : gkahiu@gmail.com 
- ***************************************************************************/
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+***************************************************************************/
 
 /***************************************************************************
  *                                                                         *
@@ -34,21 +35,21 @@ from .report_title_base import TitleBase
 
 class FieldNames(TitleBase):     
     #Class constructor  
-    def __init__(self,id,parent = None):              
-        TitleBase.__init__(self,id,parent) 
+    def __init__(self, id, parent=None):              
+        TitleBase.__init__(self, id, parent) 
         self.initWidget() 
-        self.elTop=0.8
+        self.elTop = 0.8
         self.elFont = QFont("Times New Roman",14,75)
         self.elFontColor = QColor(Qt.darkBlue)
     
-    def initWidget(self):
+    def init_widget(self):
         self.label_6.setVisible(False)
         self.txtTitleText.setVisible(False)
         
-    def columnStyle(self):
+    def column_style(self):
         #Get the geraldo label for the column
         self.compileEntry()
-        lblDic=dict(top=self.elTop*cm,style=self.getStyle())        
-        return lblDic
+        lbl_dic = dict(top=self.elTop*cm, style=self.getStyle())        
+        return lbl_dic
                
         
