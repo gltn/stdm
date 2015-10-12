@@ -732,7 +732,7 @@ class ReportBuilder(QDialog, Ui_ReportBuilder):
 
         lst_fields = []
 
-        for f in range(tr_fields.child_count()):
+        for f in range(tr_fields.childCount()):
             tw = tr_fields.child(f)
             lst_fields.append(tw.text(0))
         #Remove (from the list) those items that exist for both report and tree instances
@@ -858,12 +858,12 @@ class ReportBuilder(QDialog, Ui_ReportBuilder):
                 self.rpt_elements.headerBorders = w.elBorder
                 
             elif isinstance(w, FieldBase):            
-                self.rpt_elements.detailElements.append(w.getObjectValue()) 
-                self.rpt_elements.headerElements.append(w.getLabel())                       
+                self.rpt_elements.detailElements.append(w.get_object_value()) 
+                self.rpt_elements.headerElements.append(w.get_label())                       
                 self.rpt_elements.detailBorders = w.elBorder
                 
                 #Check if it is an image field
-                if w.isImageField():
+                if w.is_image_field():
                     self.imageFields.append(str(w.ID))
                     
             elif isinstance(w,Groups):            
@@ -877,7 +877,7 @@ class ReportBuilder(QDialog, Ui_ReportBuilder):
                 self.rpt_elements.margin_right = w.RightMargin()
             '''
             elif isinstance(w,frmFieldNames):
-                self.rpt_elements.headerElements.append(w.getLabel())
+                self.rpt_elements.headerElements.append(w.get_label())
         '''
 
     def save_report_settings(self, file):
@@ -891,7 +891,7 @@ class ReportBuilder(QDialog, Ui_ReportBuilder):
             w = self.stackedWidget.widget(i)
             
             #Get report element 
-            rpt_el = w.getSettings()
+            rpt_el = w.get_settings()
             
             #Group dialog settings are not added directly to the collection but through the DBField proxy
             if not rpt_el.parent == "Groups":               
