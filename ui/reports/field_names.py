@@ -37,7 +37,7 @@ class FieldNames(TitleBase):
     #Class constructor  
     def __init__(self, id, parent=None):              
         TitleBase.__init__(self, id, parent) 
-        self.initWidget() 
+        self.init_widget() 
         self.elTop = 0.8
         self.elFont = QFont("Times New Roman",14,75)
         self.elFontColor = QColor(Qt.darkBlue)
