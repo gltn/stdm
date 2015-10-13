@@ -275,7 +275,7 @@ class manageAccountsDlg(QDialog, Ui_frmSysManageAccounts):
             self.roleProvider.DeleteRole(rolename)
             
             #Remove user from the list and role mappings view
-            self.rolesModel.removeRows(roleIndex.row(), 1)            
+            self.rolesModel.removeRows(role_index.row(), 1)            
             
             self.lblRoleDescription.setText("")
             
