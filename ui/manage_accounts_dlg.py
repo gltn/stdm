@@ -188,10 +188,10 @@ class manageAccountsDlg(QDialog, Ui_frmSysManageAccounts):
             self.membership.deleteUser(username)
             
             #Remove user from the list
-            self.usersModel.removeRows(userIndex.row(), 1)
+            self.usersModel.removeRows(user_index.row(), 1)
             
             #Remove corresponding item from the user mapping list view
-            self.UserMappingsModel.removeRow(userIndex.row())
+            self.UserMappingsModel.removeRow(user_index.row())
             
             #Sort users
             self.sortUsers()
