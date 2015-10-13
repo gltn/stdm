@@ -83,4 +83,3 @@ class ForeignKeyMapperDialog(QWidget):
 
 
 
-

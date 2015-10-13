@@ -3,9 +3,11 @@
 Name                 : Manage Users Accounts and System Roles Dialog
 Description          : Helps to manage user accounts and corresponding roles
 Date                 : 18/June/2013 
-copyright            : (C) 2013 by John Gitau
-email                : gkahiu@gmail.com
- ***************************************************************************/
+copyright            : (C) 2014 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+
+***************************************************************************/
 
 /***************************************************************************
  *                                                                         *
@@ -16,6 +18,10 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+
 from ui_user_role_manage import Ui_frmSysManageAccounts
 from .new_user_dlg import newUserDlg
 from .new_role_dlg import newRoleDlg
@@ -23,9 +29,6 @@ from .new_role_dlg import newRoleDlg
 from stdm.security import User, Membership, RoleProvider
 from stdm.data import UsersRolesModel
 from stdm.utils import *
-
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
 
 class manageAccountsDlg(QDialog, Ui_frmSysManageAccounts):
     '''
@@ -39,13 +42,13 @@ class manageAccountsDlg(QDialog, Ui_frmSysManageAccounts):
         self.initGui()
         
         #Load users
-        self.loadUsers()
+        self.load_users()
         
         #Load Roles
-        self.loadRoles()
+        self.load_roles()
         
         #Load user mappings
-        self.loadUserMappings()
+        self.load_user_mappings()
         
         #Reference to the currently selected STDM role for which user mappings need to be defined
         self.currentRole = None
@@ -57,126 +60,126 @@ class manageAccountsDlg(QDialog, Ui_frmSysManageAccounts):
         #Set properties for 'Users' button box
         btnUserNew = self.btnManageUsers.button(QDialogButtonBox.Ok)  
         btnUserNew.setText(QApplication.translate("manageAccountsDlg", "New") + "...")
-        QObject.connect(btnUserNew, SIGNAL("clicked()"),self.onNewUser)
+        QObject.connect(btnUserNew, SIGNAL("clicked()"),self.on_new_user)
         
         btnUserEdit = self.btnManageUsers.button(QDialogButtonBox.Save)  
         btnUserEdit.setText(QApplication.translate("manageAccountsDlg", "Edit"))
-        QObject.connect(btnUserEdit, SIGNAL("clicked()"),self.onEditUser)
+        QObject.connect(btnUserEdit, SIGNAL("clicked()"),self.on_edit_user)
         
         btnUserDelete = self.btnManageUsers.button(QDialogButtonBox.Cancel)  
         btnUserDelete.setText(QApplication.translate("manageAccountsDlg", "Delete"))
-        QObject.connect(btnUserDelete, SIGNAL("clicked()"),self.onDeleteUser)
+        QObject.connect(btnUserDelete, SIGNAL("clicked()"),self.on_delete_user)
         
         #Set properties for 'Roles' button box
         btnRoleNew = self.btnManageRoles.button(QDialogButtonBox.Ok)  
         btnRoleNew.setText(QApplication.translate("manageAccountsDlg", "New") + "...")
-        QObject.connect(btnRoleNew, SIGNAL("clicked()"),self.onNewRole)        
+        QObject.connect(btnRoleNew, SIGNAL("clicked()"),self.on_new_role)        
         
         btnRoleDelete = self.btnManageRoles.button(QDialogButtonBox.Cancel)  
         btnRoleDelete.setText(QApplication.translate("manageAccountsDlg", "Delete"))
-        QObject.connect(btnRoleDelete, SIGNAL("clicked()"),self.onDeleteRole)     
+        QObject.connect(btnRoleDelete, SIGNAL("clicked()"),self.on_delete_role)     
         
         btnRoleSync = self.btnManageRoles.button(QDialogButtonBox.Apply)  
         btnRoleSync.setText(QApplication.translate("manageAccountsDlg", "Sync"))
         btnRoleSync.setToolTip(QApplication.translate("manageAccountsDlg", "Synchronize STDM roles with database roles"))
-        QObject.connect(btnRoleSync, SIGNAL("clicked()"),self.onSyncRoles)
+        QObject.connect(btnRoleSync, SIGNAL("clicked()"),self.on_sync_roles)
         
         #Data view signals
-        QObject.connect(self.lstRoles, SIGNAL("clicked(const QModelIndex&)"),self.onRoleSelected)
-        QObject.connect(self.lstRoles, SIGNAL("activated(const QModelIndex&)"),self.onRoleSelected)
-        QObject.connect(self.lstMappingRoles, SIGNAL("activated(const QModelIndex&)"),self.onRoleMappingSelected)        
-        QObject.connect(self.lstMappingRoles, SIGNAL("clicked(const QModelIndex&)"),self.onRoleMappingSelected)
-        QObject.connect(self.lstMappingUsers, SIGNAL("activated(const QModelIndex&)"),self.onUserMappingSelected)        
-        QObject.connect(self.lstMappingUsers, SIGNAL("clicked(const QModelIndex&)"),self.onUserMappingSelected)
+        QObject.connect(self.lstRoles, SIGNAL("clicked(const QModelIndex&)"),self.on_role_selected)
+        QObject.connect(self.lstRoles, SIGNAL("activated(const QModelIndex&)"),self.on_role_selected)
+        QObject.connect(self.lstMappingRoles, SIGNAL("activated(const QModelIndex&)"),self.on_role_mapping_selected)        
+        QObject.connect(self.lstMappingRoles, SIGNAL("clicked(const QModelIndex&)"),self.on_role_mapping_selected)
+        QObject.connect(self.lstMappingUsers, SIGNAL("activated(const QModelIndex&)"),self.on_user_mapping_selected)        
+        QObject.connect(self.lstMappingUsers, SIGNAL("clicked(const QModelIndex&)"),self.on_user_mapping_selected)
         
         #Disable any action by the user in the user roles mapping list view
         self.lstMappingUsers.setEnabled(False)
         
-    def onNewUser(self):
+    def on_new_user(self):
         '''
         Slot activated when the user requests to create a new user
         '''
-        frmNewUser = newUserDlg(self)
-        result = frmNewUser.exec_()
+        frm_new_user = newUserDlg(self)
+        result = frm_new_user.exec_()
         
         #Add new user to dependent models
         if result == QDialog.Accepted:
-            user = frmNewUser.user
+            user = frm_new_user.user
             
             #Add new user to Users view
-            numUsers = self.usersModel.rowCount()
-            self.usersModel.insertRows(numUsers, 1)
-            index = self.usersModel.index(numUsers)
-            self.usersModel.setData(index,user.UserName)
+            num_users = self.usersModel.rowCount()
+            self.usersModel.insertRows(num_users, 1)
+            index = self.usersModel.index(num_users)
+            self.usersModel.setData(index, user.UserName)
             
             #Add the user to the user mappings list
-            userItem = self._createNewUserMapping(user.UserName)
-            numUsers = self.UserMappingsModel.rowCount()
-            self.UserMappingsModel.setItem(numUsers, userItem)
+            user_item = self._create_new_user_mapping(user.UserName)
+            num_users = self.UserMappingsModel.rowCount()
+            self.UserMappingsModel.setItem(num_users, user_item)
             
             #Sort users
-            self.sortUsers()            
+            self.sort_users()            
         
-    def loadUsers(self):
+    def load_users(self):
         '''
         Loads the names of existing users
         '''
         self.membership = Membership()
         users = self.membership.getAllUsers()
         self.usersModel = UsersRolesModel(users)
-        self.sortUsers()
+        self.sort_users()
         self.lstUsers.setModel(self.usersModel)
         
-    def loadRoles(self):
+    def load_roles(self):
         '''
         Loads the roles of the database cluster
         '''
         self.roleProvider = RoleProvider()
         roles = self.roleProvider.GetAllRoles()
-        roleNames = []
+        role_names = []
         #Remove the postgresql role if it exists
         for role in roles:
             if role.name != 'postgres':
-                roleNames.append(role.name)
-        self.rolesModel = UsersRolesModel(roleNames)
-        self.sortRoles()
+                role_names.append(role.name)
+        self.rolesModel = UsersRolesModel(role_names)
+        self.sort_roles()
         self.lstRoles.setModel(self.rolesModel)
         
         #Load mapping roles view as well
         self.lstMappingRoles.setModel(self.rolesModel)
         
-    def onEditUser(self):
+    def on_edit_user(self):
         '''
         Slot activated for editing a selected user
         '''
-        selItems = self.lstUsers.selectionModel().selectedRows()
+        sel_items = self.lstUsers.selectionModel().selectedRows()
         
-        if len(selItems) == 0:
+        if len(sel_items) == 0:
             msg = QApplication.translate("manageAccountsDlg", "Please select a user to edit.")
-            QMessageBox.warning(self, QApplication.translate("manageAccountsDlg", "Select User"),msg)
+            QMessageBox.warning(self, QApplication.translate("manageAccountsDlg", "Select User"), msg)
             return
         
         #Get user from the first item in the selection
         username = sel_items[0].data()
         user = self.membership.getUser(username)
         if user != None:
-            frmUserUpdate = newUserDlg(self,user)
-            frmUserUpdate.exec_()
+            frm_user_update = newUserDlg(self, user)
+            frm_user_update.exec_()
             
-    def onDeleteUser(self):
+    def on_delete_user(self):
         '''
         Slot activated for deleting a selected user
         '''
-        selItems = self.lstUsers.selectionModel().selectedRows()
+        sel_items = self.lstUsers.selectionModel().selectedRows()
         
-        if len(selItems) == 0:
+        if len(sel_items) == 0:
             msg = QApplication.translate("manageAccountsDlg", "Please select a user to delete.")
-            QMessageBox.warning(self, QApplication.translate("manageAccountsDlg", "Select User"),msg)
+            QMessageBox.warning(self, QApplication.translate("manageAccountsDlg", "Select User"), msg)
             return
         
         #Get user from the first item in the selection
-        userIndex = selItems[0]
-        username = userIndex.data()       
+        user_index = sel_items[0]
+        username = user_index.data()       
         
         msg = QApplication.translate("manageAccountsDlg", 
                                      "Are you sure you want to delete '%s'?\nOnce deleted, this user account cannot be recovered."%(username,))
@@ -194,9 +197,9 @@ class manageAccountsDlg(QDialog, Ui_frmSysManageAccounts):
             self.UserMappingsModel.removeRow(user_index.row())
             
             #Sort users
-            self.sortUsers()
+            self.sort_users()
             
-    def onSyncRoles(self):
+    def on_sync_roles(self):
         '''
         Slot for synchronizing STDM roles with database cluster roles.
         This is very important especially on first time login by the superuser/'postgres' account
@@ -204,65 +207,65 @@ class manageAccountsDlg(QDialog, Ui_frmSysManageAccounts):
         self.roleProvider.syncSTDMRoles()
         
         #Update view
-        self.loadRoles()
+        self.load_roles()
         
         #Reset role description label
         self.lblRoleDescription.setText("")
         
-    def sortUsers(self):
+    def sort_users(self):
         '''
         Sort users in ascending order
         '''
-        self.usersModel.sort(0,Qt.AscendingOrder)
+        self.usersModel.sort(0, Qt.AscendingOrder)
         
-    def sortRoles(self):
+    def sort_roles(self):
         '''
         Sorts the roles in ascending order
         '''        
-        self.rolesModel.sort(0,Qt.AscendingOrder)
+        self.rolesModel.sort(0, Qt.AscendingOrder)
         
-    def onNewRole(self):
+    def on_new_role(self):
         '''
         Slot for creating new role
         '''
-        frmNewRole = newRoleDlg(self)
-        result = frmNewRole.exec_()
+        frm_new_role = newRoleDlg(self)
+        result = frm_new_role.exec_()
         
         if result == QDialog.Accepted:
-            role = frmNewRole.role
-            
+            role = frm_new_role.role
+
             #Add new role to roles view
-            numRoles = self.rolesModel.rowCount()
-            self.rolesModel.insertRows(numRoles, 1)
-            index = self.rolesModel.index(numRoles)
-            self.rolesModel.setData(index,role.name)
+            num_roles = self.rolesModel.rowCount()
+            self.rolesModel.insertRows(num_roles, 1)
+            index = self.rolesModel.index(num_roles)
+            self.rolesModel.setData(index, role.name)
             
             #Sort model contents
-            self.sortRoles()
+            self.sort_roles()
 
-    def onRoleSelected(self,index):
+    def on_role_selected(self, index):
         '''
         Slot activated when a role item in the view is selected to load the description text.
         '''
-        roleName = index.data()
-        role = self.roleProvider.GetRole(roleName)
+        role_name = index.data()
+        role = self.roleProvider.GetRole(role_name)
         if role != None:
             self.lblRoleDescription.setText(role.description)
             
-    def onDeleteRole(self):
+    def on_delete_role(self):
         '''
         Slot for deleting the selected role
         '''
-        selItems = self.lstRoles.selectionModel().selectedRows()
+        sel_items = self.lstRoles.selectionModel().selectedRows()
         
-        if len(selItems) == 0:
+        if len(sel_items) == 0:
             msg = QApplication.translate("manageAccountsDlg", "Please select a role to delete.")
-            QMessageBox.warning(self, QApplication.translate("manageAccountsDlg", "Select Role"),msg)
+            QMessageBox.warning(self, QApplication.translate("manageAccountsDlg", "Select Role"), msg)
             return
         
         #Get role from the first item in the selection
-        roleIndex = selItems[0]
-        rolename = roleIndex.data()       
+        role_index = sel_items[0]
+        rolename = role_index.data()       
         
         msg = QApplication.translate("manageAccountsDlg", 
                                      "Are you sure you want to delete '%s'?\nOnce deleted, this role cannot be recovered."%(rolename,))
@@ -279,38 +282,38 @@ class manageAccountsDlg(QDialog, Ui_frmSysManageAccounts):
             
             self.lblRoleDescription.setText("")
             
-            self.sortRoles()
+            self.sort_roles()
             
-    def loadUserMappings(self,rolename = ""):
+    def load_user_mappings(self, rolename=""):
         '''
         Loads checked/unchecked users in the user mappings list based on whether they are non/members
         of the specified group.
         If rolename is empty, then just load all users with the check state set to 'Unchecked'
         '''
-        roleUsers = []
+        role_users = []
         if rolename != "":            
-            roleUsers = self.roleProvider.GetUsersInRole(rolename)           
+            role_users = self.roleProvider.GetUsersInRole(rolename)           
             
-        sysUsers = self.usersModel._users
+        sys_users = self.usersModel._users
         
         #Initialize model
-        self.UserMappingsModel = QStandardItemModel(len(sysUsers),1,self)
+        self.UserMappingsModel = QStandardItemModel(len(sys_users), 1, self)
         
         #Create standard user items (checkable and with an icon) then add them to the list view
-        for u in range(len(sysUsers)):
-            user = sysUsers[u]
-            userItem = self._createNewUserMapping(user)
+        for u in range(len(sys_users)):
+            user = sys_users[u]
+            user_item = self._create_new_user_mapping(user)
             
             #If the user is in the given role then set checkstate to 'checked'
-            sysIndex = getIndex(roleUsers,user)
-            if sysIndex != -1:
-                userItem.setCheckState(Qt.Checked)
+            sys_index = getIndex(role_users, user)
+            if sys_index != -1:
+                user_item.setCheckState(Qt.Checked)
             
-            self.UserMappingsModel.setItem(u, userItem)
+            self.UserMappingsModel.setItem(u, user_item)
             
         self.lstMappingUsers.setModel(self.UserMappingsModel)
         
-    def _createNewUserMapping(self,username):
+    def _create_new_user_mapping(self, username):
         '''
         Adds a new user to the list of user mappings
         '''
@@ -318,23 +321,23 @@ class manageAccountsDlg(QDialog, Ui_frmSysManageAccounts):
         icon = QIcon()
         icon.addPixmap(QPixmap(":/plugins/stdm/images/icons/user.png"), QIcon.Normal, QIcon.Off)
         
-        userItem = QStandardItem(icon,username)
-        userItem.setCheckable(True)
-        userItem.setCheckState(Qt.Unchecked)
+        user_item = QStandardItem(icon, username)
+        user_item.setCheckable(True)
+        user_item.setCheckState(Qt.Unchecked)
         
-        return userItem
+        return user_item
         
-    def onRoleMappingSelected(self,index):
+    def on_role_mapping_selected(self, index):
         '''
         Slot activated when a role item in the mapping view is selected to load the users
         in the specified role
         '''
         self.lstMappingUsers.setEnabled(True)
-        roleName = index.data()
-        self.currentRole = roleName
-        self.loadUserMappings(roleName)
+        role_name = index.data()
+        self.currentRole = role_name
+        self.load_user_mappings(role_name)
         
-    def onUserMappingSelected(self,index):
+    def on_user_mapping_selected(self, index):
         '''
         Slot which is called when a user item in the user mapping list has been clicked or selected to 
         add it to the currently selected role
@@ -353,29 +356,3 @@ class manageAccountsDlg(QDialog, Ui_frmSysManageAccounts):
                 self.roleProvider.RemoveUsersFromRoles([username], [self.currentRole])
                 
             self.blockSignals(False)
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
