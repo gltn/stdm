@@ -24,9 +24,9 @@ from stdm.data import MapperMixin
 from stdm.data import STDMDb
 from stdm.ui.ui_base_form import Ui_Dialog
 from stdm.ui.notification import NotificationBar
+
 from .property_mapper import TypePropertyMapper
 from .attribute_datatype import AttributePropretyType
-
 
 class MapperDialog(QDialog,Ui_Dialog):
     def __init__(self,parent):
@@ -63,9 +63,9 @@ class CustomFormDialog(MapperDialog, MapperMixin):
         self.set_window_title()
 
         self.setLayout(self.frmLayout)
-        self.loadMapperDialog()
+        self.load_mapper_dialog()
 
-    def loadMapperDialog(self):
+    def load_mapper_dialog(self):
         """
         :return: Mapper dialog form
         """
@@ -79,15 +79,15 @@ class CustomFormDialog(MapperDialog, MapperMixin):
                     control_type = form_widget_loader.control_widget(attrib)
                     self.addMapping(attrib, control_type, False, attrib)
 
-                    self.frmLayout.addRow(QT_TRANSLATE_NOOP("ModuleSettings",self.userLabel(attrib)), control_type)
+                    self.frmLayout.addRow(QT_TRANSLATE_NOOP("ModuleSettings", self.user_label(attrib)), control_type)
 
         except Exception as ex:
             pass
 
-    def userLabel(self, attr):
+    def user_label(self, attr):
             return attr.replace("_", " ").title()
         
-    def lookupOptions(self, widget, widgetOptions):
+    def lookup_options(self, widget, widgetOptions):
         try:
             widget.setOptions(widgetOptions)
 
@@ -134,14 +134,14 @@ class FormWidgetLoader(object):
         self.init_widget_cls = self.widget_property[0]()
         control_type = self.init_widget_cls.Factory()
         if self.widget_property[1]:
-            self.lookupOptions(self.init_widget_cls, self.widget_property[2])
+            self.lookup_options(self.init_widget_cls, self.widget_property[2])
         if self.widget_property[3]:
             if self.widget_property[3].add_table_formatters() or len(self.widget_property.add_table_formatters())>0:
                 self.init_widget_cls.foreign_key_formatter(attr, self.widget_property[3])
         self.init_widget_cls.adopt()
         return control_type
 
-    def lookupOptions(self, widget, widgetOptions):
+    def lookup_options(self, widget, widgetOptions):
         """
         Add lookup items on the widget control
         :param widget: QObject

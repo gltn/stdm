@@ -24,26 +24,26 @@ from stdm.ui.stdmdialog import DeclareMapping
 class LookupModeller(object):
     def __init__(self,):
         self._lookup = []
-        self._lookupFormatter = {}
+        self._lookup_formatter = {}
         self._mapper = DeclareMapping.instance()
 
-    def setLookupAttribute(self, attributeName):
+    def set_lookup_attribute(self, attribute_name):
         """Add the attribute to the list of attribute in this model"""
-        self._lookup.append(attributeName)
+        self._lookup.append(attribute_name)
 
-    def lookupChoices(self, attributeName, lkupModel):
+    def lookup_choices(self, attribute_name, lkup_model):
         """
         Temporarily hold the mapping of table to model. Need further implementation
         """
-        self._lookupFormatter[attributeName] = lkupModel
+        self._lookup_formatter[attribute_name] = lkup_model
 
-    def lookupModel(self, tName):
+    def lookup_model(self, tName):
         """
         Ensure the lookup table is mapped to an SQLALchemy model
         """
-        lkModel = self._mapper.tableMapping(tName.lower())
-        self._lookupFormatter[tName.lower()] = lkModel
-        return lkModel
+        lk_model = self._mapper.tableMapping(tName.lower())
+        self._lookup_formatter[tName.lower()] = lk_model
+        return lk_model
 
 
 
