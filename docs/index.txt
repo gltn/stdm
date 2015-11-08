@@ -1,0 +1,36 @@
+.. STDM Documentation master file, created by
+   sphinx-quickstart on Sat Nov  7 18:21:04 2015.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+==============================================
+Welcome to STDM Documentation!
+==============================================
+
+About STDM
+==========
+
+The Social Tenure Domain Model (STDM) is a pro-poor, gender responsive and
+participatory land information system developed by the Global Land Tool
+Network  (GLTN). It is one of eighteen land tools being developed,  tested
+and applied by GLTN partners to promote secure land and property rights for all.
+
+Contents:
+
+.. toctree::
+   :maxdepth: 2
+
+   quick/index
+   training/index
+   administrators/index
+   developers/index
+
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+

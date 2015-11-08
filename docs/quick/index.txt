@@ -1,0 +1,7 @@
+===================
+Gental Introduction
+===================
+
+.. toctree::
+   :hidden:
+   :maxdepth: 2

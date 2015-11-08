@@ -1,0 +1,7 @@
+========
+Training
+========
+
+.. toctree::
+   :hidden:
+   :maxdepth: 2
