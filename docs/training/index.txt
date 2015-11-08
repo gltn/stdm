@@ -1,6 +1,6 @@
-========
-Training
-========
+===========
+User Manual
+===========
 
 .. toctree::
    :hidden:

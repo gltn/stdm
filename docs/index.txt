@@ -7,21 +7,32 @@
 Welcome to STDM Documentation!
 ==============================================
 
-About STDM
-==========
-
 The Social Tenure Domain Model (STDM) is a pro-poor, gender responsive and
 participatory land information system developed by the Global Land Tool
 Network  (GLTN). It is one of eighteen land tools being developed,  tested
-and applied by GLTN partners to promote secure land and property rights for all.
+and applied by GLTN partners to promote secure land and property rights for
+all.
+
+STDM has four inter-related components:
+
+#.  A new way of thinking about land records
+#.  A free and open-source software package to record information about land
+#.  An approach of collecting data about land
+#.  A way of using and disseminating information about land
+
+First Steps
+===========
 
 Contents:
 
 .. toctree::
+   :caption: Table of Contents
+   :hidden:
    :maxdepth: 2
 
    quick/index
    training/index
+   customization/index
    administrators/index
    developers/index
 
