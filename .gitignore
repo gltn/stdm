@@ -10,3 +10,4 @@
 *.pyc
 
 /third_party/*
+docs/_build
