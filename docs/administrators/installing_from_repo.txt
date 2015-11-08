@@ -1,0 +1,61 @@
+.. _installing-from-stdm-plugin-repository:
+
+======================================
+Installing From STDM Plugin Repository
+======================================
+
+For users with an already existing installation of QGIS version 2.6 or higher and do not want to uninstall current version, we recommend that you download STDM plugin from the repository using the following steps.
+
+* Start QGIS normally and wait for it to load
+* Go to menu **Plugins -> Manage and Install Plugins...**
+
+.. figure:: img/repo_plugin_menu.png
+  :align: center
+
+* Wait for the plugin to fetch available plugins from the web repository (only if online)
+* On the **Plugins** dialog select **Settings** tab
+
+.. image:: img/repo_menu.png
+  :align: center
+
+Available repositories will be shown under **Plugin repositories**
+
+.. image:: img/repo_available_repos.png
+  :align: center
+
+* Select |repo_add_button| to open repository details dialog. The dialog allows you to enter additional repository properties,
+
+.. |repo_add_button| image:: img/repo_add_button.png
+   :width: 4 em
+
+To add STDM plugin repository, please enter the details as follows;
+
+#. In the Name field enter: **GLTN Plugin Repository**
+#. In the URL field enter: `http://stdm.gltn.net/plugin/plugins.xml <http://stdm.gltn.net/plugin/plugins.xml>`_
+#. Ensure **Enabled** option is checked then select **OK** to close.
+
+.. image:: img/repo_details.png
+  :align: center
+
+* Click **Ok** to dismiss the dialog.
+* The dialog will try accessing the added repository (if online) and pull the linked plugins. If successful the repository will be added to the list as shown below.
+
+.. image:: img/repo_shown.png
+  :align: center
+
+* Still on the **Plugins** window select **Not installed** tab, look for STDM plugin on the list of *Not installed* plugins. Select it and click **Install plugin**.
+
+.. image:: img/repo_not_installed.png
+  :align: center
+
+* QGIS will download and install STDM plugin. The plugin should now be available on the **Installed tab** and also on the QGIS main panel.
+
+.. image:: img/repo_installed.png
+  :align: center
+
+* Click close to dismiss the dialog.
+
+Now you ready to start using STDM. When you see |stdm_tool_bar| on QGIS toolbar
+
+.. |stdm_tool_bar| image:: img/stdm_icon_toolbar.png
+   :width: 5 em

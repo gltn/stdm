@@ -235,8 +235,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'STDMDocumentation.tex', u'STDM Documentation Documentation',
-   u'Erick', 'manual'),
+  (master_doc, 'STDMDocumentation.tex', u'STDM Documentation',
+   u'UN-Habitat', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

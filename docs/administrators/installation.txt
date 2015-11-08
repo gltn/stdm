@@ -1,3 +1,133 @@
-===========
-Installtion
-===========
+============
+Installation
+============
+
+Supported Operating Systems:
+============================
+
+Windows:
+--------
+ * Windows 2000, Windows XP, Windows Vista or Windows 7 , Windows 8
+
+Linux Based:
+------------
+ * Debian, Ubuntu, Fedora, Red Hat, openSUSE
+
+Hardware Requirements
+---------------------
+* Atleast 2GB of RAM
+* Atleast 2GB free disk space
+* 1024x768 screen resolution or higher
+
+What to know before installing
+==============================
+What do I need to install to have a fully functional STDM?
+----------------------------------------------------------
+For a fully functional STDM, the following packages are bundled together
+with the installer.
+
+* Quantum GIS (current version 2.8.2)
+* PostgreSQL (current version 9.4.2)
+* PostGIS  (current version 2.1.7)
+* Sample data is optional if you want to have a sample data to manipulate and test features of STDM.
+
+Do I need to uninstall previous installation of the above software?
+-------------------------------------------------------------------
+This is not necessary especially if you are working with QGIS 2.6 or higher
+and postgres 8.4 or higher.
+
+In this case, you need to do the following:
+
+* Start QGIS normally and wait for it to load
+* Download the latest version of STDM plugin from `STDM Pluging Repository <http://stdm.gltn.net/plugin/plugins.xml>`_ by adding STDM download repository in the QGIs Plugin manager. See instructions :ref:`installing-from-stdm-plugin-repository`
+* Using postgreSQL database browser i.e pgadmin create a new database called stdm.
+* Within stdm database, create postgis extension.
+* On the QGIS window, check if STDM is enable on the menu and toolbar |stdm_tool_bar|
+* Delete previous config files in the the working directory.
+* Login and configure data forms wizard to finish.
+
+.. |stdm_tool_bar| image:: img/stdm_icon_toolbar.png
+   :width: 5 em
+
+Upgrade your configuration file
+-------------------------------
+.. note:: This only applies if you are running stdm version 1.0.
+
+The current version has rich and improved features that have also been
+changed in the configuration file. It is recommended to remove previous
+config file in your workspace so that the improved configuration can be copied.
+
+.. warning:: Duplicate keys for the modules exits:
+
+This error is mostly attribute to mismatch of config file and especially
+where new module were created to replace the existing ones. To remove this
+error, you either restore the original config files or simply ask
+administrator to run pgadmin and open stdm database, then truncate all the
+values in the content base and content roles tables. The problem should be fixed.
+
+Using Bundled STDM installer
+============================
+
+The bundled installer is the custom installer that is built to help you
+easily install stdm and dependent software packages.
+
+.. note:: **32bit machine** please select and run STDM-1.1-Final-x86.exe setup file, **64bit machines** run STDM-1.1-Final-x86_64.exe setup file.
+
+Installtion steps
+-----------------
+
+Step 1
+------
+* Run the installer by double clicking on setup file and select ‘Next’.
+
+.. figure:: img/installation_step_1.png
+   :align: center
+
+Step 2
+------
+* Read the license agreement, and if you accept select the first option and click ‘Next’ to proceed to step 3
+
+.. figure:: img/installation_step_2_license.png
+   :align: center
+
+Step 3
+------
+* Choose the components you would like to install, the following are the available components;
+
+* **QGIS Wein 2.8.2 for STDM** – This will install QGIS with STDM plugin embedded
+* **PostgreSQL 9.4** – This will install PostgreSQL database server, if you don’t have PostgreSQL make sure you select this option, STDM will not work without it.
+* **PostGIS 2.1.7** – This install the GIS plugin for PostgreSQL, if you don’t have it in your machine make sure you select for installation.
+* **Sample data** – This will install sample files for STDM plugin. This is not a mandatory option, but new users are recommended to install to help them jump start with STDM practice.
+
+After your selection, click ‘Next’ to start the installation.
+
+.. note:: If you already have PostgreSQL or PostGIS installed, the installer will skip installation of those components.
+
+Step 4
+------
+Database connection properties.
+
+.. figure:: img/installation_step_4_db.png
+   :align: center
+
+*The window allows you to set the username and password to use with STDM.
+Leave the default port to 5433, this is where PostgreSQL server will be
+listening for database connections (for more details on `PostgreSQL
+connections refer to documentation <http://www.postgresql.org>`)*
+
+Step 5
+------
+This is the actual component installation. QGIS, STDM, PostgreSQL, PostGIS
+and all other dependencies will be installed in ‘C:\Program Files\ QGIS Wein for STDM’ folder. Depending on the speed of your machine, this process might take slightly about 15 minutes.
+
+.. figure:: img/installation_step_5_installation.png
+  :align: center
+
+Step 6
+------
+After successful installation, please close the installer by selecting
+**Finish** button. Go ahead and run QGIS for STDM from the icon created on
+your computer desktop.
+
+.. figure:: img/installation_step_6_finish_installation.png
+  :align: center
