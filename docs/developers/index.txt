@@ -1,6 +1,6 @@
-==========
-Developers
-==========
+=================
+Developers' Manual
+=================
 
 .. toctree::
    :hidden:

@@ -1,7 +1,10 @@
-=============
-Customization
-=============
+=====================
+Administration Manual
+=====================
 
 .. toctree::
    :hidden:
-   :maxdepth: 2
+   :maxdepth: 3
+
+   about
+   installation

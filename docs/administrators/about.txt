@@ -1,0 +1,34 @@
+==========
+About STDM
+==========
+
+STDM, as it stands, has the capacity to broaden the scope of land
+administration by providing a land information management framework that
+would integrate formal, informal and customary land systems and
+administrative and spatial components. STDM makes this possible through
+tools that facilitates recording of all forms of land rights, all types of
+rights holders and all kinds of land and property objects/spatial units
+regardless of the level of formality.
+
+Core Values
+-----------
+STDM's core values and principles are pro-poor, good governance, equity,
+subsidiarity, sustainability, affordability, systematic large scale, and
+gender responsiveness.
+
+The STDM Universe
+-----------------
+STDM is a pro-poor, participatory and affordable land tool that broadens the
+scope of land administration by incorporating all person/s to land
+relationships beyond formal/legal land rights, cognisant of the continuum
+of land rights.
+
+Getting Technical Support
+-------------------------
+
+Depending on the context of the support services required, you can use the
+online resource below to get in touch with GLTN’s STDM team:
+
+* For more information, please visit `STDM Website <http://www.stdm.gltn.net>`_ or subscribe to: `User's List <http://lists.osgeo.org/cgi-bin/mailman/listinfo/stdm-user>`_
+* To receive important news and updates around STDM in general, subscribe to: `News and Updates <http://lists.osgeo.org/cgi-bin/mailman/listinfo/stdm-announce>`_
+* If you find an issue working with STDM, please report it so that developers can check and fix it. To report a bug, subscribe to: `Developer's List  <http://http://lists.osgeo.org/cgi-bin/mailman/listinfo/stdm-dev>`_ or post  it on `GitHub <https://github.com/gltn/stdm-plugin/issues>`_
