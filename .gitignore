@@ -8,6 +8,7 @@
 
 #Compiled Python Files
 *.pyc
+*.zip
 
 /third_party/*
 docs/_build

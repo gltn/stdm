@@ -8,3 +8,4 @@ Administration Manual
 
    about
    installation
+   installing_from_repo

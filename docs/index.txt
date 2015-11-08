@@ -23,6 +23,10 @@ STDM has four inter-related components:
 First Steps
 ===========
 
+ * :doc:`About STDM <administrators/about>`
+ * :doc:`Installation Guide <administrators/installation>`
+ * :doc:`Gental Introduction to STDM <administrators/installation>`
+
 Contents:
 
 .. toctree::
