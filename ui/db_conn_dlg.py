@@ -87,6 +87,7 @@ class dbconnDlg(QDialog, Ui_frmDbConn):
                 #Write DB conn object to the registry
                 dbconfig.write(self.dbconn)
             except Exception as ex:
-                raise ex.message
+                QMessageBox.critical(self, QApplication.translate("DbConnectionDialog","Error saving settings"),
+                                 QApplication.translate("DbConnectionDialog",unicode(ex.message)))
 
             self.accept()
