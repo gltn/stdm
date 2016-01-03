@@ -20,6 +20,17 @@ email                : stdm@unhabitat.org
 import sys
 import os
 
+import logging
+from logging.handlers import TimedRotatingFileHandler
+
+from PyQt4.QtGui import (
+    QDesktopServices
+)
+from PyQt4.QtCore import (
+    QDir
+)
+
+#Load third party libraries
 third_party_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                "third_party"))
 font_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -29,11 +40,42 @@ if third_party_dir not in sys.path:
     sys.path.append(third_party_dir)
     sys.path.append(font_dir)
 
+#Setup logging
+LOG_DIR = QDesktopServices.storageLocation(QDesktopServices.HomeLocation) \
+               + '/.stdm/logs'
+LOG_FILE_PATH = LOG_DIR + '/stdm.log'
+
+def setup_logger():
+    logger = logging.getLogger('stdm')
+    logger.setLevel(logging.DEBUG)
+
+    #Create log directory if it does not exist
+    log_folder = QDir()
+    if not log_folder.exists(LOG_DIR):
+        status = log_folder.mkpath(LOG_DIR)
+
+        #Log directory could not be created
+        if not status:
+            raise IOError('Log directory for STDM could not be created.')
+
+    #File handler for logging debug messages
+    file_handler = TimedRotatingFileHandler(LOG_FILE_PATH, when='D',
+                                            interval=30, backupCount=4)
+    file_handler.setLevel(logging.DEBUG)
+
+    #Create formatter and add it to the handler
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+
+    #Add handler to the logger
+    logger.addHandler(file_handler)
+
 
 def classFactory(iface):
     """
-    Load STDMQGISLoader class from file stdm
+    Load STDMQGISLoader class.
     """
+    setup_logger()
 
     from stdm import STDMQGISLoader
     return STDMQGISLoader(iface)
