@@ -22,9 +22,9 @@ from stdm.settings import RegistryConfig
 from connection import DatabaseConnection
 
 class DatabaseConfig(object):
-    '''
-    Reads and writes database settings in the registry
-    '''
+    """
+    Reads and writes database settings in the registry.
+    """
     def __init__(self):
         self.host = "Host"
         self.port = "Port"    

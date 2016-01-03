@@ -202,6 +202,7 @@ class PhotoFormatter(BaseComposerItemFormatter):
             frame_width = 0.15
             photo_item.setFrameEnabled(True)
             photo_item.setFrameOutlineWidth(frame_width)
+            photo_item.setResizeMode(QgsComposerPicture.ZoomResizeFrame)
 
             #Create data properties editor and it to the dock widget
             photo_data_source_editor = ComposerPhotoDataSourceEditor(composerWrapper)

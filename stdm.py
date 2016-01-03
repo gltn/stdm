@@ -17,7 +17,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-
+import logging
 import os.path
 import platform
 
@@ -75,6 +75,8 @@ from mapping.utils import pg_layerNamesIDMapping
 from composer import ComposerWrapper
 from settings import ModuleSettings
 
+LOGGER = logging.getLogger('stdm')
+
 class STDMQGISLoader(object):
 
     viewSTRWin = None
@@ -108,6 +110,8 @@ class STDMQGISLoader(object):
         self.spatialLayerMangerDockWidget = None
 
         self._user_logged_in = False
+
+        LOGGER.debug('STDM plugin has been initialized.')
 
     def initGui(self):
         # Initial actions on starting up the application
