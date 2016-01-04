@@ -19,8 +19,8 @@ email                : gkahiu@gmail.com
 """
 from ui_changepwd import Ui_frmChangePwd
 
-from stdm.security import User, Membership, SecurityException
-import stdm.data
+#from stdm.security import User, Membership, SecurityException
+#import stdm.data
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *

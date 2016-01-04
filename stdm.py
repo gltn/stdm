@@ -26,12 +26,11 @@ from PyQt4.QtGui import *
 
 from qgis.core import *
 from qgis.gui import *
-#from data.pg_utils import delete_table_keys
+#from stdm.ui.change_pwd_dlg import changePwdDlg
 from ui import (
     DocumentGeneratorDialogWrapper,
     EntityConfig,
     loginDlg,
-    changePwdDlg,
     manageAccountsDlg,
     contentAuthDlg,
     newSTRWiz,

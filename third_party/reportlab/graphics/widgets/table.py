@@ -155,7 +155,7 @@ class TableWidget(Widget):
                 row.extend([None]*(max_row-len(row)))
         return data
 
-#test
+#tests
 if __name__ == '__main__':
     d = TableWidget().demo()
     import os

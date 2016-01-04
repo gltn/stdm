@@ -129,7 +129,7 @@ def dumbSplit(word, widths, maxWidths):
             extraSpace = maxWidth - widthUsed
             if ord(c)<0x3000:
                 # we appear to be inside a non-Asian script section.
-                # (this is a very crude test but quick to compute).
+                # (this is a very crude tests but quick to compute).
                 # This is likely to be quite rare so the speed of the
                 # code below is hopefully not a big issue.  The main
                 # situation requiring this is that a document title

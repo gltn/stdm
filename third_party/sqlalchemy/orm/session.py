@@ -1025,7 +1025,7 @@ class Session(_SessionClassMethods):
         self._new = {}
         self._deleted = {}
 
-    # TODO: need much more test coverage for bind_mapper() and similar !
+    # TODO: need much more tests coverage for bind_mapper() and similar !
     # TODO: + crystallize + document resolution order
     #       vis. bind_mapper/bind_table
 
@@ -1432,7 +1432,7 @@ class Session(_SessionClassMethods):
                 elif state.key != instance_key:
                     # primary key switch. use discard() in case another
                     # state has already replaced this one in the identity
-                    # map (see test/orm/test_naturalpks.py ReversePKsTest)
+                    # map (see tests/orm/test_naturalpks.py ReversePKsTest)
                     self.identity_map.discard(state)
                     if state in self.transaction._key_switches:
                         orig_key = self.transaction._key_switches[state][0]
@@ -2047,7 +2047,7 @@ class Session(_SessionClassMethods):
 
         It is in effect a more expensive and accurate
         version of checking for the given instance in the
-        :attr:`.Session.dirty` collection; a full test for
+        :attr:`.Session.dirty` collection; a full tests for
         each attribute's net "dirty" status is performed.
 
         E.g.::

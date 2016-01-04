@@ -203,7 +203,7 @@ def _AsciiHexEncode(input):
 def _AsciiHexDecode(input):
     """Decodes input using ASCII-Hex coding.
 
-    Not used except to provide a test of the inverse function."""
+    Not used except to provide a tests of the inverse function."""
 
     #strip out all whitespace
     stripped = ''.join(input.split())

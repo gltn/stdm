@@ -781,11 +781,11 @@ def test3widths(texts):
 def testStringWidthAlgorithms():
     rawdata = open('../../rlextra/rml2pdf/doc/rml_user_guide.prep').read()
     print 'rawdata length %d' % len(rawdata)
-    print 'test one huge string...'
+    print 'tests one huge string...'
     test3widths([rawdata])
     print
     words = string.split(rawdata)
-    print 'test %d shorter strings (average length %0.2f chars)...' % (len(words), 1.0*len(rawdata)/len(words))
+    print 'tests %d shorter strings (average length %0.2f chars)...' % (len(words), 1.0*len(rawdata)/len(words))
     test3widths(words)
 
 

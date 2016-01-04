@@ -773,7 +773,7 @@ class TypeDecorator(TypeEngine):
         """memoized boolean, check if process_bind_param is implemented.
 
         Allows the base process_bind_param to raise
-        NotImplementedError without needing to test an expensive
+        NotImplementedError without needing to tests an expensive
         exception throw.
 
         """
@@ -875,7 +875,7 @@ class TypeDecorator(TypeEngine):
         """memoized boolean, check if process_result_value is implemented.
 
         Allows the base process_result_value to raise
-        NotImplementedError without needing to test an expensive
+        NotImplementedError without needing to tests an expensive
         exception throw.
 
         """

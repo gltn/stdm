@@ -406,7 +406,7 @@ class InstrumentationFactory(object):
         return None, None
 
     def _check_conflicts(self, class_, factory):
-        """Overridden by a subclass to test for conflicting factories."""
+        """Overridden by a subclass to tests for conflicting factories."""
         return
 
     def unregister(self, class_):

@@ -29,6 +29,7 @@ from stdm.settings import RegistryConfig
 from stdm.security import User
 
 SUPERUSER = 'postgres'
+
 class loginDlg(QDialog, Ui_frmLogin):
     '''
     This class handles user authentication for accessing STDM resources

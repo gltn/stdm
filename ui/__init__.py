@@ -1,5 +1,3 @@
-from .login_dlg import loginDlg
-from .db_conn_dlg import dbconnDlg
 from .change_pwd_dlg import changePwdDlg
 from .manage_accounts_dlg import manageAccountsDlg
 from .notification import (
@@ -8,6 +6,8 @@ from .notification import (
   INFO,
   WARNING
 )
+from .login_dlg import loginDlg
+from .db_conn_dlg import dbconnDlg
 from .content_auth_dlg import contentAuthDlg
 from .new_str_wiz import newSTRWiz
 from .view_str import ViewSTRWidget

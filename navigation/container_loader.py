@@ -27,7 +27,6 @@ from stdm.utils import *
 import stdm.data
 from stdm.data import Content, Role
 from .content_group import ContentGroup
-from stdm.security import Authorizer, SecurityException
 
 class QtContainerLoader(QObject):
     """
@@ -40,7 +39,9 @@ class QtContainerLoader(QObject):
     finished = pyqtSignal()
     #contentAdded = pyqtSignal(Content)
     
-    def __init__(self,parent,container, actionRef = None, register = False):
+    def __init__(self,parent,container, actionRef=None, register=False):
+        from stdm.security import Authorizer
+
         QObject.__init__(self,parent)
         self._container = container
         self._register = register
@@ -74,6 +75,8 @@ class QtContainerLoader(QObject):
         Add defined items in the specified container.
         """
         #If the user does not belong to any STDM group then the system will raise an error so gracefully terminate
+        from stdm.security import SecurityException
+
         userRoles = self._authorizer.userRoles
         
         if len(userRoles) == 0:

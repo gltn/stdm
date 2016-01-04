@@ -37,7 +37,7 @@ class DiffXml2Ddl:
         self.dbmsType = 'postgres'
         self.params = {
             'drop_constraints_on_col_rename' : False,
-            'drop_table_has_cascade' : False, # test
+            'drop_table_has_cascade' : False, # tests
             'can_change_table_comment' : True,
         }
     

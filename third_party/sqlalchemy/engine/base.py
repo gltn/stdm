@@ -1268,7 +1268,7 @@ class Transaction(object):
     :class:`.Connection`::
 
         from sqlalchemy import create_engine
-        engine = create_engine("postgresql://scott:tiger@localhost/test")
+        engine = create_engine("postgresql://scott:tiger@localhost/tests")
         connection = engine.connect()
         trans = connection.begin()
         connection.execute("insert into x (a, b) values (1, 2)")
@@ -1585,7 +1585,7 @@ class Engine(Connectable, log.Identified):
            connections held by the pool are potentially dropped, and
            the entire pool is replaced.
 
-         * An application may want to use :meth:`dispose` within a test
+         * An application may want to use :meth:`dispose` within a tests
            suite that is creating multiple engines.
 
         It is critical to note that :meth:`dispose` does **not** guarantee

@@ -298,7 +298,7 @@ class FontFinder:
 ##            )
 
 def test():
-    #windows-centric test maybe
+    #windows-centric tests maybe
     from reportlab import rl_config
     ff = FontFinder()
     ff.useCache = True

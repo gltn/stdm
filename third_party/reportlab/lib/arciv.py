@@ -208,7 +208,7 @@ if __name__=='__main__':
 	i = 0
 	for t in _TESTS:
 		o = ArcIV(t['key']).encode(t['input'])
-		print 'Forward test %d %s!' %(i,o!=t['output'] and 'failed' or 'succeeded')
+		print 'Forward tests %d %s!' %(i,o!=t['output'] and 'failed' or 'succeeded')
 		o = ArcIV(t['key']).encode(t['output'])
-		print 'Reverse test %d %s!' %(i,o!=t['input'] and 'failed' or 'succeeded')
+		print 'Reverse tests %d %s!' %(i,o!=t['input'] and 'failed' or 'succeeded')
 		i += 1

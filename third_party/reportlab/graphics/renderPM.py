@@ -10,7 +10,7 @@ Usage::
     renderPM.drawToFile(drawing,filename,fmt='GIF',configPIL={....})
 
 Other functions let you create a PM drawing as string or into a PM buffer.
-Execute the script to see some test drawings."""
+Execute the script to see some tests drawings."""
 
 from reportlab.graphics.shapes import *
 from reportlab.graphics.renderbase import StateTracker, getStateDelta, renderScaledDrawing
@@ -671,7 +671,7 @@ def test(verbose=True):
     def ext(x):
         if x=='tiff': x='tif'
         return x
-    #grab all drawings from the test module and write out.
+    #grab all drawings from the tests module and write out.
     #make a page of links in HTML to assist viewing.
     import os
     from reportlab.graphics import testshapes

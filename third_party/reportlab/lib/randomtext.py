@@ -273,7 +273,7 @@ verbs= [
 
 objects = [
     "problems of phonemic and morphological analysis.",
-    "a corpus of utterance tokens upon which conformity has been defined by the paired utterance test.",
+    "a corpus of utterance tokens upon which conformity has been defined by the paired utterance tests.",
     "the traditional practice of grammarians.",
     "the levels of acceptability from fairly high (e.g. (99a)) to virtual gibberish (e.g. (98d)).",
     "a stipulation to place the constructions into these various categories.",

@@ -11,7 +11,7 @@ Usage::
     import renderpdf
     renderpdf.draw(drawing, canvas, x, y)
 
-Execute the script to see some test drawings.
+Execute the script to see some tests drawings.
 changed
 """
 
@@ -309,7 +309,7 @@ def drawToString(d, msg="", showBoundary=rl_config._unset_,autoSize=1):
 
 #########################################################
 #
-#   test code.  First, define a bunch of drawings.
+#   tests code.  First, define a bunch of drawings.
 #   Routine to draw them comes at the end.
 #
 #########################################################
@@ -319,10 +319,10 @@ def test():
     c.setFont(_baseGFontName, 36)
     c.drawString(80, 750, 'Graphics Test')
 
-    # print all drawings and their doc strings from the test
+    # print all drawings and their doc strings from the tests
     # file
 
-    #grab all drawings from the test module
+    #grab all drawings from the tests module
     from reportlab.graphics import testshapes
     drawings = []
     for funcname in dir(testshapes):

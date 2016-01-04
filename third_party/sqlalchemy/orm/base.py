@@ -424,7 +424,7 @@ class _InspectionAttr(object):
     by the :func:`.inspect` function.
 
     The attributes defined here allow the usage of simple boolean
-    checks to test basic facts about the object returned.
+    checks to tests basic facts about the object returned.
 
     While the boolean checks here are basically the same as using
     the Python isinstance() function, the flags here can be used without

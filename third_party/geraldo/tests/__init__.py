@@ -10,7 +10,7 @@ doctest_files = [os.path.split(f)[1] for f in glob.glob('%s/*.txt' % here)]
 doctest_files.sort()
 
 # python testcases files
-unittest_files = [os.path.split(f)[1] for f in glob.glob('%s/test*.py' % here)]
+unittest_files = [os.path.split(f)[1] for f in glob.glob('%s/tests*.py' % here)]
 
 def suite():
     suites = []

@@ -672,7 +672,7 @@ class PSCanvas:
 """Usage:
     from reportlab.graphics import renderPS
     renderPS.draw(drawing, canvas, x, y)
-Execute the script to see some test drawings."""
+Execute the script to see some tests drawings."""
 from shapes import *
 
 # hack so we only get warnings once each
@@ -885,17 +885,17 @@ def drawToString(d, showBoundary=rl_config.showBoundary):
 
 #########################################################
 #
-#   test code.  First, defin a bunch of drawings.
+#   tests code.  First, defin a bunch of drawings.
 #   Routine to draw them comes at the end.
 #
 #########################################################
 def test(outdir='epsout'):
     import os
-    # print all drawings and their doc strings from the test
+    # print all drawings and their doc strings from the tests
     # file
     if not os.path.isdir(outdir):
         os.mkdir(outdir)
-    #grab all drawings from the test module
+    #grab all drawings from the tests module
     import testshapes
     drawings = []
 

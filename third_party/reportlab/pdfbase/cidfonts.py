@@ -435,7 +435,7 @@ class UnicodeCIDFont(CIDFont):
 
 
     def stringWidth(self, text, size, encoding=None):
-        "Just ensure we do width test on characters, not bytes..."
+        "Just ensure we do width tests on characters, not bytes..."
         if type(text) is type(''):
             text = text.decode('utf8')
 
@@ -513,7 +513,7 @@ if __name__=='__main__':
     import doctest
     import cidfonts
     doctest.testmod(cidfonts)
-    #test()
+    #tests()
 
 
 
