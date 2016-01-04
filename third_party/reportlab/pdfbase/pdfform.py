@@ -29,7 +29,7 @@ at this time.
 
 See individual function docstrings below for more information.
 
-The function test1(...) generates a simple test file.
+The function test1(...) generates a simple tests file.
 
 THIS CONTRIBUTION WAS COMMISSIONED BY REPORTLAB USERS
 WHO WISH TO REMAIN ANONYMOUS.

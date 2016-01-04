@@ -25,10 +25,13 @@ from PyQt4.QtCore import (
     QObject
 )
 
+#from ..database import Singleton
+
 from .profile import Profile
 
 LOGGER = logging.getLogger('stdm')
 
+#@Singleton
 class StdmConfiguration(QObject):
     """
     The main class containing all the configuration information. This

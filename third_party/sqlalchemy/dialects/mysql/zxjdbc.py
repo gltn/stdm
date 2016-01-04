@@ -93,7 +93,7 @@ class MySQLDialect_zxjdbc(ZxJDBCConnector, MySQLDialect):
         return dict(characterEncoding='UTF-8', yearIsDateType='false')
 
     def _extract_error_code(self, exception):
-        # e.g.: DBAPIError: (Error) Table 'test.u2' doesn't exist
+        # e.g.: DBAPIError: (Error) Table 'tests.u2' doesn't exist
         # [SQLCode: 1146], [SQLState: 42S02] 'DESCRIBE `u2`' ()
         m = re.compile(r"\[SQLCode\: (\d+)\]").search(str(exception.args))
         c = m.group(1)

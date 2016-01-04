@@ -880,11 +880,11 @@ class _SVGRenderer(Renderer):
                 self._canvas.setFont(fontname, fontsize)
 
 def test0(outdir='svgout'):
-    # print all drawings and their doc strings from the test
+    # print all drawings and their doc strings from the tests
     # file
     if not os.path.isdir(outdir):
         os.mkdir(outdir)
-    #grab all drawings from the test module
+    #grab all drawings from the tests module
     from reportlab.graphics import testshapes
     drawings = []
 
@@ -908,7 +908,7 @@ def test0(outdir='svgout'):
 def test1():
     from reportlab.graphics.testshapes import getDrawing01
     d = getDrawing01()
-    drawToFile(d, "svgout/test.svg")
+    drawToFile(d, "svgout/tests.svg")
 
 def test2():
     from reportlab.lib.corp import RL_CorpLogo

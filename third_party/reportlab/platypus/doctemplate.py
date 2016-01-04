@@ -520,7 +520,7 @@ class BaseDocTemplate:
         'add one or a sequence of pageTemplates'
         if type(pageTemplates) not in (ListType,TupleType):
             pageTemplates = [pageTemplates]
-        #this test below fails due to inconsistent imports!
+        #this tests below fails due to inconsistent imports!
         #assert filter(lambda x: not isinstance(x,PageTemplate), pageTemplates)==[], "pageTemplates argument error"
         for t in pageTemplates:
             self.pageTemplates.append(t)

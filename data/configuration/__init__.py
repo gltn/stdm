@@ -40,10 +40,10 @@ from .entity import (
     entity_factory
 )
 from .entity_relation import EntityRelation
-from .entity_supporting_document import EntitySupportingDocument
 from .entity_updaters import entity_updater
 from .profile import Profile
 from .social_tenure import SocialTenure
+from .stdm_configuration import StdmConfiguration
 from .supporting_document import SupportingDocument
 from .value_list import (
     CodeValue,

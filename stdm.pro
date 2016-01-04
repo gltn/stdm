@@ -125,6 +125,7 @@ SOURCES = stdm.py \
 			mapping/edit_tool.py \
 			mapping/create_feature.py \
 			mapping/capture_tool.py \
+			data/configuration/columns.py \
 			data/config.py \
 			data/config_table_reader.py \
 			data/config_utils.py \

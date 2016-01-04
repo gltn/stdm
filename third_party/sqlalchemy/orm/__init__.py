@@ -202,11 +202,11 @@ def clear_mappers():
     mappers are permanent structural components of user-defined classes, and
     are never discarded independently of their class.  If a mapped class
     itself is garbage collected, its mapper is automatically disposed of as
-    well. As such, :func:`.clear_mappers` is only for usage in test suites
+    well. As such, :func:`.clear_mappers` is only for usage in tests suites
     that re-use the same classes with different mappings, which is itself an
     extremely rare use case - the only such use case is in fact SQLAlchemy's
-    own test suite, and possibly the test suites of other ORM extension
-    libraries which intend to test various combinations of mapper construction
+    own tests suite, and possibly the tests suites of other ORM extension
+    libraries which intend to tests various combinations of mapper construction
     upon a fixed set of classes.
 
     """

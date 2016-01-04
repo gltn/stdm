@@ -391,7 +391,7 @@ def safely_delete_tables(tables):
 def flush_session_activity():
     STDMDb.instance().session._autoflush()
 
-def vector_layer(table_name, sql="", key="id", geom_column=""):
+def vector_layer(table_name, sql='', key='id', geom_column=''):
     """
     Returns a QgsVectorLayer based on the specified table name.
     """

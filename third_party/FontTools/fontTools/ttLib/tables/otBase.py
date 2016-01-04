@@ -268,7 +268,7 @@ class OTTableWriter:
 							if hasattr(self, "sortCoverageLast") and item.name == "Coverage":
 								# Coverage is first in the item list, but last in the table list,
 								# The original overflow is really in the item list. Skip the Coverage 
-								# table in the following test.
+								# table in the following tests.
 								items = items[i+1:]
 	
 							for j in range(len(items)):

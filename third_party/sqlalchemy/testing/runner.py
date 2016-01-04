@@ -6,7 +6,7 @@
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 """
-Nose test runner module.
+Nose tests runner module.
 
 This script is a front-end to "nosetests" which
 installs SQLAlchemy's testing plugin into the local environment.
@@ -18,7 +18,7 @@ be invoked via::
     python -m sqlalchemy.testing.runner
 
 The script is then essentially the same as the "nosetests" script, including
-all of the usual Nose options.   The test environment requires that a
+all of the usual Nose options.   The tests environment requires that a
 setup.cfg is locally present including various required options.
 
 Note that when using this runner, Nose's "coverage" plugin will not be
@@ -43,7 +43,7 @@ def setup_py_test():
     """Runner to use for the 'test_suite' entry of your setup.py.
 
     Prevents any name clash shenanigans from the command line
-    argument "test" that the "setup.py test" command sends
+    argument "tests" that the "setup.py tests" command sends
     to nose.
 
     """

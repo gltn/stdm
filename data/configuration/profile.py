@@ -268,3 +268,14 @@ class Profile(QObject):
         :rtype: AssociationEntity
         """
         return self.create_entity(name, association_entity_factory, **kwargs)
+
+    def entities_by_type_info(self, type_info):
+        """
+        :param type_info: Entity TYPE_INFO
+        :type type_info: str
+        :returns: A list of entities based on the specified TYPE_INFO
+        e.g. ENTITY, VALUE_LIST etc.
+        :rtype: Entity
+        """
+        return [entity for entity in self.entities.values()
+                if entity.TYPE_INFO == type_info]

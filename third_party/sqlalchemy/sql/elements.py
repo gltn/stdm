@@ -754,7 +754,7 @@ class ColumnElement(operators.ColumnOperators, ClauseElement):
         :param equivalents: a dictionary of columns as keys mapped to sets
           of columns. If the given "other" column is present in this
           dictionary, if any of the columns in the corresponding set() pass
-          the comparison test, the result is True. This is used to expand the
+          the comparison tests, the result is True. This is used to expand the
           comparison to other columns that may be known to be equivalent to
           this one via foreign key or other criterion.
 

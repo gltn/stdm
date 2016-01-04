@@ -341,14 +341,14 @@ def reduce_columns(columns, *clauses, **kw):
                     fk_col = fk.column
                 except exc.NoReferencedColumnError:
                     # TODO: add specific coverage here
-                    # to test/sql/test_selectable ReduceTest
+                    # to tests/sql/test_selectable ReduceTest
                     if ignore_nonexistent_tables:
                         continue
                     else:
                         raise
                 except exc.NoReferencedTableError:
                     # TODO: add specific coverage here
-                    # to test/sql/test_selectable ReduceTest
+                    # to tests/sql/test_selectable ReduceTest
                     if ignore_nonexistent_tables:
                         continue
                     else:

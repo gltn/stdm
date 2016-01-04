@@ -1,6 +1,6 @@
 from xml2ddl import Xml2Ddl, readMergeDict
 #from xml2html import Xml2Html, xml2ddl
-sourcePath="C:/test/stdmConfig.xml"
+sourcePath="C:/tests/stdmConfig.xml"
 def writeXml(source, dest, dropTable=True):
     cd = Xml2Ddl()
     cd.setDbms("postgres")
@@ -24,7 +24,7 @@ def writeXml(source, dest, dropTable=True):
 #    strFilename = sourcePath
 #    xml = xml2ddl.readMergeDict(strFilename)
 #    lines = x2h.outputHtml(xml)
-#    strOutfile = "C:/test/stdm_schema.html"
+#    strOutfile = "C:/tests/stdm_schema.html"
 #        
 #    of = open(strOutfile, "w")
 #    for line in lines:
@@ -32,8 +32,8 @@ def writeXml(source, dest, dropTable=True):
 #    of.close()
 
 def testWriteXml():
-    sourcePath="C:/test/stdmConfig.xml"
-    destPath="C:/test/stdmConfig.sql"
+    sourcePath="C:/tests/stdmConfig.xml"
+    destPath="C:/tests/stdmConfig.sql"
     writeXml(sourcePath, destPath)
 
 if __name__ == "__main__":

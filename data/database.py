@@ -62,7 +62,7 @@ from geoalchemy2 import Geometry
 
 import stdm.data
 
-metadata=MetaData()
+metadata = MetaData()
 
 #Registry of table names and corresponding mappers
 table_registry = defaultdict(set)

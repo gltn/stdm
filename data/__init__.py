@@ -11,6 +11,7 @@ from .database import (
     Model,
     Respondent,
     Role,
+    Singleton,
     STDMDb,
     SupportingDocument,
     Survey,

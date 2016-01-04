@@ -178,7 +178,7 @@ def fail(msg):
 
 @decorator
 def provide_metadata(fn, *args, **kw):
-    """Provide bound MetaData for a single test, dropping afterwards."""
+    """Provide bound MetaData for a single tests, dropping afterwards."""
 
     from . import config
     from sqlalchemy import schema
