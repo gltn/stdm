@@ -37,7 +37,7 @@ class SupportingDocument(Entity):
     TYPE_INFO = 'SUPPORTING_DOCUMENT'
 
     def __init__(self, profile):
-        Entity.__init__(self, 'supporting_document', profile)
+        Entity.__init__(self, 'supporting_document', profile, supports_documents=False)
 
         self.creation_date = DateTimeColumn('creation_date', self)
         self.document_identifier = VarCharColumn('document_identifier', self)
@@ -46,3 +46,10 @@ class SupportingDocument(Entity):
         self.filename = VarCharColumn('filename', self)
 
         LOGGER.debug('%s supporting document initialized.', self.name)
+
+        #Add columns to the entity
+        self.add_column(self.creation_date)
+        self.add_column(self.document_identifier)
+        self.add_column(self.document_type)
+        self.add_column(self.document_size)
+        self.add_column(self.filename)

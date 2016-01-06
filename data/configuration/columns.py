@@ -90,9 +90,16 @@ class BaseColumn(ColumnItem):
         for this column.
          - *index:* True to indicate that the column should be indexed.
         """
+        ColumnItem.__init__(self, name)
+
+        #Internal flag used to check whether this constructor has been initialized
+        self._intialized = True
+
+        #Attributes in the database that need to monitored for any changes
+        self._monitor_attrs = ['mandatory', 'index', 'unique' ]
+
         self.updated_db_attrs = {}
 
-        ColumnItem.__init__(self, name)
         self.entity = entity
         self.profile = entity.profile
         self.description = kwargs.get('description', '')
@@ -102,8 +109,6 @@ class BaseColumn(ColumnItem):
         self.unique = kwargs.get('unique', False)
         self.user_tip = kwargs.get('user_tip', '')
 
-        #Attributes in the database that need to monitored for any changes
-        self._monitor_attrs = ['mandatory', 'index', 'unique' ]
         self.reset_updated_attrs()
 
         LOGGER.debug('%s column initialized in %s entity.',self.name, self.entity.name)
@@ -201,15 +206,16 @@ class BaseColumn(ColumnItem):
         pass
 
     def __setattr__(self, key, value):
-        if key in self._monitor_attrs:
-            if getattr(self, key) != value:
-                self.updated_db_attrs[key] = value
+        if hasattr(self, '_initialized'):
+            if key in self._monitor_attrs:
+                if getattr(self, key) != value:
+                    self.updated_db_attrs[key] = value
 
-        if len(self.updated_db_attrs) > 0 and self.action == DbItem.NONE:
-            self.action = DbItem.ALTER
+            if len(self.updated_db_attrs) > 0 and self.action == DbItem.NONE:
+                self.action = DbItem.ALTER
 
-            #Notify parent
-            self.entity.append_updated_column(self)
+                #Notify parent
+                self.entity.append_updated_column(self)
 
         object.__setattr__(self, key, value)
 
@@ -223,11 +229,11 @@ class BoundsColumn(BaseColumn):
     SQL_MIN = 0
 
     def __init__(self, name, entity, **kwargs):
-        self._minimum = 0
-        self._maximum = 1000
+        self._minimum = self.SQL_MIN
+        self._maximum = self.SQL_MAX
 
-        self.minimum = kwargs.pop('minimum', 0)
-        self.maximum = kwargs.pop('maximum', 1000)
+        self.minimum = kwargs.pop('minimum', self.SQL_MIN)
+        self.maximum = kwargs.pop('maximum', self.SQL_MAX)
 
         BaseColumn.__init__(self, name, entity, **kwargs)
 

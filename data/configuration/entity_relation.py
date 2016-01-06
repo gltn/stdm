@@ -114,4 +114,4 @@ class EntityRelation(object):
         if not self.child_column:
             return False, tr('The child column has not been defined.')
 
-        return True
+        return True, ''
