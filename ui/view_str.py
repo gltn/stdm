@@ -22,6 +22,7 @@ from collections import OrderedDict
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+
 from qgis.core import *
 
 from sqlalchemy import (
@@ -32,15 +33,19 @@ from sqlalchemy import (
 from sqlalchemy.orm import mapper
 
 import stdm.data
-from stdm.data import (
-    BaseSTDMTableModel,
-    ConfigTableReader,
-    Content,
-    display_name,
+from stdm.data.pg_utils import (
     numeric_varchar_columns,
-    pg_table_exists,
-    ProfileException,
+    pg_table_exists
+)
+from stdm.data.qtmodels import (
+    BaseSTDMTableModel,
     STRTreeViewModel
+)
+from stdm.data.config_table_reader import ConfigTableReader
+from stdm.data.database import Content
+from stdm.data.config_utils import (
+    display_name,
+    ProfileException
 )
 from stdm.navigation.socialtenure import (
     BaseSTRNode,
@@ -52,7 +57,7 @@ from stdm.navigation.socialtenure import (
 )
 from stdm.security import Authorizer
 
-from notification import (
+from .notification import (
     NotificationBar
 )
 from .sourcedocument import (

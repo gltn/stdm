@@ -44,7 +44,7 @@ from qgis.core import (
     QgsPaperItem
 )
 
-from stdm.data import (
+from stdm.data.pg_utils import (
     vector_layer
 )
 from stdm.settings import RegistryConfig

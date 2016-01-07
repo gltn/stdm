@@ -22,12 +22,24 @@ from datetime import date
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import (
+from stdm.data.database import (
     Enumerator,
-    Witness,
+    Respondent,
+    STDMDb,
     Survey,
-    table_searchable_cols,
+    Witness
+)
+from stdm.data.config_utils import (
+    tableCols,
+    tableColType,
+    table_searchable_cols
+)
+from stdm.data.qtmodels import (
+    BaseSTDMTableModel,
     VerticalHeaderSortFilterProxyModel
+)
+from stdm.data.modelformatters import (
+     dateFormatter
 )
 from stdm.navigation import TableContentGroup
 from .admin_unit_manager import VIEW,MANAGE,SELECT
@@ -35,8 +47,7 @@ from .ui_entity_browser import Ui_EntityBrowser
 from .helpers import SupportsManageMixin
 from .notification import NotificationBar, ERROR, WARNING,INFO
 from .base_person import WitnessEditor
-from stdm.data import BaseSTDMTableModel
-from stdm.data import STDMDb, tableCols,dateFormatter, Respondent, Witness, Enumerator, tableColType
+
 from .stdmdialog import DeclareMapping
 from stdm.ui.forms import (
     CustomFormDialog,

@@ -22,7 +22,7 @@ from PyQt4.QtGui import (
     QComboBox
 )
 
-from stdm.data import (
+from stdm.data.pg_utils import (
     pg_tables,
     pg_views
 )

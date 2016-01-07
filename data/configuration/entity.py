@@ -95,7 +95,13 @@ class Entity(QObject, TableItem):
 
         #Append profile prefix if not global
         if not self.is_global:
-            name = u'{0}_{1}'.format(self.profile.prefix, name)
+            #Ensure prefix is not duplicated in the names
+            prfx = self.profile.prefix
+            prefix_idx = name.find(prfx, 0, len(prfx))
+
+            #If there is no prefix then append
+            if prefix_idx == -1:
+                name = u'{0}_{1}'.format(self.profile.prefix, name)
 
         TableItem.__init__(self, name)
 
@@ -225,9 +231,11 @@ class EntitySupportingDocument(Entity):
 
         name = u'{0}_{1}'.format(parent_entity.short_name,
                                  'supporting_document')
-        Entity.__init__(self, name, profile)
 
-        self.document_reference = ForeignKeyColumn('supporting_doc_id', self)
+        Entity.__init__(self, name, profile, supports_documents=False)
+
+        supporting_doc_prefix = u'{0}_{1}'.format(self.profile.prefix, 'supporting_doc_id')
+        self.document_reference = ForeignKeyColumn(supporting_doc_prefix, self)
 
         entity_ref_name = u'{0}_{1}'.format(self.parent_entity.short_name,
                                             'id')
@@ -247,12 +255,11 @@ class EntitySupportingDocument(Entity):
 
     def _update_fk_references(self):
         #Update ForeignKey references.
-        #Entity references
-
         #check if there is an 'id' column
         entity_id = self._entity_id_column(self.parent_entity)
 
-        LOGGER.debug('Attempting to set %s entity as the spatial unit.',
+        LOGGER.debug('Attempting to set %s entity as the parent entity to '
+                     'this supporting document reference.',
                      self.parent_entity.name)
 
         if entity_id is None:

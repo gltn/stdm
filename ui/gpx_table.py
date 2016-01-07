@@ -1,11 +1,14 @@
+from collections import OrderedDict
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
-from collections import OrderedDict
 
-from ..data import (non_spatial_table_columns,
-                    vector_layer)
+from stdm.data.pg_utils import (
+    non_spatial_table_columns,
+    vector_layer
+)
 
 from ui_gpx_table_widget import Ui_Dialog
 

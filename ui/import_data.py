@@ -29,18 +29,18 @@ from PyQt4.QtCore import (
 )
 
 from stdm.utils import *
-from stdm.data import (
-    alchemy_table_relationships,
+from stdm.data.database import alchemy_table_relationships
+from stdm.data.pg_utils import (
     table_column_names,
     pg_tables,
     spatial_tables
 )
 from stdm.data.importexport import (
-    OGRReader,
-    ValueTranslatorManager,
     vectorFileDir,
     setVectorFileDir
 )
+from stdm.data.importexport.value_translators import ValueTranslatorManager
+from stdm.data.importexport.reader import OGRReader
 from .importexport import (
     ValueTranslatorConfig,
     TranslatorWidgetManager

@@ -27,7 +27,7 @@ class CoordinatesWidget(QWidget):
     """
     Custom widget for entering an X,Y coordinate pair.
     """
-    def __init__(self,parent = None,x=0,y=0):
+    def __init__(self, parent=None, x=0, y=0):
         QWidget.__init__(self,parent)
         self.resize(270, 130)
         

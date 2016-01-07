@@ -23,7 +23,7 @@ from PyQt4.QtGui import (
     QWidget
 )
 
-from stdm.data.importexport import SourceValueTranslator
+from stdm.data.importexport.value_translators import SourceValueTranslator
 
 from .related_table_dialog import RelatedTableDialog
 from .multiple_enumeration_dialog import MultipleEnumerationDialog

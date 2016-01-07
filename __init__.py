@@ -77,5 +77,5 @@ def classFactory(iface):
     """
     setup_logger()
 
-    from stdm import STDMQGISLoader
+    from stdm.plugin import STDMQGISLoader
     return STDMQGISLoader(iface)

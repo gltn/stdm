@@ -18,32 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from stdm.data import (
-    XMLTableElement,
-    tableColumns,
-    tableRelations,
-    lookupTable,
-    lookupColumn,
-    profiles,
-    tableLookUpCollection,
-    lookupData,
-    config_version,
-    geometryColumns,
-    writeSQLFile,
-    writeHTML,
-    setLookupValue,updateSQL,
-    listEntityViewer,
-    EntityColumnModel,
-    FilePaths,
-    tableFullDescription,
-    set_str_tables,
-    social_tenure_tables,
-    str_type_tables,
-    str_col_collection,
-    social_tenure_tables_type,
-
-
-)
+from .configfile_paths import FilePaths
 from .config_utils import (
     activeProfile,
     ProfileException,
@@ -52,14 +27,41 @@ from .config_utils import (
     read_social_relation_cols,
     current_table_exist
 )
-from stdm.settings import dataIcon
+from .xmlconfig_reader import (
+    XMLTableElement,
+    tableColumns,
+    tableRelations,
+    tableFullDescription,
+    tableLookUpCollection,
+    lookupData,
+    geometryColumns,
+    lookupColumn,
+    lookupTable,
+    profiles,
+    social_tenure_tables,
+    social_tenure_tables_type,
+    config_version
+)
+from .xmlconfig_writer import(
+    writeSQLFile,
+    writeHTML,
+    setLookupValue,
+    updateSQL,
+    set_str_tables,
+    str_type_tables,
+    str_col_collection
+)
+from .usermodels import (
+    listEntityViewer,
+    EntityColumnModel
+)
 
+from stdm.settings.path_settings import dataIcon
 
-from stdm.settings import (
+from stdm.settings.registryconfig import (
     RegistryConfig,
     PATHKEYS
 )
-from PyQt4.QtGui import QMessageBox
 
 class ConfigTableReader(object):
     def __init__(self, parent=None, args=None):

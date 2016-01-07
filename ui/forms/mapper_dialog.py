@@ -20,13 +20,11 @@ email                : stdm@unhabitat.org
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import MapperMixin
-from stdm.data import STDMDb
+from stdm.data.mapping import MapperMixin
+from stdm.data.database import STDMDb
 from stdm.ui.ui_base_form import Ui_Dialog
 from stdm.ui.notification import NotificationBar
 from .property_mapper import TypePropertyMapper
-from .attribute_datatype import AttributePropretyType
-
 
 class MapperDialog(QDialog,Ui_Dialog):
     def __init__(self,parent):

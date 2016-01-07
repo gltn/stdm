@@ -30,7 +30,7 @@ from .xmlconfig_reader import (
     social_tenure_tables,
     checktableExist
 )
-from stdm.settings import RegistryConfig
+from stdm.settings.registryconfig import RegistryConfig
 
 regConfig = RegistryConfig()
 
@@ -123,7 +123,7 @@ def activeProfile():
         profile=lookupReg['currentProfile']
         return profile
     except:
-        return  None
+        return None
 
     # except:
     #     msg = QApplication.translate("ProfileException",

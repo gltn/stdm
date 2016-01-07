@@ -19,6 +19,7 @@
  ***************************************************************************/
 """
 from PyQt4.QtGui import *
+
 class ModuleSettings(object):
     def __init__(self):
         """
