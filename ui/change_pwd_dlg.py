@@ -19,8 +19,10 @@ email                : gkahiu@gmail.com
 """
 from ui_changepwd import Ui_frmChangePwd
 
-#from stdm.security import User, Membership, SecurityException
-#import stdm.data
+from stdm.security.user import User
+from stdm.security.membership import Membership
+from stdm.security.exception import SecurityException
+import stdm.data
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -72,12 +74,14 @@ class changePwdDlg(QDialog, Ui_frmChangePwd):
         if self.validateInput():
             member = Membership()
             newPwd = self.txtConfirmPass.text()
+
             try:
                 #Set new password
-                member.setPassword(stdm.data.app_dbconn.User.UserName,newPwd)
+                member.setPassword(stdm.data.app_dbconn.User.UserName, newPwd)
                 QMessageBox.information(self, QApplication.translate("ChangePasswordDialog","Change Password"), 
                                         QApplication.translate("ChangePasswordDialog","Your password has successfully been changed"))
                 self.accept()
+
             except SecurityException as se:
                 QMessageBox.critical(self, 
                                      QApplication.translate("ChangePasswordDialog","Password Error"), str(se))

@@ -30,7 +30,7 @@ from qgis.core import *
 
 from stdm.settings import getProxy
 from stdm.utils import PLUGIN_DIR
-from stdm.data import STDMDb
+from stdm.data.database import STDMDb
 
 from geoalchemy2 import WKBElement 
 

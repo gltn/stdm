@@ -63,10 +63,10 @@ class Profile(QObject):
         self.name = name
         self.configuration = configuration
         self.prefix = self._prefix()
-        self.social_tenure = self._create_social_tenure()
         self.entities = OrderedDict()
         self.relations = OrderedDict()
         self.supporting_document = SupportingDocument(self)
+        self.social_tenure = self._create_social_tenure()
         self._admin_spatial_unit = AdministrativeSpatialUnit(self)
 
         #Add default entities to the entity collection
@@ -84,18 +84,19 @@ class Profile(QObject):
             if not curr_prefix in prefixes:
                 prefix = curr_prefix
 
-                LOGGER.debug('Prefix determined %s for %s profile', prefix, self.name)
+                LOGGER.debug('Prefix determined %s for %s profile', prefix.lower(), self.name)
 
                 break
 
-        return prefix
+        return prefix.lower()
 
-    def _create_social_tenure(self):
+    def _create_social_tenure(self, supports_documents=True):
         """
         :return: Returns an instance of a social tenure object.
         :rtype: SocialTenure
         """
-        return SocialTenure('social_tenure_relationship', self)
+        return SocialTenure('social_tenure_relationship', self,
+                            supports_documents=supports_documents)
 
     def set_social_tenure_attr(self, attr, val):
         """

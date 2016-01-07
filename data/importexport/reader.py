@@ -41,11 +41,14 @@ from sqlalchemy.orm import (
     class_mapper
 )
 
-from stdm.data import (
-    delete_table_data,
-    geometryType,
+from stdm.data.database import (
     STDMDb,
     table_mapper
+)
+
+from stdm.data.pg_utils import (
+    delete_table_data,
+    geometryType
 )
 from stdm.utils import getIndex
 

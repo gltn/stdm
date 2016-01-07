@@ -33,8 +33,8 @@ CONFIG="Config"
 HELP="stdm.chm"
 
 xmldoc=os.path.dirname(os.path.abspath(__file__))
-#from stdm.config import activeProfile
-from stdm.settings import RegistryConfig
+
+from stdm.settings.registryconfig import RegistryConfig
 from .reports import SysFonts
 
 class FilePaths(object):
@@ -144,7 +144,7 @@ class FilePaths(object):
         else:
             path = path
         base_file = self.baseSQLPath()
-        user_file = path +'/%s'%DEFAULT_CONFIG
+        user_file = path + '/%s'%DEFAULT_CONFIG
         if os.path.isfile(user_file):
             if QMessageBox.warning(None, QApplication.translate("FilePaths","Previous user configuration found"),
                                    QApplication.translate("FilePaths",

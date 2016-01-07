@@ -23,7 +23,7 @@ from PyQt4.QtGui import (
     QMessageBox
 )
 
-from stdm.data import (
+from stdm.data.mapping import (
     MapperMixin,
     SAVE,
     UPDATE

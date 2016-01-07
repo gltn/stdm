@@ -26,7 +26,7 @@ from PyQt4.QtCore import QRegExp
 
 from qgis.core import QgsMapLayerRegistry
 
-from stdm.data import (
+from stdm.data.pg_utils import (
     VIEWS,
     vector_layer
 )

@@ -45,12 +45,12 @@ from geraldo import Report, ReportBand, Label, ObjectValue, SystemField,\
     RoundRect, Line
 
 from stdm.utils import *
-from stdm.data.reports import (
-                               SysFonts,
-                               TitleDialogSettings, 
-                               ReportElement, 
-                               SFont
-                               )
+from stdm.data.reports.sys_fonts import SysFonts
+from stdm.data.reports.persistence import (
+    TitleDialogSettings,
+    ReportElement,
+    SFont
+)
     
 from .ui_rpt_title_base import Ui_frmRptTitleBase
 

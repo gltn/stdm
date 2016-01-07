@@ -27,16 +27,16 @@ from reportlab.lib.enums import TA_CENTER, TA_RIGHT
 from reportlab.lib.colors import navy, yellow, red, white
 
 from geraldo import (
-                     Report, 
-                     ReportBand, 
-                     DetailBand, 
-                     Label, 
-                     ObjectValue, 
-                     SystemField,
-                     FIELD_ACTION_COUNT,
-                     BAND_WIDTH,
-                     Line
-                     )
+     Report,
+     ReportBand,
+     DetailBand,
+     Label,
+     ObjectValue,
+     SystemField,
+     FIELD_ACTION_COUNT,
+     BAND_WIDTH,
+     Line
+)
 
 from geraldo.generators import PDFGenerator
 

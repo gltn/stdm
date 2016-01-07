@@ -29,7 +29,10 @@ from qgis.core import *
 from sqlalchemy.sql.expression import text
 
 import stdm.data
-from stdm.data import STDMDb, Base
+from stdm.data.database import (
+    STDMDb,
+    Base
+)
 from stdm.utils import (
     getIndex,
     PLUGIN_DIR

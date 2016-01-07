@@ -21,14 +21,20 @@ email                : gkahiu@gmail.com
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import MapperMixin,Enumerator,Witness,UPDATE
+from stdm.data.database import (
+    Enumerator,
+    Witness
+)
+from stdm.data.mapping import (
+    MapperMixin,
+    UPDATE
+)
+from stdm.utils import loadComboSelections
+
 from .ui_base_person import Ui_frmBasePerson
 from .ui_farmer import Ui_frmFarmer
 from .ui_household import Ui_frmHousehold
 from helpers import LineEditValueHandler
-#from .foreign_key_editors import HouseholdIncomeEditor,HouseholdSavingsEditor,PriorityServiceEditor, \
-#ImpactEditor
-from stdm.utils import loadComboSelections
 
 class BasePersonDialogMixin(MapperMixin):
     '''

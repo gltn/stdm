@@ -32,7 +32,7 @@ from qgis.core import (
 )
 from qgis.gui import QgsExpressionBuilderDialog
 
-from stdm.data import BaseSTDMTableModel
+from stdm.data.qtmodels import BaseSTDMTableModel
 from stdm.data.config_utils import foreign_key_table_reference
 from stdm.utils import getIndex
 from .admin_unit_manager import (

@@ -1,17 +1,17 @@
 from .dirtytracker import ControlDirtyTracker,ControlDirtyTrackerCollection, \
 ControlReaderMapper
 from .valuehandlers import (
-                CheckBoxValueHandler,
-                ControlValueHandler,
-                LineEditValueHandler,
-                ComboBoxValueHandler,
-                TextEditValueHandler,
-                DateEditValueHandler,
-                SourceDocManagerValueHandler,
-                ForeignKeyMapperValueHandler,
-                SpinBoxValueHandler,
-                DoubleSpinBoxValueHandler,
-                CoordinatesWidgetValueHandler
+    CheckBoxValueHandler,
+    ControlValueHandler,
+    LineEditValueHandler,
+    ComboBoxValueHandler,
+    TextEditValueHandler,
+    DateEditValueHandler,
+    SourceDocManagerValueHandler,
+    ForeignKeyMapperValueHandler,
+    SpinBoxValueHandler,
+    DoubleSpinBoxValueHandler,
+    CoordinatesWidgetValueHandler
 )
 from .datamanagemixin import SupportsManageMixin
 

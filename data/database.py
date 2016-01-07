@@ -107,6 +107,7 @@ class Singleton(object):
 class NoPostGISError(Exception):
     """Raised when the PostGIS extension is not installed in the specified
     STDM database."""
+    pass
     
 @Singleton
 class STDMDb(object):

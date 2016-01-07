@@ -24,9 +24,10 @@ from .ui_login import Ui_frmLogin
 from .db_conn_dlg import dbconnDlg
 from .notification import NotificationBar,ERROR
 
-from stdm.data import DatabaseConfig, DatabaseConnection
-from stdm.settings import RegistryConfig
-from stdm.security import User
+from stdm.data.config import DatabaseConfig
+from stdm.data.connection import DatabaseConnection
+from stdm.settings.registryconfig import RegistryConfig
+from stdm.security.user import User
 
 SUPERUSER = 'postgres'
 

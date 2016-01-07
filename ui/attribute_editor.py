@@ -21,32 +21,36 @@
 """
 import os
 import collections
+from collections import OrderedDict
+
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from collections import OrderedDict
-from .ui_attribute_editor import Ui_editor
+
 from .lookupDlg import LookupDialog
-from stdm.data  import (
+
+from stdm.data.enums import (
     data_types,
     nullable,
-    ConfigTableReader,
-    writeTableColumn,
-    table_column_exist,
-    editTableColumn,
     postgres_defaults,
-    RESERVED_ID,
-    writeGeomConstraint
+    RESERVED_ID
 )
+from stdm.data.config_table_reader import ConfigTableReader
+from stdm.data.xmlconfig_writer import (
+    editTableColumn,
+    writeGeomConstraint,
+    writeTableColumn
+)
+from stdm.data.xmlconfig_reader import table_column_exist
 from stdm.data.config_utils import *
 from .geometry import GeometryProperty
+
+from .ui_attribute_editor import Ui_editor
 
 class AttributeEditor(QDialog,Ui_editor):
     #class constructor
     def __init__(self,profile,tableName,parent, args=None):
         #Initialize the Qwidget parent
         QDialog.__init__(self, parent)
-        #Initialize the Qt designer form
-        #Iniherit the form controls to this class
         self.setupUi(self)
         
         self.profile = profile
