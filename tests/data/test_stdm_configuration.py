@@ -31,7 +31,7 @@ class TestStdmConfiguration(TestCase):
         self.assertEqual(prfx, 'ba')
 
     def tearDown(self):
-        self.config = None
+        self.config.cleanUp()
 
     def _create_basic_profile(self):
         return self.config.create_profile('Basic')
