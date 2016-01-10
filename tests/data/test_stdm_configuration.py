@@ -1,41 +1,47 @@
-from unittest import TestCase
+from unittest import (
+    makeSuite,
+    TestCase
+)
 
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
+
+from .utils import (
+    add_basic_profile,
+    create_basic_profile
+)
 
 class TestStdmConfiguration(TestCase):
     def setUp(self):
         self.config = StdmConfiguration.instance()
 
     def test_add_profile(self):
-        self._add_profile()
+        add_basic_profile(self.config)
         self.assertEqual(len(self.config.profiles), 1)
 
     def test_create_profile(self):
-        profile = self._create_basic_profile()
+        profile = create_basic_profile(self.config)
         self.assertEqual(profile.name, 'Basic')
 
     def test_remove_profile(self):
-        self._add_profile()
+        add_basic_profile(self.config)
         status = self.config.remove_profile('Basic')
         self.assertTrue(status)
 
     def test_profile(self):
-        self._add_profile()
+        add_basic_profile(self.config)
         profile = self.config.profile('Basic')
         self.assertEqual(profile.name, 'Basic')
 
     def test_prefixes(self):
-        self._add_profile()
+        add_basic_profile(self.config)
         prefixes = self.config.prefixes()
         prfx = prefixes[0]
         self.assertEqual(prfx, 'ba')
 
     def tearDown(self):
-        self.config.cleanUp()
+        self.config = None
 
-    def _create_basic_profile(self):
-        return self.config.create_profile('Basic')
+def suite():
+    suite = makeSuite(TestStdmConfiguration, 'test')
 
-    def _add_profile(self):
-        profile = self._create_basic_profile()
-        self.config.add_profile(profile)
+    return suite

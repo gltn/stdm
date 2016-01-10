@@ -29,6 +29,7 @@ from PyQt4.QtCore import (
 from .columns import (
     BaseColumn,
     ForeignKeyColumn,
+    GeometryColumn,
     SerialColumn
 )
 from .db_items import (
@@ -92,6 +93,7 @@ class Entity(QObject, TableItem):
         QObject.__init__(self, profile)
         self.profile = profile
         self.is_global = is_global
+        self.short_name = name
 
         #Append profile prefix if not global
         if not self.is_global:
@@ -105,7 +107,6 @@ class Entity(QObject, TableItem):
 
         TableItem.__init__(self, name)
 
-        self.short_name = name
         self.description = ''
         self.is_associative = False
         self.columns = OrderedDict()
@@ -218,6 +219,31 @@ class Entity(QObject, TableItem):
             return
 
         self.sql_updater(self)
+
+    def columns_by_type_info(self, type_info):
+        """
+        :param type_info: Column TYPE_INFO
+        :type type_info: str
+        :returns: A list of columns based on the specified TYPE_INFO
+        e.g. VARCHAR, DOUBLE etc.
+        :rtype: Entity
+        """
+        return [c for c in self.columns.values()
+                if c.TYPE_INFO == type_info]
+
+    def geometry_columns(self):
+        """
+        :return: A list of Geometry-type columns.
+        :rtype: list
+        """
+        return self.columns_by_type_info(GeometryColumn.TYPE_INFO)
+
+    def has_geometry_column(self):
+        """
+        :return: True if the entity contains a spatial column, else False.
+        :rtype: True
+        """
+        return True if len(self.geometry_columns()) > 0 else False
 
 class EntitySupportingDocument(Entity):
     """

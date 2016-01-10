@@ -98,16 +98,31 @@ class Profile(QObject):
         return SocialTenure('social_tenure_relationship', self,
                             supports_documents=supports_documents)
 
-    def set_social_tenure_attr(self, attr, val):
+    def set_social_tenure_attr(self, entity_type, val):
         """
         Sets the specified property of the SocialTenure object.
-        :param attr: Name of the attribute.
-        :type attr: str
+        :param attr: Enumeration type of an social tenure relationship entity.
+        :type attr: int
         :param value: Attribute value. A string or object can be passed; if
         it is the former then the corresponding entity will be used if it
         exists in the collection.
         :type value: str
         """
+        if entity_type == SocialTenure.PARTY:
+            attr = 'party'
+
+        elif entity_type == SocialTenure.SPATIAL_UNIT:
+            attr = 'spatial_unit'
+
+        elif entity_type == SocialTenure.SOCIAL_TENURE_TYPE:
+            attr = 'tenure_type'
+
+        else:
+            LOGGER.debug('%s is an invalid enumeration for social tenure '
+                         'entity type.', str(entity_type))
+
+            return
+
         LOGGER.debug('Attempting to set the value for %s attribute in %s '
                      'profile.', attr, self.name)
 
@@ -150,6 +165,38 @@ class Profile(QObject):
         """
         return EntityRelation(self, **kwargs)
 
+    def parent_relations(self, parent):
+        """
+        :param parent: Entity object that is a parent in the collection of
+        entity relations.
+        :type parent: str or Entity
+        :return: Returns a list of entity relations whose parents match that
+        of the specified argument.
+        :rtype: EntityRelation
+        """
+        #Get corresponding entity
+        if isinstance(parent, Entity):
+            parent = parent.name
+
+        return [er for er in self.relations.values()
+                if er.parent.name == parent]
+
+    def child_relations(self, child):
+        """
+        :param parent: Entity object that is a child in the collection of
+        entity relations.
+        :type parent: str or Entity
+        :return: Returns a list of entity relations whose children match that
+        of the specified argument.
+        :rtype: EntityRelation
+        """
+        #Get corresponding entity
+        if isinstance(child, Entity):
+            child = child.name
+
+        return [er for er in self.relations.values()
+                if er.child.name == child]
+
     def add_entity_relation(self, entity_relation):
         """
         Add an EntityRelation object to the collection
@@ -176,7 +223,8 @@ class Profile(QObject):
             return False
 
         if entity_relation.name in self.relations:
-            LOGGER.debug('Entity relation with the name %s already exists.', entity_relation.name)
+            LOGGER.debug('Entity relation with the name %s already exists.',
+                         entity_relation.name)
 
             return False
 
@@ -203,6 +251,8 @@ class Profile(QObject):
         del self.relations[name]
 
         LOGGER.debug('%s entity relation removed from %s profile', name, self.name)
+
+        return True
 
     def add_entity(self, item):
         """

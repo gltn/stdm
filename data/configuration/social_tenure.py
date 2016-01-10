@@ -33,7 +33,7 @@ class SocialTenure(Entity):
     Main class that represents 'people-land' relationships.
     """
     TYPE_INFO = 'SOCIAL_TENURE'
-    PARTY, SPATIAL_UNIT = range(0,2)
+    PARTY, SPATIAL_UNIT, SOCIAL_TENURE_TYPE = range(0,3)
 
     def __init__(self, name, profile, supports_documents=True):
         Entity.__init__(self, name, profile,
@@ -94,6 +94,13 @@ class SocialTenure(Entity):
 
     @spatial_unit.setter
     def spatial_unit(self, spatial_unit):
+        """
+        Sets the corresponding spatial unit entity in the social tenure
+        relationship.
+        :param spatial_unit: Spatial unit entity.
+        .. note:: The spatial unit entity must contain a geometry column
+        else it will not be set.
+        """
         spatial_unit_entity = self._obj_from_str(spatial_unit)
 
         if spatial_unit_entity is None:
@@ -109,6 +116,16 @@ class SocialTenure(Entity):
             err = self.tr('%s does not have an id column. This is required '
                           'in order to link it to the social tenure '
                           'relationship table.'%(spatial_unit_entity.name))
+
+            LOGGER.debug(err)
+
+            raise AttributeError(err)
+
+        if not spatial_unit_entity.has_geometry_column():
+            err = self.tr('%s does not have geometry column. This is required '
+                          'when setting the spatial unit entity in a '
+                          'social tenure relationship definition.'
+                          %(spatial_unit_entity.name))
 
             LOGGER.debug(err)
 
@@ -147,4 +164,18 @@ class SocialTenure(Entity):
         Check if the entity has an ID column and return it, else returns None.
         """
         return entity.column('id')
+
+    def valid(self):
+        """
+        :return: Returns True if the party and spatial unit entities have
+        been set, else returns False.
+        :rtype: bool
+        """
+        if self._party is None:
+            return False
+
+        if self._spatial_unit is None:
+            return False
+
+        return True
 
