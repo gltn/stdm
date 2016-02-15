@@ -20,10 +20,11 @@ email                : stdm@unhabitat.org
 import logging
 from collections import OrderedDict
 
-from .columns import (
+from stdm.data.configuration.columns import (
     VarCharColumn
 )
-from .entity import Entity
+from stdm.data.configuration.entity import Entity
+from stdm.data.configuration.entity_updaters import value_list_updater
 
 LOGGER = logging.getLogger('stdm')
 
@@ -46,10 +47,10 @@ class CodeValue(object):
     """
     Represents a code and corresponding value for use in a ValueList object.
     """
-    def __init__(self, code='', value='', updated_value=''):
+    def __init__(self, code='', value=''):
         self.code = code
         self.value = value
-        self.updated_value = updated_value
+        self.updated_value = ''
 
 
 class ValueList(Entity):
@@ -61,12 +62,15 @@ class ValueList(Entity):
     """
     TYPE_INFO = 'VALUE_LIST'
     PREFIX = 'check'
+    sql_updater = value_list_updater
 
     def __init__(self, name, profile):
         #Assert if 'check' prefix has been appended.
         name = self._append_check(name)
 
         Entity.__init__(self, name, profile, supports_documents=False)
+
+        self.user_editable = False
 
         self.code_column = VarCharColumn('code', self, minimum=0, maximum=5)
         self.value_column = VarCharColumn('value', self, minimum=2, maximum=50)
@@ -87,13 +91,13 @@ class ValueList(Entity):
 
         return u'{0}_{1}'.format(self.PREFIX, name)
 
-    def add_value(self, value):
+    def add_value(self, value, code=''):
         """
         Add a string value to the CodeValue collection.
         :param value: Lookup value.
         :type value: str
         """
-        self.add_code_value(CodeValue(value=value))
+        self.add_code_value(CodeValue(value=value, code=code))
 
     def add_code_value(self, code_value):
         """

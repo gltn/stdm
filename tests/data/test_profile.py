@@ -3,10 +3,12 @@ from unittest import (
     TestCase
 )
 
+from stdm.tests.utils import qgis_app
+
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.data.configuration.association_entity import AssociationEntity
 
-from .utils import (
+from stdm.tests.data.utils import (
     add_basic_profile,
     add_household_entity,
     add_person_entity,
@@ -106,6 +108,7 @@ class TestProfile(TestCase):
         self.config.remove_profile(BASIC_PROFILE)
         self.profile = None
         self.config = None
+
 
 def suite():
     suite = makeSuite(TestProfile, 'test')

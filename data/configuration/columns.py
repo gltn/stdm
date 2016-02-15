@@ -19,6 +19,7 @@ email                : stdm@unhabitat.org
 """
 import sys
 import logging
+from copy import deepcopy
 from collections import OrderedDict
 from datetime import (
     date,
@@ -29,7 +30,7 @@ from PyQt4.QtCore import (
     QCoreApplication
 )
 
-from .column_updaters import (
+from stdm.data.configuration.column_updaters import (
     base_column_updater,
     date_updater,
     datetime_updater,
@@ -40,13 +41,15 @@ from .column_updaters import (
     text_updater,
     varchar_updater
 )
-from .db_items import (
+
+from stdm.data.configuration.db_items import (
     ColumnItem,
     DbItem
 )
-from .entity_relation import EntityRelation
+from stdm.data.configuration.entity_relation import EntityRelation
 
 LOGGER = logging.getLogger('stdm')
+
 
 def tr(text):
     """
@@ -159,10 +162,13 @@ class BaseColumn(ColumnItem):
         """
         raise NotImplementedError
 
-    def update(self, table):
+    def update(self, table, column_names):
         """
         Update the column in the database for the given Table using the
         'sql_updater' callable.
+        :param table: SQLAlchemy table object that this column belongs to.
+        :param column_names: Existing column names in the database for the
+        given table.
         :returns: SQLAlchemy column.
         :rtype: Column
         """
@@ -172,7 +178,7 @@ class BaseColumn(ColumnItem):
 
             return
 
-        return self.sql_updater(self, table)
+        return self.sql_updater(table, column_names)
 
     def user_editable(self):
         """
@@ -201,9 +207,33 @@ class BaseColumn(ColumnItem):
 
     def on_delete(self):
         """
-        Include code for cleaning up additional column references.
+        Include code for cleaning up additional column references. Default
+        implementation does nothing.
         """
         pass
+
+    def clone(self):
+        """
+        Create and return a new deep copy of this object.
+        """
+        return deepcopy(self)
+
+    def child_entity_relations(self):
+        """
+        :return: Returns a list of entity relations for child entities which
+        reference this column.
+        :rtype: list
+        """
+        return self.entity.column_children_relations(self.name)
+
+    def parent_entity_relations(self):
+        """
+        :return: Returns a list of entity relations for parent entities which
+        reference this column. These basically correspond to entity relations
+        foreign key columns.
+        :rtype: list
+        """
+        return self.entity.column_parent_relations(self.name)
 
     def __setattr__(self, key, value):
         if hasattr(self, '_initialized'):
@@ -288,12 +318,6 @@ class VarCharColumn(BoundsColumn):
     SQL_MAX = 4000
     SQL_MIN = 0
     sql_updater = varchar_updater
-
-    def __init__(self, name, entity, **kwargs):
-        BoundsColumn.__init__(self, name, entity, **kwargs)
-
-        #Enable indexing for this column type
-        self.index = True
 
     @classmethod
     def display_name(cls):
@@ -418,7 +442,7 @@ class GeometryColumn(BaseColumn):
 
     def geometry_type(self):
         """
-        :returns: Returns the selected geometry type as a string.
+        :returns: Returns the specified geometry type as a string.
         :rtype: str
         """
         if self.geom_type == GeometryColumn.POINT:
@@ -456,7 +480,8 @@ class ForeignKeyColumn(IntegerColumn):
     sql_updater = integer_updater
 
     def __init__(self, name, entity, **kwargs):
-        self.entity_relation = kwargs.pop('entity_relation', EntityRelation(entity.profile))
+        self.entity_relation = kwargs.pop('entity_relation',
+                                          EntityRelation(entity.profile))
 
         #Reset bounds
         kwargs['minimum'] = 0

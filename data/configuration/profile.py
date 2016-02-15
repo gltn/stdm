@@ -17,23 +17,28 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+
 import logging
 from collections import OrderedDict
+from copy import deepcopy
 
 from PyQt4.QtCore import (
     pyqtSignal,
     QObject
 )
 
-from .administative_spatial_unit import AdministrativeSpatialUnit
-from .association_entity import (
+from stdm.data.configuration.administative_spatial_unit import (
+    AdministrativeSpatialUnit
+)
+from stdm.data.configuration.association_entity import (
     association_entity_factory,
     AssociationEntity
 )
-from .entity_relation import EntityRelation
-from .entity import Entity
-from .social_tenure import SocialTenure
-from .supporting_document import SupportingDocument
+from stdm.data.configuration.entity_relation import EntityRelation
+from stdm.data.configuration.entity import Entity
+from stdm.data.configuration.db_items import DbItem
+from stdm.data.configuration.social_tenure import SocialTenure
+from stdm.data.configuration.supporting_document import SupportingDocument
 
 LOGGER = logging.getLogger('stdm')
 
@@ -65,13 +70,16 @@ class Profile(QObject):
         self.prefix = self._prefix()
         self.entities = OrderedDict()
         self.relations = OrderedDict()
+        self.removed_relations = []
         self.supporting_document = SupportingDocument(self)
         self.social_tenure = self._create_social_tenure()
         self._admin_spatial_unit = AdministrativeSpatialUnit(self)
+        self.removed_entities = []
 
         #Add default entities to the entity collection
         self.add_entity(self.supporting_document)
         self.add_entity(self._admin_spatial_unit)
+        self.add_entity(self.social_tenure)
 
     def _prefix(self):
         prefixes = self.configuration.prefixes()
@@ -84,7 +92,8 @@ class Profile(QObject):
             if not curr_prefix in prefixes:
                 prefix = curr_prefix
 
-                LOGGER.debug('Prefix determined %s for %s profile', prefix.lower(), self.name)
+                LOGGER.debug('Prefix determined %s for %s profile',
+                             prefix.lower(), self.name)
 
                 break
 
@@ -147,6 +156,13 @@ class Profile(QObject):
         """
         return self.entities.get(name, None)
 
+    def clone(self):
+        """
+        :return: Returns a deep copy instance of this object.
+        :rtype: Profile
+        """
+        return deepcopy(self)
+
     def relation(self, name):
         """
         :param name: Name of the relation.
@@ -165,23 +181,33 @@ class Profile(QObject):
         """
         return EntityRelation(self, **kwargs)
 
-    def parent_relations(self, parent):
+    def user_entities(self):
         """
-        :param parent: Entity object that is a parent in the collection of
+        :return: Returns a list of entities that are user editable i.e. those
+        that have the attribute 'user_editable' set to True.
+        :rtype: list
+        """
+        return [ent for ent in self.entities.values() if ent.user_editable]
+
+    def parent_relations(self, item):
+        """
+        :param item: Entity object that is a parent in the collection of
         entity relations.
-        :type parent: str or Entity
+        :type item: str or Entity
         :return: Returns a list of entity relations whose parents match that
         of the specified argument.
         :rtype: EntityRelation
         """
         #Get corresponding entity
-        if isinstance(parent, Entity):
-            parent = parent.name
+        if not isinstance(item, Entity):
+            return []
+
+        item = item.name
 
         return [er for er in self.relations.values()
-                if er.parent.name == parent]
+                if er.parent.name == item]
 
-    def child_relations(self, child):
+    def child_relations(self, item):
         """
         :param parent: Entity object that is a child in the collection of
         entity relations.
@@ -191,11 +217,13 @@ class Profile(QObject):
         :rtype: EntityRelation
         """
         #Get corresponding entity
-        if isinstance(child, Entity):
-            child = child.name
+        if not isinstance(item, Entity):
+            return []
+
+        item = item.name
 
         return [er for er in self.relations.values()
-                if er.child.name == child]
+                if er.child.name == item]
 
     def add_entity_relation(self, entity_relation):
         """
@@ -248,9 +276,12 @@ class Profile(QObject):
 
             return False
 
-        del self.relations[name]
+        rel = self.relations[name]
 
-        LOGGER.debug('%s entity relation removed from %s profile', name, self.name)
+        self.removed_relations.append(rel)
+
+        LOGGER.debug('%s entity relation flagged to be removed from %s '
+                     'profile', name, self.name)
 
         return True
 
@@ -262,6 +293,10 @@ class Profile(QObject):
         replaced with this item.
         :type item: Entity
         """
+        #If there is an existing item with the same name then do not add it.
+        if item.short_name in self.entities:
+            return
+
         self.entities[item.short_name] = item
 
         LOGGER.debug('%s entity added to %s profile', item.short_name, self.name)
@@ -271,7 +306,7 @@ class Profile(QObject):
 
     def remove_entity(self, name):
         """
-        Removes an entity with the given name from the collection.
+        Removes an entity with the given short name from the collection.
         :param name: Name of the entity. Should include the prefix that
         the entity belongs to.
         :type name: str
@@ -284,9 +319,25 @@ class Profile(QObject):
 
             return False
 
-        del self.entities[name]
+        ent = self.entities[name]
+        ent.action = DbItem.DROP
+
+        ent_replica = ent.clone()
+
+        #Check existing entity relation where this entity is referenced
+        parent_relations = self.parent_relations(ent)
+        child_relations = self.child_relations(ent)
+        remove_relations = parent_relations + child_relations
+
+        for er in remove_relations:
+            self.remove_relation(er.name)
+
+        #Now delete the original entity
+        del ent
 
         LOGGER.debug('%s entity removed from %s profile', name, self.name)
+
+        self.removed_entities.append(ent_replica)
 
         self.entity_removed.emit(name)
 
@@ -330,3 +381,11 @@ class Profile(QObject):
         """
         return [entity for entity in self.entities.values()
                 if entity.TYPE_INFO == type_info]
+
+    def on_delete(self):
+        """
+        Cleans up the profile upon deleting by clearing the tables and
+        corresponding entity relation/FK constraints.
+        """
+        for entity in self.entities:
+            self.remove_entity(entity.short_name)

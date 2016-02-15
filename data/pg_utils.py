@@ -29,11 +29,12 @@ from qgis.core import *
 from sqlalchemy.sql.expression import text
 
 import stdm.data
+
 from stdm.data.database import (
     STDMDb,
     Base
 )
-from stdm.utils import (
+from stdm.utils.util import (
     getIndex,
     PLUGIN_DIR
 )
@@ -189,8 +190,7 @@ def table_column_names(tableName, spatialColumns=False):
 
 def non_spatial_table_columns(table):
     """
-    Returns non spatial table columns
-    Uses list comprehension
+    Returns non spatial table columns.
     """
     all_columns = table_column_names(table)
 

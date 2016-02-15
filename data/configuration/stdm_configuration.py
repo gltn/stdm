@@ -17,6 +17,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+
 import logging
 from collections import OrderedDict
 
@@ -26,8 +27,7 @@ from PyQt4.QtCore import (
 )
 
 from stdm.data.database import Singleton
-
-from .profile import Profile
+from stdm.data.configuration.profile import Profile
 
 LOGGER = logging.getLogger('stdm')
 
@@ -93,10 +93,17 @@ class StdmConfiguration(QObject):
 
             return False
 
-        del self.profiles[name]
+        profile = self.profiles[name]
+
+        profile_replica = profile.clone()
+
+        del profile
 
         if len(self.profiles) == 0:
             self.is_null = True
+
+        #Remove all references for the profile using the clone object
+        profile_replica.on_delete()
 
         LOGGER.debug('%s profile removed.', name)
 

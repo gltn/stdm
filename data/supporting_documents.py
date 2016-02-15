@@ -21,7 +21,6 @@ from PyQt4.QtCore import (
     QRegExp
 )
 
-from .database import SupportingDocument
 from .pg_utils import foreign_key_parent_tables
 from .table_mapper import DeclareMapping
 
@@ -78,7 +77,8 @@ def document_models(doc_link_table, link_column, link_value):
 
     #Get the name of the supporting document foreign key column
     linked_tables = foreign_key_parent_tables(doc_link_table)
-    supporting_doc_ref = [lt[0] for lt in linked_tables if lt[1] == SUPPORTING_DOC_BASE]
+    supporting_doc_ref = [lt[0] for lt in linked_tables
+                          if lt[1] == SUPPORTING_DOC_BASE]
 
     #No link found to supporting document table
     if len(supporting_doc_ref) == 0:
