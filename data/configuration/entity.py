@@ -20,24 +20,27 @@ email                : stdm@unhabitat.org
 """
 import logging
 from collections import OrderedDict
+from copy import deepcopy
 
 from PyQt4.QtCore import (
     pyqtSignal,
     QObject
 )
+from stdm.data.configuration.columns import BaseColumn
 
-from .columns import (
+from stdm.data.configuration.columns import (
     BaseColumn,
     ForeignKeyColumn,
     GeometryColumn,
     SerialColumn
 )
-from .db_items import (
+
+from stdm.data.configuration.db_items import (
     DbItem,
     TableItem
 )
 
-from .entity_updaters import entity_updater
+from stdm.data.configuration.entity_updaters import entity_updater
 
 LOGGER = logging.getLogger('stdm')
 
@@ -79,7 +82,7 @@ class Entity(QObject, TableItem):
         :param profile: Profile that the entity will belong to.
         :type profile: Profile
         :param create_id_column: True to append an id serial column which
-        will also be the table's primary key.
+        will also be the table's primary key. This will always be True (bug).
         :type create_id_column: bool
         :param supports_documents: True if supporting documents can be
         attached to this entity.
@@ -109,13 +112,21 @@ class Entity(QObject, TableItem):
 
         self.description = ''
         self.is_associative = False
+        self.user_editable = True
         self.columns = OrderedDict()
-        self.create_id_column = create_id_column
+
+        '''
+        We will always create an ID column due to a bug in SQLAlchemy-migrate
+        as setting the 'id' column as a primary key does not create a serial
+        column type in the database.
+        '''
+        self.create_id_column = True
+
         self.supports_documents = supports_documents
         self.supporting_doc = None
         self.is_global = is_global
         self.is_proxy = is_proxy
-        self._updated_columns = OrderedDict()
+        self.updated_columns = OrderedDict()
 
         #Create PK if flag is specified
         if self.create_id_column:
@@ -126,6 +137,7 @@ class Entity(QObject, TableItem):
         #Enable the attachment of supporting documents if flag is specified
         if self.supports_documents:
             self.supporting_doc = EntitySupportingDocument(self.profile, self)
+            self.profile.add_entity(self.supporting_doc)
 
         LOGGER.debug('%s entity created.', self.name)
 
@@ -174,14 +186,21 @@ class Entity(QObject, TableItem):
 
             return False
 
+        col = self.columns[name]
+
+        #Create a copy of the object before deleting.
+        col_replica = col.clone()
+
         del self.columns[name]
 
         LOGGER.debug('%s column removed from %s entity', name, self.name)
 
-        self.column_removed.emit(str)
+        col_replica.action = DbItem.DROP
 
         #Add column to the collection of updated columns
-        self.append_updated_column(self.column(name))
+        self.append_updated_column(col_replica)
+
+        self.column_removed.emit(name)
 
         return True
 
@@ -195,11 +214,18 @@ class Entity(QObject, TableItem):
         if self.action == DbItem.CREATE:
             return
 
-        self._updated_columns[col.name] = col
+        self.updated_columns[col.name] = col
 
         #Update action
         if self.action == DbItem.NONE:
             self.action = DbItem.ALTER
+
+    def clone(self):
+        """
+        :return: Returns a deep copy of this object.
+        :rtype: Entity
+        """
+        return deepcopy(self)
 
     def on_delete(self):
         """
@@ -208,17 +234,69 @@ class Entity(QObject, TableItem):
         """
         pass
 
-    def update(self):
+    def update(self, engine, metadata):
         """
         Update the entity in the database using the 'sql_updater' callable
         attribute.
+        :param engine: SQLAlchemy engine which contains the database
+        connection properties.
+        :param metadata: Object containing all the schema constructs
+        associated with our database.
+        :type metadata: MetaData
         """
         if self.sql_updater is None:
-            LOGGER.debug('%s entity has no sql_updater callable defined.', self.name)
+            LOGGER.debug('%s entity has no sql_updater callable class.', self.name)
 
             return
 
-        self.sql_updater(self)
+        self.sql_updater(engine, metadata)
+
+    def parents(self):
+        """
+        :return: Returns a collection of entities which this entity refers to
+        through one or more entity relations (implemented as foreign key constraints
+        in the database).
+        :rtype: list
+        """
+        entity_relations = self.profile.child_relations(self)
+
+        return [er.parent for er in entity_relations if er.valid()[0]]
+
+    def children(self):
+        """
+        :return: Returns a collection of entities that refer to this entity
+        as the parent through one or more entity relations (implemented as
+        foreign key constraints in the database).
+        :rtype: list
+        """
+        entity_relations = self.profile.parent_relations(self)
+
+        return [er.child for er in entity_relations if er.valid()[0]]
+
+    def column_children_relations(self, name):
+        """
+        :param name: Column name
+        :type name: str
+        :return: Returns a list of entity relations which reference the
+        column with the given name as the parent column in the entity relation.
+        :rtype: list
+        """
+        entity_relations = self.profile.child_relations(self)
+
+        return [er for er in entity_relations if er.parent_column == name]
+
+    def column_parent_relations(self, name):
+        """
+        :param name: Column name
+        :type name: str
+        :return: Returns a list of entity relations which reference the
+        column with the given name as the child column in the entity relation.
+        These are basically entity relations in foreign key columns.
+        :rtype: list
+        """
+        entity_relations = self.profile.parent_relations(self)
+
+        return [er for er in entity_relations if er.child_column == name]
 
     def columns_by_type_info(self, type_info):
         """
@@ -245,6 +323,7 @@ class Entity(QObject, TableItem):
         """
         return True if len(self.geometry_columns()) > 0 else False
 
+
 class EntitySupportingDocument(Entity):
     """
     An association class that provides the link between a given Entity and
@@ -259,6 +338,8 @@ class EntitySupportingDocument(Entity):
                                  'supporting_document')
 
         Entity.__init__(self, name, profile, supports_documents=False)
+
+        self.user_editable = False
 
         supporting_doc_prefix = u'{0}_{1}'.format(self.profile.prefix, 'supporting_doc_id')
         self.document_reference = ForeignKeyColumn(supporting_doc_prefix, self)

@@ -47,7 +47,7 @@ from qgis.core import (
 from stdm.data.pg_utils import (
     vector_layer
 )
-from stdm.settings import RegistryConfig
+from stdm.settings.registryconfig import RegistryConfig
 from stdm.ui.composer import (
     ComposerChartConfigEditor,
     ComposerDataSourceSelector,

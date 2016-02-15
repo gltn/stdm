@@ -63,7 +63,7 @@ from sqlalchemy import (
 )
 from geoalchemy2 import Geometry
 
-from stdm.settings import RegistryConfig
+from stdm.settings.registryconfig import RegistryConfig
 from stdm.data.pg_utils import (
     geometryType,
     pg_table_exists,

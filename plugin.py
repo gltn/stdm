@@ -40,8 +40,7 @@ from stdm.ui.view_str import ViewSTRWidget
 from stdm.ui.admin_unit_selector import AdminUnitSelector
 from stdm.ui.entity_browser import (
     EntityBrowser,
-    STDMEntityBrowser,
-    SurveyEntityBrowser
+    STDMEntityBrowser
 )
 from stdm.ui.about import AboutSTDMDialog
 from stdm.ui.stdmdialog import DeclareMapping
@@ -81,7 +80,6 @@ from utils import *
 from mapping.utils import pg_layerNamesIDMapping
 
 from composer import ComposerWrapper
-from settings import ModuleSettings
 
 LOGGER = logging.getLogger('stdm')
 

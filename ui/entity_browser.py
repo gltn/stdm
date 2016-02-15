@@ -22,13 +22,7 @@ from datetime import date
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data.database import (
-    Enumerator,
-    Respondent,
-    STDMDb,
-    Survey,
-    Witness
-)
+from stdm.data.database import STDMDb
 from stdm.data.config_utils import (
     tableCols,
     tableColType,
@@ -45,8 +39,7 @@ from stdm.navigation import TableContentGroup
 from .admin_unit_manager import VIEW,MANAGE,SELECT
 from .ui_entity_browser import Ui_EntityBrowser
 from .helpers import SupportsManageMixin
-from .notification import NotificationBar, ERROR, WARNING,INFO
-from .base_person import WitnessEditor
+from .notification import NotificationBar
 
 from .stdmdialog import DeclareMapping
 from stdm.ui.forms import (
@@ -54,9 +47,8 @@ from stdm.ui.forms import (
     LookupModeller
 )
 
-__all__ = ["EntityBrowser","EnumeratorEntityBrowser","EntityBrowserWithEditor", \
-           "ContentGroupEntityBrowser","RespondentEntityBrowser","WitnessEntityBrowser", \
-           "FarmerEntityBrowser","SurveyEntityBrowser"]
+__all__ = ["EntityBrowser", "EntityBrowserWithEditor",
+           "ContentGroupEntityBrowser"]
 
 class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
     """
@@ -563,65 +555,6 @@ class SocialTenureEntityBrowser(EntityBrowserWithEditor):
     def title(self):
         return QApplication.translate("SocialTenureEntityBrowser", "Social Tenure Records")
 
-class EnumeratorEntityBrowser(EntityBrowserWithEditor):
-    '''
-    Browser for enumerator records.
-    '''
-    def __init__(self,parent = None,state = VIEW|MANAGE):
-
-        mapping = DeclareMapping.instance()
-        Enumerator = mapping.tableMapping('enumerator')
-
-        EntityBrowserWithEditor.__init__(self, Enumerator, parent, state)
-
-        self._editorDialog = CustomFormDialog
-        
-    def title(self):
-        return QApplication.translate("EnumeratorEntityBrowser", "Enumerator Records")
-
-class RespondentEntityBrowser(EntityBrowserWithEditor):
-    '''
-    Browser for respondent records.
-    '''
-    def __init__(self,parent = None,state = VIEW|MANAGE):
-        
-        mapping=DeclareMapping.instance()
-        Respondent=mapping.tableMapping('respondent')
-        
-        EntityBrowserWithEditor.__init__(self, Respondent, parent, state)
-        #self._editorDialog = RespondentEditor  
-        self._editorDialog = CustomFormDialog
-        
-    def title(self):
-        return QApplication.translate("RespondentEntityBrowser", "Respondent Records")
-            
-class PriorityEntityBrowser(EntityBrowserWithEditor):
-    '''
-    Browser for witness records.
-    '''
-    def __init__(self,parent = None,state = VIEW|MANAGE):
-
-        mapping=DeclareMapping.instance()
-        Priority = mapping.tableMapping('priority')
-        EntityBrowserWithEditor.__init__(self, Priority, parent, state)
-        self._editorDialog = CustomFormDialog
-
-    def title(self):
-        return QApplication.translate("WitnessEntityBrowser", "Witness Records")
-
-class WitnessEntityBrowser(EntityBrowserWithEditor):
-    '''
-    Browser for witness records.
-    '''
-    def __init__(self,parent = None,state = VIEW|MANAGE):
-
-        mapping=DeclareMapping.instance()
-        Witness = mapping.tableMapping('witness')
-        EntityBrowserWithEditor.__init__(self, Witness, parent, state)
-        self._editorDialog = CustomFormDialog
-
-    def title(self):
-        return QApplication.translate("WitnessEntityBrowser", "Witness Records")
     
 class PartyEntitySelector(EntityBrowser):
     '''
@@ -695,27 +628,6 @@ class ForeignKeyBrowser(EntityBrowser):
         return QApplication.translate("EnumeratorEntityBrowser",
                     "%s Entity Records")%(self._data_source_name).replace("_"," ").capitalize()
 
-class SurveyEntityBrowser(ContentGroupEntityBrowser):
-    '''
-    Browser for survey records.
-    '''
-    def __init__(self, tableContentGroup, parent = None,state = MANAGE):
-        from .survey_editor import SurveyEditor
-        
-        ContentGroupEntityBrowser.__init__(self, Survey, tableContentGroup, parent, state)
-        self._editorDialog = SurveyEditor  
-        
-    def _setFormatters(self):
-        """
-        
-        Specify formatting mappings.
-        """   
-        #self.addCellFormatter("EnumeratorID",enumeratorNamesFormatter)
-        # self.addCellFormatter("RespondentID",respondentNamesFormatter)
-        pass
-        
-    def title(self):
-        return QApplication.translate("SurveyEntityBrowser", "Survey Records Manager")
 
     
     

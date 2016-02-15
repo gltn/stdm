@@ -200,7 +200,7 @@ class ForeignKeyMapper(QWidget):
         """
         Configure the mapper based on the user settings.
         """
-        from stdm.data import numeric_varchar_columns
+        from stdm.data.pg_utils import numeric_varchar_columns
 
         #Load headers
         if not self._dbModel is None:

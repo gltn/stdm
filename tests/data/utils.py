@@ -1,15 +1,29 @@
+from stdm import data
+
+from sqlalchemy import create_engine
+
 from stdm.data.configuration.columns import (
     GeometryColumn,
-    IntegerColumn
+    IntegerColumn,
+    VarCharColumn
 )
 from stdm.data.configuration.entity import entity_factory
 from stdm.data.configuration.value_list import value_list_factory
 from stdm.data.configuration.social_tenure import SocialTenure
 
+from stdm.data.connection import DatabaseConnection
+from stdm.security.user import User
+
 BASIC_PROFILE = 'Basic'
 PERSON_ENTITY = 'person'
 SPATIAL_UNIT_ENTITY = 'spatial_unit'
 HOUSEHOLD_ENTITY = 'household'
+
+DB_USER = 'postgres'
+DB_PASS = 'admin'
+DB_PORT = 5434
+DB_SERVER = 'localhost'
+DB_NAME = 'demo'
 
 full_entity_opt_args = {
     'create_id_column': True,
@@ -88,4 +102,47 @@ def add_household_entity(profile):
 
 def append_person_columns(entity):
     household_id = IntegerColumn('household_id', entity)
+    first_name = VarCharColumn('first_name', entity, maximum=30)
+    last_name = VarCharColumn('last_name', entity, maximum=30)
     entity.add_column(household_id)
+    entity.add_column(first_name)
+    entity.add_column(last_name)
+
+def populate_configuration(config):
+    profile = add_basic_profile(config)
+
+    rel = create_relation(profile)
+    person_entity = add_person_entity(profile)
+    append_person_columns(person_entity)
+    household_entity = add_household_entity(profile)
+
+    rel.parent = household_entity
+    rel.child = person_entity
+    rel.child_column = 'household_id'
+    rel.parent_column = 'id'
+
+    profile.add_entity_relation(rel)
+
+    add_spatial_unit_entity(profile)
+
+    #Set STR entities
+    set_profile_social_tenure(profile)
+
+
+def create_db_connection():
+    db_conn = DatabaseConnection(DB_SERVER, DB_PORT, DB_NAME)
+    user = User(DB_USER, DB_PASS)
+    db_conn.User = user
+
+    return db_conn
+
+def create_alchemy_engine():
+    db_conn = create_db_connection()
+    connection_str = db_conn.toAlchemyConnection()
+
+    #Set STDMDb instance
+    data.app_dbconn = db_conn
+
+    return create_engine(connection_str, echo=False)
+
+

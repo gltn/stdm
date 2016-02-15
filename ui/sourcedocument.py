@@ -46,7 +46,7 @@ from stdm.network import (
 from stdm.ui.stdmdialog import DeclareMapping
 from stdm.data.database import STDMDb
 from stdmdialog import DeclareMapping
-from stdm.settings import (
+from stdm.settings.registryconfig import (
     RegistryConfig,
     NETWORK_DOC_RESOURCE,
     LOCAL_SOURCE_DOC

@@ -48,7 +48,7 @@ from sqlalchemy import (
 
 from geoalchemy2 import Geometry
 
-from stdm.composer import DocumentGenerator
+from stdm.composer.document_generator import DocumentGenerator
 from stdm.data.config_table_reader import ConfigTableReader
 from stdm.data.config_utils import (
     display_name,

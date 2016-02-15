@@ -19,12 +19,12 @@ email                : stdm@unhabitat.org
 """
 import logging
 
-from .columns import (
+from stdm.data.configuration.columns import (
     DateTimeColumn,
     IntegerColumn,
     VarCharColumn
 )
-from .entity import Entity
+from stdm.data.configuration.entity import Entity
 
 LOGGER = logging.getLogger('stdm')
 
@@ -39,11 +39,14 @@ class SupportingDocument(Entity):
     def __init__(self, profile):
         Entity.__init__(self, 'supporting_document', profile, supports_documents=False)
 
+        self.user_editable = False
+
         self.creation_date = DateTimeColumn('creation_date', self)
-        self.document_identifier = VarCharColumn('document_identifier', self)
+        self.document_identifier = VarCharColumn('document_identifier',
+                                                 self, maximum=50)
         self.document_type = IntegerColumn('document_type', self)
         self.document_size = IntegerColumn('document_size', self)
-        self.filename = VarCharColumn('filename', self)
+        self.filename = VarCharColumn('filename', self, maximum=200)
 
         LOGGER.debug('%s supporting document initialized.', self.name)
 
