@@ -21,8 +21,15 @@
 """
 from ui_profile import Ui_Profile
 from PyQt4.QtCore import *
-from PyQt4.QtGui import QDialog, QApplication, QMessageBox
-from stdm.data import writeProfile, checkProfile
+from PyQt4.QtGui import (
+    QDialog,
+    QApplication,
+    QMessageBox
+)
+from stdm.data.xmlconfig_writer import (
+    writeProfile,
+    checkProfile
+)
 
 class ProfileEditor(QDialog, Ui_Profile):
     def __init__(self, parent):

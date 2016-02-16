@@ -19,6 +19,7 @@ email                : njoroge.solomon@yahoo.com
 from datetime import date
 
 from PyQt4.QtGui import *
+
 from stdm.ui.attribute_browser import AttributeBrowser
 
 class InputWidget(QWidget):

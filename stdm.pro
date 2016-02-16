@@ -1,4 +1,4 @@
-SOURCES = stdm.py \
+SOURCES = plugin.py \
 			data/configfile_paths.py\
 			ui/reports/report_builder.py\
 			ui/forms/widgets.py\
@@ -14,17 +14,20 @@ SOURCES = stdm.py \
 			ui/admin_unit_selector.py \
 			ui/attribute_editor.py \
 			ui/change_pwd_dlg.py \
-			ui/composer_data_source.py \
-			ui/composer_doc_selector.py \
-			ui/composer_field_selector.py \
-			ui/composer_spcolumn_styler.py \
-			ui/composer_symbol_editor.py \
+			ui/composer/composer_data_source.py \
+			ui/composer/composer_doc_selector.py \
+			ui/composer/composer_field_selector.py \
+			ui/composer/composer_spcolumn_styler.py \
+			ui/composer/composer_symbol_editor.py \
+			ui/composer/referenced_table_editor.py \
+			ui/composer/table_data_source.py \
 			ui/content_auth_dlg.py \
 			ui/db_conn_dlg.py \
+			ui/doc_generator_dlg.py \
+			ui/document_viewer.py \
 			ui/entity_browser.py \
 			ui/export_data.py \
 			ui/fkbase_form.py \
-			ui/foreign_key_editors.py \
 			ui/foreign_key_mapper.py \
 			ui/frmAbout.py \
 			ui/geometry_editor.py \
@@ -38,12 +41,11 @@ SOURCES = stdm.py \
 			ui/new_str_wiz.py \
 			ui/new_user_dlg.py \
 			ui/notification.py \
-			ui/person_doc_generator.py \
 			ui/profileDlg.py \
-			ui/propertyPreview.py \
+			ui/property_preview.py \
 			ui/sourcedocument.py \
 			ui/stdmdialog.py \
-			ui/str_editor_dlg.py \
+			ui/str_editor.py \
 			ui/table_propertyDlg.py \
 			ui/ui_about_stdm.py \
 			ui/ui_about_stdm2.py \
@@ -54,11 +56,6 @@ SOURCES = stdm.py \
 			ui/ui_base_form.py \
 			ui/ui_base_person.py \
 			ui/ui_changepwd.py \
-			ui/ui_composer_data_field.py \ 
-			ui/ui_composer_data_source.py \
-			ui/ui_composer_doc_selector.py \
-			ui/ui_composer_spcolumn_styler.py \
-			ui/ui_composer_symbol_editor.py \
 			ui/ui_content_auth.py \
 			ui/ui_coordinates_editor.py \
 			ui/ui_dbconn.py \
@@ -126,6 +123,7 @@ SOURCES = stdm.py \
 			mapping/create_feature.py \
 			mapping/capture_tool.py \
 			data/configuration/columns.py \
+			data/configuration/config_updater.py \
 			data/config.py \
 			data/config_table_reader.py \
 			data/config_utils.py \
@@ -157,11 +155,14 @@ FORMS =	ui/reports/ui_rpt_builder.ui \
 		ui/ui_admin_details.ui \
 		ui/ui_attribute_editor.ui \
 		ui/ui_combo_option_other.ui \
-		ui/ui_composer_data_field.ui \ 
-		ui/ui_composer_data_source.ui \
-		ui/ui_composer_doc_selector.ui \
-		ui/ui_composer_spcolumn_styler.ui \
-		ui/ui_composer_symbol_editor.ui \
+		ui/composer/ui_composer_chart_config.ui \
+		ui/composer/ui_composer_data_field.ui \
+		ui/composer/ui_composer_data_source.ui \
+		ui/composer/ui_composer_doc_selector.ui \
+		ui/composer/ui_composer_photo_data_source.ui \
+		ui/composer/ui_composer_spcolumn_styler.ui \
+		ui/composer/ui_composer_symbol_editor.ui \
+		ui/composer/ui_composer_table_source.ui \
 		ui/ui_configWizard.ui \
 		ui/ui_content_auth.ui \
 		ui/ui_coordinates_editor.ui \

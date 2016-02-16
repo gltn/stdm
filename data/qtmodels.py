@@ -24,9 +24,10 @@ from decimal import Decimal
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from modelformatters import LookupFormatter, DoBFormatter
-
-
+from .modelformatters import (
+    LookupFormatter,
+    DoBFormatter
+)
 #Standard colors for widgets supporting alternating rows
 ALT_COLOR_EVEN = QColor(255,165,79)
 ALT_COLOR_ODD = QColor(135,206,255)

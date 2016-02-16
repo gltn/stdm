@@ -23,9 +23,12 @@ email                : gkahiu@gmail.com
 """
 from PyQt4.QtGui import QApplication
 
-from database import *
+from .database import *
 
-from stdm.settings import RegistryConfig,DATABASE_LOOKUP
+from stdm.settings.registryconfig import (
+    RegistryConfig,
+    DATABASE_LOOKUP
+)
 
 '''
 Format of the dictionary:

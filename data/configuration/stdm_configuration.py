@@ -17,6 +17,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+
 import logging
 from collections import OrderedDict
 
@@ -25,13 +26,12 @@ from PyQt4.QtCore import (
     QObject
 )
 
-#from ..database import Singleton
-
-from .profile import Profile
+from stdm.data.database import Singleton
+from stdm.data.configuration.profile import Profile
 
 LOGGER = logging.getLogger('stdm')
 
-#@Singleton
+@Singleton
 class StdmConfiguration(QObject):
     """
     The main class containing all the configuration information. This
@@ -47,7 +47,7 @@ class StdmConfiguration(QObject):
         self.profiles = OrderedDict()
         self.is_null = True
 
-        LOGGER.debug("STDM Configuration created.")
+        LOGGER.debug("STDM Configuration initialized.")
 
     def add_profile(self, profile):
         """
@@ -60,6 +60,9 @@ class StdmConfiguration(QObject):
             self.profiles[profile.name] = profile
 
             LOGGER.debug('%s profile added', profile.name)
+
+            if self.is_null:
+                self.is_null = False
 
             #Raise profile_added signal
             self.profile_added.emit(profile)
@@ -90,7 +93,17 @@ class StdmConfiguration(QObject):
 
             return False
 
-        del self.profiles[name]
+        profile = self.profiles[name]
+
+        profile_replica = profile.clone()
+
+        del profile
+
+        if len(self.profiles) == 0:
+            self.is_null = True
+
+        #Remove all references for the profile using the clone object
+        profile_replica.on_delete()
 
         LOGGER.debug('%s profile removed.', name)
 

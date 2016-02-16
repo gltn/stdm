@@ -17,11 +17,12 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from stdm.data import STDMDb
+from PyQt4.QtGui import QMessageBox
 
 from sqlalchemy.orm import sessionmaker
-from stdm.data import _execute
-from PyQt4.QtGui import QMessageBox
+
+from .database import STDMDb
+from .pg_utils import _execute
 
 dbStmt = ("CREATE DATABASE %s WITH ENCODING='UTF8'")
 dbExt = ("CREATE DATABASE %s WITH ENCODING='UTF8' TEMPLATE=%s")

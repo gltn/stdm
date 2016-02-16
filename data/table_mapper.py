@@ -37,7 +37,7 @@ def create_dynamic_class(clsname, **attr):
 def class_from_table(clsname):
         return create_dynamic_class(clsname)
 
-from stdm.data.database import Singleton
+from .database import Singleton
 from stdm.third_party.sqlalchemy.exc import NoSuchTableError
         
 @Singleton                  

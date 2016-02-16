@@ -17,7 +17,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from stdm.data import Model
+from stdm.data.database import Model
 
 def create_dynamic_class(clsname, **attr):
         """create a python object from database table name"""

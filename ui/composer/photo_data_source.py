@@ -25,7 +25,7 @@ from PyQt4.QtCore import QRegExp
 
 from qgis.core import QgsComposerPicture
 
-from stdm.data import supporting_doc_tables_regexp
+from stdm.data.supporting_documents import supporting_doc_tables_regexp
 
 from ..notification import (
                              NotificationBar,

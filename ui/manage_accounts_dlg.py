@@ -21,7 +21,7 @@ from .new_user_dlg import newUserDlg
 from .new_role_dlg import newRoleDlg
 
 from stdm.security import User, Membership, RoleProvider
-from stdm.data import UsersRolesModel
+from stdm.data.qtmodels import UsersRolesModel
 from stdm.utils import *
 
 from PyQt4.QtCore import *

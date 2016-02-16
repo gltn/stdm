@@ -16,34 +16,38 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+import os
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 import sqlalchemy
+from sqlalchemy.exc import SQLAlchemyError
 
 from stdm.utils import *
-from stdm.data.reports import (
-                               STDMReport,
-                               STDMGenerator,
-                               ReportElements, 
-                                STDMReportConfig, 
-                                ReportSerializer,
-                                DbField, 
-                                FieldConfig, 
-                                GroupSettings, 
-                                SortDir, 
-                                FieldSort
-                                )
-from stdm.data import (
-                       table_column_names,
-                       unique_column_values,
-                       pg_tables,
-                       pg_views,
-                       process_report_filter
-                       )
+from stdm.data.reports.stdm_report import (
+    STDMReport,
+    STDMGenerator
+)
+from stdm.data.reports.report_elements import ReportElements
+from stdm.data.reports.persistence import (
+    STDMReportConfig,
+    ReportSerializer,
+    DbField,
+    FieldConfig,
+    GroupSettings,
+    SortDir,
+    FieldSort
+)
+from stdm.data.pg_utils import (
+    table_column_names,
+    unique_column_values,
+    pg_tables,
+    pg_views,
+    process_report_filter
+)
 from stdm.ui.customcontrols import TableComboBox
-from sqlalchemy.exc import SQLAlchemyError
-import os
+
 '''
 from stdm.workspace.defaultSetting.config import dbTableConfig
 from stdm.workspace.defaultSetting.map_query import CertificateMap
@@ -55,7 +59,6 @@ from .field_names import FieldNames
 from .groups import Groups
 from .report_layout import ReportLayout
 from .highlighter import SqlHighlighter
-from stdm.data import pg_views
 
 from qgis.core import *
 from qgis.gui import *

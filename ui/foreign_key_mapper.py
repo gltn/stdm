@@ -32,7 +32,7 @@ from qgis.core import (
 )
 from qgis.gui import QgsExpressionBuilderDialog
 
-from stdm.data import BaseSTDMTableModel
+from stdm.data.qtmodels import BaseSTDMTableModel
 from stdm.data.config_utils import foreign_key_table_reference
 from stdm.utils import getIndex
 from .admin_unit_manager import (
@@ -200,7 +200,7 @@ class ForeignKeyMapper(QWidget):
         """
         Configure the mapper based on the user settings.
         """
-        from stdm.data import numeric_varchar_columns
+        from stdm.data.pg_utils import numeric_varchar_columns
 
         #Load headers
         if not self._dbModel is None:

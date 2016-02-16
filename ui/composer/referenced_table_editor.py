@@ -35,7 +35,7 @@ from PyQt4.QtCore import (
     pyqtSlot
 )
 
-from stdm.data import (
+from stdm.data.pg_utils import (
     table_column_names,
     pg_tables,
     pg_views,

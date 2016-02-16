@@ -21,14 +21,20 @@ email                : gkahiu@gmail.com
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm import resources_rc
-
-from stdm.security import RoleProvider
-from stdm.data import Content,Role, UsersRolesModel, STDMDb, Base
-from stdm.utils import *
 from sqlalchemy.orm import clear_mappers
 from sqlalchemy import Table
 
+from stdm import resources_rc
+
+from stdm.security import RoleProvider
+from stdm.data.database import (
+    Content,
+    Role,
+    STDMDb,
+    Base
+)
+from stdm.data.qtmodels import UsersRolesModel
+from stdm.utils import *
 
 from ui_content_auth import Ui_frmContentAuth
 

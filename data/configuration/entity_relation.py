@@ -17,8 +17,14 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+
 from PyQt4.QtCore import (
     QCoreApplication
+)
+
+from stdm.data.configuration.entity_relation_updater import (
+    create_foreign_key_constraint,
+    drop_foreign_key_constraint
 )
 
 
@@ -34,7 +40,14 @@ def tr(text):
     """
     return QCoreApplication.translate('EntityRelation', text)
 
+
 class EntityRelation(object):
+    """
+    Set functions for creating and dropping foreign key constraints
+    respectively in the database.
+    """
+    constraint_creator = create_foreign_key_constraint
+    constraint_deleter = drop_foreign_key_constraint
 
     def __init__(self, profile, **kwargs):
         """
@@ -115,3 +128,21 @@ class EntityRelation(object):
             return False, tr('The child column has not been defined.')
 
         return True, ''
+
+    def create_foreign_key_constraint(self):
+        """
+        Creates a foreign key constraint in the database using the specified
+        strategy function.
+        :return: True if the constraint was successfully created, else False.
+        :rtype: bool
+        """
+        return self.constraint_creator()
+
+    def drop_foreign_key_constraint(self):
+        """
+        Deletes the given foreign key constraint represented by this object
+        from the database.
+        :return: True if the constraint was successfully deleted, else False.
+        :rtype: bool
+        """
+        return self.constraint_deleter()

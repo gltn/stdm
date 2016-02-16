@@ -20,8 +20,8 @@ email                : stdm@unhabitat.org
 """
 import logging
 
-from .entity import Entity
-from .columns import (
+from stdm.data.configuration.entity import Entity
+from stdm.data.configuration.columns import (
     ForeignKeyColumn
 )
 
@@ -51,6 +51,9 @@ class AssociationEntity(Entity):
 
     def __init__(self, name, profile, **kwargs):
         Entity.__init__(self, name, profile, supports_documents=False)
+
+        self.user_editable = False
+        self.is_associative = True
 
         self.first_reference = None
         self.second_reference = None

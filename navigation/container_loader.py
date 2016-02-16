@@ -25,7 +25,10 @@ from collections import OrderedDict
 
 from stdm.utils import *
 import stdm.data
-from stdm.data import Content, Role
+from stdm.data.database import (
+    Content,
+    Role
+)
 from .content_group import ContentGroup
 
 class QtContainerLoader(QObject):

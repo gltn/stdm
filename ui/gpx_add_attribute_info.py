@@ -1,23 +1,24 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import (geometryType,
-                        vector_layer,
-                       STDMDb)
-
-from ui_gpx_add_attribute_info import Ui_Dialog
-
 import sqlalchemy
 from sqlalchemy.schema import (
-                               Table,
-                               MetaData
-                               )
+    Table,
+    MetaData
+)
 from sqlalchemy.orm import (
-                            mapper,
-                            class_mapper
-                            )
+    mapper,
+    class_mapper
+)
 
-from ..data import columnType
+from stdm.data.database import STDMDb
+from stdm.data.pg_utils import (
+    geometryType,
+    vector_layer
+)
+from stdm.data.pg_utils import columnType
+
+from ui_gpx_add_attribute_info import Ui_Dialog
 
 class _ReflectedModel(object):
     """

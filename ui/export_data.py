@@ -20,25 +20,26 @@ email                : gkahiu@gmail.com
 import sys
 from PyQt4.QtGui import *
 from PyQt4.QtCore import (
-                          Qt,
-                          SIGNAL
-                          )
+    Qt,
+    SIGNAL
+)
 
 import sqlalchemy
 
 from stdm.utils import *
 from stdm.ui.reports import SqlHighlighter
-from stdm.data import (
-                       process_report_filter,
-                       table_column_names,
-                       unique_column_values,
-                       pg_tables
-                       )
+from stdm.data.pg_utils import (
+    process_report_filter,
+    table_column_names,
+    unique_column_values,
+    pg_tables
+)
+from stdm.data.importexport.writer import OGRWriter
+
 from stdm.data.importexport import (
-                                    OGRWriter,
-                                    vectorFileDir,
-                                    setVectorFileDir
-                                    )
+    vectorFileDir,
+    setVectorFileDir
+)
 
 from .ui_export_data import Ui_frmExportWizard 
 

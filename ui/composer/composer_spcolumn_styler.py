@@ -25,7 +25,7 @@ from PyQt4.QtCore import Qt
 
 from qgis.core import QgsSymbolLayerV2Utils
 
-from stdm.data import (
+from stdm.data.pg_utils import (
     table_column_names
 )
 

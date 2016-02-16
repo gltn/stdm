@@ -19,9 +19,9 @@ email                : stdm@unhabitat.org
 """
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from stdm.ui.ui_attribute_browser import Ui_AttribBrowser
-from fkbase_form import ForeignKeyMapperDialog
 
+from fkbase_form import ForeignKeyMapperDialog
+from .ui_attribute_browser import Ui_AttribBrowser
 
 class AttributeBrowser(QWidget, Ui_AttribBrowser):
     """

@@ -48,15 +48,43 @@ from stdm.data import (
 		table_description
 )
 
-from attribute_editor import AttributeEditor
-from .geometry_editor import GeometryEditor
-from table_propertyDlg import TableProperty
-from addtable import TableEditor
-from stdm.security import RoleProvider
-from profileDlg import ProfileEditor
-from lookup_values_dlg import ADDLookupValue
 from sqlalchemy.sql.expression import text
 from sqlalchemy.exc import SQLAlchemyError
+
+from stdm.data.config_table_reader import ConfigTableReader
+from stdm.data.xmlconfig_writer import (
+    deleteColumn,
+    deleteTable,
+    deleteLookupChoice
+)
+from stdm.data.xmlconfig_reader import (
+    deleteProfile,
+    profileFullDescription,
+    lookupData2List
+)
+from stdm.data.xmldata2sql import SQLInsert
+from stdm.data.license_doc import LicenseDocument
+from stdm.data.pg_utils import (
+    flush_session_activity,
+    safely_delete_tables,
+    _execute
+)
+from stdm.data.enums import (
+    non_editable_tables,
+    stdm_core_tables
+)
+from stdm.data.config_utils import table_description
+from stdm.data.usermodels import CheckableListModel
+
+from stdm.security import RoleProvider
+from .attribute_editor import AttributeEditor
+from .geometry_editor import GeometryEditor
+from .table_propertyDlg import TableProperty
+from .addtable import TableEditor
+from .profileDlg import ProfileEditor
+from .lookup_values_dlg import ADDLookupValue
+
+from ui_workspace_config import Ui_STDMWizard
 
 class WorkspaceLoader(QWizard, Ui_STDMWizard):
     def __init__(self, parent):

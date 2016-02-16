@@ -33,11 +33,11 @@ from sqlalchemy.schema import (
     MetaData
 )
 
-from stdm.data import (
+from stdm.data.database import (
     STDMDb,
-    table_column_names,
     table_mapper
 )
+from stdm.data.pg_utils import table_column_names
 
 from stdm.utils import (
     getIndex

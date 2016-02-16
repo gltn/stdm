@@ -24,17 +24,27 @@ import sys
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtWebKit import *
+
 import sqlalchemy
 from sqlalchemy import Table
 
-from ui_new_str import Ui_frmNewSTR
 from notification import NotificationBar,ERROR,INFO, WARNING
 from sourcedocument import *
 
-from stdm.data import STDMDb, Base, tableCols, UserData, table_searchable_cols
+from stdm.data.database import (
+    STDMDb,
+    Base
+)
+from stdm.data.config_utils import (
+    UserData,
+    table_searchable_cols,
+    tableCols
+)
 from stdm.navigation import TreeSummaryLoader,WebSpatialLoader, GMAP_SATELLITE, OSM
 from stdm.utils import *
 from .stdmdialog import  DeclareMapping
+
+from ui_new_str import Ui_frmNewSTR
 
 class newSTRWiz(QWizard, Ui_frmNewSTR):
     '''
