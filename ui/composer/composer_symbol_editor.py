@@ -37,7 +37,7 @@ from qgis.gui import (
     QgsSimpleFillSymbolLayerV2Widget
 )
 
-from stdm.data import (
+from stdm.data.pg_utils import (
    table_column_names,
    geometryType
 )

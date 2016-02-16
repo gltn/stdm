@@ -17,7 +17,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from stdm.data import STDMDb, Role
+from stdm.data.database import STDMDb, Role
 from stdm.utils import *
 from exception import SecurityException
 

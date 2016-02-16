@@ -19,12 +19,23 @@
  *                                                                         *
  ***************************************************************************/
 """
-from ui_table import Ui_table
 from PyQt4.QtCore import *
 from PyQt4.QtGui import QDialog, QApplication, QMessageBox
-from stdm.data import writeTable, renameTable,inheritTableColumn, writeTableColumn,writeLookup,\
-checktableExist,ConfigTableReader, table_column_exist
+from stdm.data.xmlconfig_writer import (
+    writeTable,
+    renameTable,
+    inheritTableColumn,
+    writeTableColumn,
+    writeLookup
+)
+from stdm.data.xmlconfig_reader import (
+    checktableExist,
+    table_column_exist
+)
+from stdm.data.config_table_reader import ConfigTableReader
 from stdm.data.config_utils import setUniversalCode
+
+from ui_table import Ui_table
 
 class TableEditor(QDialog, Ui_table):
     def __init__(self,actionMode,tableName,parent):

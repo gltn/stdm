@@ -19,9 +19,11 @@
  *                                                                         *
  ***************************************************************************/
 """
-from stdm.data import FilePaths 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+
+from stdm.data.configfile_paths import FilePaths
+
 class LicenseDocument(object):
     def __init__(self):
         self.file = None

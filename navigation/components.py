@@ -20,7 +20,8 @@ email                : gkahiu@gmail.com
 """
 
 from PyQt4.QtGui import QAction, QListWidgetItem, QApplication
-from stdm.data import Content
+
+from stdm.data.database import Content
 
 class STDMContent(object):
     '''

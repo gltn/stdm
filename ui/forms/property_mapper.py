@@ -19,9 +19,8 @@ email                : stdm@unhabitat.org
 """
 from collections import OrderedDict
 from stdm.utils import *
-from stdm.data import STDMDb
+from stdm.data.database import STDMDb
 from .widgets import WidgetCollection
-from PyQt4.QtGui import QMessageBox
 from stdm.ui.stdmdialog import DeclareMapping
 from lookup_dlg import LookupModeller
 from attribute_datatype import AttributePropretyType

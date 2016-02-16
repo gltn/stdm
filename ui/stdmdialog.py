@@ -20,21 +20,20 @@
  ***************************************************************************/
 """
 import sys
+from collections import OrderedDict
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-#from .entity_browser import ContentGroupEntityBrowser
-
-# create the dialog for zoom to point
 
 from sqlalchemy import Table
 from sqlalchemy.orm import mapper
-from stdm.data import (
+
+from stdm.data.database import (
     Model,
     Base,
     STDMDb
 )
 from .python_object import class_from_table
-from collections import OrderedDict
+
 import types
 
 from stdm.data.database import Singleton
@@ -88,6 +87,7 @@ class DeclareMapping(object):
         """
         class_name = table.capitalize()
         class_object = class_from_table(class_name)
+
         return class_object
 
     def table_property(self, reflectedtab):

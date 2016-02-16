@@ -35,7 +35,7 @@ from qgis.gui import (
     QgsColorButtonV2
 )
 
-from stdm.data import (
+from stdm.data.pg_utils import (
     numeric_columns,
     table_column_names
 )

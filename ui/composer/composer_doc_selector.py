@@ -18,27 +18,27 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from PyQt4.QtGui import (
-                         QDialog,
-                         QDialogButtonBox,
-                         QStandardItemModel,
-                         QStandardItem,
-                         QIcon,
-                         QPixmap,
-                         QApplication,
-                         QIcon,
-                         QInputDialog,
-                         QMessageBox
-                         )
+     QDialog,
+     QDialogButtonBox,
+     QStandardItemModel,
+     QStandardItem,
+     QIcon,
+     QPixmap,
+     QApplication,
+     QIcon,
+     QInputDialog,
+     QMessageBox
+ )
 
 from PyQt4.QtCore import (
-                          QFile,
-                          QIODevice
-                          )
+    QFile,
+    QIODevice
+)
 
 from PyQt4.QtXml import QDomDocument
 
 from stdm.utils import documentTemplates
-from stdm.settings import RegistryConfig
+from stdm.settings.registryconfig import RegistryConfig
 from ..notification import (
                              NotificationBar,
                              ERROR

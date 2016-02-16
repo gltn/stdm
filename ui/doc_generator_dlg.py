@@ -48,12 +48,14 @@ from sqlalchemy import (
 
 from geoalchemy2 import Geometry
 
-from stdm.composer import DocumentGenerator
-from stdm.data import (
-    ConfigTableReader,
+from stdm.composer.document_generator import DocumentGenerator
+from stdm.data.config_table_reader import ConfigTableReader
+from stdm.data.config_utils import (
     display_name,
-    numeric_varchar_columns,
     ProfileException,
+)
+from stdm.data.pg_utils import (
+    numeric_varchar_columns,
     _execute
 )
 from stdm.utils import getIndex

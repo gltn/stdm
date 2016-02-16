@@ -16,10 +16,11 @@ email                : njoroge.solomon.com
  *                                                                         *
  ***************************************************************************/
 """
+from PyQt4.QtGui import *
+
 from stdm.data.config_utils import tableColType, foreign_key_columns
 from stdm.ui.stdmdialog import DeclareMapping
-from stdm.data import data_types
-from PyQt4.QtGui import *
+from stdm.data.enums import data_types
 
 class AttributePropretyType(object):
     """

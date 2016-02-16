@@ -20,10 +20,19 @@
  ***************************************************************************/
 """
 import sys
-from stdm.data import XMLTableElement,tableColumns,tableRelations,ConfigTableReader, activeProfile,writeLookup
 
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
+
+from stdm.data.xmlconfig_reader import (
+    XMLTableElement,
+    tableColumns,
+    tableRelations
+)
+from stdm.data.config_table_reader import ConfigTableReader
+from stdm.data.xmlconfig_writer import writeLookup
+from stdm.data.config_utils import activeProfile
+
 from ui_lookup import Ui_Lookup
 from addtable import TableEditor
 from lookup_values_dlg import ADDLookupValue

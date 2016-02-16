@@ -45,12 +45,12 @@ from stdm.navigation import (
     OSM
 )
 
-from stdm.data import(
+from stdm.data.pg_utils import(
     geometryType,
     pg_table_exists,
-    STDMDb,
     table_column_names
 )
+from stdm.data.database import STDMDb
 
 from notification import (
     NotificationBar,

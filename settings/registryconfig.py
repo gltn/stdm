@@ -20,10 +20,10 @@ email                : gkahiu@gmail.com
 from PyQt4.QtCore import QSettings
 
 #Names of registry keys
-NETWORK_DOC_RESOURCE = "NetDocumentResource"
-PATHKEYS=['Config','NetDocumentResource','ComposerOutputs','ComposerTemplates']
-DATABASE_LOOKUP = "LookupInit"
-LOCAL_SOURCE_DOC = "SourceDocuments"
+NETWORK_DOC_RESOURCE = 'NetDocumentResource'
+PATHKEYS = ['Config','NetDocumentResource','ComposerOutputs','ComposerTemplates']
+DATABASE_LOOKUP = 'LookupInit'
+LOCAL_SOURCE_DOC = 'SourceDocuments'
 COMPOSER_OUTPUT = 'ComposerOutputs'
 COMPOSER_TEMPLATE = 'ComposerTemplates'
 

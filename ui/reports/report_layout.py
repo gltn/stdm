@@ -25,10 +25,10 @@ from reportlab.lib.units import cm,inch
 from geraldo import Report
 
 from stdm.utils import *
-from stdm.data.reports import (
-                               LayoutDialogSettings, 
-                               ReportElement
-                               )
+from stdm.data.reports.persistence import (
+    LayoutDialogSettings,
+    ReportElement
+)
 
 from .ui_rpt_layout import Ui_frmRptLayout
 

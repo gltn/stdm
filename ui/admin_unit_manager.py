@@ -21,8 +21,8 @@ from collections import OrderedDict
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import (
-    STRTreeViewModel,
+from stdm.data.qtmodels import STRTreeViewModel
+from stdm.data.database import (
     AdminSpatialUnitSet,
     STDMDb,
     Base

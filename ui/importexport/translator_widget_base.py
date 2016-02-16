@@ -21,7 +21,7 @@ email                : stdm@unhabitat.org
 """
 from PyQt4.QtGui import QMessageBox
 
-from stdm.data import (
+from stdm.data.pg_utils import (
    table_column_names,
    pg_tables,
    spatial_tables

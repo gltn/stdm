@@ -1,8 +1,8 @@
 """
 /***************************************************************************
 Name                 : FKMapperDialog
-Description          : class supporting access to foreign key attribute of another class
-                        foreign key relations.
+Description          : class supporting access to foreign key attribute of
+                        another class foreign key relations.
 Date                 : 8/April/2015
 copyright            : (C) 2015 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
@@ -18,10 +18,9 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ****
 """
-
+from PyQt4.QtGui import QMessageBox, QWidget, QApplication
 from .foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.stdmdialog import DeclareMapping
-from PyQt4.QtGui import QMessageBox, QWidget, QApplication
 from stdm.ui.customcontrols import FKBrowserProperty
 
 class ForeignKeyMapperDialog(QWidget):

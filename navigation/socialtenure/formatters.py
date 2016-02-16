@@ -91,7 +91,7 @@ class EntityNodeFormatter(STRNodeFormatter):
     Generic formatter for rendering an STR entity's values and dependent nodes.
     """
     def __init__(self, config, treeview, parent=None):
-        from stdm.data import (
+        from stdm.data.pg_utils import (
             foreign_key_parent_tables,
             numeric_varchar_columns,
             spatial_tables
@@ -228,7 +228,7 @@ class EntityNodeFormatter(STRNodeFormatter):
         :return: Supporting document models.
         :rtype: list
         """
-        from stdm.data import (
+        from stdm.data.supporting_documents import (
             supporting_doc_tables,
             document_models
         )
@@ -262,7 +262,7 @@ class EntityNodeFormatter(STRNodeFormatter):
         :return: STR Node
         :rtype: STRNode
         """
-        from stdm.data import (
+        from stdm.data.pg_utils import (
             numeric_varchar_columns
         )
 

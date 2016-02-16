@@ -21,7 +21,12 @@ from PyQt4.QtCore import pyqtSignal,QObject
 
 from sqlalchemy import Table
 
-from stdm.data import Content, Role, STDMDb, Base
+from stdm.data.database import (
+    Content,
+    Role,
+    STDMDb,
+    Base
+)
 from stdm.utils import (
     randomCodeGenerator,
     HashableMixin

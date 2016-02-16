@@ -16,7 +16,6 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-
 import os, os.path
 import tempfile
 from decimal import Decimal
@@ -24,15 +23,16 @@ import binascii,string,random
 from collections import OrderedDict
 
 from PyQt4.QtCore import (
-                          QDir,
-                          Qt,
-                           QSettings,
-                           QFileInfo
-                          )
+    QDir,
+    Qt,
+    QSettings,
+    QFileInfo
+)
 from PyQt4.QtGui import QPixmap, QFileDialog, QDialog
 
-from stdm.settings import RegistryConfig
 from qgis.gui import QgsEncodingFileDialog
+
+from stdm.settings.registryconfig import RegistryConfig
 
 PLUGIN_DIR = os.path.abspath(os.path.join(os.path.dirname( __file__ ), os.path.pardir)).replace("\\", "/")
 CURRENCY_CODE = "" #TODO: Put in the registry
@@ -135,7 +135,7 @@ def createQuerySet(columnList,resultSet,imageFields):
     
     return rtDir,qSet
 
-def writeImage(rootDir,imageStr):
+def writeImage(rootDir, imageStr):
     '''
     Write an image object to disk under the root directory in the
     system's temp directory. 
@@ -167,7 +167,7 @@ def copyattrs(objfrom, objto, names):
             v = getattr(objfrom,n)
             setattr(objto,n,v) 
             
-def compareLists(validList,userList):
+def compareLists(validList, userList):
     #Method for validating if items defined in the user list actually exist in the valid list        
     validList = [x for x in userList if x in validList]    
     #Get invalid items in the user list    
@@ -175,7 +175,7 @@ def compareLists(validList,userList):
     
     return validList, invalidList
         
-def replaceNoneText(dbvalue,replacewith=""):
+def replaceNoneText(dbvalue, replacewith=""):
     '''
     Replaces 'None' string with more friendly text.
     '''

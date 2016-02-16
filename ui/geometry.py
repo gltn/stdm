@@ -22,8 +22,15 @@
 # Import the PyQt and QGIS libraries
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from stdm.data  import data_types, setCollectiontypes, geometry_collections
-from stdm.data.config_utils import UserData
+
+from stdm.data.enums import (
+    data_types,
+    geometry_collections,
+)
+from stdm.data.config_utils import (
+    setCollectiontypes,
+    UserData
+)
 from stdm.settings import projectionSelector
 
 class GeometryProperty(QDialog):

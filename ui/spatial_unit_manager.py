@@ -27,19 +27,24 @@ from PyQt4 import uic
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from qgis.core import *
-from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
 from gps_tool import GPSToolDialog
 
-from ..data import (
+from stdm.data.pg_utils import (
+    geometryType,
     spatial_tables,
     table_column_names,
-    vector_layer,
-    geometryType,
-    write_display_name,
+    vector_layer
+)
+from stdm.data.xmlconfig_reader import (
     check_if_display_name_exits,
-    get_xml_display_name,
+    get_xml_display_name
+)
+from stdm.data.xmlconfig_writer import (
+    write_display_name,
     write_changed_display_name
 )
+
+from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_spatial_unit_manager.ui'))

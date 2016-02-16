@@ -19,11 +19,9 @@ email                : stdm@unhabitat.org
 """
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from stdm.settings import tableIcon
 
+from stdm.settings.path_settings import tableIcon
 
-# ALT_COLOR_EVEN = QColor(209, 243, 249)
-# ALT_COLOR_ODD = QColor(241,246,245)
 ALT_COLOR_EVEN = QColor(255, 255, 255)
 ALT_COLOR_ODD = QColor( 248, 248, 248)
 

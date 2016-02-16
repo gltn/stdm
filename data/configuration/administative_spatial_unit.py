@@ -20,8 +20,8 @@ email                : stdm@unhabitat.org
 """
 import logging
 
-from .entity import Entity
-from .columns import (
+from stdm.data.configuration.entity import Entity
+from stdm.data.configuration.columns import (
     VarCharColumn
 )
 
@@ -36,9 +36,15 @@ class AdministrativeSpatialUnit(Entity):
 
     def __init__(self, profile):
         Entity.__init__(self, 'admin_spatial_unit_set', profile,
-                        is_global=True, is_proxy=True)
+                    is_global=True, is_proxy=True, supports_documents=False)
 
-        self.name = VarCharColumn('name', self)
-        self.code = VarCharColumn('code', self)
+        self.user_editable = False
+
+        self.admin_unit_name = VarCharColumn('name', self, maximum=70)
+        self.admin_unit_code = VarCharColumn('code', self, maximum=10)
 
         LOGGER.debug('%s Administrative Spatial Unit set initialized.', self.name)
+
+        #Add columns
+        self.add_column(self.admin_unit_name)
+        self.add_column(self.admin_unit_code)

@@ -22,15 +22,21 @@
 import sys
 import os
 import collections
+
 from PyQt4.QtGui import QDialog, QMessageBox, QComboBox, QApplication 
 from PyQt4.QtCore import *
 
-
-from stdm.data import actions, constraints,writeTableColumn,ConfigTableReader,setCollectiontypes
-from ui_table_property import Ui_TableProperty
+from stdm.data.config_table_reader import ConfigTableReader
+from stdm.data.enums import (
+    actions,
+    constraints
+)
+from stdm.data.xmlconfig_writer import writeTableColumn
 from stdm.data.config_utils import *
 
-class TableProperty(QDialog,Ui_TableProperty):
+from ui_table_property import Ui_TableProperty
+
+class TableProperty(QDialog, Ui_TableProperty):
     def __init__(self,usrProf,tableName,parent):
         QDialog.__init__(self,parent)
         # Set up the user interface from Designer.
@@ -45,7 +51,6 @@ class TableProperty(QDialog,Ui_TableProperty):
         self.initControls()
 
         QObject.connect(self.cboTable, SIGNAL("currentIndexChanged(int)"), self.relationColumns)
-       #QObject.connect(self.listView,SIGNAL('clicked(QModelIndex)'),self.selectedIndex)
         
     def initControls(self):
         '''Initialize defualt dialog properties'''

@@ -17,7 +17,6 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-
 class DbItem(object):
     """
     Represents the main objects

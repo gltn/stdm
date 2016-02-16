@@ -1,11 +1,4 @@
-"""
-STDM Import/Export module
-"""
-__author__ = 'John Gitau'
-__license__ = 'GNU Lesser General Public License (LGPL)'
-__url__ = 'http://www.unhabitat.org'
-
-from stdm.settings import QGISRegistryConfig
+from stdm.settings.registryconfig import QGISRegistryConfig
 from .exceptions import TranslatorException
 from .reader import OGRReader
 from .writer import OGRWriter

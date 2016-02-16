@@ -19,8 +19,9 @@ email                : stdm@unhabitat.org
 """
 import logging
 
-from .columns import ForeignKeyColumn
-from .entity import Entity
+from stdm.data.configuration.columns import ForeignKeyColumn
+from stdm.data.configuration.entity import Entity
+from stdm.data.configuration.value_list import ValueList
 
 LOGGER = logging.getLogger('stdm')
 
@@ -33,18 +34,33 @@ class SocialTenure(Entity):
     Main class that represents 'people-land' relationships.
     """
     TYPE_INFO = 'SOCIAL_TENURE'
-    PARTY, SPATIAL_UNIT = range(0,2)
+    PARTY, SPATIAL_UNIT, SOCIAL_TENURE_TYPE = range(0,3)
+    tenure_type_list = 'tenure_type'
 
     def __init__(self, name, profile, supports_documents=True):
         Entity.__init__(self, name, profile,
                         supports_documents=supports_documents)
 
+        self.user_editable = False
+
         self._party = None
         self._spatial_unit = None
 
-        self.party_foreign_key = None
-        self.spatial_unit_foreign_key = None
-        self.tenure_type_foreign_key = None
+        self.party_foreign_key = ForeignKeyColumn('party_id', self)
+        self.spatial_unit_foreign_key = ForeignKeyColumn('spatial_unit_id',
+                                                         self)
+        self.tenure_type_foreign_key = ForeignKeyColumn('tenure_type_id',
+                                                        self)
+
+        self._value_list = self._prepare_tenure_type_value_list()
+
+        #Add the value list to the table collection
+        self.profile.add_entity(self._value_list)
+
+        #Add columns to the collection
+        self.add_column(self.party_foreign_key)
+        self.add_column(self.spatial_unit_foreign_key)
+        self.add_column(self.tenure_type_foreign_key)
 
         LOGGER.debug('Social Tenure Relationship initialized for %s profile.',
                      self.profile.name)
@@ -56,6 +72,10 @@ class SocialTenure(Entity):
     @property
     def spatial_unit(self):
         return self._spatial_unit
+
+    @property
+    def tenure_type_collection(self):
+        return self._value_list
 
     @party.setter
     def party(self, party):
@@ -81,9 +101,6 @@ class SocialTenure(Entity):
 
         self._party = party_entity
 
-        #Create foreign key reference
-        self.party_foreign_key = ForeignKeyColumn('party_id', self)
-
         #Set parent attributes
         self.party_foreign_key.set_entity_relation_attr('parent', self._party)
         self.party_foreign_key.set_entity_relation_attr('parent_column', 'id')
@@ -94,6 +111,13 @@ class SocialTenure(Entity):
 
     @spatial_unit.setter
     def spatial_unit(self, spatial_unit):
+        """
+        Sets the corresponding spatial unit entity in the social tenure
+        relationship.
+        :param spatial_unit: Spatial unit entity.
+        .. note:: The spatial unit entity must contain a geometry column
+        else it will not be set.
+        """
         spatial_unit_entity = self._obj_from_str(spatial_unit)
 
         if spatial_unit_entity is None:
@@ -114,11 +138,17 @@ class SocialTenure(Entity):
 
             raise AttributeError(err)
 
-        self._spatial_unit = spatial_unit_entity
+        if not spatial_unit_entity.has_geometry_column():
+            err = self.tr('%s does not have geometry column. This is required'
+                          ' when setting the spatial unit entity in a '
+                          'social tenure relationship definition.'
+                          %(spatial_unit_entity.name))
 
-        #Create foreign key reference
-        self.spatial_unit_foreign_key = ForeignKeyColumn('spatial_unit_id',
-                                                         self)
+            LOGGER.debug(err)
+
+            raise AttributeError(err)
+
+        self._spatial_unit = spatial_unit_entity
 
         #Set parent attributes
         self.spatial_unit_foreign_key.set_entity_relation_attr('parent',
@@ -147,4 +177,29 @@ class SocialTenure(Entity):
         Check if the entity has an ID column and return it, else returns None.
         """
         return entity.column('id')
+
+    def _prepare_tenure_type_value_list(self):
+        tenure_value_list = ValueList(self.tenure_type_list, self.profile)
+
+        #Set the FK attributes
+        self.tenure_type_foreign_key.set_entity_relation_attr('parent',
+                                                        tenure_value_list)
+        self.tenure_type_foreign_key.set_entity_relation_attr('parent_column',
+                                                              'id')
+
+        return tenure_value_list
+
+    def valid(self):
+        """
+        :return: Returns True if the party and spatial unit entities have
+        been set, else returns False.
+        :rtype: bool
+        """
+        if self._party is None:
+            return False
+
+        if self._spatial_unit is None:
+            return False
+
+        return True
 

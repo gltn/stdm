@@ -20,10 +20,10 @@ email                : gkahiu@gmail.com
 from collections import OrderedDict
 
 from PyQt4.QtGui import (
-                         QListView,
-                         QStandardItemModel,
-                         QStandardItem
-                         )
+     QListView,
+     QStandardItemModel,
+     QStandardItem
+)
 from PyQt4.QtCore import Qt
 
 __all__ = ["ModelAtrributesView"]

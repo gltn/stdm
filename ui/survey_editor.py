@@ -21,7 +21,12 @@ from datetime import datetime
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import Survey,Witness, Respondent, MapperMixin
+from stdm.data.database import (
+    Survey,
+    Witness,
+    Respondent
+)
+from stdm.data.mapping import MapperMixin
 
 from stdm.utils import randomCodeGenerator
 from .ui_survey import Ui_frmSurvey

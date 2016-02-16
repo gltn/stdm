@@ -20,8 +20,10 @@ email                : gkahiu@gmail.com
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from ui_dbconn import Ui_frmDbConn
-from stdm.data import DatabaseConnection, DatabaseConfig
+from stdm.data.config import DatabaseConfig
+from stdm.data.connection import DatabaseConnection
+
+from .ui_dbconn import Ui_frmDbConn
 
 class dbconnDlg(QDialog, Ui_frmDbConn):
     '''
