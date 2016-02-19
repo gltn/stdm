@@ -10,5 +10,4 @@
 *.pyc
 *.zip
 
-/third_party/*
 docs/_build

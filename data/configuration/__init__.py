@@ -31,7 +31,7 @@ def entity_model(entity, entity_only=False):
         rf_entities.extend(parents)
         rf_entities.extend(children)
 
-    #We will a different metadata object just for reflecting 'rf_entities'
+    #We will use a different metadata object just for reflecting 'rf_entities'
     rf_metadata = MetaData(metadata.bind)
     rf_metadata.reflect(only=rf_entities)
 
