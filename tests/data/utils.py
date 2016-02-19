@@ -3,8 +3,10 @@ from stdm import data
 from sqlalchemy import create_engine
 
 from stdm.data.configuration.columns import (
+    ForeignKeyColumn,
     GeometryColumn,
     IntegerColumn,
+    MultipleSelectColumn,
     VarCharColumn
 )
 from stdm.data.configuration.entity import entity_factory
@@ -18,6 +20,7 @@ BASIC_PROFILE = 'Basic'
 PERSON_ENTITY = 'person'
 SPATIAL_UNIT_ENTITY = 'spatial_unit'
 HOUSEHOLD_ENTITY = 'household'
+SURVEYOR_ENTITY = 'suveyor'
 
 DB_USER = 'postgres'
 DB_PASS = 'admin'
@@ -60,6 +63,15 @@ def create_spatial_unit_entity(profile):
     add_geometry_column('geom_poly', entity)
 
     return entity
+
+def create_surveyor_entity(profile):
+    return create_entity(profile, SURVEYOR_ENTITY, **full_entity_opt_args)
+
+def add_surveyor_entity(profile):
+    surveyor = create_surveyor_entity(profile)
+    profile.add_entity(surveyor)
+
+    return surveyor
 
 def add_person_entity(profile):
     entity = create_person_entity(profile)
@@ -108,6 +120,12 @@ def append_person_columns(entity):
     entity.add_column(first_name)
     entity.add_column(last_name)
 
+def append_surveyor_columns(surveyor):
+    first_name = VarCharColumn('first_name', surveyor, maximum=30)
+    last_name = VarCharColumn('last_name', surveyor, maximum=30)
+    surveyor.add_column(first_name)
+    surveyor.add_column(last_name)
+
 def populate_configuration(config):
     profile = add_basic_profile(config)
 
@@ -123,7 +141,29 @@ def populate_configuration(config):
 
     profile.add_entity_relation(rel)
 
-    add_spatial_unit_entity(profile)
+    #Add save option lookup
+    save_options = create_value_list(profile, 'save_options')
+    save_options.add_value('House')
+    save_options.add_value('Bank')
+    save_options.add_value('SACCO')
+    profile.add_entity(save_options)
+
+    #Add save options to multiple select column to person entity
+    save_options_column = MultipleSelectColumn('save_location', person_entity)
+    save_options_column.value_list = save_options
+    person_entity.add_column(save_options_column)
+
+    #Append surveyor columns
+    surveyor = add_surveyor_entity(profile)
+    append_surveyor_columns(surveyor)
+
+    spatial_unit = add_spatial_unit_entity(profile)
+
+    #Add foreign key linking spatial unit to surveyor
+    surveyor_id_col = ForeignKeyColumn('surveyor_id', spatial_unit)
+    surveyor_id_col.set_entity_relation_attr('parent', surveyor)
+    surveyor_id_col.set_entity_relation_attr('parent_column', 'id')
+    spatial_unit.add_column(surveyor_id_col)
 
     #Set STR entities
     set_profile_social_tenure(profile)
@@ -144,5 +184,4 @@ def create_alchemy_engine():
     data.app_dbconn = db_conn
 
     return create_engine(connection_str, echo=False)
-
 

@@ -17,7 +17,6 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-
 import logging
 from collections import OrderedDict
 
