@@ -124,7 +124,6 @@ class Entity(QObject, TableItem):
 
         self.supports_documents = supports_documents
         self.supporting_doc = None
-        self.is_global = is_global
         self.is_proxy = is_proxy
         self.updated_columns = OrderedDict()
 
