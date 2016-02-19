@@ -187,6 +187,9 @@ class SocialTenure(Entity):
         self.tenure_type_foreign_key.set_entity_relation_attr('parent_column',
                                                               'id')
 
+        tenure_value_list.add_value('Ownership', 'OWN')
+        tenure_value_list.add_value('Tenancy', 'TEN')
+
         return tenure_value_list
 
     def valid(self):

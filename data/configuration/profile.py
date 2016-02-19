@@ -39,6 +39,7 @@ from stdm.data.configuration.entity import Entity
 from stdm.data.configuration.db_items import DbItem
 from stdm.data.configuration.social_tenure import SocialTenure
 from stdm.data.configuration.supporting_document import SupportingDocument
+from stdm.data.configuration.value_list import ValueList
 
 LOGGER = logging.getLogger('stdm')
 
@@ -147,14 +148,29 @@ class Profile(QObject):
 
     def entity(self, name):
         """
-        Get table item from the name.
-        :param name: Name of the table item.
+        Get table item using its short name.
+        :param name: Short name of the table item.
         :type name: str
         :returns: Entity with the corresponding name, returns None
         if not found.
         :rtype: Entity
         """
         return self.entities.get(name, None)
+
+    def entity_by_name(self, name):
+        """
+        :param name: Name of the entity.
+        :type name: str
+        :return: Return an entity object with the specified name. ValueLists
+        are also searched and returned.
+        :rtype: Entity
+        """
+        items = [e for e in self.entities.values() if e.name == name]
+
+        if len(items) == 0:
+            return None
+        else:
+            return items[0]
 
     def clone(self):
         """
@@ -381,6 +397,13 @@ class Profile(QObject):
         """
         return [entity for entity in self.entities.values()
                 if entity.TYPE_INFO == type_info]
+
+    def value_lists(self):
+        """
+        :return: A list of lookup entities contained in this profile.
+        :rtype: list
+        """
+        return self.entities_by_type_info(ValueList.TYPE_INFO)
 
     def on_delete(self):
         """
