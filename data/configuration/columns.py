@@ -495,7 +495,7 @@ class ForeignKeyColumn(IntegerColumn):
     def set_entity_relation_attr(self, attr, val):
         """
         Sets the specified property of the entity relation object.
-        :param attr: Name of the attribute.
+        :param attr: Name of the attribute i.e. 'parent' or 'parent_column'.
         :type attr: str
         :param val: Attribute value.
         :type val: object
@@ -548,6 +548,14 @@ class LookupColumn(ForeignKeyColumn):
         :type value_list: str or ValueList object.
         """
         self.set_entity_relation_attr('parent', value_list)
+
+    @property
+    def value_list(self):
+        """
+        :return: Returns the value list for this lookup object
+        :rtype: ValueList
+        """
+        return self.entity_relation.parent
 
     @classmethod
     def display_name(cls):

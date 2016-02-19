@@ -55,29 +55,42 @@ class AssociationEntity(Entity):
         self.user_editable = False
         self.is_associative = True
 
-        self.first_reference = None
-        self.second_reference = None
+        self.first_reference_column = None
+        self.second_reference_column = None
 
-        self._first_parent = kwargs.get('first_parent', None)
-        self._second_parent = kwargs.get('second_parent', None)
+        self.first_parent = kwargs.get('first_parent', None)
+        self.second_parent = kwargs.get('second_parent', None)
 
     @property
     def first_parent(self):
-        return self._first_parent
+        if self.first_reference_column is None:
+            return None
+
+        return self.first_reference_column.entity_relation.parent
 
     @property
     def second_parent(self):
-        return self._second_parent
+        if self.second_reference_column is None:
+            return None
+
+        return self.second_reference_column.entity_relation.parent
 
     @first_parent.setter
     def first_parent(self, parent):
-        self._set_parent(parent, self.first_reference)
+        self.first_reference_column = self._set_parent(parent)
+
+        #Add column to the collection
+        if self.first_reference_column:
+            self.add_column(self.first_reference_column)
 
     @second_parent.setter
     def second_parent(self, parent):
-        self._set_parent(parent, self.second_reference)
+        self.second_reference_column = self._set_parent(parent)
 
-    def _set_parent(self, parent, foreign_key_reference):
+        if self.second_reference_column:
+            self.add_column(self.second_reference_column)
+
+    def _set_parent(self, parent):
         parent_entity = self._obj_from_str(parent)
 
         if parent_entity is None:
@@ -112,6 +125,8 @@ class AssociationEntity(Entity):
         LOGGER.debug('%s entity has been successfully set as the parent in '
                      'the %s association entity in the %s profile.',
                      parent_entity.name, self.name, self.profile.name)
+
+        return foreign_key_reference
 
     def _obj_from_str(self, item):
         """Create corresponding table item from string."""
