@@ -1,7 +1,7 @@
 """
 /***************************************************************************
 Name                 : ConfigurationWriter
-Description          : Writes configuration object to file.
+Description          : Reads/writes configuration object from/to file.
 Date                 : 15/February/2016
 copyright            : (C) 2015 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
