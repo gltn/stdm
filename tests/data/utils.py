@@ -6,6 +6,7 @@ from stdm.data.configuration.columns import (
     ForeignKeyColumn,
     GeometryColumn,
     IntegerColumn,
+    LookupColumn,
     MultipleSelectColumn,
     VarCharColumn
 )
@@ -112,13 +113,27 @@ def add_household_entity(profile):
 
     return entity
 
+def create_gender_lookup(entity):
+    gender_value_list = create_value_list(entity.profile, 'gender')
+    gender_value_list.add_value('Male')
+    gender_value_list.add_value('Female')
+
+    return gender_value_list
+
 def append_person_columns(entity):
     household_id = IntegerColumn('household_id', entity)
     first_name = VarCharColumn('first_name', entity, maximum=30)
     last_name = VarCharColumn('last_name', entity, maximum=30)
+
+    #Create gender lookup column and attach value list
+    gender = LookupColumn('gender', entity)
+    gender_value_list = create_gender_lookup(entity)
+    gender.value_list = gender_value_list
+
     entity.add_column(household_id)
     entity.add_column(first_name)
     entity.add_column(last_name)
+    entity.add_column(gender)
 
 def append_surveyor_columns(surveyor):
     first_name = VarCharColumn('first_name', surveyor, maximum=30)
@@ -166,7 +181,8 @@ def populate_configuration(config):
     spatial_unit.add_column(surveyor_id_col)
 
     #Set STR entities
-    set_profile_social_tenure(profile)
+    profile.set_social_tenure_attr(SocialTenure.PARTY, person_entity)
+    profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT, spatial_unit)
 
 
 def create_db_connection():
