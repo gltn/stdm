@@ -11,3 +11,6 @@
 *.zip
 
 docs/_build
+
+# Bash scripts
+*.sh

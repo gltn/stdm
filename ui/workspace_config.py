@@ -27,26 +27,7 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
 #from ui_workspace_config import Ui_STDMWizard
-from ui_stdm_config import Ui_STDMWizard
-
-from stdm.data import (
-		ConfigTableReader,
-		deleteProfile,
-		profileFullDescription,
-		deleteColumn,
-		deleteTable,
-		lookupData2List,
-		deleteLookupChoice,
-		SQLInsert,
-		LicenseDocument, 
-		safely_delete_tables, 
-		stdm_core_tables,
-		_execute, 
-		flush_session_activity,
-		CheckableListModel, 
-		non_editable_tables, 
-		table_description
-)
+from wizard.ui_stdm_config import Ui_STDMWizard
 
 from sqlalchemy.sql.expression import text
 from sqlalchemy.exc import SQLAlchemyError

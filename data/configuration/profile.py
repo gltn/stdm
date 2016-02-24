@@ -165,7 +165,7 @@ class Profile(QObject):
         are also searched and returned.
         :rtype: Entity
         """
-        items = [e for e in self.entities.values() if e.name == name]
+        items = [e for e in self.entities.values() if e.short_name == name]
 
         if len(items) == 0:
             return None
@@ -309,9 +309,12 @@ class Profile(QObject):
         replaced with this item.
         :type item: Entity
         """
-        #If there is an existing item with the same name then do not add it.
+        #If there is an existing item with the same name,
+        # and that item action is not DROP, then do not add this.
         if item.short_name in self.entities:
-            return
+            old_item = self.entities[item.short_name]
+            if old_item.action <> DbItem.DROP:
+                return
 
         self.entities[item.short_name] = item
 
@@ -410,5 +413,5 @@ class Profile(QObject):
         Cleans up the profile upon deleting by clearing the tables and
         corresponding entity relation/FK constraints.
         """
-        for entity in self.entities:
+        for entity in self.entities.values():
             self.remove_entity(entity.short_name)
