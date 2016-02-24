@@ -19,8 +19,12 @@ email                : stdm@unhabitat.org
 """
 import logging
 
-from stdm.data.configuration.columns import ForeignKeyColumn
+from stdm.data.configuration.columns import (
+    ForeignKeyColumn,
+    LookupColumn
+)
 from stdm.data.configuration.entity import Entity
+from stdm.data.configuration.social_tenure_updater import view_updater
 from stdm.data.configuration.value_list import ValueList
 
 LOGGER = logging.getLogger('stdm')
@@ -36,6 +40,7 @@ class SocialTenure(Entity):
     TYPE_INFO = 'SOCIAL_TENURE'
     PARTY, SPATIAL_UNIT, SOCIAL_TENURE_TYPE = range(0,3)
     tenure_type_list = 'tenure_type'
+    view_creator = view_updater
 
     def __init__(self, name, profile, supports_documents=True):
         Entity.__init__(self, name, profile,
@@ -49,7 +54,7 @@ class SocialTenure(Entity):
         self.party_foreign_key = ForeignKeyColumn('party_id', self)
         self.spatial_unit_foreign_key = ForeignKeyColumn('spatial_unit_id',
                                                          self)
-        self.tenure_type_foreign_key = ForeignKeyColumn('tenure_type_id',
+        self.tenure_type_lookup = LookupColumn('tenure_type',
                                                         self)
 
         self._value_list = self._prepare_tenure_type_value_list()
@@ -60,7 +65,7 @@ class SocialTenure(Entity):
         #Add columns to the collection
         self.add_column(self.party_foreign_key)
         self.add_column(self.spatial_unit_foreign_key)
-        self.add_column(self.tenure_type_foreign_key)
+        self.add_column(self.tenure_type_lookup)
 
         LOGGER.debug('Social Tenure Relationship initialized for %s profile.',
                      self.profile.name)
@@ -181,11 +186,8 @@ class SocialTenure(Entity):
     def _prepare_tenure_type_value_list(self):
         tenure_value_list = ValueList(self.tenure_type_list, self.profile)
 
-        #Set the FK attributes
-        self.tenure_type_foreign_key.set_entity_relation_attr('parent',
-                                                        tenure_value_list)
-        self.tenure_type_foreign_key.set_entity_relation_attr('parent_column',
-                                                              'id')
+        #Set lookup column reference value list
+        self.tenure_type_lookup.value_list = tenure_value_list
 
         tenure_value_list.add_value('Ownership', 'OWN')
         tenure_value_list.add_value('Tenancy', 'TEN')
@@ -205,4 +207,13 @@ class SocialTenure(Entity):
             return False
 
         return True
+
+    def create_view(self, engine):
+        """
+        Creates a basic view linking all the social tenure relationship
+        entities.
+        :param engine: SQLAlchemy connectable object.
+        :type engine: Engine
+        """
+        self.view_creator(engine)
 

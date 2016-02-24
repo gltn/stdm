@@ -155,6 +155,9 @@ class ConfigurationSchemaUpdater(QObject):
         #Update entity relations by creating foreign key references
         self.update_entity_relations(profile)
 
+        #Create basic STR database view
+        profile.social_tenure.create_view(self.engine)
+
     def _update_entities(self, entities):
         for e in entities:
             action = e.action
