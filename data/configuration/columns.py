@@ -440,6 +440,8 @@ class GeometryColumn(BaseColumn):
 
         BaseColumn.__init__(self, name, entity, **kwargs)
 
+        self.searchable = False
+
     def geometry_type(self):
         """
         :returns: Returns the specified geometry type as a string.

@@ -103,16 +103,17 @@ class Entity(QObject, TableItem):
             # format the internal name, replace spaces between words 
             # with underscore and make all letters lower case.
             name = str(name).strip()
-	    name = name.replace(' ', "_")
-	    name = name.lower()
-            
-            #Ensure prefix is not duplicated in the names
-            prfx = self.profile.prefix
-            prefix_idx = name.find(prfx, 0, len(prfx))
 
-            #If there is no prefix then append
-            if prefix_idx == -1:
-                name = u'{0}_{1}'.format(self.profile.prefix, name)
+        name = name.replace(' ', "_")
+        name = name.lower()
+            
+        #Ensure prefix is not duplicated in the names
+        prfx = self.profile.prefix
+        prefix_idx = name.find(prfx, 0, len(prfx))
+
+        #If there is no prefix then append
+        if prefix_idx == -1:
+            name = u'{0}_{1}'.format(self.profile.prefix, name)
 
         TableItem.__init__(self, name)
 

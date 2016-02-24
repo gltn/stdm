@@ -198,7 +198,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         editor = GeometryProperty(self)
         result = editor.exec_()
         if result == 1:
-            self.form_fields['srid'] = editor.coord_sys
+            self.form_fields['srid'] = editor.coord_sys()
             self.form_fields['geom_type'] = editor.geom_type
             self.type_attribs[self.type_info]['prop_set'] = True
 
@@ -351,7 +351,10 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
     def validate_mandt_fields(self):
         if len(unicode(self.edtColName.text()).strip())==0:
             self.error_message('Please enter the column name!')
+
             return False
+        return True
+
         return True
 
     def accept(self):

@@ -17,6 +17,8 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+import logging
+
 from PyQt4.QtCore import (
     QFile,
     QFileInfo,
@@ -24,6 +26,7 @@ from PyQt4.QtCore import (
 )
 from PyQt4.QtXml import (
     QDomDocument,
+    QDomElement,
     QDomNode
 )
 
@@ -31,6 +34,10 @@ from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.configuration.supporting_document import SupportingDocument
 from stdm.data.configuration.entity import Entity
+from stdm.data.configuration.profile import Profile
+
+LOGGER = logging.getLogger('stdm')
+
 
 class ConfigurationFileSerializer(object):
     """
@@ -58,7 +65,7 @@ class ConfigurationFileSerializer(object):
 
         #Check if the suffix is in the file name
         #TODO: Remove str function
-        if not str(save_file_info.suffix()).lower != 'stc':
+        if not unicode(save_file_info.suffix()).lower != 'stc':
             self.path = u'{0}.{1}'.format(self.path, 'stc')
             save_file_info = QFileInfo(self.path)
 
@@ -91,11 +98,150 @@ class ConfigurationFileSerializer(object):
         for p in self.config.profiles.values():
             ProfileSerializer.write_xml(p, config_element, document)
 
+    def load(self):
+        """
+        Loads the contents of the configuration file to the corresponding
+        instance object.
+        """
+        if not QFile.exists(self.path):
+            raise IOError(u'{0} does not exist. Configuration file cannot be '
+                          u'loaded.')
+
+        config_file = QFile(self.path)
+
+        if not config_file.open(QIODevice.ReadOnly):
+            raise IOError('Cannot read configuration file.')
+
+        config_doc = QDomDocument()
+
+        status, msg, line, col = config_doc.setContent(config_file)
+        if not status:
+            raise ConfigurationException(u'Configuration file cannot be '
+                                         u'loaded.\n{0}'.format(msg))
+
+        #Load configuration items
+        self.read_xml(config_doc)
+
+    def update(self, document):
+        """
+        Tries to upgrade the configuration file specified in the DOM document
+        to the current version.
+        :param document: Older version of STDM config.
+        :type document: QDomDocument
+        :return: True if the upgrade succeeded including the updated document
+        object, else False with None document object.
+        :rtype: tuple(bool, QDomDocument)
+        """
+        #TODO: Need to plugin the updater object
+        return False, None
+
+    def read_xml(self, document):
+        """
+        Reads configuration file and loads contents into a configuration
+        instance.
+        :param document: Main document object containing config information.
+        :type document: QDomDocument
+        """
+        #Reset items in the config file
+        self.config._clear()
+
+        #Load items afresh
+        #Check tag and version attribute first
+        doc_element = document.documentElement()
+
+        if doc_element.isNull():
+            #Its an older config file hence, try upgrade
+            document = self._update_status(document)
+
+        if not doc_element.hasAttribute('version'):
+            #Again, an older version
+            document = self._update_status(document)
+
+        #Check version
+        config_version = doc_element.attribute('version')
+        if config_version:
+            config_version = float(config_version)
+
+        else:
+            #Fatal error
+            raise ConfigurationException('Error extracting version '
+                                         'number from the '
+                                         'configuration file.')
+
+        if config_version < StdmConfiguration.instance().VERSION:
+            #Upgrade configuration
+            document = self._update_status(document)
+
+        doc_element = document.documentElement()
+
+        #All should be well at this point so start parsing the items
+        self._load_config_items(doc_element)
+
+    def _load_config_items(self, element):
+        #Load profiles
+        profile_elements = element.elementsByTagName('Profile')
+
+        p_count = profile_elements.count()
+
+        for i in range(p_count):
+            profile_element = profile_elements.item(i).toElement()
+            profile = ProfileSerializer.read_xml(profile_element, element,
+                                                 self.config)
+
+            if not profile is None:
+                self.config.add_profile(profile)
+
+            else:
+                LOGGER.debug('Empty profile name in the configuration file. '
+                             'Profile cannot be loaded.')
+
+    def _update_status(self, document):
+        status, doc = self.update(document)
+
+        if not status:
+            raise ConfigurationException('Configuration could not be updated. '
+                                         'Please contact your system '
+                                         'administrator.')
+
+        return doc
+
 
 class ProfileSerializer(object):
     """
     (De)serialize profile information.
     """
+    @staticmethod
+    def read_xml(element, config_element, configuration):
+        """
+        :param element: Element containing profile information.
+        :type element: QDomNode
+        :param config_element: Parent configuration element.
+        :type config_element: QDomElement
+        :param configuration: Current configuration instance.
+        :type configuration: StdmConfiguration
+        :return: Returns a Profile object using information contained in the
+        profile element.
+        :rtype: Profile
+        """
+        profile_name = element.attribute('name', '')
+        if not profile_name:
+            return None
+
+        #TODO: Remove str
+        profile = Profile(str(profile_name), configuration)
+
+        #Add entity-based items to the profile
+        child_nodes = element.childNodes()
+        for i in range(child_nodes.count()):
+            child_element = child_nodes.item(i).toElement()
+            child_tag_name = child_element.tagName()
+            item_serializer = EntitySerializerCollection.handler_by_tag_name(child_tag_name)
+
+            if not item_serializer is None:
+                item_serializer.read_xml(child_element, profile)
+
+        return profile
+
     @staticmethod
     def write_xml(profile, parent_node, document):
         """
@@ -183,6 +329,23 @@ class EntitySerializerCollection(object):
     @staticmethod
     def handler(type_info):
         return EntitySerializerCollection._registry.get(type_info, None)
+
+    @classmethod
+    def entry_tag_name(cls):
+        if hasattr(cls, 'GROUP_TAG'):
+            return cls.GROUP_TAG
+
+        return cls.TAG_NAME
+
+    @staticmethod
+    def handler_by_tag_name(tag_name):
+        handler = [s for s in EntitySerializerCollection._registry.values()
+                   if s.entry_tag_name() == tag_name]
+
+        if len(handler) == 0:
+            return None
+
+        return handler[0]
 
     @classmethod
     def group_element(cls, parent_node, document):
@@ -343,6 +506,20 @@ class ValueListSerializer(EntitySerializerCollection):
 
     #Corresponding type info to (de)serialize
     ENTITY_TYPE_INFO = 'VALUE_LIST'
+
+    @staticmethod
+    def read_xml(child_element, profile):
+        """
+        Reads the items in the child list element and add to the profile.
+        If child element is a group element then children nodes are also
+        extracted.
+        :param child_element: Element containing value list information.
+        :type child_element: QDomElement
+        :param profile: Profile object to be populated with the value list
+        information.
+        :type profile: Profile
+        """
+        pass
 
     #Specify attribute names
     @staticmethod

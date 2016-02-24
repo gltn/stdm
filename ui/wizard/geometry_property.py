@@ -22,13 +22,14 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import (
-		QDialog, 
-		QApplication, 
-		QMessageBox
-		)
+    QDialog,
+    QApplication,
+    QMessageBox
+)
+
+from qgis.gui import QgsGenericProjectionSelector
 
 from ui_geom_property import Ui_GeometryProperty
-from stdm.settings.projectionSelector import ProjectionSelector
 
 class GeometryProperty(QDialog, Ui_GeometryProperty):
     def __init__(self, parent, geom_type=None, coord_sys=None):
@@ -45,17 +46,20 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
         self.btnCoord.clicked.connect(self.projection_selector)
 
     def load_geometry_types(self):
-	self.cboGeoType.clear()
-	self.cboGeoType.insertItems(0, ['POINT', 'LINE', 'POLYGON', 'MULTIPOINT', 'MULTILINE', 'MULTIPOLYGON'])
-	self.cboGeoType.setCurrentIndex(0)
+        self.cboGeoType.clear()
+        self.cboGeoType.addItems(['POINT', 'LINE', 'POLYGON',
+                                        'MULTIPOINT', 'MULTILINE',
+                                        'MULTIPOLYGON'])
+        self.cboGeoType.setCurrentIndex(0)
 
     def projection_selector(self):
-	# open QGIS projection selector
-	projection_selector = ProjectionSelector(self)
-	projection = projection_selector.loadAvailableSystems()
-	self._coord_sys = unicode(projection)
-	#self._coord_sys = "EPSG:4326"
-        self.btnCoord.setText(self._coord_sys)
+        # open QGIS projection selector
+        projection_selector = QgsGenericProjectionSelector(self)
+
+        if projection_selector.exec_() == QDialog.Accepted:
+            #Remove 'EPSG:' part
+            self._coord_sys = projection_selector.selectedAuthId()[5:]
+            self.btnCoord.setText(projection_selector.selectedAuthId())
 	
     def add_values(self):
         self._geom_type = self.cboGeoType.currentIndex()
@@ -69,6 +73,7 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
     def accept(self):
         if not self._coord_sys:
             self.ErrorInfoMessage(QApplication.translate("GeometryPropetyEditor","Geometry coordinate system not given!"))
+
             return
 
         self.add_values()
