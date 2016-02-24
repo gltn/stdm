@@ -34,6 +34,7 @@ from stdm.data.configuration.columns import BaseColumn
 from stdm.data.configuration.value_list import ValueList, CodeValue, value_list_factory
 from stdm.data.configuration.social_tenure import *
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
+from stdm.data.configuration.db_items import DbItem
 
 from custom_item_model import *
 
@@ -88,10 +89,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         # STR view model
         self.party_item_model = STRColumnEntitiesModel()
-        self.lvParty.setModel(self.party_item_model)
+        #self.lvParty.setModel(self.party_item_model)
 
         self.spunit_item_model = STRColumnEntitiesModel()
-        self.lvSpatialUnit.setModel(self.spunit_item_model)
+        #self.lvSpatialUnit.setModel(self.spunit_item_model)
 
         self.cboParty.currentIndexChanged.connect(self.party_changed)
 
@@ -126,6 +127,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.btnEditLkupValue.clicked.connect(self.edit_lookup_value)
         self.btnDeleteLkupValue.clicked.connect(self.delete_lookup_value)
 
+        self.edtDocPath.setFocus()
+
         self.setStartId(1)
 
     def validate_str(self):
@@ -135,10 +138,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if self.cboParty.currentIndex() == self.cboSPUnit.currentIndex():
             return False, "Party and Spatial Unit entities cannot be the same!"
 
-        if self.get_str_columns(self.party_item_model) == 0 or \
-        len(self.get_str_columns(self.spunit_item_model)) == 0:
-            return False, "Please select party/spatial unit columns to \
-                    participate in STR definition!"
+        #if self.get_str_columns(self.party_item_model) == 0 or \
+        #len(self.get_str_columns(self.spunit_item_model)) == 0:
+            #return False, "Please select party/spatial unit columns to \
+                    #participate in STR definition!"
 
         return True, "Ok"
 
@@ -399,6 +402,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def populate_view_model(self, profile):
         for entity in profile.entities.values():
+            # if item is "deleted", don't show it
+            if entity.action == DbItem.DROP:
+                continue
+
             if entity.TYPE_INFO not in ['SUPPORTING_DOCUMENT',
                     'SOCIAL_TENURE', 'ADMINISTRATIVE_SPATIAL_UNIT',
                     'ENTITY_SUPPORTING_DOCUMENT']:
@@ -419,7 +426,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.cboSPUnit.currentIndexChanged.emit(self.cboSPUnit.currentIndex())
 
     def switch_profile(self, name):
-        profile = self.stdm_config.profile(str(name))  #profiles.values()[sel_id]
+        profile = self.stdm_config.profile(unicode(name))  #profiles.values()[sel_id]
 
         # clear view models
         self.clear_view_model(self.entity_model)
@@ -490,7 +497,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.party_item_model.clear()
             self.party_item_model = STRColumnEntitiesModel()
             self.addColumns(self.party_item_model, columns)
-            self.lvParty.setModel(self.party_item_model)
+            #self.lvParty.setModel(self.party_item_model)
         except:
             pass
 
@@ -501,7 +508,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.spunit_item_model.clear()
             self.spunit_item_model = STRColumnEntitiesModel()
             self.addColumns(self.spunit_item_model, columns)
-            self.lvSpatialUnit.setModel(self.spunit_item_model)
+            #self.lvSpatialUnit.setModel(self.spunit_item_model)
         except:
             pass
 
@@ -651,10 +658,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def new_lookup(self):
         profile = self.current_profile()
         if profile:
-            lookdlg = LookupEditor(self, profile)
-            result = lookdlg.exec_()
+            editor = LookupEditor(self, profile)
+            result = editor.exec_()
             if result == 1:
-                    self.lookup_view_model.add_entity(lookdlg.lookup)
+                self.lookup_view_model.add_entity(editor.lookup)
         else:
             show_message(QApplication.translate("Configuration Wizard", \
                     "No profile selected to add lookup!"))
@@ -676,6 +683,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if profile:
             if len(self.lvLookups.selectedIndexes()) > 0:
                 row_id, lookup = self._get_entity_item(self.lvLookups)
+                editor = LookupEditor(self, profile, lookup)
+                result = editor.exec_()
+                if result == 1:
+                    self.lookup_view_model.removeRow(row_id)
+                    self.lookup_view_model.add_entity(editor.lookup)
             else:
                 show_message(QApplication.translate("Configuration Wizard", \
                         "No lookup selected for edit!"))
@@ -689,7 +701,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             if len(self.lvLookups.selectedIndexes()) > 0:
                 row_id, lookup = self._get_entity_item(self.lvLookups)
                 profile.remove_entity(lookup.short_name)
-                #self.lookup_view_model.removeRow(row_id)
+                self.lookup_view_model.removeRow(row_id)
             else:
                 show_message(QApplication.translate("Configuration Wizard", \
                         "No lookup selected for deletion!"))
@@ -943,7 +955,6 @@ def start_cli():
 
     print editor.entity.columns
     return editor
-
 
 if __name__=='__main__':
     import sys

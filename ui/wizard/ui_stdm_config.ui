@@ -172,9 +172,9 @@
       <widget class="QLineEdit" name="edtOutputPath">
        <property name="geometry">
         <rect>
-         <x>190</x>
+         <x>152</x>
          <y>140</y>
-         <width>231</width>
+         <width>330</width>
          <height>30</height>
         </rect>
        </property>
@@ -187,13 +187,16 @@
        <property name="readOnly">
         <bool>true</bool>
        </property>
+       <property name="placeholderText">
+        <string>Enter path to save generated documents</string>
+       </property>
       </widget>
       <widget class="QLineEdit" name="edtTemplatePath">
        <property name="geometry">
         <rect>
-         <x>188</x>
+         <x>150</x>
          <y>230</y>
-         <width>231</width>
+         <width>330</width>
          <height>30</height>
         </rect>
        </property>
@@ -203,18 +206,21 @@
          <height>30</height>
         </size>
        </property>
+       <property name="placeholderText">
+        <string>Enter path to save document templates</string>
+       </property>
       </widget>
       <widget class="QLabel" name="label_4">
        <property name="geometry">
         <rect>
          <x>14</x>
          <y>237</y>
-         <width>123</width>
+         <width>131</width>
          <height>16</height>
         </rect>
        </property>
        <property name="text">
-        <string>Document templates path</string>
+        <string>Documents template path</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_31">
@@ -227,15 +233,15 @@
         </rect>
        </property>
        <property name="text">
-        <string>Documents generated output path</string>
+        <string>Documents output path</string>
        </property>
       </widget>
       <widget class="QPushButton" name="btnDocOutput">
        <property name="geometry">
         <rect>
-         <x>425</x>
+         <x>486</x>
          <y>139</y>
-         <width>75</width>
+         <width>70</width>
          <height>30</height>
         </rect>
        </property>
@@ -256,9 +262,9 @@
       <widget class="QLineEdit" name="edtDocPath">
        <property name="geometry">
         <rect>
-         <x>190</x>
+         <x>152</x>
          <y>40</y>
-         <width>231</width>
+         <width>330</width>
          <height>30</height>
         </rect>
        </property>
@@ -274,13 +280,16 @@
        <property name="readOnly">
         <bool>true</bool>
        </property>
+       <property name="placeholderText">
+        <string>Enter path to save entity supporting documents</string>
+       </property>
       </widget>
       <widget class="QPushButton" name="btnTemplates">
        <property name="geometry">
         <rect>
-         <x>422</x>
+         <x>483</x>
          <y>230</y>
-         <width>75</width>
+         <width>70</width>
          <height>30</height>
         </rect>
        </property>
@@ -301,9 +310,9 @@
       <widget class="QPushButton" name="btnDocPath">
        <property name="geometry">
         <rect>
-         <x>426</x>
+         <x>487</x>
          <y>40</y>
-         <width>75</width>
+         <width>70</width>
          <height>30</height>
         </rect>
        </property>
@@ -1008,33 +1017,11 @@
      <string/>
     </property>
    </widget>
-   <widget class="QGroupBox" name="groupBox_3">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>100</y>
-      <width>261</width>
-      <height>260</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Columns</string>
-    </property>
-    <layout class="QGridLayout" name="gridLayout_34">
-     <item row="0" column="0">
-      <widget class="QListView" name="lvParty">
-       <property name="selectionBehavior">
-        <enum>QAbstractItemView::SelectRows</enum>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
    <widget class="QLabel" name="label_5">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>40</y>
+      <x>160</x>
+      <y>30</y>
       <width>171</width>
       <height>16</height>
      </rect>
@@ -1058,9 +1045,9 @@
    <widget class="QComboBox" name="cboParty">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>60</y>
-      <width>251</width>
+      <x>160</x>
+      <y>50</y>
+      <width>271</width>
       <height>30</height>
      </rect>
     </property>
@@ -1080,8 +1067,8 @@
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
-      <x>300</x>
-      <y>40</y>
+      <x>160</x>
+      <y>190</y>
       <width>191</width>
       <height>16</height>
      </rect>
@@ -1102,29 +1089,11 @@
      <string>Spatial unit table in the STR definition</string>
     </property>
    </widget>
-   <widget class="QGroupBox" name="groupBox_4">
-    <property name="geometry">
-     <rect>
-      <x>300</x>
-      <y>100</y>
-      <width>271</width>
-      <height>260</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Columns</string>
-    </property>
-    <layout class="QGridLayout" name="gridLayout_35">
-     <item row="0" column="0">
-      <widget class="QListView" name="lvSpatialUnit"/>
-     </item>
-    </layout>
-   </widget>
    <widget class="QComboBox" name="cboSPUnit">
     <property name="geometry">
      <rect>
-      <x>300</x>
-      <y>60</y>
+      <x>160</x>
+      <y>210</y>
       <width>271</width>
       <height>30</height>
      </rect>
@@ -1167,7 +1136,7 @@
     <string>Save Profile</string>
    </property>
    <property name="subTitle">
-    <string>Save your profile changes</string>
+    <string>Click finish to save your profile changes to the database. Saving progress will be displayed in the window below. </string>
    </property>
    <layout class="QGridLayout" name="gridLayout_10">
     <item row="0" column="0">
@@ -1219,6 +1188,41 @@
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>btnDocPath</tabstop>
+  <tabstop>btnDocOutput</tabstop>
+  <tabstop>btnTemplates</tabstop>
+  <tabstop>edtDocPath</tabstop>
+  <tabstop>edtOutputPath</tabstop>
+  <tabstop>edtTemplatePath</tabstop>
+  <tabstop>rbAccpt</tabstop>
+  <tabstop>cboProfile</tabstop>
+  <tabstop>rbReject</tabstop>
+  <tabstop>btnPDelete</tabstop>
+  <tabstop>btnNewP</tabstop>
+  <tabstop>pftableView</tabstop>
+  <tabstop>btnNewEntity</tabstop>
+  <tabstop>btnEditEntity</tabstop>
+  <tabstop>btnDeleteEntity</tabstop>
+  <tabstop>lvEntities</tabstop>
+  <tabstop>btnDeleteColumn</tabstop>
+  <tabstop>btnEditColumn</tabstop>
+  <tabstop>btnAddColumn</tabstop>
+  <tabstop>tbvColumns</tabstop>
+  <tabstop>lvLookups</tabstop>
+  <tabstop>btnEditLookup</tabstop>
+  <tabstop>btnDeleteLookup</tabstop>
+  <tabstop>btnAddLookup</tabstop>
+  <tabstop>lvLookupValues</tabstop>
+  <tabstop>btnDeleteLkupValue</tabstop>
+  <tabstop>btnEditLkupValue</tabstop>
+  <tabstop>btnAddLkupValue</tabstop>
+  <tabstop>cboParty</tabstop>
+  <tabstop>cboSPUnit</tabstop>
+  <tabstop>scrollArea</tabstop>
+  <tabstop>txtHtml</tabstop>
+  <tabstop>txtLicense</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources.qrc"/>
  </resources>
