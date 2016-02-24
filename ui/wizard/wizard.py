@@ -105,8 +105,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         # Entity customization
         self.btnAddColumn.clicked.connect(self.new_column)
-        #self.btnAddColumn.clicked.connect(self.fake_party_columns)
-        #self.btnEditColumn.clicked.connect(self.fake_columns)
         self.btnEditColumn.clicked.connect(self.edit_column)
         self.btnDeleteColumn.clicked.connect(self.delete_column)
 
@@ -540,61 +538,29 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         model_item, entity, row_id = self.get_model_entity(self.lvEntities)
         if model_item:
-            editor = ColumnEditor(self, entity, self.current_profile())
+            profile = self.current_profile()
+            editor = ColumnEditor(self, entity, profile)
             result = editor.exec_()
+            if result == 1:
+                if editor.type_info == 'LOOKUP':
+                    self.clear_lookup_view()
+                    self.populate_lookup_view(profile)
 
-    def fake_party_columns(self):
-        model_item, entity, row_id = self.get_model_entity(self.lvEntities)
-        if model_item:
-            cp = self.current_profile()
-            print "fake_party_columns: ", cp.name
-
-            editor = ColumnEditor(self, entity, self.current_profile())
-
-            editor.type_info = 'VARCHAR'
-            attrs = {'maximum':50, 'value':'varchar_column','colname':'fname'}
-            editor.attributes(**attrs)
-            column = editor.create_column()
-            entity.add_column(column)
-            editor.entity.add_column(column)
-
-            editor.type_info = 'BIGINT'
-            attrs = {'colname':'age'}
-            editor.attributes(**attrs)
-            child_col = editor.create_column()
-            entity.add_column(column)
-            editor.entity.add_column(child_col)
-
-    def fake_columns(self):
-            model_item, entity, row_id = self.get_model_entity(self.lvEntities)
-            if model_item:
-                cp = self.current_profile()
-                print "fake_columns: ", cp.name
-
-                editor = ColumnEditor(self, entity, self.current_profile())
-
-                editor.type_info = 'VARCHAR'
-                attrs = {'maximum':80, 'value':'varchar_column','colname':'name'}
-                editor.attributes(**attrs)
-                column = editor.create_column()
-                entity.add_column(column)
-                editor.entity.add_column(column)
-
-                editor.type_info = 'VARCHAR'
-                attrs = {'maximum':15, 'value':'','colname':'code'}
-                editor.attributes(**attrs)
-                column = editor.create_column()
-                entity.add_column(column)
-                editor.entity.add_column(column)
-
-                editor.type_info = 'BIGINT'
-                attrs = {'colname':'regnum'}
-                editor.attributes(**attrs)
-                child_col = editor.create_column()
-                entity.add_column(column)
-                editor.entity.add_column(child_col)
-
-                #result = editor.exec_()
+    def clear_lookup_view(self):
+        self.clear_view_model(self.lookup_view_model)
+        self.lookup_view_model = LookupEntitiesModel()
+        self.lvLookups.setModel(self.lookup_view_model)
+        self.lookup_item_model = self.lvLookups.selectionModel()
+        self.lookup_item_model.selectionChanged.connect(self.lookup_changed)
+        
+    def populate_lookup_view(self, profile):
+        for entity in profile.entities.values():
+            # if item is "deleted", don't show it
+            if entity.action == DbItem.DROP:
+                continue
+            if entity.TYPE_INFO == 'VALUE_LIST':
+                self.lookup_view_model.add_entity(entity)
+                self.addValues_byEntity(entity)
 
     def new_column_LIVE(self):
         model_item, entity, row_id = self.get_model_entity(self.lvEntities)

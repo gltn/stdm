@@ -59,7 +59,7 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
         if projection_selector.exec_() == QDialog.Accepted:
             #Remove 'EPSG:' part
             self._coord_sys = projection_selector.selectedAuthId()[5:]
-            self.btnCoord.setText(projection_selector.selectedAuthId())
+            self.btnCoord.setText(self._coord_sys)
 	
     def add_values(self):
         self._geom_type = self.cboGeoType.currentIndex()
@@ -72,7 +72,7 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
 	    
     def accept(self):
         if not self._coord_sys:
-            self.ErrorInfoMessage(QApplication.translate("GeometryPropetyEditor","Geometry coordinate system not given!"))
+            self.error_message(QApplication.translate("GeometryPropetyEditor","Geometry coordinate system not given!"))
 
             return
 
@@ -82,7 +82,7 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
     def reject(self):
         self.done(0)
     
-    def ErrorInfoMessage(self, Message):
+    def error_message(self, Message):
         # Error Message Box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)

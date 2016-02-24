@@ -31,6 +31,7 @@ from PyQt4.QtCore import *
 
 from ui_lookup_property import Ui_LookupProperty
 from stdm.data.configuration.entity_relation import EntityRelation
+from create_lookup import LookupEditor
 
 class LookupProperty(QDialog, Ui_LookupProperty):
     def __init__(self, parent, lookup='', profile=None):
@@ -45,12 +46,21 @@ class LookupProperty(QDialog, Ui_LookupProperty):
 
     def initGui(self):
         #self.cboPrimaryEntity.currentIndexChanged.connect(self.load_entity_columns)
+        self.edtNewlookup.clicked.connect(self.create_lookup)
         lookup_names = self.lookup_entities()
         self.fill_lookup_cbo(lookup_names)
         if self._lookup:
             pass
             # read elements from self._entity_relation and assign widgets
 
+    def create_lookup(self):
+        editor = LookupEditor(self, self._profile)
+        result = editor.exec_()
+        if result == 1:
+            names = []
+            names.append(editor.lookup.short_name)
+            self.cboPrimaryEntity.insertItems(0, names)
+            
     def lookup_entities(self):
         names = []
         for entity in self._profile.entities.values():
@@ -90,7 +100,7 @@ class LookupProperty(QDialog, Ui_LookupProperty):
     def reject(self):
         self.done(0)
     
-    def ErrorInfoMessage(self, Message):
+    def error_message(self, Message):
         # Error Message Box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
