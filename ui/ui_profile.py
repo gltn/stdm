@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_profile.ui'
 #
-# Created: Sun Apr 27 17:15:47 2014
-#      by: PyQt4 UI code generator 4.10.3
+# Created: Sat Feb 20 09:11:15 2016
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -36,15 +36,15 @@ class Ui_Profile(object):
         self.label = QtGui.QLabel(self.groupBox)
         self.label.setObjectName(_fromUtf8("label"))
         self.gridLayout_2.addWidget(self.label, 0, 0, 1, 1)
-        self.txtProfile = QtGui.QLineEdit(self.groupBox)
-        self.txtProfile.setObjectName(_fromUtf8("txtProfile"))
-        self.gridLayout_2.addWidget(self.txtProfile, 0, 1, 1, 1)
+        self.edtProfile = QtGui.QLineEdit(self.groupBox)
+        self.edtProfile.setObjectName(_fromUtf8("edtProfile"))
+        self.gridLayout_2.addWidget(self.edtProfile, 0, 1, 1, 1)
         self.label_2 = QtGui.QLabel(self.groupBox)
         self.label_2.setObjectName(_fromUtf8("label_2"))
         self.gridLayout_2.addWidget(self.label_2, 1, 0, 1, 1)
-        self.txtDesc = QtGui.QLineEdit(self.groupBox)
-        self.txtDesc.setObjectName(_fromUtf8("txtDesc"))
-        self.gridLayout_2.addWidget(self.txtDesc, 1, 1, 1, 1)
+        self.edtDesc = QtGui.QLineEdit(self.groupBox)
+        self.edtDesc.setObjectName(_fromUtf8("edtDesc"))
+        self.gridLayout_2.addWidget(self.edtDesc, 1, 1, 1, 1)
         self.gridLayout.addWidget(self.groupBox, 0, 0, 1, 1)
         self.buttonBox = QtGui.QDialogButtonBox(Profile)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -59,9 +59,9 @@ class Ui_Profile(object):
 
     def retranslateUi(self, Profile):
         Profile.setWindowTitle(_translate("Profile", "Profile Editor", None))
-        self.groupBox.setTitle(_translate("Profile", "Manage Profile", None))
-        self.label.setText(_translate("Profile", "Profile Name", None))
-        self.txtProfile.setPlaceholderText(_translate("Profile", "Profile name", None))
+        self.groupBox.setTitle(_translate("Profile", "Profile details", None))
+        self.label.setText(_translate("Profile", "Profile name", None))
+        self.edtProfile.setPlaceholderText(_translate("Profile", "Profile name", None))
         self.label_2.setText(_translate("Profile", "Description", None))
-        self.txtDesc.setPlaceholderText(_translate("Profile", "Profile description", None))
+        self.edtDesc.setPlaceholderText(_translate("Profile", "Profile description", None))
 
