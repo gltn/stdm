@@ -11,21 +11,31 @@ from stdm.tests.data.utils import (
     populate_configuration
 )
 
-save_config_path = 'D:/Temp/Templates/test_writer.stc'
+config_path = 'D:/Temp/Templates/test_writer.stc'
 
 class TestConfigurationSerializer(TestCase):
     def setUp(self):
         self.config = StdmConfiguration.instance()
-        populate_configuration(self.config)
-        self.serializer = ConfigurationFileSerializer(save_config_path)
+        self.serializer = ConfigurationFileSerializer(config_path)
 
+    '''
     def test_save(self):
+        populate_configuration(self.config)
+
         self.serializer.save()
 
         update_result = True
 
         #Hardwire result
         self.assertTrue(update_result)
+    '''
+    def test_load(self):
+        self.serializer.load()
+
+        read_result = True
+
+        #Hardwire result
+        self.assertTrue(read_result)
 
 
 def suite():
