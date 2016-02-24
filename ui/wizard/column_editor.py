@@ -349,9 +349,10 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.current_column['column']    = self.create_column()
 
     def validate_mandt_fields(self):
-        if self.edtColName.text().isEmpty():
+        if len(unicode(self.edtColName.text()).strip())==0:
             self.error_message('Please enter the column name!')
             return False
+        return True
 
     def accept(self):
         if not self.validate_mandt_fields():
@@ -363,7 +364,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.done(1)
         else:
             return
-
 
     def rejectAct(self):
         self.done(0)

@@ -44,41 +44,46 @@ from stdm.data.configuration.entity import *
 from stdm.data.configuration.value_list import ValueList, CodeValue, value_list_factory
 
 class LookupEditor(QDialog, Ui_dlgLookup):
-    def __init__(self, parent, profile):
+    def __init__(self, parent, profile, lookup=None):
         QDialog.__init__(self, parent)
         self.setupUi(self)
-        self.initGui()
 
 	self.profile = profile
-	#self.form_parent = parent
-	self.lookup = None
+	self.lookup = lookup
+
+        self.initGui()
 
     def initGui(self):
-	    self.edtName.setFocus()
+	self.edtName.setFocus()
+        if self.lookup:
+            self.edtName.setText(self.lookup.short_name)
 	
     def format_lookup_name(self, name):
-	    formatted_name = str(name).strip()
-	    formatted_name = formatted_name.replace(' ', "_")
-	    return formatted_name.lower()
+        formatted_name = str(name).strip()
+        formatted_name = formatted_name.replace(' ', "_")
+        return formatted_name.lower()
     
     def add_lookup(self):
-  	    self.lookup = self.profile.create_entity(self.format_lookup_name(unicode(self.edtName.text())), value_list_factory)
-    	    self.profile.add_entity(self.lookup)
-	    #self.form_parent.lookup_view_model.add_entity(lookup)
+        name = self.format_lookup_name(unicode(self.edtName.text()))
+        # if its an edit, remove the existing entry first
+        if self.lookup:
+               self.profile.remove_entity(name)
+        self.lookup = self.profile.create_entity(name, value_list_factory)
+        self.profile.add_entity(self.lookup)
 	    
     def accept(self):
-	    if self.edtName.text()=='':
-		    self.ErrorInfoMessage(QApplication.translate("LookupEditor","Lookup name is not given!"))
-		    return
+        if self.edtName.text()=='':
+            self.error_message(QApplication.translate("LookupEditor","Lookup name is not given!"))
+            return
 
-            self.add_lookup()
-	    
-	    self.done(1)
+        self.add_lookup()
+        
+        self.done(1)
 
     def reject(self):
-	    self.done(0)
+        self.done(0)
     
-    def ErrorInfoMessage(self, Message):
+    def error_message(self, Message):
         # Error Message Box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
