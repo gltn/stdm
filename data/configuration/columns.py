@@ -541,14 +541,6 @@ class LookupColumn(ForeignKeyColumn):
         self.set_entity_relation_attr('parent_column', 'id')
         self.set_entity_relation_attr('display_cols', ['name', 'code'])
 
-    def set_value_list(self, value_list):
-        """
-        Set the lookup source.
-        :param value_list: ValueList reference.
-        :type value_list: str or ValueList object.
-        """
-        self.set_entity_relation_attr('parent', value_list)
-
     @property
     def value_list(self):
         """
@@ -556,6 +548,18 @@ class LookupColumn(ForeignKeyColumn):
         :rtype: ValueList
         """
         return self.entity_relation.parent
+
+    @value_list.setter
+    def value_list(self, value_list):
+        """
+        Set the lookup source.
+        :param value_list: ValueList reference.
+        :type value_list: str or ValueList object.
+        """
+        self.set_entity_relation_attr('parent', value_list)
+
+        #Add value list to the profile collection
+        self.profile.add_entity(value_list)
 
     @classmethod
     def display_name(cls):
