@@ -100,6 +100,12 @@ class Entity(QObject, TableItem):
 
         #Append profile prefix if not global
         if not self.is_global:
+            # format the internal name, replace spaces between words 
+            # with underscore and make all letters lower case.
+            name = str(name).strip()
+	    name = name.replace(' ', "_")
+	    name = name.lower()
+            
             #Ensure prefix is not duplicated in the names
             prfx = self.profile.prefix
             prefix_idx = name.find(prfx, 0, len(prfx))

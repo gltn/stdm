@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- stdm
-                                 A QGIS plugin
- Securing land and property rights for all
-                              -------------------
-        begin                : 2014-03-04
-        copyright            : (C) 2014 by GLTN
-        email                : njoroge.solomon@yahoo.com
+Name                 : workspace_config
+Description          : STDM Configuration Wizard
+Date                 : 05/January/2016
+copyright            : (C) 2015 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -26,6 +25,9 @@ import os
 
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
+
+#from ui_workspace_config import Ui_STDMWizard
+from wizard.ui_stdm_config import Ui_STDMWizard
 
 from sqlalchemy.sql.expression import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -65,7 +67,7 @@ from .lookup_values_dlg import ADDLookupValue
 
 from ui_workspace_config import Ui_STDMWizard
 
-class WorkspaceLoader(QWizard,Ui_STDMWizard):
+class WorkspaceLoader(QWizard, Ui_STDMWizard):
     def __init__(self, parent):
         #Initialize the Qwizard parent
         QWizard.__init__(self,parent)
@@ -74,12 +76,13 @@ class WorkspaceLoader(QWizard,Ui_STDMWizard):
         self.registerFields()
         #Initialize the xml filehandler
         self.tableHandler = ConfigTableReader()
-        self.tableName=None
-        self.party_table_list=[]
-        self.spatial_table_list=[]
-        self. str_column_mapping ={}
-        self.profile=''
-        self.geomEntity=None
+
+        self.tableName = None
+        self.party_table_list = []
+        self.spatial_table_list = []
+        self. str_column_mapping = {}
+        self.profile = ''
+        self.geomEntity = None
 
         #if platform.system() =="Windows":
         #    self.setWizardStyle(QWizard.AeroStyle)

@@ -44,7 +44,10 @@ from stdm.ui.entity_browser import (
 )
 from stdm.ui.about import AboutSTDMDialog
 from stdm.ui.stdmdialog import DeclareMapping
+
 from stdm.ui.workspace_config import WorkspaceLoader
+from stdm.ui.wizard.wizard import ConfigWizard
+
 from stdm.ui.import_data import ImportData
 from stdm.ui.export_data import ExportData
 
@@ -402,7 +405,9 @@ class STDMQGISLoader(object):
         self.saveEditsAct.triggered.connect(self.onSaveEdits)
         self.createFeatureAct.triggered.connect(self.onCreateFeature)
         contentMenu.triggered.connect(self.widgetLoader)
-        self.wzdAct.triggered.connect(self.workspaceLoader)
+
+        #self.wzdAct.triggered.connect(self.workspaceLoader)
+        self.wzdAct.triggered.connect(self.load_config_wizard)
 
         self.newSTRAct.triggered.connect(self.newSTR)
         self.viewSTRAct.triggered.connect(self.onViewSTR)
@@ -672,6 +677,12 @@ class STDMQGISLoader(object):
         '''
         self.wkspDlg = WorkspaceLoader(self.iface.mainWindow())
         self.wkspDlg.exec_()
+
+    def load_config_wizard(self):
+        '''
+        '''
+        self.wizard = ConfigWizard(self.iface.mainWindow())
+        self.wizard.exec_()
 
     def changePassword(self):
         '''
