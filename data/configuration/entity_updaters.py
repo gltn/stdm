@@ -55,6 +55,10 @@ def entity_updater(entity, engine, metadata):
                   Column('id', Integer, primary_key=True)
                   )
 
+    #Ensure table is always bound to an engine object
+    if table.bind is None:
+        table.bind = engine
+
     if entity.action == DbItem.CREATE:
         LOGGER.debug('Creating %s entity...', entity.name)
         create_entity(entity, table, engine)
@@ -109,6 +113,8 @@ def update_entity_columns(entity, table, columns):
             LOGGER.debug('Updating %s column.', c.name)
 
             c.update(table, col_names)
+
+            LOGGER.debug('Finished updating %s column.', c.name)
 
 
 def value_list_updater(value_list, engine, metadata):

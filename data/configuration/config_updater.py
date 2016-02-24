@@ -64,7 +64,7 @@ class ConfigurationSchemaUpdater(QObject):
 
         #Ensure there is a connectable set in the metadata
         if self.metadata.bind is None:
-            self.metadata.bind = engine
+            self.metadata.bind = self.engine
 
     def exec_(self):
         """
@@ -195,7 +195,7 @@ class ConfigurationSchemaUpdater(QObject):
                 else:
                     msg = self.tr(u'{0} foreign key constraint successfully '
                                   'created.'.format(er.name))
-                    self.update_progress.emit(ConfigurationSchemaUpdater.INFORMATION, msg)
+                    #self.update_progress.emit(ConfigurationSchemaUpdater.INFORMATION, msg)
 
                 LOGGER.debug(msg)
 

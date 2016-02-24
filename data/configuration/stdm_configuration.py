@@ -128,3 +128,12 @@ class StdmConfiguration(QObject):
         """
         return [p.prefix for p in self.profiles.values()]
 
+    def _clear(self):
+        """
+        Resets the profile collection without syncing the operations in the
+        database. Only used when loading the configuration from file. It
+        should not be used in most circumstances.
+        """
+        self.profiles = OrderedDict()
+        self.is_null = True
+
