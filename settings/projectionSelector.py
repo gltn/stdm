@@ -19,10 +19,10 @@ from PyQt4.QtCore import *
 from qgis.gui import QgsGenericProjectionSelector
 
 
-class projectionSelector(QDialog):
-    def __init__(self,parent):
-        super(projectionSelector,self).__init__(parent)
-        self.parent=parent
+class ProjectionSelector(QDialog):
+    def __init__(self, parent):
+        super(ProjectionSelector, self).__init__(parent)
+        self.parent = parent
        
       
     def loadAvailableSystems(self):

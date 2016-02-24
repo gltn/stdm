@@ -107,7 +107,7 @@ class ValueList(Entity):
         """
         self.values[code_value.value] = code_value
 
-    def values(self):
+    def Values(self):
         """
         :returns: Returns the absolute values in the lookup collection.
         """
