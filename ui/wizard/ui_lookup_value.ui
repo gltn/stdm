@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>241</width>
-    <height>124</height>
+    <width>223</width>
+    <height>117</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,8 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>66</x>
-     <y>90</y>
+     <x>55</x>
+     <y>88</y>
      <width>156</width>
      <height>23</height>
     </rect>
@@ -51,15 +51,15 @@
   <widget class="QLineEdit" name="edtCode">
    <property name="geometry">
     <rect>
-     <x>90</x>
+     <x>83</x>
      <y>52</y>
-     <width>80</width>
+     <width>131</width>
      <height>20</height>
     </rect>
    </property>
    <property name="maximumSize">
     <size>
-     <width>80</width>
+     <width>200</width>
      <height>16777215</height>
     </size>
    </property>
@@ -80,9 +80,9 @@
   <widget class="QLineEdit" name="edtValue">
    <property name="geometry">
     <rect>
-     <x>90</x>
+     <x>83</x>
      <y>20</y>
-     <width>133</width>
+     <width>130</width>
      <height>20</height>
     </rect>
    </property>

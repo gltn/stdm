@@ -35,6 +35,8 @@ from stdm.data.configuration.value_list import ValueList, CodeValue, value_list_
 from stdm.data.configuration.social_tenure import *
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 from stdm.data.configuration.db_items import DbItem
+from stdm.settings.config_serializer import ConfigurationFileSerializer 
+from stdm.data.configuration.exception import ConfigurationException
 
 from custom_item_model import *
 
@@ -55,6 +57,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         QWizard.__init__(self, parent)
         self.setupUi(self)
         self.register_fields()
+
+        self.is_config_done = False
 
         self.stdm_config = StdmConfiguration.instance()  
         self.stdm_config.profile_added.connect(self.cbo_add_profile)
@@ -177,6 +181,18 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             config_updater.update_completed.connect(self.config_update_completed)
 
             config_updater.exec_()
+
+            if self.is_config_done:
+                #config_path = 'D:/Temp/Templates/test_writer.stc'
+                config_path = 'd:/home/QGISApp/stdm/dev/sandbox/tmp/stdm.conf'
+                # write config to a file
+                cfs = ConfigurationFileSerializer(config_path)
+                try:
+                    cfs.save()
+                except(ConfigurationException, IOError) as e:
+                    show_message(QApplication.translate("Configuration Wizard", \
+                            str(e)))
+                    validPage = False
                 
             validPage = False
 
@@ -191,8 +207,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def config_update_completed(self, status):
         if status:
             self.txtHtml.append("Configuration updated successully.")
+            self.is_config_done = True
         else:
             self.txtHtml.append("Failed to update configuration. Check error logs.")
+            self.is_config_done = False
 
     def register_fields(self):
         self.setOption(self.HaveHelpButton, True)  
@@ -749,12 +767,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         #cv = self.lookup_item_model.currentIndex().model().entity_byId(row_id).code_value(unicode(value_text))
         else:
             show_message(QApplication.translate("Configuration Wizard", \
-                    "No value selected for edit"))
+                    "Select value to edit"))
 
     def delete_lookup_value(self):
         if len(self.lvLookupValues.selectedIndexes() ) == 0:
             show_message(QApplication.translate("Configuration Wizard", \
-                    "No value selected for deletion!"))
+                    "Select value to delete"))
             return
 
         row_id, lookup = self._get_entity_item(self.lvLookups)

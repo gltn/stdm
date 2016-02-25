@@ -107,7 +107,10 @@ def _entity_select_column(entity, use_inner_join=False, join_parents=False,
 
     for c in columns:
         if not c.TYPE_INFO in _exclude_view_column_types:
-            pseudo_column_name = u'{0}_{1}'.format(entity.short_name, c.name)
+            normalized_entity_sname = entity.short_name.replace(' ', 
+                    '_').lower()
+            pseudo_column_name = u'{0}_{1}'.format(normalized_entity_sname, 
+                    c.name)
             col_select_name = u'{0}.{1}'.format(entity.name,
                                                        c.name)
 
