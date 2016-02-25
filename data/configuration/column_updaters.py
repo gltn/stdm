@@ -67,6 +67,7 @@ def _update_col(column, table, data_type, columns):
     :param columns: Existing column names in the database for the given table.
     :type columns: list
     """
+    LOGGER.debug('Temp: Attempting to update %s column', column.name)
     alchemy_column = Column(column.name, data_type, **_base_col_attrs(column))
 
     idx_name = None

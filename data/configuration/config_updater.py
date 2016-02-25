@@ -190,7 +190,7 @@ class ConfigurationSchemaUpdater(QObject):
                 if not status:
                     msg = self.tr(u'Error in creating {0} foreign key '
                                   'constraint.'.format(er.name))
-                    self.update_progress.emit(ConfigurationSchemaUpdater.ERROR, msg)
+                    #self.update_progress.emit(ConfigurationSchemaUpdater.ERROR, msg)
 
                 else:
                     msg = self.tr(u'{0} foreign key constraint successfully '

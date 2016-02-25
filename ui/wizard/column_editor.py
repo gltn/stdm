@@ -199,7 +199,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         result = editor.exec_()
         if result == 1:
             self.form_fields['srid'] = editor.coord_sys()
-            self.form_fields['geom_type'] = editor.geom_type
+            self.form_fields['geom_type'] = editor.geom_type()
             self.type_attribs[self.type_info]['prop_set'] = True
 
     def fk_property(self):
