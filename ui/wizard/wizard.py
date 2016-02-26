@@ -183,8 +183,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             config_updater.exec_()
 
             if self.is_config_done:
-                #config_path = 'D:/Temp/Templates/test_writer.stc'
-                config_path = 'd:/home/QGISApp/stdm/dev/sandbox/tmp/stdm.conf'
+                #config_path = 'd:/home/QGISApp/stdm/dev/sandbox/tmp/stdm.xml'
+                config_path = os.path.expand('~')+'/.stdm/stdm_config.xml'
                 # write config to a file
                 cfs = ConfigurationFileSerializer(config_path)
                 try:
@@ -194,7 +194,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                             str(e)))
                     validPage = False
                 
-            validPage = False
+            if validPage:
+                show_message(QApplication.translate("Configuration Wizard", \
+                        "Configuration saved successfully."))
 
         return validPage
 
@@ -557,12 +559,32 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         model_item, entity, row_id = self.get_model_entity(self.lvEntities)
         if model_item:
             profile = self.current_profile()
-            editor = ColumnEditor(self, entity, profile)
+
+            params={}
+            params['entity']=entity
+            params['profile']=profile
+            editor = ColumnEditor(self, **params)
             result = editor.exec_()
             if result == 1:
                 if editor.type_info == 'LOOKUP':
                     self.clear_lookup_view()
                     self.populate_lookup_view(profile)
+
+    def edit_column(self):
+        rid, column = self._get_column(self.tbvColumns)
+        if column and column.action == DbItem.CREATE:
+            row_id, entity = self._get_entity(self.lvEntities)
+
+            params = {}
+            params['column'] = column
+            params['entity'] = entity
+            params['profile'] = self.current_profile()
+            
+            editor = ColumnEditor(self, **params)
+            result = editor.exec_()
+        else:
+            show_message(QApplication.translate("Configuration Wizard", \
+                    "No column selected for edit!"))
 
     def clear_lookup_view(self):
         self.clear_view_model(self.lookup_view_model)
@@ -579,12 +601,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             if entity.TYPE_INFO == 'VALUE_LIST':
                 self.lookup_view_model.add_entity(entity)
                 self.addValues_byEntity(entity)
-
-    def new_column_LIVE(self):
-        model_item, entity, row_id = self.get_model_entity(self.lvEntities)
-        if model_item:
-            editor = ColumnEditor(self, entity, self.current_profile())
-            result = editor.exec_()
 
     def _get_cbo_id(self, types, text):
         for i, c in enumerate(types):
@@ -609,25 +625,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         model_item, entity, row_id = self.get_model_entity(view)
         if entity:
             return row_id, entity
-
-    def edit_column(self):
-        rid, column = self._get_column(self.tbvColumns)
-        if column:
-            editor = ColumnEditor(self)
-            editor.resize(300, 200)
-
-            row_id, entity = self._get_entity(self.lvEntities)
-            #rid, column = self._get_column(self.tbvColumns)
-    
-            editor.txtCol.setText(column.name)
-
-            cbo_id = self._get_cbo_id(col_types, column.display_name())
-            editor.cboColType.setCurrentIndex(cbo_id)
-
-            result = editor.exec_()
-        else:
-            show_message(QApplication.translate("Configuration Wizard", \
-                    "No column selected for edit!"))
 
     def delete_column(self):
         row_id, column = self._get_column(self.tbvColumns)

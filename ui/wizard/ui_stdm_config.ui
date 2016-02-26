@@ -1133,59 +1133,34 @@
   </widget>
   <widget class="QWizardPage" name="wpSaveProfile">
    <property name="title">
-    <string>Save Profile</string>
+    <string>Save configuration</string>
    </property>
    <property name="subTitle">
-    <string>Click finish to save your profile changes to the database. Saving progress will be displayed in the window below. </string>
+    <string>Click finish to save changes in your configuration to the database.  </string>
    </property>
-   <layout class="QGridLayout" name="gridLayout_10">
-    <item row="0" column="0">
-     <widget class="QScrollArea" name="scrollArea">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>100</height>
-       </size>
-      </property>
-      <property name="baseSize">
-       <size>
-        <width>0</width>
-        <height>320</height>
-       </size>
-      </property>
-      <property name="widgetResizable">
-       <bool>true</bool>
-      </property>
-      <widget class="QWidget" name="scrollAreaWidgetContents">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>569</width>
-         <height>375</height>
-        </rect>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>800</width>
-         <height>500</height>
-        </size>
-       </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QTextEdit" name="txtHtml"/>
-        </item>
-       </layout>
-      </widget>
-     </widget>
-    </item>
-   </layout>
+   <widget class="QTextEdit" name="txtHtml">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>571</width>
+      <height>351</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>7</y>
+      <width>261</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save status will be displayed in the window below.</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <tabstops>
@@ -1219,8 +1194,6 @@
   <tabstop>btnAddLkupValue</tabstop>
   <tabstop>cboParty</tabstop>
   <tabstop>cboSPUnit</tabstop>
-  <tabstop>scrollArea</tabstop>
-  <tabstop>txtHtml</tabstop>
   <tabstop>txtLicense</tabstop>
  </tabstops>
  <resources>

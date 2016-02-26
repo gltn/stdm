@@ -121,7 +121,9 @@ def _entity_select_column(entity, use_inner_join=False, join_parents=False,
                 select_column_name = col_select_name
 
             if isinstance(c, ForeignKeyColumn) and join_parents:
+                LOGGER.debug('Creating STR: Getting parent for %s column', c.name)
                 parent_table = c.entity_relation.parent.name
+                LOGGER.debug('Parent found')
                 select_column_name = ''
 
                 #Map lookup values by default
