@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_entity.ui'
 #
-# Created: Tue Feb 23 12:34:02 2016
+# Created: Fri Feb 26 19:13:13 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -62,5 +62,5 @@ class Ui_dlgEntity(object):
         self.label_2.setText(_translate("dlgEntity", "Description", None))
         self.label.setText(_translate("dlgEntity", "Entity Name", None))
         self.edtTable.setPlaceholderText(_translate("dlgEntity", "Table name", None))
-        self.cbSupportDoc.setText(_translate("dlgEntity", "Allow supporting documents ?", None))
+        self.cbSupportDoc.setText(_translate("dlgEntity", "Allow supporting documents?", None))
 

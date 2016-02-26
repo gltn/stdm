@@ -81,7 +81,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
 	return formatted_name.lower()
     
     def add_entity(self):
-        entity_name = unicode(self.edtTable.text())
+        entity_name = unicode(self.edtTable.text()).capitalize()
 
         if self.entity is None:
             if self.profile.entities.has_key(entity_name):

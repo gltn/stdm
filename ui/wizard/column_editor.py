@@ -93,7 +93,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.lookup_entities = []
 
         # the current entity should not be part of the foreign key parent table, add it to the exclusion list
-        self.FK_EXCLUDE.append(entity.short_name)
+        self.FK_EXCLUDE.append(self.entity.short_name)
 
         self.cboDataType.currentIndexChanged.connect(self.change_data_type)
         #self.btnTableList.clicked.connect(self.lookupDialog)
@@ -161,7 +161,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 'unique': False, 'index': False,
                 'property':self.lookup_property, 'prop_set':False }
 
-        self.type_attribs['GEOMETRY' ] ={'mandt':True, 'search': False, 
+        self.type_attribs['GEOMETRY' ] ={'mandt':False, 'search': False, 
                 'unique': False, 'index': False, 
                 'property':self.geometry_property, 'prop_set':False }
 

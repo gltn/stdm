@@ -115,224 +115,191 @@
   </widget>
   <widget class="QWizardPage" name="wpPathSetting">
    <property name="title">
-    <string>Path Settings</string>
+    <string>Directory Settings</string>
    </property>
    <property name="subTitle">
-    <string>Set configuration and data directory path</string>
+    <string>Set configuration and documents directory path</string>
    </property>
-   <layout class="QGridLayout" name="gridLayout_27">
-    <item row="0" column="0">
-     <widget class="QGroupBox" name="groupBox_15">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>350</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>500</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <weight>50</weight>
-        <bold>false</bold>
-       </font>
-      </property>
-      <property name="title">
-       <string>Directory paths</string>
-      </property>
-      <widget class="QLabel" name="label_37">
-       <property name="geometry">
-        <rect>
-         <x>14</x>
-         <y>43</y>
-         <width>200</width>
-         <height>30</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>200</width>
-         <height>30</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Supporting documents path&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="edtOutputPath">
-       <property name="geometry">
-        <rect>
-         <x>152</x>
-         <y>140</y>
-         <width>330</width>
-         <height>30</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>30</height>
-        </size>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-       <property name="placeholderText">
-        <string>Enter path to save generated documents</string>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="edtTemplatePath">
-       <property name="geometry">
-        <rect>
-         <x>150</x>
-         <y>230</y>
-         <width>330</width>
-         <height>30</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>30</height>
-        </size>
-       </property>
-       <property name="placeholderText">
-        <string>Enter path to save document templates</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_4">
-       <property name="geometry">
-        <rect>
-         <x>14</x>
-         <y>237</y>
-         <width>131</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Documents template path</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_31">
-       <property name="geometry">
-        <rect>
-         <x>14</x>
-         <y>145</y>
-         <width>166</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Documents output path</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="btnDocOutput">
-       <property name="geometry">
-        <rect>
-         <x>486</x>
-         <y>139</y>
-         <width>70</width>
-         <height>30</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>30</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Change</string>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="edtDocPath">
-       <property name="geometry">
-        <rect>
-         <x>152</x>
-         <y>40</y>
-         <width>330</width>
-         <height>30</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>30</height>
-        </size>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-       <property name="placeholderText">
-        <string>Enter path to save entity supporting documents</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="btnTemplates">
-       <property name="geometry">
-        <rect>
-         <x>483</x>
-         <y>230</y>
-         <width>70</width>
-         <height>30</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>30</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Change</string>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="btnDocPath">
-       <property name="geometry">
-        <rect>
-         <x>487</x>
-         <y>40</y>
-         <width>70</width>
-         <height>30</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>30</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Change</string>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
-       </property>
-      </widget>
-     </widget>
-    </item>
-   </layout>
+   <widget class="QPushButton" name="btnTemplates">
+    <property name="geometry">
+     <rect>
+      <x>491</x>
+      <y>220</y>
+      <width>70</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>0</width>
+      <height>30</height>
+     </size>
+    </property>
+    <property name="text">
+     <string>Change</string>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_37">
+    <property name="geometry">
+     <rect>
+      <x>22</x>
+      <y>33</y>
+      <width>200</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>200</width>
+      <height>30</height>
+     </size>
+    </property>
+    <property name="text">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Supporting documents path&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnDocOutput">
+    <property name="geometry">
+     <rect>
+      <x>494</x>
+      <y>129</y>
+      <width>70</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>0</width>
+      <height>30</height>
+     </size>
+    </property>
+    <property name="text">
+     <string>Change</string>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_31">
+    <property name="geometry">
+     <rect>
+      <x>22</x>
+      <y>135</y>
+      <width>166</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Documents output path</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="edtTemplatePath">
+    <property name="geometry">
+     <rect>
+      <x>158</x>
+      <y>220</y>
+      <width>330</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>0</width>
+      <height>30</height>
+     </size>
+    </property>
+    <property name="placeholderText">
+     <string>Specify path to save document templates</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="edtDocPath">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>30</y>
+      <width>330</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>0</width>
+      <height>30</height>
+     </size>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+    <property name="placeholderText">
+     <string>Specify path to save entity supporting documents</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>22</x>
+      <y>227</y>
+      <width>131</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Documents template path</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="edtOutputPath">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>130</y>
+      <width>330</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>0</width>
+      <height>30</height>
+     </size>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+    <property name="placeholderText">
+     <string>Specify path to save generated documents</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnDocPath">
+    <property name="geometry">
+     <rect>
+      <x>495</x>
+      <y>30</y>
+      <width>70</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>0</width>
+      <height>30</height>
+     </size>
+    </property>
+    <property name="text">
+     <string>Change</string>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
+    </property>
+   </widget>
   </widget>
   <widget class="QWizardPage" name="wpProfile">
    <property name="title">
@@ -1164,12 +1131,6 @@
   </widget>
  </widget>
  <tabstops>
-  <tabstop>btnDocPath</tabstop>
-  <tabstop>btnDocOutput</tabstop>
-  <tabstop>btnTemplates</tabstop>
-  <tabstop>edtDocPath</tabstop>
-  <tabstop>edtOutputPath</tabstop>
-  <tabstop>edtTemplatePath</tabstop>
   <tabstop>rbAccpt</tabstop>
   <tabstop>cboProfile</tabstop>
   <tabstop>rbReject</tabstop>
