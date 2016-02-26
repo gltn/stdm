@@ -52,6 +52,8 @@ from create_lookup_value import ValueEditor
 LOGGER = logging.getLogger('stdm')
 LOGGER.setLevel(logging.DEBUG)
 
+LICENSE_PAGE, PATHS_PAGE, PROFILE_PAGE, ENTITY_PAGE, STR_PAGE, FINAL_PAGE = range(0, 6)
+
 class ConfigWizard(QWizard, Ui_STDMWizard):
     def __init__(self, parent):
         QWizard.__init__(self, parent)
@@ -140,21 +142,25 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if self.cboParty.currentIndex() == self.cboSPUnit.currentIndex():
             return False, "Party and Spatial Unit entities cannot be the same!"
 
-        #if self.get_str_columns(self.party_item_model) == 0 or \
-        #len(self.get_str_columns(self.spunit_item_model)) == 0:
-            #return False, "Please select party/spatial unit columns to \
-                    #participate in STR definition!"
-
         return True, "Ok"
+
+    def index_spatial_unit_table(self):
+        for index, entity in enumerate(self.entity_model.entities().values()):
+            if entity.has_geometry_column():
+                return index
+        return 0
 
     def validateCurrentPage(self):
         validPage = True
-        print "current page = ", self.currentId()
-        if self.currentId() == 3:
-            self.party_changed(0)
-            self.spatial_unit_changed(0)
 
-        if self.currentId() == 4:
+        if self.currentId() == ENTITY_PAGE:
+            self.party_changed(0)
+            # make spatial unit combo box
+            idx = self.index_spatial_unit_table()
+            self.cboSPUnit.setCurrentIndex(idx)
+            self.spatial_unit_changed(idx)
+
+        if self.currentId() == STR_PAGE:
             validPage, msg = self.validate_str()
             if not validPage:
                 show_message(QApplication.translate("Configuration Wizard", msg))
@@ -171,7 +177,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                             "Spatial unit entity should have a geometry column!"))
                     validPage = False
 
-        if self.currentId() == 5:
+        if self.currentId() == FINAL_PAGE:
             # last page
             # commit config to DB
             config_updater = ConfigurationSchemaUpdater()
@@ -183,15 +189,14 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             config_updater.exec_()
 
             if self.is_config_done:
-                #config_path = 'd:/home/QGISApp/stdm/dev/sandbox/tmp/stdm.xml'
-                config_path = os.path.expand('~')+'/.stdm/stdm_config.xml'
                 # write config to a file
+                config_path = os.path.expanduser('~')+'/.stdm/configuration.stc'
                 cfs = ConfigurationFileSerializer(config_path)
                 try:
                     cfs.save()
                 except(ConfigurationException, IOError) as e:
                     show_message(QApplication.translate("Configuration Wizard", \
-                            str(e)))
+                            unicode(e)))
                     validPage = False
                 
             if validPage:
@@ -281,7 +286,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def delete_entity_item(self, name):
         items = self.entity_model.findItems(name)
-        print "delete_entity_item items >>> ",items
         if len(items) > 0:
             self.entity_model.removeRow(items[0].row())
 
@@ -335,21 +339,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.cboProfile.clear()
         self.cboProfile.insertItems(0, profiles)
         self.cboProfile.setCurrentIndex(0)
-
-    def new_entity_test(self):
-        profile = self.current_profile()
-
-        entity_name = "party"
-        self._create_ent(profile, entity_name)
-
-        entity_name = "spatial unit"
-        self._create_ent(profile, entity_name)
-
-        entity_name = "Iostream"
-        self._create_ent(profile, entity_name)
-
-        entity_name = "memory"
-        self._create_ent(profile, entity_name)
 
     def add_column_item(self, column):
         print "Column added triggered...."
@@ -427,6 +416,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             if entity.TYPE_INFO not in ['SUPPORTING_DOCUMENT',
                     'SOCIAL_TENURE', 'ADMINISTRATIVE_SPATIAL_UNIT',
                     'ENTITY_SUPPORTING_DOCUMENT']:
+
                 if entity.TYPE_INFO == 'VALUE_LIST':
                     self.lookup_view_model.add_entity(entity)
                     self.addValues_byEntity(entity)

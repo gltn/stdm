@@ -109,7 +109,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Allow supporting documents ?</string>
+    <string>Allow supporting documents?</string>
    </property>
   </widget>
  </widget>

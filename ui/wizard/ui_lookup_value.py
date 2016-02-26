@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_lookup_value.ui'
 #
-# Created: Thu Feb 25 11:26:34 2016
+# Created: Fri Feb 26 16:10:39 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
