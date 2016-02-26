@@ -124,7 +124,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
 	    
     def accept(self):
         if self.edtTable.text()=='':
-            self.error_message(QApplication.translate("EntityEditor","Entity name is not given"))
+            self.error_message(QApplication.translate("EntityEditor","Please enter an entity name"))
             return
 
         if self.add_entity():

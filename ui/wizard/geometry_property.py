@@ -59,8 +59,8 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
         if projection_selector.exec_() == QDialog.Accepted:
             #Remove 'EPSG:' part
             self._coord_sys = projection_selector.selectedAuthId()[5:]
-            self.btnCoord.setText(self._coord_sys)
-	
+            self.btnCoord.setText(projection_selector.selectedAuthId())
+
     def add_values(self):
         self._geom_type = self.cboGeoType.currentIndex()
 
