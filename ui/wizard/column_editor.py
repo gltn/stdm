@@ -120,8 +120,14 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.form_fields['unique'] = column.unique
         self.form_fields['index']  = column.index
 
-        self.form_fields['minimum'] = column.minimum
-        self.form_fields['maximum'] = column.maximum
+        if hasattr(column, 'minimum'):
+            self.form_fields['minimum'] = column.minimum
+            self.form_fields['maximum'] = column.maximum
+
+        if hasattr(column, 'srid'):
+            self.form_fields['srid'] = column.srid
+            self.form_fields['geom_type'] = column.geom_type
+
         #self.form_fields['entity_relation'] = {}
 
     def bool_to_check(self, state):
@@ -139,6 +145,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.form_fields['index']  = False
         self.form_fields['minimum'] = self.type_attribs.get('minimum', 0) 
         self.form_fields['maximum'] = self.type_attribs.get('maximum', 0)
+        self.form_fields['srid'] = self.type_attribs.get('srid', "Select...")
+        self.form_fields['geom_type'] = self.type_attribs.get('geom_type', 0)
         self.form_fields['entity_relation'] = {}
 		
     def init_type_attribs(self):
@@ -183,7 +191,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 'property':self.lookup_property, 'prop_set':False }
 
         self.type_attribs['GEOMETRY' ] ={'mandt':False, 'search': False, 
-                'unique': False, 'index': False, 
+                'unique': False, 'index': False,
+                'srid':0, 'geom_type':0,
                 'property':self.geometry_property, 'prop_set':False }
 
         self.type_attribs['ADMIN_SPATIAL_UNIT' ] ={'mandt':True, 'search': False,
@@ -233,7 +242,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.form_fields['maximum'] = editor.max_val()
 
     def geometry_property(self):
-        editor = GeometryProperty(self)
+        editor = GeometryProperty(self, self.form_fields)
         result = editor.exec_()
         if result == 1:
             self.form_fields['srid'] = editor.coord_sys()
@@ -383,9 +392,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.fill_form_data()
         self.column = self.create_column()
-
-        print "MIN: ",self.column.minimum
-        print "MAX: ",self.column.maximum
 
         if self.column:
             self.entity.add_column(self.column)
