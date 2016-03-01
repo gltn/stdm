@@ -347,8 +347,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.spunit_item_model.add_entity(column)
 
     def delete_column_item(self, name):
-        #print self.col_view_model.findItems(name)  #[0].entity()
-        row_id = self.col_view_model.findItems(name)[0].row()
+        model_item, column, row_id = self.get_model_entity(self.tbvColumns)
+        self.col_view_model.delete_entity(column)
         self.col_view_model.removeRow(row_id)
         self.party_item_model.removeRow(row_id)
         self.spunit_item_model.removeRow(row_id)
@@ -562,6 +562,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def edit_column(self):
         rid, column = self._get_column(self.tbvColumns)
+        
         if column and column.action == DbItem.CREATE:
             row_id, entity = self._get_entity(self.lvEntities)
 
@@ -592,10 +593,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 self.lookup_view_model.add_entity(entity)
                 self.addValues_byEntity(entity)
 
-    def _get_cbo_id(self, types, text):
-        for i, c in enumerate(types):
-            if c == text:
-                return i
 
     def _get_entity_item(self, view):
         model_item, entity, row_id = self.get_model_entity(view)
@@ -681,7 +678,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     "Nothing to delete!"))
 
     def addValues_byEntity(self, entity):
-        for v in entity.Values():
+        for v in entity.values:
             cv = entity.code_value(v)
             if cv.updated_value == '':
                 txt = cv.value

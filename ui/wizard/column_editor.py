@@ -46,23 +46,6 @@ from datetime import (
     datetime
 )
 
-#from .lookupDlg import LookupDialog
-
-#from stdm.data  import (
-    #data_types,
-    #nullable,
-    #ConfigTableReader,
-    #writeTableColumn,
-    #table_column_exist,
-    #editTableColumn,
-    #postgres_defaults,
-    #RESERVED_ID,
-    #writeGeomConstraint
-#)
-
-#from stdm.data.config_utils import *
-#from .geometry import GeometryProperty
-
 class ColumnEditor(QDialog, Ui_ColumnEditor):
     def __init__(self, parent, **kwargs):
         QDialog.__init__(self, parent)
@@ -86,8 +69,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.type_attribs = {}
         self.init_type_attribs()
 
-        self.current_column = {}
-        self.init_current_column()
+        #self.current_column = {}
+        #self.init_current_column()
 
         self.fk_entities     = []
         self.lookup_entities = []
@@ -99,6 +82,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         #self.btnTableList.clicked.connect(self.lookupDialog)
         self.btnColProp.clicked.connect(self.data_type_property)
 
+        self.type_names = [str(name) for name in BaseColumn.types_by_display_name().keys()]
+
         self.init_controls()
 
     def init_controls(self):
@@ -109,11 +94,42 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.edtColName.setValidator(name_validator)
         # if this an edit
         if self.column:
-            self.txtCol.setText(column.name)
-            cbo_id = self._get_cbo_id(col_types, column.display_name())
-            editor.cboColType.setCurrentIndex(cbo_id)
+            self.column_to_form(self.column)
 
         self.edtColName.setFocus()
+
+    def _get_cbo_id(self, types, text):
+        for i, c in enumerate(types):
+            if c == text:
+                return i
+
+    def column_to_form(self, column):
+        self.edtColName.setText(column.name)
+        self.edtColDesc.setText(column.description)
+        self.edtUserTip.setText(column.user_tip)
+        self.cbMandt.setCheckState(self.bool_to_check(column.mandatory))
+        self.cbSearch.setCheckState(self.bool_to_check(column.searchable))
+        self.cbUnique.setCheckState(self.bool_to_check(column.unique))
+        self.cbIndex.setCheckState(self.bool_to_check(column.index))
+
+        self.form_fields['colname'] = column.name
+        self.form_fields['value']  = None
+        self.form_fields['mandt']  = column.mandatory
+        self.form_fields['search'] = column.searchable
+        self.form_fields['unique'] = column.unique
+        self.form_fields['index']  = column.index
+        self.form_fields['minimum'] = column.minimum
+        self.form_fields['maximum']  = column.maximum
+        #self.form_fields['entity_relation'] = {}
+        
+        cbo_id = self._get_cbo_id(self.type_names, column.display_name())
+        self.cboDataType.setCurrentIndex(cbo_id)
+
+    def bool_to_check(self, state):
+        if state:
+            return Qt.Checked
+        else:
+            return Qt.Unchecked
 
     def init_form_fields(self):
         self.form_fields['colname'] = ''
@@ -122,6 +138,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.form_fields['search'] = False
         self.form_fields['unique'] = False
         self.form_fields['index']  = False
+        self.form_fields['minimum'] = 0
+        self.form_fields['maximum'] = 0
         self.form_fields['entity_relation'] = {}
 		
     def init_type_attribs(self):
@@ -172,19 +190,14 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 'unique': False, 'index': False,
                 'property':self.lookup_property, 'prop_set':False }
 	
-    def init_current_column(self):
-        self.current_column['type_info'] = ''
-        self.current_column['column']    = None
-        self.current_column['property']  = {}
-		
     def data_type_property(self):
         self.type_attribs[self.current_type_info()]['property']()
 
     def varchar_property(self):
-        editor = VarcharProperty(self)
+        editor = VarcharProperty(self, self.form_fields)
         result = editor.exec_()
         if result == 1:
-            self.form_fields['col_len'] = editor.char_len()
+            self.form_fields['maximum'] = editor.max_len()
 
     def bigint_property(self):
         editor = BigintProperty(self)
@@ -256,7 +269,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             if self.valid_type_properties(self.type_info):
                 column = BaseColumn.registered_types[self.type_info](self.form_fields['colname'], self.entity, **self.form_fields)
             else:
-                self.error_message('Column properties not set!')
+                self.error_message('Please set column properties.')
         else:
             raise "No type to create!"
 
@@ -286,6 +299,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
     def change_data_type(self):
         ti = self.current_type_info()
+        if ti=='':
+            return
         self.btnColProp.setEnabled(self.type_attribs[ti].has_key('property'))
         self.type_info = ti
         opts = self.type_attribs[ti]
@@ -346,33 +361,33 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         msg.setWindowTitle(QApplication.translate("AttributeEditor", "STDM"))
         msg.setText(Message)
         msg.exec_()  
-                
-    def fill_current_column(self, type_info):
-        self.fill_form_data()
-        self.current_column['type_info'] = type_info
-        self.current_column['form_data'] = self.form_fields
-        self.current_column['column']    = self.create_column()
 
-    def validate_mandt_fields(self):
+    def accept(self):
         col_name = unicode(self.edtColName.text()).strip()
 
+        # column name is not empty
         if len(col_name)==0:
             self.error_message('Please enter the column name!')
             return False
 
+        # if column is initialized, this is an edit
+        # delete first then add a new one
+        if self.column:
+            self.entity.remove_column(self.column.name)
+
+        # check if another column with the same name exist in the current entity
         if self.entity.columns.has_key(col_name):
-            self.error_message(QApplication.translate("ColumnEditor","Column with the same name already exist!"))
-            return False
+            self.error_message(QApplication.translate("ColumnEditor", "Column with the same name already exist!"))
+            return 
 
-        return True
+        self.fill_form_data()
+        self.column = self.create_column()
 
-    def accept(self):
-        if not self.validate_mandt_fields():
-            return
+        print "MIN: ",self.column.minimum
+        print "MAX: ",self.column.maximum
 
-        self.fill_current_column(self.type_info)
-        if self.current_column['column']:
-            self.entity.add_column(self.current_column['column'])
+        if self.column:
+            self.entity.add_column(self.column)
             self.done(1)
         else:
             return
