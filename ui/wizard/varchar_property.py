@@ -33,11 +33,11 @@ from stdm.data.configuration.entity import *
 from stdm.data.configuration.value_list import ValueList, CodeValue, value_list_factory
 
 class VarcharProperty(QDialog, Ui_VarcharProperty):
-    def __init__(self, parent, char_len=None):
+    def __init__(self, parent, form_fields):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
-        self._char_len = char_len
+        self._max_len = form_fields['maximum']
 
         self.initGui()
 
@@ -46,20 +46,20 @@ class VarcharProperty(QDialog, Ui_VarcharProperty):
         charlen_validator = QtGui.QRegExpValidator(charlen_regex)
         self.edtCharLen.setValidator(charlen_validator)
 
-        if self._char_len:
-            self.edtCharLen.setText(self._char_len)
-            self.edtCharLen.setFocus()
+        self.edtCharLen.setText(str(self._max_len))
+        self.edtCharLen.setFocus()
 	
     def add_len(self):
         # if its an edit, first remove the previous value
-        self._char_len = self.edtCharLen.text()
+        self._max_len = int(self.edtCharLen.text())
 
-    def char_len(self):
-        return self._char_len
+    def max_len(self):
+        return self._max_len
         
     def accept(self):
         if self.edtCharLen.text()=='':
-            self.ErrorInfoMessage(QApplication.translate("VarcharPropetyEditor","Varchar len is not given!"))
+            self.error_message(QApplication.translate("VarcharPropetyEditor",
+                "Please enter length for the column."))
             return
 
         self.add_len()
@@ -68,10 +68,9 @@ class VarcharProperty(QDialog, Ui_VarcharProperty):
     def reject(self):
         self.done(0)
 
-    def ErrorInfoMessage(self, Message):
-        # Error Message Box
+    def error_message(self, message):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle("STDM")
-        msg.setText(Message)
+        msg.setText(message)
         msg.exec_()  
