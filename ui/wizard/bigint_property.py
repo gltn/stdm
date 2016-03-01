@@ -33,32 +33,29 @@ from stdm.data.configuration.entity import *
 from stdm.data.configuration.value_list import ValueList, CodeValue, value_list_factory
 
 class BigintProperty(QDialog, Ui_BigintProperty):
-    def __init__(self, parent, min_val=None, max_val=None):
+    def __init__(self, parent, form_fields):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
-        self._min_val = min_val
-        self._max_val = max_val
+        self._min_val = form_fields['minimum']
+        self._max_val = form_fields['maximum']
 
         self.initGui()
 
     def initGui(self):
-        val_regex = QtCore.QRegExp('^[0-9]{1,9}$')
-        val_validator = QtGui.QRegExpValidator(val_regex)
-        self.edtMinVal.setValidator(val_validator)
-        self.edtMaxVal.setValidator(val_validator)
+        validator = QtGui.QIntValidator()
+        self.edtMinVal.setValidator(validator)
+        self.edtMaxVal.setValidator(validator)
 
-        if self._min_val:
-            self.edtMinVal.setText(self._min_val)
-        if self._max_val:
-            self.edtMaxVal.setText(self._max_val)
+        self.edtMinVal.setText(str(self._min_val))
+        self.edtMaxVal.setText(str(self._max_val))
 
         self.edtMinVal.setFocus()
 	
     def add_values(self):
         # if its an edit, first remove the previous value
-        self._min_val = self.edtMinVal.text()
-        self._max_val = self.edtMaxVal.text()
+        self._min_val = int(self.edtMinVal.text())
+        self._max_val = int(self.edtMaxVal.text())
 
     def min_val(self):
         return self._min_val
@@ -68,11 +65,13 @@ class BigintProperty(QDialog, Ui_BigintProperty):
 	    
     def accept(self):
         if self.edtMinVal.text()=='':
-            self.ErrorInfoMessage(QApplication.translate("BigintPropetyEditor","Minimum value is not given!"))
+            self.error_message(QApplication.translate("BigintPropetyEditor",
+                "Please set minimum value."))
             return
 
         if self.edtMaxVal.text()=='':
-            self.ErrorInfoMessage(QApplication.translate("BigintPropetyEditor","Maximum value is not given!"))
+            self.error_message(QApplication.translate("BigintPropetyEditor",
+                "Please set maximum value."))
             return
 
         self.add_values()
@@ -81,7 +80,7 @@ class BigintProperty(QDialog, Ui_BigintProperty):
     def reject(self):
         self.done(0)
     
-    def ErrorInfoMessage(self, Message):
+    def error_message(self, Message):
         # Error Message Box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)

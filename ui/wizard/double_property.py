@@ -31,32 +31,28 @@ from PyQt4.QtGui import (
 		)
 
 class DoubleProperty(QDialog, Ui_DoubleProperty):
-    def __init__(self, parent, min_val=None, max_val=None):
+    def __init__(self, parent, form_fields):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
-        self._min_val = min_val
-        self._max_val = max_val
+        self._min_val = form_fields['minimum']
+        self._max_val = form_fields['maximum']
 
         self.initGui()
 
     def initGui(self):
-        val_regex = QtCore.QRegExp('^[0-9]{1,9}$')
-        val_validator = QtGui.QRegExpValidator(val_regex)
-        self.edtMinVal.setValidator(val_validator)
-        self.edtMaxVal.setValidator(val_validator)
+        validator = QtGui.QDoubleValidator()
+        self.edtMinVal.setValidator(validator)
+        self.edtMaxVal.setValidator(validator)
 
-        if self._min_val:
-            self.edtMinVal.setText(self._min_val)
-        if self._max_val:
-            self.edtMaxVal.setText(self._max_val)
+        self.edtMinVal.setText(str(self._min_val))
+        self.edtMaxVal.setText(str(self._max_val))
 
         self.edtMinVal.setFocus()
 	
     def add_values(self):
-        # if its an edit, first remove the previous value
-        self._min_val = self.edtMinVal.text()
-        self._max_val = self.edtMaxVal.text()
+        self._min_val = float(self.edtMinVal.text())
+        self._max_val = float(self.edtMaxVal.text())
 
     def min_val(self):
         return self._min_val
@@ -66,11 +62,13 @@ class DoubleProperty(QDialog, Ui_DoubleProperty):
 	    
     def accept(self):
         if self.edtMinVal.text()=='':
-            self.ErrorInfoMessage(QApplication.translate("DoublePropetyEditor","Minimum value is not given!"))
+            self.error_message(QApplication.translate("DoublePropetyEditor",
+                "Please set minimum value"))
             return
 
         if self.edtMaxVal.text()=='':
-            self.ErrorInfoMessage(QApplication.translate("DoublePropetyEditor","Maximum value is not given!"))
+            self.error_message(QApplication.translate("DoublePropetyEditor",
+                "Pleasei set maximum value."))
             return
 
         self.add_values()
@@ -79,8 +77,7 @@ class DoubleProperty(QDialog, Ui_DoubleProperty):
     def reject(self):
         self.done(0)
     
-    def ErrorInfoMessage(self, Message):
-        # Error Message Box
+    def error_message(self, Message):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle("STDM")
