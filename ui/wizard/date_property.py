@@ -30,30 +30,27 @@ from PyQt4.QtGui import (
 from ui_date_property import Ui_DateProperty
 
 class DateProperty(QDialog, Ui_DateProperty):
-    def __init__(self, parent, min_val=None, max_val=None):
+    def __init__(self, parent, form_fields):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
-        self._min_val = min_val
-        self._max_val = max_val
+        self._min_val = form_fields['minimum']
+        self._max_val = form_fields['maximum']
 
         self.initGui()
 
     def initGui(self):
-        min_date = QtCore.QDate(1900, 1, 1)
+        min_date = QtCore.QDate.currentDate()
         today = QtCore.QDate.currentDate()
         self.edtMinDate.setDate(min_date)
         self.edtMaxDate.setDate(today)
-        
-        if self._min_val:
-            self.edtMinDate.setDate(self._min_val)
-        if self._max_val:
-            self.edtMaxDate.setDate(self._max_val)
+        #QtCore.QDate(1900, 1, 1)
+        self.edtMinDate.setDate(self._min_val)
+        self.edtMaxDate.setDate(self._max_val)
 
         self.edtMinDate.setFocus()
 	
     def add_values(self):
-        # if its an edit, first remove the previous value
         self._min_val = self.edtMinDate.date()
         self._max_val = self.edtMaxDate.date()
 
@@ -70,8 +67,7 @@ class DateProperty(QDialog, Ui_DateProperty):
     def reject(self):
         self.done(0)
     
-    def ErrorInfoMessage(self, Message):
-        # Error Message Box
+    def error_message(self, Message):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle("STDM")

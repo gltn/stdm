@@ -62,15 +62,12 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.profile = kwargs.get('profile', None)
 
         self.type_info = ''
-
-        self.form_fields = {}
-        self.init_form_fields()
         
         self.type_attribs = {}
         self.init_type_attribs()
 
-        #self.current_column = {}
-        #self.init_current_column()
+        self.form_fields = {}
+        self.init_form_fields()
 
         self.fk_entities     = []
         self.lookup_entities = []
@@ -79,6 +76,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.FK_EXCLUDE.append(self.entity.short_name)
 
         self.cboDataType.currentIndexChanged.connect(self.change_data_type)
+
         #self.btnTableList.clicked.connect(self.lookupDialog)
         self.btnColProp.clicked.connect(self.data_type_property)
 
@@ -87,7 +85,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.init_controls()
 
     def init_controls(self):
-        self.set_col_type_cbo()
+        self.popuplate_type_cbo()
 
         name_regex = QtCore.QRegExp('^[a-z][a-z0-9_]*$')
         name_validator = QtGui.QRegExpValidator(name_regex)
@@ -112,18 +110,19 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.cbUnique.setCheckState(self.bool_to_check(column.unique))
         self.cbIndex.setCheckState(self.bool_to_check(column.index))
 
+        cbo_id = self._get_cbo_id(self.type_names, column.display_name())
+        self.cboDataType.setCurrentIndex(cbo_id)
+
         self.form_fields['colname'] = column.name
         self.form_fields['value']  = None
         self.form_fields['mandt']  = column.mandatory
         self.form_fields['search'] = column.searchable
         self.form_fields['unique'] = column.unique
         self.form_fields['index']  = column.index
+
         self.form_fields['minimum'] = column.minimum
-        self.form_fields['maximum']  = column.maximum
+        self.form_fields['maximum'] = column.maximum
         #self.form_fields['entity_relation'] = {}
-        
-        cbo_id = self._get_cbo_id(self.type_names, column.display_name())
-        self.cboDataType.setCurrentIndex(cbo_id)
 
     def bool_to_check(self, state):
         if state:
@@ -138,8 +137,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.form_fields['search'] = False
         self.form_fields['unique'] = False
         self.form_fields['index']  = False
-        self.form_fields['minimum'] = 0
-        self.form_fields['maximum'] = 0
+        self.form_fields['minimum'] = self.type_attribs.get('minimum', 0) 
+        self.form_fields['maximum'] = self.type_attribs.get('maximum', 0)
         self.form_fields['entity_relation'] = {}
 		
     def init_type_attribs(self):
@@ -152,6 +151,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.type_attribs['BIGINT'] = {
                 'mandt':True, 'search': True,
                 'unique': True, 'index': True,
+                'minimum':0, 'maximum':0,
                 'property':self.bigint_property }
 
         self.type_attribs['TEXT'] = {'mandt':False, 'search': False, 
@@ -159,16 +159,19 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.type_attribs['DOUBLE' ] = {'mandt':True, 'search': True, 
                 'unique': False, 'index': False, 
+                'minimum':0.0, 'maximum':0.0,
                 'property':self.double_property }
 
         self.type_attribs['DATE'] =  {'mandt':True, 'search': True,
                 'unique': False, 'index': True,
-                'minimum':date.min, 'maximum':date.max,
+                'minimum':QtCore.QDate.currentDate(),
+                'maximum':QtCore.QDate.currentDate(),
                 'property':self.date_property }
                
         self.type_attribs['DATETIME' ] = {'mandt':True, 'search': False,
                 'unique': False, 'index': False,
-                'minimum':datetime.min, 'maximum':datetime.max,
+                'minimum':QtCore.QDateTime.currentDateTime(),
+                'maximum':QtCore.QDateTime.currentDateTime(),
                 'property':self.dtime_property }
 
         self.type_attribs['FOREIGN_KEY' ] = {'mandt':True, 'search': False, 
@@ -214,14 +217,16 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.form_fields['maximum'] = editor.max_val()
 
     def date_property(self):
-        editor = DateProperty(self)
+        print "date_property MIN: ",self.form_fields['minimum']
+        print "date_property MAX: ",self.form_fields['maximum']
+        editor = DateProperty(self, self.form_fields)
         result = editor.exec_()
         if result == 1:
             self.form_fields['minimum'] = editor.min_val()
             self.form_fields['maximum'] = editor.max_val()
 
     def dtime_property(self):
-        editor = DTimeProperty(self)
+        editor = DTimeProperty(self, self.form_fields)
         result = editor.exec_()
         if result == 1:
             self.form_fields['minimum'] = editor.min_val()
@@ -292,7 +297,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         cbox.insertItems(0, [name[0] for name in entities])
         cbox.setCurrentIndex(0)
 
-    def set_col_type_cbo(self):
+    def popuplate_type_cbo(self):
         self.cboDataType.clear()
         self.cboDataType.insertItems(0, BaseColumn.types_by_display_name().keys())
         self.cboDataType.setCurrentIndex(0)
@@ -320,11 +325,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         dictionary
 
         '''
-        if self.type_attribs[type_info].has_key('minimum'):
-            self.form_fields['minimum'] = self.type_attribs[type_info]['minimum']
-
-        if self.type_attribs[type_info].has_key('maximum'):
-            self.form_fields['maximum'] = self.type_attribs[type_info]['maximum']
+        self.form_fields['minimum'] = self.type_attribs[type_info].get('minimum', 0)
+        self.form_fields['maximum'] = self.type_attribs[type_info].get('maximum', 0)
 
     def current_type_info(self):
         text = self.cboDataType.itemText(self.cboDataType.currentIndex())
@@ -355,7 +357,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.txtAttrib.setText('')
     
     def error_message(self, Message):
-        # Error Message Box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle(QApplication.translate("AttributeEditor", "STDM"))
