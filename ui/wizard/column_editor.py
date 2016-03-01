@@ -200,14 +200,14 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.form_fields['maximum'] = editor.max_len()
 
     def bigint_property(self):
-        editor = BigintProperty(self)
+        editor = BigintProperty(self, self.form_fields)
         result = editor.exec_()
         if result == 1:
             self.form_fields['minimum'] = editor.min_val()
             self.form_fields['maximum'] = editor.max_val()
 
     def double_property(self):
-        editor = DoubleProperty(self)
+        editor = DoubleProperty(self, self.form_fields)
         result = editor.exec_()
         if result == 1:
             self.form_fields['minimum'] = editor.min_val()
