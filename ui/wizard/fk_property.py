@@ -21,14 +21,6 @@ email                : stdm@unhabitat.org
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
-#from PyQt4.QtGui import (
-		#QDialog, 
-		#QApplication, 
-		#QMessageBox,
-                #QStandardItemModel,
-                #QStandardItem
-		#)
-
 from ui_fk_property import Ui_FKProperty
 from stdm.data.configuration.entity_relation import EntityRelation
 
@@ -49,28 +41,71 @@ class FKProperty(QDialog, Ui_FKProperty):
         self.initGui()
 
     def initGui(self):
-        self.cboPrimaryEntity.currentIndexChanged.connect(self.load_entity_columns)
+        self.cboPrimaryEntity.currentIndexChanged.connect( \
+                self.load_entity_columns)
+
         self.load_fk_entities()
-        if self._entity_relation <> {}:
-            pass
-            # read elements from self._entity_relation and assign widgets
+        if self._entity_relation:
+            parent = self._entity_relation.parent.short_name
+            parent_column = self._entity_relation.parent_column
+            display_cols = self._entity_relation.display_cols
+
+            self.cboPrimaryEntity.setCurrentIndex( \
+                    self.cboPrimaryEntity.findText(parent))
+
+            self.cboPrimaryUKey.setCurrentIndex( \
+                    self.cboPrimaryUKey.findText(parent_column))
+
+            self.show_display_cols(display_cols)
+            
+
+    def show_display_cols(self, display_cols):
+        '''
+        checks previously selected display columns
+        '''
+        for row in range(self.column_model.rowCount()):
+            if unicode(self.column_model.item(row).text()) in display_cols:
+                self.column_model.item(row).setCheckState(Qt.Checked)
 
     def load_fk_entities(self):
-        print "load_fk_entities...", self.fk_entities
+        '''
+        populates combobox with entities to select primary entity for the
+        foreign key
+        '''
         self.cboPrimaryEntity.clear()
-        self.cboPrimaryEntity.insertItems(0, [name[0] for name in self.fk_entities])
+        self.cboPrimaryEntity.insertItems(0,
+                [name[0] for name in self.fk_entities])
+
         self.cboPrimaryEntity.setCurrentIndex(0)
 	
     def entity_columns(self):
+        '''
+        returns list used to select child entity column when building
+        a foreign key
+        rtype: list
+        '''
         index = self.cboPrimaryEntity.currentIndex()
-        entity_columns = [column for column in self.fk_entities[index][1].columns.items()]
+
+        entity_columns = \
+                [column for column in self.fk_entities[index][1].columns.items()]
+
         column_names = [column[0] for column in entity_columns]
+        
         return column_names
 
     def fk_display_columns(self):
+        '''
+        returns a list of columns used to select display columns
+        in foreign key
+        rtype: list
+        '''
         index = self.cboPrimaryEntity.currentIndex()
-        entity_columns = [column for column in self.fk_entities[index][1].columns.items()]
-        columns = [column[0] for column in entity_columns if column[1].TYPE_INFO <>'SERIAL']
+        entity_columns = \
+                [column for column in self.fk_entities[index][1].columns.items()]
+
+        columns = [column[0] for column in entity_columns \
+                if column[1].TYPE_INFO <>'SERIAL']
+
         return columns
 
     def load_entity_columns(self):
@@ -85,6 +120,11 @@ class FKProperty(QDialog, Ui_FKProperty):
         self.cboPrimaryUKey.insertItems(0, columns)
 
     def populate_column_listview(self, columns):
+        '''
+        Populates list view with columns used in selecting 
+        display columns for foreign key
+
+        '''
         self.column_model.clear()
         for column in columns:
             item = QStandardItem(column)
@@ -95,24 +135,31 @@ class FKProperty(QDialog, Ui_FKProperty):
         self._entity_relation = self.make_entity_relation()
 
     def display_columns(self):
+        '''
+        returns a list of selected/checked columns for display in 
+        foreign key
+        rtype: list
+        '''
         return [unicode(self.column_model.item(row).text()) \
                 for row in range(self.column_model.rowCount()) \
                 if self.column_model.item(row).checkState()==Qt.Checked]
 
     def make_entity_relation(self):
-            er_fields = {}
-            er_fields['parent'] = unicode(self.cboPrimaryEntity.currentText())
-            er_fields['parent_column'] = unicode(self.cboPrimaryUKey.currentText())
-            er_fields['display_columns'] = self.display_columns()
-            er_fields['child'] = self.entity
-            er_fields['child_column'] = self.column_name
+        '''
+        returns a fully constructed EntityRelation column
+        rtype: EntityRelation
+        '''
+        er_fields = {}
+        er_fields['parent'] = unicode(self.cboPrimaryEntity.currentText())
+        er_fields['parent_column'] = unicode(self.cboPrimaryUKey.currentText())
+        er_fields['display_columns'] = self.display_columns()
+        er_fields['child'] = self.entity
+        er_fields['child_column'] = self.column_name
 
-            er = EntityRelation(self.profile, **er_fields)
-            return er
-        
+        er = EntityRelation(self.profile, **er_fields)
+        return er
 
     def entity_relation(self):
-        print self._entity_relation
         return self._entity_relation
 	    
     def accept(self):
@@ -122,8 +169,7 @@ class FKProperty(QDialog, Ui_FKProperty):
     def reject(self):
         self.done(0)
     
-    def ErrorInfoMessage(self, Message):
-        # Error Message Box
+    def error_message(self, Message):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle("STDM")
