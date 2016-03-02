@@ -40,6 +40,7 @@ from dtime_property import DTimeProperty
 from geometry_property import GeometryProperty
 from fk_property import FKProperty
 from lookup_property import LookupProperty
+from multi_select_property import MultiSelectProperty
 
 from datetime import (
     date,
@@ -136,11 +137,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.form_fields['entity_relation'] = column.entity_relation
 
         if hasattr(column, 'association'):
-            print "ASSOC: ", column
-            print "ASSOC 2: ", column.association
-            print "ASSOC FP: ", column.association.first_parent
-            print "ASSOC SP: ", column.association.second_parent.short_name
-            self.form_fields['entity_relation'] = column.association.first_parent
+            print column.association.first_parent
+            self.form_fields['first_parent'] = column.association.first_parent
+            self.form_fields['second_parent'] = column.association.second_parent
 
     def bool_to_check(self, state):
         if state:
@@ -165,6 +164,12 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.form_fields['entity_relation'] = \
                 self.type_attribs.get('entity_relation', None)
+
+        self.form_fields['first_parent'] = \
+                self.type_attribs.get('first_parent', None)
+
+        self.form_fields['second_parent'] = \
+                self.type_attribs.get('second_parent', None)
 		
     def init_type_attribs(self):
         self.type_attribs['VARCHAR'] = {
@@ -218,8 +223,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.type_attribs['MULTIPLE_SELECT' ] ={'mandt':True, 'search': False, 
                 'unique': False, 'index': False,
-                'entity_relation':{},
-                'property':self.lookup_property, 'prop_set':False }
+                'first_parent':None, 'second_parent':self.entity,
+                'property':self.multi_select_property, 'prop_set':False }
 	
     def data_type_property(self):
         self.type_attribs[self.current_type_info()]['property']()
@@ -303,6 +308,22 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.form_fields['entity_relation'] = editor.entity_relation()
             self.type_attribs[self.type_info]['prop_set'] = True
 
+    def multi_select_property(self):
+        """
+        Opens a multi select property editor
+        """
+        if len(self.edtColName.displayText())==0:
+           self.error_message("Please enter column name!")
+           return
+       
+        first_parent = self.form_fields['first_parent']
+        editor = MultiSelectProperty(self, first_parent, self.entity, self.profile) 
+        result = editor.exec_()
+        if result == 1:
+            self.form_fields['first_parent'] = editor.lookup()
+            self.form_fields['second_parent'] = self.entity
+            self.type_attribs[self.type_info]['prop_set'] = True
+
     def create_column(self):
         column = None
         if self.type_info:
@@ -383,13 +404,13 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 return column_fields
 
     def fill_form_data(self):
-        self.form_fields['colname']    = self.edtColName.text()
-        self.form_fields['description']= self.edtColDesc.text()
+        self.form_fields['colname']    = unicode(self.edtColName.text())
+        self.form_fields['description']= unicode(self.edtColDesc.text())
         self.form_fields['index']      = self.cbIndex.isChecked()
         self.form_fields['mandatory']  = self.cbMandt.isChecked()
         self.form_fields['searchable'] = self.cbSearch.isChecked()
         self.form_fields['unique']     = self.cbUnique.isChecked()
-        self.form_fields['user_tip']   = self.edtUserTip.text()
+        self.form_fields['user_tip']   = unicode(self.edtUserTip.text())
 
     def error_message(self, Message):
         msg = QMessageBox()
@@ -419,6 +440,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.fill_form_data()
         self.column = self.create_column()
+
+        print "COLUMN: ",self.column.association.first_parent
 
         if self.column:
             self.entity.add_column(self.column)
