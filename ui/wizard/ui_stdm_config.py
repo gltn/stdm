@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_stdm_config.ui'
 #
-# Created: Fri Feb 26 19:13:08 2016
+# Created: Wed Mar 02 18:57:31 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -225,6 +225,7 @@ class Ui_STDMWizard(object):
         self.lvEntities = QtGui.QListView(self.groupBox)
         self.lvEntities.setGeometry(QtCore.QRect(10, 20, 210, 151))
         self.lvEntities.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.lvEntities.setSelectionRectVisible(True)
         self.lvEntities.setObjectName(_fromUtf8("lvEntities"))
         self.groupBox_2 = QtGui.QGroupBox(self.wpEntityCustom)
         self.groupBox_2.setGeometry(QtCore.QRect(241, 1, 340, 180))

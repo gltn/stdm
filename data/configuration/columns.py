@@ -607,7 +607,7 @@ class MultipleSelectColumn(VirtualColumn):
 
     def __init__(self, name, entity, **kwargs):
         VirtualColumn.__init__(self, name, entity, **kwargs)
-        self.association = self.profile.create_association_entity(name)
+        self.association = self.profile.create_association_entity(name, **kwargs)
         self.association.second_parent = entity
 
         #Add association to the collection
