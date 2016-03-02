@@ -21,76 +21,87 @@ email                : stdm@unhabitat.org
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
-#from PyQt4.QtGui import (
-		#QDialog, 
-		#QApplication, 
-		#QMessageBox,
-                #QStandardItemModel,
-                #QStandardItem
-		#)
-
 from ui_lookup_property import Ui_LookupProperty
 from stdm.data.configuration.entity_relation import EntityRelation
 from create_lookup import LookupEditor
 
 class LookupProperty(QDialog, Ui_LookupProperty):
-    def __init__(self, parent, lookup='', profile=None):
+    def __init__(self, parent, entity_relation, profile=None):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
-        self._lookup = lookup
-        self._entity_relation = None
+        self._entity_relation = entity_relation
+        self._lookup_name = ''
         self._profile = profile
 
-        self.initGui()
+        self.init_gui()
 
-    def initGui(self):
-        #self.cboPrimaryEntity.currentIndexChanged.connect(self.load_entity_columns)
+    def init_gui(self):
+        """
+        Initializes form widgets
+        """
         self.edtNewlookup.clicked.connect(self.create_lookup)
         lookup_names = self.lookup_entities()
         self.fill_lookup_cbo(lookup_names)
-        if self._lookup:
-            pass
-            # read elements from self._entity_relation and assign widgets
+        if self._entity_relation:
+            self._lookup_name = self._entity_relation.parent.short_name
+            self.cboPrimaryEntity.setCurrentIndex( \
+                    self.cboPrimaryEntity.findText(self._lookup_name))
 
     def create_lookup(self):
+        """
+        - Create a new lookup entity,
+        - insert it to the current lookup combobox
+        - make it the current lookup
+        """
         editor = LookupEditor(self, self._profile)
         result = editor.exec_()
         if result == 1:
+            name = editor.lookup.short_name
             names = []
-            names.append(editor.lookup.short_name)
+            names.append(name)
             self.cboPrimaryEntity.insertItems(0, names)
+            self.cboPrimaryEntity.setCurrentIndex( \
+                    self.cboPrimaryEntity.findText(name))
             
     def lookup_entities(self):
+        """
+        returns: A list of ValueList (a.k.a lookup) names in the current profile
+        rtype: list
+        """
         names = []
-        for entity in self._profile.entities.values():
-            if entity.TYPE_INFO not in ['SUPPORTING_DOCUMENT',
-                    'ADMINISTRATIVE_SPATIAL_UNIT']:
-                if entity.TYPE_INFO == 'VALUE_LIST':
-                    names.append(entity.short_name)
+        for value_list in self._profile.value_lists():
+            names.append(value_list.short_name)
         return names
 
     def fill_lookup_cbo(self, names):
+        """
+        Fill combobox with entity names
+        param names: List of entity names
+        """
         self.cboPrimaryEntity.clear()
         self.cboPrimaryEntity.insertItems(0, names)
         self.cboPrimaryEntity.setCurrentIndex(0)
 
     def add_values(self):
-        self._lookup = unicode(self.cboPrimaryEntity.currentText())
-        self._entity_relation = self.make_entity_relation()
+        """
+        Construct an EntityRelation instanec
+        """
+        lookup_name = unicode(self.cboPrimaryEntity.currentText())
+        self._lookup_name = lookup_name
 
-    def make_entity_relation(self):
         er_fields = {}
-        er_fields['parent'] = unicode(self.cboPrimaryEntity.currentText())
+        er_fields['parent'] = lookup_name
         er_fields['parent_column'] = None
         er_fields['display_columns'] = []
         er_fields['child'] = None
         er_fields['child_column'] = None
-        
-        er = EntityRelation(self._profile, **er_fields)
-        return er
+        self._entity_relation = EntityRelation(self._profile, **er_fields)
 
     def entity_relation(self):
+        """
+        rtype: EntityRelation instance
+        """
         return self._entity_relation
 	    
     def accept(self):
@@ -101,7 +112,6 @@ class LookupProperty(QDialog, Ui_LookupProperty):
         self.done(0)
     
     def error_message(self, Message):
-        # Error Message Box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle("STDM")
