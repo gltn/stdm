@@ -279,17 +279,30 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 #return sel_dir
 
     def add_entity_item(self, entity):
+        """
+        param entity: Instance of a new entity
+        type entity: BaseColumn
+        """
+        print "add_entity_item: ",entity.TYPE_INFO
         if entity.TYPE_INFO not in ['SUPPORTING_DOCUMENT',
                     'SOCIAL_TENURE', 'ADMINISTRATIVE_SPATIAL_UNIT',
-                    'ENTITY_SUPPORTING_DOCUMENT','VALUE_LIST']:
+                    'ENTITY_SUPPORTING_DOCUMENT','VALUE_LIST', 'ASSOCIATION_ENTITY']:
             self.entity_model.add_entity(entity)
 
     def delete_entity_item(self, name):
+        """
+        param name: Name of entity to delete
+        type name: str
+        """
         items = self.entity_model.findItems(name)
         if len(items) > 0:
             self.entity_model.removeRow(items[0].row())
 
     def cbo_add_profile(self, profile):
+        """
+        param profile: List of profile to add in a combobox
+        type profile: list
+        """
         profiles = []
         profiles.append(profile.name)
         self.cboProfile.insertItems(0, profiles)
@@ -297,7 +310,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     #PROFILE
     def new_profile(self):
-        # create a profile, add it to current stdm_configuration
+        """
+        Creates a new instance of a profile and adds it to the
+        StdmConfiguration singleton
+        """
         editor = ProfileEditor(self)
         result = editor.exec_()
         if result == 1:
@@ -307,6 +323,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.stdm_config.add_profile(profile)
 
     def current_profile(self):
+        """
+        Returns an instance of the selected profile in the 
+        profile combobox
+        rtype: Profile
+        """
         profile = None
         prof_name = self.cboProfile.currentText()
         if len(prof_name) > 0:
@@ -314,6 +335,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         return profile
 
     def delete_profile(self):
+        """
+        Delete the current selected profile
+        """
         if self.cboProfile.count() == 1:
             show_message(QApplication.translate("Configuration Wizard", \
                     "Cannot delete last profile!"))
@@ -324,7 +348,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             show_message(QApplication.translate("Configuration Wizard", \
                     "Unable to delete profile!"))
             return
-
         self.set_profile_cbo()
 
     def get_profiles(self):
@@ -367,7 +390,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             show_message(QApplication.translate("Configuration Wizard", \
                     "No entity selected for edit!"))
             return
-
         model_item, entity, row_id = self.get_model_entity(self.pftableView)
         if model_item:
             profile = self.current_profile()
@@ -379,7 +401,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 # delete entity from selected profile
                 #profile = self.current_profile()
                 #profile.remove_entity(entity.short_name)
-
 
     def delete_entity(self):
         if len(self.pftableView.selectedIndexes())==0:
@@ -482,11 +503,23 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
 		
     def addColumns(self, v_model, columns):
+        """
+        param v_model: Instance of EntitiesModel
+        type v_model: EntitiesModel
+        param columns: List of column names to insert in v_model
+        type columns: list
+        """
         for column in columns:
             if column.user_editable():
                 v_model.add_entity(column)
 
     def entity_changed(self, selected, diselected):
+        """
+        triggered when you select an entity, clears an existing column entity
+        model and create a new one.
+        Get the columns of the selected entity, add them to the newly created
+        column entity model
+        """
         row_id = self.entity_item_model.currentIndex().row()
         if row_id > -1:
             view_model = self.entity_item_model.currentIndex().model()
