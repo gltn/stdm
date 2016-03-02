@@ -137,7 +137,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.form_fields['entity_relation'] = column.entity_relation
 
         if hasattr(column, 'association'):
-            print column.association.first_parent
             self.form_fields['first_parent'] = column.association.first_parent
             self.form_fields['second_parent'] = column.association.second_parent
 
@@ -440,8 +439,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.fill_form_data()
         self.column = self.create_column()
-
-        print "COLUMN: ",self.column.association.first_parent
 
         if self.column:
             self.entity.add_column(self.column)
