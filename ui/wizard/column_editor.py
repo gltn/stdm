@@ -135,7 +135,12 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         if hasattr(column, 'entity_relation'):
             self.form_fields['entity_relation'] = column.entity_relation
 
-        #self.form_fields['entity_relation'] = {}
+        if hasattr(column, 'association'):
+            print "ASSOC: ", column
+            print "ASSOC 2: ", column.association
+            print "ASSOC FP: ", column.association.first_parent
+            print "ASSOC SP: ", column.association.second_parent.short_name
+            self.form_fields['entity_relation'] = column.association.first_parent
 
     def bool_to_check(self, state):
         if state:
@@ -144,6 +149,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             return Qt.Unchecked
 
     def init_form_fields(self):
+        """
+        Initializes form_fields dictionary used to hold form values
+        """
         self.form_fields['colname'] = ''
         self.form_fields['value']  = None
         self.form_fields['mandt']  = False
@@ -197,6 +205,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.type_attribs['LOOKUP' ] = {'mandt':True, 'search': False,
                 'unique': False, 'index': False,
+                'entity_relation':{},
                 'property':self.lookup_property, 'prop_set':False }
 
         self.type_attribs['GEOMETRY' ] ={'mandt':False, 'search': False, 
@@ -209,6 +218,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.type_attribs['MULTIPLE_SELECT' ] ={'mandt':True, 'search': False, 
                 'unique': False, 'index': False,
+                'entity_relation':{},
                 'property':self.lookup_property, 'prop_set':False }
 	
     def data_type_property(self):
@@ -283,11 +293,15 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.type_attribs[self.type_info]['prop_set'] = True
 
     def lookup_property(self):
-       editor = LookupProperty(self, profile=self.profile) 
-       result = editor.exec_()
-       if result == 1:
-           self.form_fields['entity_relation'] = editor.entity_relation()
-           self.type_attribs[self.type_info]['prop_set'] = True
+        """
+        Opens a lookup property editor
+        """
+        er = self.form_fields['entity_relation']
+        editor = LookupProperty(self, er, profile=self.profile) 
+        result = editor.exec_()
+        if result == 1:
+            self.form_fields['entity_relation'] = editor.entity_relation()
+            self.type_attribs[self.type_info]['prop_set'] = True
 
     def create_column(self):
         column = None
