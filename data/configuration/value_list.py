@@ -28,7 +28,6 @@ from stdm.data.configuration.entity_updaters import value_list_updater
 
 LOGGER = logging.getLogger('stdm')
 
-
 def value_list_factory(name, profile, **kwargs):
     """
     Factory method for creating an instance of a ValueList object. This
@@ -113,7 +112,7 @@ class ValueList(Entity):
         False.
         :rtype: bool
         """
-        return len(self.values) > 0
+        return len(self.values) == 0
 
     def rename(self, old_value, new_value):
         """
