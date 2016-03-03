@@ -150,15 +150,33 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 return index
         return 0
 
+    def validate_empty_lookups(self):
+        """
+        Verifys that all lookups in the current profile
+        have values. Returns true if all have values else false
+        rtype: bool
+        """
+        valid = True
+        profile  = self.current_profile()
+        if not profile:
+            return valid
+        for vl in profile.value_lists():
+            if vl.is_empty():
+                valid = False
+                show_message("Lookup %s has no values" % vl.short_name)
+                break
+        return valid
+
     def validateCurrentPage(self):
         validPage = True
 
         if self.currentId() == ENTITY_PAGE:
             self.party_changed(0)
-            # make spatial unit combo box
             idx = self.index_spatial_unit_table()
             self.cboSPUnit.setCurrentIndex(idx)
             self.spatial_unit_changed(idx)
+            # verify that lookup entities have values
+            validPage = self.validate_empty_lookups()
 
         if self.currentId() == STR_PAGE:
             validPage, msg = self.validate_str()
@@ -283,7 +301,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         param entity: Instance of a new entity
         type entity: BaseColumn
         """
-        print "add_entity_item: ",entity.TYPE_INFO
         if entity.TYPE_INFO not in ['SUPPORTING_DOCUMENT',
                     'SOCIAL_TENURE', 'ADMINISTRATIVE_SPATIAL_UNIT',
                     'ENTITY_SUPPORTING_DOCUMENT','VALUE_LIST', 'ASSOCIATION_ENTITY']:

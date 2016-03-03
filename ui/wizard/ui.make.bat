@@ -6,7 +6,7 @@ set ext=.py
 
 call set out=%%src:.ui=%ext%%%
 call pyuic4.bat %src% -o %out%
-copy /Y %out% ..\..\..\..\sandbox\
+copy /Y %out% ..\..\..\..\sandbox\stdm\ui\wizard
 goto :eof
 
 :usage
