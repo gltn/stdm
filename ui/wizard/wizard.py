@@ -24,6 +24,7 @@ import sys
 import logging
 
 from PyQt4 import QtGui
+from PyQt4 import QtCore
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
@@ -52,7 +53,9 @@ from create_lookup_value import ValueEditor
 LOGGER = logging.getLogger('stdm')
 LOGGER.setLevel(logging.DEBUG)
 
-LICENSE_PAGE, PATHS_PAGE, PROFILE_PAGE, ENTITY_PAGE, STR_PAGE, FINAL_PAGE = range(0, 6)
+LIC_PAGE, PATH_PAGE, PROFILE_PAGE, ENTITY_PAGE, STR_PAGE, FINAL_PAGE = range(0, 6)
+
+REG_KEY = "HKEY_CURRENT_USER\\Software\\QGIS\\QGIS2\\STDM"
 
 class ConfigWizard(QWizard, Ui_STDMWizard):
     def __init__(self, parent):
@@ -133,7 +136,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         self.edtDocPath.setFocus()
 
-        self.setStartId(1)
+        self.setStartId(0)
 
     def validate_str(self):
         if self.entity_model.rowCount() == 0:
@@ -141,6 +144,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         if self.cboParty.currentIndex() == self.cboSPUnit.currentIndex():
             return False, "Party and Spatial Unit entities cannot be the same!"
+
+        profile = self.current_profile()
+        spatial_unit = profile.entity_by_name(unicode( \
+                self.cboSPUnit.currentText()))
+
+        if not spatial_unit.has_geometry_column():
+            return False, "Spatial unit entity should have a geometry column!"
 
         return True, "Ok"
 
@@ -167,35 +177,85 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 break
         return valid
 
+    def fmt_path_str(self, path):
+        """
+        param path: string representing the windows path
+        type path: str
+        Returns a directory path string formatted in a unix format
+        rtype: str
+        """
+        rpath = r''.join(unicode(path))
+        return rpath.replace("\\", "/")
+
+
+    def read_settings_path(self, reg_key, os_path):
+        """
+        param reg_key: Registry key where to read path setting
+        type reg_key: str
+        param os_path: os directory to use if the reg_key is not set
+        type os_path: str
+        Returns path settings from the registry or an os folder
+        rtype: str
+        """
+        settings = QtCore.QSettings(REG_KEY, QtCore.QSettings.NativeFormat)
+        try:
+            if len(settings.value(reg_key).toString()) > 0:
+                reg_doc_path = self.fmt_path_str(settings.value(reg_key).toString())
+            else:
+                reg_doc_path = None
+        except:
+            reg_doc_path = self.fmt_path_str(settings.value(reg_key))
+            show_message(reg_doc_path.title())
+            if reg_doc_path.title() == 'None' or reg_doc_path.strip()=='':
+                reg_doc_path = None
+
+        if reg_doc_path is not None:
+            return reg_doc_path
+        else:
+            doc_path = os.path.expanduser('~')+os_path
+            if not os.path.exists(doc_path):
+                os.makedirs(doc_path) 
+            return self.fmt_path_str(doc_path)
+
     def validateCurrentPage(self):
         validPage = True
 
-        if self.currentId() == ENTITY_PAGE:
+        if self.currentId() == LIC_PAGE:
+            doc_path = self.read_settings_path('documents', '/.stdm/documents/')
+            self.edtDocPath.setText(doc_path)
+
+            output_path = self.read_settings_path('outputs', '/.stdm/reports/outputs')
+            self.edtOutputPath.setText(output_path)
+
+            templates_path = self.read_settings_path('templates', '/.stdm/reports/templates')
+            self.edtTemplatePath.setText(templates_path)
+
+            return validPage
+
+        if self.currentId() == 3:
             self.party_changed(0)
+            # get an entity with a geometry column
             idx = self.index_spatial_unit_table()
             self.cboSPUnit.setCurrentIndex(idx)
             self.spatial_unit_changed(idx)
             # verify that lookup entities have values
             validPage = self.validate_empty_lookups()
+            return validPage
 
-        if self.currentId() == STR_PAGE:
+        if self.currentId() == 4:
             validPage, msg = self.validate_str()
-            if not validPage:
-                show_message(QApplication.translate("Configuration Wizard", msg))
-            else:
+
+            if validPage:
                 profile = self.current_profile()
                 party = profile.entity_by_name(unicode(self.cboParty.currentText()))
                 spatial_unit = profile.entity_by_name(unicode(self.cboSPUnit.currentText()))
 
-                if spatial_unit.has_geometry_column():
-                    profile.set_social_tenure_attr(SocialTenure.PARTY, party)
-                    profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT, spatial_unit)
-                else:
-                    show_message(QApplication.translate("Configuration Wizard", \
-                            "Spatial unit entity should have a geometry column!"))
-                    validPage = False
+                profile.set_social_tenure_attr(SocialTenure.PARTY, party)
+                profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT, spatial_unit)
+            else:
+                show_message(QApplication.translate("Configuration Wizard", msg))
 
-        if self.currentId() == FINAL_PAGE:
+        if self.currentId() == 5: # FINAL_PAGE:
             # last page
             # commit config to DB
             config_updater = ConfigurationSchemaUpdater()

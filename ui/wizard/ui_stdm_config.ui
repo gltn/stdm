@@ -47,6 +47,9 @@
    <property name="subTitle">
     <string>Read carefully before you proceed</string>
    </property>
+   <attribute name="pageId">
+    <string notr="true">0</string>
+   </attribute>
    <layout class="QGridLayout" name="gridLayout_2">
     <item row="0" column="0">
      <widget class="QGroupBox" name="groupBox_16">
@@ -120,6 +123,9 @@
    <property name="subTitle">
     <string>Set configuration and documents directory path</string>
    </property>
+   <attribute name="pageId">
+    <string notr="true">1</string>
+   </attribute>
    <widget class="QPushButton" name="btnTemplates">
     <property name="geometry">
      <rect>
@@ -308,6 +314,9 @@
    <property name="subTitle">
     <string>Manage profile and related entities.  A profile represents a collection of related entities, some of which represent the party and spatial unit. Examples of profiles include household, neighbourhood or even city-wide profile.  </string>
    </property>
+   <attribute name="pageId">
+    <string notr="true">2</string>
+   </attribute>
    <widget class="QGroupBox" name="groupBox_17">
     <property name="geometry">
      <rect>
@@ -604,6 +613,9 @@
    <property name="subTitle">
     <string>Add or edit entity columns, lookups and lookup values</string>
    </property>
+   <attribute name="pageId">
+    <string notr="true">3</string>
+   </attribute>
    <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
      <rect>
@@ -974,6 +986,9 @@
    <property name="subTitle">
     <string>Define entities to participate in Social Tenure Relations views</string>
    </property>
+   <attribute name="pageId">
+    <string notr="true">4</string>
+   </attribute>
    <widget class="QLabel" name="lblPartyDesc">
     <property name="geometry">
      <rect>
@@ -1108,6 +1123,9 @@
    <property name="subTitle">
     <string>Click finish to save changes in your configuration to the database.  </string>
    </property>
+   <attribute name="pageId">
+    <string notr="true">5</string>
+   </attribute>
    <widget class="QTextEdit" name="txtHtml">
     <property name="geometry">
      <rect>
