@@ -63,11 +63,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.setupUi(self)
         self.register_fields()
 
-        self.is_config_done = False
-
-        self.stdm_config = StdmConfiguration.instance()  
-        self.stdm_config.profile_added.connect(self.cbo_add_profile)
-
         # directory path settings
         self.btnDocPath.clicked.connect(self.support_doc_path)
         self.btnDocOutput.clicked.connect(self.output_path)
@@ -138,6 +133,23 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         self.setStartId(0)
 
+        self.is_config_done = False
+        self.stdm_config = StdmConfiguration.instance()  
+        self.stdm_config.profile_added.connect(self.cbo_add_profile)
+
+        # if StdmConfiguration instance is not empty, load profiles
+        #if len(self.stdm_config.profiles) > 0:
+            #self.reload_profiles()
+
+    def reload_profiles(self):
+        """
+        """
+        profiles = []
+        for profile in self.stdm_config.profiles.values():
+            profiles.append(profile)
+        self.cbo_add_profile(profiles)
+
+
     def validate_str(self):
         if self.entity_model.rowCount() == 0:
             return False, "No entities for creating Social Tenure Relationship"
@@ -205,7 +217,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 reg_doc_path = None
         except:
             reg_doc_path = self.fmt_path_str(settings.value(reg_key))
-            show_message(reg_doc_path.title())
             if reg_doc_path.title() == 'None' or reg_doc_path.strip()=='':
                 reg_doc_path = None
 
@@ -377,7 +388,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def cbo_add_profile(self, profile):
         """
-        param profile: List of profile to add in a combobox
+        param profile: List of profile to add in profiles combobox
         type profile: list
         """
         profiles = []
