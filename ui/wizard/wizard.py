@@ -63,6 +63,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.setupUi(self)
         self.register_fields()
 
+
         # directory path settings
         self.btnDocPath.clicked.connect(self.support_doc_path)
         self.btnDocOutput.clicked.connect(self.output_path)
@@ -138,17 +139,25 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.stdm_config.profile_added.connect(self.cbo_add_profile)
 
         # if StdmConfiguration instance is not empty, load profiles
-        #if len(self.stdm_config.profiles) > 0:
-            #self.reload_profiles()
+        if len(self.stdm_config.profiles) > 0:
+            self.reload_profiles()
 
     def reload_profiles(self):
         """
+        Read and load the profiles from StdmConfiguration instance
         """
         profiles = []
         for profile in self.stdm_config.profiles.values():
-            profiles.append(profile)
-        self.cbo_add_profile(profiles)
+            for entity in profile.entities.values():
+                self.connect_entity_signals(entity)
+            profiles.append(profile.name)
+        self.cbo_add_profiles(profiles)
+        self.lvLookups.setCurrentIndex(self.lvLookups.model().index(0,0))
+        self.lvEntities.setCurrentIndex(self.lvEntities.model().index(0,0))
 
+    def connect_entity_signals(self, entity):
+        entity.column_added.connect(self.add_column_item)
+        entity.column_removed.connect(self.delete_column_item)
 
     def validate_str(self):
         if self.entity_model.rowCount() == 0:
@@ -235,10 +244,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             doc_path = self.read_settings_path('documents', '/.stdm/documents/')
             self.edtDocPath.setText(doc_path)
 
-            output_path = self.read_settings_path('outputs', '/.stdm/reports/outputs')
+            output_path = self.read_settings_path('outputs', 
+                    '/.stdm/reports/outputs')
             self.edtOutputPath.setText(output_path)
 
-            templates_path = self.read_settings_path('templates', '/.stdm/reports/templates')
+            templates_path = self.read_settings_path('templates',
+                    '/.stdm/reports/templates')
             self.edtTemplatePath.setText(templates_path)
 
             return validPage
@@ -258,8 +269,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             if validPage:
                 profile = self.current_profile()
-                party = profile.entity_by_name(unicode(self.cboParty.currentText()))
-                spatial_unit = profile.entity_by_name(unicode(self.cboSPUnit.currentText()))
+                party = profile.entity_by_name(unicode( \
+                        self.cboParty.currentText()))
+                spatial_unit = profile.entity_by_name(unicode( \
+                        self.cboSPUnit.currentText()))
 
                 profile.set_social_tenure_attr(SocialTenure.PARTY, party)
                 profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT, spatial_unit)
@@ -388,11 +401,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def cbo_add_profile(self, profile):
         """
-        param profile: List of profile to add in profiles combobox
+        param profile: List of profile to add in a combobox
         type profile: list
         """
         profiles = []
         profiles.append(profile.name)
+        self.cboProfile.insertItems(0, profiles)
+        self.cboProfile.setCurrentIndex(0)
+
+    def cbo_add_profiles(self, profiles):
+        """
+        param profiles: list of profiles to add in the profile combobox
+        type profiles: list
+        """
         self.cboProfile.insertItems(0, profiles)
         self.cboProfile.setCurrentIndex(0)
 
@@ -465,6 +486,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.spunit_item_model.removeRow(row_id)
 
     def new_entity(self):
+        """
+        Creates a new entity and adds it to the current profile
+        """
         profile = self.current_profile()
         if profile:
             editor = EntityEditor(self, profile)
@@ -474,6 +498,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     "No profile selected to add entity!"))
 
     def edit_entity(self):
+        """
+        Edit selected entity
+        """
         if len(self.pftableView.selectedIndexes())==0:
             show_message(QApplication.translate("Configuration Wizard", \
                     "No entity selected for edit!"))
@@ -486,11 +513,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             if result == 1:
                 model_item.delete_entity(entity)
                 model_item.removeRow(row_id)
-                # delete entity from selected profile
-                #profile = self.current_profile()
-                #profile.remove_entity(entity.short_name)
 
     def delete_entity(self):
+        """
+        Delete selected entity
+        """
         if len(self.pftableView.selectedIndexes())==0:
             show_message(QApplication.translate("Configuration Wizard", \
                     "No entity selected for deletion!"))
@@ -573,11 +600,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 		
     def _create_ent(self, profile, entity_name):
         entity = profile.create_entity(entity_name, entity_factory)
-        entity.column_added.connect(self.add_column_item)
-        entity.column_removed.connect(self.delete_column_item)
-    
+        self.connect_entity_signals(entity)
         profile.add_entity(entity)
-        #self.entity_model.add_entity(entity)
 
     def get_model_entity(self, view):
         sel_id = -1
@@ -648,25 +672,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         col = BaseColumn.registered_types.values()[id](col_name, entity)
         return col
 
-    def new_column_test(self):
-        model_item, entity, row_id = self.get_model_entity(self.lvEntities)
-
-        if model_item:
-            column = self._make_column(0, "name", entity)
-            entity.add_column(column)
-
-            column = self._make_column(2, "age", entity)
-            entity.add_column(column)
-
-            column = self._make_column(4, "dob", entity)
-            entity.add_column(column)
-
     def new_column(self):
         if len(self.lvEntities.selectedIndexes())==0:
             show_message(QApplication.translate("Configuration Wizard", \
                     "No entity selected to add column!"))
             return
-
         model_item, entity, row_id = self.get_model_entity(self.lvEntities)
         if model_item:
             profile = self.current_profile()
@@ -682,6 +692,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     self.populate_lookup_view(profile)
 
     def edit_column(self):
+        """
+        Edit selected column.
+        Allow editting of columns that have not yet being persisted on the DB
+        """
         rid, column = self._get_column(self.tbvColumns)
         
         if column and column.action == DbItem.CREATE:
@@ -713,7 +727,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             if entity.TYPE_INFO == 'VALUE_LIST':
                 self.lookup_view_model.add_entity(entity)
                 self.addValues_byEntity(entity)
-
 
     def _get_entity_item(self, view):
         model_item, entity, row_id = self.get_model_entity(view)
@@ -809,10 +822,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             val = QStandardItem(txt)
             self.lookup_value_view_model.appendRow(val)
 
-    def addValues(self, values):
+    def add_values(self, values):
         self.lookup_value_view_model.clear()
         for v in values:
-            val = QStandardItem(v)
+            val = QStandardItem(v.value)
             self.lookup_value_view_model.appendRow(val)
                  
     def add_lookup_value_test(self):
@@ -843,7 +856,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             value_editor = ValueEditor(self, lookup)
             result = value_editor.exec_()
             if result == 1:
-                self.addValues(value_editor.lookup.Values())
+                self.add_values(value_editor.lookup.values.values())
                 self.lvLookupValues.setModel(self.lookup_value_view_model)
 
     def edit_lookup_value(self):
@@ -907,6 +920,22 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         return [item_model.item(row) for row in range(item_model.rowCount()) \
                 if item_model.item(row).checkState()==Qt.Checked]
 
+class Launcher(QMainWindow):
+    def __init__(self, parent=None):
+        QMainWindow.__init__(self, parent)
+        self.create_main_frame()
+
+    def create_main_frame(self):
+        page = QWidget()
+        self.button = QPushButton('Wizard', page)
+        self.setCentralWidget(page)
+        self.button.clicked.connect(self.open_wizard)
+
+    def open_wizard(self):
+        window = QWidget()
+        configWiz = ConfigWizard(window)
+        configWiz.exec_()
+
 def show_message(message):
     msg = QMessageBox()
     msg.setIcon(QMessageBox.Critical)
@@ -931,17 +960,13 @@ def createLogger():
 def start_gui():
     print "starting graphical user interface ..."
     app = QApplication(sys.argv)
-    window = QWidget()
+    window = Launcher()
+    window.show()
+    app.exec_()
 
-    configWiz = ConfigWizard(window)
-    configWiz.exec_()
-
-def print_type_attrs(ta):
-    print ta.type_info
-    print
-    print ta.attribs
-    print "-"*80
-    print
+    #window = QWidget()
+    #configWiz = ConfigWizard(window)
+    #configWiz.exec_()
 
 def start_cli():
     print "starting command line interface ..."
