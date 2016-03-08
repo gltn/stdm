@@ -35,22 +35,37 @@ geom_types = ['POINT', 'LINE', 'POLYGON', 'MULTIPOINT', 'MULTILINE',
 'MULTIPOLYGON']
 
 class GeometryProperty(QDialog, Ui_GeometryProperty):
+    """
+    Geometry type property editor
+    """
     def __init__(self, parent, form_fields):
+        """
+        :param parent: Owner of this dialog window
+        :type parent: QWidget
+        :param form_fields: Dictionary for form fields
+        :type form_fields: dictionary
+        """
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
         self._geom_type = form_fields['geom_type']
         self._srid = form_fields['srid']
 
-        self.initGui()
+        self.init_gui()
 
-    def initGui(self):
+    def init_gui(self):
+        """
+        Initializes form fields
+        """
         self.load_geometry_types()
         self.btnCoord.clicked.connect(self.projection_selector)
         self.cboGeoType.setCurrentIndex(self._geom_type)
         self.btnCoord.setText(self._srid)
 
     def load_geometry_types(self):
+        """
+        Initializes geometry combobox with geometry types
+        """
         self.cboGeoType.clear()
         self.cboGeoType.addItems(geom_types)
         self.cboGeoType.setCurrentIndex(0)
@@ -60,7 +75,9 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
         self.btnCoord.setText('EPSG: 4236')
 
     def projection_selector(self):
-        # open QGIS projection selector
+        """
+        Opens the QGIS projection selector
+        """
         projection_selector = QgsGenericProjectionSelector(self)
 
         if projection_selector.exec_() == QDialog.Accepted:
@@ -90,11 +107,10 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
     def reject(self):
         self.done(0)
     
-    def error_message(self, Message):
-        # Error Message Box
+    def error_message(self, message):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle("STDM")
-        msg.setText(Message)
+        msg.setText(message)
         msg.exec_()  
 

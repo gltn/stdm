@@ -20,6 +20,8 @@ email                : stdm@unhabitat.org
 """
 
 from ui_lookup_entity import Ui_dlgLookup
+from PyQt4 import QtCore
+from PyQt4 import QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import (
 		QDialog, 
@@ -27,44 +29,66 @@ from PyQt4.QtGui import (
 		QMessageBox
 		)
 
-#from stdm.data import (
-		#writeTable, 
-		#renameTable,
-		#inheritTableColumn, 
-		#writeTableColumn,
-		#writeLookup,
-		#checktableExist,
-		#ConfigTableReader, 
-		#table_column_exist
-		#)
-
-#from stdm.data.config_utils import setUniversalCode
-
 from stdm.data.configuration.entity import *
-from stdm.data.configuration.value_list import ValueList, CodeValue, value_list_factory
+from stdm.data.configuration.value_list import (
+        ValueList, 
+        CodeValue, 
+        value_list_factory
+        )
 
 class LookupEditor(QDialog, Ui_dlgLookup):
+    """
+    Form to add/edit lookup entities.
+    """
     def __init__(self, parent, profile, lookup=None):
+        """
+        :param parent: Owner of this dialog
+        :type parent: QWidget
+        :param profile: A profile to add/edit lookup
+        :type profile: Profile
+        :param lookup: Value list to create, if None this is a new value list
+         else its an edit
+        :type lookup: ValueList
+        """
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
 	self.profile = profile
 	self.lookup = lookup
 
-        self.initGui()
+        self.init_gui()
 
-    def initGui(self):
+    def init_gui(self):
+        """
+        Initializes form widgets
+        """
+        name_regex = QtCore.QRegExp('^[a-z][a-z0-9_]*$')
+        validator = QtGui.QRegExpValidator(name_regex)
+        self.edtName.setValidator(validator)
 	self.edtName.setFocus()
         if self.lookup:
             self.edtName.setText(self.lookup.short_name)
 	
     def format_lookup_name(self, name):
+        """
+        Replace spaces with underscore in a name string
+        :param name: Name to replace spaces 
+        :type name: str
+        :rtype: str
+        """
         formatted_name = str(name).strip()
         formatted_name = formatted_name.replace(' ', "_")
         return formatted_name.lower()
     
-    def add_lookup(self):
-        name = self.format_lookup_name(unicode(self.edtName.text()))
+    def add_lookup(self, name):
+        """
+        Creates a lookup entity and add it to a profile.
+        If this is an edit, first the previous lookup is removed before
+        adding a new one.
+        :param name: Name of the new/edited lookup
+        :type name: str
+        """
+        name = self.format_lookup_name(name)
         # if its an edit, remove the existing entry first
         if self.lookup:
                self.profile.remove_entity(name)
@@ -76,17 +100,16 @@ class LookupEditor(QDialog, Ui_dlgLookup):
             self.error_message(QApplication.translate("LookupEditor","Lookup name is not given!"))
             return
 
-        self.add_lookup()
+        self.add_lookup(unicode(self.edtName.text()))
         
         self.done(1)
 
     def reject(self):
         self.done(0)
     
-    def error_message(self, Message):
-        # Error Message Box
+    def error_message(self, message):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle("STDM")
-        msg.setText(Message)
+        msg.setText(message)
         msg.exec_()  
