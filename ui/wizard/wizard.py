@@ -149,13 +149,14 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         profiles = []
         for profile in self.stdm_config.profiles.values():
             for entity in profile.entities.values():
-                self.connect_entity_signals(entity)
+                self.connect_column_signals(entity)
+            self.connect_entity_signals(profile)
             profiles.append(profile.name)
         self.cbo_add_profiles(profiles)
         self.lvLookups.setCurrentIndex(self.lvLookups.model().index(0,0))
         self.lvEntities.setCurrentIndex(self.lvEntities.model().index(0,0))
 
-    def connect_entity_signals(self, entity):
+    def connect_column_signals(self, entity):
         entity.column_added.connect(self.add_column_item)
         entity.column_removed.connect(self.delete_column_item)
 
@@ -427,9 +428,18 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         result = editor.exec_()
         if result == 1:
             profile = self.stdm_config.create_profile(editor.profile_name)
-            profile.entity_added.connect(self.add_entity_item)
-            profile.entity_removed.connect(self.delete_entity_item)
+            self.connect_entity_signals(profile)
             self.stdm_config.add_profile(profile)
+
+    def connect_entity_signals(self, profile):
+        """
+        Connects signals to emit when an entity is added or removed from a
+        profile
+        :param profile: Profile that emits the signals
+        :type profile: Profile
+        """
+        profile.entity_added.connect(self.add_entity_item)
+        profile.entity_removed.connect(self.delete_entity_item)
 
     def current_profile(self):
         """
@@ -452,12 +462,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     "Cannot delete last profile!"))
             return
 
-        profile_name = self.cboProfile.currentText()
+        profile_name = unicode(self.cboProfile.currentText())
         if not self.stdm_config.remove_profile(profile_name):
             show_message(QApplication.translate("Configuration Wizard", \
                     "Unable to delete profile!"))
             return
-        self.set_profile_cbo()
+        self.load_profile_cbo()
 
     def get_profiles(self):
         profiles = []
@@ -466,7 +476,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         return profiles
 
-    def set_profile_cbo(self):
+    def load_profile_cbo(self):
         profiles = self.get_profiles()
         self.cboProfile.clear()
         self.cboProfile.insertItems(0, profiles)
@@ -600,7 +610,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 		
     def _create_ent(self, profile, entity_name):
         entity = profile.create_entity(entity_name, entity_factory)
-        self.connect_entity_signals(entity)
+        self.connect_column_signals(entity)
         profile.add_entity(entity)
 
     def get_model_entity(self, view):
