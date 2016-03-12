@@ -27,15 +27,28 @@ from stdm.data.configuration.association_entity import AssociationEntity
 from create_lookup import LookupEditor
 
 class MultiSelectProperty(QDialog, Ui_LookupProperty):
+    """
+    Editor to create/edit MultiSelect column property
+    """
     def __init__(self, parent, first_parent, entity, profile):
+        """
+        :param parent: Owner of this window
+        :type parent: QWidget
+        :param first_parent: Primary ValueList entity in the association class
+        :type first_parent: ValueList
+        :param entity: Current entity a column is created for
+        :type entity: Entity
+        :profile: Current profile
+        :type profile: Profile
+        """
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
         self._first_parent = first_parent
-        self._lookup_name = ''
-        self._profile = profile
         self._current_entity = entity
+        self._profile = profile
 
+        self._lookup_name = ''
         self.init_gui()
 
     def init_gui(self):
@@ -52,9 +65,8 @@ class MultiSelectProperty(QDialog, Ui_LookupProperty):
 
     def create_lookup(self):
         """
-        - Create a new lookup entity,
-        - insert it to the current lookup combobox
-        - make it the current lookup
+        Creates a new lookup entity, inserts it to the
+        current lookup combobox and make it the current lookup
         """
         editor = LookupEditor(self, self._profile)
         result = editor.exec_()
@@ -68,8 +80,8 @@ class MultiSelectProperty(QDialog, Ui_LookupProperty):
             
     def lookup_entities(self):
         """
-        returns: A list of ValueList (a.k.a lookup) names in the current profile
-        rtype: list
+        Returns a list of ValueList (a.k.a lookup) names in the current profile
+        :rtype: list
         """
         names = []
         for value_list in self._profile.value_lists():
@@ -79,7 +91,8 @@ class MultiSelectProperty(QDialog, Ui_LookupProperty):
     def fill_lookup_cbo(self, names):
         """
         Fill combobox with entity names
-        param names: List of entity names
+        :param names: List of entity names
+        :type names: list
         """
         self.cboPrimaryEntity.clear()
         self.cboPrimaryEntity.insertItems(0, names)
@@ -96,8 +109,8 @@ class MultiSelectProperty(QDialog, Ui_LookupProperty):
 
     def lookup(self):
         """
-        returns the lookup entity that was selected
-        rtype: ValueList
+        Returns the lookup entity that was selected
+        :rtype: ValueList
         """
         return self._first_parent
 	    
@@ -107,11 +120,3 @@ class MultiSelectProperty(QDialog, Ui_LookupProperty):
 
     def reject(self):
         self.done(0)
-    
-    def error_message(self, Message):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Warning)
-        msg.setWindowTitle("STDM")
-        msg.setText(Message)
-        msg.exec_()  
-

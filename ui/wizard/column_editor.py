@@ -2,7 +2,7 @@
 """
 /***************************************************************************
 Name                 : column_editor
-Description          : STDM profile configuration wizard
+Description          : Editor to create/edit entity columns
 Date                 : 24/January/2016
 copyright            : (C) 2015 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
@@ -48,13 +48,27 @@ from datetime import (
 )
 
 class ColumnEditor(QDialog, Ui_ColumnEditor):
+    """
+    Form to add/edit entity columns
+    """
     def __init__(self, parent, **kwargs):
+        """
+        :param parent: Owner of this dialog
+        :type parent: QWidget
+        :param kwargs: Keyword dictionary of the following params;
+         column - Column you editting, None if its a new column
+         entity - Entity you are adding the column
+         profile - Current profile
+        """
         QDialog.__init__(self, parent)
         self.form_parent = parent
+
         self.FK_EXCLUDE = [u'supporting_document', u'admin_spatial_unit_set']
+
         self.EX_TYPE_INFO =  ['SUPPORTING_DOCUMENT', 'SOCIAL_TENURE', 
                 'ADMINISTRATIVE_SPATIAL_UNIT', 'ENTITY_SUPPORTING_DOCUMENT',
                 'VALUE_LIST']
+
         self.setupUi(self)
         self.dtypes = {}
 
@@ -64,9 +78,11 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.type_info = ''
         
+        # dictionary to hold default attributes for each data type
         self.type_attribs = {}
         self.init_type_attribs()
 
+        # dictionary to act as a work area for the form fields.
         self.form_fields = {}
         self.init_form_fields()
 
@@ -92,18 +108,19 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         name_regex = QtCore.QRegExp('^[a-z][a-z0-9_]*$')
         name_validator = QtGui.QRegExpValidator(name_regex)
         self.edtColName.setValidator(name_validator)
-        # if this an edit
+
         if self.column:
             self.column_to_form(self.column)
+            self.column_to_wa(self.column)
 
         self.edtColName.setFocus()
 
-    def _get_cbo_id(self, types, text):
-        for i, c in enumerate(types):
-            if c == text:
-                return i
-
     def column_to_form(self, column):
+        """
+        Initializes form controls with column data when editting a column.
+        :param column: Column to edit
+        :type column: BaseColumn
+        """
         self.edtColName.setText(column.name)
         self.edtColDesc.setText(column.description)
         self.edtUserTip.setText(column.user_tip)
@@ -112,12 +129,18 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.cbUnique.setCheckState(self.bool_to_check(column.unique))
         self.cbIndex.setCheckState(self.bool_to_check(column.index))
 
-        #cbo_id = self._get_cbo_id(self.type_names, column.display_name())
         #self.cboDataType.setCurrentIndex(cbo_id)
 
         self.cboDataType.setCurrentIndex( \
                 self.cboDataType.findText(column.display_name()))
 
+    def column_to_wa(self, column):
+        """
+        Initializes work area 'form_fields' with column data.
+        Used when editing a column
+        :param column: Column to edit
+        :type column: BaseColumn
+        """
         self.form_fields['colname'] = column.name
         self.form_fields['value']  = None
         self.form_fields['mandt']  = column.mandatory
@@ -141,6 +164,12 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.form_fields['second_parent'] = column.association.second_parent
 
     def bool_to_check(self, state):
+        """
+        Converts a boolean to a Qt checkstate.
+        :param state: True/False
+        :type state: boolean
+        :rtype: Qt.CheckState
+        """
         if state:
             return Qt.Checked
         else:
@@ -148,7 +177,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
     def init_form_fields(self):
         """
-        Initializes form_fields dictionary used to hold form values
+        Initializes work area 'form_fields' dictionary with default values.
+        Used when creating a new column.
         """
         self.form_fields['colname'] = ''
         self.form_fields['value']  = None
@@ -171,6 +201,15 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 self.type_attribs.get('second_parent', None)
 		
     def init_type_attribs(self):
+        """
+        Initializes data type attributes. The attributes are used to
+        set the form controls state when a particular data type is selected.
+        mandt - enables/disables checkbox 'mandatory field'
+        search - enables/disables checkbox 'is searchable'
+        unique - enables/disables checkbox 'is unique'
+        index - enables/disables checkbox 'column index'
+        *property - function to execute when a data type is selected.
+        """
         self.type_attribs['VARCHAR'] = {
                 'mandt':True,'search': True,
                 'unique': False, 'index': True,
@@ -226,15 +265,26 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 'property':self.multi_select_property, 'prop_set':False }
 	
     def data_type_property(self):
+        """
+        Executes the relevant function assigned to the property attribute of 
+        the current selected data type.
+        """
         self.type_attribs[self.current_type_info()]['property']()
 
     def varchar_property(self):
+        """
+        Opens the property editor for the Varchar data type.
+        If successfull, set a minimum column in work area 'form fields'
+        """
         editor = VarcharProperty(self, self.form_fields)
         result = editor.exec_()
         if result == 1:
             self.form_fields['maximum'] = editor.max_len()
 
     def bigint_property(self):
+        """
+        Opens a property editor for the BigInt data type.
+        """
         editor = BigintProperty(self, self.form_fields)
         result = editor.exec_()
         if result == 1:
@@ -242,6 +292,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.form_fields['maximum'] = editor.max_val()
 
     def double_property(self):
+        """
+        Opens a property editor for the Double data type.
+        """
         editor = DoubleProperty(self, self.form_fields)
         result = editor.exec_()
         if result == 1:
@@ -249,6 +302,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.form_fields['maximum'] = editor.max_val()
 
     def date_property(self):
+        """
+        Opens a property editor for the Date data type.
+        """
         editor = DateProperty(self, self.form_fields)
         result = editor.exec_()
         if result == 1:
@@ -256,6 +312,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.form_fields['maximum'] = editor.max_val()
 
     def dtime_property(self):
+        """
+        Opens a property editor for the DateTime data type.
+        """
         editor = DTimeProperty(self, self.form_fields)
         result = editor.exec_()
         if result == 1:
@@ -263,6 +322,13 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.form_fields['maximum'] = editor.max_val()
 
     def geometry_property(self):
+        """
+        Opens a property editor for the Geometry data type.
+        If successfull, set the srid(projection), geom_type (LINE, POLYGON...)
+        and prop_set which is boolean flag to verify that all the geometry
+        properties are set.  If prop_set is false you are not allowed to save
+        the column.
+        """
         editor = GeometryProperty(self, self.form_fields)
         result = editor.exec_()
         if result == 1:
@@ -271,6 +337,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.type_attribs[self.type_info]['prop_set'] = True
 
     def fk_property(self):
+        """
+        Opens a property editor for the ForeignKey data type.
+        """
         if len(self.edtColName.displayText())==0:
             self.error_message("Please enter column name!")
             return
@@ -298,7 +367,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
     def lookup_property(self):
         """
-        Opens a lookup property editor
+        Opens a lookup type property editor
         """
         er = self.form_fields['entity_relation']
         editor = LookupProperty(self, er, profile=self.profile) 
@@ -324,9 +393,12 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.type_attribs[self.type_info]['prop_set'] = True
 
     def create_column(self):
+        """
+        Creates a new BaseColumn.
+        """
         column = None
         if self.type_info:
-            if self.valid_type_properties(self.type_info):
+            if self.is_property_set(self.type_info):
                 column = BaseColumn.registered_types[self.type_info] \
                         (self.form_fields['colname'], self.entity,
                                 **self.form_fields)
@@ -337,7 +409,14 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         return column
 
-    def valid_type_properties(self, ti):
+    def is_property_set(self, ti):
+        """
+        Checks if column property is set by reading the value of
+        attribute 'prop_set'
+        :param ti: Type info to check for prop set
+        :type ti: BaseColumn.TYPE_INFO
+        :rtype: boolean
+        """
         if not self.type_attribs[ti].has_key('prop_set'):
             return True
 
@@ -349,17 +428,23 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         except:
                 return None
 
-    def load_entities(self, cbox, entities):
-        cbox.clear()
-        cbox.insertItems(0, [name[0] for name in entities])
-        cbox.setCurrentIndex(0)
+    #def load_entities(self, cbox, entities):
+        #cbox.clear()
+        #cbox.insertItems(0, [name[0] for name in entities])
+        #cbox.setCurrentIndex(0)
 
     def popuplate_type_cbo(self):
+        """
+        Fills the data type combobox widget with BaseColumn type names
+        """
         self.cboDataType.clear()
         self.cboDataType.insertItems(0, BaseColumn.types_by_display_name().keys())
         self.cboDataType.setCurrentIndex(0)
 
     def change_data_type(self):
+        """
+        Called by type combobox when you select a different data type.
+        """
         ti = self.current_type_info()
         if ti=='':
             return
@@ -370,17 +455,22 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.set_min_max_defaults(ti)
 
     def set_optionals(self, opts):
+        """
+        Enable/disables form controls by selected data type attribute
+        """
         self.cbMandt.setEnabled(opts['mandt'])
         self.cbSearch.setEnabled(opts['search'])
         self.cbUnique.setEnabled(opts['unique'])
         self.cbIndex.setEnabled(opts['index'])
 
     def set_min_max_defaults(self, type_info):
-        '''
-        sets the form defaults(minimum/maximum) from the column property
-        dictionary
-
-        '''
+        """
+        sets the work area 'form_fields' defaults(minimum/maximum)
+        from the column attribute dictionary
+        :param type_info: TYPE_INFO to extract minimum/maximum values in 
+         type attribute
+        :type type_info: BaseColumn TYPE_INFO
+        """
         self.form_fields['minimum'] = \
                 self.type_attribs[type_info].get('minimum', 0)
 
@@ -388,21 +478,28 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 self.type_attribs[type_info].get('maximum', 0)
 
     def current_type_info(self):
+        """
+        Returns a TYPE_INFO of a data type
+        :rtype: BaseColumn.TYPE_INFO
+        """
         text = self.cboDataType.itemText(self.cboDataType.currentIndex())
         try:
                 return BaseColumn.types_by_display_name()[text].TYPE_INFO
         except:
                 return ''
 
-    def append_attr(self, column_fields, attr, value):
-        try:
-                column_fields[attr] = \
-                        self.property_by_name(self.current_type_info(), attr)
-                return column_fields
-        except:
-                return column_fields
+    #def append_attr(self, column_fields, attr, value):
+        #try:
+                #column_fields[attr] = \
+                        #self.property_by_name(self.current_type_info(), attr)
+                #return column_fields
+        #except:
+                #return column_fields
 
-    def fill_form_data(self):
+    def fill_work_area(self):
+        """
+        Sets work area 'form_fields' with form control values
+        """
         self.form_fields['colname']    = unicode(self.edtColName.text())
         self.form_fields['description']= unicode(self.edtColDesc.text())
         self.form_fields['index']      = self.cbIndex.isChecked()
@@ -411,11 +508,11 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.form_fields['unique']     = self.cbUnique.isChecked()
         self.form_fields['user_tip']   = unicode(self.edtUserTip.text())
 
-    def error_message(self, Message):
+    def error_message(self, message):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle(QApplication.translate("AttributeEditor", "STDM"))
-        msg.setText(Message)
+        msg.setText(message)
         msg.exec_()  
 
     def accept(self):
@@ -437,7 +534,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 "Column with the same name already exist!"))
             return 
 
-        self.fill_form_data()
+        self.fill_work_area()
         self.column = self.create_column()
 
         if self.column:

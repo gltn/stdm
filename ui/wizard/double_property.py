@@ -29,18 +29,31 @@ from PyQt4.QtGui import (
 		QApplication, 
 		QMessageBox
 		)
+from stdm.utils import show_message
 
 class DoubleProperty(QDialog, Ui_DoubleProperty):
+    """
+    Editor to create/edit Double column property
+    """
     def __init__(self, parent, form_fields):
+        """
+        :param parent: Owner of the form
+        :type parent: QWidget
+        :param form_fields: Contains data from the column editor window
+        :type form_field: dictionary
+        """
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
         self._min_val = form_fields['minimum']
         self._max_val = form_fields['maximum']
 
-        self.initGui()
+        self.init_gui()
 
-    def initGui(self):
+    def init_gui(self):
+        """
+        Initializes form widgets
+        """
         validator = QtGui.QDoubleValidator()
         self.edtMinVal.setValidator(validator)
         self.edtMaxVal.setValidator(validator)
@@ -51,23 +64,34 @@ class DoubleProperty(QDialog, Ui_DoubleProperty):
         self.edtMinVal.setFocus()
 	
     def add_values(self):
+        """
+        Sets min/max properties with values from form widgets
+        """
         self._min_val = float(self.edtMinVal.text())
         self._max_val = float(self.edtMaxVal.text())
 
     def min_val(self):
+        """
+        Returns minimum property
+        :rtype: int
+        """
         return self._min_val
 	    
     def max_val(self):
+        """
+        Returns maximum property
+        :rtype: int
+        """
         return self._max_val
 	    
     def accept(self):
         if self.edtMinVal.text()=='':
-            self.error_message(QApplication.translate("DoublePropetyEditor",
+            show_message(QApplication.translate("DoublePropetyEditor",
                 "Please set minimum value"))
             return
 
         if self.edtMaxVal.text()=='':
-            self.error_message(QApplication.translate("DoublePropetyEditor",
+            show_message(QApplication.translate("DoublePropetyEditor",
                 "Pleasei set maximum value."))
             return
 
@@ -76,11 +100,3 @@ class DoubleProperty(QDialog, Ui_DoubleProperty):
 
     def reject(self):
         self.done(0)
-    
-    def error_message(self, Message):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Warning)
-        msg.setWindowTitle("STDM")
-        msg.setText(Message)
-        msg.exec_()  
-
