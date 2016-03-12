@@ -2,7 +2,7 @@
 """
 /***************************************************************************
 Name                 : varchar_property
-Description          : Set properties for VarChar data type
+Description          : Set properties for Varchar data type
 Date                 : 02/January/2016
 copyright            : (C) 2015 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
@@ -29,19 +29,36 @@ from PyQt4.QtGui import (
 		QMessageBox
 		)
 
+from stdm.utils import show_message
 from stdm.data.configuration.entity import *
-from stdm.data.configuration.value_list import ValueList, CodeValue, value_list_factory
+from stdm.data.configuration.value_list import (
+        ValueList, 
+        CodeValue, 
+        value_list_factory
+        )
 
 class VarcharProperty(QDialog, Ui_VarcharProperty):
+    """
+    Editor to create/edit varchar max len property
+    """
     def __init__(self, parent, form_fields):
+        """
+        :param parent: Owner of the form
+        :type parent: QWidget
+        :param form_fields: Contains data from the column editor window
+        :type form_field: dictionary
+        """
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
         self._max_len = form_fields['maximum']
 
-        self.initGui()
+        self.init_gui()
 
-    def initGui(self):
+    def init_gui(self):
+        """
+        Initializes form widgets
+        """
         charlen_regex = QtCore.QRegExp('^[0-9]{1,3}$')
         charlen_validator = QtGui.QRegExpValidator(charlen_regex)
         self.edtCharLen.setValidator(charlen_validator)
@@ -50,15 +67,21 @@ class VarcharProperty(QDialog, Ui_VarcharProperty):
         self.edtCharLen.setFocus()
 	
     def add_len(self):
-        # if its an edit, first remove the previous value
+        """
+        Sets the max_len property from the form widget.
+        """
         self._max_len = int(self.edtCharLen.text())
 
     def max_len(self):
+        """
+        Returns the max_len property
+        :rtype: int
+        """
         return self._max_len
         
     def accept(self):
         if self.edtCharLen.text()=='':
-            self.error_message(QApplication.translate("VarcharPropetyEditor",
+            show_message(QApplication.translate("VarcharPropetyEditor",
                 "Please enter length for the column."))
             return
 
@@ -67,10 +90,3 @@ class VarcharProperty(QDialog, Ui_VarcharProperty):
 
     def reject(self):
         self.done(0)
-
-    def error_message(self, message):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Warning)
-        msg.setWindowTitle("STDM")
-        msg.setText(message)
-        msg.exec_()  

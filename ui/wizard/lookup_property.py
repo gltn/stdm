@@ -26,7 +26,18 @@ from stdm.data.configuration.entity_relation import EntityRelation
 from create_lookup import LookupEditor
 
 class LookupProperty(QDialog, Ui_LookupProperty):
+    """
+    Editor to create/edit Lookup column property
+    """
     def __init__(self, parent, entity_relation, profile=None):
+        """
+        :param parent: Owner of this form
+        :type parent: QWidget
+        :param entity_relation: EntityRelation object
+        :type entity_relation: EntityRelation
+        :param profile: Current configuration profile
+        :type profile: Profile
+        """
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
@@ -50,9 +61,8 @@ class LookupProperty(QDialog, Ui_LookupProperty):
 
     def create_lookup(self):
         """
-        - Create a new lookup entity,
-        - insert it to the current lookup combobox
-        - make it the current lookup
+        Creates a new lookup entity, insert it to the current lookup combobox 
+        and make it the current lookup
         """
         editor = LookupEditor(self, self._profile)
         result = editor.exec_()
@@ -66,7 +76,7 @@ class LookupProperty(QDialog, Ui_LookupProperty):
             
     def lookup_entities(self):
         """
-        returns: A list of ValueList (a.k.a lookup) names in the current profile
+        Returns a list of ValueList (a.k.a lookup) names in the current profile
         rtype: list
         """
         names = []
@@ -77,7 +87,7 @@ class LookupProperty(QDialog, Ui_LookupProperty):
     def fill_lookup_cbo(self, names):
         """
         Fill combobox with entity names
-        param names: List of entity names
+        :param names: List of entity names
         """
         self.cboPrimaryEntity.clear()
         self.cboPrimaryEntity.insertItems(0, names)
@@ -85,7 +95,7 @@ class LookupProperty(QDialog, Ui_LookupProperty):
 
     def add_values(self):
         """
-        Construct an EntityRelation instanec
+        Construct an EntityRelation instance
         """
         lookup_name = unicode(self.cboPrimaryEntity.currentText())
         self._lookup_name = lookup_name
@@ -100,7 +110,8 @@ class LookupProperty(QDialog, Ui_LookupProperty):
 
     def entity_relation(self):
         """
-        rtype: EntityRelation instance
+        Returns an instance of EntityRelation
+        rtype: EntityRelation
         """
         return self._entity_relation
 	    
@@ -110,11 +121,3 @@ class LookupProperty(QDialog, Ui_LookupProperty):
 
     def reject(self):
         self.done(0)
-    
-    def error_message(self, Message):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Warning)
-        msg.setWindowTitle("STDM")
-        msg.setText(Message)
-        msg.exec_()  
-

@@ -28,9 +28,14 @@ from PyQt4.QtCore import (
     QSettings,
     QFileInfo
 )
-from PyQt4.QtGui import QPixmap, QFileDialog, QDialog
+from PyQt4.QtGui import (
+        QPixmap, 
+        QFileDialog, 
+        QDialog,
+        QMessageBox
+        )
 
-from qgis.gui import QgsEncodingFileDialog
+#from qgis.gui import QgsEncodingFileDialog
 
 from stdm.settings.registryconfig import RegistryConfig
 
@@ -283,3 +288,10 @@ def openDialog( parent, filtering="GPX (*.gpx)", dialogMode="SingleFile"):
       return ( unicode( files[0] ), unicode( fileDialog.encoding() ) )
     else:
       return ( files, unicode( fileDialog.encoding() ) )
+
+def show_message(message):
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Warning)
+    msg.setWindowTitle("STDM")
+    msg.setText(message)
+    msg.exec_()

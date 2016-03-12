@@ -2,7 +2,7 @@
 """
 /***************************************************************************
 Name                 : geometry_property
-Description          : Set properties for Date data type
+Description          : Set properties for Geometry data type
 Date                 : 02/January/2016
 copyright            : (C) 2015 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
@@ -26,8 +26,9 @@ from PyQt4.QtGui import (
     QApplication,
     QMessageBox
 )
+from stdm.utils import show_message
 
-from qgis.gui import QgsGenericProjectionSelector
+#from qgis.gui import QgsGenericProjectionSelector
 
 from ui_geom_property import Ui_GeometryProperty
 
@@ -36,13 +37,14 @@ geom_types = ['POINT', 'LINE', 'POLYGON', 'MULTIPOINT', 'MULTILINE',
 
 class GeometryProperty(QDialog, Ui_GeometryProperty):
     """
-    Geometry type property editor
+    Geometry column property editor
     """
     def __init__(self, parent, form_fields):
         """
         :param parent: Owner of this dialog window
         :type parent: QWidget
-        :param form_fields: Dictionary for form fields
+        :param form_fields: Dictionary used to pass parameters from
+         column editor
         :type form_fields: dictionary
         """
         QDialog.__init__(self, parent)
@@ -86,17 +88,28 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
             self.btnCoord.setText(projection_selector.selectedAuthId())
 
     def add_values(self):
+        """
+        Sets geom type properties with values from form widgets
+        """
         self._geom_type = self.cboGeoType.currentIndex()
 
     def geom_type(self):
+        """
+        Returns geometry type property
+        :rtype: str
+        """
         return self._geom_type
 	    
     def coord_sys(self):
+        """
+        Returns projection type
+        :rtype: str
+        """
         return self._srid
 	    
     def accept(self):
         if not self._srid:
-            self.error_message(QApplication.translate("GeometryPropetyEditor",
+            show_message(QApplication.translate("GeometryPropetyEditor",
                 "Please set geometry coordinate system"))
 
             return
@@ -106,11 +119,4 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
 
     def reject(self):
         self.done(0)
-    
-    def error_message(self, message):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Warning)
-        msg.setWindowTitle("STDM")
-        msg.setText(message)
-        msg.exec_()  
 
