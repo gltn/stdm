@@ -266,7 +266,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 	
     def data_type_property(self):
         """
-        Executes the relevant function assigned to the property attribute of 
+        Executes the relevant function attached to the property attribute of 
         the current selected data type.
         """
         self.type_attribs[self.current_type_info()]['property']()
@@ -274,7 +274,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
     def varchar_property(self):
         """
         Opens the property editor for the Varchar data type.
-        If successfull, set a minimum column in work area 'form fields'
+        Sets minimum length property.
         """
         editor = VarcharProperty(self, self.form_fields)
         result = editor.exec_()
@@ -284,6 +284,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
     def bigint_property(self):
         """
         Opens a property editor for the BigInt data type.
+        Sets minimum and maximum properties.
         """
         editor = BigintProperty(self, self.form_fields)
         result = editor.exec_()
@@ -294,6 +295,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
     def double_property(self):
         """
         Opens a property editor for the Double data type.
+        Sets minimum and maximum double properties.
         """
         editor = DoubleProperty(self, self.form_fields)
         result = editor.exec_()
@@ -304,6 +306,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
     def date_property(self):
         """
         Opens a property editor for the Date data type.
+        Sets minimum and maximum date properties.
         """
         editor = DateProperty(self, self.form_fields)
         result = editor.exec_()
@@ -314,6 +317,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
     def dtime_property(self):
         """
         Opens a property editor for the DateTime data type.
+        Sets the minimum and maximum datetime properties.
         """
         editor = DTimeProperty(self, self.form_fields)
         result = editor.exec_()
@@ -324,10 +328,11 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
     def geometry_property(self):
         """
         Opens a property editor for the Geometry data type.
-        If successfull, set the srid(projection), geom_type (LINE, POLYGON...)
-        and prop_set which is boolean flag to verify that all the geometry
-        properties are set.  If prop_set is false you are not allowed to save
-        the column.
+        Sets srid(projection), geom_type (LINE, POLYGON...)
+        and prop_set properties.
+        prop_set is boolean flag used to check if all the required fields
+        to create a geometry column are set. If prop_set is False you cannot
+        create the column.
         """
         editor = GeometryProperty(self, self.form_fields)
         result = editor.exec_()
@@ -339,13 +344,14 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
     def fk_property(self):
         """
         Opens a property editor for the ForeignKey data type.
+        Sets entity_relation and prop_set properties
         """
         if len(self.edtColName.displayText())==0:
             self.error_message("Please enter column name!")
             return
 
-        # filter list of lookup tables, don't show internal 
-        # tables in list of lookups
+        # filter list of lookup tables, don't show internal tables in list
+        # of lookups
         fk_ent = [entity for entity in self.profile.entities.items() \
                 if entity[1].TYPE_INFO not in self.EX_TYPE_INFO]
 
@@ -368,6 +374,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
     def lookup_property(self):
         """
         Opens a lookup type property editor
+        Sets entity_relation and prop_set properties.
         """
         er = self.form_fields['entity_relation']
         editor = LookupProperty(self, er, profile=self.profile) 
@@ -378,7 +385,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
     def multi_select_property(self):
         """
-        Opens a multi select property editor
+        Opens a multi select property editor.
+        Sets first_parent(entity), second_parent(entity) and prop_set 
+        properties.
         """
         if len(self.edtColName.displayText())==0:
            self.error_message("Please enter column name!")
@@ -395,6 +404,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
     def create_column(self):
         """
         Creates a new BaseColumn.
+        :rtype: BaseColumn
         """
         column = None
         if self.type_info:
@@ -411,9 +421,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
     def is_property_set(self, ti):
         """
-        Checks if column property is set by reading the value of
+        Checks if the required column property are set by reading 
         attribute 'prop_set'
-        :param ti: Type info to check for prop set
+        :param ti: Type info to check for prop_set
         :type ti: BaseColumn.TYPE_INFO
         :rtype: boolean
         """
@@ -422,20 +432,15 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         return self.type_attribs[ti]['prop_set']
 
-    def property_by_name(self, ti, name):
-        try:
-                return self.dtype_property(ti)['property'][name]
-        except:
-                return None
-
-    #def load_entities(self, cbox, entities):
-        #cbox.clear()
-        #cbox.insertItems(0, [name[0] for name in entities])
-        #cbox.setCurrentIndex(0)
+    #def property_by_name(self, ti, name):
+        #try:
+                #return self.dtype_property(ti)['property'][name]
+        #except:
+                #return None
 
     def popuplate_type_cbo(self):
         """
-        Fills the data type combobox widget with BaseColumn type names
+        Fills the data type combobox widget with BaseColumn type names.
         """
         self.cboDataType.clear()
         self.cboDataType.insertItems(0, BaseColumn.types_by_display_name().keys())
@@ -443,7 +448,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
     def change_data_type(self):
         """
-        Called by type combobox when you select a different data type.
+        Triggered by data type combobox when a data type is selected.
         """
         ti = self.current_type_info()
         if ti=='':
@@ -487,14 +492,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 return BaseColumn.types_by_display_name()[text].TYPE_INFO
         except:
                 return ''
-
-    #def append_attr(self, column_fields, attr, value):
-        #try:
-                #column_fields[attr] = \
-                        #self.property_by_name(self.current_type_info(), attr)
-                #return column_fields
-        #except:
-                #return column_fields
 
     def fill_work_area(self):
         """
