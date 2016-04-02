@@ -32,7 +32,13 @@ from stdm.data.configuration.stdm_configuration import StdmConfiguration, Profil
 from stdm.data.configuration.entity import entity_factory, Entity
 from stdm.data.configuration.entity_relation import EntityRelation 
 from stdm.data.configuration.columns import BaseColumn
-from stdm.data.configuration.value_list import ValueList, CodeValue, value_list_factory
+
+from stdm.data.configuration.value_list import (
+        ValueList, 
+        CodeValue, 
+        value_list_factory
+        )
+
 from stdm.data.configuration.social_tenure import *
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 from stdm.data.configuration.db_items import DbItem
@@ -58,16 +64,18 @@ LIC_PAGE, PATH_PAGE, PROFILE_PAGE, ENTITY_PAGE, STR_PAGE, FINAL_PAGE = range(0, 
 REG_KEY = "HKEY_CURRENT_USER\\Software\\QGIS\\QGIS2\\STDM"
 
 class ConfigWizard(QWizard, Ui_STDMWizard):
+    """
+    STDM configuration wizard editor
+    """
     def __init__(self, parent):
         QWizard.__init__(self, parent)
         self.setupUi(self)
         self.register_fields()
 
-
         # directory path settings
-        self.btnDocPath.clicked.connect(self.support_doc_path)
-        self.btnDocOutput.clicked.connect(self.output_path)
-        self.btnTemplates.clicked.connect(self.template_path)
+        self.btnDocPath.clicked.connect(self.set_support_doc_path)
+        self.btnDocOutput.clicked.connect(self.set_output_path)
+        self.btnTemplates.clicked.connect(self.set_template_path)
 
         # profile
         self.cboProfile.currentIndexChanged.connect(self.profile_changed)
@@ -132,6 +140,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         self.edtDocPath.setFocus()
 
+        self.rbReject.setChecked(True)
+
+        # wizard start page
         self.setStartId(0)
         self.setFixedSize(QSize(605, 488))
 
@@ -139,7 +150,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.stdm_config = StdmConfiguration.instance()  
         self.stdm_config.profile_added.connect(self.cbo_add_profile)
 
-        # if StdmConfiguration instance is not empty, load profiles
+        # if StdmConfiguration instance is not empty, load earlier profiles
         if len(self.stdm_config.profiles) > 0:
             self.reload_profiles()
 
@@ -154,14 +165,26 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.connect_entity_signals(profile)
             profiles.append(profile.name)
         self.cbo_add_profiles(profiles)
+
         self.lvLookups.setCurrentIndex(self.lvLookups.model().index(0,0))
         self.lvEntities.setCurrentIndex(self.lvEntities.model().index(0,0))
 
     def connect_column_signals(self, entity):
+        """
+        Connect signals triggered when column is added or deleted in an entity
+        """
         entity.column_added.connect(self.add_column_item)
         entity.column_removed.connect(self.delete_column_item)
 
-    def validate_str(self):
+    def validate_STR(self):
+        """
+        Returns a tuple (True, 'OK') if all properties for 
+        Social Tenure Relationship are set, else (False, 'message').
+        Check if any entities exist,
+        Check that party and spatial unit entities are not the same
+        Check if spatial unit has a geometry column
+        :rtype: tuple
+        """
         if self.entity_model.rowCount() == 0:
             return False, "No entities for creating Social Tenure Relationship"
 
@@ -185,7 +208,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def validate_empty_lookups(self):
         """
-        Verify that all lookups in the current profile
+        Verifys that all lookups in the current profile
         have values. Returns true if all have values else false
         rtype: bool
         """
@@ -254,7 +277,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     '/.stdm/reports/templates')
             self.edtTemplatePath.setText(templates_path)
 
-            return validPage
+            if self.rbReject.isChecked():
+                message1 = "To continue with the wizard please comply with "
+                message2 = "disclaimer policy by selecting the option 'I Agree'"
+                show_message(message1+message2)
+                validPage=False
 
         if self.currentId() == 3:
             self.party_changed(0)
@@ -264,10 +291,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.spatial_unit_changed(idx)
             # verify that lookup entities have values
             validPage = self.validate_empty_lookups()
-            return validPage
 
         if self.currentId() == 4:
-            validPage, msg = self.validate_str()
+            validPage, msg = self.validate_STR()
 
             if validPage:
                 profile = self.current_profile()
@@ -281,7 +307,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             else:
                 show_message(QApplication.translate("Configuration Wizard", msg))
 
-        if self.currentId() == 5:
+        if self.currentId() == 5: # FINAL_PAGE:
             # last page
             # commit config to DB
             config_updater = ConfigurationSchemaUpdater()
@@ -329,41 +355,40 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         page_count.registerField("Accept", self.rbAccpt)
         page_count.registerField("Reject", self.rbReject)
 
-    def support_doc_path(self):
+    def set_support_doc_path(self):
         try:
             dir_name = self.open_dir_chooser(QApplication.translate( \
                     "STDM Configuration", 
                     "Select a directory for supporting documents"), 
                     str(self.edtDocPath.text()))
 
-            #dir_path = dir_name.first()
-            
-            self.edtDocPath.setText(dir_name)
+            if len(dir_name.strip()) > 0:
+                self.edtDocPath.setText(dir_name)
         except:
             LOGGER.debug("Error setting support document path!")
             raise
 
-    def output_path(self):
+    def set_output_path(self):
         try:
             dir_name = self.open_dir_chooser(QApplication.translate( \
                     "STDM Configuration",
                     "Select a directory for outputting generated documents"),
                     str(self.edtOutputPath.text()))
 
-            #dir_path = dir_name.first()
-            self.edtOutputPath.setText(dir_name)
+            if len(dir_name.strip()) > 0:
+                self.edtOutputPath.setText(dir_name)
         except:
             LOGGER.debug("Error setting support document path!")
 
-    def template_path(self):
+    def set_template_path(self):
         try:
             dir_name = self.open_dir_chooser(QApplication.translate( \
                     "STDM Configuration",
                     "Select a directory for document templates"),
                     str(self.edtTemplatePath.text()))
 
-            #dir_path = dir_name.first()
-            self.edtTemplatePath.setText(dir_name)
+            if len(dir_name.strip()) > 0:
+                self.edtTemplatePath.setText(dir_name)
         except:
             LOGGER.debug("Error setting support document path!")
 
@@ -372,16 +397,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 self, "Select Folder", ""))
         return sel_dir
         
-        #dir_dlg = QFileDialog(self, message, dir)
-        #dir_dlg.setFileMode(QFileDialog.Directory)
-        #dir_dlg.setOption(QFileDialog.ShowDirsOnly, True)
-        #if dir_dlg.exec_() == QDialog.Accepted:
-            #sel_dir = dir_dlg.selectedFiles()
-            #if len(sel_dir) > 0:
-                #show_message(QApplication.translate("Configuration Wizard", \
-                        #str(type(sel_dir)) ))
-                #return sel_dir
-
     def add_entity_item(self, entity):
         """
         param entity: Instance of a new entity
@@ -446,7 +461,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Returns an instance of the selected profile in the 
         profile combobox
-        :rtype: Profile
+        rtype: Profile
         """
         profile = None
         prof_name = self.cboProfile.currentText()
@@ -471,10 +486,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.load_profile_cbo()
 
     def get_profiles(self):
-        """
-        Returns a list of all profiles in the StdmConfiguration instance
-        :rtype: list
-        """
         profiles = []
         for profile in self.stdm_config.profiles.items():
                 profiles.append(profile[0])
@@ -482,30 +493,18 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         return profiles
 
     def load_profile_cbo(self):
-        """
-        Populates profile combobox with a list of profile names
-        """
         profiles = self.get_profiles()
         self.cboProfile.clear()
         self.cboProfile.insertItems(0, profiles)
         self.cboProfile.setCurrentIndex(0)
 
     def add_column_item(self, column):
-        """
-        Add a column to widgets view model
-        :param column: Column to add to widgets models
-        :type column: BaseColumn
-        """
+        print "Column added triggered...."
         self.col_view_model.add_entity(column)
         self.party_item_model.add_entity(column)
         self.spunit_item_model.add_entity(column)
 
     def delete_column_item(self, name):
-        """
-        Deletes a column from model entities
-        :param name: name of column to delete
-        :type name: str
-        """
         model_item, column, row_id = self.get_model_entity(self.tbvColumns)
         self.col_view_model.delete_entity(column)
         self.col_view_model.removeRow(row_id)
@@ -596,8 +595,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.cboParty.currentIndexChanged.emit(self.cboParty.currentIndex())
         self.cboSPUnit.currentIndexChanged.emit(self.cboSPUnit.currentIndex())
 
-    def switch_profile(self, profile_name):
-        profile = self.stdm_config.profile(unicode(profile_name))
+    def switch_profile(self, name):
+        profile = self.stdm_config.profile(unicode(name))  #profiles.values()[sel_id]
 
         # clear view models
         self.clear_view_model(self.entity_model)
@@ -622,10 +621,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         self.connect_signals()
 
-    def profile_changed(self):
-        """
-        Method called when a new profile is selected in the profile combobox.
-        """
+    def profile_changed(self, row_id):
         self.switch_profile(self.cboProfile.currentText())
 		
     def _create_ent(self, profile, entity_name):
@@ -634,13 +630,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         profile.add_entity(entity)
 
     def get_model_entity(self, view):
-        """
-        Returns a tuple of listview data model, 
-        ????????
-        :param view: list view to extract data model
-        :type view: QListView
-        :rtype: tuple
-        """
         sel_id = -1
         entity = None
         model_item = view.currentIndex().model()
@@ -971,6 +960,7 @@ class Launcher(QMainWindow):
     def open_wizard(self):
         window = QWidget()
         configWiz = ConfigWizard(window)
+        #configWiz.setFixedSize(QSize(605, 488))
         configWiz.exec_()
 
 def show_message(message):

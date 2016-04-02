@@ -432,4 +432,4 @@ class Ui_STDMWizard(object):
         self.wpSaveProfile.setSubTitle(_translate("STDMWizard", "Click finish to save changes in your configuration to the database.  ", None))
         self.label_2.setText(_translate("STDMWizard", "Save status will be displayed in the window below.", None))
 
-import resources_rc
+#import resources_rc
