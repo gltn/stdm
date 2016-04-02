@@ -133,6 +133,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.edtDocPath.setFocus()
 
         self.setStartId(0)
+        self.setFixedSize(QSize(605, 488))
 
         self.is_config_done = False
         self.stdm_config = StdmConfiguration.instance()  
@@ -970,7 +971,6 @@ class Launcher(QMainWindow):
     def open_wizard(self):
         window = QWidget()
         configWiz = ConfigWizard(window)
-        configWiz.setFixedSize(QSize(605, 488))
         configWiz.exec_()
 
 def show_message(message):
