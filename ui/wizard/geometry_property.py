@@ -28,7 +28,7 @@ from PyQt4.QtGui import (
 )
 from stdm.utils import show_message
 
-#from qgis.gui import QgsGenericProjectionSelector
+from qgis.gui import QgsGenericProjectionSelector
 
 from ui_geom_property import Ui_GeometryProperty
 
