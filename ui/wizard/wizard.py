@@ -44,6 +44,7 @@ from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 from stdm.data.configuration.db_items import DbItem
 from stdm.settings.config_serializer import ConfigurationFileSerializer 
 from stdm.data.configuration.exception import ConfigurationException
+from stdm.data.license_doc import LicenseDocument
 
 from custom_item_model import *
 
@@ -154,6 +155,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if len(self.stdm_config.profiles) > 0:
             self.reload_profiles()
 
+        # try load from the file (".stc") 
+        #config_file = os.path.expanduser('~')+'/.stdm/configuration.stc'
+        #cfs = ConfigurationFileSerializer(config_file)
+        #cfs.load()
+
     def reload_profiles(self):
         """
         Read and load the profiles from StdmConfiguration instance
@@ -262,6 +268,16 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 os.makedirs(doc_path) 
             return self.fmt_path_str(doc_path)
 
+    def show_license(self):
+        self.txtLicense.clear()
+        license = LicenseDocument()
+        self.txtLicense.setCurrentFont(license.text_font())
+        self.txtLicense.setText(license.read_license_info())
+
+    def initializePage(self, int):
+        if self.currentId() == 0:
+            self.show_license()
+
     def validateCurrentPage(self):
         validPage = True
 
@@ -339,7 +355,16 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.txtHtml.append("Config update started ...")
 
     def config_update_progress(self, info_id, msg):
-        self.txtHtml.append(unicode(info_id)+" : "+msg)
+        if info_id == 0: # information
+            self.txtHtml.setTextColo(QColor('black'))
+
+        if info_id == 1: # Warninig
+            self.txtHtml.setTextColor(QColor('yellow'))
+
+        if info_id == 2: # Error
+            self.txtHTML.setTextColor(QColor('red'))
+
+        self.txtHtml.append(msg)
 
     def config_update_completed(self, status):
         if status:
