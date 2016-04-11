@@ -145,7 +145,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         # wizard start page
         self.setStartId(0)
-        self.setFixedSize(QSize(605, 488))
+        #self.setFixedSize(QSize(605, 488))
 
         self.is_config_done = False
         self.stdm_config = StdmConfiguration.instance()  
@@ -271,7 +271,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def show_license(self):
         self.txtLicense.clear()
         license = LicenseDocument()
-        self.txtLicense.setCurrentFont(license.text_font())
+        #self.txtLicense.setCurrentFont(license.text_font())
         self.txtLicense.setText(license.read_license_info())
 
     def initializePage(self, int):
