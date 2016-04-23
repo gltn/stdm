@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
-Name                 : lookup_property
-Description          : Set properties for Lookup data type
+Name                 : multi_select_property
+Description          : Set properties for multi select lookup data type
 Date                 : 02/January/2016
 copyright            : (C) 2015 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
@@ -23,28 +23,32 @@ from PyQt4.QtCore import *
 
 from ui_lookup_property import Ui_LookupProperty
 from stdm.data.configuration.entity_relation import EntityRelation
+from stdm.data.configuration.association_entity import AssociationEntity
 from create_lookup import LookupEditor
 
-class LookupProperty(QDialog, Ui_LookupProperty):
+class MultiSelectProperty(QDialog, Ui_LookupProperty):
     """
-    Editor to create/edit Lookup column property
+    Editor to create/edit MultiSelect column property
     """
-    def __init__(self, parent, entity_relation, profile=None):
+    def __init__(self, parent, first_parent, entity, profile):
         """
-        :param parent: Owner of this form
+        :param parent: Owner of this window
         :type parent: QWidget
-        :param entity_relation: EntityRelation object
-        :type entity_relation: EntityRelation
-        :param profile: Current configuration profile
+        :param first_parent: Primary ValueList entity in the association class
+        :type first_parent: ValueList
+        :param entity: Current entity a column is created for
+        :type entity: Entity
+        :profile: Current profile
         :type profile: Profile
         """
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
-        self._entity_relation = entity_relation
-        self._lookup_name = ''
+        self._first_parent = first_parent
+        self._current_entity = entity
         self._profile = profile
 
+        self._lookup_name = ''
         self.init_gui()
 
     def init_gui(self):
@@ -54,15 +58,15 @@ class LookupProperty(QDialog, Ui_LookupProperty):
         self.edtNewlookup.clicked.connect(self.create_lookup)
         lookup_names = self.lookup_entities()
         self.fill_lookup_cbo(lookup_names)
-        if self._entity_relation:
-            self._lookup_name = self._entity_relation.parent.short_name
+        if self._first_parent:
+            self._lookup_name = self._first_parent.short_name
             self.cboPrimaryEntity.setCurrentIndex( \
                     self.cboPrimaryEntity.findText(self._lookup_name))
 
     def create_lookup(self):
         """
-        Creates a new lookup entity, insert it to the current lookup combobox 
-        and make it the current lookup
+        Creates a new lookup entity, inserts it to the
+        current lookup combobox and make it the current lookup
         """
         editor = LookupEditor(self, self._profile)
         result = editor.exec_()
@@ -77,7 +81,7 @@ class LookupProperty(QDialog, Ui_LookupProperty):
     def lookup_entities(self):
         """
         Returns a list of ValueList (a.k.a lookup) names in the current profile
-        rtype: list
+        :rtype: list
         """
         names = []
         for value_list in self._profile.value_lists():
@@ -88,6 +92,7 @@ class LookupProperty(QDialog, Ui_LookupProperty):
         """
         Fill combobox with entity names
         :param names: List of entity names
+        :type names: list
         """
         self.cboPrimaryEntity.clear()
         self.cboPrimaryEntity.insertItems(0, names)
@@ -95,25 +100,19 @@ class LookupProperty(QDialog, Ui_LookupProperty):
 
     def add_values(self):
         """
-        Construct an EntityRelation instance
+        Construct a ValueList instance
         """
         lookup_name = unicode(self.cboPrimaryEntity.currentText())
         self._lookup_name = lookup_name
 
-        er_fields = {}
-        er_fields['parent'] = lookup_name
-        er_fields['parent_column'] = None
-        er_fields['display_columns'] = []
-        er_fields['child'] = None
-        er_fields['child_column'] = None
-        self._entity_relation = EntityRelation(self._profile, **er_fields)
+        self._first_parent = self._profile.entity(lookup_name)
 
-    def entity_relation(self):
+    def lookup(self):
         """
-        Returns an instance of EntityRelation
-        rtype: EntityRelation
+        Returns the lookup entity that was selected
+        :rtype: ValueList
         """
-        return self._entity_relation
+        return self._first_parent
 	    
     def accept(self):
         self.add_values()

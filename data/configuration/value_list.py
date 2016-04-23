@@ -28,7 +28,6 @@ from stdm.data.configuration.entity_updaters import value_list_updater
 
 LOGGER = logging.getLogger('stdm')
 
-
 def value_list_factory(name, profile, **kwargs):
     """
     Factory method for creating an instance of a ValueList object. This
@@ -107,11 +106,13 @@ class ValueList(Entity):
         """
         self.values[code_value.value] = code_value
 
-    def Values(self):
+    def is_empty(self):
         """
-        :returns: Returns the absolute values in the lookup collection.
+        return: Returns True if the ValueList contains items else 
+        False.
+        :rtype: bool
         """
-        return self.values.keys()
+        return len(self.values) == 0
 
     def rename(self, old_value, new_value):
         """

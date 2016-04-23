@@ -30,37 +30,57 @@ from PyQt4.QtGui import (
 from ui_dtime_property import Ui_DTimeProperty
 
 class DTimeProperty(QDialog, Ui_DTimeProperty):
-    def __init__(self, parent, min_val=None, max_val=None):
+    """
+    Editor to create/edit date column property
+    """
+    def __init__(self, parent, form_fields):
+        """
+        :param parent: Owner of the form
+        :type parent: QWidget
+        :param form_fields: Contains data from the column editor window
+        :type form_field: dictionary
+        """
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
-        self._min_val = min_val
-        self._max_val = max_val
+        self._min_val = form_fields['minimum']
+        self._max_val = form_fields['maximum']
 
-        self.initGui()
+        self.init_gui()
 
-    def initGui(self):
-        min_dtime = QtCore.QDateTime(1900, 1, 1,0,0,0)
+    def init_gui(self):
+        """
+        Initializes form widgets
+        """
+        min_dtime = QtCore.QDateTime.currentDateTime()
         now = QtCore.QDateTime.currentDateTime()
         self.edtMinDTime.setDateTime(min_dtime)
         self.edtMaxDTime.setDateTime(now)
         
-        if self._min_val:
-            self.edtMinDTime.setDateTime(self._min_val)
-        if self._max_val:
-            self.edtMaxDTime.setDateTime(self._max_val)
+        self.edtMinDTime.setDateTime(self._min_val)
+        self.edtMaxDTime.setDateTime(self._max_val)
 
         self.edtMinDTime.setFocus()
 	
     def add_values(self):
-        # if its an edit, first remove the previous value
+        """
+        Sets min/max properties with values from form widgets
+        """
         self._min_val = self.edtMinDTime.dateTime()
         self._max_val = self.edtMaxDTime.dateTime()
 
     def min_val(self):
+        """
+        Returns minimum datetime property
+        :rtype: QDateTime 
+        """
         return self._min_val
 	    
     def max_val(self):
+        """
+        Returns maximum datetime property
+        :rtype: QDateTime 
+        """
         return self._max_val
 	    
     def accept(self):
@@ -70,11 +90,3 @@ class DTimeProperty(QDialog, Ui_DTimeProperty):
     def reject(self):
         self.done(0)
     
-    def ErrorInfoMessage(self, Message):
-        # Error Message Box
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Warning)
-        msg.setWindowTitle("STDM")
-        msg.setText(Message)
-        msg.exec_()  
-
