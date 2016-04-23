@@ -89,7 +89,7 @@ class SocialTenure(Entity):
         if party_entity is None:
             return
 
-        #check if there is an 'id' column
+        #Check if there is an 'id' column
         party_id = self._entity_id_column(party_entity)
 
         LOGGER.debug('Attempting to set %s entity as the party.',
@@ -144,7 +144,7 @@ class SocialTenure(Entity):
             raise AttributeError(err)
 
         if not spatial_unit_entity.has_geometry_column():
-            err = self.tr('%s does not have geometry column. This is required'
+            err = self.tr('%s does not have a geometry column. This is required'
                           ' when setting the spatial unit entity in a '
                           'social tenure relationship definition.'
                           %(spatial_unit_entity.name))
