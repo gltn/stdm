@@ -52,12 +52,9 @@ def entity_updater(entity, engine, metadata):
 
     #All table will have an ID column
     table = Table(entity.name, metadata,
-                  Column('id', Integer, primary_key=True)
+                  Column('id', Integer, primary_key=True),
+                  extend_existing=True
                   )
-
-    #Ensure table is always bound to an engine object
-    if table.bind is None:
-        table.bind = engine
 
     if entity.action == DbItem.CREATE:
         LOGGER.debug('Creating %s entity...', entity.name)

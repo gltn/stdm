@@ -81,7 +81,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
 	return formatted_name.lower()
     
     def add_entity(self):
-        entity_name = unicode(self.edtTable.text())
+        entity_name = unicode(self.edtTable.text()).capitalize()
 
         if self.entity is None:
             if self.profile.entities.has_key(entity_name):
@@ -124,7 +124,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
 	    
     def accept(self):
         if self.edtTable.text()=='':
-            self.error_message(QApplication.translate("EntityEditor","Entity name is not given"))
+            self.error_message(QApplication.translate("EntityEditor","Please enter an entity name"))
             return
 
         if self.add_entity():

@@ -29,33 +29,40 @@ from PyQt4.QtGui import (
 		QMessageBox
 		)
 
-#from stdm.data import (
-		#writeTable, 
-		#renameTable,
-		#inheritTableColumn, 
-		#writeTableColumn,
-		#writeLookup,
-		#checktableExist,
-		#ConfigTableReader, 
-		#table_column_exist
-		#)
-
-#from stdm.data.config_utils import setUniversalCode
-
 from stdm.data.configuration.entity import *
-from stdm.data.configuration.value_list import ValueList, CodeValue, value_list_factory
+from stdm.data.configuration.value_list import (
+        ValueList, 
+        CodeValue, 
+        value_list_factory
+        )
 
 class ValueEditor(QDialog, Ui_LookupValue):
+    """
+    Form to add/edit values added to a lookup. Values are objects of type
+    CodeValue
+    """
     def __init__(self, parent, lookup, code_value=None):
+        """
+        :param parent: Owner of this dialog window
+        :type parent: QWidget
+        :param lookup: A value list object to add the value
+        :type lookup: ValueList
+        :param code_value: A value to add to the lookup, if None this is a new
+         value, else its an edit.
+        :type code_value: CodeValue
+        """
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
 	self.lookup = lookup
 	self.code_value = code_value
 
-        self.initGui()
+        self.init_gui()
 
-    def initGui(self):
+    def init_gui(self):
+        """
+        initializes the form widgets
+        """
 	code_regex = QtCore.QRegExp('^[A-Z0-9]{1,5}$')
 	code_validator = QtGui.QRegExpValidator(code_regex)
 	self.edtCode.setValidator(code_validator)
@@ -65,35 +72,43 @@ class ValueEditor(QDialog, Ui_LookupValue):
 	self.edtValue.setFocus()
 	
     def add_value(self):
-  	    value = unicode(self.edtValue.text())
-	    code  = unicode(self.edtCode.text())
-	    
-	    # if its an edit, first remove the previous value
-	    if self.code_value:
-		    self.lookup.remove_value(self.code_value.value)
+        """
+        Adds a code value to a lookup object. Checks first if a previous value
+        exist then removes it and then adds the new one.
+        """
+        value = unicode(self.edtValue.text())
+        code  = unicode(self.edtCode.text())
+        
+        # if its an edit, first remove the previous value
+        if self.code_value:
+                self.lookup.remove_value(self.code_value.value)
 
-	    self.lookup.add_code_value(CodeValue(code,value))
+        self.lookup.add_code_value(CodeValue(code,value))
 	    
     def accept(self):
-	    if self.edtValue.text()=='':
-		    self.ErrorInfoMessage(QApplication.translate("ValueEditor","Lookup value is not given!"))
-		    return
+        if self.edtValue.text()=='':
+                self.error_message(QApplication.translate("ValueEditor","Lookup value is not given!"))
+                return
 
-	    if self.edtCode.text()=='':
-		    self.ErrorInfoMessage(QApplication.translate("ValueEditor","Value code is not given!"))
-		    return
+        if self.edtCode.text()=='':
+                self.error_message(QApplication.translate("ValueEditor","Value code is not given!"))
+                return
 
-            self.add_value()
-	    
-	    self.done(1)
+        self.add_value()
+        
+        self.done(1)
 
     def reject(self):
-	    self.done(0)
+        self.done(0)
     
-    def ErrorInfoMessage(self, Message):
-        # Error Message Box
+    def error_message(self, message):
+        """
+        Creates a message box and displays a message
+        :param message: message to display
+        :type message: str
+        """
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle("STDM")
-        msg.setText(Message)
+        msg.setText(message)
         msg.exec_()  

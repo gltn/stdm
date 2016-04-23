@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_lookup_value.ui'
 #
-# Created: Tue Feb 23 16:18:54 2016
+# Created: Fri Feb 26 16:10:39 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,9 +26,9 @@ except AttributeError:
 class Ui_LookupValue(object):
     def setupUi(self, LookupValue):
         LookupValue.setObjectName(_fromUtf8("LookupValue"))
-        LookupValue.resize(241, 124)
+        LookupValue.resize(223, 117)
         self.buttonBox = QtGui.QDialogButtonBox(LookupValue)
-        self.buttonBox.setGeometry(QtCore.QRect(66, 90, 156, 23))
+        self.buttonBox.setGeometry(QtCore.QRect(55, 88, 156, 23))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
@@ -37,14 +37,14 @@ class Ui_LookupValue(object):
         self.label.setMinimumSize(QtCore.QSize(60, 0))
         self.label.setObjectName(_fromUtf8("label"))
         self.edtCode = QtGui.QLineEdit(LookupValue)
-        self.edtCode.setGeometry(QtCore.QRect(90, 52, 80, 20))
-        self.edtCode.setMaximumSize(QtCore.QSize(80, 16777215))
+        self.edtCode.setGeometry(QtCore.QRect(83, 52, 131, 20))
+        self.edtCode.setMaximumSize(QtCore.QSize(200, 16777215))
         self.edtCode.setObjectName(_fromUtf8("edtCode"))
         self.label_2 = QtGui.QLabel(LookupValue)
         self.label_2.setGeometry(QtCore.QRect(24, 52, 25, 16))
         self.label_2.setObjectName(_fromUtf8("label_2"))
         self.edtValue = QtGui.QLineEdit(LookupValue)
-        self.edtValue.setGeometry(QtCore.QRect(90, 20, 133, 20))
+        self.edtValue.setGeometry(QtCore.QRect(83, 20, 130, 20))
         self.edtValue.setObjectName(_fromUtf8("edtValue"))
 
         self.retranslateUi(LookupValue)

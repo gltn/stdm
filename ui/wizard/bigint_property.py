@@ -29,50 +29,76 @@ from PyQt4.QtGui import (
 		QMessageBox
 		)
 
+from stdm.utils import show_message
 from stdm.data.configuration.entity import *
-from stdm.data.configuration.value_list import ValueList, CodeValue, value_list_factory
+from stdm.data.configuration.value_list import (
+        ValueList, 
+        CodeValue, 
+        value_list_factory
+        )
 
 class BigintProperty(QDialog, Ui_BigintProperty):
-    def __init__(self, parent, min_val=None, max_val=None):
+    """
+    Editor to create/edit integer column property
+    """
+    def __init__(self, parent, form_fields):
+        """
+        :param parent: Owner of the form
+        :type parent: QWidget
+        :param form_fields: Contains data from the column editor window
+        :type form_field: dictionary
+        """
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
-        self._min_val = min_val
-        self._max_val = max_val
+        self._min_val = form_fields['minimum']
+        self._max_val = form_fields['maximum']
 
-        self.initGui()
+        self.init_gui()
 
-    def initGui(self):
-        val_regex = QtCore.QRegExp('^[0-9]{1,9}$')
-        val_validator = QtGui.QRegExpValidator(val_regex)
-        self.edtMinVal.setValidator(val_validator)
-        self.edtMaxVal.setValidator(val_validator)
+    def init_gui(self):
+        """
+        Initializes form widgets
+        """
+        validator = QtGui.QIntValidator()
+        self.edtMinVal.setValidator(validator)
+        self.edtMaxVal.setValidator(validator)
 
-        if self._min_val:
-            self.edtMinVal.setText(self._min_val)
-        if self._max_val:
-            self.edtMaxVal.setText(self._max_val)
+        self.edtMinVal.setText(str(self._min_val))
+        self.edtMaxVal.setText(str(self._max_val))
 
         self.edtMinVal.setFocus()
 	
     def add_values(self):
-        # if its an edit, first remove the previous value
-        self._min_val = self.edtMinVal.text()
-        self._max_val = self.edtMaxVal.text()
+        """
+        Sets min/max properties with values from form widgets
+        """
+        self._min_val = int(self.edtMinVal.text())
+        self._max_val = int(self.edtMaxVal.text())
 
     def min_val(self):
+        """
+        Returns minimum property
+        :rtype: int
+        """
         return self._min_val
         
     def max_val(self):
+        """
+        Returns maximum property
+        :rtype: int
+        """
         return self._max_val
 	    
     def accept(self):
         if self.edtMinVal.text()=='':
-            self.ErrorInfoMessage(QApplication.translate("BigintPropetyEditor","Minimum value is not given!"))
+            show_message(QApplication.translate("BigintPropetyEditor",
+                "Please set minimum value."))
             return
 
         if self.edtMaxVal.text()=='':
-            self.ErrorInfoMessage(QApplication.translate("BigintPropetyEditor","Maximum value is not given!"))
+            show_message(QApplication.translate("BigintPropetyEditor",
+                "Please set maximum value."))
             return
 
         self.add_values()
@@ -80,11 +106,3 @@ class BigintProperty(QDialog, Ui_BigintProperty):
 
     def reject(self):
         self.done(0)
-    
-    def ErrorInfoMessage(self, Message):
-        # Error Message Box
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Warning)
-        msg.setWindowTitle("STDM")
-        msg.setText(Message)
-        msg.exec_()  

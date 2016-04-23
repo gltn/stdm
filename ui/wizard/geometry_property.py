@@ -2,7 +2,7 @@
 """
 /***************************************************************************
 Name                 : geometry_property
-Description          : Set properties for Date data type
+Description          : Set properties for Geometry data type
 Date                 : 02/January/2016
 copyright            : (C) 2015 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
@@ -26,53 +26,91 @@ from PyQt4.QtGui import (
     QApplication,
     QMessageBox
 )
+from stdm.utils import show_message
 
 from qgis.gui import QgsGenericProjectionSelector
 
 from ui_geom_property import Ui_GeometryProperty
 
+geom_types = ['POINT', 'LINE', 'POLYGON', 'MULTIPOINT', 'MULTILINE',
+'MULTIPOLYGON']
+
 class GeometryProperty(QDialog, Ui_GeometryProperty):
-    def __init__(self, parent, geom_type=None, coord_sys=None):
+    """
+    Geometry column property editor
+    """
+    def __init__(self, parent, form_fields):
+        """
+        :param parent: Owner of this dialog window
+        :type parent: QWidget
+        :param form_fields: Dictionary used to pass parameters from
+         column editor
+        :type form_fields: dictionary
+        """
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
-        self._geom_type = geom_type
-        self._coord_sys = coord_sys 
+        self._geom_type = form_fields['geom_type']
+        self._srid = form_fields['srid']
 
-        self.initGui()
+        self.init_gui()
 
-    def initGui(self):
+    def init_gui(self):
+        """
+        Initializes form fields
+        """
         self.load_geometry_types()
         self.btnCoord.clicked.connect(self.projection_selector)
+        self.cboGeoType.setCurrentIndex(self._geom_type)
+        self.btnCoord.setText(self._srid)
 
     def load_geometry_types(self):
+        """
+        Initializes geometry combobox with geometry types
+        """
         self.cboGeoType.clear()
-        self.cboGeoType.addItems(['POINT', 'LINE', 'POLYGON',
-                                        'MULTIPOINT', 'MULTILINE',
-                                        'MULTIPOLYGON'])
+        self.cboGeoType.addItems(geom_types)
         self.cboGeoType.setCurrentIndex(0)
 
+    def projection_selector_TEST(self):
+        self._srid = '4236'  #projection_selector.selectedAuthId()[5:]
+        self.btnCoord.setText('EPSG: 4236')
+
     def projection_selector(self):
-        # open QGIS projection selector
+        """
+        Opens the QGIS projection selector
+        """
         projection_selector = QgsGenericProjectionSelector(self)
 
         if projection_selector.exec_() == QDialog.Accepted:
             #Remove 'EPSG:' part
-            self._coord_sys = projection_selector.selectedAuthId()[5:]
+            self._srid = projection_selector.selectedAuthId()[5:]
             self.btnCoord.setText(projection_selector.selectedAuthId())
-	
+
     def add_values(self):
+        """
+        Sets geom type properties with values from form widgets
+        """
         self._geom_type = self.cboGeoType.currentIndex()
 
     def geom_type(self):
+        """
+        Returns geometry type property
+        :rtype: str
+        """
         return self._geom_type
 	    
     def coord_sys(self):
-        return self._coord_sys
+        """
+        Returns projection type
+        :rtype: str
+        """
+        return self._srid
 	    
     def accept(self):
-        if not self._coord_sys:
-            self.ErrorInfoMessage(QApplication.translate("GeometryPropetyEditor","Geometry coordinate system not given!"))
+        if not self._srid:
+            show_message(QApplication.translate("GeometryPropetyEditor",
+                "Please set geometry coordinate system"))
 
             return
 
@@ -81,12 +119,4 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
 
     def reject(self):
         self.done(0)
-    
-    def ErrorInfoMessage(self, Message):
-        # Error Message Box
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Warning)
-        msg.setWindowTitle("STDM")
-        msg.setText(Message)
-        msg.exec_()  
 

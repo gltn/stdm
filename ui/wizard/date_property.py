@@ -30,37 +30,56 @@ from PyQt4.QtGui import (
 from ui_date_property import Ui_DateProperty
 
 class DateProperty(QDialog, Ui_DateProperty):
-    def __init__(self, parent, min_val=None, max_val=None):
+    """
+    Editor to create/edit date column property
+    """
+    def __init__(self, parent, form_fields):
+        """
+        :param parent: Owner of the form
+        :type parent: QWidget
+        :param form_fields: Contains data from the column editor window
+        :type form_field: dictionary
+        """
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
-        self._min_val = min_val
-        self._max_val = max_val
+        self._min_val = form_fields['minimum']
+        self._max_val = form_fields['maximum']
 
-        self.initGui()
+        self.init_gui()
 
-    def initGui(self):
-        min_date = QtCore.QDate(1900, 1, 1)
+    def init_gui(self):
+        """
+        Initializes form widgets
+        """
+        min_date = QtCore.QDate.currentDate()
         today = QtCore.QDate.currentDate()
         self.edtMinDate.setDate(min_date)
         self.edtMaxDate.setDate(today)
-        
-        if self._min_val:
-            self.edtMinDate.setDate(self._min_val)
-        if self._max_val:
-            self.edtMaxDate.setDate(self._max_val)
+        self.edtMinDate.setDate(self._min_val)
+        self.edtMaxDate.setDate(self._max_val)
 
         self.edtMinDate.setFocus()
 	
     def add_values(self):
-        # if its an edit, first remove the previous value
+        """
+        Sets min/max properties with values from form widgets
+        """
         self._min_val = self.edtMinDate.date()
         self._max_val = self.edtMaxDate.date()
 
     def min_val(self):
+        """
+        Returns minimum property
+        :rtype: int
+        """
         return self._min_val
 	    
     def max_val(self):
+        """
+        Returns maximum property
+        :rtype: int
+        """
         return self._max_val
 	    
     def accept(self):
@@ -70,11 +89,3 @@ class DateProperty(QDialog, Ui_DateProperty):
     def reject(self):
         self.done(0)
     
-    def ErrorInfoMessage(self, Message):
-        # Error Message Box
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Warning)
-        msg.setWindowTitle("STDM")
-        msg.setText(Message)
-        msg.exec_()  
-
