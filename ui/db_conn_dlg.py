@@ -52,7 +52,7 @@ class dbconnDlg(QDialog, Ui_frmDbConn):
         self.txtPort.setValidator(intValidator)
         
         #Connect slots
-        QObject.connect(self.btnBox, SIGNAL("accepted()"), self.acceptdlg)        
+        self.btnBox.accepted.connect(self.acceptdlg)
                         
     def validateInput(self):
         '''
@@ -69,7 +69,8 @@ class dbconnDlg(QDialog, Ui_frmDbConn):
         if self.txtDatabase.text() == "":
             QMessageBox.critical(self, QApplication.translate("DbConnectionDialog","Required field"), 
                                  QApplication.translate("DbConnectionDialog","Database name cannot be empty"))
-            return False  
+            return False
+
         else:
             return True       
         

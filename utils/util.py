@@ -32,7 +32,12 @@ from PyQt4.QtCore import (
     QSettings,
     QFileInfo
 )
-from PyQt4.QtGui import QPixmap, QFileDialog, QDialog
+from PyQt4.QtGui import (
+    QPixmap,
+    QFileDialog,
+    QDialog,
+    QMessageBox
+)
 
 from qgis.gui import QgsEncodingFileDialog
 
@@ -309,3 +314,11 @@ def date_from_string(str_val):
     :rtype: date
     """
     return datetime.strptime(str_val, '%Y-%m-%d')
+
+
+def show_message(message):
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Warning)
+    msg.setWindowTitle("STDM")
+    msg.setText(message)
+    msg.exec_()
