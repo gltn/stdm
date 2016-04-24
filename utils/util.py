@@ -21,6 +21,10 @@ import tempfile
 from decimal import Decimal
 import binascii,string,random
 from collections import OrderedDict
+from datetime import (
+    date,
+    datetime
+)
 
 from PyQt4.QtCore import (
     QDir,
@@ -29,13 +33,13 @@ from PyQt4.QtCore import (
     QFileInfo
 )
 from PyQt4.QtGui import (
-        QPixmap, 
-        QFileDialog, 
-        QDialog,
-        QMessageBox
-        )
+    QPixmap,
+    QFileDialog,
+    QDialog,
+    QMessageBox
+)
 
-#from qgis.gui import QgsEncodingFileDialog
+from qgis.gui import QgsEncodingFileDialog
 
 from stdm.settings.registryconfig import RegistryConfig
 
@@ -288,6 +292,29 @@ def openDialog( parent, filtering="GPX (*.gpx)", dialogMode="SingleFile"):
       return ( unicode( files[0] ), unicode( fileDialog.encoding() ) )
     else:
       return ( files, unicode( fileDialog.encoding() ) )
+
+
+def datetime_from_string(str_val):
+    """
+    Converts a datetime in string value to the corresponding datetime object.
+    :param str_val: Datetime
+    :type str_val: str
+    :return: Returns a datetime object from the corresponding string value.
+    :rtype: datetime
+    """
+    return datetime.strptime(str_val, '%Y-%m-%d %H:%M:%S')
+
+
+def date_from_string(str_val):
+    """
+    Converts a date in string value to the corresponding date object.
+    :param str_val: Date in string.
+    :type str_val: str
+    :return: Returns a date object from the corresponding string value.
+    :rtype: date
+    """
+    return datetime.strptime(str_val, '%Y-%m-%d')
+
 
 def show_message(message):
     msg = QMessageBox()

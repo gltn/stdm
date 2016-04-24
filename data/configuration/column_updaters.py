@@ -21,6 +21,7 @@ email                : stdm@unhabitat.org
 import logging
 
 from sqlalchemy import (
+    Boolean,
     Column,
     Date,
     DateTime,
@@ -67,7 +68,6 @@ def _update_col(column, table, data_type, columns):
     :param columns: Existing column names in the database for the given table.
     :type columns: list
     """
-    LOGGER.debug('Temp: Attempting to update %s column', column.name)
     alchemy_column = Column(column.name, data_type, **_base_col_attrs(column))
 
     idx_name = None
@@ -226,3 +226,16 @@ def geometry_updater(column, table, columns):
     return _update_col(column, table, Geometry(geometry_type=geom_type,
                                                srid=column.srid),
                        columns)
+
+
+def yes_no_updater(column, table, columns):
+    """
+    Updater for Yes/No column.
+    :param column: Yes/No column.
+    :type column: YesNoColumn
+    :param table: SQLAlchemy table
+    :type table: Table
+    :param columns: Existing column names in the database for the given table.
+    :type columns: list
+    """
+    return _update_col(column, table, Boolean, columns)
