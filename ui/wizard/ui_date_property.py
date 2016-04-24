@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_date_property.ui'
 #
-# Created: Sun Feb 21 12:25:14 2016
+# Created: Sun Apr 24 14:29:52 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -27,21 +27,17 @@ class Ui_DateProperty(object):
     def setupUi(self, DateProperty):
         DateProperty.setObjectName(_fromUtf8("DateProperty"))
         DateProperty.resize(245, 104)
-        self.buttonBox = QtGui.QDialogButtonBox(DateProperty)
-        self.buttonBox.setGeometry(QtCore.QRect(69, 74, 156, 23))
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.formLayout = QtGui.QFormLayout(DateProperty)
+        self.formLayout.setObjectName(_fromUtf8("formLayout"))
         self.label = QtGui.QLabel(DateProperty)
-        self.label.setGeometry(QtCore.QRect(24, 11, 65, 16))
         self.label.setMaximumSize(QtCore.QSize(200, 16777215))
         self.label.setObjectName(_fromUtf8("label"))
+        self.formLayout.setWidget(0, QtGui.QFormLayout.LabelRole, self.label)
         self.edtMinDate = QtGui.QDateEdit(DateProperty)
-        self.edtMinDate.setGeometry(QtCore.QRect(99, 11, 131, 20))
         self.edtMinDate.setCalendarPopup(True)
         self.edtMinDate.setObjectName(_fromUtf8("edtMinDate"))
+        self.formLayout.setWidget(0, QtGui.QFormLayout.FieldRole, self.edtMinDate)
         self.label_2 = QtGui.QLabel(DateProperty)
-        self.label_2.setGeometry(QtCore.QRect(24, 41, 69, 16))
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -49,10 +45,16 @@ class Ui_DateProperty(object):
         self.label_2.setSizePolicy(sizePolicy)
         self.label_2.setMaximumSize(QtCore.QSize(200, 16777215))
         self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.formLayout.setWidget(1, QtGui.QFormLayout.LabelRole, self.label_2)
         self.edtMaxDate = QtGui.QDateEdit(DateProperty)
-        self.edtMaxDate.setGeometry(QtCore.QRect(99, 41, 131, 20))
         self.edtMaxDate.setCalendarPopup(True)
         self.edtMaxDate.setObjectName(_fromUtf8("edtMaxDate"))
+        self.formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self.edtMaxDate)
+        self.buttonBox = QtGui.QDialogButtonBox(DateProperty)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.formLayout.setWidget(2, QtGui.QFormLayout.SpanningRole, self.buttonBox)
 
         self.retranslateUi(DateProperty)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), DateProperty.accept)
