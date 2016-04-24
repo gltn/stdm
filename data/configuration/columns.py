@@ -32,6 +32,7 @@ from PyQt4.QtCore import (
 
 from stdm.data.configuration.column_updaters import (
     base_column_updater,
+    yes_no_updater,
     date_updater,
     datetime_updater,
     double_updater,
@@ -75,7 +76,7 @@ class BaseColumn(ColumnItem):
 
     TYPE_INFO = 'BASE_COLUMN'
 
-    def __init__(self, name, entity, **kwargs):
+    def __init__(self, *args, **kwargs):
         """
         :param name: Unique name for identifying the column.
         :type name: str
@@ -93,6 +94,12 @@ class BaseColumn(ColumnItem):
         for this column.
          - *index:* True to indicate that the column should be indexed.
         """
+        if len(args) < 2:
+            raise Exception('Constructor requires name and entity arguments.')
+
+        name = args[0]
+        entity = args[1]
+
         ColumnItem.__init__(self, name)
 
         #Internal flag used to check whether this constructor has been initialized
@@ -258,14 +265,14 @@ class BoundsColumn(BaseColumn):
     SQL_MAX = 1000
     SQL_MIN = 0
 
-    def __init__(self, name, entity, **kwargs):
+    def __init__(self, *args, **kwargs):
         self._minimum = self.SQL_MIN
         self._maximum = self.SQL_MAX
 
         self.minimum = kwargs.pop('minimum', self.SQL_MIN)
         self.maximum = kwargs.pop('maximum', self.SQL_MAX)
 
-        BaseColumn.__init__(self, name, entity, **kwargs)
+        BaseColumn.__init__(self, *args, **kwargs)
 
     def _check_type_min_max(self, val):
         """
@@ -434,11 +441,15 @@ class GeometryColumn(BaseColumn):
     sql_updater = geometry_updater
     POINT, LINE, POLYGON, MULTIPOINT, MULTILINE, MULTIPOLYGON = range(0,6)
 
-    def __init__(self, name, entity, geom_type, **kwargs):
-        self.srid = kwargs.pop('srid', 4326)
-        self.geom_type = geom_type
+    def __init__(self, *args, **kwargs):
+        if len(args) < 3:
+            raise Exception('Constructor requires name, entity and geometry '
+                            'type arguments.')
 
-        BaseColumn.__init__(self, name, entity, **kwargs)
+        self.geom_type = args[2]
+        self.srid = kwargs.pop('srid', 4326)
+
+        BaseColumn.__init__(self, *args, **kwargs)
 
         self.searchable = False
 
@@ -471,6 +482,17 @@ class GeometryColumn(BaseColumn):
 
 GeometryColumn.register()
 
+class YesNoColumn(BaseColumn):
+    """
+    Represents a True/False or Yes/No column.
+    """
+    TYPE_INFO = 'YES_NO'
+    sql_updater = yes_no_updater
+
+    @classmethod
+    def display_name(cls):
+        return tr('Yes/No')
+
 
 class ForeignKeyColumn(IntegerColumn):
     """
@@ -481,15 +503,15 @@ class ForeignKeyColumn(IntegerColumn):
     TYPE_INFO = 'FOREIGN_KEY'
     sql_updater = integer_updater
 
-    def __init__(self, name, entity, **kwargs):
-        self.entity_relation = kwargs.pop('entity_relation',
-                                          EntityRelation(entity.profile))
-
+    def __init__(self, *args, **kwargs):
         #Reset bounds
         kwargs['minimum'] = 0
         kwargs['maximum'] = self.SQL_MAX
 
-        IntegerColumn.__init__(self, name, entity, **kwargs)
+        IntegerColumn.__init__(self, *args, **kwargs)
+
+        self.entity_relation = kwargs.pop('entity_relation',
+                                          EntityRelation(self.entity.profile))
 
         self.entity_relation.child_column = self.name
         self.entity_relation.child = self.entity
@@ -535,9 +557,8 @@ class LookupColumn(ForeignKeyColumn):
     """
     TYPE_INFO = 'LOOKUP'
 
-    def __init__(self, name, entity, **kwargs):
-        ForeignKeyColumn.__init__(self, name, entity,
-                                  **kwargs)
+    def __init__(self, *args, **kwargs):
+        ForeignKeyColumn.__init__(self, *args, **kwargs)
 
         #Set the definite entity relation properties
         self.set_entity_relation_attr('parent_column', 'id')
@@ -572,13 +593,14 @@ LookupColumn.register()
 
 class AdministrativeSpatialUnitColumn(ForeignKeyColumn):
     """
-    Enables attaching of AdminSpatialUnitSet information to the entity.
+    Enables the attachment of AdminSpatialUnitSet information to the entity.
     """
     TYPE_INFO = 'ADMIN_SPATIAL_UNIT'
 
     def __init__(self, entity, **kwargs):
-        ForeignKeyColumn.__init__(self, 'admin_spatial_unit', entity,
-                                  **kwargs)
+        args = ['admin_spatial_unit', entity]
+
+        ForeignKeyColumn.__init__(self, *args, **kwargs)
 
         #Set the parent info
         self.set_entity_relation_attr('parent', 'admin_spatial_unit_set')
@@ -605,10 +627,16 @@ class MultipleSelectColumn(VirtualColumn):
     """
     TYPE_INFO = 'MULTIPLE_SELECT'
 
-    def __init__(self, name, entity, **kwargs):
-        VirtualColumn.__init__(self, name, entity, **kwargs)
-        self.association = self.profile.create_association_entity(name, **kwargs)
-        self.association.second_parent = entity
+    def __init__(self, *args, **kwargs):
+        first_parent = kwargs.pop('first_parent', None)
+
+        VirtualColumn.__init__(self, *args, **kwargs)
+
+        self.association = self.profile.create_association_entity(
+            self.name,
+            first_parent=first_parent
+        )
+        self.association.second_parent = self.entity
 
         #Add association to the collection
         self.profile.add_entity(self.association)
