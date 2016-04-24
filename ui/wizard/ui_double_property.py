@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_double_property.ui'
 #
-# Created: Sun Feb 21 12:27:03 2016
+# Created: Sun Apr 24 14:30:04 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -27,23 +27,25 @@ class Ui_DoubleProperty(object):
     def setupUi(self, DoubleProperty):
         DoubleProperty.setObjectName(_fromUtf8("DoubleProperty"))
         DoubleProperty.resize(239, 100)
+        self.formLayout = QtGui.QFormLayout(DoubleProperty)
+        self.formLayout.setObjectName(_fromUtf8("formLayout"))
+        self.label = QtGui.QLabel(DoubleProperty)
+        self.label.setObjectName(_fromUtf8("label"))
+        self.formLayout.setWidget(0, QtGui.QFormLayout.LabelRole, self.label)
+        self.edtMinVal = QtGui.QLineEdit(DoubleProperty)
+        self.edtMinVal.setObjectName(_fromUtf8("edtMinVal"))
+        self.formLayout.setWidget(0, QtGui.QFormLayout.FieldRole, self.edtMinVal)
+        self.label_2 = QtGui.QLabel(DoubleProperty)
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.formLayout.setWidget(1, QtGui.QFormLayout.LabelRole, self.label_2)
+        self.edtMaxVal = QtGui.QLineEdit(DoubleProperty)
+        self.edtMaxVal.setObjectName(_fromUtf8("edtMaxVal"))
+        self.formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self.edtMaxVal)
         self.buttonBox = QtGui.QDialogButtonBox(DoubleProperty)
-        self.buttonBox.setGeometry(QtCore.QRect(80, 70, 156, 23))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.edtMinVal = QtGui.QLineEdit(DoubleProperty)
-        self.edtMinVal.setGeometry(QtCore.QRect(99, 12, 133, 20))
-        self.edtMinVal.setObjectName(_fromUtf8("edtMinVal"))
-        self.label_2 = QtGui.QLabel(DoubleProperty)
-        self.label_2.setGeometry(QtCore.QRect(20, 41, 73, 16))
-        self.label_2.setObjectName(_fromUtf8("label_2"))
-        self.label = QtGui.QLabel(DoubleProperty)
-        self.label.setGeometry(QtCore.QRect(20, 12, 69, 16))
-        self.label.setObjectName(_fromUtf8("label"))
-        self.edtMaxVal = QtGui.QLineEdit(DoubleProperty)
-        self.edtMaxVal.setGeometry(QtCore.QRect(99, 41, 133, 20))
-        self.edtMaxVal.setObjectName(_fromUtf8("edtMaxVal"))
+        self.formLayout.setWidget(2, QtGui.QFormLayout.SpanningRole, self.buttonBox)
 
         self.retranslateUi(DoubleProperty)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), DoubleProperty.accept)
@@ -52,8 +54,8 @@ class Ui_DoubleProperty(object):
 
     def retranslateUi(self, DoubleProperty):
         DoubleProperty.setWindowTitle(_translate("DoubleProperty", "Decimal properties", None))
+        self.label.setText(_translate("DoubleProperty", "Minimum value", None))
         self.edtMinVal.setPlaceholderText(_translate("DoubleProperty", "Enter minimum value", None))
         self.label_2.setText(_translate("DoubleProperty", "Maximum value", None))
-        self.label.setText(_translate("DoubleProperty", "Minimum value", None))
         self.edtMaxVal.setPlaceholderText(_translate("DoubleProperty", "Enter maximum value", None))
 

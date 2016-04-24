@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_varchar_property.ui'
 #
-# Created: Sun Feb 21 12:26:42 2016
+# Created: Sun Apr 24 14:31:41 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,18 +26,20 @@ except AttributeError:
 class Ui_VarcharProperty(object):
     def setupUi(self, VarcharProperty):
         VarcharProperty.setObjectName(_fromUtf8("VarcharProperty"))
-        VarcharProperty.resize(240, 101)
+        VarcharProperty.resize(246, 67)
+        self.formLayout = QtGui.QFormLayout(VarcharProperty)
+        self.formLayout.setObjectName(_fromUtf8("formLayout"))
+        self.label = QtGui.QLabel(VarcharProperty)
+        self.label.setObjectName(_fromUtf8("label"))
+        self.formLayout.setWidget(0, QtGui.QFormLayout.LabelRole, self.label)
+        self.edtCharLen = QtGui.QLineEdit(VarcharProperty)
+        self.edtCharLen.setObjectName(_fromUtf8("edtCharLen"))
+        self.formLayout.setWidget(0, QtGui.QFormLayout.FieldRole, self.edtCharLen)
         self.buttonBox = QtGui.QDialogButtonBox(VarcharProperty)
-        self.buttonBox.setGeometry(QtCore.QRect(76, 68, 156, 23))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.label = QtGui.QLabel(VarcharProperty)
-        self.label.setGeometry(QtCore.QRect(10, 20, 81, 16))
-        self.label.setObjectName(_fromUtf8("label"))
-        self.edtCharLen = QtGui.QLineEdit(VarcharProperty)
-        self.edtCharLen.setGeometry(QtCore.QRect(100, 20, 133, 20))
-        self.edtCharLen.setObjectName(_fromUtf8("edtCharLen"))
+        self.formLayout.setWidget(1, QtGui.QFormLayout.SpanningRole, self.buttonBox)
 
         self.retranslateUi(VarcharProperty)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), VarcharProperty.accept)

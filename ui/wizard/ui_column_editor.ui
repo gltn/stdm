@@ -13,197 +13,115 @@
   <property name="windowTitle">
    <string>Column editor</string>
   </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>210</x>
-     <y>277</y>
-     <width>156</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="edtUserTip">
-   <property name="geometry">
-    <rect>
-     <x>110</x>
-     <y>69</y>
-     <width>261</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-   <property name="placeholderText">
-    <string>Enter text to appear in the form as a tooltip</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="cbUnique">
-   <property name="geometry">
-    <rect>
-     <x>110</x>
-     <y>218</y>
-     <width>91</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Is unique</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_3">
-   <property name="geometry">
-    <rect>
-     <x>19</x>
-     <y>41</y>
-     <width>53</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Description</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_2">
-   <property name="geometry">
-    <rect>
-     <x>19</x>
-     <y>11</y>
-     <width>64</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Column name</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_4">
-   <property name="geometry">
-    <rect>
-     <x>19</x>
-     <y>98</y>
-     <width>85</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Column data type</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="edtColName">
-   <property name="geometry">
-    <rect>
-     <x>110</x>
-     <y>11</y>
-     <width>261</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="placeholderText">
-    <string>Enter column name</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="edtColDesc">
-   <property name="geometry">
-    <rect>
-     <x>110</x>
-     <y>39</y>
-     <width>261</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="placeholderText">
-    <string>Column Description</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_11">
-   <property name="geometry">
-    <rect>
-     <x>19</x>
-     <y>69</y>
-     <width>37</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>User tip</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="cbSearch">
-   <property name="geometry">
-    <rect>
-     <x>110</x>
-     <y>188</y>
-     <width>91</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Is searchable</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="cbIndex">
-   <property name="geometry">
-    <rect>
-     <x>110</x>
-     <y>248</y>
-     <width>121</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Is column Indexed</string>
-   </property>
-  </widget>
-  <widget class="QComboBox" name="cboDataType">
-   <property name="geometry">
-    <rect>
-     <x>110</x>
-     <y>98</y>
-     <width>261</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="editable">
-    <bool>false</bool>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="btnColProp">
-   <property name="geometry">
-    <rect>
-     <x>110</x>
-     <y>128</y>
-     <width>261</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Column properties ...</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="cbMandt">
-   <property name="geometry">
-    <rect>
-     <x>110</x>
-     <y>161</y>
-     <width>111</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Is mandatory</string>
-   </property>
-   <property name="checked">
-    <bool>false</bool>
-   </property>
-  </widget>
+  <layout class="QFormLayout" name="formLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Column name</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="edtColName">
+     <property name="placeholderText">
+      <string>Enter column name</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Description</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="edtColDesc">
+     <property name="placeholderText">
+      <string>Column Description</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_11">
+     <property name="text">
+      <string>User tip</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QLineEdit" name="edtUserTip">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="placeholderText">
+      <string>Enter text to appear in the form as a tooltip</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Column data type</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="QComboBox" name="cboDataType">
+     <property name="editable">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="1">
+    <widget class="QPushButton" name="btnColProp">
+     <property name="text">
+      <string>Column properties ...</string>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="1">
+    <widget class="QCheckBox" name="cbMandt">
+     <property name="text">
+      <string>Is mandatory</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="1">
+    <widget class="QCheckBox" name="cbSearch">
+     <property name="text">
+      <string>Is searchable</string>
+     </property>
+    </widget>
+   </item>
+   <item row="13" column="1">
+    <widget class="QCheckBox" name="cbUnique">
+     <property name="text">
+      <string>Is unique</string>
+     </property>
+    </widget>
+   </item>
+   <item row="14" column="1">
+    <widget class="QCheckBox" name="cbIndex">
+     <property name="text">
+      <string>Is column Indexed</string>
+     </property>
+    </widget>
+   </item>
+   <item row="16" column="1">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <tabstops>
   <tabstop>edtColName</tabstop>
