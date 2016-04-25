@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_lookup_property.ui'
 #
-# Created: Thu Feb 25 08:52:33 2016
+# Created: Sun Apr 24 14:30:53 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,23 +26,27 @@ except AttributeError:
 class Ui_LookupProperty(object):
     def setupUi(self, LookupProperty):
         LookupProperty.setObjectName(_fromUtf8("LookupProperty"))
-        LookupProperty.resize(331, 90)
+        LookupProperty.resize(337, 86)
+        self.formLayout = QtGui.QFormLayout(LookupProperty)
+        self.formLayout.setVerticalSpacing(18)
+        self.formLayout.setObjectName(_fromUtf8("formLayout"))
+        self.splitter = QtGui.QSplitter(LookupProperty)
+        self.splitter.setOrientation(QtCore.Qt.Horizontal)
+        self.splitter.setObjectName(_fromUtf8("splitter"))
+        self.label = QtGui.QLabel(self.splitter)
+        self.label.setMaximumSize(QtCore.QSize(200, 16777215))
+        self.label.setObjectName(_fromUtf8("label"))
+        self.cboPrimaryEntity = QtGui.QComboBox(self.splitter)
+        self.cboPrimaryEntity.setInsertPolicy(QtGui.QComboBox.InsertAtTop)
+        self.cboPrimaryEntity.setObjectName(_fromUtf8("cboPrimaryEntity"))
+        self.edtNewlookup = QtGui.QPushButton(self.splitter)
+        self.edtNewlookup.setObjectName(_fromUtf8("edtNewlookup"))
+        self.formLayout.setWidget(0, QtGui.QFormLayout.SpanningRole, self.splitter)
         self.buttonBox = QtGui.QDialogButtonBox(LookupProperty)
-        self.buttonBox.setGeometry(QtCore.QRect(170, 59, 156, 23))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.label = QtGui.QLabel(LookupProperty)
-        self.label.setGeometry(QtCore.QRect(10, 20, 41, 16))
-        self.label.setMaximumSize(QtCore.QSize(200, 16777215))
-        self.label.setObjectName(_fromUtf8("label"))
-        self.cboPrimaryEntity = QtGui.QComboBox(LookupProperty)
-        self.cboPrimaryEntity.setGeometry(QtCore.QRect(50, 20, 181, 20))
-        self.cboPrimaryEntity.setInsertPolicy(QtGui.QComboBox.InsertAtTop)
-        self.cboPrimaryEntity.setObjectName(_fromUtf8("cboPrimaryEntity"))
-        self.edtNewlookup = QtGui.QPushButton(LookupProperty)
-        self.edtNewlookup.setGeometry(QtCore.QRect(246, 18, 78, 23))
-        self.edtNewlookup.setObjectName(_fromUtf8("edtNewlookup"))
+        self.formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self.buttonBox)
 
         self.retranslateUi(LookupProperty)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), LookupProperty.accept)

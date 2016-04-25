@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_entity.ui'
 #
-# Created: Fri Feb 26 19:13:13 2016
+# Created: Sun Apr 24 14:30:28 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,30 +26,33 @@ except AttributeError:
 class Ui_dlgEntity(object):
     def setupUi(self, dlgEntity):
         dlgEntity.setObjectName(_fromUtf8("dlgEntity"))
-        dlgEntity.resize(310, 141)
+        dlgEntity.resize(310, 129)
+        self.formLayout = QtGui.QFormLayout(dlgEntity)
+        self.formLayout.setVerticalSpacing(10)
+        self.formLayout.setObjectName(_fromUtf8("formLayout"))
+        self.label = QtGui.QLabel(dlgEntity)
+        self.label.setMinimumSize(QtCore.QSize(60, 0))
+        self.label.setObjectName(_fromUtf8("label"))
+        self.formLayout.setWidget(0, QtGui.QFormLayout.LabelRole, self.label)
+        self.edtTable = QtGui.QLineEdit(dlgEntity)
+        self.edtTable.setObjectName(_fromUtf8("edtTable"))
+        self.formLayout.setWidget(0, QtGui.QFormLayout.FieldRole, self.edtTable)
+        self.label_2 = QtGui.QLabel(dlgEntity)
+        self.label_2.setMaximumSize(QtCore.QSize(60, 16777215))
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.formLayout.setWidget(1, QtGui.QFormLayout.LabelRole, self.label_2)
+        self.edtDesc = QtGui.QLineEdit(dlgEntity)
+        self.edtDesc.setMinimumSize(QtCore.QSize(120, 0))
+        self.edtDesc.setObjectName(_fromUtf8("edtDesc"))
+        self.formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self.edtDesc)
+        self.cbSupportDoc = QtGui.QCheckBox(dlgEntity)
+        self.cbSupportDoc.setObjectName(_fromUtf8("cbSupportDoc"))
+        self.formLayout.setWidget(2, QtGui.QFormLayout.FieldRole, self.cbSupportDoc)
         self.buttonBox = QtGui.QDialogButtonBox(dlgEntity)
-        self.buttonBox.setGeometry(QtCore.QRect(140, 109, 156, 23))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.edtDesc = QtGui.QLineEdit(dlgEntity)
-        self.edtDesc.setGeometry(QtCore.QRect(79, 40, 221, 20))
-        self.edtDesc.setMinimumSize(QtCore.QSize(120, 0))
-        self.edtDesc.setObjectName(_fromUtf8("edtDesc"))
-        self.label_2 = QtGui.QLabel(dlgEntity)
-        self.label_2.setGeometry(QtCore.QRect(10, 40, 53, 16))
-        self.label_2.setMaximumSize(QtCore.QSize(60, 16777215))
-        self.label_2.setObjectName(_fromUtf8("label_2"))
-        self.label = QtGui.QLabel(dlgEntity)
-        self.label.setGeometry(QtCore.QRect(14, 10, 60, 16))
-        self.label.setMinimumSize(QtCore.QSize(60, 0))
-        self.label.setObjectName(_fromUtf8("label"))
-        self.edtTable = QtGui.QLineEdit(dlgEntity)
-        self.edtTable.setGeometry(QtCore.QRect(80, 10, 221, 20))
-        self.edtTable.setObjectName(_fromUtf8("edtTable"))
-        self.cbSupportDoc = QtGui.QCheckBox(dlgEntity)
-        self.cbSupportDoc.setGeometry(QtCore.QRect(80, 73, 161, 17))
-        self.cbSupportDoc.setObjectName(_fromUtf8("cbSupportDoc"))
+        self.formLayout.setWidget(3, QtGui.QFormLayout.FieldRole, self.buttonBox)
 
         self.retranslateUi(dlgEntity)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), dlgEntity.accept)
@@ -58,9 +61,9 @@ class Ui_dlgEntity(object):
 
     def retranslateUi(self, dlgEntity):
         dlgEntity.setWindowTitle(_translate("dlgEntity", "Entity editor", None))
-        self.edtDesc.setPlaceholderText(_translate("dlgEntity", "Table description", None))
-        self.label_2.setText(_translate("dlgEntity", "Description", None))
         self.label.setText(_translate("dlgEntity", "Entity Name", None))
         self.edtTable.setPlaceholderText(_translate("dlgEntity", "Table name", None))
+        self.label_2.setText(_translate("dlgEntity", "Description", None))
+        self.edtDesc.setPlaceholderText(_translate("dlgEntity", "Table description", None))
         self.cbSupportDoc.setText(_translate("dlgEntity", "Allow supporting documents?", None))
 
