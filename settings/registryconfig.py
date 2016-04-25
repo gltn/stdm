@@ -23,7 +23,8 @@ from PyQt4.QtCore import QSettings
 NETWORK_DOC_RESOURCE = 'NetDocumentResource'
 PATHKEYS = ['Config','NetDocumentResource','ComposerOutputs','ComposerTemplates']
 DATABASE_LOOKUP = 'LookupInit'
-LOCAL_SOURCE_DOC = 'SourceDocuments'
+#There was a mixup in these 2 keys. Consolidation required across the plugin.
+LOCAL_SOURCE_DOC = NETWORK_DOC_RESOURCE
 COMPOSER_OUTPUT = 'ComposerOutputs'
 COMPOSER_TEMPLATE = 'ComposerTemplates'
 
