@@ -188,7 +188,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.form_fields['index']  = False
         self.form_fields['minimum'] = self.type_attribs.get('minimum', 0) 
         self.form_fields['maximum'] = self.type_attribs.get('maximum', 0)
-        self.form_fields['srid'] = self.type_attribs.get('srid', "Select...")
+        self.form_fields['srid'] = self.type_attribs.get('srid', "")
         self.form_fields['geom_type'] = self.type_attribs.get('geom_type', 0)
 
         self.form_fields['entity_relation'] = \
@@ -329,6 +329,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         properties are set.  If prop_set is false you are not allowed to save
         the column.
         """
+        print self.form_fields
         editor = GeometryProperty(self, self.form_fields)
         result = editor.exec_()
         if result == 1:
@@ -418,9 +419,11 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 return column
 
             if self.is_property_set(self.type_info):
+                print self.form_fields
                 column = BaseColumn.registered_types[self.type_info] \
-                        (self.form_fields['colname'], self.entity,
-                                **self.form_fields)
+                        (self.form_fields['colname'], self.entity, 
+                                self.form_fields['geom_type'],
+                                self.entity, **self.form_fields)
             else:
                 self.error_message('Please set column properties.')
         else:

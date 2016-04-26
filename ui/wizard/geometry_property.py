@@ -55,6 +55,12 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
 
         self.init_gui()
 
+    def srid(self):
+        if self._srid=="":
+            return "Select..."
+        else:
+            return self._srid
+
     def init_gui(self):
         """
         Initializes form fields
@@ -62,7 +68,7 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
         self.load_geometry_types()
         self.btnCoord.clicked.connect(self.projection_selector)
         self.cboGeoType.setCurrentIndex(self._geom_type)
-        self.btnCoord.setText(self._srid)
+        self.btnCoord.setText(self.srid())
 
     def load_geometry_types(self):
         """
@@ -108,10 +114,9 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
         return self._srid
 	    
     def accept(self):
-        if not self._srid:
+        if self._srid =="":
             show_message(QApplication.translate("GeometryPropetyEditor",
                 "Please set geometry coordinate system"))
-
             return
 
         self.add_values()
