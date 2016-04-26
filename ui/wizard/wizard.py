@@ -326,18 +326,29 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if self.currentId() == 5: # FINAL_PAGE:
             # last page
             # commit config to DB
-            config_updater = ConfigurationSchemaUpdater()
+            self.config_updater = ConfigurationSchemaUpdater()
 
-            config_updater.update_started.connect(self.config_update_started)
-            config_updater.update_progress.connect(self.config_update_progress)
-            config_updater.update_completed.connect(self.config_update_completed)
+            #Thread to handle schema updating
+            self.updater_thread = QThread(self)
+            self.config_updater.moveToThread(self.updater_thread)
 
-            config_updater.exec_()
+            #Connect schema updater slots
+            self.config_updater.update_started.connect(self.config_update_started)
+            self.config_updater.update_progress.connect(self.config_update_progress)
+            self.config_updater.update_completed.connect(self.config_update_completed)
+
+            #Connect thread signals
+            self.updater_thread.started.connect(self._updater_thread_started)
+            self.updater_thread.finished.connect(self.updater_thread.deleteLater)
+
+            #Start the process
+            self.updater_thread.start()
 
             if self.is_config_done:
                 # write config to a file
-                config_path = os.path.expanduser('~')+'/.stdm/configuration.stc'
+                config_path = os.path.expanduser('~') + '/.stdm/configuration.stc'
                 cfs = ConfigurationFileSerializer(config_path)
+
                 try:
                     cfs.save()
                 except(ConfigurationException, IOError) as e:
@@ -350,6 +361,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                         "Configuration saved successfully."))
 
         return validPage
+
+    def _updater_thread_started(self):
+        """
+        Slot for initiating the schema updating process.
+        """
+        self.config_updater.exec_()
 
     def config_update_started(self):
         self.txtHtml.append("Config update started ...")
@@ -368,11 +385,16 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def config_update_completed(self, status):
         if status:
-            self.txtHtml.append("Configuration updated successully.")
+            self.txtHtml.append("The configuration successfully updated.")
             self.is_config_done = True
+
         else:
-            self.txtHtml.append("Failed to update configuration. Check error logs.")
+            self.txtHtml.append("Failed to update configuration. "
+                                "Check error logs.")
             self.is_config_done = False
+
+        #Exit thread
+        self.updater_thread.quit()
 
     def register_fields(self):
         self.setOption(self.HaveHelpButton, True)  

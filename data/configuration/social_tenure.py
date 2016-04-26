@@ -189,9 +189,6 @@ class SocialTenure(Entity):
         #Set lookup column reference value list
         self.tenure_type_lookup.value_list = tenure_value_list
 
-        tenure_value_list.add_value('Ownership', 'OWN')
-        tenure_value_list.add_value('Tenancy', 'TEN')
-
         return tenure_value_list
 
     def valid(self):
