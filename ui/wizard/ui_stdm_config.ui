@@ -124,7 +124,7 @@
     <string>Directory Settings</string>
    </property>
    <property name="subTitle">
-    <string>Set configuration and documents directory path</string>
+    <string>Specify configuration and documents directory path</string>
    </property>
    <layout class="QFormLayout" name="formLayout_2">
     <item row="0" column="0" colspan="2">
@@ -138,6 +138,53 @@
       <property name="verticalSpacing">
        <number>100</number>
       </property>
+      <item row="2" column="2">
+       <widget class="QPushButton" name="btnTemplates">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Change</string>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="btnDocOutput">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Change</string>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="edtTemplatePath">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="placeholderText">
+         <string>Specify path to save document templates</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label_37">
         <property name="minimumSize">
@@ -151,39 +198,10 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="edtDocPath">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>30</height>
-         </size>
-        </property>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_4">
         <property name="text">
-         <string/>
-        </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-        <property name="placeholderText">
-         <string>Specify path to save entity supporting documents</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QPushButton" name="btnDocPath">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>30</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Change</string>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
+         <string>Documents template path</string>
         </property>
        </widget>
       </item>
@@ -210,8 +228,8 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="2">
-       <widget class="QPushButton" name="btnDocOutput">
+      <item row="0" column="2">
+       <widget class="QPushButton" name="btnDocPath">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -227,40 +245,25 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Documents template path</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="edtTemplatePath">
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="edtDocPath">
         <property name="minimumSize">
          <size>
           <width>0</width>
           <height>30</height>
          </size>
+        </property>
+        <property name="toolTip">
+         <string extracomment="Specify path to save entity supporting documents"/>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
         </property>
         <property name="placeholderText">
-         <string>Specify path to save document templates</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2">
-       <widget class="QPushButton" name="btnTemplates">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>30</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Change</string>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
+         <string>Specify path to save entity supporting documents</string>
         </property>
        </widget>
       </item>
@@ -273,7 +276,7 @@
     <string>Profile</string>
    </property>
    <property name="subTitle">
-    <string>Manage profile and related entities.  A profile represents a collection of related entities, some of which represent the party and spatial unit. Examples of profiles include household, neighbourhood or even city-wide profile.  </string>
+    <string>Manage profile and related entities.  A profile represents a collection of logically related entities, some of which represent the party and spatial unit. Examples of profiles include individual, household, neighbourhood or even city-wide profiles.   </string>
    </property>
    <layout class="QFormLayout" name="formLayout_5">
     <item row="1" column="0" colspan="2">
@@ -532,10 +535,6 @@
         </layout>
        </item>
       </layout>
-      <zorder>label</zorder>
-      <zorder>cboProfile</zorder>
-      <zorder>widget</zorder>
-      <zorder>groupBox_18</zorder>
      </widget>
     </item>
    </layout>
@@ -642,7 +641,7 @@
           <bool>true</bool>
          </attribute>
         </widget>
-        <widget class="QWidget" name="">
+        <widget class="QWidget" name="layoutWidget">
          <property name="geometry">
           <rect>
            <x>13</x>
@@ -785,7 +784,7 @@
           <enum>QAbstractItemView::SelectRows</enum>
          </property>
         </widget>
-        <widget class="QWidget" name="">
+        <widget class="QWidget" name="layoutWidget">
          <property name="geometry">
           <rect>
            <x>11</x>
@@ -895,7 +894,7 @@
           <enum>QAbstractItemView::SelectRows</enum>
          </property>
         </widget>
-        <widget class="QWidget" name="">
+        <widget class="QWidget" name="layoutWidget">
          <property name="geometry">
           <rect>
            <x>11</x>
@@ -1160,8 +1159,6 @@
   <tabstop>cboSPUnit</tabstop>
   <tabstop>txtLicense</tabstop>
  </tabstops>
- <resources>
-  <include location="../resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
