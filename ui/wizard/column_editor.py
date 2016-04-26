@@ -213,7 +213,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.type_attribs['VARCHAR'] = {
                 'mandt':True,'search': True,
                 'unique': True, 'index': True,
-                'property': self.varchar_property }
+                'maximum':30,'property': self.varchar_property }
 
         self.type_attribs['BIGINT'] = {
                 'mandt':True, 'search': True,
@@ -329,7 +329,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         properties are set.  If prop_set is false you are not allowed to save
         the column.
         """
-        print self.form_fields
         editor = GeometryProperty(self, self.form_fields)
         result = editor.exec_()
         if result == 1:
@@ -419,7 +418,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 return column
 
             if self.is_property_set(self.type_info):
-                print self.form_fields
                 column = BaseColumn.registered_types[self.type_info] \
                         (self.form_fields['colname'], self.entity, 
                                 self.form_fields['geom_type'],

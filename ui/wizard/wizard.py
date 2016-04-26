@@ -117,7 +117,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.btnEditEntity.clicked.connect(self.edit_entity)
         self.btnDeleteEntity.clicked.connect(self.delete_entity)
 
-        # Entity customization
+        # Entity customization page
         self.btnAddColumn.clicked.connect(self.new_column)
         self.btnEditColumn.clicked.connect(self.edit_column)
         self.btnDeleteColumn.clicked.connect(self.delete_column)
@@ -202,7 +202,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 self.cboSPUnit.currentText()))
 
         if not spatial_unit.has_geometry_column():
-            return False, "Spatial unit entity should have a geometry column!"
+            return False, "%s entity should have a geometry column!"\
+                    % spatial_unit.short_name
 
         return True, "Ok"
 
@@ -271,7 +272,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def show_license(self):
         self.txtLicense.clear()
         license = LicenseDocument()
-        #self.txtLicense.setCurrentFont(license.text_font())
         self.txtLicense.setText(license.read_license_info())
 
     def initializePage(self, int):
@@ -358,7 +358,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 
             if validPage:
                 show_message(QApplication.translate("Configuration Wizard", \
-                        "Configuration saved successfully."))
+                        "Configuration saved successfully."),
+                        msg_icon=QMessageBox.Information)
 
         return validPage
 
@@ -369,7 +370,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.config_updater.exec_()
 
     def config_update_started(self):
-        self.txtHtml.append("Config update started ...")
+        self.txtHtml.append(QApplication.translate("Config update started ..."))
 
     def config_update_progress(self, info_id, msg):
         if info_id == 0: # information
@@ -379,7 +380,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.txtHtml.setTextColor(QColor('yellow'))
 
         if info_id == 2: # Error
-            self.txtHTML.setTextColor(QColor('red'))
+            self.txtHtml.setTextColor(QColor('red'))
 
         self.txtHtml.append(msg)
 
@@ -584,8 +585,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             editor = EntityEditor(self, profile, entity)
             result = editor.exec_()
             if result == 1:
+                self.entity_model.add_entity(editor.entity)
                 model_item.delete_entity(entity)
-                model_item.removeRow(row_id)
+                #model_item.removeRow(row_id)
 
     def delete_entity(self):
         """
@@ -683,7 +685,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if model_item:
             sel_id = view.currentIndex().row()
             entity = model_item.entities().items()[sel_id][1]
-
         return (model_item, entity, sel_id)
 
 		
@@ -971,7 +972,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         value_text = self.lookup_value_view_model.itemFromIndex(model_index).text()
         lookup.remove_value(unicode(value_text))
         self.addValues(lookup.Values())
-        print "Value removed ...."
 
     def edit_lookup_value_test(self):
         if len(self.lvLookupValues.selectedIndexes() ) > 0:
@@ -1010,9 +1010,9 @@ class Launcher(QMainWindow):
         #configWiz.setFixedSize(QSize(605, 488))
         configWiz.exec_()
 
-def show_message(message):
+def show_message(message, msg_icon=QMessageBox.Critical):
     msg = QMessageBox()
-    msg.setIcon(QMessageBox.Critical)
+    msg.setIcon(msg_icon)
     msg.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
     msg.setText(QApplication.translate("STDM Configuration Wizard",message))
     msg.exec_()
