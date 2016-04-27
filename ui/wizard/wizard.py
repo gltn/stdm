@@ -370,13 +370,15 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.config_updater.exec_()
 
     def config_update_started(self):
-        self.txtHtml.append(QApplication.translate("Config update started ..."))
+        self.txtHtml.append(QApplication.translate("Configuration Wizard",
+                               "Configuration update started ...")
+        )
 
     def config_update_progress(self, info_id, msg):
         if info_id == 0: # information
-            self.txtHtml.setTextColo(QColor('black'))
+            self.txtHtml.setTextColor(QColor('black'))
 
-        if info_id == 1: # Warninig
+        if info_id == 1: # Warning
             self.txtHtml.setTextColor(QColor('yellow'))
 
         if info_id == 2: # Error
