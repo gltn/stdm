@@ -55,10 +55,12 @@ class StdmConfiguration(QObject):
         :param profile: Profile object.
         :type profile: Profile
         """
-        if not profile.name in self.profiles:
-            self.profiles[profile.name] = profile
+        profile_name = unicode(profile.name)
 
-            LOGGER.debug('%s profile added', profile.name)
+        if not profile_name in self.profiles:
+            self.profiles[profile_name] = profile
+
+            LOGGER.debug('%s profile added', profile_name)
 
             if self.is_null:
                 self.is_null = False
