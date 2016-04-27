@@ -61,6 +61,9 @@ class DTimeProperty(QDialog, Ui_DTimeProperty):
         self.edtMaxDTime.setDateTime(self._max_val)
 
         self.edtMinDTime.setFocus()
+
+        self.rbMinFixed.setChecked(True)
+        self.rbMaxFixed.setChecked(True)
 	
     def add_values(self):
         """
