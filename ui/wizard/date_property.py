@@ -60,6 +60,9 @@ class DateProperty(QDialog, Ui_DateProperty):
         self.edtMaxDate.setDate(self._max_val)
 
         self.edtMinDate.setFocus()
+
+        self.rbMinFixed.setChecked(True)
+        self.rbMaxFixed.setChecked(True)
 	
     def add_values(self):
         """
