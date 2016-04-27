@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_fk_property.ui'
 #
-# Created: Sun Apr 24 14:30:40 2016
+# Created: Wed Apr 27 11:03:02 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,17 +26,22 @@ except AttributeError:
 class Ui_FKProperty(object):
     def setupUi(self, FKProperty):
         FKProperty.setObjectName(_fromUtf8("FKProperty"))
-        FKProperty.resize(320, 240)
-        self.buttonBox = QtGui.QDialogButtonBox(FKProperty)
-        self.buttonBox.setGeometry(QtCore.QRect(150, 210, 156, 23))
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.cboPrimaryUKey = QtGui.QComboBox(FKProperty)
-        self.cboPrimaryUKey.setGeometry(QtCore.QRect(120, 34, 191, 20))
-        self.cboPrimaryUKey.setObjectName(_fromUtf8("cboPrimaryUKey"))
+        FKProperty.resize(343, 240)
+        self.formLayout = QtGui.QFormLayout(FKProperty)
+        self.formLayout.setObjectName(_fromUtf8("formLayout"))
+        self.label = QtGui.QLabel(FKProperty)
+        self.label.setMaximumSize(QtCore.QSize(200, 16777215))
+        self.label.setObjectName(_fromUtf8("label"))
+        self.formLayout.setWidget(0, QtGui.QFormLayout.LabelRole, self.label)
+        self.cboPrimaryEntity = QtGui.QComboBox(FKProperty)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.cboPrimaryEntity.sizePolicy().hasHeightForWidth())
+        self.cboPrimaryEntity.setSizePolicy(sizePolicy)
+        self.cboPrimaryEntity.setObjectName(_fromUtf8("cboPrimaryEntity"))
+        self.formLayout.setWidget(0, QtGui.QFormLayout.FieldRole, self.cboPrimaryEntity)
         self.label_2 = QtGui.QLabel(FKProperty)
-        self.label_2.setGeometry(QtCore.QRect(7, 34, 107, 16))
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -44,19 +49,31 @@ class Ui_FKProperty(object):
         self.label_2.setSizePolicy(sizePolicy)
         self.label_2.setMaximumSize(QtCore.QSize(200, 16777215))
         self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.formLayout.setWidget(1, QtGui.QFormLayout.LabelRole, self.label_2)
+        self.cboPrimaryUKey = QtGui.QComboBox(FKProperty)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.cboPrimaryUKey.sizePolicy().hasHeightForWidth())
+        self.cboPrimaryUKey.setSizePolicy(sizePolicy)
+        self.cboPrimaryUKey.setObjectName(_fromUtf8("cboPrimaryUKey"))
+        self.formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self.cboPrimaryUKey)
         self.label_3 = QtGui.QLabel(FKProperty)
-        self.label_3.setGeometry(QtCore.QRect(7, 60, 75, 16))
         self.label_3.setObjectName(_fromUtf8("label_3"))
-        self.cboPrimaryEntity = QtGui.QComboBox(FKProperty)
-        self.cboPrimaryEntity.setGeometry(QtCore.QRect(120, 8, 191, 20))
-        self.cboPrimaryEntity.setObjectName(_fromUtf8("cboPrimaryEntity"))
-        self.label = QtGui.QLabel(FKProperty)
-        self.label.setGeometry(QtCore.QRect(7, 8, 67, 16))
-        self.label.setMaximumSize(QtCore.QSize(200, 16777215))
-        self.label.setObjectName(_fromUtf8("label"))
+        self.formLayout.setWidget(2, QtGui.QFormLayout.LabelRole, self.label_3)
         self.lvDisplayCol = QtGui.QListView(FKProperty)
-        self.lvDisplayCol.setGeometry(QtCore.QRect(120, 60, 191, 142))
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.lvDisplayCol.sizePolicy().hasHeightForWidth())
+        self.lvDisplayCol.setSizePolicy(sizePolicy)
         self.lvDisplayCol.setObjectName(_fromUtf8("lvDisplayCol"))
+        self.formLayout.setWidget(2, QtGui.QFormLayout.FieldRole, self.lvDisplayCol)
+        self.buttonBox = QtGui.QDialogButtonBox(FKProperty)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.formLayout.setWidget(3, QtGui.QFormLayout.FieldRole, self.buttonBox)
 
         self.retranslateUi(FKProperty)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), FKProperty.accept)
@@ -65,7 +82,7 @@ class Ui_FKProperty(object):
 
     def retranslateUi(self, FKProperty):
         FKProperty.setWindowTitle(_translate("FKProperty", "Foreign key editor", None))
+        self.label.setText(_translate("FKProperty", "Primary entity", None))
         self.label_2.setText(_translate("FKProperty", "Primary unique column", None))
         self.label_3.setText(_translate("FKProperty", "Display columns", None))
-        self.label.setText(_translate("FKProperty", "Primary entity", None))
 
