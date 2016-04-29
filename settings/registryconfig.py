@@ -27,6 +27,7 @@ DATABASE_LOOKUP = 'LookupInit'
 LOCAL_SOURCE_DOC = NETWORK_DOC_RESOURCE
 COMPOSER_OUTPUT = 'ComposerOutputs'
 COMPOSER_TEMPLATE = 'ComposerTemplates'
+CURRENT_PROFILE = 'CurrentProfile'
 
 class RegistryConfig(object):
     """
@@ -35,7 +36,7 @@ class RegistryConfig(object):
     def __init__(self):
         self.groupPath = "STDM"
     
-    def read(self,items):
+    def read(self, items):
         """
         Get the value of the user defined items from the STDM registry tree
         """

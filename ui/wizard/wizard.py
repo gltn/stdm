@@ -34,10 +34,10 @@ from stdm.data.configuration.entity_relation import EntityRelation
 from stdm.data.configuration.columns import BaseColumn
 
 from stdm.data.configuration.value_list import (
-        ValueList, 
-        CodeValue, 
-        value_list_factory
-        )
+    ValueList,
+    CodeValue,
+    value_list_factory
+)
 
 from stdm.data.configuration.social_tenure import *
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
@@ -46,6 +46,10 @@ from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings.registryconfig import RegistryConfig 
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.license_doc import LicenseDocument
+from stdm.utils.util import (
+    current_profile,
+    save_current_profile
+)
 
 from custom_item_model import *
 
@@ -365,6 +369,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     show_message(QApplication.translate("Configuration Wizard", \
                             unicode(e)))
                     validPage = False
+
+                #Save current profile to the registry
+                profile_name = unicode(self.cboProfile.currentText())
+                save_current_profile(profile_name)
                 
             if validPage:
                 show_message(QApplication.translate("Configuration Wizard", \
@@ -380,13 +388,15 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.config_updater.exec_()
 
     def config_update_started(self):
-        self.txtHtml.append(QApplication.translate("Config update started ..."))
+        self.txtHtml.append(QApplication.translate("Configuration Wizard",
+                               "Configuration update started ...")
+        )
 
     def config_update_progress(self, info_id, msg):
         if info_id == 0: # information
-            self.txtHtml.setTextColo(QColor('black'))
+            self.txtHtml.setTextColor(QColor('black'))
 
-        if info_id == 1: # Warninig
+        if info_id == 1: # Warning
             self.txtHtml.setTextColor(QColor('yellow'))
 
         if info_id == 2: # Error
