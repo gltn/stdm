@@ -43,6 +43,7 @@ from stdm.data.configuration.social_tenure import *
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 from stdm.data.configuration.db_items import DbItem
 from stdm.settings.config_serializer import ConfigurationFileSerializer 
+from stdm.settings.registryconfig import RegistryConfig 
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.license_doc import LicenseDocument
 
@@ -241,6 +242,14 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         return rpath.replace("\\", "/")
 
 
+    #def read_settings_path(self, reg_key, os_path):
+        #print "Reg Key: ", reg_key
+        #reg_config = RegistryConfig()
+        #settings = reg_config.read([reg_key])
+        #print "PATH: ", settings
+        #if len(settings) == 0:
+            #reg_doc_path = None
+
     def read_settings_path(self, reg_key, os_path):
         """
         param reg_key: Registry key where to read path setting
@@ -251,6 +260,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         rtype: str
         """
         settings = QtCore.QSettings(REG_KEY, QtCore.QSettings.NativeFormat)
+
         try:
             if len(settings.value(reg_key).toString()) > 0:
                 reg_doc_path = self.fmt_path_str(settings.value(reg_key).toString())
@@ -876,6 +886,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if profile:
             if len(self.lvLookups.selectedIndexes()) > 0:
                 row_id, lookup = self._get_entity_item(self.lvLookups)
+                # dont delete `tenure_type` lookup
+                if lookup.short_name == 'check_tenure_type':
+                    show_message(QApplication.translate("Configuration Wizard",
+                        "Cannot delete tenure type lookup table!"))
+                    return
                 profile.remove_entity(lookup.short_name)
                 self.lookup_view_model.removeRow(row_id)
             else:
