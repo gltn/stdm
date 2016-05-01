@@ -28,7 +28,6 @@ from migrate.changeset.constraint import ForeignKeyConstraint
 from stdm.data.database import (
     metadata
 )
-from stdm.data.pg_utils import pg_table_exists
 
 from stdm.data.pg_utils import (
     pg_table_exists,

@@ -53,7 +53,7 @@ from stdm.ui.composer import (
     ComposerSymbolEditor,
     ComposerTableDataSourceEditor
 )
-from stdm.utils import PLUGIN_DIR
+from stdm.utils.util import PLUGIN_DIR
                      
 class BaseComposerItemFormatter(object):
     """

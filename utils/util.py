@@ -41,12 +41,7 @@ from PyQt4.QtGui import (
 
 from qgis.gui import QgsEncodingFileDialog
 
-from stdm.data.configuration.profile import Profile
-from stdm.data.configuration.stdm_configuration import StdmConfiguration
-from stdm.settings.registryconfig import (
-    CURRENT_PROFILE,
-    RegistryConfig
-)
+from stdm.settings.registryconfig import RegistryConfig
 
 PLUGIN_DIR = os.path.abspath(os.path.join(os.path.dirname( __file__ ), os.path.pardir)).replace("\\", "/")
 CURRENCY_CODE = "" #TODO: Put in the registry
@@ -320,36 +315,6 @@ def date_from_string(str_val):
     """
     return datetime.strptime(str_val, '%Y-%m-%d')
 
-def current_profile():
-    """
-    :return: Returns the current profile in the configuration currently
-    being used.
-    :rtype: Profile
-    """
-    reg_config = RegistryConfig()
-    profile_info = reg_config.read([CURRENT_PROFILE])
-    profile_name = profile_info.get(CURRENT_PROFILE, '')
-
-    #Return None if there is no current profile
-    if not profile_name:
-        return None
-
-    profiles = StdmConfiguration.instance().profiles
-
-    return profiles.get(unicode(profile_name), None)
-
-def save_current_profile(name):
-    """
-    Save the profile with the given name as the current profile.
-    :param name: Name of the current profile.
-    :type name: unicode
-    """
-    if not name:
-        return
-
-    #Save profile in the registry/settings
-    reg_config = RegistryConfig()
-    reg_config.write({CURRENT_PROFILE: name})
 
 def show_message(message):
     msg = QMessageBox()

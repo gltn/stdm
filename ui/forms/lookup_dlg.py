@@ -18,7 +18,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
-from stdm.utils import readComboSelections
+from stdm.utils.util import readComboSelections
 from stdm.ui.stdmdialog import DeclareMapping
 
 class LookupModeller(object):

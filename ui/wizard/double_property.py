@@ -29,7 +29,7 @@ from PyQt4.QtGui import (
 		QApplication, 
 		QMessageBox
 		)
-from stdm.utils import show_message
+from stdm.utils.util import show_message
 
 class DoubleProperty(QDialog, Ui_DoubleProperty):
     """

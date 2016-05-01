@@ -16,16 +16,18 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from ui_user_role_manage import Ui_frmSysManageAccounts
-from .new_user_dlg import newUserDlg
-from .new_role_dlg import newRoleDlg
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 
-from stdm.security import User, Membership, RoleProvider
+from stdm.security.user import User
+from stdm.security.membership import Membership
+from stdm.security.roleprovider import RoleProvider
 from stdm.data.qtmodels import UsersRolesModel
 from stdm.utils import *
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from ui_user_role_manage import Ui_frmSysManageAccounts
+from .new_user_dlg import newUserDlg
+from .new_role_dlg import newRoleDlg
 
 class manageAccountsDlg(QDialog, Ui_frmSysManageAccounts):
     '''

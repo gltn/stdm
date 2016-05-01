@@ -19,7 +19,11 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 
-from PyQt4.QtGui import QAction, QListWidgetItem, QApplication
+from PyQt4.QtGui import (
+    QAction,
+    QListWidgetItem,
+    QApplication
+)
 
 from stdm.data.database import Content
 

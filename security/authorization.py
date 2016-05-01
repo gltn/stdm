@@ -20,7 +20,7 @@ email                : gkahiu@gmail.com
 from roleprovider import RoleProvider
 from exception import SecurityException
 from stdm.data.database import Content, STDMDb, Base
-from stdm.utils import *
+from stdm.utils.util import *
 from sqlalchemy import Table
 from sqlalchemy.orm import relationship, mapper, clear_mappers
 

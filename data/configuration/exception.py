@@ -17,8 +17,6 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-
-
 class ConfigurationException(Exception):
     """
     Raised when there is an error in StdmConfiguration

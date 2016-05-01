@@ -26,7 +26,7 @@ from sqlalchemy import Table
 
 from stdm import resources_rc
 
-from stdm.security import RoleProvider
+from stdm.security.roleprovider import RoleProvider
 from stdm.data.database import (
     Content,
     Role,

@@ -18,16 +18,11 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-# Import the PyQt and QGIS libraries
-
 import platform
 import os
 
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-
-#from ui_workspace_config import Ui_STDMWizard
-from wizard.ui_stdm_config import Ui_STDMWizard
 
 from sqlalchemy.sql.expression import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -57,13 +52,15 @@ from stdm.data.enums import (
 from stdm.data.config_utils import table_description
 from stdm.data.usermodels import CheckableListModel
 
-from stdm.security import RoleProvider
+from stdm.security.roleprovider import RoleProvider
 from .attribute_editor import AttributeEditor
 from .geometry_editor import GeometryEditor
 from .table_propertyDlg import TableProperty
 from .addtable import TableEditor
 from .profileDlg import ProfileEditor
 from .lookup_values_dlg import ADDLookupValue
+
+from wizard.ui_stdm_config import Ui_STDMWizard
 
 from ui_workspace_config import Ui_STDMWizard
 

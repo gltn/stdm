@@ -42,7 +42,7 @@ from stdm.data.pg_utils import (
     TABLES,
     VIEWS
 )
-from stdm.utils import setComboCurrentIndexWithText
+from stdm.utils.util import setComboCurrentIndexWithText
 
 __all__ = ["LinkedTableProps", "ReferencedTableEditor"]
 

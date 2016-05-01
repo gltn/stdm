@@ -55,7 +55,7 @@ from stdm.navigation.socialtenure import (
     STRNode,
     SupportsDocumentsNode
 )
-from stdm.security import Authorizer
+from stdm.security.authorization import Authorizer
 
 from .notification import (
     NotificationBar

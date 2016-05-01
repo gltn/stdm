@@ -35,10 +35,8 @@ from PyQt4.QtGui import *
 
 import sqlalchemy
 
-from stdm.utils import (
-    size,
-    getIndex
-)
+from stdm.utils.filesize import size
+from stdm.utils.util import getIndex
 from stdm.network import (
     NetworkFileManager,
     DocumentTransferWorker
