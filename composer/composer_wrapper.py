@@ -56,10 +56,8 @@ from stdm.ui.composer import (
     ComposerSymbolEditor,
     ComposerTableDataSourceEditor
 )
-from stdm.utils import (
-    documentTemplates,
-    CaseInsensitiveDict
-)
+from stdm.utils.util import documentTemplates
+from stdm.utils.case_insensitive_dict import CaseInsensitiveDict
 
 from .chart_configuration import ChartConfigurationCollection
 from .composer_item_config import ComposerItemConfig

@@ -31,7 +31,7 @@ from PyQt4.QtCore import (
 
 from qgis.core import *
 
-from stdm.utils import guess_extension
+from stdm.utils.util import guess_extension
 
 class NetworkFileManager(QObject):
     """

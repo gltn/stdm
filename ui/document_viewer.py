@@ -48,7 +48,7 @@ from PyQt4.QtCore import (
     QFile
 )
 
-from stdm.utils import guess_extension
+from stdm.utils.util import guess_extension
 
 class PhotoViewer(QScrollArea):
     """

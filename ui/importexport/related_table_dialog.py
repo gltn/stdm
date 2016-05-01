@@ -28,7 +28,7 @@ from stdm.data.pg_utils import (
    pg_tables,
    spatial_tables
 )
-from stdm.data.importexport import RelatedTableTranslator
+from stdm.data.importexport.value_translators import RelatedTableTranslator
 
 from ..notification import NotificationBar
 from .translator_widget_base import TranslatorDialogBase

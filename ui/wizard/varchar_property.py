@@ -29,7 +29,7 @@ from PyQt4.QtGui import (
 		QMessageBox
 		)
 
-from stdm.utils import show_message
+from stdm.utils.util import show_message
 from stdm.data.configuration.entity import *
 from stdm.data.configuration.value_list import (
         ValueList, 

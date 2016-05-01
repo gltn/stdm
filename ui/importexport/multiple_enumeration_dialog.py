@@ -31,8 +31,8 @@ from stdm.data.pg_utils import (
    pg_tables,
    spatial_tables
 )
-from stdm.data.importexport import MultipleEnumerationTranslator
-from stdm.utils import getIndex
+from stdm.data.importexport.value_translators import MultipleEnumerationTranslator
+from stdm.utils.util import getIndex
 
 from ..notification import NotificationBar
 from .translator_widget_base import TranslatorDialogBase

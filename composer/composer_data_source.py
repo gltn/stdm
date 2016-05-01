@@ -15,10 +15,8 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from stdm.utils import (
-    getIndex,
-    ReverseDict
-)
+from stdm.utils.util import getIndex
+from stdm.utils.reverse_dict import ReverseDict
 
 __all__ = ["ComposerDataSource"]
 

@@ -30,7 +30,7 @@ from PyQt4.QtCore import (
     QIODevice,
     QUrl
 )
-from stdm.utils import PLUGIN_DIR
+from stdm.utils.util import PLUGIN_DIR
 from ui_about_stdm import Ui_frmAbout
 
 class AboutSTDMDialog(QDialog,Ui_frmAbout):

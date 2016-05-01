@@ -18,11 +18,11 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from qgis.core import (
-                       QgsMapLayerRegistry,
-                       QgsDataSourceURI
-                       )
+    QgsMapLayerRegistry,
+    QgsDataSourceURI
+)
 
-from stdm.utils import ReverseDict
+from stdm.utils.reverse_dict import ReverseDict
 
 def pg_layerNamesIDMapping():
     '''

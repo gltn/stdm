@@ -23,7 +23,7 @@ import os
 import shutil
 import platform
 import filecmp
-from stdm.utils import PLUGIN_DIR
+from stdm.utils.util import PLUGIN_DIR
 from PyQt4.QtGui import QApplication, QMessageBox
 DEFAULT_CONFIG="stdmConfig.xml"
 LICENSE="LICENSE.txt"
@@ -32,7 +32,7 @@ BASIC_SQL="stdmConfig.sql"
 CONFIG="Config"
 HELP="stdm.chm"
 
-xmldoc=os.path.dirname(os.path.abspath(__file__))
+xmldoc= os.path.dirname(os.path.abspath(__file__))
 
 from stdm.settings.registryconfig import RegistryConfig
 from .reports import SysFonts

@@ -39,7 +39,7 @@ from stdm.data.database import (
 )
 from stdm.data.pg_utils import table_column_names
 
-from stdm.utils import (
+from stdm.utils.util import (
     getIndex
 )
 

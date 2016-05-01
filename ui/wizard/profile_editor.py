@@ -18,15 +18,13 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-
-from ui_profile import Ui_Profile
 from PyQt4.QtCore import *
 from PyQt4.QtGui import (
     QDialog,
     QApplication,
     QMessageBox
 )
-
+from ui_profile import Ui_Profile
 #from stdm.data.xmlconfig_writer import (
     #writeProfile,
     #checkProfile

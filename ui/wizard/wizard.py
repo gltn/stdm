@@ -45,7 +45,7 @@ from stdm.data.configuration.db_items import DbItem
 from stdm.settings.config_serializer import ConfigurationFileSerializer 
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.license_doc import LicenseDocument
-from stdm.utils.util import (
+from stdm.settings import (
     current_profile,
     save_current_profile
 )
@@ -347,22 +347,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             #Start the process
             self.updater_thread.start()
-
-            if self.is_config_done:
-                # write config to a file
-                config_path = os.path.expanduser('~') + '/.stdm/configuration.stc'
-                cfs = ConfigurationFileSerializer(config_path)
-
-                try:
-                    cfs.save()
-                except(ConfigurationException, IOError) as e:
-                    show_message(QApplication.translate("Configuration Wizard", \
-                            unicode(e)))
-                    validPage = False
-
-                #Save current profile to the registry
-                profile_name = unicode(self.cboProfile.currentText())
-                save_current_profile(profile_name)
                 
             if validPage:
                 show_message(QApplication.translate("Configuration Wizard", \
@@ -398,6 +382,21 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if status:
             self.txtHtml.append("The configuration successfully updated.")
             self.is_config_done = True
+
+            #Write config to a file
+            config_path = os.path.expanduser('~') + '/.stdm/configuration.stc'
+            cfs = ConfigurationFileSerializer(config_path)
+
+            try:
+                cfs.save()
+
+                #Save current profile to the registry
+                profile_name = unicode(self.cboProfile.currentText())
+                save_current_profile(profile_name)
+
+            except(ConfigurationException, IOError) as e:
+                show_message(QApplication.translate("Configuration Wizard", \
+                        unicode(e)))
 
         else:
             self.txtHtml.append("Failed to update configuration. "

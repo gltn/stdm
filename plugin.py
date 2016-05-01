@@ -20,6 +20,7 @@ email                : stdm@unhabitat.org
 import logging
 import os.path
 import platform
+from collections import OrderedDict
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -172,7 +173,6 @@ class STDMQGISLoader(object):
         self.menu_bar.insertMenu(currAction, self.stdmMenu)
         self.stdmMenu.setToolTip(QApplication.translate("STDMQGISLoader","STDM plugin menu"))
 
-
     def getThemeIcon(self, theName):
         # get the icon from the best available theme
         myCurThemePath = QgsApplication.activeThemePath() + "/plugins/" + theName;
@@ -266,14 +266,17 @@ class STDMQGISLoader(object):
                 self.reset_content_modules_id(title,cve.message)
 
             except ProfileException as pe:
-                title =QApplication.translate("STDMQGISLoader","Error reading profile settings")
+                title = QApplication.translate("STDMQGISLoader","Error reading profile settings")
                 self.reset_content_modules_id(title,pe.message)
 
+            '''
             except Exception as ex:
-                title =QApplication.translate("STDMQGISLoader","Error reading tables")
+                raise ex
+                title = QApplication.translate("STDMQGISLoader","Error reading tables")
                 msg = QApplication.translate("STDMQGISLoader","\nCheck the configuration is okay and" \
-                          "\permission on modules or duplicate keys for the table(s).")
+                          "/or permissions on modules or duplicate keys for the table(s).")
                 self.reset_content_modules_id(title,unicode(ex.message + msg))
+            '''
 
     def loadModules(self):
         '''

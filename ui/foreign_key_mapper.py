@@ -34,7 +34,7 @@ from qgis.gui import QgsExpressionBuilderDialog
 
 from stdm.data.qtmodels import BaseSTDMTableModel
 from stdm.data.config_utils import foreign_key_table_reference
-from stdm.utils import getIndex
+from stdm.utils.util import getIndex
 from .admin_unit_manager import (
     VIEW,
     MANAGE,

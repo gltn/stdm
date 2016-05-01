@@ -27,10 +27,8 @@ from stdm.data.database import (
     STDMDb,
     Base
 )
-from stdm.utils import (
-    randomCodeGenerator,
-    HashableMixin
-)
+from stdm.utils.util import randomCodeGenerator
+from stdm.utils.hashable_mixin import HashableMixin
 
 __all__ = ["ContentGroup,TableContentGroup"]
 
@@ -41,7 +39,7 @@ class ContentGroup(QObject,HashableMixin):
     contentAuthorized = pyqtSignal(Content)
     
     def __init__(self,username,containerItem = None,parent = None):
-        from stdm.security import Authorizer
+        from stdm.security.authorization import Authorizer
 
         QObject.__init__(self,parent)
         HashableMixin.__init__(self)

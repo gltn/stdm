@@ -73,7 +73,7 @@ from stdm.data.database import STDMDb
 from stdm.ui.sourcedocument import (
     network_document_path
 )
-from stdm.utils import PLUGIN_DIR
+from stdm.utils.util import PLUGIN_DIR
 
 from .composer_data_source import ComposerDataSource
 from .composer_wrapper import load_table_layers

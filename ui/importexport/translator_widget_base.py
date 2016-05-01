@@ -26,7 +26,7 @@ from stdm.data.pg_utils import (
    pg_tables,
    spatial_tables
 )
-from stdm.data.importexport import ValueTranslatorManager
+from stdm.data.importexport.value_translators import ValueTranslatorManager
 
 __all__ = ["TranslatorDialogBase", "TranslatorWidgetManager"]
 

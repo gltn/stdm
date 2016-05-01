@@ -32,7 +32,7 @@ from sqlalchemy import (
 )
 
 from stdm.ui.stdmdialog import DeclareMapping
-from stdm.utils import getIndex
+from stdm.utils.util import getIndex
 
 from .nodes import (
     BaseSTRNode,
