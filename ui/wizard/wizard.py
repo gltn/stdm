@@ -931,7 +931,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         # check lookup <> None
         lookup.add_code_value(CodeValue('M','Male'))
         lookup.add_code_value(CodeValue('F','Female'))
-        self.addValues(lookup.Values())
+        self.add_values(lookup.values.values())
         self.lvLookupValues.setModel(self.lookup_value_view_model)
 
     def lookup_changed(self, selected, diselected):
@@ -975,7 +975,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         value_editor = ValueEditor(self, lookup, code_value)
         result = value_editor.exec_()
         if result == 1:
-            self.addValues(value_editor.lookup.Values())
+            self.add_values(value_editor.lookup.values.values())
 
         #new_value = 'Alien'
         #if self.lookup_item_model.currentIndex().model().entity_byId(row_id).rename(unicode(value_text), new_value):
@@ -995,7 +995,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         model_index = self.lvLookupValues.selectedIndexes()[0]
         value_text = self.lookup_value_view_model.itemFromIndex(model_index).text()
         lookup.remove_value(unicode(value_text))
-        self.addValues(lookup.Values())
+        self.add_values(lookup.values.values())
 
     def edit_lookup_value_test(self):
         if len(self.lvLookupValues.selectedIndexes() ) > 0:

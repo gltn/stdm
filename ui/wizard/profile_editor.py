@@ -38,17 +38,17 @@ class ProfileEditor(QDialog, Ui_Profile):
         self.desc = ''
         
         self.setupUi(self)
-        self.initControls()
+        self.init_controls()
         
-    def initControls(self):
+    def init_controls(self):
         self.edtProfile.clear()
         self.edtDesc.clear()
         self.edtProfile.setFocus()
         
     def format_name(self, txt):
-        ''''remove training spaces in the name and replace them'''
+        ''''remove any trailing spaces in the name and replace them underscore'''
         formatted_name = txt.strip().replace(' ', "_")
-        return formatted_name.lower()
+        return formatted_name
     
     def add_profile(self):
         self.profile_name = self.format_name(unicode(self.edtProfile.text()))
@@ -57,7 +57,7 @@ class ProfileEditor(QDialog, Ui_Profile):
     def accept(self):
         '''listen to user action on the dialog'''
         if self.edtProfile.text() == '':
-            self.ErrorInfoMessage(QApplication.translate("ProfileEditor","Profile name is not given"))
+            self.error_info_message(QApplication.translate("ProfileEditor", "Profile name is not given"))
             return
 
         self.add_profile()
@@ -66,7 +66,7 @@ class ProfileEditor(QDialog, Ui_Profile):
     def reject(self):
         self.done(0)
         
-    def ErrorInfoMessage(self, Message):
+    def error_info_message(self, Message):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle("STDM")
