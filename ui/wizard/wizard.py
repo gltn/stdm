@@ -388,6 +388,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         self.txtHtml.append(msg)
 
+        #If there was an error then exit the thread
+        if info_id == 2:
+            self.updater_thread.exit(1)
+
     def config_update_completed(self, status):
         if status:
             self.txtHtml.append("The configuration successfully updated.")

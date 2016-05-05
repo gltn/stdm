@@ -283,6 +283,10 @@ class ProfileSerializer(object):
         #TODO: Remove unicode
         profile = Profile(unicode(profile_name), configuration)
 
+        #Set description
+        description = element.attribute('description', '')
+        profile.description = description
+
         '''
         Now populate the entity relations and associations for use by child
         elements.
@@ -357,6 +361,7 @@ class ProfileSerializer(object):
         profile_element = document.createElement('Profile')
 
         profile_element.setAttribute('name', profile.name)
+        profile_element.setAttribute('description', profile.description)
 
         #Append entity information
         for e in profile.entities.values():
