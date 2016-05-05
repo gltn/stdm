@@ -28,6 +28,10 @@ from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
 
+from stdm.settings.config_serializer import ConfigurationFileSerializer
+from stdm.data.configuration.exception import ConfigurationException
+from stdm.data.configuration.stdm_configuration import StdmConfiguration
+
 from stdm.ui.change_pwd_dlg import changePwdDlg
 from stdm.ui.doc_generator_dlg import (
     DocumentGeneratorDialogWrapper,
@@ -226,7 +230,6 @@ class STDMQGISLoader(object):
             #Initialize the whole STDM database
             try:
                 db = STDMDb.instance()
-
             except NoPostGISError:
                 err_msg = QApplication.translate("STDM",
                             "STDM cannot be loaded because the system has "
@@ -256,27 +259,56 @@ class STDMQGISLoader(object):
             #Fetch STDM tables
             self.stdmTables = spatial_tables()
 
+            #Load the configuration from file
+            config_load_status = self.load_configuration_from_file()
+
+            #Exit if the load failed
+            if not config_load_status:
+                return
+
             try:
                 self.default_config_version()
                 self.loadModules()
                 self._user_logged_in = True
 
             except ConfigVersionException as cve:
-                title =QApplication.translate("STDMQGISLoader","Error reading Config Version")
+                title = QApplication.translate("STDMQGISLoader",
+                                              "Error reading Config Version")
                 self.reset_content_modules_id(title,cve.message)
 
             except ProfileException as pe:
-                title = QApplication.translate("STDMQGISLoader","Error reading profile settings")
+                title = QApplication.translate("STDMQGISLoader",
+                                               "Error reading profile settings")
                 self.reset_content_modules_id(title,pe.message)
 
-            '''
-            except Exception as ex:
-                raise ex
-                title = QApplication.translate("STDMQGISLoader","Error reading tables")
-                msg = QApplication.translate("STDMQGISLoader","\nCheck the configuration is okay and" \
-                          "/or permissions on modules or duplicate keys for the table(s).")
-                self.reset_content_modules_id(title,unicode(ex.message + msg))
-            '''
+    def load_configuration_from_file(self):
+        """
+        Load configuration object from the file.
+        :return: True if the file was successfully loaded. Otherwise, False.
+        :rtype: bool
+        """
+        config_path = QDesktopServices.storageLocation(QDesktopServices.HomeLocation) \
+                      + '/.stdm/configuration.stc'
+        config_serializer = ConfigurationFileSerializer(config_path)
+
+        try:
+            config_serializer.load()
+
+        except IOError as io_err:
+            QMessageBox.critical(self.iface.mainWindow(),
+                    QApplication.translate("STDM", "Load Configuration Error"),
+                    unicode(io_err))
+
+            return False
+
+        except ConfigurationException as c_ex:
+            QMessageBox.critical(self.iface.mainWindow(),
+                    QApplication.translate("STDM", "Load Configuration Error"),
+                    unicode(c_ex))
+
+            return False
+
+        return True
 
     def loadModules(self):
         '''

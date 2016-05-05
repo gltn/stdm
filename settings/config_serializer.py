@@ -122,12 +122,13 @@ class ConfigurationFileSerializer(object):
         """
         if not QFile.exists(self.path):
             raise IOError(u'{0} does not exist. Configuration file cannot be '
-                          u'loaded.')
+                          u'loaded.'.format(self.path))
 
         config_file = QFile(self.path)
 
         if not config_file.open(QIODevice.ReadOnly):
-            raise IOError('Cannot read configuration file.')
+            raise IOError('Cannot read configuration file. Check read '
+                          'permissions.')
 
         config_doc = QDomDocument()
 
