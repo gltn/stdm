@@ -32,6 +32,7 @@ from stdm.data.database import (
 )
 from stdm.data.configuration.db_items import DbItem
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
+from stdm.data.configuration.exception import ConfigurationException
 
 LOGGER = logging.getLogger('stdm')
 
@@ -156,7 +157,17 @@ class ConfigurationSchemaUpdater(QObject):
         self.update_entity_relations(profile)
 
         #Create basic STR database view
-        profile.social_tenure.create_view(self.engine)
+        try:
+            profile.social_tenure.create_view(self.engine)
+
+        except ConfigurationException as ce:
+            msg = unicode(ce)
+
+            self.update_progress.emit(ConfigurationSchemaUpdater.ERROR, msg)
+
+            LOGGER.debug(msg)
+
+            self.update_completed.emit(False)
 
     def _update_entities(self, entities):
         for e in entities:

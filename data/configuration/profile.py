@@ -67,6 +67,7 @@ class Profile(QObject):
         """
         QObject.__init__(self, configuration)
         self.name = name
+        self.description = ''
         self.configuration = configuration
         self.prefix = self._prefix()
         self.entities = OrderedDict()
