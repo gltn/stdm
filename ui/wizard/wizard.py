@@ -231,7 +231,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         for vl in profile.value_lists():
             if vl.is_empty():
                 valid = False
-                show_message("Lookup %s has no values" % vl.short_name)
+                self.show_message("Lookup %s has no values" % vl.short_name)
                 break
         return valid
 
@@ -310,7 +310,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             if self.rbReject.isChecked():
                 message1 = "To continue with the wizard please comply with "
                 message2 = "disclaimer policy by selecting the option 'I Agree'"
-                show_message(message1+message2)
+                self.show_message(message1+message2)
                 validPage=False
 
         if self.currentId() == 3:
@@ -335,7 +335,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 profile.set_social_tenure_attr(SocialTenure.PARTY, party)
                 profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT, spatial_unit)
             else:
-                show_message(QApplication.translate("Configuration Wizard", msg))
+                self.show_message(QApplication.translate("Configuration Wizard", msg))
 
         if self.currentId() == 5: # FINAL_PAGE:
             # last page
@@ -359,7 +359,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.updater_thread.start()
                 
             if validPage:
-                show_message(QApplication.translate("Configuration Wizard", \
+                self.show_message(QApplication.translate("Configuration Wizard", \
                         "Configuration saved successfully."),
                         msg_icon=QMessageBox.Information)
 
@@ -388,10 +388,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         self.txtHtml.append(msg)
 
-        #If there was an error then exit the thread
-        if info_id == 2:
-            self.updater_thread.exit(1)
-
     def config_update_completed(self, status):
         if status:
             self.txtHtml.append("The configuration successfully updated.")
@@ -409,7 +405,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 save_current_profile(profile_name)
 
             except(ConfigurationException, IOError) as e:
-                show_message(QApplication.translate("Configuration Wizard", \
+                self.show_message(QApplication.translate("Configuration Wizard", \
                         unicode(e)))
 
         else:
@@ -545,13 +541,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Delete the current selected profile
         """
         if self.cboProfile.count() == 1:
-            show_message(QApplication.translate("Configuration Wizard", \
+            self.show_message(QApplication.translate("Configuration Wizard", \
                     "Cannot delete last profile!"))
             return
 
         profile_name = unicode(self.cboProfile.currentText())
         if not self.stdm_config.remove_profile(profile_name):
-            show_message(QApplication.translate("Configuration Wizard", \
+            self.show_message(QApplication.translate("Configuration Wizard", \
                     "Unable to delete profile!"))
             return
         self.load_profile_cbo()
@@ -591,7 +587,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             editor = EntityEditor(self, profile)
             editor.exec_()
         else:
-            show_message(QApplication.translate("Configuration Wizard", \
+            self.show_message(QApplication.translate("Configuration Wizard", \
                     "No profile selected to add entity!"))
 
     def edit_entity(self):
@@ -599,7 +595,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Edit selected entity
         """
         if len(self.pftableView.selectedIndexes())==0:
-            show_message(QApplication.translate("Configuration Wizard", \
+            self.show_message(QApplication.translate("Configuration Wizard", \
                     "No entity selected for edit!"))
             return
         model_item, entity, row_id = self.get_model_entity(self.pftableView)
@@ -617,7 +613,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Delete selected entity
         """
         if len(self.pftableView.selectedIndexes())==0:
-            show_message(QApplication.translate("Configuration Wizard", \
+            self.show_message(QApplication.translate("Configuration Wizard", \
                     "No entity selected for deletion!"))
             return
 
@@ -771,7 +767,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def new_column(self):
         if len(self.lvEntities.selectedIndexes())==0:
-            show_message(QApplication.translate("Configuration Wizard", \
+            self.show_message(QApplication.translate("Configuration Wizard", \
                     "No entity selected to add column!"))
             return
         model_item, entity, row_id = self.get_model_entity(self.lvEntities)
@@ -806,7 +802,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             editor = ColumnEditor(self, **params)
             result = editor.exec_()
         else:
-            show_message(QApplication.translate("Configuration Wizard", \
+            self.show_message(QApplication.translate("Configuration Wizard", \
                     "No column selected for edit!"))
 
     def clear_lookup_view(self):
@@ -851,7 +847,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             # delete from the entity
             entity.remove_column(column.name)
         else:
-            show_message(QApplication.translate("Configuration Wizard", \
+            self.show_message(QApplication.translate("Configuration Wizard", \
                     "No column selected for deletion!"))
 	
     def new_lookup(self):
@@ -862,7 +858,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             if result == 1:
                 self.lookup_view_model.add_entity(editor.lookup)
         else:
-            show_message(QApplication.translate("Configuration Wizard", \
+            self.show_message(QApplication.translate("Configuration Wizard", \
                     "No profile selected to add lookup!"))
 
     def new_lookup_test(self):
@@ -888,10 +884,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     self.lookup_view_model.removeRow(row_id)
                     self.lookup_view_model.add_entity(editor.lookup)
             else:
-                show_message(QApplication.translate("Configuration Wizard", \
+                self.show_message(QApplication.translate("Configuration Wizard", \
                         "No lookup selected for edit!"))
         else:
-            show_message(QApplication.translate("Configuration Wizard", \
+            self.show_message(QApplication.translate("Configuration Wizard", \
                     "Nothing to edit!"))
 
     def delete_lookup(self):
@@ -901,16 +897,16 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 row_id, lookup = self._get_entity_item(self.lvLookups)
                 # dont delete `tenure_type` lookup
                 if lookup.short_name == 'check_tenure_type':
-                    show_message(QApplication.translate("Configuration Wizard",
+                    self.show_message(QApplication.translate("Configuration Wizard",
                         "Cannot delete tenure type lookup table!"))
                     return
                 profile.remove_entity(lookup.short_name)
                 self.lookup_view_model.removeRow(row_id)
             else:
-                show_message(QApplication.translate("Configuration Wizard", \
+                self.show_message(QApplication.translate("Configuration Wizard", \
                         "No lookup selected for deletion!"))
         else:
-            show_message(QApplication.translate("Configuration Wizard", \
+            self.show_message(QApplication.translate("Configuration Wizard", \
                     "Nothing to delete!"))
 
     def addValues_byEntity(self, entity):
@@ -949,7 +945,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def add_lookup_value(self):
         if len(self.lvLookups.selectedIndexes()) == 0:
-            show_message(QApplication.translate("Configuration Wizard", \
+            self.show_message(QApplication.translate("Configuration Wizard", \
                     "No lookup selected to add value!"))
             return
 
@@ -963,7 +959,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def edit_lookup_value(self):
         if len(self.lvLookupValues.selectedIndexes() ) == 0:
-            show_message(QApplication.translate("Configuration Wizard", \
+            self.show_message(QApplication.translate("Configuration Wizard", \
                     "No value selected for edit!"))
             return
         # get selected lookup value
@@ -981,17 +977,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if result == 1:
             self.add_values(value_editor.lookup.values.values())
 
-        #new_value = 'Alien'
-        #if self.lookup_item_model.currentIndex().model().entity_byId(row_id).rename(unicode(value_text), new_value):
-        #self.lookup_value_view_model.itemFromIndex(model_index).setText(new_value)
-        #cv = self.lookup_item_model.currentIndex().model().entity_byId(row_id).code_value(unicode(value_text))
-        else:
-            show_message(QApplication.translate("Configuration Wizard", \
-                    "Select value to edit"))
-
     def delete_lookup_value(self):
         if len(self.lvLookupValues.selectedIndexes() ) == 0:
-            show_message(QApplication.translate("Configuration Wizard", \
+            self.show_message(QApplication.translate("Configuration Wizard", \
                     "Select value to delete"))
             return
 
@@ -1021,6 +1009,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         return [item_model.item(row) for row in range(item_model.rowCount()) \
                 if item_model.item(row).checkState()==Qt.Checked]
 
+    def show_message(self, message, msg_icon=QMessageBox.Critical):
+        msg = QMessageBox(self)
+        msg.setIcon(msg_icon)
+        msg.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
+        msg.setText(QApplication.translate("STDM Configuration Wizard",message))
+        msg.exec_()
+
 class Launcher(QMainWindow):
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
@@ -1038,12 +1033,6 @@ class Launcher(QMainWindow):
         #configWiz.setFixedSize(QSize(605, 488))
         configWiz.exec_()
 
-def show_message(message, msg_icon=QMessageBox.Critical):
-    msg = QMessageBox()
-    msg.setIcon(msg_icon)
-    msg.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
-    msg.setText(QApplication.translate("STDM Configuration Wizard",message))
-    msg.exec_()
 
 def createLogger():
     # create console handler and set level to debug

@@ -26,7 +26,6 @@ from PyQt4.QtGui import (
     QApplication,
     QMessageBox
 )
-from stdm.utils.util import show_message
 
 from qgis.gui import QgsGenericProjectionSelector
 
@@ -115,7 +114,7 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
 	    
     def accept(self):
         if self._srid =="":
-            show_message(QApplication.translate("GeometryPropetyEditor",
+            self.show_message(QApplication.translate("GeometryPropetyEditor",
                 "Please set geometry coordinate system"))
             return
 
@@ -125,3 +124,9 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
     def reject(self):
         self.done(0)
 
+    def show_message(self, message, msg_icon=QMessageBox.Critical):
+        msg = QMessageBox(self)
+        msg.setIcon(msg_icon)
+        msg.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
+        msg.setText(QApplication.translate("STDM Configuration Wizard",message))
+        msg.exec_()
