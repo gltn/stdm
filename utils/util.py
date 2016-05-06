@@ -39,7 +39,7 @@ from PyQt4.QtGui import (
     QMessageBox
 )
 
-from qgis.gui import QgsEncodingFileDialog
+#from qgis.gui import QgsEncodingFileDialog
 
 from stdm.settings.registryconfig import RegistryConfig
 
@@ -314,11 +314,3 @@ def date_from_string(str_val):
     :rtype: date
     """
     return datetime.strptime(str_val, '%Y-%m-%d')
-
-
-def show_message(message):
-    msg = QMessageBox()
-    msg.setIcon(QMessageBox.Warning)
-    msg.setWindowTitle("STDM")
-    msg.setText(message)
-    msg.exec_()

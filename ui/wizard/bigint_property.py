@@ -29,7 +29,6 @@ from PyQt4.QtGui import (
 		QMessageBox
 		)
 
-from stdm.utils.util import show_message
 from stdm.data.configuration.entity import *
 from stdm.data.configuration.value_list import (
         ValueList, 
@@ -92,12 +91,12 @@ class BigintProperty(QDialog, Ui_BigintProperty):
 	    
     def accept(self):
         if self.edtMinVal.text()=='':
-            show_message(QApplication.translate("BigintPropetyEditor",
+            self.show_message(QApplication.translate("BigintPropetyEditor",
                 "Please set minimum value."))
             return
 
         if self.edtMaxVal.text()=='':
-            show_message(QApplication.translate("BigintPropetyEditor",
+            self.show_message(QApplication.translate("BigintPropetyEditor",
                 "Please set maximum value."))
             return
 
@@ -106,3 +105,10 @@ class BigintProperty(QDialog, Ui_BigintProperty):
 
     def reject(self):
         self.done(0)
+
+    def show_message(self, message, msg_icon=QMessageBox.Critical):
+        msg = QMessageBox(self)
+        msg.setIcon(msg_icon)
+        msg.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
+        msg.setText(QApplication.translate("STDM Configuration Wizard",message))
+        msg.exec_()

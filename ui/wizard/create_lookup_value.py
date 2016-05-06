@@ -90,10 +90,6 @@ class ValueEditor(QDialog, Ui_LookupValue):
                 self.error_message(QApplication.translate("ValueEditor","Lookup value is not given!"))
                 return
 
-        if self.edtCode.text()=='':
-                self.error_message(QApplication.translate("ValueEditor","Value code is not given!"))
-                return
-
         self.add_value()
         
         self.done(1)

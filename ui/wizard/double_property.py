@@ -29,7 +29,6 @@ from PyQt4.QtGui import (
 		QApplication, 
 		QMessageBox
 		)
-from stdm.utils.util import show_message
 
 class DoubleProperty(QDialog, Ui_DoubleProperty):
     """
@@ -86,12 +85,12 @@ class DoubleProperty(QDialog, Ui_DoubleProperty):
 	    
     def accept(self):
         if self.edtMinVal.text()=='':
-            show_message(QApplication.translate("DoublePropetyEditor",
+            self.show_message(QApplication.translate("DoublePropetyEditor",
                 "Please set minimum value"))
             return
 
         if self.edtMaxVal.text()=='':
-            show_message(QApplication.translate("DoublePropetyEditor",
+            self.show_message(QApplication.translate("DoublePropetyEditor",
                 "Pleasei set maximum value."))
             return
 
@@ -100,3 +99,10 @@ class DoubleProperty(QDialog, Ui_DoubleProperty):
 
     def reject(self):
         self.done(0)
+
+    def show_message(self, message, msg_icon=QMessageBox.Critical):
+        msg = QMessageBox(self)
+        msg.setIcon(msg_icon)
+        msg.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
+        msg.setText(QApplication.translate("STDM Configuration Wizard",message))
+        msg.exec_()
