@@ -79,75 +79,47 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.register_fields()
 
         # directory path settings
-        self.btnDocPath.clicked.connect(self.set_support_doc_path)
-        self.btnDocOutput.clicked.connect(self.set_output_path)
-        self.btnTemplates.clicked.connect(self.set_template_path)
+        self.init_path_ctrls_event_handlers()
 
         # profile
-        self.cboProfile.currentIndexChanged.connect(self.profile_changed)
-
-        self.btnNewP.clicked.connect(self.new_profile)
-        self.btnPDelete.clicked.connect(self.delete_profile)
+        self.init_profile_ctrls_event_handlers()
         
         # register enitity model to different view controllers
         self.entity_model = EntitiesModel()
-        self.pftableView.setModel(self.entity_model)
-        self.pftableView.setColumnWidth(0, 250)
+        self.set_views_entity_model(self.entity_model)
 
-        self.lvEntities.setModel(self.entity_model)	
-        
-        self.entity_item_model = self.lvEntities.selectionModel()
-
-        self.entity_item_model.selectionChanged.connect(self.entity_changed)
+        self.init_entity_item_model()
 
         self.col_view_model = ColumnEntitiesModel()
         self.tbvColumns.setModel(self.col_view_model)
-        
-        self.cboParty.setModel(self.entity_model)
-        self.cboSPUnit.setModel(self.entity_model)
 
         # STR view model
         self.party_item_model = STRColumnEntitiesModel()
-        #self.lvParty.setModel(self.party_item_model)
-
         self.spunit_item_model = STRColumnEntitiesModel()
-        #self.lvSpatialUnit.setModel(self.spunit_item_model)
 
-        self.cboParty.currentIndexChanged.connect(self.party_changed)
-
-        self.cboSPUnit.currentIndexChanged.connect(self.spatial_unit_changed)
+        #cboParty & cboSPUnit
+        self.init_STR_ctrls_event_handlers()
         
         # profile page : Add entities
-        self.btnNewEntity.clicked.connect(self.new_entity)
-        self.btnEditEntity.clicked.connect(self.edit_entity)
-        self.btnDeleteEntity.clicked.connect(self.delete_entity)
+        self.init_entity_ctrls_event_handlers()
 
         # Entity customization page
-        self.btnAddColumn.clicked.connect(self.new_column)
-        self.btnEditColumn.clicked.connect(self.edit_column)
-        self.btnDeleteColumn.clicked.connect(self.delete_column)
+        self.init_column_ctrls_event_handlers()
 
         # lookup
         self.lookup_view_model = LookupEntitiesModel()
         self.lvLookups.setModel(self.lookup_view_model)
 
-        self.btnAddLookup.clicked.connect(self.new_lookup)
-        self.btnEditLookup.clicked.connect(self.edit_lookup)
-        self.btnDeleteLookup.clicked.connect(self.delete_lookup)
+        self.init_lookup_ctrls_event_handlers()
 
         self.lookup_item_model = self.lvLookups.selectionModel()
         self.lookup_item_model.selectionChanged.connect(self.lookup_changed)
 
         # lookup values
         self.lookup_value_view_model = QStandardItemModel(self.lvLookupValues)
-        self.btnAddLkupValue.clicked.connect(self.add_lookup_value)
-        self.btnEditLkupValue.clicked.connect(self.edit_lookup_value)
-        self.btnDeleteLkupValue.clicked.connect(self.delete_lookup_value)
+        self.init_lkvalues_event_handlers()
 
-        self.edtDocPath.setFocus()
-
-        self.rbReject.setChecked(True)
-
+        self.init_ui_ctrls()
 
         self.is_config_done = False
         self.stdm_config = StdmConfiguration.instance()  
@@ -163,10 +135,55 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             # wizard start at page 0 - license
             self.setStartId(0)
 
-        # try load from the file (".stc") 
-        #config_file = os.path.expanduser('~')+'/.stdm/configuration.stc'
-        #cfs = ConfigurationFileSerializer(config_file)
-        #cfs.load()
+    def init_path_ctrls_event_handlers(self):
+        self.btnDocPath.clicked.connect(self.set_support_doc_path)
+        self.btnDocOutput.clicked.connect(self.set_output_path)
+        self.btnTemplates.clicked.connect(self.set_template_path)
+
+    def init_profile_ctrls_event_handlers(self):
+        self.cboProfile.currentIndexChanged.connect(self.profile_changed)
+        self.btnNewP.clicked.connect(self.new_profile)
+        self.btnPDelete.clicked.connect(self.delete_profile)
+
+    def init_entity_item_model(self):
+        self.entity_item_model = self.lvEntities.selectionModel()
+        self.entity_item_model.selectionChanged.connect(self.entity_changed)
+
+    def set_views_entity_model(self, entity_model):
+        self.pftableView.setModel(entity_model)
+        self.lvEntities.setModel(entity_model)	
+        self.cboParty.setModel(entity_model)
+        self.cboSPUnit.setModel(entity_model)
+
+    def init_STR_ctrls_event_handlers(self):
+        self.cboParty.currentIndexChanged.connect(self.party_changed)
+        self.cboSPUnit.currentIndexChanged.connect(self.spatial_unit_changed)
+
+    def init_entity_ctrls_event_handlers(self):
+        self.btnNewEntity.clicked.connect(self.new_entity)
+        self.btnEditEntity.clicked.connect(self.edit_entity)
+        self.btnDeleteEntity.clicked.connect(self.delete_entity)
+
+    def init_column_ctrls_event_handlers(self):
+        self.btnAddColumn.clicked.connect(self.new_column)
+        self.btnEditColumn.clicked.connect(self.edit_column)
+        self.btnDeleteColumn.clicked.connect(self.delete_column)
+
+    def init_lookup_ctrls_event_handlers(self):
+        self.btnAddLookup.clicked.connect(self.new_lookup)
+        self.btnEditLookup.clicked.connect(self.edit_lookup)
+        self.btnDeleteLookup.clicked.connect(self.delete_lookup)
+
+    def init_lkvalues_event_handlers(self):
+        self.btnAddLkupValue.clicked.connect(self.add_lookup_value)
+        self.btnEditLkupValue.clicked.connect(self.edit_lookup_value)
+        self.btnDeleteLkupValue.clicked.connect(self.delete_lookup_value)
+
+    def init_ui_ctrls(self):
+        self.edtDocPath.setFocus()
+        self.rbReject.setChecked(True)
+        self.pftableView.setColumnWidth(0, 250)
+        self.lblDesc.setText("")
 
     def reload_profiles(self):
         """
@@ -526,6 +543,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         result = editor.exec_()
         if result == 1:
             profile = self.stdm_config.create_profile(editor.profile_name)
+            profile.description = editor.desc
             self.connect_entity_signals(profile)
             self.stdm_config.add_profile(profile)
 
@@ -669,8 +687,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     self.entity_model.add_entity(entity)
 
     def connect_signals(self):
-        self.entity_item_model = self.lvEntities.selectionModel()
-        self.entity_item_model.selectionChanged.connect(self.entity_changed)
+        self.init_entity_item_model()
+        #self.entity_item_model = self.lvEntities.selectionModel()
+        #self.entity_item_model.selectionChanged.connect(self.entity_changed)
 
         self.lookup_item_model = self.lvLookups.selectionModel()
         self.lookup_item_model.selectionChanged.connect(self.lookup_changed)
@@ -679,7 +698,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.cboSPUnit.currentIndexChanged.emit(self.cboSPUnit.currentIndex())
 
     def switch_profile(self, name):
-        profile = self.stdm_config.profile(unicode(name))  #profiles.values()[sel_id]
+        profile = self.stdm_config.profile(unicode(name))
+        self.lblDesc.setText(profile.description)
 
         # clear view models
         self.clear_view_model(self.entity_model)
