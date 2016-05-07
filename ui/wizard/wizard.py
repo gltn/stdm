@@ -148,17 +148,20 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         self.rbReject.setChecked(True)
 
-        # wizard start page
-        self.setStartId(0)
-        #self.setFixedSize(QSize(605, 488))
 
         self.is_config_done = False
         self.stdm_config = StdmConfiguration.instance()  
         self.stdm_config.profile_added.connect(self.cbo_add_profile)
 
-        # if StdmConfiguration instance is not empty, load earlier profiles
+        # if StdmConfiguration profiles instance is not empty, 
+        # load earlier profiles and go straight to profile config page
         if len(self.stdm_config.profiles) > 0:
             self.reload_profiles()
+            self.load_path()
+            self.setStartId(1)
+        else:
+            # wizard start at page 0 - license
+            self.setStartId(0)
 
         # try load from the file (".stc") 
         #config_file = os.path.expanduser('~')+'/.stdm/configuration.stc'
@@ -288,6 +291,25 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         license = LicenseDocument()
         self.txtLicense.setText(license.read_license_info())
 
+    def load_path(self):
+        self.load_doc_path()
+        self.load_output_path()
+        self.load_template_path()
+
+    def load_doc_path(self):
+        doc_path = self.read_settings_path('documents', '/.stdm/documents/')
+        self.edtDocPath.setText(doc_path)
+
+    def load_output_path(self):
+        output_path = self.read_settings_path('outputs', 
+                '/.stdm/reports/outputs')
+        self.edtOutputPath.setText(output_path)
+
+    def load_template_path(self):
+        templates_path = self.read_settings_path('templates',
+                '/.stdm/reports/templates')
+        self.edtTemplatePath.setText(templates_path)
+
     def initializePage(self, int):
         if self.currentId() == 0:
             self.show_license()
@@ -296,16 +318,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         validPage = True
 
         if self.currentId() == 0:
-            doc_path = self.read_settings_path('documents', '/.stdm/documents/')
-            self.edtDocPath.setText(doc_path)
-
-            output_path = self.read_settings_path('outputs', 
-                    '/.stdm/reports/outputs')
-            self.edtOutputPath.setText(output_path)
-
-            templates_path = self.read_settings_path('templates',
-                    '/.stdm/reports/templates')
-            self.edtTemplatePath.setText(templates_path)
+            self.load_path()
 
             if self.rbReject.isChecked():
                 message1 = "To continue with the wizard please comply with "
@@ -339,29 +352,31 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         if self.currentId() == 5: # FINAL_PAGE:
             # last page
-            # commit config to DB
+            #* commit config to DB
             self.config_updater = ConfigurationSchemaUpdater()
 
-            #Thread to handle schema updating
+            ##*Thread to handle schema updating
             self.updater_thread = QThread(self)
             self.config_updater.moveToThread(self.updater_thread)
 
-            #Connect schema updater slots
+            ##*Connect schema updater slots
             self.config_updater.update_started.connect(self.config_update_started)
             self.config_updater.update_progress.connect(self.config_update_progress)
             self.config_updater.update_completed.connect(self.config_update_completed)
 
-            #Connect thread signals
+            ##*Connect thread signals
             self.updater_thread.started.connect(self._updater_thread_started)
             self.updater_thread.finished.connect(self.updater_thread.deleteLater)
 
-            #Start the process
+            ##*Start the process
             self.updater_thread.start()
-                
-            if validPage:
-                self.show_message(QApplication.translate("Configuration Wizard", \
-                        "Configuration saved successfully."),
-                        msg_icon=QMessageBox.Information)
+
+            self.button(QWizard.BackButton).setEnabled(False)
+            self.button(QWizard.FinishButton).setEnabled(False)
+            self.button(QWizard.CancelButton).setText(\
+                    QApplication.translate("Configuration Wizard","Close"))
+
+            validPage = False
 
         return validPage
 
