@@ -126,7 +126,7 @@ class Profile(QObject):
             attr = 'spatial_unit'
 
         elif entity_type == SocialTenure.SOCIAL_TENURE_TYPE:
-            attr = 'tenure_type'
+            attr = 'tenure_type_collection'
 
         else:
             LOGGER.debug('%s is an invalid enumeration for social tenure '
