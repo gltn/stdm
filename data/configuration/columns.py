@@ -448,6 +448,7 @@ class GeometryColumn(BaseColumn):
 
         self.geom_type = args[2]
         self.srid = kwargs.pop('srid', 4326)
+        self.layer_display_name = kwargs.pop('layer_display', '')
 
         BaseColumn.__init__(self, *args, **kwargs)
 

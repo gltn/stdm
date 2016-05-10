@@ -115,6 +115,19 @@ class ValueList(Entity):
         """
         return len(self.values) == 0
 
+    def copy_from(self, value_list):
+        """
+        Appends the code value collection from the given value list.
+        :param value_list: Collection to copy code values from.
+        :type value_list: ValueList
+        """
+        #Test if it is a ValueList object
+        if value_list.TYPE_INFO != ValueList.TYPE_INFO:
+            return
+
+        for cv in value_list.values.values():
+            self.add_code_value(cv)
+
     def rename(self, old_value, new_value):
         """
         Rename a value in the lookup collection.
