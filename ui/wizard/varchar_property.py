@@ -29,7 +29,6 @@ from PyQt4.QtGui import (
 		QMessageBox
 		)
 
-from stdm.utils.util import show_message
 from stdm.data.configuration.entity import *
 from stdm.data.configuration.value_list import (
         ValueList, 
@@ -81,7 +80,7 @@ class VarcharProperty(QDialog, Ui_VarcharProperty):
         
     def accept(self):
         if self.edtCharLen.text()=='':
-            show_message(QApplication.translate("VarcharPropetyEditor",
+            self.show_message(QApplication.translate("VarcharPropetyEditor",
                 "Please enter length for the column."))
             return
 
@@ -90,3 +89,10 @@ class VarcharProperty(QDialog, Ui_VarcharProperty):
 
     def reject(self):
         self.done(0)
+
+    def show_message(self, message, msg_icon=QMessageBox.Critical):
+        msg = QMessageBox(self)
+        msg.setIcon(msg_icon)
+        msg.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
+        msg.setText(QApplication.translate("STDM Configuration Wizard",message))
+        msg.exec_()
