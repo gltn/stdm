@@ -57,8 +57,7 @@ class SocialTenure(Entity):
         self.party_foreign_key = ForeignKeyColumn('party_id', self)
         self.spatial_unit_foreign_key = ForeignKeyColumn('spatial_unit_id',
                                                          self)
-        self.tenure_type_lookup = LookupColumn('tenure_type',
-                                                        self)
+        self.tenure_type_lookup = LookupColumn('tenure_type', self)
 
         self._value_list = self._prepare_tenure_type_value_list()
 
@@ -91,7 +90,7 @@ class SocialTenure(Entity):
 
     @tenure_type_collection.setter
     def tenure_type_collection(self, value_list):
-        #Add the look up values from the given value list
+        #Copy the look up values from the given value list
         value_list_entity = self._obj_from_str(value_list)
         self._value_list.copy_from(value_list_entity)
 
