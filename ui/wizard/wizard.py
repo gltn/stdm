@@ -193,6 +193,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         for profile in self.stdm_config.profiles.values():
             for entity in profile.entities.values():
                 self.connect_column_signals(entity)
+                #if entity.TYPE_INFO == 'VALUE_LIST':
+                    #self.addValues_byEntity(entity)
             self.connect_entity_signals(profile)
             profiles.append(profile.name)
         self.cbo_add_profiles(profiles)
@@ -503,7 +505,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         if entity.TYPE_INFO not in ['SUPPORTING_DOCUMENT',
                     'SOCIAL_TENURE', 'ADMINISTRATIVE_SPATIAL_UNIT',
-                    'ENTITY_SUPPORTING_DOCUMENT','VALUE_LIST', 'ASSOCIATION_ENTITY']:
+                    'ENTITY_SUPPORTING_DOCUMENT', 'VALUE_LIST', 'ASSOCIATION_ENTITY']:
             self.entity_model.add_entity(entity)
 
     def delete_entity_item(self, name):
@@ -740,7 +742,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             sel_id = view.currentIndex().row()
             entity = model_item.entities().items()[sel_id][1]
         return (model_item, entity, sel_id)
-
 		
     def addColumns(self, v_model, columns):
         """
@@ -858,9 +859,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def _get_entity_item(self, view):
         model_item, entity, row_id = self.get_model_entity(view)
+        entity_item = None
         if model_item:
             entity_item = model_item.entities().values()[row_id]
-            return row_id, entity_item
+        return row_id, entity_item
 
     def _get_column(self, view):
         model_item, entity, row_id = self.get_model_entity(view)
