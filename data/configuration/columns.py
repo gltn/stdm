@@ -409,6 +409,8 @@ class DateColumn(BoundsColumn):
     SQL_MIN = date.min
     SQL_MAX = date.max
     sql_updater = date_updater
+    min_use_current_date = False
+    max_use_current_date = False
 
     @classmethod
     def display_name(cls):
@@ -425,6 +427,8 @@ class DateTimeColumn(BoundsColumn):
     SQL_MIN = datetime.min
     SQL_MAX = datetime.max
     sql_updater = datetime_updater
+    min_use_current_datetime = False
+    max_use_current_datetime = False
 
     @classmethod
     def display_name(cls):
@@ -434,7 +438,7 @@ DateTimeColumn.register()
 
 
 class GeometryColumn(BaseColumn):
-    """
+    "
     Represents 2D vector types apart from GEOMETRYCOLLECTION type.
     """
     TYPE_INFO = 'GEOMETRY'
