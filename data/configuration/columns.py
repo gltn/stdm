@@ -438,7 +438,7 @@ DateTimeColumn.register()
 
 
 class GeometryColumn(BaseColumn):
-    "
+    """
     Represents 2D vector types apart from GEOMETRYCOLLECTION type.
     """
     TYPE_INFO = 'GEOMETRY'
