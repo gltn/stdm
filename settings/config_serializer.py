@@ -583,7 +583,7 @@ class EntitySerializer(EntitySerializerCollection):
             )
             if create_id:
                 create_id = _str_to_bool(create_id)
-                optional_args['is_proxy'] = create_id
+                optional_args['create_id_column'] = create_id
 
             #Supports documents
             supports_docs = unicode(child_element.attribute(

@@ -193,8 +193,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         for profile in self.stdm_config.profiles.values():
             for entity in profile.entities.values():
                 self.connect_column_signals(entity)
-                #if entity.TYPE_INFO == 'VALUE_LIST':
-                    #self.addValues_byEntity(entity)
             self.connect_entity_signals(profile)
             profiles.append(profile.name)
         self.cbo_add_profiles(profiles)
