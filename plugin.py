@@ -271,17 +271,6 @@ class STDMQGISLoader(object):
             #Set current profile
             self.current_profile = current_profile()
 
-            if not self.current_profile is None:
-                social_tenure = self.current_profile.social_tenure
-                value_list = social_tenure.tenure_type_collection
-                items = value_list.values
-
-                for vl in self.current_profile.value_lists():
-                    QMessageBox.information(None, 'Info', vl.name)
-                    values = vl.values.keys()
-                    for v in values:
-                        QMessageBox.information(None, 'Info', v)
-
             try:
                 self.default_config_version()
                 self.loadModules()

@@ -29,7 +29,10 @@ from PyQt4.QtCore import *
 from qgis.core import *
 from gps_tool import GPSToolDialog
 
-from stdm.settings import current_profile
+from stdm.settings import (
+    current_profile,
+    save_configuration
+)
 from stdm.data.configuration.social_tenure_updater import BASE_STR_VIEW
 from stdm.data.pg_utils import (
     geometryType,
@@ -166,9 +169,7 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         Method used to add layers to canvas
         '''
         if self.stdm_layers_combo.count() == 0:
-            # Return message that there are no layers
-            QMessageBox.warning(self.iface.mainWindow(), 'Spatial Unit Manager',
-                                'No Layers')
+            return
 
         sp_col_info = self.stdm_layers_combo.itemData(self.stdm_layers_combo.currentIndex())
         if sp_col_info is None:
@@ -209,15 +210,21 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         for name, layer in layer_map.iteritems():
             if layer == self.iface.activeLayer():
                 _name = layer.name()
-                display_name, ok = QInputDialog.getText(None,"Change Display Name",
+                display_name, ok = QInputDialog.getText(self,"Change Display Name",
                                                         "Current Name is {0}".format(layer.originalName()))
-                if ok and display_name != "":
+                if ok and display_name != '':
                     layer.setLayerName(display_name)
                     write_changed_display_name(_name, display_name)
                 elif not ok and display_name == "":
                     layer.originalName()
             else:
                 continue
+
+    def update_layer_display_name(self):
+        """
+        Update the configuration with the new layer display name.
+        """
+        pass
 
     @pyqtSignature("")
     def on_import_gpx_file_button_clicked(self):
@@ -226,7 +233,10 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         """
         layer_map = QgsMapLayerRegistry.instance().mapLayers()
         if not bool(layer_map):
-            QMessageBox.warning(None,"STDM","You must add a layer first, from Spatial Unit Manager to import GPX to")
+            QMessageBox.warning(self,
+                                "STDM",
+                                "You must add a layer first from Spatial Unit "
+                                "Manager to import GPX to")
         elif bool(layer_map):
             self.gps_tool_dialog = GPSToolDialog(self.iface, self.curr_layer, self.curr_lyr_table, self.curr_lyr_sp_col)
             self.gps_tool_dialog.show()
