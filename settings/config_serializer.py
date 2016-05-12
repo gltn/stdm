@@ -409,6 +409,9 @@ class SocialTenureSerializer(object):
         spatial_unit = unicode(child_element.attribute(
             SocialTenureSerializer.SPATIAL_UNIT, '')
         )
+        tenure_types = unicode(child_element.attribute(
+            SocialTenureSerializer.TENURE_TYPE, '')
+        )
 
         #Set STR attributes
         if party:
@@ -417,6 +420,11 @@ class SocialTenureSerializer(object):
         if spatial_unit:
             profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT,
                                        spatial_unit)
+        '''
+        if tenure_types:
+            profile.set_social_tenure_attr(SocialTenure.SOCIAL_TENURE_TYPE,
+                                       tenure_types)
+        '''
 
     @staticmethod
     def write_xml(social_tenure, parent_node, document):
@@ -853,8 +861,13 @@ class ValueListSerializer(EntitySerializerCollection):
                     if value:
                         value_list.add_value(value, code)
 
-                #Add value list to the profile
-                profile.add_entity(value_list)
+                #Check if the value list is for tenure types
+                if name == 'check_tenure_type':
+                    profile.set_social_tenure_attr(SocialTenure.SOCIAL_TENURE_TYPE,
+                                       value_list)
+                else:
+                    #Add value list to the profile
+                    profile.add_entity(value_list)
 
     #Specify attribute names
     @staticmethod
@@ -1278,6 +1291,7 @@ class GeometryColumnSerializer(ColumnSerializerCollection):
     #Attribute names
     SRID = 'srid'
     GEOMETRY_TYPE = 'type'
+    LAYER_DISPLAY = 'layerDisplay'
 
     @classmethod
     def _obj_args(cls, args, kwargs, element, assoc_elements,
@@ -1295,9 +1309,15 @@ class GeometryColumnSerializer(ColumnSerializerCollection):
                 '4326'
             ))
 
+            display_name = unicode(geom_el.attribute(
+                GeometryColumnSerializer.LAYER_DISPLAY,
+                ''
+            ))
+
             #Append additional geometry information
             args.append(geom_type)
             kwargs['srid'] = srid
+            kwargs['layer_display'] = display_name
 
         return args, kwargs
 
@@ -1310,6 +1330,8 @@ class GeometryColumnSerializer(ColumnSerializerCollection):
                                     str(column.srid))
         geom_element.setAttribute(GeometryColumnSerializer.GEOMETRY_TYPE,
                                     column.geom_type)
+        geom_element.setAttribute(GeometryColumnSerializer.LAYER_DISPLAY,
+                                    column.layer_display_name)
 
         column_element.appendChild(geom_element)
 

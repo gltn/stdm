@@ -49,7 +49,7 @@ def view_updater(social_tenure, engine):
     :param engine: SQLAlchemy connectable object.
     :type engine: Engine
     """
-    view_name = u'{0}_{1}'.format(social_tenure.profile.prefix, BASE_STR_VIEW)
+    view_name = social_tenure.view_name
 
     #Check if there is an existing one and delete if it exists
     LOGGER.debug('Checking if %s view exists...', view_name)
