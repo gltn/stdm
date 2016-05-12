@@ -29,6 +29,7 @@ from qgis.core import *
 from qgis.gui import *
 
 from stdm.settings.config_serializer import ConfigurationFileSerializer
+from stdm.settings import current_profile
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 
@@ -124,6 +125,7 @@ class STDMQGISLoader(object):
         self.spatialLayerMangerDockWidget = None
 
         self._user_logged_in = False
+        self.current_profile = None
 
         LOGGER.debug('STDM plugin has been initialized.')
 
@@ -266,6 +268,9 @@ class STDMQGISLoader(object):
             if not config_load_status:
                 return
 
+            #Set current profile
+            self.current_profile = current_profile()
+
             try:
                 self.default_config_version()
                 self.loadModules()
@@ -273,7 +278,7 @@ class STDMQGISLoader(object):
 
             except ConfigVersionException as cve:
                 title = QApplication.translate("STDMQGISLoader",
-                                              "Error reading Config Version")
+                                              "Error reading config version")
                 self.reset_content_modules_id(title,cve.message)
 
             except ProfileException as pe:
@@ -705,7 +710,6 @@ class STDMQGISLoader(object):
         frmAuthContent = contentAuthDlg(self)
         frmAuthContent.exec_()
 
-
     def workspaceLoader(self):
         '''
         Slot for customizing user forms
@@ -717,7 +721,19 @@ class STDMQGISLoader(object):
         '''
         '''
         self.wizard = ConfigWizard(self.iface.mainWindow())
-        self.wizard.exec_()
+        status = self.wizard.exec_()
+
+        #Reload profile upon successfully running the config wizard
+        if status == QDialog.Accepted:
+            self.reload_profile()
+
+    def reload_profile(self):
+        """
+        Reload the current profile.
+        """
+        #Reload the spatial unit manager
+        if not self.spatialLayerMangerDockWidget is None:
+            self.spatialLayerMangerDockWidget.reload()
 
     def changePassword(self):
         '''
@@ -1173,6 +1189,7 @@ class STDMQGISLoader(object):
                 self.spatialLayerMangerDockWidget.close()
 
             self.spatialLayerMangerDockWidget = None
+            self.current_profile = None
         except:
             pass
 

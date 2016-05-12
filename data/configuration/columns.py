@@ -409,6 +409,8 @@ class DateColumn(BoundsColumn):
     SQL_MIN = date.min
     SQL_MAX = date.max
     sql_updater = date_updater
+    min_use_current_date = False
+    max_use_current_date = False
 
     @classmethod
     def display_name(cls):
@@ -425,6 +427,8 @@ class DateTimeColumn(BoundsColumn):
     SQL_MIN = datetime.min
     SQL_MAX = datetime.max
     sql_updater = datetime_updater
+    min_use_current_datetime = False
+    max_use_current_datetime = False
 
     @classmethod
     def display_name(cls):
@@ -448,6 +452,7 @@ class GeometryColumn(BaseColumn):
 
         self.geom_type = args[2]
         self.srid = kwargs.pop('srid', 4326)
+        self.layer_display_name = kwargs.pop('layer_display', '')
 
         BaseColumn.__init__(self, *args, **kwargs)
 

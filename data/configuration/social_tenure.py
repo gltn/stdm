@@ -39,6 +39,7 @@ class SocialTenure(Entity):
     """
     TYPE_INFO = 'SOCIAL_TENURE'
     PARTY, SPATIAL_UNIT, SOCIAL_TENURE_TYPE = range(0,3)
+    BASE_STR_VIEW = 'vw_social_tenure_relationship'
     tenure_type_list = 'tenure_type'
     view_creator = view_updater
 
@@ -50,12 +51,13 @@ class SocialTenure(Entity):
 
         self._party = None
         self._spatial_unit = None
+        self._view_name = u'{0}_{1}'.format(self.profile.prefix,
+                                 SocialTenure.BASE_STR_VIEW)
 
         self.party_foreign_key = ForeignKeyColumn('party_id', self)
         self.spatial_unit_foreign_key = ForeignKeyColumn('spatial_unit_id',
                                                          self)
-        self.tenure_type_lookup = LookupColumn('tenure_type',
-                                                        self)
+        self.tenure_type_lookup = LookupColumn('tenure_type', self)
 
         self._value_list = self._prepare_tenure_type_value_list()
 
@@ -71,6 +73,10 @@ class SocialTenure(Entity):
                      self.profile.name)
 
     @property
+    def view_name(self):
+        return self._view_name
+
+    @property
     def party(self):
         return self._party
 
@@ -81,6 +87,12 @@ class SocialTenure(Entity):
     @property
     def tenure_type_collection(self):
         return self._value_list
+
+    @tenure_type_collection.setter
+    def tenure_type_collection(self, value_list):
+        #Copy the look up values from the given value list
+        value_list_entity = self._obj_from_str(value_list)
+        self._value_list.copy_from(value_list_entity)
 
     @party.setter
     def party(self, party):
@@ -184,6 +196,7 @@ class SocialTenure(Entity):
         return entity.column('id')
 
     def _prepare_tenure_type_value_list(self):
+        #Create tenure types lookup table
         tenure_value_list = ValueList(self.tenure_type_list, self.profile)
 
         #Set lookup column reference value list

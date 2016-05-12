@@ -29,6 +29,11 @@ from PyQt4.QtCore import *
 from qgis.core import *
 from gps_tool import GPSToolDialog
 
+from stdm.settings import (
+    current_profile,
+    save_configuration
+)
+from stdm.data.configuration.social_tenure_updater import BASE_STR_VIEW
 from stdm.data.pg_utils import (
     geometryType,
     spatial_tables,
@@ -59,29 +64,88 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
-        self._populate_layers()
         self.iface = iface
         self.gps_tool_dialog = None
         self.curr_lyr_table = None
         self.curr_lyr_sp_col = None
         self.curr_layer = None
+        self._populate_layers()
+
+    def reload(self):
+        """
+        Repopulates the list of layers in the current profile.
+        """
+        self._populate_layers()
 
     def _populate_layers(self):
         self.stdm_layers_combo.clear()
+
+        curr_profile = current_profile()
+        if curr_profile is None:
+            msg = QApplication.translate('Spatial Unit Manager', 'There is '
+                                                                 'no current '
+                                                                 'profile '
+                                                                 'configured. '
+                                                                 'Please '
+                                                                 'create one '
+                                                                 'by running '
+                                                                 'the wizard '
+                                                                 'or set an '
+                                                                 'existing '
+                                                                 'one in the '
+                                                                 'settings.'
+                                         )
+            QMessageBox.warning(self.iface.mainWindow(), 'Spatial Unit Manager',
+                                msg)
+
+            return
+
+        #Get entities containing geometry columns based on the config info
+        config_entities = curr_profile.entities
+        geom_entities = [ge for ge in config_entities.values()
+                         if ge.TYPE_INFO == 'ENTITY' and
+                         ge.has_geometry_column()]
+        geom_entity_names = [ge.name for ge in geom_entities]
+
         self._stdm_tables = {}
         self.spatial_layers = []
         self.layers_info = []
-        for spt in spatial_tables():
-            sp_columns = table_column_names(spt,True)
-            self._stdm_tables[spt]=sp_columns
+        sp_tables = spatial_tables()
 
-            # QMessageBox.information(None,"Title",str(sp_columns))
+        #Check whether the geometry tables specified in the config exist
+        missing_tables = [geom_entity.name for geom_entity in geom_entities
+                          if not geom_entity.name in sp_tables]
 
-            # Add spatial columns to combo box
+        #Notify user of missing tables if they exist
+        if len(missing_tables) > 0:
+            msg = QApplication.translate('Spatial Unit Manager', 'The following '
+                                                                 'spatial tables '
+                                                                 'are missing in '
+                                                                 'the database:'
+                                                                 '\n- {0}\nPlease '
+                                                                 're-run the '
+                                                                 'configuration '
+                                                                 'wizard to create '
+                                                                 'them.'.format('\n'.join(missing_tables)))
+            QMessageBox.warning(self.iface.mainWindow(),
+                                'Spatial Unit Manager', msg)
+
+        #Append the corresponding view to the list of entity names
+        str_view = u'{0}_{1}'.format(curr_profile.prefix, BASE_STR_VIEW)
+        geom_entity_names.append(str_view)
+
+        for spt in sp_tables:
+            #Only load those tables/views that are in the current profile
+            if not spt in geom_entity_names:
+                continue
+
+            sp_columns = table_column_names(spt, True)
+            self._stdm_tables[spt] = sp_columns
+
+            #Add spatial columns to combo box
             for sp_col in sp_columns:
-
-                # Get column type and apply the appropriate icon
-                geometry_typ = str(geometryType(spt, sp_col)[0])
+                #Get column type and apply the appropriate icon
+                geometry_typ = unicode(geometryType(spt, sp_col)[0])
 
                 if geometry_typ == "POLYGON":
                     self.icon = QIcon(":/plugins/stdm/images/icons/layer_polygon.png")
@@ -105,13 +169,13 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         Method used to add layers to canvas
         '''
         if self.stdm_layers_combo.count() == 0:
-            # Return message that there are no layers
-            QMessageBox.warning(None,"No Layers")
+            return
 
         sp_col_info = self.stdm_layers_combo.itemData(self.stdm_layers_combo.currentIndex())
         if sp_col_info is None:
             # Message: Spatial column information could not be found
-            QMessageBox.warning(None,"Spatial Column Layer Could not be found")
+            QMessageBox.warning(self.iface.mainWindow(), 'Spatial Unit Manager',
+                                'Spatial Column Layer Could not be found')
 
         table_name, spatial_column = sp_col_info["table_name"], sp_col_info["col_name"]
 
@@ -146,15 +210,21 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         for name, layer in layer_map.iteritems():
             if layer == self.iface.activeLayer():
                 _name = layer.name()
-                display_name, ok = QInputDialog.getText(None,"Change Display Name",
+                display_name, ok = QInputDialog.getText(self,"Change Display Name",
                                                         "Current Name is {0}".format(layer.originalName()))
-                if ok and display_name != "":
+                if ok and display_name != '':
                     layer.setLayerName(display_name)
                     write_changed_display_name(_name, display_name)
                 elif not ok and display_name == "":
                     layer.originalName()
             else:
                 continue
+
+    def update_layer_display_name(self):
+        """
+        Update the configuration with the new layer display name.
+        """
+        pass
 
     @pyqtSignature("")
     def on_import_gpx_file_button_clicked(self):
@@ -163,7 +233,10 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         """
         layer_map = QgsMapLayerRegistry.instance().mapLayers()
         if not bool(layer_map):
-            QMessageBox.warning(None,"STDM","You must add a layer first, from Spatial Unit Manager to import GPX to")
+            QMessageBox.warning(self,
+                                "STDM",
+                                "You must add a layer first from Spatial Unit "
+                                "Manager to import GPX to")
         elif bool(layer_map):
             self.gps_tool_dialog = GPSToolDialog(self.iface, self.curr_layer, self.curr_lyr_table, self.curr_lyr_sp_col)
             self.gps_tool_dialog.show()
