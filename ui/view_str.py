@@ -47,6 +47,9 @@ from stdm.data.config_utils import (
     display_name,
     ProfileException
 )
+from stdm.settings import (
+    current_profile
+)
 from stdm.navigation.socialtenure import (
     BaseSTRNode,
     EntityNode,
@@ -80,7 +83,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         self._plugin = plugin
         self.tbPropertyPreview.set_iface(self._plugin.iface)
-
+        self.curr_profile = current_profile()
         #Center me
         self.move(QDesktopWidget().availableGeometry().center() - self.frameGeometry().center())
 
@@ -150,9 +153,12 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Specify the entity configurations.
         """
         try:
-            tables = self._config_table_reader.social_tenure_tables()
+            tb_str_entities = [
+                self.curr_profile.social_tenure._party.short_name,
+                self.curr_profile.social_tenure._spatial_unit.short_name
+            ]
 
-            for t in tables:
+            for t in tb_str_entities:
                 #Ensure 'supporting_document' table is not in the list
                 if t.find("supporting_document") == -1:
                     entity_cfg = self._entity_config_from_table(t)
@@ -177,6 +183,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         :rtype: EntityConfig
         """
         table_display_name = display_name(table_name)
+
         model = DeclareMapping.instance().tableMapping(table_name)
 
         if model is not None:
@@ -219,6 +226,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         entityWidg = STRViewEntityWidget(config)
         entityWidg.asyncStarted.connect(self._progressStart)
         entityWidg.asyncFinished.connect(self._progressFinish)
+
         tabIndex = self.tbSTREntity.addTab(entityWidg, config.Title)
 
         return entityWidg
@@ -376,7 +384,14 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         :type event: QShowEvent
         """
         #Check if there are entity configurations defined
-        if self.tbSTREntity.count() == 0:
+
+        tb_str_entities = [
+            e.short_name for e in
+            self.curr_profile.entities.values()
+            if e.TYPE_INFO == 'ENTITY'
+            ]
+
+        if len(tb_str_entities) == 0:
             msg = QApplication.translate("ViewSTR", "There are no configured "
                                         "entities to search against. Please "
                                         "check the social tenure relationship "

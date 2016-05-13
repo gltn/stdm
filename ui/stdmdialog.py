@@ -35,7 +35,9 @@ from stdm.data.database import (
 from .python_object import class_from_table
 
 import types
-
+from stdm.settings import (
+    current_profile
+)
 from stdm.data.database import Singleton
 from stdm.third_party.sqlalchemy.exc import NoSuchTableError
 
@@ -50,7 +52,8 @@ class DeclareMapping(object):
         self._mapping = {}
         self.attDictionary = OrderedDict()
         self.tablecol_mapping = OrderedDict()
-    
+
+
     def setTableMapping(self, tablist):
         """
         Method to convert a list of table to mapped table object
@@ -105,9 +108,11 @@ class DeclareMapping(object):
         :param table:
         :return: reflected table : sqlalchemy table class
         """
+        # print prefix
         if table not in self._mapping:
             self.mapper_for_table(table)
         model_cls = self._mapping[table]
+
         Model.attrTranslations = self.displayMapping(table)
 
         return model_cls
