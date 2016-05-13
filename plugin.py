@@ -72,6 +72,9 @@ from stdm.data.database import (
     NoPostGISError,
     STDMDb
 )
+from stdm.data.pg_utils import (
+    pg_table_exists
+)
 from stdm.data.pg_utils import spatial_tables
 from stdm.data.reports.sys_fonts import SysFonts
 from stdm.data.config_table_reader import ConfigTableReader
@@ -179,6 +182,7 @@ class STDMQGISLoader(object):
         self.menu_bar.insertMenu(currAction, self.stdmMenu)
         self.stdmMenu.setToolTip(QApplication.translate("STDMQGISLoader","STDM plugin menu"))
 
+
     def getThemeIcon(self, theName):
         # get the icon from the best available theme
         myCurThemePath = QgsApplication.activeThemePath() + "/plugins/" + theName;
@@ -232,6 +236,7 @@ class STDMQGISLoader(object):
             #Initialize the whole STDM database
             try:
                 db = STDMDb.instance()
+
             except NoPostGISError:
                 err_msg = QApplication.translate("STDM",
                             "STDM cannot be loaded because the system has "
@@ -277,13 +282,11 @@ class STDMQGISLoader(object):
                 self._user_logged_in = True
 
             except ConfigVersionException as cve:
-                title = QApplication.translate("STDMQGISLoader",
-                                              "Error reading config version")
+                title = QApplication.translate("STDMQGISLoader","Error reading Config Version")
                 self.reset_content_modules_id(title,cve.message)
 
             except ProfileException as pe:
-                title = QApplication.translate("STDMQGISLoader",
-                                               "Error reading profile settings")
+                title = QApplication.translate("STDMQGISLoader","Error reading profile settings")
                 self.reset_content_modules_id(title,pe.message)
 
     def load_configuration_from_file(self):
@@ -501,7 +504,7 @@ class STDMQGISLoader(object):
         username = data.app_dbconn.User.UserName
         self.moduleCntGroup = None
         self.moduleContentGroups = []
-        self._moduleItems = {}
+        self._moduleItems = OrderedDict()
         self._reportModules = OrderedDict()
 
         #    map the user tables to sqlalchemy model object
@@ -509,7 +512,7 @@ class STDMQGISLoader(object):
         add the tables to the stdm toolbar
         Format the table names to freiendly format before adding them
         """
-        for module in self.configTables():
+        for module in self.user_entities():
             display_name = QT_TRANSLATE_NOOP("ModuleSettings",
                                 unicode(module).replace("_", " ").title())
             self._moduleItems[display_name] = module
@@ -517,18 +520,18 @@ class STDMQGISLoader(object):
         for k, v in self._moduleItems.iteritems():
             content_action = QAction(QIcon(":/plugins/stdm/images/icons/table.png"),
                                     k, self.iface.mainWindow())
-            capabilities = contentGroup(self._moduleItems[k])
-
-            if capabilities:
-                moduleCntGroup = TableContentGroup(username, k, content_action)
-                moduleCntGroup.createContentItem().code = capabilities[0]
-                moduleCntGroup.readContentItem().code = capabilities[1]
-                moduleCntGroup.updateContentItem().code = capabilities[2]
-                moduleCntGroup.deleteContentItem().code = capabilities[3]
-                moduleCntGroup.register()
-                self._reportModules[k] = self._moduleItems.get(k)
-                self.moduleContentGroups.append(moduleCntGroup)
-                # Add core modules to the report configuration
+            # capabilities = contentGroup(self._moduleItems[k])
+            #
+            # if capabilities:
+            moduleCntGroup = TableContentGroup(username, k, content_action)
+                # moduleCntGroup.createContentItem().code = capabilities[0]
+                # moduleCntGroup.readContentItem().code = capabilities[1]
+                # moduleCntGroup.updateContentItem().code = capabilities[2]
+                # moduleCntGroup.deleteContentItem().code = capabilities[3]
+            moduleCntGroup.register()
+            self._reportModules[k] = self._moduleItems.get(k)
+            self.moduleContentGroups.append(moduleCntGroup)
+            # Add core modules to the report configuration
 
         #Create content groups and add items
         self.contentAuthCntGroup = ContentGroup(username)
@@ -1193,40 +1196,29 @@ class STDMQGISLoader(object):
         except:
             pass
 
-    def configTables(self):
+    def user_entities(self):
         """
         Create a handler to read the xml config and return the table list
         """
-        profile = activeProfile()
-        handler = self.config_loader()
-
-        if profile is None:
-
-            #Add a default is not provided
-            default = handler.STDMProfiles()
-            profile = unicode(default[0])
-        exceptions_list = ['spatial_unit','str_relations']
-
-        moduleList = handler.tableNames(profile)
-        moduleList.extend(handler.lookupTable())
-        self.pgTableMapper(moduleList)
-        for table in exceptions_list:
-            if table in moduleList:
-                moduleList.remove(table)
-
-        return moduleList
+        return [
+                e.short_name
+                for e in
+                self.current_profile.entities.values()
+                if (e.TYPE_INFO == 'ENTITY' or e.TYPE_INFO == 'SOCIAL_TENURE') and
+                not e.has_geometry_column()
+            ]
 
     def check_str_table_exist(self):
         """
         Str table is required to save str. check if it exist before saving data
         :return:
         """
-        handler = self.config_loader()
-        str_table = 'str_relations'
+        prefix = self.current_profile.prefix
+        str_doc_table = str(prefix)+'_social_tenure_relationship_supporting_document'
         try:
-            if handler.chect_table_exist(str_table):
+            if pg_table_exists(str_doc_table, False):
                 tableMapper = DeclareMapping.instance()
-                tmapper =tableMapper.raw_table('str_relations')
+                tmapper = tableMapper.raw_table(str_doc_table)
                 return tmapper.key
         except:
             return None
@@ -1294,6 +1286,3 @@ class STDMQGISLoader(object):
                                                                       " Delete existing configuration folder"
                                                                       " or xml file and restart QGIS.")
                      raise ConfigVersionException(err_msg)
-
-
-

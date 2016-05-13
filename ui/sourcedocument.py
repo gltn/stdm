@@ -49,7 +49,9 @@ from stdm.settings.registryconfig import (
     NETWORK_DOC_RESOURCE,
     LOCAL_SOURCE_DOC
 )
-
+from stdm.settings import (
+    current_profile
+)
 from .document_viewer import DocumentViewManager
 from ui_doc_item import Ui_frmDocumentItem
 
@@ -448,7 +450,10 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         self._canRemove = canRemove
         self._view_manager = view_manager
         mapper = DeclareMapping.instance()
-        STR_DOC_MODEL = mapper.tableMapping('supporting_document')
+        curr_profile = current_profile()
+        prefix = curr_profile.prefix
+        str_doc_table = str(prefix)+'_social_tenure_relationship_supporting_document'
+        STR_DOC_MODEL = mapper.tableMapping(str_doc_table)
         document_type_class[DEFAULT_DOCUMENT]= STR_DOC_MODEL
 
         self.lblClose.installEventFilter(self)
