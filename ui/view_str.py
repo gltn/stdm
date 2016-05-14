@@ -19,7 +19,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 from collections import OrderedDict
-
+import logging
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
@@ -47,6 +47,7 @@ from stdm.data.config_utils import (
     display_name,
     ProfileException
 )
+from stdm.settings import current_profile
 from stdm.navigation.socialtenure import (
     BaseSTRNode,
     EntityNode,
@@ -70,6 +71,8 @@ from ui_view_str import Ui_frmManageSTR
 from ui_str_view_entity import Ui_frmSTRViewEntity
 from .stdmdialog import DeclareMapping
 
+LOGGER = logging.getLogger('stdm')
+
 class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
     """
     Search and browse the social tenure relationship of all participating entities.
@@ -80,7 +83,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         self._plugin = plugin
         self.tbPropertyPreview.set_iface(self._plugin.iface)
-
+        self.curr_profile = current_profile()
         #Center me
         self.move(QDesktopWidget().availableGeometry().center() - self.frameGeometry().center())
 
@@ -150,25 +153,30 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Specify the entity configurations.
         """
         try:
-            tables = self._config_table_reader.social_tenure_tables()
+            tb_str_entities = [
+                e
+                for e in
+                self.curr_profile.entities.values()
+                if e.TYPE_INFO == 'ENTITY'
+            ]
 
-            for t in tables:
-                #Ensure 'supporting_document' table is not in the list
-                if t.find("supporting_document") == -1:
-                    entity_cfg = self._entity_config_from_table(t)
+            for t in tb_str_entities:
 
-                    if not entity_cfg is None:
-                        entity_widget = self.add_entity_config(entity_cfg)
-                        entity_widget.setNodeFormatter(
-                            EntityNodeFormatter(entity_cfg, self.tvSTRResults,
-                                                self)
-                        )
+                entity_cfg = self._entity_config_from_profile(str(t.name), t.short_name)
+
+                if not entity_cfg is None:
+                    entity_widget = self.add_entity_config(entity_cfg)
+
+                    entity_widget.setNodeFormatter(
+                        EntityNodeFormatter(entity_cfg, self.tvSTRResults,
+                                            self)
+                    )
 
         except ProfileException as pe:
             self._notif_bar.clear()
             self._notif_bar.insertErrorNotification(pe.message)
 
-    def _entity_config_from_table(self, table_name):
+    def _entity_config_from_profile(self, table_name, short_name):
         """
         Creates an EntityConfig object from the table name.
         :param table_name: Name of the database table.
@@ -176,10 +184,12 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         :return: Entity configuration object.
         :rtype: EntityConfig
         """
-        table_display_name = display_name(table_name)
+        table_display_name = display_name(short_name)
+
         model = DeclareMapping.instance().tableMapping(table_name)
 
         if model is not None:
+            columns = self.curr_profile.entities[table_name[3:].title()].columns.values()
             #Entity configuration
             entity_cfg = EntityConfiguration()
             entity_cfg.Title = table_display_name
@@ -190,25 +200,13 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             Load filter and display columns using only those which are of
             numeric/varchar type
             '''
-            cols = numeric_varchar_columns(table_name)
-            search_cols = self._config_table_reader.table_searchable_columns(table_name)
-            disp_cols = self._config_table_reader.table_columns(table_name)
 
-            for c in search_cols:
-                #Ensure it is a numeric or text type column
-                if c in cols:
-                    entity_cfg.filterColumns[c] = display_name(c)
-
-            if len(disp_cols) == 0:
-                entity_cfg.displayColumns = entity_cfg.displayColumns
-
-            else:
-                for dc in disp_cols:
-                    if dc in cols:
-                        entity_cfg.displayColumns[dc] = display_name(dc)
-
+            for c in columns:
+                if c.name != 'id':
+                    if c.searchable:
+                        entity_cfg.filterColumns[c.name] = display_name(c.name)
+                        entity_cfg.displayColumns[c.name] = display_name(c.name)
             return entity_cfg
-
         else:
             return None
 
@@ -219,6 +217,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         entityWidg = STRViewEntityWidget(config)
         entityWidg.asyncStarted.connect(self._progressStart)
         entityWidg.asyncFinished.connect(self._progressFinish)
+
         tabIndex = self.tbSTREntity.addTab(entityWidg, config.Title)
 
         return entityWidg
@@ -376,7 +375,14 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         :type event: QShowEvent
         """
         #Check if there are entity configurations defined
-        if self.tbSTREntity.count() == 0:
+
+        tb_str_entities = [
+            e.short_name for e in
+            self.curr_profile.entities.values()
+            if e.TYPE_INFO == 'ENTITY'
+            ]
+
+        if len(tb_str_entities) == 0:
             msg = QApplication.translate("ViewSTR", "There are no configured "
                                         "entities to search against. Please "
                                         "check the social tenure relationship "
@@ -419,7 +425,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         :return: True if the table exists.Otherwise False.
         :rtype: bool
         """
-        return pg_table_exists("social_tenure_relationship", False)
+        return pg_table_exists(self.curr_profile.social_tenure.name, False)
 
     def _notify_no_base_layers(self):
         """
@@ -613,7 +619,8 @@ class EntitySearchItem(QObject):
         """
         Generic handler that logs error messages to the QGIS message log
         """
-        QgsMessageLog.logMessage(error,2)
+        #QgsMessageLog.logMessage(error,2)
+        LOGGER.debug(error)
 
     def reset(self):
         """
@@ -646,8 +653,6 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         """
         Apply configuration options.
         """
-        #self.lblBrowseDescription.setText(self.config.browseDescription)
-
         #Set filter columns and remove id column
         for col_name, display_name in self.config.filterColumns.iteritems():
             if col_name != "id":
@@ -747,10 +752,20 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         """
         Returns the name of the database field from the current item in the combo box.
         """
-        currIndex = self.cboFilterCol.currentIndex()
-        fieldName = self.cboFilterCol.itemData(currIndex)
+        curr_index = self.cboFilterCol.currentIndex()
+        field_name = self.cboFilterCol.itemData(curr_index)
 
-        return fieldName
+        if field_name is None:
+            # msg = QApplication.translate(
+            #     'ViewSTR',
+            #     'No searchable column is found for this entity. \n'
+            #     'Mark at least one column searchable for '
+            #     'this entity in Design Forms Wizard.'
+            # )
+
+            return
+        else:
+            return field_name
 
     def _searchTerm(self):
         """
@@ -854,15 +869,15 @@ class ModelWorker(QObject):
         Fetch attribute values from the database for the specified model
         and corresponding column name.
         """
-        if hasattr(model, fieldname):
-            try:
+        try:
+            if hasattr(model, fieldname):
                 modelInstance = model()
                 obj_property = getattr(model, fieldname)
                 model_values = modelInstance.queryObject([obj_property]).distinct()
                 self.retrieved.emit(model_values)
 
-            except Exception as ex:
-                self.error.emit(unicode(ex))
+        except Exception as ex:
+            self.error.emit(unicode(ex))
 
 class SourceDocumentContainerWidget(QWidget):
     """
@@ -898,28 +913,3 @@ class SourceDocumentContainerWidget(QWidget):
         Returns the ID of the container.
         """
         return self._containerId
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-        
-        

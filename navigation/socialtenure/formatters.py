@@ -31,6 +31,7 @@ from sqlalchemy import (
     String
 )
 
+from stdm.settings import current_profile
 from stdm.ui.stdmdialog import DeclareMapping
 from stdm.utils.util import getIndex
 
@@ -98,8 +99,9 @@ class EntityNodeFormatter(STRNodeFormatter):
         )
 
         super(EntityNodeFormatter, self).__init__(config, treeview, parent)
-
-        self._str_ref = "social_tenure_relationship"
+        self.curr_profile = current_profile()
+        prefix = self.curr_profile.prefix
+        self._str_ref = str(prefix)+"_social_tenure_relationship"
 
         self._str_title = QApplication.translate("STRFormatterBase",
                                                  "Social Tenure Relationship")
@@ -111,7 +113,6 @@ class EntityNodeFormatter(STRNodeFormatter):
         [table_name]:[list of supporting document tables]
         '''
         self._entity_supporting_doc_tables = {}
-
         '''
         Set STR display mapping due to a bug in the 'displayMapping'
         function
@@ -121,8 +122,9 @@ class EntityNodeFormatter(STRNodeFormatter):
             self._str_model_disp_mapping = self._str_model.displayMapping()
 
         self._str_num_char_cols = numeric_varchar_columns(self._str_ref)
-        self._fk_references = foreign_key_parent_tables(self._str_ref)
+        self._fk_references =  (self._str_ref)
 
+        #print self._fk_references
         self._current_data_source_fk_ref = self._current_data_source_foreign_key_reference()
         self._numeric_char_cols = numeric_varchar_columns(config.data_source_name)
         self._spatial_data_sources = spatial_tables()
@@ -392,6 +394,7 @@ class EntityNodeFormatter(STRNodeFormatter):
 
                 else:
                     for s in str_entities:
+
                         str_node = self._create_str_node(entity_node, s,
                                                          isChild=True,
                                                          header=self._str_title)

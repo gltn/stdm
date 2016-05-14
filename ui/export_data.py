@@ -27,6 +27,7 @@ from PyQt4.QtCore import (
 import sqlalchemy
 
 from stdm.utils import *
+from stdm.utils.util import getIndex
 from stdm.ui.reports import SqlHighlighter
 from stdm.data.pg_utils import (
     process_report_filter,
