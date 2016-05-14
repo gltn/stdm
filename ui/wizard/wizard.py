@@ -193,6 +193,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         for profile in self.stdm_config.profiles.values():
             for entity in profile.entities.values():
                 self.connect_column_signals(entity)
+                #if entity.TYPE_INFO == 'VALUE_LIST':
+                    #self.addValues_byEntity(entity)
             self.connect_entity_signals(profile)
             profiles.append(profile.name)
         self.cbo_add_profiles(profiles)
@@ -388,14 +390,18 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             ##*Start the process
             self.updater_thread.start()
 
+            #pause, allow user to read post saving messages
+            self.pause_wizard_dialog()
+            validPage = False
+
+        return validPage
+
+    def pause_wizard_dialog(self):
             self.button(QWizard.BackButton).setEnabled(False)
             self.button(QWizard.FinishButton).setEnabled(False)
             self.button(QWizard.CancelButton).setText(\
                     QApplication.translate("Configuration Wizard","Close"))
 
-            validPage = False
-
-        return validPage
 
     def _updater_thread_started(self):
         """
@@ -821,7 +827,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def edit_column(self):
         """
         Edit selected column.
-        Allow editting of columns that have not yet being persisted on the DB
+        Allow editting of columns that have not yet being persisted to the
+        database
         """
         rid, column = self._get_column(self.tbvColumns)
         
@@ -863,8 +870,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         return row_id, entity_item
 
     def _get_column(self, view):
-        model_item, entity, row_id = self.get_model_entity(view)
         row_id = -1
+        model_item, entity, row_id = self.get_model_entity(view)
         column = None
         if model_item:
             column = model_item.entities().values()[row_id]
