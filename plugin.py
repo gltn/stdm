@@ -28,6 +28,7 @@ from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
 
+# from stdm.utils.util import getIndex
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings import current_profile
 from stdm.data.configuration.exception import ConfigurationException
@@ -73,9 +74,10 @@ from stdm.data.database import (
     STDMDb
 )
 from stdm.data.pg_utils import (
-    pg_table_exists
+    pg_table_exists,
+    spatial_tables
 )
-from stdm.data.pg_utils import spatial_tables
+
 from stdm.data.reports.sys_fonts import SysFonts
 from stdm.data.config_table_reader import ConfigTableReader
 
