@@ -16,7 +16,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-
+from datetime import datetime
 from collections import OrderedDict
 
 from PyQt4.QtCore import (
@@ -452,7 +452,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         mapper = DeclareMapping.instance()
         curr_profile = current_profile()
         prefix = curr_profile.prefix
-        str_doc_table = str(prefix)+'_social_tenure_relationship_supporting_document'
+        str_doc_table = str(prefix)+'_supporting_document'
         STR_DOC_MODEL = mapper.tableMapping(str_doc_table)
         document_type_class[DEFAULT_DOCUMENT]= STR_DOC_MODEL
 
@@ -645,10 +645,10 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
             if self._docType in document_type_class:
                 src_doc = document_type_class[self._docType]()
 
-                src_doc.document_id = self.fileUUID
+                src_doc.document_identifier = self.fileUUID
                 src_doc.filename = self.fileInfo.fileName()
-                src_doc.doc_size = self._docSize
-                #src_doc.source = QDate.currentDate()
+                src_doc.document_size = self._docSize
+                src_doc.creation_date = datetime.now()
                 src_doc.document_type = self._docType
                # src_doc.validity = QDate.currentDate()
                 self._srcDoc = src_doc
@@ -738,11 +738,10 @@ def source_document_location(default = "/home"):
 def set_source_document_location(doc_path):
     """
     Set the latest source directory of uploaded source documents.
-    :param doc_path: Directory path or file path. The system will attempt to extract the directory path from the
-    file name.
+    :param doc_path: Directory path or file path. The system will
+     attempt to extract the directory path from the file name.
     """
     doc_dir_path = ""
-
     #Check if it is a file or directory
     doc_dir = QDir(doc_path)
 
@@ -765,40 +764,8 @@ def network_document_path():
     """
     regConfig = RegistryConfig()
     networkResReg = regConfig.read([NETWORK_DOC_RESOURCE])
-
     if len(networkResReg) == 0:
         networkLocation = ""
-
     else:
         networkLocation = networkResReg[NETWORK_DOC_RESOURCE].strip()
-
     return networkLocation
-        
-
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        

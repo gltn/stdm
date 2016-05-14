@@ -408,22 +408,22 @@ class ImportData(QWizard, Ui_frmImport):
 
         value_translator_manager = self._trans_widget_mgr.translator_manager()
                
-        try:
-            if self.field("optOverwrite"):
-                self.dataReader.featToDb(self.targetTab, matchCols, False, self, geom_column,
-                                         translator_manager=value_translator_manager)
-            else:
-                self.dataReader.featToDb(self.targetTab, matchCols, True, self, geom_column,
-                                         translator_manager=value_translator_manager)
+        #try:
+        if self.field("optOverwrite"):
+            self.dataReader.featToDb(self.targetTab, matchCols, False, self, geom_column,
+                                     translator_manager=value_translator_manager)
+        else:
+            self.dataReader.featToDb(self.targetTab, matchCols, True, self, geom_column,
+                                     translator_manager=value_translator_manager)
 
-            self.InfoMessage("All features have been imported successfully!")
+        self.InfoMessage("All features have been imported successfully!")
 
-            #Update directory info in the registry
-            setVectorFileDir(self.field("srcFile"))
+        #Update directory info in the registry
+        setVectorFileDir(self.field("srcFile"))
 
-            success = True
-        except:
-            self.ErrorInfoMessage(unicode(sys.exc_info()[1]))
+        success = True
+        # except:
+        #     self.ErrorInfoMessage(unicode(sys.exc_info()[1]))
 
         return success
         

@@ -69,8 +69,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         # Current profile instance and properties
         self.curr_profile = current_profile()
         self.prefix = self.curr_profile.prefix
-        #
-        # print vars(self.curr_profile.social_tenure.tenure_type_collection)
+
         self.str_name = str(self.curr_profile.social_tenure.name)
 
         self.party = self.curr_profile.social_tenure._party
@@ -326,21 +325,23 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 value = getattr(type, 'value')
                 if value == selected_str_type:
                     socialTenure.tenure_type = type.id
-
             progDialog.setValue(6)
 
             """
             Save new STR relations and supporting documentation
             """
             socialTenure.save()
-            model_objs = self.sourceDocManager.model_objects()
+            if self.curr_profile.social_tenure.supports_documents:
+                model_objs = self.sourceDocManager.model_objects()
 
-            if len(model_objs) > 0:
-                for model_obj in model_objs:
-                    model_obj.save()
-                    STR_relation.social_tenure_relationship_id = socialTenure.id
-                    STR_relation.supporting_doc_id = model_obj.id
-                    STR_relation.save()
+                if len(model_objs) > 0:
+                    for model_obj in model_objs:
+                        model_obj.save()
+                        STR_relation.social_tenure_relationship_id = socialTenure.id
+                        setattr(STR_relation, self.prefix+'_supporting_doc_id', model_obj.id)
+                        STR_relation.save()
+            else:
+                self.groupBox_3.setEnabled(False)
 
             progDialog.setValue(7)
 

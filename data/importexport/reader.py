@@ -45,7 +45,7 @@ from stdm.data.database import (
     STDMDb,
     table_mapper
 )
-
+from stdm.ui.stdmdialog import DeclareMapping
 from stdm.data.pg_utils import (
     delete_table_data,
     geometryType
@@ -123,8 +123,6 @@ class OGRReader(object):
         return dsTable
 
     def _get_mapped_class(self, table_name):
-        from stdm.ui import DeclareMapping
-
         return DeclareMapping.instance().tableMapping(table_name)
     
     def _insertRow(self, columnValueMapping):
