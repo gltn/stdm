@@ -40,6 +40,8 @@ from qgis.core import *
 
 from stdm.utils import *
 
+from stdm.utils.util import gen_random_string
+
 EDIT_ICON = QIcon(":/plugins/stdm/images/icons/edit.png")
 DELETE_ICON = QIcon(":/plugins/stdm/images/icons/delete.png")
 NO_ACTION_ICON = QIcon(":/plugins/stdm/images/icons/no_action.png")
@@ -641,17 +643,3 @@ class SpatialUnitNode(EntityNode):
 
     def typeInfo(self):
         return "SPATIAL_UNIT_NODE"
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        

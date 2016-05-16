@@ -47,7 +47,7 @@ from sqlalchemy import (
 )
 
 from geoalchemy2 import Geometry
-
+from stdm.settings import current_profile
 from stdm.composer.document_generator import DocumentGenerator
 from stdm.data.config_table_reader import ConfigTableReader
 from stdm.data.config_utils import (
@@ -153,7 +153,7 @@ class DocumentGeneratorDialogWrapper(object):
         self._doc_gen_dlg = DocumentGeneratorDialog(self._iface, parent)
         self._notif_bar = self._doc_gen_dlg.notification_bar()
         self._config_table_reader = ConfigTableReader()
-
+        self.curr_profile = current_profile()
         #Load entity configurations
         self._load_entity_configurations()
 
@@ -163,21 +163,25 @@ class DocumentGeneratorDialogWrapper(object):
         corresponding EntityConfig objects.
         """
         try:
-            tables = self._config_table_reader.social_tenure_tables()
+            tables = [
+                e
+                for e in
+                self.curr_profile.entities.values()
+                if e.TYPE_INFO == 'ENTITY'
+            ]
+            print tables
 
             for t in tables:
-                #Ensure 'supporting_document' table is not in the list
-                if t.find("supporting_document") == -1:
-                    entity_cfg = self._entity_config_from_table(t)
+                entity_cfg = self._entity_config_from_profile(str(t.name), t.short_name)
 
-                    if not entity_cfg is None:
-                        self._doc_gen_dlg.add_entity_config(entity_cfg)
+                if not entity_cfg is None:
+                    self._doc_gen_dlg.add_entity_config(entity_cfg)
 
         except ProfileException as pe:
             self._notif_bar.clear()
             self._notif_bar.insertErrorNotification(pe.message)
 
-    def _entity_config_from_table(self, table_name):
+    def _entity_config_from_profile(self, table_name, short_name):
         """
         Creates an EntityConfig object from the table name.
         :param table_name: Name of the database table.
@@ -185,7 +189,7 @@ class DocumentGeneratorDialogWrapper(object):
         :return: Entity configuration object.
         :rtype: EntityConfig
         """
-        table_display_name = display_name(table_name)
+        table_display_name = display_name(short_name)
         model = DeclareMapping.instance().tableMapping(table_name)
 
         if model is not None:

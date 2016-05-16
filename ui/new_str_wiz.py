@@ -17,6 +17,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+import logging
 from collections import OrderedDict
 from decimal import Decimal
 import sys
@@ -35,6 +36,10 @@ from stdm.data.database import (
     STDMDb,
     Base
 )
+from stdm.settings import (
+    current_profile
+)
+from stdm.ui.wizard.wizard import ConfigWizard
 from stdm.data.config_utils import (
     UserData,
     table_searchable_cols,
@@ -45,6 +50,8 @@ from stdm.utils import *
 from .stdmdialog import  DeclareMapping
 
 from ui_new_str import Ui_frmNewSTR
+
+LOGGER = logging.getLogger('stdm')
 
 class newSTRWiz(QWizard, Ui_frmNewSTR):
     '''
@@ -59,11 +66,23 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.selProperty = None
         self.enjoymentRight = None
         self.conflict = None
-        
+        # Current profile instance and properties
+        self.curr_profile = current_profile()
+        self.prefix = self.curr_profile.prefix
+
+        self.str_name = str(self.curr_profile.social_tenure.name)
+
+        self.party = self.curr_profile.social_tenure._party
+        self.party_name = str(self.party.name)
+        self.spatial_unit = self.curr_profile.social_tenure._spatial_unit
+
+        self.spatial_unit_name = str(self.spatial_unit.name)
+
+        self.str_type_data = None
         #Initialize GUI wizard pages
         self.mapping=DeclareMapping.instance()
         self.initPerson()
-        
+
         self.initProperty()
         
         self.initSTRType()
@@ -96,7 +115,9 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         QObject.connect(self.cboPersonFilterCols, SIGNAL("currentIndexChanged(int)"),self._updatePersonCompleter)
         
         #QObject.connect(self.cboPersonFilterCols, SIGNAL("currentIndexChanged(int)"),self.dataReceieved)
-        
+        self.cboFilterPattern.activated.connect(
+            self._updatePersonSummary
+        )
         #Start background thread
         self.personWorker.start()
         
@@ -143,10 +164,12 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         '''
         Initialize 'Social Tenure Relationship' GUI controls
         '''
-        person = self.mapping.tableMapping('check_social_tenure_type')
-        Person = person()
-        strTypeFormatter =Person.queryObject().all()
-        strType=[ids.value for ids in strTypeFormatter]
+        str_lookup_table = self.curr_profile.social_tenure.tenure_type_collection.name
+
+        str_types = self.mapping.tableMapping(str(str_lookup_table))
+        str_type = str_types()
+        self.str_type_data = str_type.queryObject().all()
+        strType=[ids.value for ids in self.str_type_data]
         strType.insert(0, " ")
         self.cboSTRType.insertItems(0,strType)
 
@@ -155,13 +178,13 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.notifSTR = NotificationBar(self.vlSTRTypeNotif)
         
         #Register STR selection field
-        self.frmWizSTRType.registerField("STR_Type",self.cboSTRType)
+        self.frmWizSTRType.registerField('Social_Tenure_Type', self.cboSTRType)
     
     def init_document_type(self):
         '''
         Initialize 'Right of Enjoyment' GUI controls
         '''
-        doc_type_model = self.mapping.tableMapping('check_document_type')
+        doc_type_model = self.mapping.tableMapping(str(self.prefix)+'_check_document_type')
         Docs = doc_type_model()
         doc_type_list = Docs.queryObject().all()
         doc_types = [doc.value for doc in doc_type_list]
@@ -273,43 +296,52 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
     
     def onCreateSTR(self):
         '''
-        Slot raised when the user clicks on Finish button in order to create a new STR entry.
+        Slot raised when the user clicks on Finish
+        button in order to create a new STR entry.
         '''
         isValid = True
-        
         #Create a progress dialog
         progDialog = QProgressDialog(self)
         progDialog.setWindowTitle(QApplication.translate("newSTRWiz", "Creating New STR"))
         progDialog.setRange(0, 7)
         progDialog.show()
 
-        socialTenureRel = self.mapping.tableMapping('social_tenure_relationship')
-        str_relation_table = self.mapping.tableMapping('str_relations')
+        social_tenure_rel = self.mapping.tableMapping(self.str_name)
+        str_relation_table = self.mapping.tableMapping(
+            str(self.prefix)+
+            '_social_tenure_relationship_supporting_document'
+        )
         STR_relation = str_relation_table()
 
         try:
             progDialog.setValue(1)
-            socialTenure = socialTenureRel()
-            socialTenure.party = self.selPerson.id
+            socialTenure = social_tenure_rel()
+            socialTenure.party_id = self.selPerson.id
             progDialog.setValue(2)
-            socialTenure.spatial_unit = self.selProperty.id
+            socialTenure.spatial_unit_id = self.selProperty.id
             progDialog.setValue(3)
-            
-            socialTenure.social_tenure_type = unicode(self.cboSTRType.currentText())
+            selected_str_type = unicode(self.cboSTRType.currentText())
+            for type in self.str_type_data:
+                value = getattr(type, 'value')
+                if value == selected_str_type:
+                    socialTenure.tenure_type = type.id
             progDialog.setValue(6)
 
             """
             Save new STR relations and supporting documentation
             """
             socialTenure.save()
-            model_objs = self.sourceDocManager.model_objects()
+            if self.curr_profile.social_tenure.supports_documents:
+                model_objs = self.sourceDocManager.model_objects()
 
-            if len(model_objs) > 0:
-                for model_obj in model_objs:
-                    model_obj.save()
-                    STR_relation.social_tenure_id = socialTenure.id
-                    STR_relation.source_doc_id = model_obj.id
-                    STR_relation.save()
+                if len(model_objs) > 0:
+                    for model_obj in model_objs:
+                        model_obj.save()
+                        STR_relation.social_tenure_relationship_id = socialTenure.id
+                        setattr(STR_relation, self.prefix+'_supporting_doc_id', model_obj.id)
+                        STR_relation.save()
+            else:
+                self.groupBox_3.setEnabled(False)
 
             progDialog.setValue(7)
 
@@ -330,11 +362,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             QMessageBox.critical(self, QApplication.translate("newSTRWiz", "Duplicate Relationship Error"),errMsg)
             progDialog.hide()
             isValid = False
-            
+
         except Exception as e:
             errMsg = str(e)
             QMessageBox.critical(self, QApplication.translate("newSTRWiz", "Unexpected Error"),errMsg)
-            
+
             isValid = False
         finally:
             STDMDb.instance().session.rollback()
@@ -346,7 +378,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         '''
         Load person objects
         '''
-        self.persons = persons 
+        self.persons = persons
         self._updatePersonCompleter(0)
         
     def _onPropertiesLoaded(self,propids):
@@ -355,9 +387,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         Creates a completer and populates it with the property IDs.
         '''
         #Get the items in a tuple and put them in a list
-        
         propertyIds = [str(pid[0]) for pid in propids]
-       
         #Configure completer   
         propCompleter = QCompleter(propertyIds,self)         
         propCompleter.setCaseSensitivity(Qt.CaseInsensitive)
@@ -393,18 +423,26 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             self.overlayProperty()
         else:
             self.notifProp.clear()
-            msg = QApplication.translate("newSTRWiz", "Error - The property map cannot be loaded.")   
+            msg = QApplication.translate(
+                "newSTRWiz",
+                "Error - The property map cannot be loaded."
+            )
             self.notifProp.insertErrorNotification(msg)
         
     def _onEnableOLGroupbox(self,state):
         '''
-        Slot raised when a user chooses to select the group box for enabling/disabling to view
+        Slot raised when a user chooses to select
+        the group box for enabling/disabling to view
         the property in OpenLayers.
         '''
         if state:
             if self.selProperty is None:
                 self.notifProp.clear()
-                msg = QApplication.translate("newSTRWiz", "You need to specify a property in order to be able to preview it.")   
+                msg = QApplication.translate(
+                    "newSTRWiz",
+                    "You need to specify a property "
+                    "in order to be able to preview it."
+                )
                 self.notifProp.insertWarningNotification(msg)                
                 self.gpOpenLayers.setChecked(False)
                 return  
@@ -420,7 +458,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
     def _onZoomChanged(self):
         '''
         Slot raised when the zoom value in the slider changes.
-        This is only raised once the user releases the slider with the mouse.
+        This is only raised once the user
+        releases the slider with the mouse.
         '''
         zoom = self.zoomSlider.value()        
         self.propBrowser.zoom_to_level(zoom)
@@ -429,77 +468,127 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         '''
         Initializes person filter settings
         '''
-
-        cols=table_searchable_cols('party')
-        if len(cols)>0:
-            for col in cols:
-                self.cboPersonFilterCols.addItem(str(QApplication.translate("newSTRWiz",col.replace('_',' ').title())), col)
+        searchable_columns = [
+            c
+            for c in self.party.columns.values()
+        ]
+        if len(searchable_columns) > 0:
+            for col in searchable_columns:
+                if col.searchable and col.name != 'id':
+                    self.cboPersonFilterCols.addItem(
+                        QApplication.translate(
+                            "newSTRWiz",
+                            str(
+                                col.name.
+                                replace('_',' ').
+                                title()
+                            )
+                        ),
+                        col.name
+                    )
         
     def _updatePersonCompleter(self,index):
         '''
-        Updates the person completer based on the person attribute item that the user has selected
+        Updates the person completer based on the
+        person attribute item that the user has selected
         '''
         #Clear dependent controls
-        #self.txtFilterPattern.clear()
         self.cboFilterPattern.clear()
         self.tvPersonInfo.clear()
         try:
-            field_name = self.cboPersonFilterCols.currentText().replace(" ","_").lower()
-            data_list =[getattr(array,field_name) for array in self.persons if getattr(array,field_name)!=None]
-            model =QCompleter(data_list)
+            filter_text = self.cboPersonFilterCols.currentText()
+            filter_text = filter_text.replace(" ","_").lower()
+            data_list = [
+                    getattr(array, filter_text)
+                    for array in self.persons
+                    if getattr(array, filter_text) != None
+                ]
+
+            model = QCompleter(data_list)
             model.setCompletionMode(QCompleter.PopupCompletion)
             model.setCaseSensitivity(Qt.CaseInsensitive)
             self.cboFilterPattern.setCompleter(model)
             self.cboFilterPattern.showPopup()
         except Exception as ex:
             msg =ex.message
-            QMessageBox.critical(self,QApplication.translate("SocialTenureRelationship", u"Error Loading values"),
-                                 QApplication.translate("SocialTenureRelationship",
-                                 u"The was an error in sorting the data with the given column, try another %s"%msg))
+            QMessageBox.critical(
+                self,
+                QApplication.translate(
+                    "SocialTenureRelationship",
+                    u"Error Loading values"
+                ),
+                QApplication.translate(
+                    "SocialTenureRelationship",
+                    u"The was an error in sorting the data "
+                    u"with the given column, try another %s"%msg
+                )
+            )
             return
-        self.currPersonAttr = str(self.cboPersonFilterCols.itemData(index))            
-        
-        #Create standard model which will always contain the id of the person row then the attribute for use in the completer
-        self.cboFilterPattern.addItem("")
-        for p in self.persons:
-            pVal = getattr(p,self.currPersonAttr)
-            if pVal != "" or pVal != None:
-                self.cboFilterPattern.addItem(pVal,p.id)
+        self.currPersonAttr = unicode(
+            self.cboPersonFilterCols.itemData(index)
+        )
 
-        self.cboFilterPattern.activated.connect(self._updatePersonSummary)
-         #self.connect(self.cboFilterPattern, SIGNAL("currentIndexChanged(int)"),self._updatePersonSummary)
-                
+        # Create standard model which will always contain the id
+        # of the person row then the attribute for use in the completer
+        self.cboFilterPattern.addItem('')
+
+        for p in self.persons:
+
+            pVal = getattr(p, self.currPersonAttr)
+            if pVal != "" or pVal != None:
+                self.cboFilterPattern.addItem(pVal, p.id)
+        # except Exception as exception:
+        #     LOGGER.debug(
+        #         '_updatePersonCompleter exception: %s',
+        #         exception
+        #     )
+
+        self.cboFilterPattern.highlighted.connect(
+            self._updatePersonSummary
+        )
+        self.cboFilterPattern.activated.connect(
+            self._updatePersonSummary
+        )
     def _updatePersonSummary(self,index):
         '''
-        Slot for updating the person information into the tree widget based on the user-selected value
+        Slot for updating the person information
+        into the tree widget based on the user-selected value
         '''
-        Person=self.mapping.tableMapping('party')
-        person=Person()
-        #Get the id from the model then the value of the ID model index
+        QApplication.processEvents()
+        Person = self.mapping.tableMapping(self.party_name)
+        person = Person()
 
-
-
-        index =self.cboFilterPattern.currentIndex()
+        # Get the id from the model then the value of the ID model index
+        index = self.cboFilterPattern.currentIndex()
         personId = self.cboFilterPattern.itemData(index)
-        #QMessageBox.information(None,'index',str(data))
-        # personId = pData
+
         if personId is not None:
-        #Get person info
-            p = person.queryObject().filter(Person.id == str(personId)).first()
+        # Get person info
+            p = person.queryObject().filter(
+                Person.id == str(personId)
+            ).first()
+
             if p:
                 self.selPerson = p
                 personInfoMapping = self._mapPersonAttributes(p)
-                personTreeLoader = TreeSummaryLoader(self.tvPersonInfo)
-                personTreeLoader.addCollection(personInfoMapping, QApplication.translate("newSTRWiz","Party Information"),
-                                               ":/plugins/stdm/images/icons/user.png")
+                personTreeLoader = TreeSummaryLoader(
+                    self.tvPersonInfo
+                )
+                personTreeLoader.addCollection(
+                    personInfoMapping,
+                    QApplication.translate(
+                        "newSTRWiz","Party Information"
+                    ),
+                    ":/plugins/stdm/images/icons/user.png"
+                )
                 personTreeLoader.display()
             
     def _mapPersonAttributes(self,person):
         '''
         Maps the attributes of a person to a more friendly user representation 
-        '''   
+        '''
         #Setup formatters        
-        pmapper=self.mapping.tableMapping('party')
+        pmapper=self.mapping.tableMapping(self.party_name)
         colMapping = pmapper.displayMapping()
         colMapping.pop('id')
         pMapping=OrderedDict()
@@ -515,11 +604,12 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         '''
         Update the summary information for the selected property
         '''
-        property = self.mapping.tableMapping('spatial_unit')
+        property = self.mapping.tableMapping(self.spatial_unit_name)
         Property =property()
-        #propty=Table('spatial_unit',Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
-        #session=STDMDb.instance().session
-        prop =Property.queryObject().filter(property.code == unicode(propid)).first()
+
+        prop = Property.queryObject().filter(
+            property.code == unicode(propid)
+        ).first()
         if prop:
             propMapping = self._mapPropertyAttributes(prop)
             
@@ -538,7 +628,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
     
     def _mapPropertyAttributes(self,prop):
             #Configure formatters
-            spMapper = self.mapping.tableMapping('spatial_unit')
+            spMapper = self.mapping.tableMapping(self.spatial_unit_name)
             colMapping = spMapper.displayMapping()
             colMapping.pop('id')
             propMapping=OrderedDict()
@@ -640,8 +730,14 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
     def overlayProperty(self):
         '''
         Overlay property boundaries on the basemap imagery
-        '''                    
-        self.propBrowser.add_overlay(self.selProperty,'geom_polygon')
+        '''
+
+        geometry_col_name = [c.name for c in
+            self.spatial_unit.columns.values()
+            if c.TYPE_INFO == 'GEOMETRY'
+        ]
+
+        self.propBrowser.add_overlay(self.selProperty, geometry_col_name[0])
         
     def validateEnjoymentRight(self): 
         '''
@@ -849,10 +945,14 @@ class PersonWorker(QThread):
         Fetch person objects from the database
         '''        
         self.mapping=DeclareMapping.instance()
-        Person=self.mapping.tableMapping('party')
+        # get party table name from the current profile
+        curr_profile = current_profile()
+        party_name = str(curr_profile.social_tenure._party.name)
+        Person = self.mapping.tableMapping(party_name)
         p = Person()
         persons = p.queryObject().all()
-        self.emit(SIGNAL("retrieved(PyQt_PyObject)"),persons)
+
+        self.emit(SIGNAL("retrieved(PyQt_PyObject)"), persons)
         
 class PropertyWorker(QThread):
     '''
@@ -865,38 +965,9 @@ class PropertyWorker(QThread):
         '''
         Fetch property IDs from the database
         '''
-        pty=Table('spatial_unit',Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
+        curr_profile = current_profile()
+        spatial_unit_name = str(curr_profile.social_tenure._spatial_unit.name)
+        pty=Table(spatial_unit_name, Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
         session=STDMDb.instance().session
         properties =session.query(pty.c.code).all()
-        #pty = Property()
-
-        #properties = pty.queryObject([Property.spatial_unit_id]).all()      
         self.emit(SIGNAL("retrieved(PyQt_PyObject)"), properties)
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-            
