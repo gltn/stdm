@@ -166,7 +166,7 @@ class Profile(QObject):
         are also searched and returned.
         :rtype: Entity
         """
-        items = [e for e in self.entities.values() if e.name == name]
+        items = [e for e in self.entities.values() if e.short_name == name]
 
         if len(items) == 0:
             return None
