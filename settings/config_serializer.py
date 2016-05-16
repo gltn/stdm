@@ -135,7 +135,7 @@ class ConfigurationFileSerializer(object):
         status, msg, line, col = config_doc.setContent(config_file)
         if not status:
             raise ConfigurationException(u'Configuration file cannot be '
-                                         u'loaded.\n{0}'.format(msg))
+                                         u'loaded: {0}'.format(msg))
 
         #Load configuration items
         self.read_xml(config_doc)
@@ -391,6 +391,7 @@ class SocialTenureSerializer(object):
     PARTY = 'party'
     SPATIAL_UNIT = 'spatialUnit'
     TENURE_TYPE = 'tenureTypeList'
+    LAYER_DISPLAY = 'layerDisplay'
 
     @staticmethod
     def read_xml(child_element, profile, association_elements,
@@ -409,8 +410,8 @@ class SocialTenureSerializer(object):
         spatial_unit = unicode(child_element.attribute(
             SocialTenureSerializer.SPATIAL_UNIT, '')
         )
-        tenure_types = unicode(child_element.attribute(
-            SocialTenureSerializer.TENURE_TYPE, '')
+        layer_display = unicode(child_element.attribute(
+            SocialTenureSerializer.LAYER_DISPLAY, '')
         )
 
         #Set STR attributes
@@ -420,11 +421,9 @@ class SocialTenureSerializer(object):
         if spatial_unit:
             profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT,
                                        spatial_unit)
-        '''
-        if tenure_types:
-            profile.set_social_tenure_attr(SocialTenure.SOCIAL_TENURE_TYPE,
-                                       tenure_types)
-        '''
+
+        if layer_display:
+            profile.social_tenure.layer_display_name = layer_display
 
     @staticmethod
     def write_xml(social_tenure, parent_node, document):
@@ -445,6 +444,8 @@ class SocialTenureSerializer(object):
                                         social_tenure.spatial_unit.short_name)
         social_tenure_element.setAttribute(SocialTenureSerializer.TENURE_TYPE,
                                     social_tenure.tenure_type_collection.short_name)
+        social_tenure_element.setAttribute(SocialTenureSerializer.LAYER_DISPLAY,
+                                    social_tenure.layer_display())
 
         parent_node.appendChild(social_tenure_element)
 

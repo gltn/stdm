@@ -301,14 +301,14 @@ class STDMQGISLoader(object):
 
         except IOError as io_err:
             QMessageBox.critical(self.iface.mainWindow(),
-                    QApplication.translate("STDM", "Load Configuration Error"),
+                    QApplication.translate('STDM', 'Load Configuration Error'),
                     unicode(io_err))
 
             return False
 
         except ConfigurationException as c_ex:
             QMessageBox.critical(self.iface.mainWindow(),
-                    QApplication.translate("STDM", "Load Configuration Error"),
+                    QApplication.translate('STDM', 'Load Configuration Error'),
                     unicode(c_ex))
 
             return False
