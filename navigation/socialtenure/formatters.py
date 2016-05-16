@@ -61,6 +61,7 @@ class STRNodeFormatter(object):
         self.rootNode = BaseSTRNode(self._headers, view=treeview,
                                     parentWidget=parentwidget)
 
+
     def setData(self, data):
         """
         Set the data to be formatted through the nodes.
@@ -121,13 +122,64 @@ class EntityNodeFormatter(STRNodeFormatter):
         if not self._str_model is None:
             self._str_model_disp_mapping = self._str_model.displayMapping()
 
-        self._str_num_char_cols = numeric_varchar_columns(self._str_ref)
-        self._fk_references =  (self._str_ref)
+        self._fk_references = [
+            (
+                e.entity_relation.child_column,
+                e.entity_relation._parent.name,
+                e.entity_relation.parent_column
+            )
+                for e in
+                self.curr_profile.social_tenure.columns.values()
+                if e.TYPE_INFO == 'FOREIGN_KEY'
+        ]
 
-        #print self._fk_references
+        self._str_num_char_cols = [
+            e.name
+            for e in
+            self.curr_profile.social_tenure.columns.values()
+            if e.TYPE_INFO in ['VARCHAR',
+                               'SERIAL',
+                               'TEXT',
+                               'BIGINT',
+                               'DOUBLE',
+                               'DATE',
+                               'DATETIME',
+                               'YES_NO',
+                               'LOOKUP',
+                               'ADMIN_SPATIAL_UNIT',
+                               'MULTIPLE_SELECT'
+                               ]
+        ]
+
         self._current_data_source_fk_ref = self._current_data_source_foreign_key_reference()
-        self._numeric_char_cols = numeric_varchar_columns(config.data_source_name)
-        self._spatial_data_sources = spatial_tables()
+        #numeric_char_cols for entities - party and sp_unit
+        self._numeric_char_cols = [
+            e.name
+            for e in
+            self.curr_profile.
+                entity_by_name(config.data_source_name).
+                columns.values()
+            if e.TYPE_INFO in ['VARCHAR',
+                               'SERIAL',
+                               'TEXT',
+                               'BIGINT',
+                               'DOUBLE',
+                               'DATE',
+                               'DATETIME',
+                               'YES_NO',
+                               'LOOKUP',
+                               'ADMIN_SPATIAL_UNIT',
+                               'MULTIPLE_SELECT'
+                               ]
+        ]
+
+        self._spatial_data_sources = [
+            e.name
+            for e in
+            self.curr_profile.entities.values()
+            if e.TYPE_INFO == 'ENTITY' and e.has_geometry_column()
+        ]
+
 
     def _format_display_mapping(self, model, display_cols, filter_cols):
         """
@@ -296,7 +348,7 @@ class EntityNodeFormatter(STRNodeFormatter):
                                                       entity_display_cols)
 
                     node = self._spatial_textual_node(mod_table)
-
+                    mod_table = mod_table.replace(self.curr_profile.prefix, '')
                     entity_node = node(dm, parent=str_node,
                                              header=mod_table.replace('_',
                                                                       ' ').title(),
@@ -394,50 +446,13 @@ class EntityNodeFormatter(STRNodeFormatter):
 
                 else:
                     for s in str_entities:
-
                         str_node = self._create_str_node(entity_node, s,
                                                          isChild=True,
                                                          header=self._str_title)
+
 
             else:
                 #The parent node now refers to STR data so we render accordingly
                 str_node = self._create_str_node(self.rootNode, ed)
 
         return self.rootNode
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
