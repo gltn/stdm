@@ -93,7 +93,7 @@ class Entity(QObject, TableItem):
         configuration process.
         :type is_proxy: bool
         """
-        QObject.__init__(self, profile)
+        super(Entity, self).__init__(None)
         self.profile = profile
         self.is_global = is_global
         self.short_name = name
@@ -102,7 +102,7 @@ class Entity(QObject, TableItem):
         if not self.is_global:
             # format the internal name, replace spaces between words 
             # with underscore and make all letters lower case.
-            name = str(name).strip()
+            name = unicode(name).strip()
 
         name = name.replace(' ', "_")
         name = name.lower()
@@ -226,12 +226,53 @@ class Entity(QObject, TableItem):
         if self.action == DbItem.NONE:
             self.action = DbItem.ALTER
 
+    def _constructor_args(self):
+        """
+        :return: Returns a collection of the constructor keys and
+        corresponding values for cloning the this object.
+        """
+        constructor_args = {}
+
+        constructor_args['create_id_column'] = self.create_id_column
+        constructor_args['supports_documents'] = self.supports_documents
+        constructor_args['is_global'] = self.is_global
+        constructor_args['is_proxy'] = self.is_proxy
+
+        return constructor_args
+
+    def _copy_columns(self, entity):
+        """
+        Copies the columns in the current object into the specified entity.
+        :param entity: Target entity of the columns to be copied.
+        :type entity: Entity
+        """
+        for c in self.columns.values():
+            new_col = c.clone()
+            entity.add_column(new_col)
+
+    def _copy_attrs(self, entity):
+        """
+        Copies the attributes of the current object into the given entity object.
+        :param entity: Target of the copied entity attributes.
+        :type entity: Entity
+        """
+        entity.description = self.description
+        entity.is_associative = self.is_associative
+        entity.user_editable = self.user_editable
+
+        #Copy columns
+        #self._copy_columns(entity)
+
     def clone(self):
         """
         :return: Returns a deep copy of this object.
         :rtype: Entity
         """
-        return deepcopy(self)
+        kwargs = self._constructor_args()
+        ent = Entity(self.short_name, self.profile, **kwargs)
+        self._copy_attrs(ent)
+
+        return ent
 
     def on_delete(self):
         """

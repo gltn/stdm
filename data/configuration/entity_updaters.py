@@ -66,7 +66,7 @@ def entity_updater(entity, engine, metadata):
 
     elif entity.action == DbItem.DROP:
         LOGGER.debug('Deleting %s entity...', entity.name)
-        drop_entity(entity)
+        drop_entity(entity, table, engine)
 
 
 def create_entity(entity, table, engine):

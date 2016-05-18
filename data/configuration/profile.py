@@ -65,7 +65,7 @@ class Profile(QObject):
         :type name: str
         :param configuration: Parent configuration object.
         """
-        QObject.__init__(self, configuration)
+        super(Profile, self).__init__(configuration)
         self.name = name
         self.description = ''
         self.configuration = configuration
@@ -166,7 +166,7 @@ class Profile(QObject):
         are also searched and returned.
         :rtype: Entity
         """
-        items = [e for e in self.entities.values() if e.name == name]
+        items = [e for e in self.entities.values() if e.short_name == name]
 
         if len(items) == 0:
             return None
@@ -334,6 +334,8 @@ class Profile(QObject):
         :returns: True if the item was successfully removed, otherwise False.
         :rtype: bool
         """
+        from PyQt4.QtGui import QMessageBox
+
         if not name in self.entities:
             LOGGER.debug('%s entity cannot be removed. Item does '
                          'not exist.', name)
@@ -342,6 +344,8 @@ class Profile(QObject):
 
         ent = self.entities[name]
         ent.action = DbItem.DROP
+
+        entities = self.entities_by_type_info('ENTITY')
 
         ent_replica = ent.clone()
 
@@ -354,7 +358,7 @@ class Profile(QObject):
             self.remove_relation(er.name)
 
         #Now delete the original entity
-        del ent
+        del self.entities[name]
 
         LOGGER.debug('%s entity removed from %s profile', name, self.name)
 
@@ -398,7 +402,7 @@ class Profile(QObject):
         :type type_info: str
         :returns: A list of entities based on the specified TYPE_INFO
         e.g. ENTITY, VALUE_LIST etc.
-        :rtype: Entity
+        :rtype: list(Entity)
         """
         return [entity for entity in self.entities.values()
                 if entity.TYPE_INFO == type_info]
