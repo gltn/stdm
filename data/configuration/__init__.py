@@ -6,7 +6,8 @@ from sqlalchemy.ext.automap import automap_base
 
 from stdm.data.database import (
     metadata,
-    Model
+    Model,
+    STDMDb
 )
 
 def entity_model(entity, entity_only=False):
@@ -30,6 +31,10 @@ def entity_model(entity, entity_only=False):
 
         rf_entities.extend(parents)
         rf_entities.extend(children)
+
+    #Ensure there is a connectable set in the metadata
+    if metadata.bind is None:
+        metadata.bind = STDMDb.instance().engine
 
     #We will use a different metadata object just for reflecting 'rf_entities'
     rf_metadata = MetaData(metadata.bind)

@@ -43,7 +43,8 @@ class SocialTenure(Entity):
     tenure_type_list = 'tenure_type'
     view_creator = view_updater
 
-    def __init__(self, name, profile, supports_documents=True):
+    def __init__(self, name, profile, supports_documents=True,
+                 layer_display=''):
         Entity.__init__(self, name, profile,
                         supports_documents=supports_documents)
 
@@ -58,7 +59,7 @@ class SocialTenure(Entity):
         self.spatial_unit_foreign_key = ForeignKeyColumn('spatial_unit_id',
                                                          self)
         self.tenure_type_lookup = LookupColumn('tenure_type', self)
-
+        self.layer_display_name = layer_display
         self._value_list = self._prepare_tenure_type_value_list()
 
         #Add the value list to the table collection
@@ -71,6 +72,16 @@ class SocialTenure(Entity):
 
         LOGGER.debug('Social Tenure Relationship initialized for %s profile.',
                      self.profile.name)
+
+    def layer_display(self):
+        """
+        :return: Name to show in the Layers TOC.
+        :rtype: str
+        """
+        if self.layer_display_name:
+            return self.layer_display_name
+
+        return self.view_name
 
     @property
     def view_name(self):

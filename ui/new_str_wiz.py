@@ -39,6 +39,7 @@ from stdm.data.database import (
 from stdm.settings import (
     current_profile
 )
+from stdm.data.configuration import entity_model
 from stdm.ui.wizard.wizard import ConfigWizard
 from stdm.data.config_utils import (
     UserData,
@@ -103,11 +104,14 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.notifPerson = NotificationBar(self.vlPersonNotif)
         
         self._initPersonFilter()
-        
-        #Initialize person worker thread for fetching person objects
+        # str_model = entity_model(self.curr_profile.social_tenure)
+        # # print vars(str_model)
+        # # str_model_obj = str_model()
+        # # print str_model_obj.queryObject().all()
+        # Initialize person worker thread for fetching person objects
         self.personWorker = PersonWorker(self)
         self.connect(self.personWorker, SIGNAL("retrieved(PyQt_PyObject)"),self._loadPersonInfo)
-        
+
         #Init summary tree loaders
         self.personTreeLoader = TreeSummaryLoader(self.tvPersonInfo,QApplication.translate("newSTRWiz","Party Information"))
                 
@@ -184,7 +188,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         '''
         Initialize 'Right of Enjoyment' GUI controls
         '''
-        doc_type_model = self.mapping.tableMapping(str(self.prefix)+'_check_document_type')
+        doc_type_model = self.mapping.tableMapping(unicode(self.prefix+'_check_document_type'))
         Docs = doc_type_model()
         doc_type_list = Docs.queryObject().all()
         doc_types = [doc.value for doc in doc_type_list]
@@ -204,7 +208,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         '''
         '''
         self.notifSourceDoc = NotificationBar(self.vlSourceDocNotif)
-        
         #Set source document manager
         self.sourceDocManager = SourceDocumentManager()
         self.sourceDocManager.registerContainer(self.vlDocTitleDeed, DEFAULT_DOCUMENT)
@@ -307,6 +310,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         progDialog.show()
 
         social_tenure_rel = self.mapping.tableMapping(self.str_name)
+
         str_relation_table = self.mapping.tableMapping(
             str(self.prefix)+
             '_social_tenure_relationship_supporting_document'
@@ -610,6 +614,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         prop = Property.queryObject().filter(
             property.code == unicode(propid)
         ).first()
+        print prop
         if prop:
             propMapping = self._mapPropertyAttributes(prop)
             
@@ -967,7 +972,7 @@ class PropertyWorker(QThread):
         '''
         curr_profile = current_profile()
         spatial_unit_name = str(curr_profile.social_tenure._spatial_unit.name)
-        pty=Table(spatial_unit_name, Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
-        session=STDMDb.instance().session
-        properties =session.query(pty.c.code).all()
+        pty = Table(spatial_unit_name, Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
+        session = STDMDb.instance().session
+        properties = session.query(pty.c.code).all()
         self.emit(SIGNAL("retrieved(PyQt_PyObject)"), properties)

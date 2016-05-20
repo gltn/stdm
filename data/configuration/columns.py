@@ -458,6 +458,16 @@ class GeometryColumn(BaseColumn):
 
         self.searchable = False
 
+    def layer_display(self):
+        """
+        :return: Name to show in the Layers TOC.
+        :rtype: str
+        """
+        if self.layer_display_name:
+            return self.layer_display_name
+
+        return u'{0}.{1}'.format(self.entity.name, self.name)
+
     def geometry_type(self):
         """
         :returns: Returns the specified geometry type as a string.

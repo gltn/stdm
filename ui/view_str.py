@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from sqlalchemy import exc
 from collections import OrderedDict
 import logging
 from PyQt4.QtCore import *
@@ -731,7 +732,7 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
             else:
                 results = modelQueryObj.filter(func.lower(queryObjProperty) == func.lower(search_term)).all()
 
-        except StatementError:
+        except exc.StatementError:
             return model_root_node, [], search_term
 
         if self.formatter is not None:

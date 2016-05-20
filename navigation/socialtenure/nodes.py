@@ -78,7 +78,7 @@ class BaseSTRNode(object):
             self._rootNodeHash = self._parent.rootHash()
 
         #Separator for child text
-        self.separator = " : "
+        self.separator = ": "
 
         if isChild:
             if styleIfChild:
@@ -489,6 +489,7 @@ class EntityNode(SupportsDocumentsNode):
         prop_val_mapping = self._concat_names_values(self._colname_display_value,
                                                      self._value_formatters)
         for p_val in prop_val_mapping:
+
             ch_ent_node = BaseSTRNode([p_val], self)
     
 class NoSTRNode(BaseSTRNode):
@@ -523,7 +524,6 @@ class STRNode(EntityNode):
         """
         n_data = unicode(node_data)
         display_col_name = n_data.split(self.separator)[0]
-
         return display_col_name.replace(" ", "_").lower(), display_col_name
 
     def _update_str_node(self, index, model):
@@ -544,6 +544,7 @@ class STRNode(EntityNode):
                         col_value = getattr(self._model, col_name)
                         node_value = u"{0}{1} {2}".format(display_name, self.separator, col_value)
                         view_model.setData(idx, node_value, Qt.DisplayRole)
+
 
             i += 1
 
