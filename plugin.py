@@ -27,8 +27,7 @@ from PyQt4.QtGui import *
 
 from qgis.core import *
 from qgis.gui import *
-
-# from stdm.utils.util import getIndex
+from stdm.utils.util import getIndex
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings import current_profile
 from stdm.data.configuration.exception import ConfigurationException
@@ -59,7 +58,7 @@ from stdm.ui.import_data import ImportData
 from stdm.ui.export_data import ExportData
 
 from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
-from stdm.ui.reports.report_builder import ReportBuilder
+
 import data
 
 from stdm.data.config_utils import (
@@ -275,10 +274,8 @@ class STDMQGISLoader(object):
             if not config_load_status:
                 return
 
-            #Set current profile
-            self.current_profile = current_profile()
-
             try:
+                self.default_profile()
                 self.default_config_version()
                 self.loadModules()
                 self._user_logged_in = True
@@ -290,6 +287,36 @@ class STDMQGISLoader(object):
             except ProfileException as pe:
                 title = QApplication.translate("STDMQGISLoader","Error reading profile settings")
                 self.reset_content_modules_id(title,pe.message)
+
+    def default_profile(self):
+        """
+        Checks if the current profile exists and if it doesn't,
+        asks the user to run Configuration Wizard.
+        Returns: None
+        """
+        #Set current profile
+        self.current_profile = current_profile()
+        if self.current_profile is None:
+            title = QApplication.translate(
+                "STDMQGISLoader",
+                'Default Profile Error'
+            )
+            message = QApplication.translate(
+                "STDMQGISLoader",
+                'The system has detected that there is no default profile. \n'
+                'Do you want to run the Configuration Wizard now?'
+            )
+            default_profile = QMessageBox.question(
+                self.iface.mainWindow(),
+                title,
+                message,
+                QMessageBox.Yes,
+                QMessageBox.No
+            )
+            if default_profile == QMessageBox.Yes:
+                self.load_config_wizard()
+            else:
+                return
 
     def load_configuration_from_file(self):
         """
@@ -306,14 +333,14 @@ class STDMQGISLoader(object):
 
         except IOError as io_err:
             QMessageBox.critical(self.iface.mainWindow(),
-                    QApplication.translate("STDM", "Load Configuration Error"),
+                    QApplication.translate('STDM', 'Load Configuration Error'),
                     unicode(io_err))
 
             return False
 
         except ConfigurationException as c_ex:
             QMessageBox.critical(self.iface.mainWindow(),
-                    QApplication.translate("STDM", "Load Configuration Error"),
+                    QApplication.translate('STDM', 'Load Configuration Error'),
                     unicode(c_ex))
 
             return False
@@ -351,7 +378,7 @@ class STDMQGISLoader(object):
 
         #Create content menu container
         contentBtn = QToolButton()
-        contentObjName = QApplication.translate("ToolbarAdminSettings","Module Settings")
+        contentObjName = QApplication.translate("ToolbarAdminSettings","Entities")
         #Required by module loader for those widgets that need to be inserted into the container
         contentBtn.setObjectName(contentObjName)
         contentBtn.setToolTip(contentObjName)
@@ -364,7 +391,7 @@ class STDMQGISLoader(object):
         stdmEntityMenu = QMenu(self.stdmMenu)
         stdmEntityMenu.setObjectName("STDMEntityMenu")
         stdmEntityMenu.setIcon(QIcon(":/plugins/stdm/images/icons/entity_management.png"))
-        stdmEntityMenu.setTitle(QApplication.translate("STDMEntityMenu","Modules"))
+        stdmEntityMenu.setTitle(QApplication.translate("STDMEntityMenu","Entities"))
 
         #Separator definition
         tbSeparator = QAction(self.iface.mainWindow())
@@ -398,9 +425,6 @@ class STDMQGISLoader(object):
         self.docGeneratorAct = QAction(QIcon(":/plugins/stdm/images/icons/generate_document.png"), \
         QApplication.translate("DocumentGeneratorAction","Document Generator"), self.iface.mainWindow())
 
-        self.rptBuilderAct = QAction(QIcon(":/plugins/stdm/images/icons/report.png"), \
-        QApplication.translate("ReportBuilderAction","Report Builder"), self.iface.mainWindow())
-        self.rptBuilderAct.setShortcut(Qt.Key_F6)
         #Activate spatial unit management tools
         self.spatialEditorAct = QAction(QIcon(":/plugins/stdm/images/icons/edit24.png"), \
         QApplication.translate("SpatialEditorAction","Toggle Spatial Unit Editing"), self.iface.mainWindow())
@@ -432,7 +456,7 @@ class STDMQGISLoader(object):
                     QApplication.translate("WorkspaceConfig","Design Forms"), self.iface.mainWindow())
         self.wzdAct.setShortcut(Qt.Key_F7)
         self.ModuleAct = QAction(QIcon(":/plugins/stdm/images/icons/table_designer.png"),\
-                    QApplication.translate("WorkspaceConfig","Modules"), self.iface.mainWindow())
+                    QApplication.translate("WorkspaceConfig","Entities"), self.iface.mainWindow())
 
 
         #Connect the slots for the actions above
@@ -444,7 +468,6 @@ class STDMQGISLoader(object):
         self.surveyAct.triggered.connect(self.onManageSurvey)
         self.docDesignerAct.triggered.connect(self.onDocumentDesigner)
         self.docGeneratorAct.triggered.connect(self.onDocumentGenerator)
-        self.rptBuilderAct.triggered.connect(self.onReportBuilder)
         self.spatialEditorAct.triggered.connect(self.onToggleSpatialEditing)
         self.spatialLayerManager.triggered.connect(self.spatialLayerMangerActivate)
         self.saveEditsAct.triggered.connect(self.onSaveEdits)
@@ -485,9 +508,6 @@ class STDMQGISLoader(object):
         documentGeneratorCnt = ContentGroup.contentItemFromQAction(self.docGeneratorAct)
         documentGeneratorCnt.code = "4C0C7EF2-5914-4FDE-96CB-089D44EDDA5A"
 
-        rptBuilderCnt = ContentGroup.contentItemFromQAction(self.rptBuilderAct)
-        rptBuilderCnt.code = "E60A9143-FFA5-4422-985A-0C43C71323BE"
-
         spatialEditingCnt = ContentGroup.contentItemFromQAction(self.spatialEditorAct)
         spatialEditingCnt.code = "4E945EE7-D6F9-4E1C-A4AA-0C7F1BC67224"
 
@@ -514,10 +534,11 @@ class STDMQGISLoader(object):
         add the tables to the stdm toolbar
         Format the table names to freiendly format before adding them
         """
-        for module in self.user_entities():
-            display_name = QT_TRANSLATE_NOOP("ModuleSettings",
-                                unicode(module).replace("_", " ").title())
-            self._moduleItems[display_name] = module
+        if self.user_entities() is not None:
+            for module in self.user_entities():
+                display_name = QT_TRANSLATE_NOOP("Entities",
+                                    unicode(module).replace("_", " ").title())
+                self._moduleItems[display_name] = module
 
         for k, v in self._moduleItems.iteritems():
             content_action = QAction(QIcon(":/plugins/stdm/images/icons/table.png"),
@@ -606,10 +627,6 @@ class STDMQGISLoader(object):
         self.exportCntGroup.addContentItem(exportCnt)
         self.exportCntGroup.register()
 
-        self.rptBuilderCntGroup = ContentGroup(username, self.rptBuilderAct)
-        self.rptBuilderCntGroup.addContentItem(rptBuilderCnt)
-        self.rptBuilderCntGroup.register()
-
         #Add Design Forms menu and tool bar actions
         self.toolbarLoader.addContent(self.wzdConfigCntGroup)
         self.menubarLoader.addContent(self.wzdConfigCntGroup)
@@ -648,9 +665,6 @@ class STDMQGISLoader(object):
 
         self.toolbarLoader.addContent(self.docGeneratorCntGroup)
         self.menubarLoader.addContent(self.docGeneratorCntGroup)
-
-        self.toolbarLoader.addContent(self.rptBuilderCntGroup)
-        self.menubarLoader.addContent(self.rptBuilderCntGroup)
 
         #Group spatial editing tools together
         self.spatialEditingGroup = QActionGroup(self.iface.mainWindow())
@@ -804,14 +818,6 @@ class STDMQGISLoader(object):
         doc_gen_wrapper = DocumentGeneratorDialogWrapper(self.iface,
                                                          self.iface.mainWindow())
         doc_gen_wrapper.exec_()
-
-    def onReportBuilder(self):
-        """
-        Show tabular reports' builder dialog
-        """
-        config = self._reportModules
-        rptBuilder = ReportBuilder(config, self.iface.mainWindow())
-        rptBuilder.exec_()
 
     def onImportData(self):
         """
@@ -1202,13 +1208,14 @@ class STDMQGISLoader(object):
         """
         Create a handler to read the xml config and return the table list
         """
-        return [
-                e.short_name
-                for e in
-                self.current_profile.entities.values()
-                if (e.TYPE_INFO == 'ENTITY' or e.TYPE_INFO == 'SOCIAL_TENURE') and
-                not e.has_geometry_column()
-            ]
+        if self.current_profile is not None:
+            return [
+                    e.short_name
+                    for e in
+                    self.current_profile.entities.values()
+                    if (e.TYPE_INFO == 'ENTITY' or e.TYPE_INFO == 'SOCIAL_TENURE') and
+                    not e.has_geometry_column()
+                ]
 
     def check_str_table_exist(self):
         """

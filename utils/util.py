@@ -16,6 +16,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+
 import os, os.path
 import tempfile
 from decimal import Decimal
@@ -39,9 +40,9 @@ from PyQt4.QtGui import (
     QMessageBox
 )
 
-#from qgis.gui import QgsEncodingFileDialog
+from qgis.gui import QgsEncodingFileDialog
 
-from stdm.settings.registryconfig import RegistryConfig
+
 
 PLUGIN_DIR = os.path.abspath(os.path.join(os.path.dirname( __file__ ), os.path.pardir)).replace("\\", "/")
 CURRENCY_CODE = "" #TODO: Put in the registry
@@ -258,6 +259,8 @@ def documentTemplates():
     """
     Return a dictionary of document names and their corresponding absolute file paths.
     """
+    from stdm.settings.registryconfig import RegistryConfig
+
     docTemplates = OrderedDict()
     
     regConfig = RegistryConfig()
