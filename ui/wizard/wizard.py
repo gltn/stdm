@@ -51,6 +51,13 @@ from stdm.settings import (
     save_current_profile
 )
 
+from stdm.settings.registryconfig import (
+        RegistryConfig,
+        DOCUMENTS_KEY,
+        TEMPLATES_KEY,
+        OUTPUTS_KEY
+)
+
 from custom_item_model import *
 
 from ui_stdm_config import Ui_STDMWizard
@@ -390,6 +397,14 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             ##*Start the process
             self.updater_thread.start()
 
+            # write document paths to registry
+            reg_config = RegistryConfig()
+            reg_config.write(
+                    { DOCUMENTS_KEY:self.edtDocPath.text(),
+                      OUTPUTS_KEY:self.edtOutputPath.text(),
+                      TEMPLATES_KEY:self.edtTemplatePath.text()
+                     })
+                    
             #pause, allow user to read post saving messages
             self.pause_wizard_dialog()
             validPage = False
@@ -582,6 +597,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if self.cboProfile.count() == 1:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "Cannot delete last profile!"))
+            return
+
+        msg = "Are you sure you want to delete the profile?"
+        if self.query_box(msg) == QMessageBox.Cancel:
             return
 
         profile_name = unicode(self.cboProfile.currentText())
@@ -1057,6 +1076,17 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         msg.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
         msg.setText(QApplication.translate("STDM Configuration Wizard",message))
         msg.exec_()
+
+    def query_box(self, msg):
+        msgbox = QMessageBox(self)
+        msgbox.setIcon(QMessageBox.Question)
+        msgbox.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
+        msgbox.setInformativeText(QApplication.translate("STDM Configuration Wizard", msg))
+        msgbox.setStandardButtons(QMessageBox.Cancel | QMessageBox.Ok);
+        msgbox.setDefaultButton(QMessageBox.Cancel);
+        result = msgbox.exec_()
+        return result
+
 
 class Launcher(QMainWindow):
     def __init__(self, parent=None):
