@@ -253,8 +253,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.type_attribs['GEOMETRY'] ={'mandt':False, 'search': False, 
                 'unique': False, 'index': False,
-                'srid':0, 'geom_type':0,
+                'srid':"", 'geom_type':0,
                 'property':self.geometry_property, 'prop_set':False }
+
 
         self.type_attribs['ADMIN_SPATIAL_UNIT'] ={'mandt':False, 'search': False,
                 'entity_relation':None, 'unique': False, 'index': False}

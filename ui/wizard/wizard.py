@@ -232,14 +232,14 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             return False, "Party and Spatial Unit entities cannot be the same!"
 
         profile = self.current_profile()
-        spatial_unit = profile.entity_by_name(unicode( \
-                self.cboSPUnit.currentText()))
+        spatial_unit = profile.entity(unicode(self.cboSPUnit.currentText()))
 
         if not spatial_unit.has_geometry_column():
             return False, "%s entity should have a geometry column!"\
                     % spatial_unit.short_name
 
         return True, "Ok"
+
 
     def index_spatial_unit_table(self):
         for index, entity in enumerate(self.entity_model.entities().values()):
@@ -350,7 +350,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 message1 = "To continue with the wizard please comply with "
                 message2 = "disclaimer policy by selecting the option 'I Agree'"
                 self.show_message(message1+message2)
-                validPage=False
+                validPage = False
 
         if self.currentId() == 3:
             self.party_changed(0)
@@ -361,15 +361,14 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             # verify that lookup entities have values
             validPage = self.validate_empty_lookups()
 
+
         if self.currentId() == 4:
             validPage, msg = self.validate_STR()
 
             if validPage:
                 profile = self.current_profile()
-                party = profile.entity_by_name(unicode( \
-                        self.cboParty.currentText()))
-                spatial_unit = profile.entity_by_name(unicode( \
-                        self.cboSPUnit.currentText()))
+                party = profile.entity(unicode(self.cboParty.currentText()))
+                spatial_unit = profile.entity(unicode(self.cboSPUnit.currentText()))
 
                 profile.set_social_tenure_attr(SocialTenure.PARTY, party)
                 profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT, spatial_unit)

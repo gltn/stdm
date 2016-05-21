@@ -27,19 +27,6 @@ from PyQt4.QtGui import (
 	QMessageBox
 	)
 
-#from stdm.data import (
-		#writeTable, 
-		#renameTable,
-		#inheritTableColumn, 
-		#writeTableColumn,
-		#writeLookup,
-		#checktableExist,
-		#ConfigTableReader, 
-		#table_column_exist
-		#)
-
-#from stdm.data.config_utils import setUniversalCode
-
 from stdm.data.configuration.entity import *
 from stdm.data.configuration.db_items import DbItem
 
