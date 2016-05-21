@@ -15,5 +15,8 @@ docs/_build
 # Bash scripts
 *.sh
 
+# Others
+*.swp
+
 # My scripts
 ui.make.bat
