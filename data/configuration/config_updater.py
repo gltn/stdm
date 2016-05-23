@@ -24,7 +24,7 @@ from PyQt4.QtCore import (
     QObject
 )
 
-from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.exc import SQLAlchemyError
 
 from stdm.data.database import (
     metadata,
@@ -88,9 +88,16 @@ class ConfigurationSchemaUpdater(QObject):
             return
 
         try:
+            #Iterate through removed profiles first
+            for rp in self.config.removed_profiles:
+                self.remove_profile(rp)
+
             #Iterate through profiles
             for p in self.config.profiles.values():
                 self.update_profile(p)
+
+            #Delete removed profile objects
+            self._clean_removed_profiles()
 
             msg = self.tr('The schema has been successfully updated!')
 
@@ -100,14 +107,66 @@ class ConfigurationSchemaUpdater(QObject):
 
             self.update_completed.emit(True)
 
-        except ProgrammingError as pe:
-            msg = unicode(pe)
+        except SQLAlchemyError as sae:
+            msg = unicode(sae)
 
             self.update_progress.emit(ConfigurationSchemaUpdater.ERROR, msg)
 
             LOGGER.debug(msg)
 
             self.update_completed.emit(False)
+
+    def _clean_removed_profiles(self):
+        #Delete removed profiles
+        for p in self.config.removed_profiles:
+            p.deleteLater()
+
+        self.config.reset_removed_profiles()
+
+    def remove_profile(self, profile):
+        """
+        Deletes the entities in the given profile from the database.
+        :param profile: Profile whose entities are to be deleted.
+        :type profile: Profile
+        """
+        trans_msg = u'Attempting to delete {0} profile...'.format(
+            profile.name)
+        msg = self.tr(trans_msg)
+
+        LOGGER.debug(trans_msg)
+
+        self.update_progress.emit(ConfigurationSchemaUpdater.INFORMATION, msg)
+
+        #Delete basic view first
+        profile.social_tenure.delete_view(self.engine)
+
+        #Drop relations
+        self._drop_entity_relations(profile)
+
+        #Drop entities
+        self._update_entities(profile.removed_entities)
+
+    def _drop_entity_relations(self, profile):
+        trans_msg = self.tr('Removing redundant foreign key constraints...')
+        self.update_progress.emit(ConfigurationSchemaUpdater.INFORMATION, trans_msg)
+
+        #Drop removed relations
+        for er in profile.removed_relations:
+            status = er.drop_foreign_key_constraint()
+
+            if not status:
+                msg = self.tr(u'Error in removing {0} foreign key '
+                              'constraint.'.format(er.name))
+                self.update_progress.emit(ConfigurationSchemaUpdater.WARNING, msg)
+
+            else:
+                del profile.relations[er.name]
+
+                msg = self.tr(u'{0} foreign key constraint successfully '
+                              'removed.'.format(er.name))
+                self.update_progress.emit(ConfigurationSchemaUpdater.INFORMATION, msg)
+
+            LOGGER.debug(msg)
 
     def update_profile(self, profile):
         """
@@ -124,31 +183,10 @@ class ConfigurationSchemaUpdater(QObject):
 
         self.update_progress.emit(ConfigurationSchemaUpdater.INFORMATION, msg)
 
-        trans_msg = self.tr('Removing redundant foreign key constraints...')
-
-        self.update_progress.emit(ConfigurationSchemaUpdater.INFORMATION, trans_msg)
-
-        #Drop removed relations
-        for er in profile.removed_relations:
-            status = er.drop_foreign_key_constraint()
-
-            if not status:
-                msg = self.tr(u'Error in removing {0} foreign key '
-                                  'constraint.'.format(er.name))
-                self.update_progress.emit(ConfigurationSchemaUpdater.ERROR, msg)
-
-            else:
-                del profile.relations[er.name]
-
-                msg = self.tr(u'{0} foreign key constraint successfully '
-                                  'removed.'.format(er.name))
-                self.update_progress.emit(ConfigurationSchemaUpdater.INFORMATION, msg)
-
-            LOGGER.debug(msg)
+        self._drop_entity_relations(profile)
 
         #Drop removed entities first
         self._update_entities(profile.removed_entities)
-        self.removed_entities = []
 
         #Now iterate through new or updated entities
         self._update_entities(profile.entities.values())

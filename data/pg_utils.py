@@ -27,6 +27,7 @@ from PyQt4.QtCore import (
 from qgis.core import *
 
 from sqlalchemy.sql.expression import text
+from sqlalchemy.exc import SQLAlchemyError
 
 import stdm.data
 
@@ -358,9 +359,12 @@ def _execute(sql,**kwargs):
     """
     Execute the passed in sql statement
     """
-    conn = STDMDb.instance().engine.connect()        
+    conn = STDMDb.instance().engine.connect()
+    trans = conn.begin()
     result = conn.execute(sql,**kwargs)
+    trans.commit()
     conn.close()
+
     return result
 
 def reset_content_roles():
@@ -485,4 +489,62 @@ def foreign_key_parent_tables(table_name, search_parent=True, filter_exp=None):
         fk_refs.append(fk_ref)
 
     return fk_refs
+
+
+def table_view_dependencies(table_name):
+    """
+    Find database views that are dependent on the given table.
+    :param table_name: Table name
+    :type table_name: str
+    :return: A list of views which are dependent on the given table name.
+    :rtype: list(str)
+    """
+    views = []
+
+    #Load the SQL file
+    script_path = PLUGIN_DIR + "/scripts/table_related_views.sql"
+    script_file = QFile(script_path)
+
+    if not script_file.exists():
+        raise IOError('SQL file for retrieving view dependencies could '
+                      'not be found.')
+
+    else:
+        if not script_file.open(QIODevice.ReadOnly):
+            raise IOError('Failed to read the SQL file for retrieving view '
+                          'dependencies.')
+
+        reader = QTextStream(script_file)
+        sql = reader.readAll()
+        if sql:
+            t = text(sql)
+            result = _execute(t,table_name=table_name)
+
+            #Get view names
+            for r in result:
+                view_name = r['view_name']
+                views.append(view_name)
+
+    return views
+
+
+def drop_view(view_name):
+    """
+    Deletes the database view with the given name. The CASCADE command option
+    will be used hence dependent objects will also be dropped.
+    :param view_name: Name of the database view.
+    :type view_name: str
+    """
+    del_com = 'DROP VIEW IF EXISTS {0} CASCADE;'.format(view_name)
+    t = text(del_com)
+
+    try:
+        _execute(t)
+
+        return True
+
+    #Error such as view dependencies or the current user is not the owner.
+    except SQLAlchemyError:
+        return False
+
 

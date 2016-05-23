@@ -24,7 +24,10 @@ from stdm.data.configuration.columns import (
     LookupColumn
 )
 from stdm.data.configuration.entity import Entity
-from stdm.data.configuration.social_tenure_updater import view_updater
+from stdm.data.configuration.social_tenure_updater import (
+    view_deleter,
+    view_updater
+)
 from stdm.data.configuration.value_list import ValueList
 
 LOGGER = logging.getLogger('stdm')
@@ -42,6 +45,7 @@ class SocialTenure(Entity):
     BASE_STR_VIEW = 'vw_social_tenure_relationship'
     tenure_type_list = 'tenure_type'
     view_creator = view_updater
+    view_remover = view_deleter
 
     def __init__(self, name, profile, supports_documents=True,
                  layer_display=''):
@@ -228,6 +232,15 @@ class SocialTenure(Entity):
             return False
 
         return True
+
+    def delete_view(self, engine):
+        """
+        Deletes the basic view associated with the current social tenure
+        object.
+        :param engine: SQLAlchemy connectable object.
+        :type engine: Engine
+        """
+        self.view_remover(engine)
 
     def create_view(self, engine):
         """
