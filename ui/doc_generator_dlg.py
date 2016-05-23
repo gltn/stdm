@@ -169,7 +169,6 @@ class DocumentGeneratorDialogWrapper(object):
                 self.curr_profile.entities.values()
                 if e.TYPE_INFO == 'ENTITY'
             ]
-            print tables
 
             for t in tables:
                 entity_cfg = self._entity_config_from_profile(str(t.name), t.short_name)

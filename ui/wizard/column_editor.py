@@ -199,7 +199,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.form_fields['second_parent'] = \
                 self.type_attribs.get('second_parent', None)
-		
+
     def init_type_attribs(self):
         """
         Initializes data type attributes. The attributes are used to
@@ -211,55 +211,56 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         *property - function to execute when a data type is selected.
         """
         self.type_attribs['VARCHAR'] = {
-                'mandt':True,'search': True,
-                'unique': True, 'index': True,
+                'mandt':False,'search': True,
+                'unique': False, 'index': False,
                 'maximum':30,'property': self.varchar_property }
 
         self.type_attribs['BIGINT'] = {
-                'mandt':True, 'search': True,
-                'unique': True, 'index': True,
+                'mandt':False, 'search': False,
+                'unique': False, 'index': False,
                 'minimum':0, 'maximum':0,
                 'property':self.bigint_property }
 
         self.type_attribs['TEXT'] = {'mandt':False, 'search': False, 
                 'unique': False, 'index': False } 
 
-        self.type_attribs['DOUBLE' ] = {'mandt':True, 'search': True, 
+        self.type_attribs['DOUBLE' ] = {'mandt':False, 'search': False, 
                 'unique': False, 'index': False, 
                 'minimum':0.0, 'maximum':0.0,
                 'property':self.double_property }
 
-        self.type_attribs['DATE'] =  {'mandt':True, 'search': True,
-                'unique': False, 'index': True,
+        self.type_attribs['DATE'] =  {'mandt':False, 'search': False,
+                'unique': False, 'index': False,
                 'minimum':QtCore.QDate.currentDate(),
                 'maximum':QtCore.QDate.currentDate(),
                 'property':self.date_property }
                
-        self.type_attribs['DATETIME'] = {'mandt':True, 'search': False,
+        self.type_attribs['DATETIME'] = {'mandt':False, 'search': False,
                 'unique': False, 'index': False,
                 'minimum':QtCore.QDateTime.currentDateTime(),
                 'maximum':QtCore.QDateTime.currentDateTime(),
                 'property':self.dtime_property }
 
-        self.type_attribs['FOREIGN_KEY'] = {'mandt':True, 'search': False, 
+        self.type_attribs['FOREIGN_KEY'] = {'mandt':False, 'search': False, 
                 'unique': False, 'index': False,
                 'entity_relation':None,
                 'property':self.fk_property, 'prop_set':False }
 
-        self.type_attribs['LOOKUP'] = {'mandt':True, 'search': False,
+        self.type_attribs['LOOKUP'] = {'mandt':False, 'search': False,
                 'unique': False, 'index': False,
                 'entity_relation':{},
                 'property':self.lookup_property, 'prop_set':False }
 
         self.type_attribs['GEOMETRY'] ={'mandt':False, 'search': False, 
                 'unique': False, 'index': False,
-                'srid':0, 'geom_type':0,
+                'srid':"", 'geom_type':0,
                 'property':self.geometry_property, 'prop_set':False }
 
-        self.type_attribs['ADMIN_SPATIAL_UNIT'] ={'mandt':True, 'search': False,
+
+        self.type_attribs['ADMIN_SPATIAL_UNIT'] ={'mandt':False, 'search': False,
                 'entity_relation':None, 'unique': False, 'index': False}
 
-        self.type_attribs['MULTIPLE_SELECT'] ={'mandt':True, 'search': False, 
+        self.type_attribs['MULTIPLE_SELECT'] ={'mandt':False, 'search': False, 
                 'unique': False, 'index': False,
                 'first_parent':None, 'second_parent':self.entity,
                 'property':self.multi_select_property, 'prop_set':False }
@@ -448,11 +449,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         except:
                 return None
 
-    #def load_entities(self, cbox, entities):
-        #cbox.clear()
-        #cbox.insertItems(0, [name[0] for name in entities])
-        #cbox.setCurrentIndex(0)
-
     def popuplate_type_cbo(self):
         """
         Fills the data type combobox widget with BaseColumn type names
@@ -477,11 +473,18 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
     def set_optionals(self, opts):
         """
         Enable/disables form controls by selected data type attribute
+        param opts: Dictionary of selected column type properties
+        type: dictionary
         """
         self.cbMandt.setEnabled(opts['mandt'])
         self.cbSearch.setEnabled(opts['search'])
         self.cbUnique.setEnabled(opts['unique'])
         self.cbIndex.setEnabled(opts['index'])
+
+        self.cbMandt.setCheckState(self.bool_to_check(opts['mandt']))
+        self.cbSearch.setCheckState(self.bool_to_check(opts['search']))
+        self.cbUnique.setCheckState(self.bool_to_check(opts['unique']))
+        self.cbIndex.setCheckState(self.bool_to_check(opts['index']))
 
     def set_min_max_defaults(self, type_info):
         """
@@ -507,14 +510,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 return BaseColumn.types_by_display_name()[text].TYPE_INFO
         except:
                 return ''
-
-    #def append_attr(self, column_fields, attr, value):
-        #try:
-                #column_fields[attr] = \
-                        #self.property_by_name(self.current_type_info(), attr)
-                #return column_fields
-        #except:
-                #return column_fields
 
     def fill_work_area(self):
         """

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_stdm_config.ui'
 #
-# Created: Sat May 07 14:36:46 2016
+# Created: Fri May 20 11:59:42 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -471,6 +471,7 @@ class Ui_STDMWizard(object):
         sizePolicy.setVerticalStretch(1)
         sizePolicy.setHeightForWidth(self.txtHtml.sizePolicy().hasHeightForWidth())
         self.txtHtml.setSizePolicy(sizePolicy)
+        self.txtHtml.setReadOnly(True)
         self.txtHtml.setObjectName(_fromUtf8("txtHtml"))
         self.formLayout_10.setWidget(1, QtGui.QFormLayout.SpanningRole, self.txtHtml)
         STDMWizard.addPage(self.wpSaveProfile)
@@ -503,7 +504,7 @@ class Ui_STDMWizard(object):
         STDMWizard.setTabOrder(self.cboSPUnit, self.txtLicense)
 
     def retranslateUi(self, STDMWizard):
-        STDMWizard.setWindowTitle(_translate("STDMWizard", "STDM Profile Wizard", None))
+        STDMWizard.setWindowTitle(_translate("STDMWizard", "Configuration Wizard", None))
         self.wpLicense.setTitle(_translate("STDMWizard", "End User License Agreement", None))
         self.wpLicense.setSubTitle(_translate("STDMWizard", "Read carefully before you proceed", None))
         self.groupBox_16.setTitle(_translate("STDMWizard", "Terms and Conditions", None))
