@@ -77,10 +77,6 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
         self.cboGeoType.addItems(geom_types)
         self.cboGeoType.setCurrentIndex(0)
 
-    def projection_selector_TEST(self):
-        self._srid = '4236'  #projection_selector.selectedAuthId()[5:]
-        self.btnCoord.setText('EPSG: 4236')
-
     def projection_selector(self):
         """
         Opens the QGIS projection selector

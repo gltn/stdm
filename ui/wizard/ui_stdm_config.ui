@@ -32,7 +32,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>STDM Profile Wizard</string>
+   <string>Configuration Wizard</string>
   </property>
   <property name="modal">
    <bool>true</bool>
@@ -1150,6 +1150,9 @@
         <horstretch>0</horstretch>
         <verstretch>1</verstretch>
        </sizepolicy>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
       </property>
      </widget>
     </item>

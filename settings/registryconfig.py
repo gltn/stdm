@@ -29,6 +29,10 @@ COMPOSER_OUTPUT = 'ComposerOutputs'
 COMPOSER_TEMPLATE = 'ComposerTemplates'
 CURRENT_PROFILE = 'CurrentProfile'
 
+DOCUMENTS_KEY = 'documents'
+TEMPLATES_KEY = 'templates'
+OUTPUTS_KEY = 'outputs'
+
 class RegistryConfig(object):
     """
     Utility class for reading and writing STDM user settings in Windows Registry
