@@ -317,3 +317,51 @@ def date_from_string(str_val):
     :rtype: date
     """
     return datetime.strptime(str_val, '%Y-%m-%d')
+
+def format_column(attr):
+    """
+    Formats the column names by removing id
+    from lookups and fk columns and capitalize.
+    Used for title and form labels
+    :param attr: column name
+    :return: string - formatted column name
+    """
+    if '_id' in attr:
+        if attr != 'national_id':
+            display_name = attr[:-3]
+            display_name = display_name.replace('_', ' ').title()
+        else:
+            display_name = 'National ID'
+    else:
+        display_name = attr.replace('_', ' ').title()
+
+    return display_name
+
+def entity_display_columns(entity):
+    display_column = [
+    c.name
+    for c in
+    entity.columns.values()
+    if c.TYPE_INFO in ['VARCHAR',
+                       'SERIAL',
+                       'TEXT',
+                       'BIGINT',
+                       'DOUBLE',
+                       'DATE',
+                       'DATETIME',
+                       'YES_NO',
+                       'LOOKUP',
+                       'ADMIN_SPATIAL_UNIT',
+                       'MULTIPLE_SELECT'
+                       ]
+    ]
+    return display_column
+
+def model_display_data(model, entity):
+    #Configure spatial unit formatters
+    model_display = OrderedDict()
+    model_dic = model.__dict__
+    for key, value in model_dic.iteritems():
+        if key in entity_display_columns(entity) and key != 'id':
+            model_display[key] = value
+    return model_display
