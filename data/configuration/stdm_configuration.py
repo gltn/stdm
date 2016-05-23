@@ -39,14 +39,29 @@ class StdmConfiguration(QObject):
     """
     VERSION = 1.2
     profile_added = pyqtSignal(Profile)
-    profile_removed = pyqtSignal(str)
+    profile_removed = pyqtSignal(unicode)
 
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
         self.profiles = OrderedDict()
         self.is_null = True
+        self._removed_profiles = []
 
         LOGGER.debug("STDM Configuration initialized.")
+
+    @property
+    def removed_profiles(self):
+        """
+        :return: Returns a list of removed profiles.
+        :rtype: list(Profile)
+        """
+        return self._removed_profiles
+
+    def reset_removed_profiles(self):
+        """
+        Clears the list of removed profiles.
+        """
+        self._removed_profiles = []
 
     def add_profile(self, profile):
         """
@@ -94,17 +109,17 @@ class StdmConfiguration(QObject):
 
             return False
 
-        profile = self.profiles[name]
-
-        profile_replica = profile.clone()
-
-        del profile
+        del_profile = self.profiles.pop(name, None)
 
         if len(self.profiles) == 0:
             self.is_null = True
 
         #Remove all references for the profile using the clone object
-        profile_replica.on_delete()
+        if not del_profile is None:
+            del_profile.on_delete()
+
+        #Add to the list of removed profiles
+        self._removed_profiles.append(del_profile)
 
         LOGGER.debug('%s profile removed.', name)
 

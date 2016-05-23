@@ -27,20 +27,18 @@ from PyQt4.QtCore import (
     QObject
 )
 from stdm.data.configuration.columns import BaseColumn
-
 from stdm.data.configuration.columns import (
     BaseColumn,
     ForeignKeyColumn,
     GeometryColumn,
     SerialColumn
 )
-
 from stdm.data.configuration.db_items import (
     DbItem,
     TableItem
 )
-
 from stdm.data.configuration.entity_updaters import entity_updater
+from stdm.data.pg_utils import table_view_dependencies
 
 LOGGER = logging.getLogger('stdm')
 
@@ -68,7 +66,7 @@ class Entity(QObject, TableItem):
     sql_updater = entity_updater
 
     column_added = pyqtSignal(BaseColumn)
-    column_removed = pyqtSignal(str)
+    column_removed = pyqtSignal(unicode)
 
     def __init__(self, name, profile, create_id_column=True, supports_documents=True,
                  is_global=False, is_proxy=False):
@@ -93,7 +91,7 @@ class Entity(QObject, TableItem):
         configuration process.
         :type is_proxy: bool
         """
-        super(Entity, self).__init__(None)
+        QObject.__init__(self, profile)
         self.profile = profile
         self.is_global = is_global
         self.short_name = name
@@ -263,16 +261,6 @@ class Entity(QObject, TableItem):
         #Copy columns
         #self._copy_columns(entity)
 
-    def clone(self):
-        """
-        :return: Returns a deep copy of this object.
-        :rtype: Entity
-        """
-        kwargs = self._constructor_args()
-        ent = Entity(self.short_name, self.profile, **kwargs)
-        self._copy_attrs(ent)
-
-        return ent
 
     def on_delete(self):
         """
@@ -319,6 +307,26 @@ class Entity(QObject, TableItem):
         entity_relations = self.profile.parent_relations(self)
 
         return [er.child for er in entity_relations if er.valid()[0]]
+
+    def dependencies(self):
+        """
+        Gets the tables and views that are related to the specified entity.
+        :return: A dictionary containing a list of related entity names and
+        views respectively.
+        :rtype: dict
+        """
+        parents = self.parents()
+        children = self.children()
+
+        all_relations = parents + children
+
+        #Dependent entity names
+        dep_ent = [e.name for e in all_relations]
+
+        #Add views as well
+        dep_views = table_view_dependencies(self.name)
+
+        return {'entities': dep_ent, 'views': dep_views}
 
     def column_children_relations(self, name):
         """

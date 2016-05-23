@@ -57,7 +57,7 @@ class Profile(QObject):
 
     """
     entity_added = pyqtSignal(Entity)
-    entity_removed = pyqtSignal(str)
+    entity_removed = pyqtSignal(unicode)
 
     def __init__(self, name, configuration):
         """
@@ -65,7 +65,7 @@ class Profile(QObject):
         :type name: str
         :param configuration: Parent configuration object.
         """
-        super(Profile, self).__init__(configuration)
+        QObject.__init__(self, configuration)
         self.name = name
         self.description = ''
         self.configuration = configuration
@@ -174,13 +174,6 @@ class Profile(QObject):
         else:
             return items[0]
 
-    def clone(self):
-        """
-        :return: Returns a deep copy instance of this object.
-        :rtype: Profile
-        """
-        return deepcopy(self)
-
     def relation(self, name):
         """
         :param name: Name of the relation.
@@ -211,7 +204,7 @@ class Profile(QObject):
         """
         :param item: Entity object that is a parent in the collection of
         entity relations.
-        :type item: str or Entity
+        :type item: Entity
         :return: Returns a list of entity relations whose parents match that
         of the specified argument.
         :rtype: EntityRelation
@@ -229,7 +222,7 @@ class Profile(QObject):
         """
         :param parent: Entity object that is a child in the collection of
         entity relations.
-        :type parent: str or Entity
+        :type parent: Entity
         :return: Returns a list of entity relations whose children match that
         of the specified argument.
         :rtype: EntityRelation
@@ -334,8 +327,6 @@ class Profile(QObject):
         :returns: True if the item was successfully removed, otherwise False.
         :rtype: bool
         """
-        from PyQt4.QtGui import QMessageBox
-
         if not name in self.entities:
             LOGGER.debug('%s entity cannot be removed. Item does '
                          'not exist.', name)
@@ -343,11 +334,6 @@ class Profile(QObject):
             return False
 
         ent = self.entities[name]
-        ent.action = DbItem.DROP
-
-        entities = self.entities_by_type_info('ENTITY')
-
-        ent_replica = ent.clone()
 
         #Check existing entity relation where this entity is referenced
         parent_relations = self.parent_relations(ent)
@@ -357,12 +343,14 @@ class Profile(QObject):
         for er in remove_relations:
             self.remove_relation(er.name)
 
-        #Now delete the original entity
-        del self.entities[name]
+        #Now remove the entity from the collection
+        del_entity = self.entities.pop(name, None)
 
         LOGGER.debug('%s entity removed from %s profile', name, self.name)
 
-        self.removed_entities.append(ent_replica)
+        if not del_entity is None:
+            del_entity.action = DbItem.DROP
+            self.removed_entities.append(del_entity)
 
         self.entity_removed.emit(name)
 

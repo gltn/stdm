@@ -2,6 +2,7 @@ from sqlalchemy import (
     create_engine,
     MetaData
 )
+from sqlalchemy.engine import reflection
 from sqlalchemy.ext.automap import automap_base
 
 from stdm.data.database import (
@@ -9,6 +10,12 @@ from stdm.data.database import (
     Model,
     STDMDb
 )
+
+def _bind_metadata(metadata):
+    #Ensures there is a connectable set in the metadata
+    if metadata.bind is None:
+            metadata.bind = STDMDb.instance().engine
+
 
 def entity_model(entity, entity_only=False):
     """
@@ -32,9 +39,7 @@ def entity_model(entity, entity_only=False):
         rf_entities.extend(parents)
         rf_entities.extend(children)
 
-    #Ensure there is a connectable set in the metadata
-    if metadata.bind is None:
-        metadata.bind = STDMDb.instance().engine
+    _bind_metadata(metadata)
 
     #We will use a different metadata object just for reflecting 'rf_entities'
     rf_metadata = MetaData(metadata.bind)
@@ -46,3 +51,10 @@ def entity_model(entity, entity_only=False):
     Base.prepare()
 
     return getattr(Base.classes, entity.name, None)
+
+
+def entity_foreign_keys(entity):
+    _bind_metadata(metadata)
+    insp = reflection.Inspector.from_engine(metadata.bind)
+
+    return [fi['name'] for fi in insp.get_foreign_keys(entity.name)]

@@ -26,6 +26,7 @@ from migrate.changeset import *
 
 from stdm.data.pg_utils import (
     _execute,
+    drop_view,
     pg_table_exists
 )
 from stdm.data.configuration.columns import (
@@ -41,6 +42,22 @@ BASE_STR_VIEW = 'vw_social_tenure_relationship'
 #Columns types which should not be incorporated in the STR view
 _exclude_view_column_types = ['MULTIPLE_SELECT']
 
+def view_deleter(social_tenure, engine):
+    """
+    Deletes the database view using the information in the social tenure
+    object.
+    :param social_tenure: Social tenure object containing the view
+    information.
+    :type social_tenure: SocialTenure
+    :param engine: SQLAlchemy connectable object.
+    :type engine: Engine
+    """
+    view_name = social_tenure.view_name
+
+    LOGGER.debug('Attempting to delete %s view...', view_name)
+
+    drop_view(view_name)
+
 def view_updater(social_tenure, engine):
     """
     Creates a generic database view linking all STR entities.
@@ -54,14 +71,9 @@ def view_updater(social_tenure, engine):
     #Check if there is an existing one and delete if it exists
     LOGGER.debug('Checking if %s view exists...', view_name)
 
+    #Do not create if it already exists
     if pg_table_exists(view_name):
-        LOGGER.debug('Attempting to delete %s view...', view_name)
-
-        del_sql = u'DROP VIEW {0} CASCADE'.format(view_name)
-        normalized_del_sql = text(del_sql)
-
-        #TODO: check the current logged in user and compare with view owner
-        result = _execute(normalized_del_sql)
+        return
 
     #Create the SQL statement for creating the view where party is the
     # primary entity

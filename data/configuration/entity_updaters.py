@@ -19,6 +19,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import logging
+
 from sqlalchemy import (
     Column,
     Integer,
@@ -27,7 +28,10 @@ from sqlalchemy import (
 
 from stdm.data.configuration import entity_model
 from stdm.data.configuration.db_items import DbItem
-from stdm.data.pg_utils import table_column_names
+from stdm.data.pg_utils import (
+    drop_view,
+    table_column_names
+)
 
 LOGGER = logging.getLogger('stdm')
 
@@ -50,7 +54,7 @@ def entity_updater(entity, engine, metadata):
 
     LOGGER.debug('Attempting to update %s entity', entity.name)
 
-    #All table will have an ID column
+    #All tables will have an ID column
     table = Table(entity.name, metadata,
                   Column('id', Integer, primary_key=True),
                   extend_existing=True
@@ -82,7 +86,30 @@ def drop_entity(entity, table, engine):
     """
     Delete the entity from the database.
     """
-    table.drop(engine, checkfirst=True)
+    #Drop dependencies first
+    status = drop_dependencies(entity)
+
+    #Only drop table if dropping dependencies succeeded
+    if status:
+        table.drop(engine, checkfirst=True)
+
+
+def drop_dependencies(entity):
+    """
+    Deletes dependent views before deleting the table.
+    :return: True if the DROP succeeded, otherwise False.
+    :rtype: bool
+    """
+    dep = entity.dependencies()
+    dep_views = dep['views']
+
+    for v in dep_views:
+        status = drop_view(v)
+
+        if not status:
+            return False
+
+    return True
 
 
 def _table_column_names(table):
@@ -125,6 +152,10 @@ def value_list_updater(value_list, engine, metadata):
     :type metadata: MetaData
     """
     entity_updater(value_list, engine, metadata)
+
+    #Return if action is to delete the lookup table
+    if value_list.action == DbItem.DROP:
+        return
 
     #Update lookup values
     model = entity_model(value_list, True)
