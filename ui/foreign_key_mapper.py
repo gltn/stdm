@@ -690,7 +690,7 @@ class ForeignKeyMapper(QWidget):
         specified in the mapper including the system-wide data connection
         properties.
         """
-        from stdm.data import vector_layer
+        from stdm.data.pg_utils import vector_layer
 
         if self._dbModel is None:
             msg = QApplication.translate("ForeignKeyMapper",
@@ -745,69 +745,3 @@ class ForeignKeyMapper(QWidget):
             retStatus = entitySelector.exec_()
             if retStatus == QDialog.Accepted:
                 pass
-                
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
