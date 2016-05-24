@@ -154,11 +154,11 @@ class EntityNodeFormatter(STRNodeFormatter):
 
         self._current_data_source_fk_ref = self._current_data_source_foreign_key_reference()
         #numeric_char_cols for entities - party and sp_unit
+        print self.curr_profile.entity_by_name(config.data_source_name)
         self._numeric_char_cols = [
             e.name
             for e in
-            self.curr_profile.
-                entity_by_name(config.data_source_name).
+            self.curr_profile.entity_by_name(config.data_source_name).
                 columns.values()
             if e.TYPE_INFO in ['VARCHAR',
                                'SERIAL',
