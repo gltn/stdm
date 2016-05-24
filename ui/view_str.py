@@ -205,6 +205,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             for c in columns:
                 if c.name != 'id':
                     if c.searchable:
+
                         entity_cfg.filterColumns[c.name] = display_name(c.name)
                         entity_cfg.displayColumns[c.name] = display_name(c.name)
             return entity_cfg

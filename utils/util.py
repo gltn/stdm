@@ -39,7 +39,7 @@ from PyQt4.QtGui import (
     QDialog,
     QMessageBox
 )
-
+from stdm.data.configuration import entity_model
 from qgis.gui import QgsEncodingFileDialog
 
 
@@ -365,3 +365,19 @@ def model_display_data(model, entity):
         if key in entity_display_columns(entity) and key != 'id':
             model_display[key] = value
     return model_display
+
+# def entity_lookup_value_to_id(id, entity):
+#
+#     db_model = entity_model(entity, True)
+#
+#     db_obj = db_model()
+#     str_query = db_obj.queryObject().filter(
+#         db_model.id == id
+#     ).all()
+#
+#     value = getattr(
+#         str_query[0],
+#         'value',
+#         None
+#     )
+#     return value

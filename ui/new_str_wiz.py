@@ -82,7 +82,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.row = 0 # number of party rows
         # Current profile instance and properties
         self.curr_profile = current_profile()
-
+        print vars(self.curr_profile)
+       # print self.current_profile.social_tenure
         self.prefix = self.curr_profile.prefix
 
         self.str_name = str(self.curr_profile.social_tenure.name)
@@ -469,6 +470,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             db_model.id == sel_attr[0]
             ).first()
             self.sel_spatial_unit.append(spatial_unit_query)
+
         if entity == self.str_type:
             self.sel_str_type = []
             for sel_value in sel_attr:
@@ -579,7 +581,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 QApplication.translate(
                     "newSTRWiz",
                     "Social Tenure Relationship Information"),
-                    ":/plugins/stdm/images/icons/social_tenure.png"
+                ":/plugins/stdm/images/icons/social_tenure.png"
             )
 
         for q_obj in self.sel_spatial_unit:
@@ -590,8 +592,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             summaryTreeLoader.addCollection(
                 spatial_unit_mapping,
                 QApplication.translate(
-                    "newSTRWiz","Spatial Unit Information"),
-                    ":/plugins/stdm/images/icons/property.png"
+                    "newSTRWiz", "Spatial Unit Information"),
+                ":/plugins/stdm/images/icons/property.png"
             )
 
 
@@ -602,7 +604,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             srcDocMapping,
             QApplication.translate(
                 "newSTRWiz","Source Documents"),
-                ":/plugins/stdm/images/icons/attachment.png"
+            ":/plugins/stdm/images/icons/attachment.png"
         )
       
         summaryTreeLoader.display()  
@@ -999,8 +1001,7 @@ class ComboBoxDelegate(QItemDelegate):
             index, Qt.DisplayRole
         )
         if list_item_index is not None and \
-                not isinstance(list_item_index, unicode) and  \
-                not isinstance(list_item_index, int):
+                not isinstance(list_item_index, (unicode, int)):
             value = list_item_index.toInt()
             comboBox.setCurrentIndex(value[0])
 
