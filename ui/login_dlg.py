@@ -51,15 +51,17 @@ class loginDlg(QDialog, Ui_frmLogin):
         Initialize GUI
         '''
         #Change the name of the OK button to Login
-        btnLogin=self.btnBox.button(QDialogButtonBox.Ok)
-        btnLogin.setText(QApplication.translate("loginDlg","Login"))
+        btnLogin = self.btnBox.button(QDialogButtonBox.Ok)
+        btnLogin.setText(QApplication.translate("loginDlg", "Login"))
+
         #Connect slots
+        self.btn_db_settings.clicked.connect(self.settingsDialog)
         self.connect(self.btnBox, SIGNAL("accepted()"), self.acceptdlg)
         
         #Configure notification bar
         self.notifBar = NotificationBar(self.vlNotification)
         self.txtUserName.setText('postgres')
-        #self.txtPassword.setText('root')
+        self.txtPassword.setFocus()
                         
     def validateInput(self):
         '''
@@ -92,31 +94,15 @@ class loginDlg(QDialog, Ui_frmLogin):
         password = self.txtPassword.text()
         self.User = User(username, password)
 
-    def resetSetting(self):
-        '''
-        Add reset button to change the settings incase they are incorrect
-        '''
-        self.btnBox.setStandardButtons(QDialogButtonBox.Reset | QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
-        btnReset=self.btnBox.button(QDialogButtonBox.Reset)
-        btnReset.setText(QApplication.translate('loginDlg','Reset Settings'))
-
-    def onRegistrySettings(self):
-        '''
-        On clicking the reset button, activate the settings dialog
-        '''
-        btnReset=self.btnBox.button(QDialogButtonBox.Reset)
-        btnReset.clicked.connect(self.settingsDialog)
-
-
     def settingsDialog(self):
         '''
         Incase the user clicks reset button to change the settings
         '''
         setting_data = self.reg_setting()
         dbDlg = dbconnDlg(self)
-        dbDlg.txtDatabase.setText(str(setting_data['Database']))
-        dbDlg.txtHost.setText(str(setting_data['Host']))
-        dbDlg.txtPort.setText(str(setting_data['Port']))
+        dbDlg.txtDatabase.setText(unicode(setting_data['Database']))
+        dbDlg.txtHost.setText(unicode(setting_data['Host']))
+        dbDlg.txtPort.setText(unicode(setting_data['Port']))
         dbDlg.exec_()
 
     def reg_setting(self):
@@ -137,20 +123,33 @@ class loginDlg(QDialog, Ui_frmLogin):
             dbconfig = DatabaseConfig()
             dbconn = dbconfig.read()
             if not dbconn:
-                msg = QApplication.translate("loginDlg","The STDM database connection has not been configured in your system.\nWould you like to configure it now?")
-                response = QMessageBox.warning(self, QApplication.translate("LoginDialog","Database Connection"), 
-                                               msg, QMessageBox.Yes|QMessageBox.No, QMessageBox.Yes)
+                msg = QApplication.translate("loginDlg","The STDM database "
+                                                        "connection has not "
+                                                        "been configured in "
+                                                        "your system.\nWould "
+                                                        "you like to configure "
+                                                        "it now?")
+                response = QMessageBox.warning(self,
+                                               QApplication.translate(
+                                                   "LoginDialog",
+                                                   "Database Connection"),
+                                               msg,
+                                               QMessageBox.Yes|QMessageBox.No,
+                                               QMessageBox.Yes)
                 if response == QMessageBox.Yes:
                     dbDlg = dbconnDlg(self)
                     if dbDlg.exec_() == QDialog.Accepted:
                         #set the partial database connection properties
                         dbconn = dbDlg.dbconn
+
                 #Whatever the outcome of the database settings definition process                
-                if dbconn == None:
-                    return                
+                if dbconn is None:
+                    return
+
             dbconn.User = self.User
             #Test connection
             success, msg = dbconn.validateConnection()
+
             if success:
                 self.dbConn = dbconn
                 self.accept()
@@ -159,9 +158,6 @@ class loginDlg(QDialog, Ui_frmLogin):
                                      QApplication.translate("LoginDialog",
                                 "Authentication Failed"),
                                      msg)
-                if self.User.UserName == SUPERUSER:
-                    self.resetSetting()
-                    self.onRegistrySettings()
                 self.txtPassword.setFocus()
                 self.txtPassword.selectAll()
 

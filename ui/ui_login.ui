@@ -7,20 +7,59 @@
     <x>0</x>
     <y>0</y>
     <width>320</width>
-    <height>208</height>
+    <height>152</height>
    </rect>
   </property>
   <property name="maximumSize">
    <size>
     <width>320</width>
-    <height>16777215</height>
+    <height>152</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>STDM Login</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <item row="1" column="0">
+   <item row="3" column="1">
+    <widget class="QDialogButtonBox" name="btnBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QToolButton" name="btn_db_settings">
+     <property name="toolTip">
+      <string>Edit database server settings</string>
+     </property>
+     <property name="statusTip">
+      <string>Edit database server settings</string>
+     </property>
+     <property name="whatsThis">
+      <string>Edit database server settings</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="../resources.qrc">
+       <normaloff>:/plugins/stdm/images/icons/db_server_settings.png</normaloff>:/plugins/stdm/images/icons/db_server_settings.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>16</width>
+       <height>16</height>
+      </size>
+     </property>
+     <property name="checkable">
+      <bool>false</bool>
+     </property>
+     <property name="autoRaise">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="1">
       <widget class="QLineEdit" name="txtUserName">
@@ -67,14 +106,7 @@
      </item>
     </layout>
    </item>
-   <item row="2" column="0">
-    <widget class="QDialogButtonBox" name="btnBox">
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
+   <item row="0" column="0" colspan="2">
     <layout class="QVBoxLayout" name="vlNotification"/>
    </item>
   </layout>
@@ -84,7 +116,9 @@
   <tabstop>txtPassword</tabstop>
   <tabstop>btnBox</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>btnBox</sender>

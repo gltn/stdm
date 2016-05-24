@@ -618,6 +618,9 @@ class EntitySerializer(EntitySerializerCollection):
             )
             ent.description = description
 
+            #Add entity to the profile so that it is discoverable
+            profile.add_entity(ent)
+
             column_elements = EntitySerializer.column_elements(child_element)
 
             for ce in column_elements:
@@ -630,8 +633,6 @@ class EntitySerializer(EntitySerializerCollection):
                     ColumnSerializerCollection.read_xml(ce, ent,
                                                         association_elements,
                                                         entity_relation_elements)
-
-            profile.add_entity(ent)
 
     @staticmethod
     def column_elements(entity_element):
