@@ -744,6 +744,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         profile.add_entity(entity)
 
     def get_model_entity(self, view):
+        """
+        Extracts and returns an entitymodel, entity and selected item ID
+        from QAbstractItemView of a view widget
+        param view: Widget that inherits QAbstractItemView
+        type view: QAbstractitemView
+        rtype: tuple
+        """
         sel_id = -1
         entity = None
         model_item = view.currentIndex().model()
@@ -754,6 +761,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 		
     def addColumns(self, v_model, columns):
         """
+        Add columns to a view model
         param v_model: Instance of EntitiesModel
         type v_model: EntitiesModel
         param columns: List of column names to insert in v_model
@@ -908,18 +916,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No profile selected to add lookup!"))
 
-    def new_lookup_test(self):
-        profile = self.current_profile()
-        if profile:
-            gender_lookup = profile.create_entity('gender', value_list_factory)
-            mstatus = profile.create_entity('marital status', value_list_factory)
-
-            profile.add_entity(gender_lookup)
-            profile.add_entity(mstatus)
-
-            self.lookup_view_model.add_entity(gender_lookup)
-            self.lookup_view_model.add_entity(mstatus)
-
     def edit_lookup(self):
         profile = self.current_profile()
         if profile:
@@ -1055,4 +1051,5 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         msgbox.setDefaultButton(QMessageBox.Cancel);
         result = msgbox.exec_()
         return result
+
 
