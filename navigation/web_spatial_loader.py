@@ -291,7 +291,6 @@ class WebSpatialLoader(QObject):
             label_js_object = "{'%s':'%s'}" % (labelfield, str(lbl_val))
         
         #Reproject to web mercator
-        #TODO: Remove hardcode of geometry field name
         geom = getattr(sp_unit, geometry_col)
         sp_unit_wkb = self.dbSession.scalar(geom.ST_Transform(900913))
 

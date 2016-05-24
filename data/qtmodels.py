@@ -438,7 +438,7 @@ class PersonTableModel(QAbstractTableModel):
         
         return True
     
-class BaseSTDMTableModel(QAbstractTableModel):
+class BaseSTDMTableModel(QAbstractTableModel, QAbstractItemView):
     """
     Generic table model for use in STDM table views.
     """
@@ -490,7 +490,8 @@ class BaseSTDMTableModel(QAbstractTableModel):
     def flags(self,index):
         if not index.isValid():
             return Qt.ItemIsEnabled
-        
+        # elif index.column() > 1:
+        #             return Qt.ItemIsEnabled | Qt.ItemIsSelectable
         return Qt.ItemIsEditable|Qt.ItemIsSelectable|Qt.ItemIsEnabled
     
     def insertRows(self,position,rows,parent = QModelIndex()):
@@ -510,16 +511,15 @@ class BaseSTDMTableModel(QAbstractTableModel):
         return True
         
     def removeRows(self,position,count,parent = QModelIndex()):
+
         if position < 0 or position > len(self._initData):
             return False
         
         self.beginRemoveRows(parent,position,position + count - 1)
-        
-        for i in range(count):            
+
+        for i in range(count):
             del self._initData[position]
-            
         self.endRemoveRows()
-        
         return True
 
 class VerticalHeaderSortFilterProxyModel(QSortFilterProxyModel):

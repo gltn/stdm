@@ -72,4 +72,4 @@ class Ui_frmLogin(object):
         self.label.setText(QtGui.QApplication.translate("frmLogin", "UserName", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("frmLogin", "Password", None, QtGui.QApplication.UnicodeUTF8))
 
-import resources_rc
+from stdm import resources_rc
