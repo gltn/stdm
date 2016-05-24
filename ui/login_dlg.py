@@ -61,6 +61,7 @@ class loginDlg(QDialog, Ui_frmLogin):
         #Configure notification bar
         self.notifBar = NotificationBar(self.vlNotification)
         self.txtUserName.setText('postgres')
+        self.txtPassword.setFocus()
                         
     def validateInput(self):
         '''

@@ -190,19 +190,14 @@ class Entity(QObject, TableItem):
 
             return False
 
-        col = self.columns[name]
-
-        #Create a copy of the object before deleting.
-        col_replica = col.clone()
-
-        del self.columns[name]
+        col = self.columns.pop(name)
 
         LOGGER.debug('%s column removed from %s entity', name, self.name)
 
-        col_replica.action = DbItem.DROP
+        col.action = DbItem.DROP
 
         #Add column to the collection of updated columns
-        self.append_updated_column(col_replica)
+        self.append_updated_column(col)
 
         self.column_removed.emit(name)
 
@@ -333,25 +328,26 @@ class Entity(QObject, TableItem):
         :param name: Column name
         :type name: str
         :return: Returns a list of entity relations which reference the
-        column with the given name as the parent column in the entity relation.
+        column with the given name as the child column in the entity relation.
         :rtype: list
         """
         entity_relations = self.profile.child_relations(self)
 
-        return [er for er in entity_relations if er.parent_column == name]
+        return [er for er in entity_relations if er.child_column == name]
 
     def column_parent_relations(self, name):
         """
         :param name: Column name
         :type name: str
         :return: Returns a list of entity relations which reference the
-        column with the given name as the child column in the entity relation.
+        column with the given name as the parent column in the entity
+        relation.
         These are basically entity relations in foreign key columns.
         :rtype: list
         """
         entity_relations = self.profile.parent_relations(self)
 
-        return [er for er in entity_relations if er.child_column == name]
+        return [er for er in entity_relations if er.parent_column == name]
 
     def columns_by_type_info(self, type_info):
         """

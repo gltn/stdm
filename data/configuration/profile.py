@@ -160,16 +160,17 @@ class Profile(QObject):
 
     def entity_by_name(self, name):
         """
-        :param name: Name of the entity.
+        :param name: Name of the entity i.e. table name in the database.
         :type name: str
-        :return: Return an entity object with the specified name. ValueLists
-        are also searched and returned.
+        :return: Return an entity object with the specified name attribute.
+        ValueLists are also searched and returned.
         :rtype: Entity
         """
-        items = [e for e in self.entities.values() if e.short_name == name]
+        items = [e for e in self.entities.values() if e.name == name]
 
         if len(items) == 0:
             return None
+        
         else:
             return items[0]
 
@@ -212,10 +213,10 @@ class Profile(QObject):
         if not isinstance(item, Entity):
             return []
 
-        item = item.name
+        name = item.name
 
         return [er for er in self.relations.values()
-                if er.parent.name == item]
+                if er.parent.name == name]
 
     def child_relations(self, item):
         """
@@ -230,10 +231,10 @@ class Profile(QObject):
         if not isinstance(item, Entity):
             return []
 
-        item = item.name
+        name = item.name
 
         return [er for er in self.relations.values()
-                if er.child.name == item]
+                if er.child.name == name]
 
     def add_entity_relation(self, entity_relation):
         """
