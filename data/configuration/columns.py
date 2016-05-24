@@ -48,6 +48,7 @@ from stdm.data.configuration.db_items import (
     DbItem
 )
 from stdm.data.configuration.entity_relation import EntityRelation
+from stdm.data.pg_utils import table_view_dependencies
 
 LOGGER = logging.getLogger('stdm')
 
@@ -219,11 +220,32 @@ class BaseColumn(ColumnItem):
         """
         pass
 
-    def clone(self):
+    def dependencies(self):
         """
-        Create and return a new deep copy of this object.
+        Gets the tables and views that are related to this column.
+        :return: A dictionary containing a list of related entity names and
+        views respectively.
+        :rtype: dict
         """
-        return deepcopy(self)
+        #Get all relations to this column
+        child_relations = self.entity.column_children_relations(self.name)
+        parent_relations = self.entity.column_parent_relations(self.name)
+
+        r = child_relations + parent_relations
+
+        #Get children entities
+        parent_entities = [er.parent for er in child_relations]
+        child_entities = [er.child for er in parent_relations]
+
+        all_entities = parent_entities + child_entities
+
+        #Dependent entity names
+        dep_ent_names = [e.name for e in all_entities]
+
+        #Add views related to this column
+        dep_views = table_view_dependencies(self.entity.name, self.name)
+
+        return {'entities': dep_ent_names, 'views': dep_views}
 
     def child_entity_relations(self):
         """

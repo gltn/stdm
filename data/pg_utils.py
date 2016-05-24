@@ -491,18 +491,27 @@ def foreign_key_parent_tables(table_name, search_parent=True, filter_exp=None):
     return fk_refs
 
 
-def table_view_dependencies(table_name):
+def table_view_dependencies(table_name, column_name=None):
     """
-    Find database views that are dependent on the given table.
+    Find database views that are dependent on the given table and
+    optionally the column.
     :param table_name: Table name
     :type table_name: str
-    :return: A list of views which are dependent on the given table name.
+    :param column_name: Name of the column whose dependent views are to be
+    extracted.
+    :type column_name: str
+    :return: A list of views which are dependent on the given table name and
+    column respectively.
     :rtype: list(str)
     """
     views = []
 
-    #Load the SQL file
-    script_path = PLUGIN_DIR + "/scripts/table_related_views.sql"
+    #Load the SQL file depending on whether its table or table/column
+    if column_name is None:
+        script_path = PLUGIN_DIR + '/scripts/table_related_views.sql'
+    else:
+        script_path = PLUGIN_DIR + '/scripts/table_column_related_views.sql'
+
     script_file = QFile(script_path)
 
     if not script_file.exists():
@@ -518,7 +527,11 @@ def table_view_dependencies(table_name):
         sql = reader.readAll()
         if sql:
             t = text(sql)
-            result = _execute(t,table_name=table_name)
+            if column_name is None:
+                result = _execute(t,table_name=table_name)
+
+            else:
+                result = _execute(t,table_name=table_name, column_name=column_name)
 
             #Get view names
             for r in result:
