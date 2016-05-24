@@ -27,20 +27,18 @@ from PyQt4.QtCore import (
     QObject
 )
 from stdm.data.configuration.columns import BaseColumn
-
 from stdm.data.configuration.columns import (
     BaseColumn,
     ForeignKeyColumn,
     GeometryColumn,
     SerialColumn
 )
-
 from stdm.data.configuration.db_items import (
     DbItem,
     TableItem
 )
-
 from stdm.data.configuration.entity_updaters import entity_updater
+from stdm.data.pg_utils import table_view_dependencies
 
 LOGGER = logging.getLogger('stdm')
 
@@ -68,7 +66,7 @@ class Entity(QObject, TableItem):
     sql_updater = entity_updater
 
     column_added = pyqtSignal(BaseColumn)
-    column_removed = pyqtSignal(str)
+    column_removed = pyqtSignal(unicode)
 
     def __init__(self, name, profile, create_id_column=True, supports_documents=True,
                  is_global=False, is_proxy=False):
@@ -102,7 +100,7 @@ class Entity(QObject, TableItem):
         if not self.is_global:
             # format the internal name, replace spaces between words 
             # with underscore and make all letters lower case.
-            name = str(name).strip()
+            name = unicode(name).strip()
 
         name = name.replace(' ', "_")
         name = name.lower()
@@ -192,19 +190,14 @@ class Entity(QObject, TableItem):
 
             return False
 
-        col = self.columns[name]
-
-        #Create a copy of the object before deleting.
-        col_replica = col.clone()
-
-        del self.columns[name]
+        col = self.columns.pop(name)
 
         LOGGER.debug('%s column removed from %s entity', name, self.name)
 
-        col_replica.action = DbItem.DROP
+        col.action = DbItem.DROP
 
         #Add column to the collection of updated columns
-        self.append_updated_column(col_replica)
+        self.append_updated_column(col)
 
         self.column_removed.emit(name)
 
@@ -226,12 +219,43 @@ class Entity(QObject, TableItem):
         if self.action == DbItem.NONE:
             self.action = DbItem.ALTER
 
-    def clone(self):
+    def _constructor_args(self):
         """
-        :return: Returns a deep copy of this object.
-        :rtype: Entity
+        :return: Returns a collection of the constructor keys and
+        corresponding values for cloning the this object.
         """
-        return deepcopy(self)
+        constructor_args = {}
+
+        constructor_args['create_id_column'] = self.create_id_column
+        constructor_args['supports_documents'] = self.supports_documents
+        constructor_args['is_global'] = self.is_global
+        constructor_args['is_proxy'] = self.is_proxy
+
+        return constructor_args
+
+    def _copy_columns(self, entity):
+        """
+        Copies the columns in the current object into the specified entity.
+        :param entity: Target entity of the columns to be copied.
+        :type entity: Entity
+        """
+        for c in self.columns.values():
+            new_col = c.clone()
+            entity.add_column(new_col)
+
+    def _copy_attrs(self, entity):
+        """
+        Copies the attributes of the current object into the given entity object.
+        :param entity: Target of the copied entity attributes.
+        :type entity: Entity
+        """
+        entity.description = self.description
+        entity.is_associative = self.is_associative
+        entity.user_editable = self.user_editable
+
+        #Copy columns
+        #self._copy_columns(entity)
+
 
     def on_delete(self):
         """
@@ -279,30 +303,51 @@ class Entity(QObject, TableItem):
 
         return [er.child for er in entity_relations if er.valid()[0]]
 
+    def dependencies(self):
+        """
+        Gets the tables and views that are related to the specified entity.
+        :return: A dictionary containing a list of related entity names and
+        views respectively.
+        :rtype: dict
+        """
+        parents = self.parents()
+        children = self.children()
+
+        all_relations = parents + children
+
+        #Dependent entity names
+        dep_ent = [e.name for e in all_relations]
+
+        #Add views as well
+        dep_views = table_view_dependencies(self.name)
+
+        return {'entities': dep_ent, 'views': dep_views}
+
     def column_children_relations(self, name):
         """
         :param name: Column name
         :type name: str
         :return: Returns a list of entity relations which reference the
-        column with the given name as the parent column in the entity relation.
+        column with the given name as the child column in the entity relation.
         :rtype: list
         """
         entity_relations = self.profile.child_relations(self)
 
-        return [er for er in entity_relations if er.parent_column == name]
+        return [er for er in entity_relations if er.child_column == name]
 
     def column_parent_relations(self, name):
         """
         :param name: Column name
         :type name: str
         :return: Returns a list of entity relations which reference the
-        column with the given name as the child column in the entity relation.
+        column with the given name as the parent column in the entity
+        relation.
         These are basically entity relations in foreign key columns.
         :rtype: list
         """
         entity_relations = self.profile.parent_relations(self)
 
-        return [er for er in entity_relations if er.child_column == name]
+        return [er for er in entity_relations if er.parent_column == name]
 
     def columns_by_type_info(self, type_info):
         """

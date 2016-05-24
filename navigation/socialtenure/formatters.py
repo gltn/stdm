@@ -32,6 +32,7 @@ from sqlalchemy import (
 )
 
 from stdm.settings import current_profile
+from stdm.data.configuration import entity_model
 from stdm.ui.stdmdialog import DeclareMapping
 from stdm.utils.util import getIndex
 
@@ -106,7 +107,7 @@ class EntityNodeFormatter(STRNodeFormatter):
 
         self._str_title = QApplication.translate("STRFormatterBase",
                                                  "Social Tenure Relationship")
-
+        #self._str_model = entity_model()
         self._str_model = DeclareMapping.instance().tableMapping(self._str_ref)
 
         '''
@@ -193,7 +194,12 @@ class EntityNodeFormatter(STRNodeFormatter):
             if c != "id" and c in filter_cols:
                 if hasattr(model, c):
                     k = c, c.replace("_", " ").title()
-                    disp_mapping[k] = getattr(model, c)
+                    if c == self.curr_profile.social_tenure.tenure_type_collection.name:
+                        str_obj = getattr(model, self.curr_profile.social_tenure.name, None) # model should be the result from query obj
+                        disp_mapping[k] = getattr(model, c)
+                    else:
+                        disp_mapping[k] = getattr(model, c)
+                    print disp_mapping
 
         return disp_mapping
 

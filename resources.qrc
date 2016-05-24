@@ -89,5 +89,6 @@
     <file>images/icons/photo_512.png</file>
     <file>images/icons/layer.gif</file>
     <file>images/icons/table_designer.png</file>
+    <file>images/icons/db_server_settings.png</file>
   </qresource>
 </RCC>

@@ -416,7 +416,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.txtHtml.setTextColor(QColor('black'))
 
         if info_id == 1: # Warning
-            self.txtHtml.setTextColor(QColor('yellow'))
+            self.txtHtml.setTextColor(QColor(255, 170, 0))
 
         if info_id == 2: # Error
             self.txtHtml.setTextColor(QColor('red'))
@@ -705,6 +705,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.cboSPUnit.currentIndexChanged.emit(self.cboSPUnit.currentIndex())
 
     def switch_profile(self, name):
+        #Exit if the name is empty
+        if not name:
+            return
+
         profile = self.stdm_config.profile(unicode(name))
         self.lblDesc.setText(profile.description)
 

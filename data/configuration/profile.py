@@ -57,7 +57,7 @@ class Profile(QObject):
 
     """
     entity_added = pyqtSignal(Entity)
-    entity_removed = pyqtSignal(str)
+    entity_removed = pyqtSignal(unicode)
 
     def __init__(self, name, configuration):
         """
@@ -160,25 +160,19 @@ class Profile(QObject):
 
     def entity_by_name(self, name):
         """
-        :param name: Name of the entity.
+        :param name: Name of the entity i.e. table name in the database.
         :type name: str
-        :return: Return an entity object with the specified name. ValueLists
-        are also searched and returned.
+        :return: Return an entity object with the specified name attribute.
+        ValueLists are also searched and returned.
         :rtype: Entity
         """
         items = [e for e in self.entities.values() if e.name == name]
 
         if len(items) == 0:
             return None
+        
         else:
             return items[0]
-
-    def clone(self):
-        """
-        :return: Returns a deep copy instance of this object.
-        :rtype: Profile
-        """
-        return deepcopy(self)
 
     def relation(self, name):
         """
@@ -210,7 +204,7 @@ class Profile(QObject):
         """
         :param item: Entity object that is a parent in the collection of
         entity relations.
-        :type item: str or Entity
+        :type item: Entity
         :return: Returns a list of entity relations whose parents match that
         of the specified argument.
         :rtype: EntityRelation
@@ -219,16 +213,16 @@ class Profile(QObject):
         if not isinstance(item, Entity):
             return []
 
-        item = item.name
+        name = item.name
 
         return [er for er in self.relations.values()
-                if er.parent.name == item]
+                if er.parent.name == name]
 
     def child_relations(self, item):
         """
         :param parent: Entity object that is a child in the collection of
         entity relations.
-        :type parent: str or Entity
+        :type parent: Entity
         :return: Returns a list of entity relations whose children match that
         of the specified argument.
         :rtype: EntityRelation
@@ -237,10 +231,10 @@ class Profile(QObject):
         if not isinstance(item, Entity):
             return []
 
-        item = item.name
+        name = item.name
 
         return [er for er in self.relations.values()
-                if er.child.name == item]
+                if er.child.name == name]
 
     def add_entity_relation(self, entity_relation):
         """
@@ -340,9 +334,6 @@ class Profile(QObject):
             return False
 
         ent = self.entities[name]
-        ent.action = DbItem.DROP
-
-        ent_replica = ent.clone()
 
         #Check existing entity relation where this entity is referenced
         parent_relations = self.parent_relations(ent)
@@ -352,12 +343,14 @@ class Profile(QObject):
         for er in remove_relations:
             self.remove_relation(er.name)
 
-        #Now delete the original entity
-        del ent
+        #Now remove the entity from the collection
+        del_entity = self.entities.pop(name, None)
 
         LOGGER.debug('%s entity removed from %s profile', name, self.name)
 
-        self.removed_entities.append(ent_replica)
+        if not del_entity is None:
+            del_entity.action = DbItem.DROP
+            self.removed_entities.append(del_entity)
 
         self.entity_removed.emit(name)
 
@@ -397,7 +390,7 @@ class Profile(QObject):
         :type type_info: str
         :returns: A list of entities based on the specified TYPE_INFO
         e.g. ENTITY, VALUE_LIST etc.
-        :rtype: Entity
+        :rtype: list(Entity)
         """
         return [entity for entity in self.entities.values()
                 if entity.TYPE_INFO == type_info]

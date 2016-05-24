@@ -38,7 +38,75 @@ from stdm.data.pg_utils import (
 LOGGER = logging.getLogger('stdm')
 
 
-def foreign_key_constraint(entity_relation):
+def _table_col_attr(table, col_names):
+    col_attrs = []
+
+    for c in col_names:
+        col_attr = getattr(table.c, c, None)
+        if not col_attr is None:
+            col_attrs.append(col_attr)
+
+    return col_attrs
+
+
+def fk_constraint(child, child_cols, parent, parent_cols):
+    """
+    Creates a ForeignKeyConstraint object based on the parent and child
+    table information.
+    :param child: Name of the child table.
+    :type child: str
+    :param child_cols: Column names in constraint.
+    :type child_cols: list
+    :param parent: Name of the parent table.
+    :type parent: str
+    :param parent_cols: Referred column names in the other table.
+    :type parent_cols: list
+    :return: A ForeignKeyConstraint object or None if some of the information
+    is invalid.
+    :rtype: ForeignKeyConstraint
+    """
+    parent_exists = _check_table_exists(parent)
+
+    if not parent_exists:
+        return
+
+    all_parent_cols_exist = True
+    for c in parent_cols:
+        parent_col_exists = _check_column_exists(c, parent)
+        if not parent_col_exists:
+            all_parent_cols_exist = False
+
+    if not all_parent_cols_exist:
+        return None
+
+    child_exists = _check_table_exists(child)
+
+    if not child_exists:
+        return None
+
+    all_child_cols_exist = True
+    for cc in child_cols:
+        child_col_exists = _check_column_exists(cc, child)
+        if not child_col_exists:
+            all_child_cols_exist = False
+
+    if not all_child_cols_exist:
+        return None
+
+    child_table = _table(child)
+    parent_table = _table(parent)
+
+    child_col_attrs = _table_col_attr(child_table, child_cols)
+    parent_col_attrs = _table_col_attr(parent_table, parent_cols)
+
+    #Return None if one of the column attributes is None
+    if len(child_col_attrs) == 0 or len(parent_col_attrs) == 0:
+        return None
+
+    return ForeignKeyConstraint(child_col_attrs, parent_col_attrs)
+
+
+def fk_constraint_from_er(entity_relation):
     """
     Creates a ForeignKeyConstraint object from an EntityRelation object.
     :param entity_relation: EntityRelation object.
@@ -49,36 +117,13 @@ def foreign_key_constraint(entity_relation):
     #Validate that the referenced columns exist in the respective tables.
     #Parent table
     parent = entity_relation.parent.name
-    parent_exists = _check_table_exists(parent)
-
-    if not parent_exists:
-        return None
-
-    parent_col_exists = _check_column_exists(entity_relation.parent_column,
-                                             parent)
-    if not parent_col_exists:
-        return None
+    parent_col = entity_relation.parent_column
 
     #Child table
     child = entity_relation.child.name
-    child_exists = _check_table_exists(child)
+    child_col = entity_relation.child_column
 
-    if not child_exists:
-        return None
-
-    child_col_exists = _check_column_exists(entity_relation.child_column,
-                                            child)
-    if not child_col_exists:
-        return None
-
-    #Create FK constraint
-    child_table = _table(child)
-    parent_table = _table(parent)
-
-    child_col_attr = getattr(child_table.c, entity_relation.child_column, None)
-    parent_col_attr = getattr(parent_table.c, entity_relation.parent_column, None)
-
-    return ForeignKeyConstraint([child_col_attr], [parent_col_attr])
+    return fk_constraint(child, [child_col], parent, [parent_col])
 
 
 def create_foreign_key_constraint(entity_relation):
@@ -89,7 +134,7 @@ def create_foreign_key_constraint(entity_relation):
     :return: True if the foreign key was successfully created, else False.
     :rtype: bool
     """
-    fk_cons = foreign_key_constraint(entity_relation)
+    fk_cons = fk_constraint_from_er(entity_relation)
 
     if fk_cons is None:
         LOGGER.debug('Foreign key constraint object could not be created.')
@@ -117,16 +162,27 @@ def drop_foreign_key_constraint(entity_relation):
     :return: True if the foreign key was successfully dropped, else False.
     :rtype: bool
     """
-    fk_cons = foreign_key_constraint(entity_relation)
+    fk_cons = fk_constraint_from_er(entity_relation)
 
     if fk_cons is None:
         LOGGER.debug('Foreign key constraint object could not be created.')
 
         return False
 
-    fk_cons.drop()
+    '''
+    Catch and log exception if the constraint does not exist mostly due to
+    related cascades(s) having removed the constraint.
+    '''
+    try:
+        fk_cons.drop()
 
-    return True
+        return True
+
+    except ProgrammingError as pe:
+        LOGGER.debug('Drop of foreign key constraint failed - %s',
+                     unicode(pe))
+
+        return False
 
 
 def _check_table_exists(table):
@@ -154,4 +210,4 @@ def _check_column_exists(column, table):
 
 
 def _table(table_name):
-    return Table(table_name, metadata)
+    return Table(table_name, metadata, autoload=True)
