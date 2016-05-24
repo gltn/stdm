@@ -43,6 +43,8 @@ class RegistryConfig(object):
     def read(self, items):
         """
         Get the value of the user defined items from the STDM registry tree
+        param items: List of registry keys to fetch.
+        type items: list
         """
         userKeys = {}
         settings = QSettings()        

@@ -72,10 +72,6 @@ from create_lookup_value import ValueEditor
 LOGGER = logging.getLogger('stdm')
 LOGGER.setLevel(logging.DEBUG)
 
-LIC_PAGE, PATH_PAGE, PROFILE_PAGE, ENTITY_PAGE, STR_PAGE, FINAL_PAGE = range(0, 6)
-
-REG_KEY = "HKEY_CURRENT_USER\\Software\\QGIS\\QGIS2\\STDM"
-
 class ConfigWizard(QWizard, Ui_STDMWizard):
     """
     STDM configuration wizard editor
@@ -200,8 +196,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         for profile in self.stdm_config.profiles.values():
             for entity in profile.entities.values():
                 self.connect_column_signals(entity)
-                #if entity.TYPE_INFO == 'VALUE_LIST':
-                    #self.addValues_byEntity(entity)
             self.connect_entity_signals(profile)
             profiles.append(profile.name)
         self.cbo_add_profiles(profiles)
@@ -274,35 +268,25 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         rpath = r''.join(unicode(path))
         return rpath.replace("\\", "/")
 
-
-    #def read_settings_path(self, reg_key, os_path):
-        #print "Reg Key: ", reg_key
-        #reg_config = RegistryConfig()
-        #settings = reg_config.read([reg_key])
-        #print "PATH: ", settings
-        #if len(settings) == 0:
-            #reg_doc_path = None
-
-    def read_settings_path(self, reg_key, os_path):
+    def read_settings_path(self, reg_keys, os_path):
         """
-        param reg_key: Registry key where to read path setting
-        type reg_key: str
+        param reg_key: list of registry keys to read the path setting
+        type reg_keys: list
         param os_path: os directory to use if the reg_key is not set
         type os_path: str
         Returns path settings from the registry or an os folder
         rtype: str
         """
-        settings = QtCore.QSettings(REG_KEY, QtCore.QSettings.NativeFormat)
-
+        reg_config = RegistryConfig()
         try:
-            if len(settings.value(reg_key).toString()) > 0:
-                reg_doc_path = self.fmt_path_str(settings.value(reg_key).toString())
+            # returns a dict {reg_key:reg_value}
+            key = reg_config.read(reg_keys)
+            if len(key) > 0:
+                reg_doc_path = key[reg_keys[0]]
             else:
                 reg_doc_path = None
         except:
-            reg_doc_path = self.fmt_path_str(settings.value(reg_key))
-            if reg_doc_path.title() == 'None' or reg_doc_path.strip()=='':
-                reg_doc_path = None
+            reg_doc_path = None
 
         if reg_doc_path is not None:
             return reg_doc_path
@@ -323,16 +307,16 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.load_template_path()
 
     def load_doc_path(self):
-        doc_path = self.read_settings_path('documents', '/.stdm/documents/')
+        doc_path = self.read_settings_path(['documents'], '/.stdm/documents/')
         self.edtDocPath.setText(doc_path)
 
     def load_output_path(self):
-        output_path = self.read_settings_path('outputs', 
+        output_path = self.read_settings_path(['outputs'], 
                 '/.stdm/reports/outputs')
         self.edtOutputPath.setText(output_path)
 
     def load_template_path(self):
-        templates_path = self.read_settings_path('templates',
+        templates_path = self.read_settings_path(['templates'],
                 '/.stdm/reports/templates')
         self.edtTemplatePath.setText(templates_path)
 
@@ -360,7 +344,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.spatial_unit_changed(idx)
             # verify that lookup entities have values
             validPage = self.validate_empty_lookups()
-
 
         if self.currentId() == 4:
             validPage, msg = self.validate_STR()
@@ -1029,7 +1012,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         # get selected lookup
         row_id, lookup = self._get_entity_item(self.lvLookups)
         lookup_view_model = self.lookup_item_model.currentIndex().model().entity_byId(row_id)
-
         code_value = lookup_view_model.values[unicode(value_text)]
 
         value_editor = ValueEditor(self, lookup, code_value)
@@ -1048,22 +1030,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         value_text = self.lookup_value_view_model.itemFromIndex(model_index).text()
         lookup.remove_value(unicode(value_text))
         self.add_values(lookup.values.values())
-
-    def edit_lookup_value_test(self):
-        if len(self.lvLookupValues.selectedIndexes() ) > 0:
-            # get selected lookup value
-            model_index = self.lvLookupValues.selectedIndexes()[0]
-            value_text = self.lookup_value_view_model.itemFromIndex(model_index).text()
-
-            # get selected lookup
-            row_id = self.lookup_item_model.currentIndex().row()
-            #lookup_view_model = self.lookup_item_model.currentIndex().model()
-
-            new_value = 'Alien'
-
-            if self.lookup_item_model.currentIndex().model().entity_byId(row_id).rename(unicode(value_text), new_value):
-                self.lookup_value_view_model.itemFromIndex(model_index).setText(new_value)
-                cv = self.lookup_item_model.currentIndex().model().entity_byId(row_id).code_value(unicode(value_text))
 
     def get_str_columns(self, item_model):
         return [item_model.item(row) for row in range(item_model.rowCount()) \
@@ -1086,163 +1052,3 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         result = msgbox.exec_()
         return result
 
-
-class Launcher(QMainWindow):
-    def __init__(self, parent=None):
-        QMainWindow.__init__(self, parent)
-        self.create_main_frame()
-
-    def create_main_frame(self):
-        page = QWidget()
-        self.button = QPushButton('Wizard', page)
-        self.setCentralWidget(page)
-        self.button.clicked.connect(self.open_wizard)
-
-    def open_wizard(self):
-        window = QWidget()
-        configWiz = ConfigWizard(window)
-        #configWiz.setFixedSize(QSize(605, 488))
-        configWiz.exec_()
-
-
-def createLogger():
-    # create console handler and set level to debug
-    ch = logging.FileHandler("stdm.log")
-    ch.setLevel(logging.DEBUG)
-
-    # create formatter
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-    # add formatter to ch
-    ch.setFormatter(formatter)
-
-    # add ch to logger
-    LOGGER.addHandler(ch)
-
-def start_gui():
-    print "starting graphical user interface ..."
-    app = QApplication(sys.argv)
-    window = Launcher()
-    window.show()
-    app.exec_()
-
-    #window = QWidget()
-    #configWiz = ConfigWizard(window)
-    #configWiz.exec_()
-
-def start_cli():
-    print "starting command line interface ..."
-    import sys
-    createLogger()
-    app = QApplication(sys.argv)
-    window = QWidget()
-    cw = ConfigWizard(window)
-
-    # create profiles
-    cw.new_profile()
-
-    # print profiles
-    print "profiles ..."
-    for profile in cw.stdm_config.profiles.items():
-        print profile
-
-    # get first profile
-    profile = cw.stdm_config.profiles['test']
-
-    print "current profile ...", profile
-
-    # create entities
-    ent_name = "Party"
-    cw._create_ent(profile, ent_name)
-
-    ent_name = "Spatial"
-    cw._create_ent(profile, ent_name)
-
-    # print entities
-    print "Entities ..."
-    for entity in profile.entities.items():
-        print entity
-
-    fk_entity = profile.entities['Spatial']
-    fk_editor = ColumnEditor(cw, fk_entity, profile)
-    fk_editor.type_info = 'BIGINT'
-    attrs = {'colname':'FK_parent_col', 'index':True, 'unique':True}
-    fk_editor.attributes(**attrs)
-    fk_column = fk_editor.create_column()
-
-    print 
-    print ">"*100
-    for k, v in fk_column.__dict__.iteritems():
-        print k, v
-
-    print "<"*100
-
-    fk_editor.entity.add_column(fk_column)
-
-    # get a "party" entity
-    entity = profile.entities['Party']
-    editor = ColumnEditor(cw, entity, profile)
-    editor.run_test()
-
-    #print BaseColumn.registered_types.values()
-
-    editor.type_info = 'VARCHAR'
-    attrs = {'maximum':80, 'value':'varchar_column','colname':'name'}
-    editor.attributes(**attrs)
-    column = editor.create_column()
-    editor.entity.add_column(column)
-
-    editor.type_info = 'VARCHAR'
-    attrs = {'maximum':15, 'value':'','colname':'code'}
-    editor.attributes(**attrs)
-    column = editor.create_column()
-    editor.entity.add_column(column)
-
-    editor.type_info = 'GEOMETRY'
-    attrs = {'srid':102022, 'geom_type':1,'colname':'geoloc'}
-    editor.attributes(**attrs)
-    column = editor.create_column()
-    print
-    print ">>> Geometry Type / projection <<< "
-    print column.geometry_type(), "/", column.projection()
-    print
-
-    editor.entity.add_column(column)
-
-    editor.type_info = 'BIGINT'
-    attrs = {'colname':'regnum'}
-    editor.attributes(**attrs)
-    child_col = editor.create_column()
-    editor.entity.add_column(child_col)
-
-    print "CHILD: ", child_col
-
-    editor.type_info = 'FOREIGN_KEY'
-    er = {'parent':profile.entities['Spatial'], 'parent_column':fk_column, 
-            'child':entity, 'child_column':child_col,
-            'display_columns':['id', 'name']}
-    entity_relation = EntityRelation(profile, **er)
-
-    attrs = {'colname':'rent', 'entity_relation': entity_relation}
-    editor.attributes(**attrs)
-    
-    column = editor.create_column()
-    editor.entity.add_column(column)
-
-    print editor.entity.columns
-    return editor
-
-if __name__=='__main__':
-    import sys
-
-    editor = None
-
-    createLogger()
-
-    if len(sys.argv) > 1:
-        if sys.argv[1]=='cli':
-            start_cli()
-        else:
-            start_gui()
-    else:
-        start_gui()
