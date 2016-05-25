@@ -76,9 +76,6 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         self._populate_layers()
         self.curr_profile = current_profile()
         self.spatial_unit = None
-        # add spatial unit layers on login.
-        if len(spatial_tables() ) > 0:
-            self.on_add_to_canvas_button_clicked()
 
     def _populate_layers(self):
         self.stdm_layers_combo.clear()
