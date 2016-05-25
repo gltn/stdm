@@ -74,17 +74,18 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         self._curr_profile = None
         self._profile_spatial_layers = []
         self._populate_layers()
-
-    def reload(self):
-        """
-        Repopulates the list of layers in the current profile.
-        """
-        self._populate_layers()
+        self.curr_profile = current_profile()
+        self.spatial_unit = None
+        # add spatial unit layers on login.
+        if len(spatial_tables() ) > 0:
+            self.on_add_to_canvas_button_clicked()
 
     def _populate_layers(self):
         self.stdm_layers_combo.clear()
 
         self._curr_profile = current_profile()
+        self.spatial_unit = self._curr_profile.social_tenure.spatial_unit
+
         if self._curr_profile is None:
             msg = QApplication.translate('Spatial Unit Manager', 'There is '
                                                                  'no current '
@@ -171,6 +172,14 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
             'item': item}
         )
 
+        table = self.spatial_unit.name
+        spatial_column = [c.name for c in self.spatial_unit.columns.values() if c.TYPE_INFO == 'GEOMETRY']
+        spatial_unit_item = unicode(table + '.'+spatial_column[0])
+        index = self.stdm_layers_combo.findText(spatial_unit_item, Qt.MatchFixedString)
+        if index >= 0:
+             self.stdm_layers_combo.setCurrentIndex(index)
+
+
     def _layer_info_from_table_column(self, table, column):
         #Returns the index and item data from the given table and column name
         idx, layer_info = -1, None
@@ -221,6 +230,7 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
 
         table_name, spatial_column = sp_col_info["table_name"], \
                                      sp_col_info["column_name"]
+
 
         #Check if the layer has already been added to the map layer registry
         tab_col = u'{0}.{1}'.format(table_name, spatial_column)

@@ -19,15 +19,12 @@ email                : gkahiu@gmail.com
 """
 import logging
 from collections import OrderedDict
-from decimal import Decimal
-import sys
+
 from stdm.data.qtmodels import BaseSTDMTableModel
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from PyQt4.QtWebKit import *
 
 import sqlalchemy
-from sqlalchemy import Table
 
 from notification import NotificationBar,ERROR,INFO, WARNING
 from sourcedocument import *
@@ -45,12 +42,7 @@ from stdm.utils.util import (
     model_display_data
 )
 from stdm.data.configuration import entity_model
-from stdm.ui.wizard.wizard import ConfigWizard
-from stdm.data.config_utils import (
-    UserData,
-    table_searchable_cols,
-    tableCols
-)
+
 from stdm.navigation import (
     TreeSummaryLoader,
     WebSpatialLoader,
@@ -58,8 +50,9 @@ from stdm.navigation import (
     OSM
 )
 from stdm.utils import *
-from .stdmdialog import  DeclareMapping
-
+from stdm.utils.util import (
+lookup_id_to_value
+)
 from ui_new_str import Ui_frmNewSTR
 
 LOGGER = logging.getLogger('stdm')
@@ -70,7 +63,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
     '''
     def __init__(self, plugin):
         QWizard.__init__(self, plugin.iface.mainWindow())
-        ## TODO check if db insert is ordered as shown
+        ## TODO when forms are done check if db insert
+        ## TODO is ordered as shown
         ## TODO in party and str_type pages and each
         ## TODO party and str_type matches.
         ## TODO Use OrderDict if mismatch found
@@ -82,21 +76,14 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.row = 0 # number of party rows
         # Current profile instance and properties
         self.curr_profile = current_profile()
-        print vars(self.curr_profile)
-       # print self.current_profile.social_tenure
-        self.prefix = self.curr_profile.prefix
 
-        self.str_name = str(self.curr_profile.social_tenure.name)
+        self.prefix = self.curr_profile.prefix
 
         self.party = self.curr_profile.social_tenure.party
 
-        self.party_name = str(self.party.name)
         self.spatial_unit = self.curr_profile.social_tenure.spatial_unit
-        self.spatial_unit_name = self.spatial_unit.name
+
         self.str_type = self.curr_profile.social_tenure.tenure_type_collection
-        #self.str_type_cbo = self.str_type_combo()
-        # Initialize GUI wizard pages
-        self.mapping=DeclareMapping.instance()
 
         self.init_party()
         self.party_header = []
@@ -397,7 +384,13 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         for col in entity_display_columns(entity):
             attr = getattr(db_model, col)
-            data[col] = db_obj.queryObject([attr]).all()[0][0]
+
+            value = db_obj.queryObject([attr]).all()[0][0]
+            # change id to value if lookup, else return the same value
+            value = lookup_id_to_value(
+                self.curr_profile, col, value
+            )
+            data[col] = value
         if entity == self.spatial_unit:
             if table_view.model().rowCount() > 0:
                 table_view.model().rowCount(0)
@@ -459,7 +452,9 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         if entity == self.party:
             self.sel_party = []
             for sel_id in sel_attr:
-                party_query = db_obj.queryObject().filter(
+                party_query = db_obj.queryObject(
+                    entity_display_columns(entity)
+                ).filter(
                 db_model.id == sel_id
                 ).first()
                 self.sel_party.append(party_query)
@@ -519,9 +514,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         '''
         Initialize 'Right of Enjoyment' GUI controls
         '''
-        doc_type_model = self.mapping.tableMapping(
+        doc_entity = self.curr_profile.entity_by_name(
             unicode(self.prefix+'_check_document_type')
         )
+        doc_type_model = entity_model(doc_entity)
+
         Docs = doc_type_model()
         doc_type_list = Docs.queryObject().all()
         doc_types = [doc.value for doc in doc_type_list]
@@ -565,7 +562,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         # Add each str type next to each party.
         for q_obj, item in zip(self.sel_party, sel_str_types):
             party_mapping = model_display_data(
-                q_obj, self.party
+                q_obj, self.party, self.curr_profile
             )
 
             summaryTreeLoader.addCollection(
@@ -586,7 +583,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         for q_obj in self.sel_spatial_unit:
             spatial_unit_mapping = model_display_data(
-                q_obj, self.spatial_unit
+                q_obj, self.spatial_unit, self.curr_profile
             )
 
             summaryTreeLoader.addCollection(
