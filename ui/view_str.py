@@ -59,6 +59,7 @@ from stdm.navigation.socialtenure import (
     STRNode,
     SupportsDocumentsNode
 )
+from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
 from stdm.security.authorization import Authorizer
 from stdm.utils.util import (
 entity_searchable_columns,
@@ -91,6 +92,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self._plugin = plugin
         self.tbPropertyPreview.set_iface(self._plugin.iface)
         self.curr_profile = current_profile()
+        self.spatial_unit = self.curr_profile.social_tenure.spatial_unit
         #Center me
         self.move(QDesktopWidget().availableGeometry().center() - self.frameGeometry().center())
 
@@ -113,6 +115,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self._config_table_reader = ConfigTableReader()
 
         self.initGui()
+        self.add_spatial_unit_layer()
 
     def initGui(self):
         """
@@ -138,6 +141,26 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         #Load async for the current widget
         self.entityTabIndexChanged(0)
+
+
+    def add_spatial_unit_layer(self):
+
+        sp_unit_manager = SpatialUnitManagerDockWidget(self._plugin.iface)
+
+        table = self.spatial_unit.name
+        spatial_column = [
+            c.name
+            for c in self.spatial_unit.columns.values()
+            if c.TYPE_INFO == 'GEOMETRY'
+        ]
+        spatial_unit_item = unicode(table + '.'+spatial_column[0])
+        index = sp_unit_manager.stdm_layers_combo.findText(
+            spatial_unit_item, Qt.MatchFixedString
+        )
+        if index >= 0:
+             sp_unit_manager.stdm_layers_combo.setCurrentIndex(index)
+        # add spatial unit layers on view social tenure.
+        sp_unit_manager.on_add_to_canvas_button_clicked()
 
     def _check_permissions(self):
         """
