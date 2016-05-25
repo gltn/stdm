@@ -81,7 +81,6 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         self.stdm_layers_combo.clear()
 
         self._curr_profile = current_profile()
-        self.spatial_unit = self._curr_profile.social_tenure.spatial_unit
 
         if self._curr_profile is None:
             msg = QApplication.translate('Spatial Unit Manager', 'There is '
@@ -101,6 +100,8 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
                                 msg)
 
             return
+
+        self.spatial_unit = self._curr_profile.social_tenure.spatial_unit
 
         #Get entities containing geometry columns based on the config info
         config_entities = self._curr_profile.entities
