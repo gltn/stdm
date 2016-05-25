@@ -28,7 +28,7 @@ from qgis.core import *
 
 from sqlalchemy.sql.expression import text
 from sqlalchemy.exc import SQLAlchemyError
-
+from geoalchemy2 import WKBElement
 import stdm.data
 
 from stdm.data.database import (

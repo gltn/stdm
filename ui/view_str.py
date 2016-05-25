@@ -49,6 +49,8 @@ from stdm.data.config_utils import (
     ProfileException
 )
 from stdm.settings import current_profile
+from stdm.data.configuration import entity_model
+
 from stdm.navigation.socialtenure import (
     BaseSTRNode,
     EntityNode,
@@ -58,7 +60,11 @@ from stdm.navigation.socialtenure import (
     SupportsDocumentsNode
 )
 from stdm.security.authorization import Authorizer
-
+from stdm.utils.util import (
+entity_searchable_columns,
+entity_display_columns,
+format_column
+)
 from .notification import (
     NotificationBar
 )
@@ -185,12 +191,12 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         :return: Entity configuration object.
         :rtype: EntityConfig
         """
-        table_display_name = display_name(short_name)
+        table_display_name = format_column(short_name)
 
-        model = DeclareMapping.instance().tableMapping(table_name)
-
+        entity = self.curr_profile.entity_by_name(table_name)
+        model = entity_model(entity)
+        print model
         if model is not None:
-            columns = self.curr_profile.entities[table_name[3:].title()].columns.values()
             #Entity configuration
             entity_cfg = EntityConfiguration()
             entity_cfg.Title = table_display_name
@@ -201,13 +207,14 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             Load filter and display columns using only those which are of
             numeric/varchar type
             '''
-
-            for c in columns:
-                if c.name != 'id':
-                    if c.searchable:
-
-                        entity_cfg.filterColumns[c.name] = display_name(c.name)
-                        entity_cfg.displayColumns[c.name] = display_name(c.name)
+            searchable_columns = entity_searchable_columns(entity)
+            display_columns = entity_display_columns(entity)
+            for c in searchable_columns:
+                if c != 'id':
+                    entity_cfg.filterColumns[c] = format_column(c)
+            for c in display_columns:
+                if c != 'id':
+                    entity_cfg.displayColumns[c] = format_column(c)
             return entity_cfg
         else:
             return None
@@ -330,7 +337,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Render the geometry of the given spatial unit in the spatial view.
         :param row_id: Sqlalchemy oject representing a feature.
         """
-        self.tbPropertyPreview.draw_spatial_unit(model)
+
+        self.tbPropertyPreview.draw_spatial_unit(model, True, True)
 
     def removeSourceDocumentWidget(self,container_id):
         """
@@ -427,7 +435,9 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         :return: True if the table exists.Otherwise False.
         :rtype: bool
         """
-        return pg_table_exists(self.curr_profile.social_tenure.name, False)
+        return pg_table_exists(
+            self.curr_profile.social_tenure.name, False
+        )
 
     def _notify_no_base_layers(self):
         """

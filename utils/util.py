@@ -339,45 +339,106 @@ def format_column(attr):
 
 def entity_display_columns(entity):
     display_column = [
-    c.name
-    for c in
-    entity.columns.values()
-    if c.TYPE_INFO in ['VARCHAR',
-                       'SERIAL',
-                       'TEXT',
-                       'BIGINT',
-                       'DOUBLE',
-                       'DATE',
-                       'DATETIME',
-                       'YES_NO',
-                       'LOOKUP',
-                       'ADMIN_SPATIAL_UNIT',
-                       'MULTIPLE_SELECT'
-                       ]
+        c.name
+        for c in
+        entity.columns.values()
+        if c.TYPE_INFO in [
+            'VARCHAR',
+            'SERIAL',
+            'TEXT',
+            'BIGINT',
+            'DOUBLE',
+            'DATE',
+            'DATETIME',
+            'YES_NO',
+            'LOOKUP',
+            'ADMIN_SPATIAL_UNIT',
+            'MULTIPLE_SELECT'
+        ]
     ]
     return display_column
 
-def model_display_data(model, entity):
-    #Configure spatial unit formatters
+def entity_searchable_columns(entity):
+    searchable_column = [
+        c.name
+        for c in
+        entity.columns.values()
+        if c.searchable
+    ]
+    return searchable_column
+
+def model_display_data(model, entity, profile):
+
     model_display = OrderedDict()
     model_dic = model.__dict__
     for key, value in model_dic.iteritems():
         if key in entity_display_columns(entity) and key != 'id':
-            model_display[key] = value
+            value = lookup_id_to_value(profile, key, value)
+            model_display[format_column(key)] = value
     return model_display
 
-# def entity_lookup_value_to_id(id, entity):
-#
-#     db_model = entity_model(entity, True)
-#
-#     db_obj = db_model()
-#     str_query = db_obj.queryObject().filter(
-#         db_model.id == id
-#     ).all()
-#
-#     value = getattr(
-#         str_query[0],
-#         'value',
-#         None
-#     )
-#     return value
+def model_display_mapping(model):
+    model_display_cols = OrderedDict()
+    model_dic = model.__dict__
+    for col in model_dic:
+        model_display_cols[col] = format_column(col)
+    return model_display_cols
+
+def profile_spatial_tables(profile):
+    spatial_tables = [
+        e.name
+        for e in
+        profile.entities.values()
+        if e.TYPE_INFO == 'ENTITY' and e.has_geometry_column()
+    ]
+    return spatial_tables
+
+def profile_lookup_columns(profile):
+    lookup_columns = [
+        r.child_column for r in profile.relations.values()
+    ]
+    return lookup_columns
+
+def lookup_parent_entity(profile, col):
+    parent_entity = [
+        r.parent for r in profile.relations.values()
+        if r.child_column == col
+    ]
+    return parent_entity[0]
+
+
+def model_lookup_id_to_value(id, db_model):
+
+    if isinstance(id, int):
+        db_obj = db_model()
+        query = db_obj.queryObject().filter(
+            db_model.id == id
+        ).all()
+
+        value = getattr(
+            query[0],
+            'value',
+            None
+        )
+        return value
+    else:
+        return id
+
+def lookup_id_to_value(profile, col, id):
+    if col in profile_lookup_columns(profile):
+        parent_entity = lookup_parent_entity(profile, col)
+        db_model = entity_model(parent_entity)
+        db_obj = db_model()
+        query = db_obj.queryObject().filter(
+            db_model.id == id
+        ).all()
+
+        value = getattr(
+            query[0],
+            'value',
+            None
+        )
+        return value
+    else:
+        return id
+

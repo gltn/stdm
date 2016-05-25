@@ -29,6 +29,7 @@ from PyQt4.QtCore import (
 )
 
 from stdm.utils import *
+from stdm.utils.util import getIndex
 from stdm.data.database import alchemy_table_relationships
 from stdm.data.pg_utils import (
     table_column_names,

@@ -18,18 +18,21 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """ 
-
+import re
 from PyQt4.QtGui import (
     QTabWidget,
     QApplication,
     QMessageBox,
-    QShowEvent
+    QShowEvent,
+    QColor
 )
 from PyQt4.QtCore import (
     QCoreApplication,
     Qt
 )
-
+from qgis.gui import (
+   QgsHighlight
+)
 from qgis.core import (
     QgsApplication,
     QgsFeature,
@@ -44,11 +47,12 @@ from stdm.navigation import (
     GMAP_SATELLITE,
     OSM
 )
-
+from stdm.settings import current_profile
 from stdm.data.pg_utils import(
     geometryType,
     pg_table_exists,
-    table_column_names
+    table_column_names,
+    qgsgeometry_from_wkbelement
 )
 from stdm.data.database import STDMDb
 
@@ -72,9 +76,11 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         self._notif_bar = None
         self._ol_loaded = False
         self._overlay_layer = None
-
+        self.sel_highlight = None
         self._db_session = STDMDb.instance().session
 
+        self.curr_profile = current_profile()
+        self.spatial_unit = self.curr_profile.social_tenure.spatial_unit
         self.set_iface(iface)
 
         #Web config
@@ -163,7 +169,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
             "view_str_spatial_unit",
             "memory")
 
-    def draw_spatial_unit(self, model, clear_existing=True):
+    def draw_spatial_unit(self, model, highlight=True, clear_existing=True):
         """
         Draw geometry of the given model in the respective local and web views.
         :param model: Source model whose geometry will be drawn.
@@ -172,12 +178,15 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         new features.
         :type clear_existing: bool
         """
+
         if model is None:
             msg = QApplication.translate("SpatialPreview",
                                          "Data model is empty, the spatial "
                                          "unit cannot be rendered.")
-            QMessageBox.critical(self, QApplication.translate("SpatialPreview",
-                                                              "Spatial Unit Preview"),
+            QMessageBox.critical(self,
+                                 QApplication.translate(
+                                    "SpatialPreview",
+                                    "Spatial Unit Preview"),
                                  msg)
 
             return
@@ -188,9 +197,13 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
                                          "The spatial unit data source could "
                                          "not be retrieved, the feature cannot "
                                          "be rendered.")
-            QMessageBox.critical(self, QApplication.translate("SpatialPreview",
-                                                              "Spatial Unit Preview"),
-                                 msg)
+            QMessageBox.critical(
+                self,
+                QApplication.translate(
+                    "SpatialPreview",
+                    "Spatial Unit Preview"),
+                msg
+            )
 
             return
 
@@ -217,9 +230,11 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
 
         geom_type, epsg_code = geometryType(table_name, geom_col)
 
-        if self._overlay_layer is None:
-            self._create_vector_layer(geom_type, epsg_code)
+        # if self._overlay_layer is None:
 
+        self._create_vector_layer(geom_type, epsg_code)
+
+        if not highlight:
             #Add layer to map
             QgsMapLayerRegistry.instance().addMapLayer(self._overlay_layer,
                                                        False)
@@ -229,8 +244,9 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         if clear_existing:
             self.delete_local_features()
 
-        feat, extent = self._add_geom_to_map(geom)
-
+        extent = self._add_geom_to_map(geom)
+        if not extent:
+            return
         #Add spatial unit to web viewer
         self._web_spatial_loader.add_overlay(model, geom_col)
 
@@ -244,26 +260,120 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         self._iface.mapCanvas().refresh()
         self.refresh_canvas_layers()
 
+
         #Need to force event so that layer is shown
         QCoreApplication.sendEvent(self.local_map, QShowEvent())
 
-    def _add_geom_to_map(self, geom):
+    def clear_sel_highlight(self):
+        """
+        Removes sel_highlight from the canvas.
+        :return:
+        """
+        if self.sel_highlight is not None:
+            self.sel_highlight = None
+
+    def get_layer_source(self, layer):
+        """
+        Get the layer table name if the source is from the database.
+        :param layer: The layer for which the source is checked
+        :type QGIS vectorlayer
+        :return: String or None
+        """
+        source = layer.source()
+        vals = dict(re.findall('(\S+)="?(.*?)"? ', source))
+        try:
+            table = vals['table'].split('.')
+            table_name = table[1].strip('"')
+            return table_name
+        except KeyError:
+            return None
+
+    def spatial_unit_layer(self, active_layer):
+        """
+        Check whether the layer is parcel layer or not.
+        :param active_layer: The layer to be checked
+        :type QGIS vectorlayer
+        :return: Boolean
+        """
+        if self.active_layer_check():
+            layer_source = self.get_layer_source(active_layer)
+            if layer_source == self.spatial_unit.name:
+                return True
+            else:
+                not_sp_msg = QApplication.translate(
+                    'SpatialPreview',
+                    'You have selected a non-spatial_unit layer. '
+                    'Please select a spatial unit layer to preview.'
+                )
+                QMessageBox.information(
+                    self._iface.mainWindow(),
+                    "Error",
+                    not_sp_msg
+                )
+                return
+
+    def active_layer_check(self):
+        """
+        Check if there is active layer and if not, displays
+        a message box to select a parcel layer.
+        :return:
+        """
+        active_layer = self._iface.activeLayer()
+        if active_layer is None:
+            no_layer_msg = QApplication.translate(
+                'SpatialPreview',
+                'Please add a spatial unit layer to preview the spatial unit.'
+            )
+            QMessageBox.critical(
+                self._iface.mainWindow(),
+                "Error",
+                no_layer_msg
+            )
+            return False
+        else:
+            return True
+
+    def _add_geom_to_map(self, geom, highlight=True):
+
         if self._overlay_layer is None:
             return
+        if not highlight:
+            geom_func = geom.ST_AsText()
+            geom_wkt = self._db_session.scalar(geom_func)
 
-        geom_func = geom.ST_AsText()
-        geom_wkt = self._db_session.scalar(geom_func)
+            dp = self._overlay_layer.dataProvider()
 
-        dp = self._overlay_layer.dataProvider()
+            feat = QgsFeature()
+            qgis_geom = QgsGeometry.fromWkt(geom_wkt)
+            feat.setGeometry(g)
+            dp.addFeatures([feat])
+            self._overlay_layer.updateExtents()
 
-        feat = QgsFeature()
-        g = QgsGeometry.fromWkt(geom_wkt)
-        feat.setGeometry(g)
-        dp.addFeatures([feat])
+            return qgis_geom.boundingBox()
+        else:
 
-        self._overlay_layer.updateExtents()
+            layer = self._iface.activeLayer()
 
-        return feat, g.boundingBox()
+            if self.spatial_unit_layer(layer):
+                self.clear_sel_highlight()
+                geom_func = geom.ST_AsText()
+                geom_wkt = self._db_session.scalar(geom_func)
+                print geom_wkt
+                qgis_geom = qgsgeometry_from_wkbelement(geom)
+
+                self.sel_highlight = QgsHighlight(
+                    self.local_map.canvas, qgis_geom, layer
+                )
+                self.sel_highlight.setFillColor(QColor(255,128,0))
+                self.sel_highlight.setWidth(3)
+                self.sel_highlight.show()
+
+                self._overlay_layer.updateExtents()
+
+                return qgis_geom.boundingBox()
+            else:
+                return False
+
 
     def delete_local_features(self, feature_ids=[]):
         """
