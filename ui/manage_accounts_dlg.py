@@ -353,31 +353,30 @@ class manageAccountsDlg(QDialog, Ui_frmSysManageAccounts):
                 self.roleProvider.AddUsersToRoles([username], [self.currentRole])
             elif item.checkState() == Qt.Unchecked:
                 self.roleProvider.RemoveUsersFromRoles([username], [self.currentRole])
-                
+
             self.blockSignals(False)
 
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

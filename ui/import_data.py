@@ -46,14 +46,18 @@ from .importexport import (
     ValueTranslatorConfig,
     TranslatorWidgetManager
 )
-
+from stdm.settings import current_profile
+from stdm.utils.util import (
+    profile_user_tables,
+    profile_spatial_tables
+)
 from .ui_import_data import Ui_frmImport
 
 class ImportData(QWizard, Ui_frmImport):
     def __init__(self,parent=None):
         QWizard.__init__(self,parent)
         self.setupUi(self) 
-                
+        self.curr_profile = current_profile()
         #Connect signals   
         self.btnBrowseSource.clicked.connect(self.setSourceFile)
         self.lstDestTables.itemClicked.connect(self.destSelectChanged)
@@ -333,10 +337,10 @@ class ImportData(QWizard, Ui_frmImport):
         self.lstDestTables.clear()
         
         if type == "textual":
-            tables = pg_tables(exclude_lookups=False)
+            tables = profile_user_tables(self.curr_profile)
             
         elif type == "spatial":
-            tables = spatial_tables(exclude_views=True)
+            tables = profile_spatial_tables(self.curr_profile)
                                 
         for t in tables:            
             tabItem = QListWidgetItem(t,self.lstDestTables)

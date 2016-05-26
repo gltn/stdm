@@ -41,14 +41,17 @@ from stdm.data.importexport import (
     vectorFileDir,
     setVectorFileDir
 )
-
+from stdm.settings import current_profile
+from stdm.utils.util import (
+    profile_user_tables
+)
 from .ui_export_data import Ui_frmExportWizard 
 
 class ExportData(QWizard,Ui_frmExportWizard):
     def __init__(self,parent=None):
         QWizard.__init__(self,parent) 
         self.setupUi(self)  
-               
+        self.curr_profile = current_profile()
         #Event Handlers    
         self.btnDestFile.clicked.connect(self.setDestFile)
         self.lstSrcTab.itemSelectionChanged.connect(self.srcSelectChanged)
@@ -147,9 +150,11 @@ class ExportData(QWizard,Ui_frmExportWizard):
     def loadSourceTables(self):
         #Load all STDM tables
         self.lstSrcTab.clear()
-        tables = pg_tables()   
-             
-        for t in tables:            
+        # tables = pg_tables()
+        tables = profile_user_tables(
+            self.curr_profile
+        )
+        for t in tables.keys():
             tabItem = QListWidgetItem(t,self.lstSrcTab)
             tabItem.setIcon(QIcon(":/plugins/stdm/images/icons/table.png"))
             self.lstSrcTab.addItem(tabItem)         

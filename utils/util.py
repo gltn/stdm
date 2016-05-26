@@ -390,6 +390,7 @@ def profile_spatial_tables(profile):
         profile.entities.values()
         if e.TYPE_INFO == 'ENTITY' and e.has_geometry_column()
     ]
+
     return spatial_tables
 
 def profile_user_tables(profile, include_views=True):
@@ -407,10 +408,10 @@ def profile_user_tables(profile, include_views=True):
             'SUPPORTING_DOCUMENT'
         ]
     ]
-
-    tables = dict(tables)
-    for view in pg_views():
-        tables[view] = view
+    if include_views:
+        tables = dict(tables)
+        for view in pg_views():
+            tables[view] = view
 
     return tables
 
