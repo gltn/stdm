@@ -59,7 +59,7 @@ class STRNodeFormatter(object):
     def __init__(self, config, treeview=None, parentwidget=None):
         self._config = config
         self.curr_profile = current_profile()
-     
+
         headers = self._config.displayColumns.values()
 
         idx = getIndex(headers, "Id")

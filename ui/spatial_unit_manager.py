@@ -83,21 +83,21 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         self._curr_profile = current_profile()
 
         if self._curr_profile is None:
-            msg = QApplication.translate('Spatial Unit Manager', 'There is '
-                                                                 'no current '
-                                                                 'profile '
-                                                                 'configured. '
-                                                                 'Please '
-                                                                 'create one '
-                                                                 'by running '
-                                                                 'the wizard '
-                                                                 'or set an '
-                                                                 'existing '
-                                                                 'one in the '
-                                                                 'settings.'
-                                         )
-            QMessageBox.warning(self.iface.mainWindow(), 'Spatial Unit Manager',
-                                msg)
+            # msg = QApplication.translate('Spatial Unit Manager', 'There is '
+            #                                                      'no current '
+            #                                                      'profile '
+            #                                                      'configured. '
+            #                                                      'Please '
+            #                                                      'create one '
+            #                                                      'by running '
+            #                                                      'the wizard '
+            #                                                      'or set an '
+            #                                                      'existing '
+            #                                                      'one in the '
+            #                                                      'settings.'
+            #                              )
+            # QMessageBox.warning(self.iface.mainWindow(), 'Spatial Unit Manager',
+            #                     msg)
 
             return
 

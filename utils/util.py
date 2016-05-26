@@ -43,7 +43,6 @@ from stdm.data.configuration import entity_model
 from qgis.gui import QgsEncodingFileDialog
 
 
-
 PLUGIN_DIR = os.path.abspath(os.path.join(os.path.dirname( __file__ ), os.path.pardir)).replace("\\", "/")
 CURRENCY_CODE = "" #TODO: Put in the registry
 DOUBLE_FILE_EXTENSIONS = ['tar.gz','tar.bz2']
@@ -393,7 +392,10 @@ def profile_spatial_tables(profile):
     ]
     return spatial_tables
 
-def profile_user_tables(profile):
+def profile_user_tables(profile, include_views=True):
+    from stdm.data.pg_utils import (
+        pg_views
+    )
     tables = [
         (e.name, e.short_name)
         for e in
@@ -405,7 +407,11 @@ def profile_user_tables(profile):
             'SUPPORTING_DOCUMENT'
         ]
     ]
+
     tables = dict(tables)
+    for view in pg_views():
+        tables[view] = view
+
     return tables
 
 

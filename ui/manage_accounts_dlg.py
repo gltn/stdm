@@ -24,7 +24,7 @@ from stdm.security.membership import Membership
 from stdm.security.roleprovider import RoleProvider
 from stdm.data.qtmodels import UsersRolesModel
 from stdm.utils import *
-
+from stdm.utils.util import getIndex
 from ui_user_role_manage import Ui_frmSysManageAccounts
 from .new_user_dlg import newUserDlg
 from .new_role_dlg import newRoleDlg
