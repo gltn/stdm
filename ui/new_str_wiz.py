@@ -385,7 +385,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         for col in entity_display_columns(entity):
             attr = getattr(db_model, col)
 
-            value = db_obj.queryObject([attr]).all()[0][0]
+            value = db_obj.queryObject([attr]).all()
+            if len(value) > 0:
+                value = value[0][0]
+            else:
+                return
             # change id to value if lookup, else return the same value
             value = lookup_id_to_value(
                 self.curr_profile, col, value
@@ -423,7 +427,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             table_data.append(model.data(
                 spatial_unit_idx, Qt.DisplayRole
             ))
-            #print table_data
+
         return table_data
 
     def get_party_str_type_data(self):
