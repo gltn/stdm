@@ -393,6 +393,22 @@ def profile_spatial_tables(profile):
     ]
     return spatial_tables
 
+def profile_user_tables(profile):
+    tables = [
+        (e.name, e.short_name)
+        for e in
+        profile.entities.values()
+        if e.TYPE_INFO in [
+            'ENTITY',
+            'ENTITY_SUPPORTING_DOCUMENT',
+            'SOCIAL_TENURE',
+            'SUPPORTING_DOCUMENT'
+        ]
+    ]
+    tables = dict(tables)
+    return tables
+
+
 def profile_lookup_columns(profile):
     lookup_columns = [
         r.child_column for r in profile.relations.values()

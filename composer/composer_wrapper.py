@@ -349,7 +349,9 @@ class ComposerWrapper(QObject):
         """
         Returns the name of the data source specified by the user.
         """
-        return self._stdmDataSourceDock.widget().cboDataSource.currentText()
+        row = self._stdmDataSourceDock.widget().cboDataSource.currentIndex()
+        table_name = self._stdmDataSourceDock.widget().cboDataSource.itemData(row)
+        return table_name
     
     def selectedDataSourceCategory(self):
         """
