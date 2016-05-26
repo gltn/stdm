@@ -218,7 +218,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         entity = self.curr_profile.entity_by_name(table_name)
         model = entity_model(entity)
-        print model
+
         if model is not None:
             #Entity configuration
             entity_cfg = EntityConfiguration()

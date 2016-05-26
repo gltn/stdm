@@ -26,7 +26,10 @@ from stdm.data.pg_utils import (
     pg_tables,
     pg_views
 )
-
+from stdm.settings import current_profile
+from stdm.utils.util import (
+    profile_user_tables
+)
 from .ui_composer_data_source import Ui_frmComposerDataSource
 
 class ComposerDataSourceSelector(QWidget,Ui_frmComposerDataSource):
@@ -38,7 +41,7 @@ class ComposerDataSourceSelector(QWidget,Ui_frmComposerDataSource):
         self.setupUi(self)
         
         self.cboDataSource.setInsertPolicy(QComboBox.InsertAlphabetically)
-        
+        self.curr_profile = current_profile()
         self.rbTables.toggled.connect(self.onShowTables)
         self.rbViews.toggled.connect(self.onShowViews)
         
@@ -88,9 +91,11 @@ class ComposerDataSourceSelector(QWidget,Ui_frmComposerDataSource):
         Slot raised to show STDM database tables.
         """
         if state:
+            tables = profile_user_tables(self.curr_profile)
             self.cboDataSource.clear()
-            self.cboDataSource.addItem("")
-            self.cboDataSource.addItems(pg_tables())
+            self.cboDataSource.addItem('')
+            for key, value in tables.iteritems():
+                self.cboDataSource.addItem(value, key)
             
     def onShowViews(self,state):
         """

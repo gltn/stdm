@@ -296,48 +296,63 @@ class STDMQGISLoader(object):
                 "STDMQGISLoader",
                 'Database Table Error'
             )
-        if not pg_table_exists(entity.name):
-            if entity == self.current_profile.social_tenure:
-                 str_table_status = [
-                    (str(entity.party.short_name), pg_table_exists(entity.party.name)),
-                    (str(entity.spatial_unit.short_name), pg_table_exists(entity.spatial_unit.name)),
-                    (str(entity.short_name), pg_table_exists(entity.name))
-                 ]
-                 str_table_status = dict(str_table_status)
-                 missing_tables = [
-                     key
-                     for key, value in str_table_status.iteritems()
-                     if not value
-                 ]
-                 missing_tables = str(missing_tables).strip("[]")
-                 missing_tables = missing_tables.replace("'", "")
-                 message = QApplication.translate(
+
+        if entity == self.current_profile.social_tenure:
+            str_table_status = [
+                (str(entity.party.short_name), pg_table_exists(entity.party.name)),
+                (str(entity.spatial_unit.short_name), pg_table_exists(entity.spatial_unit.name)),
+                (str(entity.short_name), pg_table_exists(entity.name))
+            ]
+            str_table_status = dict(str_table_status)
+            missing_tables = [
+                 key
+                 for key, value in str_table_status.iteritems()
+                 if not value
+            ]
+            if len(missing_tables) > 0:
+                missing_tables = str(missing_tables).strip("[]")
+                missing_tables = missing_tables.replace("'", "")
+                message = QApplication.translate(
                     "STDMQGISLoader",
                     'The system has detected that database table(s) required in \n'
                     'in the Social Tenure Relationship is/are missing.\n'
                     'Missing table(s) - '+missing_tables+'\n'+
                     'Do you want to re-run the Configuration Wizard now?'
-                 )
+                )
+                database_check = QMessageBox.critical(
+                    self.iface.mainWindow(),
+                    title,
+                    message,
+                    QMessageBox.Yes,
+                    QMessageBox.No
+                )
+                if database_check == QMessageBox.Yes:
+                    self.load_config_wizard()
+                else:
+                    return False
             else:
+                return True
+        else:
+            if not pg_table_exists(entity.name):
                 message = QApplication.translate(
                     "STDMQGISLoader",
                     'The system has detected that a required database table - \n'
                     +entity.short_name+ ' is missing. \n'+
                     'Do you want to re-run the Configuration Wizard now?'
                 )
-            database_check = QMessageBox.critical(
-                self.iface.mainWindow(),
-                title,
-                message,
-                QMessageBox.Yes,
-                QMessageBox.No
-            )
-            if database_check == QMessageBox.Yes:
-                self.load_config_wizard()
+                database_check = QMessageBox.critical(
+                    self.iface.mainWindow(),
+                    title,
+                    message,
+                    QMessageBox.Yes,
+                    QMessageBox.No
+                )
+                if database_check == QMessageBox.Yes:
+                    self.load_config_wizard()
+                else:
+                    return False
             else:
-                return False
-        else:
-            return True
+                return True
 
 
     def default_profile(self):
@@ -1132,12 +1147,18 @@ class STDMQGISLoader(object):
         Slot for showing widget that enables users to browse 
         existing STRs.
         '''
-        if self.viewSTRWin is None:
-            self.viewSTRWin = ViewSTRWidget(self)
-            self.viewSTRWin.show()
-        else:
-            self.viewSTRWin.showNormal()
-            self.viewSTRWin.setFocus()
+        db_status = self.database_checker(
+            self.current_profile.social_tenure
+        )
+
+        if db_status:
+            if self.viewSTRWin is None:
+                self.viewSTRWin = ViewSTRWidget(self)
+                self.viewSTRWin.show()
+            else:
+                self.viewSTRWin.showNormal()
+                self.viewSTRWin.setFocus()
+
 
     def isSTDMLayer(self,layer):
         '''
