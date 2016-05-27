@@ -119,8 +119,7 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
             error_label.setText(msg)
             error_label.setStyleSheet("QLabel {color : red;}")
             self.NotificationBar.addWidget(error_label)
-            # spum_error = NotificationBar(self.NotificationBar)
-            # spum_error.insertNotification(msg, ERROR)
+
         for e in geom_entities:
             table_name = e.name
             if table_name in sp_tables:
