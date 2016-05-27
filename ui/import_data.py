@@ -335,18 +335,18 @@ class ImportData(QWizard, Ui_frmImport):
     def loadTables(self,type):
         #Load textual or spatial tables
         self.lstDestTables.clear()
-        
+        tables = None
         if type == "textual":
             tables = profile_user_tables(self.curr_profile)
             
         elif type == "spatial":
             tables = profile_spatial_tables(self.curr_profile)
-                                
-        for t in tables:            
-            tabItem = QListWidgetItem(t,self.lstDestTables)
-            tabItem.setCheckState(Qt.Unchecked)
-            tabItem.setIcon(QIcon(":/plugins/stdm/images/icons/table.png"))
-            self.lstDestTables.addItem(tabItem)            
+        if tables is not None:
+            for t in tables:
+                tabItem = QListWidgetItem(t,self.lstDestTables)
+                tabItem.setCheckState(Qt.Unchecked)
+                tabItem.setIcon(QIcon(":/plugins/stdm/images/icons/table.png"))
+                self.lstDestTables.addItem(tabItem)
                 
     def validateCurrentPage(self):
         #Validate the current page before proceeding to the next one

@@ -95,7 +95,7 @@ class ComposerDataSourceSelector(QWidget,Ui_frmComposerDataSource):
             self.cboDataSource.clear()
             self.cboDataSource.addItem('')
             for key, value in tables.iteritems():
-                self.cboDataSource.addItem(value, key)
+                self.cboDataSource.addItem(value.lower(), key)
             
     def onShowViews(self,state):
         """

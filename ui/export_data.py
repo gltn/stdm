@@ -157,7 +157,7 @@ class ExportData(QWizard,Ui_frmExportWizard):
         for t in tables.keys():
             tabItem = QListWidgetItem(t,self.lstSrcTab)
             tabItem.setIcon(QIcon(":/plugins/stdm/images/icons/table.png"))
-            self.lstSrcTab.addItem(tabItem)         
+            self.lstSrcTab.addItem(tabItem)
         
     def setDestFile(self):
         #Set the file path to the destination file
@@ -172,7 +172,9 @@ class ExportData(QWizard,Ui_frmExportWizard):
         elif self.rbDXF.isChecked():
             ogrFilter = "DXF (*.dxf)"     
                  
-        destFile = QFileDialog.getSaveFileName(self,"Select Output File",vectorFileDir(),ogrFilter)
+        destFile = QFileDialog.getSaveFileName(
+            self,"Select Output File",vectorFileDir(),ogrFilter
+        )
         
         if destFile != "":
             self.txtExportPath.setText(destFile) 
