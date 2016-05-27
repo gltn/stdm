@@ -385,12 +385,12 @@ def model_display_mapping(model):
 
 def profile_spatial_tables(profile):
     spatial_tables = [
-        e.name
+        (e.name, e.short_name)
         for e in
         profile.entities.values()
         if e.TYPE_INFO == 'ENTITY' and e.has_geometry_column()
     ]
-
+    spatial_tables = dict(spatial_tables)
     return spatial_tables
 
 def profile_user_tables(profile, include_views=True):

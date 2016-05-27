@@ -52,6 +52,7 @@ from stdm.data.xmlconfig_writer import (
 )
 
 from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
+from notification import NotificationBar,ERROR,INFO, WARNING
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_spatial_unit_manager.ui'))
@@ -83,21 +84,6 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         self._curr_profile = current_profile()
 
         if self._curr_profile is None:
-            # msg = QApplication.translate('Spatial Unit Manager', 'There is '
-            #                                                      'no current '
-            #                                                      'profile '
-            #                                                      'configured. '
-            #                                                      'Please '
-            #                                                      'create one '
-            #                                                      'by running '
-            #                                                      'the wizard '
-            #                                                      'or set an '
-            #                                                      'existing '
-            #                                                      'one in the '
-            #                                                      'settings.'
-            #                              )
-            # QMessageBox.warning(self.iface.mainWindow(), 'Spatial Unit Manager',
-            #                     msg)
 
             return
 
@@ -118,18 +104,23 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
 
         #Notify user of missing tables
         if len(missing_tables) > 0:
-            msg = QApplication.translate('Spatial Unit Manager', 'The following '
-                                                                 'spatial tables '
-                                                                 'are missing in '
-                                                                 'the database:'
-                                                                 '\n- {0}\nPlease '
-                                                                 're-run the '
-                                                                 'configuration '
-                                                                 'wizard to create '
-                                                                 'them.'.format('\n'.join(missing_tables)))
-            QMessageBox.warning(self.iface.mainWindow(),
-                                'Spatial Unit Manager', msg)
-
+            msg = QApplication.translate(
+                'Spatial Unit Manager',
+                'The following '
+                 'spatial tables '
+                 'are missing in '
+                 'the database:'
+                 '\n {0}\nPlease '
+                 're-run the '
+                 'configuration '
+                 'wizard to create '
+                 'them.'.format('\n'.join(missing_tables)))
+            error_label = QLabel()
+            error_label.setText(msg)
+            error_label.setStyleSheet("QLabel {color : red;}")
+            self.NotificationBar.addWidget(error_label)
+            # spum_error = NotificationBar(self.NotificationBar)
+            # spum_error.insertNotification(msg, ERROR)
         for e in geom_entities:
             table_name = e.name
             if table_name in sp_tables:
