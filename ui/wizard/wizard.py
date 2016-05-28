@@ -647,7 +647,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             if result == 1:
                 self.entity_model.add_entity(editor.entity)
                 model_item.delete_entity(entity)
-                #model_item.removeRow(row_id)
 
     def delete_entity(self):
         """
@@ -791,6 +790,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         column entity model
         """
         self.trigger_entity_change()
+
 
     def trigger_entity_change(self):
         row_id = self.entity_item_model.currentIndex().row()
