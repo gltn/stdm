@@ -126,9 +126,6 @@ class AdminUnitManager(QWidget,Ui_frmAdminUnitManager):
         
         #Configure validating line edit controls
         invalidMsg = "{} already exists."
-        self.txtUnitName.setModelAttr(AdminSpatialUnitSet,"Name")
-        self.txtUnitName.setInvalidMessage(invalidMsg)
-        self.txtUnitName.setNotificationBar(self._notifBar)
         self.txtUnitCode.setModelAttr(AdminSpatialUnitSet,"Code")
         self.txtUnitCode.setInvalidMessage(invalidMsg)
         self.txtUnitCode.setNotificationBar(self._notifBar)

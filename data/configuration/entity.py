@@ -110,7 +110,7 @@ class Entity(QObject, TableItem):
         prefix_idx = name.find(prfx, 0, len(prfx))
 
         #If there is no prefix then append
-        if prefix_idx == -1:
+        if prefix_idx == -1 and not is_global:
             name = u'{0}_{1}'.format(self.profile.prefix, name)
 
         TableItem.__init__(self, name)

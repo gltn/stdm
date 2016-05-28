@@ -34,7 +34,6 @@ from stdm.settings import (
     save_configuration
 )
 from stdm.data.configuration.social_tenure_updater import BASE_STR_VIEW
-from stdm.data.configuration import entity_model, entity_foreign_keys
 from stdm.data.pg_utils import (
     geometryType,
     spatial_tables,
@@ -52,6 +51,7 @@ from stdm.data.xmlconfig_writer import (
 )
 
 from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
+from notification import NotificationBar,ERROR,INFO, WARNING
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_spatial_unit_manager.ui'))
@@ -74,35 +74,19 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         self._curr_profile = None
         self._profile_spatial_layers = []
         self._populate_layers()
-
-    def reload(self):
-        """
-        Repopulates the list of layers in the current profile.
-        """
-        self._populate_layers()
+        self.curr_profile = current_profile()
+        self.spatial_unit = None
 
     def _populate_layers(self):
         self.stdm_layers_combo.clear()
 
         self._curr_profile = current_profile()
+
         if self._curr_profile is None:
-            msg = QApplication.translate('Spatial Unit Manager', 'There is '
-                                                                 'no current '
-                                                                 'profile '
-                                                                 'configured. '
-                                                                 'Please '
-                                                                 'create one '
-                                                                 'by running '
-                                                                 'the wizard '
-                                                                 'or set an '
-                                                                 'existing '
-                                                                 'one in the '
-                                                                 'settings.'
-                                         )
-            QMessageBox.warning(self.iface.mainWindow(), 'Spatial Unit Manager',
-                                msg)
 
             return
+
+        self.spatial_unit = self._curr_profile.social_tenure.spatial_unit
 
         #Get entities containing geometry columns based on the config info
         config_entities = self._curr_profile.entities
@@ -119,17 +103,21 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
 
         #Notify user of missing tables
         if len(missing_tables) > 0:
-            msg = QApplication.translate('Spatial Unit Manager', 'The following '
-                                                                 'spatial tables '
-                                                                 'are missing in '
-                                                                 'the database:'
-                                                                 '\n- {0}\nPlease '
-                                                                 're-run the '
-                                                                 'configuration '
-                                                                 'wizard to create '
-                                                                 'them.'.format('\n'.join(missing_tables)))
-            QMessageBox.warning(self.iface.mainWindow(),
-                                'Spatial Unit Manager', msg)
+            msg = QApplication.translate(
+                'Spatial Unit Manager',
+                'The following '
+                 'spatial tables '
+                 'are missing in '
+                 'the database:'
+                 '\n {0}\nPlease '
+                 're-run the '
+                 'configuration '
+                 'wizard to create '
+                 'them.'.format('\n'.join(missing_tables)))
+            error_label = QLabel()
+            error_label.setText(msg)
+            error_label.setStyleSheet("QLabel {color : red;}")
+            self.NotificationBar.addWidget(error_label)
 
         for e in geom_entities:
             table_name = e.name
@@ -170,6 +158,14 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
             'column_name': column_name,
             'item': item}
         )
+
+        table = self.spatial_unit.name
+        spatial_column = [c.name for c in self.spatial_unit.columns.values() if c.TYPE_INFO == 'GEOMETRY']
+        spatial_unit_item = unicode(table + '.'+spatial_column[0])
+        index = self.stdm_layers_combo.findText(spatial_unit_item, Qt.MatchFixedString)
+        if index >= 0:
+             self.stdm_layers_combo.setCurrentIndex(index)
+
 
     def _layer_info_from_table_column(self, table, column):
         #Returns the index and item data from the given table and column name
@@ -221,6 +217,7 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
 
         table_name, spatial_column = sp_col_info["table_name"], \
                                      sp_col_info["column_name"]
+
 
         #Check if the layer has already been added to the map layer registry
         tab_col = u'{0}.{1}'.format(table_name, spatial_column)
