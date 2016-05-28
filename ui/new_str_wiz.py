@@ -58,10 +58,21 @@ from ui_new_str import Ui_frmNewSTR
 LOGGER = logging.getLogger('stdm')
 
 class newSTRWiz(QWizard, Ui_frmNewSTR):
-    '''
-    This class handles the listing of locality information
-    '''
+    """
+    This class enable users choose party,
+    spatial unit, social tenure, and supporting
+    document to create a social tenure relationship.
+    """
     def __init__(self, plugin):
+        """
+        Initializes the ui file, party, spatial unit, social
+        tenure type, and supporting document pages.
+        It also defines class properties.
+        :param plugin: STDM plugin
+        :type plugin: STDMQGISLoader
+        :returns: None
+        :rtype: NoneType
+        """
         QWizard.__init__(self, plugin.iface.mainWindow())
         ## TODO when forms are done check if db insert
         ## TODO is ordered as shown
@@ -79,34 +90,42 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         self.prefix = self.curr_profile.prefix
 
-        self.party = self.curr_profile.social_tenure.party
+        self.party = self.curr_profile.\
+            social_tenure.party
 
-        self.spatial_unit = self.curr_profile.social_tenure.spatial_unit
+        self.spatial_unit = self.curr_profile.\
+            social_tenure.spatial_unit
 
-        self.str_type = self.curr_profile.social_tenure.tenure_type_collection
+        self.str_type = self.curr_profile.\
+            social_tenure.tenure_type_collection
 
         self.init_party()
         self.party_header = []
         self.init_spatial_unit()
         self.init_document_type()
         self.initSourceDocument()
-        #Connect signal when the finish button is clicked
-        btnFinish = self.button(QWizard.FinishButton)
+        # Connect signal when the finish 
+        # button is clicked
+        btnFinish = self.button(
+            QWizard.FinishButton
+        )
 
     def init_party(self):
-        '''
-        Initialize person config
-        '''
-        self.notifPerson = NotificationBar(self.vlPersonNotif)
+        """
+        Initialize the party page
+        :returns:None
+        :rtype: NoneType
+        """
+        self.party_notice = NotificationBar(self.vlPersonNotif)
 
-        #Init summary tree loaders
-        self.personTreeLoader = TreeSummaryLoader(
-            self.tvPersonInfo,
-            QApplication.translate(
-                "newSTRWiz",
-                "Party Information"
-            )
-        )
+        # #Init summary tree loaders
+        # self.personTreeLoader = TreeSummaryLoader(
+        #     self.tvPersonInfo,
+        #     QApplication.translate(
+        #         "newSTRWiz",
+        #         "Party Information"
+        #     )
+        # )
         party_data = []
         vertical_layout = QVBoxLayout(
             self.tvPersonInfo
@@ -131,25 +150,29 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         self.RemovePartybtn.clicked.connect(
             lambda: self.remove_row(
-                party_table, self.notifPerson
+                party_table, self.party_notice
             )
         )
 
     def init_spatial_unit(self):
-        '''
-        Initialize property config
-        '''
-        self.notifProp = NotificationBar(
+        """
+        Initialize the spatial unit page.
+        :returns: None
+        :rtype: NoneType
+        """
+        self.spatial_unit_notice = NotificationBar(
             self.vlPropNotif
         )
         self.gpOLTitle = self.gpOpenLayers.title()
         
         # Flag for checking whether
-        # OpenLayers basemaps have been loaded
+        # OpenLayers base maps have been loaded
         self.olLoaded = False
 
         spatial_unit_data = []
-        vertical_layout = QVBoxLayout(self.tvPropInfo)
+        vertical_layout = QVBoxLayout(
+            self.tvPropInfo
+        )
         spatial_unit_table = self.create_table(
             self.tvPropInfo,
             vertical_layout
@@ -168,7 +191,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         )
         self.RemoveSpatialUnitbtn.clicked.connect(
             lambda: self.remove_row(
-                spatial_unit_table, self.notifPerson
+                spatial_unit_table, self.party_notice
             )
         )
         #Connect signals
@@ -195,12 +218,12 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.connect(
             self.propBrowser,
             SIGNAL("loadError(QString)"),
-            self._onPropertyBrowserError
+            self.on_property_browser_error
         )
         self.connect(
             self.propBrowser,
             SIGNAL("loadProgress(int)"),
-            self._onPropertyBrowserLoading
+            self.on_property_browser_loading
         )
         self.connect(
             self.propBrowser,
@@ -226,14 +249,24 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         )
 
     def remove_row(self, table_view, notification):
-
+        """
+        A slot that removes a selected party or
+        spatial unit record/row.
+        :param table_view: The table view in which
+            the row is removed.
+        :type table_view: QTableView
+        :param notification: The notification
+        :type notification: NotificationBar object
+        :returns: None
+        :rtype: NoneType
+        """
         if len(table_view.selectedIndexes()) > 0:
             row_index = table_view.selectedIndexes()[0]
             table_view.model().removeRow(
                 row_index.row(), row_index
             )
             table_view.model().layoutChanged.emit()
-            if notification == self.notifPerson:
+            if notification == self.party_notice:
                 self.remove_str_type(row_index.row())
 
         else:
@@ -247,9 +280,19 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
 
     def remove_str_type(self, row_position):
-        # As there are two tableviews for each party row,
+        """
+        Removes corresponding social tenure type
+        row when a party row is removed.
+        :param row_position: Party row position that is removed.
+        :type row_position: integer
+        :returns: None
+        :rtype: NoneType
+        """
+        # As there are two tableviews in str type page
+        # due to an additional tableview for social
+        # tenure type combo (FreezeTableWidget),
         # we have to multiply by 2 to get the correct
-        # position of matching FreezeTableWidget
+        # position of str_type row to be removed
         matching_table = row_position * 2
         for position, item in enumerate(
                 self.frmWizSTRType.findChildren(QTableView)
@@ -261,13 +304,28 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
 
     def initializePage(self, id):
-        '''
-        Initialize summary page based on user selections.
-        '''
+        """
+        Initialize summary page based on user
+        selections.
+        :param id: the page id of the wizard
+        :type id: QWizard id
+        :returns: None
+        :rtype: NoneType
+        """
         if id == 5:
             self.buildSummary()
 
     def create_table(self, parent, container):
+        """
+        Creates an empty QTableView in party and
+        spatial unit pages.
+        :param parent: The parent of the tableview
+        :type parent: QWidget
+        :param container: The layout that holds the parent
+        :type parent: QVBoxLayout
+        :returns: QTableView
+        :rtype: QTableView
+        """
         table_view = QTableView()
 
         table_view.setEditTriggers(
@@ -294,6 +352,24 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
     def create_str_type_table(
             self, parent, container, table_data, headers
     ):
+        """
+        Creates social tenure type table that is composed
+        of each selected party rows with a combobox for
+        social tenure type.
+        :param parent:  The parent of the tableview
+        :type parent: QWidget
+        :param container: The layout that holds the parent
+        :type container: QVBoxLayout
+        :param table_data: The table data that is composed
+            of the added party record. It is empty when
+            the method is called. But gets populated inside
+            the model.
+        :type table_data: List
+        :param headers: Header of the tableview
+        :type headers: List
+        :return: QTableView
+        :rtype: QTableView
+        """
         table_view = FreezeTableWidget(
             table_data, headers, parent
         )
@@ -314,6 +390,17 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         return table_view
 
     def update_table_view(self, table_view, str_type):
+        """
+        Updates a tableview by resizing row and headers
+        to content size and by hiding id columns
+        :param table_view: The table view to be updated.
+        :type table_view: QTableView
+        :param str_type: A boolean that sets if it is
+        for str type table or not.
+        :type str_type: Boolean
+        :return: None
+        :rtype: NoneType
+        """
         # show grid
         table_view.setShowGrid(True)
         # set column width to fit contents
@@ -344,8 +431,21 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             self, entity, table_data, tableview, str_type=False
     ):
         """
-        Adds headers from model columns.
-        Returns: None
+        Adds headers data for tableview columns. The
+        headers comes from the selected entity.
+        :param entity: The entity for which the table
+        header is created for.
+        :type entity: Entity Object
+        :param table_data: The table data of the table view.
+        :type table_data: List
+        :param tableview: The tableview in which the header
+        is added in.
+        :type tableview: QTableView
+        :param str_type: A boolean whether the header is for
+        str_type or not.
+        :type str_type: Boolean
+        :return: List of Table headers
+        :rtype: List
         """
         db_model = entity_model(entity, True)
         headers = []
@@ -374,7 +474,19 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
     def add_record(
             self, table_view, entity, table_data, str_type=False
     ):
+        """
 
+        :param table_view:
+        :type table_view:
+        :param entity:
+        :type entity:
+        :param table_data:
+        :type table_data:
+        :param str_type:
+        :type str_type:
+        :return:
+        :rtype:
+        """
         data = OrderedDict()
         db_model = entity_model(entity, True)
         db_obj = db_model()
@@ -401,6 +513,9 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 table_view.model().removeRow(0)
 
         table_data.append(data.values())
+        # Get the id and set it to self.sel_spatial_unit
+        # so that it can be previewed on the map under
+        # the preview tab.
         if entity == self.spatial_unit:
             spatial_unit_id = self.get_spatial_unit_data()
             self.set_record_to_model(
@@ -411,6 +526,18 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
 
     def get_table_data(self, table_view, str_type=True):
+        """
+        Gets the data from a table_view.
+        :param table_view: The table view from when
+        the data is pulled.
+        :type table_view: QTableView
+        :param str_type: A boolean whether the header is for
+        str_type or not.
+        :type str_type: Boolean
+        :return: A list containing a list of ids of
+        the selected str related table or str_type value.
+        :rtype: List
+        """
         model = table_view.model()
         table_data = []
         if str_type:
@@ -431,17 +558,33 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         return table_data
 
     def get_party_str_type_data(self):
-         str_types = []
-         party_ids = []
-         for item in self.frmWizSTRType.findChildren(QTableView):
-             if item.__class__.__name__ == 'FreezeTableWidget' and \
-                             item is not None:
+        """
+        Gets party and str_type data from str_type
+        page (page 3 of the wizard). It uses
+        get_table_data() method.
+        :return: A list containing a list of ids of
+        the selected str related table or str_type value.
+        :rtype: List
+        """
+        str_types = []
+        party_ids = []
+        for item in self.frmWizSTRType.findChildren(QTableView):
+            if item.__class__.__name__ == 'FreezeTableWidget' and \
+                         item is not None:
                 party_id, str_type = self.get_table_data(item)
                 party_ids.append(party_id)
                 str_types.append(str_type)
-         return party_ids, str_types
+                return party_ids, str_types
 
     def get_spatial_unit_data(self):
+        """
+        Gets spatial unit data from spatial unit
+        page (page 2 of the wizard). It uses
+        get_table_data() method.
+        :return: A list containing a list of ids of
+        spatial units select.
+        :rtype: List
+        """
         spatial_unit_id = None
         for item in self.tvPropInfo.findChildren(QTableView):
             if item is not None:
@@ -451,6 +594,18 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         return spatial_unit_id
 
     def set_record_to_model(self, entity, sel_attr):
+        """
+        Sets selected record data to model and stores it as
+        a list model.
+        :param entity: The entity from which the model is created.
+        :type entity: Entity object
+        :param sel_attr: List of selected records that is the
+        return from get_spatial_unit_data() or
+        get_party_str_type_data()
+        :type sel_attr: List
+        :return: None
+        :rtype: NoneType
+        """
         db_model = entity_model(entity, True)
         db_obj = db_model()
         if entity == self.party:
@@ -485,9 +640,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 self.sel_str_type.append(sel_str_type_id)
 
     def init_str_type(self):
-        '''
-        Initialize 'Social Tenure Relationship' GUI controls
-        '''
+        """
+        Initialize 'Social Tenure Type page.
+        :return: None
+        :rtype: NoteType
+        """
         party_data = []
         headers = self.add_table_headers(
             self.party,
@@ -515,9 +672,12 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
 
     def init_document_type(self):
-        '''
-        Initialize 'Right of Enjoyment' GUI controls
-        '''
+        """
+        Initializes the document type combobox by
+        populating data.
+        :return: None
+        :rtype: NoneType
+        """
         doc_entity = self.curr_profile.entity_by_name(
             unicode(self.prefix+'_check_document_type')
         )
@@ -534,9 +694,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         )
         
     def initSourceDocument(self):
-        '''
-        Initialize source document page
-        '''
+        """
+        Initialize the supporting document page.
+        :return: None
+        :rtype: NoneType
+        """
         #Set currency regular expression and currency prefix
         rx = QRegExp("^\\d{1,12}(([.]\\d{2})*),(\\d{2})$")
         rxValidator = QRegExpValidator(rx,self)
@@ -557,9 +719,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         )
 
     def buildSummary(self):
-        '''
+        """
         Display summary information in the tree view.
-        '''
+        :return: None
+        :rtype: NoneType
+        """
         summaryTreeLoader = TreeSummaryLoader(self.twSTRSummary)
 
         sel_party, sel_str_types = self.get_party_str_type_data()
@@ -597,7 +761,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 ":/plugins/stdm/images/icons/property.png"
             )
 
-
         #Check the source documents based on the type of property
         srcDocMapping = self.sourceDocManager.attributeMapping()
 
@@ -611,9 +774,14 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         summaryTreeLoader.display()  
 
     def validateCurrentPage(self):
-        '''
-        Validate the current page before proceeding to the next one
-        '''
+        """
+        Validate the current page before
+        proceeding to the next one and gets and 
+        sets data from each page so that it can be used
+        in on_create_str.
+        :return: None
+        :rtype: NoneType
+        """
         isValid = True
         currPageIndex = self.currentId()       
         
@@ -628,8 +796,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                     "Please choose a person for whom you are "
                     "defining the social tenure relationship for."
                 )
-                self.notifPerson.clear()
-                self.notifPerson.insertNotification(msg, ERROR)
+                self.party_notice.clear()
+                self.party_notice.insertNotification(msg, ERROR)
                 isValid = False
         
         #Validate property information
@@ -640,14 +808,18 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                     "newSTRWiz",
                     "Please specify the spatial unit to reference. "
                     "Use the filter capability below.")
-                self.notifProp.clear()
-                self.notifProp.insertNotification(msg, ERROR)
+                self.spatial_unit_notice.clear()
+                self.spatial_unit_notice.insertNotification(
+                    msg, ERROR
+                )
                 isValid = False
         #Validate STR Type
         if currPageIndex == 3:
             #Get current selected index
             party_ids, str_types = self.get_party_str_type_data()
-            self.set_record_to_model(self.str_type, str_types)
+            self.set_record_to_model(
+                self.str_type, str_types
+            )
             if None in str_types or ' ' in str_types:
                 msg = QApplication.translate(
                     'newSTRWiz',
@@ -670,14 +842,16 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 self.notifSourceDoc.insertErrorNotification(msg)
 
         if currPageIndex == 5:
-            isValid = self.onCreateSTR()
+            isValid = self.on_create_str()
         return isValid
     
-    def onCreateSTR(self):
-        '''
+    def on_create_str(self):
+        """
         Slot raised when the user clicks on Finish
         button in order to create a new STR entry.
-        '''
+        :return: None
+        :rtype: NoneType
+        """
         isValid = True
 
         #Create a progress dialog
@@ -792,19 +966,30 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         return isValid
         
-    def _onPropertyBrowserError(self,err):
-        '''
+    def on_property_browser_error(self, err):
+        """
         Slot raised when an error occurs when
         loading items in the property browser
-        '''
-        self.notifProp.clear()
-        self.notifProp.insertNotification(err, ERROR)
+        :param err: The error message to be displayed
+        :type err: QString
+        :return: None
+        :rtype: NoneType
+        """
+        self.spatial_unit_notice.clear()
+        self.spatial_unit_notice.insertNotification(
+            err, ERROR
+        )
         
-    def _onPropertyBrowserLoading(self,progress):
-        '''
-        Slot raised when the property browser is loading.
-        Displays the progress of the page loading as a percentage.
-        '''
+    def on_property_browser_loading(self, progress):
+        """
+        Slot raised when the property browser is
+        loading. Displays the progress of the
+        page loading as a percentage.
+        :param progress: load progress
+        :type progress: Integer
+        :return: None
+        :rtype: NoneType
+        """
         if progress <= 0 or progress >= 100:
             self.gpOpenLayers.setTitle(self.gpOLTitle)
         else:
@@ -824,12 +1009,12 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             self.olLoaded = True
             self.overlayProperty()
         else:
-            self.notifProp.clear()
+            self.spatial_unit_notice.clear()
             msg = QApplication.translate(
                 "newSTRWiz",
                 "Error - The property map cannot be loaded."
             )
-            self.notifProp.insertErrorNotification(msg)
+            self.spatial_unit_notice.insertErrorNotification(msg)
         
     def _onEnableOLGroupbox(self,state):
         '''
@@ -840,13 +1025,13 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         if state:
 
             if len(self.sel_spatial_unit) < 1:
-                self.notifProp.clear()
+                self.spatial_unit_notice.clear()
                 msg = QApplication.translate(
                     "newSTRWiz",
                     "You have to add a spatial unit record "
                     "in order to be able to preview it."
                 )
-                self.notifProp.insertWarningNotification(msg)                
+                self.spatial_unit_notice.insertWarningNotification(msg)                
                 self.gpOpenLayers.setChecked(False)
                 return  
             
@@ -1119,7 +1304,8 @@ class FreezeTableWidget(QTableView):
         # Set properties header lines
         vh = self.verticalHeader()
         vh.setDefaultSectionSize(25) # height lines
-        vh.setDefaultAlignment(Qt.AlignCenter) # text alignment centered
+        # text alignment centered
+        vh.setDefaultAlignment(Qt.AlignCenter) 
         vh.setVisible(True)
         # Height of rows - as in the main widget
         self.frozen_table_view.verticalHeader().\
