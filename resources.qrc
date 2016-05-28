@@ -11,15 +11,11 @@
     <file>images/icons/entity_management.png</file>
     <file>images/icons/content_auth.png</file>
     <file>images/icons/users_manage.png</file>
-    <file>images/icons/enumerator.png</file>
-    <file>images/icons/questionaire.png</file>
     <file>images/icons/search.png</file>
     <file>images/icons/add.png</file>
-    <file>images/icons/admin_unit.png</file>
     <file>images/icons/roles.png</file>
     <file>images/icons/user.png</file>
     <file>images/icons/user_mapping.png</file>
-    <file>images/icons/people_icon.png</file>
     <file>images/icons/property_manager.png</file>
     <file>images/icons/update.png</file>
     <file>images/icons/save.png</file>
@@ -90,5 +86,6 @@
     <file>images/icons/layer.gif</file>
     <file>images/icons/table_designer.png</file>
     <file>images/icons/db_server_settings.png</file>
+      <file>images/icons/options.png</file>
   </qresource>
 </RCC>

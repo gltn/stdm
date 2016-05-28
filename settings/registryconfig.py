@@ -33,6 +33,50 @@ DOCUMENTS_KEY = 'documents'
 TEMPLATES_KEY = 'templates'
 OUTPUTS_KEY = 'outputs'
 
+
+def registry_value(key_name):
+    """
+    Util method for reading the value for the given key.
+    :param key_name: Name of the registry key.
+    :type key_name: str
+    :return: Value of the of the given registry key.
+    :rtype: object
+    """
+    reg_config = RegistryConfig()
+
+    key_value = reg_config.read([key_name])
+
+    if len(key_value) == 0:
+        return None
+
+    else:
+        return key_value[key_name]
+
+
+def composer_output_path():
+    """
+    :return: Returns the directory path of composer outputs.
+    :rtype: str
+    """
+    return registry_value(COMPOSER_OUTPUT)
+
+
+def composer_template_path():
+    """
+    :return: Returns the directory path of composer templates.
+    :rtype: str
+    """
+    return registry_value(COMPOSER_TEMPLATE)
+
+
+def source_documents_path():
+    """
+    :return: Returns the root path of source documents.
+    :rtype: str
+    """
+    return registry_value(NETWORK_DOC_RESOURCE)
+
+
 class RegistryConfig(object):
     """
     Utility class for reading and writing STDM user settings in Windows Registry
@@ -51,7 +95,6 @@ class RegistryConfig(object):
         settings.beginGroup("/")
         groups = settings.childGroups()
         for group in groups:
-            #QMessageBox.information(None, "Info", group)
             if str(group) == self._base_group():
                 for t in items:
                     tKey = self.groupPath + "/" + t
