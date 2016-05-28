@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_profile.ui'
 #
-# Created: Sun Feb 21 15:23:48 2016
+# Created: Sat May 28 12:14:12 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,24 +26,26 @@ except AttributeError:
 class Ui_Profile(object):
     def setupUi(self, Profile):
         Profile.setObjectName(_fromUtf8("Profile"))
-        Profile.resize(358, 140)
-        self.edtDesc = QtGui.QLineEdit(Profile)
-        self.edtDesc.setGeometry(QtCore.QRect(90, 52, 261, 20))
-        self.edtDesc.setObjectName(_fromUtf8("edtDesc"))
-        self.label_2 = QtGui.QLabel(Profile)
-        self.label_2.setGeometry(QtCore.QRect(25, 52, 53, 16))
-        self.label_2.setObjectName(_fromUtf8("label_2"))
+        Profile.resize(314, 93)
+        self.formLayout = QtGui.QFormLayout(Profile)
+        self.formLayout.setObjectName(_fromUtf8("formLayout"))
         self.label = QtGui.QLabel(Profile)
-        self.label.setGeometry(QtCore.QRect(25, 20, 59, 16))
         self.label.setObjectName(_fromUtf8("label"))
+        self.formLayout.setWidget(0, QtGui.QFormLayout.LabelRole, self.label)
+        self.edtProfile = QtGui.QLineEdit(Profile)
+        self.edtProfile.setObjectName(_fromUtf8("edtProfile"))
+        self.formLayout.setWidget(0, QtGui.QFormLayout.FieldRole, self.edtProfile)
+        self.label_2 = QtGui.QLabel(Profile)
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.formLayout.setWidget(1, QtGui.QFormLayout.LabelRole, self.label_2)
+        self.edtDesc = QtGui.QLineEdit(Profile)
+        self.edtDesc.setObjectName(_fromUtf8("edtDesc"))
+        self.formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self.edtDesc)
         self.buttonBox = QtGui.QDialogButtonBox(Profile)
-        self.buttonBox.setGeometry(QtCore.QRect(190, 90, 156, 23))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.edtProfile = QtGui.QLineEdit(Profile)
-        self.edtProfile.setGeometry(QtCore.QRect(90, 20, 261, 20))
-        self.edtProfile.setObjectName(_fromUtf8("edtProfile"))
+        self.formLayout.setWidget(2, QtGui.QFormLayout.FieldRole, self.buttonBox)
 
         self.retranslateUi(Profile)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), Profile.accept)
@@ -54,8 +56,8 @@ class Ui_Profile(object):
 
     def retranslateUi(self, Profile):
         Profile.setWindowTitle(_translate("Profile", "Profile Editor", None))
-        self.edtDesc.setPlaceholderText(_translate("Profile", "Profile description", None))
-        self.label_2.setText(_translate("Profile", "Description", None))
         self.label.setText(_translate("Profile", "Profile name", None))
         self.edtProfile.setPlaceholderText(_translate("Profile", "Profile name", None))
+        self.label_2.setText(_translate("Profile", "Description", None))
+        self.edtDesc.setPlaceholderText(_translate("Profile", "Profile description", None))
 

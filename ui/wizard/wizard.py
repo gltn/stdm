@@ -67,6 +67,7 @@ from create_entity import EntityEditor
 from column_editor import ColumnEditor
 from create_lookup import LookupEditor
 from create_lookup_value import ValueEditor
+from entity_depend import EntityDepend
 
 # create logger
 LOGGER = logging.getLogger('stdm')
@@ -658,12 +659,23 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             return
 
         model_item, entity, row_id = self.get_model_entity(self.pftableView)
+
         if model_item:
+            dependencies = entity.dependencies()
+            if len(dependencies['entities']) > 0 or len(dependencies['views']) > 0:
+                entity_depend = EntityDepend(self, entity, dependencies)
+                result = entity_depend.exec_()
+                if result == 0:
+                    return
+
+            self.entity_item_model.selectionChanged.disconnect()
             model_item.delete_entity(entity)
             # delete entity from selected profile
             profile = self.current_profile()
             profile.remove_entity(entity.short_name)
-            model_item.removeRow(row_id)
+
+            self.init_entity_item_model()
+            self.trigger_entity_change()
 
     def clear_view_model(self, view_model):
         rows = view_model.rowCount()
@@ -778,7 +790,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Get the columns of the selected entity, add them to the newly created
         column entity model
         """
+        self.trigger_entity_change()
+
+    def trigger_entity_change(self):
         row_id = self.entity_item_model.currentIndex().row()
+
         if row_id > -1:
             view_model = self.entity_item_model.currentIndex().model()
             self.col_view_model.clear()
