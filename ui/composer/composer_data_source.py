@@ -91,11 +91,11 @@ class ComposerDataSourceSelector(QWidget,Ui_frmComposerDataSource):
         Slot raised to show STDM database tables.
         """
         if state:
-            tables = profile_user_tables(self.curr_profile)
+            tables = profile_user_tables(self.curr_profile, False)
             self.cboDataSource.clear()
             self.cboDataSource.addItem('')
             for key, value in tables.iteritems():
-                self.cboDataSource.addItem(value, key)
+                self.cboDataSource.addItem(value.lower(), key)
             
     def onShowViews(self,state):
         """

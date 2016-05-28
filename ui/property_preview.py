@@ -77,6 +77,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         self._ol_loaded = False
         self._overlay_layer = None
         self.sel_highlight = None
+        self.memory_layer = None
         self._db_session = STDMDb.instance().session
 
         self.curr_profile = current_profile()
@@ -229,40 +230,36 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
             return
 
         geom_type, epsg_code = geometryType(table_name, geom_col)
-
-        # if self._overlay_layer is None:
-
-        self._create_vector_layer(geom_type, epsg_code)
-
         if not highlight:
+            self._create_vector_layer(geom_type, epsg_code)
             #Add layer to map
             QgsMapLayerRegistry.instance().addMapLayer(self._overlay_layer,
                                                        False)
             #Ensure it is always added on top
             QgsProject.instance().layerTreeRoot().insertLayer(0, self._overlay_layer)
 
-        if clear_existing:
-            self.delete_local_features()
+            if clear_existing:
+                self.delete_local_features()
+            extent = self._add_geom_to_map(geom)
 
-        extent = self._add_geom_to_map(geom)
-        if not extent:
-            return
-        #Add spatial unit to web viewer
-        self._web_spatial_loader.add_overlay(model, geom_col)
+            if not extent:
+                return
+            #Add spatial unit to web viewer
+            self._web_spatial_loader.add_overlay(model, geom_col)
+            #Increase bounding box by 50%, so that layer slightly zoomed out
+            extent.scale(1.5)
 
-        #Increase bounding box by 50%, so that layer slightly zoomed out
-        extent.scale(1.5)
+            #Select feature. Hack for forcing a selection by using inversion
+            self._overlay_layer.invertSelection()
 
-        #Select feature. Hack for forcing a selection by using inversion
-        self._overlay_layer.invertSelection()
+            self._iface.mapCanvas().setExtent(extent)
+            self._iface.mapCanvas().refresh()
 
-        self._iface.mapCanvas().setExtent(extent)
-        self._iface.mapCanvas().refresh()
-        self.refresh_canvas_layers()
-
-
-        #Need to force event so that layer is shown
-        QCoreApplication.sendEvent(self.local_map, QShowEvent())
+            self.refresh_canvas_layers()
+            #Need to force event so that layer is shown
+            QCoreApplication.sendEvent(self.local_map, QShowEvent())
+        else:
+            self.highlight_spatial_unit(geom)
 
     def clear_sel_highlight(self):
         """
@@ -322,7 +319,8 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         if active_layer is None:
             no_layer_msg = QApplication.translate(
                 'SpatialPreview',
-                'Please add a spatial unit layer to preview the spatial unit.'
+                'Please add a spatial unit layer '
+                'to preview the spatial unit.'
             )
             QMessageBox.critical(
                 self._iface.mainWindow(),
@@ -333,46 +331,65 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         else:
             return True
 
-    def _add_geom_to_map(self, geom, highlight=True):
+    def _add_geom_to_map(self, geom):
 
         if self._overlay_layer is None:
             return
-        if not highlight:
-            geom_func = geom.ST_AsText()
-            geom_wkt = self._db_session.scalar(geom_func)
 
-            dp = self._overlay_layer.dataProvider()
+        geom_func = geom.ST_AsText()
+        geom_wkt = self._db_session.scalar(geom_func)
 
-            feat = QgsFeature()
-            qgis_geom = QgsGeometry.fromWkt(geom_wkt)
-            feat.setGeometry(g)
-            dp.addFeatures([feat])
-            self._overlay_layer.updateExtents()
+        dp = self._overlay_layer.dataProvider()
 
-            return qgis_geom.boundingBox()
+        feat = QgsFeature()
+        qgis_geom = QgsGeometry.fromWkt(geom_wkt)
+        feat.setGeometry(g)
+        dp.addFeatures([feat])
+
+        self._overlay_layer.updateExtents()
+
+        return qgis_geom.boundingBox()
+
+    def highlight_spatial_unit(self, geom):
+        layer = self._iface.activeLayer()
+        self.local_map.canvas.setExtent(layer.extent())
+        self.local_map.canvas.refresh()
+
+        if self.spatial_unit_layer(layer):
+
+            self.clear_sel_highlight()
+
+            qgis_geom = qgsgeometry_from_wkbelement(geom)
+
+            self.sel_highlight = QgsHighlight(
+                self.local_map.canvas, qgis_geom, layer
+            )
+            self.sel_highlight.setFillColor(QColor(255,128,0))
+
+            self.sel_highlight.setWidth(3)
+            self.sel_highlight.show()
+
+            extent = qgis_geom.boundingBox()
+            extent.scale(1.1)
+            self.local_map.canvas.setExtent(extent)
+            self.local_map.canvas.refresh()
+
         else:
+            return
 
-            layer = self._iface.activeLayer()
 
-            if self.spatial_unit_layer(layer):
-                self.clear_sel_highlight()
-                geom_func = geom.ST_AsText()
-                geom_wkt = self._db_session.scalar(geom_func)
-                print geom_wkt
-                qgis_geom = qgsgeometry_from_wkbelement(geom)
-
-                self.sel_highlight = QgsHighlight(
-                    self.local_map.canvas, qgis_geom, layer
-                )
-                self.sel_highlight.setFillColor(QColor(255,128,0))
-                self.sel_highlight.setWidth(3)
-                self.sel_highlight.show()
-
-                self._overlay_layer.updateExtents()
-
-                return qgis_geom.boundingBox()
-            else:
-                return False
+    def remove_preview_layer(self, layer, name):
+        """
+        Removes the preview layer from legend.
+        :param layer: The preview polygon layer to be removed.
+        :param name: The name of the layer to be removed.
+        :return: None
+        """
+        if layer is not None:
+            for lyr in QgsMapLayerRegistry.instance().mapLayers().values():
+                if lyr.name() == name:
+                    id = lyr.id()
+                    QgsMapLayerRegistry.instance().removeMapLayer(id)
 
 
     def delete_local_features(self, feature_ids=[]):
