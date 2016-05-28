@@ -316,7 +316,7 @@ class Entity(QObject, TableItem):
         all_relations = parents + children
 
         #Dependent entity names
-        dep_ent = [e.name for e in all_relations]
+        dep_ent = [e.short_name for e in all_relations]
 
         #Add views as well
         dep_views = table_view_dependencies(self.name)

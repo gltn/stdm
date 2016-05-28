@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_entity.ui'
 #
-# Created: Sun Apr 24 14:30:28 2016
+# Created: Sat May 28 12:27:02 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,8 +26,10 @@ except AttributeError:
 class Ui_dlgEntity(object):
     def setupUi(self, dlgEntity):
         dlgEntity.setObjectName(_fromUtf8("dlgEntity"))
-        dlgEntity.resize(310, 129)
+        dlgEntity.resize(308, 129)
+        dlgEntity.setMaximumSize(QtCore.QSize(500, 16777215))
         self.formLayout = QtGui.QFormLayout(dlgEntity)
+        self.formLayout.setSizeConstraint(QtGui.QLayout.SetMaximumSize)
         self.formLayout.setVerticalSpacing(10)
         self.formLayout.setObjectName(_fromUtf8("formLayout"))
         self.label = QtGui.QLabel(dlgEntity)
