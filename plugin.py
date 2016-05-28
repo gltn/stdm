@@ -43,6 +43,7 @@ from stdm.ui.doc_generator_dlg import (
 from stdm.ui.login_dlg import loginDlg
 from stdm.ui.manage_accounts_dlg import manageAccountsDlg
 from stdm.ui.content_auth_dlg import contentAuthDlg
+from stdm.ui.options_base import OptionsDialog
 from stdm.ui.new_str_wiz import newSTRWiz
 from stdm.ui.view_str import ViewSTRWidget
 from stdm.ui.admin_unit_selector import AdminUnitSelector
@@ -229,7 +230,7 @@ class STDMQGISLoader(object):
         '''
         Show login dialog
         '''
-        frmLogin = loginDlg(self)
+        frmLogin = loginDlg(self.iface.mainWindow())
         retstatus = frmLogin.exec_()
 
         if retstatus == QDialog.Accepted:
@@ -471,6 +472,9 @@ class STDMQGISLoader(object):
         self.usersAct = QAction(QIcon(":/plugins/stdm/images/icons/users_manage.png"), \
         QApplication.translate("ManageUsersToolbarAction","Manage Users-Roles"), self.iface.mainWindow())
 
+        self.options_act = QAction(QIcon(":/plugins/stdm/images/icons/options.png"), \
+        QApplication.translate("OptionsToolbarAction","Options..."), self.iface.mainWindow())
+
         self.manageAdminUnitsAct = QAction(QIcon(":/plugins/stdm/images/icons/manage_admin_units.png"), \
         QApplication.translate("ManageAdminUnitsToolbarAction","Manage Administrative Units"), self.iface.mainWindow())
 
@@ -529,6 +533,7 @@ class STDMQGISLoader(object):
         #Connect the slots for the actions above
         self.contentAuthAct.triggered.connect(self.contentAuthorization)
         self.usersAct.triggered.connect(self.manageAccounts)
+        self.options_act.triggered.connect(self.on_sys_options)
         self.manageAdminUnitsAct.triggered.connect(self.onManageAdminUnits)
         self.exportAct.triggered.connect(self.onExportData)
         self.importAct.triggered.connect(self.onImportData)
@@ -553,6 +558,9 @@ class STDMQGISLoader(object):
 
         userRoleMngtCnt = ContentGroup.contentItemFromQAction(self.usersAct)
         userRoleMngtCnt.code = "0CC4FB8F-70BA-4DE8-8599-FD344A564EB5"
+
+        options_cnt = ContentGroup.contentItemFromQAction(self.options_act)
+        options_cnt.code = "1520B989-03BA-4B05-BC50-A4C3EC7D79B6"
 
         adminUnitsCnt = ContentGroup.contentItemFromQAction(self.manageAdminUnitsAct)
         adminUnitsCnt.code = "770EAC75-2BEC-492E-8703-34674054C246"
@@ -637,10 +645,16 @@ class STDMQGISLoader(object):
         self.userRoleCntGroup.setContainerItem(self.usersAct)
         self.userRoleCntGroup.register()
 
+        self.options_content_group = ContentGroup(username)
+        self.options_content_group.addContentItem(options_cnt)
+        self.options_content_group.setContainerItem(self.options_act)
+        self.options_content_group.register()
+
         #Group admin settings content groups
         adminSettingsCntGroups = []
         adminSettingsCntGroups.append(self.contentAuthCntGroup)
         adminSettingsCntGroups.append(self.userRoleCntGroup)
+        adminSettingsCntGroups.append(self.options_content_group)
 
         self.adminUnitsCntGroup = ContentGroup(username)
         self.adminUnitsCntGroup.addContentItem(adminUnitsCnt)
@@ -703,6 +717,8 @@ class STDMQGISLoader(object):
 
         self.toolbarLoader.addContent(self.contentAuthCntGroup, [adminMenu, adminBtn])
         self.toolbarLoader.addContent(self.userRoleCntGroup, [adminMenu, adminBtn])
+        self.toolbarLoader.addContent(self.options_content_group, [adminMenu,
+                                                                   adminBtn])
 
         self.menubarLoader.addContents(adminSettingsCntGroups, [stdmAdminMenu, stdmAdminMenu])
 
@@ -798,6 +814,13 @@ class STDMQGISLoader(object):
         '''
         frmAuthContent = contentAuthDlg(self)
         frmAuthContent.exec_()
+
+    def on_sys_options(self):
+        """
+        Loads the dialog for settings STDM options.
+        """
+        opt_dlg = OptionsDialog(self.iface)
+        opt_dlg.exec_()
 
     def workspaceLoader(self):
         '''
