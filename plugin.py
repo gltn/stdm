@@ -355,7 +355,6 @@ class STDMQGISLoader(object):
             else:
                 return True
 
-
     def default_profile(self):
         """
         Checks if the current profile exists and if it doesn't,
