@@ -30,6 +30,8 @@ from qgis.gui import *
 from stdm.utils.util import getIndex
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings import current_profile
+from stdm.data.configuration import entity_model
+
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 
@@ -41,6 +43,7 @@ from stdm.ui.doc_generator_dlg import (
 from stdm.ui.login_dlg import loginDlg
 from stdm.ui.manage_accounts_dlg import manageAccountsDlg
 from stdm.ui.content_auth_dlg import contentAuthDlg
+from stdm.ui.options_base import OptionsDialog
 from stdm.ui.new_str_wiz import newSTRWiz
 from stdm.ui.view_str import ViewSTRWidget
 from stdm.ui.admin_unit_selector import AdminUnitSelector
@@ -227,7 +230,7 @@ class STDMQGISLoader(object):
         '''
         Show login dialog
         '''
-        frmLogin = loginDlg(self)
+        frmLogin = loginDlg(self.iface.mainWindow())
         retstatus = frmLogin.exec_()
 
         if retstatus == QDialog.Accepted:
@@ -288,6 +291,70 @@ class STDMQGISLoader(object):
                 title = QApplication.translate("STDMQGISLoader","Error reading profile settings")
                 self.reset_content_modules_id(title,pe.message)
 
+
+    def database_checker(self, entity):
+        title = QApplication.translate(
+                "STDMQGISLoader",
+                'Database Table Error'
+            )
+
+        if entity == self.current_profile.social_tenure:
+            str_table_status = [
+                (str(entity.party.short_name), pg_table_exists(entity.party.name)),
+                (str(entity.spatial_unit.short_name), pg_table_exists(entity.spatial_unit.name)),
+                (str(entity.short_name), pg_table_exists(entity.name))
+            ]
+            str_table_status = dict(str_table_status)
+            missing_tables = [
+                 key
+                 for key, value in str_table_status.iteritems()
+                 if not value
+            ]
+            if len(missing_tables) > 0:
+                missing_tables = str(missing_tables).strip("[]")
+                missing_tables = missing_tables.replace("'", "")
+                message = QApplication.translate(
+                    "STDMQGISLoader",
+                    'The system has detected that database table(s) required in \n'
+                    'in the Social Tenure Relationship is/are missing.\n'
+                    'Missing table(s) - '+missing_tables+'\n'+
+                    'Do you want to re-run the Configuration Wizard now?'
+                )
+                database_check = QMessageBox.critical(
+                    self.iface.mainWindow(),
+                    title,
+                    message,
+                    QMessageBox.Yes,
+                    QMessageBox.No
+                )
+                if database_check == QMessageBox.Yes:
+                    self.load_config_wizard()
+                else:
+                    return False
+            else:
+                return True
+        else:
+            if not pg_table_exists(entity.name):
+                message = QApplication.translate(
+                    "STDMQGISLoader",
+                    'The system has detected that a required database table - \n'
+                    +entity.short_name+ ' is missing. \n'+
+                    'Do you want to re-run the Configuration Wizard now?'
+                )
+                database_check = QMessageBox.critical(
+                    self.iface.mainWindow(),
+                    title,
+                    message,
+                    QMessageBox.Yes,
+                    QMessageBox.No
+                )
+                if database_check == QMessageBox.Yes:
+                    self.load_config_wizard()
+                else:
+                    return False
+            else:
+                return True
+
     def default_profile(self):
         """
         Checks if the current profile exists and if it doesn't,
@@ -306,7 +373,7 @@ class STDMQGISLoader(object):
                 'The system has detected that there is no default profile. \n'
                 'Do you want to run the Configuration Wizard now?'
             )
-            default_profile = QMessageBox.question(
+            default_profile = QMessageBox.critical(
                 self.iface.mainWindow(),
                 title,
                 message,
@@ -404,6 +471,9 @@ class STDMQGISLoader(object):
         self.usersAct = QAction(QIcon(":/plugins/stdm/images/icons/users_manage.png"), \
         QApplication.translate("ManageUsersToolbarAction","Manage Users-Roles"), self.iface.mainWindow())
 
+        self.options_act = QAction(QIcon(":/plugins/stdm/images/icons/options.png"), \
+        QApplication.translate("OptionsToolbarAction","Options..."), self.iface.mainWindow())
+
         self.manageAdminUnitsAct = QAction(QIcon(":/plugins/stdm/images/icons/manage_admin_units.png"), \
         QApplication.translate("ManageAdminUnitsToolbarAction","Manage Administrative Units"), self.iface.mainWindow())
 
@@ -462,6 +532,7 @@ class STDMQGISLoader(object):
         #Connect the slots for the actions above
         self.contentAuthAct.triggered.connect(self.contentAuthorization)
         self.usersAct.triggered.connect(self.manageAccounts)
+        self.options_act.triggered.connect(self.on_sys_options)
         self.manageAdminUnitsAct.triggered.connect(self.onManageAdminUnits)
         self.exportAct.triggered.connect(self.onExportData)
         self.importAct.triggered.connect(self.onImportData)
@@ -486,6 +557,9 @@ class STDMQGISLoader(object):
 
         userRoleMngtCnt = ContentGroup.contentItemFromQAction(self.usersAct)
         userRoleMngtCnt.code = "0CC4FB8F-70BA-4DE8-8599-FD344A564EB5"
+
+        options_cnt = ContentGroup.contentItemFromQAction(self.options_act)
+        options_cnt.code = "1520B989-03BA-4B05-BC50-A4C3EC7D79B6"
 
         adminUnitsCnt = ContentGroup.contentItemFromQAction(self.manageAdminUnitsAct)
         adminUnitsCnt.code = "770EAC75-2BEC-492E-8703-34674054C246"
@@ -535,14 +609,17 @@ class STDMQGISLoader(object):
         Format the table names to freiendly format before adding them
         """
         if self.user_entities() is not None:
-            for module in self.user_entities():
+            user_entities = dict(self.user_entities())
+            for name, short_name in user_entities.iteritems():
                 display_name = QT_TRANSLATE_NOOP("Entities",
-                                    unicode(module).replace("_", " ").title())
-                self._moduleItems[display_name] = module
+                                    unicode(short_name).replace("_", " ").title())
+                self._moduleItems[display_name] = name
 
         for k, v in self._moduleItems.iteritems():
+
             content_action = QAction(QIcon(":/plugins/stdm/images/icons/table.png"),
                                     k, self.iface.mainWindow())
+
             # capabilities = contentGroup(self._moduleItems[k])
             #
             # if capabilities:
@@ -567,10 +644,16 @@ class STDMQGISLoader(object):
         self.userRoleCntGroup.setContainerItem(self.usersAct)
         self.userRoleCntGroup.register()
 
+        self.options_content_group = ContentGroup(username)
+        self.options_content_group.addContentItem(options_cnt)
+        self.options_content_group.setContainerItem(self.options_act)
+        self.options_content_group.register()
+
         #Group admin settings content groups
         adminSettingsCntGroups = []
         adminSettingsCntGroups.append(self.contentAuthCntGroup)
         adminSettingsCntGroups.append(self.userRoleCntGroup)
+        adminSettingsCntGroups.append(self.options_content_group)
 
         self.adminUnitsCntGroup = ContentGroup(username)
         self.adminUnitsCntGroup.addContentItem(adminUnitsCnt)
@@ -633,6 +716,8 @@ class STDMQGISLoader(object):
 
         self.toolbarLoader.addContent(self.contentAuthCntGroup, [adminMenu, adminBtn])
         self.toolbarLoader.addContent(self.userRoleCntGroup, [adminMenu, adminBtn])
+        self.toolbarLoader.addContent(self.options_content_group, [adminMenu,
+                                                                   adminBtn])
 
         self.menubarLoader.addContents(adminSettingsCntGroups, [stdmAdminMenu, stdmAdminMenu])
 
@@ -728,6 +813,13 @@ class STDMQGISLoader(object):
         '''
         frmAuthContent = contentAuthDlg(self)
         frmAuthContent.exec_()
+
+    def on_sys_options(self):
+        """
+        Loads the dialog for settings STDM options.
+        """
+        opt_dlg = OptionsDialog(self.iface)
+        opt_dlg.exec_()
 
     def workspaceLoader(self):
         '''
@@ -1077,12 +1169,18 @@ class STDMQGISLoader(object):
         Slot for showing widget that enables users to browse 
         existing STRs.
         '''
-        if self.viewSTRWin is None:
-            self.viewSTRWin = ViewSTRWidget(self)
-            self.viewSTRWin.show()
-        else:
-            self.viewSTRWin.showNormal()
-            self.viewSTRWin.setFocus()
+        db_status = self.database_checker(
+            self.current_profile.social_tenure
+        )
+
+        if db_status:
+            if self.viewSTRWin is None:
+                self.viewSTRWin = ViewSTRWidget(self)
+                self.viewSTRWin.show()
+            else:
+                self.viewSTRWin.showNormal()
+                self.viewSTRWin.setFocus()
+
 
     def isSTDMLayer(self,layer):
         '''
@@ -1097,32 +1195,40 @@ class STDMQGISLoader(object):
         tbList = self._moduleItems.values()
 
         dispName=QAction.text()
+
         if dispName == 'Social Tenure Relationship':
-            if self.check_str_table_exist() in Base.metadata.tables:
+
+            database_status = self.database_checker(
+                self.current_profile.social_tenure
+            )
+            if database_status:
                 self.newSTR()
-            else:
-                msg = QApplication.translate("STDMPlugin","Some required tables are missing for this function to work"
-                                                          " 'str_relations' table is not found in the database")
-                self.reset_content_modules_id("STR",msg)
+
 
         else:
-            tableName=self._moduleItems.get(dispName)
-            if tableName in tbList:
-                cnt_idx = getIndex(self._reportModules.keys(), dispName)
-                try:
+            table_name =self._moduleItems.get(dispName)
+            sel_entity = self.current_profile.entity_by_name(table_name)
+            database_status = self.database_checker(sel_entity)
+
+            try:
+                if table_name in tbList and database_status:
+                    cnt_idx = getIndex(self._reportModules.keys(), dispName)
                     main = STDMEntityBrowser(self.moduleContentGroups[cnt_idx],
-                                             tableName, self.iface.mainWindow())
+                                             table_name, self.iface.mainWindow())
                     main.exec_()
 
-                except Exception as ex:
-                    QMessageBox.critical(self.iface.mainWindow(),
-                                         QApplication.translate("STDMPlugin","Loading dialog..."),
-                                         QApplication.translate("STDMPlugin",
-                                         "Unable to load the table columns in the browser, "
-                                         "check if this table and columns exist in configuration file and"
-                                         " database: %s")%unicode(ex.message))
-                finally:
-                    STDMDb.instance().session.rollback()
+                else:
+                    return
+
+            except Exception as ex:
+                QMessageBox.critical(self.iface.mainWindow(),
+                                     QApplication.translate("STDMPlugin","Loading dialog..."),
+                                     QApplication.translate("STDMPlugin",
+                                     "Unable to load the entity in the browser. "
+                                     "Check if the entity is configured correctly. "
+                                     "Error: %s")%unicode(ex.message))
+            finally:
+                STDMDb.instance().session.rollback()
 
     def about(self):
         """
@@ -1206,11 +1312,11 @@ class STDMQGISLoader(object):
 
     def user_entities(self):
         """
-        Create a handler to read the xml config and return the table list
+        Create a handler to read the current profile and return the table list
         """
         if self.current_profile is not None:
             return [
-                    e.short_name
+                    (e.name, e.short_name)
                     for e in
                     self.current_profile.entities.values()
                     if (e.TYPE_INFO == 'ENTITY' or e.TYPE_INFO == 'SOCIAL_TENURE') and

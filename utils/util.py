@@ -39,9 +39,8 @@ from PyQt4.QtGui import (
     QDialog,
     QMessageBox
 )
-
+from stdm.data.configuration import entity_model
 from qgis.gui import QgsEncodingFileDialog
-
 
 
 PLUGIN_DIR = os.path.abspath(os.path.join(os.path.dirname( __file__ ), os.path.pardir)).replace("\\", "/")
@@ -339,29 +338,130 @@ def format_column(attr):
 
 def entity_display_columns(entity):
     display_column = [
-    c.name
-    for c in
-    entity.columns.values()
-    if c.TYPE_INFO in ['VARCHAR',
-                       'SERIAL',
-                       'TEXT',
-                       'BIGINT',
-                       'DOUBLE',
-                       'DATE',
-                       'DATETIME',
-                       'YES_NO',
-                       'LOOKUP',
-                       'ADMIN_SPATIAL_UNIT',
-                       'MULTIPLE_SELECT'
-                       ]
+        c.name
+        for c in
+        entity.columns.values()
+        if c.TYPE_INFO in [
+            'VARCHAR',
+            'SERIAL',
+            'TEXT',
+            'BIGINT',
+            'DOUBLE',
+            'DATE',
+            'DATETIME',
+            'YES_NO',
+            'LOOKUP',
+            'ADMIN_SPATIAL_UNIT',
+            'MULTIPLE_SELECT'
+        ]
     ]
     return display_column
 
-def model_display_data(model, entity):
-    #Configure spatial unit formatters
+def entity_searchable_columns(entity):
+    searchable_column = [
+        c.name
+        for c in
+        entity.columns.values()
+        if c.searchable
+    ]
+    return searchable_column
+
+def model_display_data(model, entity, profile):
+
     model_display = OrderedDict()
     model_dic = model.__dict__
     for key, value in model_dic.iteritems():
         if key in entity_display_columns(entity) and key != 'id':
-            model_display[key] = value
+            value = lookup_id_to_value(profile, key, value)
+            model_display[format_column(key)] = value
     return model_display
+
+def model_display_mapping(model):
+    model_display_cols = OrderedDict()
+    model_dic = model.__dict__
+    for col in model_dic:
+        model_display_cols[col] = format_column(col)
+    return model_display_cols
+
+def profile_spatial_tables(profile):
+    spatial_tables = [
+        (e.name, e.short_name)
+        for e in
+        profile.entities.values()
+        if e.TYPE_INFO == 'ENTITY' and e.has_geometry_column()
+    ]
+    spatial_tables = dict(spatial_tables)
+    return spatial_tables
+
+def profile_user_tables(profile, include_views=True):
+    from stdm.data.pg_utils import (
+        pg_views
+    )
+    tables = [
+        (e.name, e.short_name)
+        for e in
+        profile.entities.values()
+        if e.TYPE_INFO in [
+            'ENTITY',
+            'ENTITY_SUPPORTING_DOCUMENT',
+            'SOCIAL_TENURE',
+            'SUPPORTING_DOCUMENT'
+        ]
+    ]
+    if include_views:
+        tables = dict(tables)
+        for view in pg_views():
+            tables[view] = view
+
+    return tables
+
+
+def profile_lookup_columns(profile):
+    lookup_columns = [
+        r.child_column for r in profile.relations.values()
+    ]
+    return lookup_columns
+
+def lookup_parent_entity(profile, col):
+    parent_entity = [
+        r.parent for r in profile.relations.values()
+        if r.child_column == col
+    ]
+    return parent_entity[0]
+
+
+def model_lookup_id_to_value(id, db_model):
+
+    if isinstance(id, int):
+        db_obj = db_model()
+        query = db_obj.queryObject().filter(
+            db_model.id == id
+        ).all()
+
+        value = getattr(
+            query[0],
+            'value',
+            None
+        )
+        return value
+    else:
+        return id
+
+def lookup_id_to_value(profile, col, id):
+    if col in profile_lookup_columns(profile):
+        parent_entity = lookup_parent_entity(profile, col)
+        db_model = entity_model(parent_entity)
+        db_obj = db_model()
+        query = db_obj.queryObject().filter(
+            db_model.id == id
+        ).all()
+
+        value = getattr(
+            query[0],
+            'value',
+            None
+        )
+        return value
+    else:
+        return id
+

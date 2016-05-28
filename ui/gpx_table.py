@@ -58,14 +58,9 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
         self.table_widget.setHorizontalHeaderLabels(["",
                                                      "Point Name",
                                                      "Latitude",
-                                                     "Longitude",
-                                                     # "Lat-Offset",
-                                                     # "Long-offset"
+                                                     "Longitude"
                                                      ])
 
-        # self.table_widget.setFocusPolicy(Qt.NoFocus)
-        # self.table_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        # self.table_widget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         row_counter = 0
         layer_list = []
@@ -96,16 +91,6 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
 
             layer_list.append(gpx_layer_point)
 
-            # Center checkbox item
-            # chk_bx_widget = QWidget()
-            # chk_bx = QCheckBox()
-            # chk_bx.setCheckState(Qt.Checked)
-            # lay_out = QHBoxLayout(chk_bx_widget)
-            # lay_out.addWidget(chk_bx)
-            # lay_out.setAlignment(Qt.AlignCenter)
-            # lay_out.setContentsMargins(0,0,0,0)
-            # chk_bx_widget.setLayout(lay_out)
-
             # Normal checkbox item
             chk_bx_tb_widget_item = QTableWidgetItem()
             chk_bx_tb_widget_item.setFlags(Qt.ItemIsUserCheckable | Qt.ItemIsEnabled | Qt.ItemIsSelectable )
@@ -121,8 +106,6 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
             self.table_widget.setItem(i, 1, self.label)
             self.table_widget.setItem(i, 2, item_lat)  # Column 2
             self.table_widget.setItem(i, 3, item_lon)  # Column 3
-            # self.table_widget.setCellWidget(i, 3, x_offset_spin_bx)  # Column 4
-            # self.table_widget.setCellWidget(i, 4, y_offset_spin_bx)  # Column 5
 
             # QgsVertex
             vertex_marker = QgsVertexMarker(self.map_canvas)
@@ -157,10 +140,6 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
             elif self.active_layer_geometry_typ == 2:
                 check_box_state = Qt.Checked
 
-        # QMessageBox.information(None, "STDM", "{0} {1} {2}".format(layer_list,
-        #                                                    self.active_layer_geometry_typ,
-        #                                                    self.temp_layer_type))
-
         if self.active_layer_geometry_typ == 0:
             for feat in layer_list:
                 fet.setGeometry(QgsGeometry.fromPoint(feat))
@@ -188,10 +167,6 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
         # Enable selection if entire row
         self.table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)
 
-        #
-        # self.table_widget.setFixedSize(self.table_widget.horizontalHeader().length() + 60, )
-        # self.table_widget.setMaximumWidth(self.table_widget.horizontalHeader().length() + 60)
-
         # Update Extent to new QgsVertext position
         x_min, x_max, y_min, y_max = self.layer_gpx.GetExtent()
         # self.map_canvas.clearExtentHistory()
@@ -209,7 +184,6 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
         Run when table row is selected
         """
         self.table_pressed_status = True
-        # QMessageBox.information(None, "STDM", "{0} {1}".format("Row pressed", self.table_pressed_status))
 
     @pyqtSlot('QTableWidgetItem')
     def gpx_table_widget_item_selection_changed(self):
@@ -218,89 +192,17 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
         """
         self.table_select_status = True
 
-        # # QMessageBox.information(None, "STDM", "{0} {1}".format("Selection has changed", self.table_pressed_status))
-        # self.list_of_selected_rows = []  # Clear selected list row
-        #
-        # self.list_of_selected_items = self.table_widget.selectedItems()
-        #
-        # # Adding selected items to list_of_selected_rows
-        # for itm in self.list_of_selected_items:
-        #     selected_item_row = itm.row()
-        #     self.list_of_selected_rows.append(selected_item_row)
-        #
-        # # Getting unique row of selected items rows
-        # unique_rows = list(OrderedDict.fromkeys(self.list_of_selected_rows))
-        #
-        # # QMessageBox.information(None, "STDM", "{0} {1}".format("Items state", self.vertex_dict))
-        #
-        # for row, vertex in self.vertex_dict.iteritems():
-        #
-        #     if row in unique_rows:
-        #         vertex[0].setColor(self.black)
-        #         vertex[0].setIconType(3)
-        #         self.map_canvas.refresh()
-        #
-        #     elif row not in unique_rows and self.active_layer_geometry_typ == 0:
-        #         vertex[0].setColor(self.red)
-        #         vertex[0].setIconType(2)
-        #         self.map_canvas.refresh()
-        #
-        #     elif row not in unique_rows and self.active_layer_geometry_typ in (1,2):
-        #         vertex[0].setColor(self.green)
-        #         vertex[0].setIconType(2)
-        #         self.map_canvas.refresh()
-        #
-        #     if self.active_layer_geometry_typ == 0:
-        #         for item_row, chkbx_item in self.prv_chkbx_itm_placeholder_dict.iteritems():
-        #             if item_row == row:
-        #                 vertex[0].setColor(self.green)
-        #                 vertex[0].setIconType(2)
-        #                 self.map_canvas.refresh()
-        #                 self.table_pressed_status = False
-        #
-        #     # if vertex[3] is Qt.Checked:
-        #     #     vertex[0].setColor(self.green)
-        #     #     vertex[0].setIconType(2)
-        #     #     self.map_canvas.refresh()
-        #     #
-        #     # elif vertex[3] is Qt.Unchecked and row in unique_rows:
-        #     #     vertex[0].setColor(self.black)
-        #     #     vertex[0].setIconType(3)
-        #     #     self.map_canvas.refresh()
-        #
-        #     # else:
-        #     #     vertex[0].setColor(self.red)
-        #     #     vertex[0].setIconType(2)
-        #     #     self.map_canvas.refresh()
-        #
-        #     # vertex[0].setColor(self.red)
-        #     # vertex[0].setIconType(2)
-        #     #
-        #     # if row in unique_rows:
-        #     #     vertex[0].setColor(self.black)
-        #     #     vertex[0].setIconType(3)
-        #     #     self.map_canvas.refresh()
-        #     #
-        #     # if self.active_layer_geometry_typ == 0:
-        #     #     for item_row, chkbx_item in self.prv_chkbx_itm_placeholder_dict.iteritems():
-        #     #         if item_row == row:
-        #     #             vertex[0].setColor(self.green)
-        #     #             vertex[0].setIconType(2)
-        #     #             self.map_canvas.refresh()
 
     @pyqtSlot('QTableWidgetItem')
     def gpx_table_widget_item_clicked(self, item):
         """
         Run when table checkbox column is clicked
         """
-        # QMessageBox.information(None, "STDM", "{0} table status {1}".format("Checkbox clicked", self.table_pressed_status))
-
         # First check if row is pressed to avoid running twice pressed and clicked actions
         if self.table_pressed_status:
             pass
 
         elif not self.table_pressed_status or self.table_select_status:
-            # QMessageBox.information(None, "STDM", "{0} {1}".format("Items state", self.vertex_dict))
             # If table row is not pressed maintain presses status at False
 
             # Check if import layer is a point
@@ -338,6 +240,7 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
                 for row, vertex_lon_lat_state in self.vertex_dict.iteritems():
                     if row == item.row():
                         vertex_lon_lat_state[0].setColor(self.red)
+                        vertex_lon_lat_state[3] = Qt.Unchecked
                         self.map_canvas.refresh()
 
 
@@ -389,8 +292,7 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
 
         for key, vertex in self.vertex_dict.iteritems():
             self.map_canvas.scene().removeItem(vertex[0])
-        # id = self.vl.id()
-        # QgsMapLayerRegistry.instance().removeMapLayer(id)
+
         self.close()
 
         self.curr_layer = vector_layer(self.sp_table, geom_column=self.sp_col)
@@ -407,7 +309,6 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
                                                              geom_wkb)
         self.gpx_add_attribute_info.create_attribute_info_gui()
         self.gpx_add_attribute_info.show()
-        # self.active_layer.setEditForm()
 
     def closeEvent(self, QCloseEvent):
         id = self.vl.id()

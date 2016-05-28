@@ -119,9 +119,9 @@ def _entity_select_column(entity, use_inner_join=False, join_parents=False,
 
     for c in columns:
         if not c.TYPE_INFO in _exclude_view_column_types:
-            normalized_entity_sname = entity.short_name.replace(' ', 
+            normalized_entity_sname = entity.short_name.replace(' ',
                     '_').lower()
-            pseudo_column_name = u'{0}_{1}'.format(normalized_entity_sname, 
+            pseudo_column_name = u'{0}_{1}'.format(normalized_entity_sname,
                     c.name)
             col_select_name = u'{0}.{1}'.format(entity.name,
                                                        c.name)
@@ -138,9 +138,13 @@ def _entity_select_column(entity, use_inner_join=False, join_parents=False,
                 LOGGER.debug('Parent found')
                 select_column_name = ''
 
-                #Map lookup values by default
+                #Map lookup and admin unit values by default
                 if c.TYPE_INFO == 'LOOKUP':
                     select_column_name = u'{0}.value AS {1}'.format(
+                        parent_table, pseudo_column_name)
+
+                elif c.TYPE_INFO == 'ADMIN_SPATIAL_UNIT':
+                    select_column_name = u'{0}.name AS {1}'.format(
                         parent_table, pseudo_column_name)
 
                 #These are outer joins

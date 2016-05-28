@@ -28,7 +28,7 @@ from qgis.core import *
 
 from sqlalchemy.sql.expression import text
 from sqlalchemy.exc import SQLAlchemyError
-
+from geoalchemy2 import WKBElement
 import stdm.data
 
 from stdm.data.database import (
@@ -110,11 +110,12 @@ def pg_views(schema="public"):
     """
     t = text("SELECT table_name FROM information_schema.tables WHERE table_schema = :tschema and table_type = :tbtype " \
              "ORDER BY table_name ASC")
-    result = _execute(t,tschema = schema,tbtype = "VIEW")
+    result = _execute(t, tschema = schema, tbtype = "VIEW")
         
     pgViews = []
         
     for r in result:
+
         viewName = r["table_name"]
         
         #Remove default PostGIS tables
