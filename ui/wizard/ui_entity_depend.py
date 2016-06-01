@@ -88,4 +88,4 @@ class Ui_dlgEntityDepend(object):
         self.btnCancel.setText(_translate("dlgEntityDepend", "Cancel", None))
         self.btnDelete.setText(_translate("dlgEntityDepend", "Delete entity", None))
 
-import resources_rc
+from stdm import resources_rc

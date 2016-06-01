@@ -148,7 +148,7 @@ class EntityNodeFormatter(STRNodeFormatter):
             self.curr_profile.entity_by_name(config.data_source_name)
         )
 
-        self._spatial_data_sources = profile_spatial_tables(self.curr_profile)
+        self._spatial_data_sources = profile_spatial_tables(self.curr_profile).keys()
 
 
     def _format_display_mapping(self, model, display_cols, filter_cols):
