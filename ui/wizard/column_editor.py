@@ -553,7 +553,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.fill_work_area()
         self.column = self.create_column()
-        self.error_message("AFTER: "+self.column.name)
 
         if self.column:
             self.entity.add_column(self.column)

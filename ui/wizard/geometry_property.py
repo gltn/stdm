@@ -67,7 +67,7 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
         self.load_geometry_types()
         self.btnCoord.clicked.connect(self.projection_selector)
         self.cboGeoType.setCurrentIndex(self._geom_type)
-        self.btnCoord.setText(self.srid())
+        self.btnCoord.setText(unicode(self.srid()))
 
     def load_geometry_types(self):
         """

@@ -512,6 +512,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def delete_entity_item(self, name):
         """
+        Triggered when an entity is removed from profile
         param name: Name of entity to delete
         type name: str
         """
@@ -645,8 +646,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             editor = EntityEditor(self, profile, entity)
             result = editor.exec_()
             if result == 1:
+                self.entity_model.delete_entity(entity)
                 self.entity_model.add_entity(editor.entity)
-                model_item.delete_entity(entity)
 
     def delete_entity(self):
         """
@@ -688,7 +689,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.cboParty.setModel(view_model)
         self.cboSPUnit.setModel(view_model)
 
-    def populate_view_model(self, profile):
+    def populate_view_models(self, profile):
         for entity in profile.entities.values():
             # if item is "deleted", don't show it
             if entity.action == DbItem.DROP:
@@ -742,7 +743,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.lvLookupValues.setModel(self.lookup_value_view_model)
 
         # from profile entities to view_model
-        self.populate_view_model(profile)
+        self.populate_view_models(profile)
 
         self.connect_signals()
 
@@ -753,6 +754,18 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         entity = profile.create_entity(entity_name, entity_factory)
         self.connect_column_signals(entity)
         profile.add_entity(entity)
+
+    def get_model_entityX(self, view):
+        sel_id = -1
+        entity = None
+        model_item = view.selectionModel().model()
+        if model_item:
+            sel_id = view.selectionModel().currentIndex().row()
+            #self.show_message("ROW: "+str(sel_id))
+            #for ent in  model_item.entities().items():
+                #self.show_message(ent[1].short_name)
+            entity = model_item.entities().items()[sel_id][1]
+        return (model_item, entity, sel_id)
 
     def get_model_entity(self, view):
         """
