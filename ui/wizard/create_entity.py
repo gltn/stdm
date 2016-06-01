@@ -84,21 +84,20 @@ class EntityEditor(QDialog, Ui_dlgEntity):
             entity.column_added.connect(self.form_parent.add_column_item)
             entity.column_removed.connect(self.form_parent.delete_column_item)
             self.profile.add_entity(entity)
-            return True
+            #return True
         else:
-            # editing
             if self.entity.short_name == entity_name:
                 self.entity.description = self.edtDesc.text()
                 self.entity.supports_documents = self.support_doc()
                 return False
             else:
                 self.profile.remove_entity(self.entity.short_name)
-                entity = self.profile.create_entity(entity_name, entity_factory,
+                self.entity = self.profile.create_entity(entity_name, entity_factory,
                         supports_documents=self.support_doc())
-                entity.description = self.edtDesc.text()
-                entity.column_added.connect(self.form_parent.add_column_item)
-                entity.column_removed.connect(self.form_parent.delete_column_item)
-                self.profile.add_entity(entity)
+                self.entity.description = self.edtDesc.text()
+                self.entity.column_added.connect(self.form_parent.add_column_item)
+                self.entity.column_removed.connect(self.form_parent.delete_column_item)
+                self.profile.add_entity(self.entity)
                 return True
 
     def support_doc(self):
