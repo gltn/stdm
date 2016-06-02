@@ -37,7 +37,7 @@ from stdm.settings import (
     current_profile
 )
 from stdm.utils.util import (
-    format_column,
+    format_name,
     entity_display_columns,
     model_display_data
 )
@@ -453,7 +453,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 headers.append('Social Tenure Type')
 
             for col in entity_display_columns(entity):
-                headers.append(format_column(col))
+                headers.append(format_name(col))
             if not str_type:
                 self.prepare_table_model(
                     tableview, table_data, headers, self
@@ -665,116 +665,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.notifSTR = NotificationBar(
             self.vlSTRTypeNotif
         )
-    #
-    # def document_type_tabs(self):
-    #     self.tabs = QTabWidget()
-    #
-    #
-    # def init_document_type(self):
-    #     """
-    #     Initializes the document type combobox by
-    #     populating data.
-    #     :return: None
-    #     :rtype: NoneType
-    #     """
-    #     self.notifSourceDoc = NotificationBar(
-    #         self.vlSourceDocNotif
-    #     )
-    #     doc_entity = self.curr_profile.entity_by_name(
-    #         unicode(self.prefix+'_check_document_type')
-    #     )
-    #     doc_type_model = entity_model(doc_entity)
-    #
-    #     Docs = doc_type_model()
-    #     doc_type_list = Docs.queryObject().all()
-    #     doc_types = [doc.value for doc in doc_type_list]
-    #
-    #     self.docs_tab = QTabWidget()
-    #     self.docs_tab_index = OrderedDict()
-    #     #print doc_type_list
-    #     for i, doc in enumerate(doc_types):
-    #         self.docs_tab_index[doc] = i
-    #         tabWidget = QWidget()
-    #         tabWidget.setObjectName(doc)
-    #         tab_layout = QVBoxLayout()
-    #         tabWidget.setLayout(tab_layout)
-    #         self.docs_tab.addTab(tabWidget, doc)
-    #
-    #     self.vlDocTitleDeed.addWidget(self.docs_tab, 1)
-    #
-    #     #doc_types.insert(0, None)
-    #     self.cboDocType.insertItems(0, doc_types)
-    #     self.cboDocType.setCurrentIndex(-1)
-    #     self.vlSourceDocNotif = NotificationBar(
-    #         self.vlSourceDocNotif
-    #     )
-    #
-    #
-    #     self.cboDocType.currentIndexChanged.connect(
-    #         self.match_doc_combo_to_tab
-    #     )
-    #     self.docs_tab.currentChanged.connect(
-    #         self.match_doc_tab_to_combo
-    #     )
-    #     self.cboDocType.currentIndexChanged.connect(
-    #         lambda: self.initSourceDocument(
-    #             self.cboDocType.currentText()
-    #         )
-    #     )
-    #     self.connect(
-    #         self.btnAddTitleDeed,
-    #         SIGNAL("clicked()"),
-    #         self.onUploadTitleDeed
-    #     )
-    #
-    # def match_doc_combo_to_tab(self):
-    #
-    #     combo_text = self.cboDocType.currentText()
-    #     if combo_text is not None and len(combo_text) > 0:
-    #         index = self.docs_tab_index[combo_text]
-    #         self.docs_tab.setCurrentIndex(index)
-    #
-    # def match_doc_tab_to_combo(self):
-    #     doc_tab_index = self.docs_tab.currentIndex()
-    #     self.cboDocType.setCurrentIndex(doc_tab_index)
-    #
-    # def initSourceDocument(self, doc_widget):
-    #     """
-    #     Initialize the supporting document page.
-    #     :return: None
-    #     :rtype: NoneType
-    #     """
-    #     print DEFAULT_DOCUMENT
-    #     widget = self.docs_tab.findChild(QWidget, doc_widget)
-    #     layout = widget.findChild(QVBoxLayout)
-    #
-    #     # Set currency regular expression and currency prefix
-    #     rx = QRegExp("^\\d{1,12}(([.]\\d{2})*),(\\d{2})$")
-    #     rxValidator = QRegExpValidator(rx, self)
-    #
-    #     # Set source document manager
-    #     self.sourceDocManager = SourceDocumentManager()
-    #
-    #     self.sourceDocManager.registerContainer(
-    #         layout, DEFAULT_DOCUMENT
-    #     )
-    #
-    # def onUploadTitleDeed(self):
-    #     '''
-    #     Slot raised when the user clicks
-    #     to upload a title deed
-    #     '''
-    #     titleStr = QApplication.translate(
-    #         "newSTRWiz",
-    #         "Specify the Document File Location"
-    #     )
-    #     titles = self.selectSourceDocumentDialog(titleStr)
-    #     id = 1
-    #     for title in titles:
-    #         self.sourceDocManager.insertDocumentFromFile(
-    #             title,
-    #             DEFAULT_DOCUMENT
-    #         )
 
     def init_document_type(self):
         """
@@ -783,9 +673,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :return: None
         :rtype: NoneType
         """
-        self.notifSourceDoc = NotificationBar(
-            self.vlSourceDocNotif
-        )
         self.sourceDocManager = SourceDocumentManager()
         doc_entity = self.curr_profile.entity_by_name(
             unicode(self.prefix + '_check_document_type')
@@ -1014,6 +901,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 )
         #Validate source document    
         if currPageIndex == 4:
+
+            #if self.curr_profile.social_tenure.supports_documents:
             currIndex = self.cboDocType.currentIndex()
             if currIndex ==-1:
                 msg = QApplication.translate(
@@ -1022,6 +911,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 )
                 self.notifSourceDoc.clear()
                 self.notifSourceDoc.insertErrorNotification(msg)
+            # else:
+            #     self.removePage(4)
 
         if currPageIndex == 5:
             isValid = self.on_create_str()
@@ -1126,6 +1017,15 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         return isValid
 
     def supporting_document_insert(self, str_model_objects):
+        """
+        Checks if supporting document exists for the current profile.
+        Inserts supporting document object into database, it exists.
+        And disables the supporting document page if it doesn't.
+        :param str_model_objects: Social tenure model object
+        :type str_model_objects: SQL Alchemy object
+        :return: None
+        :rtype:
+        """
 
         str_supp_doc_model = entity_model(
             self.curr_profile.social_tenure.supporting_doc,
@@ -1134,7 +1034,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         str_supp_doc_model_obj = str_supp_doc_model()
         # social_tenure_relationship_supporting_document save dict - for saveMany
         str_doc_objs = OrderedDict()
-        # Supporting document insertion
         # Check if supporting document exists for the profile
         # and disable the page, if it doesn't
         if self.curr_profile.social_tenure.supports_documents:
@@ -1152,21 +1051,20 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                             # insert in supporting_document table
                             doc_obj.save()
                             str_doc_obj = str_supp_doc_model(
-                                social_tenure_relationship_id=obj.id
-                                #tu_supporting_doc_id=doc_obj.id
+                                social_tenure_relationship_id=obj.id,
+                                tu_supporting_doc_id=doc_obj.id
                             )
-                            setattr(
-                                str_supp_doc_model_obj,
-                                self.prefix + '_supporting_doc_id',
-                                doc_obj.id
-                            )
-
+                            # setattr(
+                            #     str_supp_doc_model_obj,
+                            #     self.prefix + '_supporting_doc_id',
+                            #     doc_obj.id
+                            # )
                             # collect for saveMany
                             str_doc_objs[str_doc_obj] = str_doc_obj
                     # Insert in social_tenure_relationship_supporting_document table
                     str_supp_doc_model_obj.saveMany(str_doc_objs.values())
-        else:
-            self.groupBox_3.setEnabled(False)
+        # else:
+        #     self.groupBox_3.setEnabled(False)
     def on_property_browser_error(self, err):
         """
         Slot raised when an error occurs when
