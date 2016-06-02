@@ -206,7 +206,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def connect_column_signals(self, entity):
         """
-        Connect signals triggered when column is added or deleted in an entity
+        Connect signals triggered when column is added or deleted from an entity
         """
         entity.column_added.connect(self.add_column_item)
         entity.column_removed.connect(self.delete_column_item)
@@ -608,7 +608,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.cboProfile.setCurrentIndex(0)
 
     def add_column_item(self, column):
-        print "Column added triggered...."
         self.col_view_model.add_entity(column)
         self.party_item_model.add_entity(column)
         self.spunit_item_model.add_entity(column)
@@ -755,18 +754,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.connect_column_signals(entity)
         profile.add_entity(entity)
 
-    def get_model_entityX(self, view):
-        sel_id = -1
-        entity = None
-        model_item = view.selectionModel().model()
-        if model_item:
-            sel_id = view.selectionModel().currentIndex().row()
-            #self.show_message("ROW: "+str(sel_id))
-            #for ent in  model_item.entities().items():
-                #self.show_message(ent[1].short_name)
-            entity = model_item.entities().items()[sel_id][1]
-        return (model_item, entity, sel_id)
-
     def get_model_entity(self, view):
         """
         Extracts and returns an entitymodel, entity and selected item ID
@@ -865,6 +852,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 if editor.type_info == 'LOOKUP':
                     self.clear_lookup_view()
                     self.populate_lookup_view(profile)
+                    self.lvLookups.setCurrentIndex(self.lookup_view_model.index(0,0))
 
     def edit_column(self):
         """
