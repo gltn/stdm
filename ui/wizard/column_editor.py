@@ -547,9 +547,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         # if column is initialized, this is an edit
         # delete old one then add a new one
         if self.column:
-            self.error_message(self.column.name)
             self.entity.remove_column(self.column.name)
-
 
         self.fill_work_area()
         self.column = self.create_column()
