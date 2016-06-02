@@ -20,11 +20,12 @@ email                : stdm@unhabitat.org
 from PyQt4.QtCore import (
     QRegExp
 )
-
+from stdm.settings import current_profile
+from stdm.data.configuration import entity_model
 from .pg_utils import foreign_key_parent_tables
-from .table_mapper import DeclareMapping
 
-SUPPORTING_DOC_BASE = "supporting_document"
+SUPPORTING_DOC_BASE = 'supporting_document'
+
 SUPPORTING_DOC_TAGS = ["doc", "document", "photo", "str_relations"]
 
 def supporting_doc_tables_regexp():
@@ -68,7 +69,13 @@ def document_models(doc_link_table, link_column, link_value):
     specified record in the document linked table.
     :rtype: list
     """
-    link_table_model = DeclareMapping.instance().tableMapping(doc_link_table)
+    curr_profile = current_profile()
+    str_supporting_doc_entity = curr_profile.social_tenure.supporting_doc
+    supporting_doc_table = str(curr_profile.prefix) + '_supporting_document'
+    supporting_doc_entity = curr_profile.entity_by_name(supporting_doc_table)
+    supporting_doc_model = entity_model(supporting_doc_entity)
+    link_table_model = entity_model(str_supporting_doc_entity)
+
     if link_table_model is None:
         return []
 
@@ -77,9 +84,10 @@ def document_models(doc_link_table, link_column, link_value):
 
     #Get the name of the supporting document foreign key column
     linked_tables = foreign_key_parent_tables(doc_link_table)
+    print linked_tables
     supporting_doc_ref = [lt[0] for lt in linked_tables
-                          if lt[1] == SUPPORTING_DOC_BASE]
-
+                          if lt[1] == supporting_doc_table]
+    print supporting_doc_ref
     #No link found to supporting document table
     if len(supporting_doc_ref) == 0:
         return []
@@ -92,16 +100,17 @@ def document_models(doc_link_table, link_column, link_value):
 
     linked_table_models = link_table_query_obj.filter(linked_table_obj_col == link_value).all()
 
-    supporting_doc_instance = SupportingDocument()
+    supporting_doc_instance = supporting_doc_model()
     sdi_query_obj = supporting_doc_instance.queryObject()
 
     doc_models = []
-
+    #print linked_table_models
     for ltm in linked_table_models:
         supporting_doc_id = getattr(ltm, supporting_doc_col)
-        supporting_doc_model = sdi_query_obj.filter(SupportingDocument.id == supporting_doc_id).first()
-        if not supporting_doc_model is None:
-            doc_models.append(supporting_doc_model)
+        supporting_doc_obj = sdi_query_obj.filter(supporting_doc_model.id == supporting_doc_id).first()
+       # print vars(ltm)
+        if not supporting_doc_obj is None:
+            doc_models.append(supporting_doc_obj)
 
     return doc_models
 

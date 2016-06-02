@@ -63,12 +63,6 @@ from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
 
 import data
 
-from stdm.data.config_utils import (
-    activeProfile,
-    ConfigVersionException,
-    ProfileException
-)
-
 from stdm.data.database import (
     Base,
     NoPostGISError,
@@ -298,17 +292,7 @@ class STDMQGISLoader(object):
 
                 self.default_profile()
 
-            except ConfigVersionException as cve:
-                title = QApplication.translate(
-                    "STDMQGISLoader",
-                    "Error reading Config Version"
-                )
-                self.reset_content_modules_id(
-                    title,
-                    cve.message
-                )
-
-            except ProfileException as pe:
+            except Exception as pe:
                 title = QApplication.translate(
                     "STDMQGISLoader",
                     "Error reading profile settings"

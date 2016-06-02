@@ -35,19 +35,15 @@ from sqlalchemy.orm import mapper
 
 import stdm.data
 from stdm.data.pg_utils import (
-    numeric_varchar_columns,
     pg_table_exists
 )
 from stdm.data.qtmodels import (
     BaseSTDMTableModel,
     STRTreeViewModel
 )
-from stdm.data.config_table_reader import ConfigTableReader
+
 from stdm.data.database import Content
-from stdm.data.config_utils import (
-    display_name,
-    ProfileException
-)
+
 from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
 
@@ -62,22 +58,20 @@ from stdm.navigation.socialtenure import (
 from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
 from stdm.security.authorization import Authorizer
 from stdm.utils.util import (
-entity_searchable_columns,
-entity_display_columns,
-format_column
+    entity_searchable_columns,
+    entity_display_columns,
+    format_name
 )
 from .notification import (
     NotificationBar
 )
 from .sourcedocument import (
-    SourceDocumentManager,
-    DOC_TYPE_MAPPING,
-    STR_DOC_TYPE_MAPPING
+    SourceDocumentManager
 )
 from .str_editor import SocialTenureEditor
 from ui_view_str import Ui_frmManageSTR
 from ui_str_view_entity import Ui_frmSTRViewEntity
-from .stdmdialog import DeclareMapping
+
 
 LOGGER = logging.getLogger('stdm')
 
@@ -112,7 +106,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self._source_doc_manager.documentRemoved.connect(self.onSourceDocumentRemoved)
         self._source_doc_manager.setEditPermissions(self._can_edit)
 
-        self._config_table_reader = ConfigTableReader()
+        #self._config_table_reader = ConfigTableReader()
 
         self.initGui()
         self.add_spatial_unit_layer()
@@ -202,7 +196,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                                             self)
                     )
 
-        except ProfileException as pe:
+        except Exception as pe:
             self._notif_bar.clear()
             self._notif_bar.insertErrorNotification(pe.message)
 
@@ -214,7 +208,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         :return: Entity configuration object.
         :rtype: EntityConfig
         """
-        table_display_name = format_column(short_name)
+        table_display_name = format_name(short_name)
 
         entity = self.curr_profile.entity_by_name(table_name)
         model = entity_model(entity)
@@ -234,10 +228,10 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             display_columns = entity_display_columns(entity)
             for c in searchable_columns:
                 if c != 'id':
-                    entity_cfg.filterColumns[c] = format_column(c)
+                    entity_cfg.filterColumns[c] = format_name(c)
             for c in display_columns:
                 if c != 'id':
-                    entity_cfg.displayColumns[c] = format_column(c)
+                    entity_cfg.displayColumns[c] = format_name(c)
             return entity_cfg
         else:
             return None
@@ -330,6 +324,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                     self._on_node_reference_changed(node.rootHash())
 
                     if isinstance(node, SupportsDocumentsNode):
+
                         src_docs = node.documents()
                         str_id = node.id()
 
@@ -546,7 +541,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         progressDialog = QProgressDialog(progressMsg, "", 0, len(source_docs), self)
         progressDialog.setWindowModality(Qt.WindowModal)
 
-        for i,doc in enumerate(source_docs):
+        for i, doc in enumerate(source_docs):
+
             progressDialog.setValue(i)
             type_id = doc.document_type
             container = self._source_doc_manager.container(type_id)
@@ -559,12 +555,12 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
                 #Add widget to tab container for source documents
                 tab_title = QApplication.translate("ViewSTR", "General")
-                if type_id in DOC_TYPE_MAPPING:
-                    tab_title = DOC_TYPE_MAPPING[type_id]
+                if type_id in self._source_doc_manager.doc_type_mapping:
+                    tab_title = self._source_doc_manager.doc_type_mapping[type_id]
 
                 else:
-                    if type_id in STR_DOC_TYPE_MAPPING:
-                        tab_title = STR_DOC_TYPE_MAPPING[type_id]
+                    if type_id in self._source_doc_manager.doc_type_mapping:
+                        tab_title = self._source_doc_manager.doc_type_mapping[type_id]
 
                 self.tbSupportingDocs.addTab(src_doc_widget, tab_title)
 
