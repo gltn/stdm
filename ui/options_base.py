@@ -52,12 +52,7 @@ from stdm.settings.registryconfig import (
 from stdm.utils.util import setComboCurrentIndexWithText
 from stdm.ui.login_dlg import loginDlg
 from stdm.ui.notification import NotificationBar
-
-# get the directory of this script
-path = os.path.dirname(os.path.abspath(__file__))
-
-OptionsUI, OptionsBase = uic.loadUiType(
-    os.path.join(path, 'ui_options.ui'))
+from stdm.ui.ui_options import Ui_DlgOptions
 
 def pg_profile_names():
     """
@@ -75,7 +70,7 @@ def pg_profile_names():
 
     return profiles
 
-class OptionsDialog(QDialog, OptionsUI):
+class OptionsDialog(QDialog, Ui_DlgOptions):
     """
     Dialog for editing STDM settings.
     """

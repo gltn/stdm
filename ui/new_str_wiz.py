@@ -1,9 +1,9 @@
 """
 /***************************************************************************
-Name                 : New STR Wizard  
+Name                 : New STR Wizard
 Description          : Wizard that enables users to define a new social tenure
                        relationship.
-Date                 : 3/July/2013 
+Date                 : 3/July/2013
 copyright            : (C) 2013 by John Gitau
 email                : gkahiu@gmail.com
  ***************************************************************************/
@@ -26,7 +26,7 @@ from PyQt4.QtGui import *
 
 import sqlalchemy
 
-from notification import NotificationBar,ERROR,INFO, WARNING
+from notification import NotificationBar, ERROR, INFO, WARNING
 from sourcedocument import *
 
 from stdm.data.database import (
@@ -51,7 +51,7 @@ from stdm.navigation import (
 )
 from stdm.utils import *
 from stdm.utils.util import (
-lookup_id_to_value
+    lookup_id_to_value
 )
 from ui_new_str import Ui_frmNewSTR
 
@@ -90,21 +90,24 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         self.prefix = self.curr_profile.prefix
 
-        self.party = self.curr_profile.\
-            social_tenure.party
+        self.party = self.curr_profile.social_tenure.party
 
-        self.spatial_unit = self.curr_profile.\
-            social_tenure.spatial_unit
+        self.spatial_unit = self.curr_profile.social_tenure.spatial_unit
 
         self.str_type = self.curr_profile.\
             social_tenure.tenure_type_collection
 
         self.init_party()
         self.party_header = []
+
         self.init_spatial_unit()
+        self.docs_tab_index = None
+        self.docs_tab = None
+        self.doc_types = None
         self.init_document_type()
-        self.initSourceDocument()
-        # Connect signal when the finish 
+
+
+        # Connect signal when the finish
         # button is clicked
         btnFinish = self.button(
             QWizard.FinishButton
@@ -118,14 +121,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         """
         self.party_notice = NotificationBar(self.vlPersonNotif)
 
-        # #Init summary tree loaders
-        # self.personTreeLoader = TreeSummaryLoader(
-        #     self.tvPersonInfo,
-        #     QApplication.translate(
-        #         "newSTRWiz",
-        #         "Party Information"
-        #     )
-        # )
         party_data = []
         vertical_layout = QVBoxLayout(
             self.tvPersonInfo
@@ -198,12 +193,12 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         QObject.connect(
             self.gpOpenLayers,
             SIGNAL("toggled(bool)"),
-            self._onEnableOLGroupbox
+            self.on_enable_ol_groupbox
         )
         QObject.connect(
             self.zoomSlider,
             SIGNAL("sliderReleased()"),
-            self._onZoomChanged
+            self.on_zoom_changed
         )
         QObject.connect(
             self.btnResetMap,
@@ -228,7 +223,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.connect(
             self.propBrowser,
             SIGNAL("loadFinished(bool)"),
-            self._onPropertyBrowserFinished
+            self.on_property_browser_finished
         )
         self.connect(
             self.propBrowser,
@@ -568,13 +563,13 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         """
         str_types = []
         party_ids = []
+
         for item in self.frmWizSTRType.findChildren(QTableView):
-            if item.__class__.__name__ == 'FreezeTableWidget' and \
-                         item is not None:
+            if item.__class__.__name__ == 'FreezeTableWidget':
                 party_id, str_type = self.get_table_data(item)
                 party_ids.append(party_id)
                 str_types.append(str_type)
-                return party_ids, str_types
+        return party_ids, str_types
 
     def get_spatial_unit_data(self):
         """
@@ -627,6 +622,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         if entity == self.str_type:
             self.sel_str_type = []
+
             for sel_value in sel_attr:
                 str_query = db_obj.queryObject().filter(
                     db_model.value == sel_value
@@ -669,7 +665,116 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.notifSTR = NotificationBar(
             self.vlSTRTypeNotif
         )
-
+    #
+    # def document_type_tabs(self):
+    #     self.tabs = QTabWidget()
+    #
+    #
+    # def init_document_type(self):
+    #     """
+    #     Initializes the document type combobox by
+    #     populating data.
+    #     :return: None
+    #     :rtype: NoneType
+    #     """
+    #     self.notifSourceDoc = NotificationBar(
+    #         self.vlSourceDocNotif
+    #     )
+    #     doc_entity = self.curr_profile.entity_by_name(
+    #         unicode(self.prefix+'_check_document_type')
+    #     )
+    #     doc_type_model = entity_model(doc_entity)
+    #
+    #     Docs = doc_type_model()
+    #     doc_type_list = Docs.queryObject().all()
+    #     doc_types = [doc.value for doc in doc_type_list]
+    #
+    #     self.docs_tab = QTabWidget()
+    #     self.docs_tab_index = OrderedDict()
+    #     #print doc_type_list
+    #     for i, doc in enumerate(doc_types):
+    #         self.docs_tab_index[doc] = i
+    #         tabWidget = QWidget()
+    #         tabWidget.setObjectName(doc)
+    #         tab_layout = QVBoxLayout()
+    #         tabWidget.setLayout(tab_layout)
+    #         self.docs_tab.addTab(tabWidget, doc)
+    #
+    #     self.vlDocTitleDeed.addWidget(self.docs_tab, 1)
+    #
+    #     #doc_types.insert(0, None)
+    #     self.cboDocType.insertItems(0, doc_types)
+    #     self.cboDocType.setCurrentIndex(-1)
+    #     self.vlSourceDocNotif = NotificationBar(
+    #         self.vlSourceDocNotif
+    #     )
+    #
+    #
+    #     self.cboDocType.currentIndexChanged.connect(
+    #         self.match_doc_combo_to_tab
+    #     )
+    #     self.docs_tab.currentChanged.connect(
+    #         self.match_doc_tab_to_combo
+    #     )
+    #     self.cboDocType.currentIndexChanged.connect(
+    #         lambda: self.initSourceDocument(
+    #             self.cboDocType.currentText()
+    #         )
+    #     )
+    #     self.connect(
+    #         self.btnAddTitleDeed,
+    #         SIGNAL("clicked()"),
+    #         self.onUploadTitleDeed
+    #     )
+    #
+    # def match_doc_combo_to_tab(self):
+    #
+    #     combo_text = self.cboDocType.currentText()
+    #     if combo_text is not None and len(combo_text) > 0:
+    #         index = self.docs_tab_index[combo_text]
+    #         self.docs_tab.setCurrentIndex(index)
+    #
+    # def match_doc_tab_to_combo(self):
+    #     doc_tab_index = self.docs_tab.currentIndex()
+    #     self.cboDocType.setCurrentIndex(doc_tab_index)
+    #
+    # def initSourceDocument(self, doc_widget):
+    #     """
+    #     Initialize the supporting document page.
+    #     :return: None
+    #     :rtype: NoneType
+    #     """
+    #     print DEFAULT_DOCUMENT
+    #     widget = self.docs_tab.findChild(QWidget, doc_widget)
+    #     layout = widget.findChild(QVBoxLayout)
+    #
+    #     # Set currency regular expression and currency prefix
+    #     rx = QRegExp("^\\d{1,12}(([.]\\d{2})*),(\\d{2})$")
+    #     rxValidator = QRegExpValidator(rx, self)
+    #
+    #     # Set source document manager
+    #     self.sourceDocManager = SourceDocumentManager()
+    #
+    #     self.sourceDocManager.registerContainer(
+    #         layout, DEFAULT_DOCUMENT
+    #     )
+    #
+    # def onUploadTitleDeed(self):
+    #     '''
+    #     Slot raised when the user clicks
+    #     to upload a title deed
+    #     '''
+    #     titleStr = QApplication.translate(
+    #         "newSTRWiz",
+    #         "Specify the Document File Location"
+    #     )
+    #     titles = self.selectSourceDocumentDialog(titleStr)
+    #     id = 1
+    #     for title in titles:
+    #         self.sourceDocManager.insertDocumentFromFile(
+    #             title,
+    #             DEFAULT_DOCUMENT
+    #         )
 
     def init_document_type(self):
         """
@@ -678,44 +783,114 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :return: None
         :rtype: NoneType
         """
+        self.notifSourceDoc = NotificationBar(
+            self.vlSourceDocNotif
+        )
+        self.sourceDocManager = SourceDocumentManager()
         doc_entity = self.curr_profile.entity_by_name(
-            unicode(self.prefix+'_check_document_type')
+            unicode(self.prefix + '_check_document_type')
         )
         doc_type_model = entity_model(doc_entity)
 
         Docs = doc_type_model()
         doc_type_list = Docs.queryObject().all()
-        doc_types = [doc.value for doc in doc_type_list]
-        doc_types.insert(0," ")
-        self.cboDocType.insertItems(0, doc_types)
-        self.cboDocType.setCurrentIndex(-1)
+        self.doc_types = [(doc.id, doc.value) for doc in doc_type_list]
+        self.doc_types = OrderedDict(self.doc_types)
+        self.docs_tab = QTabWidget()
+        self.docs_tab_index = OrderedDict()
+        # print doc_type_list
+        for i, (id, doc) in enumerate(self.doc_types.iteritems()):
+            self.docs_tab_index[doc] = i
+            tabWidget = QWidget()
+            tabWidget.setObjectName(doc)
+            tab_layout = QVBoxLayout()
+            tabWidget.setLayout(tab_layout)
+            self.docs_tab.addTab(tabWidget, doc)
+            self.cboDocType.addItem(doc, id)
+        self.vlDocTitleDeed.addWidget(self.docs_tab, 1)
+
+        # self.cboDocType.setCurrentIndex(-1)
         self.vlSourceDocNotif = NotificationBar(
             self.vlSourceDocNotif
         )
-        
+
+        self.cboDocType.currentIndexChanged.connect(
+            self.match_doc_combo_to_tab
+        )
+        self.docs_tab.currentChanged.connect(
+            self.match_doc_tab_to_combo
+        )
+        self.initSourceDocument()
+        self.cboDocType.currentIndexChanged.connect(
+            self.initSourceDocument
+        )
+        self.btnAddTitleDeed.clicked.connect(
+            self.onUploadTitleDeed
+        )
+
+    def match_doc_combo_to_tab(self):
+
+        combo_text = self.cboDocType.currentText()
+        if combo_text is not None and len(combo_text) > 0:
+            index = self.docs_tab_index[combo_text]
+            self.docs_tab.setCurrentIndex(index)
+
+    def match_doc_tab_to_combo(self):
+        doc_tab_index = self.docs_tab.currentIndex()
+        self.cboDocType.setCurrentIndex(doc_tab_index)
+
     def initSourceDocument(self):
         """
         Initialize the supporting document page.
         :return: None
         :rtype: NoneType
         """
-        #Set currency regular expression and currency prefix
-        rx = QRegExp("^\\d{1,12}(([.]\\d{2})*),(\\d{2})$")
-        rxValidator = QRegExpValidator(rx,self)
-        '''
-        '''
-        self.notifSourceDoc = NotificationBar(
-            self.vlSourceDocNotif
-        )
-        #Set source document manager
-        self.sourceDocManager = SourceDocumentManager()
+        doc_text = self.cboDocType.currentText()
+        cbo_index = self.cboDocType.currentIndex()
+        doc_id = self.cboDocType.itemData(cbo_index)
+        widget = self.docs_tab.findChild(QWidget, doc_text)
+        layout = widget.findChild(QVBoxLayout)
         self.sourceDocManager.registerContainer(
-            self.vlDocTitleDeed, DEFAULT_DOCUMENT
+            layout, doc_id
         )
-        self.connect(
-            self.btnAddTitleDeed,
-            SIGNAL("clicked()"),
-            self.onUploadTitleDeed
+
+    def onUploadTitleDeed(self):
+        '''
+        Slot raised when the user clicks
+        to upload a title deed
+        '''
+        titleStr = QApplication.translate(
+            "newSTRWiz",
+            "Specify the Document File Location"
+        )
+        titles = self.selectSourceDocumentDialog(titleStr)
+
+        cbo_index = self.cboDocType.currentIndex()
+        doc_id = self.cboDocType.itemData(cbo_index)
+
+        for title in titles:
+            self.sourceDocManager.insertDocumentFromFile(
+                title,
+                doc_id
+            )
+
+    def selectSourceDocumentDialog(self, title):
+        '''
+        Displays a file dialog for a user
+        to specify a source document
+        '''
+        files = QFileDialog.getOpenFileNames(
+            self, title, "/home", "Source "
+                                  "Documents (*.jpg *.jpeg *.png *.bmp *.tiff *.svg)"
+        )
+        return files
+
+    def uploadDocument(self, path, containerid):
+        '''
+        Upload source document
+        '''
+        self.sourceDocManager.insertDocumentFromFile(
+            path, containerid
         )
 
     def buildSummary(self):
@@ -787,8 +962,9 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         
         #Validate person information
         if currPageIndex == 1:
-            party_ids, str_type = self.get_party_str_type_data()
-            self.set_record_to_model(self.party, party_ids)
+            if self.get_party_str_type_data() is not None:
+                party_ids, str_type = self.get_party_str_type_data()
+                self.set_record_to_model(self.party, party_ids)
 
             if len(self.sel_party) == 0:
                 msg = QApplication.translate(
@@ -796,10 +972,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                     "Please choose a person for whom you are "
                     "defining the social tenure relationship for."
                 )
+
                 self.party_notice.clear()
                 self.party_notice.insertNotification(msg, ERROR)
                 isValid = False
-        
+
         #Validate property information
         if currPageIndex == 2:
 
@@ -807,7 +984,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 msg = QApplication.translate(
                     "newSTRWiz",
                     "Please specify the spatial unit to reference. "
-                    "Use the filter capability below.")
+                    "Use the filter capability below."
+                )
                 self.spatial_unit_notice.clear()
                 self.spatial_unit_notice.insertNotification(
                     msg, ERROR
@@ -816,11 +994,12 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         #Validate STR Type
         if currPageIndex == 3:
             #Get current selected index
-            party_ids, str_types = self.get_party_str_type_data()
-            self.set_record_to_model(
-                self.str_type, str_types
-            )
-            if None in str_types or ' ' in str_types:
+            str_types = []
+            if self.get_party_str_type_data() is not None:
+                party_ids, str_types = self.get_party_str_type_data()
+
+
+            if None in str_types or ' ' in str_types or len(str_types) < 1:
                 msg = QApplication.translate(
                     'newSTRWiz',
                     'Please select an item in the drop down '
@@ -829,7 +1008,10 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 self.notifSTR.clear()
                 self.notifSTR.insertErrorNotification(msg)
                 isValid = False
-
+            if isValid != False:
+                self.set_record_to_model(
+                    self.str_type, str_types
+                )
         #Validate source document    
         if currPageIndex == 4:
             currIndex = self.cboDocType.currentIndex()
@@ -864,51 +1046,31 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         )
 
 
-        str_supp_doc_model = entity_model(
-            self.curr_profile.social_tenure.supporting_doc,
-            True
-        )
-        str_supp_doc_model_obj = str_supp_doc_model()
-
         str_model = entity_model(
             self.curr_profile.social_tenure
         )
         str_model_obj = str_model()
+
         prog_dialog.setRange(0, len(self.sel_party)-1)
         prog_dialog.show()
         try:
 
-            objects = []
+            objects = OrderedDict()
+            # Social tenure table insertion
             for i, (sel_party, str_type_id) in enumerate(
                     zip(self.sel_party, self.sel_str_type)
             ):
-
-
-                # Save new STR relations and supporting documentation
-                # if self.curr_profile.social_tenure.supports_documents:
-                #     model_objs = self.sourceDocManager.model_objects()
-                #     if len(model_objs) > 0:
-                #         for model_obj in model_objs:
-                #             # print model_obj
-                #             model_obj.save()
-                #             str_supp_doc_model_obj.\
-                #                 social_tenure_relationship_id = str_model_obj.id
-                #             setattr(
-                #                 str_supp_doc_model_obj,
-                #                 self.prefix+'_supporting_doc_id',
-                #                 model_obj.id)
-                #             str_supp_doc_model_obj.save()
-                # else:
-                #     self.groupBox_3.setEnabled(False)
-                query = str_model(
+                str_obj = str_model(
                     party_id = sel_party.id,
                     spatial_unit_id = self.sel_spatial_unit[0].id,
                     tenure_type = str_type_id
                 )
-
-                objects.append(query)
+                objects[str_obj] = str_obj
                 prog_dialog.setValue(i)
-            str_model.saveMany(str_model_obj, objects)
+
+            str_model_obj.saveMany(objects.values())
+            # Insert Supporting Document
+            self.supporting_document_insert(objects)
 
             strMsg = unicode(QApplication.translate(
                 "newSTRWiz",
@@ -927,8 +1089,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             QMessageBox.critical(
                 self,
                 QApplication.translate(
-                    "newSTRWiz",
-                    "Unexpected Error"
+                    "newSTRWiz", "Unexpected Error"
                 ),
                 errMsg
             )
@@ -940,8 +1101,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             QMessageBox.critical(
                 self,
                 QApplication.translate(
-                    "newSTRWiz",
-                    "Duplicate Relationship Error"
+                    "newSTRWiz", "Duplicate Relationship Error"
                 ),
                 errMsg
             )
@@ -953,8 +1113,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             QMessageBox.critical(
                 self,
                 QApplication.translate(
-                    "newSTRWiz",
-                    "Unexpected Error"
+                    'newSTRWiz','Unexpected Error'
                 ),
                 errMsg
             )
@@ -965,7 +1124,49 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             prog_dialog.hide()
 
         return isValid
-        
+
+    def supporting_document_insert(self, str_model_objects):
+
+        str_supp_doc_model = entity_model(
+            self.curr_profile.social_tenure.supporting_doc,
+            True
+        )
+        str_supp_doc_model_obj = str_supp_doc_model()
+        # social_tenure_relationship_supporting_document save dict - for saveMany
+        str_doc_objs = OrderedDict()
+        # Supporting document insertion
+        # Check if supporting document exists for the profile
+        # and disable the page, if it doesn't
+        if self.curr_profile.social_tenure.supports_documents:
+            for obj in str_model_objects.keys():
+                # model_objs is a list of list for each document_type uploaded
+                model_objs = self.sourceDocManager.model_objects()
+
+                if len(model_objs) > 0:
+                    # loop for each document type,
+                    # model_obj is an obj for one document type.
+                    for model_obj in model_objs:
+                        # doc_obj stands for each file
+                        # uploaded under a document type
+                        for doc_obj in model_obj:
+                            # insert in supporting_document table
+                            doc_obj.save()
+                            str_doc_obj = str_supp_doc_model(
+                                social_tenure_relationship_id=obj.id
+                                #tu_supporting_doc_id=doc_obj.id
+                            )
+                            setattr(
+                                str_supp_doc_model_obj,
+                                self.prefix + '_supporting_doc_id',
+                                doc_obj.id
+                            )
+
+                            # collect for saveMany
+                            str_doc_objs[str_doc_obj] = str_doc_obj
+                    # Insert in social_tenure_relationship_supporting_document table
+                    str_supp_doc_model_obj.saveMany(str_doc_objs.values())
+        else:
+            self.groupBox_3.setEnabled(False)
     def on_property_browser_error(self, err):
         """
         Slot raised when an error occurs when
@@ -1000,11 +1201,15 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 )
             )
             
-    def _onPropertyBrowserFinished(self,status):
-        '''
+    def on_property_browser_finished(self, status):
+        """
         Slot raised when the property browser
         finishes loading the content
-        '''
+        :param status: Boolean of the load status.
+        :type status: Boolean
+        :return: None
+        :rtype: NoneType
+        """
         if status:
             self.olLoaded = True
             self.overlayProperty()
@@ -1016,12 +1221,16 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             )
             self.spatial_unit_notice.insertErrorNotification(msg)
         
-    def _onEnableOLGroupbox(self,state):
-        '''
+    def on_enable_ol_groupbox(self, state):
+        """
         Slot raised when a user chooses to select
         the group box for enabling/disabling to view
         the property in OpenLayers.
-        '''
+        :param state: Boolean of the load status.
+        :type state: Boolean
+        :return: None
+        :rtype: NoneType
+        """
         if state:
 
             if len(self.sel_spatial_unit) < 1:
@@ -1043,21 +1252,32 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             #Remove overlay
             self.propBrowser.removeOverlay()     
             
-    def _onZoomChanged(self):
-        '''
+    def on_zoom_changed(self):
+        """
         Slot raised when the zoom value in the slider changes.
         This is only raised once the user
         releases the slider with the mouse.
-        '''
+        :return: None
+        :rtype: NoneType
+        """
         zoom = self.zoomSlider.value()        
         self.propBrowser.zoom_to_level(zoom)
 
 
     def map_str_type(self, item):
+        """
+        Loads the selected social tenure type into an
+        ordered dictionary for the summary page treeview
+        :param item: The social tenure type
+        :type item: OrderedDict
+        :return: 
+        :rtype: 
+        """
         str_mapping = OrderedDict()
         str_mapping[
             QApplication.translate(
-                "newSTRWiz","Tenure Type")
+                "newSTRWiz","Tenure Type"
+            )
         ] = item
         return str_mapping
 
@@ -1108,42 +1328,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 self.sel_spatial_unit[0], geom
             )
 
-    def onUploadTitleDeed(self):
-        '''
-        Slot raised when the user clicks
-        to upload a title deed
-        '''
-        titleStr = QApplication.translate(
-            "newSTRWiz",
-            "Specify the Document File Location"
-        )
-        titles = self.selectSourceDocumentDialog(titleStr)
-
-        for title in titles:
-            self.sourceDocManager.insertDocumentFromFile(
-                title,
-                DEFAULT_DOCUMENT
-            )
-
-
-    def selectSourceDocumentDialog(self,title):
-        '''
-        Displays a file dialog for a user
-        to specify a source document
-        '''
-        files = QFileDialog.getOpenFileNames(
-            self, title,"/home","Source "
-            "Documents (*.jpg *.jpeg *.png *.bmp *.tiff *.svg)"
-        )
-        return files
-        
-    def uploadDocument(self,path,containerid):
-        '''
-        Upload source document
-        '''
-        self.sourceDocManager.insertDocumentFromFile(
-            path, containerid
-        )
 
 class ComboBoxDelegate(QItemDelegate):
     def __init__(self, parent = None):

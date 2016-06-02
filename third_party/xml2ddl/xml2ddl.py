@@ -351,7 +351,7 @@ def parseCommandLine():
 #    if len(args) == 0 or len(args[0]) == 0:
 #        parser.print_help()
 #        sys.exit(-1)
-    sourcePath="C:/tests/stdmConfig.xml"
+    sourcePath="C:/test/stdmConfig.xml"
     strFilename = sourcePath#args[0]
     xml = readMergeDict(strFilename)
     #results = cd.createTables(xml)
