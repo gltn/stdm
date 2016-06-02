@@ -454,14 +454,16 @@ def lookup_id_to_value(profile, col, id):
         db_obj = db_model()
         query = db_obj.queryObject().filter(
             db_model.id == id
-        ).all()
-
-        value = getattr(
-            query[0],
-            'value',
-            None
-        )
-        return value
+        ).first()
+        if query is not None:
+            value = getattr(
+                query,
+                'value',
+                None
+            )
+            return value
+        else:
+            return id
     else:
         return id
 
