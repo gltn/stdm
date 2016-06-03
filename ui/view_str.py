@@ -347,15 +347,14 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                     if isinstance(node, SupportsDocumentsNode):
 
                         src_docs = node.documents()
-
-                        str_id = node.id()
-
-                        #if str_id != self._strID:
-                        #self._strID = str_id
-
-                        self._load_source_documents(src_docs)
+                        if isinstance(src_docs, dict):
+                            self._load_source_documents(src_docs)
+                            # Expand the supporting document box
+                            self.toolBox.setCurrentIndex(1)
 
                     if isinstance(node, SpatialUnitNode):
+                        # Expand the Spatial Unit preview
+                        self.toolBox.setCurrentIndex(0)
                         self.draw_spatial_unit(node.model())
 
     def onSourceDocumentRemoved(self, container_id):
@@ -599,36 +598,32 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         )
         progressDialog.setWindowModality(Qt.WindowModal)
 
-        for i, doc in enumerate(source_docs):
+        for doc_type_id, doc_obj in source_docs.iteritems():
+            # add tabs, and container and widget for each tab
+            tab_title = self._source_doc_manager.doc_type_mapping[doc_type_id]
 
-            progressDialog.setValue(i)
-            type_id = doc.document_type
+            tab_widget = QWidget()
+            tab_widget.setGeometry(QRect(0, 0, 462, 80))
+            tab_widget.setObjectName("tab_widget"+str(doc_type_id))
 
-            container = self._source_doc_manager.container(type_id)
-
-            #Check if a container has been defined and create if None is found
-            if container is None:
-                src_doc_widget = SourceDocumentContainerWidget(type_id)
-
-
-
-                container = src_doc_widget.container()
-                self._source_doc_manager.registerContainer(container, type_id)
-
-                #Add widget to tab container for source documents
-                tab_title = QApplication.translate("ViewSTR", "General")
-                if type_id in self._source_doc_manager.doc_type_mapping:
-                    tab_title = self._source_doc_manager.doc_type_mapping[type_id]
-
-                else:
-                    if type_id in self._source_doc_manager.doc_type_mapping:
-                        tab_title = self._source_doc_manager.doc_type_mapping[type_id]
-
-                self.tbSupportingDocs.addTab(src_doc_widget, tab_title)
-
-            self._source_doc_manager.insertDocFromModel(
-                doc, type_id
+            verticalLayout = QVBoxLayout(tab_widget)
+            verticalLayout.setObjectName(
+                "verticalLayout"+str(doc_type_id)
             )
+
+            self._source_doc_manager.registerContainer(
+                verticalLayout, doc_type_id
+            )
+
+            for doc in doc_obj[0]:
+                # add doc widgets
+                self._source_doc_manager.insertDocFromModel(
+                    doc, doc_type_id
+                )
+            self.tbSupportingDocs.addTab(
+                tab_widget, tab_title
+            )
+
 
         progressDialog.setValue(len(source_docs))
 
