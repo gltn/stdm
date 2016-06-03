@@ -468,8 +468,8 @@ class DocumentViewManager(QMainWindow):
             doc_type = document_widget.documentType()
             file_name, file_extension = guess_extension(document_widget.displayName())
 
-            abs_path = network_repository + "/" + doc_type + "/" +\
-                       file_id + file_extension
+            abs_path = network_repository + "/" + str(doc_type) + "/" +\
+                       str(file_id) + str(file_extension)
 
         return abs_path
 

@@ -29,7 +29,8 @@ from PyQt4.QtCore import (
     SIGNAL,
     QEvent,
     QThread,
-    QDate
+    QDate,
+    QRect
 )
 from PyQt4.QtGui import *
 
@@ -288,6 +289,7 @@ class SourceDocumentManager(QObject):
                 self._linkWidgetRemovedSignal(docWidg)
                 docWidg.setModel(sourcedoc)
                 container.addWidget(docWidg)
+
                 self._docRefs.append(sourcedoc.document_identifier)
 
     def _doc_repository_error(self):
@@ -674,7 +676,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         Builds the database model for the source document file reference.
         """
         if self._mode == UPLOAD_MODE:
-            #print "self._docType" + str(self._docType)
+
             if self._docType in document_type_class:
                 src_doc = document_type_class[self._docType]()
 

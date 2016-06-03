@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_view_str.ui'
 #
-# Created: Sun Sep 20 13:45:38 2015
-#      by: PyQt4 UI code generator 4.10.3
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -112,6 +111,11 @@ class Ui_frmManageSTR(object):
         self.verticalLayout_2.addWidget(self.tbSupportingDocs)
         self.gridLayout_3.addWidget(self.gb_supporting_docs, 1, 0, 1, 1)
         self.groupBox_3 = QtGui.QGroupBox(self.frame_2)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.groupBox_3.sizePolicy().hasHeightForWidth())
+        self.groupBox_3.setSizePolicy(sizePolicy)
         self.groupBox_3.setObjectName(_fromUtf8("groupBox_3"))
         self.gridLayout_2 = QtGui.QGridLayout(self.groupBox_3)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
@@ -150,6 +154,6 @@ class Ui_frmManageSTR(object):
         self.groupBox_3.setTitle(_translate("frmManageSTR", "Spatial Unit Preview:", None))
         self.tb_actions.setWindowTitle(_translate("frmManageSTR", "toolBar", None))
 
-from qgis.gui import QgsCollapsibleGroupBoxBasic
 from .property_preview import SpatialPreview
+from qgis.gui import QgsCollapsibleGroupBoxBasic
 from stdm import resources_rc
