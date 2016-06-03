@@ -77,7 +77,8 @@ LOGGER = logging.getLogger('stdm')
 
 class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
     """
-    Search and browse the social tenure relationship of all participating entities.
+    Search and browse the social tenure relationship
+    of all participating entities.
     """
     def __init__(self, plugin):
         QMainWindow.__init__(self, plugin.iface.mainWindow())
@@ -88,22 +89,28 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self.curr_profile = current_profile()
         self.spatial_unit = self.curr_profile.social_tenure.spatial_unit
         #Center me
-        self.move(QDesktopWidget().availableGeometry().center() - self.frameGeometry().center())
+        self.move(QDesktopWidget().availableGeometry().center() -
+                  self.frameGeometry().center())
 
-        #set whether currently logged in user has permissions to edit existing STR records
+        # set whether currently logged in user has
+        # permissions to edit existing STR records
         self._can_edit = self._plugin.STRCntGroup.canUpdate()
 
-        '''
-        Variable used to store a reference to the currently selected social tenure relationship
-        when displaying documents in the supporting documents tab window.
-        This ensures that there are no duplicates when the same item is selected over and over again.
-        '''
+
+        # Variable used to store a reference to the
+        # currently selected social tenure relationship
+        # when displaying documents in the supporting documents tab window.
+        # This ensures that there are no duplicates
+        # when the same item is selected over and over again.
+
         self._strID = None
 
         #Used to store the root hash of the currently selected node.
         self._curr_rootnode_hash = ""
         self._source_doc_manager = SourceDocumentManager()
-        self._source_doc_manager.documentRemoved.connect(self.onSourceDocumentRemoved)
+        self._source_doc_manager.documentRemoved.connect(
+            self.onSourceDocumentRemoved
+        )
         self._source_doc_manager.setEditPermissions(self._can_edit)
 
         #self._config_table_reader = ConfigTableReader()
@@ -131,7 +138,9 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         #Set the results treeview to accept requests for context menus
         self.tvSTRResults.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.tvSTRResults.customContextMenuRequested.connect(self.onResultsContextMenuRequested)
+        self.tvSTRResults.customContextMenuRequested.connect(
+            self.onResultsContextMenuRequested
+        )
 
         #Load async for the current widget
         self.entityTabIndexChanged(0)
@@ -186,14 +195,17 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
             for t in tb_str_entities:
 
-                entity_cfg = self._entity_config_from_profile(str(t.name), t.short_name)
+                entity_cfg = self._entity_config_from_profile(
+                    str(t.name), t.short_name
+                )
 
                 if not entity_cfg is None:
                     entity_widget = self.add_entity_config(entity_cfg)
 
                     entity_widget.setNodeFormatter(
-                        EntityNodeFormatter(entity_cfg, self.tvSTRResults,
-                                            self)
+                        EntityNodeFormatter(
+                            entity_cfg, self.tvSTRResults, self
+                        )
                     )
 
         except Exception as pe:
@@ -220,10 +232,10 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             entity_cfg.STRModel = model
             entity_cfg.data_source_name = table_name
 
-            '''
-            Load filter and display columns using only those which are of
-            numeric/varchar type
-            '''
+            # Load filter and display columns
+            # using only those which are of
+            # numeric/varchar type
+
             searchable_columns = entity_searchable_columns(entity)
             display_columns = entity_display_columns(entity)
             for c in searchable_columns:
@@ -238,7 +250,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
     def add_entity_config(self, config):
         """
-        Set an entity configuration option and add it to the 'Search Entity' tab.
+        Set an entity configuration option and
+        add it to the 'Search Entity' tab.
         """
         entityWidg = STRViewEntityWidget(config)
         entityWidg.asyncStarted.connect(self._progressStart)
@@ -248,7 +261,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         return entityWidg
 
-    def entityTabIndexChanged(self,index):
+    def entityTabIndexChanged(self, index):
         """
         Raised when the tab index of the entity search tab widget changes.
         """
@@ -260,7 +273,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
     def searchEntityRelations(self):
         """
-        Slot that searches for matching items for the specified entity and corresponding STR entities.
+        Slot that searches for matching items for
+        the specified entity and corresponding STR entities.
         """
         self._reset_controls()
 
@@ -278,9 +292,14 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
             #Show error message
             if len(results) == 0:
-                noResultsMsg = QApplication.translate("ViewSTR", "No results found for '" + searchWord + "'")
+                noResultsMsg = QApplication.translate(
+                    "ViewSTR",
+                    "No results found for '" + searchWord + "'"
+                )
                 self._notif_search_config.clear()
-                self._notif_search_config.insertErrorNotification(noResultsMsg)
+                self._notif_search_config.insertErrorNotification(
+                    noResultsMsg
+                )
 
                 return
 
@@ -309,7 +328,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
     def on_select_results(self, selected, deselected):
         """
-        Slot which is raised when the selection is changed in the tree view
+        Slot which is raised when the selection
+        is changed in the tree view
         selection model.
         """
         selIndexes = selected.indexes()
@@ -320,17 +340,20 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                 node = mi.internalPointer()
 
                 if mi.column() == 0:
-                    #Assert if node represents another entity has been clicked
+                    # Assert if node represents another
+                    # entity has been clicked
                     self._on_node_reference_changed(node.rootHash())
 
                     if isinstance(node, SupportsDocumentsNode):
 
                         src_docs = node.documents()
+
                         str_id = node.id()
 
-                        if str_id != self._strID:
-                            self._strID = str_id
-                            self._load_source_documents(src_docs)
+                        #if str_id != self._strID:
+                        #self._strID = str_id
+
+                        self._load_source_documents(src_docs)
 
                     if isinstance(node, SpatialUnitNode):
                         self.draw_spatial_unit(node.model())
@@ -360,7 +383,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
     def removeSourceDocumentWidget(self,container_id):
         """
-        Convenience method that removes the tab widget that lists the source documents
+        Convenience method that removes the tab
+        widget that lists the source documents
         with the given container id.
         """
         for i in range(self.tbSupportingDocs.count()):
@@ -384,7 +408,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
     def onResultsContextMenuRequested(self,pnt):
         """
-        Slot raised when the user right-clicks on a node item to request the
+        Slot raised when the user right-clicks
+        on a node item to request the
         corresponding context menu.
         """
         #Get the model index at the specified point
@@ -411,27 +436,40 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             ]
 
         if len(tb_str_entities) == 0:
-            msg = QApplication.translate("ViewSTR", "There are no configured "
-                                        "entities to search against. Please "
-                                        "check the social tenure relationship "
-                                        "tables in the Form Designer.")
-            QMessageBox.critical(self, QApplication.translate("ViewSTR",
-                                            "Social Tenure Relationship"),
-                                    msg)
+            msg = QApplication.translate(
+                "ViewSTR", "There are no configured "
+                "entities to search against. Please "
+                "check the social tenure relationship "
+                "tables in the Form Designer."
+            )
+            QMessageBox.critical(
+                self, QApplication.translate(
+                    "ViewSTR",
+                    "Social Tenure Relationship"
+                ),
+                msg
+            )
             self.setEnabled(False)
             event.ignore()
 
             return QMainWindow.showEvent(self, event)
 
         if not self._check_str_table():
-            msg = QApplication.translate("ViewSTR", "'social_tenure_relationship' "
-                                        "table could not be found. Please "
-                                        "recreate the table in the Form "
-                                        "Designer and configure the related "
-                                        "entities.")
-            QMessageBox.critical(self, QApplication.translate("ViewSTR",
-                                            "Social Tenure Relationship"),
-                                    msg)
+            msg = QApplication.translate(
+                "ViewSTR",
+                "'social_tenure_relationship' "
+                "table could not be found. Please "
+                "recreate the table in the Form "
+                "Designer and configure the related "
+                "entities."
+            )
+            QMessageBox.critical(
+                self, QApplication.translate(
+                    "ViewSTR",
+                    "Social Tenure Relationship"
+                ),
+                msg
+            )
             self.setEnabled(False)
             event.ignore()
 
@@ -448,8 +486,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
     def _check_str_table(self):
         """
-        Checks whether a table explicitly named 'social_tenure_relationship'
-        exists in th database.
+        Checks whether a table explicitly named
+        'social_tenure_relationship' exists in th database.
         :return: True if the table exists.Otherwise False.
         :rtype: bool
         """
@@ -467,9 +505,12 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         num_layers = len(self._plugin.iface.legendInterface().layers())
         if num_layers == 0:
-            msg = QApplication.translate("ViewSTR", "No basemap layers are loaded in the current project. "
-                                                    "Basemap layers enhance the visualization of"
-                                                    " spatial units.")
+            msg = QApplication.translate(
+                "ViewSTR",
+                "No basemap layers are loaded in the "
+                "current project. Basemap layers "
+                "enhance the visualization of spatial units."
+            )
             self._notif_search_config.insertWarningNotification(msg)
 
     def _deleteSourceDocTabs(self):
@@ -499,15 +540,21 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             strModel.clear()
 
         if resultsSelModel:
-            self.disconnect(resultsSelModel, SIGNAL("selectionChanged(const QItemSelection&,const QItemSelection&)"),
-                                     self.on_select_results)
+            self.disconnect(
+                resultsSelModel,
+                SIGNAL("selectionChanged(const QItemSelection&,const QItemSelection&)"),
+                self.on_select_results
+            )
 
     def _load_root_node(self, root):
         """
-        Load the search results (formatted into an object of type 'stdm.navigaion.STR') into
+        Load the search results (formatted into
+        an object of type 'stdm.navigaion.STR') into
         the tree view.
         """
-        strTreeViewModel = STRTreeViewModel(root, view=self.tvSTRResults)
+        strTreeViewModel = STRTreeViewModel(
+            root, view=self.tvSTRResults
+        )
         self.tvSTRResults.setModel(strTreeViewModel)
 
         # Resize tree columns to fit contents
@@ -515,7 +562,9 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         #Capture selection changes signals when results are returned in the tree view
         resultsSelModel = self.tvSTRResults.selectionModel()
-        resultsSelModel.selectionChanged.connect(self.on_select_results)
+        resultsSelModel.selectionChanged.connect(
+            self.on_select_results
+        )
 
     def _resize_columns(self):
         """
@@ -527,7 +576,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         for i in range(columnCount):
             self.tvSTRResults.resizeColumnToContents(i)
 
-        #Once resized then slightly increase the width of the first column so that text for 'No STR Defined' visible.
+        #Once resized then slightly increase the width
+        # of the first column so that text for 'No STR Defined' visible.
         currColWidth = self.tvSTRResults.columnWidth(0)
         newColWidth = currColWidth + 100
         self.tvSTRResults.setColumnWidth(0, newColWidth)
@@ -537,19 +587,31 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Load source documents into document listing widget.
         """
         #Configure progress dialog
-        progressMsg = QApplication.translate("ViewSTR", "Loading supporting documents...")
-        progressDialog = QProgressDialog(progressMsg, "", 0, len(source_docs), self)
+        progressMsg = QApplication.translate(
+            "ViewSTR", "Loading supporting documents..."
+        )
+
+        self.tbSupportingDocs.clear()
+        self._source_doc_manager.reset()
+
+        progressDialog = QProgressDialog(
+            progressMsg, "Ok", 0, len(source_docs), self
+        )
         progressDialog.setWindowModality(Qt.WindowModal)
 
         for i, doc in enumerate(source_docs):
 
             progressDialog.setValue(i)
             type_id = doc.document_type
+
             container = self._source_doc_manager.container(type_id)
 
             #Check if a container has been defined and create if None is found
             if container is None:
                 src_doc_widget = SourceDocumentContainerWidget(type_id)
+
+
+
                 container = src_doc_widget.container()
                 self._source_doc_manager.registerContainer(container, type_id)
 
@@ -564,14 +626,18 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
                 self.tbSupportingDocs.addTab(src_doc_widget, tab_title)
 
-            self._source_doc_manager.insertDocFromModel(doc, type_id)
+            self._source_doc_manager.insertDocFromModel(
+                doc, type_id
+            )
 
         progressDialog.setValue(len(source_docs))
 
     def _on_node_reference_changed(self, rootHash):
         """
-        Method for resetting document listing and map preview if another root node and its children
-        are selected then the documents are reset as well as the map preview control.
+        Method for resetting document listing and map preview
+        if another root node and its children
+        are selected then the documents are reset as
+        well as the map preview control.
         """
         if rootHash != self._curr_rootnode_hash:
             self._deleteSourceDocTabs()
@@ -580,8 +646,10 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
     def _progressStart(self):
         """
         Load progress dialog window.
-        For items whose durations is unknown, 'isindefinite' = True by default.
-        If 'isindefinite' is False, then 'rangeitems' has to be specified.
+        For items whose durations is unknown,
+        'isindefinite' = True by default.
+        If 'isindefinite' is False, then
+        'rangeitems' has to be specified.
         """
         pass
 
@@ -593,8 +661,10 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
     def _edit_permissions(self):
         """
-        Returns True/False whether the current logged in user has permissions to create new social tenure relationships.
-        If true, then the system assumes that they can also edit STR records.
+        Returns True/False whether the current logged in user
+        has permissions to create new social tenure relationships.
+        If true, then the system assumes that
+        they can also edit STR records.
         """
         canEdit = False
         userName = stdm.data.app_dbconn.User.UserName
@@ -603,7 +673,9 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         #Get the name of the content from the code
         cnt = Content()
-        createSTRCnt = cnt.queryObject().filter(Content.code == newSTRCode).first()
+        createSTRCnt = cnt.queryObject().filter(
+            Content.code == newSTRCode
+        ).first()
         if createSTRCnt:
             name = createSTRCnt.name
             canEdit = authorizer.CheckAccess(name)
@@ -612,43 +684,59 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
 class EntitySearchItem(QObject):
     """
-    Abstract class for implementation by widgets that enable users to search for entity records.
+    Abstract class for implementation by widgets that
+    enable users to search for entity records.
     """
 
     def __init__(self, formatter=None):
-        #Specify the formatter that should be applied on the result item. It should inherit from 'stdm.navigation.STRNodeFormatter'
+        # Specify the formatter that should be
+        # applied on the result item. It should
+        # inherit from 'stdm.navigation.STRNodeFormatter'
         self.formatter = formatter
 
     def setNodeFormatter(self, formatter):
         """
-        Set the formatter that should be applied on the entity search results.
+        Set the formatter that should be
+        applied on the entity search results.
         """
         self.formatter = formatter
 
     def validate(self):
         """
-        Method for validating the input arguments before a search is conducted.
-        Should return bool indicating whether validation was successful and message (applicable if validation fails).
+        Method for validating the input arguments
+        before a search is conducted.
+        Should return bool indicating whether validation
+        was successful and message (applicable if validation fails).
         """
         raise NotImplementedError()
 
     def executeSearch(self):
         """
-        Implemented when the a search operation is executed.
-        Should return tuple of formatted results for render in the tree view,raw object results and search word.
+        Implemented when the a search operation
+        is executed. Should return tuple of formatted
+        results for render in the tree view,raw
+        object results and search word.
         """
-        raise NotImplementedError(str(QApplication.translate("ViewSTR",
-                                                             "Subclass must implement abstract method.")))
+        raise NotImplementedError(
+            str(
+                QApplication.translate(
+                    "ViewSTR",
+                    "Subclass must implement abstract method."
+                )
+            )
+        )
 
     def loadAsync(self):
         """
-        Any initialization that needs to be carried out when the parent container is activated.
+        Any initialization that needs to be carried
+        out when the parent container is activated.
         """
         pass
 
     def errorHandler(self,error):
         """
-        Generic handler that logs error messages to the QGIS message log
+        Generic handler that logs error
+        messages to the QGIS message log
         """
         #QgsMessageLog.logMessage(error,2)
         LOGGER.debug(error)
@@ -678,7 +766,9 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         self._proxy_completer_model = None
 
         #Hook up signals
-        self.cboFilterCol.currentIndexChanged.connect(self._on_column_index_changed)
+        self.cboFilterCol.currentIndexChanged.connect(
+            self._on_column_index_changed
+        )
 
     def setConfigOptions(self):
         """
@@ -687,7 +777,9 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         #Set filter columns and remove id column
         for col_name, display_name in self.config.filterColumns.iteritems():
             if col_name != "id":
-                self.cboFilterCol.addItem(display_name, col_name)
+                self.cboFilterCol.addItem(
+                    display_name, col_name
+                )
 
     def loadAsync(self):
         """
@@ -703,7 +795,10 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         #Connect signals
         modelWorker.error.connect(self.errorHandler)
         workerThread.started.connect(
-                     lambda: modelWorker.fetch(self.config.STRModel, self.currentFieldName()))
+            lambda: modelWorker.fetch(
+                self.config.STRModel, self.currentFieldName()
+            )
+        )
         modelWorker.retrieved.connect(self._asyncFinished)
         modelWorker.retrieved.connect(workerThread.quit)
         workerThread.finished.connect(modelWorker.deleteLater)
@@ -720,7 +815,9 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         message = ""
 
         if self.txtFilterPattern.text() == "":
-            message = QApplication.translate("ViewSTR", "Search word cannot be empty.")
+            message = QApplication.translate(
+                "ViewSTR", "Search word cannot be empty."
+            )
             is_valid = False
 
         return is_valid, message
@@ -743,24 +840,35 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
             if self._proxy_completer_model.rowCount() > 0:
                 #Get corresponding actual value from the first matching item
                 value_model_idx  = self._proxy_completer_model.index(0, 1)
-                source_model_idx = self._proxy_completer_model.mapToSource(value_model_idx)
+                source_model_idx = self._proxy_completer_model.mapToSource(
+                    value_model_idx
+                )
 
-                search_term = self._completer_model.data(source_model_idx, Qt.DisplayRole)
+                search_term = self._completer_model.data(
+                    source_model_idx, Qt.DisplayRole
+                )
 
         modelInstance = self.config.STRModel()
 
         modelQueryObj = modelInstance.queryObject()
-        queryObjProperty = getattr(self.config.STRModel, self.currentFieldName())
+        queryObjProperty = getattr(
+            self.config.STRModel, self.currentFieldName()
+        )
 
-        #Get property type so that the filter can be applied according to the appropriate type
+        # Get property type so that the filter can
+        # be applied according to the appropriate type
         propType = queryObjProperty.property.columns[0].type
 
         try:
             if not isinstance(propType, String):
-                results = modelQueryObj.filter(queryObjProperty == search_term).all()
+                results = modelQueryObj.filter(
+                    queryObjProperty == search_term
+                ).all()
 
             else:
-                results = modelQueryObj.filter(func.lower(queryObjProperty) == func.lower(search_term)).all()
+                results = modelQueryObj.filter(
+                    func.lower(queryObjProperty) == func.lower(search_term)
+                ).all()
 
         except exc.StatementError:
             return model_root_node, [], search_term
@@ -781,7 +889,8 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
 
     def currentFieldName(self):
         """
-        Returns the name of the database field from the current item in the combo box.
+        Returns the name of the database field
+        from the current item in the combo box.
         """
         curr_index = self.cboFilterCol.currentIndex()
         field_name = self.cboFilterCol.itemData(curr_index)
@@ -814,8 +923,9 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
 
     def _update_completer(self, values):
         #Get the items in a tuple and put them in a list
-        field_formatter = self.config.LookupFormatters.get(self.currentFieldName(),
-                                                         None)
+        field_formatter = self.config.LookupFormatters.get(
+            self.currentFieldName(), None
+        )
         '''
         Store display and actual values in a model for easier mapping and
         retrieval when carrying out searches
@@ -866,20 +976,23 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
 
 class EntityConfiguration(object):
     """
-    Specifies the configuration to apply when creating a new tab widget for performing entity searches.
+    Specifies the configuration to apply when creating
+    a new tab widget for performing entity searches.
     """
     browseDescription = "Click on the browse button below to load entity " \
                         "records and their corresponding social tenure " \
                         "relationship definitions."
     defaultFieldName = ""
-    #Format of each dictionary item: property/db column name - display name
+    # Format of each dictionary item:
+    # property/db column name - display name
     filterColumns = OrderedDict()
     displayColumns = OrderedDict()
     groupBy = ""
     STRModel = None
     Title = ""
     data_source_name = ""
-    #Functions for formatting values before they are loaded into the completer
+    # Functions for formatting values before
+    # they are loaded into the completer
     LookupFormatters = {}
 
     def __init__(self):
@@ -889,7 +1002,8 @@ class EntityConfiguration(object):
 
 class ModelWorker(QObject):
     """
-    Worker for retrieving model attribute values stored in the database.
+    Worker for retrieving model attribute
+    values stored in the database.
     """
     retrieved = pyqtSignal(object)
     error = pyqtSignal(unicode)
@@ -897,14 +1011,17 @@ class ModelWorker(QObject):
     pyqtSlot(object, unicode)
     def fetch(self, model, fieldname):
         """
-        Fetch attribute values from the database for the specified model
+        Fetch attribute values from the
+        database for the specified model
         and corresponding column name.
         """
         try:
             if hasattr(model, fieldname):
                 modelInstance = model()
                 obj_property = getattr(model, fieldname)
-                model_values = modelInstance.queryObject([obj_property]).distinct()
+                model_values = modelInstance.queryObject(
+                    [obj_property]
+                ).distinct()
                 self.retrieved.emit(model_values)
 
         except Exception as ex:
@@ -912,9 +1029,10 @@ class ModelWorker(QObject):
 
 class SourceDocumentContainerWidget(QWidget):
     """
-    Widget that enables source documents of one type to be displayed.
+    Widget that enables source documents
+    of one type to be displayed.
     """
-    def __init__(self, container_id = -1,parent = None):
+    def __init__(self, container_id = -1, parent = None):
         QWidget.__init__(self,parent)
 
         #Set overall layout for the widget
@@ -924,12 +1042,14 @@ class SourceDocumentContainerWidget(QWidget):
         self.docVtLayout = QVBoxLayout()
         vtLayout.addLayout(self.docVtLayout)
 
+
         #Id of the container
         self._containerId = container_id
 
     def container(self):
         """
-        Returns the container in which source documents will rendered in.
+        Returns the container in which
+        source documents will rendered in.
         """
         return self.docVtLayout
 
