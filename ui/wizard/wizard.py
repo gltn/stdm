@@ -28,7 +28,11 @@ from PyQt4 import QtCore
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
-from stdm.data.configuration.stdm_configuration import StdmConfiguration, Profile
+from stdm.data.configuration.stdm_configuration import (
+        StdmConfiguration, 
+        Profile
+)
+
 from stdm.data.configuration.entity import entity_factory, Entity
 from stdm.data.configuration.entity_relation import EntityRelation 
 from stdm.data.configuration.columns import BaseColumn
@@ -42,6 +46,10 @@ from stdm.data.configuration.value_list import (
 from stdm.data.configuration.social_tenure import *
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 from stdm.data.configuration.db_items import DbItem
+from stdm.data.pg_utils import (
+        pg_table_exists, 
+        table_column_names
+       )
 from stdm.settings.config_serializer import ConfigurationFileSerializer 
 from stdm.settings.registryconfig import RegistryConfig 
 from stdm.data.configuration.exception import ConfigurationException
@@ -639,7 +647,15 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No entity selected for edit!"))
             return
+
         model_item, entity, row_id = self.get_model_entity(self.pftableView)
+
+        # don't edit entities that already exist in the database
+        if pg_table_exists(entity.name):
+            self.show_message(QApplication.translate("Configuration Wizard", \
+                    "Editing entity that exist in database is not allowed!"))
+            return
+
         if model_item:
             profile = self.current_profile()
             editor = EntityEditor(self, profile, entity)
@@ -647,6 +663,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             if result == 1:
                 self.entity_model.delete_entity(entity)
                 self.entity_model.add_entity(editor.entity)
+
 
     def delete_entity(self):
         """
@@ -676,6 +693,21 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.init_entity_item_model()
             self.trigger_entity_change()
 
+    def column_exist_in_entity(self, entity, column):
+        """
+        Returns True if a column exists in a given entity in DB
+        :param entity: Entity instance to check if column exist
+        :type entity: Entity
+        :param column: Column instance to check its existance
+        :type entity: BaseColumn 
+        :rtype: boolean
+        """
+        cols = table_column_names(entity.name) 
+        if column.name in cols:
+            return True
+        else:
+            return False
+
     def clear_view_model(self, view_model):
         rows = view_model.rowCount()
         for i in range(rows):
@@ -683,6 +715,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         view_model.clear()
 
     def set_view_model(self, view_model):
+        """
+        Attach model to table views, list views and combobox widgets
+        :param view_model: custom EntitiesModel
+        :type view_model: EntitiesModel
+        """
         self.pftableView.setModel(view_model)
         self.lvEntities.setModel(view_model)
         self.cboParty.setModel(view_model)
@@ -706,8 +743,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def connect_signals(self):
         self.init_entity_item_model()
-        #self.entity_item_model = self.lvEntities.selectionModel()
-        #self.entity_item_model.selectionChanged.connect(self.entity_changed)
 
         self.lookup_item_model = self.lvLookups.selectionModel()
         self.lookup_item_model.selectionChanged.connect(self.lookup_changed)
@@ -791,7 +826,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self.trigger_entity_change()
 
-
     def trigger_entity_change(self):
         row_id = self.entity_item_model.currentIndex().row()
 
@@ -839,15 +873,18 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No entity selected to add column!"))
             return
+
         model_item, entity, row_id = self.get_model_entity(self.lvEntities)
+
         if model_item:
             profile = self.current_profile()
+            params = {}
+            params['entity'] = entity
+            params['profile'] = profile
 
-            params={}
-            params['entity']=entity
-            params['profile']=profile
             editor = ColumnEditor(self, **params)
             result = editor.exec_()
+
             if result == 1:
                 if editor.type_info == 'LOOKUP':
                     self.clear_lookup_view()
@@ -857,13 +894,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def edit_column(self):
         """
         Edit selected column.
-        Allow editting of columns that have not yet being persisted to the
+        Only allow editting of columns that have not yet being persisted to the
         database
         """
         rid, column = self._get_column(self.tbvColumns)
         
         if column and column.action == DbItem.CREATE:
             row_id, entity = self._get_entity(self.lvEntities)
+
+            # Don't edit if a column exist in database
+            if self.column_exist_in_entity(entity, column):
+                self.show_message(QApplication.translate("Configuration Wizard", \
+                        "Editing columns that exist in database is not allowed!"))
+                return
 
             params = {}
             params['column'] = column
@@ -936,16 +979,23 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def edit_lookup(self):
         profile = self.current_profile()
         if profile:
-            if len(self.lvLookups.selectedIndexes()) > 0:
-                row_id, lookup = self._get_entity_item(self.lvLookups)
-                editor = LookupEditor(self, profile, lookup)
-                result = editor.exec_()
-                if result == 1:
-                    self.lookup_view_model.removeRow(row_id)
-                    self.lookup_view_model.add_entity(editor.lookup)
-            else:
+            if len(self.lvLookups.selectedIndexes()) == 0:
                 self.show_message(QApplication.translate("Configuration Wizard", \
                         "No lookup selected for edit!"))
+                return
+
+            row_id, lookup = self._get_entity_item(self.lvLookups)
+            # don't edit entities that already exist in the database
+            if pg_table_exists(lookup.name):
+                self.show_message(QApplication.translate("Configuration Wizard", \
+                        "Editing lookup that exist in database is not allowed!"))
+                return
+            editor = LookupEditor(self, profile, lookup)
+            result = editor.exec_()
+            if result == 1:
+                self.lookup_view_model.delete_entity(lookup)
+                self.lookup_view_model.removeRow(row_id)
+                self.lookup_view_model.add_entity(editor.lookup)
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "Nothing to edit!"))
@@ -985,14 +1035,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         for v in values:
             val = QStandardItem(v.value)
             self.lookup_value_view_model.appendRow(val)
-                 
-    def add_lookup_value_test(self):
-        row_id, lookup = self._get_entity_item(self.lvLookups)
-        # check lookup <> None
-        lookup.add_code_value(CodeValue('M','Male'))
-        lookup.add_code_value(CodeValue('F','Female'))
-        self.add_values(lookup.values.values())
-        self.lvLookupValues.setModel(self.lookup_value_view_model)
 
     def lookup_changed(self, selected, diselected):
         row_id = self.lookup_item_model.currentIndex().row()
