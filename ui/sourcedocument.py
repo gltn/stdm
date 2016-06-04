@@ -29,7 +29,8 @@ from PyQt4.QtCore import (
     SIGNAL,
     QEvent,
     QThread,
-    QDate
+    QDate,
+    QRect
 )
 from PyQt4.QtGui import *
 
@@ -265,7 +266,7 @@ class SourceDocumentManager(QObject):
         Renders the source document info from a subclass of 'SupportingDocumentMixin'.
         """
         #Check if the document has already been inserted in the manager.
-        docIndex = getIndex(self._docRefs, sourcedoc.document_id)
+        docIndex = getIndex(self._docRefs, sourcedoc.document_identifier)
         if docIndex != -1:
             return
 
@@ -288,7 +289,8 @@ class SourceDocumentManager(QObject):
                 self._linkWidgetRemovedSignal(docWidg)
                 docWidg.setModel(sourcedoc)
                 container.addWidget(docWidg)
-                self._docRefs.append(sourcedoc.document_id)
+
+                self._docRefs.append(sourcedoc.document_identifier)
 
     def _doc_repository_error(self):
         msg = QApplication.translate("sourceDocumentManager","Document repository could not be found.\nPlease "
@@ -637,8 +639,8 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
         if self._mode == DOWNLOAD_MODE:
             self._displayName = sourcedoc.filename
-            self._docSize = sourcedoc.doc_size
-            self.fileUUID = sourcedoc.document_id
+            self._docSize = sourcedoc.document_size
+            self.fileUUID = sourcedoc.document_identifier
 
             self.buildDisplay()
             self._srcDoc = sourcedoc
@@ -674,7 +676,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         Builds the database model for the source document file reference.
         """
         if self._mode == UPLOAD_MODE:
-            #print "self._docType" + str(self._docType)
+
             if self._docType in document_type_class:
                 src_doc = document_type_class[self._docType]()
 
