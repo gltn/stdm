@@ -372,6 +372,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.config_updater.update_progress.connect(self.config_update_progress)
             self.config_updater.update_completed.connect(self.config_update_completed)
 
+
             ##*Connect thread signals
             self.updater_thread.started.connect(self._updater_thread_started)
             self.updater_thread.finished.connect(self.updater_thread.deleteLater)

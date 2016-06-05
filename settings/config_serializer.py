@@ -542,6 +542,7 @@ class EntitySerializer(EntitySerializerCollection):
     CREATE_ID = 'createId'
     PROXY = 'proxy'
     SUPPORTS_DOCUMENTS = 'supportsDocuments'
+    DOCUMENT_TYPE_LOOKUP = 'documentTypeLookup'
     ENTITY_TYPE_INFO = 'ENTITY'
     DEPENDENCY_FLAGS = [ForeignKeyColumn.TYPE_INFO]
 
@@ -718,6 +719,12 @@ class EntitySerializer(EntitySerializerCollection):
                                     str(entity.is_proxy))
         entity_element.setAttribute(EntitySerializer.SUPPORTS_DOCUMENTS,
                                     str(entity.supports_documents))
+
+        #Set document type lookup
+        if entity.supports_documents:
+            doc_type_lookup = entity.supporting_doc.document_type_entity
+            entity_element.setAttribute(EntitySerializer.DOCUMENT_TYPE_LOOKUP,
+                                    str(doc_type_lookup.short_name))
 
         #Root columns element
         columns_element = document.createElement('Columns')

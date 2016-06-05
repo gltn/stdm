@@ -58,3 +58,30 @@ def entity_foreign_keys(entity):
     insp = reflection.Inspector.from_engine(metadata.bind)
 
     return [fi['name'] for fi in insp.get_foreign_keys(entity.name)]
+
+def profile_foreign_keys(profile):
+    """
+    Gets all foreign keys for tables in the given profile.
+    :param profile: Profile object.
+    :type profile: Profile
+    :return: A list containing foreign key names of the given profiles.
+    :rtype: list(str)
+    """
+    from stdm.data.pg_utils import pg_table_exists
+
+    _bind_metadata(metadata)
+    insp = reflection.Inspector.from_engine(metadata.bind)
+
+    fks = []
+    for t in profile.table_names():
+        #Assert if the table exists
+        if not pg_table_exists(t):
+            continue
+
+        t_fks = insp.get_foreign_keys(t)
+        for fk in t_fks:
+            if 'name' in fk:
+                fk_name = fk['name']
+                fks.append(fk_name)
+
+    return fks
