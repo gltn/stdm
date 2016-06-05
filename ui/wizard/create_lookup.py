@@ -91,7 +91,7 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         name = self.format_lookup_name(name)
         # if its an edit, remove the existing entry first
         if self.lookup:
-               self.profile.remove_entity(name)
+               self.profile.remove_entity(self.lookup.name)
         self.lookup = self.profile.create_entity(name, value_list_factory)
         self.profile.add_entity(self.lookup)
 	    

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_lookup_entity.ui'
 #
-# Created: Tue Apr 26 18:09:32 2016
+# Created: Sat May 28 12:23:44 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,10 +26,14 @@ except AttributeError:
 class Ui_dlgLookup(object):
     def setupUi(self, dlgLookup):
         dlgLookup.setObjectName(_fromUtf8("dlgLookup"))
-        dlgLookup.resize(363, 94)
+        dlgLookup.resize(362, 86)
         self.formLayout = QtGui.QFormLayout(dlgLookup)
-        self.formLayout.setVerticalSpacing(10)
+        self.formLayout.setSizeConstraint(QtGui.QLayout.SetMaximumSize)
         self.formLayout.setObjectName(_fromUtf8("formLayout"))
+        self.label_2 = QtGui.QLabel(dlgLookup)
+        self.label_2.setMaximumSize(QtCore.QSize(300, 16777215))
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.formLayout.setWidget(0, QtGui.QFormLayout.FieldRole, self.label_2)
         self.label = QtGui.QLabel(dlgLookup)
         self.label.setMinimumSize(QtCore.QSize(60, 0))
         self.label.setObjectName(_fromUtf8("label"))
@@ -42,9 +46,6 @@ class Ui_dlgLookup(object):
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
         self.formLayout.setWidget(2, QtGui.QFormLayout.FieldRole, self.buttonBox)
-        self.label_2 = QtGui.QLabel(dlgLookup)
-        self.label_2.setObjectName(_fromUtf8("label_2"))
-        self.formLayout.setWidget(0, QtGui.QFormLayout.FieldRole, self.label_2)
 
         self.retranslateUi(dlgLookup)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), dlgLookup.accept)
@@ -53,7 +54,7 @@ class Ui_dlgLookup(object):
 
     def retranslateUi(self, dlgLookup):
         dlgLookup.setWindowTitle(_translate("dlgLookup", "Lookup entity", None))
+        self.label_2.setText(_translate("dlgLookup", "`check_` prefix will be appended on the lookup name", None))
         self.label.setText(_translate("dlgLookup", "Lookup Name", None))
         self.edtName.setPlaceholderText(_translate("dlgLookup", "Enter lookup name", None))
-        self.label_2.setText(_translate("dlgLookup", "`check_` prefix will be appended on the lookup name", None))
 

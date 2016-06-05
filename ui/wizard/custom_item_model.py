@@ -37,8 +37,10 @@ class EntityModelItem(QStandardItem):
         self._set_entity_properties()
         
 class EntitiesModel(QStandardItemModel):
+
     def __init__(self, parent=None):
         super(EntitiesModel, self).__init__(parent)
+        
         self._entities = OrderedDict()
         
         self.setHorizontalHeaderLabels(EntityModelItem.headers_labels)

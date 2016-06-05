@@ -538,16 +538,16 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.error_message('Please enter the column name!')
             return False
 
-        # if column is initialized, this is an edit
-        # delete old one then add a new one
-        if self.column:
-            self.entity.remove_column(self.column.name)
-
         # check if another column with the same name exist in the current entity
         if self.entity.columns.has_key(col_name):
             self.error_message(QApplication.translate("ColumnEditor",
                 "Column with the same name already exist!"))
             return 
+
+        # if column is initialized, this is an edit
+        # delete old one then add a new one
+        if self.column:
+            self.entity.remove_column(self.column.name)
 
         self.fill_work_area()
         self.column = self.create_column()

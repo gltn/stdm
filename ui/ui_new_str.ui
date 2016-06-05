@@ -460,6 +460,13 @@
      <layout class="QVBoxLayout" name="vlSTRTypeNotif"/>
     </item>
     <item>
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>Choose the social tenure type from the first column by clicking on the cell.</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QScrollArea" name="scrollArea_3">
       <property name="widgetResizable">
        <bool>true</bool>
@@ -473,7 +480,7 @@
          <x>0</x>
          <y>0</y>
          <width>617</width>
-         <height>427</height>
+         <height>404</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -508,7 +515,7 @@
     <string>Source Documents</string>
    </property>
    <property name="subTitle">
-    <string>Upload one or more documents.</string>
+    <string>Upload one or more documents for each document types by selecting a document type from the drop down menu and by clicking on Add Supporting Document button.</string>
    </property>
    <attribute name="pageId">
     <string notr="true">source_docs</string>
@@ -578,6 +585,12 @@
        </item>
        <item>
         <widget class="QScrollArea" name="scrollArea">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Plain</enum>
+         </property>
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
@@ -586,22 +599,17 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>593</width>
-            <height>348</height>
+            <width>595</width>
+            <height>350</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
            <item row="0" column="0">
-            <widget class="QGroupBox" name="groupBox_4">
-             <property name="title">
-              <string/>
+            <layout class="QVBoxLayout" name="vlDocTitleDeed">
+             <property name="spacing">
+              <number>0</number>
              </property>
-             <layout class="QGridLayout" name="gridLayout_7">
-              <item row="0" column="0">
-               <layout class="QVBoxLayout" name="vlDocTitleDeed"/>
-              </item>
-             </layout>
-            </widget>
+            </layout>
            </item>
           </layout>
          </widget>

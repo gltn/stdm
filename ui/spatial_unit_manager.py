@@ -115,10 +115,11 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
                  'configuration '
                  'wizard to create '
                  'them.'.format('\n'.join(missing_tables)))
-            error_label = QLabel()
-            error_label.setText(msg)
-            error_label.setStyleSheet("QLabel {color : red;}")
-            self.NotificationBar.addWidget(error_label)
+            QMessageBox.critical(
+                self.iface.mainWindow(),
+                'Spatial Unit Manager',
+                msg
+            )
 
         for e in geom_entities:
             table_name = e.name

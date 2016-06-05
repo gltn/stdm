@@ -260,6 +260,8 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
             QCoreApplication.sendEvent(self.local_map, QShowEvent())
         else:
             self.highlight_spatial_unit(geom)
+            # Add spatial unit to web viewer
+            self._web_spatial_loader.add_overlay(model, geom_col)
 
     def clear_sel_highlight(self):
         """

@@ -49,16 +49,13 @@ from sqlalchemy import (
 from geoalchemy2 import Geometry
 from stdm.settings import current_profile
 from stdm.composer.document_generator import DocumentGenerator
-from stdm.data.config_table_reader import ConfigTableReader
-from stdm.data.config_utils import (
-    display_name,
-    ProfileException,
-)
+# from stdm.data.config_table_reader import ConfigTableReader
+
 from stdm.data.pg_utils import (
     numeric_varchar_columns,
     _execute
 )
-from stdm.utils.util import getIndex
+from stdm.utils.util import getIndex, format_name
 
 from .stdmdialog import DeclareMapping
 from .entity_browser import ForeignKeyBrowser
@@ -152,7 +149,7 @@ class DocumentGeneratorDialogWrapper(object):
         self._iface = iface
         self._doc_gen_dlg = DocumentGeneratorDialog(self._iface, parent)
         self._notif_bar = self._doc_gen_dlg.notification_bar()
-        self._config_table_reader = ConfigTableReader()
+        # self._config_table_reader = ConfigTableReader()
         self.curr_profile = current_profile()
         #Load entity configurations
         self._load_entity_configurations()
@@ -176,7 +173,7 @@ class DocumentGeneratorDialogWrapper(object):
                 if not entity_cfg is None:
                     self._doc_gen_dlg.add_entity_config(entity_cfg)
 
-        except ProfileException as pe:
+        except Exception as pe:
             self._notif_bar.clear()
             self._notif_bar.insertErrorNotification(pe.message)
 
@@ -188,7 +185,7 @@ class DocumentGeneratorDialogWrapper(object):
         :return: Entity configuration object.
         :rtype: EntityConfig
         """
-        table_display_name = display_name(short_name)
+        table_display_name = format_name(short_name)
         model = DeclareMapping.instance().tableMapping(table_name)
 
         if model is not None:

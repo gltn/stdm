@@ -39,7 +39,7 @@ from stdm.utils.util import (
     entity_display_columns,
     profile_spatial_tables,
     lookup_id_to_value,
-    format_column,
+    format_name,
     profile_lookup_columns,
     model_display_mapping
 )
@@ -115,11 +115,8 @@ class EntityNodeFormatter(STRNodeFormatter):
                                                  "Social Tenure Relationship")
 
         self._str_model = entity_model(self.curr_profile.social_tenure)
-
-        '''
-        Cache for entity supporting document tables.
-        [table_name]:[list of supporting document tables]
-        '''
+        # Cache for entity supporting document tables.
+        # [table_name]:[list of supporting document tables]
         self._entity_supporting_doc_tables = {}
 
         self._str_model_disp_mapping = {}
@@ -148,7 +145,7 @@ class EntityNodeFormatter(STRNodeFormatter):
             self.curr_profile.entity_by_name(config.data_source_name)
         )
 
-        self._spatial_data_sources = profile_spatial_tables(self.curr_profile)
+        self._spatial_data_sources = profile_spatial_tables(self.curr_profile).keys()
 
 
     def _format_display_mapping(self, model, display_cols, filter_cols):
@@ -162,7 +159,7 @@ class EntityNodeFormatter(STRNodeFormatter):
         for c in display_cols.keys():
             if c != "id" and c in filter_cols:
                 if hasattr(model, c):
-                    k = c, format_column(c)
+                    k = c, format_name(c)
                     disp_mapping[k] = lookup_id_to_value(
                         self.curr_profile, c, getattr(model, c)
                     )
@@ -255,6 +252,7 @@ class EntityNodeFormatter(STRNodeFormatter):
         :return: Supporting document models.
         :rtype: list
         """
+
         from stdm.data.supporting_documents import (
             supporting_doc_tables,
             document_models
@@ -265,6 +263,7 @@ class EntityNodeFormatter(STRNodeFormatter):
             doc_table_ref = self._entity_supporting_doc_tables[entity_table]
         else:
             doc_tables = supporting_doc_tables(entity_table)
+
             if len(doc_tables) > 0:
                 doc_table_ref = doc_tables[0]
                 self._entity_supporting_doc_tables[entity_table] = doc_table_ref
