@@ -27,10 +27,9 @@ from PyQt4.QtGui import *
 
 from qgis.core import *
 from qgis.gui import *
-from stdm.utils.util import getIndex
+
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings import current_profile
-from stdm.data.configuration import entity_model
 
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
@@ -64,12 +63,6 @@ from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
 
 import data
 
-from stdm.data.config_utils import (
-    activeProfile,
-    ConfigVersionException,
-    ProfileException
-)
-from stdm.data.xmlconfig_reader import contentGroup
 from stdm.data.database import (
     Base,
     NoPostGISError,
@@ -80,9 +73,6 @@ from stdm.data.pg_utils import (
     spatial_tables
 )
 
-from stdm.data.reports.sys_fonts import SysFonts
-from stdm.data.config_table_reader import ConfigTableReader
-
 from navigation import (
     STDMAction,
     QtContainerLoader,
@@ -92,7 +82,11 @@ from navigation import (
 from mapping import (
     StdmMapToolCreateFeature
 )
-from utils import *
+
+from stdm.utils.util import (
+    getIndex,
+    profile_user_tables
+)
 from mapping.utils import pg_layerNamesIDMapping
 
 from composer import ComposerWrapper
@@ -111,13 +105,13 @@ class STDMQGISLoader(object):
         self.menubarLoader = None
 
         # Setup locale
-        pluginDir = os.path.dirname(__file__)
+        self.plugin_dir = os.path.dirname(__file__)
         localePath = ""
         locale = QSettings().value("locale/userLocale")[0:2]
-        if QFileInfo(pluginDir).exists():
+        if QFileInfo(self.plugin_dir).exists():
             # Replace forward slash with backslash
-            pluginDir = string.replace(pluginDir, "\\", "/")
-            localePath = pluginDir + "/i18n/stdm_%s.qm" % (locale,)
+            self.plugin_dir = string.replace(self.plugin_dir, "\\", "/")
+            localePath = self.plugin_dir + "/i18n/stdm_%s.qm" % (locale,)
         if QFileInfo(localePath).exists():
             self.translator = QTranslator()
             self.translator.load(localePath)
@@ -168,7 +162,7 @@ class STDMQGISLoader(object):
         self.changePasswordAct.triggered.connect(self.changePassword)
         self.logoutAct.triggered.connect(self.logout)
         self.aboutAct.triggered.connect(self.about)
-        self.helpAct.triggered.connect(self.helpContents)
+        self.helpAct.triggered.connect(self.help_contents)
         self.initToolbar()
         self.initMenuItems()
 
@@ -176,21 +170,33 @@ class STDMQGISLoader(object):
     def _menu_items(self):
         #Create menu and menu items on the menu bar
         self.stdmMenu=QMenu()
-        self.stdmMenu.setTitle(QApplication.translate("STDMQGISLoader","STDM"))
+        self.stdmMenu.setTitle(
+            QApplication.translate(
+                "STDMQGISLoader","STDM"
+            )
+        )
         #Initialize the menu bar item
         self.menu_bar=self.iface.mainWindow().menuBar()
         #Create actions
         actions=self.menu_bar.actions()
         currAction=actions[len(actions)-1]
         #add actions to the menu bar
-        self.menu_bar.insertMenu(currAction, self.stdmMenu)
-        self.stdmMenu.setToolTip(QApplication.translate("STDMQGISLoader","STDM plugin menu"))
+        self.menu_bar.insertMenu(
+            currAction,
+            self.stdmMenu
+        )
+        self.stdmMenu.setToolTip(
+            QApplication.translate(
+                "STDMQGISLoader",
+                "STDM plugin menu"
+            )
+        )
 
 
     def getThemeIcon(self, theName):
         # get the icon from the best available theme
-        myCurThemePath = QgsApplication.activeThemePath() + "/plugins/" + theName;
-        myDefThemePath = QgsApplication.defaultThemePath() + "/plugins/" + theName;
+        myCurThemePath = QgsApplication.activeThemePath() + "/plugins/" + theName
+        myDefThemePath = QgsApplication.defaultThemePath() + "/plugins/" + theName
         myQrcPath = ":/plugins/stdm/" + theName;
         if QFile.exists(myCurThemePath):
             return QIcon(myCurThemePath)
@@ -242,13 +248,14 @@ class STDMQGISLoader(object):
                 db = STDMDb.instance()
 
             except NoPostGISError:
-                err_msg = QApplication.translate("STDM",
-                            "STDM cannot be loaded because the system has "
-                            "detected that the PostGIS extension is missing "
-                            "in '{0}' database.\nCheck that PostGIS has been "
-                            "installed and that the extension has been enabled "
-                            "in the STDM database. Please contact the system "
-                            "administrator for more information."
+                err_msg = QApplication.translate(
+                    "STDM",
+                    "STDM cannot be loaded because the system has "
+                    "detected that the PostGIS extension is missing "
+                    "in '{0}' database.\nCheck that PostGIS has been "
+                    "installed and that the extension has been enabled "
+                    "in the STDM database. Please contact the system "
+                    "administrator for more information."
                                         .format(frmLogin.dbConn.Database))
                 QMessageBox.critical(self.iface.mainWindow(),
                     QApplication.translate("STDM","Spatial Extension Error"),
@@ -278,31 +285,66 @@ class STDMQGISLoader(object):
                 return
 
             try:
-                self.default_profile()
-                self.default_config_version()
+                #Set current profile
+                self.current_profile = current_profile()
                 self.loadModules()
                 self._user_logged_in = True
 
-            except ConfigVersionException as cve:
-                title = QApplication.translate("STDMQGISLoader","Error reading Config Version")
-                self.reset_content_modules_id(title,cve.message)
+                self.default_profile()
 
-            except ProfileException as pe:
-                title = QApplication.translate("STDMQGISLoader","Error reading profile settings")
-                self.reset_content_modules_id(title,pe.message)
+            except Exception as pe:
+                title = QApplication.translate(
+                    "STDMQGISLoader",
+                    "Error reading profile settings"
+                )
+                self.reset_content_modules_id(
+                    title,
+                    pe.message
+                )
 
+    def minimum_table_checker(self):
 
-    def database_checker(self, entity):
         title = QApplication.translate(
-                "STDMQGISLoader",
-                'Database Table Error'
-            )
+            "STDMQGISLoader",
+            'Database Table Error'
+        )
 
+        message = QApplication.translate(
+            "STDMQGISLoader",
+            'The system has detected that database tables \n'
+            'required in this module are missing.\n'
+            'Do you want to re-run the Configuration Wizard now?'
+        )
+
+        database_check = QMessageBox.critical(
+            self.iface.mainWindow(),
+            title,
+            message,
+            QMessageBox.Yes,
+            QMessageBox.No
+        )
+        if database_check == QMessageBox.Yes:
+            self.load_config_wizard()
+
+    def entity_table_checker(self, entity):
+        title = QApplication.translate(
+            "STDMQGISLoader",
+            'Database Table Error'
+        )
         if entity == self.current_profile.social_tenure:
             str_table_status = [
-                (str(entity.party.short_name), pg_table_exists(entity.party.name)),
-                (str(entity.spatial_unit.short_name), pg_table_exists(entity.spatial_unit.name)),
-                (str(entity.short_name), pg_table_exists(entity.name))
+                (
+                    str(entity.party.short_name),
+                    pg_table_exists(entity.party.name)
+                ),
+                (
+                    str(entity.spatial_unit.short_name),
+                    pg_table_exists(entity.spatial_unit.name)
+                ),
+                (
+                    str(entity.short_name),
+                    pg_table_exists(entity.name)
+                )
             ]
             str_table_status = dict(str_table_status)
             missing_tables = [
@@ -313,6 +355,7 @@ class STDMQGISLoader(object):
             if len(missing_tables) > 0:
                 missing_tables = str(missing_tables).strip("[]")
                 missing_tables = missing_tables.replace("'", "")
+
                 message = QApplication.translate(
                     "STDMQGISLoader",
                     'The system has detected that database table(s) required in \n'
@@ -355,14 +398,13 @@ class STDMQGISLoader(object):
             else:
                 return True
 
+
     def default_profile(self):
         """
         Checks if the current profile exists and if it doesn't,
         asks the user to run Configuration Wizard.
         Returns: None
         """
-        #Set current profile
-        self.current_profile = current_profile()
         if self.current_profile is None:
             title = QApplication.translate(
                 "STDMQGISLoader",
@@ -370,8 +412,10 @@ class STDMQGISLoader(object):
             )
             message = QApplication.translate(
                 "STDMQGISLoader",
-                'The system has detected that there is no default profile. \n'
-                'Do you want to run the Configuration Wizard now?'
+                'The system has detected that there '
+                'is no default profile. \n'
+                'Do you want to run the '
+                'Configuration Wizard now?'
             )
             default_profile = QMessageBox.critical(
                 self.iface.mainWindow(),
@@ -388,27 +432,39 @@ class STDMQGISLoader(object):
     def load_configuration_from_file(self):
         """
         Load configuration object from the file.
-        :return: True if the file was successfully loaded. Otherwise, False.
+        :return: True if the file was successfully
+        loaded. Otherwise, False.
         :rtype: bool
         """
-        config_path = QDesktopServices.storageLocation(QDesktopServices.HomeLocation) \
-                      + '/.stdm/configuration.stc'
-        config_serializer = ConfigurationFileSerializer(config_path)
+        config_path = QDesktopServices.storageLocation(
+            QDesktopServices.HomeLocation) +\
+                      '/.stdm/configuration.stc'
+        config_serializer = ConfigurationFileSerializer(
+            config_path
+        )
 
         try:
             config_serializer.load()
 
         except IOError as io_err:
             QMessageBox.critical(self.iface.mainWindow(),
-                    QApplication.translate('STDM', 'Load Configuration Error'),
-                    unicode(io_err))
+                QApplication.translate(
+                    'STDM', 'Load Configuration Error'
+                ),
+                unicode(io_err)
+            )
 
             return False
 
         except ConfigurationException as c_ex:
-            QMessageBox.critical(self.iface.mainWindow(),
-                    QApplication.translate('STDM', 'Load Configuration Error'),
-                    unicode(c_ex))
+            QMessageBox.critical(
+                self.iface.mainWindow(),
+                QApplication.translate(
+                    'STDM',
+                    'Load Configuration Error'
+                ),
+                unicode(c_ex)
+            )
 
             return False
 
@@ -465,17 +521,31 @@ class STDMQGISLoader(object):
         tbSeparator.setSeparator(True)
 
         #Define actions
-        self.contentAuthAct = QAction(QIcon(":/plugins/stdm/images/icons/content_auth.png"), \
-        QApplication.translate("ContentAuthorizationToolbarAction","Content Authorization"), self.iface.mainWindow())
+        self.contentAuthAct = QAction(
+            QIcon(":/plugins/stdm/images/icons/content_auth.png"),
+            QApplication.translate(
+                "ContentAuthorizationToolbarAction",
+                "Content Authorization"
+            ),
+            self.iface.mainWindow()
+        )
 
         self.usersAct = QAction(QIcon(":/plugins/stdm/images/icons/users_manage.png"), \
         QApplication.translate("ManageUsersToolbarAction","Manage Users-Roles"), self.iface.mainWindow())
 
-        self.options_act = QAction(QIcon(":/plugins/stdm/images/icons/options.png"), \
-        QApplication.translate("OptionsToolbarAction","Options..."), self.iface.mainWindow())
 
-        self.manageAdminUnitsAct = QAction(QIcon(":/plugins/stdm/images/icons/manage_admin_units.png"), \
-        QApplication.translate("ManageAdminUnitsToolbarAction","Manage Administrative Units"), self.iface.mainWindow())
+        self.options_act = QAction(QIcon(":/plugins/stdm/images/icons/options.png"), \
+                           QApplication.translate("OptionsToolbarAction", "Options..."),
+                           self.iface.mainWindow())
+
+        self.manageAdminUnitsAct = QAction(
+            QIcon(":/plugins/stdm/images/icons/manage_admin_units.png"),
+            QApplication.translate(
+                "ManageAdminUnitsToolbarAction",
+                "Manage Administrative Units"
+            ),
+            self.iface.mainWindow()
+        )
 
         self.importAct = QAction(QIcon(":/plugins/stdm/images/icons/import.png"), \
         QApplication.translate("ImportAction","Import Data"), self.iface.mainWindow())
@@ -545,7 +615,6 @@ class STDMQGISLoader(object):
         self.createFeatureAct.triggered.connect(self.onCreateFeature)
         contentMenu.triggered.connect(self.widgetLoader)
 
-        #self.wzdAct.triggered.connect(self.workspaceLoader)
         self.wzdAct.triggered.connect(self.load_config_wizard)
 
         self.newSTRAct.triggered.connect(self.newSTR)
@@ -604,10 +673,10 @@ class STDMQGISLoader(object):
         self._reportModules = OrderedDict()
 
         #    map the user tables to sqlalchemy model object
-        """
-        add the tables to the stdm toolbar
-        Format the table names to freiendly format before adding them
-        """
+
+        # add the tables to the stdm toolbar
+        # Format the table names to freiendly format before adding them
+
         if self.user_entities() is not None:
             user_entities = dict(self.user_entities())
             for name, short_name in user_entities.iteritems():
@@ -667,7 +736,7 @@ class STDMQGISLoader(object):
         self.spatialUnitManagerCntGroup = ContentGroup(username,self.spatialLayerManager)
         self.spatialUnitManagerCntGroup.addContentItem(spatialLayerManagerCnt)
         self.spatialUnitManagerCntGroup.register()
-        
+
         self.createFeatureCntGroup = ContentGroup(username,self.createFeatureAct)
         self.createFeatureCntGroup.addContentItem(createFeatureCnt)
         self.createFeatureCntGroup.register()
@@ -791,18 +860,26 @@ class STDMQGISLoader(object):
         '''
         if stdmAction.Name == self.createFeatureAct.Name:
             #Insert SaveEdits action
-            self.stdmInitToolbar.insertAction(self.createFeatureAct,self.saveEditsAct)
+            self.stdmInitToolbar.insertAction(
+                self.createFeatureAct,
+                self.saveEditsAct
+            )
 
     def onFinishedLoadingContent(self):
         '''
-        This slot is raised once the module loader has finished loading content items.        
+        This slot is raised once the module
+        loader has finished loading content items.
         '''
         if self.propManageWindow != None:
-            self.iface.addDockWidget(Qt.RightDockWidgetArea,self.propManageWindow)
+            self.iface.addDockWidget(
+                Qt.RightDockWidgetArea,
+                self.propManageWindow
+            )
 
     def manageAccounts(self):
         '''
-        Slot for showing the user and role accounts management window
+        Slot for showing the user and
+        role accounts management window
         '''
         frmUserAccounts = manageAccountsDlg(self)
         frmUserAccounts.exec_()
@@ -825,16 +902,21 @@ class STDMQGISLoader(object):
         '''
         Slot for customizing user forms
         '''
-        self.wkspDlg = WorkspaceLoader(self.iface.mainWindow())
+        self.wkspDlg = WorkspaceLoader(
+            self.iface.mainWindow()
+        )
         self.wkspDlg.exec_()
 
     def load_config_wizard(self):
         '''
         '''
-        self.wizard = ConfigWizard(self.iface.mainWindow())
+        self.wizard = ConfigWizard(
+            self.iface.mainWindow()
+        )
         status = self.wizard.exec_()
 
-        #Reload profile upon successfully running the config wizard
+        #Reload profile upon successfully
+        # running the config wizard
         if status == QDialog.Accepted:
             self.reload_profile()
 
@@ -856,7 +938,7 @@ class STDMQGISLoader(object):
 
     def onShowHidePropertyWindow(self,visible):
         '''
-        Slot raised when the user checks or unchecks the action for 
+        Slot raised when the user checks or unchecks the action for
         showing/hiding the property manager window
         '''
         if visible:
@@ -874,47 +956,101 @@ class STDMQGISLoader(object):
             frmNewSTR.exec_()
         except Exception as ex:
             QMessageBox.critical(self.iface.mainWindow(),
-                QApplication.translate("STDMPlugin","Loading dialog..."),str(ex.message))
+                QApplication.translate(
+                    "STDMPlugin",
+                    "Loading dialog..."),
+                str(ex.message)
+            )
 
     def onManageAdminUnits(self):
         '''
         Slot for showing administrative unit selector dialog.
         '''
-        frmAdminUnitSelector = AdminUnitSelector(self.iface.mainWindow())
-        frmAdminUnitSelector.setManageMode(True)
-        frmAdminUnitSelector.exec_()
+
+        if self.current_profile is None:
+            self.default_profile()
+            return
+        admin_spatial_unit = [
+            e
+            for e in
+                self.current_profile.entities.values()
+            if e.TYPE_INFO == 'ADMINISTRATIVE_SPATIAL_UNIT'
+        ]
+        db_status = self.entity_table_checker(
+            admin_spatial_unit[0]
+        )
+
+        if db_status:
+            frmAdminUnitSelector = AdminUnitSelector(
+                self.iface.mainWindow()
+            )
+            frmAdminUnitSelector.setManageMode(True)
+            frmAdminUnitSelector.exec_()
+        else:
+            return
 
     def onManageSurvey(self):
         '''
         Slot raised to show form for entering new survey.
         '''
-        surveyBrowser = SurveyEntityBrowser(self.surveyCntGroup,self.iface.mainWindow())
+        surveyBrowser = SurveyEntityBrowser(
+            self.surveyCntGroup,
+            self.iface.mainWindow()
+        )
         surveyBrowser.exec_()
 
     def onDocumentDesigner(self):
         """
-        Slot raised to show new print composer with additional tools for designing 
+        Slot raised to show new print
+        composer with additional tools for designing
         map-based documents.
         """
-        title = QApplication.translate("STDMPlugin", "STDM Document Designer")
-        documentComposer = self.iface.createNewComposer(title)
+        if self.current_profile is None:
+            self.default_profile()
+            return
+        if len(profile_user_tables(self.current_profile)) < 1:
+            self.minimum_table_checker()
+            return
+        title = QApplication.translate(
+            "STDMPlugin",
+            "STDM Document Designer"
+        )
+        documentComposer = self.iface.createNewComposer(
+            title
+        )
 
         #Embed STDM customizations
-        composerWrapper = ComposerWrapper(documentComposer, self.iface)
+        composerWrapper = ComposerWrapper(
+            documentComposer, self.iface
+        )
         composerWrapper.configure()
 
     def onDocumentGenerator(self):
         """
         Document generator by person dialog.
         """
-        doc_gen_wrapper = DocumentGeneratorDialogWrapper(self.iface,
-                                                         self.iface.mainWindow())
+        if self.current_profile is None:
+            self.default_profile()
+            return
+        if len(profile_user_tables(self.current_profile)) < 1:
+            self.minimum_table_checker()
+            return
+        doc_gen_wrapper = DocumentGeneratorDialogWrapper(
+            self.iface,
+            self.iface.mainWindow()
+        )
         doc_gen_wrapper.exec_()
 
     def onImportData(self):
         """
         Show import data wizard.
         """
+        if self.current_profile is None:
+            self.default_profile()
+            return
+        if len(profile_user_tables(self.current_profile)) < 1:
+            self.minimum_table_checker()
+            return
         importData = ImportData(self.iface.mainWindow())
         importData.exec_()
 
@@ -922,6 +1058,12 @@ class STDMQGISLoader(object):
         """
         Show export data dialog.
         """
+        if self.current_profile is None:
+            self.default_profile()
+            return
+        if len(profile_user_tables(self.current_profile)) < 1:
+            self.minimum_table_checker()
+            return
         exportData = ExportData(self.iface.mainWindow())
         exportData.exec_()
 
@@ -943,16 +1085,24 @@ class STDMQGISLoader(object):
 
         if not currLayer.commitChanges():
             self.iface.messageBar().clearWidgets()
-            self.iface.messageBar().pushMessage(QApplication.translate("STDMPlugin","Save STDM Layer"),
-                                                QApplication.translate("STDMPlugin","Could not commit changes to {0} layer." .format(currLayer.name())),
-                                                level=QgsMessageBar.CRITICAL)
+            self.iface.messageBar().pushMessage(
+                QApplication.translate(
+                    "STDMPlugin", "Save STDM Layer"),
+                QApplication.translate(
+                    "STDMPlugin",
+                    "Could not commit changes to {0} layer." .format(
+                        currLayer.name()
+                    )
+                ),
+                level=QgsMessageBar.CRITICAL)
 
         currLayer.startEditing()
         currLayer.triggerRepaint()
 
     def onToggleSpatialEditing(self,toggled):
         '''
-        Slot raised on toggling to activate/deactivate editing, and load corresponding 
+        Slot raised on toggling to activate/deactivate
+        editing, and load corresponding
         spatial tools.
         '''
         currLayer = self.iface.activeLayer()
@@ -969,7 +1119,8 @@ class STDMQGISLoader(object):
 
     def onToggleSpatialUnitManger(self,toggled):
         '''
-        Slot raised on toggling to activate/deactivate editing, and load corresponding
+        Slot raised on toggling to activate/deactivate
+        editing, and load corresponding
         spatial tools.
         '''
         currLayer = self.iface.activeLayer()
@@ -986,7 +1137,8 @@ class STDMQGISLoader(object):
 
     def toggleEditing(self,layer):
         '''
-        Actual implementation which validates and creates/ends edit sessions.
+        Actual implementation which validates and
+        creates/ends edit sessions.
         '''
         if not isinstance(layer,QgsVectorLayer):
             return False
@@ -997,19 +1149,35 @@ class STDMQGISLoader(object):
         if not self.isSTDMLayer(layer):
             self.spatialLayerManager.setChecked(False)
             self.iface.messageBar().clearWidgets()
-            self.iface.messageBar().pushMessage(QApplication.translate("STDMPlugin","Non-SDTM Layer"),
-                                                QApplication.translate("STDMPlugin","Selected layer is not from the STDM database."),
-                                                level=QgsMessageBar.CRITICAL)
-
+            self.iface.messageBar().pushMessage(
+                QApplication.translate(
+                    "STDMPlugin",
+                    "Non-SDTM Layer"
+                ),
+                QApplication.translate(
+                    "STDMPlugin",
+                    "Selected layer is not from"
+                    " the STDM database."),
+                level=QgsMessageBar.CRITICAL
+            )
             return False
 
         if not layer.isEditable() and not layer.isReadOnly():
-            if not (layer.dataProvider().capabilities() & QgsVectorDataProvider.EditingCapabilities):
+            if not (layer.dataProvider().capabilities() &
+                        QgsVectorDataProvider.EditingCapabilities):
                 self.spatialLayerManager.setChecked(False)
                 self.spatialLayerManager.setEnabled(False)
-                self.iface.messageBar().pushMessage(QApplication.translate("STDMPlugin","Start Editing Failed"),
-                                                    QApplication.translate("STDMPlugin","Provider cannot be opened for editing"),
-                                                    level=QgsMessageBar.CRITICAL)
+                self.iface.messageBar().pushMessage(
+                    QApplication.translate(
+                        "STDMPlugin",
+                        "Start Editing Failed"
+                    ),
+                    QApplication.translate(
+                        "STDMPlugin",
+                        "Provider cannot be opened for editing"
+                    ),
+                    level=QgsMessageBar.CRITICAL
+                )
 
                 return False
 
@@ -1019,11 +1187,20 @@ class STDMQGISLoader(object):
             layer.startEditing()
 
         elif layer.isModified():
-            saveResult = QMessageBox.information(self.iface.mainWindow(),
-                                                 QApplication.translate("STDMPlugin","Stop Editing"),
-                                                 QApplication.translate("STDMPlugin",
-                                                                        "Do you want to save changes to {0} layer?" .format(layer.name())), \
-                                                 QMessageBox.Save|QMessageBox.Discard|QMessageBox.Cancel)
+            saveResult = QMessageBox.information(
+                self.iface.mainWindow(),
+                QApplication.translate(
+                    "STDMPlugin",
+                    "Stop Editing"
+                ),
+                QApplication.translate(
+                    "STDMPlugin",
+                    "Do you want to save "
+                    "changes to {0} layer?" .format(
+                        layer.name())
+                ),
+                QMessageBox.Save|QMessageBox.Discard|QMessageBox.Cancel
+            )
 
             if saveResult == QMessageBox.Cancel:
                 teResult = False
@@ -1044,9 +1221,16 @@ class STDMQGISLoader(object):
                 self.iface.mapCanvas().freeze(True)
 
                 if not layer.rollBack():
-                    self.iface.messageBar().pushMessage(QApplication.translate("STDMPlugin","Error"),
-                                                    QApplication.translate("STDMPlugin","Problems during rollback"),
-                                                    level = QgsMessageBar.CRITICAL)
+                    self.iface.messageBar().pushMessage(
+                        QApplication.translate(
+                            "STDMPlugin", "Error"
+                        ),
+                        QApplication.translate(
+                            "STDMPlugin",
+                            "Problems during rollback"
+                        ),
+                        level = QgsMessageBar.CRITICAL
+                    )
                     teResult = False
 
                 self.iface.mapCanvas().freeze(False)
@@ -1063,17 +1247,12 @@ class STDMQGISLoader(object):
             teResult = True
             layer.triggerRepaint()
 
-        '''
-        #Disable/hide related tools   
-        if not teResult and layer == self.iface.activeLayer():
-            self.createFeatureAct.setVisible(False)
-        '''
-
         return teResult
 
     def spatialUnitMangerToggleEditing(self,layer):
         '''
-        Actual implementation which validates and creates/ends edit sessions.
+        Actual implementation which validates
+        and creates/ends edit sessions.
         '''
         if not isinstance(layer,QgsVectorLayer):
             return False
@@ -1084,19 +1263,33 @@ class STDMQGISLoader(object):
         if not self.isSTDMLayer(layer):
             self.postGISLayerEditor.setChecked(False)
             self.iface.messageBar().clearWidgets()
-            self.iface.messageBar().pushMessage(QApplication.translate("STDMPlugin","Non-SDTM Layer"),
-                                                QApplication.translate("STDMPlugin","Selected layer is not from the STDM database."),
-                                                level=QgsMessageBar.CRITICAL)
+            self.iface.messageBar().pushMessage(
+                QApplication.translate(
+                    "STDMPlugin","Non-SDTM Layer"
+                ),
+                QApplication.translate(
+                    "STDMPlugin",
+                    "Selected layer is not from "
+                    "the STDM database."
+                ),
+                level=QgsMessageBar.CRITICAL
+            )
 
             return False
 
         if not layer.isEditable() and not layer.isReadOnly():
-            if not (layer.dataProvider().capabilities() & QgsVectorDataProvider.EditingCapabilities):
+            if not (layer.dataProvider().capabilities() &
+                        QgsVectorDataProvider.EditingCapabilities):
                 self.postGISLayerEditor.setChecked(False)
                 self.postGISLayerEditor.setEnabled(False)
-                self.iface.messageBar().pushMessage(QApplication.translate("STDMPlugin","Start Editing Failed"),
-                                                    QApplication.translate("STDMPlugin","Provider cannot be opened for editing"),
-                                                    level=QgsMessageBar.CRITICAL)
+                self.iface.messageBar().pushMessage(
+                    QApplication.translate(
+                        "STDMPlugin","Start Editing Failed"),
+                    QApplication.translate(
+                        "STDMPlugin",
+                        "Provider cannot be opened for editing"),
+                    level=QgsMessageBar.CRITICAL
+                )
 
                 return False
 
@@ -1106,11 +1299,16 @@ class STDMQGISLoader(object):
             layer.startEditing()
 
         elif layer.isModified():
-            saveResult = QMessageBox.information(self.iface.mainWindow(),
-                                                 QApplication.translate("STDMPlugin","Stop Editing"),
-                                                 QApplication.translate("STDMPlugin",
-                                                                        "Do you want to save changes to {0} layer?")).format(layer.name(), \
-                                                 QMessageBox.Save|QMessageBox.Discard|QMessageBox.Cancel)
+            saveResult = QMessageBox.information(
+                self.iface.mainWindow(),
+                QApplication.translate("STDMPlugin","Stop Editing"),
+                QApplication.translate(
+                    "STDMPlugin",
+                    "Do you want to save changes to {0} layer?")
+                ).format(
+                layer.name(),
+                    QMessageBox.Save|QMessageBox.Discard|QMessageBox.Cancel
+                )
 
             if saveResult == QMessageBox.Cancel:
                 teResult = False
@@ -1131,9 +1329,16 @@ class STDMQGISLoader(object):
                 self.iface.mapCanvas().freeze(True)
 
                 if not layer.rollBack():
-                    self.iface.messageBar().pushMessage(QApplication.translate("STDMPlugin","Error"),
-                                                    QApplication.translate("STDMPlugin","Problems during rollback"),
-                                                    level=QgsMessageBar.CRITICAL)
+                    self.iface.messageBar().pushMessage(
+                        QApplication.translate(
+                            "STDMPlugin","Error"
+                        ),
+                        QApplication.translate(
+                            "STDMPlugin",
+                            "Problems during rollback"
+                        ),
+                        level=QgsMessageBar.CRITICAL
+                    )
                     teResult = False
 
                 self.iface.mapCanvas().freeze(False)
@@ -1150,26 +1355,26 @@ class STDMQGISLoader(object):
             teResult = True
             layer.triggerRepaint()
 
-        '''
-        #Disable/hide related tools
-        if not teResult and layer == self.iface.activeLayer():
-            self.createFeatureAct.setVisible(False)
-        '''
-
         return teResult
 
     def onCreateFeature(self):
         '''
-        Slot raised to activate the digitization process of creating a new feature.
+        Slot raised to activate the digitization
+        process of creating a new feature.
         '''
-        self.iface.mapCanvas().setMapTool(self.mapToolCreateFeature)
+        self.iface.mapCanvas().setMapTool(
+            self.mapToolCreateFeature
+        )
 
     def onViewSTR(self):
         '''
-        Slot for showing widget that enables users to browse 
+        Slot for showing widget that enables users to browse
         existing STRs.
         '''
-        db_status = self.database_checker(
+        if self.current_profile == None:
+            self.default_profile()
+            return
+        db_status = self.entity_table_checker(
             self.current_profile.social_tenure
         )
 
@@ -1197,8 +1402,11 @@ class STDMQGISLoader(object):
         dispName=QAction.text()
 
         if dispName == 'Social Tenure Relationship':
+            if self.current_profile is None:
+                self.default_profile()
+                return
 
-            database_status = self.database_checker(
+            database_status = self.entity_table_checker(
                 self.current_profile.social_tenure
             )
             if database_status:
@@ -1206,27 +1414,39 @@ class STDMQGISLoader(object):
 
 
         else:
-            table_name =self._moduleItems.get(dispName)
+            table_name = self._moduleItems.get(dispName)
+            if self.current_profile is None:
+                self.default_profile()
+                return
             sel_entity = self.current_profile.entity_by_name(table_name)
-            database_status = self.database_checker(sel_entity)
+            database_status = self.entity_table_checker(sel_entity)
 
             try:
                 if table_name in tbList and database_status:
-                    cnt_idx = getIndex(self._reportModules.keys(), dispName)
-                    main = STDMEntityBrowser(self.moduleContentGroups[cnt_idx],
-                                             table_name, self.iface.mainWindow())
+                    cnt_idx = getIndex(
+                        self._reportModules.keys(), dispName
+                    )
+                    main = STDMEntityBrowser(
+                        self.moduleContentGroups[cnt_idx],
+                        table_name,
+                        self.iface.mainWindow()
+                    )
                     main.exec_()
 
                 else:
                     return
 
             except Exception as ex:
-                QMessageBox.critical(self.iface.mainWindow(),
-                                     QApplication.translate("STDMPlugin","Loading dialog..."),
-                                     QApplication.translate("STDMPlugin",
-                                     "Unable to load the entity in the browser. "
-                                     "Check if the entity is configured correctly. "
-                                     "Error: %s")%unicode(ex.message))
+                QMessageBox.critical(
+                    self.iface.mainWindow(),
+                    QApplication.translate(
+                        "STDMPlugin","Loading dialog..."
+                    ),
+                    QApplication.translate(
+                        "STDMPlugin",
+                        "Unable to load the entity in the browser. "
+                        "Check if the entity is configured correctly. "
+                        "Error: %s")%unicode(ex.message))
             finally:
                 STDMDb.instance().session.rollback()
 
@@ -1292,7 +1512,9 @@ class STDMQGISLoader(object):
                 self.stdmMenu.clear()
             #Reset property management window
             if not self.propManageWindow is None:
-                self.iface.removeDockWidget(self.propManageWindow)
+                self.iface.removeDockWidget(
+                    self.propManageWindow
+                )
                 del self.propManageWindow
                 self.propManageWindow = None
 
@@ -1312,53 +1534,39 @@ class STDMQGISLoader(object):
 
     def user_entities(self):
         """
-        Create a handler to read the current profile and return the table list
+        Create a handler to read the current profile
+        and return the table list
         """
+
         if self.current_profile is not None:
             return [
-                    (e.name, e.short_name)
-                    for e in
-                    self.current_profile.entities.values()
-                    if (e.TYPE_INFO == 'ENTITY' or e.TYPE_INFO == 'SOCIAL_TENURE') and
-                    not e.has_geometry_column()
-                ]
-
-    def check_str_table_exist(self):
-        """
-        Str table is required to save str. check if it exist before saving data
-        :return:
-        """
-        prefix = self.current_profile.prefix
-        str_doc_table = str(prefix)+'_social_tenure_relationship_supporting_document'
-        try:
-            if pg_table_exists(str_doc_table, False):
-                tableMapper = DeclareMapping.instance()
-                tmapper = tableMapper.raw_table(str_doc_table)
-                return tmapper.key
-        except:
-            return None
-
-    def pgTableMapper(self, tableList=None):
-        """
-        map postgresql table to Python object/ model
-        """
-        tableMapper = DeclareMapping.instance()
-        tableMapper.setTableMapping(tableList)
+                (e.name, e.short_name)
+                for e in
+                self.current_profile.entities.values()
+                if (e.TYPE_INFO == 'ENTITY' or
+                    e.TYPE_INFO == 'SOCIAL_TENURE') and
+                not e.has_geometry_column()
+            ]
 
 
-    def helpContents(self):
+    def help_contents(self):
         """
         Load and open documentation manual
         """
-        handler = self.config_loader()
-        helpManual = handler.setDocumentationPath()
-        os.startfile(helpManual,'open')
+        help_manual = self.plugin_dir+'/%s'%"stdm.chm"
+        os.startfile(
+            help_manual,'open'
+        )
 
     def reset_content_modules_id(self, title, message_text):
-        return QMessageBox.critical(self.iface.mainWindow(),
-                                    QApplication.translate("STDMQGISLoader",
-                                                           title),
-                                    message_text)
+        return QMessageBox.critical(
+            self.iface.mainWindow(),
+            QApplication.translate(
+                "STDMQGISLoader",
+                title
+            ),
+            message_text
+        )
 
     def _action_separator(self):
         """
@@ -1375,29 +1583,3 @@ class STDMQGISLoader(object):
             self.spatialLayerMangerDockWidget.hide()
         else:
             self.spatialLayerMangerDockWidget.show()
-
-    def config_loader(self):
-        """
-        Method to provide access to config elements through the handler class
-        :return:class: config handler class
-        """
-        handler = ConfigTableReader()
-        return handler
-
-    def default_config_version(self):
-            handler = self.config_loader()
-            config_version = handler.read_config_version()
-            if config_version is not None:
-                return config_version
-            if config_version== None:
-                 msg_title = QApplication.translate("STDMQGISLoader","Update config file")
-                 msg = QApplication.translate("STDMQGISLoader","The config version installed is old and outdated."
-                                                               " STDM will try to apply the required updates")
-                 if QMessageBox.information(None,msg_title, msg,QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
-                    handler.update_config_file()
-                 else:
-                     err_msg =QApplication.translate("STDMQGISLoader","STDM has detected that the version of config"
-                                                                      "  installed is old and outdated."
-                                                                      " Delete existing configuration folder"
-                                                                      " or xml file and restart QGIS.")
-                     raise ConfigVersionException(err_msg)

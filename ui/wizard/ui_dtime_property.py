@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_dtime_property.ui'
 #
-# Created: Wed Apr 27 11:31:21 2016
+# Created: Sat May 28 13:23:15 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,10 +26,9 @@ except AttributeError:
 class Ui_DTimeProperty(object):
     def setupUi(self, DTimeProperty):
         DTimeProperty.setObjectName(_fromUtf8("DTimeProperty"))
-        DTimeProperty.resize(341, 233)
-        self.formLayout = QtGui.QFormLayout(DTimeProperty)
-        self.formLayout.setVerticalSpacing(20)
-        self.formLayout.setObjectName(_fromUtf8("formLayout"))
+        DTimeProperty.resize(340, 233)
+        self.verticalLayout = QtGui.QVBoxLayout(DTimeProperty)
+        self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.groupBox = QtGui.QGroupBox(DTimeProperty)
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
         self.gridLayout = QtGui.QGridLayout(self.groupBox)
@@ -54,7 +53,7 @@ class Ui_DTimeProperty(object):
         self.rbMinCurr = QtGui.QRadioButton(self.groupBox)
         self.rbMinCurr.setObjectName(_fromUtf8("rbMinCurr"))
         self.gridLayout.addWidget(self.rbMinCurr, 1, 0, 1, 1)
-        self.formLayout.setWidget(0, QtGui.QFormLayout.LabelRole, self.groupBox)
+        self.verticalLayout.addWidget(self.groupBox)
         self.groupBox_2 = QtGui.QGroupBox(DTimeProperty)
         self.groupBox_2.setObjectName(_fromUtf8("groupBox_2"))
         self.gridLayout_2 = QtGui.QGridLayout(self.groupBox_2)
@@ -84,13 +83,13 @@ class Ui_DTimeProperty(object):
         self.rbMaxCurr = QtGui.QRadioButton(self.groupBox_2)
         self.rbMaxCurr.setObjectName(_fromUtf8("rbMaxCurr"))
         self.gridLayout_2.addWidget(self.rbMaxCurr, 1, 0, 1, 1)
-        self.formLayout.setWidget(1, QtGui.QFormLayout.LabelRole, self.groupBox_2)
+        self.verticalLayout.addWidget(self.groupBox_2)
         self.buttonBox = QtGui.QDialogButtonBox(DTimeProperty)
         self.buttonBox.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.formLayout.setWidget(2, QtGui.QFormLayout.SpanningRole, self.buttonBox)
+        self.verticalLayout.addWidget(self.buttonBox)
 
         self.retranslateUi(DTimeProperty)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), DTimeProperty.accept)

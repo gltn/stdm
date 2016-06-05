@@ -84,18 +84,21 @@ class EntityEditor(QDialog, Ui_dlgEntity):
             entity.column_added.connect(self.form_parent.add_column_item)
             entity.column_removed.connect(self.form_parent.delete_column_item)
             self.profile.add_entity(entity)
-            return True
+            #return True
         else:
-            # editing
-            self.profile.remove_entity(entity_name)
-            entity = self.profile.create_entity(entity_name, entity_factory,
-                    supports_documents=self.support_doc())
-            entity.description = self.edtDesc.text()
-            entity.column_added.connect(self.form_parent.add_column_item)
-            entity.column_removed.connect(self.form_parent.delete_column_item)
-            self.profile.add_entity(entity)
-            return True
-            
+            if self.entity.short_name == entity_name:
+                self.entity.description = self.edtDesc.text()
+                self.entity.supports_documents = self.support_doc()
+                return False
+            else:
+                self.profile.remove_entity(self.entity.short_name)
+                self.entity = self.profile.create_entity(entity_name, entity_factory,
+                        supports_documents=self.support_doc())
+                self.entity.description = self.edtDesc.text()
+                self.entity.column_added.connect(self.form_parent.add_column_item)
+                self.entity.column_removed.connect(self.form_parent.delete_column_item)
+                self.profile.add_entity(self.entity)
+                return True
 
     def support_doc(self):
         if self.cbSupportDoc.checkState() == Qt.Checked:
@@ -117,7 +120,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         if self.add_entity():
             self.done(1)
         else:
-            return
+            self.done(0)
 
     def reject(self):
         self.done(0)

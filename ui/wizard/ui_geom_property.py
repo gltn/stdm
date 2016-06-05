@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_geom_property.ui'
 #
-# Created: Mon Feb 22 11:16:36 2016
+# Created: Sat May 28 15:59:30 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,31 +26,40 @@ except AttributeError:
 class Ui_GeometryProperty(object):
     def setupUi(self, GeometryProperty):
         GeometryProperty.setObjectName(_fromUtf8("GeometryProperty"))
-        GeometryProperty.resize(261, 108)
-        self.buttonBox = QtGui.QDialogButtonBox(GeometryProperty)
-        self.buttonBox.setGeometry(QtCore.QRect(90, 80, 156, 23))
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        GeometryProperty.resize(290, 108)
+        self.gridLayout_2 = QtGui.QGridLayout(GeometryProperty)
+        self.gridLayout_2.setSizeConstraint(QtGui.QLayout.SetMaximumSize)
+        self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
+        self.gridLayout = QtGui.QGridLayout()
+        self.gridLayout.setSizeConstraint(QtGui.QLayout.SetMaximumSize)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.label = QtGui.QLabel(GeometryProperty)
-        self.label.setGeometry(QtCore.QRect(10, 8, 72, 16))
-        self.label.setMaximumSize(QtCore.QSize(200, 16777215))
+        self.label.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.label.setObjectName(_fromUtf8("label"))
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
+        self.cboGeoType = QtGui.QComboBox(GeometryProperty)
+        self.cboGeoType.setMaximumSize(QtCore.QSize(500, 16777215))
+        self.cboGeoType.setObjectName(_fromUtf8("cboGeoType"))
+        self.gridLayout.addWidget(self.cboGeoType, 0, 1, 1, 1)
         self.label_2 = QtGui.QLabel(GeometryProperty)
-        self.label_2.setGeometry(QtCore.QRect(10, 40, 90, 16))
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label_2.sizePolicy().hasHeightForWidth())
         self.label_2.setSizePolicy(sizePolicy)
-        self.label_2.setMaximumSize(QtCore.QSize(200, 16777215))
+        self.label_2.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.gridLayout.addWidget(self.label_2, 1, 0, 1, 1)
         self.btnCoord = QtGui.QPushButton(GeometryProperty)
-        self.btnCoord.setGeometry(QtCore.QRect(110, 40, 141, 23))
         self.btnCoord.setObjectName(_fromUtf8("btnCoord"))
-        self.cboGeoType = QtGui.QComboBox(GeometryProperty)
-        self.cboGeoType.setGeometry(QtCore.QRect(110, 10, 141, 20))
-        self.cboGeoType.setObjectName(_fromUtf8("cboGeoType"))
+        self.gridLayout.addWidget(self.btnCoord, 1, 1, 1, 1)
+        self.gridLayout.setColumnStretch(1, 1)
+        self.gridLayout_2.addLayout(self.gridLayout, 0, 0, 1, 1)
+        self.buttonBox = QtGui.QDialogButtonBox(GeometryProperty)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.gridLayout_2.addWidget(self.buttonBox, 1, 0, 1, 1)
 
         self.retranslateUi(GeometryProperty)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), GeometryProperty.accept)

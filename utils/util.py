@@ -317,7 +317,7 @@ def date_from_string(str_val):
     """
     return datetime.strptime(str_val, '%Y-%m-%d')
 
-def format_column(attr):
+def format_name(attr):
     """
     Formats the column names by removing id
     from lookups and fk columns and capitalize.
@@ -373,14 +373,14 @@ def model_display_data(model, entity, profile):
     for key, value in model_dic.iteritems():
         if key in entity_display_columns(entity) and key != 'id':
             value = lookup_id_to_value(profile, key, value)
-            model_display[format_column(key)] = value
+            model_display[format_name(key)] = value
     return model_display
 
 def model_display_mapping(model):
     model_display_cols = OrderedDict()
     model_dic = model.__dict__
     for col in model_dic:
-        model_display_cols[col] = format_column(col)
+        model_display_cols[col] = format_name(col)
     return model_display_cols
 
 def profile_spatial_tables(profile):
@@ -454,14 +454,16 @@ def lookup_id_to_value(profile, col, id):
         db_obj = db_model()
         query = db_obj.queryObject().filter(
             db_model.id == id
-        ).all()
-
-        value = getattr(
-            query[0],
-            'value',
-            None
-        )
-        return value
+        ).first()
+        if query is not None:
+            value = getattr(
+                query,
+                'value',
+                None
+            )
+            return value
+        else:
+            return id
     else:
         return id
 
