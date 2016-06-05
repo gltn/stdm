@@ -409,7 +409,9 @@ class EntitySupportingDocument(Entity):
             self._doc_types_value_list = self.profile.create_value_list(
                 vl_name
             )
-            #Add default type
+            self.profile.add_entity(self._doc_types_value_list)
+
+            #Add a default type
             self._doc_types_value_list.add_value(self.tr('General'))
 
         #Document type column
