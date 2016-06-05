@@ -39,7 +39,10 @@ from stdm.data.configuration.entity import Entity
 from stdm.data.configuration.db_items import DbItem
 from stdm.data.configuration.social_tenure import SocialTenure
 from stdm.data.configuration.supporting_document import SupportingDocument
-from stdm.data.configuration.value_list import ValueList
+from stdm.data.configuration.value_list import (
+    value_list_factory,
+    ValueList
+)
 
 LOGGER = logging.getLogger('stdm')
 
@@ -372,6 +375,16 @@ class Profile(QObject):
         """
         return factory(name, self, **kwargs)
 
+    def create_value_list(self, name):
+        """
+        Creates a ValueList object.
+        :param name: Name to use for the value list. A 'check_' prefix
+        will be appended.
+        :return: Returns an empty ValueList object.
+        :rtype: ValueList
+        """
+        return self.create_entity(name, value_list_factory)
+
     def create_association_entity(self, name, **kwargs):
         """
         Creates an AssociationEntity object for defining an association
@@ -409,3 +422,12 @@ class Profile(QObject):
         """
         for entity in self.entities.values():
             self.remove_entity(entity.short_name)
+
+    def table_names(self):
+        """
+        :return: Returns a list of table names that belong to this profile
+        object. Some tables might not actually exist in the database so it
+        important to check if the table names exist.
+        :rtype: list(str)
+        """
+        return [e.name for e in self.entities.values()]

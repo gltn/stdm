@@ -612,7 +612,7 @@ class LookupColumn(ForeignKeyColumn):
     @value_list.setter
     def value_list(self, value_list):
         """
-        Set the lookup source.
+        Set the lookup ValueList object.
         :param value_list: ValueList reference.
         :type value_list: str or ValueList object.
         """
