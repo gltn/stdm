@@ -351,8 +351,8 @@ class Profile(QObject):
                 doc_parent_relations = self.parent_relations(supporting_doc_ent)
                 doc_child_relations = self.child_relations(supporting_doc_ent)
 
-                remove_relations.append(doc_parent_relations)
-                remove_relations.append(doc_child_relations)
+                remove_relations.extend(doc_parent_relations)
+                remove_relations.extend(doc_child_relations)
 
         for er in remove_relations:
             self.remove_relation(er.name)
