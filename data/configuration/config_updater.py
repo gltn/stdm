@@ -100,12 +100,6 @@ class ConfigurationSchemaUpdater(QObject):
             #Delete removed profile objects
             self._clean_removed_profiles()
 
-            msg = self.tr('The schema has been successfully updated!')
-
-            self.update_progress.emit(ConfigurationSchemaUpdater.INFORMATION, msg)
-
-            LOGGER.debug(msg)
-
             self.update_completed.emit(True)
 
         except SQLAlchemyError as sae:
