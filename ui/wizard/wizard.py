@@ -417,9 +417,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.config_updater.exec_()
 
     def config_update_started(self):
+        self.txtHtml.setFontWeight(75)
         self.txtHtml.append(QApplication.translate("Configuration Wizard",
-                               "Configuration update started ...")
+                               "Configuration update started...")
         )
+        self.txtHtml.setFontWeight(50)
 
     def config_update_progress(self, info_id, msg):
         if info_id == 0: # information
@@ -435,7 +437,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def config_update_completed(self, status):
         if status:
-            self.txtHtml.append("The configuration successfully updated.")
+            self.txtHtml.setTextColor(QColor(51, 182, 45))
+            self.txtHtml.setFontWeight(75)
+            msg = QApplication.translate('Configuration Wizard',
+                                         'The configuration has been '
+                                         'successfully updated.')
+            self.txtHtml.append(msg)
             self.is_config_done = True
 
             #Write config to a file
@@ -444,7 +451,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             try:
                 cfs.save()
-
                 #Save current profile to the registry
                 profile_name = unicode(self.cboProfile.currentText())
                 save_current_profile(profile_name)

@@ -343,6 +343,17 @@ class Profile(QObject):
         child_relations = self.child_relations(ent)
         remove_relations = parent_relations + child_relations
 
+        #Check if the entity has supporting documents and remove references
+        if ent.supports_documents:
+            supporting_doc_ent = ent.supporting_doc
+            if not supporting_doc_ent is None:
+                #Some relations will be duplicated with ones in the main ent.
+                doc_parent_relations = self.parent_relations(supporting_doc_ent)
+                doc_child_relations = self.child_relations(supporting_doc_ent)
+
+                remove_relations.append(doc_parent_relations)
+                remove_relations.append(doc_child_relations)
+
         for er in remove_relations:
             self.remove_relation(er.name)
 
