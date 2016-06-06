@@ -1,0 +1,38 @@
+<Configuration version="1.2">
+ <Profile description="" name="mathare">
+  <ValueLists>
+   <ValueList name="check_tenure_type">
+    <CodeValue value="Ownership" code="OWN"/>
+    <CodeValue value="Tenancy" code="TEN"/>
+   </ValueList>
+   <ValueList name="check_gender">
+    <CodeValue value="Femal" code="F"/>
+    <CodeValue value="Male" code="M"/>
+   </ValueList>
+  </ValueLists>
+  <Entity editable="True" global="False" associative="False" description="person" proxy="False" createId="True" supportsDocuments="False" shortName="Person" name="ma_person">
+   <Columns>
+    <Column unique="False" tip="" minimum="-9223372036854775808" maximum="9223372036854775807" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="False" tip="Enter first name" minimum="0" maximum="0" description="First name" index="False" name="fname" searchable="False" TYPE_INFO="VARCHAR" mandatory="True"/>
+    <Column unique="False" tip="" minimum="0" maximum="0" description="Access card number" index="False" name="card_number" searchable="False" TYPE_INFO="BIGINT" mandatory="True"/>
+   </Columns>
+  </Entity>
+  <Entity editable="True" global="False" associative="False" description="spatial unit" proxy="False" createId="True" supportsDocuments="False" shortName="Spatial unit" name="ma_spatial_unit">
+   <Columns>
+    <Column unique="False" tip="" minimum="-9223372036854775808" maximum="9223372036854775807" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="False" tip="" description="Geometry location" index="False" name="geo_loc" searchable="False" TYPE_INFO="GEOMETRY" mandatory="False">
+     <Geometry layerDisplay="" srid="4326" type="2"/>
+    </Column>
+    <Column unique="False" tip="" minimum="0" maximum="0" description="House Name" index="False" name="hse_name" searchable="False" TYPE_INFO="VARCHAR" mandatory="True"/>
+   </Columns>
+  </Entity>
+  <Relations>
+   <EntityRelation child="social_tenure_relationship_supporting_document" parent="social_tenure_relationship" name="fk_ma_social_tenure_relationship_id_ma_social_tenure_relationship_supporting_document_social_tenure_relationship_id" parentColumn="id" childColumn="social_tenure_relationship_id"/>
+   <EntityRelation child="social_tenure_relationship_supporting_document" parent="supporting_document" name="fk_ma_supporting_document_id_ma_social_tenure_relationship_supporting_document_ma_supporting_doc_id" parentColumn="id" childColumn="ma_supporting_doc_id"/>
+   <EntityRelation child="social_tenure_relationship" parent="check_tenure_type" name="fk_ma_check_tenure_type_id_ma_social_tenure_relationship_tenure_type" parentColumn="id" childColumn="tenure_type"/>
+   <EntityRelation child="social_tenure_relationship" parent="Person" name="fk_ma_person_id_ma_social_tenure_relationship_party_id" parentColumn="id" childColumn="party_id"/>
+   <EntityRelation child="social_tenure_relationship" parent="Spatial unit" name="fk_ma_spatial_unit_id_ma_social_tenure_relationship_spatial_unit_id" parentColumn="id" childColumn="spatial_unit_id"/>
+  </Relations>
+  <SocialTenure layerDisplay="ma_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Spatial unit" party="Person"/>
+ </Profile>
+</Configuration>

@@ -36,6 +36,9 @@ from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.configuration.stdm_configuration import (
     StdmConfiguration
 )
+from stdm.data.configuration.stdm_configuration import StdmConfiguration
+from .settings.config_file_updater import ConfigurationFileUpdater
+
 from stdm.ui.change_pwd_dlg import changePwdDlg
 from stdm.ui.doc_generator_dlg import (
     DocumentGeneratorDialogWrapper,
@@ -141,6 +144,13 @@ class STDMQGISLoader(object):
         # Profile status label showing the current profile
         self.profile_status_label = None
         LOGGER.debug('STDM plugin has been initialized.')
+
+        # Load configuration file
+        self.config_path = QDesktopServices.storageLocation(
+            QDesktopServices.HomeLocation) \
+                      + '/.stdm/configuration.stc'
+        self.config_serializer = ConfigurationFileSerializer(self.config_path)
+        self.configuration_file_updater = ConfigurationFileUpdater()
 
     def initGui(self):
         # Initial actions on starting up the application
@@ -541,6 +551,16 @@ class STDMQGISLoader(object):
 
         upgrade_template.process_update(True)
 
+
+
+        if self.configuration_file_updater.load():
+
+            try:
+                self.config_serializer.load()
+            except IOError as io_err:
+                QMessageBox.critical(self.iface.mainWindow(),
+                        QApplication.translate('STDM', 'Load Configuration Error'),
+                        unicode(io_err))
         try:
             config_serializer.load()
 
@@ -552,8 +572,13 @@ class STDMQGISLoader(object):
                 unicode(io_err)
             )
 
-            return False
+                return False
 
+
+            except ConfigurationException as c_ex:
+                QMessageBox.critical(self.iface.mainWindow(),
+                        QApplication.translate('STDM', 'Load Configuration Error'),
+                        unicode(c_ex))
         except ConfigurationException as c_ex:
             QMessageBox.critical(
                 self.iface.mainWindow(),
@@ -564,9 +589,23 @@ class STDMQGISLoader(object):
                 unicode(c_ex)
             )
 
+                return False
+
+            if self.configuration_file_updater.check_version():
+                return True
+            else:
+                if QMessageBox.information(None, "Update STDM Config",
+                                        "Do you want to backup your data?",
+                                            QMessageBox.Yes |
+                                        QMessageBox.No) == QMessageBox.Yes:
+                    pass
+                else:
+                    # Update .stc version to stdm instance version
+                    return True
+
+        else:
             return False
 
-        return True
 
     def loadModules(self):
         '''
@@ -1528,3 +1567,50 @@ class STDMQGISLoader(object):
                 self.spatialLayerMangerDockWidget.hide()
             else:
                 self.spatialLayerMangerDockWidget.show()
+
+    def config_loader(self):
+        """
+        Method to provide access to config elements through the handler class
+        :return:class: config handler class
+        """
+        handler = ConfigTableReader()
+        return handler
+
+    def default_config_version(self):
+        handler = self.config_loader()
+        config_version = handler.read_config_version()
+        if float(config_version) < 1.2:
+            msg_title = QApplication.translate("STDMQGISLoader",
+                                                    "Config file version")
+            msg = QApplication.translate("STDMQGISLoader",
+                                             "Your configuration file is "
+                                             "older than the current stdm "
+                                             "version, do you want to backup"
+                                             "the configuration and database"
+                                             "data")
+            if QMessageBox.information(None, msg_title, msg,
+                                            QMessageBox.Yes |
+                                            QMessageBox.No) == QMessageBox.Yes:
+                pass
+
+        if config_version is None:
+            msg_title = QApplication.translate("STDMQGISLoader",
+                                                    "Update config file")
+            msg = QApplication.translate("STDMQGISLoader", "The config "
+                                              "version installed is old and "
+                                              "outdated STDM will try to "
+                                              "apply the required updates")
+            if QMessageBox.information(None, msg_title, msg,
+                                            QMessageBox.Yes |
+                                            QMessageBox.No) == QMessageBox.Yes:
+                handler.update_config_file()
+            else:
+                err_msg =QApplication.translate("STDMQGISLoader",
+                                                     "STDM has detected that "
+                                                     "the version of config "
+                                                     "installed is old and "
+                                                     "outdated. Delete "
+                                                     "existing configuration "
+                                                     "folder or xml file and "
+                                                     "restart QGIS.")
+                raise ConfigVersionException(err_msg)
