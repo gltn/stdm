@@ -454,9 +454,10 @@ class BaseSTDMTableModel(QAbstractTableModel, QAbstractItemView):
         return len(self._headerdata)
     
     def data(self,index, role):
-        
-        indexData = self._initData[index.row()][index.column()]
-        
+        if index.row() != -1 and index.column() != -1:
+            indexData = self._initData[index.row()][index.column()]
+        else:
+            return None
         if not index.isValid():
             return None
         

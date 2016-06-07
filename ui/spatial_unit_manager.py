@@ -114,7 +114,7 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
                  'configuration '
                  'wizard to create '
                  'them.'.format('\n'.join(missing_tables)))
-            QMessageBox.critical(
+            QMessageBox.warning(
                 self.iface.mainWindow(),
                 'Spatial Unit Manager',
                 msg
