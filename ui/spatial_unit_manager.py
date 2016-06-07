@@ -34,7 +34,6 @@ from stdm.settings import (
     save_configuration
 )
 from stdm.data.configuration.social_tenure_updater import BASE_STR_VIEW
-from stdm.data.configuration import profile_foreign_keys
 from stdm.data.pg_utils import (
     geometryType,
     spatial_tables,
