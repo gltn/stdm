@@ -667,41 +667,38 @@ class STDMQGISLoader(object):
         strViewCnt.code="D13B0415-30B4-4497-B471-D98CA98CD841"
 
         username = data.app_dbconn.User.UserName
+
         self.moduleCntGroup = None
         self.moduleContentGroups = []
         self._moduleItems = OrderedDict()
         self._reportModules = OrderedDict()
 
-        #    map the user tables to sqlalchemy model object
-
         # add the tables to the stdm toolbar
-        # Format the table names to freiendly format before adding them
+        # Format the table names to friendly format before adding them
 
         if self.user_entities() is not None:
             user_entities = dict(self.user_entities())
             for name, short_name in user_entities.iteritems():
                 display_name = QT_TRANSLATE_NOOP("Entities",
-                                    unicode(short_name).replace("_", " ").title())
+                                                 unicode(short_name).replace("_", " ").title())
                 self._moduleItems[display_name] = name
 
         for k, v in self._moduleItems.iteritems():
-
             content_action = QAction(QIcon(":/plugins/stdm/images/icons/table.png"),
-                                    k, self.iface.mainWindow())
+                                     k, self.iface.mainWindow())
 
             # capabilities = contentGroup(self._moduleItems[k])
             #
             # if capabilities:
             moduleCntGroup = TableContentGroup(username, k, content_action)
-                # moduleCntGroup.createContentItem().code = capabilities[0]
-                # moduleCntGroup.readContentItem().code = capabilities[1]
-                # moduleCntGroup.updateContentItem().code = capabilities[2]
-                # moduleCntGroup.deleteContentItem().code = capabilities[3]
+            # moduleCntGroup.createContentItem().code = capabilities[0]
+            # moduleCntGroup.readContentItem().code = capabilities[1]
+            # moduleCntGroup.updateContentItem().code = capabilities[2]
+            # moduleCntGroup.deleteContentItem().code = capabilities[3]
             moduleCntGroup.register()
             self._reportModules[k] = self._moduleItems.get(k)
             self.moduleContentGroups.append(moduleCntGroup)
             # Add core modules to the report configuration
-
         #Create content groups and add items
         self.contentAuthCntGroup = ContentGroup(username)
         self.contentAuthCntGroup.addContentItem(contentAuthCnt)
@@ -896,7 +893,22 @@ class STDMQGISLoader(object):
         Loads the dialog for settings STDM options.
         """
         opt_dlg = OptionsDialog(self.iface)
-        opt_dlg.exec_()
+        status = opt_dlg.exec_()
+
+        if status == QDialog.Accepted:
+            self.reload_plugin()
+
+    def reload_plugin(self):
+        """
+        Reloads stdm plugin without logging out.
+        This is to update new profile selection.
+        :return: None
+        :rtype: NoneType
+        """
+        self.logoutCleanUp(True)
+        # Set current profile
+        self.current_profile = current_profile()
+        self.loadModules()
 
     def workspaceLoader(self):
         '''
@@ -915,10 +927,11 @@ class STDMQGISLoader(object):
         )
         status = self.wizard.exec_()
 
-        #Reload profile upon successfully
+        # Reload profile upon successfully
         # running the config wizard
         if status == QDialog.Accepted:
             self.reload_profile()
+            self.reload_plugin()
 
     def reload_profile(self):
         """
@@ -1485,7 +1498,7 @@ class STDMQGISLoader(object):
 
         self.stdmTables = []
 
-    def logoutCleanUp(self):
+    def logoutCleanUp(self, change_profile=False):
         '''
         Clear database connection references and content items
         '''
@@ -1495,15 +1508,15 @@ class STDMQGISLoader(object):
 
             #Remove STDM layers
             self.removeSTDMLayers()
+            if not change_profile:
+                #Clear singleton ref for SQLALchemy connections
+                if not data.app_dbconn is None:
+                    #clear_mappers()
+                    STDMDb.cleanUp()
+                    DeclareMapping.cleanUp()
 
-            #Clear singleton ref for SQLALchemy connections
-            if not data.app_dbconn is None:
-                #clear_mappers()
-                STDMDb.cleanUp()
-                DeclareMapping.cleanUp()
-
-            #Remove database reference
-            data.app_dbconn = None
+                #Remove database reference
+                data.app_dbconn = None
 
             if not self.toolbarLoader is None:
                 self.toolbarLoader.unloadContent()
