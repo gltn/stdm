@@ -901,7 +901,8 @@ class STDMQGISLoader(object):
     def reload_plugin(self):
         """
         Reloads stdm plugin without logging out.
-        This is to update new profile selection.
+        This is to allow modules capture changes
+        made by the configuration wizard.
         :return: None
         :rtype: NoneType
         """
@@ -910,15 +911,6 @@ class STDMQGISLoader(object):
         self.current_profile = current_profile()
         self.loadModules()
 
-    def workspaceLoader(self):
-        '''
-        Slot for customizing user forms
-        '''
-        self.wkspDlg = WorkspaceLoader(
-            self.iface.mainWindow()
-        )
-        self.wkspDlg.exec_()
-
     def load_config_wizard(self):
         '''
         '''
@@ -926,12 +918,14 @@ class STDMQGISLoader(object):
             self.iface.mainWindow()
         )
         status = self.wizard.exec_()
+        # Reload all modules when the wizard is finished
+        self.reload_plugin()
 
         # Reload profile upon successfully
         # running the config wizard
         if status == QDialog.Accepted:
+            print "wiz accepted"
             self.reload_profile()
-            self.reload_plugin()
 
     def reload_profile(self):
         """
