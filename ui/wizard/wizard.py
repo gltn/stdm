@@ -396,7 +396,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                       OUTPUTS_KEY:self.edtOutputPath.text(),
                       TEMPLATES_KEY:self.edtTemplatePath.text()
                      })
-                    
+
             #pause, allow user to read post saving messages
             self.pause_wizard_dialog()
             validPage = False
