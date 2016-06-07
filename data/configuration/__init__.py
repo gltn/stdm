@@ -59,6 +59,7 @@ def entity_foreign_keys(entity):
 
     return [fi['name'] for fi in insp.get_foreign_keys(entity.name)]
 
+
 def profile_foreign_keys(profile):
     """
     Gets all foreign keys for tables in the given profile.

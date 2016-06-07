@@ -373,6 +373,19 @@ class Entity(QObject, TableItem):
         """
         return True if len(self.geometry_columns()) > 0 else False
 
+    def document_types(self):
+        """
+        :return: Returns a list of document types specified for this entity.
+        A error is raised if supporting documents are not enabled for this
+        entity.
+        :rtype: list
+        """
+        if not self.supports_documents:
+            raise AttributeError('Supporting documents are not enabled for '
+                                 'this entity.')
+        
+        return self.supporting_doc.document_types().keys()
+
 
 class EntitySupportingDocument(Entity):
     """
@@ -393,7 +406,7 @@ class EntitySupportingDocument(Entity):
         #Supporting document ref column
         supporting_doc_prefix = u'{0}_{1}'.format(self.profile.prefix,
                                                   'supporting_doc_id')
-        self.document_reference = ForeignKeyColumn(supporting_doc_prefix, self)
+        self.document_reference = ForeignKeyColumn('supporting_doc_id', self)
 
         normalize_name = self.parent_entity.short_name.replace(' ',
                                                                '_').lower()
