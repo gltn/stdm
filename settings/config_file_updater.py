@@ -44,6 +44,7 @@ class ConfigurationFileUpdater(object):
         self.config_profiles = []
         self.table_dict = OrderedDict()
         self.table_list = []
+        self.lookup_dict = OrderedDict()
         self.config_file = None
 
     def _check_config_folder_exists(self):
@@ -117,10 +118,23 @@ class ConfigurationFileUpdater(object):
                                  "configuration.stc"),
                     self.file_handler.localPath())
 
+    def _set_lookup_data(self, lookup_name, element):
+
+        for i in range(element.count()):
+            lookup_dict = OrderedDict()
+            lookup_nodes = element.item(i).toElement()
+            if lookup_nodes.tagName() == "data":
+                lookup_node = lookup_nodes.childNodes()
+                for i in range(lookup_node.count()):
+                    lookup = lookup_node.item(i).toElement().text()
+                    code = lookup[0:2].upper()
+                    lookup_dict[code] = lookup
+            self.lookup_dict[lookup_name] = lookup_dict
+
     def _set_table_columns(self, table_name, element):
 
         for i in range(element.count()):
-            column_dict = {}
+            column_dict = OrderedDict()
             columns_node = element.item(i).toElement()
             if columns_node.tagName() == "columns":
                 column_nodes = columns_node.childNodes()
@@ -144,7 +158,6 @@ class ConfigurationFileUpdater(object):
             profile_child_node = element.item(i).toElement()
             if profile_child_node.tagName() == "table":
                 table_name = unicode(profile_child_node.attribute('name'))
-                self.table_dict["table_name"] = table_name
                 table_descrpt = unicode(profile_child_node.attribute(
                                         'fullname'))
                 self.table_list.append(table_descrpt)
@@ -155,7 +168,9 @@ class ConfigurationFileUpdater(object):
                 self._set_table_columns(table_name, columns_nodes)
 
             if profile_child_node.tagName() == "lookup":
-                pass
+                lookup_name = unicode(profile_child_node.attribute('name'))
+                lookup_nodes = profile_child_node.childNodes()
+                self._set_lookup_data(lookup_name, lookup_nodes)
 
     def _set_version_profile(self, element):
         """
@@ -195,6 +210,9 @@ class ConfigurationFileUpdater(object):
 
                 # Create config file
                 self._create_config_file("configuration.stc")
+
+                QMessageBox.information(None, "Lookup", str(self.lookup_dict))
+
                 doc = QDomDocument()
                 configuration = doc.createElement("Configuration")
                 configuration.setAttribute("version", self.version)
