@@ -127,7 +127,8 @@ class STDMQGISLoader(object):
 
         self._user_logged_in = False
         self.current_profile = None
-
+        # Profile status label showing the current profile
+        self.profile_status_label = QLabel()
         LOGGER.debug('STDM plugin has been initialized.')
 
     def initGui(self):
@@ -829,6 +830,8 @@ class STDMQGISLoader(object):
 
         self.create_spatial_unit_manager()
 
+        self.profile_status_message()
+
     def create_spatial_unit_manager(self):
         self.spatialLayerMangerDockWidget = SpatialUnitManagerDockWidget(self.iface)
         self.spatialLayerMangerDockWidget.setWindowTitle(
@@ -898,11 +901,35 @@ class STDMQGISLoader(object):
         if status == QDialog.Accepted:
             self.reload_plugin()
 
+
+    def profile_status_message(self):
+        """
+        Shows the name of the loaded profile in QGIS
+        status bar.
+        :return: None
+        :rtype: NoneType
+        """
+
+        profile_name = self.current_profile.name
+        message = QApplication.translate(
+            "STDMPlugin",
+            "Current STDM profile: "+profile_name
+        )
+
+        if self.profile_status_label.parent() is None:
+            self.iface.mainWindow().statusBar().insertPermanentWidget(
+                0,
+                self.profile_status_label,
+                10
+            )
+        self.profile_status_label.setText(message)
+
+
     def reload_plugin(self):
         """
         Reloads stdm plugin without logging out.
         This is to allow modules capture changes
-        made by the configuration wizard.
+        made by the Configuration Wizard and Options.
         :return: None
         :rtype: NoneType
         """
@@ -911,6 +938,7 @@ class STDMQGISLoader(object):
         self.current_profile = current_profile()
         self.loadModules()
 
+
     def load_config_wizard(self):
         '''
         '''
@@ -918,13 +946,11 @@ class STDMQGISLoader(object):
             self.iface.mainWindow()
         )
         status = self.wizard.exec_()
-        # Reload all modules when the wizard is finished
+        # Reload all modules
         self.reload_plugin()
-
         # Reload profile upon successfully
         # running the config wizard
         if status == QDialog.Accepted:
-            print "wiz accepted"
             self.reload_profile()
 
     def reload_profile(self):
@@ -1536,6 +1562,9 @@ class STDMQGISLoader(object):
 
             self.spatialLayerMangerDockWidget = None
             self.current_profile = None
+            # Clear current profile status text
+
+            self.profile_status_label.setText('')
         except:
             pass
 
