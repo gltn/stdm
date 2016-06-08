@@ -52,6 +52,9 @@ def entity_model(entity, entity_only=False):
 
     return getattr(Base.classes, entity.name, None)
 
+def join_supporting_documents():
+    pass
+
 
 def entity_foreign_keys(entity):
     _bind_metadata(metadata)
