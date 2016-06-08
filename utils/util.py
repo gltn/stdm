@@ -467,3 +467,18 @@ def lookup_id_to_value(profile, col, id):
     else:
         return id
 
+def get_db_attr(db_model, source_col, source_attr, destination_col):
+
+    db_obj = db_model()
+    query_result = db_obj.queryObject().filter(
+        source_col == source_attr
+    ).first()
+
+    if query_result is not None:
+        destination_attr = getattr(
+            query_result,
+            destination_col,
+            None
+        )
+        return destination_attr
+

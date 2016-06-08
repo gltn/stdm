@@ -60,13 +60,15 @@ from stdm.security.authorization import Authorizer
 from stdm.utils.util import (
     entity_searchable_columns,
     entity_display_columns,
-    format_name
+    format_name,
+    get_db_attr
 )
 from .notification import (
     NotificationBar
 )
 from .sourcedocument import (
-    SourceDocumentManager
+    SourceDocumentManager,
+    DocumentWidget
 )
 from .str_editor import SocialTenureEditor
 from ui_view_str import Ui_frmManageSTR
@@ -87,15 +89,36 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self._plugin = plugin
         self.tbPropertyPreview.set_iface(self._plugin.iface)
         self.curr_profile = current_profile()
+
         self.spatial_unit = self.curr_profile.social_tenure.spatial_unit
         #Center me
         self.move(QDesktopWidget().availableGeometry().center() -
                   self.frameGeometry().center())
+        self.removed_docs = []
 
+        self.toolBox.setStyleSheet(
+            '''
+            QToolBox::tab {
+                background: qlineargradient(
+                    x1: 0, y1: 0, x2: 0, y2: 1,
+                    stop: 0 #EDEDED, stop: 0.4 #EDEDED,
+                    stop: 0.5 #EDEDED, stop: 1.0 #D3D3D3
+                );
+                border-radius: 2px;
+                border-style: outset;
+                border-width: 2px;
+                height: 100px;
+                border-color: #C3C3C3;
+            }
+
+            QToolBox::tab:selected {
+                font: italic;
+            }
+            '''
+        )
         # set whether currently logged in user has
         # permissions to edit existing STR records
         self._can_edit = self._plugin.STRCntGroup.canUpdate()
-
 
         # Variable used to store a reference to the
         # currently selected social tenure relationship
@@ -107,13 +130,13 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         #Used to store the root hash of the currently selected node.
         self._curr_rootnode_hash = ""
+
         self._source_doc_manager = SourceDocumentManager()
         self._source_doc_manager.documentRemoved.connect(
             self.onSourceDocumentRemoved
         )
-        self._source_doc_manager.setEditPermissions(self._can_edit)
 
-        #self._config_table_reader = ConfigTableReader()
+        self._source_doc_manager.setEditPermissions(self._can_edit)
 
         self.initGui()
         self.add_spatial_unit_layer()
@@ -167,7 +190,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
     def _check_permissions(self):
         """
-        Enable/disable actions based on the permissions defined in the content
+        Enable/disable actions based on the
+        permissions defined in the content
         group.
         """
         if self._can_edit:
@@ -235,7 +259,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             # Load filter and display columns
             # using only those which are of
             # numeric/varchar type
-
             searchable_columns = entity_searchable_columns(entity)
             display_columns = entity_display_columns(entity)
             for c in searchable_columns:
@@ -349,50 +372,38 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                         src_docs = node.documents()
                         if isinstance(src_docs, dict):
                             self._load_source_documents(src_docs)
-                            # Expand the supporting document box
-                            self.toolBox.setCurrentIndex(1)
+                            # if there is supporting document,
+                            # expand supporting document tab
+                            if len (src_docs) > 0:
+                                self.toolBox.setCurrentIndex(1)
 
                     if isinstance(node, SpatialUnitNode):
                         # Expand the Spatial Unit preview
                         self.toolBox.setCurrentIndex(0)
                         self.draw_spatial_unit(node.model())
 
-    def onSourceDocumentRemoved(self, container_id):
+    def onSourceDocumentRemoved(self, container_id, doc_uuid):
         """
         Slot raised when a source document is removed from the container.
         If there are no documents in the specified container then remove
         the tab.
         """
-        for i in range(self.tbSupportingDocs.count()):
-            docwidget = self.tbSupportingDocs.widget(i)
-            if docwidget.containerId() == container_id:
-                docCount = docwidget.container().count()
-                if docCount == 0:
-                    self.tbSupportingDocs.removeTab(i)
-                    del docwidget
-                    break
+        curr_container = self.tbSupportingDocs.currentWidget()
+        curr_doc_widget = curr_container.findChildren(DocumentWidget)
+
+        for doc in curr_doc_widget:
+            if doc.fileUUID == doc_uuid:
+                doc.deleteLater()
+
+        self.removed_docs.append(doc_uuid)
 
     def draw_spatial_unit(self, model):
         """
         Render the geometry of the given spatial unit in the spatial view.
-        :param row_id: Sqlalchemy oject representing a feature.
+        :param row_id: Sqlalchemy object representing a feature.
         """
 
         self.tbPropertyPreview.draw_spatial_unit(model, True, True)
-
-    def removeSourceDocumentWidget(self,container_id):
-        """
-        Convenience method that removes the tab
-        widget that lists the source documents
-        with the given container id.
-        """
-        for i in range(self.tbSupportingDocs.count()):
-            docwidget = self.tbSupportingDocs.widget(i)
-            if docwidget.containerId() == container_id:
-                self.tbSupportingDocs.removeTab(i)
-                self._source_doc_manager.removeContainer(container_id)
-                del docwidget
-                break
 
     def onTreeViewItemExpanded(self,modelindex):
         """
@@ -559,7 +570,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         # Resize tree columns to fit contents
         self._resize_columns()
 
-        #Capture selection changes signals when results are returned in the tree view
+        #Capture selection changes signals when
+        # results are returned in the tree view
         resultsSelModel = self.tvSTRResults.selectionModel()
         resultsSelModel.selectionChanged.connect(
             self.on_select_results
@@ -585,6 +597,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         """
         Load source documents into document listing widget.
         """
+        self._notif_search_config.clear()
         #Configure progress dialog
         progressMsg = QApplication.translate(
             "ViewSTR", "Loading supporting documents..."
@@ -598,7 +611,17 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         )
         progressDialog.setWindowModality(Qt.WindowModal)
 
+        # If no single supporting document, show message warning message
+        if len(source_docs) < 1:
+            empty_msg = QApplication.translate(
+                'ViewSTR', 'No supporting document is uploaded '
+                           'for this social tenure relationship.'
+            )
+            self._notif_search_config.clear()
+            self._notif_search_config.insertWarningNotification(empty_msg)
+
         for doc_type_id, doc_obj in source_docs.iteritems():
+
             # add tabs, and container and widget for each tab
             tab_title = self._source_doc_manager.doc_type_mapping[doc_type_id]
 
@@ -606,20 +629,21 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             tab_widget.setGeometry(QRect(0, 0, 462, 80))
             tab_widget.setObjectName("tab_widget"+str(doc_type_id))
 
-            verticalLayout = QVBoxLayout(tab_widget)
-            verticalLayout.setObjectName(
+            vertical_layout = QVBoxLayout(tab_widget)
+            vertical_layout.setObjectName(
                 "verticalLayout"+str(doc_type_id)
             )
 
             self._source_doc_manager.registerContainer(
-                verticalLayout, doc_type_id
+                vertical_layout, doc_type_id
             )
 
             for doc in doc_obj[0]:
-                # add doc widgets
-                self._source_doc_manager.insertDocFromModel(
-                    doc, doc_type_id
-                )
+                if doc.document_identifier not in self.removed_docs:
+                    # add doc widgets
+                    self._source_doc_manager.insertDocFromModel(
+                        doc, doc_type_id
+                    )
             self.tbSupportingDocs.addTab(
                 tab_widget, tab_title
             )

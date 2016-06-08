@@ -127,7 +127,8 @@ class STDMQGISLoader(object):
 
         self._user_logged_in = False
         self.current_profile = None
-
+        # Profile status label showing the current profile
+        self.profile_status_label = QLabel()
         LOGGER.debug('STDM plugin has been initialized.')
 
     def initGui(self):
@@ -667,41 +668,38 @@ class STDMQGISLoader(object):
         strViewCnt.code="D13B0415-30B4-4497-B471-D98CA98CD841"
 
         username = data.app_dbconn.User.UserName
+
         self.moduleCntGroup = None
         self.moduleContentGroups = []
         self._moduleItems = OrderedDict()
         self._reportModules = OrderedDict()
 
-        #    map the user tables to sqlalchemy model object
-
         # add the tables to the stdm toolbar
-        # Format the table names to freiendly format before adding them
+        # Format the table names to friendly format before adding them
 
         if self.user_entities() is not None:
             user_entities = dict(self.user_entities())
             for name, short_name in user_entities.iteritems():
                 display_name = QT_TRANSLATE_NOOP("Entities",
-                                    unicode(short_name).replace("_", " ").title())
+                                                 unicode(short_name).replace("_", " ").title())
                 self._moduleItems[display_name] = name
 
         for k, v in self._moduleItems.iteritems():
-
             content_action = QAction(QIcon(":/plugins/stdm/images/icons/table.png"),
-                                    k, self.iface.mainWindow())
+                                     k, self.iface.mainWindow())
 
             # capabilities = contentGroup(self._moduleItems[k])
             #
             # if capabilities:
             moduleCntGroup = TableContentGroup(username, k, content_action)
-                # moduleCntGroup.createContentItem().code = capabilities[0]
-                # moduleCntGroup.readContentItem().code = capabilities[1]
-                # moduleCntGroup.updateContentItem().code = capabilities[2]
-                # moduleCntGroup.deleteContentItem().code = capabilities[3]
+            # moduleCntGroup.createContentItem().code = capabilities[0]
+            # moduleCntGroup.readContentItem().code = capabilities[1]
+            # moduleCntGroup.updateContentItem().code = capabilities[2]
+            # moduleCntGroup.deleteContentItem().code = capabilities[3]
             moduleCntGroup.register()
             self._reportModules[k] = self._moduleItems.get(k)
             self.moduleContentGroups.append(moduleCntGroup)
             # Add core modules to the report configuration
-
         #Create content groups and add items
         self.contentAuthCntGroup = ContentGroup(username)
         self.contentAuthCntGroup.addContentItem(contentAuthCnt)
@@ -832,6 +830,8 @@ class STDMQGISLoader(object):
 
         self.create_spatial_unit_manager()
 
+        self.profile_status_message()
+
     def create_spatial_unit_manager(self):
         self.spatialLayerMangerDockWidget = SpatialUnitManagerDockWidget(self.iface)
         self.spatialLayerMangerDockWidget.setWindowTitle(
@@ -896,16 +896,48 @@ class STDMQGISLoader(object):
         Loads the dialog for settings STDM options.
         """
         opt_dlg = OptionsDialog(self.iface)
-        opt_dlg.exec_()
+        status = opt_dlg.exec_()
 
-    def workspaceLoader(self):
-        '''
-        Slot for customizing user forms
-        '''
-        self.wkspDlg = WorkspaceLoader(
-            self.iface.mainWindow()
+        if status == QDialog.Accepted:
+            self.reload_plugin()
+
+
+    def profile_status_message(self):
+        """
+        Shows the name of the loaded profile in QGIS
+        status bar.
+        :return: None
+        :rtype: NoneType
+        """
+
+        profile_name = self.current_profile.name
+        message = QApplication.translate(
+            "STDMPlugin",
+            "Current STDM profile: "+profile_name
         )
-        self.wkspDlg.exec_()
+
+        if self.profile_status_label.parent() is None:
+            self.iface.mainWindow().statusBar().insertPermanentWidget(
+                0,
+                self.profile_status_label,
+                10
+            )
+        self.profile_status_label.setText(message)
+
+
+    def reload_plugin(self):
+        """
+        Reloads stdm plugin without logging out.
+        This is to allow modules capture changes
+        made by the Configuration Wizard and Options.
+        :return: None
+        :rtype: NoneType
+        """
+        self.logoutCleanUp(True)
+        # Set current profile
+        self.current_profile = current_profile()
+        self.loadModules()
+
 
     def load_config_wizard(self):
         '''
@@ -914,8 +946,9 @@ class STDMQGISLoader(object):
             self.iface.mainWindow()
         )
         status = self.wizard.exec_()
-
-        #Reload profile upon successfully
+        # Reload all modules
+        self.reload_plugin()
+        # Reload profile upon successfully
         # running the config wizard
         if status == QDialog.Accepted:
             self.reload_profile()
@@ -1485,7 +1518,7 @@ class STDMQGISLoader(object):
 
         self.stdmTables = []
 
-    def logoutCleanUp(self):
+    def logoutCleanUp(self, change_profile=False):
         '''
         Clear database connection references and content items
         '''
@@ -1495,15 +1528,15 @@ class STDMQGISLoader(object):
 
             #Remove STDM layers
             self.removeSTDMLayers()
+            if not change_profile:
+                #Clear singleton ref for SQLALchemy connections
+                if not data.app_dbconn is None:
+                    #clear_mappers()
+                    STDMDb.cleanUp()
+                    DeclareMapping.cleanUp()
 
-            #Clear singleton ref for SQLALchemy connections
-            if not data.app_dbconn is None:
-                #clear_mappers()
-                STDMDb.cleanUp()
-                DeclareMapping.cleanUp()
-
-            #Remove database reference
-            data.app_dbconn = None
+                #Remove database reference
+                data.app_dbconn = None
 
             if not self.toolbarLoader is None:
                 self.toolbarLoader.unloadContent()
@@ -1529,6 +1562,9 @@ class STDMQGISLoader(object):
 
             self.spatialLayerMangerDockWidget = None
             self.current_profile = None
+            # Clear current profile status text
+
+            self.profile_status_label.setText('')
         except:
             pass
 

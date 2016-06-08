@@ -42,8 +42,7 @@ from stdm.network import (
     NetworkFileManager,
     DocumentTransferWorker
 )
-from stdm.ui.stdmdialog import DeclareMapping
-from stdm.data.database import STDMDb
+
 from stdmdialog import DeclareMapping
 from stdm.settings.registryconfig import (
     RegistryConfig,
@@ -56,7 +55,7 @@ from stdm.settings import (
 from stdm.data.configuration import entity_model
 from .document_viewer import DocumentViewManager
 from ui_doc_item import Ui_frmDocumentItem
-
+from stdm.utils.util import get_db_attr
 #Document Type Enumerations
 DEFAULT_DOCUMENT = 2020
 STATUTORY_REF_PAPER = 2021
@@ -83,7 +82,7 @@ class SourceDocumentManager(QObject):
     Manages the display of source documents in vertical layout container(s).
     """
     #Signal raised when a document is removed from its container.
-    documentRemoved = pyqtSignal(int)
+    documentRemoved = pyqtSignal(int, str)
     fileUploaded = pyqtSignal('PyQt_PyObject')
 
     def __init__(self, parent=None):
@@ -94,9 +93,9 @@ class SourceDocumentManager(QObject):
 
         self.curr_profile = current_profile()
         self.prefix = self.curr_profile.prefix
-        doc_entity = self.curr_profile.entity_by_name(
-            unicode(self.prefix + '_check_document_type')
-        )
+        doc_entity = self.curr_profile.social_tenure.\
+            supporting_doc.document_type_entity
+
         doc_type_model = entity_model(doc_entity)
 
         docs = doc_type_model()
@@ -105,17 +104,12 @@ class SourceDocumentManager(QObject):
         self.doc_types = dict(self.doc_types)
 
         str_doc_entity = self.curr_profile.supporting_document
-        STR_DOC_MODEL = entity_model(str_doc_entity)
+        self.str_doc_model = entity_model(str_doc_entity)
 
-        # document_type_class[DEFAULT_DOCUMENT] = STR_DOC_MODEL
         for id in self.doc_types.keys():
-            document_type_class[id] = STR_DOC_MODEL
+            document_type_class[id] = self.str_doc_model
         #Container for document references based on their unique IDs
         self._docRefs = []
-        mapper = DeclareMapping.instance()
-
-        #STR_DOC_MODEL = mapper.tableMapping('str_relations')
-        #Register for document types and corresponding db classes
 
         #Set default manager for document viewing
         self._doc_view_manager = DocumentViewManager(self.parent_widget())
@@ -157,8 +151,8 @@ class SourceDocumentManager(QObject):
         '''
         Register a container for displaying the document widget
         '''
-
-        self.containers[id] = container
+        if container is not None:
+            self.containers[id] = container
 
 
     def removeContainer(self, containerid):
@@ -188,8 +182,10 @@ class SourceDocumentManager(QObject):
 
     def insertDocumentFromFile(self, path, containerid):
         """
-        Insert a new document into one of the registered containers with the
-        specified id. If there is no container is specified then the document widget
+        Insert a new document into one of the
+        registered containers with the
+        specified id. If there is no container
+        is specified then the document widget
         will be inserted in the first container available.
         """
 
@@ -274,7 +270,7 @@ class SourceDocumentManager(QObject):
             if containerid in self.containers:
                 container = self.containers[containerid]
 
-                network_location = source_document_location("")
+                network_location = source_document_location('')
 
                 if not network_location:
                     self._doc_repository_error()
@@ -340,12 +336,12 @@ class SourceDocumentManager(QObject):
 
     def sourceDocuments(self, dtype=None):
         """
-        Returns all supporting document models based on the file uploads
-        contained in the document manager.
+        Returns all supporting document models based on
+        the file uploads contained in the document manager.
         """
         source_documents = {}
 
-        for k,v in self.containers.iteritems():
+        for k, v in self.containers.iteritems():
             widg_count = v.count()
 
             type_docs = []
@@ -356,23 +352,25 @@ class SourceDocumentManager(QObject):
                 type_docs.append(source_doc)
 
             source_documents[k] = type_docs
-            #modelObj =source_documents.get(DEFAULT_DOCUMENT)[0]
+
         return source_documents
 
     def model_objects(self):
         """
-        Method to return all the model object for supporting document be inserted into table
+        Method to return all the model object for
+        supporting document be inserted into table
         :return:
         """
-        #proxies =STDMDb.instance().engine.connect()
-
         model_objs = []
-
-        for id in self.doc_types.keys():
-           # soc_doc = document_type_class.get(id)()
-
-            if len(self.sourceDocuments().get(id)) > 0:
-                model_objs.append([model_obj for model_obj in self.sourceDocuments().get(id)])
+        if self.sourceDocuments() is not None:
+            for id in self.containers.keys():
+                if self.sourceDocuments().get(id) is not None:
+                    model_objs.append(
+                        [
+                            model_obj
+                            for model_obj in self.sourceDocuments().get(id)
+                        ]
+                    )
 
         return model_objs
 
@@ -398,7 +396,7 @@ class SourceDocumentManager(QObject):
 
         return delete_error_docs
 
-    def onDocumentRemoved(self,doctype):
+    def onDocumentRemoved(self, containerid, doc_uuid=None):
         """
         Slot raised when a document is removed from the container.
         Propagate signal.
@@ -406,38 +404,41 @@ class SourceDocumentManager(QObject):
         remDocWidget = self.sender()
 
         if remDocWidget:
-            self.container(doctype).removeWidget(remDocWidget)
-            remDocWidget.deleteLater()
+            self.container(containerid).removeWidget(remDocWidget)
 
             #Remove document reference in the list
             if remDocWidget.mode() == UPLOAD_MODE:
-                docId = remDocWidget.fileUUID
+                doc_uuid = remDocWidget.fileUUID
 
             elif remDocWidget.mode() == DOWNLOAD_MODE:
-                docId = remDocWidget._srcDoc.doc_identifier
 
-            if docId:
+                doc_uuid = remDocWidget._srcDoc.document_identifier
+
+            if doc_uuid:
                 #Remove corresponding viewer
-                self._doc_view_manager.remove_viewer(docId)
+                self._doc_view_manager.remove_viewer(doc_uuid)
 
                 try:
-                    self._docRefs.remove(docId)
+                    self._docRefs.remove(doc_uuid)
 
                 except ValueError:
                     pass
+            remDocWidget.deleteLater()
 
-        self.documentRemoved.emit(doctype)
+        self.documentRemoved.emit(containerid, doc_uuid)
 
     def eventFilter(self,watched,e):
         '''
-        Intercept signals raised by the widgets managed by this container.
+        Intercept signals raised by the
+        widgets managed by this container.
         For future implementations.
         '''
         pass
 
     def _addDocumentReference(self,docid):
         """
-        Add a document reference to the list that the document manager
+        Add a document reference to the
+        list that the document manager
         contains
         """
         docIndex = getIndex(self._docRefs,docid)
@@ -487,8 +488,8 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         self._fileName = ""
         self._canRemove = canRemove
         self._view_manager = view_manager
-        mapper = DeclareMapping.instance()
 
+        self.curr_profile = current_profile()
 
         self.lblClose.installEventFilter(self)
         self.lblName.installEventFilter(self)
@@ -562,14 +563,45 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
         return True
 
+
+    def delete_str_supp_doc(self):
+        """
+        Deletes the corresponding
+        social_tenure_relationship_supporting_document
+        when a supporting document is deleted.
+        :return: None
+        :rtype: NoneType
+        """
+        str_supp_doc_model = entity_model(
+            self.curr_profile.social_tenure.supporting_doc
+        )
+        str_supp_doc_obj = str_supp_doc_model()
+
+        doc_id = self._srcDoc.id
+
+        str_doc_id = get_db_attr(
+            str_supp_doc_model,
+            str_supp_doc_model.supporting_doc_id,
+            doc_id,
+            'id'
+        )
+        query_result = str_supp_doc_obj.queryObject().filter(
+            str_supp_doc_model.id == str_doc_id
+        ).first()
+
+        query_result.delete()
+
     def _remove_doc(self, suppress_messages=False):
         """
-        :param suppress_messages: Set whether user messages should be displayed or the system should continue with
+        :param suppress_messages: Set whether user messages
+        should be displayed or the system should continue with
         execution.
         :type suppress_messages: bool
-        :return: True to indicate that the document was successfully removed or False if an error was encountered.
+        :return: True to indicate that the document was
+        successfully removed or False if an error was encountered.
         :rtype: bool
         """
+        str_doc_id = -1
         if self._mode == UPLOAD_MODE:
             status = self.fileManager.deleteDocument()
         else:
@@ -589,14 +621,18 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         if self._mode == DOWNLOAD_MODE:
             #Try to delete document and suppress error if it does not exist
             try:
+
+                self.delete_str_supp_doc()
                 self._srcDoc.delete()
 
-            except sqlalchemy.exc.SQLAlchemyError,exc:
+
+            except sqlalchemy.exc.SQLAlchemyError, exc:
                 #TODO: Log this information
                 pass
 
         #Emit signal to indicate the widget is ready to be removed
         self.referencesRemoved.emit(self._docType)
+
         self.deleteLater()
 
         return True

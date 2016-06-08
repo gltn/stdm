@@ -183,7 +183,7 @@
            <set>Qt::ImhNone</set>
           </property>
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
           <property name="frameShadow">
            <enum>QFrame::Sunken</enum>
@@ -205,8 +205,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>484</width>
-             <height>458</height>
+             <width>486</width>
+             <height>460</height>
             </rect>
            </property>
            <attribute name="label">
@@ -223,8 +223,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>484</width>
-             <height>458</height>
+             <width>157</width>
+             <height>28</height>
             </rect>
            </property>
            <attribute name="label">
