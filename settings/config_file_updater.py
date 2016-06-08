@@ -37,6 +37,10 @@ class ConfigurationFileUpdater(object):
 
     def __init__(self):
         self.file_handler = FilePaths()
+        self.version = None
+        self.profiles = []
+        self.table_dict = {}
+        self.table_list = []
 
     def _check_config_folder_exists(self):
         """
@@ -67,10 +71,10 @@ class ConfigurationFileUpdater(object):
         else:
             return False
 
-    def _check_config_version(self):
-        stc_config_file = os.path.join(self.file_handler.localPath(),
-                                       "configuration.stc")
-        config_file = QFile(stc_config_file)
+    def _get_doc_root(self, path):
+        config_file = os.path.join(self.file_handler.localPath(),
+                                       path)
+        config_file = QFile(config_file)
         if not config_file.open(QIODevice.ReadOnly):
             raise IOError('Cannot read configuration file. Check read '
                           'permissions.')
@@ -81,11 +85,16 @@ class ConfigurationFileUpdater(object):
             raise ConfigurationException(u'Configuration file cannot be '
                                          u'loaded: {0}'.format(msg))
 
-        config = StdmConfiguration.instance()
-
         doc_element = config_doc.documentElement()
 
+        return doc_element
+
+    def _check_config_version(self):
+        doc_element = self._get_doc_root("configuration.stc")
+
         config_version = doc_element.attribute('version')
+
+        config = StdmConfiguration.instance()
 
         if config_version:
             config_version = float(config_version)
@@ -104,12 +113,66 @@ class ConfigurationFileUpdater(object):
                                      "configuration.stc"),
                         self.file_handler.localPath())
 
+    def _set_table_columns(self, table_name, element):
+        for i in range(element.count()):
+            column_dict = {}
+            columns_node = element.item(i).toElement()
+            if columns_node.tagName() == "columns":
+                column_nodes = columns_node.childNodes()
+                for i in range(column_nodes.count()):
+                    column_node = column_nodes.item(i).toElement()
+                    col_name = unicode(column_node.attribute('name'))
+                    column_dict["col_name"] = col_name
+                    col_search = unicode(column_node.attribute('searchable'))
+                    column_dict["col_search"] = col_search
+                    col_description = unicode(column_node.attribute('fullname'))
+                    column_dict["col_descrpt"] = col_description
+                    col_type = unicode(column_node.attribute('type'))
+                    column_dict["col_type"] = col_type
+                self.table_list.append(column_dict)
+        self.table_dict[table_name] = self.table_list
+
+    def _set_table_attributes(self, element):
+        for i in range(element.count()):
+            profile_child_node = element.item(i).toElement()
+            if profile_child_node.tagName() == "table":
+                table_name = unicode(profile_child_node.attribute('name'))
+                self.table_dict["table_name"] = table_name
+                table_descrpt = unicode(profile_child_node.attribute(
+                                        'fullname'))
+                self.table_list.append(table_descrpt)
+                table_shortname = unicode(profile_child_node.attribute(
+                                    'fullname'))
+                self.table_list.append(table_shortname)
+                columns_nodes = profile_child_node.childNodes()
+                self._set_table_columns(table_name, columns_nodes)
+
+            if profile_child_node.tagName() == "lookup":
+                pass
+
+    def _set_version_profile(self, element):
+        for i in range(element.count()):
+            child_node = element.item(i).toElement()
+            if child_node.hasAttribute('version'):
+                self.version = unicode(child_node.attribute('version'))
+            if child_node.tagName() == "profile":
+                self.profiles.append(unicode(child_node.attribute('name')))
+                profile_child_nodes = child_node.childNodes()
+                self._set_table_attributes(profile_child_nodes)
+
     def load(self):
         if self._check_config_folder_exists():
             # Check if old configuration file exists
             if self._check_config_file_exists("stdmConfig.xml"):
-                QMessageBox.information(None,"STDM","{0}".format(
-                    "stdmConfig.xml exists"))
+                root = self._get_doc_root(os.path.join(
+                    self.file_handler.localPath(), "stdmConfig.xml"))
+                node_list = []
+                child_nodes = root.childNodes()
+                self._set_version_profile(child_nodes)
+
+                QMessageBox.information(None, "Test", str(
+                    self.table_dict))
+                return True
             else:
                 if self._check_config_file_exists("configuration.stc"):
                     return True
