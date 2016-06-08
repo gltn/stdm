@@ -243,7 +243,7 @@ class DocumentViewer(QMdiSubWindow):
 
     def __init__(self, parent = None, file_identifier = ""):
         QMdiSubWindow.__init__(self,parent)
-        self.resize(400,300)
+        self.resize(330, 550)
         self.setWindowIcon(QIcon(":/plugins/stdm/images/icons/photo.png"))
 
         self._file_identifier = file_identifier
@@ -440,6 +440,7 @@ class DocumentViewManager(QMainWindow):
             self._doc_viewers[doc_identifier] = doc_viewer
 
             self._mdi_area.addSubWindow(doc_viewer)
+
             doc_viewer.show()
 
         if not self.isVisible():
@@ -483,7 +484,8 @@ class DocumentViewManager(QMainWindow):
     def _create_viewer(self, document_widget):
         """
         Creates a new instance of a document viewer.
-        :param document_widget: Contains all the necessary information required
+        :param document_widget: Contains all
+        the necessary information required
         to load the specific document.
         :return: Document viewer object
         :rtype: DocumentViewer

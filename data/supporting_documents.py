@@ -115,9 +115,10 @@ def document_models(doc_link_table, link_column, link_value):
         supporting_doc_obj = sdi_query_obj.filter(
             supporting_doc_model.id == supporting_doc_id
         ).order_by(supporting_doc_model.document_type).first()
-        doc_type_id = getattr(supporting_doc_obj, 'document_type')
+
 
         if supporting_doc_obj is not None:
+            doc_type_id = getattr(supporting_doc_obj, 'document_type')
             doc_models[doc_type_id].append(supporting_doc_obj)
 
     grouped_doc_models = OrderedDict()

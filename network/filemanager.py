@@ -115,11 +115,11 @@ class NetworkFileManager(QObject):
         """
         if not docmodel is None:
             #Build the path from the model variable values.
-            fileName, fileExt = guess_extension(docmodel.file_name)
+            fileName, fileExt = guess_extension(docmodel.filename)
         
             #Qt always expects the file separator be be "/" regardless of platform.
-            absPath = self.networkPath + "/" + "%d"%(docmodel.doc_type) + "/" +\
-                      docmodel.doc_identifier + fileExt
+            absPath = self.networkPath + "/" + "%d"%(docmodel.document_type) + "/" +\
+                      docmodel.document_identifier + fileExt
             
             return QFile.remove(absPath)
         
