@@ -34,9 +34,6 @@ from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings import current_profile, save_current_profile
 
 from stdm.data.configuration.exception import ConfigurationException
-from stdm.data.configuration.stdm_configuration import (
-    StdmConfiguration
-)
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from .settings.config_file_updater import ConfigurationFileUpdater
 
@@ -511,33 +508,18 @@ class STDMQGISLoader(object):
                 QMessageBox.critical(self.iface.mainWindow(),
                         QApplication.translate('STDM', 'Load Configuration Error'),
                         unicode(io_err))
-        try:
-            config_serializer.load()
-
-        except IOError as io_err:
-            QMessageBox.critical(self.iface.mainWindow(),
-                QApplication.translate(
-                    'STDM', 'Load Configuration Error'
-                ),
-                unicode(io_err)
-            )
 
                 return False
 
-
             except ConfigurationException as c_ex:
-                QMessageBox.critical(self.iface.mainWindow(),
-                        QApplication.translate('STDM', 'Load Configuration Error'),
-                        unicode(c_ex))
-        except ConfigurationException as c_ex:
-            QMessageBox.critical(
-                self.iface.mainWindow(),
-                QApplication.translate(
-                    'STDM',
-                    'Load Configuration Error'
-                ),
-                unicode(c_ex)
-            )
+                QMessageBox.critical(
+                    self.iface.mainWindow(),
+                    QApplication.translate(
+                        'STDM',
+                        'Load Configuration Error'
+                    ),
+                    unicode(c_ex)
+                )
 
                 return False
 
