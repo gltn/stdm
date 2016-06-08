@@ -386,6 +386,19 @@ class Entity(QObject, TableItem):
 
         return self.supporting_doc.document_types().keys()
 
+    def document_path(self):
+        """
+        :return: Returns a subpath for locating supporting documents using
+        the profile and entity names respectively. This is concatenated to
+        the root path to locate documents for this particular entity.
+        :rtype: str
+        """
+        if not self.supports_documents:
+            raise AttributeError('Supporting documents are not enabled for '
+                                 'this entity.')
+
+        return self.supporting_doc.document_path()
+
 
 class EntitySupportingDocument(Entity):
     """
@@ -404,8 +417,6 @@ class EntitySupportingDocument(Entity):
         self.user_editable = False
 
         #Supporting document ref column
-        supporting_doc_prefix = u'{0}_{1}'.format(self.profile.prefix,
-                                                  'supporting_doc_id')
         self.document_reference = ForeignKeyColumn('supporting_doc_id', self)
 
         normalize_name = self.parent_entity.short_name.replace(' ',
@@ -428,7 +439,7 @@ class EntitySupportingDocument(Entity):
             self._doc_types_value_list.add_value(self.tr('General'))
 
         #Document type column
-        self.doc_type = LookupColumn('document_type', self)
+        self.doc_type = LookupColumn('document_sub_type', self)
         self.doc_type.value_list = self._doc_types_value_list
 
         #Append columns
@@ -491,6 +502,15 @@ class EntitySupportingDocument(Entity):
         :rtype: OrderedDict
         """
         return self._doc_types_value_list.values
+
+    def document_path(self):
+        """
+        :return: Returns a subpath for locating supporting documents using
+        the profile and entity names respectively. This is concatenated to
+        the root path to locate documents for this particular entity.
+        :rtype: str
+        """
+        return u'{0}/{1}'.format(self.profile.key, self.parent_entity.name)
 
     @property
     def document_type_entity(self):

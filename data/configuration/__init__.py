@@ -3,6 +3,7 @@ from sqlalchemy import (
     MetaData
 )
 from sqlalchemy.engine import reflection
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.automap import automap_base
 
 from stdm.data.database import (
@@ -15,6 +16,16 @@ def _bind_metadata(metadata):
     #Ensures there is a connectable set in the metadata
     if metadata.bind is None:
             metadata.bind = STDMDb.instance().engine
+
+def _rename_supporting_doc_collection(base, local_cls, ref_cls, constraint):
+    #Rename document collection property in an entity model
+    referred_name = ref_cls.__name__
+
+    if referred_name == 'EntitySupportingDocumentProxy':
+        return 'documents'
+    else:
+        #Default
+        return ref_cls.__name__.lower() + '_collection'
 
 
 def entity_model(entity, entity_only=False):
@@ -45,15 +56,83 @@ def entity_model(entity, entity_only=False):
     rf_metadata = MetaData(metadata.bind)
     rf_metadata.reflect(only=rf_entities)
 
+    '''
+    Remove supporting document tables if entity supports them. The supporting
+    document models will be setup manually.
+    '''
+    ent_supporting_docs_table = None
+    profile_supporting_docs_table = None
+
+    if entity.supports_documents:
+        ent_supporting_doc = entity.supporting_doc.name
+        profile_supporting_doc = entity.profile.supporting_document.name
+
+        ent_supporting_docs_table = rf_metadata.tables.get(ent_supporting_doc,
+                                                           None
+        )
+        profile_supporting_docs_table = rf_metadata.tables.get(
+            profile_supporting_doc, None
+        )
+
+        #Remove the supporting doc tables from the metadata
+        if not ent_supporting_docs_table is None:
+            rf_metadata.remove(ent_supporting_docs_table)
+        if not profile_supporting_docs_table is None:
+            rf_metadata.remove(profile_supporting_docs_table)
+
     Base = automap_base(metadata=rf_metadata, cls=Model)
 
+    '''
+    Return the supporting document model that corresponds to the
+    primary entity.
+    '''
+    supporting_doc_model = None
+
+    #Setup supporting document models
+    if entity.supports_documents:
+        supporting_doc_model = configure_supporting_documents_inheritance(
+            ent_supporting_docs_table, profile_supporting_docs_table, Base,
+            entity.name
+        )
+
     #Set up mapped classes and relationships
-    Base.prepare()
+    Base.prepare(
+        name_for_collection_relationship=_rename_supporting_doc_collection
+    )
 
-    return getattr(Base.classes, entity.name, None)
+    return getattr(Base.classes, entity.name, None), supporting_doc_model
 
-def join_supporting_documents():
-    pass
+def configure_supporting_documents_inheritance(entity_supporting_docs_t,
+                                               profile_supporting_docs_t,
+                                               base, parent_entity):
+    class ProfileSupportingDocumentProxy(base):
+        """
+        Represents the root table for storing supporting documents in a
+        given profile.
+        """
+        __table__ = profile_supporting_docs_t
+
+        __mapper_args__ = {
+            'polymorphic_identity': 'NA',
+            'polymorphic_on': 'document_type'
+        }
+
+    #Get the link columns
+    t_doc_id_col = getattr(entity_supporting_docs_t.c, 'supporting_doc_id')
+    p_doc_id_col = getattr(profile_supporting_docs_t.c, 'id')
+
+    class EntitySupportingDocumentProxy(ProfileSupportingDocumentProxy):
+        """
+        Represents the entity supporting documents table.
+        """
+        __table__ = entity_supporting_docs_t
+
+        __mapper_args__ = {
+            'polymorphic_identity': parent_entity,
+            'inherit_condition': t_doc_id_col == p_doc_id_col
+        }
+
+    return EntitySupportingDocumentProxy
 
 
 def entity_foreign_keys(entity):

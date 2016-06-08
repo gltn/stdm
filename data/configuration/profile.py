@@ -76,6 +76,7 @@ class Profile(QObject):
         self.entities = OrderedDict()
         self.relations = OrderedDict()
         self.removed_relations = []
+        #Base entity for supporting documents within the profile
         self.supporting_document = SupportingDocument(self)
         self.social_tenure = self._create_social_tenure()
         self._admin_spatial_unit = AdministrativeSpatialUnit(self)
@@ -111,6 +112,14 @@ class Profile(QObject):
         """
         return SocialTenure('social_tenure_relationship', self,
                             supports_documents=supports_documents)
+
+    @property
+    def key(self):
+        """
+        :return: Returns the normalized name of the profile.
+        :rtype: str
+        """
+        return self.name.replace(' ', '_').lower()
 
     def set_social_tenure_attr(self, entity_type, val):
         """
