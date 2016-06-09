@@ -21,6 +21,7 @@ email                : stdm@unhabitat.org
 
 import os
 import shutil
+import ast
 
 from collections import OrderedDict
 
@@ -222,15 +223,13 @@ class ConfigurationFileUpdater(object):
                 configuration = doc.createElement("Configuration")
                 configuration.setAttribute("version", self.version)
 
-                # QMessageBox.information(None, "config dict",
-                #                         str(self.config_file_tables_lookup))
-
                 for config_profile, values in \
                         self.config_file_tables_lookup.iteritems():
                     profile = doc.createElement("Profile")
                     profile.setAttribute("description", "")
                     profile.setAttribute("name", config_profile)
                     value_lists = doc.createElement("ValueLists")
+
                     for key, value in values.iteritems():
                         if key.endswith("lookup"):
                             for lookup_key, lookup_value in value.iteritems():
@@ -245,6 +244,31 @@ class ConfigurationFileUpdater(object):
 
                                 value_lists.appendChild(value_list)
 
+                        if key.endswith("table"):
+
+                            for entity_key, entity_value in value.iteritems():
+                                entities = doc.createElement("Entity")
+                                entities.setAttribute("name", entity_key)
+                                entities.setAttribute("description",
+                                                      entity_value[0])
+                                entities.setAttribute("shortName",
+                                                      entity_value[1])
+                                column_properties = entity_value[2:]
+                                columns = doc.createElement("Columns")
+                                for i in column_properties:
+                                    column = doc.createElement("Column")
+                                    for col_k, col_v in i.iteritems():
+                                        if col_k == "col_name":
+                                            column.setAttribute("name", col_v)
+                                        elif col_k == "col_descrpt":
+                                            column.setAttribute("description",
+                                                                col_v)
+                                        elif col_k == "col_type":
+                                            column.setAttribute("TYPE_INFO",
+                                                                col_v)
+                                    columns.appendChild(column)
+                                entities.appendChild(columns)
+                                profile.appendChild(entities)
                     profile.appendChild(value_lists)
                     configuration.appendChild(profile)
 
@@ -252,33 +276,6 @@ class ConfigurationFileUpdater(object):
 
                 stream = QTextStream(self.config_file)
                 stream << doc.toString()
-
-                # for config_profile in self.config_profiles:
-                #     profile = doc.createElement("Profile")
-                #     profile.setAttribute("description", "")
-                #     profile.setAttribute("name", config_profile)
-                #     value_lists = doc.createElement("ValueLists")
-                #     for values_key, values_value in \
-                #             self.lookup_dict.iteritems():
-                #         value_list = doc.createElement("ValueList")
-                #         value_list.setAttribute("name", values_key)
-                #
-                #         for value_key, value_value in \
-                #                 values_value.iteritems():
-                #             code_value = doc.createElement("CodeValue")
-                #             code_value.setAttribute("code", value_key)
-                #             code_value.setAttribute("value", value_value)
-                #             value_list.appendChild(code_value)
-                #
-                #         value_lists.appendChild(value_list)
-                #
-                #     profile.appendChild(value_lists)
-                #     configuration.appendChild(profile)
-                #
-                # doc.appendChild(configuration)
-                #
-                # stream = QTextStream(self.config_file)
-                # stream << doc.toString()
 
                 return True
             else:
