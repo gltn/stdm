@@ -42,10 +42,10 @@ from .helpers import SupportsManageMixin
 from .notification import NotificationBar
 
 from .stdmdialog import DeclareMapping
-from stdm.ui.forms import (
-    CustomFormDialog,
-    LookupModeller
-)
+# from stdm.ui.forms import (
+#     CustomFormDialog,
+#     LookupModeller
+# )
 
 __all__ = ["EntityBrowser", "EntityBrowserWithEditor",
            "ContentGroupEntityBrowser"]
@@ -595,16 +595,16 @@ class STDMEntityBrowser(ContentGroupEntityBrowser):
     def title(self):
         return QApplication.translate("STDMEntityBrowser", "%s Records Manager")%unicode(self.tbEntityClass.title())
 
-    modeller = LookupModeller()
+    #modeller = LookupModeller()
     def create_lookup_setter(self, attr_name):
         """
         :return lookup formatter
         """
         lkName ='gender'
-        def lookupformatter(lookupvalue):
-            lkformatter = modeller.lookupModel('check_gender')
-            return lkformatter.setDisplay(lookupvalue)
-        return lookupformatter
+        # def lookupformatter(lookupvalue):
+        #     #lkformatter = modeller.lookupModel('check_gender')
+        #     return lkformatter.setDisplay(lookupvalue)
+        # return lookupformatter
 
 class ForeignKeyBrowser(EntityBrowser):
     """

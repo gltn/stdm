@@ -158,7 +158,7 @@ def value_list_updater(value_list, engine, metadata):
         return
 
     #Update lookup values
-    model = entity_model(value_list, True)[0]
+    model = entity_model(value_list, True)
 
     if model is None:
         LOGGER.debug('Model for %s ValueList object could not be created.',

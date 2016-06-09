@@ -69,7 +69,7 @@ def entity_model(entity, entity_only=False, with_supporting_document=False):
     ent_supporting_docs_table = None
     profile_supporting_docs_table = None
 
-    if entity.supports_documents:
+    if entity.supports_documents and not entity_only:
         ent_supporting_doc = entity.supporting_doc.name
         profile_supporting_doc = entity.profile.supporting_document.name
 
@@ -95,7 +95,7 @@ def entity_model(entity, entity_only=False, with_supporting_document=False):
     supporting_doc_model = None
 
     #Setup supporting document models
-    if entity.supports_documents:
+    if entity.supports_documents and not entity_only:
         supporting_doc_model = configure_supporting_documents_inheritance(
             ent_supporting_docs_table, profile_supporting_docs_table, Base,
             entity.name
@@ -106,7 +106,7 @@ def entity_model(entity, entity_only=False, with_supporting_document=False):
         name_for_collection_relationship=_rename_supporting_doc_collection
     )
 
-    if with_supporting_document:
+    if with_supporting_document and not entity_only:
         return getattr(Base.classes, entity.name, None), supporting_doc_model
 
     return getattr(Base.classes, entity.name, None)

@@ -52,6 +52,8 @@ class TestEntityModelFunc(TestCase):
         #Hardwire result
         self.assertTrue(read_result)
 
+        entity_model(entity.supporting_doc.document_type)
+
 
 def populate_supporting_document(supporting_document):
     #Set basic attributes of the supporting document
