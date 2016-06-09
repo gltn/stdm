@@ -139,7 +139,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self._source_doc_manager.setEditPermissions(self._can_edit)
 
         self.initGui()
-        self.add_spatial_unit_layer()
 
     def initGui(self):
         """
@@ -210,11 +209,10 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Specify the entity configurations.
         """
         try:
+
             tb_str_entities = [
-                e
-                for e in
-                self.curr_profile.entities.values()
-                if e.TYPE_INFO == 'ENTITY'
+                self.curr_profile.social_tenure.party,
+                self.curr_profile.social_tenure.spatial_unit
             ]
 
             for t in tb_str_entities:
@@ -437,73 +435,17 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         :param event: Window event
         :type event: QShowEvent
         """
-        #Check if there are entity configurations defined
-
-        tb_str_entities = [
-            e.short_name for e in
-            self.curr_profile.entities.values()
-            if e.TYPE_INFO == 'ENTITY'
-            ]
-
-        if len(tb_str_entities) == 0:
-            msg = QApplication.translate(
-                "ViewSTR", "There are no configured "
-                "entities to search against. Please "
-                "check the social tenure relationship "
-                "tables in the Form Designer."
-            )
-            QMessageBox.critical(
-                self, QApplication.translate(
-                    "ViewSTR",
-                    "Social Tenure Relationship"
-                ),
-                msg
-            )
-            self.setEnabled(False)
-            event.ignore()
-
-            return QMainWindow.showEvent(self, event)
-
-        if not self._check_str_table():
-            msg = QApplication.translate(
-                "ViewSTR",
-                "'social_tenure_relationship' "
-                "table could not be found. Please "
-                "recreate the table in the Form "
-                "Designer and configure the related "
-                "entities."
-            )
-            QMessageBox.critical(
-                self, QApplication.translate(
-                    "ViewSTR",
-                    "Social Tenure Relationship"
-                ),
-                msg
-            )
-            self.setEnabled(False)
-            event.ignore()
-
-            return QMainWindow.showEvent(self, event)
-
         self.setEnabled(True)
 
         self._notify_no_base_layers()
 
         self.tbPropertyPreview.refresh_canvas_layers()
         self.tbPropertyPreview.load_web_map()
+        # Add spatial unit layer if it doesn't exist
+        self.add_spatial_unit_layer()
 
         return QMainWindow.showEvent(self, event)
 
-    def _check_str_table(self):
-        """
-        Checks whether a table explicitly named
-        'social_tenure_relationship' exists in th database.
-        :return: True if the table exists.Otherwise False.
-        :rtype: bool
-        """
-        return pg_table_exists(
-            self.curr_profile.social_tenure.name, False
-        )
 
     def _notify_no_base_layers(self):
         """
@@ -848,6 +790,17 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         """
         model_root_node = None
 
+        prog_dialog = QProgressDialog(self)
+        prog_dialog.setWindowTitle(
+            QApplication.translate(
+                "STRViewEntityWidget",
+                "Searching for STR..."
+            )
+        )
+        prog_dialog.show()
+        prog_dialog.setRange(
+            0, 10
+        )
         search_term = self._searchTerm()
 
         #Try to get the corresponding search term value from the completer model
@@ -855,14 +808,14 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
             reg_exp = QRegExp("^%s$"%(search_term), Qt.CaseInsensitive,
                               QRegExp.RegExp2)
             self._proxy_completer_model.setFilterRegExp(reg_exp)
-
+            prog_dialog.setValue(2)
             if self._proxy_completer_model.rowCount() > 0:
                 #Get corresponding actual value from the first matching item
                 value_model_idx  = self._proxy_completer_model.index(0, 1)
                 source_model_idx = self._proxy_completer_model.mapToSource(
                     value_model_idx
                 )
-
+                prog_dialog.setValue(4)
                 search_term = self._completer_model.data(
                     source_model_idx, Qt.DisplayRole
                 )
@@ -873,7 +826,7 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         queryObjProperty = getattr(
             self.config.STRModel, self.currentFieldName()
         )
-
+        prog_dialog.setValue(6)
         # Get property type so that the filter can
         # be applied according to the appropriate type
         propType = queryObjProperty.property.columns[0].type
@@ -883,19 +836,20 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
                 results = modelQueryObj.filter(
                     queryObjProperty == search_term
                 ).all()
-
+                prog_dialog.setValue(7)
             else:
                 results = modelQueryObj.filter(
                     func.lower(queryObjProperty) == func.lower(search_term)
                 ).all()
-
+                prog_dialog.setValue(8)
         except exc.StatementError:
             return model_root_node, [], search_term
 
         if self.formatter is not None:
             self.formatter.setData(results)
             model_root_node = self.formatter.root()
-
+            prog_dialog.setValue(10)
+            prog_dialog.hide()
         return model_root_node, results, search_term
 
     def reset(self):

@@ -984,16 +984,16 @@ class STDMQGISLoader(object):
         Slot for showing the wizard for defining a new social
         tenure relationship
         '''
-        try:
-            frmNewSTR = newSTRWiz(self)
-            frmNewSTR.exec_()
-        except Exception as ex:
-            QMessageBox.critical(self.iface.mainWindow(),
-                QApplication.translate(
-                    "STDMPlugin",
-                    "Loading dialog..."),
-                str(ex.message)
-            )
+       # try:
+        frmNewSTR = newSTRWiz(self)
+        frmNewSTR.exec_()
+        # except Exception as ex:
+        #     QMessageBox.critical(self.iface.mainWindow(),
+        #         QApplication.translate(
+        #             "STDMPlugin",
+        #             "Loading dialog..."),
+        #         str(ex.message)
+        #     )
 
     def onManageAdminUnits(self):
         '''
