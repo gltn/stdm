@@ -44,7 +44,7 @@ class SupportingDocument(Entity):
         self.creation_date = DateTimeColumn('creation_date', self)
         self.document_identifier = VarCharColumn('document_identifier',
                                                  self, maximum=50)
-        self.document_type = VarCharColumn('document_type', self, maximum=150)
+        self.document_type = VarCharColumn('source_entity', self, maximum=150)
         self.document_size = IntegerColumn('document_size', self)
         self.filename = VarCharColumn('filename', self, maximum=200)
 

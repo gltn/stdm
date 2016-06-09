@@ -439,7 +439,7 @@ class EntitySupportingDocument(Entity):
             self._doc_types_value_list.add_value(self.tr('General'))
 
         #Document type column
-        self.doc_type = LookupColumn('document_sub_type', self)
+        self.doc_type = LookupColumn('document_type', self)
         self.doc_type.value_list = self._doc_types_value_list
 
         #Append columns
