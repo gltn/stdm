@@ -46,6 +46,9 @@ class ConfigurationFileUpdater(object):
         self.table_list = []
         self.lookup_dict = OrderedDict()
         self.config_file = None
+        self.profile_dict = OrderedDict()
+        self.profile_list = []
+        self.config_file_tables_lookup = OrderedDict()
 
     def _check_config_folder_exists(self):
         """
@@ -119,9 +122,8 @@ class ConfigurationFileUpdater(object):
                     self.file_handler.localPath())
 
     def _set_lookup_data(self, lookup_name, element):
-
+        lookup_dict = OrderedDict()
         for i in range(element.count()):
-            lookup_dict = OrderedDict()
             lookup_nodes = element.item(i).toElement()
             if lookup_nodes.tagName() == "data":
                 lookup_node = lookup_nodes.childNodes()
@@ -132,13 +134,12 @@ class ConfigurationFileUpdater(object):
             self.lookup_dict[lookup_name] = lookup_dict
 
     def _set_table_columns(self, table_name, element):
-
         for i in range(element.count()):
-            column_dict = OrderedDict()
             columns_node = element.item(i).toElement()
             if columns_node.tagName() == "columns":
                 column_nodes = columns_node.childNodes()
                 for i in range(column_nodes.count()):
+                    column_dict = OrderedDict()
                     column_node = column_nodes.item(i).toElement()
                     col_name = unicode(column_node.attribute('name'))
                     column_dict["col_name"] = col_name
@@ -149,12 +150,12 @@ class ConfigurationFileUpdater(object):
                     column_dict["col_descrpt"] = col_description
                     col_type = unicode(column_node.attribute('type'))
                     column_dict["col_type"] = col_type
-                self.table_list.append(column_dict)
+                    self.table_list.append(column_dict)
         self.table_dict[table_name] = self.table_list
 
     def _set_table_attributes(self, element):
-
         for i in range(element.count()):
+            self.table_list = []
             profile_child_node = element.item(i).toElement()
             if profile_child_node.tagName() == "table":
                 table_name = unicode(profile_child_node.attribute('name'))
@@ -177,13 +178,19 @@ class ConfigurationFileUpdater(object):
         Internal function to load version and profile to dictionary
         """
         for i in range(element.count()):
+            self.table_dict = OrderedDict()
+            self.lookup_dict = OrderedDict()
+            self.profile_dict = OrderedDict()
             child_node = element.item(i).toElement()
             if child_node.hasAttribute('version'):
                 self.version = unicode(child_node.attribute('version'))
             if child_node.tagName() == "profile":
-                self.config_profiles.append(unicode(child_node.attribute('name')))
+                profile = unicode(child_node.attribute('name')).lower()
                 profile_child_nodes = child_node.childNodes()
                 self._set_table_attributes(profile_child_nodes)
+                self.profile_dict[profile + "_table"] = self.table_dict
+                self.profile_dict[profile + "_lookup"] = self.lookup_dict
+                self.config_file_tables_lookup[profile] = self.profile_dict
 
     def _create_config_file(self, config_file_name):
         self.config_file = QFile(os.path.join(self.file_handler.localPath(),
@@ -211,22 +218,67 @@ class ConfigurationFileUpdater(object):
                 # Create config file
                 self._create_config_file("configuration.stc")
 
-                QMessageBox.information(None, "Lookup", str(self.lookup_dict))
-
                 doc = QDomDocument()
                 configuration = doc.createElement("Configuration")
                 configuration.setAttribute("version", self.version)
 
-                for config_profile in self.config_profiles:
+                # QMessageBox.information(None, "config dict",
+                #                         str(self.config_file_tables_lookup))
+
+                for config_profile, values in \
+                        self.config_file_tables_lookup.iteritems():
                     profile = doc.createElement("Profile")
                     profile.setAttribute("description", "")
                     profile.setAttribute("name", config_profile)
+                    value_lists = doc.createElement("ValueLists")
+                    for key, value in values.iteritems():
+                        if key.endswith("lookup"):
+                            for lookup_key, lookup_value in value.iteritems():
+                                value_list = doc.createElement("ValueList")
+                                value_list.setAttribute("name", lookup_key)
+
+                                for k, v in lookup_value.iteritems():
+                                    code_value = doc.createElement("CodeValue")
+                                    code_value.setAttribute("code", k)
+                                    code_value.setAttribute("value", v)
+                                    value_list.appendChild(code_value)
+
+                                value_lists.appendChild(value_list)
+
+                    profile.appendChild(value_lists)
                     configuration.appendChild(profile)
 
                 doc.appendChild(configuration)
 
                 stream = QTextStream(self.config_file)
                 stream << doc.toString()
+
+                # for config_profile in self.config_profiles:
+                #     profile = doc.createElement("Profile")
+                #     profile.setAttribute("description", "")
+                #     profile.setAttribute("name", config_profile)
+                #     value_lists = doc.createElement("ValueLists")
+                #     for values_key, values_value in \
+                #             self.lookup_dict.iteritems():
+                #         value_list = doc.createElement("ValueList")
+                #         value_list.setAttribute("name", values_key)
+                #
+                #         for value_key, value_value in \
+                #                 values_value.iteritems():
+                #             code_value = doc.createElement("CodeValue")
+                #             code_value.setAttribute("code", value_key)
+                #             code_value.setAttribute("value", value_value)
+                #             value_list.appendChild(code_value)
+                #
+                #         value_lists.appendChild(value_list)
+                #
+                #     profile.appendChild(value_lists)
+                #     configuration.appendChild(profile)
+                #
+                # doc.appendChild(configuration)
+                #
+                # stream = QTextStream(self.config_file)
+                # stream << doc.toString()
 
                 return True
             else:
