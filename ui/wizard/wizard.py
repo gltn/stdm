@@ -76,6 +76,7 @@ from column_editor import ColumnEditor
 from create_lookup import LookupEditor
 from create_lookup_value import ValueEditor
 from entity_depend import EntityDepend
+from column_depend import ColumnDepend
 
 # create logger
 LOGGER = logging.getLogger('stdm')
@@ -957,13 +958,21 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def delete_column(self):
         row_id, column = self._get_column(self.tbvColumns)
-        if column:
-            ent_id, entity = self._get_entity(self.lvEntities)
-            # delete from the entity
-            entity.remove_column(column.name)
-        else:
+        if not column:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No column selected for deletion!"))
+            return
+
+        dependencies = column.dependencies()
+        if len(dependencies['entities']) > 0 or len(dependencies['views']) > 0:
+            column_depend = ColumnDepend(self, column, dependencies)
+            result = column_depend.exec_()
+            if result == 0:
+                return
+
+        ent_id, entity = self._get_entity(self.lvEntities)
+        # delete from the entity
+        entity.remove_column(column.name)
 	
     def new_lookup(self):
         profile = self.current_profile()
