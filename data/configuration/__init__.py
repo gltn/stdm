@@ -28,10 +28,12 @@ def _rename_supporting_doc_collection(base, local_cls, ref_cls, constraint):
         return ref_cls.__name__.lower() + '_collection'
 
 
-def entity_model(entity, entity_only=False):
+def entity_model(entity, entity_only=False, with_supporting_document=False):
     """
     Creates a mapped class and corresponding relationships from an entity
-    object.
+    object. Entities of 'EntitySupportingDocument' type are not supported
+    since they are already mapped from their parent classes, a TypeError will
+    be raised.
     :param entity: Entity
     :type entity: Entity
     :param entity_only: True to only reflect the table corresponding to the
@@ -41,6 +43,10 @@ def entity_model(entity, entity_only=False):
     :return: An SQLAlchemy model reflected from the table in the database
     corresponding to the specified entity object.
     """
+    if entity.TYPE_INFO == 'ENTITY_SUPPORTING_DOCUMENT':
+        raise TypeError('<EntitySupportingDocument> type not supported. '
+                        'Please use the parent entity.')
+
     rf_entities = [entity.name]
 
     if not entity_only:
@@ -100,7 +106,10 @@ def entity_model(entity, entity_only=False):
         name_for_collection_relationship=_rename_supporting_doc_collection
     )
 
-    return getattr(Base.classes, entity.name, None), supporting_doc_model
+    if with_supporting_document:
+        return getattr(Base.classes, entity.name, None), supporting_doc_model
+
+    return getattr(Base.classes, entity.name, None)
 
 def configure_supporting_documents_inheritance(entity_supporting_docs_t,
                                                profile_supporting_docs_t,
@@ -114,7 +123,7 @@ def configure_supporting_documents_inheritance(entity_supporting_docs_t,
 
         __mapper_args__ = {
             'polymorphic_identity': 'NA',
-            'polymorphic_on': 'document_type'
+            'polymorphic_on': 'source_entity'
         }
 
     #Get the link columns
