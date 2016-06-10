@@ -71,16 +71,15 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         self.curr_lyr_table = None
         self.curr_lyr_sp_col = None
         self.curr_layer = None
-        self._curr_profile = None
+        self.setMaximumHeight(250)
+        self._curr_profile = current_profile()
         self._profile_spatial_layers = []
         self._populate_layers()
-        self.curr_profile = current_profile()
+
         self.spatial_unit = None
 
     def _populate_layers(self):
         self.stdm_layers_combo.clear()
-
-        self._curr_profile = current_profile()
 
         if self._curr_profile is None:
 

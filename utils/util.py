@@ -467,6 +467,8 @@ def lookup_id_to_value(profile, col, id):
     else:
         return id
 
+
+
 def get_db_attr(db_model, source_col, source_attr, destination_col):
 
     db_obj = db_model()
@@ -482,3 +484,36 @@ def get_db_attr(db_model, source_col, source_attr, destination_col):
         )
         return destination_attr
 
+def entity_id_to_attr(entity, attr, id):
+    doc_type_model = entity_model(entity)
+    doc_type_obj = doc_type_model()
+    result = doc_type_obj.queryObject().filter(
+        doc_type_model.id == id
+    ).first()
+    if result is not None:
+        attr_val = getattr(
+            result,
+            attr,
+            None
+        )
+    else:
+        attr_val = id
+
+    return attr_val
+
+def entity_attr_to_id(entity, attr_obj, attr_val):
+    doc_type_model = entity_model(entity)
+    doc_type_obj = doc_type_model()
+    result = doc_type_obj.queryObject().filter(
+        attr_obj == attr_val
+    ).first()
+    if result is not None:
+        attr_id = getattr(
+            result,
+            'id',
+            None
+        )
+    else:
+        attr_id = attr_val
+
+    return attr_id

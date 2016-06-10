@@ -82,6 +82,7 @@ LOGGER = logging.getLogger('stdm')
 LOGGER.setLevel(logging.DEBUG)
 
 class ConfigWizard(QWizard, Ui_STDMWizard):
+    wizardFinished = pyqtSignal(object)
     """
     STDM configuration wizard editor
     """
@@ -359,6 +360,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             if validPage:
                 profile = self.current_profile()
+
                 party = profile.entity(unicode(self.cboParty.currentText()))
                 spatial_unit = profile.entity(unicode(self.cboSPUnit.currentText()))
 
@@ -397,6 +399,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                       TEMPLATES_KEY:self.edtTemplatePath.text()
                      })
 
+            self.wizardFinished.emit(self.cboProfile.currentText())
             #pause, allow user to read post saving messages
             self.pause_wizard_dialog()
             validPage = False
@@ -551,7 +554,15 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         type profiles: list
         """
         self.cboProfile.insertItems(0, profiles)
-        self.cboProfile.setCurrentIndex(0)
+        # Set current profile on the profile combobox.
+        if self.current_profile is not None:
+            index = self.cboProfile.findText(
+                current_profile().name, Qt.MatchFixedString
+            )
+            if index >= 0:
+                self.cboProfile.setCurrentIndex(index)
+        else:
+            self.cboProfile.setCurrentIndex(0)
 
     #PROFILE
     def new_profile(self):
@@ -763,8 +774,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             return
 
         profile = self.stdm_config.profile(unicode(name))
-        self.lblDesc.setText(profile.description)
-
+        if profile is not None:
+            self.lblDesc.setText(profile.description)
+        else:
+            return
         # clear view models
         self.clear_view_model(self.entity_model)
         self.clear_view_model(self.col_view_model)
