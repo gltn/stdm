@@ -276,7 +276,12 @@ class EntityNodeFormatter(STRNodeFormatter):
         if not hasattr(model_obj, 'id'):
             return []
 
-        return document_models(doc_link_table, doc_link_col, model_obj.id)
+        return document_models(
+            self.curr_profile.social_tenure,
+            doc_link_table,
+            doc_link_col,
+            model_obj.id
+        )
 
     def _create_str_node(self, parent_node, str_model, **kwargs):
         """

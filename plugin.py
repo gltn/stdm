@@ -29,7 +29,7 @@ from qgis.core import *
 from qgis.gui import *
 
 from stdm.settings.config_serializer import ConfigurationFileSerializer
-from stdm.settings import current_profile
+from stdm.settings import current_profile, save_current_profile
 
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
@@ -53,7 +53,6 @@ from stdm.ui.entity_browser import (
 from stdm.ui.about import AboutSTDMDialog
 from stdm.ui.stdmdialog import DeclareMapping
 
-from stdm.ui.workspace_config import WorkspaceLoader
 from stdm.ui.wizard.wizard import ConfigWizard
 
 from stdm.ui.import_data import ImportData
@@ -118,9 +117,6 @@ class STDMQGISLoader(object):
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
 
-        # Initialize the property management window
-        self.propManageWindow = None
-
         # STDM Tables
         self.stdmTables = []
         self.spatialLayerMangerDockWidget = None
@@ -128,7 +124,7 @@ class STDMQGISLoader(object):
         self._user_logged_in = False
         self.current_profile = None
         # Profile status label showing the current profile
-        self.profile_status_label = QLabel()
+        self.profile_status_label = None
         LOGGER.debug('STDM plugin has been initialized.')
 
     def initGui(self):
@@ -285,23 +281,23 @@ class STDMQGISLoader(object):
             if not config_load_status:
                 return
 
-            try:
-                #Set current profile
-                self.current_profile = current_profile()
-                self.loadModules()
-                self._user_logged_in = True
+            #try:
+            #Set current profile
+            self.current_profile = current_profile()
+            self.loadModules()
+            self._user_logged_in = True
 
-                self.default_profile()
+            self.default_profile()
 
-            except Exception as pe:
-                title = QApplication.translate(
-                    "STDMQGISLoader",
-                    "Error reading profile settings"
-                )
-                self.reset_content_modules_id(
-                    title,
-                    pe.message
-                )
+            # except Exception as pe:
+            #     title = QApplication.translate(
+            #         "STDMQGISLoader",
+            #         "Error reading profile settings"
+            #     )
+            #     self.reset_content_modules_id(
+            #         title,
+            #         pe.message
+            #     )
 
     def minimum_table_checker(self):
 
@@ -495,10 +491,10 @@ class STDMQGISLoader(object):
         adminBtn.setMenu(adminMenu)
 
         #Settings menu container in STDM's QGIS menu
-        stdmAdminMenu = QMenu(self.stdmMenu)
-        stdmAdminMenu.setIcon(QIcon(":/plugins/stdm/images/icons/settings.png"))
-        stdmAdminMenu.setObjectName("STDMAdminSettings")
-        stdmAdminMenu.setTitle(QApplication.translate("ToolbarAdminSettings","Admin Settings"))
+        self.stdmAdminMenu = QMenu(self.stdmMenu)
+        self.stdmAdminMenu.setIcon(QIcon(":/plugins/stdm/images/icons/settings.png"))
+        self.stdmAdminMenu.setObjectName("STDMAdminSettings")
+        self.stdmAdminMenu.setTitle(QApplication.translate("ToolbarAdminSettings","Admin Settings"))
 
         #Create content menu container
         contentBtn = QToolButton()
@@ -512,10 +508,10 @@ class STDMQGISLoader(object):
         contentMenu = QMenu(contentBtn)
         contentBtn.setMenu(contentMenu)
 
-        stdmEntityMenu = QMenu(self.stdmMenu)
-        stdmEntityMenu.setObjectName("STDMEntityMenu")
-        stdmEntityMenu.setIcon(QIcon(":/plugins/stdm/images/icons/entity_management.png"))
-        stdmEntityMenu.setTitle(QApplication.translate("STDMEntityMenu","Entities"))
+        self.stdmEntityMenu = QMenu(self.stdmMenu)
+        self.stdmEntityMenu.setObjectName("STDMEntityMenu")
+        self.stdmEntityMenu.setIcon(QIcon(":/plugins/stdm/images/icons/entity_management.png"))
+        self.stdmEntityMenu.setTitle(QApplication.translate("STDMEntityMenu","Entities"))
 
         #Separator definition
         tbSeparator = QAction(self.iface.mainWindow())
@@ -786,12 +782,12 @@ class STDMQGISLoader(object):
         self.toolbarLoader.addContent(self.options_content_group, [adminMenu,
                                                                    adminBtn])
 
-        self.menubarLoader.addContents(adminSettingsCntGroups, [stdmAdminMenu, stdmAdminMenu])
+        self.menubarLoader.addContents(adminSettingsCntGroups, [self.stdmAdminMenu, self.stdmAdminMenu])
 
         self.menubarLoader.addContent(self._action_separator())
         self.toolbarLoader.addContent(self._action_separator())
 
-        self.menubarLoader.addContents(self.moduleContentGroups, [stdmEntityMenu, stdmEntityMenu])
+        self.menubarLoader.addContents(self.moduleContentGroups, [self.stdmEntityMenu, self.stdmEntityMenu])
         self.toolbarLoader.addContents(self.moduleContentGroups, [contentMenu, contentBtn])
 
         self.menubarLoader.addContent(self.spatialUnitManagerCntGroup)
@@ -833,6 +829,8 @@ class STDMQGISLoader(object):
         self.profile_status_message()
 
     def create_spatial_unit_manager(self):
+        self.remove_spatial_unit_mgr()
+
         self.spatialLayerMangerDockWidget = SpatialUnitManagerDockWidget(self.iface)
         self.spatialLayerMangerDockWidget.setWindowTitle(
             QApplication.translate("STDMQGISLoader", 'Spatial Unit Manager'))
@@ -865,17 +863,6 @@ class STDMQGISLoader(object):
                 self.saveEditsAct
             )
 
-    def onFinishedLoadingContent(self):
-        '''
-        This slot is raised once the module
-        loader has finished loading content items.
-        '''
-        if self.propManageWindow != None:
-            self.iface.addDockWidget(
-                Qt.RightDockWidgetArea,
-                self.propManageWindow
-            )
-
     def manageAccounts(self):
         '''
         Slot for showing the user and
@@ -899,7 +886,7 @@ class STDMQGISLoader(object):
         status = opt_dlg.exec_()
 
         if status == QDialog.Accepted:
-            self.reload_plugin()
+            self.reload_plugin(None)
 
 
     def profile_status_message(self):
@@ -909,11 +896,13 @@ class STDMQGISLoader(object):
         :return: None
         :rtype: NoneType
         """
-
+        if self.current_profile is None:
+            return
+        self.profile_status_label = QLabel()
         profile_name = self.current_profile.name
         message = QApplication.translate(
-            "STDMPlugin",
-            "Current STDM profile: "+profile_name
+            'STDMPlugin',
+            'The currently loaded STDM profile is '+profile_name+'.'
         )
 
         if self.profile_status_label.parent() is None:
@@ -925,19 +914,31 @@ class STDMQGISLoader(object):
         self.profile_status_label.setText(message)
 
 
-    def reload_plugin(self):
+    def reload_plugin(self, sel_profile):
         """
         Reloads stdm plugin without logging out.
         This is to allow modules capture changes
         made by the Configuration Wizard and Options.
+        :param sel_profile: the selected profile name
+        on the configuration wizard.
+        :type: string
         :return: None
         :rtype: NoneType
         """
+        if self.toolbarLoader is not None:
+            self.toolbarLoader.unloadContent()
+        if self.menubarLoader is not None:
+            self.menubarLoader.unloadContent()
+            self.stdmMenu.clear()
         self.logoutCleanUp(True)
-        # Set current profile
+
+        # Set current profile based on the selected
+        # profile in the wizard
+        if sel_profile is not None:
+            save_current_profile(sel_profile)
+
         self.current_profile = current_profile()
         self.loadModules()
-
 
     def load_config_wizard(self):
         '''
@@ -945,21 +946,10 @@ class STDMQGISLoader(object):
         self.wizard = ConfigWizard(
             self.iface.mainWindow()
         )
-        status = self.wizard.exec_()
-        # Reload all modules
-        self.reload_plugin()
-        # Reload profile upon successfully
-        # running the config wizard
-        if status == QDialog.Accepted:
-            self.reload_profile()
 
-    def reload_profile(self):
-        """
-        Reload the current profile.
-        """
-        #Reload the spatial unit manager
-        if not self.spatialLayerMangerDockWidget is None:
-            self.spatialLayerMangerDockWidget.reload()
+        # Reload all modules
+        self.wizard.wizardFinished.connect(self.reload_plugin)
+        self.wizard.exec_()
 
     def changePassword(self):
         '''
@@ -969,31 +959,21 @@ class STDMQGISLoader(object):
         frmPwdDlg = changePwdDlg(self)
         frmPwdDlg.exec_()
 
-    def onShowHidePropertyWindow(self,visible):
-        '''
-        Slot raised when the user checks or unchecks the action for
-        showing/hiding the property manager window
-        '''
-        if visible:
-            self.propMngtAct.setChecked(True)
-        else:
-            self.propMngtAct.setChecked(False)
-
     def newSTR(self):
         '''
         Slot for showing the wizard for defining a new social
         tenure relationship
         '''
-       # try:
-        frmNewSTR = newSTRWiz(self)
-        frmNewSTR.exec_()
-        # except Exception as ex:
-        #     QMessageBox.critical(self.iface.mainWindow(),
-        #         QApplication.translate(
-        #             "STDMPlugin",
-        #             "Loading dialog..."),
-        #         str(ex.message)
-        #     )
+        try:
+            frmNewSTR = newSTRWiz(self)
+            frmNewSTR.exec_()
+        except Exception as ex:
+            QMessageBox.critical(self.iface.mainWindow(),
+                QApplication.translate(
+                    "STDMPlugin",
+                    "Loading dialog..."),
+                str(ex.message)
+            )
 
     def onManageAdminUnits(self):
         '''
@@ -1495,16 +1475,32 @@ class STDMQGISLoader(object):
         Logout the user and remove default user buttons when logged in
         """
         try:
+
             self.stdmInitToolbar.removeAction(self.logoutAct)
             self.stdmInitToolbar.removeAction(self.changePasswordAct)
-            self.loginAct.setEnabled(True)
             self.stdmInitToolbar.removeAction(self.wzdAct)
             self.stdmInitToolbar.removeAction(self.spatialLayerManager)
-            # self.spatialLayerMangerActivate()
+            self.stdmInitToolbar.removeAction(self.contentAuthAct)
+            self.stdmInitToolbar.removeAction(self.usersAct)
+            self.stdmInitToolbar.removeAction(self.options_act)
+            self.stdmInitToolbar.removeAction(self.manageAdminUnitsAct)
+            self.stdmInitToolbar.removeAction(self.importAct)
+            self.stdmInitToolbar.removeAction(self.exportAct)
+            self.stdmInitToolbar.removeAction(self.docDesignerAct)
+            self.stdmInitToolbar.removeAction(self.docGeneratorAct)
+            self.stdmInitToolbar.removeAction(self.viewSTRAct)
+            if self.toolbarLoader is not None:
+                self.toolbarLoader.unloadContent()
+            if self.menubarLoader is not None:
+                self.menubarLoader.unloadContent()
+                self.stdmMenu.clear()
+
             self.logoutCleanUp()
             self.initMenuItems()
-        except:
-            pass
+            self.loginAct.setEnabled(True)
+        except Exception as ex:
+            LOGGER.debug(unicode('logout:')+unicode(ex))
+
 
     def removeSTDMLayers(self):
         """
@@ -1518,7 +1514,7 @@ class STDMQGISLoader(object):
 
         self.stdmTables = []
 
-    def logoutCleanUp(self, change_profile=False):
+    def logoutCleanUp(self, reload=False):
         '''
         Clear database connection references and content items
         '''
@@ -1528,7 +1524,12 @@ class STDMQGISLoader(object):
 
             #Remove STDM layers
             self.removeSTDMLayers()
-            if not change_profile:
+            # Remove Spatial Unit Manager
+            self.remove_spatial_unit_mgr()
+            # Clear current profile status text
+            self.profile_status_label.deleteLater()
+            self.profile_status_label = None
+            if reload == False:
                 #Clear singleton ref for SQLALchemy connections
                 if not data.app_dbconn is None:
                     #clear_mappers()
@@ -1537,36 +1538,22 @@ class STDMQGISLoader(object):
 
                 #Remove database reference
                 data.app_dbconn = None
-
-            if not self.toolbarLoader is None:
-                self.toolbarLoader.unloadContent()
-            if not self.menubarLoader is None:
-                self.menubarLoader.unloadContent()
-                self.stdmMenu.clear()
-            #Reset property management window
-            if not self.propManageWindow is None:
-                self.iface.removeDockWidget(
-                    self.propManageWindow
-                )
-                del self.propManageWindow
-                self.propManageWindow = None
-
             #Reset View STR Window
             if not self.viewSTRWin is None:
                 del self.viewSTRWin
                 self.viewSTRWin = None
 
-            #Remove Spatial Unit Manager
-            if self.spatialLayerMangerDockWidget:
-                self.spatialLayerMangerDockWidget.close()
-
-            self.spatialLayerMangerDockWidget = None
             self.current_profile = None
-            # Clear current profile status text
 
-            self.profile_status_label.setText('')
-        except:
-            pass
+        except Exception as ex:
+            LOGGER.debug(unicode('logoutCleanUp:') + unicode(ex))
+
+    def remove_spatial_unit_mgr(self):
+        if self.spatialLayerMangerDockWidget:
+            self.spatialLayerManager.setChecked(False)
+            self.spatialLayerMangerDockWidget.close()
+
+        self.spatialLayerMangerDockWidget = None
 
     def user_entities(self):
         """
@@ -1615,6 +1602,7 @@ class STDMQGISLoader(object):
         return separator
 
     def spatialLayerMangerActivate(self):
+
         if self.spatialLayerMangerDockWidget.isVisible():
             self.spatialLayerMangerDockWidget.hide()
         else:

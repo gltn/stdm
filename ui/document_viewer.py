@@ -466,11 +466,12 @@ class DocumentViewManager(QMainWindow):
         if not file_manager is None:
             network_repository = file_manager.networkPath
             file_id = document_widget.file_identifier()
-            doc_type = document_widget.documentType()
+            source_entity = document_widget.doc_source_entity()
+            doc_type = document_widget.doc_type_value()
             file_name, file_extension = guess_extension(document_widget.displayName())
 
-            abs_path = network_repository + "/" + str(doc_type) + "/" +\
-                       str(file_id) + str(file_extension)
+            abs_path = network_repository + "/" + str(source_entity) + "/" + \
+                       str(doc_type) + "/" +str(file_id) + str(file_extension)
 
         return abs_path
 
@@ -490,11 +491,16 @@ class DocumentViewManager(QMainWindow):
         :return: Document viewer object
         :rtype: DocumentViewer
         """
-        doc_viewer = DocumentViewer(self._mdi_area, document_widget.file_identifier())
+        doc_viewer = DocumentViewer(
+            self._mdi_area, document_widget.file_identifier()
+        )
         doc_viewer.setAttribute(Qt.WA_DeleteOnClose)
-        doc_viewer.setWindowTitle(document_widget.displayName())
+        doc_viewer.setWindowTitle(
+            document_widget.displayName()
+        )
 
-        #TODO: Incorporate logic for determining viewer based on document type
+        # TODO: Incorporate logic for determining
+        # TODO: viewer based on document type
         ph_viewer = PhotoViewer()
         doc_viewer.set_view_widget(ph_viewer)
 
