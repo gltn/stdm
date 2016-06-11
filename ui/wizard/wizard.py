@@ -159,44 +159,77 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.btnPDelete.clicked.connect(self.delete_profile)
 
     def init_entity_item_model(self):
+        """
+        Attach a selection change event handler for the custom
+        QStandardItemModel - entity_item_model
+        """
         self.entity_item_model = self.lvEntities.selectionModel()
         self.entity_item_model.selectionChanged.connect(self.entity_changed)
 
     def set_views_entity_model(self, entity_model):
+        """
+        Attach custom item model to hold data for the view controls
+        :param entity_model: Custom QStardardItemModel
+        :type entity_model: EntitiesModel
+        """
         self.pftableView.setModel(entity_model)
         self.lvEntities.setModel(entity_model)	
         self.cboParty.setModel(entity_model)
         self.cboSPUnit.setModel(entity_model)
 
     def init_STR_ctrls_event_handlers(self):
+        """
+        Attach onChange event handlers for the STR combobox 
+        """
         self.cboParty.currentIndexChanged.connect(self.party_changed)
         self.cboSPUnit.currentIndexChanged.connect(self.spatial_unit_changed)
 
     def init_entity_ctrls_event_handlers(self):
+        """
+        Attach click event handlers for the entity toolbar buttons
+        """
         self.btnNewEntity.clicked.connect(self.new_entity)
         self.btnEditEntity.clicked.connect(self.edit_entity)
         self.btnDeleteEntity.clicked.connect(self.delete_entity)
 
     def init_column_ctrls_event_handlers(self):
+        """
+        Attach click event handlers for the columns toolbar buttons
+        """
         self.btnAddColumn.clicked.connect(self.new_column)
         self.btnEditColumn.clicked.connect(self.edit_column)
         self.btnDeleteColumn.clicked.connect(self.delete_column)
 
     def init_lookup_ctrls_event_handlers(self):
+        """
+        Attach click event handlers for the lookup toolbar buttons
+        """
         self.btnAddLookup.clicked.connect(self.new_lookup)
         self.btnEditLookup.clicked.connect(self.edit_lookup)
         self.btnDeleteLookup.clicked.connect(self.delete_lookup)
 
     def init_lkvalues_event_handlers(self):
+        """
+        Attach click event handlers for the lookup values toolbar buttons
+        """
         self.btnAddLkupValue.clicked.connect(self.add_lookup_value)
         self.btnEditLkupValue.clicked.connect(self.edit_lookup_value)
         self.btnDeleteLkupValue.clicked.connect(self.delete_lookup_value)
 
     def init_ui_ctrls(self):
+        """
+        Set default state for UI controls
+        """
         self.edtDocPath.setFocus()
         self.rbReject.setChecked(True)
-        self.pftableView.setColumnWidth(0, 250)
         self.lblDesc.setText("")
+        self.pftableView.setColumnWidth(0, 250)
+        # disable editting 
+        self.pftableView.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.tbvColumns.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.lvEntities.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.lvLookups.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.lvLookupValues.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
 
     def reload_profiles(self):
         """
@@ -585,7 +618,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def delete_profile(self):
         """
-        Delete the current selected profile
+        Delete the current selected profile, but not the last one.
         """
         if self.cboProfile.count() == 1:
             self.show_message(QApplication.translate("Configuration Wizard", \
@@ -1055,6 +1088,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.lvLookupValues.setModel(self.lookup_value_view_model)
 
     def add_lookup_value(self):
+        """
+        OnClick event handler for the lookup values `Add` button
+        """
         if len(self.lvLookups.selectedIndexes()) == 0:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No lookup selected to add value!"))
@@ -1069,6 +1105,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 self.lvLookupValues.setModel(self.lookup_value_view_model)
 
     def edit_lookup_value(self):
+        """
+        OnClick event handler for the lookup values `Edit` button
+        """
         if len(self.lvLookupValues.selectedIndexes() ) == 0:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No value selected for edit!"))
@@ -1088,6 +1127,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.add_values(value_editor.lookup.values.values())
 
     def delete_lookup_value(self):
+        """
+        OnClick event handler for the lookup values `Delete` button
+        """
         if len(self.lvLookupValues.selectedIndexes() ) == 0:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "Select value to delete"))
@@ -1099,11 +1141,14 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         lookup.remove_value(unicode(value_text))
         self.add_values(lookup.values.values())
 
-    def get_str_columns(self, item_model):
-        return [item_model.item(row) for row in range(item_model.rowCount()) \
-                if item_model.item(row).checkState()==Qt.Checked]
-
     def show_message(self, message, msg_icon=QMessageBox.Critical):
+        """
+        Show a message dialog message
+        :param message: Message to show
+        :type message: str
+        :param msg_icon:Icon to show on the message box
+        :type msg_icon: QMessage.Icon 
+        """
         msg = QMessageBox(self)
         msg.setIcon(msg_icon)
         msg.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
@@ -1111,6 +1156,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         msg.exec_()
 
     def query_box(self, msg):
+        """
+        Show 'OK/Cancel' query message box
+        :param msg: message to show on the box
+        :type msg: str
+        :rtype: QMessageBox.StandardButton
+
+        """
         msgbox = QMessageBox(self)
         msgbox.setIcon(QMessageBox.Question)
         msgbox.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
