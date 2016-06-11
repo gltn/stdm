@@ -25,9 +25,9 @@ SURVEYOR_ENTITY = 'suveyor'
 
 DB_USER = 'postgres'
 DB_PASS = 'admin'
-DB_PORT = 5434
+DB_PORT = 5467
 DB_SERVER = 'localhost'
-DB_NAME = 'demo'
+DB_NAME = 'stdm'
 
 full_entity_opt_args = {
     'create_id_column': True,

@@ -39,7 +39,10 @@ from stdm.data.configuration.entity import Entity
 from stdm.data.configuration.db_items import DbItem
 from stdm.data.configuration.social_tenure import SocialTenure
 from stdm.data.configuration.supporting_document import SupportingDocument
-from stdm.data.configuration.value_list import ValueList
+from stdm.data.configuration.value_list import (
+    value_list_factory,
+    ValueList
+)
 
 LOGGER = logging.getLogger('stdm')
 
@@ -73,6 +76,7 @@ class Profile(QObject):
         self.entities = OrderedDict()
         self.relations = OrderedDict()
         self.removed_relations = []
+        #Base entity for supporting documents within the profile
         self.supporting_document = SupportingDocument(self)
         self.social_tenure = self._create_social_tenure()
         self._admin_spatial_unit = AdministrativeSpatialUnit(self)
@@ -108,6 +112,14 @@ class Profile(QObject):
         """
         return SocialTenure('social_tenure_relationship', self,
                             supports_documents=supports_documents)
+
+    @property
+    def key(self):
+        """
+        :return: Returns the normalized name of the profile.
+        :rtype: str
+        """
+        return self.name.replace(' ', '_').lower()
 
     def set_social_tenure_attr(self, entity_type, val):
         """
@@ -340,6 +352,17 @@ class Profile(QObject):
         child_relations = self.child_relations(ent)
         remove_relations = parent_relations + child_relations
 
+        #Check if the entity has supporting documents and remove references
+        if ent.supports_documents:
+            supporting_doc_ent = ent.supporting_doc
+            if not supporting_doc_ent is None:
+                #Some relations will be duplicated with ones in the main ent.
+                doc_parent_relations = self.parent_relations(supporting_doc_ent)
+                doc_child_relations = self.child_relations(supporting_doc_ent)
+
+                remove_relations.extend(doc_parent_relations)
+                remove_relations.extend(doc_child_relations)
+
         for er in remove_relations:
             self.remove_relation(er.name)
 
@@ -371,6 +394,16 @@ class Profile(QObject):
         :rtype: Entity
         """
         return factory(name, self, **kwargs)
+
+    def create_value_list(self, name):
+        """
+        Creates a ValueList object.
+        :param name: Name to use for the value list. A 'check_' prefix
+        will be appended.
+        :return: Returns an empty ValueList object.
+        :rtype: ValueList
+        """
+        return self.create_entity(name, value_list_factory)
 
     def create_association_entity(self, name, **kwargs):
         """
@@ -409,3 +442,12 @@ class Profile(QObject):
         """
         for entity in self.entities.values():
             self.remove_entity(entity.short_name)
+
+    def table_names(self):
+        """
+        :return: Returns a list of table names that belong to this profile
+        object. Some tables might not actually exist in the database so it
+        important to check if the table names exist.
+        :rtype: list(str)
+        """
+        return [e.name for e in self.entities.values()]

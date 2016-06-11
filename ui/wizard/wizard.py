@@ -83,6 +83,7 @@ LOGGER = logging.getLogger('stdm')
 LOGGER.setLevel(logging.DEBUG)
 
 class ConfigWizard(QWizard, Ui_STDMWizard):
+    wizardFinished = pyqtSignal(object)
     """
     STDM configuration wizard editor
     """
@@ -393,6 +394,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             if validPage:
                 profile = self.current_profile()
+
                 party = profile.entity(unicode(self.cboParty.currentText()))
                 spatial_unit = profile.entity(unicode(self.cboSPUnit.currentText()))
 
@@ -415,6 +417,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.config_updater.update_progress.connect(self.config_update_progress)
             self.config_updater.update_completed.connect(self.config_update_completed)
 
+
             ##*Connect thread signals
             self.updater_thread.started.connect(self._updater_thread_started)
             self.updater_thread.finished.connect(self.updater_thread.deleteLater)
@@ -429,7 +432,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                       OUTPUTS_KEY:self.edtOutputPath.text(),
                       TEMPLATES_KEY:self.edtTemplatePath.text()
                      })
-                    
+
+            self.wizardFinished.emit(self.cboProfile.currentText())
             #pause, allow user to read post saving messages
             self.pause_wizard_dialog()
             validPage = False
@@ -450,9 +454,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.config_updater.exec_()
 
     def config_update_started(self):
+        self.txtHtml.setFontWeight(75)
         self.txtHtml.append(QApplication.translate("Configuration Wizard",
-                               "Configuration update started ...")
+                               "Configuration update started...")
         )
+        self.txtHtml.setFontWeight(50)
 
     def config_update_progress(self, info_id, msg):
         if info_id == 0: # information
@@ -468,7 +474,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def config_update_completed(self, status):
         if status:
-            self.txtHtml.append("The configuration successfully updated.")
+            self.txtHtml.setTextColor(QColor(51, 182, 45))
+            self.txtHtml.setFontWeight(75)
+            msg = QApplication.translate('Configuration Wizard',
+                                         'The configuration has been '
+                                         'successfully updated.')
+            self.txtHtml.append(msg)
             self.is_config_done = True
 
             #Write config to a file
@@ -477,7 +488,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             try:
                 cfs.save()
-
                 #Save current profile to the registry
                 profile_name = unicode(self.cboProfile.currentText())
                 save_current_profile(profile_name)
@@ -578,7 +588,15 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         type profiles: list
         """
         self.cboProfile.insertItems(0, profiles)
-        self.cboProfile.setCurrentIndex(0)
+        # Set current profile on the profile combobox.
+        if self.current_profile is not None:
+            index = self.cboProfile.findText(
+                current_profile().name, Qt.MatchFixedString
+            )
+            if index >= 0:
+                self.cboProfile.setCurrentIndex(index)
+        else:
+            self.cboProfile.setCurrentIndex(0)
 
     #PROFILE
     def new_profile(self):
@@ -790,8 +808,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             return
 
         profile = self.stdm_config.profile(unicode(name))
-        self.lblDesc.setText(profile.description)
-
+        if profile is not None:
+            self.lblDesc.setText(profile.description)
+        else:
+            return
         # clear view models
         self.clear_view_model(self.entity_model)
         self.clear_view_model(self.col_view_model)

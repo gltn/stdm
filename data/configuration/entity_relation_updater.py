@@ -17,7 +17,6 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-
 import logging
 
 from sqlalchemy import Table
@@ -93,8 +92,14 @@ def fk_constraint(child, child_cols, parent, parent_cols):
     if not all_child_cols_exist:
         return None
 
-    child_table = _table(child)
-    parent_table = _table(parent)
+    child_table = _get_table(child)
+    parent_table = _get_table(parent)
+
+    if child_table is None or parent_table is None:
+        LOGGER.debug('Parent or child table is None. FK constraint will '
+                     'not be created.')
+
+        return None
 
     child_col_attrs = _table_col_attr(child_table, child_cols)
     parent_col_attrs = _table_col_attr(parent_table, parent_cols)
@@ -184,6 +189,14 @@ def drop_foreign_key_constraint(entity_relation):
 
         return False
 
+def _get_table(table_name):
+    #Get Table object from metadata or create one
+    table = metadata.tables.get(table_name, None)
+    if table is None:
+        table = Table(table_name, metadata, autoload=True)
+
+    return table
+
 
 def _check_table_exists(table):
     table_exists = pg_table_exists(table, False)
@@ -207,7 +220,3 @@ def _check_column_exists(column, table):
         return False
 
     return True
-
-
-def _table(table_name):
-    return Table(table_name, metadata, autoload=True)

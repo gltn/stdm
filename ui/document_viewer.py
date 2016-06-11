@@ -243,7 +243,7 @@ class DocumentViewer(QMdiSubWindow):
 
     def __init__(self, parent = None, file_identifier = ""):
         QMdiSubWindow.__init__(self,parent)
-        self.resize(400,300)
+        self.resize(330, 550)
         self.setWindowIcon(QIcon(":/plugins/stdm/images/icons/photo.png"))
 
         self._file_identifier = file_identifier
@@ -440,6 +440,7 @@ class DocumentViewManager(QMainWindow):
             self._doc_viewers[doc_identifier] = doc_viewer
 
             self._mdi_area.addSubWindow(doc_viewer)
+
             doc_viewer.show()
 
         if not self.isVisible():
@@ -465,11 +466,12 @@ class DocumentViewManager(QMainWindow):
         if not file_manager is None:
             network_repository = file_manager.networkPath
             file_id = document_widget.file_identifier()
-            doc_type = document_widget.documentType()
+            source_entity = document_widget.doc_source_entity()
+            doc_type = document_widget.doc_type_value()
             file_name, file_extension = guess_extension(document_widget.displayName())
 
-            abs_path = network_repository + "/" + str(doc_type) + "/" +\
-                       str(file_id) + str(file_extension)
+            abs_path = network_repository + "/" + str(source_entity) + "/" + \
+                       str(doc_type) + "/" +str(file_id) + str(file_extension)
 
         return abs_path
 
@@ -483,16 +485,22 @@ class DocumentViewManager(QMainWindow):
     def _create_viewer(self, document_widget):
         """
         Creates a new instance of a document viewer.
-        :param document_widget: Contains all the necessary information required
+        :param document_widget: Contains all
+        the necessary information required
         to load the specific document.
         :return: Document viewer object
         :rtype: DocumentViewer
         """
-        doc_viewer = DocumentViewer(self._mdi_area, document_widget.file_identifier())
+        doc_viewer = DocumentViewer(
+            self._mdi_area, document_widget.file_identifier()
+        )
         doc_viewer.setAttribute(Qt.WA_DeleteOnClose)
-        doc_viewer.setWindowTitle(document_widget.displayName())
+        doc_viewer.setWindowTitle(
+            document_widget.displayName()
+        )
 
-        #TODO: Incorporate logic for determining viewer based on document type
+        # TODO: Incorporate logic for determining
+        # TODO: viewer based on document type
         ph_viewer = PhotoViewer()
         doc_viewer.set_view_widget(ph_viewer)
 

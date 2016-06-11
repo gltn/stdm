@@ -57,7 +57,7 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_spatial_unit_manager.ui'))
 
 class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
-    def __init__(self, iface):
+    def __init__(self, iface, plugin):
         """Constructor."""
         QDockWidget.__init__(self, iface.mainWindow())
         # Set up the user interface from Designer.
@@ -67,20 +67,20 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
         self.iface = iface
+        self._plugin = plugin
         self.gps_tool_dialog = None
         self.curr_lyr_table = None
         self.curr_lyr_sp_col = None
         self.curr_layer = None
-        self._curr_profile = None
+        self.setMaximumHeight(250)
+        self._curr_profile = current_profile()
         self._profile_spatial_layers = []
         self._populate_layers()
-        self.curr_profile = current_profile()
+
         self.spatial_unit = None
 
     def _populate_layers(self):
         self.stdm_layers_combo.clear()
-
-        self._curr_profile = current_profile()
 
         if self._curr_profile is None:
 
@@ -114,7 +114,7 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
                  'configuration '
                  'wizard to create '
                  'them.'.format('\n'.join(missing_tables)))
-            QMessageBox.critical(
+            QMessageBox.warning(
                 self.iface.mainWindow(),
                 'Spatial Unit Manager',
                 msg
@@ -350,3 +350,15 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         elif bool(layer_map):
             self.gps_tool_dialog = GPSToolDialog(self.iface, self.curr_layer, self.curr_lyr_table, self.curr_lyr_sp_col)
             self.gps_tool_dialog.show()
+
+
+    def closeEvent(self, event):
+        """
+        On close of the dock window, this event is executed
+        to run close_dock method
+        :param event: The close event
+        :type QCloseEvent
+        :return: None
+        """
+        self._plugin.spatialLayerManager.setChecked(False)
+

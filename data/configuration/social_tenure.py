@@ -74,6 +74,9 @@ class SocialTenure(Entity):
         self.add_column(self.spatial_unit_foreign_key)
         self.add_column(self.tenure_type_lookup)
 
+        #Specify if a spatial unit should only be linked to one party
+        self.multi_party = True
+
         LOGGER.debug('Social Tenure Relationship initialized for %s profile.',
                      self.profile.name)
 

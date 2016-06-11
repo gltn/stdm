@@ -88,8 +88,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         # Current profile instance and properties
         self.curr_profile = current_profile()
 
-        self.prefix = self.curr_profile.prefix
-
         self.party = self.curr_profile.social_tenure.party
 
         self.spatial_unit = self.curr_profile.social_tenure.spatial_unit
@@ -535,15 +533,21 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         """
         model = table_view.model()
         table_data = []
+
+
         if str_type:
             str_type_idx = model.index(0, 0)
             party_id_idx = model.index(0, 1)
-            table_data.append(model.data(
+
+            if model.data(
                 party_id_idx, Qt.DisplayRole
-            ))
-            table_data.append(model.data(
-                str_type_idx, Qt.DisplayRole
-            ))
+            ) is not None:
+                table_data.append(model.data(
+                    party_id_idx, Qt.DisplayRole
+                ))
+                table_data.append(model.data(
+                    str_type_idx, Qt.DisplayRole
+                ))
         else:
             spatial_unit_idx = model.index(0, 0)
             table_data.append(model.data(
@@ -566,9 +570,12 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         for item in self.frmWizSTRType.findChildren(QTableView):
             if item.__class__.__name__ == 'FreezeTableWidget':
-                party_id, str_type = self.get_table_data(item)
-                party_ids.append(party_id)
-                str_types.append(str_type)
+
+                if len(self.get_table_data(item)) > 0:
+                    party_id, str_type = self.get_table_data(item)
+                    party_ids.append(party_id)
+                    str_types.append(str_type)
+
         return party_ids, str_types
 
     def get_spatial_unit_data(self):
@@ -674,9 +681,9 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :rtype: NoneType
         """
         self.sourceDocManager = SourceDocumentManager()
-        doc_entity = self.curr_profile.entity_by_name(
-            unicode(self.prefix + '_check_document_type')
-        )
+        doc_entity = self.curr_profile.social_tenure.\
+            supporting_doc.document_type_entity
+
         doc_type_model = entity_model(doc_entity)
 
         Docs = doc_type_model()
@@ -685,7 +692,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.doc_types = OrderedDict(self.doc_types)
         self.docs_tab = QTabWidget()
         self.docs_tab_index = OrderedDict()
-        # print doc_type_list
+
         for i, (id, doc) in enumerate(self.doc_types.iteritems()):
             self.docs_tab_index[doc] = i
             tabWidget = QWidget()
@@ -735,8 +742,10 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         doc_text = self.cboDocType.currentText()
         cbo_index = self.cboDocType.currentIndex()
         doc_id = self.cboDocType.itemData(cbo_index)
+
         widget = self.docs_tab.findChild(QWidget, doc_text)
         layout = widget.findChild(QVBoxLayout)
+
         self.sourceDocManager.registerContainer(
             layout, doc_id
         )
@@ -758,7 +767,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         for title in titles:
             self.sourceDocManager.insertDocumentFromFile(
                 title,
-                doc_id
+                doc_id,
+                self.curr_profile.social_tenure
             )
 
     def selectSourceDocumentDialog(self, title):
@@ -777,7 +787,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         Upload source document
         '''
         self.sourceDocManager.insertDocumentFromFile(
-            path, containerid
+            path, containerid, self.curr_profile.social_tenure
         )
 
     def buildSummary(self):
@@ -849,9 +859,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         
         #Validate person information
         if currPageIndex == 1:
+
             if self.get_party_str_type_data() is not None:
                 party_ids, str_type = self.get_party_str_type_data()
-                self.set_record_to_model(self.party, party_ids)
+                if len(party_ids) > 0:
+                    self.set_record_to_model(self.party, party_ids)
 
             if len(self.sel_party) == 0:
                 msg = QApplication.translate(
@@ -902,7 +914,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         #Validate source document    
         if currPageIndex == 4:
 
-            #if self.curr_profile.social_tenure.supports_documents:
             currIndex = self.cboDocType.currentIndex()
             if currIndex ==-1:
                 msg = QApplication.translate(
@@ -911,8 +922,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 )
                 self.notifSourceDoc.clear()
                 self.notifSourceDoc.insertErrorNotification(msg)
-            # else:
-            #     self.removePage(4)
+
 
         if currPageIndex == 5:
             isValid = self.on_create_str()
@@ -937,16 +947,19 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         )
 
 
-        str_model = entity_model(
-            self.curr_profile.social_tenure
+        str_model, str_doc_model = entity_model(
+            self.curr_profile.social_tenure, False, True
         )
-        str_model_obj = str_model()
+        _str_model_obj = str_model()
+        #_str_doc_obj = str_doc_model()
 
         prog_dialog.setRange(0, len(self.sel_party)-1)
         prog_dialog.show()
         try:
-
-            objects = OrderedDict()
+            str_model_objs = []
+            model_objs = self.sourceDocManager.model_objects(
+                self.curr_profile.social_tenure
+            )
             # Social tenure table insertion
             for i, (sel_party, str_type_id) in enumerate(
                     zip(self.sel_party, self.sel_str_type)
@@ -956,12 +969,22 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                     spatial_unit_id = self.sel_spatial_unit[0].id,
                     tenure_type = str_type_id
                 )
-                objects[str_obj] = str_obj
-                prog_dialog.setValue(i)
 
-            str_model_obj.saveMany(objects.values())
-            # Insert Supporting Document
-            self.supporting_document_insert(objects)
+                prog_dialog.setValue(i)
+                # Insert Supporting Document if there a
+                # supporting document is uploaded.
+                if len(model_objs) > 0:
+                    # loop for each document type,
+                    # model_obj is a model object
+                    # for one document type.
+                    for model_obj in model_objs:
+                        # doc_obj stands for each file
+                        # uploaded under a document type
+                        for doc_obj in model_obj.keys():
+                            str_obj.documents.append(doc_obj)
+
+                str_model_objs.append(str_obj)
+            _str_model_obj.saveMany(str_model_objs)
 
             strMsg = unicode(QApplication.translate(
                 "newSTRWiz",
@@ -975,17 +998,17 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 strMsg
             )
 
-        except sqlalchemy.exc.OperationalError as oe:
-            errMsg = oe.message
-            QMessageBox.critical(
-                self,
-                QApplication.translate(
-                    "newSTRWiz", "Unexpected Error"
-                ),
-                errMsg
-            )
-            prog_dialog.hide()
-            isValid = False
+        # except sqlalchemy.exc.OperationalError as oe:
+        #     errMsg = oe.message
+        #     QMessageBox.critical(
+        #         self,
+        #         QApplication.translate(
+        #             "newSTRWiz", "Unexpected Error"
+        #         ),
+        #         errMsg
+        #     )
+        #     prog_dialog.hide()
+        #     isValid = False
 
         except sqlalchemy.exc.IntegrityError as ie:
             errMsg = ie.message
@@ -999,24 +1022,24 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             prog_dialog.hide()
             isValid = False
 
-        except Exception as e:
-            errMsg = str(e)
-            QMessageBox.critical(
-                self,
-                QApplication.translate(
-                    'newSTRWiz','Unexpected Error'
-                ),
-                errMsg
-            )
-
-            isValid = False
+        # except Exception as e:
+        #     errMsg = str(e)
+        #     QMessageBox.critical(
+        #         self,
+        #         QApplication.translate(
+        #             'newSTRWiz','Unexpected Error'
+        #         ),
+        #         errMsg
+        #     )
+        #
+        #     isValid = False
         finally:
             STDMDb.instance().session.rollback()
             prog_dialog.hide()
 
         return isValid
 
-    def supporting_document_insert(self, str_model_objects):
+    def supporting_document_insert(self, str_model_objects, str_supp_doc_model, progress):
         """
         Checks if supporting document exists for the current profile.
         Inserts supporting document object into database, it exists.
@@ -1027,44 +1050,46 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :rtype:
         """
 
-        str_supp_doc_model = entity_model(
-            self.curr_profile.social_tenure.supporting_doc,
-            True
-        )
+        # str_supp_doc_model = entity_model(
+        #     str_supp_doc_model
+        # )
         str_supp_doc_model_obj = str_supp_doc_model()
-        # social_tenure_relationship_supporting_document save dict - for saveMany
+        # social_tenure_relationship_supporting_document
+        # save dict - for saveMany
         str_doc_objs = OrderedDict()
         # Check if supporting document exists for the profile
         # and disable the page, if it doesn't
-        if self.curr_profile.social_tenure.supports_documents:
-            for obj in str_model_objects.keys():
-                # model_objs is a list of list for each document_type uploaded
-                model_objs = self.sourceDocManager.model_objects()
 
-                if len(model_objs) > 0:
-                    # loop for each document type,
-                    # model_obj is an obj for one document type.
-                    for model_obj in model_objs:
-                        # doc_obj stands for each file
-                        # uploaded under a document type
-                        for doc_obj in model_obj:
-                            # insert in supporting_document table
-                            doc_obj.save()
-                            str_doc_obj = str_supp_doc_model(
-                                social_tenure_relationship_id=obj.id,
-                                tu_supporting_doc_id=doc_obj.id
-                            )
-                            # setattr(
-                            #     str_supp_doc_model_obj,
-                            #     self.prefix + '_supporting_doc_id',
-                            #     doc_obj.id
-                            # )
-                            # collect for saveMany
-                            str_doc_objs[str_doc_obj] = str_doc_obj
-                    # Insert in social_tenure_relationship_supporting_document table
-                    str_supp_doc_model_obj.saveMany(str_doc_objs.values())
-        # else:
-        #     self.groupBox_3.setEnabled(False)
+        for obj in str_model_objects.keys():
+            # model_objs is a list of list for each
+            # document_type uploaded
+            model_objs = self.sourceDocManager.model_objects(
+                self.curr_profile.social_tenure.supporting_doc
+            )
+
+            if len(model_objs) > 0:
+                # loop for each document type,
+                # model_obj is an obj for one document type.
+                for i, model_obj in enumerate(model_objs):
+                    # doc_obj stands for each file
+                    # uploaded under a document type
+                    for doc_obj, doc_type_id in model_obj.iteritems():
+                        # insert in supporting_document table
+                        doc_obj.save()
+                        str_doc_obj = str_supp_doc_model(
+                            social_tenure_relationship_id=obj.id,
+                            supporting_doc_id = doc_obj.id,
+                            document_type=doc_type_id
+                        )
+                        # collect for saveMany
+                        str_doc_objs[str_doc_obj] = str_doc_obj
+                    progress.setValue(len(self.sel_party) + i + 1)
+                # Insert in social_tenure_relationship_
+                # supporting_document table
+                str_supp_doc_model_obj.saveMany(
+                    str_doc_objs.values()
+                )
+
     def on_property_browser_error(self, err):
         """
         Slot raised when an error occurs when

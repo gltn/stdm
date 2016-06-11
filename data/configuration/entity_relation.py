@@ -129,6 +129,17 @@ class EntityRelation(object):
 
         return True, ''
 
+    @property
+    def autoname(self):
+        """
+        Mimic the database's automatic constraint name.
+        """
+        valid, msg = self.valid()
+        if not valid:
+            return ''
+
+        return u'{0}_{1}_fkey'.format(self.child.name, self.child_column)[:63]
+
     def create_foreign_key_constraint(self):
         """
         Creates a foreign key constraint in the database using the specified

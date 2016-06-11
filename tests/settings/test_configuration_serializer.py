@@ -18,7 +18,9 @@ class TestConfigurationSerializer(TestCase):
         self.config = StdmConfiguration.instance()
         self.serializer = ConfigurationFileSerializer(config_path)
 
-    '''
+    def tearDown(self):
+        self.config = None
+
     def test_save(self):
         populate_configuration(self.config)
 
@@ -28,7 +30,7 @@ class TestConfigurationSerializer(TestCase):
 
         #Hardwire result
         self.assertTrue(update_result)
-    '''
+
     def test_load(self):
         self.serializer.load()
 
