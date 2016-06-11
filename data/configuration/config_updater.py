@@ -33,6 +33,7 @@ from stdm.data.database import (
 from stdm.data.configuration.db_items import DbItem
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.data.configuration.exception import ConfigurationException
+from stdm.data.configuration import profile_foreign_keys
 
 LOGGER = logging.getLogger('stdm')
 
@@ -99,12 +100,6 @@ class ConfigurationSchemaUpdater(QObject):
             #Delete removed profile objects
             self._clean_removed_profiles()
 
-            msg = self.tr('The schema has been successfully updated!')
-
-            self.update_progress.emit(ConfigurationSchemaUpdater.INFORMATION, msg)
-
-            LOGGER.debug(msg)
-
             self.update_completed.emit(True)
 
         except SQLAlchemyError as sae:
@@ -150,21 +145,28 @@ class ConfigurationSchemaUpdater(QObject):
         trans_msg = self.tr('Removing redundant foreign key constraints...')
         self.update_progress.emit(ConfigurationSchemaUpdater.INFORMATION, trans_msg)
 
+        #Get existing foreign key names
+        fks = profile_foreign_keys(profile)
+
         #Drop removed relations
         for er in profile.removed_relations:
+            #Assert if the foreign key exists and skip drop if it exists
+            if er.autoname in fks:
+                continue
+
             status = er.drop_foreign_key_constraint()
 
             if not status:
                 msg = self.tr(u'Error in removing {0} foreign key '
-                              'constraint.'.format(er.name))
-                self.update_progress.emit(ConfigurationSchemaUpdater.WARNING, msg)
+                              'constraint.'.format(er.autoname))
+                #self.update_progress.emit(ConfigurationSchemaUpdater.WARNING, msg)
 
             else:
                 del profile.relations[er.name]
 
                 msg = self.tr(u'{0} foreign key constraint successfully '
-                              'removed.'.format(er.name))
-                self.update_progress.emit(ConfigurationSchemaUpdater.INFORMATION, msg)
+                              'removed.'.format(er.autoname))
+                #self.update_progress.emit(ConfigurationSchemaUpdater.INFORMATION, msg)
 
             LOGGER.debug(msg)
 
@@ -231,20 +233,27 @@ class ConfigurationSchemaUpdater(QObject):
         :param profile: Profile whose foreign key references are to be updated.
         :type profile: Profile
         """
+        from PyQt4.QtGui import QMessageBox
+        fks = profile_foreign_keys(profile)
+
         for er in profile.relations.values():
             #Assert if the EntityRelation object is valid
             if er.valid()[0]:
-                status = er.create_foreign_key_constraint()
+                #Assert if the entity relation already exists
+                if er.autoname in fks:
+                    LOGGER.debug('{0} foreign key already exists.'.format(er.autoname))
 
+                    continue
+
+
+                status = er.create_foreign_key_constraint()
                 if not status:
                     msg = self.tr(u'Error in creating {0} foreign key '
                                   'constraint.'.format(er.name))
-                    #self.update_progress.emit(ConfigurationSchemaUpdater.ERROR, msg)
 
                 else:
                     msg = self.tr(u'{0} foreign key constraint successfully '
                                   'created.'.format(er.name))
-                    #self.update_progress.emit(ConfigurationSchemaUpdater.INFORMATION, msg)
 
                 LOGGER.debug(msg)
 

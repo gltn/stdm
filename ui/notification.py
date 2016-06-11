@@ -39,7 +39,8 @@ class NotificationBar(object):
     parameter in the constructor.
     '''
     def __init__(self,layout,timerinterval = 10000): 
-        
+        self.interval = timerinterval
+
         if isinstance(layout,QVBoxLayout):                        
             self.layout = layout 
             self.layout.setSpacing(2)
@@ -53,7 +54,7 @@ class NotificationBar(object):
     
             #Timer settings
             self.timer = QTimer(self.layout)
-            self.timer.setInterval(timerinterval)
+            self.timer.setInterval(self.interval)
             QObject.connect(self.timer, SIGNAL("timeout()"),self.clear)
             
         else:

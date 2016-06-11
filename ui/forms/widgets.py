@@ -1,10 +1,11 @@
 """
 /***************************************************************************
-Name                 : Generic application for forms
-Description          : forms generator functions
-Date                 : 30/June/2013 
-copyright            : (C) 2013 by Solomon Njogu
-email                : njoroge.solomon@yahoo.com
+Name                 : Widget factories
+Description          : Creates appropriate widgets based on column type.
+Date                 : 8/June/2016
+copyright            : (C) 2016 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -16,172 +17,109 @@ email                : njoroge.solomon@yahoo.com
  *                                                                         *
  ***************************************************************************/
 """
-from datetime import date
+from collections import OrderedDict
 
-from PyQt4.QtGui import *
+from PyQt4.QtGui import (
+    QLineEdit,
+    QTextEdit,
+    QWidget
+)
 
-from stdm.ui.attribute_browser import AttributeBrowser
+from stdm.data.configuration.columns import (
+    BaseColumn,
+    TextColumn,
+    VarCharColumn
+)
 
-class InputWidget(QWidget):
-    #def __init__(self, parent =None):
-    data_type = None
-
-    def Factory(self):
-        pass
-       
-    def adopt(self):
-        pass
-    
-    def save(self):
-        pass
-    
-    def update(self):
-        pass
-
-    def type(self):
-        pass
-
-    def setOptions(self, opt=None):
-        pass
-
-class LineEditWidget(InputWidget):
-    data_type = 'string'
-    def Factory(self):
-        self.control = QLineEdit()
-        return self.control
-    
-    def adopt(self):
-        """Set mimimum character length"""
-        self.control.setMinimumWidth(50)
-        self.control.setText("")
-          
-class IntegerWidget(LineEditWidget):
-    data_type = 'integer'
-    def Factory(self):
-        self.control = QSpinBox()
-        self.control.setMaximum(1000000000)
-        self.control.adjustSize()
-        return self.control
-    
-    def adopt(self):
-        self.control.setValue(0)
-
-class DoubleWidget(IntegerWidget):
-    data_type = 'floating'
-    def Factory(self):
-        self.control = QDoubleSpinBox()
-
-    def adopt(self):
-        self.control.setValue(0)
-
-class ChoiceListWidget(InputWidget):
-    data_type = 'list'
-
-    def Factory(self):
-        #self.control = MultipleChoiceCombo()
-        self.control = QComboBox()
-        return self.control
-    
-    def setOptions(self, options):
-        self.options = options
-        return self.options
-
-    def adopt(self):
-        try:
-            if self.options:
-                #self.control.set_value(options)
-                self.control.addItem("")
-                for item in self.options:
-                    self.control.addItem(item.value,item.id)
-                self.control.setMinimumContentsLength(60)
-                self.control.setDuplicatesEnabled(False)
-                #self.control.
-                self.control.setCurrentIndex(0)
-            else:
-                return
-        except Exception as ex:
-            QMessageBox.information(None,QApplication.translate("InputWidget",
-                        "Initializing Form Controls"),
-            QApplication.translate("InputWidget",
-                        "Error loading data for the widget:"))
-            
-
-class TextAreaWidget(LineEditWidget):
-    data_type = 'long text'
-    def Factory(self):
-        self.control = QTextEdit()
-        return self.control
-
-    def adopt(self):
-        self.control.acceptRichText()
-        self.control.canPaste()
-
-class BooleanWidget(LineEditWidget):
-    data_type = 'boolean'
-    def Factory(self):
-        self.control = QComboBox()
-        return self.control
-
-    def adopt(self):
-        self.options = {
-            'Yes': 'Yes',
-            'No': 'No'
-        }
-        for k, v in self.options.iteritems():
-            self.control.addItem(v, k)
-        self.control.setMaxVisibleItems(len(self.options))
-
-class DateEditWidget(InputWidget):
-    data_type = 'datetime'
-    def Factory(self):
-        self.control = QDateEdit()
-        self.control.setCalendarPopup(True)
-        return self.control
-    
-    def adopt(self):
-        tDate = date.today()
-        self.control.setDate(tDate)
-        self.control.setMinimumWidth(50)
-
-#class Administrative
-
-class ForeignKeyEdit(InputWidget):
-    #control_type = SearchableLineEdit
-    def __init__(self, parent=None):
-        #InputWidget.__init__(self)
-        super(ForeignKeyEdit,self).__init__()
-        self.control = AttributeBrowser()
-
-    def Factory(self):
-        self.base_id = 0
-        return self.control
-
-    def adopt(self):
-        self.control.txt_attribute.setText("0")
-
-    def foreign_key_formatter(self, attr, foreign_key_ids):
-        if foreign_key_ids:
-            fk_info = foreign_key_ids.add_table_formatters().get(attr)
-            self.control.set_parent_table(fk_info)
-            self.control.set_display_column(foreign_key_ids.display_name())
-
-class WidgetCollection(object):
+class ColumnWidgetRegistry(object):
     """
-    Class initialization
+    Base container for widget factories based on column types. It is used to
+    create widgets based on column type.
     """
-    @staticmethod
-    def widget_control_type(data_type):
-        mapping = {
-            'character varying': LineEditWidget,
-            'integer': IntegerWidget,
-            'bigint': IntegerWidget,
-            'serial': IntegerWidget,
-            'double precision': DoubleWidget,
-            'choice': ChoiceListWidget,
-            'date': DateEditWidget,
-            'text': TextAreaWidget,
-            'foreign key': ForeignKeyEdit,
-            'boolean': BooleanWidget
-        }
-        return mapping[data_type]
+    registered_factories = OrderedDict()
+
+    COLUMN_TYPE_INFO = 'NA'
+    _TYPE_PREFIX = ''
+
+    @classmethod
+    def register(cls):
+        """
+        Adds the widget factory to the collection based on column type info.
+        :param cls: Column widget factory class.
+        :type cla: ColumnWidgetRegistry
+        """
+        ColumnWidgetRegistry.registered_factories[cls.COLUMN_TYPE_INFO] = cls
+
+    @classmethod
+    def create(cls, c, parent=None):
+        """
+        Creates the appropriate widget based on the given column type.
+        :param c: Column object for which to create a widget for.
+        :type c: BaseColumn
+        :param parent: Parent widget.
+        :type parent: QWidget
+        :return: Returns a widget for the given column type only if there is
+        a corresponding factory in the registry, otherwise returns None.
+        :rtype: QWidget
+        """
+        factory = ColumnWidgetRegistry.factory(c.TYPE_INFO)
+
+        if not factory is None:
+            return factory._create_widget(c, parent)
+
+        return None
+
+    @classmethod
+    def factory(cls, type_info):
+        """
+        :param type_info: Type info of a given column.
+        :type type_info: str
+        :return: Returns a widget factory based on the corresponding type
+        info, otherwise None if there is no registered factory with the given
+        type_info name.
+        """
+        return ColumnWidgetRegistry.registered_factories.get(
+                type_info,
+                None
+        )
+
+    @classmethod
+    def _create_widget(cls, c, parent):
+        #For implementation by sub-classes to create the appropriate widget.
+        raise NotImplementedError
+
+
+class VarCharWidgetFactory(ColumnWidgetRegistry):
+    """
+    Widget factory for VarChar column type.
+    """
+    COLUMN_TYPE_INFO = VarCharColumn.TYPE_INFO
+    _TYPE_PREFIX = 'le_'
+
+    @classmethod
+    def _create_widget(cls, c, parent):
+        le = QLineEdit(parent)
+        le.setObjectName(u'{0)_{1}'.format(cls._TYPE_PREFIX, c.name))
+        le.setMaxLength(c.maximum)
+
+        return le
+
+VarCharWidgetFactory.register()
+
+
+class TextWidgetFactory(ColumnWidgetRegistry):
+    """
+    Widget factory for Text column type.
+    """
+    COLUMN_TYPE_INFO = TextColumn.TYPE_INFO
+    _TYPE_PREFIX = 'txt_'
+
+    @classmethod
+    def _create_widget(cls, c, parent):
+        te = QTextEdit(parent)
+        te.setObjectName(u'{0)_{1}'.format(cls._TYPE_PREFIX, c.name))
+
+        return te
+
+TextWidgetFactory.register()
 

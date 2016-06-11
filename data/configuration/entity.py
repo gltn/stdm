@@ -31,6 +31,7 @@ from stdm.data.configuration.columns import (
     BaseColumn,
     ForeignKeyColumn,
     GeometryColumn,
+    LookupColumn,
     SerialColumn
 )
 from stdm.data.configuration.db_items import (
@@ -252,10 +253,8 @@ class Entity(QObject, TableItem):
         entity.description = self.description
         entity.is_associative = self.is_associative
         entity.user_editable = self.user_editable
-
         #Copy columns
         #self._copy_columns(entity)
-
 
     def on_delete(self):
         """
@@ -374,6 +373,32 @@ class Entity(QObject, TableItem):
         """
         return True if len(self.geometry_columns()) > 0 else False
 
+    def document_types(self):
+        """
+        :return: Returns a list of document types specified for this entity.
+        An AttributeError is raised if supporting documents are not enabled for this
+        entity.
+        :rtype: list
+        """
+        if not self.supports_documents:
+            raise AttributeError('Supporting documents are not enabled for '
+                                 'this entity.')
+
+        return self.supporting_doc.document_types().keys()
+
+    def document_path(self):
+        """
+        :return: Returns a subpath for locating supporting documents using
+        the profile and entity names respectively. This is concatenated to
+        the root path to locate documents for this particular entity.
+        :rtype: str
+        """
+        if not self.supports_documents:
+            raise AttributeError('Supporting documents are not enabled for '
+                                 'this entity.')
+
+        return self.supporting_doc.document_path()
+
 
 class EntitySupportingDocument(Entity):
     """
@@ -387,21 +412,40 @@ class EntitySupportingDocument(Entity):
 
         name = u'{0}_{1}'.format(parent_entity.short_name,
                                  'supporting_document')
-
         Entity.__init__(self, name, profile, supports_documents=False)
 
         self.user_editable = False
 
-        supporting_doc_prefix = u'{0}_{1}'.format(self.profile.prefix, 'supporting_doc_id')
-        self.document_reference = ForeignKeyColumn(supporting_doc_prefix, self)
+        #Supporting document ref column
+        self.document_reference = ForeignKeyColumn('supporting_doc_id', self)
 
-        entity_ref_name = u'{0}_{1}'.format(self.parent_entity.short_name,
-                                            'id')
+        normalize_name = self.parent_entity.short_name.replace(' ',
+                                                               '_').lower()
+
+        #Entity reference column
+        entity_ref_name = u'{0}_{1}'.format(normalize_name, 'id')
         self.entity_reference = ForeignKeyColumn(entity_ref_name, self)
+
+        #Document types
+        vl_name = u'check_{0}_document_type'.format(normalize_name)
+        self._doc_types_value_list = self._doc_type_vl(vl_name)
+        if self._doc_types_value_list is None:
+            self._doc_types_value_list = self.profile.create_value_list(
+                vl_name
+            )
+            self.profile.add_entity(self._doc_types_value_list)
+
+            #Add a default type
+            self._doc_types_value_list.add_value(self.tr('General'))
+
+        #Document type column
+        self.doc_type = LookupColumn('document_type', self)
+        self.doc_type.value_list = self._doc_types_value_list
 
         #Append columns
         self.add_column(self.document_reference)
         self.add_column(self.entity_reference)
+        self.add_column(self.doc_type)
 
         LOGGER.debug('Updating foreign key references in %s entity.',
                      self.name)
@@ -410,6 +454,17 @@ class EntitySupportingDocument(Entity):
         self._update_fk_references()
 
         LOGGER.debug('%s entity successfully initialized', self.name)
+
+    def _doc_type_vl(self, name):
+        #Search for the document type value list based on the given name
+        value_lists = self.profile.value_lists()
+        doc_type_vl = [v for v in value_lists if v.short_name == name]
+
+        #Return first item
+        if len(doc_type_vl) > 0:
+            return doc_type_vl[0]
+
+        return None
 
     def _update_fk_references(self):
         #Update ForeignKey references.
@@ -439,6 +494,31 @@ class EntitySupportingDocument(Entity):
                                             self.profile.supporting_document)
         self.document_reference.set_entity_relation_attr('parent_column',
                                                          'id')
+
+    def document_types(self):
+        """
+        :return: Returns a collection of document type names and
+        corresponding codes.
+        :rtype: OrderedDict
+        """
+        return self._doc_types_value_list.values
+
+    def document_path(self):
+        """
+        :return: Returns a subpath for locating supporting documents using
+        the profile and entity names respectively. This is concatenated to
+        the root path to locate documents for this particular entity.
+        :rtype: str
+        """
+        return u'{0}/{1}'.format(self.profile.key, self.parent_entity.name)
+
+    @property
+    def document_type_entity(self):
+        """
+        :return: ValueList object containing the entity types.
+        :rtype: ValueList
+        """
+        return self._doc_types_value_list
 
     def _entity_id_column(self, entity):
         """

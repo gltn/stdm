@@ -28,7 +28,9 @@ from PyQt4.QtGui import (
     QMessageBox
 )
 from PyQt4.QtCore import(
-    QDir
+    QDir,
+    QTimer,
+    SIGNAL
 )
 
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
@@ -52,6 +54,7 @@ from stdm.settings.registryconfig import (
 from stdm.utils.util import setComboCurrentIndexWithText
 from stdm.ui.login_dlg import loginDlg
 from stdm.ui.notification import NotificationBar
+from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
 from stdm.ui.ui_options import Ui_DlgOptions
 
 def pg_profile_names():
@@ -78,7 +81,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
 
-        self.notif_bar = NotificationBar(self.vlNotification)
+        self.notif_bar = NotificationBar(self.vlNotification, 6000)
         self._apply_btn = self.buttonBox.button(QDialogButtonBox.Apply)
         self._reg_config = RegistryConfig()
         self._db_config = DatabaseConfig()
@@ -102,7 +105,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         )
 
         self._config = StdmConfiguration.instance()
-
+        self._default_style_sheet = self.txtRepoLocation.styleSheet()
         self.init_gui()
 
     def init_gui(self):
@@ -291,7 +294,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         res = login_dlg.exec_()
         if res == QDialog.Accepted:
-            msg = self.tr("Connection to '{0}' database was "
+            msg = self.tr(u"Connection to '{0}' database was "
                           "successful.".format(db_conn.Database))
             QMessageBox.information(self, self.tr('Database Connection'), msg)
 
@@ -344,6 +347,10 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
             return False
 
+        #Validate path
+        if not self._check_path_exists(path, self.txtRepoLocation):
+            return False
+
         #Commit to registry
         self._reg_config.write({NETWORK_DOC_RESOURCE: path})
 
@@ -365,6 +372,10 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
             return False
 
+        #Validate path
+        if not self._check_path_exists(path, self.txt_template_dir):
+            return False
+
         #Commit to registry
         self._reg_config.write({COMPOSER_TEMPLATE: path})
 
@@ -377,18 +388,62 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         False.
         :rtype: bool
         """
-        path = self.txtRepoLocation.text()
+        path = self.txt_output_dir.text()
 
         if not path:
-            msg = self.tr('Please set the document generator output directory.')
+            msg = self.tr('Please set the document generator output directory'
+                          '.')
             self.notif_bar.insertErrorNotification(msg)
 
+            return False
+
+        #Validate path
+        if not self._check_path_exists(path, self.txt_output_dir):
             return False
 
         #Commit to registry
         self._reg_config.write({COMPOSER_OUTPUT: path})
 
         return True
+
+    def _check_path_exists(self, path, text_box):
+        #Validates if the specified folder exists
+        dir = QDir()
+
+        if not dir.exists(path):
+            msg = self.tr(u"'{0}' directory does not exist.".format(path))
+            self.notif_bar.insertErrorNotification(msg)
+
+            #Highlight textbox control
+            text_box.setStyleSheet(INVALIDATESTYLESHEET)
+
+            timer = QTimer(self)
+            #Sync interval with that of the notification bar
+            timer.setInterval(self.notif_bar.interval)
+            timer.setSingleShot(True)
+
+            #Remove previous connected slots (if any)
+            receivers = timer.receivers(SIGNAL('timeout()'))
+            if receivers > 0:
+                self._timer.timeout.disconnect()
+
+            timer.start()
+            timer.timeout.connect(lambda:self._restore_stylesheet(
+                text_box)
+            )
+
+            return False
+
+        return True
+
+    def _restore_stylesheet(self, textbox):
+        #Slot raised to restore the original stylesheet of the textbox control
+        textbox.setStyleSheet(self._default_style_sheet)
+
+        #Get reference to timer and delete
+        sender = self.sender()
+        if not sender is None:
+            sender.deleteLater()
 
     def apply_settings(self):
         """
@@ -406,13 +461,16 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             return False
 
         #Set supporting documents directory
-        return self.set_supporting_documents_path()
+        if not self.set_supporting_documents_path():
+            return False
 
         #Set document designer templates path
-        return self.set_document_templates_path()
+        if not self.set_document_templates_path():
+            return False
 
         #Set document generator output path
-        return self.set_document_output_path()
+        if not self.set_document_output_path():
+            return False
 
         msg = self.tr('Settings successfully saved.')
         self.notif_bar.insertInfoNotification(msg)
