@@ -31,7 +31,10 @@ from PyQt4.QtCore import (
 
 from qgis.core import *
 
-from stdm.utils.util import guess_extension
+from stdm.utils.util import (
+    guess_extension,
+    table_to_profile_name
+)
 
 class NetworkFileManager(QObject):
     """
@@ -55,12 +58,14 @@ class NetworkFileManager(QObject):
         self._doc_type = doc_type
         self.fileID = self.generateFileID()
         self.sourcePath = fileinfo.filePath()
-
+        profile_name = table_to_profile_name(self._entity_source)
         root_dir = QDir(self.networkPath)
-        doc_dir = QDir(self.networkPath + "/" + self._entity_source \
-                       + "/" + self._doc_type)
-        doc_path_str = self.networkPath + "/" + self._entity_source \
-                       + "/" + self._doc_type
+        doc_dir = QDir(
+            self.networkPath + '/'+ profile_name + '/'
+            + self._entity_source + "/" + self._doc_type
+        )
+        doc_path_str = self.networkPath + '/'+ profile_name + '/' \
+                       + self._entity_source + "/" + self._doc_type
 
         if not doc_dir.exists():
             res = root_dir.mkpath(doc_path_str)
@@ -104,30 +109,22 @@ class NetworkFileManager(QObject):
         """
         pass
 
-    # def document_type(self):
-    #     """
-    #     Document type
-    #     """
-    #     return self._entity_source
-    #
-    # def set_entity_source(self, entity_source):
-    #     """
-    #     Specify the entity source.
-    #     """
-    #     self._entity_source = entity_source
-    
+
+
     def deleteDocument(self, docmodel = None, doc_type=None):
         """
         Delete the source document from the central repository.
         """
+
         if not docmodel is None:
             #Build the path from the model variable values.
             fileName, fileExt = guess_extension(docmodel.filename)
-        
+            profile_name = table_to_profile_name(docmodel.source_entity)
             #Qt always expects the file separator be be "/" regardless of platform.
-            absPath = self.networkPath + '/' + "%s"%(docmodel.source_entity) + '/' + \
+            absPath = self.networkPath + '/'+profile_name + '/' + \
+                      "%s"%(docmodel.source_entity) + '/' + \
                       doc_type + '/' + docmodel.document_identifier + fileExt
-            
+            print absPath
             return QFile.remove(absPath)
         
         else:
