@@ -131,7 +131,12 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         #Used to store the root hash of the currently selected node.
         self._curr_rootnode_hash = ""
 
-        self._source_doc_manager = SourceDocumentManager()
+
+        self.str_model, self.str_doc_model = entity_model(
+            self.curr_profile.social_tenure, False, True
+        )
+
+        self._source_doc_manager = SourceDocumentManager(self.str_doc_model, self)
         self._source_doc_manager.documentRemoved.connect(
             self.onSourceDocumentRemoved
         )
@@ -170,7 +175,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
     def add_spatial_unit_layer(self):
 
-        sp_unit_manager = SpatialUnitManagerDockWidget(self._plugin.iface)
+        sp_unit_manager = SpatialUnitManagerDockWidget(self._plugin.iface, self._plugin)
 
         table = self.spatial_unit.name
         spatial_column = [
@@ -580,7 +585,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                 vertical_layout, doc_type_id
             )
 
-            for doc in doc_obj[0]:
+            for doc in doc_obj:
                 if doc.document_identifier not in self.removed_docs:
                     # add doc widgets
                     self._source_doc_manager.insertDocFromModel(
