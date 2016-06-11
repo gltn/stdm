@@ -953,10 +953,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         _str_model_obj = str_model()
         #_str_doc_obj = str_doc_model()
 
-        prog_dialog.setRange(
-            0,
-            len(self.sel_party)
-        )
+        prog_dialog.setRange(0, len(self.sel_party)-1)
         prog_dialog.show()
         try:
             str_model_objs = []
@@ -978,7 +975,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 # supporting document is uploaded.
                 if len(model_objs) > 0:
                     # loop for each document type,
-                    # model_obj is a model object for one document type.
+                    # model_obj is a model object
+                    # for one document type.
                     for model_obj in model_objs:
                         # doc_obj stands for each file
                         # uploaded under a document type

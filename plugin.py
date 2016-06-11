@@ -109,7 +109,7 @@ class STDMQGISLoader(object):
         locale = QSettings().value("locale/userLocale")[0:2]
         if QFileInfo(self.plugin_dir).exists():
             # Replace forward slash with backslash
-            self.plugin_dir = string.replace(self.plugin_dir, "\\", "/")
+            self.plugin_dir = self.plugin_dir.replace("\\", "/")
             localePath = self.plugin_dir + "/i18n/stdm_%s.qm" % (locale,)
         if QFileInfo(localePath).exists():
             self.translator = QTranslator()
@@ -223,10 +223,9 @@ class STDMQGISLoader(object):
         self.stdmMenu.addAction(self.aboutAct)
 
     def unload(self):
-        #Remove the STDM toolbar
+        # Remove the STDM toolbar
         del self.stdmInitToolbar
-
-        #Remove connection info
+        # Remove connection info
         self.logoutCleanUp()
 
     def login(self):
@@ -281,23 +280,23 @@ class STDMQGISLoader(object):
             if not config_load_status:
                 return
 
-            #try:
-            #Set current profile
-            self.current_profile = current_profile()
-            self.loadModules()
-            self._user_logged_in = True
+            try:
+                #Set current profile
+                self.current_profile = current_profile()
+                self.loadModules()
+                self._user_logged_in = True
 
-            self.default_profile()
+                self.default_profile()
 
-            # except Exception as pe:
-            #     title = QApplication.translate(
-            #         "STDMQGISLoader",
-            #         "Error reading profile settings"
-            #     )
-            #     self.reset_content_modules_id(
-            #         title,
-            #         pe.message
-            #     )
+            except Exception as pe:
+                title = QApplication.translate(
+                    "STDMQGISLoader",
+                    "Error reading profile settings"
+                )
+                self.reset_content_modules_id(
+                    title,
+                    pe.message
+                )
 
     def minimum_table_checker(self):
 
@@ -491,10 +490,10 @@ class STDMQGISLoader(object):
         adminBtn.setMenu(adminMenu)
 
         #Settings menu container in STDM's QGIS menu
-        self.stdmAdminMenu = QMenu(self.stdmMenu)
-        self.stdmAdminMenu.setIcon(QIcon(":/plugins/stdm/images/icons/settings.png"))
-        self.stdmAdminMenu.setObjectName("STDMAdminSettings")
-        self.stdmAdminMenu.setTitle(QApplication.translate("ToolbarAdminSettings","Admin Settings"))
+        stdmAdminMenu = QMenu(self.stdmMenu)
+        stdmAdminMenu.setIcon(QIcon(":/plugins/stdm/images/icons/settings.png"))
+        stdmAdminMenu.setObjectName("STDMAdminSettings")
+        stdmAdminMenu.setTitle(QApplication.translate("ToolbarAdminSettings","Admin Settings"))
 
         #Create content menu container
         contentBtn = QToolButton()
@@ -508,10 +507,10 @@ class STDMQGISLoader(object):
         contentMenu = QMenu(contentBtn)
         contentBtn.setMenu(contentMenu)
 
-        self.stdmEntityMenu = QMenu(self.stdmMenu)
-        self.stdmEntityMenu.setObjectName("STDMEntityMenu")
-        self.stdmEntityMenu.setIcon(QIcon(":/plugins/stdm/images/icons/entity_management.png"))
-        self.stdmEntityMenu.setTitle(QApplication.translate("STDMEntityMenu","Entities"))
+        stdmEntityMenu = QMenu(self.stdmMenu)
+        stdmEntityMenu.setObjectName("STDMEntityMenu")
+        stdmEntityMenu.setIcon(QIcon(":/plugins/stdm/images/icons/entity_management.png"))
+        stdmEntityMenu.setTitle(QApplication.translate("STDMEntityMenu","Entities"))
 
         #Separator definition
         tbSeparator = QAction(self.iface.mainWindow())
@@ -603,7 +602,6 @@ class STDMQGISLoader(object):
         self.manageAdminUnitsAct.triggered.connect(self.onManageAdminUnits)
         self.exportAct.triggered.connect(self.onExportData)
         self.importAct.triggered.connect(self.onImportData)
-        self.surveyAct.triggered.connect(self.onManageSurvey)
         self.docDesignerAct.triggered.connect(self.onDocumentDesigner)
         self.docGeneratorAct.triggered.connect(self.onDocumentGenerator)
         self.spatialEditorAct.triggered.connect(self.onToggleSpatialEditing)
@@ -782,12 +780,12 @@ class STDMQGISLoader(object):
         self.toolbarLoader.addContent(self.options_content_group, [adminMenu,
                                                                    adminBtn])
 
-        self.menubarLoader.addContents(adminSettingsCntGroups, [self.stdmAdminMenu, self.stdmAdminMenu])
+        self.menubarLoader.addContents(adminSettingsCntGroups, [stdmAdminMenu, stdmAdminMenu])
 
         self.menubarLoader.addContent(self._action_separator())
         self.toolbarLoader.addContent(self._action_separator())
 
-        self.menubarLoader.addContents(self.moduleContentGroups, [self.stdmEntityMenu, self.stdmEntityMenu])
+        self.menubarLoader.addContents(self.moduleContentGroups, [stdmEntityMenu, stdmEntityMenu])
         self.toolbarLoader.addContents(self.moduleContentGroups, [contentMenu, contentBtn])
 
         self.menubarLoader.addContent(self.spatialUnitManagerCntGroup)
@@ -831,7 +829,7 @@ class STDMQGISLoader(object):
     def create_spatial_unit_manager(self):
         self.remove_spatial_unit_mgr()
 
-        self.spatialLayerMangerDockWidget = SpatialUnitManagerDockWidget(self.iface)
+        self.spatialLayerMangerDockWidget = SpatialUnitManagerDockWidget(self.iface, self)
         self.spatialLayerMangerDockWidget.setWindowTitle(
             QApplication.translate("STDMQGISLoader", 'Spatial Unit Manager'))
         self.iface.addDockWidget(Qt.LeftDockWidgetArea,
@@ -883,10 +881,10 @@ class STDMQGISLoader(object):
         Loads the dialog for settings STDM options.
         """
         opt_dlg = OptionsDialog(self.iface)
-        status = opt_dlg.exec_()
-
-        if status == QDialog.Accepted:
-            self.reload_plugin(None)
+        opt_dlg._apply_btn.clicked.connect(
+            lambda: self.reload_plugin(None)
+        )
+        opt_dlg.exec_()
 
 
     def profile_status_message(self):
@@ -1002,15 +1000,6 @@ class STDMQGISLoader(object):
         else:
             return
 
-    def onManageSurvey(self):
-        '''
-        Slot raised to show form for entering new survey.
-        '''
-        surveyBrowser = SurveyEntityBrowser(
-            self.surveyCntGroup,
-            self.iface.mainWindow()
-        )
-        surveyBrowser.exec_()
 
     def onDocumentDesigner(self):
         """
@@ -1549,10 +1538,15 @@ class STDMQGISLoader(object):
             LOGGER.debug(unicode('logoutCleanUp:') + unicode(ex))
 
     def remove_spatial_unit_mgr(self):
+        """
+        Removes spatial Unit Manger DockWidget.
+        :return: None
+        :rtype: NoneType
+        """
         if self.spatialLayerMangerDockWidget:
             self.spatialLayerManager.setChecked(False)
             self.spatialLayerMangerDockWidget.close()
-
+            self.spatialLayerMangerDockWidget.deleteLater()
         self.spatialLayerMangerDockWidget = None
 
     def user_entities(self):
