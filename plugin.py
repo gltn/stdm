@@ -27,7 +27,7 @@ from PyQt4.QtGui import *
 
 from qgis.core import *
 from qgis.gui import *
-
+from sqlalchemy.exc import SQLAlchemyError
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings import current_profile, save_current_profile
 
@@ -942,6 +942,7 @@ class STDMQGISLoader(object):
         :return: None
         :rtype: NoneType
         """
+
         if self.toolbarLoader is not None:
             self.toolbarLoader.unloadContent()
         if self.menubarLoader is not None:
@@ -955,7 +956,16 @@ class STDMQGISLoader(object):
             save_current_profile(sel_profile)
 
         self.current_profile = current_profile()
-        self.loadModules()
+        try:
+            self.loadModules()
+        except SQLAlchemyError as ex:
+            LOGGER.debug('SQLAlchemyError: '+ str(ex))
+            STDMDb.instance().session.rollback()
+            self.loadModules()
+
+        except Exception as ex:
+            LOGGER.debug('Error Loading Modules: ' + str(ex))
+            self.loadModules()
 
     def load_config_wizard(self):
         '''
