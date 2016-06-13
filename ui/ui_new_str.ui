@@ -121,37 +121,43 @@
      </widget>
     </item>
     <item>
-     <widget class="QScrollArea" name="scrollArea_2">
-      <property name="widgetResizable">
-       <bool>true</bool>
-      </property>
-      <widget class="QWidget" name="scrollAreaWidgetContents_3">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>617</width>
-         <height>367</height>
-        </rect>
-       </property>
-       <widget class="QWidget" name="tvPersonInfo" native="true">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>619</width>
-          <height>371</height>
-         </rect>
+     <layout class="QVBoxLayout" name="verticalLayout_13">
+      <item>
+       <widget class="QScrollArea" name="scrollArea_2">
+        <property name="widgetResizable">
+         <bool>true</bool>
         </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
+        <widget class="QWidget" name="scrollAreaWidgetContents_3">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>615</width>
+           <height>365</height>
+          </rect>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_14">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="margin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QWidget" name="tvPersonInfo" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </widget>
-      </widget>
-     </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -188,7 +194,7 @@
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
-        <string>Add Record</string>
+        <string>Add Spatial Unit</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
@@ -292,7 +298,7 @@
       </widget>
       <widget class="QWidget" name="tab_2">
        <attribute name="title">
-        <string>Preview</string>
+        <string>Preview Spatial Unit</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_5">
         <item>
@@ -479,8 +485,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>617</width>
-         <height>404</height>
+         <width>98</width>
+         <height>31</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -599,8 +605,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>595</width>
-            <height>350</height>
+            <width>100</width>
+            <height>30</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">

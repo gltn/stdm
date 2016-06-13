@@ -16,7 +16,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-#import inspect
+import logging
 from datetime import datetime
 from collections import OrderedDict
 
@@ -43,7 +43,9 @@ from stdm.network import (
     NetworkFileManager,
     DocumentTransferWorker
 )
-
+from stdm.data.database import (
+    STDMDb
+)
 from stdmdialog import DeclareMapping
 from stdm.settings.registryconfig import (
     RegistryConfig,
@@ -80,6 +82,7 @@ document_type_class={}
 #Mode for initializing the document widget
 UPLOAD_MODE = 2100
 DOWNLOAD_MODE = 2101
+LOGGER = logging.getLogger('stdm')
 
 class SourceDocumentManager(QObject):
     """
@@ -89,12 +92,12 @@ class SourceDocumentManager(QObject):
     documentRemoved = pyqtSignal(int, str)
     fileUploaded = pyqtSignal('PyQt_PyObject')
 
-    def __init__(self, parent=None):
+    def __init__(self, document_model, parent=None):
         QObject.__init__(self, parent)
         self.containers = OrderedDict()
         self._canEdit = True
 
-
+        self.document_model = document_model
         self.curr_profile = current_profile()
         self.prefix = self.curr_profile.prefix
         doc_entity = self.curr_profile.social_tenure.\
@@ -230,7 +233,7 @@ class SourceDocumentManager(QObject):
                     networkManager = NetworkFileManager(network_location,self.parent())
 
                     #Add document widget
-                    docWidg = DocumentWidget(networkManager, parent=self.parent(),
+                    docWidg = DocumentWidget(self.document_model, networkManager, parent=self.parent(),
                                              view_manager=self._doc_view_manager)
 
                     #Connect slot once the document has been successfully uploaded.
@@ -243,6 +246,7 @@ class SourceDocumentManager(QObject):
                     doc_type_value = entity_id_to_attr(
                         doc_type_entity, 'value', doc_type_id
                     )
+
                     docWidg.setFile(path, entity.name, doc_type_value, doc_type_id)
                     container.addWidget(docWidg)
 
@@ -255,7 +259,7 @@ class SourceDocumentManager(QObject):
         docWidget = self.sender()
         if isinstance(docWidget, DocumentWidget):
 
-            self.fileUploaded.emit(docWidget.sourceDocument(documenttype, entity))
+            self.fileUploaded.emit(docWidget.sourceDocument(documenttype))
             self._docRefs.append(docWidget.fileUUID)
 
     def set_source_documents(self, source_docs):
@@ -273,7 +277,6 @@ class SourceDocumentManager(QObject):
         Renders the source document info from a subclass of 'SupportingDocumentMixin'.
         """
         #Check if the document has already been inserted in the manager.
-
         docIndex = getIndex(self._docRefs, sourcedoc.document_identifier)
         if docIndex != -1:
             return
@@ -291,7 +294,7 @@ class SourceDocumentManager(QObject):
 
                 networkManager = NetworkFileManager(network_document_path())
                 #Add document widget
-                docWidg = DocumentWidget(networkManager, mode=DOWNLOAD_MODE,
+                docWidg = DocumentWidget(self.document_model, networkManager, mode=DOWNLOAD_MODE,
                                          canRemove=self._canEdit,
                                          view_manager=self._doc_view_manager)
                 self._linkWidgetRemovedSignal(docWidg)
@@ -346,7 +349,7 @@ class SourceDocumentManager(QObject):
 
         return srcDocMapping
 
-    def sourceDocuments(self, entity, dtype=None):
+    def sourceDocuments(self, dtype=None):
         """
         Returns all supporting document models based on
         the file uploads contained in the document manager.
@@ -360,31 +363,29 @@ class SourceDocumentManager(QObject):
 
             for w in range(widg_count):
                 docWidg = v.itemAt(w).widget()
-                source_doc = docWidg.sourceDocument(k, entity)
+                source_doc = docWidg.sourceDocument(k)
                 type_docs.append(source_doc)
 
             source_documents[k] = type_docs
 
         return source_documents
 
-    def model_objects(self, entity):
+    def model_objects(self):
         """
         Method to return all the model object for
         supporting document be inserted into table
         :return:
         """
         model_objs = []
-        #print inspect.stack()
-        #print inspect.stack()[1][3]
-        if self.sourceDocuments(entity) is not None:
-            for doc_type_id in self.containers.keys():
-                if self.sourceDocuments(entity).get(doc_type_id) is not None:
-                    doc_obj = [
-                        (model_obj, doc_type_id)
-                        for model_obj in self.sourceDocuments(entity).get(doc_type_id)
-                    ]
 
-                    doc_obj = OrderedDict(doc_obj)
+        if self.sourceDocuments() is not None:
+            for doc_type_id in self.containers.keys():
+                if self.sourceDocuments().get(doc_type_id) is not None:
+                    doc_obj = [
+                        model_obj
+                        for model_obj in
+                            self.sourceDocuments().get(doc_type_id)
+                    ]
 
                     model_objs.append(doc_obj)
 
@@ -414,13 +415,13 @@ class SourceDocumentManager(QObject):
 
         return delete_error_docs
 
-    def onDocumentRemoved(self, containerid, doc_uuid=None):
+    def onDocumentRemoved(self, containerid):
         """
         Slot raised when a document is removed from the container.
         Propagate signal.
         """
         remDocWidget = self.sender()
-
+        doc_uuid = None
         if remDocWidget:
             self.container(containerid).removeWidget(remDocWidget)
 
@@ -429,8 +430,11 @@ class SourceDocumentManager(QObject):
                 doc_uuid = remDocWidget.fileUUID
 
             elif remDocWidget.mode() == DOWNLOAD_MODE:
-
-                doc_uuid = remDocWidget._srcDoc.document_identifier
+                try:
+                    doc_uuid = remDocWidget._srcDoc.document_identifier
+                except Exception as ex:
+                    STDMDb.instance().session.rollback()
+                    LOGGER.debug('onDocumentRemoved: ' + str(ex))
 
             if doc_uuid:
                 #Remove corresponding viewer
@@ -496,6 +500,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
     def __init__(
             self,
+            document_model,
             fileManager=None,
             mode=UPLOAD_MODE,
             parent=None,
@@ -507,6 +512,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         self.initGui()
         self.fileInfo = None
         self.fileUUID = None
+        self.document_model = document_model
         self.fileManager = fileManager
         self._mode = mode
         self._displayName = ""
@@ -600,21 +606,12 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         :return: None
         :rtype: NoneType
         """
-        str_supp_doc_model = entity_model(
-            self.curr_profile.social_tenure.supporting_doc
-        )
-        str_supp_doc_obj = str_supp_doc_model()
+        str_supp_doc_obj = self.document_model()
 
         doc_id = self._srcDoc.id
 
-        str_doc_id = get_db_attr(
-            str_supp_doc_model,
-            str_supp_doc_model.supporting_doc_id,
-            doc_id,
-            'id'
-        )
         query_result = str_supp_doc_obj.queryObject().filter(
-            str_supp_doc_model.id == str_doc_id
+            self.document_model.id == doc_id
         ).first()
 
         query_result.delete()
@@ -633,7 +630,8 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         if self._mode == UPLOAD_MODE:
             status = self.fileManager.deleteDocument()
         else:
-            status = self.fileManager.deleteDocument(self._srcDoc, self._doc_type)
+            doc_type = self.doc_type_value()
+            status = self.fileManager.deleteDocument(self._srcDoc, doc_type)
 
         if not status:
             if not suppress_messages:
@@ -655,8 +653,8 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
 
             except sqlalchemy.exc.SQLAlchemyError, exc:
-                #TODO: Log this information
-                pass
+                LOGGER.debug('_remove_doc: '+str(exc))
+
 
         #Emit signal to indicate the widget is ready to be removed
         self.referencesRemoved.emit(self._doc_type_id)
@@ -711,6 +709,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
             self.buildDisplay()
             self._srcDoc = sourcedoc
             self._source_entity = sourcedoc.source_entity
+            self._doc_type_id = sourcedoc.document_type
 
     def doc_type_value(self):
         """
@@ -720,6 +719,12 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         :type: String
         :rtype: String
         """
+        entity = self.curr_profile.entity_by_name(self._source_entity)
+
+        doc_type_entity = entity.supporting_doc.document_type_entity
+        self._doc_type = entity_id_to_attr(
+            doc_type_entity, 'value', self._doc_type_id
+        )
         return self._doc_type
 
     def doc_source_entity(self):
@@ -747,19 +752,21 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         """
         return self.fileUUID
 
-    def sourceDocument(self, doc_type_id, entity):
+    def sourceDocument(self, doc_type_id):
         """
         Builds the database model for the source document file reference.
         """
+        sent = self.sender()
+        print sent
         if self._mode == UPLOAD_MODE:
-            entity_cls, entity_doc_cls = entity_model(entity, False, True)
 
-            entity_doc_obj = entity_doc_cls()
+            entity_doc_obj = self.document_model()
             entity_doc_obj.document_identifier = self.fileUUID
             entity_doc_obj.filename = self.fileInfo.fileName()
             entity_doc_obj.document_size = self._docSize
             entity_doc_obj.creation_date = datetime.now()
             entity_doc_obj.source_entity = self._source_entity
+            entity_doc_obj.document_type = doc_type_id
             self._srcDoc = entity_doc_obj
 
         return self._srcDoc
