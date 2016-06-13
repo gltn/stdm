@@ -89,7 +89,7 @@ class SourceDocumentManager(QObject):
     Manages the display of source documents in vertical layout container(s).
     """
     #Signal raised when a document is removed from its container.
-    documentRemoved = pyqtSignal(int, str)
+    documentRemoved = pyqtSignal(int, str, list)
     fileUploaded = pyqtSignal('PyQt_PyObject')
 
     def __init__(self, document_model, parent=None):
@@ -189,11 +189,16 @@ class SourceDocumentManager(QObject):
 
     def insertDocumentFromFile(self, path, doc_type_id, entity):
         """
-        Insert a new document into one of the
-        registered containers with the
-        specified id. If there is no container
-        is specified then the document widget
-        will be inserted in the first container available.
+        Insert a new document into one of the registered containers with the
+        document type id. This document is registered
+        :param path: The local user path of the document
+        :type path: String
+        :param doc_type_id: The entity document type id
+        :type doc_type_id: Integer
+        :param entity: The entity in which the document is inserted into.
+        :type entity: Entity class
+        :return: None
+        :rtype: NoneType
         """
 
         if len(self.containers) > 0:
@@ -214,31 +219,43 @@ class SourceDocumentManager(QObject):
                     doc_dir = QDir(network_location)
 
                     if not doc_dir.exists():
-                        msg = QApplication.translate("sourceDocumentManager",
-                                                     u"The root document "
-                                                     u"repository '{0}' does "
-                                                     u"not exist.\nPlease "
-                                                     u"check the path settings.")
+                        msg = QApplication.translate(
+                            "sourceDocumentManager",
+                            u"The root document "
+                            u"repository '{0}' does "
+                            u"not exist.\nPlease "
+                            u"check the path settings."
+                        )
                         parent = self.parent()
                         if not isinstance(parent, QWidget):
                             parent = None
 
-                        QMessageBox.critical(parent,
-                                             QApplication.translate("sourceDocumentManager","Document Manager"),
-                                             msg.format(network_location))
-
+                        QMessageBox.critical(
+                            parent,
+                            QApplication.translate(
+                                "sourceDocumentManager",
+                                "Document Manager"
+                            ),
+                            msg.format(network_location)
+                        )
                         return
 
                     #Use the default network file manager
-                    networkManager = NetworkFileManager(network_location,self.parent())
+                    networkManager = NetworkFileManager(
+                        network_location,self.parent()
+                    )
 
                     #Add document widget
-                    docWidg = DocumentWidget(self.document_model, networkManager, parent=self.parent(),
-                                             view_manager=self._doc_view_manager)
+                    docWidg = DocumentWidget(
+                        self.document_model,
+                        networkManager,
+                        parent=self.parent(),
+                        view_manager=self._doc_view_manager
+                    )
 
                     #Connect slot once the document has been successfully uploaded.
                     docWidg.fileUploadComplete.connect(
-                        lambda: self.onFileUploadComplete(doc_type_id, entity)
+                        lambda: self.onFileUploadComplete(doc_type_id)
                     )
                     self._linkWidgetRemovedSignal(docWidg)
 
@@ -247,10 +264,12 @@ class SourceDocumentManager(QObject):
                         doc_type_entity, 'value', doc_type_id
                     )
 
-                    docWidg.setFile(path, entity.name, doc_type_value, doc_type_id)
+                    docWidg.setFile(
+                        path, entity.name, doc_type_value, doc_type_id
+                    )
                     container.addWidget(docWidg)
 
-    def onFileUploadComplete(self, documenttype, entity):
+    def onFileUploadComplete(self, documenttype):
         """
         Slot raised when a source file has been successfully uploaded into the central document
         repository.
@@ -394,10 +413,10 @@ class SourceDocumentManager(QObject):
 
     def clean_up(self):
         """
-        Removes all unsaved files that had initially
+        s all unsaved files that had initially
         been uploaded in the corresponding containers.
         :return: Document widgets whose referenced
-        files could not be removed.
+        files could not be d.
         :rtype: list
         """
         delete_error_docs = []
@@ -421,6 +440,7 @@ class SourceDocumentManager(QObject):
         Propagate signal.
         """
         remDocWidget = self.sender()
+
         doc_uuid = None
         if remDocWidget:
             self.container(containerid).removeWidget(remDocWidget)
@@ -430,11 +450,7 @@ class SourceDocumentManager(QObject):
                 doc_uuid = remDocWidget.fileUUID
 
             elif remDocWidget.mode() == DOWNLOAD_MODE:
-                try:
-                    doc_uuid = remDocWidget._srcDoc.document_identifier
-                except Exception as ex:
-                    STDMDb.instance().session.rollback()
-                    LOGGER.debug('onDocumentRemoved: ' + str(ex))
+                doc_uuid = remDocWidget.fileUUID
 
             if doc_uuid:
                 #Remove corresponding viewer
@@ -447,7 +463,11 @@ class SourceDocumentManager(QObject):
                     pass
             remDocWidget.deleteLater()
 
-        self.documentRemoved.emit(containerid, doc_uuid)
+        self.documentRemoved.emit(
+            containerid,
+            remDocWidget.fileUUID,
+            remDocWidget.removed_doc
+        )
 
     def eventFilter(self,watched,e):
         '''
@@ -523,7 +543,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         self._view_manager = view_manager
 
         self.curr_profile = current_profile()
-
+        self.removed_doc = []
         self.lblClose.installEventFilter(self)
         self.lblName.installEventFilter(self)
         self._source_entity = ""
@@ -597,25 +617,6 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
         return True
 
-
-    def delete_str_supp_doc(self):
-        """
-        Deletes the corresponding
-        social_tenure_relationship_supporting_document
-        when a supporting document is deleted.
-        :return: None
-        :rtype: NoneType
-        """
-        str_supp_doc_obj = self.document_model()
-
-        doc_id = self._srcDoc.id
-
-        query_result = str_supp_doc_obj.queryObject().filter(
-            self.document_model.id == doc_id
-        ).first()
-
-        query_result.delete()
-
     def _remove_doc(self, suppress_messages=False):
         """
         :param suppress_messages: Set whether user messages
@@ -630,7 +631,9 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         if self._mode == UPLOAD_MODE:
             status = self.fileManager.deleteDocument()
         else:
+
             doc_type = self.doc_type_value()
+            self.removed_doc.append(self._srcDoc)
             status = self.fileManager.deleteDocument(self._srcDoc, doc_type)
 
         if not status:
@@ -648,9 +651,19 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
             #Try to delete document and suppress error if it does not exist
             try:
 
-                self.delete_str_supp_doc()
-                self._srcDoc.delete()
 
+                self._srcDoc.delete()
+                # Remove the same document from supporting
+                # doc table linked to other str record as the file doesn't exist.
+                doc_obj = self.document_model()
+                other_party_doc = doc_obj.queryObject().filter(
+                    self.document_model.document_identifier ==
+                    self._srcDoc.document_identifier
+                ).all()
+
+                for docs in other_party_doc:
+                    self.removed_doc.append(docs)
+                    docs.delete()
 
             except sqlalchemy.exc.SQLAlchemyError, exc:
                 LOGGER.debug('_remove_doc: '+str(exc))
@@ -687,7 +700,6 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
             self._displayName = unicode(self.fileInfo.fileName())
             self._docSize = self.fileInfo.size()
-
             self.buildDisplay()
             self._source_entity = source_entity
             self._doc_type = doc_type
@@ -756,13 +768,12 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         """
         Builds the database model for the source document file reference.
         """
-        sent = self.sender()
-        print sent
         if self._mode == UPLOAD_MODE:
 
             entity_doc_obj = self.document_model()
             entity_doc_obj.document_identifier = self.fileUUID
             entity_doc_obj.filename = self.fileInfo.fileName()
+
             entity_doc_obj.document_size = self._docSize
             entity_doc_obj.creation_date = datetime.now()
             entity_doc_obj.source_entity = self._source_entity
@@ -840,7 +851,8 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
 def source_document_location(default = "/home"):
     """
-    :return: Last used source directory for source documents prior to uploading.
+    :return: Last used source directory for
+    source documents prior to uploading.
     :rtype: str
     """
     source_doc_dir = default

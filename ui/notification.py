@@ -198,4 +198,3 @@ class NotificationItem(QWidget,Ui_frmNotificationItem):
         self.lblNotifMessage.setText(message)
         self.frame.setStyleSheet(stylesheet)
         self.lblNotifMessage.setStyleSheet(font_color)
-        self.lblNotifMessage.setWordWrap(True)
