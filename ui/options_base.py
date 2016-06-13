@@ -473,7 +473,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             return False
 
         msg = self.tr('Settings successfully saved.')
-        self.notif_bar.insertInfoNotification(msg)
+        self.notif_bar.insertSuccessNotification(msg)
 
         return True
 

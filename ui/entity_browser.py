@@ -308,7 +308,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
             #Get the first selected id
             selId = selIDs[0]
             self.recordSelected.emit(selId)
-            self._notifBar.insertInfoNotification(QApplication.translate("EntityBrowser", "Record has been selected"))
+            self._notifBar.insertSuccessNotification(QApplication.translate("EntityBrowser", "Record has been selected"))
             
     def addModelToView(self,modelObj):
         '''
@@ -476,7 +476,7 @@ class EntityBrowserWithEditor(EntityBrowser):
                 #User notification
                 delMsg = QApplication.translate("EntityBrowserWithEditor", 
                                          "Record has been successfully deleted!")
-                self._notifBar.insertInfoNotification(delMsg)     
+                self._notifBar.insertSuccessNotification(delMsg)
 
     def onDoubleClickView(self, modelindex):
         '''

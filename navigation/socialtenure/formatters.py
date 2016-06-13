@@ -278,7 +278,6 @@ class EntityNodeFormatter(STRNodeFormatter):
 
         return document_models(
             self.curr_profile.social_tenure,
-            doc_link_table,
             doc_link_col,
             model_obj.id
         )

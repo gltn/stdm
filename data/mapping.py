@@ -25,7 +25,7 @@ from qgis.gui import *
 from qgis.core import *
 
 from stdm.ui.helpers import valueHandler, ControlDirtyTrackerCollection
-from stdm.ui.notification import NotificationBar,ERROR,WARNING,INFO
+from stdm.ui.notification import NotificationBar,ERROR,WARNING, SUCCESS
 
 __all__ = ["SAVE","UPDATE","MapperMixin","QgsFeatureMappperMixin"]
 

@@ -27,7 +27,7 @@ from PyQt4.QtGui import (
 from stdm.ui.notification import (
     ERROR,
     WARNING,
-    INFO
+    SUCCESS
 )
 
 from .registryconfig import RegistryConfig
@@ -271,7 +271,7 @@ class SettingsWidgetMapper(object):
 
             s.bind_configuration_value()
 
-        msg = INFO, QApplication.translate("SettingsWidgetMapper",
+        msg = SUCCESS, QApplication.translate("SettingsWidgetMapper",
                     "%s settings successfully updated." % (self._capitalize_first_char(self._context),))
         self.notified.emit([msg])
 

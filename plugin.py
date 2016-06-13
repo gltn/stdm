@@ -27,7 +27,7 @@ from PyQt4.QtGui import *
 
 from qgis.core import *
 from qgis.gui import *
-
+from sqlalchemy.exc import SQLAlchemyError
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings import current_profile, save_current_profile
 
@@ -589,7 +589,7 @@ class STDMQGISLoader(object):
         self.iface.mainWindow())
 
         self.wzdAct = QAction(QIcon(":/plugins/stdm/images/icons/table_designer.png"),\
-                    QApplication.translate("WorkspaceConfig","Design Forms"), self.iface.mainWindow())
+                    QApplication.translate("ConfigWizard","Configuration Wizard"), self.iface.mainWindow())
         self.wzdAct.setShortcut(Qt.Key_F7)
         self.ModuleAct = QAction(QIcon(":/plugins/stdm/images/icons/table_designer.png"),\
                     QApplication.translate("WorkspaceConfig","Entities"), self.iface.mainWindow())
@@ -673,17 +673,35 @@ class STDMQGISLoader(object):
 
         if self.user_entities() is not None:
             user_entities = dict(self.user_entities())
-            for name, short_name in user_entities.iteritems():
+            for i, (name, short_name) in enumerate(user_entities.iteritems()):
                 display_name = QT_TRANSLATE_NOOP("Entities",
                                                  unicode(short_name).replace("_", " ").title())
-                self._moduleItems[display_name] = name
+                if display_name != 'Social Tenure Relationship':
+                    self._moduleItems[display_name] = name
+            # Add social tenure at last in the dict
+            str_display_name = QT_TRANSLATE_NOOP(
+                "Entities",
+                unicode(
+                    self.current_profile.social_tenure.short_name
+                ).replace("_", " ").title()
+            )
+            self._moduleItems[str_display_name] = self.current_profile.social_tenure.name
+
 
         for k, v in self._moduleItems.iteritems():
+
             content_action = QAction(QIcon(":/plugins/stdm/images/icons/table.png"),
                                      k, self.iface.mainWindow())
 
             # capabilities = contentGroup(self._moduleItems[k])
             #
+            #if k == 'Social Tenure Relationship':
+                #content_action.parent().addSeparator()
+                # separate = QFrame()
+                # separate.setObjectName('str_separate')
+                # separate.setGeometry(QRect(320, 150, 118, 3))
+                # separate.setFrameShape(QFrame.HLine)
+                # separate.setFrameShadow(QFrame.Sunken)
             # if capabilities:
             moduleCntGroup = TableContentGroup(username, k, content_action)
             # moduleCntGroup.createContentItem().code = capabilities[0]
@@ -694,6 +712,7 @@ class STDMQGISLoader(object):
             self._reportModules[k] = self._moduleItems.get(k)
             self.moduleContentGroups.append(moduleCntGroup)
             # Add core modules to the report configuration
+
         #Create content groups and add items
         self.contentAuthCntGroup = ContentGroup(username)
         self.contentAuthCntGroup.addContentItem(contentAuthCnt)
@@ -923,6 +942,7 @@ class STDMQGISLoader(object):
         :return: None
         :rtype: NoneType
         """
+
         if self.toolbarLoader is not None:
             self.toolbarLoader.unloadContent()
         if self.menubarLoader is not None:
@@ -936,7 +956,16 @@ class STDMQGISLoader(object):
             save_current_profile(sel_profile)
 
         self.current_profile = current_profile()
-        self.loadModules()
+        try:
+            self.loadModules()
+        except SQLAlchemyError as ex:
+            LOGGER.debug('SQLAlchemyError: ' + str(ex))
+            STDMDb.instance().session.rollback()
+            self.loadModules()
+
+        except Exception as ex:
+            LOGGER.debug('Error Loading Modules: ' + str(ex))
+            self.loadModules()
 
     def load_config_wizard(self):
         '''
@@ -1397,13 +1426,14 @@ class STDMQGISLoader(object):
             return True
         return False
 
-    def widgetLoader(self,QAction):
+    def widgetLoader(self, QAction):
         #Method to load custom forms
         tbList = self._moduleItems.values()
 
         dispName=QAction.text()
 
         if dispName == 'Social Tenure Relationship':
+
             if self.current_profile is None:
                 self.default_profile()
                 return

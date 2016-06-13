@@ -144,7 +144,7 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
                 docNameItem.setText(docName)
                 filePathItem.setText(newTemplatePath)
                 
-                self.notifBar.insertInfoNotification(QApplication.translate("TemplateDocumentSelector", \
+                self.notifBar.insertSuccessNotification(QApplication.translate("TemplateDocumentSelector", \
                                                                          "'{0}' template has been successfully updated".format(docName)))
                 
             else:
@@ -182,7 +182,7 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
             selectedDocNameIndices = self.lstDocs.selectionModel().selectedRows(0)
             row = selectedDocNameIndices[0].row()
             self._docItemModel.removeRow(row)
-            self.notifBar.insertInfoNotification(QApplication.translate("TemplateDocumentSelector", \
+            self.notifBar.insertSuccessNotification(QApplication.translate("TemplateDocumentSelector", \
                                                                          "'{0}' template has been successfully removed".format(templateName)))
         
         else:
