@@ -374,7 +374,6 @@ class SourceDocumentManager(QObject):
 
         return model_objs
 
-
     def clean_up(self):
         """
         Removes all unsaved files that had initially been uploaded in the corresponding containers.

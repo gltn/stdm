@@ -86,6 +86,7 @@
     <file>images/icons/layer.gif</file>
     <file>images/icons/table_designer.png</file>
     <file>images/icons/db_server_settings.png</file>
-      <file>images/icons/options.png</file>
+    <file>images/icons/options.png</file>
+    <file>images/icons/user_tip.png</file>
   </qresource>
 </RCC>
