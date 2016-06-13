@@ -182,12 +182,13 @@ class SourceDocManagerValueHandler(ControlValueHandler):
     '''
     controlType = SourceDocumentManager
 
-    def __init__(self,documenttype):
+    def __init__(self, entity, documenttype):
         self._docType = documenttype
-        
+        self._entity = entity
+
     def value(self):
         #Get source document objects
-        srcDocs = self.control.sourceDocuments(self._docType)
+        srcDocs = self.control.sourceDocuments(self._entity, self._docType)
         #Get document ids
         docIds = [sd.DocumentID for sd in srcDocs]
         

@@ -445,7 +445,7 @@ class ComposerWrapper(QObject):
 
             '''
             First load vector layers for the table definitions in the config
-            collection before loading rhe composition from file.
+            collection before loading the composition from file.
             '''
             load_table_layers(table_config_collection)
 

@@ -31,7 +31,10 @@ from PyQt4.QtCore import (
 
 from qgis.core import *
 
-from stdm.utils.util import guess_extension
+from stdm.utils.util import (
+    guess_extension,
+    table_to_profile_name
+)
 
 class NetworkFileManager(QObject):
     """
@@ -44,27 +47,36 @@ class NetworkFileManager(QObject):
         self.fileID = None
         self.sourcePath = None
         self.destinationPath = None
-        self._document_type = ""
+        self._entity_source = ''
+        self._doc_type = ''
         
-    def uploadDocument(self,doc_type, fileinfo):
+    def uploadDocument(self, entity_source, doc_type, fileinfo):
         """
         Upload document in central repository
         """
-        self._document_type = doc_type
-
+        self._entity_source = entity_source
+        self._doc_type = doc_type
         self.fileID = self.generateFileID()
         self.sourcePath = fileinfo.filePath()
-
+        profile_name = table_to_profile_name(self._entity_source)
         root_dir = QDir(self.networkPath)
-        if not root_dir.exists(self._document_type):
-            res = root_dir.mkdir(self._document_type)
+        doc_dir = QDir(
+            self.networkPath + '/'+ profile_name + '/'
+            + self._entity_source + "/" + self._doc_type
+        )
+        doc_path_str = self.networkPath + '/'+ profile_name + '/' \
+                       + self._entity_source + "/" + self._doc_type
+
+        if not doc_dir.exists():
+            res = root_dir.mkpath(doc_path_str)
             if res:
-                root_doc_type_path = self.networkPath + "/" + self._document_type
+                root_doc_type_path = doc_path_str
+
             else:
                 root_doc_type_path = self.networkPath
 
         else:
-            root_doc_type_path = self.networkPath + "/" + self._document_type
+            root_doc_type_path = doc_path_str
 
         self.destinationPath = root_doc_type_path + "/" + self.fileID + "."  + \
                                fileinfo.completeSuffix()
@@ -97,30 +109,22 @@ class NetworkFileManager(QObject):
         """
         pass
 
-    def document_type(self):
-        """
-        Document type
-        """
-        return self._document_type
 
-    def set_document_type(self, doc_type):
-        """
-        Specify the document type.
-        """
-        self._document_type = doc_type
-    
-    def deleteDocument(self, docmodel = None):
+
+    def deleteDocument(self, docmodel = None, doc_type=None):
         """
         Delete the source document from the central repository.
         """
+
         if not docmodel is None:
             #Build the path from the model variable values.
             fileName, fileExt = guess_extension(docmodel.filename)
-        
+            profile_name = table_to_profile_name(docmodel.source_entity)
             #Qt always expects the file separator be be "/" regardless of platform.
-            absPath = self.networkPath + "/" + "%d"%(docmodel.document_type) + "/" +\
-                      docmodel.document_identifier + fileExt
-            
+            absPath = self.networkPath + '/'+profile_name + '/' + \
+                      "%s"%(docmodel.source_entity) + '/' + \
+                      doc_type + '/' + docmodel.document_identifier + fileExt
+            print absPath
             return QFile.remove(absPath)
         
         else:
@@ -139,13 +143,13 @@ class DocumentTransferWorker(QObject):
     blockWrite = pyqtSignal("int")
     complete = pyqtSignal("QString")
     
-    def __init__(self, file_manager, file_info, document_type = "",
-                 parent = None):
+    def __init__(
+            self, file_manager, file_info, entity_source='', doc_type='', parent=None):
         QObject.__init__(self,parent)
         self._file_manager = file_manager
         self._file_info = file_info
-        self._doc_type = document_type
-    
+        self._entity_source = entity_source
+        self._doc_type = doc_type
     @pyqtSlot()    
     def transfer(self):
         """
@@ -153,7 +157,9 @@ class DocumentTransferWorker(QObject):
         """
         self.connect(self._file_manager, SIGNAL("blockWritten(int)"),self.onBlockWritten)
         self.connect(self._file_manager, SIGNAL("completed(QString)"),self.onWriteComplete)
-        self._file_manager.uploadDocument(self._doc_type, self._file_info)
+        self._file_manager.uploadDocument(
+            self._entity_source, self._doc_type, self._file_info
+        )
         
     def onBlockWritten(self,size):
         """
@@ -166,19 +172,3 @@ class DocumentTransferWorker(QObject):
         Propagate event.
         """
         self.complete.emit(self._file_manager.fileID)
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        

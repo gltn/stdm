@@ -39,7 +39,10 @@ from PyQt4.QtGui import (
     QDialog,
     QMessageBox
 )
-from stdm.data.configuration import entity_model
+from stdm.data.configuration import (
+    entity_model
+)
+
 from qgis.gui import QgsEncodingFileDialog
 
 
@@ -467,6 +470,8 @@ def lookup_id_to_value(profile, col, id):
     else:
         return id
 
+
+
 def get_db_attr(db_model, source_col, source_attr, destination_col):
 
     db_obj = db_model()
@@ -482,3 +487,57 @@ def get_db_attr(db_model, source_col, source_attr, destination_col):
         )
         return destination_attr
 
+def entity_id_to_attr(entity, attr, id):
+    doc_type_model = entity_model(entity)
+    doc_type_obj = doc_type_model()
+    result = doc_type_obj.queryObject().filter(
+        doc_type_model.id == id
+    ).first()
+    if result is not None:
+        attr_val = getattr(
+            result,
+            attr,
+            None
+        )
+    else:
+        attr_val = id
+
+    return attr_val
+
+def entity_attr_to_id(entity, attr_obj, attr_val):
+    doc_type_model = entity_model(entity)
+    doc_type_obj = doc_type_model()
+    result = doc_type_obj.queryObject().filter(
+        attr_obj == attr_val
+    ).first()
+    if result is not None:
+        attr_id = getattr(
+            result,
+            'id',
+            None
+        )
+    else:
+        attr_id = attr_val
+
+    return attr_id
+
+def table_to_profile_name(table_name):
+    """
+    Get profile name from prefix.
+    :param table_name: The name of the table.
+    :type prefix: String
+    :return: Profile name.
+    :rtype: String
+    """
+    from stdm.data.configuration.stdm_configuration import (
+        StdmConfiguration
+    )
+    prefix = table_name.split('_', 1)[0]
+
+    config = StdmConfiguration.instance()
+    profile_name =  [p.name for p in
+                     config.profiles.values()
+                     if p.prefix == prefix
+                ]
+
+    return profile_name[0]
