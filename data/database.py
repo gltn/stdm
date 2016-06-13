@@ -348,29 +348,24 @@ class AdminSpatialUnitSet(Model,Base):
         reverseCode = list(reversed(codeList))
             
         return separator.join(reverseCode)
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 
+    def hierarchy_names(self, separator="/"):
+        """
+        Return comma separated names of all administrative units
+        :param separator: A symbol used to separate names.
+        :type separator: String
+        :return: The name of all admin units in a hierarchy
+        :rtype: String
+        """
+        name_list = []
+        name_list.append(self.Name)
 
-            
-            
-            
-            
-            
-            
-        
-        
-        
-        
-        
+        parent = self.Parent
+        while parent != None:
+            name_list.append(parent.Name)
+            parent = parent.Parent
+
+        # Reverse the items so that the last item added becomes the prefix of the hierarchy code
+        reverse_name = list(reversed(name_list))
+
+        return separator.join(reverse_name)

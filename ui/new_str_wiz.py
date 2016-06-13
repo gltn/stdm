@@ -17,6 +17,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+from datetime import datetime
 import logging
 from collections import OrderedDict
 
@@ -95,6 +96,10 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.str_type = self.curr_profile.\
             social_tenure.tenure_type_collection
 
+
+        self.str_model, self.str_doc_model = entity_model(
+            self.curr_profile.social_tenure, False, True
+        )
         self.init_party()
         self.party_header = []
 
@@ -680,14 +685,14 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :return: None
         :rtype: NoneType
         """
-        self.sourceDocManager = SourceDocumentManager()
+        self.sourceDocManager = SourceDocumentManager(self.str_doc_model, self)
         doc_entity = self.curr_profile.social_tenure.\
             supporting_doc.document_type_entity
 
         doc_type_model = entity_model(doc_entity)
 
-        Docs = doc_type_model()
-        doc_type_list = Docs.queryObject().all()
+        docs = doc_type_model()
+        doc_type_list = docs.queryObject().all()
         self.doc_types = [(doc.id, doc.value) for doc in doc_type_list]
         self.doc_types = OrderedDict(self.doc_types)
         self.docs_tab = QTabWidget()
@@ -703,7 +708,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             self.cboDocType.addItem(doc, id)
         self.vlDocTitleDeed.addWidget(self.docs_tab, 1)
 
-        # self.cboDocType.setCurrentIndex(-1)
         self.vlSourceDocNotif = NotificationBar(
             self.vlSourceDocNotif
         )
@@ -719,7 +723,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             self.initSourceDocument
         )
         self.btnAddTitleDeed.clicked.connect(
-            self.onUploadTitleDeed
+            self.on_upload_document
         )
 
     def match_doc_combo_to_tab(self):
@@ -742,30 +746,33 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         doc_text = self.cboDocType.currentText()
         cbo_index = self.cboDocType.currentIndex()
         doc_id = self.cboDocType.itemData(cbo_index)
+
         widget = self.docs_tab.findChild(QWidget, doc_text)
         layout = widget.findChild(QVBoxLayout)
+
         self.sourceDocManager.registerContainer(
             layout, doc_id
         )
 
-    def onUploadTitleDeed(self):
+    def on_upload_document(self):
         '''
         Slot raised when the user clicks
         to upload a title deed
         '''
-        titleStr = QApplication.translate(
+        document_str = QApplication.translate(
             "newSTRWiz",
             "Specify the Document File Location"
         )
-        titles = self.selectSourceDocumentDialog(titleStr)
+        documents = self.selectSourceDocumentDialog(document_str)
 
         cbo_index = self.cboDocType.currentIndex()
         doc_id = self.cboDocType.itemData(cbo_index)
 
-        for title in titles:
+        for doc in documents:
             self.sourceDocManager.insertDocumentFromFile(
-                title,
-                doc_id
+                doc,
+                doc_id,
+                self.curr_profile.social_tenure
             )
 
     def selectSourceDocumentDialog(self, title):
@@ -784,7 +791,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         Upload source document
         '''
         self.sourceDocManager.insertDocumentFromFile(
-            path, containerid
+            path, containerid, self.curr_profile.social_tenure
         )
 
     def buildSummary(self):
@@ -911,7 +918,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         #Validate source document    
         if currPageIndex == 4:
 
-            #if self.curr_profile.social_tenure.supports_documents:
             currIndex = self.cboDocType.currentIndex()
             if currIndex ==-1:
                 msg = QApplication.translate(
@@ -920,8 +926,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 )
                 self.notifSourceDoc.clear()
                 self.notifSourceDoc.insertErrorNotification(msg)
-            # else:
-            #     self.removePage(4)
+
 
         if currPageIndex == 5:
             isValid = self.on_create_str()
@@ -935,7 +940,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :rtype: NoneType
         """
         isValid = True
-
         #Create a progress dialog
         prog_dialog = QProgressDialog(self)
         prog_dialog.setWindowTitle(
@@ -945,32 +949,39 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             )
         )
 
+        _str_model_obj = self.str_model()
 
-        str_model = entity_model(self.curr_profile.social_tenure)
-        str_model_obj = str_model()
-
-        prog_dialog.setRange(
-            0, len(self.sel_party) + len(self.sourceDocManager.model_objects())
-        )
+        prog_dialog.setRange(0, len(self.sel_party)-1)
         prog_dialog.show()
         try:
-
-            objects = OrderedDict()
+            str_model_objs = []
+            model_objs = self.sourceDocManager.model_objects()
             # Social tenure table insertion
             for i, (sel_party, str_type_id) in enumerate(
                     zip(self.sel_party, self.sel_str_type)
             ):
-                str_obj = str_model(
+                str_obj = self.str_model(
                     party_id = sel_party.id,
                     spatial_unit_id = self.sel_spatial_unit[0].id,
                     tenure_type = str_type_id
                 )
-                objects[str_obj] = str_obj
-                prog_dialog.setValue(i + 1)
 
-            str_model_obj.saveMany(objects.values())
-            # Insert Supporting Document
-            self.supporting_document_insert(objects, prog_dialog)
+                prog_dialog.setValue(i)
+                # Insert Supporting Document if there a
+                # supporting document is uploaded.
+                if len(model_objs) > 0:
+                    # loop for each document type,
+                    # model_obj is a model object
+                    # for one document type.
+                    for model_obj in model_objs:
+                        # doc_obj stands for each file
+                        # uploaded under a document type
+                        for doc_obj in model_obj:
+                           str_obj.documents.append(doc_obj)
+
+                str_model_objs.append(str_obj)
+
+            _str_model_obj.saveMany(str_model_objs)
 
             strMsg = unicode(QApplication.translate(
                 "newSTRWiz",
@@ -1001,7 +1012,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             QMessageBox.critical(
                 self,
                 QApplication.translate(
-                    "newSTRWiz", "Duplicate Relationship Error"
+                    "newSTRWiz",
+                    "Duplicate Relationship Error"
                 ),
                 errMsg
             )
@@ -1025,56 +1037,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         return isValid
 
-    def supporting_document_insert(self, str_model_objects, progress):
-        """
-        Checks if supporting document exists for the current profile.
-        Inserts supporting document object into database, it exists.
-        And disables the supporting document page if it doesn't.
-        :param str_model_objects: Social tenure model object
-        :type str_model_objects: SQL Alchemy object
-        :return: None
-        :rtype:
-        """
-
-        str_supp_doc_model = entity_model(
-            self.curr_profile.social_tenure.supporting_doc,
-            True
-        )
-        str_supp_doc_model_obj = str_supp_doc_model()
-        # social_tenure_relationship_supporting_document
-        # save dict - for saveMany
-        str_doc_objs = OrderedDict()
-        # Check if supporting document exists for the profile
-        # and disable the page, if it doesn't
-        if self.curr_profile.social_tenure.supports_documents:
-            for obj in str_model_objects.keys():
-                # model_objs is a list of list for each
-                # document_type uploaded
-                model_objs = self.sourceDocManager.model_objects()
-
-                if len(model_objs) > 0:
-                    # loop for each document type,
-                    # model_obj is an obj for one document type.
-                    for i, model_obj in enumerate(model_objs):
-                        # doc_obj stands for each file
-                        # uploaded under a document type
-                        for doc_obj in model_obj:
-                            # insert in supporting_document table
-                            doc_obj.save()
-                            str_doc_obj = str_supp_doc_model(
-                                social_tenure_relationship_id=obj.id,
-                                supporting_doc_id = doc_obj.id
-                            )
-                            # collect for saveMany
-                            str_doc_objs[str_doc_obj] = str_doc_obj
-                        progress.setValue(len(self.sel_party) + i + 1)
-                    # Insert in social_tenure_relationship_
-                    # supporting_document table
-                    str_supp_doc_model_obj.saveMany(
-                        str_doc_objs.values()
-                    )
-        # else:
-        #     self.groupBox_3.setEnabled(False)
     def on_property_browser_error(self, err):
         """
         Slot raised when an error occurs when

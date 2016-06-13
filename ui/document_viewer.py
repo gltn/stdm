@@ -39,6 +39,7 @@ from PyQt4.QtGui import (
     QWheelEvent,
     QMainWindow,
     QMenu,
+    QDesktopWidget,
     QResizeEvent
 )
 from PyQt4.QtCore import (
@@ -48,14 +49,17 @@ from PyQt4.QtCore import (
     QFile
 )
 
-from stdm.utils.util import guess_extension
+from stdm.utils.util import (
+    guess_extension,
+    table_to_profile_name
+)
 
 class PhotoViewer(QScrollArea):
     """
     Widget for viewing images by incorporating basic navigation options.
     """
     def __init__(self, parent = None, photo_path = ""):
-        QScrollArea.__init__(self,parent)
+        QScrollArea.__init__(self, parent)
         self.setBackgroundRole(QPalette.Dark)
 
         self._printer = QPrinter()
@@ -76,6 +80,7 @@ class PhotoViewer(QScrollArea):
 
         if self._photo_path:
             self.load_document(self._photo_path)
+
 
     def _create_actions(self):
         """
@@ -205,8 +210,10 @@ class PhotoViewer(QScrollArea):
             self._photo_path = photo_path
 
             ph_pixmap = QPixmap.fromImage(self._ph_image)
+
             self._lbl_photo.setPixmap(ph_pixmap)
             self._scale_factor = 1.0
+
             self._aspect_ratio = ph_pixmap.width() / ph_pixmap.height()
 
             self._fit_to_window_act.setEnabled(True)
@@ -214,6 +221,7 @@ class PhotoViewer(QScrollArea):
             self._fit_to_window_act.trigger()
 
             self.update_actions()
+            return ph_pixmap
 
         return True
 
@@ -243,7 +251,7 @@ class DocumentViewer(QMdiSubWindow):
 
     def __init__(self, parent = None, file_identifier = ""):
         QMdiSubWindow.__init__(self,parent)
-        self.resize(330, 550)
+
         self.setWindowIcon(QIcon(":/plugins/stdm/images/icons/photo.png"))
 
         self._file_identifier = file_identifier
@@ -287,7 +295,10 @@ class DocumentViewer(QMdiSubWindow):
         :type doc_path: str
         """
         if not self._view_widget is None:
-            self._view_widget.load_document(doc_path)
+            photo_obj = self._view_widget.load_document(doc_path)
+            doc_width = photo_obj.width()
+            doc_height = photo_obj.height()
+            self.resize(doc_width, doc_height)
 
     def closeEvent(self, event):
         """
@@ -322,6 +333,24 @@ class DocumentViewManager(QMainWindow):
 
         self._create_menu_actions()
         self.update_actions()
+
+
+    def center(self):
+        """
+        Move the Document viewer to the center of the screen.
+        :return: None
+        :rtype: NoneType
+        """
+        # Get the current screens' dimensions...
+        screen = QDesktopWidget().availableGeometry()
+        # ... and get this windows' dimensions
+        mid_area_size = self._mdi_area.frameGeometry()
+        # The horizontal position
+        hpos = (screen.width() - mid_area_size.width()) / 2
+        # vertical position
+        vpos = (screen.height() - mid_area_size.height()) / 2
+        # repositions the window
+        self.move(hpos, vpos)
 
     def _create_menu_actions(self):
         self._window_menu = self.menuBar().addMenu(QApplication.translate("DocumentViewManager","&Windows"))
@@ -449,11 +478,13 @@ class DocumentViewManager(QMainWindow):
         if self.isMinimized():
             self.showNormal()
 
+        self.center()
+
     def set_active_sub_window(self, viewer):
         if viewer:
             self._mdi_area.setActiveSubWindow(viewer)
 
-    def absolute_document_path(self,document_widget):
+    def absolute_document_path(self, document_widget):
         """
         Build the absolute document path using info from the document widget.
         :param document_widget: Instance of document widget.
@@ -466,10 +497,13 @@ class DocumentViewManager(QMainWindow):
         if not file_manager is None:
             network_repository = file_manager.networkPath
             file_id = document_widget.file_identifier()
-            doc_type = document_widget.documentType()
+            source_entity = document_widget.doc_source_entity()
+            profile_name = table_to_profile_name(source_entity)
+            doc_type = document_widget.doc_type_value()
             file_name, file_extension = guess_extension(document_widget.displayName())
 
-            abs_path = network_repository + "/" + str(doc_type) + "/" +\
+            abs_path = network_repository + "/" +profile_name + '/' +\
+                       str(source_entity) + "/" + str(doc_type) + "/" +\
                        str(file_id) + str(file_extension)
 
         return abs_path
@@ -490,12 +524,19 @@ class DocumentViewManager(QMainWindow):
         :return: Document viewer object
         :rtype: DocumentViewer
         """
-        doc_viewer = DocumentViewer(self._mdi_area, document_widget.file_identifier())
+        doc_viewer = DocumentViewer(
+            self._mdi_area, document_widget.file_identifier()
+        )
         doc_viewer.setAttribute(Qt.WA_DeleteOnClose)
-        doc_viewer.setWindowTitle(document_widget.displayName())
+        doc_viewer.setWindowTitle(
+            document_widget.displayName()
+        )
 
-        #TODO: Incorporate logic for determining viewer based on document type
+        # TODO: Incorporate logic for determining
+        # TODO: viewer based on document type
         ph_viewer = PhotoViewer()
+
+
         doc_viewer.set_view_widget(ph_viewer)
 
         doc_viewer.closed.connect(self._on_viewer_closed)
