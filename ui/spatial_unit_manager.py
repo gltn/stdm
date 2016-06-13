@@ -51,7 +51,7 @@ from stdm.data.xmlconfig_writer import (
 )
 
 from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
-from notification import NotificationBar,ERROR,INFO, WARNING
+from notification import NotificationBar,ERROR, SUCCESS, WARNING
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_spatial_unit_manager.ui'))
