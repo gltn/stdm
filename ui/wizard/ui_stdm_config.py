@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_stdm_config.ui'
 #
-# Created: Sat Jun 11 12:01:47 2016
+# Created: Mon Jun 13 16:05:18 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -415,7 +415,7 @@ class Ui_STDMWizard(object):
         self.formLayout_9.setObjectName(_fromUtf8("formLayout_9"))
         self.verticalLayout = QtGui.QVBoxLayout()
         self.verticalLayout.setSpacing(6)
-        self.verticalLayout.setContentsMargins(80, 50, -1, -1)
+        self.verticalLayout.setContentsMargins(80, 50, -1, 3)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.label_5 = QtGui.QLabel(self.wpSTR)
         self.label_5.setMinimumSize(QtCore.QSize(0, 0))
@@ -423,10 +423,18 @@ class Ui_STDMWizard(object):
         self.label_5.setObjectName(_fromUtf8("label_5"))
         self.verticalLayout.addWidget(self.label_5)
         self.cboParty = QtGui.QComboBox(self.wpSTR)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.cboParty.sizePolicy().hasHeightForWidth())
+        self.cboParty.setSizePolicy(sizePolicy)
         self.cboParty.setMinimumSize(QtCore.QSize(0, 30))
         self.cboParty.setMaximumSize(QtCore.QSize(300, 16777215))
         self.cboParty.setObjectName(_fromUtf8("cboParty"))
         self.verticalLayout.addWidget(self.cboParty)
+        self.cbMultiParty = QtGui.QCheckBox(self.wpSTR)
+        self.cbMultiParty.setObjectName(_fromUtf8("cbMultiParty"))
+        self.verticalLayout.addWidget(self.cbMultiParty)
         self.formLayout_9.setLayout(0, QtGui.QFormLayout.FieldRole, self.verticalLayout)
         self.lblPartyDesc = QtGui.QLabel(self.wpSTR)
         self.lblPartyDesc.setText(_fromUtf8(""))
@@ -446,8 +454,8 @@ class Ui_STDMWizard(object):
         self.label_6.setObjectName(_fromUtf8("label_6"))
         self.verticalLayout_2.addWidget(self.label_6)
         self.cboSPUnit = QtGui.QComboBox(self.wpSTR)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.cboSPUnit.sizePolicy().hasHeightForWidth())
         self.cboSPUnit.setSizePolicy(sizePolicy)
@@ -535,8 +543,9 @@ class Ui_STDMWizard(object):
         self.groupBox_6.setTitle(_translate("STDMWizard", "Values", None))
         self.wpSTR.setTitle(_translate("STDMWizard", "Defining Social Tenure Tables", None))
         self.wpSTR.setSubTitle(_translate("STDMWizard", "Define entities to participate in Social Tenure Relations views", None))
-        self.label_5.setText(_translate("STDMWizard", "Party table in the STR definition", None))
-        self.label_6.setText(_translate("STDMWizard", "Spatial unit table in the STR definition", None))
+        self.label_5.setText(_translate("STDMWizard", "Party entity in the STR definition", None))
+        self.cbMultiParty.setText(_translate("STDMWizard", "Allow party entity in multiple STR", None))
+        self.label_6.setText(_translate("STDMWizard", "Spatial unit entity in the STR definition", None))
         self.wpSaveProfile.setTitle(_translate("STDMWizard", "Save configuration", None))
         self.wpSaveProfile.setSubTitle(_translate("STDMWizard", "Click finish to save changes in your configuration to the database.  ", None))
         self.label_2.setText(_translate("STDMWizard", "Save status will be displayed in the window below.", None))
