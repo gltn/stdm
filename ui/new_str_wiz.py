@@ -658,6 +658,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                     msg, ERROR
                 )
                 return False
+        else:
+            return True
 
     def set_record_to_model(self, entity, sel_attr):
         """
@@ -953,7 +955,9 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 )
                 isValid = False
             if len(self.sel_spatial_unit) > 0:
-                unoccupied = self.validate_occupants(self.sel_spatial_unit[0].id)
+                unoccupied = self.validate_occupants(
+                    self.sel_spatial_unit[0].id
+                )
                 if not unoccupied:
                     isValid = False
         #Validate STR Type
@@ -1000,20 +1004,27 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             )
         )
 
-        prog_dialog.setRange(0, 10)
+        prog_dialog.setRange(0, 4+len(self.sel_party))
         prog_dialog.show()
         try:
-            str_obj = self.str_model()
-            doc_objs = self.sourceDocManager.model_objects()
+
+            _str_obj = self.str_model()
+
+            str_objs = []
             prog_dialog.setValue(3)
+            index = 4
             # Social tenure table insertion
             for sel_party, str_type_id in zip(self.sel_party, self.sel_str_type):
 
-                str_obj.party_id = sel_party.id
-                str_obj.spatial_unit_id = self.sel_spatial_unit[0].id
-                str_obj.tenure_type = str_type_id
+                doc_objs = self.sourceDocManager.model_objects()
 
-
+                str_obj = self.str_model(
+                    party_id=sel_party.id,
+                    spatial_unit_id=self.sel_spatial_unit[0].id,
+                    tenure_type=str_type_id
+                )
+                prog_dialog.setValue(index)
+                index = index + 1
                 # Insert Supporting Document if a
                 # supporting document is uploaded.
                 if len(doc_objs) > 0:
@@ -1025,10 +1036,12 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                         # uploaded under a document type
                         for doc_obj in doc_type_obj:
                             str_obj.documents.append(doc_obj)
-                str_obj.save()
-                prog_dialog.setValue(6)
 
-            prog_dialog.setValue(10)
+                str_objs.append(str_obj)
+
+            _str_obj.saveMany(str_objs)
+            prog_dialog.setValue(index)
+
             strMsg = unicode(QApplication.translate(
                 "newSTRWiz",
                 "The social tenure relationship has "
@@ -1502,7 +1515,8 @@ class FreezeTableWidget(QTableView):
         try:
             self.update_frozen_table_geometry()
         except Exception as log:
-            print log
+            LOGGER.debug('FrozenTableWidget-resizeEvent: '+str(log))
+
 
     def scrollTo(self, index, hint):
         if index.column() > 1:

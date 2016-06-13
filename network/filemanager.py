@@ -124,7 +124,7 @@ class NetworkFileManager(QObject):
             absPath = self.networkPath + '/'+profile_name + '/' + \
                       "%s"%(docmodel.source_entity) + '/' + \
                       doc_type + '/' + docmodel.document_identifier + fileExt
-            print absPath
+
             return QFile.remove(absPath)
         
         else:

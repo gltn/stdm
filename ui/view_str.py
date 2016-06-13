@@ -94,7 +94,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         #Center me
         self.move(QDesktopWidget().availableGeometry().center() -
                   self.frameGeometry().center())
-        self.removed_docs = []
 
         self.toolBox.setStyleSheet(
             '''
@@ -127,7 +126,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         # when the same item is selected over and over again.
 
         self._strID = None
-
+        self.removed_docs = None
         #Used to store the root hash of the currently selected node.
         self._curr_rootnode_hash = ""
 
@@ -373,6 +372,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                     if isinstance(node, SupportsDocumentsNode):
 
                         src_docs = node.documents()
+
                         if isinstance(src_docs, dict):
                             self._load_source_documents(src_docs)
                             # if there is supporting document,
@@ -385,7 +385,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                         self.toolBox.setCurrentIndex(0)
                         self.draw_spatial_unit(node.model())
 
-    def onSourceDocumentRemoved(self, container_id, doc_uuid):
+    def onSourceDocumentRemoved(self, container_id, doc_uuid, removed_doc):
         """
         Slot raised when a source document is removed from the container.
         If there are no documents in the specified container then remove
@@ -397,8 +397,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         for doc in curr_doc_widget:
             if doc.fileUUID == doc_uuid:
                 doc.deleteLater()
-
-        self.removed_docs.append(doc_uuid)
+        self.removed_docs = removed_doc
 
     def draw_spatial_unit(self, model):
         """
@@ -557,7 +556,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             progressMsg, "Ok", 0, len(source_docs), self
         )
         progressDialog.setWindowModality(Qt.WindowModal)
-
+        progressDialog.show()
         # If no single supporting document, show message warning message
         if len(source_docs) < 1:
             empty_msg = QApplication.translate(
@@ -568,6 +567,10 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             self._notif_search_config.insertWarningNotification(empty_msg)
 
         for doc_type_id, doc_obj in source_docs.iteritems():
+            # Filter out removed docs.
+            # Only filter when a doc is removed.
+            if self.removed_docs is not None:
+                doc_obj = list(set(doc_obj) - set(self.removed_docs))
 
             # add tabs, and container and widget for each tab
             tab_title = self._source_doc_manager.doc_type_mapping[doc_type_id]
@@ -586,17 +589,22 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             )
 
             for doc in doc_obj:
-                if doc.document_identifier not in self.removed_docs:
+
+                try:
                     # add doc widgets
                     self._source_doc_manager.insertDocFromModel(
                         doc, doc_type_id
                     )
+                except Exception as ex:
+                    LOGGER.debug(
+                        'ViewSTR-Load_source_document: '+str(ex)
+                    )
+
             self.tbSupportingDocs.addTab(
                 tab_widget, tab_title
             )
 
-
-        progressDialog.setValue(len(source_docs))
+        progressDialog.hide()
 
     def _on_node_reference_changed(self, rootHash):
         """
