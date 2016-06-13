@@ -490,9 +490,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         """
         sets the work area 'form_fields' defaults(minimum/maximum)
         from the column attribute dictionary
-        :param type_info: TYPE_INFO to extract minimum/maximum values in 
-         type attribute
-        :type type_info: BaseColumn TYPE_INFO
+        :param type_info: BaseColumn.TYPE_INFO
+        :type type_info: str
         """
         self.form_fields['minimum'] = \
                 self.type_attribs[type_info].get('minimum', 0)

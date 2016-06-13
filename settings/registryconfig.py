@@ -29,10 +29,7 @@ COMPOSER_OUTPUT = 'ComposerOutputs'
 COMPOSER_TEMPLATE = 'ComposerTemplates'
 CURRENT_PROFILE = 'CurrentProfile'
 
-DOCUMENTS_KEY = 'documents'
-TEMPLATES_KEY = 'templates'
-OUTPUTS_KEY = 'outputs'
-
+SHOW_LICENSE = 'ShowLicense'
 
 def registry_value(key_name):
     """
