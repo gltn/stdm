@@ -959,7 +959,7 @@ class STDMQGISLoader(object):
         try:
             self.loadModules()
         except SQLAlchemyError as ex:
-            LOGGER.debug('SQLAlchemyError: '+ str(ex))
+            LOGGER.debug('SQLAlchemyError: ' + str(ex))
             STDMDb.instance().session.rollback()
             self.loadModules()
 

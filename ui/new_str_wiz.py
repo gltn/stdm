@@ -25,9 +25,12 @@ from stdm.data.qtmodels import BaseSTDMTableModel
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-import sqlalchemy
 
-from notification import NotificationBar, ERROR, INFO, WARNING
+from sqlalchemy import (
+    func
+)
+
+from notification import NotificationBar, ERROR, SUCCESS, WARNING, INFORMATION
 from sourcedocument import *
 
 from stdm.data.database import (
@@ -52,7 +55,9 @@ from stdm.navigation import (
 )
 from stdm.utils import *
 from stdm.utils.util import (
-    lookup_id_to_value
+    lookup_id_to_value,
+    entity_id_to_attr,
+    format_name
 )
 from ui_new_str import Ui_frmNewSTR
 
@@ -75,11 +80,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :rtype: NoneType
         """
         QWizard.__init__(self, plugin.iface.mainWindow())
-        ## TODO when forms are done check if db insert
-        ## TODO is ordered as shown
-        ## TODO in party and str_type pages and each
-        ## TODO party and str_type matches.
-        ## TODO Use OrderDict if mismatch found
         self.setupUi(self)
         #STR Variables
         self.sel_party = []
@@ -88,17 +88,17 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.row = 0 # number of party rows
         # Current profile instance and properties
         self.curr_profile = current_profile()
+        self.social_tenure = self.curr_profile.social_tenure
+        self.party = self.social_tenure.party
 
-        self.party = self.curr_profile.social_tenure.party
-
-        self.spatial_unit = self.curr_profile.social_tenure.spatial_unit
+        self.spatial_unit = self.social_tenure.spatial_unit
 
         self.str_type = self.curr_profile.\
             social_tenure.tenure_type_collection
 
 
         self.str_model, self.str_doc_model = entity_model(
-            self.curr_profile.social_tenure, False, True
+            self.social_tenure, False, True
         )
         self.init_party()
         self.party_header = []
@@ -189,7 +189,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         )
         self.RemoveSpatialUnitbtn.clicked.connect(
             lambda: self.remove_row(
-                spatial_unit_table, self.party_notice
+                spatial_unit_table, self.spatial_unit_notice
             )
         )
         #Connect signals
@@ -259,6 +259,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :rtype: NoneType
         """
         if len(table_view.selectedIndexes()) > 0:
+            notification.clear()
             row_index = table_view.selectedIndexes()[0]
             table_view.model().removeRow(
                 row_index.row(), row_index
@@ -336,15 +337,25 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         container.setSpacing(4)
         container.setMargin(5)
+
         grid_layout = QGridLayout(parent)
         grid_layout.setHorizontalSpacing(5)
         grid_layout.setColumnStretch(4, 5)
+
         container.addLayout(grid_layout)
         container.addWidget(table_view)
-        # For reduce the height for spatial unit
+        # Reduce the height for spatial unit
         if parent == self.tvPropInfo:
             table_view.setMinimumSize(QSize(55, 30))
             table_view.setMaximumSize(QSize(5550, 75))
+        # Reduce the height of party table if multi party is false
+        if parent == self.tvPersonInfo and not self.social_tenure.multi_party:
+            table_view.setMinimumSize(QSize(55, 30))
+            table_view.setMaximumSize(QSize(5550, 75))
+            spacer = QSpacerItem(
+                20, 338, QSizePolicy.Minimum, QSizePolicy.Expanding
+            )
+            self.verticalLayout_2.addItem(spacer)
         return table_view
 
     def create_str_type_table(
@@ -473,7 +484,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             self, table_view, entity, table_data, str_type=False
     ):
         """
-
         :param table_view:
         :type table_view:
         :param entity:
@@ -506,19 +516,29 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             )
             data[col] = value
         if entity == self.spatial_unit:
+            # Clear existing data before adding
+            # new one to only allow one spatial_unit
             if table_view.model().rowCount() > 0:
                 table_view.model().rowCount(0)
                 table_view.model().removeRow(0)
-
+        if entity == self.party and not self.social_tenure.multi_party:
+            # Clear existing data before adding
+            # new one to only allow one party
+            if table_view.model().rowCount() > 0:
+                table_view.model().rowCount(0)
+                table_view.model().removeRow(0)
         table_data.append(data.values())
         # Get the id and set it to self.sel_spatial_unit
         # so that it can be previewed on the map under
         # the preview tab.
         if entity == self.spatial_unit:
             spatial_unit_id = self.get_spatial_unit_data()
+            if self.social_tenure.multi_party:
+                self.validate_occupants(spatial_unit_id[0])
             self.set_record_to_model(
                 self.spatial_unit, spatial_unit_id
             )
+
         table_view.model().layoutChanged.emit()
         self.update_table_view(table_view, str_type)
 
@@ -599,6 +619,43 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 break
 
         return spatial_unit_id
+
+    def validate_occupants(self, spatial_unit_id):
+
+        str_obj = self.str_model()
+
+        # returns the number of entries for a specific parcel.
+        usage_count = str_obj.queryObject(
+            [func.count().label('spatial_unit_count')]
+        ).filter(
+            self.str_model.spatial_unit_id == spatial_unit_id
+        ).first()
+
+        # If entry is found, show error and return
+        if usage_count.spatial_unit_count > 0:
+
+            self.spatial_unit_notice.clear()
+            if self.social_tenure.multi_party:
+                msg = QApplication.translate(
+                    "newSTRWiz",
+                    'This ' + format_name(self.spatial_unit.short_name) +
+                    ' has already been assigned to an occupant. '
+
+                )
+                self.spatial_unit_notice.insertNotification(
+                    msg, INFORMATION
+                )
+                return True
+            else:
+                msg = QApplication.translate(
+                    "newSTRWiz",
+                    'Unfortunately, this ' + format_name(self.spatial_unit.short_name) +
+                    ' has already been assigned to an occupant.'
+                )
+                self.spatial_unit_notice.insertNotification(
+                    msg, ERROR
+                )
+                return False
 
     def set_record_to_model(self, entity, sel_attr):
         """
@@ -686,7 +743,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :rtype: NoneType
         """
         self.sourceDocManager = SourceDocumentManager(self.str_doc_model, self)
-        doc_entity = self.curr_profile.social_tenure.\
+        doc_entity = self.social_tenure.\
             supporting_doc.document_type_entity
 
         doc_type_model = entity_model(doc_entity)
@@ -772,7 +829,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             self.sourceDocManager.insertDocumentFromFile(
                 doc,
                 doc_id,
-                self.curr_profile.social_tenure
+                self.social_tenure
             )
 
     def selectSourceDocumentDialog(self, title):
@@ -791,7 +848,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         Upload source document
         '''
         self.sourceDocManager.insertDocumentFromFile(
-            path, containerid, self.curr_profile.social_tenure
+            path, containerid, self.social_tenure
         )
 
     def buildSummary(self):
@@ -886,14 +943,17 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             if len(self.sel_spatial_unit) == 0:
                 msg = QApplication.translate(
                     "newSTRWiz",
-                    "Please specify the spatial unit to reference. "
-                    "Use the filter capability below."
+                    "Please add a spatial unit using the Add button."
                 )
                 self.spatial_unit_notice.clear()
                 self.spatial_unit_notice.insertNotification(
                     msg, ERROR
                 )
                 isValid = False
+            if len(self.sel_spatial_unit) > 0:
+                unoccupied = self.validate_occupants(self.sel_spatial_unit[0].id)
+                if not unoccupied:
+                    isValid = False
         #Validate STR Type
         if currPageIndex == 3:
             #Get current selected index
@@ -905,28 +965,17 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             if None in str_types or ' ' in str_types or len(str_types) < 1:
                 msg = QApplication.translate(
                     'newSTRWiz',
-                    'Please select an item in the drop down '
+                    'Please select an item from the drop down '
                     'menu under each Social Tenure Type column.'
                 )
                 self.notifSTR.clear()
                 self.notifSTR.insertErrorNotification(msg)
                 isValid = False
+
             if isValid != False:
                 self.set_record_to_model(
                     self.str_type, str_types
                 )
-        #Validate source document    
-        if currPageIndex == 4:
-
-            currIndex = self.cboDocType.currentIndex()
-            if currIndex ==-1:
-                msg = QApplication.translate(
-                    "newSTRWiz",
-                    "Please select document type from the list"
-                )
-                self.notifSourceDoc.clear()
-                self.notifSourceDoc.insertErrorNotification(msg)
-
 
         if currPageIndex == 5:
             isValid = self.on_create_str()
@@ -949,40 +998,35 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             )
         )
 
-        _str_model_obj = self.str_model()
-
-        prog_dialog.setRange(0, len(self.sel_party)-1)
+        prog_dialog.setRange(0, 10)
         prog_dialog.show()
         try:
-            str_model_objs = []
-            model_objs = self.sourceDocManager.model_objects()
+            str_obj = self.str_model()
+            doc_objs = self.sourceDocManager.model_objects()
+            prog_dialog.setValue(3)
             # Social tenure table insertion
-            for i, (sel_party, str_type_id) in enumerate(
-                    zip(self.sel_party, self.sel_str_type)
-            ):
-                str_obj = self.str_model(
-                    party_id = sel_party.id,
-                    spatial_unit_id = self.sel_spatial_unit[0].id,
-                    tenure_type = str_type_id
-                )
+            for sel_party, str_type_id in zip(self.sel_party, self.sel_str_type):
 
-                prog_dialog.setValue(i)
-                # Insert Supporting Document if there a
+                str_obj.party_id = sel_party.id
+                str_obj.spatial_unit_id = self.sel_spatial_unit[0].id
+                str_obj.tenure_type = str_type_id
+
+
+                # Insert Supporting Document if a
                 # supporting document is uploaded.
-                if len(model_objs) > 0:
+                if len(doc_objs) > 0:
                     # loop for each document type,
                     # model_obj is a model object
                     # for one document type.
-                    for model_obj in model_objs:
+                    for doc_type_obj in doc_objs:
                         # doc_obj stands for each file
                         # uploaded under a document type
-                        for doc_obj in model_obj:
-                           str_obj.documents.append(doc_obj)
+                        for doc_obj in doc_type_obj:
+                            str_obj.documents.append(doc_obj)
+                str_obj.save()
+                prog_dialog.setValue(6)
 
-                str_model_objs.append(str_obj)
-
-            _str_model_obj.saveMany(str_model_objs)
-
+            prog_dialog.setValue(10)
             strMsg = unicode(QApplication.translate(
                 "newSTRWiz",
                 "The social tenure relationship has "
@@ -1205,6 +1249,7 @@ class ComboBoxDelegate(QItemDelegate):
         QItemDelegate.__init__(self, parent)
         self.row = 0
         self.curr_profile = current_profile()
+        self.social_tenure = self.curr_profile.social_tenure
 
     def str_type_combo (self):
         """
@@ -1220,8 +1265,7 @@ class ComboBoxDelegate(QItemDelegate):
         return str_type_cbo
 
     def str_type_set_data(self):
-        str_lookup_obj = self.curr_profile.social_tenure.\
-            tenure_type_collection
+        str_lookup_obj = self.social_tenure.tenure_type_collection
         str_types = entity_model(str_lookup_obj, True)
         str_type_obj = str_types()
         self.str_type_data = str_type_obj.queryObject().all()

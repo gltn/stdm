@@ -59,7 +59,7 @@ from stdm.data.database import STDMDb
 from notification import (
     NotificationBar,
     ERROR,
-    INFO,
+    SUCCESS,
     WARNING
 )
 
