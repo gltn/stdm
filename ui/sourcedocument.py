@@ -756,6 +756,8 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         """
         Builds the database model for the source document file reference.
         """
+        sent = self.sender()
+        print sent
         if self._mode == UPLOAD_MODE:
 
             entity_doc_obj = self.document_model()

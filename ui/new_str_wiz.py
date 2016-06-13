@@ -639,7 +639,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 msg = QApplication.translate(
                     "newSTRWiz",
                     'This ' + format_name(self.spatial_unit.short_name) +
-                    ' has already been assigned to an occupant. '
+                    ' has already been assigned to '+
+                    str(usage_count.spatial_unit_count)+' occupant. '
 
                 )
                 self.spatial_unit_notice.insertNotification(
@@ -649,7 +650,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             else:
                 msg = QApplication.translate(
                     "newSTRWiz",
-                    'Unfortunately, this ' + format_name(self.spatial_unit.short_name) +
+                    'Unfortunately, this ' +
+                    format_name(self.spatial_unit.short_name) +
                     ' has already been assigned to an occupant.'
                 )
                 self.spatial_unit_notice.insertNotification(
