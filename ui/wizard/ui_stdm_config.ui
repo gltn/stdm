@@ -1016,6 +1016,9 @@
       <property name="topMargin">
        <number>50</number>
       </property>
+      <property name="bottomMargin">
+       <number>3</number>
+      </property>
       <item>
        <widget class="QLabel" name="label_5">
         <property name="minimumSize">
@@ -1031,12 +1034,18 @@
          </size>
         </property>
         <property name="text">
-         <string>Party table in the STR definition</string>
+         <string>Party entity in the STR definition</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QComboBox" name="cboParty">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -1048,6 +1057,13 @@
           <width>300</width>
           <height>16777215</height>
          </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="cbMultiParty">
+        <property name="text">
+         <string>Allow party entity in multiple STR</string>
         </property>
        </widget>
       </item>
@@ -1093,15 +1109,15 @@
          </size>
         </property>
         <property name="text">
-         <string>Spatial unit table in the STR definition</string>
+         <string>Spatial unit entity in the STR definition</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QComboBox" name="cboSPUnit">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>1</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
