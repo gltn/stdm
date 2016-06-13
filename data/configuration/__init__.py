@@ -156,7 +156,8 @@ def profile_foreign_keys(profile):
     Gets all foreign keys for tables in the given profile.
     :param profile: Profile object.
     :type profile: Profile
-    :return: A list containing foreign key names of the given profiles.
+    :return: A list containing foreign key names for all tables in the given
+    profile.
     :rtype: list(str)
     """
     from stdm.data.pg_utils import pg_table_exists

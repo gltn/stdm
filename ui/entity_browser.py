@@ -52,7 +52,7 @@ __all__ = ["EntityBrowser", "EntityBrowserWithEditor",
 
 class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
     """
-    Dialog browsing entities in a table view.
+    Dialog for browsing entities in a table view.
     """
     
     '''

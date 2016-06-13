@@ -264,6 +264,15 @@ class BaseColumn(ColumnItem):
         """
         return self.entity.column_parent_relations(self.name)
 
+    def header(self):
+        """
+        :return: Returns the column name formatted with the first character
+        for each word in uppercase. Underscores are replaced with a space and
+        '_id' is removed if it exists.
+        :rtype: str
+        """
+        return self.name.replace('_id','').replace('_',' ').title()
+
     def __setattr__(self, key, value):
         if hasattr(self, '_initialized'):
             if key in self._monitor_attrs:

@@ -1,7 +1,7 @@
 """
 /***************************************************************************
 Name                 : Widget factories
-Description          : Creates appropriate widgets based on column type.
+Description          : Creates appropriate form widgets for an entity.
 Date                 : 8/June/2016
 copyright            : (C) 2016 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
@@ -20,7 +20,9 @@ email                : stdm@unhabitat.org
 from collections import OrderedDict
 
 from PyQt4.QtGui import (
+    QLabel,
     QLineEdit,
+    QPixmap,
     QTextEdit,
     QWidget
 )
@@ -31,6 +33,62 @@ from stdm.data.configuration.columns import (
     VarCharColumn
 )
 
+class UserTipLabel(QLabel):
+    """
+    Custom label that shows an information icon and a tip containing the
+    column user tip value as specified in the configuration.
+    """
+    def __init__(self, parent=None, user_tip=None):
+        QLabel.__init__(self, parent)
+
+        #Set tip icon
+        self._set_tip_icon()
+
+        #Initialize user tip
+        if user_tip is None:
+            self._user_tip = ''
+        else:
+            self._user_tip = user_tip
+            self._update_tip()
+
+    def _set_tip_icon(self):
+        #Set the information icon
+        self._px = QPixmap(':/plugins/stdm/images/icons/user_tip.png')
+        self.setPixmap(self._px)
+
+    def pixmap(self):
+        """
+        :return: Returns the pixmap object associated with this label.
+        Overrides the default implementation.
+        :rtype: QPixmap
+        """
+        return self._px
+
+    @property
+    def user_tip(self):
+        """
+        :return: Returns the user tip corresponding to this label.
+        :rtype: str
+        """
+        return self._user_tip
+
+    @user_tip.setter
+    def user_tip(self, value):
+        """
+        Sets the user tip for this label.
+        :param value: User tip text.
+        :type value: str
+        """
+        if not value:
+            return
+
+        self._user_tip = value
+        self._update_tip()
+
+    def _update_tip(self):
+        #Update the tooltip for this label with the value of the 'user-tip var.
+        self.setToolTip(self._user_tip)
+
 class ColumnWidgetRegistry(object):
     """
     Base container for widget factories based on column types. It is used to
@@ -40,6 +98,22 @@ class ColumnWidgetRegistry(object):
 
     COLUMN_TYPE_INFO = 'NA'
     _TYPE_PREFIX = ''
+
+    def __init__(self, column):
+        """
+        Class constructor.
+        :param column: Column object corresponding to the widget factory.
+        :type column: BaseColumn
+        """
+        self._column = column
+
+    @property
+    def column(self):
+        """
+        :return: Returns column object associated with this factory.
+        :rtype: BaseColumn
+        """
+        return self._column
 
     @classmethod
     def register(cls):
@@ -87,6 +161,15 @@ class ColumnWidgetRegistry(object):
     def _create_widget(cls, c, parent):
         #For implementation by sub-classes to create the appropriate widget.
         raise NotImplementedError
+
+    def value_formatter(self, value):
+        """
+        Formats the column value to a more friendly display value. Should be
+        implemented by sub-classes for custom behavior.
+        :return: Returns a more user-friendly display.
+        :rtype: str
+        """
+        return unicode(value)
 
 
 class VarCharWidgetFactory(ColumnWidgetRegistry):
