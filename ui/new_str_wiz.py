@@ -636,11 +636,15 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
             self.spatial_unit_notice.clear()
             if self.social_tenure.multi_party:
+                if usage_count.spatial_unit_count == 1:
+                    ocup = ' occupant.'
+                else:
+                    ocup = ' occupants.'
                 msg = QApplication.translate(
                     "newSTRWiz",
                     'This ' + format_name(self.spatial_unit.short_name) +
                     ' has already been assigned to '+
-                    str(usage_count.spatial_unit_count)+' occupant. '
+                    str(usage_count.spatial_unit_count)+ocup
 
                 )
                 self.spatial_unit_notice.insertNotification(
@@ -746,7 +750,9 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :return: None
         :rtype: NoneType
         """
-        self.sourceDocManager = SourceDocumentManager(self.str_doc_model, self)
+        self.sourceDocManager = SourceDocumentManager(
+            self.str_doc_model, self
+        )
         doc_entity = self.social_tenure.\
             supporting_doc.document_type_entity
 
@@ -828,12 +834,14 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         cbo_index = self.cboDocType.currentIndex()
         doc_id = self.cboDocType.itemData(cbo_index)
+        party_count = len(self.sel_party)
 
         for doc in documents:
             self.sourceDocManager.insertDocumentFromFile(
                 doc,
                 doc_id,
-                self.social_tenure
+                self.social_tenure,
+                party_count
             )
 
     def selectSourceDocumentDialog(self, title):
@@ -1009,14 +1017,22 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         try:
 
             _str_obj = self.str_model()
-
             str_objs = []
             prog_dialog.setValue(3)
-            index = 4
-            # Social tenure table insertion
-            for sel_party, str_type_id in zip(self.sel_party, self.sel_str_type):
 
+            index = 4
+
+            # Social tenure and supporting document insertion
+            # The code below is long because it also have a
+            # hack to enable batch supporting documents without affecting single
+            # party upload. The reason a hack was needed is,
+            # whenever a document is inserted in a normal way,
+            # duplicate entry is added to the database.
+            for j, (sel_party, str_type_id) in enumerate(zip(self.sel_party, self.sel_str_type)):
+                # get all model objects
                 doc_objs = self.sourceDocManager.model_objects()
+                # get the number of unique documents.
+                number_of_docs = len(doc_objs)/len(self.sel_party)
 
                 str_obj = self.str_model(
                     party_id=sel_party.id,
@@ -1028,14 +1044,20 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 # Insert Supporting Document if a
                 # supporting document is uploaded.
                 if len(doc_objs) > 0:
-                    # loop for each document type,
-                    # model_obj is a model object
-                    # for one document type.
+                    # The number of jumps (to avoid duplication) when
+                    # looping though document objects
+                    loop_increment = j * number_of_docs
+                    # loop through each document objects
                     for doc_type_obj in doc_objs:
-                        # doc_obj stands for each file
-                        # uploaded under a document type
-                        for doc_obj in doc_type_obj:
-                            str_obj.documents.append(doc_obj)
+                        # loop per each number of documents
+                        for k in range(number_of_docs):
+                            # append into the str obj
+                            str_obj.documents.append(
+                                doc_objs[k+loop_increment]
+                            )
+                        # Avoids duplicate entry into the database
+                        # in case of batch multi party
+                        break
 
                 str_objs.append(str_obj)
 

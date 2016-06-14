@@ -187,7 +187,7 @@ class SourceDocumentManager(QObject):
         '''
         return self.containers.keys()
 
-    def insertDocumentFromFile(self, path, doc_type_id, entity):
+    def insertDocumentFromFile(self, path, doc_type_id, entity, record_count=1):
         """
         Insert a new document into one of the registered containers with the
         document type id. This document is registered
@@ -240,40 +240,43 @@ class SourceDocumentManager(QObject):
                         )
                         return
 
-                    #Use the default network file manager
-                    networkManager = NetworkFileManager(
-                        network_location,self.parent()
-                    )
 
-                    #Add document widget
-                    docWidg = DocumentWidget(
-                        self.document_model,
-                        networkManager,
-                        parent=self.parent(),
-                        view_manager=self._doc_view_manager
-                    )
 
-                    #Connect slot once the document has been successfully uploaded.
-                    docWidg.fileUploadComplete.connect(
-                        lambda: self.onFileUploadComplete(doc_type_id)
-                    )
-                    self._linkWidgetRemovedSignal(docWidg)
+                    for i in range(record_count):
+                        # Use the default network file manager
+                        networkManager = NetworkFileManager(
+                            network_location, self.parent()
+                        )
+                        # Add document widget
+                        docWidg = DocumentWidget(
+                            self.document_model,
+                            networkManager,
+                            parent=self.parent(),
+                            view_manager=self._doc_view_manager
+                        )
+                        # Connect slot once the document
+                        # has been successfully uploaded.
+                        docWidg.fileUploadComplete.connect(
+                            lambda: self.onFileUploadComplete(doc_type_id)
+                        )
+                        self._linkWidgetRemovedSignal(docWidg)
 
-                    doc_type_entity = entity.supporting_doc.document_type_entity
-                    doc_type_value = entity_id_to_attr(
-                        doc_type_entity, 'value', doc_type_id
-                    )
+                        doc_type_entity = entity.supporting_doc.document_type_entity
+                        doc_type_value = entity_id_to_attr(
+                            doc_type_entity, 'value', doc_type_id
+                        )
 
-                    docWidg.setFile(
-                        path, entity.name, doc_type_value, doc_type_id
-                    )
-                    container.addWidget(docWidg)
+                        docWidg.setFile(
+                            path, entity.name, doc_type_value, doc_type_id
+                        )
+                        container.addWidget(docWidg)
 
     def onFileUploadComplete(self, documenttype):
         """
-        Slot raised when a source file has been successfully uploaded into the central document
-        repository.
-        Raises a signal that passes the resulting source document from the upload operation.
+        Slot raised when a source file has been successfully
+        uploaded into the central document repository.
+        Raises a signal that passes the resulting source
+        document from the upload operation.
         """
         docWidget = self.sender()
         if isinstance(docWidget, DocumentWidget):
@@ -283,7 +286,8 @@ class SourceDocumentManager(QObject):
 
     def set_source_documents(self, source_docs):
         """
-        :param source_docs: Supporting document objects to be inserted in their respective containers.
+        :param source_docs: Supporting document objects
+        to be inserted in their respective containers.
         :type source_docs: list
         """
         for source_doc in source_docs:
@@ -368,48 +372,22 @@ class SourceDocumentManager(QObject):
 
         return srcDocMapping
 
-    def sourceDocuments(self, dtype=None):
+    def model_objects(self, dtype=None):
         """
         Returns all supporting document models based on
         the file uploads contained in the document manager.
         """
-        source_documents = OrderedDict()
+        all_doc_objs = []
+        for doc_type_id, container in self.containers.iteritems():
+            doc_widget_count = container.count()
+            # loop through all document
+            # widgets and get their objects.
+            for doc_widget in range(doc_widget_count):
+                docWidg = container.itemAt(doc_widget).widget()
+                source_doc = docWidg.sourceDocument(doc_type_id)
+                all_doc_objs.append(source_doc)
 
-        for k, v in self.containers.iteritems():
-            widg_count = v.count()
-
-            type_docs = []
-
-            for w in range(widg_count):
-                docWidg = v.itemAt(w).widget()
-                source_doc = docWidg.sourceDocument(k)
-                type_docs.append(source_doc)
-
-            source_documents[k] = type_docs
-
-        return source_documents
-
-    def model_objects(self):
-        """
-        Method to return all the model object for
-        supporting document be inserted into table
-        :return:
-        """
-        model_objs = []
-
-        if self.sourceDocuments() is not None:
-            for doc_type_id in self.containers.keys():
-                if self.sourceDocuments().get(doc_type_id) is not None:
-                    doc_obj = [
-                        model_obj
-                        for model_obj in
-                            self.sourceDocuments().get(doc_type_id)
-                    ]
-
-                    model_objs.append(doc_obj)
-
-        return model_objs
-
+        return all_doc_objs
 
     def clean_up(self):
         """
@@ -555,7 +533,8 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
     def eventFilter(self,watched,e):
         """
-        Capture label mouse release events for deleting and opening a source
+        Capture label mouse release events
+        for deleting and opening a source
         document respectively.
         """
         if watched == self.lblClose and e.type() == QEvent.MouseButtonRelease:
@@ -608,8 +587,10 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
     def clean_up(self):
         """
-        Remove the referenced uploaded file which has not yet been saved.
-        :return: True to indicate that the document was successfully removed or False if an error was encountered.
+        Remove the referenced uploaded
+        file which has not yet been saved.
+        :return: True to indicate that the document was
+        successfully removed or False if an error was encountered.
         :rtype: bool
         """
         if self._mode == UPLOAD_MODE:
@@ -717,7 +698,6 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
             self._displayName = sourcedoc.filename
             self._docSize = sourcedoc.document_size
             self.fileUUID = sourcedoc.document_identifier
-
             self.buildDisplay()
             self._srcDoc = sourcedoc
             self._source_entity = sourcedoc.source_entity
@@ -773,7 +753,6 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
             entity_doc_obj = self.document_model()
             entity_doc_obj.document_identifier = self.fileUUID
             entity_doc_obj.filename = self.fileInfo.fileName()
-
             entity_doc_obj.document_size = self._docSize
             entity_doc_obj.creation_date = datetime.now()
             entity_doc_obj.source_entity = self._source_entity
@@ -841,7 +820,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         progress = (size * 100)/self._docSize
         self.pgBar.setValue(progress)
 
-    def onCompleteTransfer(self,fileid):
+    def onCompleteTransfer(self, fileid):
         """
         Slot raised when file has been successfully transferred.
         """
