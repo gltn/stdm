@@ -544,19 +544,19 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Load source documents into document listing widget.
         """
         self._notif_search_config.clear()
-        #Configure progress dialog
-        progressMsg = QApplication.translate(
-            "ViewSTR", "Loading supporting documents..."
-        )
+        # #Configure progress dialog
+        # progressMsg = QApplication.translate(
+        #     "ViewSTR", "Loading supporting documents..."
+        # )
 
         self.tbSupportingDocs.clear()
         self._source_doc_manager.reset()
 
-        progressDialog = QProgressDialog(
-            progressMsg, "Ok", 0, len(source_docs), self
-        )
-        progressDialog.setWindowModality(Qt.WindowModal)
-        progressDialog.show()
+        # progressDialog = QProgressDialog(
+        #     progressMsg, "Ok", 0, len(source_docs), self
+        # )
+        # progressDialog.setWindowModality(Qt.WindowModal)
+        # progressDialog.show()
         # If no single supporting document, show message warning message
         if len(source_docs) < 1:
             empty_msg = QApplication.translate(
@@ -604,7 +604,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                 tab_widget, tab_title
             )
 
-        progressDialog.hide()
+        # progressDialog.hide()
 
     def _on_node_reference_changed(self, rootHash):
         """
