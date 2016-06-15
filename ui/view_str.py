@@ -575,17 +575,29 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             # add tabs, and container and widget for each tab
             tab_title = self._source_doc_manager.doc_type_mapping[doc_type_id]
 
-            tab_widget = QWidget()
-            tab_widget.setGeometry(QRect(0, 0, 462, 80))
-            tab_widget.setObjectName("tab_widget"+str(doc_type_id))
 
-            vertical_layout = QVBoxLayout(tab_widget)
-            vertical_layout.setObjectName(
-                "verticalLayout"+str(doc_type_id)
-            )
+            tab_widget = QWidget()
+            tab_widget.setObjectName(tab_title)
+
+            cont_layout = QVBoxLayout(tab_widget)
+            cont_layout.setObjectName('widget_layout_' + tab_title)
+
+            scrollArea = QScrollArea(tab_widget)
+            scrollArea.setFrameShape(QFrame.NoFrame)
+
+            scrollArea_contents = QWidget()
+            scrollArea_contents.setObjectName('tab_scroll_area_' + tab_title)
+
+            tab_layout = QVBoxLayout(scrollArea_contents)
+            tab_layout.setObjectName('layout_' + tab_title)
+
+            scrollArea.setWidgetResizable(True)
+
+            scrollArea.setWidget(scrollArea_contents)
+            cont_layout.addWidget(scrollArea)
 
             self._source_doc_manager.registerContainer(
-                vertical_layout, doc_type_id
+                tab_layout, doc_type_id
             )
 
             for doc in doc_obj:

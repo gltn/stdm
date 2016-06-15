@@ -48,7 +48,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWizardPage" name="frmWizPerson">
+  <widget class="QWizardPage" name="frmWizParty">
    <property name="title">
     <string>Occupant Information</string>
    </property>
@@ -60,7 +60,7 @@
    </attribute>
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <layout class="QVBoxLayout" name="vlPersonNotif"/>
+     <layout class="QVBoxLayout" name="vlPartyNotif"/>
     </item>
     <item>
      <widget class="QGroupBox" name="groupBox">
@@ -124,6 +124,9 @@
      <layout class="QVBoxLayout" name="verticalLayout_13">
       <item>
        <widget class="QScrollArea" name="scrollArea_2">
+        <property name="frameShape">
+         <enum>QFrame::Box</enum>
+        </property>
         <property name="widgetResizable">
          <bool>true</bool>
         </property>
@@ -144,7 +147,7 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QWidget" name="tvPersonInfo" native="true">
+           <widget class="QWidget" name="partyRecBox" native="true">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
               <horstretch>0</horstretch>
@@ -161,7 +164,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWizardPage" name="frmWizProperty">
+  <widget class="QWizardPage" name="frmWizSpatialUnit">
    <property name="title">
     <string>Spatial unit information</string>
    </property>
@@ -185,7 +188,7 @@
      <number>8</number>
     </property>
     <item>
-     <layout class="QVBoxLayout" name="vlPropNotif"/>
+     <layout class="QVBoxLayout" name="vlSpatialUnitNotif"/>
     </item>
     <item>
      <widget class="QTabWidget" name="tabWidget">
@@ -268,15 +271,25 @@
          </widget>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_9">
+         <layout class="QVBoxLayout" name="verticalLayout_10">
           <item>
-           <widget class="QWidget" name="tvPropInfo" native="true">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+           <widget class="QScrollArea" name="scrollArea">
+            <property name="frameShape">
+             <enum>QFrame::Box</enum>
             </property>
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="spatialUnitRecBox">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>609</width>
+               <height>85</height>
+              </rect>
+             </property>
+            </widget>
            </widget>
           </item>
          </layout>
@@ -289,7 +302,7 @@
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
-            <height>238</height>
+            <height>250</height>
            </size>
           </property>
          </spacer>
@@ -474,6 +487,9 @@
     </item>
     <item>
      <widget class="QScrollArea" name="scrollArea_3">
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
       <property name="widgetResizable">
        <bool>true</bool>
       </property>
@@ -485,13 +501,19 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>98</width>
-         <height>31</height>
+         <width>617</width>
+         <height>404</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_12">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="margin">
+         <number>0</number>
+        </property>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_11">
+         <layout class="QVBoxLayout" name="STRTypePartyBox">
           <property name="spacing">
            <number>0</number>
           </property>
@@ -532,6 +554,12 @@
     </item>
     <item>
      <widget class="QGroupBox" name="groupBox_3">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="title">
        <string>Supporting Documents</string>
       </property>
@@ -549,10 +577,16 @@
              <height>30</height>
             </size>
            </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>32</height>
+            </size>
+           </property>
           </widget>
          </item>
          <item row="0" column="2">
-          <widget class="QPushButton" name="btnAddTitleDeed">
+          <widget class="QPushButton" name="btnAddDocument">
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -579,7 +613,7 @@
            <property name="maximumSize">
             <size>
              <width>100</width>
-             <height>16777215</height>
+             <height>32</height>
             </size>
            </property>
            <property name="text">
@@ -590,36 +624,11 @@
         </layout>
        </item>
        <item>
-        <widget class="QScrollArea" name="scrollArea">
-         <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
+        <layout class="QVBoxLayout" name="suppDocumentBox">
+         <property name="spacing">
+          <number>0</number>
          </property>
-         <property name="frameShadow">
-          <enum>QFrame::Plain</enum>
-         </property>
-         <property name="widgetResizable">
-          <bool>true</bool>
-         </property>
-         <widget class="QWidget" name="scrollAreaWidgetContents">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>100</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_2">
-           <item row="0" column="0">
-            <layout class="QVBoxLayout" name="vlDocTitleDeed">
-             <property name="spacing">
-              <number>0</number>
-             </property>
-            </layout>
-           </item>
-          </layout>
-         </widget>
-        </widget>
+        </layout>
        </item>
       </layout>
      </widget>

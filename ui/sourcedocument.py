@@ -505,7 +505,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
             canRemove=True,
             view_manager=None
     ):
-        QWidget.__init__(self,parent)
+        QWidget.__init__(self, parent)
         self.setupUi(self)
         self.initGui()
         self.fileInfo = None
