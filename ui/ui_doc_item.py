@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_doc_item.ui'
 #
-# Created: Fri Aug 16 12:09:50 2013
-#      by: PyQt4 UI code generator 4.10.2
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,14 +25,27 @@ except AttributeError:
 class Ui_frmDocumentItem(object):
     def setupUi(self, frmDocumentItem):
         frmDocumentItem.setObjectName(_fromUtf8("frmDocumentItem"))
-        frmDocumentItem.resize(502, 32)
+        frmDocumentItem.resize(502, 34)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(frmDocumentItem.sizePolicy().hasHeightForWidth())
+        frmDocumentItem.setSizePolicy(sizePolicy)
+        frmDocumentItem.setMinimumSize(QtCore.QSize(50, 34))
         frmDocumentItem.setMaximumSize(QtCore.QSize(16777215, 35))
         frmDocumentItem.setStyleSheet(_fromUtf8(""))
         self.horizontalLayout_2 = QtGui.QHBoxLayout(frmDocumentItem)
-        self.horizontalLayout_2.setSpacing(2)
         self.horizontalLayout_2.setMargin(2)
+        self.horizontalLayout_2.setSpacing(2)
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
         self.frame = QtGui.QFrame(frmDocumentItem)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
+        self.frame.setSizePolicy(sizePolicy)
+        self.frame.setMinimumSize(QtCore.QSize(100, 30))
+        self.frame.setMaximumSize(QtCore.QSize(16777215, 50))
         self.frame.setStyleSheet(_fromUtf8("background-color: rgb(200, 200, 200);"))
         self.frame.setFrameShape(QtGui.QFrame.Box)
         self.frame.setFrameShadow(QtGui.QFrame.Sunken)
@@ -81,3 +93,5 @@ class Ui_frmDocumentItem(object):
     def retranslateUi(self, frmDocumentItem):
         frmDocumentItem.setWindowTitle(_translate("frmDocumentItem", "Form", None))
         self.lblClose.setToolTip(_translate("frmDocumentItem", "Remove Document", None))
+
+from stdm import resources_rc

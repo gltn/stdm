@@ -95,7 +95,7 @@ class NetworkFileManager(QObject):
             totalRead += len(inbytes)
             #Raise signal on each block written
             self.emit(SIGNAL("blockWritten(int)"),totalRead)
-            
+
         self.emit(SIGNAL("completed(QString)"),self.fileID)
             
         srcFile.close()
@@ -124,7 +124,7 @@ class NetworkFileManager(QObject):
             absPath = self.networkPath + '/'+profile_name + '/' + \
                       "%s"%(docmodel.source_entity) + '/' + \
                       doc_type + '/' + docmodel.document_identifier + fileExt
-            print absPath
+
             return QFile.remove(absPath)
         
         else:
@@ -167,8 +167,13 @@ class DocumentTransferWorker(QObject):
         """
         self.blockWrite.emit(size)
         
-    def onWriteComplete(self):
+    def onWriteComplete(self, file_uuid):
         """
         Propagate event.
         """
+
+        curframe = inspect.currentframe()
+
+        calframe = inspect.getouterframes(curframe, 2)
+
         self.complete.emit(self._file_manager.fileID)

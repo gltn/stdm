@@ -94,7 +94,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         #Center me
         self.move(QDesktopWidget().availableGeometry().center() -
                   self.frameGeometry().center())
-        self.removed_docs = []
 
         self.toolBox.setStyleSheet(
             '''
@@ -127,7 +126,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         # when the same item is selected over and over again.
 
         self._strID = None
-
+        self.removed_docs = None
         #Used to store the root hash of the currently selected node.
         self._curr_rootnode_hash = ""
 
@@ -373,6 +372,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                     if isinstance(node, SupportsDocumentsNode):
 
                         src_docs = node.documents()
+
                         if isinstance(src_docs, dict):
                             self._load_source_documents(src_docs)
                             # if there is supporting document,
@@ -385,7 +385,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                         self.toolBox.setCurrentIndex(0)
                         self.draw_spatial_unit(node.model())
 
-    def onSourceDocumentRemoved(self, container_id, doc_uuid):
+    def onSourceDocumentRemoved(self, container_id, doc_uuid, removed_doc):
         """
         Slot raised when a source document is removed from the container.
         If there are no documents in the specified container then remove
@@ -397,8 +397,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         for doc in curr_doc_widget:
             if doc.fileUUID == doc_uuid:
                 doc.deleteLater()
-
-        self.removed_docs.append(doc_uuid)
+        self.removed_docs = removed_doc
 
     def draw_spatial_unit(self, model):
         """
@@ -545,19 +544,19 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Load source documents into document listing widget.
         """
         self._notif_search_config.clear()
-        #Configure progress dialog
-        progressMsg = QApplication.translate(
-            "ViewSTR", "Loading supporting documents..."
-        )
+        # #Configure progress dialog
+        # progressMsg = QApplication.translate(
+        #     "ViewSTR", "Loading supporting documents..."
+        # )
 
         self.tbSupportingDocs.clear()
         self._source_doc_manager.reset()
 
-        progressDialog = QProgressDialog(
-            progressMsg, "Ok", 0, len(source_docs), self
-        )
-        progressDialog.setWindowModality(Qt.WindowModal)
-
+        # progressDialog = QProgressDialog(
+        #     progressMsg, "Ok", 0, len(source_docs), self
+        # )
+        # progressDialog.setWindowModality(Qt.WindowModal)
+        # progressDialog.show()
         # If no single supporting document, show message warning message
         if len(source_docs) < 1:
             empty_msg = QApplication.translate(
@@ -568,35 +567,56 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             self._notif_search_config.insertWarningNotification(empty_msg)
 
         for doc_type_id, doc_obj in source_docs.iteritems():
+            # Filter out removed docs.
+            # Only filter when a doc is removed.
+            if self.removed_docs is not None:
+                doc_obj = list(set(doc_obj) - set(self.removed_docs))
 
             # add tabs, and container and widget for each tab
             tab_title = self._source_doc_manager.doc_type_mapping[doc_type_id]
 
-            tab_widget = QWidget()
-            tab_widget.setGeometry(QRect(0, 0, 462, 80))
-            tab_widget.setObjectName("tab_widget"+str(doc_type_id))
 
-            vertical_layout = QVBoxLayout(tab_widget)
-            vertical_layout.setObjectName(
-                "verticalLayout"+str(doc_type_id)
-            )
+            tab_widget = QWidget()
+            tab_widget.setObjectName(tab_title)
+
+            cont_layout = QVBoxLayout(tab_widget)
+            cont_layout.setObjectName('widget_layout_' + tab_title)
+
+            scrollArea = QScrollArea(tab_widget)
+            scrollArea.setFrameShape(QFrame.NoFrame)
+
+            scrollArea_contents = QWidget()
+            scrollArea_contents.setObjectName('tab_scroll_area_' + tab_title)
+
+            tab_layout = QVBoxLayout(scrollArea_contents)
+            tab_layout.setObjectName('layout_' + tab_title)
+
+            scrollArea.setWidgetResizable(True)
+
+            scrollArea.setWidget(scrollArea_contents)
+            cont_layout.addWidget(scrollArea)
 
             self._source_doc_manager.registerContainer(
-                vertical_layout, doc_type_id
+                tab_layout, doc_type_id
             )
 
             for doc in doc_obj:
-                if doc.document_identifier not in self.removed_docs:
+
+                try:
                     # add doc widgets
                     self._source_doc_manager.insertDocFromModel(
                         doc, doc_type_id
                     )
+                except Exception as ex:
+                    LOGGER.debug(
+                        'ViewSTR-Load_source_document: '+str(ex)
+                    )
+
             self.tbSupportingDocs.addTab(
                 tab_widget, tab_title
             )
 
-
-        progressDialog.setValue(len(source_docs))
+        # progressDialog.hide()
 
     def _on_node_reference_changed(self, rootHash):
         """
