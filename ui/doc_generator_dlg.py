@@ -17,6 +17,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+import logging
 from collections import OrderedDict
 import sys
 
@@ -66,6 +67,8 @@ from .composer import TemplateDocumentSelector
 from .sourcedocument import source_document_location
 
 __all__ = ["DocumentGeneratorDialog", "EntityConfig"]
+
+LOGGER = logging.getLogger('stdm')
 
 class EntityConfig(object):
     """
@@ -532,7 +535,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         try:
             QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
 
-            for i,record in enumerate(records):
+            for i, record in enumerate(records):
                 progressDlg.setValue(i)
 
                 if progressDlg.wasCanceled():
@@ -576,7 +579,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
                                     )
 
         except Exception as ex:
-            #TODO: Log stack trace
+            LOGGER.debug('DocGeneratorDlg-onGenerate: ' + str(ex))
             err_msg = sys.exc_info()[1]
             QApplication.restoreOverrideCursor()
 
