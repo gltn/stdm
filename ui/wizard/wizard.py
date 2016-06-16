@@ -83,7 +83,7 @@ from column_depend import ColumnDepend
 LOGGER = logging.getLogger('stdm')
 LOGGER.setLevel(logging.DEBUG)
 
-checkbox_values = [False, None, True]
+CHECKBOX_VALUES = [False, None, True]
 
 class ConfigWizard(QWizard, Ui_STDMWizard):
     wizardFinished = pyqtSignal(object)
@@ -138,11 +138,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         self.init_ui_ctrls()
 
-        self.is_config_done = False
-        self.stdm_config = StdmConfiguration.instance()  
-        self.stdm_config.profile_added.connect(self.cbo_add_profile)
-
         self.reg_config = RegistryConfig()
+
+        self.load_directory_path_settings()
 
         # validate if to show license
         show_lic = self.check_show_license(self.reg_config)
@@ -150,9 +148,37 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.setStartId(0)
             self.reg_config.write({SHOW_LICENSE:0})
         else:
-            self.reload_profiles()
-            self.load_path()
             self.setStartId(1)
+
+        self.stdm_config = None
+        self.orig_assets_count = 0
+        self.load_stdm_config()
+
+    def reject(self):
+        """
+        Event handler for the cancel button.
+        If configuration has been edited, warn user before exiting.
+        """
+        cnt = len(self.stdm_config)
+        if cnt <> self.orig_assets_count:
+            msg0 = "All changes you've made on the configuration will be lost.\n"
+            msg1 = "Are you sure you want to cancel?"
+            if self.query_box(msg0+msg1) == QMessageBox.Cancel:
+                return
+        self.done(0)
+
+    def load_stdm_config(self):
+        """
+        Read and load configuration from file 
+        """
+        self.load_configuration_from_file()  # ????? trap exception!!!!
+
+        self.stdm_config = StdmConfiguration.instance()  
+        self.orig_assets_count = len(self.stdm_config)
+
+        self.load_profiles()
+        self.is_config_done = False
+        self.stdm_config.profile_added.connect(self.cbo_add_profile)
 
     def check_show_license(self, reg_config):
         """
@@ -181,6 +207,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.btnTemplates.clicked.connect(self.set_template_path)
 
     def init_profile_ctrls_event_handlers(self):
+        """
+        Attach event handlers for the profile toolbar
+        """
         self.cboProfile.currentIndexChanged.connect(self.profile_changed)
         self.btnNewP.clicked.connect(self.new_profile)
         self.btnPDelete.clicked.connect(self.delete_profile)
@@ -213,7 +242,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def init_entity_ctrls_event_handlers(self):
         """
-        Attach click event handlers for the entity toolbar buttons
+        Attach OnClick event handlers for the entity toolbar buttons
         """
         self.btnNewEntity.clicked.connect(self.new_entity)
         self.btnEditEntity.clicked.connect(self.edit_entity)
@@ -221,7 +250,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def init_column_ctrls_event_handlers(self):
         """
-        Attach click event handlers for the columns toolbar buttons
+        Attach OnClick event handlers for the columns toolbar buttons
         """
         self.btnAddColumn.clicked.connect(self.new_column)
         self.btnEditColumn.clicked.connect(self.edit_column)
@@ -229,7 +258,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def init_lookup_ctrls_event_handlers(self):
         """
-        Attach click event handlers for the lookup toolbar buttons
+        Attach OnClick event handlers for the lookup toolbar buttons
         """
         self.btnAddLookup.clicked.connect(self.new_lookup)
         self.btnEditLookup.clicked.connect(self.edit_lookup)
@@ -237,7 +266,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def init_lkvalues_event_handlers(self):
         """
-        Attach click event handlers for the lookup values toolbar buttons
+        Attach OnClick event handlers for the lookup values toolbar buttons
         """
         self.btnAddLkupValue.clicked.connect(self.add_lookup_value)
         self.btnEditLkupValue.clicked.connect(self.edit_lookup_value)
@@ -252,19 +281,60 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.lblDesc.setText("")
         self.pftableView.setColumnWidth(0, 250)
 
-        # multi party checkbox
+        # Attach multi party checkbox state change event handler
         self.cbMultiParty.stateChanged.connect(self.multi_party_state_change)
 
-        # disable editting 
+        # disable editing of view widgets
         self.pftableView.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.tbvColumns.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.lvEntities.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.lvLookups.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.lvLookupValues.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
 
-    def reload_profiles(self):
+    def load_configuration_from_file(self):
         """
-        Read and load the profiles from StdmConfiguration instance
+        Load configuration object from the file.
+        :return: True if the file was successfully
+        loaded. Otherwise, False.
+        :rtype: bool
+        """
+        config_path = QDesktopServices.storageLocation(
+            QDesktopServices.HomeLocation) +\
+                      '/.stdm/configuration.stc'
+        config_serializer = ConfigurationFileSerializer(
+            config_path
+        )
+
+        try:
+            config_serializer.load()
+
+        except IOError as io_err:
+            QMessageBox.critical(self.iface.mainWindow(),
+                QApplication.translate(
+                    'STDM', 'Load Configuration Error'
+                ),
+                unicode(io_err)
+            )
+
+            return False
+
+        except ConfigurationException as c_ex:
+            QMessageBox.critical(
+                self.iface.mainWindow(),
+                QApplication.translate(
+                    'STDM',
+                    'Load Configuration Error'
+                ),
+                unicode(c_ex)
+            )
+
+            return False
+
+        return True
+
+    def load_profiles(self):
+        """
+        Read and load profiles from StdmConfiguration instance
         """
         profiles = []
         for profile in self.stdm_config.profiles.values():
@@ -286,7 +356,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def validate_STR(self):
         """
-        Validate if both Party & Spatial Unit entities for STR are properly set. 
+        Validate both Party & Spatial Unit entities for STR are properly set. 
         Returns a tuple indicating the setting status and a status message.
         :rtype: tuple (boolean, str)
         """
@@ -309,6 +379,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         return True, "Ok"
 
     def index_spatial_unit_table(self):
+        """
+        Returns an index of the selected spatial unit
+        """
         for index, entity in enumerate(self.entity_model.entities().values()):
             if entity.has_geometry_column():
                 return index
@@ -316,7 +389,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def validate_empty_lookups(self):
         """
-        Verifys that all lookups in the current profile
+        Verifies that all lookups in the current profile
         have values. Returns true if all have values else false
         rtype: bool
         """
@@ -343,14 +416,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def read_settings_path(self, reg_keys, os_path):
         """
-        Returns path settings from the registry or an os folder
+        Returns path settings from the registry or an os folder path
         param reg_key: list of registry keys to read the path setting
         type reg_keys: list
         param os_path: os directory to use if the reg_key is not set
         type os_path: str
         rtype: str
         """
-        #reg_config = RegistryConfig()
         try:
             # returns a dict {reg_key:reg_value}
             key = self.reg_config.read(reg_keys)
@@ -370,25 +442,40 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             return self.fmt_path_str(doc_path)
 
     def show_license(self):
+        """
+        Show STDM license file
+        """
         self.txtLicense.clear()
         license = LicenseDocument()
         self.txtLicense.setText(license.read_license_info())
 
-    def load_path(self):
+    def load_directory_path_settings(self):
+        """
+        Read and display default directory path settings
+        """
         self.load_doc_path()
         self.load_output_path()
         self.load_template_path()
 
     def load_doc_path(self):
+        """
+        Read and display default document path
+        """
         doc_path = self.read_settings_path([LOCAL_SOURCE_DOC], '/.stdm/documents/')
         self.edtDocPath.setText(doc_path)
 
     def load_output_path(self):
+        """
+        Read and display default report output path
+        """
         output_path = self.read_settings_path([COMPOSER_OUTPUT], 
                 '/.stdm/reports/outputs')
         self.edtOutputPath.setText(output_path)
 
     def load_template_path(self):
+        """
+        Read and display default template path
+        """
         templates_path = self.read_settings_path([COMPOSER_TEMPLATE],
                 '/.stdm/reports/templates')
         self.edtTemplatePath.setText(templates_path)
@@ -414,12 +501,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Event handler for the multi party checkbox state change event.
         """
         profile = self.current_profile()
-        profile.social_tenure.multi_party = checkbox_values[self.cbMultiParty.checkState()]
+        profile.social_tenure.multi_party =
+             CHECKBOX_VALUES[self.cbMultiParty.checkState()]
 
     def set_multi_party_checkbox(self, profile):
         """
-        Set the check state for the multi party checkbox from current
-        profile social_tenure multi_party attribute.
+        Set the state of multi party checkbox from the current
+        profile 'social_tenure.multi_party' attribute.
         :param profile: profile to extract multi party value
         :type profile: Profile
         """
@@ -430,12 +518,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         validPage = True
 
         if self.currentId() == 0:
-            self.load_path()
+            self.load_directory_path_settings()
 
             if self.rbReject.isChecked():
-                message1 = "To continue with the wizard please comply with "
-                message2 = "disclaimer policy by selecting the option 'I Agree'"
-                self.show_message(message1+message2)
+                message0 = "To continue with the wizard please comply with "
+                message1 = "disclaimer policy by selecting the option 'I Agree'"
+                self.show_message(message0 + message1)
                 validPage = False
 
         if self.currentId() == 3:
@@ -501,10 +589,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         return validPage
 
     def pause_wizard_dialog(self):
-            self.button(QWizard.BackButton).setEnabled(False)
-            self.button(QWizard.CancelButton).setText(\
-                    QApplication.translate("Configuration Wizard","Close"))
-
+        """
+        Pause the wizard before closing, allow user to 
+        read the message in the TextEdit widget
+        """
+        self.button(QWizard.BackButton).setEnabled(False)
+        self.button(QWizard.CancelButton).setText(\
+                QApplication.translate("Configuration Wizard","Close"))
 
     def _updater_thread_started(self):
         """
@@ -570,6 +661,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         page_count.registerField("Reject", self.rbReject)
 
     def set_support_doc_path(self):
+        """
+        OnClick event handler for the supporting document path button
+        """
         try:
             dir_name = self.open_dir_chooser(QApplication.translate( \
                     "STDM Configuration", 
@@ -583,6 +677,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             raise
 
     def set_output_path(self):
+        """
+        OnClick event handler for the document output path button
+        """
         try:
             dir_name = self.open_dir_chooser(QApplication.translate( \
                     "STDM Configuration",
@@ -595,6 +692,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             LOGGER.debug("Error setting support document path!")
 
     def set_template_path(self):
+        """
+        OnClick event handler for the documents template path button
+        """
         try:
             dir_name = self.open_dir_chooser(QApplication.translate( \
                     "STDM Configuration",
@@ -607,6 +707,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             LOGGER.debug("Error setting support document path!")
 
     def open_dir_chooser(self, message, dir=None):
+        """
+        Returns a selected folder from the QFileDialog
+        :param message:message to show on the file selector
+        :type message: str
+        """
         sel_dir = str(QtGui.QFileDialog.getExistingDirectory(
                 self, "Select Folder", ""))
         return sel_dir
@@ -621,9 +726,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     'ENTITY_SUPPORTING_DOCUMENT', 'VALUE_LIST', 'ASSOCIATION_ENTITY']:
             self.entity_model.add_entity(entity)
 
+        # if entity is a supporting document, add it to the Valuelist view model
+        if entity.TYPE_INFO == 'VALUE_LIST':
+            self.lookup_view_model.add_entity(entity)
+
     def delete_entity_item(self, name):
         """
-        Triggered when an entity is removed from profile
+        Removes an entity from a model
         param name: Name of entity to delete
         type name: str
         """
@@ -660,8 +769,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     #PROFILE
     def new_profile(self):
         """
-        Creates a new instance of a profile and adds it to the
-        StdmConfiguration singleton
+        Event handler for creating a new profiled
         """
         editor = ProfileEditor(self)
         result = editor.exec_()
@@ -698,12 +806,17 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Delete the current selected profile, but not the last one.
         """
         if self.cboProfile.count() == 1:
+            msg = "This is the last profile in your wizard. "
+            msg2 = "STDM requirement is to have atleast one profile in your database."
+            msg3 = " Delete is prohibited."
             self.show_message(QApplication.translate("Configuration Wizard", \
-                    "Cannot delete last profile!"))
+                    msg+msg2+msg3), QMessageBox.Information)
             return
 
-        msg = "Are you sure you want to delete the profile?"
-        if self.query_box(msg) == QMessageBox.Cancel:
+        msg0 ="You will loose all items related to this profile i.e \n"
+        msg1 ="entities, lookups and Social Tenure Relationships.\n"
+        msg2 = "Are you sure you want to delete this profile?"
+        if self.query_box(msg0+msg1+msg2) == QMessageBox.Cancel:
             return
 
         profile_name = unicode(self.cboProfile.currentText())
@@ -714,6 +827,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.load_profile_cbo()
 
     def get_profiles(self):
+        """
+        Returns a list of profiles from the StdmConfiguration instance.
+        :rtype: list
+        """
         profiles = []
         for profile in self.stdm_config.profiles.items():
                 profiles.append(profile[0])
@@ -721,17 +838,28 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         return profiles
 
     def load_profile_cbo(self):
+        """
+        Populate profile combobox with list of profiles.
+        """
         profiles = self.get_profiles()
         self.cboProfile.clear()
         self.cboProfile.insertItems(0, profiles)
         self.cboProfile.setCurrentIndex(0)
 
     def add_column_item(self, column):
+        """
+        Event handler to add new column to various view models
+        :param column: instance of BaseColumn to add
+        :type column: BaseColumn
+        """
         self.col_view_model.add_entity(column)
         self.party_item_model.add_entity(column)
         self.spunit_item_model.add_entity(column)
 
-    def delete_column_item(self, name):
+    def delete_column_item(self):
+        """
+        Event handler for removing column item from various view models
+        """
         model_item, column, row_id = self.get_model_entity(self.tbvColumns)
         self.col_view_model.delete_entity(column)
         self.col_view_model.removeRow(row_id)
@@ -861,7 +989,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.cboSPUnit.currentIndexChanged.emit(self.cboSPUnit.currentIndex())
 
     def switch_profile(self, name):
-        #Exit if the name is empty
+        """
+        Used to refresh all QStandardItemModel's attached to various
+        view widgets in the wizard.
+        :param name: name of the new profile to show
+        :type name: str
+        """
         if not name:
             return
 
@@ -894,20 +1027,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.connect_signals()
 
     def profile_changed(self, row_id):
+        """
+        Event handler for the profile combobox current index changed.
+        """
         self.switch_profile(self.cboProfile.currentText())
-		
-    def _create_ent(self, profile, entity_name):
-        entity = profile.create_entity(entity_name, entity_factory)
-        self.connect_column_signals(entity)
-        profile.add_entity(entity)
 
     def get_model_entity(self, view):
         """
-        Extracts and returns an entitymodel, entity and selected item ID
-        from QAbstractItemView of a view widget
+        Extracts and returns an entitymodel, entity and the 
+        current selected item ID from QAbstractItemView of a 
+        given view widget
         param view: Widget that inherits QAbstractItemView
         type view: QAbstractitemView
-        rtype: tuple
+        rtype: tuple - (QStandardItemModel, Entity, int)
         """
         sel_id = -1
         entity = None
@@ -952,34 +1084,32 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.tbvColumns.setModel(self.col_view_model)
 
     def party_changed(self, row_id):
+        """
+        Event handler for STR party combobox - event currentIndexChanged.
+        """
         cbo_model = self.cboParty.model()
         try:
             columns = cbo_model.entity_byId(row_id).columns.values()
             self.party_item_model.clear()
             self.party_item_model = STRColumnEntitiesModel()
             self.addColumns(self.party_item_model, columns)
-            #self.lvParty.setModel(self.party_item_model)
         except:
             pass
 
     def spatial_unit_changed(self, row_id):
+        """
+        Event handler for STR spatial unit combobox - event currentIndexChanged.
+        :param row_id: index of the selected item in the combobox
+        :type row_id: int
+        """
         cbo_model = self.cboSPUnit.model()
         try:
             columns = cbo_model.entity_byId(row_id).columns.values()
             self.spunit_item_model.clear()
             self.spunit_item_model = STRColumnEntitiesModel()
             self.addColumns(self.spunit_item_model, columns)
-            #self.lvSpatialUnit.setModel(self.spunit_item_model)
         except:
             pass
-
-    #def _make_column(self, id, col_name, entity):
-        #"""
-        #Helper function to return a registered Column
-        #:param id
-        #"""
-        #col = BaseColumn.registered_types.values()[id](col_name, entity)
-        #return col
 
     def new_column(self):
         """
@@ -1096,7 +1226,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     "No column selected for deletion!"))
             return
 
-        if self.check_column_dependencies():
+        if self.check_column_dependencies(column):
             ent_id, entity = self._get_entity(self.lvEntities)
             # delete from the entity
             entity.remove_column(column.name)
@@ -1306,9 +1436,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         """
         msgbox = QMessageBox(self)
-        msgbox.setIcon(QMessageBox.Question)
+        msgbox.setIcon(QMessageBox.Warning)
         msgbox.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
-        msgbox.setInformativeText(QApplication.translate("STDM Configuration Wizard", msg))
+        msgbox.setText(QApplication.translate("STDM Configuration Wizard", msg))
         msgbox.setStandardButtons(QMessageBox.Cancel | QMessageBox.Ok);
         msgbox.setDefaultButton(QMessageBox.Cancel);
         result = msgbox.exec_()
