@@ -582,6 +582,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                      })
 
             self.wizardFinished.emit(self.cboProfile.currentText())
+
+            # compute a new asset count
+            self.orig_assets_count = len(self.stdm_config)
+
             #pause, allow user to read post saving messages
             self.pause_wizard_dialog()
             validPage = False
