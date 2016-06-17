@@ -501,8 +501,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Event handler for the multi party checkbox state change event.
         """
         profile = self.current_profile()
-        profile.social_tenure.multi_party =
-             CHECKBOX_VALUES[self.cbMultiParty.checkState()]
+        profile.social_tenure.multi_party = \
+                CHECKBOX_VALUES[self.cbMultiParty.checkState()]
 
     def set_multi_party_checkbox(self, profile):
         """
