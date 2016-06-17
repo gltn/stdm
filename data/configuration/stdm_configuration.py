@@ -50,6 +50,9 @@ class StdmConfiguration(QObject):
         LOGGER.debug("STDM Configuration initialized.")
 
     def __len__(self):
+        """
+        Return a count of all assets in the configuration
+        """
         count = 0
         for p in self.profiles.values():
             for e in p.entities.values():
