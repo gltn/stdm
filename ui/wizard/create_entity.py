@@ -101,10 +101,8 @@ class EntityEditor(QDialog, Ui_dlgEntity):
                 return True
 
     def support_doc(self):
-        if self.cbSupportDoc.checkState() == Qt.Checked:
-            return True
-        else:
-            return False
+        values = [False, None, True]
+        return values[self.cbSupportDoc.checkState()]
 
     def bool_to_check(self, state):
         if state:
