@@ -33,6 +33,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import mapper
 
+from .new_str_wiz import newSTRWiz
+
 import stdm.data
 from stdm.data.pg_utils import (
     pg_table_exists
@@ -118,7 +120,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         # set whether currently logged in user has
         # permissions to edit existing STR records
         self._can_edit = self._plugin.STRCntGroup.canUpdate()
-
+        self._can_delete = self._plugin.STRCntGroup.canDelete()
+        self._can_create = self._plugin.STRCntGroup.canCreate()
         # Variable used to store a reference to the
         # currently selected social tenure relationship
         # when displaying documents in the supporting documents tab window.
@@ -167,6 +170,16 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self.tvSTRResults.customContextMenuRequested.connect(
             self.onResultsContextMenuRequested
         )
+        self.editSTR.setDisabled(True)
+        self.deleteSTR.setDisabled(True)
+        if not self._can_create:
+            self.addSTR.setDisabled(True)
+
+        self.addSTR.clicked.connect(self.load_new_str_wiz)
+
+        self.deleteSTR.clicked.connect(self.delete_str)
+
+        self.editSTR.clicked.connect(self.load_edit_str_wiz)
 
         #Load async for the current widget
         self.entityTabIndexChanged(0)
@@ -174,7 +187,9 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
     def add_spatial_unit_layer(self):
 
-        sp_unit_manager = SpatialUnitManagerDockWidget(self._plugin.iface, self._plugin)
+        sp_unit_manager = SpatialUnitManagerDockWidget(
+            self._plugin.iface, self._plugin
+        )
 
         table = self.spatial_unit.name
         spatial_column = [
@@ -336,7 +351,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Clear search input parameters (for current widget) and results.
         """
         entityWidget = self.tbSTREntity.currentWidget()
-        if isinstance(entityWidget,EntitySearchItem):
+        if isinstance(entityWidget, EntitySearchItem):
             entityWidget.reset()
 
         self._reset_controls()
@@ -351,39 +366,92 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         #Remove spatial unit memory layer
         self.tbPropertyPreview.remove_layer()
 
-    def on_select_results(self, selected, deselected):
+    def on_select_results(self):
         """
         Slot which is raised when the selection
         is changed in the tree view
         selection model.
         """
-        selIndexes = selected.indexes()
+        index = self.tvSTRResults.currentIndex()
 
         #Check type of node and perform corresponding action
-        for mi in selIndexes:
-            if mi.isValid():
-                node = mi.internalPointer()
+        #for mi in selIndexes:
+        if index.isValid():
+            node = index.internalPointer()
+            self.editSTR.setDisabled(True)
+            self.deleteSTR.setDisabled(True)
+            if index.column() == 0:
+                # Assert if node represents another
+                # entity has been clicked
+                self._on_node_reference_changed(node.rootHash())
 
-                if mi.column() == 0:
-                    # Assert if node represents another
-                    # entity has been clicked
-                    self._on_node_reference_changed(node.rootHash())
+                if isinstance(node, SupportsDocumentsNode):
 
-                    if isinstance(node, SupportsDocumentsNode):
+                    src_docs = node.documents()
 
-                        src_docs = node.documents()
+                    if isinstance(src_docs, dict):
+                        self._load_source_documents(src_docs)
+                        # if there is supporting document,
+                        # expand supporting document tab
+                        if len (src_docs) > 0:
+                            self.toolBox.setCurrentIndex(1)
+                        if self._can_edit:
+                            self.deleteSTR.setDisabled(False)
+                        if self._can_delete:
+                            self.editSTR.setDisabled(False)
 
-                        if isinstance(src_docs, dict):
-                            self._load_source_documents(src_docs)
-                            # if there is supporting document,
-                            # expand supporting document tab
-                            if len (src_docs) > 0:
-                                self.toolBox.setCurrentIndex(1)
+                if isinstance(node, SpatialUnitNode):
+                    # Expand the Spatial Unit preview
+                    self.toolBox.setCurrentIndex(0)
+                    self.draw_spatial_unit(node.model())
+                    self.editSTR.setDisabled(True)
+                    self.deleteSTR.setDisabled(True)
 
-                    if isinstance(node, SpatialUnitNode):
-                        # Expand the Spatial Unit preview
-                        self.toolBox.setCurrentIndex(0)
-                        self.draw_spatial_unit(node.model())
+    def load_edit_str_wiz(self):
+
+        index = self.tvSTRResults.currentIndex()
+        node = None
+        if index.isValid():
+            node = index.internalPointer()
+        if index.column() == 0:
+            if isinstance(node, SupportsDocumentsNode):
+
+                edit_str = newSTRWiz(self._plugin, node)
+                status = edit_str.exec_()
+
+                if status == 1:
+                    if node._parent.typeInfo() == 'ENTITY_NODE':
+                        if node._model.party_id == \
+                                edit_str.updated_str_obj.party_id:
+                            self.btnSearch.click()
+                    if node._parent.typeInfo() == 'SPATIAL_UNIT_NODE':
+                        if node._model.spatial_unit_id == \
+                                edit_str.updated_str_obj.spatial_unit_id:
+                            self.btnSearch.click()
+
+    def load_new_str_wiz(self):
+        try:
+            # Check type of node and perform corresponding action
+            add_str = newSTRWiz(self._plugin)
+            add_str.exec_()
+
+        except Exception as ex:
+            QMessageBox.critical(
+                self._plugin.iface.mainWindow(),
+                QApplication.translate(
+                    "STDMPlugin",
+                    "Loading Error"
+                ),
+                str(ex.message)
+            )
+
+    def delete_str(self):
+        index = self.tvSTRResults.currentIndex()
+        node = None
+        if index.isValid():
+            node = index.internalPointer()
+        if isinstance(node, SupportsDocumentsNode):
+            node.onDelete(index)
 
     def onSourceDocumentRemoved(self, container_id, doc_uuid, removed_doc):
         """
@@ -519,7 +587,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         #Capture selection changes signals when
         # results are returned in the tree view
         resultsSelModel = self.tvSTRResults.selectionModel()
-        resultsSelModel.selectionChanged.connect(
+        resultsSelModel.currentChanged.connect(
             self.on_select_results
         )
 
@@ -544,20 +612,10 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Load source documents into document listing widget.
         """
         self._notif_search_config.clear()
-        # #Configure progress dialog
-        # progressMsg = QApplication.translate(
-        #     "ViewSTR", "Loading supporting documents..."
-        # )
 
         self.tbSupportingDocs.clear()
         self._source_doc_manager.reset()
 
-        # progressDialog = QProgressDialog(
-        #     progressMsg, "Ok", 0, len(source_docs), self
-        # )
-        # progressDialog.setWindowModality(Qt.WindowModal)
-        # progressDialog.show()
-        # If no single supporting document, show message warning message
         if len(source_docs) < 1:
             empty_msg = QApplication.translate(
                 'ViewSTR', 'No supporting document is uploaded '
@@ -569,8 +627,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         for doc_type_id, doc_obj in source_docs.iteritems():
             # Filter out removed docs.
             # Only filter when a doc is removed.
-            if self.removed_docs is not None:
-                doc_obj = list(set(doc_obj) - set(self.removed_docs))
+            # if self.removed_docs is not None:
+            #     doc_obj = list(set(doc_obj) - set(self.removed_docs))
 
             # add tabs, and container and widget for each tab
             tab_title = self._source_doc_manager.doc_type_mapping[doc_type_id]
@@ -615,8 +673,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             self.tbSupportingDocs.addTab(
                 tab_widget, tab_title
             )
-
-        # progressDialog.hide()
 
     def _on_node_reference_changed(self, rootHash):
         """
@@ -828,12 +884,13 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         )
         search_term = self._searchTerm()
 
+        prog_dialog.setValue(2)
         #Try to get the corresponding search term value from the completer model
         if not self._completer_model is None:
             reg_exp = QRegExp("^%s$"%(search_term), Qt.CaseInsensitive,
                               QRegExp.RegExp2)
             self._proxy_completer_model.setFilterRegExp(reg_exp)
-            prog_dialog.setValue(2)
+
             if self._proxy_completer_model.rowCount() > 0:
                 #Get corresponding actual value from the first matching item
                 value_model_idx  = self._proxy_completer_model.index(0, 1)
@@ -857,16 +914,17 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         propType = queryObjProperty.property.columns[0].type
 
         try:
+            prog_dialog.setValue(7)
             if not isinstance(propType, String):
                 results = modelQueryObj.filter(
                     queryObjProperty == search_term
                 ).all()
-                prog_dialog.setValue(7)
+
             else:
                 results = modelQueryObj.filter(
                     func.lower(queryObjProperty) == func.lower(search_term)
                 ).all()
-                prog_dialog.setValue(8)
+
         except exc.StatementError:
             return model_root_node, [], search_term
 
@@ -1025,40 +1083,40 @@ class ModelWorker(QObject):
         except Exception as ex:
             self.error.emit(unicode(ex))
 
-class SourceDocumentContainerWidget(QWidget):
-    """
-    Widget that enables source documents
-    of one type to be displayed.
-    """
-    def __init__(self, container_id = -1, parent = None):
-        QWidget.__init__(self,parent)
-
-        #Set overall layout for the widget
-        vtLayout = QVBoxLayout()
-        self.setLayout(vtLayout)
-
-        self.docVtLayout = QVBoxLayout()
-        vtLayout.addLayout(self.docVtLayout)
-
-
-        #Id of the container
-        self._containerId = container_id
-
-    def container(self):
-        """
-        Returns the container in which
-        source documents will rendered in.
-        """
-        return self.docVtLayout
-
-    def setContainerId(self, id):
-        """
-        Sets the ID of the container.
-        """
-        self._containerId = id
-
-    def containerId(self):
-        """
-        Returns the ID of the container.
-        """
-        return self._containerId
+# class SourceDocumentContainerWidget(QWidget):
+#     """
+#     Widget that enables source documents
+#     of one type to be displayed.
+#     """
+#     def __init__(self, container_id = -1, parent = None):
+#         QWidget.__init__(self,parent)
+#
+#         #Set overall layout for the widget
+#         vtLayout = QVBoxLayout()
+#         self.setLayout(vtLayout)
+#
+#         self.docVtLayout = QVBoxLayout()
+#         vtLayout.addLayout(self.docVtLayout)
+#
+#
+#         #Id of the container
+#         self._containerId = container_id
+#
+#     def container(self):
+#         """
+#         Returns the container in which
+#         source documents will rendered in.
+#         """
+#         return self.docVtLayout
+#
+#     def setContainerId(self, id):
+#         """
+#         Sets the ID of the container.
+#         """
+#         self._containerId = id
+#
+#     def containerId(self):
+#         """
+#         Returns the ID of the container.
+#         """
+#         return self._containerId
