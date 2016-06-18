@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_entity_depend.ui'
 #
-# Created: Fri May 27 13:09:53 2016
+# Created: Tue Jun 14 17:52:11 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -33,11 +33,13 @@ class Ui_dlgEntityDepend(object):
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.horizontalLayout_3 = QtGui.QHBoxLayout()
         self.horizontalLayout_3.setSpacing(0)
+        self.horizontalLayout_3.setContentsMargins(0, -1, -1, -1)
         self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
         self.label = QtGui.QLabel(dlgEntityDepend)
-        self.label.setMaximumSize(QtCore.QSize(40, 16777215))
+        self.label.setMaximumSize(QtCore.QSize(80, 16777215))
         self.label.setText(_fromUtf8(""))
-        self.label.setPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/help-content.png")))
+        self.label.setPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/warning_large.png")))
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setObjectName(_fromUtf8("label"))
         self.horizontalLayout_3.addWidget(self.label)
         self.qryLabel = QtGui.QLabel(dlgEntityDepend)
@@ -53,6 +55,7 @@ class Ui_dlgEntityDepend(object):
         self.verticalLayout.addLayout(self.horizontalLayout_3)
         self.twEntityDepend = QtGui.QTreeWidget(dlgEntityDepend)
         self.twEntityDepend.setObjectName(_fromUtf8("twEntityDepend"))
+        self.twEntityDepend.headerItem().setText(0, _fromUtf8("1"))
         self.twEntityDepend.header().setVisible(False)
         self.verticalLayout.addWidget(self.twEntityDepend)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
@@ -88,4 +91,4 @@ class Ui_dlgEntityDepend(object):
         self.btnCancel.setText(_translate("dlgEntityDepend", "Cancel", None))
         self.btnDelete.setText(_translate("dlgEntityDepend", "Delete entity", None))
 
-from stdm import resources_rc
+import resources_rc
