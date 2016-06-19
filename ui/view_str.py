@@ -117,6 +117,13 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             }
             '''
         )
+        self.tvSTRResults.setStyleSheet(
+            '''
+            QTreeView:!active {
+                selection-background-color: #72a6d9;
+            }
+            '''
+        )
         # set whether currently logged in user has
         # permissions to edit existing STR records
         self._can_edit = self._plugin.STRCntGroup.canUpdate()
@@ -170,10 +177,18 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self.tvSTRResults.customContextMenuRequested.connect(
             self.onResultsContextMenuRequested
         )
-        self.editSTR.setDisabled(True)
-        self.deleteSTR.setDisabled(True)
+
         if not self._can_create:
-            self.addSTR.setDisabled(True)
+            self.addSTR.hide()
+
+        if not self._can_edit:
+            self.editSTR.hide()
+        else:
+            self.editSTR.setDisabled(True)
+        if not self._can_delete:
+            self.deleteSTR.hide()
+        else:
+            self.deleteSTR.setDisabled(True)
 
         self.addSTR.clicked.connect(self.load_new_str_wiz)
 
