@@ -340,6 +340,13 @@ def format_name(attr):
     return display_name
 
 def entity_display_columns(entity):
+    """
+    Returns entity display columns.
+    :param entity: Entity
+    :type entity: Class
+    :return: List of column names.
+    :rtype: List
+    """
     display_column = [
         c.name
         for c in
@@ -361,6 +368,13 @@ def entity_display_columns(entity):
     return display_column
 
 def entity_searchable_columns(entity):
+    """
+    Returns searchable entity columns.
+    :param entity: Entity
+    :type entity: Class
+    :return: List of searchable columns
+    :rtype: List
+    """
     searchable_column = [
         c.name
         for c in
@@ -369,8 +383,19 @@ def entity_searchable_columns(entity):
     ]
     return searchable_column
 
-def model_display_data(model, entity, profile):
-
+def model_obj_display_data(model, entity, profile):
+    """
+    Formats a model object data with a formatted column name and
+    a value converted to lookup value instead of id, if a lookup column.
+    :param model: The model object
+    :type model: Object
+    :param entity: Entity
+    :type entity: Class
+    :param profile: Current Profile
+    :type profile: Class
+    :return: Dictionary of formatted column with formatted value.
+    :rtype: OrderedDict
+    """
     model_display = OrderedDict()
     model_dic = model.__dict__
     for key, value in model_dic.iteritems():
@@ -380,6 +405,14 @@ def model_display_data(model, entity, profile):
     return model_display
 
 def model_display_mapping(model):
+    """
+    Formats model columns.
+    :param model: Entity model
+    :type model: Model
+    :return: Dictionary of formatted column name
+    with unformatted column name.
+    :rtype: OrderedDict
+    """
     model_display_cols = OrderedDict()
     model_dic = model.__dict__
     for col in model_dic:
@@ -387,6 +420,13 @@ def model_display_mapping(model):
     return model_display_cols
 
 def profile_spatial_tables(profile):
+    """
+    Returns the current profile spatial tables.
+    :param profile: Current Profile
+    :type profile: Class
+    :return: Dictionary of spatial tables short name and name
+    :rtype: Dictionary
+    """
     spatial_tables = [
         (e.name, e.short_name)
         for e in
@@ -397,6 +437,16 @@ def profile_spatial_tables(profile):
     return spatial_tables
 
 def profile_user_tables(profile, include_views=True):
+    """
+    Returns user accessible tables.
+    :param profile: Current Profile
+    :type profile: Class
+    :param include_views: A Boolean that includes or excludes Views
+    :type include_views: Boolean
+    :return: Dictionary of user tables with name and
+    short name as a key and value.
+    :rtype: Dictionary
+    """
     from stdm.data.pg_utils import (
         pg_views
     )
@@ -420,12 +470,28 @@ def profile_user_tables(profile, include_views=True):
 
 
 def profile_lookup_columns(profile):
+    """
+    Returns the list of lookup columns in a profile.
+    :param profile: Current Profile
+    :type profile: Class
+    :return: list of lookup columns
+    :rtype: List
+    """
     lookup_columns = [
         r.child_column for r in profile.relations.values()
     ]
     return lookup_columns
 
 def lookup_parent_entity(profile, col):
+    """
+    Gets lookup column's parent entity.
+    :param profile:
+    :type profile:
+    :param col: The lookup's child column name
+    :type col: String
+    :return: List of parent lookup entity
+    :rtype: List
+    """
     parent_entity = [
         r.parent for r in profile.relations.values()
         if r.child_column == col
@@ -434,7 +500,16 @@ def lookup_parent_entity(profile, col):
 
 
 def model_lookup_id_to_value(id, db_model):
-
+    """
+    Converts the id of a lookup table
+    to value using the db model.
+    :param id: The id value of the lookup table
+    :type id: Integer
+    :param db_model: Database model
+    :type db_model: Class
+    :return: Integer for id or String if no value is found
+    :rtype: Integer or String
+    """
     if isinstance(id, int):
         db_obj = db_model()
         query = db_obj.queryObject().filter(
@@ -451,6 +526,19 @@ def model_lookup_id_to_value(id, db_model):
         return id
 
 def lookup_id_to_value(profile, col, id):
+    """
+    Converts a lookup id into its value
+    using current profile class.
+    :param profile: Current profile
+    :type profile: Class
+    :param col: The column value
+    :type col: String
+    :param id: The id of the column
+    :type id: Integer
+    :return: Id of the lookup table or the
+    value if no match is found.
+    :rtype: Integer or String
+    """
     if col in profile_lookup_columns(profile):
         parent_entity = lookup_parent_entity(profile, col)
         db_model = entity_model(parent_entity)
@@ -473,7 +561,19 @@ def lookup_id_to_value(profile, col, id):
 
 
 def get_db_attr(db_model, source_col, source_attr, destination_col):
-
+    """
+    Gets the column value when supplied with the destination column.
+    :param db_model: Database model
+    :type db_model: Class
+    :param source_col: Column object of the source table.
+    :type source_col: Object
+    :param source_attr: The source column value
+    :type source_attr: String or integer
+    :param destination_col: THe destination column name
+    :type destination_col: String
+    :return: Another column value for the same record
+    :rtype: Integer or List
+    """
     db_obj = db_model()
     query_result = db_obj.queryObject().filter(
         source_col == source_attr
@@ -488,6 +588,18 @@ def get_db_attr(db_model, source_col, source_attr, destination_col):
         return destination_attr
 
 def entity_id_to_attr(entity, attr, id):
+    """
+    Converts an entity column id to another
+    column value of the same record.
+    :param entity: Entity
+    :type entity: Class
+    :param attr: Column name
+    :type attr: String
+    :param id: Id of the entity
+    :type id: Integer
+    :return: a column value if a match found
+    :rtype: Integer or String
+    """
     doc_type_model = entity_model(entity)
     doc_type_obj = doc_type_model()
     result = doc_type_obj.queryObject().filter(
@@ -505,6 +617,19 @@ def entity_id_to_attr(entity, attr, id):
     return attr_val
 
 def entity_attr_to_id(entity, attr_obj, attr_val):
+    """
+    Coverts other column values to id value
+    of the same table.
+    :param entity: Entity
+    :type entity: Class
+    :param attr_obj: The source column object
+    :type attr_obj: Object
+    :param attr_val: Any value of a source column
+    :type attr_val: Any
+    :return: The Id of the entity or the attribute
+    value if no id is found or the attribute is not valid.
+    :rtype: Integer or NoneType
+    """
     doc_type_model = entity_model(entity)
     doc_type_obj = doc_type_model()
     result = doc_type_obj.queryObject().filter(
