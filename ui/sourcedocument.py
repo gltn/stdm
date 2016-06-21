@@ -347,7 +347,7 @@ class SourceDocumentManager(QObject):
 
         return networkLocation
 
-    def attributeMapping(self):
+    def attributeMapping(self, editing=False):
         """
         Returns the mapping of source document information for display of the summary
         documents contained in a stdm.navigation.TreeLoader object.
@@ -362,8 +362,12 @@ class SourceDocumentManager(QObject):
 
                 for w in range(widgCount):
                     docWidg = v.itemAt(w).widget()
-                    srcFilePath = unicode(docWidg.fileInfo.absoluteFilePath())
-                    locTr = QApplication.translate("sourceDocumentManager", "Location")
+                    if editing:
+                        srcFilePath = unicode(docWidg._displayName)
+                        locTr = QApplication.translate("sourceDocumentManager", "File Name")
+                    else:
+                        srcFilePath = unicode(docWidg.fileInfo.absoluteFilePath())
+                        locTr = QApplication.translate("sourceDocumentManager", "Location")
                     locTxt = "%s %s"%(locTr, str(w+1))
                     docItems[locTxt] = srcFilePath
 

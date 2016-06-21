@@ -37,9 +37,10 @@ from PyQt4.QtCore import (
 )
 
 from qgis.core import *
-
+import qgis.utils
 from stdm.utils import *
 
+from stdm.ui.new_str_wiz import newSTRWiz
 from stdm.utils.util import gen_random_string
 
 EDIT_ICON = QIcon(":/plugins/stdm/images/icons/edit.png")
@@ -47,6 +48,7 @@ DELETE_ICON = QIcon(":/plugins/stdm/images/icons/delete.png")
 NO_ACTION_ICON = QIcon(":/plugins/stdm/images/icons/no_action.png")
 
 class BaseSTRNode(object):
+
     """
     Base class for all STR nodes.
     """
@@ -512,6 +514,7 @@ class STRNode(EntityNode):
     """
     Node for rendering STR information.
     """
+
     def icon(self):
         return QIcon(":/plugins/stdm/images/icons/social_tenure.png")
 
@@ -528,23 +531,28 @@ class STRNode(EntityNode):
 
     def _update_str_node(self, index, model):
         view_model = self._view.model()
-
         i = 0
+
         for c_node in self._children:
             row_num = index.row() + i
 
             if c_node.typeInfo() == "BASE_NODE":
+
                 idx = view_model.index(row_num, index.column(), index)
 
-                if idx.isValid():
-                    #Get column name from node display information
-                    node_data = c_node.data(0)
-                    col_name, display_name = self._column_name(node_data)
-                    if hasattr(self._model, col_name):
-                        col_value = getattr(self._model, col_name)
-                        node_value = u"{0}{1} {2}".format(display_name, self.separator, col_value)
-                        view_model.setData(idx, node_value, Qt.DisplayRole)
+                #if idx.isValid():
 
+                #Get column name from node display information
+                node_data = c_node.data(0)
+                col_name, display_name = self._column_name(node_data)
+
+                if hasattr(model, col_name):
+
+                    col_value = getattr(model, col_name)
+
+                    node_value = u"{0}{1} {2}".format(display_name, self.separator, col_value)
+
+                    view_model.setData(idx, node_value, Qt.DisplayRole)
 
             i += 1
 
@@ -552,7 +560,6 @@ class STRNode(EntityNode):
         """
         Method to force STR model editing without browser
         """
-        from stdm.ui.forms.mapper_dialog import CustomFormDialog
 
         if self._model is None:
             msg = QApplication.translate("STRNode","The object representing "
@@ -564,11 +571,24 @@ class STRNode(EntityNode):
             return
 
         try:
-            editEntityDlg = CustomFormDialog(self, model=self._model)
+            node = None
+            if index.isValid():
+                node = index.internalPointer()
+            if index.column() == 0:
+                if isinstance(node, SupportsDocumentsNode):
 
-            result = editEntityDlg.exec_()
-            if result == QDialog.Accepted:
-                self._update_str_node(index, editEntityDlg.model())
+                    edit_str = newSTRWiz(qgis.utils, node)
+                    status = edit_str.exec_()
+
+                    if status == 1:
+                        if node._parent.typeInfo() == 'ENTITY_NODE':
+                            if node._model.party_id == \
+                                    edit_str.updated_str_obj.party_id:
+                                self.parentWidget().btnSearch.click()
+                        if node._parent.typeInfo() == 'SPATIAL_UNIT_NODE':
+                            if node._model.spatial_unit_id == \
+                                    edit_str.updated_str_obj.spatial_unit_id:
+                                self.parentWidget().btnSearch.click()
 
         except Exception as ex:
             msg = ex.message
