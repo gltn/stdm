@@ -180,6 +180,9 @@
           <height>30</height>
          </size>
         </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
         <property name="placeholderText">
          <string>Specify path to save document templates</string>
         </property>

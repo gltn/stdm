@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_stdm_config.ui'
 #
-# Created: Thu Jun 16 07:46:20 2016
+# Created: Tue Jun 21 07:53:49 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -103,6 +103,7 @@ class Ui_STDMWizard(object):
         self.gridLayout.addWidget(self.btnDocOutput, 1, 2, 1, 1)
         self.edtTemplatePath = QtGui.QLineEdit(self.wpPathSetting)
         self.edtTemplatePath.setMinimumSize(QtCore.QSize(0, 30))
+        self.edtTemplatePath.setReadOnly(True)
         self.edtTemplatePath.setObjectName(_fromUtf8("edtTemplatePath"))
         self.gridLayout.addWidget(self.edtTemplatePath, 2, 1, 1, 1)
         self.label_37 = QtGui.QLabel(self.wpPathSetting)

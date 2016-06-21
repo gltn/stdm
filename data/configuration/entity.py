@@ -131,6 +131,7 @@ class Entity(QObject, TableItem):
         self.supports_documents = supports_documents
         self.supporting_doc = None
         self.is_proxy = is_proxy
+
         self.updated_columns = OrderedDict()
 
         #Create PK if flag is specified
