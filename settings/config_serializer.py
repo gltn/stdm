@@ -281,7 +281,7 @@ class ProfileSerializer(object):
             return None
 
         #TODO: Remove unicode
-        profile = Profile(unicode(profile_name), configuration)
+        profile = Profile(unicode(profile_name), configuration, is_new=False)
 
         #Set description
         description = element.attribute('description', '')

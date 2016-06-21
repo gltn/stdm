@@ -143,6 +143,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.load_directory_path_settings()
 
         # validate if to show license
+
         show_lic = self.check_show_license(self.reg_config)
         if show_lic:
             self.setStartId(0)
@@ -378,6 +379,18 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         return True, "Ok"
 
+    def index_party_table(self):
+        """
+        Returns an index of the selected party unit
+        """
+        for index, entity in enumerate(self.entity_model.entities().values()):
+            if entity.has_geometry_column():
+                continue
+            else:
+                return index
+        return 0
+
+
     def index_spatial_unit_table(self):
         """
         Returns an index of the selected spatial unit
@@ -528,6 +541,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         if self.currentId() == 3:
             self.party_changed(0)
+
+            # get entity with no geometry column
+            idx = self.index_party_table()
+            self.cboParty.setCurrentIndex(idx)
+            #self.spatial_unit_changed(idx)
+
             # get an entity with a geometry column
             idx = self.index_spatial_unit_table()
             self.cboSPUnit.setCurrentIndex(idx)
@@ -731,7 +750,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.entity_model.add_entity(entity)
 
         # if entity is a supporting document, add it to the Valuelist view model
-        if entity.TYPE_INFO == 'VALUE_LIST':
+        if entity.TYPE_INFO == 'VALUE_LIST' and entity.action != DbItem.DROP:
             self.lookup_view_model.add_entity(entity)
 
     def delete_entity_item(self, name):
@@ -810,11 +829,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Delete the current selected profile, but not the last one.
         """
         if self.cboProfile.count() == 1:
-            msg = "This is the last profile in your wizard. "
-            msg2 = "STDM requirement is to have atleast one profile in your database."
-            msg3 = " Delete is prohibited."
+            msg0 = "This is the last profile in your wizard. "
+            msg1 = "STDM requirement is to have atleast one profile in your database."
+            msg2 = " Delete is prohibited."
             self.show_message(QApplication.translate("Configuration Wizard", \
-                    msg+msg2+msg3), QMessageBox.Information)
+                    msg0+msg1+msg2), QMessageBox.Information)
             return
 
         msg0 ="You will loose all items related to this profile i.e \n"
@@ -904,8 +923,20 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             editor = EntityEditor(self, profile, entity)
             result = editor.exec_()
             if result == 1:
+                if entity.supports_documents:
+                    # mark the lookup for deletion
+                    doc_name = u'check_{0}_document_type'.format(
+                            entity.short_name.lower())
+                    de = profile.entity(doc_name)
+                    de.action = DbItem.DROP
+
                 self.entity_model.delete_entity(entity)
+
+                self.init_entity_item_model()
+                self.trigger_entity_change()
+
                 self.entity_model.add_entity(editor.entity)
+                self.refresh_lookup_view()
 
     def delete_entity(self):
         """
@@ -1029,6 +1060,23 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.populate_view_models(profile)
 
         self.connect_signals()
+
+    def refresh_lookup_view(self):
+        """
+        Reloads the lookups after editing an entity.
+        """
+        self.clear_view_model(self.lookup_view_model)
+
+        self.lookup_view_model = LookupEntitiesModel()
+        self.lvLookups.setModel(self.lookup_view_model)
+
+        profile = self.current_profile()
+        self.populate_lookup_view(profile)
+
+        self.lookup_item_model = self.lvLookups.selectionModel()
+        self.lookup_item_model.selectionChanged.connect(self.lookup_changed)
+        self.lvLookups.setCurrentIndex(self.lookup_view_model.index(0,0))
+
 
     def profile_changed(self, row_id):
         """
