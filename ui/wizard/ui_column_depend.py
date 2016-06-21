@@ -90,4 +90,4 @@ class Ui_dlgColumnDepend(object):
         self.btnCancel.setText(_translate("dlgColumnDepend", "Cancel", None))
         self.btnDelete.setText(_translate("dlgColumnDepend", "Delete column", None))
 
-import resources_rc
+from stdm import resources_rc
