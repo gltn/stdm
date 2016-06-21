@@ -17,7 +17,6 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from datetime import datetime
 import logging
 from collections import OrderedDict
 
@@ -43,7 +42,7 @@ from stdm.settings import (
 from stdm.utils.util import (
     format_name,
     entity_display_columns,
-    model_display_data
+    model_obj_display_data
 )
 from stdm.data.configuration import entity_model
 
@@ -124,6 +123,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             QWizard.FinishButton
         )
         self.init_preview_map()
+        # For editing STR
         if str_edit_model is not None:
             title = QApplication.translate(
                 'newSTRWiz',
@@ -141,7 +141,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             self.cboDocType.currentIndexChanged.connect(
                 self.init_document_add
             )
-
+        # For creating STR
         else:
             self.init_party_add()
             self.init_spatial_unit_add()
@@ -182,6 +182,15 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         )
 
     def init_party_str_type_edit(self,  result, str_type_id):
+        """
+        Initializes party table with STR type edit.
+        :param result: The object of the selected STR
+        :type result: Object
+        :param str_type_id:
+        :type str_type_id:
+        :return:
+        :rtype:
+        """
         table_data = []
         vertical_layout = QVBoxLayout(
             self.partyRecBox
@@ -681,6 +690,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             # Clear existing data before adding
             # new one to only allow one party
             if table_view.model().rowCount() > 0:
+
                 table_view.model().rowCount(0)
                 table_view.model().removeRow(0)
                 # Remove str type table
@@ -883,6 +893,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
     def init_str_type(self, str_type_id=0):
         """
         Initialize 'Social Tenure Type page.
+        :param str_type_id: The currently being edited STR type id.
+        :type str_type_id: Integer
         :return: None
         :rtype: NoteType
         """
@@ -915,6 +927,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.enable_str_type_combo()
 
     def init_document_edit(self):
+        """
+        Initializes the supporting document page.
+        :return: None
+        :rtype: NoneType
+        """
         if self.str_doc_edit_obj is not None:
             if len(self.str_doc_edit_obj) > 0:
 
@@ -1002,13 +1019,24 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         )
 
     def match_doc_combo_to_tab(self):
-
+        """
+        Changes the active tab based on the
+        selected value of document type combobox.
+        :return: None
+        :rtype: NoneType
+        """
         combo_text = self.cboDocType.currentText()
         if combo_text is not None and len(combo_text) > 0:
             index = self.docs_tab_index[combo_text]
             self.docs_tab.setCurrentIndex(index)
 
     def match_doc_tab_to_combo(self):
+        """
+        Changes the document type combobox value based on the
+        selected tab.
+        :return: None
+        :rtype: NoneType
+        """
         doc_tab_index = self.docs_tab.currentIndex()
         self.cboDocType.setCurrentIndex(doc_tab_index)
 
@@ -1082,7 +1110,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         sel_party, sel_str_types = self.get_party_str_type_data()
         # Add each str type next to each party.
         for q_obj, item in zip(self.sel_party, sel_str_types):
-            party_mapping = model_display_data(
+            party_mapping = model_obj_display_data(
                 q_obj, self.party, self.curr_profile
             )
 
@@ -1103,7 +1131,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             )
 
         for q_obj in self.sel_spatial_unit:
-            spatial_unit_mapping = model_display_data(
+            spatial_unit_mapping = model_obj_display_data(
                 q_obj, self.spatial_unit, self.curr_profile
             )
 
@@ -1218,6 +1246,14 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
 
     def on_add_str(self, progress):
+        """
+        Adds new STR record into the database
+        with a supporting document record, if uploaded.
+        :param progress: The progressbar
+        :type progress: QProgressDialog
+        :return: None
+        :rtype: NoneType
+        """
         _str_obj = self.str_model()
         str_objs = []
         index = 4
@@ -1266,7 +1302,14 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         _str_obj.saveMany(str_objs)
 
     def on_edit_str(self, progress):
-
+        """
+         Adds edits a selected STR record
+         with a supporting document record, if uploaded.
+         :param progress: The progressbar
+         :type progress: QProgressDialog
+         :return: None
+         :rtype: NoneType
+         """
         _str_obj = self.str_model()
 
         progress.setValue(3)
