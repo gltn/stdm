@@ -1021,6 +1021,9 @@
     <string>Define entities to participate in Social Tenure Relations views</string>
    </property>
    <layout class="QFormLayout" name="formLayout_9">
+    <property name="fieldGrowthPolicy">
+     <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+    </property>
     <item row="0" column="1">
      <layout class="QVBoxLayout" name="verticalLayout">
       <property name="spacing">

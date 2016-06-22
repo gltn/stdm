@@ -22,6 +22,9 @@ import platform
 import os
 import sys
 import logging
+from datetime import date
+from datetime import datetime 
+import calendar
 
 from PyQt4 import QtGui
 from PyQt4 import QtCore
@@ -143,16 +146,16 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.load_directory_path_settings()
 
         # validate if to show license
+        #show_lic = self.check_show_license(self.reg_config)
+        #if show_lic:
+            #self.setStartId(0)
+            #self.reg_config.write({SHOW_LICENSE:0})
+        #else:
 
-        show_lic = self.check_show_license(self.reg_config)
-        if show_lic:
-            self.setStartId(0)
-            self.reg_config.write({SHOW_LICENSE:0})
-        else:
-            self.setStartId(1)
+        self.setStartId(1)
 
         self.stdm_config = None
-        self.orig_assets_count = 0
+        self.orig_assets_count = 0  # count of items in StdmConfiguration instance
         self.load_stdm_config()
 
     def reject(self):
@@ -573,7 +576,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         if self.currentId() == 5: # FINAL_PAGE:
             # last page
-            self.button(QWizard.FinishButton).setEnabled(False)
             #* commit config to DB
             self.config_updater = ConfigurationSchemaUpdater()
 
@@ -620,6 +622,30 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.button(QWizard.CancelButton).setText(\
                 QApplication.translate("Configuration Wizard","Close"))
 
+    def save_update_info(self, info):
+        """
+        Save displayed update information to file
+        """
+        file_name = os.path.expanduser('~') + '/.stdm/update_info.log'
+        info_file = open(file_name, "a")
+        time_stamp = self.get_time_stamp()
+        info_file.write('\n')
+        info_file.write(time_stamp+'\n')
+        info_file.write('\n')
+        info_file.write(info)
+        info_file.write('\n')
+        info_file.close()
+
+    def get_time_stamp(self):
+        """
+        Return a formatted day of week and date/time
+        """
+        cdate = date.today()
+        week_day = calendar.day_name[cdate.weekday()][:3]  
+        fmt_date = datetime.now().strftime('%d-%m-%Y %H:%M')
+        time_stamp = week_day+' '+fmt_date
+        return time_stamp
+
     def _updater_thread_started(self):
         """
         Slot for initiating the schema updating process.
@@ -627,6 +653,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.config_updater.exec_()
 
     def config_update_started(self):
+        self.button(QWizard.FinishButton).setEnabled(False)
+
         self.txtHtml.setFontWeight(75)
         self.txtHtml.append(QApplication.translate("Configuration Wizard",
                                "Configuration update started...")
@@ -674,6 +702,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                                 "Check error logs.")
             self.is_config_done = False
 
+        self.save_update_info(self.txtHtml.toPlainText())
+
         #Exit thread
         self.updater_thread.quit()
 
@@ -685,7 +715,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def set_support_doc_path(self):
         """
-        OnClick event handler for the supporting document path button
+        OnClick event handler for the supporting document path selection button
         """
         try:
             dir_name = self.open_dir_chooser(QApplication.translate( \
@@ -701,7 +731,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def set_output_path(self):
         """
-        OnClick event handler for the document output path button
+        OnClick event handler for the document output path selection button
         """
         try:
             dir_name = self.open_dir_chooser(QApplication.translate( \
@@ -716,7 +746,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def set_template_path(self):
         """
-        OnClick event handler for the documents template path button
+        OnClick event handler for the documents template path selection button
         """
         try:
             dir_name = self.open_dir_chooser(QApplication.translate( \
