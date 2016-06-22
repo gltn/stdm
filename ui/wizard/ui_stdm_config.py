@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_stdm_config.ui'
 #
-# Created: Tue Jun 21 07:53:49 2016
+# Created: Wed Jun 22 12:27:41 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -418,6 +418,7 @@ class Ui_STDMWizard(object):
         self.wpSTR = QtGui.QWizardPage()
         self.wpSTR.setObjectName(_fromUtf8("wpSTR"))
         self.formLayout_9 = QtGui.QFormLayout(self.wpSTR)
+        self.formLayout_9.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
         self.formLayout_9.setObjectName(_fromUtf8("formLayout_9"))
         self.verticalLayout = QtGui.QVBoxLayout()
         self.verticalLayout.setSpacing(6)
