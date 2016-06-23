@@ -36,9 +36,7 @@ from sqlalchemy.orm import mapper
 from .new_str_wiz import newSTRWiz
 
 import stdm.data
-from stdm.data.pg_utils import (
-    pg_table_exists
-)
+
 from stdm.data.qtmodels import (
     BaseSTDMTableModel,
     STRTreeViewModel

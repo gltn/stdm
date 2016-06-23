@@ -404,11 +404,13 @@ def model_obj_display_data(model, entity, profile):
             model_display[format_name(key)] = value
     return model_display
 
-def model_display_mapping(model):
+def model_display_mapping(model, entity):
     """
-    Formats model columns.
+    Formats model display columns.
     :param model: Entity model
-    :type model: Model
+    :type model: Class
+    :param entity: Entity
+    :type entity: Class
     :return: Dictionary of formatted column name
     with unformatted column name.
     :rtype: OrderedDict
@@ -416,7 +418,8 @@ def model_display_mapping(model):
     model_display_cols = OrderedDict()
     model_dic = model.__dict__
     for col in model_dic:
-        model_display_cols[col] = format_name(col)
+        if col in entity_display_columns(entity) and col != 'id':
+            model_display_cols[col] = format_name(col)
     return model_display_cols
 
 def profile_spatial_tables(profile):
@@ -514,14 +517,16 @@ def model_lookup_id_to_value(id, db_model):
         db_obj = db_model()
         query = db_obj.queryObject().filter(
             db_model.id == id
-        ).all()
-
-        value = getattr(
-            query[0],
-            'value',
-            None
-        )
-        return value
+        ).first()
+        if query is not None:
+            value = getattr(
+                query,
+                'value',
+                None
+            )
+            return value
+        else:
+            return id
     else:
         return id
 
