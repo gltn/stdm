@@ -121,7 +121,9 @@ class EntityNodeFormatter(STRNodeFormatter):
 
         self._str_model_disp_mapping = {}
         if not self._str_model is None:
-            self._str_model_disp_mapping = model_display_mapping(self._str_model)
+            self._str_model_disp_mapping = model_display_mapping(
+                self._str_model, self.curr_profile.social_tenure
+            )
 
         self._fk_references = [
             (
@@ -317,7 +319,7 @@ class EntityNodeFormatter(STRNodeFormatter):
 
                 for r in r_entities:
                     dm = self._format_display_mapping(r,
-                                                      model_display_mapping(r.__class__),
+                                                      model_display_mapping(r.__class__, curr_entity),
                                                       entity_display_cols)
 
                     node = self._spatial_textual_node(mod_table)

@@ -20,6 +20,7 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from collections import OrderedDict
+from datetime import date
 from decimal import Decimal
 
 from PyQt4.QtCore import *
@@ -33,12 +34,21 @@ from qgis.core import (
 from qgis.gui import QgsExpressionBuilderDialog
 
 from stdm.data.qtmodels import BaseSTDMTableModel
+from stdm.data.modelformatters import dateFormatter
 from stdm.data.config_utils import foreign_key_table_reference
 from stdm.utils.util import getIndex
 from .admin_unit_manager import (
     VIEW,
     MANAGE,
     SELECT
+)
+from stdm.settings import current_profile
+# from stdm.data.configuration import entity_model
+from stdm.utils.util import (
+    model_display_mapping,
+    format_name,
+    entity_display_columns,
+    lookup_id_to_value
 )
 from .stdmdialog import DeclareMapping
 from stdm.ui.customcontrols import FKBrowserProperty
@@ -192,6 +202,7 @@ class ForeignKeyMapper(QWidget):
         self._deleteOnRemove = False
         self._uniqueValueColIndices = OrderedDict()
         self.global_id = None
+        self.curr_profile = current_profile()
         self.display_column = None
         self._deferred_objects = {}
         self._use_expression_builder = False
@@ -200,22 +211,20 @@ class ForeignKeyMapper(QWidget):
         """
         Configure the mapper based on the user settings.
         """
-        from stdm.data.pg_utils import numeric_varchar_columns
 
         #Load headers
         if not self._dbModel is None:
             headers = []
-
-            display_cols = numeric_varchar_columns(self._ds_name)
+            curr_entity = self.curr_profile.entity_by_name(self._ds_name)
 
             #Ensure only displayable values are included
-            for c, dc in self._dbModel.displayMapping().iteritems():
-                if c in display_cols:
-                    headers.append(dc)
+            for c in entity_display_columns(curr_entity):
+                headers.append(format_name(c))
 
             self._tableModel = BaseSTDMTableModel([],headers,self)
             self._tbFKEntity.setModel(self._tableModel)
-            
+
+            self._tbFKEntity.resizeColumnsToContents()
             #First (ID) column will always be hidden
             self._tbFKEntity.hideColumn(0)
             
@@ -676,12 +685,16 @@ class ForeignKeyMapper(QWidget):
             #Check if there are display formatters and apply if one exists for the given attribute
             if attr in self._cellFormatters:
                 attrVal = self._cellFormatters[attr](attrVal)
+            elif attr not in self._cellFormatters and isinstance(attrVal, date):
+                attrVal = dateFormatter(attrVal)
+            else:
+                attrVal = lookup_id_to_value(self.curr_profile, attr, attrVal)
 
             self._tableModel.setData(propIndex, attrVal)
 
         #Raise signal once entity has been inserted
         self.afterEntityAdded.emit(model_obj)
-
+        self._tbFKEntity.resizeColumnsToContents()
         return row_number
 
     def vector_layer(self):
