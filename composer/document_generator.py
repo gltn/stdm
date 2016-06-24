@@ -395,6 +395,9 @@ class DocumentGenerator(QObject):
                 elif filePath is None and len(dataFields) > 0:
                     docFileName = self._build_file_name(data_source, entityFieldName,
                                                       entityFieldValue, dataFields, fileExtension)
+                    # Replace unsupported characters in Windows file naming
+                    docFileName = docFileName.replace('/', '_').replace \
+                        ('\\', '_').replace(':', '_').strip('*?"<>|')
 
                     if not docFileName:
                         return (False, QApplication.translate("DocumentGenerator",
@@ -409,7 +412,7 @@ class DocumentGenerator(QObject):
                     if not qDir.exists(outputDir):
                         return (False, QApplication.translate("DocumentGenerator",
                                 "Output directory does not exist"))
-                    
+
                     absDocPath = u"{0}/{1}".format(outputDir, docFileName)
                     self._write_output(composition, outputMode, absDocPath)
             
