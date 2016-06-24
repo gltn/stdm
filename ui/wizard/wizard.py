@@ -615,16 +615,38 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def pause_wizard_dialog(self):
         """
-        Pause the wizard before closing, allow user to 
-        read the message in the TextEdit widget
+        Pause the wizard before closing to allow user to 
+        read the message on the TextEdit widget
         """
         self.button(QWizard.BackButton).setEnabled(False)
         self.button(QWizard.CancelButton).setText(\
                 QApplication.translate("Configuration Wizard","Close"))
 
-    def save_update_info(self, info):
+    def save_update_info(self, info, write_method):
         """
-        Save displayed update information to file
+        Call `method` to save update information displayed on the TextEdit widget
+        to file
+        :param info: update information to save to file
+        :type info: str
+        :param write_method: function used to write the udpate info to file
+        :type write_method:function
+        """
+        write_method(info)
+
+    def save_status_reminder(self, file_name):
+        self.txtHtml.setFontItalic(True)
+        self.txtHtml.setTextColor(QColor('black'))
+        self.txtHtml.setFontWeight(40)
+        self.txtHtml.append('')
+        fmt_file = file_name.replace('|', '/')
+        self.txtHtml.append("Please note, status information displayed "
+                "on this page has been saved in file: \n`"+fmt_file+"`")
+        
+    def append_update_file(self, info):
+        """
+        Append info to a single file
+        :param info: update iformation to save to file
+        :type info: str
         """
         file_name = os.path.expanduser('~') + '/.stdm/update_info.log'
         info_file = open(file_name, "a")
@@ -635,6 +657,20 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         info_file.write(info)
         info_file.write('\n')
         info_file.close()
+        self.save_status_reminder(file_name)
+
+    def new_update_file(self, info):
+        """
+        Create an new file for each update
+        :param info: update info to save to file
+        :type info: str
+        """
+        fmt_date = datetime.now().strftime('%d%m%Y%H%M')
+        file_name = os.path.expanduser('~') + '/.stdm/update_info_'+fmt_date+'.log'
+        info_file = open(file_name, "w")
+        info_file.write(info)
+        info_file.close()
+        self.save_status_reminder(file_name)
 
     def get_time_stamp(self):
         """
@@ -702,7 +738,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                                 "Check error logs.")
             self.is_config_done = False
 
-        self.save_update_info(self.txtHtml.toPlainText())
+        self.save_update_info(self.txtHtml.toPlainText(), self.append_update_file)
 
         #Exit thread
         self.updater_thread.quit()
