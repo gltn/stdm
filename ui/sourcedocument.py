@@ -100,6 +100,7 @@ class SourceDocumentManager(QObject):
         self.document_model = document_model
         self.curr_profile = current_profile()
         self.prefix = self.curr_profile.prefix
+      
         doc_entity = self.curr_profile.social_tenure.\
             supporting_doc.document_type_entity
 
