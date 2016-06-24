@@ -52,7 +52,13 @@ class LicenseAgreement(QDialog, Ui_LicenseAgreement):
         self.accepted = False
         self.btnAccept.clicked.connect(self.accept_action)
         self.btnDecline.clicked.connect(self.decline_action)
-
+        self.label.setStyleSheet(
+            '''
+            QLabel {
+                font: bold;
+            }
+            '''
+        )
     def check_show_license(self):
         """
         Checks if you need to show the license page.
