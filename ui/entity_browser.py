@@ -219,8 +219,10 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
                 relationship) as the entity attribute name.
                 '''
                 col_name = c.name
+
                 if isinstance(c, MultipleSelectColumn):
                     col_name = c.model_attribute_name
+
                 self._entity_attrs.append(col_name)
 
                 #Get widget factory so that we can use the value formatter
@@ -299,7 +301,6 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
 
         else:
             self._init_entity_columns()
-            
             '''
             Load entity data. There might be a better way in future in order to ensure that
             there is a balance between user data discovery experience and performance.

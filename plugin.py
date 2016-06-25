@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import logging
+
 import os.path
 import platform
 from collections import OrderedDict
@@ -32,7 +33,6 @@ from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings import current_profile, save_current_profile
 
 from stdm.data.configuration.exception import ConfigurationException
-from stdm.data.configuration.stdm_configuration import StdmConfiguration
 
 from stdm.ui.change_pwd_dlg import changePwdDlg
 from stdm.ui.doc_generator_dlg import (
@@ -47,7 +47,6 @@ from stdm.ui.new_str_wiz import newSTRWiz
 from stdm.ui.view_str import ViewSTRWidget
 from stdm.ui.admin_unit_selector import AdminUnitSelector
 from stdm.ui.entity_browser import (
-    EntityBrowser,
     EntityBrowserWithEditor
 )
 from stdm.ui.about import AboutSTDMDialog
@@ -72,6 +71,7 @@ from stdm.data.pg_utils import (
     spatial_tables
 )
 
+from stdm.ui.license_agreement import LicenseAgreement
 from navigation import (
     STDMAction,
     QtContainerLoader,
@@ -119,6 +119,8 @@ class STDMQGISLoader(object):
 
         # STDM Tables
         self.stdmTables = []
+
+
         self.spatialLayerMangerDockWidget = None
 
         self._user_logged_in = False
@@ -259,6 +261,12 @@ class STDMQGISLoader(object):
 
                 return
 
+            # Checks if the license is accepted and stops loading
+            # modules if the terms and conditions are never accepted.
+            license_status = self.load_license_agreement()
+            if not license_status:
+                return
+
             #Load logout and change password actions
             self.stdmInitToolbar.insertAction(self.loginAct,
                                               self.logoutAct)
@@ -323,10 +331,20 @@ class STDMQGISLoader(object):
             self.load_config_wizard()
 
     def entity_table_checker(self, entity):
+        """
+        Checks if the database table for a given entity exists.
+        In case the table doesn't exists, it shows an error message.
+        :param entity: Entity
+        :type entity: Class
+        :return: True if there is no missing table and false
+        if there is a missing table.
+        :rtype: Boolean
+        """
         title = QApplication.translate(
             "STDMQGISLoader",
             'Database Table Error'
         )
+        # Check for social tenure entity
         if entity == self.current_profile.social_tenure:
             str_table_status = [
                 (
@@ -370,8 +388,9 @@ class STDMQGISLoader(object):
                     self.load_config_wizard()
                 else:
                     return False
-            else:
+            else: # If no table is missing, return True
                 return True
+        # Check for other entities
         else:
             if not pg_table_exists(entity.name):
                 message = QApplication.translate(
@@ -399,7 +418,8 @@ class STDMQGISLoader(object):
         """
         Checks if the current profile exists and if it doesn't,
         asks the user to run Configuration Wizard.
-        Returns: None
+        :return: None
+        :rtype: NoneType
         """
         if self.current_profile is None:
             title = QApplication.translate(
@@ -695,13 +715,6 @@ class STDMQGISLoader(object):
 
             # capabilities = contentGroup(self._moduleItems[k])
             #
-            #if k == 'Social Tenure Relationship':
-                #content_action.parent().addSeparator()
-                # separate = QFrame()
-                # separate.setObjectName('str_separate')
-                # separate.setGeometry(QRect(320, 150, 118, 3))
-                # separate.setFrameShape(QFrame.HLine)
-                # separate.setFrameShadow(QFrame.Sunken)
             # if capabilities:
             moduleCntGroup = TableContentGroup(username, k, content_action)
             # moduleCntGroup.createContentItem().code = capabilities[0]
@@ -711,7 +724,6 @@ class STDMQGISLoader(object):
             moduleCntGroup.register()
             self._reportModules[k] = self._moduleItems.get(k)
             self.moduleContentGroups.append(moduleCntGroup)
-            # Add core modules to the report configuration
 
         #Create content groups and add items
         self.contentAuthCntGroup = ContentGroup(username)
@@ -959,7 +971,7 @@ class STDMQGISLoader(object):
         try:
             self.loadModules()
         except SQLAlchemyError as ex:
-            LOGGER.debug('SQLAlchemyError: '+ str(ex))
+            LOGGER.debug('SQLAlchemyError: ' + str(ex))
             STDMDb.instance().session.rollback()
             self.loadModules()
 
@@ -1458,13 +1470,6 @@ class STDMQGISLoader(object):
                     cnt_idx = getIndex(
                         self._reportModules.keys(), dispName
                     )
-                    '''
-                    et_browser = STDMEntityBrowser(
-                        self.moduleContentGroups[cnt_idx],
-                        table_name,
-                        self.iface.mainWindow()
-                    )
-                    '''
                     et_browser = EntityBrowserWithEditor(
                         sel_entity,
                         self.iface.mainWindow()
@@ -1478,7 +1483,7 @@ class STDMQGISLoader(object):
                 QMessageBox.critical(
                     self.iface.mainWindow(),
                     QApplication.translate(
-                        "STDMPlugin","Loading dialog..."
+                        "STDMPlugin","Loading Dialog..."
                     ),
                     QApplication.translate(
                         "STDMPlugin",
@@ -1494,6 +1499,23 @@ class STDMQGISLoader(object):
         """
         abtDlg = AboutSTDMDialog(self.iface.mainWindow())
         abtDlg.exec_()
+
+    def load_license_agreement(self):
+        """
+        Loads the license agreement dialog if the user
+        have never accepted the terms and conditions.
+        :return: True if the license agreement is
+        accepted already and false if not accepted.
+        :rtype: Boolean
+        """
+        license_agreement = LicenseAgreement(
+            self.iface.mainWindow()
+        )
+        license_agreement.show_license()
+        if license_agreement.accepted:
+            return True
+        else:
+            return False
 
     def logout(self):
         """

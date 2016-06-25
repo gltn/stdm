@@ -4,6 +4,7 @@
     <file>images/icons/edit_settings.png</file>
     <file>images/icons/help-content.png</file>
     <file>images/icons/info.png</file>
+    <file>images/icons/info_small.png</file>
     <file>images/icons/login.png</file>
     <file>images/icons/logout.png</file>
     <file>images/icons/settings.png</file>
@@ -22,6 +23,7 @@
     <file>images/icons/attachment.png</file>
     <file>images/icons/remove.png</file>
     <file>images/icons/close.png</file>
+    <file>images/icons/close_msg.png</file>
     <file>images/icons/receipt.png</file>
     <file>images/icons/social_tenure.png</file>
     <file>images/icons/inherit.png</file>

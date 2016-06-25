@@ -75,36 +75,39 @@ class EntityEditor(QDialog, Ui_dlgEntity):
                 # if entity exist and action is "DROP", replace it
                 entity = self.profile.entity(entity_name)
                 if entity.action <> DbItem.DROP:
-                    self.error_message(QApplication.translate("EntityEditor","Entity with the same name already exist!"))
+                    self.error_message(QApplication.translate("EntityEditor", "Entity with the same name already exist!"))
                     return False
 
-            entity = self.profile.create_entity(entity_name, entity_factory,
-                    supports_documents=self.support_doc())
-            entity.description = self.edtDesc.text()
-            entity.column_added.connect(self.form_parent.add_column_item)
-            entity.column_removed.connect(self.form_parent.delete_column_item)
-            self.profile.add_entity(entity)
+            self.entity = self._create_entity(entity_name)
+            self.profile.add_entity(self.entity)
             #return True
         else:
-            if self.entity.short_name == entity_name:
-                self.entity.description = self.edtDesc.text()
-                self.entity.supports_documents = self.support_doc()
-                return False
-            else:
-                self.profile.remove_entity(self.entity.short_name)
-                self.entity = self.profile.create_entity(entity_name, entity_factory,
-                        supports_documents=self.support_doc())
-                self.entity.description = self.edtDesc.text()
-                self.entity.column_added.connect(self.form_parent.add_column_item)
-                self.entity.column_removed.connect(self.form_parent.delete_column_item)
-                self.profile.add_entity(self.entity)
-                return True
+            self.profile.remove_entity(self.entity.short_name)
+            self.entity = self._create_entity(entity_name)
+            self.profile.add_entity(self.entity)
+            return True
+
+            #if self.entity.short_name == entity_name:
+                #self.entity.description = self.edtDesc.text()
+                #self.entity.supports_documents = self.support_doc()
+                #return False
+            #else:
+                #self.profile.remove_entity(self.entity.short_name)
+                #self.entity = self._create_entity(entity_name)
+                #self.profile.add_entity(self.entity)
+                #return True
+
+    def _create_entity(self, name):
+        entity = self.profile.create_entity(name, entity_factory,
+                supports_documents=self.support_doc())
+        entity.description = self.edtDesc.text()
+        entity.column_added.connect(self.form_parent.add_column_item)
+        entity.column_removed.connect(self.form_parent.delete_column_item)
+        return entity
 
     def support_doc(self):
-        if self.cbSupportDoc.checkState() == Qt.Checked:
-            return True
-        else:
-            return False
+        values = [False, None, True]
+        return values[self.cbSupportDoc.checkState()]
 
     def bool_to_check(self, state):
         if state:

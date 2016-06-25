@@ -27,8 +27,9 @@ from ui_notif_item import Ui_frmNotificationItem
 
 #Enums for type of notification to be displayed
 ERROR = 2005
-INFO = 2006
+SUCCESS = 2006
 WARNING = 2007
+INFORMATION = 2008
 
 class NotificationBar(object): 
     '''
@@ -46,12 +47,17 @@ class NotificationBar(object):
             self.layout.setSpacing(2)
             
             #Set notification type stylesheet
-            self.errorStyleSheet = "background-color: rgb(248, 0, 0);"
-            
-            self.infoStyleSheet = "background-color: rgb(70, 211, 0);"
-            
-            self.warningStyleSheet = "background-color: rgb(255, 170, 0);"
-    
+            self.errorStyleSheet = "background-color: #FFBABA;"
+            self.error_font_color = 'color: #D8000C;'
+
+            self.successStyleSheet = "background-color: #DFF2BF;"
+            self.success_font_color = 'color: #4F8A10;'
+
+            self.informationStyleSheet = "background-color: #BDE5F8;"
+            self.information_font_color = 'color: #555;'
+
+            self.warningStyleSheet = "background-color: #FEEFB3;"
+            self.warning_font_color = 'color: #9F6000;'
             #Timer settings
             self.timer = QTimer(self.layout)
             self.timer.setInterval(self.interval)
@@ -68,16 +74,30 @@ class NotificationBar(object):
         '''
         if self.layout != None:    
             notificationItem = NotificationItem() 
-            QObject.connect(notificationItem, SIGNAL("messageClosed(QString)"),self.onNotificationClosed)
-            
+            QObject.connect(
+                notificationItem,
+                SIGNAL("messageClosed(QString)"),
+                self.onNotificationClosed
+            )
+            font_color = "color: rgb(255, 255, 255);"
+            frameStyle = "background-color: rgba(255, 255, 255, 0);"
             if notificationType == ERROR:                        
                 frameStyle = self.errorStyleSheet
-            elif notificationType == INFO:
-                frameStyle = self.infoStyleSheet
+                font_color = self.error_font_color
+
+            elif notificationType == SUCCESS:
+                frameStyle = self.successStyleSheet
+                font_color = self.success_font_color
+
+            elif notificationType == INFORMATION:
+                frameStyle = self.informationStyleSheet
+                font_color = self.information_font_color
+
             elif notificationType == WARNING:
                 frameStyle = self.warningStyleSheet
-                
-            notificationItem.setMessage(message,notificationType,frameStyle)
+                font_color = self.warning_font_color
+
+            notificationItem.setMessage(message,notificationType,frameStyle, font_color)
             self.layout.addWidget(notificationItem)
             self._notifications[str(notificationItem.code)] = notificationItem
             
@@ -96,12 +116,18 @@ class NotificationBar(object):
         '''
         self.insertNotification(message, WARNING)
         
-    def insertInfoNotification(self,message):
+    def insertSuccessNotification(self,message):
         '''
         A convenience method for inserting information messages
         '''
-        self.insertNotification(message, INFO)
-            
+        self.insertNotification(message, SUCCESS)
+
+    def insertInformationNotification(self, message):
+        '''
+        A convenience method for inserting information messages
+        '''
+        self.insertNotification(message, INFORMATION)
+
     def clear(self):
         '''
         Remove all notifications.
@@ -153,7 +179,7 @@ class NotificationItem(QWidget,Ui_frmNotificationItem):
         else:
             return QWidget.eventFilter(self,watched, e)
         
-    def setMessage(self,message,notificationType,stylesheet):
+    def setMessage(self,message,notificationType,stylesheet, font_color):
         '''
         Set display properties
         '''
@@ -161,59 +187,14 @@ class NotificationItem(QWidget,Ui_frmNotificationItem):
         if notificationType == ERROR:   
             #Set icon resource and frame background color                     
             notifPixMap = QPixmap(":/plugins/stdm/images/icons/remove.png")
-        elif notificationType == INFO:
+        elif notificationType == SUCCESS:
             notifPixMap = QPixmap(":/plugins/stdm/images/icons/success.png")
+        elif notificationType == INFORMATION:
+            notifPixMap = QPixmap(":/plugins/stdm/images/icons/info_small.png")
         elif notificationType == WARNING:
             notifPixMap = QPixmap(":/plugins/stdm/images/icons/warning.png")
-        
+
         self.lblNotifIcon.setPixmap(notifPixMap)
         self.lblNotifMessage.setText(message)
         self.frame.setStyleSheet(stylesheet)
-        
-        
-    
-    
-    
-        
-               
-        
-          
-                
-
-        
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-            
+        self.lblNotifMessage.setStyleSheet(font_color)

@@ -281,7 +281,7 @@ class ProfileSerializer(object):
             return None
 
         #TODO: Remove unicode
-        profile = Profile(unicode(profile_name), configuration)
+        profile = Profile(unicode(profile_name), configuration, is_new=False)
 
         #Set description
         description = element.attribute('description', '')
@@ -880,9 +880,19 @@ class ValueListSerializer(EntitySerializerCollection):
                         value_list.add_value(value, code)
 
                 #Check if the value list is for tenure types
+
                 if name == 'check_tenure_type':
                     profile.set_social_tenure_attr(SocialTenure.SOCIAL_TENURE_TYPE,
                                        value_list)
+
+                elif name == 'check_social_tenure_relationship_document_type':
+                    tenure_doc_type_t_name = profile.social_tenure.supporting_doc. \
+                        document_type_entity.short_name
+                    vl_doc_type = profile.entity(tenure_doc_type_t_name)
+                    if not vl_doc_type is None:
+                        vl_doc_type.copy_from(value_list, True)
+
+
                 else:
                     #Add value list to the profile
                     profile.add_entity(value_list)

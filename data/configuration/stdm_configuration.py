@@ -49,6 +49,20 @@ class StdmConfiguration(QObject):
 
         LOGGER.debug("STDM Configuration initialized.")
 
+    def __len__(self):
+        """
+        Return a count of all assets in the configuration
+        """
+        count = 0
+        for p in self.profiles.values():
+            for e in p.entities.values():
+                if e.TYPE_INFO == 'VALUE_LIST':
+                        count += len(e.values.values())
+                count += len(e.columns)
+            count += len(p.entities)
+        count += len(self.profiles)
+        return count
+
     @property
     def removed_profiles(self):
         """
