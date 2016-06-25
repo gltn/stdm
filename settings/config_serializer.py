@@ -392,6 +392,7 @@ class SocialTenureSerializer(object):
     SPATIAL_UNIT = 'spatialUnit'
     TENURE_TYPE = 'tenureTypeList'
     LAYER_DISPLAY = 'layerDisplay'
+    MULTIPARTY = 'supportsMultipleParties'
 
     @staticmethod
     def read_xml(child_element, profile, association_elements,
@@ -413,6 +414,9 @@ class SocialTenureSerializer(object):
         layer_display = unicode(child_element.attribute(
             SocialTenureSerializer.LAYER_DISPLAY, '')
         )
+        multi_party = unicode(child_element.attribute(
+            SocialTenureSerializer.MULTIPARTY, '')
+        )
 
         #Set STR attributes
         if party:
@@ -424,6 +428,9 @@ class SocialTenureSerializer(object):
 
         if layer_display:
             profile.social_tenure.layer_display_name = layer_display
+
+        if multi_party:
+            profile.social_tenure.multi_party = _str_to_bool(multi_party)
 
     @staticmethod
     def write_xml(social_tenure, parent_node, document):
@@ -446,6 +453,8 @@ class SocialTenureSerializer(object):
                                     social_tenure.tenure_type_collection.short_name)
         social_tenure_element.setAttribute(SocialTenureSerializer.LAYER_DISPLAY,
                                     social_tenure.layer_display())
+        social_tenure_element.setAttribute(SocialTenureSerializer.MULTIPARTY,
+                                    social_tenure.multi_party)
 
         parent_node.appendChild(social_tenure_element)
 
@@ -923,6 +932,7 @@ class EntityRelationSerializer(object):
     PARENT_COLUMN = 'parentColumn'
     CHILD = 'child'
     CHILD_COLUMN = 'childColumn'
+    DISPLAY_COLUMNS = 'displayColumns'
 
     @staticmethod
     def read_xml(element, profile, association_elements,
@@ -943,13 +953,29 @@ class EntityRelationSerializer(object):
         information contained in the element.
         :rtype: EntityRelation
         """
-        args = {}
-        args['parent'] = unicode(element.attribute('parent', ''))
-        args['child'] = unicode(element.attribute('child', ''))
-        args['parent_column'] = unicode(element.attribute('parentColumn', ''))
-        args['child_column'] = unicode(element.attribute('childColumn', ''))
+        kw = {}
+        kw['parent'] = unicode(
+            element.attribute(EntityRelationSerializer.PARENT, '')
+        )
+        kw['child'] = unicode(
+            element.attribute(EntityRelationSerializer.CHILD, '')
+        )
+        kw['parent_column'] = unicode(
+            element.attribute(EntityRelationSerializer.PARENT_COLUMN, '')
+        )
+        kw['child_column'] = unicode(
+            element.attribute(EntityRelationSerializer.CHILD_COLUMN, '')
+        )
+        dc_str = unicode(
+            element.attribute(EntityRelationSerializer.DISPLAY_COLUMNS, '')
+        )
+        if not dc_str:
+            dc = []
+        else:
+            dc = dc_str.split(',')
+        kw['display_columns'] = dc
 
-        er = EntityRelation(profile, **args)
+        er = EntityRelation(profile, **kw)
 
         return er
 
@@ -957,7 +983,7 @@ class EntityRelationSerializer(object):
     def write_xml(entity_relation, parent_node, document):
         """
         Appends entity relation information to the parent node.
-        :param entity_relation: Enrity relation object.
+        :param entity_relation: Entity relation object.
         :type entity_relation: EntityRelation
         :param parent_node: Parent node.
         :type parent_node: QDomNode
@@ -977,6 +1003,8 @@ class EntityRelationSerializer(object):
                                 entity_relation.child.short_name)
         er_element.setAttribute(EntityRelationSerializer.CHILD_COLUMN,
                                 entity_relation.child_column)
+        er_element.setAttribute(EntityRelationSerializer.DISPLAY_COLUMNS,
+                                ','.join(entity_relation.display_cols))
 
         parent_node.appendChild(er_element)
 
@@ -1224,7 +1252,7 @@ class IntegerColumnSerializer(ColumnSerializerCollection):
     """
     (De)serializes integer column type.
     """
-    COLUMN_TYPE_INFO = 'BIGINT'
+    COLUMN_TYPE_INFO = 'INT'
 
     @classmethod
     def _convert_bounds_type(cls, value):
@@ -1260,6 +1288,40 @@ class DateColumnSerializer(ColumnSerializerCollection):
     (De)serializes date column type.
     """
     COLUMN_TYPE_INFO = 'DATE'
+    CURRENT_DATE = 'currentDate'
+
+    @classmethod
+    def _obj_args(cls, args, kwargs, element, assoc_elements,
+                  entity_relation_elements):
+        #Set current date settings
+        curr_date_el = element.firstChildElement(
+            DateColumnSerializer.CURRENT_DATE
+        )
+        if not curr_date_el.isNull():
+            current_min = _str_to_bool(curr_date_el.attribute(
+                'minimum',
+                ''
+            ))
+            current_max= _str_to_bool(curr_date_el.attribute(
+                'maximum',
+                ''
+            ))
+
+            #Append additional information
+            kwargs['min_use_current_date'] = current_min
+            kwargs['max_use_current_date'] = current_max
+
+        return args, kwargs
+
+    @classmethod
+    def _write_xml(cls, column, column_element, document):
+        #Append use current date settings
+        dt_element = \
+            document.createElement(DateColumnSerializer.CURRENT_DATE)
+        dt_element.setAttribute('minimum', str(column.min_use_current_date))
+        dt_element.setAttribute('maximum', str(column.max_use_current_date))
+
+        column_element.appendChild(dt_element)
 
     @classmethod
     def _convert_bounds_type(cls, value):
@@ -1273,6 +1335,40 @@ class DateTimeColumnSerializer(ColumnSerializerCollection):
     (De)serializes date time column type.
     """
     COLUMN_TYPE_INFO = 'DATETIME'
+    CURRENT_DATE_TIME = 'currentDateTime'
+
+    @classmethod
+    def _obj_args(cls, args, kwargs, element, assoc_elements,
+                  entity_relation_elements):
+        #Set current date time settings
+        curr_date_time_el = element.firstChildElement(
+            DateTimeColumnSerializer.CURRENT_DATE_TIME
+        )
+        if not curr_date_time_el.isNull():
+            current_min = _str_to_bool(curr_date_time_el.attribute(
+                'minimum',
+                ''
+            ))
+            current_max= _str_to_bool(curr_date_time_el.attribute(
+                'maximum',
+                ''
+            ))
+
+            #Append additional information
+            kwargs['min_use_current_datetime'] = current_min
+            kwargs['max_use_current_datetime'] = current_max
+
+        return args, kwargs
+
+    @classmethod
+    def _write_xml(cls, column, column_element, document):
+        #Append use current datetime settings
+        dt_element = \
+            document.createElement(DateTimeColumnSerializer.CURRENT_DATE_TIME)
+        dt_element.setAttribute('minimum', str(column.min_use_current_datetime))
+        dt_element.setAttribute('maximum', str(column.max_use_current_datetime))
+
+        column_element.appendChild(dt_element)
 
     @classmethod
     def _convert_bounds_type(cls, value):
@@ -1281,13 +1377,13 @@ class DateTimeColumnSerializer(ColumnSerializerCollection):
 DateTimeColumnSerializer.register()
 
 
-class YesNoColumnSerializer(ColumnSerializerCollection):
+class BooleanColumnSerializer(ColumnSerializerCollection):
     """
     (De)serializes yes/no column type.
     """
-    COLUMN_TYPE_INFO = 'YES_NO'
+    COLUMN_TYPE_INFO = 'BOOL'
 
-YesNoColumnSerializer.register()
+BooleanColumnSerializer.register()
 
 
 class GeometryColumnSerializer(ColumnSerializerCollection):

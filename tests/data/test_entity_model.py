@@ -31,28 +31,33 @@ class TestEntityModelFunc(TestCase):
         party_ent = profile.social_tenure.party
 
         #Map entity to SQLAlchemy class
-        party_cls, party_doc_cls = entity_model(party_ent)
+        party_cls = entity_model(party_ent)
         party = party_cls()
-        doc = party_doc_cls()
 
-        #Set document attributes
-        populate_supporting_document(doc)
-        doc.document_sub_type = 1
+        savings_col = party_ent.column('savings')
+        savings_ent = savings_col.value_list
+
+        #Create savings value list object
+        savings_cls = entity_model(savings_ent)
+        savings_obj = savings_cls()
+        savings = []
+
+        res = savings_obj.queryObject().all()
+        savings = [r for r in res]
 
         #Set attributes
         party.number = 'FK09'
         party.first_name = 'Jermaine'
         party.last_name = 'Jackson'
 
-        party.documents.append(doc)
+        #Append all savings options
+        setattr(party, 'ru_check_saving_options_collection', savings)
 
-        party.save()
+        #party.save()
 
-        read_result = False
         #Hardwire result
+        read_result = False
         self.assertTrue(read_result)
-
-        entity_model(entity.supporting_doc.document_type)
 
 
 def populate_supporting_document(supporting_document):

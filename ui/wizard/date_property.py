@@ -68,8 +68,8 @@ class DateProperty(QDialog, Ui_DateProperty):
         """
         Sets min/max properties with values from form widgets
         """
-        self._min_val = self.edtMinDate.date()
-        self._max_val = self.edtMaxDate.date()
+        self._min_val = self.edtMinDate.date().toPyDate()
+        self._max_val = self.edtMaxDate.date().toPyDate()
 
     def min_val(self):
         """

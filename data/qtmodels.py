@@ -442,7 +442,7 @@ class BaseSTDMTableModel(QAbstractTableModel, QAbstractItemView):
     """
     Generic table model for use in STDM table views.
     """
-    def __init__(self,initdata,headerdata,parent = None):
+    def __init__(self, initdata, headerdata, parent=None):
         QAbstractTableModel.__init__(self,parent)
         self._initData = initdata
         self._headerdata = headerdata 
@@ -520,7 +520,9 @@ class BaseSTDMTableModel(QAbstractTableModel, QAbstractItemView):
 
         for i in range(count):
             del self._initData[position]
+
         self.endRemoveRows()
+
         return True
 
 class VerticalHeaderSortFilterProxyModel(QSortFilterProxyModel):
@@ -528,7 +530,6 @@ class VerticalHeaderSortFilterProxyModel(QSortFilterProxyModel):
     A sort/filter proxy model that ensures row numbers in vertical headers
     are ordered correctly.
     """
-
     def headerData(self, section, orientation, role):
         if orientation == Qt.Vertical and role == Qt.DisplayRole:
             return section + 1
@@ -544,7 +545,7 @@ class STRTreeViewModel(QAbstractItemModel):
         self._rootNode = root
         self._view = view
 
-    def rowCount(self,parent):
+    def rowCount(self, parent=QModelIndex()):
         if not parent.isValid():
             parentNode = self._rootNode
 
@@ -553,7 +554,7 @@ class STRTreeViewModel(QAbstractItemModel):
 
         return parentNode.childCount()
 
-    def columnCount(self,parent=QModelIndex()):
+    def columnCount(self, parent=QModelIndex()):
         return self._rootNode.columnCount()
 
     def _getNode(self,index):
@@ -638,7 +639,7 @@ class STRTreeViewModel(QAbstractItemModel):
         
         return self.createIndex(parentNode.row(), 0, parentNode)
     
-    def index(self, row, column, parent):
+    def index(self, row, column, parent=QModelIndex()):
         if parent.isValid() and parent.column() != 0:
             return QModelIndex()
         
@@ -693,7 +694,7 @@ class STRTreeViewModel(QAbstractItemModel):
         
         '''
         We do not insert any children in this case since the internal methods of the
-        conflict node have already inserted the children nodes that contain the 
+        BaseSTRNode have already inserted the children nodes that contain the
         information.
         '''
         

@@ -215,7 +215,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 'unique': False, 'index': False,
                 'maximum':30,'property': self.varchar_property }
 
-        self.type_attribs['BIGINT'] = {
+        self.type_attribs['INT'] = {
                 'mandt':False, 'search': False,
                 'unique': False, 'index': False,
                 'minimum':0, 'maximum':0,
