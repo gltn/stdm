@@ -351,7 +351,7 @@ class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
                     self._notifBar.clear()
                     successmsg = QApplication.translate("AdminUnitManager",
                                          "Administrative unit successfully deleted.") 
-                    self._notifBar.insertInfoNotification(successmsg)
+                    self._notifBar.insertSuccessNotification(successmsg)
         
     def selectedAdministrativeUnit(self):
         '''

@@ -472,6 +472,7 @@ class AdministrativeUnitWidgetFactory(ColumnWidgetRegistry):
     _TYPE_PREFIX = 'aule_'
 
     def __init__(self, column):
+        from PyQt4.QtGui import QMessageBox
         ColumnWidgetRegistry.__init__(self, column)
 
         self._aus_cache = {}

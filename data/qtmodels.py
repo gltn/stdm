@@ -494,7 +494,7 @@ class BaseSTDMTableModel(QAbstractTableModel, QAbstractItemView):
         # elif index.column() > 1:
         #             return Qt.ItemIsEnabled | Qt.ItemIsSelectable
         return Qt.ItemIsEditable|Qt.ItemIsSelectable|Qt.ItemIsEnabled
-    
+
     def insertRows(self,position,rows,parent = QModelIndex()):
         if position < 0 or position > len(self._initData):
             return False
@@ -746,46 +746,4 @@ class STRTreeViewModel(QAbstractItemModel):
             return result
 
         return False
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-    
-     
-            
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         

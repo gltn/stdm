@@ -17,6 +17,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+import logging
 from collections import OrderedDict
 import sys
 
@@ -35,29 +36,16 @@ from PyQt4.QtCore import (
     QFileInfo
 )
 
-from sqlalchemy import (
-    BINARY,
-    BLOB,
-    Binary,
-    CLOB,
-    LargeBinary,
-    PickleType,
-    TypeDecorator,
-    VARBINARY
-)
-
-from geoalchemy2 import Geometry
 from stdm.settings import current_profile
+from stdm.data.configuration import entity_model
 from stdm.composer.document_generator import DocumentGenerator
-# from stdm.data.config_table_reader import ConfigTableReader
 
-from stdm.data.pg_utils import (
-    numeric_varchar_columns,
-    _execute
+from stdm.utils.util import (
+    getIndex,
+    format_name,
+    entity_display_columns
 )
-from stdm.utils.util import getIndex, format_name
 
-from .stdmdialog import DeclareMapping
 from .entity_browser import ForeignKeyBrowser
 from .foreign_key_mapper import ForeignKeyMapper
 from .notification import NotificationBar
@@ -66,6 +54,8 @@ from .composer import TemplateDocumentSelector
 from .sourcedocument import source_document_location
 
 __all__ = ["DocumentGeneratorDialog", "EntityConfig"]
+
+LOGGER = logging.getLogger('stdm')
 
 class EntityConfig(object):
     """
@@ -79,6 +69,9 @@ class EntityConfig(object):
 
         self._data_source = kwargs.pop("data_source", "")
         self._ds_columns = []
+        self.curr_profile = current_profile()
+        self.ds_entity = self.curr_profile.entity_by_name(self._data_source)
+
         self._set_ds_columns()
 
         self._base_model = kwargs.pop("model", None)
@@ -96,7 +89,9 @@ class EntityConfig(object):
             self._ds_columns = []
 
         else:
-            self._ds_columns = numeric_varchar_columns(self._data_source)
+            self._ds_columns = entity_display_columns(
+                self.ds_entity
+            )
 
     def model(self):
         return self._base_model
@@ -149,7 +144,7 @@ class DocumentGeneratorDialogWrapper(object):
         self._iface = iface
         self._doc_gen_dlg = DocumentGeneratorDialog(self._iface, parent)
         self._notif_bar = self._doc_gen_dlg.notification_bar()
-        # self._config_table_reader = ConfigTableReader()
+
         self.curr_profile = current_profile()
         #Load entity configurations
         self._load_entity_configurations()
@@ -168,7 +163,9 @@ class DocumentGeneratorDialogWrapper(object):
             ]
 
             for t in tables:
-                entity_cfg = self._entity_config_from_profile(str(t.name), t.short_name)
+                entity_cfg = self._entity_config_from_profile(
+                    str(t.name), t.short_name
+                )
 
                 if not entity_cfg is None:
                     self._doc_gen_dlg.add_entity_config(entity_cfg)
@@ -186,7 +183,9 @@ class DocumentGeneratorDialogWrapper(object):
         :rtype: EntityConfig
         """
         table_display_name = format_name(short_name)
-        model = DeclareMapping.instance().tableMapping(table_name)
+        self.ds_entity = self.curr_profile.entity_by_name(table_name)
+
+        model = entity_model(self.ds_entity)
 
         if model is not None:
             return EntityConfig(title=table_display_name,
@@ -225,6 +224,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         self._iface = iface
         self._docTemplatePath = ""
         self._outputFilePath = ""
+        self.curr_profile = current_profile()
 
         self._config_mapping = OrderedDict()
         
@@ -330,20 +330,20 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         model_attr_mapping = OrderedDict()
 
         for c in config.data_source_columns():
-            model_attr_mapping[c] = c.replace("_"," ").capitalize()
+            model_attr_mapping[c] = format_name(c)
 
         self.lstDocNaming.load_mapping(model_attr_mapping, True)
 
-    def _load_data_source_columns(self, ds_name):
+    def _load_data_source_columns(self, entity):
         """
         Load the columns of a data source for use in the file naming.
         """
-        table_cols = numeric_varchar_columns(ds_name)
+        table_cols = entity_display_columns(entity)
 
         attr_mapping = OrderedDict()
 
         for c in table_cols:
-            attr_mapping[c] = c.replace("_", " ").capitalize()
+            attr_mapping[c] = format_name(c)
 
         self.lstDocNaming.load_mapping(attr_mapping, True)
 
@@ -393,7 +393,9 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
 
         #Load data source columns
         self._data_source = composer_ds.name()
-        self._load_data_source_columns(self._data_source)
+        self.ds_entity = self.curr_profile.entity_by_name(self._data_source)
+
+        self._load_data_source_columns(self.ds_entity)
             
     def onToggledOutputFolder(self,state):
         """
@@ -532,7 +534,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         try:
             QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
 
-            for i,record in enumerate(records):
+            for i, record in enumerate(records):
                 progressDlg.setValue(i)
 
                 if progressDlg.wasCanceled():
@@ -576,7 +578,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
                                     )
 
         except Exception as ex:
-            #TODO: Log stack trace
+            LOGGER.debug('DocGeneratorDlg-onGenerate: ' + str(ex))
             err_msg = sys.exc_info()[1]
             QApplication.restoreOverrideCursor()
 

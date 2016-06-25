@@ -62,7 +62,7 @@ class Profile(QObject):
     entity_added = pyqtSignal(Entity)
     entity_removed = pyqtSignal(unicode)
 
-    def __init__(self, name, configuration):
+    def __init__(self, name, configuration, is_new=True):
         """
         :param name: A unique name to identify the profile.
         :type name: str
@@ -78,13 +78,16 @@ class Profile(QObject):
         self.removed_relations = []
         #Base entity for supporting documents within the profile
         self.supporting_document = SupportingDocument(self)
+
         self.social_tenure = self._create_social_tenure()
+
         self._admin_spatial_unit = AdministrativeSpatialUnit(self)
         self.removed_entities = []
 
         #Add default entities to the entity collection
         self.add_entity(self.supporting_document)
         self.add_entity(self._admin_spatial_unit)
+
         self.add_entity(self.social_tenure)
 
     def _prefix(self):
@@ -105,19 +108,18 @@ class Profile(QObject):
 
         return prefix.lower()
 
-    def _create_social_tenure(self, supports_documents=True):
+    def _create_social_tenure(self):
         """
         :return: Returns an instance of a social tenure object.
         :rtype: SocialTenure
         """
-        return SocialTenure('social_tenure_relationship', self,
-                            supports_documents=supports_documents)
+        return SocialTenure('social_tenure_relationship', self)
 
     @property
     def administrative_spatial_unit(self):
         """
-        :return: Returns the administrative spatial unit entity for this
-        profile.
+        :return: Returns the entity corresponding to the administrative
+        spatial unit.
         :rtype: AdministrativeSpatialUnit
         """
         return self._admin_spatial_unit
@@ -243,7 +245,7 @@ class Profile(QObject):
         """
         :param parent: Entity object that is a child in the collection of
         entity relations.
-        :type parent: Entity
+        :type item: Entity
         :return: Returns a list of entity relations whose children match that
         of the specified argument.
         :rtype: EntityRelation

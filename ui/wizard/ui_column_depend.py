@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_column_depend.ui'
 #
-# Created: Tue Jun 07 18:37:10 2016
+# Created: Tue Jun 14 17:54:17 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -37,7 +37,8 @@ class Ui_dlgColumnDepend(object):
         self.label = QtGui.QLabel(dlgColumnDepend)
         self.label.setMaximumSize(QtCore.QSize(40, 16777215))
         self.label.setText(_fromUtf8(""))
-        self.label.setPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/help-content.png")))
+        self.label.setPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/warning_large.png")))
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setObjectName(_fromUtf8("label"))
         self.horizontalLayout_3.addWidget(self.label)
         self.qryLabel = QtGui.QLabel(dlgColumnDepend)

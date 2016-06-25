@@ -37,7 +37,10 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="../../resources.qrc">:/plugins/stdm/images/icons/help-content.png</pixmap>
+        <pixmap resource="../../resources.qrc">:/plugins/stdm/images/icons/warning_large.png</pixmap>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
