@@ -499,6 +499,7 @@ def lookup_parent_entity(profile, col):
         r.parent for r in profile.relations.values()
         if r.child_column == col
     ]
+
     return parent_entity[0]
 
 

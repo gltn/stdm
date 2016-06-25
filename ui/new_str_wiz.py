@@ -963,7 +963,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :rtype: NoneType
         """
         self.sourceDocManager = SourceDocumentManager(
-            self.str_doc_model, self
+            self.social_tenure.supporting_doc, self.str_doc_model, self
         )
         doc_entity = self.social_tenure.\
             supporting_doc.document_type_entity

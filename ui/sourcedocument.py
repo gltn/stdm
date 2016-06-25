@@ -60,7 +60,8 @@ from .document_viewer import DocumentViewManager
 from ui_doc_item import Ui_frmDocumentItem
 from stdm.utils.util import (
     get_db_attr,
-    entity_id_to_attr
+    entity_id_to_attr,
+    lookup_parent_entity
 )
 #Document Type Enumerations
 DEFAULT_DOCUMENT = 2020
@@ -92,7 +93,7 @@ class SourceDocumentManager(QObject):
     documentRemoved = pyqtSignal(int, str, list)
     fileUploaded = pyqtSignal('PyQt_PyObject')
 
-    def __init__(self, document_model, parent=None):
+    def __init__(self, entity_document, document_model, parent=None):
         QObject.__init__(self, parent)
         self.containers = OrderedDict()
         self._canEdit = True
@@ -100,22 +101,16 @@ class SourceDocumentManager(QObject):
         self.document_model = document_model
         self.curr_profile = current_profile()
         self.prefix = self.curr_profile.prefix
-
-        doc_entity = self.curr_profile.social_tenure.\
-            supporting_doc.document_type_entity
-
-        doc_type_model = entity_model(doc_entity)
-
-        docs = doc_type_model()
-        doc_type_list = docs.queryObject().all()
+        self.entity_supporting_doc = entity_document.document_type_entity
+       # document_type_entity = lookup_parent_entity(self.curr_profile, self.document_model.document_type)
+        check_doc_type_model = entity_model(self.entity_supporting_doc)
+        doc_type_obj = check_doc_type_model()
+        doc_type_list = doc_type_obj.queryObject().all()
         self.doc_types = [(doc.id, doc.value) for doc in doc_type_list]
         self.doc_types = dict(self.doc_types)
 
-        str_doc_entity = self.curr_profile.supporting_document
-        self.str_doc_model = entity_model(str_doc_entity)
-
         for id in self.doc_types.keys():
-            document_type_class[id] = self.str_doc_model
+            document_type_class[id] = self.document_model
         #Container for document references based on their unique IDs
         self._docRefs = []
 

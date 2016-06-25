@@ -143,7 +143,11 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             self.curr_profile.social_tenure, False, True
         )
 
-        self._source_doc_manager = SourceDocumentManager(self.str_doc_model, self)
+        self._source_doc_manager = SourceDocumentManager(
+            self.curr_profile.social_tenure.supporting_doc,
+            self.str_doc_model,
+            self
+        )
         self._source_doc_manager.documentRemoved.connect(
             self.onSourceDocumentRemoved
         )
