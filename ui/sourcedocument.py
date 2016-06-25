@@ -100,9 +100,9 @@ class SourceDocumentManager(QObject):
 
         self.document_model = document_model
         self.curr_profile = current_profile()
-        self.prefix = self.curr_profile.prefix
+
         self.entity_supporting_doc = entity_document.document_type_entity
-       # document_type_entity = lookup_parent_entity(self.curr_profile, self.document_model.document_type)
+
         check_doc_type_model = entity_model(self.entity_supporting_doc)
         doc_type_obj = check_doc_type_model()
         doc_type_list = doc_type_obj.queryObject().all()
@@ -193,6 +193,10 @@ class SourceDocumentManager(QObject):
         :type doc_type_id: Integer
         :param entity: The entity in which the document is inserted into.
         :type entity: Entity class
+        :param record_count: The number of records for which a
+        document is uploaded. Default is 1. For instance, more
+        records could be used in STR wizard in multi-party.
+        :type record_count: Integer
         :return: None
         :rtype: NoneType
         """
@@ -287,7 +291,7 @@ class SourceDocumentManager(QObject):
         :type source_docs: list
         """
         for source_doc in source_docs:
-            if hasattr(source_doc, "document_type"):
+            if hasattr(source_doc, 'document_type'):
                 document_type = source_doc.document_type
                 self.insertDocFromModel(source_doc, document_type)
 
@@ -678,16 +682,16 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         """
         if self._mode == UPLOAD_MODE:
             self.fileInfo = QFileInfo(dfile)
-
             self._displayName = unicode(self.fileInfo.fileName())
             self._docSize = self.fileInfo.size()
-            self.buildDisplay()
             self._source_entity = source_entity
             self._doc_type = doc_type
             self._doc_type_id = doc_type_id
             self.uploadDoc()
+            self.buildDisplay()
 
-    def setModel(self,sourcedoc):
+
+    def setModel(self, sourcedoc):
         """
         Set the SourceDocument model that is to be associated with the widget.
         Only valid if the widget mode is in DOWNLOAD_MODE.
@@ -698,10 +702,10 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
             self._displayName = sourcedoc.filename
             self._docSize = sourcedoc.document_size
             self.fileUUID = sourcedoc.document_identifier
-            self.buildDisplay()
             self._srcDoc = sourcedoc
             self._source_entity = sourcedoc.source_entity
             self._doc_type_id = sourcedoc.document_type
+            self.buildDisplay()
 
     def doc_type_value(self):
         """
@@ -761,10 +765,41 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
         return self._srcDoc
 
+    def set_thumbnail(self):
+        """
+        Sets thumbnail to the document widget by
+        cropping if necessary.
+        :return: None
+        :rtype: NoneType
+        """
+        extension = self._displayName[self._displayName.rfind('.'):]
+
+        doc_path = source_document_location()+'/'+\
+                   str(self.curr_profile.name)+'/'+\
+                   str(self._source_entity)+'/'+\
+                   str(self.doc_type_value())+'/'+\
+                   str(self.fileUUID)+str(extension)
+
+
+        ph_image = QImage(doc_path)
+        ph_pixmap = QPixmap.fromImage(ph_image)
+        # If width is larger than height, use height as width and height
+        if ph_pixmap.width() > ph_pixmap.height():
+            rectangle = QRect(0, 0, ph_pixmap.height(), ph_pixmap.height())
+            ph_pixmap = ph_pixmap.copy(rectangle)
+        # If height is larger than width, use width as width and height
+        elif ph_pixmap.height() > ph_pixmap.width():
+            rectangle = QRect(0, 0, ph_pixmap.width(), ph_pixmap.width())
+            ph_pixmap = ph_pixmap.copy(rectangle)
+
+        self.lblThumbnail.setPixmap(ph_pixmap)
+        self.lblThumbnail.setScaledContents(True)
+
     def buildDisplay(self):
         """
         Build html text for displaying file information.
         """
+
         if not self._docSize is None:
             display_doc_size = str(size(self._docSize))
         else:
@@ -781,6 +816,8 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         #Disable link if no view manager has been configured
         if self._view_manager is None:
             self.lblName.setEnabled(False)
+
+        self.set_thumbnail()
 
     def uploadDoc(self):
         """
@@ -811,6 +848,9 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
             workerThread.finished.connect(workerThread.deleteLater)
 
             workerThread.start()
+            # Call transfer() to get fileUUID early
+            docWorker.transfer()
+            self.fileUUID = docWorker.file_uuid
 
     def onBlockWritten(self,size):
         """
@@ -827,6 +867,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         self.pgBar.setVisible(False)
         self.fileUUID = str(fileid)
         self.fileUploadComplete.emit()
+
 
 def source_document_location(default = "/home"):
     """
