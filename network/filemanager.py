@@ -150,7 +150,8 @@ class DocumentTransferWorker(QObject):
         self._file_info = file_info
         self._entity_source = entity_source
         self._doc_type = doc_type
-    @pyqtSlot()    
+        self.file_uuid = None
+    @pyqtSlot()
     def transfer(self):
         """
         Initiate document transfer
@@ -160,7 +161,8 @@ class DocumentTransferWorker(QObject):
         self._file_manager.uploadDocument(
             self._entity_source, self._doc_type, self._file_info
         )
-        
+        self.file_uuid = self._file_manager.fileID
+
     def onBlockWritten(self,size):
         """
         Propagate event.
@@ -171,9 +173,8 @@ class DocumentTransferWorker(QObject):
         """
         Propagate event.
         """
-
         curframe = inspect.currentframe()
 
         calframe = inspect.getouterframes(curframe, 2)
 
-        self.complete.emit(self._file_manager.fileID)
+        self.complete.emit(file_uuid)
