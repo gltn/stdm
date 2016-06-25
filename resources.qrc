@@ -88,5 +88,7 @@
     <file>images/icons/db_server_settings.png</file>
     <file>images/icons/options.png</file>
     <file>images/icons/user_tip.png</file>
+    <file>images/icons/select_record.png</file>
+    <file>images/icons/hierarchy.png</file>
   </qresource>
 </RCC>

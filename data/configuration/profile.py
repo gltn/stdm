@@ -114,6 +114,15 @@ class Profile(QObject):
                             supports_documents=supports_documents)
 
     @property
+    def administrative_spatial_unit(self):
+        """
+        :return: Returns the administrative spatial unit entity for this
+        profile.
+        :rtype: AdministrativeSpatialUnit
+        """
+        return self._admin_spatial_unit
+
+    @property
     def key(self):
         """
         :return: Returns the normalized name of the profile.

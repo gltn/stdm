@@ -48,7 +48,7 @@ from stdm.ui.view_str import ViewSTRWidget
 from stdm.ui.admin_unit_selector import AdminUnitSelector
 from stdm.ui.entity_browser import (
     EntityBrowser,
-    STDMEntityBrowser
+    EntityBrowserWithEditor
 )
 from stdm.ui.about import AboutSTDMDialog
 from stdm.ui.stdmdialog import DeclareMapping
@@ -1458,12 +1458,18 @@ class STDMQGISLoader(object):
                     cnt_idx = getIndex(
                         self._reportModules.keys(), dispName
                     )
-                    main = STDMEntityBrowser(
+                    '''
+                    et_browser = STDMEntityBrowser(
                         self.moduleContentGroups[cnt_idx],
                         table_name,
                         self.iface.mainWindow()
                     )
-                    main.exec_()
+                    '''
+                    et_browser = EntityBrowserWithEditor(
+                        sel_entity,
+                        self.iface.mainWindow()
+                    )
+                    et_browser.exec_()
 
                 else:
                     return

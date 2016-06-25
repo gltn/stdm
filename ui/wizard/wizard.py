@@ -42,14 +42,13 @@ from stdm.data.configuration.value_list import (
     CodeValue,
     value_list_factory
 )
-
 from stdm.data.configuration.social_tenure import *
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 from stdm.data.configuration.db_items import DbItem
 from stdm.data.pg_utils import (
         pg_table_exists, 
         table_column_names
-       )
+)
 from stdm.settings.config_serializer import ConfigurationFileSerializer 
 from stdm.settings.registryconfig import RegistryConfig 
 from stdm.data.configuration.exception import ConfigurationException
@@ -60,10 +59,10 @@ from stdm.settings import (
 )
 
 from stdm.settings.registryconfig import (
-        RegistryConfig,
-        DOCUMENTS_KEY,
-        TEMPLATES_KEY,
-        OUTPUTS_KEY
+    RegistryConfig,
+    DOCUMENTS_KEY,
+    TEMPLATES_KEY,
+    OUTPUTS_KEY
 )
 
 from custom_item_model import *
@@ -555,7 +554,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def add_entity_item(self, entity):
         """
         param entity: Instance of a new entity
-        type entity: BaseColumn
+        type entity: Entity
         """
         if entity.TYPE_INFO not in ['SUPPORTING_DOCUMENT',
                     'SOCIAL_TENURE', 'ADMINISTRATIVE_SPATIAL_UNIT',
@@ -785,7 +784,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             if entity.TYPE_INFO not in ['SUPPORTING_DOCUMENT',
                     'SOCIAL_TENURE', 'ADMINISTRATIVE_SPATIAL_UNIT',
-                    'ENTITY_SUPPORTING_DOCUMENT']:
+                    'ENTITY_SUPPORTING_DOCUMENT',
+                    'ASSOCIATION_ENTITY']:
 
                 if entity.TYPE_INFO == 'VALUE_LIST':
                     self.lookup_view_model.add_entity(entity)

@@ -20,8 +20,8 @@ email                : gkahiu@gmail.com
 """
 from PyQt4.QtGui import QLineEdit,QCheckBox,QComboBox,QTextEdit,QDateEdit
 from stdm.ui.sourcedocument import SourceDocumentManager
-from .valuehandlers import ControlValueHandler
-from stdm.utils import *
+from stdm.ui.helpers.valuehandlers import ControlValueHandler
+from stdm.utils.util import getIndex
 
 class ControlReaderMapper(object):
     '''
