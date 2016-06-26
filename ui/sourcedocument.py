@@ -775,10 +775,11 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         extension = self._displayName[self._displayName.rfind('.'):]
 
         doc_path = source_document_location()+'/'+\
-                   str(self.curr_profile.name)+'/'+\
-                   str(self._source_entity)+'/'+\
-                   str(self.doc_type_value())+'/'+\
-                   str(self.fileUUID)+str(extension)
+                   unicode(self.curr_profile.name)+'/'+ \
+                   unicode(self._source_entity)+'/'+ \
+                   unicode(self.doc_type_value())+'/'+ \
+                   unicode(self.fileUUID)+\
+                   unicode(extension)
 
 
         ph_image = QImage(doc_path)
