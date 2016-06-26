@@ -84,4 +84,4 @@ class Ui_frmAdminUnitManager(object):
         self.label_2.setText(QtGui.QApplication.translate("frmAdminUnitManager", "Code", None, QtGui.QApplication.UnicodeUTF8))
 
 from customcontrols import ValidatingLineEdit
-import resources_rc
+from stdm import resources_rc
