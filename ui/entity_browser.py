@@ -506,8 +506,30 @@ class EntityBrowserWithEditor(EntityBrowser):
         #Add action toolbar if the state contains Manage flag
         if (state & MANAGE) != 0:
             tbActions = QToolBar()
-            tbActions.setIconSize(QSize(16,16))
-            
+            tbActions.setObjectName('form_toolbar')
+            tbActions.setIconSize(QSize(16, 16))
+            tbActions.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+            tbActions.setStyleSheet(
+                '''
+                    QToolButton {
+                        border: 1px inset #777;
+                        border-radius: 2px;
+                        padding: 3px;
+                        background-color: qlineargradient(
+                            x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #f6f7fa, stop: 1 #dadbde
+                        );
+                    }
+
+                    QToolButton:pressed {
+                        background-color: qlineargradient(
+                            x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #dadbde, stop: 1 #f6f7fa
+                        );
+                    }
+
+                '''
+            )
             self._newEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/add.png"),
                                   QApplication.translate("EntityBrowserWithEditor", "Add"), self)
 
