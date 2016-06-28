@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_about_stdm.ui'
 #
-# Created: Thu Jun 26 16:51:51 2014
-#      by: PyQt4 UI code generator 4.10.3
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,7 +25,7 @@ except AttributeError:
 class Ui_frmAbout(object):
     def setupUi(self, frmAbout):
         frmAbout.setObjectName(_fromUtf8("frmAbout"))
-        frmAbout.resize(613, 474)
+        frmAbout.resize(613, 527)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -34,6 +33,8 @@ class Ui_frmAbout(object):
         frmAbout.setSizePolicy(sizePolicy)
         frmAbout.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.gridLayout = QtGui.QGridLayout(frmAbout)
+        self.gridLayout.setMargin(9)
+        self.gridLayout.setSpacing(6)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.txtAbout = QtGui.QTextEdit(frmAbout)
         self.txtAbout.setReadOnly(True)
@@ -60,3 +61,5 @@ class Ui_frmAbout(object):
         frmAbout.setWindowTitle(_translate("frmAbout", "About STDM", None))
         self.btnSTDMHome.setText(_translate("frmAbout", "STDM Home Page", None))
         self.btnContactUs.setText(_translate("frmAbout", "Contact Us", None))
+
+from stdm import resources_rc
