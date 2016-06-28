@@ -119,7 +119,7 @@ class ComposerWrapper(QObject):
         QObject.__init__(self, composerView)
         
         self._compView = composerView
-        self._stdmTB = self.mainWindow().addToolBar("STDM")
+        self._stdmTB = self.mainWindow().addToolBar("STDM Document Designer")
         self._selectMoveAction = None
         self._iface = iface
         

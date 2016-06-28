@@ -684,7 +684,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                     )
                 except Exception as ex:
                     LOGGER.debug(
-                        'ViewSTR-Load_source_document: '+str(ex)
+                        'ViewSTR-Load_source_document(): '+str(ex)
                     )
 
             self.tbSupportingDocs.addTab(

@@ -1903,7 +1903,7 @@ class FreezeTableWidget(QTableView):
         try:
             self.update_frozen_table_geometry()
         except Exception as log:
-            LOGGER.debug('FrozenTableWidget-resizeEvent: '+str(log))
+            LOGGER.debug('FrozenTableWidget-resizeEvent(): '+str(log))
 
 
     def scrollTo(self, index, hint):
