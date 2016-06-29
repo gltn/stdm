@@ -69,8 +69,8 @@ class DTimeProperty(QDialog, Ui_DTimeProperty):
         """
         Sets min/max properties with values from form widgets
         """
-        self._min_val = self.edtMinDTime.dateTime()
-        self._max_val = self.edtMaxDTime.dateTime()
+        self._min_val = self.edtMinDTime.dateTime().toPyDateTime()
+        self._max_val = self.edtMaxDTime.dateTime().toPyDateTime()
 
     def min_val(self):
         """

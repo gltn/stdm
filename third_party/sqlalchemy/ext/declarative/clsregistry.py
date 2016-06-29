@@ -164,7 +164,7 @@ class _ModuleMarker(object):
     def add_class(self, name, cls):
         if name in self.contents:
             existing = self.contents[name]
-            existing.add_item(cls)
+            existing._add_item(cls)
         else:
             existing = self.contents[name] = \
                 _MultipleClassMarker([cls],

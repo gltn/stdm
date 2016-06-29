@@ -1,10 +1,12 @@
 from sqlalchemy import (
-    create_engine,
     MetaData
 )
 from sqlalchemy.engine import reflection
-from sqlalchemy.orm import relationship
-from sqlalchemy.ext.automap import automap_base
+from sqlalchemy.orm.interfaces import MANYTOMANY
+from sqlalchemy.ext.automap import (
+    automap_base,
+    generate_relationship
+)
 
 from stdm.data.database import (
     metadata,
@@ -26,6 +28,16 @@ def _rename_supporting_doc_collection(base, local_cls, ref_cls, constraint):
     else:
         #Default
         return ref_cls.__name__.lower() + '_collection'
+
+
+def _gen_relationship(base, direction, return_fn,
+                                attrname, local_cls, referred_cls, **kw):
+    #Disable type check for many-to-many relationships
+    if direction is MANYTOMANY:
+        kw['enable_typechecks'] = False
+
+    return generate_relationship(base, direction, return_fn,
+                                 attrname, local_cls, referred_cls, **kw)
 
 
 def entity_model(entity, entity_only=False, with_supporting_document=False):
@@ -52,9 +64,11 @@ def entity_model(entity, entity_only=False, with_supporting_document=False):
     if not entity_only:
         parents = [p.name for p in entity.parents()]
         children = [c.name for c in entity.children()]
+        associations = [a.name for a in entity.associations()]
 
         rf_entities.extend(parents)
         rf_entities.extend(children)
+        rf_entities.extend(associations)
 
     _bind_metadata(metadata)
 
@@ -103,7 +117,8 @@ def entity_model(entity, entity_only=False, with_supporting_document=False):
 
     #Set up mapped classes and relationships
     Base.prepare(
-        name_for_collection_relationship=_rename_supporting_doc_collection
+        name_for_collection_relationship=_rename_supporting_doc_collection,
+        generate_relationship=_gen_relationship
     )
 
     if with_supporting_document and not entity_only:
@@ -114,6 +129,19 @@ def entity_model(entity, entity_only=False, with_supporting_document=False):
 def configure_supporting_documents_inheritance(entity_supporting_docs_t,
                                                profile_supporting_docs_t,
                                                base, parent_entity):
+    """
+    Configures a joined table inheritance for supporting documents.
+    :param entity_supporting_docs_t: Table object representing supporting
+    documents for an entity.
+    :type entity_supporting_docs_t: Table
+    :param profile_supporting_docs_t: Table object representing root
+    supporting documents table at the profile level.
+    :type profile_supporting_docs_t: Table
+    :param base: Declarative base for creating the proxy models.
+    :param parent_entity: Entity table name.
+    :type parent_entity: str
+    :return: Database model corresponding to an entity's supporting document.
+    """
     class ProfileSupportingDocumentProxy(base):
         """
         Represents the root table for storing supporting documents in a
@@ -156,7 +184,8 @@ def profile_foreign_keys(profile):
     Gets all foreign keys for tables in the given profile.
     :param profile: Profile object.
     :type profile: Profile
-    :return: A list containing foreign key names of the given profiles.
+    :return: A list containing foreign key names for all tables in the given
+    profile.
     :rtype: list(str)
     """
     from stdm.data.pg_utils import pg_table_exists

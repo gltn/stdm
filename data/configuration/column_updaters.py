@@ -232,7 +232,7 @@ def yes_no_updater(column, table, columns):
     """
     Updater for Yes/No column.
     :param column: Yes/No column.
-    :type column: YesNoColumn
+    :type column: BooleanColumn
     :param table: SQLAlchemy table
     :type table: Table
     :param columns: Existing column names in the database for the given table.

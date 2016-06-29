@@ -115,15 +115,23 @@ class ValueList(Entity):
         """
         return len(self.values) == 0
 
-    def copy_from(self, value_list):
+    def copy_from(self, value_list, clear_first=False):
         """
         Appends the code value collection from the given value list.
         :param value_list: Collection to copy code values from.
         :type value_list: ValueList
+        :param clear_first: Removes previous code values
+        before copying the new ones
+        :type clear_first: Boolean
         """
         #Test if it is a ValueList object
         if value_list.TYPE_INFO != ValueList.TYPE_INFO:
             return
+
+        #Check if clear_first is True
+        if clear_first:
+            for cv in self.values.values():
+                self.remove_value(cv)
 
         for cv in value_list.values.values():
             self.add_code_value(cv)

@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_EntityBrowser(object):
     def setupUi(self, EntityBrowser):
         EntityBrowser.setObjectName(_fromUtf8("EntityBrowser"))
-        EntityBrowser.resize(534, 416)
+        EntityBrowser.resize(650, 416)
         self.gridLayout = QtGui.QGridLayout(EntityBrowser)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.label = QtGui.QLabel(EntityBrowser)

@@ -11,7 +11,7 @@ class SupportsManageMixin(QObject):
     #Signal raised when the state (view/manage) of the dialog changes.
     stateChanged = pyqtSignal('bool')
     
-    def __init__(self,mode = MANAGE):
+    def __init__(self, mode=MANAGE):
         self._mode = mode
         self._onStateChanged()
         

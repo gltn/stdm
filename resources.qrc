@@ -3,7 +3,6 @@
     <file>images/QGIS Splash.png</file>
     <file>images/icons/edit_settings.png</file>
     <file>images/icons/help-content.png</file>
-    <file>images/icons/warning_large.png</file>
     <file>images/icons/info.png</file>
     <file>images/icons/info_small.png</file>
     <file>images/icons/login.png</file>
@@ -90,5 +89,8 @@
     <file>images/icons/table_designer.png</file>
     <file>images/icons/db_server_settings.png</file>
     <file>images/icons/options.png</file>
+    <file>images/icons/user_tip.png</file>
+    <file>images/icons/select_record.png</file>
+    <file>images/icons/hierarchy.png</file>
   </qresource>
 </RCC>

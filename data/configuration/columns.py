@@ -264,6 +264,15 @@ class BaseColumn(ColumnItem):
         """
         return self.entity.column_parent_relations(self.name)
 
+    def header(self):
+        """
+        :return: Returns the column name formatted with the first character
+        for each word in uppercase. Underscores are replaced with a space and
+        '_id' is removed if it exists.
+        :rtype: str
+        """
+        return self.name.replace('_id','').replace('_',' ').title()
+
     def __setattr__(self, key, value):
         if hasattr(self, '_initialized'):
             if key in self._monitor_attrs:
@@ -293,6 +302,11 @@ class BoundsColumn(BaseColumn):
 
         self.minimum = kwargs.pop('minimum', self.SQL_MIN)
         self.maximum = kwargs.pop('maximum', self.SQL_MAX)
+
+        #Use default range if minimum and maximum are equal
+        if self.minimum == self.maximum:
+            self.minimum = self.SQL_MIN
+            self.maximum = self.SQL_MAX
 
         BaseColumn.__init__(self, *args, **kwargs)
 
@@ -373,11 +387,11 @@ TextColumn.register()
 
 class IntegerColumn(BoundsColumn):
     """
-    Corresponds to bigint SQL type.
+    Corresponds to int SQL type.
     """
-    TYPE_INFO = 'BIGINT'
-    SQL_MIN = -9223372036854775808
-    SQL_MAX = 9223372036854775807
+    TYPE_INFO = 'INT'
+    SQL_MIN = -sys.maxint - 1
+    SQL_MAX = sys.maxint
     sql_updater = integer_updater
 
     @classmethod
@@ -434,6 +448,12 @@ class DateColumn(BoundsColumn):
     min_use_current_date = False
     max_use_current_date = False
 
+    def __init__(self, *args, **kwargs):
+        self.min_use_current_date = kwargs.pop('min_use_current_date', False)
+        self.max_use_current_date = kwargs.pop('max_use_current_date', False)
+
+        BoundsColumn.__init__(self, *args, **kwargs)
+
     @classmethod
     def display_name(cls):
         return tr('Date')
@@ -451,6 +471,18 @@ class DateTimeColumn(BoundsColumn):
     sql_updater = datetime_updater
     min_use_current_datetime = False
     max_use_current_datetime = False
+
+    def __init__(self, *args, **kwargs):
+        self.min_use_current_datetime = kwargs.pop(
+            'min_use_current_datetime',
+            False
+        )
+        self.max_use_current_datetime = kwargs.pop(
+            'max_use_current_datetime',
+            False
+        )
+
+        BoundsColumn.__init__(self, *args, **kwargs)
 
     @classmethod
     def display_name(cls):
@@ -519,17 +551,18 @@ class GeometryColumn(BaseColumn):
 
 GeometryColumn.register()
 
-class YesNoColumn(BaseColumn):
+class BooleanColumn(BaseColumn):
     """
     Represents a True/False or Yes/No column.
     """
-    TYPE_INFO = 'YES_NO'
+    TYPE_INFO = 'BOOL'
     sql_updater = yes_no_updater
 
     @classmethod
     def display_name(cls):
-        return tr('Yes/No')
+        return tr('True/False')
 
+BooleanColumn.register()
 
 class ForeignKeyColumn(IntegerColumn):
     """
@@ -552,6 +585,10 @@ class ForeignKeyColumn(IntegerColumn):
 
         self.entity_relation.child_column = self.name
         self.entity_relation.child = self.entity
+
+        #If the entity relation is valid then add it right away to the profile
+        if self.entity_relation.valid()[0]:
+            self.profile.add_entity_relation(self.entity_relation)
 
     def set_entity_relation_attr(self, attr, val):
         """
@@ -692,6 +729,15 @@ class MultipleSelectColumn(VirtualColumn):
         :type val_list: Name of the ValueList or object instance.
         """
         self.association.first_parent = val_list
+
+    @property
+    def model_attribute_name(self):
+        """
+        :return: Returns the corresponding attribute name of this column in
+        an SQLALchemy model object.
+        :rtype: str
+        """
+        return u'{0}_collection'.format(self.value_list.name)
 
     @classmethod
     def display_name(cls):

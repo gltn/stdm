@@ -130,7 +130,7 @@ class _AttributeMapper(object):
 
         if hasattr(self._model, self._attrName):
             controlValue = self._valueHandler.value()
-            setattr(self._model,self._attrName,controlValue)
+            setattr(self._model, self._attrName, controlValue)
     
 class MapperMixin(object):
     '''
@@ -159,7 +159,8 @@ class MapperMixin(object):
         #Flag to indicate whether to close the widget or dialog once model has been submitted
         #self.closeOnSubmit = True
         
-    def addMapping(self,attributeName,control,isMandatory = False,pseudoname = "",valueHandler = None,preloadfunc = None):
+    def addMapping(self,attributeName,control,isMandatory=False,
+                   pseudoname='', valueHandler=None, preloadfunc=None):
         '''
         Specify the mapping configuration.
         '''
@@ -335,7 +336,9 @@ class MapperMixin(object):
             if attrMapper.isMandatory() and attrMapper.valueHandler().supportsMandatory():
                 if attrMapper.valueHandler().value() == attrMapper.valueHandler().default():
                     #Notify user
-                    msg = QApplication.translate("MappedDialog","(%s) is a required field.")%str(attrMapper.pseudoName())
+                    msg = QApplication.translate("MappedDialog",
+                                                 "'%s' is a required field.")\
+                          %unicode(attrMapper.pseudoName())
                     self._notifBar.insertWarningNotification(msg)
                     isValid = False
                 else:
@@ -354,12 +357,12 @@ class MapperMixin(object):
         if self._mode == SAVE:
             self._model.save()
             QMessageBox.information(self, QApplication.translate("MappedDialog","Record Saved"), \
-                                    QApplication.translate("MappedDialog","New record has been successfully saved"))
+                                    QApplication.translate("MappedDialog","New record has been successfully saved."))
             
         else:
             self._model.update()
             QMessageBox.information(self, QApplication.translate("MappedDialog","Record Updated"), \
-                                    QApplication.translate("MappedDialog","Record has been successfully updated"))
+                                    QApplication.translate("MappedDialog","Record has been successfully updated."))
             
         #Close the dialog
         if isinstance(self, QDialog):
