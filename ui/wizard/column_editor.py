@@ -117,7 +117,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
     def column_to_form(self, column):
         """
-        Initializes form controls with column data when editting a column.
+        Initialize form controls with column data when editting a column.
         :param column: Column to edit
         :type column: BaseColumn
         """
@@ -129,14 +129,12 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.cbUnique.setCheckState(self.bool_to_check(column.unique))
         self.cbIndex.setCheckState(self.bool_to_check(column.index))
 
-        #self.cboDataType.setCurrentIndex(cbo_id)
-
         self.cboDataType.setCurrentIndex( \
                 self.cboDataType.findText(column.display_name()))
 
     def column_to_wa(self, column):
         """
-        Initializes work area 'form_fields' with column data.
+        Initialize 'work area' form_fields with column data.
         Used when editing a column
         :param column: Column to edit
         :type column: BaseColumn
@@ -211,57 +209,90 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         *property - function to execute when a data type is selected.
         """
         self.type_attribs['VARCHAR'] = {
-                'mandt':False,'search': True,
-                'unique': False, 'index': False,
+                'mandt':{'check_state':False, 'enabled_state':True},
+                'search':{'check_state':True, 'enabled_state':True},
+                'unique':{'check_state':False, 'enabled_state':True},
+                'index':{'check_state':False, 'enabled_state':True},
                 'maximum':30,'property': self.varchar_property }
 
         self.type_attribs['BIGINT'] = {
-                'mandt':False, 'search': False,
-                'unique': False, 'index': False,
+                'mandt':{'check_state':False, 'enabled_state':True},
+                'search':{'check_state':True, 'enabled_state':True},
+                'unique':{'check_state':False, 'enabled_state':True},
+                'index':{'check_state':False, 'enabled_state':True},
                 'minimum':0, 'maximum':0,
                 'property':self.bigint_property }
 
-        self.type_attribs['TEXT'] = {'mandt':False, 'search': False, 
-                'unique': False, 'index': False } 
+        self.type_attribs['TEXT'] = {
+                'mandt':{'check_state':False, 'enabled_state':False},
+                'search':{'check_state':False, 'enabled_state':False},
+                'unique':{'check_state':False, 'enabled_state':False},
+                'index':{'check_state':False, 'enabled_state':False},
+                } 
 
-        self.type_attribs['DOUBLE' ] = {'mandt':False, 'search': False, 
-                'unique': False, 'index': False, 
+        self.type_attribs['DOUBLE' ] = {
+                'mandt':{'check_state':False, 'enabled_state':True},
+                'search':{'check_state':True, 'enabled_state':True},
+                'unique':{'check_state':False, 'enabled_state':True},
+                'index':{'check_state':False, 'enabled_state':True},
                 'minimum':0.0, 'maximum':0.0,
                 'property':self.double_property }
 
-        self.type_attribs['DATE'] =  {'mandt':False, 'search': False,
-                'unique': False, 'index': False,
+        self.type_attribs['DATE'] =  {
+                'mandt':{'check_state':False, 'enabled_state':True},
+                'search':{'check_state':False, 'enabled_state':True},
+                'unique':{'check_state':False, 'enabled_state':False},
+                'index':{'check_state':False, 'enabled_state':False},
                 'minimum':QtCore.QDate.currentDate(),
                 'maximum':QtCore.QDate.currentDate(),
                 'property':self.date_property }
                
-        self.type_attribs['DATETIME'] = {'mandt':False, 'search': False,
-                'unique': False, 'index': False,
+        self.type_attribs['DATETIME'] = {
+                'mandt':{'check_state':False, 'enabled_state':True},
+                'search':{'check_state':False, 'enabled_state':True},
+                'unique':{'check_state':False, 'enabled_state':False},
+                'index':{'check_state':False, 'enabled_state':False},
                 'minimum':QtCore.QDateTime.currentDateTime(),
                 'maximum':QtCore.QDateTime.currentDateTime(),
                 'property':self.dtime_property }
 
-        self.type_attribs['FOREIGN_KEY'] = {'mandt':False, 'search': False, 
-                'unique': False, 'index': False,
+        self.type_attribs['FOREIGN_KEY'] = {
+                'mandt':{'check_state':False, 'enabled_state':True},
+                'search':{'check_state':False, 'enabled_state':False},
+                'unique':{'check_state':False, 'enabled_state':False},
+                'index':{'check_state':False, 'enabled_state':False},
                 'entity_relation':None,
                 'property':self.fk_property, 'prop_set':False }
 
-        self.type_attribs['LOOKUP'] = {'mandt':False, 'search': False,
-                'unique': False, 'index': False,
+        self.type_attribs['LOOKUP'] = {
+                'mandt':{'check_state':False, 'enabled_state':True},
+                'search':{'check_state':True, 'enabled_state':True},
+                'unique':{'check_state':False, 'enabled_state':False},
+                'index':{'check_state':False, 'enabled_state':False},
                 'entity_relation':{},
                 'property':self.lookup_property, 'prop_set':False }
 
-        self.type_attribs['GEOMETRY'] ={'mandt':False, 'search': False, 
-                'unique': False, 'index': False,
+        self.type_attribs['GEOMETRY'] ={
+                'mandt':{'check_state':False, 'enabled_state':False},
+                'search':{'check_state':False, 'enabled_state':False},
+                'unique':{'check_state':True, 'enabled_state':False},
+                'index':{'check_state':False, 'enabled_state':False},
                 'srid':"", 'geom_type':0,
                 'property':self.geometry_property, 'prop_set':False }
 
 
-        self.type_attribs['ADMIN_SPATIAL_UNIT'] ={'mandt':False, 'search': False,
-                'entity_relation':None, 'unique': False, 'index': False}
+        self.type_attribs['ADMIN_SPATIAL_UNIT'] ={
+                'mandt':{'check_state':False, 'enabled_state':True},
+                'search':{'check_state':True, 'enabled_state':True},
+                'unique':{'check_state':False, 'enabled_state':False},
+                'index':{'check_state':False, 'enabled_state':False},
+                'entity_relation':None}
 
-        self.type_attribs['MULTIPLE_SELECT'] ={'mandt':False, 'search': False, 
-                'unique': False, 'index': False,
+        self.type_attribs['MULTIPLE_SELECT'] ={
+                'mandt':{'check_state':False, 'enabled_state':True},
+                'search':{'check_state':False, 'enabled_state':True},
+                'unique':{'check_state':False, 'enabled_state':False},
+                'index':{'check_state':False, 'enabled_state':False},
                 'first_parent':None, 'second_parent':self.entity,
                 'property':self.multi_select_property, 'prop_set':False }
 	
@@ -476,15 +507,15 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         param opts: Dictionary of selected column type properties
         type: dictionary
         """
-        self.cbMandt.setEnabled(opts['mandt'])
-        self.cbSearch.setEnabled(opts['search'])
-        self.cbUnique.setEnabled(opts['unique'])
-        self.cbIndex.setEnabled(opts['index'])
+        self.cbMandt.setEnabled(opts['mandt']['enabled_state'])
+        self.cbSearch.setEnabled(opts['search']['enabled_state'])
+        self.cbUnique.setEnabled(opts['unique']['enabled_state'])
+        self.cbIndex.setEnabled(opts['index']['enabled_state'])
 
-        self.cbMandt.setCheckState(self.bool_to_check(opts['mandt']))
-        self.cbSearch.setCheckState(self.bool_to_check(opts['search']))
-        self.cbUnique.setCheckState(self.bool_to_check(opts['unique']))
-        self.cbIndex.setCheckState(self.bool_to_check(opts['index']))
+        self.cbMandt.setCheckState(self.bool_to_check(opts['mandt']['check_state']))
+        self.cbSearch.setCheckState(self.bool_to_check(opts['search']['check_state']))
+        self.cbUnique.setCheckState(self.bool_to_check(opts['unique']['check_state']))
+        self.cbIndex.setCheckState(self.bool_to_check(opts['index']['check_state']))
 
     def set_min_max_defaults(self, type_info):
         """

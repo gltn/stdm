@@ -645,7 +645,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def append_update_file(self, info):
         """
         Append info to a single file
-        :param info: update iformation to save to file
+        :param info: update information to save to file
         :type info: str
         """
         file_name = os.path.expanduser('~') + '/.stdm/update_info.log'
@@ -846,10 +846,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self.cboProfile.insertItems(0, profiles)
         # Set current profile on the profile combobox.
-        if self.current_profile is not None:
-            index = self.cboProfile.findText(
-                current_profile().name, Qt.MatchFixedString
-            )
+        cp = self.current_profile()
+        if cp:
+            index = self.cboProfile.findText(cp.name, Qt.MatchFixedString)
             if index >= 0:
                 self.cboProfile.setCurrentIndex(index)
         else:
