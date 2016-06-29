@@ -79,7 +79,7 @@ class Profile(QObject):
         #Base entity for supporting documents within the profile
         self.supporting_document = SupportingDocument(self)
 
-        self.social_tenure = self._create_social_tenure(supports_documents=is_new)
+        self.social_tenure = self._create_social_tenure()
 
         self._admin_spatial_unit = AdministrativeSpatialUnit(self)
         self.removed_entities = []
@@ -108,13 +108,21 @@ class Profile(QObject):
 
         return prefix.lower()
 
-    def _create_social_tenure(self, supports_documents=True):
+    def _create_social_tenure(self):
         """
         :return: Returns an instance of a social tenure object.
         :rtype: SocialTenure
         """
-        return SocialTenure('social_tenure_relationship', self,
-                            supports_documents=supports_documents)
+        return SocialTenure('social_tenure_relationship', self)
+
+    @property
+    def administrative_spatial_unit(self):
+        """
+        :return: Returns the entity corresponding to the administrative
+        spatial unit.
+        :rtype: AdministrativeSpatialUnit
+        """
+        return self._admin_spatial_unit
 
     @property
     def key(self):

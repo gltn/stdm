@@ -122,6 +122,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             }
             '''
         )
+
+
         # set whether currently logged in user has
         # permissions to edit existing STR records
         self._can_edit = self._plugin.STRCntGroup.canUpdate()
@@ -143,7 +145,12 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             self.curr_profile.social_tenure, False, True
         )
 
-        self._source_doc_manager = SourceDocumentManager(self.str_doc_model, self)
+        self._source_doc_manager = SourceDocumentManager(
+            self.curr_profile.social_tenure.supporting_doc,
+            self.str_doc_model,
+            self
+        )
+
         self._source_doc_manager.documentRemoved.connect(
             self.onSourceDocumentRemoved
         )
@@ -151,6 +158,63 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self._source_doc_manager.setEditPermissions(self._can_edit)
 
         self.initGui()
+    
+    def add_tool_buttons(self):
+        """
+        Add toolbar buttons of add, edit and delete buttons.
+        :return: None
+        :rtype: NoneType
+        """
+        tool_buttons = QToolBar()
+        tool_buttons.setObjectName('form_toolbar')
+        tool_buttons.setIconSize(QSize(16, 16))
+        tool_buttons.setToolButtonStyle(
+            Qt.ToolButtonTextBesideIcon
+        )
+        tool_buttons.setStyleSheet(
+            '''
+                QToolButton {
+                    border: 1px inset #777;
+                    border-radius: 2px;
+                    padding: 3px;
+                    background-color: qlineargradient(
+                        x1: 0, y1: 0, x2: 0, y2: 1,
+                        stop: 0 #f6f7fa, stop: 1 #dadbde
+                    );
+                }
+    
+                QToolButton:pressed {
+                    background-color: qlineargradient(
+                        x1: 0, y1: 0, x2: 0, y2: 1,
+                        stop: 0 #dadbde, stop: 1 #f6f7fa
+                    );
+                }
+            '''
+        )
+
+        self.addSTR = QAction(QIcon(
+            ':/plugins/stdm/images/icons/add.png'),
+            QApplication.translate('ViewSTRWidget', 'Add'),
+            self
+        )
+    
+
+        self.editSTR = QAction(
+            QIcon(':/plugins/stdm/images/icons/edit.png'),
+            QApplication.translate('ViewSTRWidget', 'Edit'),
+            self
+        )
+
+        self.deleteSTR = QAction(
+            QIcon(':/plugins/stdm/images/icons/remove.png'),
+            QApplication.translate('ViewSTRWidget', 'Remove'),
+            self
+        )
+
+        tool_buttons.addAction(self.addSTR)
+        tool_buttons.addAction(self.editSTR)
+        tool_buttons.addAction(self.deleteSTR)
+        self.toolbarVBox.addWidget(tool_buttons)
 
     def initGui(self):
         """
@@ -158,7 +222,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         """
         self.tb_actions.setVisible(False)
         self._load_entity_configurations()
-
+        self.add_tool_buttons()
         #self.gb_supporting_docs.setCollapsed(True)
 
         #Connect signals
@@ -188,11 +252,11 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         else:
             self.deleteSTR.setDisabled(True)
 
-        self.addSTR.clicked.connect(self.load_new_str_wiz)
+        self.addSTR.triggered.connect(self.load_new_str_wiz)
 
-        self.deleteSTR.clicked.connect(self.delete_str)
+        self.deleteSTR.triggered.connect(self.delete_str)
 
-        self.editSTR.clicked.connect(self.load_edit_str_wiz)
+        self.editSTR.triggered.connect(self.load_edit_str_wiz)
 
         #Load async for the current widget
         self.entityTabIndexChanged(0)
@@ -680,7 +744,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                     )
                 except Exception as ex:
                     LOGGER.debug(
-                        'ViewSTR-Load_source_document: '+str(ex)
+                        'ViewSTR-Load_source_document(): '+str(ex)
                     )
 
             self.tbSupportingDocs.addTab(

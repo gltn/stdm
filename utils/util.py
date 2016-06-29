@@ -307,7 +307,7 @@ def datetime_from_string(str_val):
     :return: Returns a datetime object from the corresponding string value.
     :rtype: datetime
     """
-    return datetime.strptime(str_val, '%Y-%m-%d %H:%M:%S')
+    return datetime.strptime(str(str_val), '%Y-%m-%d %H:%M:%S')
 
 
 def date_from_string(str_val):
@@ -318,7 +318,7 @@ def date_from_string(str_val):
     :return: Returns a date object from the corresponding string value.
     :rtype: date
     """
-    return datetime.strptime(str_val, '%Y-%m-%d')
+    return datetime.strptime(str(str_val), '%Y-%m-%d').date()
 
 def format_name(attr):
     """
@@ -464,8 +464,8 @@ def profile_user_tables(profile, include_views=True):
             'SUPPORTING_DOCUMENT'
         ]
     ]
+    tables = dict(tables)
     if include_views:
-        tables = dict(tables)
         for view in pg_views():
             tables[view] = view
 
@@ -499,6 +499,7 @@ def lookup_parent_entity(profile, col):
         r.parent for r in profile.relations.values()
         if r.child_column == col
     ]
+
     return parent_entity[0]
 
 

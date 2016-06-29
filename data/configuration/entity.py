@@ -131,7 +131,6 @@ class Entity(QObject, TableItem):
         self.supports_documents = supports_documents
         self.supporting_doc = None
         self.is_proxy = is_proxy
-
         self.updated_columns = OrderedDict()
 
         #Create PK if flag is specified
@@ -291,6 +290,27 @@ class Entity(QObject, TableItem):
         entity_relations = self.profile.child_relations(self)
 
         return [er.parent for er in entity_relations if er.valid()[0]]
+
+    def associations(self):
+        """
+        :return: Returns a collection of entities which are indirectly linked
+        to this entity through association entities. A multiple select column
+        is an example of an object that uses association entities.
+        :rtype: list
+        """
+        assoc_entities = self.profile.entities_by_type_info(
+            'ASSOCIATION_ENTITY'
+        )
+
+        rel_entities = []
+
+        for ase in assoc_entities:
+            if ase.first_parent.name == self.name:
+                rel_entities.append(ase.first_parent)
+            elif ase.second_parent.name == self.name:
+                rel_entities.append(ase.second_parent)
+
+        return rel_entities
 
     def children(self):
         """

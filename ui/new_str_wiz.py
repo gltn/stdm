@@ -52,13 +52,17 @@ from stdm.navigation import (
     GMAP_SATELLITE,
     OSM
 )
+
 from stdm.utils import *
 from stdm.utils.util import (
     lookup_id_to_value,
     entity_id_to_attr,
     format_name
 )
+
 from ui_new_str import Ui_frmNewSTR
+
+SELECT = 2303
 
 LOGGER = logging.getLogger('stdm')
 
@@ -91,6 +95,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         # Current profile instance and properties
         self.curr_profile = current_profile()
         self.social_tenure = self.curr_profile.social_tenure
+
         self.party = self.social_tenure.party
 
         self.spatial_unit = self.social_tenure.spatial_unit
@@ -102,6 +107,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.str_model, self.str_doc_model = entity_model(
             self.social_tenure, False, True
         )
+
+        self.sel_record_id = None
 
         self.party_header = []
 
@@ -160,7 +167,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         """
         party_model = entity_model(self.party)
         party_obj = party_model()
-        
+
+
         party_result = party_obj.queryObject().filter(
             party_model.id == self.str_edit_obj.party_id
         ).first()
@@ -181,17 +189,19 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             spatial_unit_result
         )
 
-    def init_party_str_type_edit(self,  result, str_type_id):
+    def init_party_str_type_edit(self, result, str_type_id):
         """
         Initializes party table with STR type edit.
         :param result: The object of the selected STR
         :type result: Object
-        :param str_type_id:
-        :type str_type_id:
+        :param str_type_id: The id of the social tenure type lookup
+        :type str_type_id: Integer
         :return:
         :rtype:
         """
         table_data = []
+        self.sel_record_id = self.str_edit_obj.party_id
+
         vertical_layout = QVBoxLayout(
             self.partyRecBox
         )
@@ -226,13 +236,12 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         table_view.model().layoutChanged.emit()
         table_view.resizeColumnsToContents()
 
-
-        
         self.init_str_type(str_type_id)
 
 
     def init_spatial_unit_edit(self, result):
         table_data = []
+        self.sel_record_id = self.str_edit_obj.spatial_unit_id
         vertical_layout = QVBoxLayout(
             self.spatialUnitRecBox
         )
@@ -247,7 +256,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         for col in entity_display_columns(self.spatial_unit):
             attr = getattr(result, col)
 
-            # change id to value if lookup, else return the same value
+            # change id to value if lookup,
+            # else return the same value
             attr = lookup_id_to_value(
                 self.curr_profile, col, attr
             )
@@ -265,15 +275,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.spatial_unit_signals(table_view, table_data)
 
     def party_signals(self, party_table, party_data):
-
+        # Load party table selection
         self.AddPartybtn.clicked.connect(
-            lambda: self.add_record(
-                party_table, self.party, party_data
+            lambda : self.open_entity(
+                self.party, party_table, party_data, True
             )
-        )
-
-        self.AddPartybtn.clicked.connect(
-            self.init_str_type
         )
 
         self.RemovePartybtn.clicked.connect(
@@ -284,9 +290,9 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
     def spatial_unit_signals(self, table_view, data):
         self.AddSpatialUnitbtn.clicked.connect(
-            lambda: self.add_record(
-                table_view,
+            lambda: self.open_entity(
                 self.spatial_unit,
+                table_view,
                 data
             )
         )
@@ -640,6 +646,24 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         else:
             self.update_table_view(tableview, str_type)
 
+    def get_selected_id(self, id):
+        self.sel_record_id = id
+
+    def open_entity(self, entity, table_view, table_data, str_type=False):
+
+        from .entity_browser import EntityBrowser
+
+        entity_browser = EntityBrowser(entity, self, SELECT)
+        entity_browser.show()
+
+        entity_browser.recordSelected.connect(self.get_selected_id)
+        entity_browser.recordSelected.connect(
+            lambda: self.add_record(table_view, entity, table_data, str_type=False)
+        )
+        if str_type:
+            entity_browser.recordSelected.connect(
+                self.init_str_type
+            )
 
     def add_record(
             self, table_view, entity, table_data, str_type=False
@@ -656,26 +680,33 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :return:
         :rtype:
         """
+
         data = OrderedDict()
         db_model = entity_model(entity, True)
         db_obj = db_model()
 
         if str_type:
             data['social_tenure_type'] = None
-
+        display_colums = []
         for col in entity_display_columns(entity):
             attr = getattr(db_model, col)
 
-            value = db_obj.queryObject([attr]).all()
-            if len(value) > 0:
-                value = value[0][0]
-            else:
-                return
-            # change id to value if lookup, else return the same value
-            value = lookup_id_to_value(
-                self.curr_profile, col, value
-            )
-            data[col] = value
+            display_colums.append(attr)
+        result = db_obj.queryObject(display_colums).filter(
+            db_model.id == self.sel_record_id
+        ).all()
+
+        # print result
+        # if len(result) > 0:
+        #     print result
+        #     #value = value[0][0]
+        # else:
+        #     return
+            # # change id to value if lookup, else return the same value
+            # value = lookup_id_to_value(
+            #     self.curr_profile, col, value
+            # )
+            #data[col] = value
         if entity == self.spatial_unit:
             # Clear existing data before adding
             # new one to only allow one spatial_unit
@@ -697,15 +728,22 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 for item in self.frmWizSTRType.findChildren(QTableView):
                     self.STRTypePartyBox.removeWidget(item)
                     item.deleteLater()
-
-        table_data.append(data.values())
+        for rp in result:
+            for attr_val in rp:
+                data[attr_val] = attr_val
+            #data = rp._asdict()
+            table_data.append(data.values())
+        #print table_data
         # Get the id and set it to self.sel_spatial_unit
         # so that it can be previewed on the map under
         # the preview tab.
         if entity == self.spatial_unit:
             spatial_unit_id = self.get_spatial_unit_data()
+            # Check if the added spatial unit is assigned
+            # to other occupants and provide information.
             if self.social_tenure.multi_party:
                 self.validate_occupants(spatial_unit_id[0])
+
             self.set_record_to_model(
                 self.spatial_unit, spatial_unit_id
             )
@@ -963,7 +1001,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :rtype: NoneType
         """
         self.sourceDocManager = SourceDocumentManager(
-            self.str_doc_model, self
+            self.social_tenure.supporting_doc, self.str_doc_model, self
         )
         doc_entity = self.social_tenure.\
             supporting_doc.document_type_entity
@@ -1202,11 +1240,13 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 )
                 isValid = False
             if len(self.sel_spatial_unit) > 0:
-                unoccupied = self.validate_occupants(
-                    self.sel_spatial_unit[0].id
-                )
-                if not unoccupied:
-                    isValid = False
+                if self.str_edit_obj is not None:
+                    if self.str_edit_obj.spatial_unit_id != self.sel_spatial_unit[0].id:
+                        unoccupied = self.validate_occupants(
+                            self.sel_spatial_unit[0].id
+                        )
+                        if not unoccupied:
+                            isValid = False
 
 
         #Validate STR Type
@@ -1416,7 +1456,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             isValid = False
 
         except Exception as e:
-            errMsg = str(e)
+            errMsg = unicode(e)
             QMessageBox.critical(
                 self,
                 QApplication.translate(
@@ -1461,7 +1501,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         else:
             self.gpOpenLayers.setTitle(
                 "%s (Loading...%s%%)"%(
-                    str(self.gpOLTitle),
+                    unicode(self.gpOLTitle),
                     str(progress)
                 )
             )
@@ -1863,7 +1903,7 @@ class FreezeTableWidget(QTableView):
         try:
             self.update_frozen_table_geometry()
         except Exception as log:
-            LOGGER.debug('FrozenTableWidget-resizeEvent: '+str(log))
+            LOGGER.debug('FrozenTableWidget-resizeEvent(): '+str(log))
 
 
     def scrollTo(self, index, hint):

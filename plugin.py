@@ -47,8 +47,7 @@ from stdm.ui.new_str_wiz import newSTRWiz
 from stdm.ui.view_str import ViewSTRWidget
 from stdm.ui.admin_unit_selector import AdminUnitSelector
 from stdm.ui.entity_browser import (
-    EntityBrowser,
-    STDMEntityBrowser
+    EntityBrowserWithEditor
 )
 from stdm.ui.about import AboutSTDMDialog
 from stdm.ui.stdmdialog import DeclareMapping
@@ -969,15 +968,30 @@ class STDMQGISLoader(object):
             save_current_profile(sel_profile)
 
         self.current_profile = current_profile()
+        LOGGER.debug(
+            'STDMQGISLoader-reload_plugin() - '
+            'Successfully changed '
+            'the current profile to '+self.current_profile.name
+        )
         try:
             self.loadModules()
+            LOGGER.debug(
+                'STDMQGISLoader-reload_plugin() - '
+                'Successfully reloaded all modules.'
+            )
         except SQLAlchemyError as ex:
-            LOGGER.debug('SQLAlchemyError: ' + str(ex))
+            LOGGER.debug(
+                'STDMQGISLoader-reload_plugin() - '
+                'SQLAlchemyError: ' + str(ex)
+            )
             STDMDb.instance().session.rollback()
             self.loadModules()
 
         except Exception as ex:
-            LOGGER.debug('Error Loading Modules: ' + str(ex))
+            LOGGER.debug(
+                'STDMQGISLoader-reload_plugin() - '
+                'Error Loading Modules: ' + str(ex)
+            )
             self.loadModules()
 
     def load_config_wizard(self):
@@ -1471,12 +1485,11 @@ class STDMQGISLoader(object):
                     cnt_idx = getIndex(
                         self._reportModules.keys(), dispName
                     )
-                    main = STDMEntityBrowser(
-                        self.moduleContentGroups[cnt_idx],
-                        table_name,
+                    et_browser = EntityBrowserWithEditor(
+                        sel_entity,
                         self.iface.mainWindow()
                     )
-                    main.exec_()
+                    et_browser.exec_()
 
                 else:
                     return
@@ -1485,7 +1498,7 @@ class STDMQGISLoader(object):
                 QMessageBox.critical(
                     self.iface.mainWindow(),
                     QApplication.translate(
-                        "STDMPlugin","Loading dialog..."
+                        "STDMPlugin","Loading Dialog..."
                     ),
                     QApplication.translate(
                         "STDMPlugin",
@@ -1548,7 +1561,7 @@ class STDMQGISLoader(object):
             self.initMenuItems()
             self.loginAct.setEnabled(True)
         except Exception as ex:
-            LOGGER.debug(unicode('logout:')+unicode(ex))
+            LOGGER.debug(unicode('STDMQGISLoader-logout():')+unicode(ex))
 
 
     def removeSTDMLayers(self):
@@ -1595,7 +1608,7 @@ class STDMQGISLoader(object):
             self.current_profile = None
 
         except Exception as ex:
-            LOGGER.debug(unicode('logoutCleanUp:') + unicode(ex))
+            LOGGER.debug(unicode('STDMQGISLoader-logoutCleanUp():') + unicode(ex))
 
     def remove_spatial_unit_mgr(self):
         """

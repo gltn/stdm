@@ -275,16 +275,18 @@ class DependencyProcessor(object):
                                          'zm': self.mapper,
                                      })
             else:
-                raise exc.FlushError(
-                    'Attempting to flush an item of type '
-                    '%(x)s as a member of collection '
-                    '"%(y)s". Expected an object of type '
-                    '%(z)s or a polymorphic subclass of '
-                    'this type.' % {
-                        'x': state.class_,
-                        'y': self.prop,
-                        'z': self.mapper.class_,
-                    })
+                #SQLAlchemy complaining about types of m:n relationships
+                if not self.direction.name == 'MANYTOMANY':
+                    raise exc.FlushError(
+                        'Attempting to flush an item of type '
+                        '%(x)s as a member of collection '
+                        '"%(y)s". Expected an object of type '
+                        '%(z)s or a polymorphic subclass of '
+                        'this type.' % {
+                            'x': state.class_,
+                            'y': self.prop,
+                            'z': self.mapper.class_,
+                        })
 
     def _synchronize(self, state, child, associationrow,
                      clearkeys, uowcommit):
