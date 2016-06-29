@@ -95,7 +95,9 @@ LOGGER = logging.getLogger('stdm')
 class STDMQGISLoader(object):
 
     viewSTRWin = None
-
+    STR_DISPLAY = QApplication.translate(
+        'STDMQGISLoader', 'New Social Tenure Relationship'
+    )
     def __init__(self, iface):
         self.iface = iface
 
@@ -696,34 +698,20 @@ class STDMQGISLoader(object):
             for i, (name, short_name) in enumerate(user_entities.iteritems()):
                 display_name = QT_TRANSLATE_NOOP("Entities",
                                                  unicode(short_name).replace("_", " ").title())
-                if display_name != 'Social Tenure Relationship':
-                    self._moduleItems[display_name] = name
+                self._moduleItems[display_name] = name
             # Add social tenure at last in the dict
-            str_display_name = QT_TRANSLATE_NOOP(
-                "Entities",
-                unicode(
-                    self.current_profile.social_tenure.short_name
-                ).replace("_", " ").title()
-            )
-            self._moduleItems[str_display_name] = self.current_profile.social_tenure.name
+
+            #self._moduleItems[self.STR_DISPLAY] = self.current_profile.social_tenure.name
 
 
         for k, v in self._moduleItems.iteritems():
 
-            content_action = QAction(QIcon(":/plugins/stdm/images/icons/table.png"),
-                                     k, self.iface.mainWindow())
-
-            # capabilities = contentGroup(self._moduleItems[k])
-            #
-            # if capabilities:
-            moduleCntGroup = TableContentGroup(username, k, content_action)
-            # moduleCntGroup.createContentItem().code = capabilities[0]
-            # moduleCntGroup.readContentItem().code = capabilities[1]
-            # moduleCntGroup.updateContentItem().code = capabilities[2]
-            # moduleCntGroup.deleteContentItem().code = capabilities[3]
-            moduleCntGroup.register()
-            self._reportModules[k] = self._moduleItems.get(k)
+            moduleCntGroup = self._create_table_content_group(k, username)
+            self._reportModules[k] = v
             self.moduleContentGroups.append(moduleCntGroup)
+
+        moduleCntGroup = self._create_table_content_group(self.STR_DISPLAY, username)
+        self.moduleContentGroups.append(moduleCntGroup)
 
         #Create content groups and add items
         self.contentAuthCntGroup = ContentGroup(username)
@@ -857,6 +845,14 @@ class STDMQGISLoader(object):
 
         self.profile_status_message()
 
+    def _create_table_content_group(self, k, username):
+        content_action = QAction(
+            QIcon(":/plugins/stdm/images/icons/table.png"),
+                                 k, self.iface.mainWindow())
+        moduleCntGroup = TableContentGroup(username, k, content_action)
+        moduleCntGroup.register()
+        return moduleCntGroup
+
     def create_spatial_unit_manager(self):
         self.remove_spatial_unit_mgr()
 
@@ -931,7 +927,7 @@ class STDMQGISLoader(object):
         profile_name = self.current_profile.name
         message = QApplication.translate(
             'STDMPlugin',
-            'The currently loaded STDM profile is '+profile_name+'.'
+            'Current STDM Profile: '+profile_name
         )
 
         if self.profile_status_label.parent() is None:
@@ -1459,7 +1455,7 @@ class STDMQGISLoader(object):
 
         dispName=QAction.text()
 
-        if dispName == 'Social Tenure Relationship':
+        if dispName == self.STR_DISPLAY:
 
             if self.current_profile is None:
                 self.default_profile()
@@ -1627,15 +1623,13 @@ class STDMQGISLoader(object):
         Create a handler to read the current profile
         and return the table list
         """
-
         if self.current_profile is not None:
             return [
                 (e.name, e.short_name)
                 for e in
                 self.current_profile.entities.values()
-                if (e.TYPE_INFO == 'ENTITY' or
-                    e.TYPE_INFO == 'SOCIAL_TENURE') and
-                not e.has_geometry_column()
+                if (e.TYPE_INFO == 'ENTITY' and
+                not e.has_geometry_column())
             ]
 
 
