@@ -34,7 +34,27 @@ from ..data.configuration.stdm_configuration import StdmConfiguration
 
 COLUMN_TYPE_DICT = {'character varying': 'VARCHAR', 'date': 'DATE',
                     'serial': 'SERIAL', 'integer': 'BIGINT', 'lookup':
-                        'LOOKUP'}
+                        'LOOKUP', 'double precision': 'DOUBLE'}
+COLUMN_PROPERTY_DICT = {'SERIAL': {"unique": "False", "tip": "",
+                                    "minimum": "-9223372036854775808",
+                                    "maximum": "9223372036854775807",
+                                    "index": "False", "mandatory": "False"},
+                        'VARCHAR': {"unique": "False", "tip": "",
+                                    "minimum": "0", "maximum": "30",
+                                    "index": "False", "mandatory": "False"},
+                        'BIGINT': {"unique": "False", "tip": "",
+                                    "minimum": "0", "maximum": "100000000",
+                                    "index": "False", "mandatory": "False"},
+                        'DATE':   {"unique": "False", "tip": "",
+                                    "minimum": "0", "maximum": "30",
+                                    "index": "False", "mandatory": "False"},
+                        'LOOKUP': {"unique": "False", "tip": "",
+                                    "minimum": "0", "maximum": "30",
+                                    "index": "False", "mandatory": "False"},
+                        'DOUBLE': {"unique": "False", "tip": "",
+                                    "minimum": "0", "maximum": "0",
+                                    "index": "False", "mandatory": "False"}}
+
 
 class ConfigurationFileUpdater(object):
     """
@@ -275,6 +295,12 @@ class ConfigurationFileUpdater(object):
                     entity_name = pref + "_" + entity_key
                     entities.setAttribute("description", entity_value[0])
                     entities.setAttribute("shortName", entity_value[1])
+                    entities.setAttribute("editable", "True")
+                    entities.setAttribute("global", "False")
+                    entities.setAttribute("associative", "False")
+                    entities.setAttribute("proxy", "False")
+                    entities.setAttribute("createId", "True")
+                    entities.setAttribute("supportsDocuments", "False")
                     column_properties = entity_value[2:]
                     columns = self.doc.createElement("Columns")
                     for i in column_properties:
@@ -287,7 +313,12 @@ class ConfigurationFileUpdater(object):
                                 column.setAttribute("description", col_v)
                             elif col_k == "col_type":
                                 column.setAttribute("TYPE_INFO", col_v)
-                            elif col_k == "lookup" and col_v is  not None:
+                                if COLUMN_PROPERTY_DICT[col_v]:
+                                    for k, v in COLUMN_PROPERTY_DICT[col_v].\
+                                            iteritems():
+                                        column.setAttribute(k, v)
+
+                            elif col_k == "lookup" and col_v is not None:
                                 relation = self.doc.createElement("Relation")
                                 relation.setAttribute("name", "fk_" + pref
                                                      + "_" + col_v + "_id_"
@@ -430,180 +461,6 @@ class ConfigurationFileUpdater(object):
 
                 # Create configuration node and version
                 self._populate_config_file()
-
-                doc = QDomDocument()
-                configuration = doc.createElement("Configuration")
-                configuration.setAttribute("version", self.version)
-
-                for config_profile, values in \
-                        self.entities_lookup_relations.iteritems():
-                    conf_prefix = config_profile[:2]
-                    profile = doc.createElement("Profile")
-                    profile.setAttribute("description", "")
-                    profile.setAttribute("name", config_profile)
-                    value_lists = doc.createElement("ValueLists")
-
-                    for key, value in values.iteritems():
-                        if key.endswith("lookup"):
-                            for lookup_key, lookup_value in value.iteritems():
-                                value_list = doc.createElement("ValueList")
-                                if lookup_key == "check_social_tenure_type":
-                                    lookup_key = "check_tenure_type"
-                                value_list.setAttribute("name", lookup_key)
-
-                                for k, v in lookup_value.iteritems():
-                                    code_value = doc.createElement("CodeValue")
-                                    code_value.setAttribute("code", k)
-                                    code_value.setAttribute("value", v)
-                                    value_list.appendChild(code_value)
-
-                                value_lists.appendChild(value_list)
-
-                        profile.appendChild(value_lists)
-
-                        if key.endswith("table"):
-
-                            for entity_key, entity_value in value.iteritems():
-                                entities = doc.createElement("Entity")
-                                entities.setAttribute("name", conf_prefix +
-                                                      "_" + entity_key)
-                                entity_name = conf_prefix + "_" + entity_key
-                                entities.setAttribute("description",
-                                                      entity_value[0])
-                                entities.setAttribute("shortName",
-                                                      entity_value[1])
-                                column_properties = entity_value[2:]
-                                columns = doc.createElement("Columns")
-                                for i in column_properties:
-                                    column = doc.createElement("Column")
-                                    for col_k, col_v in i.iteritems():
-                                        if col_k == "col_name":
-                                            column.setAttribute("name", col_v)
-                                            self.table_name = col_v
-                                        elif col_k == "col_descrpt":
-                                            column.setAttribute("description",
-                                                                col_v)
-                                        elif col_k == "col_type":
-                                            column.setAttribute("TYPE_INFO",
-                                                                col_v)
-                                        elif col_k == "lookup" and col_v is \
-                                                not None:
-                                            relation = doc.createElement(
-                                                "Relation")
-                                            relation.setAttribute(
-                                                "name", "fk_" + conf_prefix
-                                                + "_" + col_v + "_id_"
-                                                + entity_name + "_" +
-                                                        str(self.table_name))
-                                            column.appendChild(relation)
-                                    columns.appendChild(column)
-                                entities.appendChild(columns)
-                                profile.appendChild(entities)
-
-                        if key.endswith("relations"):
-                            relationship = doc.createElement("Relations")
-
-                            for relation_key, relation_values in \
-                                                value.iteritems():
-
-
-                                if relation_key == "social_tenure_relationship":
-
-                                    for relation_v in relation_values:
-                                        entity_relation = doc.\
-                                            createElement("EntityRelation")
-                                        entity_relation.setAttribute("parent",
-                                            relation_v)
-                                        entity_relation.setAttribute("child",
-                                            "social_tenure_relationship")
-                                        entity_relation.\
-                                            setAttribute("parentColumn", "id")
-                                        entity_relation.\
-                                            setAttribute("childColumn",
-                                                         relation_v + "_" +
-                                                         "id")
-                                        entity_relation.setAttribute("name",
-                                            "fk_" + conf_prefix + "_" +
-                                            relation_v + "_" + conf_prefix +
-                                            "_" + "social_tenure_relationship"
-                                            + "_" + relation_v + "_" + "id")
-                                        relationship.appendChild(entity_relation)
-
-                            if value:
-
-                                entity_relation = doc.createElement("EntityRelation")
-                                entity_relation.\
-                                    setAttribute("parent",
-                                                 "social_tenure_relationship")
-                                entity_relation.\
-                                    setAttribute("child",
-                                                 "social_tenure_relationship_supporting_"
-                                                 "document")
-                                entity_relation.\
-                                    setAttribute("parentColumn", "id")
-                                entity_relation.\
-                                    setAttribute("childColumn", "social_tenure_"
-                                                                "relationship_id")
-                                entity_relation.\
-                                    setAttribute("name",
-                                                 "fk_" + conf_prefix +
-                                                 "_social_tenure_relationship_id_"
-                                                 + conf_prefix +
-                                                 "_social_tenure_relationship_"
-                                                 "supporting_document_social_tenure_"
-                                                 "relationship_id")
-
-                                relationship.appendChild(entity_relation)
-
-                                entity_relation = doc.createElement("EntityRelation")
-                                entity_relation.\
-                                    setAttribute("parent",
-                                                 "supporting_document")
-                                entity_relation.\
-                                    setAttribute("child",
-                                                 "social_tenure_relationship_supporting_"
-                                                 "document")
-                                entity_relation.\
-                                    setAttribute("parentColumn", "id")
-                                entity_relation.\
-                                    setAttribute("childColumn", conf_prefix +
-                                                 "_supporting_doc_id")
-                                entity_relation.\
-                                    setAttribute("name", "fk_" + conf_prefix +
-                                                         "_supporting_document_id_" +
-                                                         conf_prefix + "_social_tenure_"
-                                                         "relationship_supporting_document"
-                                                         "_" + conf_prefix + "_supporting_"
-                                                         "doc_id")
-
-                                relationship.appendChild(entity_relation)
-
-                                entity_relation = doc.createElement("EntityRelation")
-                                entity_relation.\
-                                    setAttribute("parent",
-                                                 "check_tenure_type")
-                                entity_relation.\
-                                    setAttribute("child",
-                                                 "social_tenure_relationship")
-                                entity_relation.\
-                                    setAttribute("parentColumn", "id")
-                                entity_relation.\
-                                    setAttribute("childColumn", "tenure_type")
-                                entity_relation.\
-                                    setAttribute("name", "fk_" + conf_prefix +
-                                                 "_check_tenure_type_id_" + conf_prefix +
-                                                 "_social_tenure_relationship_tenure_type")
-
-                                relationship.appendChild(entity_relation)
-
-                            profile.appendChild(relationship)
-
-                    configuration.appendChild(profile)
-
-                doc.appendChild(configuration)
-
-                # stream = QTextStream(self.config_file)
-                # stream << self.doc.toString()
 
                 return True
             else:
