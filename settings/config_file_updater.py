@@ -76,6 +76,7 @@ class ConfigurationFileUpdater(object):
         self.relations_dict = {}
         self.doc = QDomDocument()
         self.spatial_unit_table = []
+        self.check_doc_relation_lookup_dict = {}
 
     def _check_config_folder_exists(self):
         """
@@ -164,7 +165,7 @@ class ConfigurationFileUpdater(object):
                     code = lookup[0:2].upper()
                     lookup_dict[code] = lookup
 
-            self.lookup_dict[lookup_name] = lookup_dict
+        self.lookup_dict[lookup_name] = lookup_dict
 
     def _set_table_columns(self, table_name, element):
         relations_list = []
@@ -235,6 +236,16 @@ class ConfigurationFileUpdater(object):
                 lookup_nodes = profile_child_node.childNodes()
                 self._set_lookup_data(lookup_name, lookup_nodes)
 
+        # Adding new lookups for documents and participating strs
+        for k, v in self.relations_dict.iteritems():
+            if k == "social_tenure_relationship":
+                for relation in v:
+                    lookup = "check_" + relation + "_document_type"
+                    lookup_code = {"G": "General"}
+                    self.lookup_dict[lookup] =\
+                        lookup_code
+                    self.check_doc_relation_lookup_dict[relation] = lookup
+
     def _set_version_profile(self, element):
         """
         Internal function to load version and profile to dictionary
@@ -291,6 +302,16 @@ class ConfigurationFileUpdater(object):
 
                     value_lists.appendChild(value_list)
 
+                # Default value list for check_social_tenure_relationship_
+                # document_type
+                value_list = self.doc.createElement("ValueList")
+                value_list.setAttribute("name", "check_social_tenure_"
+                                                "relationship_document_type")
+                code_value = self.doc.createElement("CodeValue")
+                code_value.setAttribute("code", "G")
+                code_value.setAttribute("value", "General")
+                value_list.appendChild(code_value)
+                value_lists.appendChild(value_list)
                 profile.appendChild(value_lists)
 
             if key.endswith("table"):
@@ -305,7 +326,18 @@ class ConfigurationFileUpdater(object):
                     entities.setAttribute("associative", "False")
                     entities.setAttribute("proxy", "False")
                     entities.setAttribute("createId", "True")
-                    entities.setAttribute("supportsDocuments", "False")
+
+                    # Adds supporting document check
+                    for k, v in self.check_doc_relation_lookup_dict.\
+                            iteritems():
+                        if k == entity_key:
+                            entities.setAttribute("documentTypeLookup", v)
+                            entities.setAttribute("supportsDocuments", "True")
+                            break
+                        else:
+                            entities.setAttribute("supportsDocuments", "False")
+                            pass
+
                     column_properties = entity_value[2:]
                     columns = self.doc.createElement("Columns")
                     for i in column_properties:
@@ -416,6 +448,27 @@ class ConfigurationFileUpdater(object):
                                 "_supporting_document_supporting_doc_id")
 
                             relationship.appendChild(entity_relation)
+
+                # Default relations
+                entity_relation = self.doc.createElement("EntityRelation")
+                entity_relation.setAttribute("parent",
+                                                 "check_social_tenure_"
+                                                 "relationship_document_type")
+                entity_relation.setAttribute("child",
+                                                 "social_tenure_relationship_"
+                                                 "supporting_document")
+                entity_relation.setAttribute("parentColumn", "id")
+                entity_relation.setAttribute("childColumn",
+                                                 "document_type")
+                entity_relation.setAttribute("name",
+                                             "fk_" + pref +
+                                             "_check_social_tenure_"
+                                             "relationship_document_type_id_"
+                                             + pref + "_social_tenure_"
+                                            "relationship_supporting_document_"
+                                            "document_type")
+
+                relationship.appendChild(entity_relation)
 
                 entity_relation = self.doc.createElement("EntityRelation")
                 entity_relation.setAttribute("parent",
