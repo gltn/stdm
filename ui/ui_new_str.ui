@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>663</width>
+    <width>672</width>
     <height>576</height>
    </rect>
   </property>
@@ -39,7 +39,7 @@
     <item>
      <widget class="QLabel" name="label">
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Scoial Tenure Relationship refers to the right or 'relationship' between persons and properties (which as represented as polygons on the map). It also includes conflict information associated with a given property.&lt;/p&gt;&lt;p&gt;This module provides a mechanism for defining STR applicable to property - both land and building&lt;/p&gt;&lt;p&gt;Click on the 'Next' button below to proceed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Social Tenure Relationship (STR) refers to the right or 'relationship' between party and spatial unit (which is represented as polygons on the map). It also includes conflict information associated with a given spatial unit.&lt;/p&gt;&lt;p&gt;This module provides a mechanism for defining STR applicable to property - both land and building&lt;/p&gt;&lt;p&gt;Click on the 'Next' button below to proceed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -50,10 +50,10 @@
   </widget>
   <widget class="QWizardPage" name="frmWizParty">
    <property name="title">
-    <string>Occupant Information</string>
+    <string>Party Information</string>
    </property>
    <property name="subTitle">
-    <string>Select the occupant information by searching through the existing repository.</string>
+    <string>Select the party by searching through the existing record.</string>
    </property>
    <attribute name="pageId">
     <string notr="true">person</string>
@@ -135,7 +135,7 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>615</width>
+           <width>624</width>
            <height>365</height>
           </rect>
          </property>
@@ -285,7 +285,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>609</width>
+               <width>618</width>
                <height>85</height>
               </rect>
              </property>
@@ -326,75 +326,6 @@
            <bool>false</bool>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
-           <item row="0" column="0" colspan="4">
-            <widget class="QWebView" name="propWebView">
-             <property name="styleSheet">
-              <string notr="true"/>
-             </property>
-             <property name="url">
-              <url>
-               <string>about:blank</string>
-              </url>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="2">
-            <widget class="QLabel" name="label_9">
-             <property name="font">
-              <font>
-               <pointsize>11</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-               <kerning>false</kerning>
-              </font>
-             </property>
-             <property name="text">
-              <string>+</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0" colspan="3">
-            <widget class="QSlider" name="zoomSlider">
-             <property name="minimum">
-              <number>2</number>
-             </property>
-             <property name="maximum">
-              <number>20</number>
-             </property>
-             <property name="value">
-              <number>12</number>
-             </property>
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="tickPosition">
-              <enum>QSlider::TicksBelow</enum>
-             </property>
-             <property name="tickInterval">
-              <number>2</number>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="3">
-            <widget class="QPushButton" name="btnResetMap">
-             <property name="text">
-              <string>Reset Map</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QLabel" name="label_7">
-             <property name="text">
-              <string>Zoom</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
            <item row="1" column="0" colspan="4">
             <widget class="QGroupBox" name="groupBox_2">
              <property name="minimumSize">
@@ -445,6 +376,75 @@
              </layout>
             </widget>
            </item>
+           <item row="0" column="0" colspan="4">
+            <widget class="QWebView" name="propWebView">
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <property name="url">
+              <url>
+               <string>about:blank</string>
+              </url>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLabel" name="label_7">
+             <property name="text">
+              <string>Zoom</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QLabel" name="label_9">
+             <property name="font">
+              <font>
+               <pointsize>11</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+               <kerning>false</kerning>
+              </font>
+             </property>
+             <property name="text">
+              <string>+</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="3">
+            <widget class="QPushButton" name="btnResetMap">
+             <property name="text">
+              <string>Reset Map</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0" colspan="3">
+            <widget class="QSlider" name="zoomSlider">
+             <property name="minimum">
+              <number>2</number>
+             </property>
+             <property name="maximum">
+              <number>20</number>
+             </property>
+             <property name="value">
+              <number>12</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TicksBelow</enum>
+             </property>
+             <property name="tickInterval">
+              <number>2</number>
+             </property>
+            </widget>
+           </item>
            <item row="3" column="0">
             <widget class="QLabel" name="label_8">
              <property name="text">
@@ -469,7 +469,7 @@
     <string>Social Tenure Relationship (STR) Type</string>
    </property>
    <property name="subTitle">
-    <string>Select the type of relationship that the specified person has with the selected property.</string>
+    <string>Select the type of relationship that the specified person has with the selected spatial unit.</string>
    </property>
    <attribute name="pageId">
     <string notr="true">str</string>
@@ -501,7 +501,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>617</width>
+         <width>626</width>
          <height>404</height>
         </rect>
        </property>

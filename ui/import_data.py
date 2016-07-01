@@ -273,13 +273,13 @@ class ImportData(QWizard, Ui_frmImport):
         tabIndex = int(self.field("tabIndex"))
         self.targetTab = self.destCheckedItem.text()
         targetCols = table_column_names(self.targetTab)   
-            
+
         #Remove geometry columns in the target columns list
         for gc in self.geomcols:            
             colIndex = getIndex(targetCols,gc)
             if colIndex != -1:
                 targetCols.remove(gc)
-                
+        targetCols.remove('id')
         self._add_target_table_columns(targetCols)
 
     def _add_target_table_columns(self, items, style=False):
