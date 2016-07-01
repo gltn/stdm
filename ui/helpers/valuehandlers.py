@@ -33,7 +33,7 @@ from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.customcontrols import CoordinatesWidget
 from stdm.utils.util import setComboCurrentIndexWithItemData
 from stdm.ui.customcontrols  import MultipleChoiceCombo
-from stdm.ui.attribute_browser import AttributeBrowser
+#from stdm.ui.attribute_browser import AttributeBrowser
 from stdm.ui.customcontrols.relation_line_edit import (
     AdministrativeUnitLineEdit,
     RelatedEntityLineEdit
@@ -362,21 +362,21 @@ class CoordinatesWidgetValueHandler(ControlValueHandler):
     
 CoordinatesWidgetValueHandler.register()
 
-class AttributeBrowserValueHandler(ControlValueHandler):
-    controlType = AttributeBrowser
-
-    def value(self):
-        ctlValue = self.control.values()
-        return ctlValue
-
-    def setValue(self, value):
-        if value:
-            self.control.set_values(value)
-
-    def supportsMandatory(self):
-        return True
-
-AttributeBrowserValueHandler.register()
+# class AttributeBrowserValueHandler(ControlValueHandler):
+#     controlType = AttributeBrowser
+#
+#     def value(self):
+#         ctlValue = self.control.values()
+#         return ctlValue
+#
+#     def setValue(self, value):
+#         if value:
+#             self.control.set_values(value)
+#
+#     def supportsMandatory(self):
+#         return True
+#
+# AttributeBrowserValueHandler.register()
 
 class MultipleChoiceComboBox(ControlValueHandler):
 

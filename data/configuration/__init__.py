@@ -2,7 +2,10 @@ from sqlalchemy import (
     MetaData
 )
 from sqlalchemy.engine import reflection
-from sqlalchemy.orm.interfaces import MANYTOMANY
+from sqlalchemy.orm.interfaces import (
+    MANYTOMANY,
+    ONETOMANY
+)
 from sqlalchemy.ext.automap import (
     automap_base,
     generate_relationship
@@ -35,6 +38,10 @@ def _gen_relationship(base, direction, return_fn,
     #Disable type check for many-to-many relationships
     if direction is MANYTOMANY:
         kw['enable_typechecks'] = False
+
+    elif direction is ONETOMANY:
+        kw['cascade'] = 'all, delete-orphan'
+        #kw['passive_deletes'] = True
 
     return generate_relationship(base, direction, return_fn,
                                  attrname, local_cls, referred_cls, **kw)

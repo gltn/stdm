@@ -59,6 +59,7 @@ class LicenseAgreement(QDialog, Ui_LicenseAgreement):
             }
             '''
         )
+
     def check_show_license(self):
         """
         Checks if you need to show the license page.
