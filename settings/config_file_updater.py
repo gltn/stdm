@@ -75,6 +75,7 @@ class ConfigurationFileUpdater(object):
         self.table_name = None
         self.relations_dict = {}
         self.doc = QDomDocument()
+        self.spatial_unit_table = []
 
     def _check_config_folder_exists(self):
         """
@@ -209,6 +210,9 @@ class ConfigurationFileUpdater(object):
                     relations_list.append(relation_table)
                 self.relations_dict[table_name] = relations_list
 
+            if columns_node.tagName() == "geometryz":
+                self.spatial_unit_table.append(table_name)
+
     def _set_table_attributes(self, element):
 
         for i in range(element.count()):
@@ -236,6 +240,7 @@ class ConfigurationFileUpdater(object):
         Internal function to load version and profile to dictionary
         """
         for i in range(element.count()):
+            # Reset values for different profiles
             self.table_dict = OrderedDict()
             self.lookup_dict = OrderedDict()
             self.profile_dict = OrderedDict()
@@ -267,11 +272,11 @@ class ConfigurationFileUpdater(object):
         return
 
 
-    def _create_entity_valuelist_relation_nodes(self, pref, profile, values,
-                                                value_lists):
+    def _create_entity_valuelist_relation_nodes(self, pref, profile, values):
 
         for key, value in values.iteritems():
-            if key.endswith("lookup"):
+            if key.endswith("lookup") and value:
+                value_lists = self.doc.createElement("ValueLists")
                 for lookup_key, lookup_value in value.iteritems():
                     value_list = self.doc.createElement("ValueList")
                     if lookup_key == "check_social_tenure_type":
@@ -286,7 +291,7 @@ class ConfigurationFileUpdater(object):
 
                     value_lists.appendChild(value_list)
 
-            profile.appendChild(value_lists)
+                profile.appendChild(value_lists)
 
             if key.endswith("table"):
                 for entity_key, entity_value in value.iteritems():
@@ -329,7 +334,7 @@ class ConfigurationFileUpdater(object):
                     entities.appendChild(columns)
                     profile.appendChild(entities)
 
-            if key.endswith("relations"):
+            if key.endswith("relations") and value:
                 relationship = self.doc.createElement("Relations")
 
                 for relation_key, relation_values in value.iteritems():
@@ -352,19 +357,77 @@ class ConfigurationFileUpdater(object):
                                 + "_" + relation_v + "_" + "id")
                             relationship.appendChild(entity_relation)
 
-                if value:
+                            entity_relation = self.doc.createElement(
+                                "EntityRelation")
+                            entity_relation.setAttribute(
+                                "parent", "check_" + relation_v +
+                                "_document_type")
+                            entity_relation.setAttribute(
+                                "child", relation_v +
+                                "_supporting_document")
+                            entity_relation.setAttribute(
+                                "parentColumn", "id")
+                            entity_relation.setAttribute(
+                                "childColumn", "document_type")
+                            entity_relation.setAttribute(
+                                "name", "fk_" + pref +
+                                "_check_" + relation_v + "_document_type_id_"
+                                + pref +
+                                "_" + relation_v +
+                                "_supporting_document_document_type")
 
-                    entity_relation = self.doc.createElement("EntityRelation")
-                    entity_relation.setAttribute("parent",
+                            relationship.appendChild(entity_relation)
+
+                            entity_relation = self.doc.createElement(
+                                "EntityRelation")
+                            entity_relation.setAttribute(
+                                "parent",  relation_v)
+                            entity_relation.setAttribute(
+                                "child", relation_v +
+                                "_supporting_document")
+                            entity_relation.setAttribute(
+                                "parentColumn", "id")
+                            entity_relation.setAttribute(
+                                "childColumn", relation_v + "_id")
+                            entity_relation.setAttribute(
+                                "name", "fk_" + pref +
+                                "_check_" + relation_v + "_id_"
+                                + pref +
+                                "_" + relation_v +
+                                "_supporting_document_" + relation_v + "_id")
+
+                            relationship.appendChild(entity_relation)
+
+                            entity_relation = self.doc.createElement(
+                                "EntityRelation")
+                            entity_relation.setAttribute(
+                                "parent",  "supporting_document")
+                            entity_relation.setAttribute(
+                                "child", relation_v +
+                                "_supporting_document")
+                            entity_relation.setAttribute(
+                                "parentColumn", "id")
+                            entity_relation.setAttribute(
+                                "childColumn", "supporting_doc_id")
+                            entity_relation.setAttribute(
+                                "name", "fk_" + pref +
+                                "_supporting_document_id_" + pref +
+                                "_" + relation_v +
+                                "_supporting_document_supporting_doc_id")
+
+                            relationship.appendChild(entity_relation)
+
+                entity_relation = self.doc.createElement("EntityRelation")
+                entity_relation.setAttribute("parent",
                                                  "social_tenure_relationship")
-                    entity_relation.setAttribute("child",
+                entity_relation.setAttribute("child",
                                                  "social_tenure_relationship_"
                                                  "supporting_document")
-                    entity_relation.setAttribute("parentColumn", "id")
-                    entity_relation.setAttribute("childColumn",
+                entity_relation.setAttribute("parentColumn", "id")
+                entity_relation.setAttribute("childColumn",
                                                  "social_tenure_relationship_"
                                                  "id")
-                    entity_relation.setAttribute("name",
+                entity_relation.setAttribute("name",
                                                  "fk_" + pref + "_social_"
                                                 "tenure_relationship_id_"
                                                  + pref +
@@ -372,41 +435,62 @@ class ConfigurationFileUpdater(object):
                                                  "supporting_document_social_"
                                                  "tenure_relationship_id")
 
-                    relationship.appendChild(entity_relation)
+                relationship.appendChild(entity_relation)
 
-                    entity_relation = self.doc.createElement("EntityRelation")
-                    entity_relation.setAttribute("parent",
+                entity_relation = self.doc.createElement("EntityRelation")
+                entity_relation.setAttribute("parent",
                                                  "supporting_document")
-                    entity_relation.setAttribute("child",
+                entity_relation.setAttribute("child",
                                                  "social_tenure_relationship_"
                                                  "supporting_document")
-                    entity_relation.setAttribute("parentColumn", "id")
-                    entity_relation.setAttribute("childColumn", pref +
+                entity_relation.setAttribute("parentColumn", "id")
+                entity_relation.setAttribute("childColumn", pref +
                                                  "_supporting_doc_id")
-                    entity_relation.setAttribute("name", "fk_" + pref +
+                entity_relation.setAttribute("name", "fk_" + pref +
                                                 "_supporting_document_id_" +
                                                 pref + "_social_tenure_"
                                                 "relationship_supporting_"
                                                 "document_" + pref +
                                                  "_supporting_doc_id")
 
-                    relationship.appendChild(entity_relation)
+                relationship.appendChild(entity_relation)
 
-                    entity_relation = self.doc.createElement("EntityRelation")
-                    entity_relation.setAttribute("parent",
+                entity_relation = self.doc.createElement("EntityRelation")
+                entity_relation.setAttribute("parent",
                                                  "check_tenure_type")
-                    entity_relation.setAttribute("child",
+                entity_relation.setAttribute("child",
                                                  "social_tenure_relationship")
-                    entity_relation.setAttribute("parentColumn", "id")
-                    entity_relation.setAttribute("childColumn", "tenure_type")
-                    entity_relation.setAttribute("name", "fk_" + pref +
+                entity_relation.setAttribute("parentColumn", "id")
+                entity_relation.setAttribute("childColumn", "tenure_type")
+                entity_relation.setAttribute("name", "fk_" + pref +
                                                  "_check_tenure_type_id_" +
                                                  pref + "_social_tenure_"
                                                  "relationship_tenure_type")
 
-                    relationship.appendChild(entity_relation)
+                relationship.appendChild(entity_relation)
 
                 profile.appendChild(relationship)
+
+                social_tenure = self.doc.createElement("SocialTenure")
+                social_tenure.setAttribute(
+                    "layerDisplay", pref + "_vw_social_tenure_relationship")
+                social_tenure.setAttribute(
+                    "tenureTypeList", "check_tenure_type")
+                social_tenure.setAttribute(
+                    "spatialUnit", self.spatial_unit_table[0])
+                for relation_key, relation_values in value.iteritems():
+
+                    if relation_key == "social_tenure_relationship":
+
+                        for relation_v in relation_values:
+                            if self.spatial_unit_table[0] == relation_v:
+                                pass
+
+                            if self.spatial_unit_table[0] != relation_v:
+                                social_tenure.setAttribute(
+                                    "party", relation_v)
+
+                profile.appendChild(social_tenure)
 
         return profile
 
@@ -418,11 +502,9 @@ class ConfigurationFileUpdater(object):
             profile = self.doc.createElement("Profile")
             profile.setAttribute("description", "")
             profile.setAttribute("name", config_profile)
-            value_lists = self.doc.createElement("ValueLists")
 
             profile = self._create_entity_valuelist_relation_nodes(conf_prefix,
-                                                         profile, values,
-                                                         value_lists)
+                                                         profile, values)
             config.appendChild(profile)
 
         return config
