@@ -1,38 +1,117 @@
-<Configuration version="1.2">
- <Profile description="" name="mathare">
+<Configuration version="1.1">
+ <Profile description="" name="basic">
+  <Entity editable="True" global="False" associative="False" description="Party can be a person household or group" documentTypeLookup="check_party_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Party can be a person household or group" name="ba_party">
+   <Columns>
+    <Column unique="False" tip="" minimum="-9223372036854775808" maximum="9223372036854775807" description="Primary Key" index="False" name="id" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Surname" index="False" name="family_name" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="other given names" index="False" name="other_names" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="address id" index="False" name="address" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Identification" index="False" name="identification" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="mobile" index="False" name="contact_telephone" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="date of birth" index="False" name="date_of_birth" TYPE_INFO="DATE" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="sex" index="False" name="gender" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_ba_check_gender_id_ba_party_gender"/>
+    </Column>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Married or not married" index="False" name="marital_status" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_ba_check_marital_status_id_ba_party_marital_status"/>
+    </Column>
+   </Columns>
+  </Entity>
+  <Entity editable="True" global="False" associative="False" description="spatial unit or a group of spatial unit" documentTypeLookup="check_spatial_unit_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="spatial unit or a group of spatial unit" name="ba_spatial_unit">
+   <Columns>
+    <Column unique="False" tip="" minimum="-9223372036854775808" maximum="9223372036854775807" description="Primary Key" index="False" name="id" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="unique identifier" index="False" name="code" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Friendly name of the unit" index="False" name="name" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="type of the unit" index="False" name="type" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_ba_check_type_id_ba_spatial_unit_type"/>
+    </Column>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Use" index="False" name="sp_unit_use" TYPE_INFO="VARCHAR" mandatory="False"/>
+   </Columns>
+  </Entity>
+  <Entity editable="True" global="False" associative="False" description="Prove of evidence to the defined tenure" proxy="False" createId="True" supportsDocuments="False" shortName="Prove of evidence to the defined tenure" name="ba_supporting_document">
+   <Columns>
+    <Column unique="False" tip="" minimum="-9223372036854775808" maximum="9223372036854775807" description="Primary Key" index="False" name="id" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="" index="False" name="document_type" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_ba_check_document_type_id_ba_supporting_document_document_type"/>
+    </Column>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="when it was obtained" index="False" name="date_of_recording" TYPE_INFO="DATE" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Validity period" index="False" name="validity" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="From whom/ where" index="False" name="source" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="" index="False" name="document_id" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="" index="False" name="filename" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="100000000" description="Document Size" index="False" name="doc_size" TYPE_INFO="BIGINT" mandatory="False"/>
+   </Columns>
+  </Entity>
+  <Entity editable="True" global="False" associative="False" description="Relation of the person to spatial unit as supported by supporting documents" proxy="False" createId="True" supportsDocuments="False" shortName="Relation of the person to spatial unit as supported by supporting documents" name="ba_social_tenure_relationship">
+   <Columns>
+    <Column unique="False" tip="" minimum="-9223372036854775808" maximum="9223372036854775807" description="Primary Key" index="False" name="id" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="type of social tenure" index="False" name="social_tenure_type" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_ba_check_social_tenure_type_id_ba_social_tenure_relationship_social_tenure_type"/>
+    </Column>
+    <Column unique="False" tip="" minimum="0" maximum="0" description="share unit " index="False" name="share" TYPE_INFO="DOUBLE" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="100000000" description="party id" index="False" name="party" TYPE_INFO="BIGINT" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="100000000" description="spatial unit id" index="False" name="spatial_unit" TYPE_INFO="BIGINT" mandatory="False"/>
+   </Columns>
+  </Entity>
+  <Entity editable="True" global="False" associative="False" description="table for store str id and supporting documents" proxy="False" createId="True" supportsDocuments="False" shortName="table for store str id and supporting documents" name="ba_str_relations">
+   <Columns>
+    <Column unique="False" tip="" minimum="-9223372036854775808" maximum="9223372036854775807" description="Primary Key" index="False" name="id" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="100000000" description="Social tenure relation primary key" index="False" name="social_tenure_id" TYPE_INFO="BIGINT" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="100000000" description="Primary key of the supporting document" index="False" name="source_doc_id" TYPE_INFO="BIGINT" mandatory="False"/>
+   </Columns>
+  </Entity>
   <ValueLists>
+   <ValueList name="check_document_type">
+    <CodeValue value="Audio Files" code="AU"/>
+    <CodeValue value="Video Files" code="VI"/>
+    <CodeValue value="Rent certificate" code="RE"/>
+    <CodeValue value="Lease agreement" code="LE"/>
+    <CodeValue value="Title" code="TI"/>
+   </ValueList>
    <ValueList name="check_tenure_type">
-    <CodeValue value="Ownership" code="OWN"/>
-    <CodeValue value="Tenancy" code="TEN"/>
+    <CodeValue value="Tenant" code="TE"/>
+    <CodeValue value="Individual owner" code="IN"/>
+    <CodeValue value="Lease" code="LE"/>
+    <CodeValue value="Occupant" code="OC"/>
+    <CodeValue value="Part ownership" code="PA"/>
+    <CodeValue value="Shared" code="SH"/>
+    <CodeValue value="Others" code="OT"/>
    </ValueList>
    <ValueList name="check_gender">
-    <CodeValue value="Femal" code="F"/>
-    <CodeValue value="Male" code="M"/>
+    <CodeValue value="Male" code="MA"/>
+    <CodeValue value="Female" code="FE"/>
+   </ValueList>
+   <ValueList name="check_marital_status">
+    <CodeValue value="married" code="MA"/>
+    <CodeValue value="Single" code="SI"/>
+    <CodeValue value="Divorced" code="DI"/>
+    <CodeValue value="widow" code="WI"/>
+   </ValueList>
+   <ValueList name="check_spatial_unit_document_type">
+    <CodeValue value="General" code="G"/>
+   </ValueList>
+   <ValueList name="check_party_document_type">
+    <CodeValue value="General" code="G"/>
+   </ValueList>
+   <ValueList name="check_social_tenure_relationship_document_type">
+    <CodeValue value="General" code="G"/>
    </ValueList>
   </ValueLists>
-  <Entity editable="True" global="False" associative="False" description="person" proxy="False" createId="True" supportsDocuments="False" shortName="Person" name="ma_person">
-   <Columns>
-    <Column unique="False" tip="" minimum="-9223372036854775808" maximum="9223372036854775807" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="Enter first name" minimum="0" maximum="0" description="First name" index="False" name="fname" searchable="False" TYPE_INFO="VARCHAR" mandatory="True"/>
-    <Column unique="False" tip="" minimum="0" maximum="0" description="Access card number" index="False" name="card_number" searchable="False" TYPE_INFO="BIGINT" mandatory="True"/>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" associative="False" description="spatial unit" proxy="False" createId="True" supportsDocuments="False" shortName="Spatial unit" name="ma_spatial_unit">
-   <Columns>
-    <Column unique="False" tip="" minimum="-9223372036854775808" maximum="9223372036854775807" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="" description="Geometry location" index="False" name="geo_loc" searchable="False" TYPE_INFO="GEOMETRY" mandatory="False">
-     <Geometry layerDisplay="" srid="4326" type="2"/>
-    </Column>
-    <Column unique="False" tip="" minimum="0" maximum="0" description="House Name" index="False" name="hse_name" searchable="False" TYPE_INFO="VARCHAR" mandatory="True"/>
-   </Columns>
-  </Entity>
   <Relations>
-   <EntityRelation child="social_tenure_relationship_supporting_document" parent="social_tenure_relationship" name="fk_ma_social_tenure_relationship_id_ma_social_tenure_relationship_supporting_document_social_tenure_relationship_id" parentColumn="id" childColumn="social_tenure_relationship_id"/>
-   <EntityRelation child="social_tenure_relationship_supporting_document" parent="supporting_document" name="fk_ma_supporting_document_id_ma_social_tenure_relationship_supporting_document_ma_supporting_doc_id" parentColumn="id" childColumn="ma_supporting_doc_id"/>
-   <EntityRelation child="social_tenure_relationship" parent="check_tenure_type" name="fk_ma_check_tenure_type_id_ma_social_tenure_relationship_tenure_type" parentColumn="id" childColumn="tenure_type"/>
-   <EntityRelation child="social_tenure_relationship" parent="Person" name="fk_ma_person_id_ma_social_tenure_relationship_party_id" parentColumn="id" childColumn="party_id"/>
-   <EntityRelation child="social_tenure_relationship" parent="Spatial unit" name="fk_ma_spatial_unit_id_ma_social_tenure_relationship_spatial_unit_id" parentColumn="id" childColumn="spatial_unit_id"/>
+   <EntityRelation child="social_tenure_relationship" parent="spatial_unit" parentColumn="id" name="fk_ba_spatial_unit_ba_social_tenure_relationship_spatial_unit_id" childColumn="spatial_unit_id"/>
+   <EntityRelation child="spatial_unit_supporting_document" parent="check_spatial_unit_document_type" parentColumn="id" name="fk_ba_check_spatial_unit_document_type_id_ba_spatial_unit_supporting_document_document_type" childColumn="document_type"/>
+   <EntityRelation child="spatial_unit_supporting_document" parent="spatial_unit" parentColumn="id" name="fk_ba_check_spatial_unit_id_ba_spatial_unit_supporting_document_spatial_unit_id" childColumn="spatial_unit_id"/>
+   <EntityRelation child="spatial_unit_supporting_document" parent="supporting_document" parentColumn="id" name="fk_ba_supporting_document_id_ba_spatial_unit_supporting_document_supporting_doc_id" childColumn="supporting_doc_id"/>
+   <EntityRelation child="social_tenure_relationship" parent="party" parentColumn="id" name="fk_ba_party_ba_social_tenure_relationship_party_id" childColumn="party_id"/>
+   <EntityRelation child="party_supporting_document" parent="check_party_document_type" parentColumn="id" name="fk_ba_check_party_document_type_id_ba_party_supporting_document_document_type" childColumn="document_type"/>
+   <EntityRelation child="party_supporting_document" parent="party" parentColumn="id" name="fk_ba_check_party_id_ba_party_supporting_document_party_id" childColumn="party_id"/>
+   <EntityRelation child="party_supporting_document" parent="supporting_document" parentColumn="id" name="fk_ba_supporting_document_id_ba_party_supporting_document_supporting_doc_id" childColumn="supporting_doc_id"/>
+   <EntityRelation child="social_tenure_relationship_supporting_document" parent="check_social_tenure_relationship_document_type" parentColumn="id" name="fk_ba_check_social_tenure_relationship_document_type_id_ba_social_tenure_relationship_supporting_document_document_type" childColumn="document_type"/>
+   <EntityRelation child="social_tenure_relationship_supporting_document" parent="social_tenure_relationship" parentColumn="id" name="fk_ba_social_tenure_relationship_id_ba_social_tenure_relationship_supporting_document_social_tenure_relationship_id" childColumn="social_tenure_relationship_id"/>
+   <EntityRelation child="social_tenure_relationship_supporting_document" parent="supporting_document" parentColumn="id" name="fk_ba_supporting_document_id_ba_social_tenure_relationship_supporting_document_ba_supporting_doc_id" childColumn="ba_supporting_doc_id"/>
+   <EntityRelation child="social_tenure_relationship" parent="check_tenure_type" parentColumn="id" name="fk_ba_check_tenure_type_id_ba_social_tenure_relationship_tenure_type" childColumn="tenure_type"/>
   </Relations>
-  <SocialTenure layerDisplay="ma_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Spatial unit" party="Person"/>
+  <SocialTenure layerDisplay="ba_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="spatial_unit" party="party"/>
  </Profile>
+ <Profile description="" name="urban"/>
 </Configuration>
