@@ -307,10 +307,8 @@ class ForeignKeyMapperValueHandler(ControlValueHandler):
         return None
 
     def supportsMandatory(self):
-
         return True
 
-    
 ForeignKeyMapperValueHandler.register()
 
 class SpinBoxValueHandler(ControlValueHandler):

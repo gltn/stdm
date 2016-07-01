@@ -275,7 +275,7 @@ class DateWidgetFactory(ColumnWidgetRegistry):
             dt.setMaximumDate(c.maximum)
 
         #Set maximum date as current date
-        dt.setDate(dt.maximumDate())
+        dt.setDate(date.today())
 
         return dt
 
