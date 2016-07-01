@@ -58,7 +58,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
     recordSelected = pyqtSignal(int)
     
     def __init__(self, entity, parent=None, state=MANAGE):
-        QDialog.__init__(self,parent)
+        QDialog.__init__(self, parent)
         self.setupUi(self)
         SupportsManageMixin.__init__(self, state)
 
@@ -346,9 +346,6 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
                 
             #Set maximum value of the progress dialog
             progressDialog.setValue(numRecords)
-
-            headers = ','.join(self._headers)
-            #QMessageBox.information(self, 'Info', headers)
         
             self._tableModel = BaseSTDMTableModel(entity_records_collection,
                                                   self._headers, self)
@@ -452,7 +449,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
             #Get the first selected id
             selId = selIDs[0]
             self.recordSelected.emit(selId)
-            self._notifBar.insertInfoNotification(
+            self._notifBar.insertSuccessNotification(
                 QApplication.translate('EntityBrowser',
                                        'Record has been selected')
             )
@@ -529,8 +526,8 @@ class EntityBrowserWithEditor(EntityBrowser):
         '''
         addEntityDlg = self._editor_dlg(self._entity, parent=self)
 
-            
         result = addEntityDlg.exec_()
+        addEntityDlg.adjustSize()
         
         if result == QDialog.Accepted:
             model_obj = addEntityDlg.model()
@@ -630,7 +627,7 @@ class EntityBrowserWithEditor(EntityBrowser):
                 #User notification
                 delMsg = QApplication.translate("EntityBrowserWithEditor", 
                                          "Record has been successfully deleted!")
-                self._notifBar.insertInfoNotification(delMsg)     
+                self._notifBar.insertSuccessNotification(delMsg)
 
     def onDoubleClickView(self, modelindex):
         '''
