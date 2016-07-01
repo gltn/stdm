@@ -552,6 +552,18 @@ class STDMQGISLoader(object):
 
         if self.configuration_file_updater.load():
 
+            if self.configuration_file_updater.check_version():
+                return True
+            else:
+                if QMessageBox.information(None, "Update STDM Config",
+                                        "Do you want to backup your data?",
+                                            QMessageBox.Yes |
+                                        QMessageBox.No) == QMessageBox.Yes:
+                    pass
+                else:
+                    # Update .stc version to stdm instance version
+                    return True
+
             try:
                 self.config_serializer.load()
             except IOError as io_err:
@@ -572,18 +584,6 @@ class STDMQGISLoader(object):
                 )
 
                 return False
-
-            if self.configuration_file_updater.check_version():
-                return True
-            else:
-                if QMessageBox.information(None, "Update STDM Config",
-                                        "Do you want to backup your data?",
-                                            QMessageBox.Yes |
-                                        QMessageBox.No) == QMessageBox.Yes:
-                    pass
-                else:
-                    # Update .stc version to stdm instance version
-                    return True
 
         else:
             return False
