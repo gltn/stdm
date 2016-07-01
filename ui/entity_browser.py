@@ -457,6 +457,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
             #Get the first selected id
             selId = selIDs[0]
             self.recordSelected.emit(selId)
+
             self._notifBar.insertInformationNotification(
                 QApplication.translate('EntityBrowser',
                                        'Record has been selected')

@@ -103,7 +103,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.str_type = self.curr_profile.\
             social_tenure.tenure_type_collection
 
-
         self.str_model, self.str_doc_model = entity_model(
             self.social_tenure, False, True
         )
@@ -224,7 +223,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         for col in entity_display_columns(self.party):
             attr = getattr(result, col)
-
             # change id to value if lookup,
             # else return the same value
             attr = lookup_id_to_value(
@@ -278,7 +276,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         # Load party table selection
         self.AddPartybtn.clicked.connect(
             lambda : self.open_entity(
-                self.party, party_table, party_data, True
+                self.party, party_table, party_data, False
             )
         )
 
@@ -391,8 +389,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :returns: None
         :rtype: NoneType
         """
-
-
         spatial_unit_data = []
         vertical_layout = QVBoxLayout(
             self.spatialUnitRecBox
@@ -440,6 +436,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                         "Please select a row you"
                         " would like to remove. "
             )
+
             notification.clear()
             notification.insertNotification(msg, ERROR)
 
@@ -648,22 +645,27 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
     def get_selected_id(self, id):
         self.sel_record_id = id
+        print "get_selected_id"
+        print self.sel_record_id
+
 
     def open_entity(self, entity, table_view, table_data, str_type=False):
 
         from .entity_browser import EntityBrowser
 
         entity_browser = EntityBrowser(entity, self, SELECT)
-        entity_browser.show()
-
         entity_browser.recordSelected.connect(self.get_selected_id)
-        entity_browser.recordSelected.connect(
-            lambda: self.add_record(table_view, entity, table_data, str_type=False)
-        )
+        status = entity_browser.exec_()
+
+        if status == 0:
+            # entity_browser.recordSelected.connect(
+            self.add_record(table_view, entity, table_data, str_type)
+            #)
         if str_type:
-            entity_browser.recordSelected.connect(
-                self.init_str_type
-            )
+            if status == 0:
+            #entity_browser.recordSelected.connect(
+                self.init_str_type()
+            #)
 
     def add_record(
             self, table_view, entity, table_data, str_type=False
@@ -686,16 +688,20 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         db_obj = db_model()
 
         if str_type:
+            print str_type
             data['social_tenure_type'] = None
         display_colums = []
         for col in entity_display_columns(entity):
             attr = getattr(db_model, col)
 
             display_colums.append(attr)
+        print "add record"
+        print self.sel_record_id
+
         result = db_obj.queryObject(display_colums).filter(
             db_model.id == self.sel_record_id
         ).all()
-
+        print result
         # print result
         # if len(result) > 0:
         #     print result
@@ -750,7 +756,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         table_view.model().layoutChanged.emit()
         self.update_table_view(table_view, str_type)
-
 
     def get_table_data(self, table_view, str_type=True):
         """
@@ -1518,6 +1523,13 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         if status:
             self.olLoaded = True
             self.overlayProperty()
+            self.spatial_unit_notice.clear()
+            msg = QApplication.translate(
+                'newSTRWiz',
+                'Web overlay may vary from actual '
+                'representation in the local map.'
+            )
+            self.spatial_unit_notice.insertWarningNotification(msg)
         else:
             self.spatial_unit_notice.clear()
             msg = QApplication.translate(
@@ -1903,7 +1915,7 @@ class FreezeTableWidget(QTableView):
         try:
             self.update_frozen_table_geometry()
         except Exception as log:
-            LOGGER.debug('FrozenTableWidget-resizeEvent(): '+str(log))
+            LOGGER.debug(str(log))
 
 
     def scrollTo(self, index, hint):
