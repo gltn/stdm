@@ -208,8 +208,6 @@ class ComposerWrapper(QObject):
         #Current template document file
         self._currDocFile = None
 
-
-
     def _remove_composer_toolbar(self, object_name):
         """
         Removes toolbars from composer window.
