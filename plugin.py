@@ -95,7 +95,9 @@ LOGGER = logging.getLogger('stdm')
 class STDMQGISLoader(object):
 
     viewSTRWin = None
-
+    STR_DISPLAY = QApplication.translate(
+        'STDMQGISLoader', 'New Social Tenure Relationship'
+    )
     def __init__(self, iface):
         self.iface = iface
 
@@ -374,8 +376,9 @@ class STDMQGISLoader(object):
                     "STDMQGISLoader",
                     'The system has detected that database table(s) required in \n'
                     'in the Social Tenure Relationship is/are missing.\n'
-                    'Missing table(s) - '+missing_tables+'\n'+
-                    'Do you want to re-run the Configuration Wizard now?'
+                    'Missing table(s) - {}\n'+
+                    'Do you want to re-run the Configuration Wizard now?'.
+                    format(missing_tables)
                 )
                 database_check = QMessageBox.critical(
                     self.iface.mainWindow(),
@@ -396,8 +399,10 @@ class STDMQGISLoader(object):
                 message = QApplication.translate(
                     "STDMQGISLoader",
                     'The system has detected that a required database table - \n'
-                    +entity.short_name+ ' is missing. \n'+
-                    'Do you want to re-run the Configuration Wizard now?'
+                    '{} is missing. \n'+
+                    'Do you want to re-run the Configuration Wizard now?'.format(
+                        entity.short_name
+                    )
                 )
                 database_check = QMessageBox.critical(
                     self.iface.mainWindow(),
@@ -517,6 +522,7 @@ class STDMQGISLoader(object):
 
         #Create content menu container
         contentBtn = QToolButton()
+
         contentObjName = QApplication.translate("ToolbarAdminSettings","Entities")
         #Required by module loader for those widgets that need to be inserted into the container
         contentBtn.setObjectName(contentObjName)
@@ -531,10 +537,6 @@ class STDMQGISLoader(object):
         stdmEntityMenu.setObjectName("STDMEntityMenu")
         stdmEntityMenu.setIcon(QIcon(":/plugins/stdm/images/icons/entity_management.png"))
         stdmEntityMenu.setTitle(QApplication.translate("STDMEntityMenu","Entities"))
-
-        #Separator definition
-        tbSeparator = QAction(self.iface.mainWindow())
-        tbSeparator.setSeparator(True)
 
         #Define actions
         self.contentAuthAct = QAction(
@@ -601,8 +603,8 @@ class STDMQGISLoader(object):
         self.saveEditsAct = QAction(QIcon(":/plugins/stdm/images/icons/save_tb.png"), \
         QApplication.translate("CreateFeatureAction","Save Edits"), self.iface.mainWindow())
 
-        self.newSTRAct = QAction(QIcon(":/plugins/stdm/images/icons/new_str.png"), \
-        QApplication.translate("NewSTRToolbarAction","New Social Tenure Relationship"), self.iface.mainWindow())
+        # self.newSTRAct = QAction(QIcon(":/plugins/stdm/images/icons/new_str.png"), \
+        # QApplication.translate("NewSTRToolbarAction","New Social Tenure Relationship"), self.iface.mainWindow())
 
         self.viewSTRAct = QAction(QIcon(":/plugins/stdm/images/icons/view_str.png"), \
         QApplication.translate("ViewSTRToolbarAction","View Social Tenure Relationship"),
@@ -632,7 +634,7 @@ class STDMQGISLoader(object):
 
         self.wzdAct.triggered.connect(self.load_config_wizard)
 
-        self.newSTRAct.triggered.connect(self.newSTR)
+        # self.newSTRAct.triggered.connect(self.newSTR)
         self.viewSTRAct.triggered.connect(self.onViewSTR)
 
         #Create content items
@@ -694,36 +696,31 @@ class STDMQGISLoader(object):
         if self.user_entities() is not None:
             user_entities = dict(self.user_entities())
             for i, (name, short_name) in enumerate(user_entities.iteritems()):
-                display_name = QT_TRANSLATE_NOOP("Entities",
-                                                 unicode(short_name).replace("_", " ").title())
-                if display_name != 'Social Tenure Relationship':
-                    self._moduleItems[display_name] = name
-            # Add social tenure at last in the dict
-            str_display_name = QT_TRANSLATE_NOOP(
-                "Entities",
-                unicode(
-                    self.current_profile.social_tenure.short_name
-                ).replace("_", " ").title()
-            )
-            self._moduleItems[str_display_name] = self.current_profile.social_tenure.name
-
+                display_name = QApplication.translate(
+                    "Entities",
+                    unicode(short_name).replace("_", " ").title()
+                )
+                self._moduleItems[display_name] = name
 
         for k, v in self._moduleItems.iteritems():
 
-            content_action = QAction(QIcon(":/plugins/stdm/images/icons/table.png"),
-                                     k, self.iface.mainWindow())
-
-            # capabilities = contentGroup(self._moduleItems[k])
-            #
-            # if capabilities:
-            moduleCntGroup = TableContentGroup(username, k, content_action)
-            # moduleCntGroup.createContentItem().code = capabilities[0]
-            # moduleCntGroup.readContentItem().code = capabilities[1]
-            # moduleCntGroup.updateContentItem().code = capabilities[2]
-            # moduleCntGroup.deleteContentItem().code = capabilities[3]
-            moduleCntGroup.register()
-            self._reportModules[k] = self._moduleItems.get(k)
+            moduleCntGroup = self._create_table_content_group(k, username, 'table.png')
+            self._reportModules[k] = v
             self.moduleContentGroups.append(moduleCntGroup)
+
+        #create a separator
+        tbSeparator = QAction(self.iface.mainWindow())
+        tbSeparator.setSeparator(True)
+
+        # add separator to menu
+        separator_group = TableContentGroup(username, k, tbSeparator)
+        separator_group.register()
+        self.moduleContentGroups.append(separator_group)
+
+        moduleCntGroup = self._create_table_content_group(
+            self.STR_DISPLAY, username, 'new_str.png'
+        )
+        self.moduleContentGroups.append(moduleCntGroup)
 
         #Create content groups and add items
         self.contentAuthCntGroup = ContentGroup(username)
@@ -857,6 +854,16 @@ class STDMQGISLoader(object):
 
         self.profile_status_message()
 
+    def _create_table_content_group(self, k, username, icon):
+        content_action = QAction(
+            QIcon(":/plugins/stdm/images/icons/{}".format(icon)),
+            k,
+            self.iface.mainWindow()
+        )
+        moduleCntGroup = TableContentGroup(username, k, content_action)
+        moduleCntGroup.register()
+        return moduleCntGroup
+
     def create_spatial_unit_manager(self):
         self.remove_spatial_unit_mgr()
 
@@ -931,7 +938,7 @@ class STDMQGISLoader(object):
         profile_name = self.current_profile.name
         message = QApplication.translate(
             'STDMPlugin',
-            'The currently loaded STDM profile is '+profile_name+'.'
+            'Current STDM Profile: {}'.format(profile_name)
         )
 
         if self.profile_status_label.parent() is None:
@@ -968,15 +975,30 @@ class STDMQGISLoader(object):
             save_current_profile(sel_profile)
 
         self.current_profile = current_profile()
+        LOGGER.debug(
+            'STDMQGISLoader-reload_plugin() - '
+            'Successfully changed '
+            'the current profile to {}'.format(
+                self.current_profile.name
+            )
+        )
         try:
             self.loadModules()
+            LOGGER.debug(
+                'STDMQGISLoader-reload_plugin() - '
+                'Successfully reloaded all modules.'
+            )
         except SQLAlchemyError as ex:
-            LOGGER.debug('SQLAlchemyError: ' + str(ex))
+            LOGGER.debug(
+                str(ex)
+            )
             STDMDb.instance().session.rollback()
             self.loadModules()
 
         except Exception as ex:
-            LOGGER.debug('Error Loading Modules: ' + str(ex))
+            LOGGER.debug(
+                'Error Loading Modules: {}'.format(str(ex))
+            )
             self.loadModules()
 
     def load_config_wizard(self):
@@ -1444,7 +1466,7 @@ class STDMQGISLoader(object):
 
         dispName=QAction.text()
 
-        if dispName == 'Social Tenure Relationship':
+        if dispName == self.STR_DISPLAY:
 
             if self.current_profile is None:
                 self.default_profile()
@@ -1546,7 +1568,7 @@ class STDMQGISLoader(object):
             self.initMenuItems()
             self.loginAct.setEnabled(True)
         except Exception as ex:
-            LOGGER.debug(unicode('logout:')+unicode(ex))
+            LOGGER.debug(unicode(ex))
 
 
     def removeSTDMLayers(self):
@@ -1593,7 +1615,7 @@ class STDMQGISLoader(object):
             self.current_profile = None
 
         except Exception as ex:
-            LOGGER.debug(unicode('logoutCleanUp:') + unicode(ex))
+            LOGGER.debug(unicode(ex))
 
     def remove_spatial_unit_mgr(self):
         """
@@ -1612,15 +1634,13 @@ class STDMQGISLoader(object):
         Create a handler to read the current profile
         and return the table list
         """
-
         if self.current_profile is not None:
             return [
                 (e.name, e.short_name)
                 for e in
                 self.current_profile.entities.values()
-                if (e.TYPE_INFO == 'ENTITY' or
-                    e.TYPE_INFO == 'SOCIAL_TENURE') and
-                not e.has_geometry_column()
+                if (e.TYPE_INFO == 'ENTITY' and
+                not e.has_geometry_column())
             ]
 
 

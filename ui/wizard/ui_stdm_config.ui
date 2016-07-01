@@ -1082,7 +1082,7 @@
       <item>
        <widget class="QCheckBox" name="cbMultiParty">
         <property name="text">
-         <string>Allow party to be linked to multiple spatial unit in social tenure relationship</string>
+         <string>Allow a spatial unit to be linked to multiple party in social tenure relationship</string>
         </property>
        </widget>
       </item>

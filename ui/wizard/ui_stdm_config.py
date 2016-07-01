@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_stdm_config.ui'
 #
-# Created: Wed Jun 22 12:27:41 2016
+# Created: Wed Jun 29 10:25:43 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -552,7 +552,7 @@ class Ui_STDMWizard(object):
         self.wpSTR.setTitle(_translate("STDMWizard", "Defining Social Tenure Tables", None))
         self.wpSTR.setSubTitle(_translate("STDMWizard", "Define entities to participate in Social Tenure Relations views", None))
         self.label_5.setText(_translate("STDMWizard", "Party entity in the STR definition", None))
-        self.cbMultiParty.setText(_translate("STDMWizard", "Allow party to be linked to multiple spatial unit in social tenure relationship", None))
+        self.cbMultiParty.setText(_translate("STDMWizard", "Allow a spatial unit to be linked to multiple party in social tenure relationship", None))
         self.label_6.setText(_translate("STDMWizard", "Spatial unit entity in the STR definition", None))
         self.wpSaveProfile.setTitle(_translate("STDMWizard", "Save configuration", None))
         self.wpSaveProfile.setSubTitle(_translate("STDMWizard", "Click finish to save changes in your configuration to the database.  ", None))

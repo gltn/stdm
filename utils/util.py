@@ -464,8 +464,8 @@ def profile_user_tables(profile, include_views=True):
             'SUPPORTING_DOCUMENT'
         ]
     ]
+    tables = dict(tables)
     if include_views:
-        tables = dict(tables)
         for view in pg_views():
             tables[view] = view
 

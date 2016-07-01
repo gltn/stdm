@@ -70,7 +70,7 @@ from .sourcedocument import (
     SourceDocumentManager,
     DocumentWidget
 )
-from .str_editor import SocialTenureEditor
+
 from ui_view_str import Ui_frmManageSTR
 from ui_str_view_entity import Ui_frmSTRViewEntity
 
@@ -122,6 +122,12 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             }
             '''
         )
+
+        # Configure notification bar
+        self._notif_search_config = NotificationBar(
+            self.vl_notification
+        )
+
         # set whether currently logged in user has
         # permissions to edit existing STR records
         self._can_edit = self._plugin.STRCntGroup.canUpdate()
@@ -148,6 +154,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             self.str_doc_model,
             self
         )
+
         self._source_doc_manager.documentRemoved.connect(
             self.onSourceDocumentRemoved
         )
@@ -155,6 +162,82 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self._source_doc_manager.setEditPermissions(self._can_edit)
 
         self.initGui()
+    
+    def add_tool_buttons(self):
+        """
+        Add toolbar buttons of add, edit and delete buttons.
+        :return: None
+        :rtype: NoneType
+        """
+        tool_buttons = QToolBar()
+        tool_buttons.setObjectName('form_toolbar')
+        tool_buttons.setIconSize(QSize(16, 16))
+        tool_buttons.setToolButtonStyle(
+            Qt.ToolButtonTextBesideIcon
+        )
+
+        self.addSTR = QAction(QIcon(
+            ':/plugins/stdm/images/icons/add.png'),
+            QApplication.translate('ViewSTRWidget', 'Add'),
+            self
+        )
+        self.addSTR.setObjectName('add_str')
+
+        self.editSTR = QAction(
+            QIcon(':/plugins/stdm/images/icons/edit.png'),
+            QApplication.translate('ViewSTRWidget', 'Edit'),
+            self
+        )
+        self.editSTR.setObjectName('edit_str')
+
+        self.deleteSTR = QAction(
+            QIcon(':/plugins/stdm/images/icons/remove.png'),
+            QApplication.translate('ViewSTRWidget', 'Remove'),
+            self
+        )
+        self.deleteSTR.setObjectName('delete_str')
+
+        tool_buttons.addAction(self.addSTR)
+        tool_buttons.addAction(self.editSTR)
+        tool_buttons.addAction(self.deleteSTR)
+
+        tool_buttons.setStyleSheet(
+            '''
+                QToolButton {
+                    border: 1px inset #777;
+                    border-radius: 2px;
+                    text-align: center;
+                    padding-top: 3px;
+                    padding-bottom: 3px;
+
+                    background-color: qlineargradient(
+                        x1: 0, y1: 0, x2: 0, y2: 1,
+                        stop: 0 #f6f7fa, stop: 1 #dadbde
+                    );
+                }
+                QToolButton[text='Add']{
+                    width:70px;
+                    padding-left: 20%;
+                }
+
+                QToolButton[text='Edit']{
+                    width:70px;
+                    padding-left: 18%;
+                }
+                QToolButton[text='Remove']{
+                    width:70px;
+                    padding-left: 10%;
+                    padding-right: 10%;
+                }
+                QToolButton:pressed {
+                    background-color: qlineargradient(
+                        x1: 0, y1: 0, x2: 0, y2: 1,
+                        stop: 0 #dadbde, stop: 1 #f6f7fa
+                    );
+                }
+            '''
+        )
+        self.toolbarVBox.addWidget(tool_buttons)
 
     def initGui(self):
         """
@@ -162,7 +245,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         """
         self.tb_actions.setVisible(False)
         self._load_entity_configurations()
-
+        self.add_tool_buttons()
         #self.gb_supporting_docs.setCollapsed(True)
 
         #Connect signals
@@ -170,9 +253,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self.btnSearch.clicked.connect(self.searchEntityRelations)
         self.btnClearSearch.clicked.connect(self.clearSearch)
         self.tvSTRResults.expanded.connect(self.onTreeViewItemExpanded)
-
-        #Configure notification bar
-        self._notif_search_config = NotificationBar(self.vl_notification)
 
         #Set the results treeview to accept requests for context menus
         self.tvSTRResults.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -192,11 +272,11 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         else:
             self.deleteSTR.setDisabled(True)
 
-        self.addSTR.clicked.connect(self.load_new_str_wiz)
+        self.addSTR.triggered.connect(self.load_new_str_wiz)
 
-        self.deleteSTR.clicked.connect(self.delete_str)
+        self.deleteSTR.triggered.connect(self.delete_str)
 
-        self.editSTR.clicked.connect(self.load_edit_str_wiz)
+        self.editSTR.triggered.connect(self.load_edit_str_wiz)
 
         #Load async for the current widget
         self.entityTabIndexChanged(0)
@@ -214,7 +294,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             for c in self.spatial_unit.columns.values()
             if c.TYPE_INFO == 'GEOMETRY'
         ]
-        spatial_unit_item = unicode(table + '.'+spatial_column[0])
+        spatial_unit_item = unicode('{}.{}'.format(table, spatial_column[0]))
         index = sp_unit_manager.stdm_layers_combo.findText(
             spatial_unit_item, Qt.MatchFixedString
         )
@@ -267,8 +347,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                     )
 
         except Exception as pe:
-            self._notif_bar.clear()
-            self._notif_bar.insertErrorNotification(pe.message)
+            self._notif_search_config.clear()
+            self._notif_search_config.insertErrorNotification(pe.message)
 
     def _entity_config_from_profile(self, table_name, short_name):
         """
@@ -350,8 +430,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             #Show error message
             if len(results) == 0:
                 noResultsMsg = QApplication.translate(
-                    "ViewSTR",
-                    "No results found for '" + searchWord + "'"
+                    'ViewSTR',
+                    'No results found for "{}"'.format(searchWord)
                 )
                 self._notif_search_config.clear()
                 self._notif_search_config.insertErrorNotification(
@@ -683,9 +763,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                         doc, doc_type_id
                     )
                 except Exception as ex:
-                    LOGGER.debug(
-                        'ViewSTR-Load_source_document: '+str(ex)
-                    )
+                    LOGGER.debug(str(ex))
 
             self.tbSupportingDocs.addTab(
                 tab_widget, tab_title

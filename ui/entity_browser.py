@@ -58,7 +58,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
     recordSelected = pyqtSignal(int)
     
     def __init__(self, entity, parent=None, state=MANAGE):
-        QDialog.__init__(self, parent)
+        QDialog.__init__(self,parent)
         self.setupUi(self)
         SupportsManageMixin.__init__(self, state)
 
@@ -75,7 +75,10 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
 
         #ID of a record to select once records have been added to the table
         self._select_item = None
-        
+        # Add maximize buttons
+        self.setWindowFlags(self.windowFlags() |
+                            Qt.WindowSystemMenuHint |
+                            Qt.WindowMaximizeButtonHint)
         #Connect signals
         self.buttonBox.accepted.connect(self.onAccept)
         self.tbEntity.doubleClicked[QModelIndex].connect(self.onDoubleClickView)
@@ -300,6 +303,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
             return
 
         else:
+
             self._init_entity_columns()
             '''
             Load entity data. There might be a better way in future in order to ensure that
@@ -346,6 +350,9 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
                 
             #Set maximum value of the progress dialog
             progressDialog.setValue(numRecords)
+
+            headers = ','.join(self._headers)
+            #QMessageBox.information(self, 'Info', headers)
         
             self._tableModel = BaseSTDMTableModel(entity_records_collection,
                                                   self._headers, self)
@@ -374,7 +381,8 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
             self.tbEntity.hideColumn(0)
             
             self.tbEntity.horizontalHeader().setResizeMode(QHeaderView.Interactive)
-            
+
+            self.tbEntity.resizeColumnsToContents()
             #Connect signals
             self.connect(self.cboFilterColumn, SIGNAL('currentIndexChanged (int)'), self.onFilterColumnChanged)
             self.connect(self.txtFilterPattern, SIGNAL('textChanged(const QString&)'), self.onFilterRegExpChanged)
@@ -449,7 +457,8 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
             #Get the first selected id
             selId = selIDs[0]
             self.recordSelected.emit(selId)
-            self._notifBar.insertSuccessNotification(
+
+            self._notifBar.insertInformationNotification(
                 QApplication.translate('EntityBrowser',
                                        'Record has been selected')
             )
@@ -498,10 +507,33 @@ class EntityBrowserWithEditor(EntityBrowser):
         #Add action toolbar if the state contains Manage flag
         if (state & MANAGE) != 0:
             tbActions = QToolBar()
-            tbActions.setIconSize(QSize(16,16))
-            
+            tbActions.setObjectName('form_toolbar')
+            tbActions.setIconSize(QSize(16, 16))
+            tbActions.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+            tbActions.setStyleSheet(
+                '''
+                    QToolButton {
+                        border: 1px inset #777;
+                        border-radius: 2px;
+                        padding: 3px;
+                        background-color: qlineargradient(
+                            x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #f6f7fa, stop: 1 #dadbde
+                        );
+                    }
+
+                    QToolButton:pressed {
+                        background-color: qlineargradient(
+                            x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #dadbde, stop: 1 #f6f7fa
+                        );
+                    }
+
+                '''
+            )
             self._newEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/add.png"),
-                                  QApplication.translate("EntityBrowserWithEditor", "New"),self)
+                                  QApplication.translate("EntityBrowserWithEditor", "Add"), self)
+
             self.connect(self._newEntityAction,SIGNAL("triggered()"),self.onNewEntity)
             
             self._editEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/edit.png"),
@@ -519,7 +551,8 @@ class EntityBrowserWithEditor(EntityBrowser):
             self.vlActions.addWidget(tbActions)
             
             self._editor_dlg = EntityEditorDialog
-            
+
+
     def onNewEntity(self):
         '''
         Load editor dialog for adding a new record.
@@ -527,7 +560,6 @@ class EntityBrowserWithEditor(EntityBrowser):
         addEntityDlg = self._editor_dlg(self._entity, parent=self)
 
         result = addEntityDlg.exec_()
-        addEntityDlg.adjustSize()
         
         if result == QDialog.Accepted:
             model_obj = addEntityDlg.model()
@@ -627,7 +659,7 @@ class EntityBrowserWithEditor(EntityBrowser):
                 #User notification
                 delMsg = QApplication.translate("EntityBrowserWithEditor", 
                                          "Record has been successfully deleted!")
-                self._notifBar.insertSuccessNotification(delMsg)
+                self._notifBar.insertInformationNotification(delMsg)
 
     def onDoubleClickView(self, modelindex):
         '''
