@@ -180,18 +180,28 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         self.partyRecBox.setLayout(vertical_layout)
 
-        # Make the party table one row
-        party_fk_mapper._tbFKEntity.setMinimumSize(QSize(55, 30))
-        party_fk_mapper._tbFKEntity.setMaximumSize(QSize(5550, 75))
-        spacer = QSpacerItem(
-            20, 250, QSizePolicy.Minimum, QSizePolicy.Expanding
-        )
-        self.verticalLayout_2.addItem(spacer)
         party_fk_mapper.setEntities(party_model_obj)
 
         self.init_str_type(party_model_obj, party_fk_mapper, str_type_id, 0)
         self.party_signals(party_fk_mapper)
+        self.resize_to_single_row(party_fk_mapper, self.verticalLayout_2)
 
+    def resize_to_single_row(self, fk_mapper, layout, height=265):
+        """
+        Reduce the table to one row.
+        :param fk_mapper: Foreign Key mapper class
+        :type fk_mapper: Object
+        :param layout: layout container of the spacer
+        :type layout: QVBoxLayout
+        :return: None
+        :rtype: NoneType
+        """
+        fk_mapper._tbFKEntity.setMinimumSize(QSize(55, 30))
+        fk_mapper._tbFKEntity.setMaximumSize(QSize(5550, 100))
+        spacer = QSpacerItem(
+            20, height, QSizePolicy.Minimum, QSizePolicy.Expanding
+        )
+        layout.addItem(spacer)
 
     def init_spatial_unit_edit(self):
 
@@ -210,15 +220,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         self.spatialUnitRecBox.setLayout(vertical_layout)
 
-        # # Make the spatial unit table one row
-        sp_unit_fk_mapper._tbFKEntity.setMinimumSize(QSize(55, 30))
-        sp_unit_fk_mapper._tbFKEntity.setMaximumSize(QSize(5550, 75))
-        spacer = QSpacerItem(
-            20, 250, QSizePolicy.Minimum, QSizePolicy.Expanding
-        )
-        self.verticalLayout_10.addItem(spacer)
         sp_unit_fk_mapper.setEntities(spatial_unit_model_obj)
         self.spatial_unit_signals(sp_unit_fk_mapper)
+        self.resize_to_single_row(
+            sp_unit_fk_mapper, self.verticalLayout_10, 220
+        )
 
     def set_model_obj(self, model_obj, sel_models_cont):
         if sel_models_cont == self.sel_spatial_unit:
@@ -330,6 +336,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         self.party_signals(party_fk_mapper)
 
+        if not self.social_tenure.multi_party:
+            self.resize_to_single_row(
+                party_fk_mapper, self.verticalLayout_2
+            )
+
     def init_spatial_unit_add(self):
         """
         Initialize the spatial unit page.
@@ -350,7 +361,9 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.spatialUnitRecBox.setLayout(vertical_layout)
 
         self.spatial_unit_signals(sp_fk_mapper)
-
+        self.resize_to_single_row(
+            sp_fk_mapper, self.verticalLayout_10, 250
+        )
 
     def remove_row(self, rows, sel_record):
         """

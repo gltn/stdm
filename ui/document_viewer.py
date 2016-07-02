@@ -293,15 +293,6 @@ class DocumentViewer(QMdiSubWindow):
         self._view_widget.set_actions(self.systemMenu())
         self.setWidget(self._view_widget)
 
-    def get_ratio(self, doc_width, doc_height):
-        par_height = self.mdi_area.height()
-        par_width = self.mdi_area.width()
-
-        ratio_list = [par_width / doc_width, par_height / doc_height]
-        ratio = min(ratio_list)
-        return ratio
-
-
     def load_document(self,doc_path):
         """
         Displays the document content using the specified document path.
@@ -316,13 +307,25 @@ class DocumentViewer(QMdiSubWindow):
             self.update_size(self.doc_width, self.doc_height)
 
     def update_size(self, doc_width, doc_height):
-
+        """
+        Updates the size of the image contain
+        based on the document viewer size.
+        :param doc_width: The width of the image
+        :type doc_width: Integer
+        :param doc_height: The height of the image
+        :type doc_height: Integer
+        :return: None
+        :rtype: NoneType
+        """
         par_height = self.mdi_area.height()
         par_width = self.mdi_area.width()
 
         ratio_list = [par_width / doc_width, par_height / doc_height]
         ratio = min(ratio_list)
-        self.resize(doc_width * ratio, doc_height * ratio)
+        if par_height > doc_height and par_width > doc_width:
+            self.resize(doc_width, doc_height)
+        else:
+            self.resize(doc_width * ratio, doc_height * ratio)
 
     def closeEvent(self, event):
         """

@@ -255,10 +255,9 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         self.tabWidget.currentChanged.connect(self.on_tab_index_changed)
         self.chk_template_datasource.stateChanged.connect(self.on_use_template_datasource)
 
-    # def add_entity_configuration(self, **kwargs):
-    #     ent_config = EntityConfig(**kwargs)
-    #
-    #     self.add_entity_config(ent_config)
+    def add_entity_configuration(self, **kwargs):
+        ent_config = EntityConfig(**kwargs)
+        self.add_entity_config(ent_config)
 
     def add_entity_config(self, ent_config):
 
@@ -350,17 +349,18 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         self.lstDocNaming.load_mapping(attr_mapping, True)
 
     def _create_fk_mapper(self, config):
-        fk_mapper = ForeignKeyMapper(config.ds_entity, self.tabWidget, self._notif_bar)
+        fk_mapper = ForeignKeyMapper(
+            config.ds_entity,
+            self.tabWidget,
+            self._notif_bar,
+            True,
+            True
+        )
 
         fk_mapper.setDatabaseModel(config.model())
-        #fk_mapper.set_data_source_name(config.data_source())
         fk_mapper.setSupportsList(True)
         fk_mapper.setDeleteonRemove(False)
-        fk_mapper.set_expression_builder(config.expression_builder())
-        #fk_mapper.setEntitySelector(config.entity_selector())
         fk_mapper.setNotificationBar(self._notif_bar)
-        #fk_mapper.setCellFormatters(config.formatters())
-        #fk_mapper.initialize()
 
         return fk_mapper
             
