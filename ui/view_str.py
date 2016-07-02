@@ -209,7 +209,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                     text-align: center;
                     padding-top: 3px;
                     padding-bottom: 3px;
-
+                    margin-right:4px;
                     background-color: qlineargradient(
                         x1: 0, y1: 0, x2: 0, y2: 1,
                         stop: 0 #f6f7fa, stop: 1 #dadbde

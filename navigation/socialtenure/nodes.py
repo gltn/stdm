@@ -18,6 +18,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+import os
 from collections import OrderedDict
 from decimal import Decimal
 
@@ -39,10 +40,14 @@ from PyQt4.QtCore import (
 from qgis.core import *
 import qgis.utils
 from stdm.utils import *
-
+from stdm.ui.sourcedocument import source_document_location
+from stdm.settings import current_profile
 from stdm.ui.new_str_wiz import newSTRWiz
-from stdm.utils.util import gen_random_string
 
+from stdm.utils.util import (
+    gen_random_string,
+    entity_id_to_attr
+)
 EDIT_ICON = QIcon(":/plugins/stdm/images/icons/edit.png")
 DELETE_ICON = QIcon(":/plugins/stdm/images/icons/delete.png")
 NO_ACTION_ICON = QIcon(":/plugins/stdm/images/icons/no_action.png")
@@ -603,11 +608,11 @@ class STRNode(EntityNode):
         """
         del_msg = QApplication.translate("STRNode",
                                      "This action will remove the social tenure relationship and dependent "
-                                     "supporting documents from the database. This action cannot be undone "
-                                     "and once removed, it can"
+                                     "supporting documents from the database and the disk. "
+                                     "This action cannot be undone and once removed, it can"
                                      " only be recreated through"
-                                     " the  new 'Social Tenure Relationship' "
-                                     "wizard. Would you like to proceed?"
+                                     " the 'New Social Tenure Relationship' wizard."
+                                     "Would you like to proceed?"
                                      "\nClick Yes to proceed or No to cancel.")
         del_result = QMessageBox.warning(self.parentWidget(),
                                         QApplication.translate("STRNode",
@@ -617,6 +622,7 @@ class STRNode(EntityNode):
 
         if del_result == QMessageBox.Yes:
             model = self._view.model()
+            self.delete_document_file(self._model.documents)
             model.removeAllChildren(index.row(), self.childCount(), index.parent())
 
             #Remove source documents listings
@@ -628,6 +634,35 @@ class STRNode(EntityNode):
 
             #Notify model that we have inserted a new child i.e. NoSTRNode
             model.insertRows(index.row(), 1, index.parent())
+
+    def delete_document_file(self, model_obj_list):
+        """
+        Loops through the deleted document models and delete associated files.
+        :param model_obj_list: List of document model objects
+        :type model_obj_list: List
+        :return: None
+        :rtype: NoneType
+        """
+        for model in model_obj_list:
+            extension = model.filename[model.filename.rfind('.'):]
+            # print 'Generating thumbnail'
+            curr_profile = current_profile()
+            doc_id = model.document_type
+
+            doc_type_entity = curr_profile.social_tenure.\
+                supporting_doc.document_type_entity
+            doc_type_val = entity_id_to_attr(
+                doc_type_entity, 'value', doc_id
+            )
+            doc_path = '{}/{}/{}/{}/{}{}'.format(
+                source_document_location(),
+                unicode(curr_profile.name),
+                unicode(model.source_entity),
+                unicode(doc_type_val),
+                unicode(model.document_identifier),
+                unicode(extension)
+            )
+            os.remove(doc_path)
 
     def manageActions(self, model_index, menu):
         """
