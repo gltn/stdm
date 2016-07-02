@@ -240,9 +240,8 @@ class SourceDocumentManager(QObject):
                         )
                         return
 
-
-
                     for i in range(record_count):
+
                         # Use the default network file manager
                         networkManager = NetworkFileManager(
                             network_location, self.parent()
@@ -765,6 +764,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
         return self._srcDoc
 
+
     def set_thumbnail(self):
         """
         Sets thumbnail to the document widget by
@@ -773,7 +773,8 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         :rtype: NoneType
         """
         extension = self._displayName[self._displayName.rfind('.'):]
-
+        # print 'Generating thumbnail'
+        #print self.fileUUID
         doc_path = '{}/{}/{}/{}/{}{}'.format(
             source_document_location(),
             unicode(self.curr_profile.name),
@@ -816,13 +817,11 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
                                    'text-decoration: underline;' \
                                    'color:#5555ff;"' \
                        '>' \
-                       '{}' \
-                       '</span>' \
+                       '{}</span>' \
                        '<span ' \
                             'style="font-weight:600;' \
                             'color:#8f8f8f;"' \
-                       '>&nbsp;' \
-                            '({})' \
+                       '>&nbsp;({})' \
                        '</span>' \
                        '</p>' \
                    '</body>' \
@@ -871,7 +870,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
             workerThread.start()
             # Call transfer() to get fileUUID early
-            docWorker.transfer()
+            #docWorker.transfer()
             self.fileUUID = docWorker.file_uuid
 
     def onBlockWritten(self,size):
@@ -880,6 +879,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         Updates the progress bar with the bytes transferred as a percentage.
         """
         progress = (size * 100)/self._docSize
+        #print progress
         self.pgBar.setValue(progress)
 
     def onCompleteTransfer(self, fileid):
