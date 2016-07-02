@@ -210,6 +210,11 @@ class ForeignKeyMapper(QWidget):
                     width:70px;
                     padding-left: 18%;
                 }
+                QToolButton[text='Filter']{
+                    width:70px;
+                    padding-left: 16%;
+                }
+
                 QToolButton[text='Remove']{
                     width:70px;
                     padding-left: 9%;
