@@ -537,6 +537,7 @@ class EntityBrowserWithEditor(EntityBrowser):
                 QToolButton {
                     border: 1px inset #777;
                     border-radius: 2px;
+                    width:70px;
                     text-align: center;
                     padding-top: 3px;
                     padding-bottom: 3px;
