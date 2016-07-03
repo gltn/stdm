@@ -31,13 +31,14 @@ from stdm.data.configuration.entity import *
 from stdm.data.configuration.db_items import DbItem
 
 class EntityEditor(QDialog, Ui_dlgEntity):
-    def __init__(self, parent, profile, entity=None):
+    def __init__(self, parent, profile, entity=None, in_db=False):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
 	self.profile = profile
 	self.form_parent = parent
         self.entity = entity
+        self.in_db = in_db
 
         self.initGui()
 
@@ -49,6 +50,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
             self.edtDesc.setText(self.entity.description)
             self.cbSupportDoc.setCheckState( \
                     self.bool_to_check(self.entity.supports_documents))
+        self.edtTable.setEnabled(not self.in_db)
        
     def setLookupTable(self):
         '''def add lookup table'''
@@ -67,35 +69,28 @@ class EntityEditor(QDialog, Ui_dlgEntity):
 	formatted_name = formatted_name.replace(' ', "_")
 	return formatted_name.lower()
     
-    def add_entity(self):
-        entity_name = unicode(self.edtTable.text()).capitalize()
+    def add_entity(self, entity_name):
+        """
+        Creates and adds a new entity to a profile
+        :param entity_name: name of the new entity
+        :type entity_name: str
+        """
+        self.entity = self._create_entity(entity_name)
+        self.profile.add_entity(self.entity)
+        return True
 
-        if self.entity is None:
-            if self.profile.entities.has_key(entity_name):
-                # if entity exist and action is "DROP", replace it
-                entity = self.profile.entity(entity_name)
-                if entity.action <> DbItem.DROP:
-                    self.error_message(QApplication.translate("EntityEditor", "Entity with the same name already exist!"))
-                    return False
-
-            self.entity = self._create_entity(entity_name)
-            self.profile.add_entity(self.entity)
-            #return True
-        else:
-            self.profile.remove_entity(self.entity.short_name)
-            self.entity = self._create_entity(entity_name)
-            self.profile.add_entity(self.entity)
+    def dup_check(self, name):
+        """
+        Return True if we have an entity in the current profile with same name
+        as the new entity name
+        :param name: entity name
+        :type name: str
+        """
+        if self.profile.entities.has_key(name):
             return True
+        else:
+            return False
 
-            #if self.entity.short_name == entity_name:
-                #self.entity.description = self.edtDesc.text()
-                #self.entity.supports_documents = self.support_doc()
-                #return False
-            #else:
-                #self.profile.remove_entity(self.entity.short_name)
-                #self.entity = self._create_entity(entity_name)
-                #self.profile.add_entity(self.entity)
-                #return True
 
     def _create_entity(self, name):
         entity = self.profile.create_entity(name, entity_factory,
@@ -120,7 +115,16 @@ class EntityEditor(QDialog, Ui_dlgEntity):
             self.error_message(QApplication.translate("EntityEditor","Please enter an entity name"))
             return
 
-        if self.add_entity():
+        entity_name = unicode(self.edtTable.text()).capitalize()
+
+        if self.entity is None:
+            if self.dup_check(entity_name):
+                self.error_message(self.tr("Entity with the same name already exist!"))
+                return
+        else:
+            self.profile.remove_entity(self.entity.short_name)
+
+        if self.add_entity(entity_name):
             self.done(1)
         else:
             self.done(0)

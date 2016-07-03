@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_column_depend.ui'
 #
-# Created: Tue Jun 14 17:54:17 2016
+# Created: Thu Jun 30 11:09:09 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -90,4 +90,4 @@ class Ui_dlgColumnDepend(object):
         self.btnCancel.setText(_translate("dlgColumnDepend", "Cancel", None))
         self.btnDelete.setText(_translate("dlgColumnDepend", "Delete column", None))
 
-from stdm import resources_rc
+import resources_rc
