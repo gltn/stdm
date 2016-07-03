@@ -60,12 +60,20 @@ class NetworkFileManager(QObject):
         self.sourcePath = fileinfo.filePath()
         profile_name = table_to_profile_name(self._entity_source)
         root_dir = QDir(self.networkPath)
-        doc_dir = QDir(
-            self.networkPath + '/'+ profile_name + '/'
-            + self._entity_source + "/" + self._doc_type
+        doc_dir = QDir('{}/{}/{}/{}'.format(
+            self.networkPath,
+            profile_name,
+            self._entity_source,
+            self._doc_type
         )
-        doc_path_str = self.networkPath + '/'+ profile_name + '/' \
-                       + self._entity_source + "/" + self._doc_type
+
+        )
+        doc_path_str = '{}/{}/{}/{}'.format(
+            self.networkPath,
+            profile_name,
+            self._entity_source,
+            self._doc_type
+        )
 
         if not doc_dir.exists():
             res = root_dir.mkpath(doc_path_str)
@@ -86,7 +94,6 @@ class NetworkFileManager(QObject):
         
         #srcLen = self.sourceFile.bytesAvailable()
         totalRead = 0
-        
         while True:
             inbytes = srcFile.read(4096)
             if not inbytes:
@@ -173,8 +180,4 @@ class DocumentTransferWorker(QObject):
         """
         Propagate event.
         """
-        curframe = inspect.currentframe()
-
-        calframe = inspect.getouterframes(curframe, 2)
-
         self.complete.emit(file_uuid)

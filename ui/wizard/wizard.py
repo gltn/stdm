@@ -734,6 +734,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         #Exit thread
         self.updater_thread.quit()
+        self.wizardFinished.emit(self.cboProfile.currentText())
 
     def register_fields(self):
         self.setOption(self.HaveHelpButton, True)  

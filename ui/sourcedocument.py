@@ -240,9 +240,8 @@ class SourceDocumentManager(QObject):
                         )
                         return
 
-
-
                     for i in range(record_count):
+
                         # Use the default network file manager
                         networkManager = NetworkFileManager(
                             network_location, self.parent()
@@ -651,7 +650,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
                     docs.delete()
 
             except sqlalchemy.exc.SQLAlchemyError, exc:
-                LOGGER.debug('_remove_doc: '+str(exc))
+                LOGGER.debug(str(exc))
 
 
         #Emit signal to indicate the widget is ready to be removed
@@ -689,7 +688,6 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
             self._doc_type_id = doc_type_id
             self.uploadDoc()
             self.buildDisplay()
-
 
     def setModel(self, sourcedoc):
         """
@@ -765,6 +763,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
         return self._srcDoc
 
+
     def set_thumbnail(self):
         """
         Sets thumbnail to the document widget by
@@ -774,13 +773,15 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         """
         extension = self._displayName[self._displayName.rfind('.'):]
 
-        doc_path = source_document_location()+'/'+\
-                   unicode(self.curr_profile.name)+'/'+ \
-                   unicode(self._source_entity)+'/'+ \
-                   unicode(self.doc_type_value())+'/'+ \
-                   unicode(self.fileUUID)+\
-                   unicode(extension)
-
+        QApplication.processEvents()
+        doc_path = '{}/{}/{}/{}/{}{}'.format(
+            source_document_location(),
+            unicode(self.curr_profile.name),
+            unicode(self._source_entity),
+            unicode(self.doc_type_value()),
+            unicode(self.fileUUID),
+            unicode(extension)
+        )
 
         ph_image = QImage(doc_path)
         ph_pixmap = QPixmap.fromImage(ph_image)
@@ -806,9 +807,27 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         else:
             display_doc_size = '0'
 
-        html = '<html><head/><body><p><span style="font-weight:600;text-decoration: underline;' + \
-        'color:#5555ff;">'+ str(self._displayName) + '</span><span style="font-weight:600;color:#8f8f8f;">&nbsp;(' + \
-        display_doc_size + ')</span></p></body></html>'
+        html = '<html>' \
+                   '<head/>' \
+                   '<body>' \
+                       '<p>' \
+                       '<span ' \
+                            'style="font-weight:600;' \
+                                   'text-decoration: underline;' \
+                                   'color:#5555ff;"' \
+                       '>' \
+                       '{}</span>' \
+                       '<span ' \
+                            'style="font-weight:600;' \
+                            'color:#8f8f8f;"' \
+                       '>&nbsp;({})' \
+                       '</span>' \
+                       '</p>' \
+                   '</body>' \
+               '</html>'.format(
+            str(self._displayName),
+            display_doc_size
+        )
         self.lblName.setText(html)
 
         #Enable/disable close
@@ -850,7 +869,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
             workerThread.start()
             # Call transfer() to get fileUUID early
-            docWorker.transfer()
+            #docWorker.transfer()
             self.fileUUID = docWorker.file_uuid
 
     def onBlockWritten(self,size):
@@ -859,7 +878,9 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         Updates the progress bar with the bytes transferred as a percentage.
         """
         progress = (size * 100)/self._docSize
+
         self.pgBar.setValue(progress)
+        QApplication.processEvents()
 
     def onCompleteTransfer(self, fileid):
         """
@@ -868,7 +889,6 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         self.pgBar.setVisible(False)
         self.fileUUID = str(fileid)
         self.fileUploadComplete.emit()
-
 
 def source_document_location(default = "/home"):
     """

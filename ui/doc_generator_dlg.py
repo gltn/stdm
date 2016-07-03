@@ -59,7 +59,8 @@ LOGGER = logging.getLogger('stdm')
 
 class EntityConfig(object):
     """
-    Configuration class for specifying the foreign key mapper and document
+    Configuration class for specifying
+    the foreign key mapper and document
     generator settings.
     """
     def __init__(self, **kwargs):
@@ -167,7 +168,7 @@ class DocumentGeneratorDialogWrapper(object):
                     str(t.name), t.short_name
                 )
 
-                if not entity_cfg is None:
+                if entity_cfg is not None:
                     self._doc_gen_dlg.add_entity_config(entity_cfg)
 
         except Exception as pe:
@@ -256,10 +257,10 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
 
     def add_entity_configuration(self, **kwargs):
         ent_config = EntityConfig(**kwargs)
-
         self.add_entity_config(ent_config)
 
     def add_entity_config(self, ent_config):
+
         if not self._config_mapping.get(ent_config.title(), ""):
             fk_mapper = self._create_fk_mapper(ent_config)
 
@@ -348,16 +349,18 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         self.lstDocNaming.load_mapping(attr_mapping, True)
 
     def _create_fk_mapper(self, config):
-        fk_mapper = ForeignKeyMapper(self)
+        fk_mapper = ForeignKeyMapper(
+            config.ds_entity,
+            self.tabWidget,
+            self._notif_bar,
+            True,
+            True
+        )
+
         fk_mapper.setDatabaseModel(config.model())
-        fk_mapper.set_data_source_name(config.data_source())
         fk_mapper.setSupportsList(True)
         fk_mapper.setDeleteonRemove(False)
-        fk_mapper.set_expression_builder(config.expression_builder())
-        fk_mapper.setEntitySelector(config.entity_selector())
         fk_mapper.setNotificationBar(self._notif_bar)
-        fk_mapper.setCellFormatters(config.formatters())
-        fk_mapper.initialize()
 
         return fk_mapper
             
