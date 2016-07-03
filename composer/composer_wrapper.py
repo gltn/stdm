@@ -200,7 +200,7 @@ class ComposerWrapper(QObject):
             
         #Connect signals
         self.composition().itemRemoved.connect(self._onItemRemoved)
-        self._dataSourceWidget.cboDataSource.currentIndexChanged[str].connect(
+        self._dataSourceWidget.cboDataSource.currentIndexChanged.connect(
             self.propagateDataSourceSelection
         )
         self.composerView().selectedItemChanged.connect(self._onItemSelected)
@@ -385,11 +385,12 @@ class ComposerWrapper(QObject):
         
         return ""
     
-    def propagateDataSourceSelection(self, dataSourceName):
+    def propagateDataSourceSelection(self, index):
         """
         Propagates the signal when a user select a data source. Listening objects can hook on to it.
         """
-        self.dataSourceSelected.emit(dataSourceName)
+        data_source_name = self._stdmDataSourceDock.widget().cboDataSource.itemData(index)
+        self.dataSourceSelected.emit(data_source_name)
 
     def composer_items(self):
         """

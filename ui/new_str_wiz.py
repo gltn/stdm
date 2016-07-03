@@ -618,7 +618,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         cbo_index = self.cboDocType.currentIndex()
         doc_id = self.cboDocType.itemData(cbo_index)
         party_count = len(self.sel_party)
-
+        print documents
         for doc in documents:
             self.sourceDocManager.insertDocumentFromFile(
                 doc,
@@ -638,13 +638,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         )
         return files
 
-    def uploadDocument(self, path, containerid):
-        '''
-        Upload source document
-        '''
-        self.sourceDocManager.insertDocumentFromFile(
-            path, containerid, self.social_tenure
-        )
     def initializePage(self, id):
         """
         Initialize summary page based on user
@@ -1077,50 +1070,43 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         str_objs = []
         index = 4
         progress.setValue(3)
-
-
         # Social tenure and supporting document insertion
         # The code below is have a workaround to enable
         # batch supporting documents without affecting single
         # party upload. The reason a hack was needed is,
         # whenever a document is inserted in a normal way,
         # duplicate entry is added to the database.
+        no_of_party = len(self.sel_party)
         for j, (sel_party, str_type_id) in enumerate(
                 zip(self.sel_party, self.sel_str_type)
         ):
             # get all model objects
             doc_objs = self.sourceDocManager.model_objects()
             # get the number of unique documents.
-            number_of_docs = len(doc_objs) / len(self.sel_party)
+            number_of_docs = len(doc_objs) / no_of_party
 
             str_obj = self.str_model(
                 party_id=sel_party.id,
                 spatial_unit_id=self.sel_spatial_unit[0].id,
                 tenure_type=str_type_id
             )
-            index = index + 1
-            progress.setValue(index)
-
             # Insert Supporting Document if a
             # supporting document is uploaded.
             if len(doc_objs) > 0:
-                # The number of jumps (to avoid duplication) when
-                # looping though document objects
-                loop_increment = j * number_of_docs
-                # loop through each document objects
-                for doc_type_obj in doc_objs:
-                    # loop per each number of documents
-                    for k in range(number_of_docs):
-                        # append into the str obj
-                        str_obj.documents.append(
-                            doc_objs[k + loop_increment]
-                        )
-                    # Avoids duplicate entry into the database
-                    # in case of batch multi party
-                    break
-
+                # # loop through each document objects
+                # loop per each number of documents
+                for k in range(number_of_docs):
+                    # The number of jumps (to avoid duplication) when
+                    # looping though document objects
+                    loop_increment = (k * no_of_party) + j
+                    # append into the str obj
+                    str_obj.documents.append(
+                        doc_objs[loop_increment]
+                    )
+                    
             str_objs.append(str_obj)
-
+            index = index + 1
+            progress.setValue(index)
         _str_obj.saveMany(str_objs)
 
     def on_edit_str(self, progress):
