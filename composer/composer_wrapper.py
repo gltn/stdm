@@ -18,6 +18,9 @@ email                : gkahiu@gmail.com
 """
 from PyQt4.QtGui import (
     QToolBar,
+    QAction,
+    QMenu,
+    QMenuBar,
     QDockWidget,
     QApplication,
     QMessageBox,
@@ -135,7 +138,12 @@ class ComposerWrapper(QObject):
 
         if not self.generalDock() is None:
             self.generalDock().hide()
-        
+
+        # Remove default toolbars
+        self._remove_composer_toolbar('mAtlasToolbar')
+
+        self._remove_composer_toolbar('mComposerToolbar')
+
         #Create dock widget for configuring STDM data source
         self._stdmDataSourceDock = QDockWidget(
             QApplication.translate("ComposerWrapper","STDM Data Source"),
@@ -199,7 +207,22 @@ class ComposerWrapper(QObject):
         
         #Current template document file
         self._currDocFile = None
-        
+
+    def _remove_composer_toolbar(self, object_name):
+        """
+        Removes toolbars from composer window.
+        :param object_name: The object name of the toolbar
+        :type object_name: String
+        :return: None
+        :rtype: NoneType
+        """
+        composers = self._iface.activeComposers()
+        for i in range(len(composers)):
+            comp = composers[i].composerWindow()
+            widgets = comp.findChildren(QToolBar, object_name)
+            for widget in widgets:
+                comp.removeToolBar(widget)
+
     def _removeActions(self):
         """
         Remove inapplicable actions and their corresponding toolbars and menus.
@@ -217,7 +240,7 @@ class ComposerWrapper(QObject):
                 
             if saveProjectAction != None:
                 composerMenu = saveProjectAction.menu()
-        
+
     def configure(self):
         #Create instances of custom STDM composer item configurations
         for ciConfig in ComposerItemConfig.itemConfigurations:

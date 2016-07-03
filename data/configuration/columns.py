@@ -560,7 +560,7 @@ class BooleanColumn(BaseColumn):
 
     @classmethod
     def display_name(cls):
-        return tr('True/False')
+        return tr('Yes/No')
 
 BooleanColumn.register()
 

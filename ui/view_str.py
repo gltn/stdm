@@ -70,7 +70,7 @@ from .sourcedocument import (
     SourceDocumentManager,
     DocumentWidget
 )
-from .str_editor import SocialTenureEditor
+
 from ui_view_str import Ui_frmManageSTR
 from ui_str_view_entity import Ui_frmSTRViewEntity
 
@@ -123,6 +123,10 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             '''
         )
 
+        # Configure notification bar
+        self._notif_search_config = NotificationBar(
+            self.vl_notification
+        )
 
         # set whether currently logged in user has
         # permissions to edit existing STR records
@@ -171,18 +175,60 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         tool_buttons.setToolButtonStyle(
             Qt.ToolButtonTextBesideIcon
         )
+
+        self.addSTR = QAction(QIcon(
+            ':/plugins/stdm/images/icons/add.png'),
+            QApplication.translate('ViewSTRWidget', 'Add'),
+            self
+        )
+        self.addSTR.setObjectName('add_str')
+
+        self.editSTR = QAction(
+            QIcon(':/plugins/stdm/images/icons/edit.png'),
+            QApplication.translate('ViewSTRWidget', 'Edit'),
+            self
+        )
+        self.editSTR.setObjectName('edit_str')
+
+        self.deleteSTR = QAction(
+            QIcon(':/plugins/stdm/images/icons/remove.png'),
+            QApplication.translate('ViewSTRWidget', 'Remove'),
+            self
+        )
+        self.deleteSTR.setObjectName('delete_str')
+
+        tool_buttons.addAction(self.addSTR)
+        tool_buttons.addAction(self.editSTR)
+        tool_buttons.addAction(self.deleteSTR)
+
         tool_buttons.setStyleSheet(
             '''
                 QToolButton {
                     border: 1px inset #777;
                     border-radius: 2px;
-                    padding: 3px;
+                    text-align: center;
+                    padding-top: 3px;
+                    padding-bottom: 3px;
+                    margin-right:4px;
                     background-color: qlineargradient(
                         x1: 0, y1: 0, x2: 0, y2: 1,
                         stop: 0 #f6f7fa, stop: 1 #dadbde
                     );
                 }
-    
+                QToolButton[text='Add']{
+                    width:70px;
+                    padding-left: 20%;
+                }
+
+                QToolButton[text='Edit']{
+                    width:70px;
+                    padding-left: 18%;
+                }
+                QToolButton[text='Remove']{
+                    width:70px;
+                    padding-left: 10%;
+                    padding-right: 10%;
+                }
                 QToolButton:pressed {
                     background-color: qlineargradient(
                         x1: 0, y1: 0, x2: 0, y2: 1,
@@ -191,29 +237,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                 }
             '''
         )
-
-        self.addSTR = QAction(QIcon(
-            ':/plugins/stdm/images/icons/add.png'),
-            QApplication.translate('ViewSTRWidget', 'Add'),
-            self
-        )
-    
-
-        self.editSTR = QAction(
-            QIcon(':/plugins/stdm/images/icons/edit.png'),
-            QApplication.translate('ViewSTRWidget', 'Edit'),
-            self
-        )
-
-        self.deleteSTR = QAction(
-            QIcon(':/plugins/stdm/images/icons/remove.png'),
-            QApplication.translate('ViewSTRWidget', 'Remove'),
-            self
-        )
-
-        tool_buttons.addAction(self.addSTR)
-        tool_buttons.addAction(self.editSTR)
-        tool_buttons.addAction(self.deleteSTR)
         self.toolbarVBox.addWidget(tool_buttons)
 
     def initGui(self):
@@ -230,9 +253,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self.btnSearch.clicked.connect(self.searchEntityRelations)
         self.btnClearSearch.clicked.connect(self.clearSearch)
         self.tvSTRResults.expanded.connect(self.onTreeViewItemExpanded)
-
-        #Configure notification bar
-        self._notif_search_config = NotificationBar(self.vl_notification)
 
         #Set the results treeview to accept requests for context menus
         self.tvSTRResults.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -274,7 +294,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             for c in self.spatial_unit.columns.values()
             if c.TYPE_INFO == 'GEOMETRY'
         ]
-        spatial_unit_item = unicode(table + '.'+spatial_column[0])
+        spatial_unit_item = unicode('{}.{}'.format(table, spatial_column[0]))
         index = sp_unit_manager.stdm_layers_combo.findText(
             spatial_unit_item, Qt.MatchFixedString
         )
@@ -327,8 +347,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                     )
 
         except Exception as pe:
-            self._notif_bar.clear()
-            self._notif_bar.insertErrorNotification(pe.message)
+            self._notif_search_config.clear()
+            self._notif_search_config.insertErrorNotification(pe.message)
 
     def _entity_config_from_profile(self, table_name, short_name):
         """
@@ -410,8 +430,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             #Show error message
             if len(results) == 0:
                 noResultsMsg = QApplication.translate(
-                    "ViewSTR",
-                    "No results found for '" + searchWord + "'"
+                    'ViewSTR',
+                    'No results found for "{}"'.format(searchWord)
                 )
                 self._notif_search_config.clear()
                 self._notif_search_config.insertErrorNotification(
@@ -688,6 +708,17 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         """
         Load source documents into document listing widget.
         """
+        # Configure progress dialog
+        progress_msg = QApplication.translate("ViewSTR", "Loading supporting documents...")
+
+        progress_dialog = QProgressDialog(self)
+        if len(source_docs) > 0:
+            progress_dialog.setWindowTitle(progress_msg)
+            progress_dialog.setRange(0, len(source_docs))
+            progress_dialog.setWindowModality(Qt.WindowModal)
+            progress_dialog.setFixedWidth(380)
+            progress_dialog.show()
+            progress_dialog.setValue(0)
         self._notif_search_config.clear()
 
         self.tbSupportingDocs.clear()
@@ -701,11 +732,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             self._notif_search_config.clear()
             self._notif_search_config.insertWarningNotification(empty_msg)
 
-        for doc_type_id, doc_obj in source_docs.iteritems():
-            # Filter out removed docs.
-            # Only filter when a doc is removed.
-            # if self.removed_docs is not None:
-            #     doc_obj = list(set(doc_obj) - set(self.removed_docs))
+        for i, (doc_type_id, doc_obj) in enumerate(source_docs.iteritems()):
 
             # add tabs, and container and widget for each tab
             tab_title = self._source_doc_manager.doc_type_mapping[doc_type_id]
@@ -743,13 +770,12 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                         doc, doc_type_id
                     )
                 except Exception as ex:
-                    LOGGER.debug(
-                        'ViewSTR-Load_source_document(): '+str(ex)
-                    )
+                    LOGGER.debug(str(ex))
 
             self.tbSupportingDocs.addTab(
                 tab_widget, tab_title
             )
+            progress_dialog.setValue(i + 1)
 
     def _on_node_reference_changed(self, rootHash):
         """

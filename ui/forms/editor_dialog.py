@@ -17,6 +17,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from collections import OrderedDict
 from PyQt4.QtCore import (
     Qt
 )
@@ -34,6 +35,7 @@ from PyQt4.QtGui import (
 )
 
 from stdm.data.configuration import entity_model
+from stdm.data.configuration.entity import Entity
 from stdm.data.configuration.columns import (
     MultipleSelectColumn,
     VirtualColumn
@@ -46,6 +48,7 @@ from stdm.ui.forms.widgets import (
 )
 from stdm.ui.forms.documents import SupportingDocumentsWidget
 from stdm.ui.notification import NotificationBar
+from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 
 class EntityEditorDialog(QDialog, MapperMixin):
     """
@@ -76,6 +79,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.has_mandatory = False
 
         self._entity = entity
+        self._fk_browsers = OrderedDict()
 
         #Set notification layout bar
         self.vlNotification = QVBoxLayout()
@@ -215,6 +219,18 @@ class EntityEditorDialog(QDialog, MapperMixin):
     
         self.entity_scroll_area.setWidget(self.scroll_widget_contents)
 
+        #Check if there are children and add foreign key browsers
+        ch_entities = self.children_entities()
+        if len(ch_entities) > 0:
+            if self.entity_tab_widget is None:
+                self.entity_tab_widget = QTabWidget(self)
+
+            #Add primary tab if necessary
+            self._add_primary_attr_widget()
+
+            for ch in ch_entities:
+                self._add_fk_browser(ch)
+
         #Add tab widget if entity supports documents
         if self._entity.supports_documents:
             self.doc_widget = SupportingDocumentsWidget(
@@ -222,13 +238,12 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 self._ent_document_model,
                 self
             )
-            self.entity_tab_widget = QTabWidget(self)
+
+            if self.entity_tab_widget is None:
+                self.entity_tab_widget = QTabWidget(self)
 
             #Add attribute tab
-            self.entity_tab_widget.addTab(
-                self.entity_scroll_area,
-                self.tr('Primary')
-            )
+            self._add_primary_attr_widget()
 
             #Add supporting documents tab
             self.entity_tab_widget.addTab(
@@ -236,9 +251,56 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 self.tr('Supporting Documents')
             )
 
+        #Return the correct widget
+        if not self.entity_tab_widget is None:
             return self.entity_tab_widget
     
         return self.entity_scroll_area
+
+    def _add_primary_attr_widget(self):
+        #Check if the primary entity exists and add if it does not
+        pr_txt = self.tr('Primary')
+        if not self.entity_tab_widget is None:
+            tab_txt = self.entity_tab_widget.tabText(0)
+            if not tab_txt == pr_txt:
+                self.entity_tab_widget.addTab(
+                self.entity_scroll_area,
+                pr_txt
+            )
+
+    def _add_fk_browser(self, child_entity):
+        #Create and add foreign key browser to the collection
+        attr = u'{0}_collection'.format(child_entity.name)
+
+        #Return if the attribute does not exist
+        if not hasattr(self._model, attr):
+            return
+
+        fkb = ForeignKeyMapper(
+            child_entity,
+            self,
+            notification_bar=self._notifBar,
+            can_filter=True
+        )
+
+        #Add to mapped collection
+        self.addMapping(
+            attr,
+            fkb
+        )
+
+        self.entity_tab_widget.addTab(fkb, child_entity.short_name)
+
+        #Add to the collection
+        self._fk_browsers[child_entity.name] = fkb
+
+    def children_entities(self):
+        """
+        :return: Returns a list of children entities that refer to the main entity as the parent.
+        :rtype: list
+        """
+        return [ch for ch in self._entity.children()
+                if ch.TYPE_INFO == Entity.TYPE_INFO]
 
     def _highlight_asterisk(self, text):
         #Highlight asterisk in red

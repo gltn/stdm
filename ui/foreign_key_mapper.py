@@ -20,8 +20,6 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from collections import OrderedDict
-from datetime import date
-from decimal import Decimal
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -33,25 +31,17 @@ from qgis.core import (
 )
 from qgis.gui import QgsExpressionBuilderDialog
 
+from stdm.data.configuration.columns import (
+    MultipleSelectColumn,
+    VirtualColumn
+)
+from stdm.data.configuration import entity_model
+from stdm.data.pg_utils import table_column_names
 from stdm.data.qtmodels import BaseSTDMTableModel
-from stdm.data.modelformatters import dateFormatter
-from stdm.data.config_utils import foreign_key_table_reference
 from stdm.utils.util import getIndex
-from .admin_unit_manager import (
-    VIEW,
-    MANAGE,
-    SELECT
-)
+from stdm.ui.admin_unit_manager import SELECT
 from stdm.settings import current_profile
-# from stdm.data.configuration import entity_model
-from stdm.utils.util import (
-    model_display_mapping,
-    format_name,
-    entity_display_columns,
-    lookup_id_to_value
-)
-from .stdmdialog import DeclareMapping
-from stdm.ui.customcontrols import FKBrowserProperty
+from stdm.ui.forms.widgets import ColumnWidgetRegistry
 
 __all__ = ["ForeignKeyMapper", "ForeignKeyMapperExpressionDialog"]
 
@@ -135,6 +125,7 @@ class ForeignKeyMapperExpressionDialog(QgsExpressionBuilderDialog):
 
         super(ForeignKeyMapperExpressionDialog, self).accept()
 
+
 class ForeignKeyMapper(QWidget):
     """
     Widget for selecting database records through an entity browser or
@@ -142,11 +133,17 @@ class ForeignKeyMapper(QWidget):
     """
     #Custom signals
     beforeEntityAdded = pyqtSignal("PyQt_PyObject")
-    afterEntityAdded = pyqtSignal("PyQt_PyObject")
+    afterEntityAdded = pyqtSignal("PyQt_PyObject", int)
     entityRemoved = pyqtSignal("PyQt_PyObject")
-    
-    def __init__(self, parent=None):
-        QWidget.__init__(self,parent)
+    deletedRows = pyqtSignal(list)
+
+    def __init__(self, entity, parent=None, notification_bar=None,
+                 enable_list=True, can_filter=False):
+        from stdm.ui.entity_browser import EntityBrowser
+
+        QWidget.__init__(self, parent)
+
+        self._entity = entity
         
         self._tbFKEntity = QTableView(self)
         self._tbFKEntity.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -156,24 +153,81 @@ class ForeignKeyMapper(QWidget):
         self._add_entity_btn = QToolButton(self)
         self._add_entity_btn.setToolTip(QApplication.translate("ForeignKeyMapper","Add"))
         self._add_entity_btn.setIcon(QIcon(":/plugins/stdm/images/icons/add.png"))
+        self._add_entity_btn.setText(QApplication.translate("ForeignKeyMapper","Add"))
         self._add_entity_btn.clicked.connect(self.onAddEntity)
-
+        self._add_entity_btn.setToolButtonStyle(
+            Qt.ToolButtonTextBesideIcon
+        )
         self._edit_entity_btn = QToolButton(self)
         self._edit_entity_btn.setVisible(False)
         self._edit_entity_btn.setToolTip(QApplication.translate("ForeignKeyMapper","Edit"))
         self._edit_entity_btn.setIcon(QIcon(":/plugins/stdm/images/icons/edit.png"))
+        self._edit_entity_btn.setText(QApplication.translate("ForeignKeyMapper", "Edit"))
+        self._edit_entity_btn.setToolButtonStyle(
+            Qt.ToolButtonTextBesideIcon
+        )
 
         self._filter_entity_btn = QToolButton(self)
         self._filter_entity_btn.setVisible(False)
         self._filter_entity_btn.setToolTip(QApplication.translate("ForeignKeyMapper","Select by expression"))
         self._filter_entity_btn.setIcon(QIcon(":/plugins/stdm/images/icons/filter.png"))
         self._filter_entity_btn.clicked.connect(self.onFilterEntity)
+        self._filter_entity_btn.setText(QApplication.translate("ForeignKeyMapper", "Filter"))
+        self._filter_entity_btn.setToolButtonStyle(
+            Qt.ToolButtonTextBesideIcon
+        )
 
         self._delete_entity_btn = QToolButton(self)
         self._delete_entity_btn.setToolTip(QApplication.translate("ForeignKeyMapper","Remove"))
         self._delete_entity_btn.setIcon(QIcon(":/plugins/stdm/images/icons/remove.png"))
         self._delete_entity_btn.clicked.connect(self.onRemoveEntity)
+        self._delete_entity_btn.setText(QApplication.translate("ForeignKeyMapper", "Remove"))
+        self._delete_entity_btn.setToolButtonStyle(
+            Qt.ToolButtonTextBesideIcon
+        )
 
+
+        self.setStyleSheet(
+            '''
+                QToolButton {
+                    border: 1px inset #777;
+                    border-radius: 2px;
+                    height:15px;
+                    text-align: center;
+                    padding-top: 3px;
+                    padding-bottom: 3px;
+                    background-color: qlineargradient(
+                        x1: 0, y1: 0, x2: 0, y2: 1,
+                        stop: 0 #f6f7fa, stop: 1 #dadbde
+                    );
+                }
+                QToolButton[text='Add']{
+                    width:70px;
+                    padding-left: 20%;
+                }
+
+                QToolButton[text='Edit']{
+                    width:70px;
+                    padding-left: 18%;
+                }
+                QToolButton[text='Filter']{
+                    width:70px;
+                    padding-left: 16%;
+                }
+
+                QToolButton[text='Remove']{
+                    width:70px;
+                    padding-left: 9%;
+                    padding-right: 10%;
+                }
+                QToolButton:pressed {
+                    background-color: qlineargradient(
+                        x1: 0, y1: 0, x2: 0, y2: 1,
+                        stop: 0 #dadbde, stop: 1 #f6f7fa
+                    );
+                }
+            '''
+        )
         layout = QVBoxLayout(self)
         layout.setSpacing(4)
         layout.setMargin(5)
@@ -188,143 +242,164 @@ class ForeignKeyMapper(QWidget):
 
         layout.addLayout(grid_layout)
         layout.addWidget(self._tbFKEntity)
-        
-        #Instance variables
-        self._dbModel = None
-        self._ds_name = ""
-        self._omitPropertyNames = []
-        self._entitySelector = None
-        self._entitySelectorState = None
-        self._supportsLists = True
+
+        self._dbmodel = entity_model(entity)
         self._tableModel = None
-        self._notifBar = None
-        self._cellFormatters = {}
+        self._notifBar = notification_bar
+        self._headers = []
+        self._entity_attrs = []
+        self._cell_formatters = {}
+        self._searchable_columns = OrderedDict()
+        self._supportsLists = enable_list
         self._deleteOnRemove = False
         self._uniqueValueColIndices = OrderedDict()
         self.global_id = None
-        self.curr_profile = current_profile()
-        self.display_column = None
         self._deferred_objects = {}
-        self._use_expression_builder = False
-        
-    def initialize(self):
+        self._use_expression_builder = can_filter
+
+        if self._use_expression_builder:
+            self._filter_entity_btn.setVisible(True)
+            self._edit_entity_btn.setVisible(False)
+
+        self._init_fk_columns()
+
+        self._entitySelector = EntityBrowser(
+            self._entity,
+            parent=self,
+            state=SELECT
+        )
+
+        #Connect signals
+        self._entitySelector.recordSelected.connect(
+            self._onRecordSelectedEntityBrowser
+        )
+
+    def _init_fk_columns(self):
         """
-        Configure the mapper based on the user settings.
+        Asserts if the entity columns actually do exist in the database. The
+        method also initializes the table headers, entity column and cell
+        formatters.
         """
+        if self._dbmodel is None:
+            msg = QApplication.translate('ForeignKeyMapper', 'The data model for '
+                                                          'the entity could '
+                                                          'not be loaded, '
+                                                          'please contact '
+                                                          'your database '
+                                                          'administrator.')
+            QMessageBox.critical(self, QApplication.translate('EntityBrowser',
+                                                              'Entity Browser'),
+                                 msg)
 
-        #Load headers
-        if not self._dbModel is None:
-            headers = []
-            curr_entity = self.curr_profile.entity_by_name(self._ds_name)
+            return
 
-            #Ensure only displayable values are included
-            for c in entity_display_columns(curr_entity):
-                headers.append(format_name(c))
+        table_name = self._entity.name
+        columns = table_column_names(table_name)
+        missing_columns = []
 
-            self._tableModel = BaseSTDMTableModel([],headers,self)
-            self._tbFKEntity.setModel(self._tableModel)
+        header_idx = 0
 
-            self._tbFKEntity.resizeColumnsToContents()
-            #First (ID) column will always be hidden
-            self._tbFKEntity.hideColumn(0)
-            
-            self._tbFKEntity.horizontalHeader().setResizeMode(QHeaderView.Interactive)
-            self._tbFKEntity.verticalHeader().setVisible(True)
+        #Iterate entity column and assert if they exist
+        for c in self._entity.columns.values():
+            #Do not include virtual columns in list of missing columns
+            if not c.name in columns and not isinstance(c, VirtualColumn):
+                missing_columns.append(c.name)
 
-            '''
-            If expression builder is enabled then disable edit button since
-            mapper cannot work in both selection and editing mode.
-            '''
-            if self._use_expression_builder:
-                self._filter_entity_btn.setVisible(True)
-                self._edit_entity_btn.setVisible(False)
+            else:
+                header = c.header()
+                self._headers.append(header)
+                '''
+                If it is a virtual column then use column name as the header
+                but fully qualified column name (created by SQLAlchemy
+                relationship) as the entity attribute name.
+                '''
+                col_name = c.name
+
+                if isinstance(c, MultipleSelectColumn):
+                    col_name = c.model_attribute_name
+
+                self._entity_attrs.append(col_name)
+
+                #Get widget factory so that we can use the value formatter
+                w_factory = ColumnWidgetRegistry.factory(c.TYPE_INFO)
+                if not w_factory is None:
+                    formatter = w_factory(c)
+                    self._cell_formatters[col_name] = formatter
+
+                #Set searchable columns
+                if c.searchable:
+                    self._searchable_columns[header] = {
+                        'name': c.name,
+                        'header_index': header_idx
+                    }
+
+                header_idx += 1
+
+        if len(missing_columns) > 0:
+            msg = QApplication.translate(
+                'ForeignKeyMapper',
+                u'The following columns have been defined in the '
+                u'configuration but are missing in corresponding '
+                u'database table, please re-run the configuration wizard '
+                u'to create them.\n{0}'.format(
+                    '\n'.join(missing_columns)
+                )
+            )
+
+            QMessageBox.warning(
+                self,
+                QApplication.translate('ForeignKeyMapper','Entity Browser'),
+                msg
+            )
+
+        self._tableModel = BaseSTDMTableModel([], self._headers, self)
+        self._tbFKEntity.setModel(self._tableModel)
+        self._tbFKEntity.resizeColumnsToContents()
+        #First (id) column will always be hidden
+        self._tbFKEntity.hideColumn(0)
+
+        self._tbFKEntity.horizontalHeader().setResizeMode(QHeaderView.Interactive)
+        self._tbFKEntity.verticalHeader().setVisible(True)
         
     def databaseModel(self):
         '''
         Returns the database model that represents the foreign key entity.
         '''
-        return self._dbModel
+        return self._dbmodel
     
     def setDatabaseModel(self,model):
         '''
         Set the database model that represents the foreign key entity.
         Model has to be a callable.
         '''
-        self._dbModel = model
-
-    def data_source_name(self):
-        """
-        :return: Returns the name of the data source (as specified in the
-        database).
-        :rtype: str
-        """
-        return self._ds_name
-
-    def set_data_source_name(self, ds_name):
-        """
-        Set the name of the data source (as specified in the database). This
-        will be used to construct the vector layer when filtering records
-        using the expression builder.
-        We are using this option since we cannot extract the table/view name
-        from the database model.
-        :param ds_name: Name of the data source.
-        :type ds_name: str
-        """
-        self._ds_name = ds_name
-        
-    def setEmitPropertyNames(self,propnames):
-        '''
-        Set the property names to be omitted from the display in the table list view.
-        '''
-        self._omitPropertyNames = propnames
-        
-    def omitPropertyNames(self):
-        '''
-        Returns the property names to be omitted from the display in the table list view.
-        '''
-        return self._omitPropertyNames
-    
-    def setCellFormatters(self,formattermapping):
-        '''
-        Dictionary of attribute mappings and corresponding functions for 
-        formatting the attribute value to the display value.
-        '''
-        self._cellFormatters = formattermapping
-        
-    def addCellFormatter(self,attributeName,formatterFunc):
-        '''
-        Add a new cell formatter configuration to the collection
-        '''
-        self._cellFormatters[attributeName] = formatterFunc
+        self._dbmodel = model
         
     def cellFormatters(self):
         """
         Returns a dictionary of cell formatters used by the foreign key mapper.
         """
-        return self._cellFormatters
+        return self._cell_formatters
+
+    def cell_formatter(self, column):
+        """
+        :param column: Column name:
+        :type column: str
+        :return: Returns the corresponding formatter object based on the
+        column name. None will be returned if there is no corresponding
+        object.
+        :rtype: object
+        """
+        return self._cell_formatters.get(column, None)
     
     def entitySelector(self):
         '''
         Returns the dialog for selecting the entity objects.
         '''
         return self._entitySelector
-    
-    def setEntitySelector(self, selector, state=SELECT):
-        '''
-        Set the dialog for selecting entity objects.
-        Selector must be a callable.
-        '''
-        if callable(selector):
-            self._entitySelector = selector
-        else:
-            self._entitySelector = selector.__class__
-
-        self._entitySelectorState = state
         
     def supportList(self):
         '''
-        Returns whether the mapper supports only one item or multiple entities i.e.
-        one-to-one and one-to-many mapping. 
+        Returns whether the mapper supports only one item or multiple entities.
         Default is 'True'.
         '''
         return self._supportsLists
@@ -380,7 +455,7 @@ class ForeignKeyMapper(QWidget):
         If 'replace' is True then the existing row will be replaced
         with one with the new value; else, the new row will not be added to the list.
         '''
-        headers = self._dbModel.displayMapping().values()
+        headers = self._dbmodel.displayMapping().values()
         colIndex = getIndex(headers,colName)
         
         if colIndex != -1:
@@ -411,11 +486,7 @@ class ForeignKeyMapper(QWidget):
 
             return
 
-        if callable(self._dbModel):
-            context = self._dbModel.__name__
-
-        else:
-            context = self._dbModel.__class__.__name__
+        context = self._entity.short_name
 
         filter_dlg = ForeignKeyMapperExpressionDialog(vl, self, context=context)
         filter_dlg.setWindowTitle(QApplication.translate("ForeignKeyMapper",
@@ -435,7 +506,7 @@ class ForeignKeyMapper(QWidget):
         Slot raised on clicking to remove the selected entity.
         '''
         selectedRowIndices = self._tbFKEntity.selectionModel().selectedRows(0)
-        
+        deleted_rows = []
         if len(selectedRowIndices) == 0:
             msg = QApplication.translate("ForeignKeyMapper","Please select the record to be removed.")   
             self._notifBar.clear()
@@ -445,8 +516,8 @@ class ForeignKeyMapper(QWidget):
             #Delete record from database if flag has been set to True
             recId= selectedRowIndex.data()
             
-            dbHandler = self._dbModel()
-            delRec = dbHandler.queryObject().filter(self._dbModel.id == recId).first()
+            dbHandler = self._dbmodel()
+            delRec = dbHandler.queryObject().filter(self._dbmodel.id == recId).first()
             
             if not delRec is None:
                 self.entityRemoved.emit(delRec)
@@ -454,7 +525,9 @@ class ForeignKeyMapper(QWidget):
                 if self._deleteOnRemove:
                     delRec.delete()
             
-            self._removeRow(selectedRowIndex.row()) 
+            self._removeRow(selectedRowIndex.row())
+            deleted_rows.append(selectedRowIndex.row())
+        self.deletedRows.emit(deleted_rows)
             
     def _recordIds(self):
         '''
@@ -467,7 +540,7 @@ class ForeignKeyMapper(QWidget):
             
             for r in range(rowCount):
                 #Get ID value
-                modelIndex = self._tableModel.index(r,0)
+                modelIndex = self._tableModel.index(r, 0)
                 modelId = modelIndex.data()
                 recordIds.append(modelId)
                     
@@ -499,7 +572,7 @@ class ForeignKeyMapper(QWidget):
         '''
         Insert entities into the table.
         '''
-        if isinstance(entities,list):
+        if isinstance(entities, list):
             for entity in entities:
                 self._insertModelToView(entity)
                 
@@ -533,12 +606,12 @@ class ForeignKeyMapper(QWidget):
         '''
         Returns the model instance based the value of its primary key.
         '''
-        dbHandler = self._dbModel()
+        dbHandler = self._dbmodel()
         
         modelInstances = []
         
         for modelId in ids:
-            modelObj = dbHandler.queryObject().filter(self._dbModel.id == modelId).first()
+            modelObj = dbHandler.queryObject().filter(self._dbmodel.id == modelId).first()
             if not modelObj is None:
                 modelInstances.append(modelObj)
 
@@ -550,84 +623,40 @@ class ForeignKeyMapper(QWidget):
         to add the selected record to the table's list.
         Add the record to the foreign key table using the mappings.
         '''
-        #Check if the record exists using the primary key so as to ensure only one instance is added to the table
-        try:
-            if isinstance(rec, int):
-                recIndex = getIndex(self._recordIds(), rec)
+        #Check if the record exists using the primary key so as to ensure
+        #only one instance is added to the table
+        if isinstance(rec, int):
+            recIndex = getIndex(self._recordIds(), rec)
 
-                if recIndex != -1:
-                    return
-
-
-                dbHandler = self._dbModel()
-                modelObj = dbHandler.queryObject().filter(self._dbModel.id == rec).first()
-
-            elif isinstance(rec, object):
-                modelObj = rec
-
-            else:
+            if recIndex != -1:
                 return
 
-        except:
-            pass
+            dbHandler = self._dbmodel()
+            modelObj = dbHandler.queryObject().filter(self._dbmodel.id == rec).first()
 
-        dbHandler = self._dbModel()
-        modelObj = dbHandler.queryObject().filter(self._dbModel.id == rec).first()
+        elif isinstance(rec, object):
+            modelObj = rec
+
+        else:
+            return
 
         if not modelObj is None:
             #Raise before entity added signal
             self.beforeEntityAdded.emit(modelObj)
             
             #Validate for unique value configurations
+            '''
             if not self._validate_unique_columns(modelObj, row_number):
                 return
+            '''
 
-            if self._tableModel:
-                if not self._supportsLists and self._tableModel.rowCount() > 0:
-                    self._removeRow(0)
+            if not self._supportsLists and self._tableModel.rowCount() > 0:
+                self._removeRow(0)
 
-                insert_position = self._insertModelToView(modelObj, row_number)
+            insert_position = self._insertModelToView(modelObj, row_number)
 
-                if isinstance(rec, object):
-                    self._deferred_objects[insert_position] = modelObj
-
-            else:
-                try:
-                    self.global_id = self.onfk_lookup(modelObj)
-
-                except Exception as ex:
-                    QMessageBox.information(self,
-                                    QApplication.translate("ForeignKeyMapper",
-                                                        "Foreign Key Reference"),
-                                            unicode(ex.message))
-
-                    return
-
-    def set_model_display_column(self, name):
-        """
-        :return:
-        """
-        self.display_column = name
-
-    def onfk_lookup(self,obj, index=None):
-        """
-        :param Model obj:
-        :param :
-        :return:
-        """
-        display_label = None
-        base_id = getattr(obj, 'id')
-        col_list = self._dbModel.displayMapping().keys()
-
-        if self.display_column:
-            display_label = getattr(obj, self.display_column)
-
-        else:
-            display_label = getattr(obj, col_list[1])
-
-        fk_reference = FKBrowserProperty(base_id, display_label)
-
-        return fk_reference
+            if isinstance(rec, object):
+                self._deferred_objects[insert_position] = modelObj
 
     def _validate_unique_columns(self,model,exclude_row = -1):
         """
@@ -635,12 +664,12 @@ class ForeignKeyMapper(QWidget):
         the configuration of unique columns.
         """
         for colIndex,replace in self._uniqueValueColIndices.items():
-            attrName = self._dbModel.displayMapping().keys()[colIndex]
+            attrName = self._dbmodel.displayMapping().keys()[colIndex]
             attrValue = getattr(model,attrName)
 
             #Check to see if there are cell formatters so that the correct value is searched for in the model
-            if attrName in self._cellFormatters:
-                attrValue = self._cellFormatters[attrName](attrValue)
+            if attrName in self._cell_formatters:
+                attrValue = self._cell_formatters[attrName](attrValue)
 
             matchingIndex = self.searchModel(colIndex, attrValue)
 
@@ -672,29 +701,34 @@ class ForeignKeyMapper(QWidget):
             row_number = self._tableModel.rowCount()
             self._tableModel.insertRows(row_number, 1)
 
-        '''
-        Reset model so that we get the correct table mapping. This is a hack,
-        will get a better solution in the future.
-        '''
-        model = DeclareMapping.instance().tableMapping(self._dbModel.__name__.lower())
+        #In some instances, we will need to get the model object with
+        # backrefs included else exceptions will be raised on missing
+        # attributes
+        q_objs = self._modelInstanceFromIds([model_obj.id])
+        if len(q_objs) == 0:
+            return
 
-        for i,attr in enumerate(self._dbModel.displayMapping().keys()):
-            propIndex = self._tableModel.index(row_number,i)
-            attrVal = getattr(model_obj, attr)
+        model_obj = q_objs[0]
 
-            #Check if there are display formatters and apply if one exists for the given attribute
-            if attr in self._cellFormatters:
-                attrVal = self._cellFormatters[attr](attrVal)
-            elif attr not in self._cellFormatters and isinstance(attrVal, date):
-                attrVal = dateFormatter(attrVal)
-            else:
-                attrVal = lookup_id_to_value(self.curr_profile, attr, attrVal)
+        for i, attr in enumerate(self._entity_attrs):
+            prop_idx = self._tableModel.index(row_number, i)
+            attr_val = getattr(model_obj, attr)
 
-            self._tableModel.setData(propIndex, attrVal)
+            '''
+            Check if there are display formatters and apply if one exists
+            for the given attribute.
+            '''
+            if attr in self._cell_formatters:
+                formatter = self._cell_formatters[attr]
+                attr_val = formatter.format_column_value(attr_val)
+
+            self._tableModel.setData(prop_idx, attr_val)
 
         #Raise signal once entity has been inserted
-        self.afterEntityAdded.emit(model_obj)
+        self.afterEntityAdded.emit(model_obj, row_number)
+
         self._tbFKEntity.resizeColumnsToContents()
+
         return row_number
 
     def vector_layer(self):
@@ -705,12 +739,12 @@ class ForeignKeyMapper(QWidget):
         """
         from stdm.data.pg_utils import vector_layer
 
-        if self._dbModel is None:
+        if self._dbmodel is None:
             msg = QApplication.translate("ForeignKeyMapper",
                                          "Primary database model object not defined.")
             return None, msg
 
-        filter_layer = vector_layer(self._ds_name)
+        filter_layer = vector_layer(self._entity.name)
         if filter_layer is None:
             msg = QApplication.translate("ForeignKeyMapper",
                 "Vector layer could not be constructed from the database table.")
@@ -720,7 +754,7 @@ class ForeignKeyMapper(QWidget):
         if not filter_layer.isValid():
             trans_msg = QApplication.translate("ForeignKeyMapper",
                 u"The vector layer for '{0}' table is invalid.")
-            msg = trans_msg.format(self._ds_name)
+            msg = trans_msg.format(self._entity.name)
 
             return None, msg
 
@@ -731,30 +765,6 @@ class ForeignKeyMapper(QWidget):
         Slot raised on selecting to add related entities that will be mapped to the primary
         database model instance.
         """
-        if self._tableModel:
-            if not self._entitySelector is None:
-                entitySelector = self._entitySelector(self, self._dbModel,
-                                                    self._entitySelectorState)
+        self._entitySelector.buttonBox.button(QDialogButtonBox.Cancel).setVisible(False)
 
-                #Cascade cell formatters
-                entitySelector.setCellFormatters(self._cellFormatters)
-                entitySelector.recordSelected[int].connect(self._onRecordSelectedEntityBrowser)
-
-                retStatus = entitySelector.exec_()
-                if retStatus == QDialog.Accepted:
-                    pass
-
-            else:
-                if not self._notifBar is None:
-                    msg = QApplication.translate("ForeignKeyMapper","Null instance of entity selector.")
-                    self._notifBar.clear()
-                    self._notifBar.insertErrorNotification(msg)
-        else:
-            entitySelector = self._entitySelector(self,
-                                                  self._dbModel,
-                                                  self._entitySelectorState)
-            entitySelector.recordSelected[int].connect(self._onRecordSelectedEntityBrowser)
-
-            retStatus = entitySelector.exec_()
-            if retStatus == QDialog.Accepted:
-                pass
+        self._entitySelector.exec_()
