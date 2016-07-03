@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_column_editor.ui'
 #
-# Created: Mon Apr 25 15:23:47 2016
+# Created: Wed Jun 29 17:19:48 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -132,8 +132,8 @@ class Ui_ColumnEditor(object):
         self.edtUserTip.setPlaceholderText(_translate("ColumnEditor", "Enter text to appear in the form as a tooltip", None))
         self.label_4.setText(_translate("ColumnEditor", "Column data type", None))
         self.btnColProp.setText(_translate("ColumnEditor", "Column properties ...", None))
-        self.cbMandt.setText(_translate("ColumnEditor", "Is mandatory", None))
-        self.cbSearch.setText(_translate("ColumnEditor", "Is searchable", None))
-        self.cbUnique.setText(_translate("ColumnEditor", "Is unique", None))
-        self.cbIndex.setText(_translate("ColumnEditor", "Is column Indexed", None))
+        self.cbMandt.setText(_translate("ColumnEditor", "Mandatory", None))
+        self.cbSearch.setText(_translate("ColumnEditor", "Searchable", None))
+        self.cbUnique.setText(_translate("ColumnEditor", "Unique", None))
+        self.cbIndex.setText(_translate("ColumnEditor", "Column Indexed", None))
 

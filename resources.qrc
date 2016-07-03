@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/plugins/stdm">
+    <file>images/icons/warning_large.png</file>
     <file>images/QGIS Splash.png</file>
     <file>images/icons/edit_settings.png</file>
     <file>images/icons/help-content.png</file>
