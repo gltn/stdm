@@ -71,6 +71,7 @@ class MirrorMap(QWidget):
         #self.addLayerBtn.setToolButtonStyle( Qt.ToolButtonTextBesideIcon )
         #self.addLayerBtn.setText("Add current layer")
         self.addLayerBtn.setIcon(QIcon(":/plugins/stdm/images/icons/add.png"))
+
         self.addLayerBtn.clicked.connect(self.tool_add_layer)
         gridLayout.addWidget(self.addLayerBtn, 1, 0, 1, 1)
 

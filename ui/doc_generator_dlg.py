@@ -396,7 +396,10 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
 
         #Load data source columns
         self._data_source = composer_ds.name()
-        self.ds_entity = self.curr_profile.entity_by_name(self._data_source)
+
+        self.ds_entity = self.curr_profile.entity_by_name(
+            self.current_config().data_source()
+        )
 
         self._load_data_source_columns(self.ds_entity)
             
