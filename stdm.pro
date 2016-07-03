@@ -49,40 +49,6 @@ SOURCES = \
           ui\property_preview.py \
           ui\sourcedocument.py \
           ui\spatial_unit_manager.py \
-          ui\ui_about_stdm.py \
-          ui\ui_adminUnitManager.py \
-          ui\ui_admin_unit.py \
-          ui\ui_changepwd.py \
-          ui\ui_composer_data_field.py \
-          ui\ui_composer_data_source.py \
-          ui\ui_composer_doc_selector.py \
-          ui\ui_composer_spcolumn_styler.py \
-          ui\ui_composer_symbol_editor.py \
-          ui\ui_content_auth.py \
-          ui\ui_dbconn.py \
-          ui\ui_dbmanage.py \
-          ui\ui_doc_generator.py \
-          ui\ui_doc_item.py \
-          ui\ui_entity_browser.py \
-          ui\ui_export_data.py \
-          ui\ui_foreign_key_mapper.py \
-          ui\ui_gps_tool.py \
-          ui\ui_gpx_add_attribute_info.py \
-          ui\ui_gpx_table.py \
-          ui\ui_gpx_table_widget.py \
-          ui\ui_import_data.py \
-          ui\ui_license_agreement.py \
-          ui\ui_login.py \
-          ui\ui_new_role.py \
-          ui\ui_new_str.py \
-          ui\ui_new_user.py \
-          ui\ui_notif_item.py \
-          ui\ui_options.py \
-          ui\ui_property_preview.py \
-          ui\ui_spatial_unit_manager.py \
-          ui\ui_str_view_entity.py \
-          ui\ui_user_role_manage.py \
-          ui\ui_view_str.py \
           ui\view_str.py \
           ui\composer\chart_type_editors.py \
           ui\composer\chart_type_register.py \
@@ -91,23 +57,12 @@ SOURCES = \
           ui\composer\composer_symbol_editor.py \
           ui\composer\referenced_table_editor.py \
           ui\composer\table_data_source.py \
-          ui\composer\ui_chart_vertical_bar.py \
-          ui\composer\ui_composer_chart_config.py \
-          ui\composer\ui_composer_data_field.py \
-          ui\composer\ui_composer_data_source.py \
-          ui\composer\ui_composer_doc_selector.py \
-          ui\composer\ui_composer_photo_data_source.py \
-          ui\composer\ui_composer_spcolumn_styler.py \
-          ui\composer\ui_composer_symbol_editor.py \
-          ui\composer\ui_composer_table_source.py \
           ui\customcontrols\combobox_with_other.py \
           ui\customcontrols\coordinates_editor.py \
           ui\helpers\datamanagemixin.py \
           ui\importexport\multiple_enumeration_dialog.py \
           ui\importexport\related_table_dialog.py \
           ui\importexport\translator_config.py \
-          ui\importexport\ui_multiple_enumeration_dialog.py \
-          ui\importexport\ui_related_table_dialog.py \
           ui\wizard\bigint_property.py \
           ui\wizard\column_depend.py \
           ui\wizard\column_editor.py \
@@ -118,22 +73,6 @@ SOURCES = \
           ui\wizard\entity_depend.py \
           ui\wizard\geometry_property.py \
           ui\wizard\profile_editor.py \
-          ui\wizard\ui_bigint_property.py \
-          ui\wizard\ui_column_depend.py \
-          ui\wizard\ui_column_editor.py \
-          ui\wizard\ui_date_property.py \
-          ui\wizard\ui_double_property.py \
-          ui\wizard\ui_dtime_property.py \
-          ui\wizard\ui_entity.py \
-          ui\wizard\ui_entity_depend.py \
-          ui\wizard\ui_fk_property.py \
-          ui\wizard\ui_geom_property.py \
-          ui\wizard\ui_lookup_entity.py \
-          ui\wizard\ui_lookup_property.py \
-          ui\wizard\ui_lookup_value.py \
-          ui\wizard\ui_profile.py \
-          ui\wizard\ui_stdm_config.py \
-          ui\wizard\ui_varchar_property.py \
           ui\wizard\varchar_property.py \
           ui\wizard\wizard.py
 

@@ -307,7 +307,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             )
         )
         spatial_unit_table.beforeEntityAdded.connect(
-            self.validate_occupants
+            self.validate_party_count
         )
 
         spatial_unit_table.deletedRows.connect(
@@ -847,7 +847,28 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         for item in self.frmWizSTRType.findChildren(QTableView):
             item.openPersistentEditor(item.model().index(0, 0))
 
-    def validate_occupants(self, spatial_unit_obj):
+    def validate_party_count(self, spatial_unit_obj):
+        from .foreign_key_mapper import ForeignKeyMapper
+        # Get entity browser notification bar
+        fk_mapper = self.sender()
+        browser_notif = None
+        if isinstance(fk_mapper, ForeignKeyMapper):
+            # Insert error in entity browser too
+            browser_notif = NotificationBar(
+                fk_mapper._entitySelector.vlNotification
+            )
+
+            layout = fk_mapper._entitySelector.vlNotification
+
+            for i in reversed(range(layout.count())):
+                notif = layout.itemAt(i).widget()
+                for lbl in notif.findChildren(QWidget):
+                    layout.removeWidget(lbl)
+                    lbl.setVisible(False)
+                    lbl.deleteLater()
+
+                notif.setParent(None)
+
 
         str_obj = self.str_model()
         self.spatial_unit_notice.clear()
@@ -862,15 +883,14 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         if usage_count.spatial_unit_count > 0:
             if self.social_tenure.multi_party:
                 if usage_count.spatial_unit_count == 1:
-                    ocup = ' occupant.'
+                    ocup = ' party.'
                 else:
-                    ocup = ' occupants.'
+                    ocup = ' parties.'
                 msg = QApplication.translate(
                     "newSTRWiz",
                     'This ' + format_name(self.spatial_unit.short_name) +
                     ' has already been assigned to '+
                     str(usage_count.spatial_unit_count)+ocup
-
                 )
                 self.spatial_unit_notice.insertNotification(
                     msg, INFORMATION
@@ -881,11 +901,15 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                     "newSTRWiz",
                     'Unfortunately, this ' +
                     format_name(self.spatial_unit.short_name) +
-                    ' has already been assigned to an occupant.'
+                    ' has already been assigned to a party.'
                 )
                 self.spatial_unit_notice.insertNotification(
                     msg, ERROR
                 )
+
+                if isinstance(fk_mapper, ForeignKeyMapper):
+                    if browser_notif is not None:
+                        browser_notif.insertErrorNotification(msg)
                 return False
         else:
             return True
@@ -993,14 +1017,14 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 if self.str_edit_obj is not None:
                     if self.str_edit_obj.spatial_unit_id != \
                             self.sel_spatial_unit[0].id:
-                        unoccupied = self.validate_occupants(
+                        unoccupied = self.validate_party_count(
                             self.sel_spatial_unit[0]
                         )
                         if not unoccupied:
                             isValid = False
                 # Validate on adding
                 else:
-                    unoccupied = self.validate_occupants(
+                    unoccupied = self.validate_party_count(
                         self.sel_spatial_unit[0]
                     )
                     if not unoccupied:

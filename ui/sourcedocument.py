@@ -689,7 +689,6 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
             self.uploadDoc()
             self.buildDisplay()
 
-
     def setModel(self, sourcedoc):
         """
         Set the SourceDocument model that is to be associated with the widget.
@@ -773,8 +772,8 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         :rtype: NoneType
         """
         extension = self._displayName[self._displayName.rfind('.'):]
-        # print 'Generating thumbnail'
-        #print self.fileUUID
+
+        QApplication.processEvents()
         doc_path = '{}/{}/{}/{}/{}{}'.format(
             source_document_location(),
             unicode(self.curr_profile.name),
@@ -879,8 +878,9 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         Updates the progress bar with the bytes transferred as a percentage.
         """
         progress = (size * 100)/self._docSize
-        #print progress
+
         self.pgBar.setValue(progress)
+        QApplication.processEvents()
 
     def onCompleteTransfer(self, fileid):
         """
@@ -889,7 +889,6 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         self.pgBar.setVisible(False)
         self.fileUUID = str(fileid)
         self.fileUploadComplete.emit()
-
 
 def source_document_location(default = "/home"):
     """

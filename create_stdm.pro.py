@@ -105,7 +105,7 @@ def create_pro_file(dir):
             for i, filename in enumerate(py_files):
                 # exclude init files
                 if '__init__' not in filename and  \
-                        not current_file_name in filename:
+                        not current_file_name in filename and 'ui_' not in filename:
                     file_path = os.path.join(dirpath, filename)
 
                     if translate_in_file(file_path):
