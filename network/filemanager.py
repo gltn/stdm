@@ -64,14 +64,14 @@ class NetworkFileManager(QObject):
                 self.networkPath,
                 unicode(profile_name).lower(),
                 self._entity_source,
-                unicode(self._doc_type).lower()
+                unicode(self._doc_type).lower().replace(' ', '_')
             )
         )
         doc_path_str = u'{}/{}/{}/{}'.format(
             self.networkPath,
-            profile_name,
+            profile_name.lower(),
             self._entity_source,
-            self._doc_type
+            self._doc_type.lower().replace(' ', '_')
         ).lower()
 
         if not doc_dir.exists():
@@ -131,7 +131,7 @@ class NetworkFileManager(QObject):
                 self.networkPath,
                 profile_name.lower(),
                 docmodel.source_entity,
-                doc_type.lower(),
+                doc_type.lower().replace(' ', '_'),
                 docmodel.document_identifier,
                 fileExt
             )

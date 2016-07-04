@@ -776,7 +776,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
             source_document_location(),
             unicode(self.curr_profile.name),
             unicode(self._source_entity),
-            unicode(self.doc_type_value()),
+            unicode(self.doc_type_value()).replace(' ', '_'),
             unicode(self.fileUUID),
             unicode(extension)
         ).lower()
