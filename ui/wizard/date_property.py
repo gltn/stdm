@@ -46,6 +46,9 @@ class DateProperty(QDialog, Ui_DateProperty):
         self._min_val = form_fields['minimum']
         self._max_val = form_fields['maximum']
 
+        self.min_use_current_date = form_fields['min_use_current_date']
+        self.max_use_current_date = form_fields['max_use_current_date']
+
         self.init_gui()
 
     def init_gui(self):
@@ -63,7 +66,28 @@ class DateProperty(QDialog, Ui_DateProperty):
 
         self.rbMinFixed.setChecked(True)
         self.rbMaxFixed.setChecked(True)
+
+        self.rbMinFixed.toggled.connect(self.min_fixed_toggle_handler)
+        self.rbMaxFixed.toggled.connect(self.max_fixed_toggle_handler)
+
+        self.rbMinCurr.toggled.connect(self.min_curr_toggle_handler)
+        self.rbMaxCurr.toggled.connect(self.max_curr_toggle_handler)
+
+        self.rbMinCurr.setChecked(self.min_use_current_date)
+        self.rbMaxCurr.setChecked(self.max_use_current_date)
+
+    def min_fixed_toggle_handler(self, checked):
+        self.edtMinDate.setEnabled(checked)
 	
+    def max_fixed_toggle_handler(self, checked):
+        self.edtMaxDate.setEnabled(checked)
+
+    def min_curr_toggle_handler(self, checked):
+        self.min_use_current_date = checked
+	
+    def max_curr_toggle_handler(self, checked):
+        self.max_use_current_date = checked
+
     def add_values(self):
         """
         Sets min/max properties with values from form widgets

@@ -43,6 +43,10 @@ from stdm.network import (
     NetworkFileManager,
     DocumentTransferWorker
 )
+from stdm.data.database import (
+    STDMDb
+)
+from stdmdialog import DeclareMapping
 from stdm.settings.registryconfig import (
     RegistryConfig,
     NETWORK_DOC_RESOURCE,
@@ -153,6 +157,7 @@ class SourceDocumentManager(QObject):
         if container is not None:
             self.containers[id] = container
 
+
     def removeContainer(self, containerid):
         """
         Removes the container with the specified ID from the
@@ -195,7 +200,6 @@ class SourceDocumentManager(QObject):
         :return: None
         :rtype: NoneType
         """
-
         if len(self.containers) > 0:
             if doc_type_id in self.containers:
                 container = self.containers[doc_type_id]
@@ -235,12 +239,11 @@ class SourceDocumentManager(QObject):
                         )
                         return
 
-                    # Use the default network file manager
-                    networkManager = NetworkFileManager(
-                        network_location, self.parent()
-                    )
-
                     for i in range(record_count):
+                        # Use the default network file manager
+                        networkManager = NetworkFileManager(
+                            network_location, self.parent()
+                        )
                         # Add document widget
                         docWidg = DocumentWidget(
                             self.document_model,
@@ -274,6 +277,7 @@ class SourceDocumentManager(QObject):
         """
         docWidget = self.sender()
         if isinstance(docWidget, DocumentWidget):
+
             self.fileUploaded.emit(docWidget.sourceDocument(documenttype))
             self._docRefs.append(docWidget.fileUUID)
 
@@ -628,6 +632,8 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         if self._mode == DOWNLOAD_MODE:
             #Try to delete document and suppress error if it does not exist
             try:
+
+
                 self._srcDoc.delete()
                 # Remove the same document from supporting
                 # doc table linked to other str record as the file doesn't exist.
@@ -643,6 +649,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
             except sqlalchemy.exc.SQLAlchemyError, exc:
                 LOGGER.debug(str(exc))
+
 
         #Emit signal to indicate the widget is ready to be removed
         self.referencesRemoved.emit(self._doc_type_id)
@@ -742,6 +749,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         Builds the database model for the source document file reference.
         """
         if self._mode == UPLOAD_MODE:
+
             entity_doc_obj = self.document_model()
             entity_doc_obj.document_identifier = self.fileUUID
             entity_doc_obj.filename = self.fileInfo.fileName()
@@ -753,6 +761,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
         return self._srcDoc
 
+
     def set_thumbnail(self):
         """
         Sets thumbnail to the document widget by
@@ -762,14 +771,15 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         """
         extension = self._displayName[self._displayName.rfind('.'):]
 
-        doc_path = '{}/{}/{}/{}/{}{}'.format(
+        QApplication.processEvents()
+        doc_path = u'{}/{}/{}/{}/{}{}'.format(
             source_document_location(),
             unicode(self.curr_profile.name),
             unicode(self._source_entity),
             unicode(self.doc_type_value()),
             unicode(self.fileUUID),
             unicode(extension)
-        )
+        ).lower()
 
         ph_image = QImage(doc_path)
         ph_pixmap = QPixmap.fromImage(ph_image)
@@ -804,13 +814,11 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
                                    'text-decoration: underline;' \
                                    'color:#5555ff;"' \
                        '>' \
-                       '{}' \
-                       '</span>' \
+                       '{}</span>' \
                        '<span ' \
                             'style="font-weight:600;' \
                             'color:#8f8f8f;"' \
-                       '>&nbsp;' \
-                            '({})' \
+                       '>&nbsp;({})' \
                        '</span>' \
                        '</p>' \
                    '</body>' \
@@ -859,7 +867,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
             workerThread.start()
             # Call transfer() to get fileUUID early
-            docWorker.transfer()
+            #docWorker.transfer()
             self.fileUUID = docWorker.file_uuid
 
     def onBlockWritten(self,size):
@@ -868,7 +876,9 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         Updates the progress bar with the bytes transferred as a percentage.
         """
         progress = (size * 100)/self._docSize
+
         self.pgBar.setValue(progress)
+        QApplication.processEvents()
 
     def onCompleteTransfer(self, fileid):
         """
@@ -877,7 +887,6 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         self.pgBar.setVisible(False)
         self.fileUUID = str(fileid)
         self.fileUploadComplete.emit()
-
 
 def source_document_location(default = "/home"):
     """

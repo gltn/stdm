@@ -67,7 +67,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.EX_TYPE_INFO =  ['SUPPORTING_DOCUMENT', 'SOCIAL_TENURE', 
                 'ADMINISTRATIVE_SPATIAL_UNIT', 'ENTITY_SUPPORTING_DOCUMENT',
-                'VALUE_LIST']
+                'VALUE_LIST', 'ASSOCIATION_ENTITY']
 
         self.setupUi(self)
         self.dtypes = {}
@@ -75,6 +75,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.column  = kwargs.get('column', None)
         self.entity  = kwargs.get('entity', None)
         self.profile = kwargs.get('profile', None)
+        self.in_db = kwargs.get('in_db', False)
 
         self.type_info = ''
         
@@ -114,10 +115,11 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.column_to_wa(self.column)
 
         self.edtColName.setFocus()
+        self.edtColName.setEnabled(not self.in_db)
 
     def column_to_form(self, column):
         """
-        Initializes form controls with column data when editting a column.
+        Initialize form controls with column data when editting a column.
         :param column: Column to edit
         :type column: BaseColumn
         """
@@ -129,14 +131,12 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.cbUnique.setCheckState(self.bool_to_check(column.unique))
         self.cbIndex.setCheckState(self.bool_to_check(column.index))
 
-        #self.cboDataType.setCurrentIndex(cbo_id)
-
         self.cboDataType.setCurrentIndex( \
                 self.cboDataType.findText(column.display_name()))
 
     def column_to_wa(self, column):
         """
-        Initializes work area 'form_fields' with column data.
+        Initialize 'work area' form_fields with column data.
         Used when editing a column
         :param column: Column to edit
         :type column: BaseColumn
@@ -162,6 +162,17 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         if hasattr(column, 'association'):
             self.form_fields['first_parent'] = column.association.first_parent
             self.form_fields['second_parent'] = column.association.second_parent
+
+        if hasattr(column, 'min_use_current_date'):
+            self.form_fields['min_use_current_date'] = column.min_use_current_date
+            self.form_fields['max_use_current_date'] = column.max_use_current_date
+
+        if hasattr(column, 'min_use_current_datetime'):
+            self.form_fields['min_use_current_datetime'] = \
+                    column.min_use_current_datetime
+            self.form_fields['max_use_current_datetime'] = \
+                    column.max_use_current_datetime
+
 
     def bool_to_check(self, state):
         """
@@ -192,13 +203,29 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.form_fields['geom_type'] = self.type_attribs.get('geom_type', 0)
 
         self.form_fields['entity_relation'] = \
-                self.type_attribs.get('entity_relation', None)
+                self.type_attribs['FOREIGN_KEY'].get('entity_relation', None)
+
+        self.form_fields['entity_relation'] = \
+                self.type_attribs['LOOKUP'].get('entity_relation', None)
 
         self.form_fields['first_parent'] = \
-                self.type_attribs.get('first_parent', None)
+                self.type_attribs['MULTIPLE_SELECT'].get('first_parent', None)
 
         self.form_fields['second_parent'] = \
-                self.type_attribs.get('second_parent', None)
+                self.type_attribs['MULTIPLE_SELECT'].get('second_parent', None)
+
+        self.form_fields['min_use_current_date'] = \
+                self.type_attribs['DATE'].get('min_use_current_date', None)
+
+        self.form_fields['max_use_current_date'] = \
+                self.type_attribs['DATE'].get('max_use_current_date', None)
+
+        self.form_fields['min_use_current_datetime'] = \
+                self.type_attribs['DATETIME'].get('min_use_current_datetime', None)
+
+        self.form_fields['max_use_current_datetime'] = \
+                self.type_attribs['DATETIME'].get('max_use_current_datetime', None)
+
 
     def init_type_attribs(self):
         """
@@ -211,57 +238,100 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         *property - function to execute when a data type is selected.
         """
         self.type_attribs['VARCHAR'] = {
-                'mandt':False,'search': True,
-                'unique': False, 'index': False,
+                'mandt':{'check_state':False, 'enabled_state':True},
+                'search':{'check_state':True, 'enabled_state':True},
+                'unique':{'check_state':False, 'enabled_state':True},
+                'index':{'check_state':False, 'enabled_state':True},
                 'maximum':30,'property': self.varchar_property }
 
-        self.type_attribs['INT'] = {
-                'mandt':False, 'search': False,
-                'unique': False, 'index': False,
+        self.type_attribs['BIGINT'] = {
+                'mandt':{'check_state':False, 'enabled_state':True},
+                'search':{'check_state':True, 'enabled_state':True},
+                'unique':{'check_state':False, 'enabled_state':True},
+                'index':{'check_state':False, 'enabled_state':True},
                 'minimum':0, 'maximum':0,
                 'property':self.bigint_property }
 
-        self.type_attribs['TEXT'] = {'mandt':False, 'search': False, 
-                'unique': False, 'index': False } 
+        self.type_attribs['TEXT'] = {
+                'mandt':{'check_state':False, 'enabled_state':False},
+                'search':{'check_state':False, 'enabled_state':False},
+                'unique':{'check_state':False, 'enabled_state':False},
+                'index':{'check_state':False, 'enabled_state':False},
+                } 
 
-        self.type_attribs['DOUBLE' ] = {'mandt':False, 'search': False, 
-                'unique': False, 'index': False, 
+        self.type_attribs['DOUBLE' ] = {
+                'mandt':{'check_state':False, 'enabled_state':True},
+                'search':{'check_state':True, 'enabled_state':True},
+                'unique':{'check_state':False, 'enabled_state':True},
+                'index':{'check_state':False, 'enabled_state':True},
                 'minimum':0.0, 'maximum':0.0,
                 'property':self.double_property }
 
-        self.type_attribs['DATE'] =  {'mandt':False, 'search': False,
-                'unique': False, 'index': False,
+        self.type_attribs['DATE'] =  {
+                'mandt':{'check_state':False, 'enabled_state':True},
+                'search':{'check_state':False, 'enabled_state':True},
+                'unique':{'check_state':False, 'enabled_state':False},
+                'index':{'check_state':False, 'enabled_state':False},
                 'minimum':QtCore.QDate.currentDate(),
                 'maximum':QtCore.QDate.currentDate(),
+                'min_use_current_date':False,
+                'max_use_current_date':False,
                 'property':self.date_property }
                
-        self.type_attribs['DATETIME'] = {'mandt':False, 'search': False,
-                'unique': False, 'index': False,
+        self.type_attribs['DATETIME'] = {
+                'mandt':{'check_state':False, 'enabled_state':True},
+                'search':{'check_state':False, 'enabled_state':True},
+                'unique':{'check_state':False, 'enabled_state':False},
+                'index':{'check_state':False, 'enabled_state':False},
                 'minimum':QtCore.QDateTime.currentDateTime(),
                 'maximum':QtCore.QDateTime.currentDateTime(),
+                'min_use_current_datetime':False,
+                'max_use_current_datetime':False,
                 'property':self.dtime_property }
 
-        self.type_attribs['FOREIGN_KEY'] = {'mandt':False, 'search': False, 
-                'unique': False, 'index': False,
+        self.type_attribs['FOREIGN_KEY'] = {
+                'mandt':{'check_state':False, 'enabled_state':True},
+                'search':{'check_state':False, 'enabled_state':False},
+                'unique':{'check_state':False, 'enabled_state':False},
+                'index':{'check_state':False, 'enabled_state':False},
                 'entity_relation':None,
                 'property':self.fk_property, 'prop_set':False }
 
-        self.type_attribs['LOOKUP'] = {'mandt':False, 'search': False,
-                'unique': False, 'index': False,
+        self.type_attribs['LOOKUP'] = {
+                'mandt':{'check_state':False, 'enabled_state':True},
+                'search':{'check_state':True, 'enabled_state':True},
+                'unique':{'check_state':False, 'enabled_state':False},
+                'index':{'check_state':False, 'enabled_state':False},
                 'entity_relation':{},
                 'property':self.lookup_property, 'prop_set':False }
 
-        self.type_attribs['GEOMETRY'] ={'mandt':False, 'search': False, 
-                'unique': False, 'index': False,
+        self.type_attribs['GEOMETRY'] ={
+                'mandt':{'check_state':False, 'enabled_state':False},
+                'search':{'check_state':False, 'enabled_state':False},
+                'unique':{'check_state':True, 'enabled_state':False},
+                'index':{'check_state':False, 'enabled_state':False},
                 'srid':"", 'geom_type':0,
                 'property':self.geometry_property, 'prop_set':False }
 
+        self.type_attribs['BOOL'] ={
+                'mandt':{'check_state':False, 'enabled_state':False},
+                'search':{'check_state':False, 'enabled_state':False},
+                'unique':{'check_state':False, 'enabled_state':False},
+                'index':{'check_state':False, 'enabled_state':False}
+                }
 
-        self.type_attribs['ADMIN_SPATIAL_UNIT'] ={'mandt':False, 'search': False,
-                'entity_relation':None, 'unique': False, 'index': False}
+        self.type_attribs['ADMIN_SPATIAL_UNIT'] ={
+                'mandt':{'check_state':False, 'enabled_state':True},
+                'search':{'check_state':True, 'enabled_state':True},
+                'unique':{'check_state':False, 'enabled_state':False},
+                'index':{'check_state':False, 'enabled_state':False},
+                'entity_relation':None}
 
-        self.type_attribs['MULTIPLE_SELECT'] ={'mandt':False, 'search': False, 
-                'unique': False, 'index': False,
+        self.type_attribs['MULTIPLE_SELECT'] ={
+                'mandt':{'check_state':False, 'enabled_state':True},
+                'search':{'check_state':False, 'enabled_state':True},
+                'unique':{'check_state':False, 'enabled_state':False},
+                'index':{'check_state':False, 'enabled_state':False},
                 'first_parent':None, 'second_parent':self.entity,
                 'property':self.multi_select_property, 'prop_set':False }
 	
@@ -306,11 +376,16 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         """
         Opens a property editor for the Date data type.
         """
+
         editor = DateProperty(self, self.form_fields)
         result = editor.exec_()
         if result == 1:
             self.form_fields['minimum'] = editor.min_val()
             self.form_fields['maximum'] = editor.max_val()
+            self.form_fields['min_use_current_date'] = \
+                    editor.min_use_current_date
+            self.form_fields['max_use_current_date'] = \
+                    editor.max_use_current_date
 
     def dtime_property(self):
         """
@@ -321,6 +396,10 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         if result == 1:
             self.form_fields['minimum'] = editor.min_val()
             self.form_fields['maximum'] = editor.max_val()
+            self.form_fields['min_use_current_datetime'] = \
+                    editor.min_use_current_datetime
+            self.form_fields['max_use_current_datetime'] = \
+                    editor.max_use_current_datetime
 
     def geometry_property(self):
         """
@@ -424,9 +503,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                                 self.form_fields['geom_type'],
                                 self.entity, **self.form_fields)
             else:
-                self.error_message('Please set column properties.')
+                self.error_message(self.tr('Please set column properties.'))
         else:
-            raise "No type to create!"
+            raise self.tr("No type to create!")
 
         return column
 
@@ -438,10 +517,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         :type ti: BaseColumn.TYPE_INFO
         :rtype: boolean
         """
-        if not self.type_attribs[ti].has_key('prop_set'):
-            return True
-
-        return self.type_attribs[ti]['prop_set']
+        return self.type_attribs[ti].get('prop_set', True)
 
     def property_by_name(self, ti, name):
         try:
@@ -476,15 +552,15 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         param opts: Dictionary of selected column type properties
         type: dictionary
         """
-        self.cbMandt.setEnabled(opts['mandt'])
-        self.cbSearch.setEnabled(opts['search'])
-        self.cbUnique.setEnabled(opts['unique'])
-        self.cbIndex.setEnabled(opts['index'])
+        self.cbMandt.setEnabled(opts['mandt']['enabled_state'])
+        self.cbSearch.setEnabled(opts['search']['enabled_state'])
+        self.cbUnique.setEnabled(opts['unique']['enabled_state'])
+        self.cbIndex.setEnabled(opts['index']['enabled_state'])
 
-        self.cbMandt.setCheckState(self.bool_to_check(opts['mandt']))
-        self.cbSearch.setCheckState(self.bool_to_check(opts['search']))
-        self.cbUnique.setCheckState(self.bool_to_check(opts['unique']))
-        self.cbIndex.setCheckState(self.bool_to_check(opts['index']))
+        self.cbMandt.setCheckState(self.bool_to_check(opts['mandt']['check_state']))
+        self.cbSearch.setCheckState(self.bool_to_check(opts['search']['check_state']))
+        self.cbUnique.setCheckState(self.bool_to_check(opts['unique']['check_state']))
+        self.cbIndex.setCheckState(self.bool_to_check(opts['index']['check_state']))
 
     def set_min_max_defaults(self, type_info):
         """
@@ -534,18 +610,14 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         # column name is not empty
         if len(col_name)==0:
-            self.error_message('Please enter the column name!')
+            self.error_message(self.tr('Please enter the column name!'))
             return False
 
-        # check if another column with the same name exist in the current entity
-        if self.entity.columns.has_key(col_name):
-            self.error_message(QApplication.translate("ColumnEditor",
-                "Column with the same name already exist!"))
-            return 
-
-        # if column is initialized, this is an edit
-        # delete old one then add a new one
-        if self.column:
+        if self.column is None:
+            if self.dup_check(col_name):
+                self.error_message(self.tr("Column with the same name already exist!"))
+                return
+        else: 
             self.entity.remove_column(self.column.name)
 
         self.fill_work_area()
@@ -556,6 +628,19 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.done(1)
         else:
             return
+
+    def dup_check(self, name):
+        """
+        Return True if we have a column in the current entity with same name
+        as our new column
+        :param col_name: column name
+        :type col_name: str
+        """
+        # check if another column with the same name exist in the current entity
+        if self.entity.columns.has_key(name):
+            return True
+        else:
+            return False
 
     def rejectAct(self):
         self.done(0)

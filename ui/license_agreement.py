@@ -78,9 +78,9 @@ class LicenseAgreement(QDialog, Ui_LicenseAgreement):
         if len(license_key) > 0:
             show_lic = license_key[SHOW_LICENSE]
 
-        if show_lic == 1:
+        if show_lic == 1 or show_lic == unicode(1):
             return True
-        elif show_lic == 0:
+        elif show_lic == 0 or show_lic == unicode(0):
             self.accepted = True
             return False
 
