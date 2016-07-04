@@ -244,7 +244,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 'index':{'check_state':False, 'enabled_state':True},
                 'maximum':30,'property': self.varchar_property }
 
-        self.type_attribs['BIGINT'] = {
+        self.type_attribs['INT'] = {
                 'mandt':{'check_state':False, 'enabled_state':True},
                 'search':{'check_state':True, 'enabled_state':True},
                 'unique':{'check_state':False, 'enabled_state':True},
