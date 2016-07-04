@@ -396,9 +396,11 @@ class DocumentGenerator(QObject):
                 elif filePath is None and len(dataFields) > 0:
                     docFileName = self._build_file_name(data_source, entityFieldName,
                                                       entityFieldValue, dataFields, fileExtension)
+
                     # Replace unsupported characters in Windows file naming
                     docFileName = docFileName.replace('/', '_').replace \
                         ('\\', '_').replace(':', '_').strip('*?"<>|')
+
 
                     if not docFileName:
                         return (False, QApplication.translate("DocumentGenerator",
@@ -416,10 +418,10 @@ class DocumentGenerator(QObject):
 
                     absDocPath = u"{0}/{1}".format(outputDir, docFileName)
                     self._write_output(composition, outputMode, absDocPath)
-                # Clear temporary layers
-                if ref_layer is not None:
-                    QgsMapLayerRegistry.instance().removeMapLayer(ref_layer.id())
-
+                # # Clear temporary layers
+                # if ref_layer is not None:
+                #     QgsMapLayerRegistry.instance().removeMapLayer(ref_layer.id())
+                #self.clear_temporary_layers()
             return True, "Success"
 
         return False, "Document composition could not be generated"
