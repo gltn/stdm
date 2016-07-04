@@ -200,7 +200,6 @@ class SourceDocumentManager(QObject):
         :return: None
         :rtype: NoneType
         """
-
         if len(self.containers) > 0:
             if doc_type_id in self.containers:
                 container = self.containers[doc_type_id]
@@ -241,7 +240,6 @@ class SourceDocumentManager(QObject):
                         return
 
                     for i in range(record_count):
-
                         # Use the default network file manager
                         networkManager = NetworkFileManager(
                             network_location, self.parent()
@@ -774,14 +772,14 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         extension = self._displayName[self._displayName.rfind('.'):]
 
         QApplication.processEvents()
-        doc_path = '{}/{}/{}/{}/{}{}'.format(
+        doc_path = u'{}/{}/{}/{}/{}{}'.format(
             source_document_location(),
             unicode(self.curr_profile.name),
             unicode(self._source_entity),
-            unicode(self.doc_type_value()),
+            unicode(self.doc_type_value()).replace(' ', '_'),
             unicode(self.fileUUID),
             unicode(extension)
-        )
+        ).lower()
 
         ph_image = QImage(doc_path)
         ph_pixmap = QPixmap.fromImage(ph_image)

@@ -395,8 +395,11 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
             return
 
         #Load data source columns
-        self._data_source = composer_ds.name()
-        self.ds_entity = self.curr_profile.entity_by_name(self._data_source)
+        self._data_source = self.current_config().data_source()
+
+        self.ds_entity = self.curr_profile.entity_by_name(
+            self._data_source
+        )
 
         self._load_data_source_columns(self.ds_entity)
             
@@ -471,7 +474,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
             return
         
         documentNamingAttrs = self.lstDocNaming.selectedMappings()
-        
+
         if self.chkUseOutputFolder.checkState() == Qt.Checked and len(documentNamingAttrs) == 0:
             self._notif_bar.insertErrorNotification(QApplication.translate("DocumentGeneratorDialog", \
                                                 "Please select at least one field for naming the output document"))

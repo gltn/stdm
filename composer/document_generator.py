@@ -285,38 +285,39 @@ class DocumentGenerator(QObject):
             """
             Iterate through records where a single file output will be generated for each matching record.
             """
+
             for rec in records:
                 composition = QgsComposition(self._map_renderer)
                 composition.loadFromTemplate(templateDoc)
-                
+                ref_layer = None
                 #Set value of composer items based on the corresponding db values
                 for composerId in composerDS.dataFieldMappings().reverse:
                     #Use composer item id since the uuid is stripped off
                     composerItem = composition.getComposerItemById(composerId)
-                    
                     if not composerItem is None:
                         fieldName = composerDS.dataFieldName(composerId)
                         fieldValue = getattr(rec,fieldName)
                         self._composeritem_value_handler(composerItem, fieldValue)
 
-                #Extract photo information
+                # Extract photo information
                 self._extract_photo_info(composition, ph_config_collection, rec)
 
-                #Set table item values based on configuration information
+                # Set table item values based on configuration information
                 self._set_table_data(composition, table_config_collection, rec)
 
-                #Refresh non-custom map composer items
+                # Refresh non-custom map composer items
                 self._refresh_composer_maps(composition,
                                             spatialFieldsConfig.spatialFieldsMapping().keys())
                             
-                #Create memory layers for spatial features and add them to the map
+                # Create memory layers for spatial features and add them to the map
                 for mapId,spfmList in spatialFieldsConfig.spatialFieldsMapping().iteritems():
+
                     map_item = composition.getComposerItemById(mapId)
-                    
+
                     if not map_item is None:
-                        #Clear any previous map memory layer
+                        # #Clear any previous map memory layer
                         self.clear_temporary_map_layers()
-                        
+
                         for spfm in spfmList:
                             #Use the value of the label field to name the layer
                             lbl_field = spfm.labelField()
@@ -333,7 +334,7 @@ class DocumentGenerator(QObject):
                                     layerName = self._random_feature_layer_name(spatial_field)
                             else:
                                 layerName = self._random_feature_layer_name(spatial_field)
-                            
+
                             #Extract the geometry using geoalchemy spatial capabilities
                             geom_value = getattr(rec, spatial_field)
                             if geom_value is None:
@@ -345,13 +346,13 @@ class DocumentGenerator(QObject):
                             #Get geometry type
                             geom_type, srid = geometryType(composerDS.name(),
                                                           spatial_field)
-                            
+
                             #Create reference layer with feature
                             ref_layer = self._build_vector_layer(layerName, geom_type, srid)
 
                             if ref_layer is None or not ref_layer.isValid():
                                 continue
-                            
+
                             #Add feature
                             bbox = self._add_feature_to_layer(ref_layer, geomWKT)
                             bbox.scale(spfm.zoomLevel())
@@ -395,9 +396,11 @@ class DocumentGenerator(QObject):
                 elif filePath is None and len(dataFields) > 0:
                     docFileName = self._build_file_name(data_source, entityFieldName,
                                                       entityFieldValue, dataFields, fileExtension)
+
                     # Replace unsupported characters in Windows file naming
                     docFileName = docFileName.replace('/', '_').replace \
                         ('\\', '_').replace(':', '_').strip('*?"<>|')
+
 
                     if not docFileName:
                         return (False, QApplication.translate("DocumentGenerator",
@@ -415,12 +418,12 @@ class DocumentGenerator(QObject):
 
                     absDocPath = u"{0}/{1}".format(outputDir, docFileName)
                     self._write_output(composition, outputMode, absDocPath)
-            
-            #Clear temporary layers
-            self.clear_temporary_layers()
-            
+                # # Clear temporary layers
+                # if ref_layer is not None:
+                #     QgsMapLayerRegistry.instance().removeMapLayer(ref_layer.id())
+                #self.clear_temporary_layers()
             return True, "Success"
-        
+
         return False, "Document composition could not be generated"
 
     def _random_feature_layer_name(self, sp_field):
@@ -468,16 +471,17 @@ class DocumentGenerator(QObject):
         self.clear_temporary_table_layers()
 
     def _clear_layers(self, layers):
+
         if layers is None:
             return
-
         try:
-            layer_ids = [lyr.id() for lyr in layers]
-            QgsMapLayerRegistry.instance().removeMapLayers(layer_ids)
+            for lyr in layers:
+                id = lyr.id()
+                QgsMapLayerRegistry.instance().removeMapLayer(id)
 
         except RuntimeError:
             pass
-    
+
     def _build_vector_layer(self, layer_name, geom_type, srid):
         """
         Builds a memory vector layer based on the spatial field mapping properties.

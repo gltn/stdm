@@ -61,19 +61,18 @@ class NetworkFileManager(QObject):
         profile_name = table_to_profile_name(self._entity_source)
         root_dir = QDir(self.networkPath)
         doc_dir = QDir('{}/{}/{}/{}'.format(
+                self.networkPath,
+                unicode(profile_name).lower(),
+                self._entity_source,
+                unicode(self._doc_type).lower().replace(' ', '_')
+            )
+        )
+        doc_path_str = u'{}/{}/{}/{}'.format(
             self.networkPath,
-            profile_name,
+            profile_name.lower(),
             self._entity_source,
-            self._doc_type
-        )
-
-        )
-        doc_path_str = '{}/{}/{}/{}'.format(
-            self.networkPath,
-            profile_name,
-            self._entity_source,
-            self._doc_type
-        )
+            self._doc_type.lower().replace(' ', '_')
+        ).lower()
 
         if not doc_dir.exists():
             res = root_dir.mkpath(doc_path_str)
@@ -86,8 +85,11 @@ class NetworkFileManager(QObject):
         else:
             root_doc_type_path = doc_path_str
 
-        self.destinationPath = root_doc_type_path + "/" + self.fileID + "."  + \
-                               fileinfo.completeSuffix()
+        self.destinationPath = '{}/{}.{}'.format(
+            root_doc_type_path,
+            self.fileID,
+            fileinfo.completeSuffix()
+        )
 
         srcFile = open(self.sourcePath,'rb')
         destinationFile = open(self.destinationPath,'wb')
@@ -116,21 +118,23 @@ class NetworkFileManager(QObject):
         """
         pass
 
-
-
     def deleteDocument(self, docmodel = None, doc_type=None):
         """
         Delete the source document from the central repository.
         """
-
         if not docmodel is None:
             #Build the path from the model variable values.
             fileName, fileExt = guess_extension(docmodel.filename)
             profile_name = table_to_profile_name(docmodel.source_entity)
             #Qt always expects the file separator be be "/" regardless of platform.
-            absPath = self.networkPath + '/'+profile_name + '/' + \
-                      "%s"%(docmodel.source_entity) + '/' + \
-                      doc_type + '/' + docmodel.document_identifier + fileExt
+            absPath = '{}/{}/{}/{}/{}{}'.format(
+                self.networkPath,
+                profile_name.lower(),
+                docmodel.source_entity,
+                doc_type.lower().replace(' ', '_'),
+                docmodel.document_identifier,
+                fileExt
+            )
 
             return QFile.remove(absPath)
         
@@ -158,6 +162,7 @@ class DocumentTransferWorker(QObject):
         self._entity_source = entity_source
         self._doc_type = doc_type
         self.file_uuid = None
+
     @pyqtSlot()
     def transfer(self):
         """
