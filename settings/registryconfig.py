@@ -28,7 +28,7 @@ LOCAL_SOURCE_DOC = NETWORK_DOC_RESOURCE
 COMPOSER_OUTPUT = 'ComposerOutputs'
 COMPOSER_TEMPLATE = 'ComposerTemplates'
 CURRENT_PROFILE = 'CurrentProfile'
-
+LAST_SUPPORTING_DOC_PATH = 'LastDocumentPath'
 SHOW_LICENSE = 'ShowLicense'
 
 def registry_value(key_name):
@@ -48,6 +48,20 @@ def registry_value(key_name):
 
     else:
         return key_value[key_name]
+
+
+def set_registry_value(key, value):
+    """
+    Sets the registry key with the specified value. A new key will be created
+    if it does not exist.
+    :param key: Registry key
+    :type: str
+    :param value: Value to be set for the given key.
+    :type value: object
+    """
+    reg_config = RegistryConfig()
+
+    reg_config.write({key: value})
 
 
 def composer_output_path():
@@ -72,6 +86,23 @@ def source_documents_path():
     :rtype: str
     """
     return registry_value(NETWORK_DOC_RESOURCE)
+
+
+def last_document_path():
+    """
+    :return: Returns the latest path used for uploading supporting documents.
+    :rtype: str
+    """
+    return registry_value(LAST_SUPPORTING_DOC_PATH)
+
+
+def set_last_document_path(path):
+    """
+    Sets the latest path used for uploading supporting documents.
+    :param path: Supporting documents path
+    :type path: str
+    """
+    set_registry_value(LAST_SUPPORTING_DOC_PATH, path)
 
 
 class RegistryConfig(object):

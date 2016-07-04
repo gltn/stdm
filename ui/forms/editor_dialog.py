@@ -72,6 +72,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
         """
         QDialog.__init__(self, parent)
 
+        self.collection_suffix = self.tr('Collection')
+
         #Set minimum width
         self.setMinimumWidth(350)
 
@@ -151,6 +153,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
     def _setup_columns_content_area(self):
         #Only use this if entity supports documents
         self.entity_tab_widget = None
+        self.doc_widget = None
 
         self.entity_scroll_area = QScrollArea(self)
         self.entity_scroll_area.setFrameShape(QFrame.NoFrame)
@@ -239,6 +242,12 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 self
             )
 
+            #Map the source document manager object
+            self.addMapping(
+                'documents',
+                self.doc_widget.source_document_manager
+            )
+
             if self.entity_tab_widget is None:
                 self.entity_tab_widget = QTabWidget(self)
 
@@ -289,7 +298,11 @@ class EntityEditorDialog(QDialog, MapperMixin):
             fkb
         )
 
-        self.entity_tab_widget.addTab(fkb, child_entity.short_name)
+        self.entity_tab_widget.addTab(
+            fkb,
+            u'{0} {1}'.format(child_entity.short_name,
+                              self.collection_suffix)
+        )
 
         #Add to the collection
         self._fk_browsers[child_entity.name] = fkb
@@ -301,6 +314,25 @@ class EntityEditorDialog(QDialog, MapperMixin):
         """
         return [ch for ch in self._entity.children()
                 if ch.TYPE_INFO == Entity.TYPE_INFO]
+
+    def document_widget(self):
+        """
+        :return: Returns the widget for managing the supporting documents for an entity if enabled.
+        :rtype: SupportingDocumentsWidget
+        """
+        return self.doc_widget
+
+    def source_document_manager(self):
+        """
+        :return: Returns an instance of the SourceDocumentManager only if
+        supporting documents are enabled for the given entity. Otherwise,
+        None if supporting documents are not enabled.
+        :rtype: SourceDocumentManager
+        """
+        if self.doc_widget is None:
+            return None
+
+        return self.doc_widget.source_document_manager
 
     def _highlight_asterisk(self, text):
         #Highlight asterisk in red
