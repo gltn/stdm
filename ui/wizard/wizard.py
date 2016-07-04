@@ -596,7 +596,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                      })
 
 
-            self.wizardFinished.emit(self.cboProfile.currentText())
+            # self.wizardFinished.emit(self.cboProfile.currentText())
 
             # compute a new asset count
             self.orig_assets_count = len(self.stdm_config)
