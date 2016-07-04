@@ -43,10 +43,6 @@ from stdm.network import (
     NetworkFileManager,
     DocumentTransferWorker
 )
-from stdm.data.database import (
-    STDMDb
-)
-from stdmdialog import DeclareMapping
 from stdm.settings.registryconfig import (
     RegistryConfig,
     NETWORK_DOC_RESOURCE,
@@ -157,7 +153,6 @@ class SourceDocumentManager(QObject):
         if container is not None:
             self.containers[id] = container
 
-
     def removeContainer(self, containerid):
         """
         Removes the container with the specified ID from the
@@ -240,13 +235,12 @@ class SourceDocumentManager(QObject):
                         )
                         return
 
-
+                    # Use the default network file manager
+                    networkManager = NetworkFileManager(
+                        network_location, self.parent()
+                    )
 
                     for i in range(record_count):
-                        # Use the default network file manager
-                        networkManager = NetworkFileManager(
-                            network_location, self.parent()
-                        )
                         # Add document widget
                         docWidg = DocumentWidget(
                             self.document_model,
@@ -280,7 +274,6 @@ class SourceDocumentManager(QObject):
         """
         docWidget = self.sender()
         if isinstance(docWidget, DocumentWidget):
-
             self.fileUploaded.emit(docWidget.sourceDocument(documenttype))
             self._docRefs.append(docWidget.fileUUID)
 
@@ -635,8 +628,6 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         if self._mode == DOWNLOAD_MODE:
             #Try to delete document and suppress error if it does not exist
             try:
-
-
                 self._srcDoc.delete()
                 # Remove the same document from supporting
                 # doc table linked to other str record as the file doesn't exist.
@@ -652,7 +643,6 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
             except sqlalchemy.exc.SQLAlchemyError, exc:
                 LOGGER.debug(str(exc))
-
 
         #Emit signal to indicate the widget is ready to be removed
         self.referencesRemoved.emit(self._doc_type_id)
@@ -689,7 +679,6 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
             self._doc_type_id = doc_type_id
             self.uploadDoc()
             self.buildDisplay()
-
 
     def setModel(self, sourcedoc):
         """
@@ -753,7 +742,6 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         Builds the database model for the source document file reference.
         """
         if self._mode == UPLOAD_MODE:
-
             entity_doc_obj = self.document_model()
             entity_doc_obj.document_identifier = self.fileUUID
             entity_doc_obj.filename = self.fileInfo.fileName()

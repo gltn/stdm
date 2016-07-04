@@ -109,13 +109,10 @@ class NetworkFileManager(QObject):
         """
         pass
 
-
-
     def deleteDocument(self, docmodel = None, doc_type=None):
         """
         Delete the source document from the central repository.
         """
-
         if not docmodel is None:
             #Build the path from the model variable values.
             fileName, fileExt = guess_extension(docmodel.filename)
@@ -151,6 +148,7 @@ class DocumentTransferWorker(QObject):
         self._entity_source = entity_source
         self._doc_type = doc_type
         self.file_uuid = None
+
     @pyqtSlot()
     def transfer(self):
         """
