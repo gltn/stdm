@@ -133,14 +133,15 @@ class ForeignKeyMapper(QWidget):
     """
     #Custom signals
     beforeEntityAdded = pyqtSignal("PyQt_PyObject")
-    afterEntityAdded = pyqtSignal("PyQt_PyObject")
+    afterEntityAdded = pyqtSignal("PyQt_PyObject", int)
     entityRemoved = pyqtSignal("PyQt_PyObject")
-    
+    deletedRows = pyqtSignal(list)
+
     def __init__(self, entity, parent=None, notification_bar=None,
                  enable_list=True, can_filter=False):
         from stdm.ui.entity_browser import EntityBrowser
 
-        QWidget.__init__(self,parent)
+        QWidget.__init__(self, parent)
 
         self._entity = entity
         
@@ -152,24 +153,81 @@ class ForeignKeyMapper(QWidget):
         self._add_entity_btn = QToolButton(self)
         self._add_entity_btn.setToolTip(QApplication.translate("ForeignKeyMapper","Add"))
         self._add_entity_btn.setIcon(QIcon(":/plugins/stdm/images/icons/add.png"))
+        self._add_entity_btn.setText(QApplication.translate("ForeignKeyMapper","Add"))
         self._add_entity_btn.clicked.connect(self.onAddEntity)
-
+        self._add_entity_btn.setToolButtonStyle(
+            Qt.ToolButtonTextBesideIcon
+        )
         self._edit_entity_btn = QToolButton(self)
         self._edit_entity_btn.setVisible(False)
         self._edit_entity_btn.setToolTip(QApplication.translate("ForeignKeyMapper","Edit"))
         self._edit_entity_btn.setIcon(QIcon(":/plugins/stdm/images/icons/edit.png"))
+        self._edit_entity_btn.setText(QApplication.translate("ForeignKeyMapper", "Edit"))
+        self._edit_entity_btn.setToolButtonStyle(
+            Qt.ToolButtonTextBesideIcon
+        )
 
         self._filter_entity_btn = QToolButton(self)
         self._filter_entity_btn.setVisible(False)
         self._filter_entity_btn.setToolTip(QApplication.translate("ForeignKeyMapper","Select by expression"))
         self._filter_entity_btn.setIcon(QIcon(":/plugins/stdm/images/icons/filter.png"))
         self._filter_entity_btn.clicked.connect(self.onFilterEntity)
+        self._filter_entity_btn.setText(QApplication.translate("ForeignKeyMapper", "Filter"))
+        self._filter_entity_btn.setToolButtonStyle(
+            Qt.ToolButtonTextBesideIcon
+        )
 
         self._delete_entity_btn = QToolButton(self)
         self._delete_entity_btn.setToolTip(QApplication.translate("ForeignKeyMapper","Remove"))
         self._delete_entity_btn.setIcon(QIcon(":/plugins/stdm/images/icons/remove.png"))
         self._delete_entity_btn.clicked.connect(self.onRemoveEntity)
+        self._delete_entity_btn.setText(QApplication.translate("ForeignKeyMapper", "Remove"))
+        self._delete_entity_btn.setToolButtonStyle(
+            Qt.ToolButtonTextBesideIcon
+        )
 
+
+        self.setStyleSheet(
+            '''
+                QToolButton {
+                    border: 1px inset #777;
+                    border-radius: 2px;
+                    height:15px;
+                    text-align: center;
+                    padding-top: 3px;
+                    padding-bottom: 3px;
+                    background-color: qlineargradient(
+                        x1: 0, y1: 0, x2: 0, y2: 1,
+                        stop: 0 #f6f7fa, stop: 1 #dadbde
+                    );
+                }
+                QToolButton[text='Add']{
+                    width:70px;
+                    padding-left: 20%;
+                }
+
+                QToolButton[text='Edit']{
+                    width:70px;
+                    padding-left: 18%;
+                }
+                QToolButton[text='Filter']{
+                    width:70px;
+                    padding-left: 16%;
+                }
+
+                QToolButton[text='Remove']{
+                    width:70px;
+                    padding-left: 9%;
+                    padding-right: 10%;
+                }
+                QToolButton:pressed {
+                    background-color: qlineargradient(
+                        x1: 0, y1: 0, x2: 0, y2: 1,
+                        stop: 0 #dadbde, stop: 1 #f6f7fa
+                    );
+                }
+            '''
+        )
         layout = QVBoxLayout(self)
         layout.setSpacing(4)
         layout.setMargin(5)
@@ -448,7 +506,7 @@ class ForeignKeyMapper(QWidget):
         Slot raised on clicking to remove the selected entity.
         '''
         selectedRowIndices = self._tbFKEntity.selectionModel().selectedRows(0)
-        
+        deleted_rows = []
         if len(selectedRowIndices) == 0:
             msg = QApplication.translate("ForeignKeyMapper","Please select the record to be removed.")   
             self._notifBar.clear()
@@ -467,7 +525,9 @@ class ForeignKeyMapper(QWidget):
                 if self._deleteOnRemove:
                     delRec.delete()
             
-            self._removeRow(selectedRowIndex.row()) 
+            self._removeRow(selectedRowIndex.row())
+            deleted_rows.append(selectedRowIndex.row())
+        self.deletedRows.emit(deleted_rows)
             
     def _recordIds(self):
         '''
@@ -665,7 +725,8 @@ class ForeignKeyMapper(QWidget):
             self._tableModel.setData(prop_idx, attr_val)
 
         #Raise signal once entity has been inserted
-        self.afterEntityAdded.emit(model_obj)
+        self.afterEntityAdded.emit(model_obj, row_number)
+
         self._tbFKEntity.resizeColumnsToContents()
 
         return row_number

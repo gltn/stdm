@@ -209,7 +209,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                     text-align: center;
                     padding-top: 3px;
                     padding-bottom: 3px;
-
+                    margin-right:4px;
                     background-color: qlineargradient(
                         x1: 0, y1: 0, x2: 0, y2: 1,
                         stop: 0 #f6f7fa, stop: 1 #dadbde
@@ -708,6 +708,17 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         """
         Load source documents into document listing widget.
         """
+        # Configure progress dialog
+        progress_msg = QApplication.translate("ViewSTR", "Loading supporting documents...")
+
+        progress_dialog = QProgressDialog(self)
+        if len(source_docs) > 0:
+            progress_dialog.setWindowTitle(progress_msg)
+            progress_dialog.setRange(0, len(source_docs))
+            progress_dialog.setWindowModality(Qt.WindowModal)
+            progress_dialog.setFixedWidth(380)
+            progress_dialog.show()
+            progress_dialog.setValue(0)
         self._notif_search_config.clear()
 
         self.tbSupportingDocs.clear()
@@ -721,11 +732,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             self._notif_search_config.clear()
             self._notif_search_config.insertWarningNotification(empty_msg)
 
-        for doc_type_id, doc_obj in source_docs.iteritems():
-            # Filter out removed docs.
-            # Only filter when a doc is removed.
-            # if self.removed_docs is not None:
-            #     doc_obj = list(set(doc_obj) - set(self.removed_docs))
+        for i, (doc_type_id, doc_obj) in enumerate(source_docs.iteritems()):
 
             # add tabs, and container and widget for each tab
             tab_title = self._source_doc_manager.doc_type_mapping[doc_type_id]
@@ -768,6 +775,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             self.tbSupportingDocs.addTab(
                 tab_widget, tab_title
             )
+            progress_dialog.setValue(i + 1)
 
     def _on_node_reference_changed(self, rootHash):
         """

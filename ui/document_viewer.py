@@ -18,6 +18,8 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import division
+
 from PyQt4.QtGui import (
     QMdiSubWindow,
     QMdiArea,
@@ -30,6 +32,7 @@ from PyQt4.QtGui import (
     QPalette,
     QSizePolicy,
     QScrollArea,
+    QVBoxLayout,
     QIcon,
     QAction,
     QPrintDialog,
@@ -251,11 +254,13 @@ class DocumentViewer(QMdiSubWindow):
 
     def __init__(self, parent = None, file_identifier = ""):
         QMdiSubWindow.__init__(self,parent)
-
         self.setWindowIcon(QIcon(":/plugins/stdm/images/icons/photo.png"))
-
         self._file_identifier = file_identifier
         self._view_widget = None
+        self.mdi_area = parent
+
+        self.doc_width = None
+        self.doc_height = None
 
     def file_identifier(self):
         """
@@ -296,9 +301,31 @@ class DocumentViewer(QMdiSubWindow):
         """
         if not self._view_widget is None:
             photo_obj = self._view_widget.load_document(doc_path)
-            doc_width = photo_obj.width()
-            doc_height = photo_obj.height()
+            self.doc_width = photo_obj.width()
+            self.doc_height = photo_obj.height()
+
+            self.update_size(self.doc_width, self.doc_height)
+
+    def update_size(self, doc_width, doc_height):
+        """
+        Updates the size of the image contain
+        based on the document viewer size.
+        :param doc_width: The width of the image
+        :type doc_width: Integer
+        :param doc_height: The height of the image
+        :type doc_height: Integer
+        :return: None
+        :rtype: NoneType
+        """
+        par_height = self.mdi_area.height()
+        par_width = self.mdi_area.width()
+
+        ratio_list = [par_width / doc_width, par_height / doc_height]
+        ratio = min(ratio_list)
+        if par_height > doc_height and par_width > doc_width:
             self.resize(doc_width, doc_height)
+        else:
+            self.resize(doc_width * ratio, doc_height * ratio)
 
     def closeEvent(self, event):
         """
@@ -319,6 +346,7 @@ class DocumentViewManager(QMainWindow):
 
         self._mdi_area = QMdiArea()
         self.setCentralWidget(self._mdi_area)
+        self._mdi_area.resize(1280, 673)
 
         self._mdi_area.subWindowActivated.connect(self.update_actions)
         self._viewer_mapper = QSignalMapper(self)
@@ -344,11 +372,11 @@ class DocumentViewManager(QMainWindow):
         # Get the current screens' dimensions...
         screen = QDesktopWidget().availableGeometry()
         # ... and get this windows' dimensions
-        mid_area_size = self._mdi_area.frameGeometry()
+        mdi_area_size = self._mdi_area.frameGeometry()
         # The horizontal position
-        hpos = (screen.width() - mid_area_size.width()) / 2
+        hpos = (screen.width() - mdi_area_size.width()) / 2
         # vertical position
-        vpos = (screen.height() - mid_area_size.height()) / 2
+        vpos = (screen.height() - mdi_area_size.height()) / 2
         # repositions the window
         self.move(hpos, vpos)
 
@@ -452,6 +480,7 @@ class DocumentViewManager(QMainWindow):
 
         else:
             doc_viewer = self._create_viewer(document_widget)
+
             abs_doc_path = self.absolute_document_path(document_widget)
 
             if not QFile.exists(abs_doc_path):
@@ -479,6 +508,8 @@ class DocumentViewManager(QMainWindow):
             self.showNormal()
 
         self.center()
+
+
 
     def set_active_sub_window(self, viewer):
         if viewer:
@@ -536,6 +567,9 @@ class DocumentViewManager(QMainWindow):
         # TODO: viewer based on document type
         ph_viewer = PhotoViewer()
 
+        # v_layout = QVBoxLayout()
+        # v_layout.addWidget(ph_viewer)
+        # doc_viewer.setLayout(v_layout)
 
         doc_viewer.set_view_widget(ph_viewer)
 

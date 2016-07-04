@@ -510,40 +510,66 @@ class EntityBrowserWithEditor(EntityBrowser):
             tbActions.setObjectName('form_toolbar')
             tbActions.setIconSize(QSize(16, 16))
             tbActions.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-            tbActions.setStyleSheet(
-                '''
-                    QToolButton {
-                        border: 1px inset #777;
-                        border-radius: 2px;
-                        padding: 3px;
-                        background-color: qlineargradient(
-                            x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #f6f7fa, stop: 1 #dadbde
-                        );
-                    }
+            add = QApplication.translate("EntityBrowserWithEditor", "Add")
+            edit = QApplication.translate("EntityBrowserWithEditor","Edit")
+            remove = QApplication.translate("EntityBrowserWithEditor", "Remove")
 
-                    QToolButton:pressed {
-                        background-color: qlineargradient(
-                            x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #dadbde, stop: 1 #f6f7fa
-                        );
-                    }
-
-                '''
-            )
             self._newEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/add.png"),
-                                  QApplication.translate("EntityBrowserWithEditor", "Add"), self)
+                                            add, self)
 
             self.connect(self._newEntityAction,SIGNAL("triggered()"),self.onNewEntity)
             
             self._editEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/edit.png"),
-                                  QApplication.translate("EntityBrowserWithEditor","Edit"),self)
+                                             edit,self)
+            self._editEntityAction.setObjectName(
+                QApplication.translate("EntityBrowserWithEditor", "edit_tool")
+            )
             self.connect(self._editEntityAction,SIGNAL("triggered()"),self.onEditEntity)
         
             self._removeEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/remove.png"),
-                                  QApplication.translate("EntityBrowserWithEditor","Remove"),self)
+                                  remove, self)
+            self._removeEntityAction.setObjectName(
+                QApplication.translate("EntityBrowserWithEditor", "remove_tool")
+            )
             self.connect(self._removeEntityAction,SIGNAL("triggered()"),self.onRemoveEntity)
-            
+            tbActions.setStyleSheet(
+                '''
+                QToolButton {
+                    border: 1px inset #777;
+                    border-radius: 2px;
+                    width:70px;
+                    text-align: center;
+                    padding-top: 3px;
+                    padding-bottom: 3px;
+                    margin-right:3px;
+                    background-color: qlineargradient(
+                        x1: 0, y1: 0, x2: 0, y2: 1,
+                        stop: 0 #f6f7fa, stop: 1 #dadbde
+                    );
+                }
+                QToolButton[text='Add']{
+                    width:70px;
+                    padding-left: 20%;
+                }
+
+                QToolButton[text='Edit']{
+                    width:70px;
+                    padding-left: 18%;
+                }
+                QToolButton[text='Remove']{
+                    width:70px;
+                    padding-left: 9%;
+                    padding-right:10%;
+                }
+                QToolButton:pressed {
+                    background-color: qlineargradient(
+                        x1: 0, y1: 0, x2: 0, y2: 1,
+                        stop: 0 #dadbde, stop: 1 #f6f7fa
+                    );
+                }
+                '''
+            )
+
             tbActions.addAction(self._newEntityAction)
             tbActions.addAction(self._editEntityAction)
             tbActions.addAction(self._removeEntityAction)
@@ -730,8 +756,8 @@ class ForeignKeyBrowser(EntityBrowser):
         model = table
 
         if isinstance(table, str) or isinstance(table, unicode):
-            mapping = DeclareMapping.instance()
-            model = mapping.tableMapping(table)
+            #mapping = DeclareMapping.instance()
+            #model = mapping.tableMapping(table)
             self._data_source_name = table
 
         else:

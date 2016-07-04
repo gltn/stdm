@@ -21,7 +21,7 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>255</width>
+    <width>435</width>
     <height>100</height>
    </size>
   </property>
@@ -1020,11 +1020,8 @@
    <property name="subTitle">
     <string>Define entities to participate in Social Tenure Relations views</string>
    </property>
-   <layout class="QFormLayout" name="formLayout_9">
-    <property name="fieldGrowthPolicy">
-     <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-    </property>
-    <item row="0" column="1">
+   <layout class="QVBoxLayout" name="verticalLayout_6">
+    <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <property name="spacing">
        <number>6</number>
@@ -1081,28 +1078,27 @@
       </item>
       <item>
        <widget class="QCheckBox" name="cbMultiParty">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="text">
-         <string>Allow a spatial unit to be linked to multiple party in social tenure relationship</string>
+         <string>Allow multiple parties to be linked to a single spatial unit</string>
         </property>
        </widget>
       </item>
      </layout>
     </item>
-    <item row="1" column="0" colspan="2">
+    <item>
      <widget class="QLabel" name="lblPartyDesc">
       <property name="text">
        <string/>
       </property>
      </widget>
     </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="lblSpDesc">
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
+    <item>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <property name="spacing">
        <number>6</number>
@@ -1155,6 +1151,13 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item>
+     <widget class="QLabel" name="lblSpDesc">
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
