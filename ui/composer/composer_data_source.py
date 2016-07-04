@@ -94,6 +94,7 @@ class ComposerDataSourceSelector(QWidget,Ui_frmComposerDataSource):
             tables = profile_user_tables(self.curr_profile, False)
             self.cboDataSource.clear()
             self.cboDataSource.addItem('')
+
             for key, value in tables.iteritems():
                 self.cboDataSource.addItem(value.lower(), key)
             
@@ -103,5 +104,7 @@ class ComposerDataSourceSelector(QWidget,Ui_frmComposerDataSource):
         """
         if state:
             self.cboDataSource.clear()
-            self.cboDataSource.addItem("")
-            self.cboDataSource.addItems(pg_views())
+            self.cboDataSource.addItem('')
+
+            for value in pg_views():
+                self.cboDataSource.addItem(value, value)

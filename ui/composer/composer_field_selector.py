@@ -88,7 +88,6 @@ class ComposerFieldSelector(QWidget, Ui_frmComposerFieldEditor):
             return
         
         columnsNames = table_column_names(dataSourceName)
-        
         if len(columnsNames) == 0:
             return
         

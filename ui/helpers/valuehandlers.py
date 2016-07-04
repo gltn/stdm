@@ -267,26 +267,19 @@ class SourceDocManagerValueHandler(ControlValueHandler):
     '''
     controlType = SourceDocumentManager
 
-    def __init__(self, entity, documenttype):
-        self._docType = documenttype
-        self._entity = entity
-
     def value(self):
         #Get source document objects
-        srcDocs = self.control.sourceDocuments(self._entity, self._docType)
-        #Get document ids
-        docIds = [sd.DocumentID for sd in srcDocs]
-        
-        return ",".join(docIds)
+        return self.control.model_objects()
     
     def setValue(self,value):
-        pass
+        if not value is None:
+            self.control.set_source_documents(value)
     
     def supportsMandatory(self):
         return True
     
     def default(self):
-        return 0
+        return []
     
 SourceDocManagerValueHandler.register()
 
@@ -362,21 +355,6 @@ class CoordinatesWidgetValueHandler(ControlValueHandler):
     
 CoordinatesWidgetValueHandler.register()
 
-# class AttributeBrowserValueHandler(ControlValueHandler):
-#     controlType = AttributeBrowser
-#
-#     def value(self):
-#         ctlValue = self.control.values()
-#         return ctlValue
-#
-#     def setValue(self, value):
-#         if value:
-#             self.control.set_values(value)
-#
-#     def supportsMandatory(self):
-#         return True
-#
-# AttributeBrowserValueHandler.register()
 
 class MultipleChoiceComboBox(ControlValueHandler):
 
@@ -389,7 +367,6 @@ class MultipleChoiceComboBox(ControlValueHandler):
     def setValue(self,value):
         if value:
             self.control.set_values(value)
-
 
 MultipleChoiceComboBox.register()
 
