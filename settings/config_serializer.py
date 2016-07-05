@@ -453,8 +453,9 @@ class SocialTenureSerializer(object):
                                     social_tenure.tenure_type_collection.short_name)
         social_tenure_element.setAttribute(SocialTenureSerializer.LAYER_DISPLAY,
                                     social_tenure.layer_display())
+
         social_tenure_element.setAttribute(SocialTenureSerializer.MULTIPARTY,
-                                    social_tenure.multi_party)
+                                    str(social_tenure.multi_party))
 
         parent_node.appendChild(social_tenure_element)
 
