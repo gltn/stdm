@@ -87,6 +87,7 @@ LOGGER = logging.getLogger('stdm')
 LOGGER.setLevel(logging.DEBUG)
 
 CHECKBOX_VALUES = [False, None, True]
+CHECK_STATE = {True:Qt.Checked, False:Qt.Unchecked}
 
 class ConfigWizard(QWizard, Ui_STDMWizard):
     wizardFinished = pyqtSignal(object)
@@ -495,15 +496,17 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def bool_to_check(self, state):
         """
-        Converts a boolean to a Qt checkstate.
+        Given a boolean returns a Qt checkstate.
         :param state: True/False
         :type state: boolean
         :rtype: Qt.CheckState
         """
-        if state:
-            return Qt.Checked
-        else:
-            return Qt.Unchecked
+        return CHECK_STATE[state]
+
+        #if state:
+            #return Qt.Checked
+        #else:
+            #return Qt.Unchecked
 
     def multi_party_state_change(self):
         """
