@@ -471,6 +471,39 @@ def profile_user_tables(profile, include_views=True):
 
     return tables
 
+def db_user_tables(profile):
+    """
+    Returns user accessible tables.
+    :param profile: Current Profile
+    :type profile: Class
+    :param include_views: A Boolean that includes or excludes Views
+    :type include_views: Boolean
+    :return: Dictionary of user tables with name and
+    short name as a key and value.
+    :rtype: Dictionary
+    """
+    from stdm.data.pg_utils import (
+
+        pg_tables
+    )
+    db_tables = []
+    tables = [
+        e.name
+        for e in
+        profile.entities.values()
+        if e.TYPE_INFO in [
+            'ENTITY',
+            'ENTITY_SUPPORTING_DOCUMENT',
+            'SOCIAL_TENURE',
+            'SUPPORTING_DOCUMENT'
+        ]
+    ]
+    for table in tables:
+        if table in pg_tables():
+            db_tables.append(table)
+
+    return db_tables
+
 
 def profile_lookup_columns(profile):
     """

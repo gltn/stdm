@@ -104,6 +104,7 @@ class DocumentGenerator(QObject):
         self._map_memory_layers = []
 
         self._table_mem_layers = []
+        self._feature_ids = []
 
         self._link_field = ""
 
@@ -386,6 +387,7 @@ class DocumentGenerator(QObject):
                         '''
                         self._refresh_map_item(map_item)
 
+
                 #Extract chart information and generate chart
                 self._generate_charts(composition, chart_config_collection, rec)
 
@@ -418,10 +420,14 @@ class DocumentGenerator(QObject):
 
                     absDocPath = u"{0}/{1}".format(outputDir, docFileName)
                     self._write_output(composition, outputMode, absDocPath)
-                # # Clear temporary layers
-                # if ref_layer is not None:
-                #     QgsMapLayerRegistry.instance().removeMapLayer(ref_layer.id())
-                #self.clear_temporary_layers()
+                # # Clear temporary feature
+                if ref_layer is not None:
+                    for feat_id in self._feature_ids:
+                        ref_layer.deleteFeature(feat_id)
+
+
+
+            self._clear_layers(self._map_memory_layers)
             return True, "Success"
 
         return False, "Document composition could not be generated"
@@ -476,6 +482,7 @@ class DocumentGenerator(QObject):
             return
         try:
             for lyr in layers:
+                print lyr.name()
                 id = lyr.id()
                 QgsMapLayerRegistry.instance().removeMapLayer(id)
 
@@ -637,7 +644,7 @@ class DocumentGenerator(QObject):
         """
         if not isinstance(vlayer, QgsVectorLayer):
             return
-        
+        #self._feature_ids[:] = []
         dp = vlayer.dataProvider()
         
         feat = QgsFeature()
@@ -645,7 +652,7 @@ class DocumentGenerator(QObject):
         feat.setGeometry(g)
         
         dp.addFeatures([feat])
-        
+        self._feature_ids.append(feat.id())
         vlayer.updateExtents()
         
         return g.boundingBox()
