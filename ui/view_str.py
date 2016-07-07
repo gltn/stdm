@@ -200,7 +200,9 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         tool_buttons.addAction(self.addSTR)
         tool_buttons.addAction(self.editSTR)
         tool_buttons.addAction(self.deleteSTR)
-
+        tool_buttons.widgetForAction(self.addSTR).setObjectName('add')
+        tool_buttons.widgetForAction(self.editSTR).setObjectName('edit')
+        tool_buttons.widgetForAction(self.deleteSTR).setObjectName('remove')
         tool_buttons.setStyleSheet(
             '''
                 QToolButton {
@@ -208,6 +210,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                     border-radius: 2px;
                     text-align: center;
                     padding-top: 3px;
+                    width:70px;
                     padding-bottom: 3px;
                     margin-right:4px;
                     background-color: qlineargradient(
@@ -215,20 +218,18 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                         stop: 0 #f6f7fa, stop: 1 #dadbde
                     );
                 }
-                QToolButton[text='Add']{
-                    width:70px;
+                QToolButton#add {
                     padding-left: 20%;
                 }
 
-                QToolButton[text='Edit']{
-                    width:70px;
+                QToolButton#edit {
                     padding-left: 18%;
                 }
-                QToolButton[text='Remove']{
-                    width:70px;
-                    padding-left: 10%;
-                    padding-right: 10%;
+                QToolButton#remove {
+                    width:90px;
+                    padding-left:13%;
                 }
+
                 QToolButton:pressed {
                     background-color: qlineargradient(
                         x1: 0, y1: 0, x2: 0, y2: 1,

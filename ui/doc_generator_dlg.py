@@ -382,14 +382,14 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         #If using template data source
         template_doc, err_msg = self._doc_generator.template_document(self._docTemplatePath)
         if template_doc is None:
-            QMessageBox.critical(self, "STDM", QApplication.translate("DocumentGeneratorDialog",
+            QMessageBox.critical(self, "Error Generating documents", QApplication.translate("DocumentGeneratorDialog",
                                                 "Error Generating documents - %s"%(err_msg)))
 
             return
 
         composer_ds, err_msg = self._doc_generator.composer_data_source(template_doc)
         if composer_ds is None:
-            QMessageBox.critical(self, "STDM", QApplication.translate("DocumentGeneratorDialog",
+            QMessageBox.critical(self, "Error Generating documents", QApplication.translate("DocumentGeneratorDialog",
                                                 "Error Generating documents - %s"%(err_msg)))
 
             return
@@ -551,15 +551,16 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
                     status,msg = self._doc_generator.run(self._docTemplatePath, entity_field_name,
                                                   record.id, outputMode,
                                                   filePath = self._outputFilePath)
-
+                    self._doc_generator.clear_temporary_layers()
                 #Output folder location using custom naming
                 else:
+
                     status, msg = self._doc_generator.run(self._docTemplatePath, entity_field_name,
                                                     record.id, outputMode,
                                                     dataFields = documentNamingAttrs,
                                                     fileExtension = fileExtension,
                                                     data_source = self._data_source)
-
+                    self._doc_generator.clear_temporary_layers()
                 if not status:
                     result = QMessageBox.warning(self,
                                                  QApplication.translate("DocumentGeneratorDialog",
