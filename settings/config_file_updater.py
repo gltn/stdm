@@ -77,6 +77,8 @@ class ConfigurationFileUpdater(object):
         self.doc = QDomDocument()
         self.spatial_unit_table = []
         self.check_doc_relation_lookup_dict = {}
+        self.config = StdmConfiguration.instance()
+        self.old_config_file = False
 
     def _check_config_folder_exists(self):
         """
@@ -107,29 +109,26 @@ class ConfigurationFileUpdater(object):
         else:
             return False
 
-    def _get_doc_root(self, path):
+    def _get_doc_element(self, path):
         config_file = os.path.join(self.file_handler.localPath(), path)
         config_file = QFile(config_file)
         if not config_file.open(QIODevice.ReadOnly):
             raise IOError('Cannot read configuration file. Check read '
                           'permissions.')
-        config_doc = QDomDocument()
 
-        status, msg, line, col = config_doc.setContent(config_file)
+        status, msg, line, col = self.doc.setContent(config_file)
         if not status:
             raise ConfigurationException(u'Configuration file cannot be '
                                          u'loaded: {0}'.format(msg))
 
-        doc_element = config_doc.documentElement()
+        doc_element = self.doc.documentElement()
 
         return doc_element
 
     def _check_config_version(self):
-        doc_element = self._get_doc_root("configuration.stc")
+        doc_element = self._get_doc_element("configuration.stc")
 
         config_version = doc_element.attribute('version')
-
-        config = StdmConfiguration.instance()
 
         if config_version:
             config_version = float(config_version)
@@ -139,7 +138,7 @@ class ConfigurationFileUpdater(object):
             raise ConfigurationException('Error extracting version '
                                          'number from the '
                                          'configuration file.')
-        if config.VERSION == config_version:
+        if self.config.VERSION == config_version:
             return True
         else:
             return False
@@ -149,6 +148,10 @@ class ConfigurationFileUpdater(object):
         shutil.copy(os.path.join(self.file_handler.defaultConfigPath(),
                                  "configuration.stc"),
                     self.file_handler.localPath())
+
+    def _remove_old_config_file(self, config_file):
+        os.remove(os.path.join(self.file_handler.localPath(),
+                               config_file))
 
     def _set_lookup_data(self, lookup_name, element):
 
@@ -275,7 +278,8 @@ class ConfigurationFileUpdater(object):
         self.config_file = QFile(os.path.join(self.file_handler.localPath(),
                                  config_file_name))
 
-        if not self.config_file.open(QFile.WriteOnly | QFile.Text):
+        if not self.config_file.open(QIODevice.ReadWrite | QIODevice.Truncate |
+                                     QIODevice.Text):
             QMessageBox.warning(None, "Config Error", "Cannot write file {"
                                 "0}: \n {2}".format(
                                  self.config_file.fileName(),
@@ -562,7 +566,7 @@ class ConfigurationFileUpdater(object):
 
         return config
 
-    def _populate_config_file(self):
+    def _populate_config_from_old_config(self):
         configuration = self.doc.createElement("Configuration")
         configuration.setAttribute("version", self.version)
         self.doc.appendChild(configuration)
@@ -577,6 +581,12 @@ class ConfigurationFileUpdater(object):
 
         stream = QTextStream(self.config_file)
         stream << self.doc.toString()
+        self.config_file.close()
+        self.doc.clear()
+
+        # Delete the old configuration file after parsing it
+        if self._check_config_file_exists("stdmConfig.xml"):
+            self._remove_old_config_file("stdmConfig.xml")
 
     def load(self):
 
@@ -584,7 +594,8 @@ class ConfigurationFileUpdater(object):
 
             # Check if old configuration file exists
             if self._check_config_file_exists("stdmConfig.xml"):
-                root = self._get_doc_root(os.path.join(
+                self.old_config_file = True
+                root = self._get_doc_element(os.path.join(
                     self.file_handler.localPath(), "stdmConfig.xml"))
                 child_nodes = root.childNodes()
 
@@ -595,7 +606,7 @@ class ConfigurationFileUpdater(object):
                 self._create_config_file("configuration.stc")
 
                 # Create configuration node and version
-                self._populate_config_file()
+                self._populate_config_from_old_config()
 
                 return True
             else:
@@ -613,3 +624,21 @@ class ConfigurationFileUpdater(object):
 
     def check_version(self):
         return self._check_config_version()
+
+    def update_config_file_version(self):
+        if self.old_config_file:
+            self.version = unicode(self.config.VERSION)
+            self._create_config_file("configuration.stc")
+            self._populate_config_from_old_config()
+        else:
+            root = self._get_doc_element(os.path.join(
+                self.file_handler.localPath(), "configuration.stc"))
+
+            if not root.isNull() and root.hasAttribute('version'):
+                self._create_config_file("configuration.stc")
+                if float(root.attribute('version')) < self.config.VERSION:
+                    root.setAttribute('version', '1.2')
+                    stream = QTextStream(self.config_file)
+                    stream << self.doc.toString()
+                    self.config_file.close()
+                    self.doc.clear()
