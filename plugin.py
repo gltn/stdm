@@ -34,7 +34,7 @@ from stdm.settings import current_profile, save_current_profile
 
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
-from .settings.config_file_updater import ConfigurationFileUpdater
+from stdm.settings.config_file_updater import ConfigurationFileUpdater
 
 from stdm.ui.change_pwd_dlg import changePwdDlg
 from stdm.ui.doc_generator_dlg import (
@@ -530,6 +530,29 @@ class STDMQGISLoader(object):
                 else:
                     return
 
+    def load_configuration_to_serializer(self):
+        try:
+            self.config_serializer.load()
+            return True
+        except IOError as io_err:
+            QMessageBox.critical(self.iface.mainWindow(),
+                    QApplication.translate('STDM', 'Load Configuration Error'),
+                    unicode(io_err))
+
+            return False
+
+        except ConfigurationException as c_ex:
+            QMessageBox.critical(
+                self.iface.mainWindow(),
+                QApplication.translate(
+                    'STDM',
+                    'Load Configuration Error'
+                ),
+                unicode(c_ex)
+            )
+
+            return False
+
     def load_configuration_from_file(self):
         """
         Load configuration object from the file.
@@ -552,38 +575,26 @@ class STDMQGISLoader(object):
 
         if self.configuration_file_updater.load():
 
+            # Checks configuration file version if its equals to
+            # configuration instance returns True, else False
             if self.configuration_file_updater.check_version():
-                return True
+                result = self.load_configuration_to_serializer()
+                return result
             else:
+
+                # If configuration file version is lower than current
+                # and user doesn't want to backup
                 if QMessageBox.information(None, "Update STDM Config",
                                         "Do you want to backup your data?",
                                             QMessageBox.Yes |
                                         QMessageBox.No) == QMessageBox.Yes:
                     pass
                 else:
+                    self.configuration_file_updater.\
+                        update_config_file_version()
                     # Update .stc version to stdm instance version
-                    return True
-
-            try:
-                self.config_serializer.load()
-            except IOError as io_err:
-                QMessageBox.critical(self.iface.mainWindow(),
-                        QApplication.translate('STDM', 'Load Configuration Error'),
-                        unicode(io_err))
-
-                return False
-
-            except ConfigurationException as c_ex:
-                QMessageBox.critical(
-                    self.iface.mainWindow(),
-                    QApplication.translate(
-                        'STDM',
-                        'Load Configuration Error'
-                    ),
-                    unicode(c_ex)
-                )
-
-                return False
+                    result = self.load_configuration_to_serializer()
+                    return result
 
         else:
             return False
