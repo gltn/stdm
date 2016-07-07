@@ -133,6 +133,25 @@ class STDMQGISLoader(object):
         self.profile_status_label = None
         LOGGER.debug('STDM plugin has been initialized.')
 
+    def write_log_message(message, tag, level):
+        current_hour = time.strftime('%Y_%m_%d.%H')
+        home_path = QDesktopServices.storageLocation(
+            QDesktopServices.HomeLocation
+        )
+        log_path = '{}/.stdm/logs/stdm_error_{}.log'.format(
+            home_path, current_hour
+        )
+        log_path = QApplication.translate(
+            "STDMQGISLoader", log_path
+        )
+
+        with open(log_path, 'a') as log_file:
+            log_file.write(
+               str(tag) + str(level) + str(message)
+            )
+
+        print 'Error logged.'
+
     def initGui(self):
         # Initial actions on starting up the application
         self._menu_items()
@@ -168,6 +187,9 @@ class STDMQGISLoader(object):
         self.helpAct.triggered.connect(self.help_contents)
         self.initToolbar()
         self.initMenuItems()
+        QgsMessageLog.instance().messageReceived.connect(
+            self.write_log_message
+        )
 
     def _menu_items(self):
         #Create menu and menu items on the menu bar

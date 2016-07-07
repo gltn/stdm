@@ -441,7 +441,8 @@ def profile_spatial_tables(profile):
 
 def profile_user_tables(profile, include_views=True):
     """
-    Returns user accessible tables.
+    Returns user accessible tables from current profile and pg_views
+    .
     :param profile: Current Profile
     :type profile: Class
     :param include_views: A Boolean that includes or excludes Views
@@ -473,9 +474,8 @@ def profile_user_tables(profile, include_views=True):
 
 def db_user_tables(profile):
     """
-    Returns user accessible tables.
+    Returns user accessible tables from database.
     :param profile: Current Profile
-    :type profile: Class
     :param include_views: A Boolean that includes or excludes Views
     :type include_views: Boolean
     :return: Dictionary of user tables with name and

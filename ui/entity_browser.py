@@ -521,24 +521,21 @@ class EntityBrowserWithEditor(EntityBrowser):
             
             self._editEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/edit.png"),
                                              edit,self)
-            self._editEntityAction.setObjectName(
-                QApplication.translate("EntityBrowserWithEditor", "edit_tool")
-            )
+
             self.connect(self._editEntityAction,SIGNAL("triggered()"),self.onEditEntity)
         
             self._removeEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/remove.png"),
                                   remove, self)
-            self._removeEntityAction.setObjectName(
-                QApplication.translate("EntityBrowserWithEditor", "remove_tool")
-            )
+
             self.connect(self._removeEntityAction,SIGNAL("triggered()"),self.onRemoveEntity)
+
+
             tbActions.setStyleSheet(
                 '''
                 QToolButton {
                     border: 1px inset #777;
                     border-radius: 2px;
                     width:70px;
-                    text-align: center;
                     padding-top: 3px;
                     padding-bottom: 3px;
                     margin-right:3px;
@@ -547,20 +544,19 @@ class EntityBrowserWithEditor(EntityBrowser):
                         stop: 0 #f6f7fa, stop: 1 #dadbde
                     );
                 }
-                QToolButton[text='Add']{
-                    width:70px;
+                QToolButton#add {
                     padding-left: 20%;
                 }
 
-                QToolButton[text='Edit']{
-                    width:70px;
+                QToolButton#edit {
                     padding-left: 18%;
                 }
-                QToolButton[text='Remove']{
-                    width:70px;
-                    padding-left: 9%;
-                    padding-right:10%;
+
+                QToolButton#remove {
+                    width:90px;
+                    padding-left:13%;
                 }
+
                 QToolButton:pressed {
                     background-color: qlineargradient(
                         x1: 0, y1: 0, x2: 0, y2: 1,
@@ -573,7 +569,9 @@ class EntityBrowserWithEditor(EntityBrowser):
             tbActions.addAction(self._newEntityAction)
             tbActions.addAction(self._editEntityAction)
             tbActions.addAction(self._removeEntityAction)
-            
+            tbActions.widgetForAction(self._newEntityAction).setObjectName('add')
+            tbActions.widgetForAction(self._editEntityAction).setObjectName('edit')
+            tbActions.widgetForAction(self._removeEntityAction).setObjectName('remove')
             self.vlActions.addWidget(tbActions)
             
             self._editor_dlg = EntityEditorDialog

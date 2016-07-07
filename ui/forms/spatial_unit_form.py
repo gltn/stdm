@@ -5,9 +5,12 @@ from PyQt4.QtGui import (
     QDateEdit,
     QTextEdit,
     QDateTimeEdit,
+    QPushButton,
     QComboBox,
+    QWidget,
     QDoubleSpinBox,
     QApplication,
+    QDialogButtonBox,
     QLabel
 )
 from PyQt4.QtCore import pyqtSlot
@@ -22,6 +25,10 @@ from qgis.core import (
     QgsFeatureRequest,
     QgsMessageLog
 )
+from qgis.utils import (
+    QGis
+)
+
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
 from stdm.settings import (
     current_profile
@@ -37,10 +44,6 @@ from stdm.ui.customcontrols.relation_line_edit import (
     AdministrativeUnitLineEdit,
     RelatedEntityLineEdit,
     RelatedEntityLineEdit
-)
-from qgis.utils import (
-    iface,
-    QGis
 )
 
 
@@ -174,7 +177,7 @@ class WidgetWrapper(QgsEditorWidgetWrapper):
         elif isinstance(value, QComboBox) and value != NULL:
             self.widget().setValue(value)
         elif isinstance(self.widget(), QLineEdit) and value != NULL:
-            self.widget().setText(value)
+            self.widget().setText(unicode(value))
         elif isinstance(self.widget(), QComboBox) and value != NULL:
             setComboCurrentIndexWithItemData(self.widget(), value)
         elif isinstance(self.widget(), AdministrativeUnitLineEdit) and value != NULL:
