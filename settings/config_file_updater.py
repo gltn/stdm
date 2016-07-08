@@ -31,6 +31,7 @@ from PyQt4.QtXml import QDomDocument
 from ..data.configuration.exception import ConfigurationException
 from ..data.configfile_paths import FilePaths
 from ..data.configuration.stdm_configuration import StdmConfiguration
+from ..data.pg_utils import export_data
 
 COLUMN_TYPE_DICT = {'character varying': 'VARCHAR', 'date': 'DATE',
                     'serial': 'SERIAL', 'integer': 'BIGINT', 'lookup':
@@ -55,6 +56,8 @@ COLUMN_PROPERTY_DICT = {'SERIAL': {"unique": "False", "tip": "",
                                     "minimum": "0", "maximum": "0",
                                     "index": "False", "mandatory": "False"}}
 
+from ..data.pg_utils import export_data
+
 
 class ConfigurationFileUpdater(object):
     """
@@ -74,11 +77,12 @@ class ConfigurationFileUpdater(object):
         self.entities_lookup_relations = OrderedDict()
         self.table_name = None
         self.relations_dict = {}
-        self.doc = QDomDocument()
+        self.doc_old = QDomDocument()
         self.spatial_unit_table = []
         self.check_doc_relation_lookup_dict = {}
         self.config = StdmConfiguration.instance()
         self.old_config_file = False
+        self.entities = []
 
     def _check_config_folder_exists(self):
         """
@@ -115,18 +119,19 @@ class ConfigurationFileUpdater(object):
         if not config_file.open(QIODevice.ReadOnly):
             raise IOError('Cannot read configuration file. Check read '
                           'permissions.')
+        doc = QDomDocument()
 
-        status, msg, line, col = self.doc.setContent(config_file)
+        status, msg, line, col = doc.setContent(config_file)
         if not status:
             raise ConfigurationException(u'Configuration file cannot be '
                                          u'loaded: {0}'.format(msg))
 
-        doc_element = self.doc.documentElement()
+        doc_element = doc.documentElement()
 
-        return doc_element
+        return (doc, doc_element)
 
     def _check_config_version(self):
-        doc_element = self._get_doc_element("configuration.stc")
+        doc, doc_element = self._get_doc_element("configuration.stc")
 
         config_version = doc_element.attribute('version')
 
@@ -233,6 +238,7 @@ class ConfigurationFileUpdater(object):
                 self.table_list.append(table_shortname)
                 columns_nodes = profile_child_node.childNodes()
                 self._set_table_columns(table_name, columns_nodes)
+                self.entities.append(table_name)
 
             if profile_child_node.tagName() == "lookup":
                 lookup_name = unicode(profile_child_node.attribute('name'))
@@ -291,15 +297,15 @@ class ConfigurationFileUpdater(object):
 
         for key, value in values.iteritems():
             if key.endswith("lookup") and value:
-                value_lists = self.doc.createElement("ValueLists")
+                value_lists = self.doc_old.createElement("ValueLists")
                 for lookup_key, lookup_value in value.iteritems():
-                    value_list = self.doc.createElement("ValueList")
+                    value_list = self.doc_old.createElement("ValueList")
                     if lookup_key == "check_social_tenure_type":
                         lookup_key = "check_tenure_type"
                     value_list.setAttribute("name", lookup_key)
 
                     for k, v in lookup_value.iteritems():
-                        code_value = self.doc.createElement("CodeValue")
+                        code_value = self.doc_old.createElement("CodeValue")
                         code_value.setAttribute("code", k)
                         code_value.setAttribute("value", v)
                         value_list.appendChild(code_value)
@@ -308,10 +314,10 @@ class ConfigurationFileUpdater(object):
 
                 # Default value list for check_social_tenure_relationship_
                 # document_type
-                value_list = self.doc.createElement("ValueList")
+                value_list = self.doc_old.createElement("ValueList")
                 value_list.setAttribute("name", "check_social_tenure_"
                                                 "relationship_document_type")
-                code_value = self.doc.createElement("CodeValue")
+                code_value = self.doc_old.createElement("CodeValue")
                 code_value.setAttribute("code", "G")
                 code_value.setAttribute("value", "General")
                 value_list.appendChild(code_value)
@@ -320,7 +326,7 @@ class ConfigurationFileUpdater(object):
 
             if key.endswith("table"):
                 for entity_key, entity_value in value.iteritems():
-                    entities = self.doc.createElement("Entity")
+                    entities = self.doc_old.createElement("Entity")
                     entities.setAttribute("name", pref + "_" + entity_key)
                     entity_name = pref + "_" + entity_key
                     entities.setAttribute("description", entity_value[0])
@@ -343,9 +349,9 @@ class ConfigurationFileUpdater(object):
                             pass
 
                     column_properties = entity_value[2:]
-                    columns = self.doc.createElement("Columns")
+                    columns = self.doc_old.createElement("Columns")
                     for i in column_properties:
-                        column = self.doc.createElement("Column")
+                        column = self.doc_old.createElement("Column")
                         for col_k, col_v in i.iteritems():
                             if col_k == "col_name":
                                 column.setAttribute("name", col_v)
@@ -360,7 +366,7 @@ class ConfigurationFileUpdater(object):
                                         column.setAttribute(k, v)
 
                             elif col_k == "lookup" and col_v is not None:
-                                relation = self.doc.createElement("Relation")
+                                relation = self.doc_old.createElement("Relation")
                                 relation.setAttribute("name", "fk_" + pref
                                                      + "_" + col_v + "_id_"
                                                      + entity_name + "_" +
@@ -371,14 +377,14 @@ class ConfigurationFileUpdater(object):
                     profile.appendChild(entities)
 
             if key.endswith("relations") and value:
-                relationship = self.doc.createElement("Relations")
+                relationship = self.doc_old.createElement("Relations")
 
                 for relation_key, relation_values in value.iteritems():
 
                     if relation_key == "social_tenure_relationship":
 
                         for relation_v in relation_values:
-                            entity_relation = self.doc.createElement(
+                            entity_relation = self.doc_old.createElement(
                                 "EntityRelation")
                             entity_relation.setAttribute("parent", relation_v)
                             entity_relation.setAttribute("child",
@@ -393,7 +399,7 @@ class ConfigurationFileUpdater(object):
                                 + "_" + relation_v + "_" + "id")
                             relationship.appendChild(entity_relation)
 
-                            entity_relation = self.doc.createElement(
+                            entity_relation = self.doc_old.createElement(
                                 "EntityRelation")
                             entity_relation.setAttribute(
                                 "parent", "check_" + relation_v +
@@ -414,7 +420,7 @@ class ConfigurationFileUpdater(object):
 
                             relationship.appendChild(entity_relation)
 
-                            entity_relation = self.doc.createElement(
+                            entity_relation = self.doc_old.createElement(
                                 "EntityRelation")
                             entity_relation.setAttribute(
                                 "parent",  relation_v)
@@ -434,7 +440,7 @@ class ConfigurationFileUpdater(object):
 
                             relationship.appendChild(entity_relation)
 
-                            entity_relation = self.doc.createElement(
+                            entity_relation = self.doc_old.createElement(
                                 "EntityRelation")
                             entity_relation.setAttribute(
                                 "parent",  "supporting_document")
@@ -454,7 +460,7 @@ class ConfigurationFileUpdater(object):
                             relationship.appendChild(entity_relation)
 
                 # Default relations
-                entity_relation = self.doc.createElement("EntityRelation")
+                entity_relation = self.doc_old.createElement("EntityRelation")
                 entity_relation.setAttribute("parent",
                                                  "check_social_tenure_"
                                                  "relationship_document_type")
@@ -474,7 +480,7 @@ class ConfigurationFileUpdater(object):
 
                 relationship.appendChild(entity_relation)
 
-                entity_relation = self.doc.createElement("EntityRelation")
+                entity_relation = self.doc_old.createElement("EntityRelation")
                 entity_relation.setAttribute("parent",
                                                  "social_tenure_relationship")
                 entity_relation.setAttribute("child",
@@ -494,7 +500,7 @@ class ConfigurationFileUpdater(object):
 
                 relationship.appendChild(entity_relation)
 
-                entity_relation = self.doc.createElement("EntityRelation")
+                entity_relation = self.doc_old.createElement("EntityRelation")
                 entity_relation.setAttribute("parent",
                                                  "supporting_document")
                 entity_relation.setAttribute("child",
@@ -512,7 +518,7 @@ class ConfigurationFileUpdater(object):
 
                 relationship.appendChild(entity_relation)
 
-                entity_relation = self.doc.createElement("EntityRelation")
+                entity_relation = self.doc_old.createElement("EntityRelation")
                 entity_relation.setAttribute("parent",
                                                  "check_tenure_type")
                 entity_relation.setAttribute("child",
@@ -528,7 +534,7 @@ class ConfigurationFileUpdater(object):
 
                 profile.appendChild(relationship)
 
-                social_tenure = self.doc.createElement("SocialTenure")
+                social_tenure = self.doc_old.createElement("SocialTenure")
                 social_tenure.setAttribute(
                     "layerDisplay", pref + "_vw_social_tenure_relationship")
                 social_tenure.setAttribute(
@@ -555,21 +561,32 @@ class ConfigurationFileUpdater(object):
     def _create_profile_valuelists_entity_nodes(self, dict, config):
 
         for config_profile, values in dict.iteritems():
-            conf_prefix = config_profile[:2]
-            profile = self.doc.createElement("Profile")
-            profile.setAttribute("description", "")
-            profile.setAttribute("name", config_profile)
 
-            profile = self._create_entity_valuelist_relation_nodes(conf_prefix,
-                                                         profile, values)
-            config.appendChild(profile)
+            # Empty list to hold values to confirm if profile is empty
+            empty_list = []
+
+            # Test if a profile content is empty
+            for k, v in values.iteritems():
+                if not v:
+                    break
+                else:
+                    empty_list.append(k)
+
+            if empty_list:
+                conf_prefix = config_profile[:2]
+                profile = self.doc_old.createElement("Profile")
+                profile.setAttribute("description", "")
+                profile.setAttribute("name", config_profile)
+                profile = self._create_entity_valuelist_relation_nodes(
+                conf_prefix, profile, values)
+                config.appendChild(profile)
 
         return config
 
     def _populate_config_from_old_config(self):
-        configuration = self.doc.createElement("Configuration")
+        configuration = self.doc_old.createElement("Configuration")
         configuration.setAttribute("version", self.version)
-        self.doc.appendChild(configuration)
+        self.doc_old.appendChild(configuration)
 
         # Create profile valuelists and entity nodes
         config = self._create_profile_valuelists_entity_nodes(
@@ -577,12 +594,12 @@ class ConfigurationFileUpdater(object):
 
         # configuration.appendChild(config)
 
-        self.doc.appendChild(config)
+        self.doc_old.appendChild(config)
 
         stream = QTextStream(self.config_file)
-        stream << self.doc.toString()
+        stream << self.doc_old.toString()
         self.config_file.close()
-        self.doc.clear()
+        self.doc_old.clear()
 
         # Delete the old configuration file after parsing it
         if self._check_config_file_exists("stdmConfig.xml"):
@@ -595,7 +612,7 @@ class ConfigurationFileUpdater(object):
             # Check if old configuration file exists
             if self._check_config_file_exists("stdmConfig.xml"):
                 self.old_config_file = True
-                root = self._get_doc_element(os.path.join(
+                doc, root = self._get_doc_element(os.path.join(
                     self.file_handler.localPath(), "stdmConfig.xml"))
                 child_nodes = root.childNodes()
 
@@ -631,7 +648,7 @@ class ConfigurationFileUpdater(object):
             self._create_config_file("configuration.stc")
             self._populate_config_from_old_config()
         else:
-            root = self._get_doc_element(os.path.join(
+            doc, root = self._get_doc_element(os.path.join(
                 self.file_handler.localPath(), "configuration.stc"))
 
             if not root.isNull() and root.hasAttribute('version'):
@@ -639,6 +656,18 @@ class ConfigurationFileUpdater(object):
                 if float(root.attribute('version')) < self.config.VERSION:
                     root.setAttribute('version', '1.2')
                     stream = QTextStream(self.config_file)
-                    stream << self.doc.toString()
+                    stream << doc.toString()
                     self.config_file.close()
-                    self.doc.clear()
+                    doc.clear()
+
+    def backup_data(self):
+        if self.old_config_file:
+            for k, v in self.entities_lookup_relations.iteritems():
+                for keys, values in v.iteritems():
+                    if keys.endswith("relations") and values:
+                        for relation_key, values in values.iteritems():
+                            if relation_key == "social_tenure_relationship":
+                                for social_tenure_entity in values:
+                                    r = export_data(social_tenure_entity)
+                                    QMessageBox.information(None, "T",
+                                                            str(r.keys()))

@@ -538,7 +538,7 @@ class STDMQGISLoader(object):
                                         "Do you want to backup your data?",
                                             QMessageBox.Yes |
                                         QMessageBox.No) == QMessageBox.Yes:
-                    pass
+                    self.configuration_file_updater.backup_data()
                 else:
                     self.configuration_file_updater.\
                         update_config_file_version()
