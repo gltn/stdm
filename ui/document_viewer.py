@@ -509,8 +509,6 @@ class DocumentViewManager(QMainWindow):
 
         self.center()
 
-
-
     def set_active_sub_window(self, viewer):
         if viewer:
             self._mdi_area.setActiveSubWindow(viewer)
@@ -522,7 +520,7 @@ class DocumentViewManager(QMainWindow):
         :return: Absolute path of the supporting document.
         :rtype: str
         """
-        abs_path = ""
+        abs_path = ''
 
         file_manager = document_widget.fileManager
         if not file_manager is None:
@@ -534,8 +532,8 @@ class DocumentViewManager(QMainWindow):
             file_name, file_extension = guess_extension(document_widget.displayName())
 
             abs_path = network_repository + "/" +profile_name + '/' +\
-                       str(source_entity) + "/" + str(doc_type) + "/" +\
-                       str(file_id) + str(file_extension)
+                       unicode(source_entity) + "/" + unicode(doc_type) + "/" +\
+                       unicode(file_id) + unicode(file_extension)
 
         return abs_path
 

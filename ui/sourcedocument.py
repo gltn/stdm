@@ -157,7 +157,6 @@ class SourceDocumentManager(QObject):
         if container is not None:
             self.containers[id] = container
 
-
     def removeContainer(self, containerid):
         """
         Removes the container with the specified ID from the
@@ -499,7 +498,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
     def __init__(
             self,
-            document_model,
+            document_model=None,
             fileManager=None,
             mode=UPLOAD_MODE,
             parent=None,
@@ -632,8 +631,6 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         if self._mode == DOWNLOAD_MODE:
             #Try to delete document and suppress error if it does not exist
             try:
-
-
                 self._srcDoc.delete()
                 # Remove the same document from supporting
                 # doc table linked to other str record as the file doesn't exist.
@@ -760,7 +757,6 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
             self._srcDoc = entity_doc_obj
 
         return self._srcDoc
-
 
     def set_thumbnail(self):
         """
@@ -930,6 +926,7 @@ def set_source_document_location(doc_path):
         reg_config = RegistryConfig()
         reg_config.write({LOCAL_SOURCE_DOC:doc_dir_path})
 
+
 def network_document_path():
     """
     Get the network resource location from the registry.
@@ -940,4 +937,5 @@ def network_document_path():
         networkLocation = ""
     else:
         networkLocation = networkResReg[NETWORK_DOC_RESOURCE].strip()
+
     return networkLocation
