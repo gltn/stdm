@@ -22,13 +22,12 @@
 """
 
 import os
-
+import logging
 from PyQt4 import uic
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from qgis.core import *
 from gps_tool import GPSToolDialog
-
 from stdm.settings import (
     current_profile,
     save_configuration
@@ -40,31 +39,36 @@ from stdm.data.pg_utils import (
     table_column_names,
     vector_layer
 )
-from stdm.mapping.utils import pg_layerNamesIDMapping
-from stdm.data.xmlconfig_reader import (
-    check_if_display_name_exits,
-    get_xml_display_name
+from stdm.data.pg_utils import (
+    pg_views
 )
-from stdm.data.xmlconfig_writer import (
-    write_display_name,
-    write_changed_display_name
+from stdm.settings.registryconfig import (
+    RegistryConfig,
+    WIZARD_RUN
+)
+from stdm.ui.forms.spatial_unit_form import (
+    WidgetWrapper,
+    QGISFieldWidgetConfig,
+    QGISFieldWidgetFactory,
+    STDMFieldWidget,
+    STDM_WIDGET
 )
 
+from stdm.mapping.utils import pg_layerNamesIDMapping
+
 from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
-from notification import NotificationBar,ERROR, SUCCESS, WARNING
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_spatial_unit_manager.ui'))
 
+LOGGER = logging.getLogger('stdm')
+
 class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
+    onLayerAdded = pyqtSignal(QgsVectorLayer)
     def __init__(self, iface, plugin):
         """Constructor."""
         QDockWidget.__init__(self, iface.mainWindow())
         # Set up the user interface from Designer.
-        # After setupUI you can access any designer object by doing
-        # self.<objectname>, and you can use autoconnect slots - see
-        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
-        # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
         self.iface = iface
         self._plugin = plugin
@@ -78,6 +82,8 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         self._populate_layers()
 
         self.spatial_unit = None
+
+        self.iface.currentLayerChanged.connect(self.init_form_widgets)
 
     def _populate_layers(self):
         self.stdm_layers_combo.clear()
@@ -97,28 +103,30 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         self._profile_spatial_layers = []
         sp_tables = spatial_tables()
 
-        #Check whether the geometry tables specified in the config exist
-        missing_tables = [geom_entity.name for geom_entity in geom_entities
-                          if not geom_entity.name in sp_tables]
+        # show the warning only if the wizard is run
+        if self.wizard_run():
+            #Check whether the geometry tables specified in the config exist
+            missing_tables = [geom_entity.name for geom_entity in geom_entities
+                              if not geom_entity.name in sp_tables]
 
-        #Notify user of missing tables
-        if len(missing_tables) > 0:
-            msg = QApplication.translate(
-                'Spatial Unit Manager',
-                'The following '
-                 'spatial tables '
-                 'are missing in '
-                 'the database:'
-                 '\n {0}\nPlease '
-                 're-run the '
-                 'configuration '
-                 'wizard to create '
-                 'them.'.format('\n'.join(missing_tables)))
-            QMessageBox.warning(
-                self.iface.mainWindow(),
-                'Spatial Unit Manager',
-                msg
-            )
+            #Notify user of missing tables
+            if len(missing_tables) > 0:
+                msg = QApplication.translate(
+                    'Spatial Unit Manager',
+                    'The following '
+                     'spatial tables '
+                     'are missing in '
+                     'the database:'
+                     '\n {0}\nPlease '
+                     're-run the '
+                     'configuration '
+                     'wizard to create '
+                     'them.'.format('\n'.join(missing_tables)))
+                QMessageBox.warning(
+                    self.iface.mainWindow(),
+                    'Spatial Unit Manager',
+                    msg
+                )
 
         for e in geom_entities:
             table_name = e.name
@@ -148,6 +156,52 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
 
                 #Append view to the list of spatial layers
                 self._profile_spatial_layers.append(str_view)
+
+        self.onLayerAdded.connect(self.init_form_widgets)
+
+    def init_form_widgets(self, curr_layer):
+        """
+        Initializes the Layer form widgets.
+        :param curr_layer: The layer for which the widgets are set.
+        :type curr_layer: QgsVectorLayer
+        :return: None
+        :rtype: NoneType
+        """
+        table, column = self._layer_table_column(curr_layer)
+
+        if table not in pg_views():
+            # Make sure digitizing toolbar is enabled
+            self.iface.digitizeToolBar().setEnabled(True)
+            try:
+                STDM_WIDGET.set_layer(curr_layer)
+                STDM_WIDGET.set_layer_source(table)
+                STDM_WIDGET.set_widget()
+                STDM_WIDGET.set_mapper()
+            except Exception as ex:
+                LOGGER.debug(str(ex))
+        # Disable digitizing toolbar for views
+        elif table in pg_views():
+            self.iface.digitizeToolBar().setEnabled(False)
+
+    def wizard_run(self):
+        """
+        Checks if you the wizard is run by the user at least once.
+        :param reg_config: registry config reader
+        :return : Return true if the wizard is run
+        :rtype: boolean
+        """
+        self.reg_config = RegistryConfig()
+        wizard_run = self.reg_config.read(
+            [WIZARD_RUN]
+        )
+
+        if len(wizard_run) > 0:
+            wizard_run = wizard_run[WIZARD_RUN]
+
+        if wizard_run == 1 or wizard_run == unicode(1):
+            return True
+        elif wizard_run == 0 or wizard_run == unicode(0):
+            return False
 
     def _format_layer_display_name(self, col, table):
         return u'{0}.{1}'.format(table,col)
@@ -246,6 +300,7 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
                                                layer_item.layer_display()))
             #curr_layer.setLayerName(layer_item.layer_display())
 
+            self.onLayerAdded.emit(curr_layer)
         else:
             msg = QApplication.translate("Spatial Unit Manager",
                                          "'{0}.{1}' layer is invalid, it cannot "
@@ -343,10 +398,12 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         """
         layer_map = QgsMapLayerRegistry.instance().mapLayers()
         if not bool(layer_map):
-            QMessageBox.warning(self,
-                                "STDM",
-                                "You must add a layer first from Spatial Unit "
-                                "Manager to import GPX to")
+            QMessageBox.warning(
+                self,
+                "STDM",
+                "You must add a layer first from Spatial Unit "
+                "Manager to import GPX to"
+            )
         elif bool(layer_map):
             self.gps_tool_dialog = GPSToolDialog(self.iface, self.curr_layer, self.curr_lyr_table, self.curr_lyr_sp_col)
             self.gps_tool_dialog.show()

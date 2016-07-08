@@ -18,7 +18,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import logging
-
+import time
 import os.path
 import platform
 from collections import OrderedDict
@@ -33,7 +33,9 @@ from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings import current_profile, save_current_profile
 
 from stdm.data.configuration.exception import ConfigurationException
-
+from stdm.data.configuration.stdm_configuration import (
+    StdmConfiguration
+)
 from stdm.ui.change_pwd_dlg import changePwdDlg
 from stdm.ui.doc_generator_dlg import (
     DocumentGeneratorDialogWrapper,
@@ -84,7 +86,7 @@ from mapping import (
 
 from stdm.utils.util import (
     getIndex,
-    profile_user_tables
+    db_user_tables
 )
 from mapping.utils import pg_layerNamesIDMapping
 
@@ -131,6 +133,25 @@ class STDMQGISLoader(object):
         self.profile_status_label = None
         LOGGER.debug('STDM plugin has been initialized.')
 
+    def write_log_message(message, tag, level):
+        current_hour = time.strftime('%Y_%m_%d.%H')
+        home_path = QDesktopServices.storageLocation(
+            QDesktopServices.HomeLocation
+        )
+        log_path = '{}/.stdm/logs/stdm_error_{}.log'.format(
+            home_path, current_hour
+        )
+        log_path = QApplication.translate(
+            "STDMQGISLoader", log_path
+        )
+
+        with open(log_path, 'a') as log_file:
+            log_file.write(
+               str(tag) + str(level) + str(message)
+            )
+
+        print 'Error logged.'
+
     def initGui(self):
         # Initial actions on starting up the application
         self._menu_items()
@@ -166,7 +187,9 @@ class STDMQGISLoader(object):
         self.helpAct.triggered.connect(self.help_contents)
         self.initToolbar()
         self.initMenuItems()
-
+        QgsMessageLog.instance().messageReceived.connect(
+            self.write_log_message
+        )
 
     def _menu_items(self):
         #Create menu and menu items on the menu bar
@@ -198,7 +221,7 @@ class STDMQGISLoader(object):
         # get the icon from the best available theme
         myCurThemePath = QgsApplication.activeThemePath() + "/plugins/" + theName
         myDefThemePath = QgsApplication.defaultThemePath() + "/plugins/" + theName
-        myQrcPath = ":/plugins/stdm/" + theName;
+        myQrcPath = ":/plugins/stdm/" + theName
         if QFile.exists(myCurThemePath):
             return QIcon(myCurThemePath)
         elif QFile.exists(myDefThemePath):
@@ -301,7 +324,7 @@ class STDMQGISLoader(object):
             except Exception as pe:
                 title = QApplication.translate(
                     "STDMQGISLoader",
-                    "Error reading profile settings"
+                    "Error Loading Modules"
                 )
                 self.reset_content_modules_id(
                     title,
@@ -376,7 +399,7 @@ class STDMQGISLoader(object):
                     "STDMQGISLoader",
                     'The system has detected that database table(s) required in \n'
                     'in the Social Tenure Relationship is/are missing.\n'
-                    'Missing table(s) - {}\n'+
+                    'Missing table(s) - {}\n'
                     'Do you want to re-run the Configuration Wizard now?'.
                     format(missing_tables)
                 )
@@ -399,7 +422,7 @@ class STDMQGISLoader(object):
                 message = QApplication.translate(
                     "STDMQGISLoader",
                     'The system has detected that a required database table - \n'
-                    '{} is missing. \n'+
+                    '{} is missing. \n'
                     'Do you want to re-run the Configuration Wizard now?'.format(
                         entity.short_name
                     )
@@ -427,16 +450,26 @@ class STDMQGISLoader(object):
         :rtype: NoneType
         """
         if self.current_profile is None:
+            stdm_config = StdmConfiguration.instance()
+            profiles = stdm_config.profiles
+
             title = QApplication.translate(
                 "STDMQGISLoader",
                 'Default Profile Error'
             )
+            if len(profiles) > 0:
+                solution = 'Do you want to set a profile now?'
+            else:
+                solution = 'Do you want to run the ' \
+                           'Configuration Wizard now?'
+
             message = QApplication.translate(
                 "STDMQGISLoader",
                 'The system has detected that there '
-                'is no default profile. \n'
-                'Do you want to run the '
-                'Configuration Wizard now?'
+                'is no default profile. \n {}'.format(
+                    solution
+                )
+
             )
             default_profile = QMessageBox.critical(
                 self.iface.mainWindow(),
@@ -445,8 +478,12 @@ class STDMQGISLoader(object):
                 QMessageBox.Yes,
                 QMessageBox.No
             )
+
             if default_profile == QMessageBox.Yes:
-                self.load_config_wizard()
+                if len(profiles) > 0:
+                    self.on_sys_options()
+                else:
+                    self.load_config_wizard()
             else:
                 return
 
@@ -713,7 +750,7 @@ class STDMQGISLoader(object):
         tbSeparator.setSeparator(True)
 
         # add separator to menu
-        separator_group = TableContentGroup(username, k, tbSeparator)
+        separator_group = TableContentGroup(username, 'separator', tbSeparator)
         separator_group.register()
         self.moduleContentGroups.append(separator_group)
 
@@ -961,7 +998,6 @@ class STDMQGISLoader(object):
         :return: None
         :rtype: NoneType
         """
-
         if self.toolbarLoader is not None:
             self.toolbarLoader.unloadContent()
         if self.menubarLoader is not None:
@@ -976,7 +1012,6 @@ class STDMQGISLoader(object):
 
         self.current_profile = current_profile()
         LOGGER.debug(
-            'STDMQGISLoader-reload_plugin() - '
             'Successfully changed '
             'the current profile to {}'.format(
                 self.current_profile.name
@@ -985,7 +1020,6 @@ class STDMQGISLoader(object):
         try:
             self.loadModules()
             LOGGER.debug(
-                'STDMQGISLoader-reload_plugin() - '
                 'Successfully reloaded all modules.'
             )
         except SQLAlchemyError as ex:
@@ -1073,7 +1107,7 @@ class STDMQGISLoader(object):
         if self.current_profile is None:
             self.default_profile()
             return
-        if len(profile_user_tables(self.current_profile)) < 1:
+        if len(db_user_tables(self.current_profile)) < 1:
             self.minimum_table_checker()
             return
         title = QApplication.translate(
@@ -1083,7 +1117,6 @@ class STDMQGISLoader(object):
         documentComposer = self.iface.createNewComposer(
             title
         )
-
         #Embed STDM customizations
         composerWrapper = ComposerWrapper(
             documentComposer, self.iface
@@ -1097,7 +1130,7 @@ class STDMQGISLoader(object):
         if self.current_profile is None:
             self.default_profile()
             return
-        if len(profile_user_tables(self.current_profile)) < 1:
+        if len(db_user_tables(self.current_profile)) < 1:
             self.minimum_table_checker()
             return
         doc_gen_wrapper = DocumentGeneratorDialogWrapper(
@@ -1110,14 +1143,21 @@ class STDMQGISLoader(object):
         """
         Show import data wizard.
         """
+
         if self.current_profile is None:
             self.default_profile()
             return
-        if len(profile_user_tables(self.current_profile)) < 1:
+
+        if len(db_user_tables(self.current_profile)) < 1:
             self.minimum_table_checker()
             return
-        importData = ImportData(self.iface.mainWindow())
-        importData.exec_()
+        try:
+            importData = ImportData(self.iface.mainWindow())
+            status = importData.exec_()
+            if status == 1:
+                self.reload_plugin(None)
+        except Exception as ex:
+            LOGGER.debug(unicode(ex))
 
     def onExportData(self):
         """
@@ -1126,7 +1166,7 @@ class STDMQGISLoader(object):
         if self.current_profile is None:
             self.default_profile()
             return
-        if len(profile_user_tables(self.current_profile)) < 1:
+        if len(db_user_tables(self.current_profile)) < 1:
             self.minimum_table_checker()
             return
         exportData = ExportData(self.iface.mainWindow())
@@ -1613,7 +1653,8 @@ class STDMQGISLoader(object):
                 self.viewSTRWin = None
 
             self.current_profile = None
-
+            # Deletes all the registered widgets
+            QgsEditorWidgetRegistry()
         except Exception as ex:
             LOGGER.debug(unicode(ex))
 
