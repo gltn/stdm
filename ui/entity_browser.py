@@ -26,6 +26,7 @@ from PyQt4.QtGui import *
 
 from stdm.data.configuration import entity_model
 from stdm.data.configuration.columns import (
+    GeometryColumn,
     MultipleSelectColumn,
     VirtualColumn
 )
@@ -37,7 +38,14 @@ from stdm.data.qtmodels import (
 )
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
 from stdm.navigation import TableContentGroup
+from stdm.network.filemanager import NetworkFileManager
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
+from stdm.ui.sourcedocument import (
+    DocumentWidget,
+    network_document_path,
+    DOWNLOAD_MODE
+)
+from stdm.ui.document_viewer import DocumentViewManager
 from .admin_unit_manager import VIEW,MANAGE,SELECT
 from .ui_entity_browser import Ui_EntityBrowser
 from .helpers import SupportsManageMixin
@@ -45,6 +53,52 @@ from .notification import NotificationBar
 
 __all__ = ["EntityBrowser", "EntityBrowserWithEditor",
            "ContentGroupEntityBrowser"]
+
+class _EntityDocumentViewer(object):
+    """
+    Class for loading the document viewer to display all documents
+    pertaining to a given entity record.
+    """
+    def __init__(self, title='', parent=None):
+        self._title = title
+        self._parent = parent
+
+        #Set default manager for document viewing
+        self._doc_view_manager = DocumentViewManager(self._parent)
+        self._doc_view_manager.setWindowTitle(self._title)
+        self._network_doc_path = network_document_path()
+        self._network_manager = NetworkFileManager(self._network_doc_path)
+
+    def load(self, documents):
+        #Assert if the root document directory exists
+        if not self.directory_exists():
+            base_msg = QApplication.translate(
+                'EntityBrowser',
+                'The root document directory does not exist'
+            )
+            msg = u'{0}:\n{1}'.format(base_msg, self._network_doc_path)
+            QMessageBox.critical(self._parent, self._title, msg)
+
+            return
+
+        #Create document widgets proxies for loading into the doc viewer
+        for d in documents:
+            doc_widget_proxy = DocumentWidget(
+                fileManager=self._network_manager,
+                mode=DOWNLOAD_MODE,
+                view_manager=self._doc_view_manager
+            )
+            doc_widget_proxy.setModel(d)
+
+            #Load proxies to the document view manager
+            self._doc_view_manager.load_viewer(doc_widget_proxy)
+
+    def directory_exists(self):
+        #Returns True if the root document directory exists, otherwise False.
+        dir = QDir(self._network_doc_path)
+
+        return dir.exists()
+
 
 class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
     """
@@ -62,6 +116,25 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
         self.setupUi(self)
         SupportsManageMixin.__init__(self, state)
 
+        #Init document viewer setup
+        self._view_docs_act = None
+        viewer_title = QApplication.translate(
+            'EntityBrowser',
+            'Document Viewer'
+        )
+        self.doc_viewer_title = u'{0} {1}'.format(
+            entity.short_name,
+            viewer_title
+        )
+        self._doc_viewer = _EntityDocumentViewer(self.doc_viewer_title, self)
+
+        #Initialize toolbar
+        self.tbActions = QToolBar()
+        self.tbActions.setObjectName('eb_actions_toolbar')
+        self.tbActions.setIconSize(QSize(16, 16))
+        self.tbActions.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        self.vlActions.addWidget(self.tbActions)
+
         self._entity = entity
         self._dbmodel = entity_model(entity)
         self._state = state
@@ -72,9 +145,15 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
         self._entity_attrs = []
         self._cell_formatters = {}
         self._searchable_columns = OrderedDict()
+        self._show_docs_col = False
 
         #ID of a record to select once records have been added to the table
         self._select_item = None
+
+        #Enable viewing of supporting documents
+        if self.can_view_supporting_documents:
+            self._add_view_supporting_docs_btn()
+
         # Add maximize buttons
         self.setWindowFlags(self.windowFlags() |
                             Qt.WindowSystemMenuHint |
@@ -90,12 +169,38 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
         :rtype: Entity
         """
         return self._entity
-        
-    def setDatabaseModel(self,databaseModel):
-        '''
-        Set the database model that represents the entity for browsing its corresponding records.
-        '''
-        self._dbmodel = databaseModel
+
+    @property
+    def can_view_supporting_documents(self):
+        """
+        :return: True if the browser supports the viewing of supporting
+        documents.
+        :rtype: bool
+        """
+        test_ent_obj = self._dbmodel()
+
+        if self._entity.supports_documents \
+                and hasattr(test_ent_obj, 'documents'):
+            return True
+
+        return False
+
+    def _add_view_supporting_docs_btn(self):
+        #Add button for viewing supporting documents if supported
+        view_docs_str = QApplication.translate(
+            'EntityBrowser',
+            'View Documents'
+        )
+        self._view_docs_act = QAction(
+            QIcon(':/plugins/stdm/images/icons/document.png'),
+            view_docs_str,
+            self
+        )
+
+        #Connect signal for showing document viewer
+        self._view_docs_act.triggered.connect(self.on_load_document_viewer)
+
+        self.tbActions.addAction(self._view_docs_act)
         
     def dateFormatter(self):
         """
@@ -209,6 +314,10 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
 
         #Iterate entity column and assert if they exist
         for c in self._entity.columns.values():
+            #Exclude geometry columns
+            if isinstance(c, GeometryColumn):
+                continue
+
             #Do not include virtual columns in list of missing columns
             if not c.name in columns and not isinstance(c, VirtualColumn):
                 missing_columns.append(c.name)
@@ -216,12 +325,14 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
             else:
                 header = c.header()
                 self._headers.append(header)
+
+                col_name = c.name
+
                 '''
                 If it is a virtual column then use column name as the header
                 but fully qualified column name (created by SQLAlchemy
                 relationship) as the entity attribute name.
                 '''
-                col_name = c.name
 
                 if isinstance(c, MultipleSelectColumn):
                     col_name = c.model_attribute_name
@@ -284,6 +395,38 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
                 sel_idx,
                 QItemSelectionModel.ClearAndSelect|QItemSelectionModel.Rows
             )
+
+    def on_load_document_viewer(self):
+        #Slot raised to show the document viewer for the selected entity
+        sel_rec_ids = self._selected_record_ids()
+
+        if len(sel_rec_ids) == 0:
+            return
+
+        #Get document objects
+        ent_obj = self._dbmodel()
+
+        for sel_id in sel_rec_ids:
+            er = ent_obj.queryObject().filter(self._dbmodel.id == sel_id).first()
+            if not er is None:
+                docs = er.documents
+
+                #Notify there are no documents for the selected doc
+                if len(docs) == 0:
+                    msg = QApplication.translate(
+                        'EntityBrowser',
+                        'There are no supporting documents for the selected entity.'
+                    )
+
+                    QMessageBox.warning(
+                        self,
+                        self.doc_viewer_title,
+                        msg
+                    )
+
+                    continue
+
+                self._doc_viewer.load(docs)
 
     def _initializeData(self):
         '''
@@ -350,9 +493,6 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
                 
             #Set maximum value of the progress dialog
             progressDialog.setValue(numRecords)
-
-            headers = ','.join(self._headers)
-            #QMessageBox.information(self, 'Info', headers)
         
             self._tableModel = BaseSTDMTableModel(entity_records_collection,
                                                   self._headers, self)
@@ -383,6 +523,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
             self.tbEntity.horizontalHeader().setResizeMode(QHeaderView.Interactive)
 
             self.tbEntity.resizeColumnsToContents()
+
             #Connect signals
             self.connect(self.cboFilterColumn, SIGNAL('currentIndexChanged (int)'), self.onFilterColumnChanged)
             self.connect(self.txtFilterPattern, SIGNAL('textChanged(const QString&)'), self.onFilterRegExpChanged)
@@ -411,7 +552,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
         '''
         Slot raised whenever the filter text changes.
         '''
-        regExp =QRegExp(text,Qt.CaseInsensitive,QRegExp.FixedString)
+        regExp = QRegExp(text,Qt.CaseInsensitive,QRegExp.FixedString)
         self._proxyModel.setFilterRegExp(regExp) 
         
     def onDoubleClickView(self,modelindex):
@@ -432,8 +573,10 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
         
         if len(sel_row_indices) == 0:
             msg = QApplication.translate("EntityBrowser", 
-                                         "Please select a record from the table.")             
+                                         "Please select a record from the table.")
+
             self._notifBar.insertWarningNotification(msg)
+
             return selected_ids
         
         for proxyRowIndex in sel_row_indices:
@@ -506,10 +649,6 @@ class EntityBrowserWithEditor(EntityBrowser):
         
         #Add action toolbar if the state contains Manage flag
         if (state & MANAGE) != 0:
-            tbActions = QToolBar()
-            tbActions.setObjectName('form_toolbar')
-            tbActions.setIconSize(QSize(16, 16))
-            tbActions.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
             add = QApplication.translate("EntityBrowserWithEditor", "Add")
             edit = QApplication.translate("EntityBrowserWithEditor","Edit")
             remove = QApplication.translate("EntityBrowserWithEditor", "Remove")
@@ -532,52 +671,25 @@ class EntityBrowserWithEditor(EntityBrowser):
                 QApplication.translate("EntityBrowserWithEditor", "remove_tool")
             )
             self.connect(self._removeEntityAction,SIGNAL("triggered()"),self.onRemoveEntity)
-            tbActions.setStyleSheet(
-                '''
-                QToolButton {
-                    border: 1px inset #777;
-                    border-radius: 2px;
-                    width:70px;
-                    text-align: center;
-                    padding-top: 3px;
-                    padding-bottom: 3px;
-                    margin-right:3px;
-                    background-color: qlineargradient(
-                        x1: 0, y1: 0, x2: 0, y2: 1,
-                        stop: 0 #f6f7fa, stop: 1 #dadbde
-                    );
-                }
-                QToolButton[text='Add']{
-                    width:70px;
-                    padding-left: 20%;
-                }
 
-                QToolButton[text='Edit']{
-                    width:70px;
-                    padding-left: 18%;
-                }
-                QToolButton[text='Remove']{
-                    width:70px;
-                    padding-left: 9%;
-                    padding-right:10%;
-                }
-                QToolButton:pressed {
-                    background-color: qlineargradient(
-                        x1: 0, y1: 0, x2: 0, y2: 1,
-                        stop: 0 #dadbde, stop: 1 #f6f7fa
-                    );
-                }
-                '''
-            )
+            #Manage position of the actions based on whether the entity
+            # supports documents.
+            if self.can_view_supporting_documents:
+                manage_acts = [self._newEntityAction, self._editEntityAction,
+                               self._removeEntityAction]
+                self.tbActions.insertActions(self._view_docs_act, manage_acts)
 
-            tbActions.addAction(self._newEntityAction)
-            tbActions.addAction(self._editEntityAction)
-            tbActions.addAction(self._removeEntityAction)
-            
-            self.vlActions.addWidget(tbActions)
+                #Add action separator
+                self._act_sep = QAction(self)
+                self._act_sep.setSeparator(True)
+                self.tbActions.insertAction(self._view_docs_act, self._act_sep)
+
+            else:
+                self.tbActions.addAction(self._newEntityAction)
+                self.tbActions.addAction(self._editEntityAction)
+                self.tbActions.addAction(self._removeEntityAction)
             
             self._editor_dlg = EntityEditorDialog
-
 
     def onNewEntity(self):
         '''
@@ -669,7 +781,6 @@ class EntityBrowserWithEditor(EntityBrowser):
                                     QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
                 
         if response == QMessageBox.Yes:
-            
             self._tableModel.removeRows(rownumber,1) 
                                      
             #Remove record from the database
