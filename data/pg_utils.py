@@ -183,6 +183,13 @@ def process_report_filter(tableName, columns, whereStr="", sortStmnt=""):
     
     return _execute(t)
 
+def export_data(table_name):
+    sql = "SELECT * FROM {0}".format(table_name, )
+
+    t = text(sql)
+
+    return _execute(t)
+
 def table_column_names(tableName, spatialColumns=False, creation_order=False):
     """
     Returns the column names of the given table name. 
