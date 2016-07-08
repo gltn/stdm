@@ -43,6 +43,7 @@ class EntityDepend(QDialog, Ui_dlgEntityDepend):
         self.btnCancel.clicked.connect(self.cancel_dlg)
         self.btnDelete.clicked.connect(self.delete_entity)
         self.qryLabel.setText(self.qryLabel.text() % self.entity.short_name)
+        self.btnDelete.setStyleSheet('QPushButton {font-weight: bold; color: red;}')
         self.show_dependencies()
 
     def show_dependencies(self):

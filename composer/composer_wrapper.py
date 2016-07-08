@@ -105,7 +105,7 @@ def load_table_layers(config_collection):
         if not v_layer.isValid():
             return
 
-        v_layers.append(v_layer)
+        v_layers.append(v_layer.id())
 
     QgsMapLayerRegistry.instance().addMapLayers(v_layers, False)
 

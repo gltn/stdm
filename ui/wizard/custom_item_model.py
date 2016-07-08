@@ -147,7 +147,7 @@ class EntitiesComboView(QComboBox, EntityComboBoxSelectionMixin):
 ############
 
 class ColumnEntityModelItem(QStandardItem):
-    headers_labels = ["Name", "Description"]
+    headers_labels = ["Name", "Data Type", "Description"]
     
     def __init__(self, entity=None):
         self._entity = None
@@ -155,7 +155,6 @@ class ColumnEntityModelItem(QStandardItem):
         super(ColumnEntityModelItem, self).__init__(entity.name)
 
         self.setColumnCount(len(self.headers_labels))
-        #self.setCheckable(True)
 
         if not entity is None:
             self.set_entity(entity)
@@ -165,14 +164,14 @@ class ColumnEntityModelItem(QStandardItem):
 
     def _create_item(self, text):
         item = QStandardItem(text)
-
         return item
 
     def _set_entity_properties(self):
         name_item = self._create_item(self._entity.name)
-        description = self._create_item(str(self._entity.description))
+        col_data_type = self._create_item(self._entity.TYPE_INFO)
+        description = self._create_item(unicode(self._entity.description))
 
-        self.appendRow([name_item, description])
+        self.appendRow([name_item, col_data_type, description])
 
     def set_entity(self, entity):
         self._entity = entity
@@ -218,8 +217,9 @@ class ColumnEntitiesModel(QStandardItemModel):
         '''
         entity_item = ColumnEntityModelItem(entity)
 	name_item = entity_item._create_item(entity.name)
+	col_data_type = entity_item._create_item(entity.TYPE_INFO.capitalize())
 	description = entity_item._create_item(entity.description)
-        self.appendRow([name_item, description])
+        self.appendRow([name_item, col_data_type, description])
 
 ######
 # Lookup Entity item model

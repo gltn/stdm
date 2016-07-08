@@ -66,8 +66,6 @@ class LicenseAgreement(QDialog, Ui_LicenseAgreement):
         Checks if the flag in the registry has been set.
         Returns True to show license. If registry key
         is not yet set, show the license page.
-        :param reg_config: registry config reader
-        :type reg_config: RegistryConfig
         :rtype: boolean
         """
         show_lic = 1

@@ -154,6 +154,7 @@ class ForeignKeyMapper(QWidget):
         self._add_entity_btn.setToolTip(QApplication.translate("ForeignKeyMapper","Add"))
         self._add_entity_btn.setIcon(QIcon(":/plugins/stdm/images/icons/add.png"))
         self._add_entity_btn.setText(QApplication.translate("ForeignKeyMapper","Add"))
+        self._add_entity_btn.setObjectName('add')
         self._add_entity_btn.clicked.connect(self.onAddEntity)
         self._add_entity_btn.setToolButtonStyle(
             Qt.ToolButtonTextBesideIcon
@@ -163,6 +164,7 @@ class ForeignKeyMapper(QWidget):
         self._edit_entity_btn.setToolTip(QApplication.translate("ForeignKeyMapper","Edit"))
         self._edit_entity_btn.setIcon(QIcon(":/plugins/stdm/images/icons/edit.png"))
         self._edit_entity_btn.setText(QApplication.translate("ForeignKeyMapper", "Edit"))
+        self._edit_entity_btn.setObjectName('edit')
         self._edit_entity_btn.setToolButtonStyle(
             Qt.ToolButtonTextBesideIcon
         )
@@ -171,6 +173,7 @@ class ForeignKeyMapper(QWidget):
         self._filter_entity_btn.setVisible(False)
         self._filter_entity_btn.setToolTip(QApplication.translate("ForeignKeyMapper","Select by expression"))
         self._filter_entity_btn.setIcon(QIcon(":/plugins/stdm/images/icons/filter.png"))
+        self._filter_entity_btn.setObjectName('filter')
         self._filter_entity_btn.clicked.connect(self.onFilterEntity)
         self._filter_entity_btn.setText(QApplication.translate("ForeignKeyMapper", "Filter"))
         self._filter_entity_btn.setToolButtonStyle(
@@ -181,6 +184,7 @@ class ForeignKeyMapper(QWidget):
         self._delete_entity_btn.setToolTip(QApplication.translate("ForeignKeyMapper","Remove"))
         self._delete_entity_btn.setIcon(QIcon(":/plugins/stdm/images/icons/remove.png"))
         self._delete_entity_btn.clicked.connect(self.onRemoveEntity)
+        self._delete_entity_btn.setObjectName('remove')
         self._delete_entity_btn.setText(QApplication.translate("ForeignKeyMapper", "Remove"))
         self._delete_entity_btn.setToolButtonStyle(
             Qt.ToolButtonTextBesideIcon
@@ -193,6 +197,7 @@ class ForeignKeyMapper(QWidget):
                     border: 1px inset #777;
                     border-radius: 2px;
                     height:15px;
+                    width:70px;
                     text-align: center;
                     padding-top: 3px;
                     padding-bottom: 3px;
@@ -201,24 +206,20 @@ class ForeignKeyMapper(QWidget):
                         stop: 0 #f6f7fa, stop: 1 #dadbde
                     );
                 }
-                QToolButton[text='Add']{
-                    width:70px;
+                QToolButton#add {
                     padding-left: 20%;
                 }
 
-                QToolButton[text='Edit']{
-                    width:70px;
+                QToolButton#edit {
                     padding-left: 18%;
                 }
-                QToolButton[text='Filter']{
-                    width:70px;
+                QToolButton#filter {
                     padding-left: 16%;
                 }
 
-                QToolButton[text='Remove']{
-                    width:70px;
-                    padding-left: 9%;
-                    padding-right: 10%;
+               QToolButton#remove {
+                    width:90px;
+                    padding-left:13%;
                 }
                 QToolButton:pressed {
                     background-color: qlineargradient(

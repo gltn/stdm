@@ -35,8 +35,13 @@ from stdm.data.database import (
     STDMDb,
     Base
 )
+
 from stdm.settings import (
     current_profile
+)
+from stdm.settings.registryconfig import (
+    last_document_path,
+    set_last_document_path
 )
 from stdm.utils.util import (
     format_name,
@@ -618,7 +623,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         cbo_index = self.cboDocType.currentIndex()
         doc_id = self.cboDocType.itemData(cbo_index)
         party_count = len(self.sel_party)
-        print documents
+
         for doc in documents:
             self.sourceDocManager.insertDocumentFromFile(
                 doc,
@@ -626,14 +631,26 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 self.social_tenure,
                 party_count
             )
+        # Set last path
+        if len(documents) > 0:
+            doc = documents[0]
+            fi = QFileInfo(doc)
+            dir_path = fi.absolutePath()
+            set_last_document_path(dir_path)
 
     def selectSourceDocumentDialog(self, title):
         '''
         Displays a file dialog for a user
         to specify a source document
         '''
+
+        #Get last path for supporting documents
+        last_path = last_document_path()
+        if last_path is None:
+            last_path = '/home'
+
         files = QFileDialog.getOpenFileNames(
-            self, title, "/home", "Source "
+            self, title, last_path, "Source "
                                   "Documents (*.jpg *.jpeg *.png *.bmp *.tiff *.svg)"
         )
         return files
