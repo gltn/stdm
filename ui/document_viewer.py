@@ -32,7 +32,6 @@ from PyQt4.QtGui import (
     QPalette,
     QSizePolicy,
     QScrollArea,
-    QVBoxLayout,
     QIcon,
     QAction,
     QPrintDialog,
@@ -49,7 +48,8 @@ from PyQt4.QtCore import (
     Qt,
     pyqtSignal,
     QSignalMapper,
-    QFile
+    QFile,
+    QSize
 )
 
 from stdm.utils.util import (
@@ -252,8 +252,8 @@ class DocumentViewer(QMdiSubWindow):
     """
     closed = pyqtSignal(str)
 
-    def __init__(self, parent = None, file_identifier = ""):
-        QMdiSubWindow.__init__(self,parent)
+    def __init__(self, parent=None, file_identifier=""):
+        QMdiSubWindow.__init__(self, parent)
         self.setWindowIcon(QIcon(":/plugins/stdm/images/icons/photo.png"))
         self._file_identifier = file_identifier
         self._view_widget = None
@@ -284,7 +284,7 @@ class DocumentViewer(QMdiSubWindow):
         """
         return self._view_widget
 
-    def set_view_widget(self,v_widget):
+    def set_view_widget(self, v_widget):
         """
         :param v_widget: Widget for displaying supporting document.
         :type v_widget: QWidget
@@ -292,6 +292,10 @@ class DocumentViewer(QMdiSubWindow):
         self._view_widget = v_widget
         self._view_widget.set_actions(self.systemMenu())
         self.setWidget(self._view_widget)
+
+    def sizeHint(self):
+        #Reset size hint of the document viewer.
+        return QSize(400, 300)
 
     def load_document(self,doc_path):
         """
@@ -340,28 +344,36 @@ class DocumentViewManager(QMainWindow):
     supporting documents for a specific household based on the lifetime of the
     'SourceDocumentManager' instance.
     """
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
         self.setWindowFlags(Qt.Window)
 
         self._mdi_area = QMdiArea()
+        self._mdi_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self._mdi_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setCentralWidget(self._mdi_area)
-        self._mdi_area.resize(1280, 673)
+        #self._mdi_area.resize(1280, 673)
 
         self._mdi_area.subWindowActivated.connect(self.update_actions)
         self._viewer_mapper = QSignalMapper(self)
         self._viewer_mapper.mapped[QWidget].connect(self.set_active_sub_window)
 
-        win_title = QApplication.translate("DocumentViewManager","Document Viewer")
+        win_title = QApplication.translate(
+            "DocumentViewManager",
+            "Document Viewer"
+        )
         self.setWindowTitle(win_title)
         self.setUnifiedTitleAndToolBarOnMac(True)
-        self.statusBar().showMessage(QApplication.translate("DocumentViewManager","Ready"))
-
+        self.statusBar().showMessage(
+            QApplication.translate(
+                "DocumentViewManager",
+                "Ready"
+            )
+        )
         self._doc_viewers = {}
 
         self._create_menu_actions()
         self.update_actions()
-
 
     def center(self):
         """
@@ -399,13 +411,13 @@ class DocumentViewManager(QMainWindow):
                                                          "&Tile"), self)
         self._tile_act.setStatusTip(QApplication.translate("DocumentViewManager",
                                                             "Tile the document viewers"))
-        self._tile_act.triggered.connect(self._mdi_area.tileSubWindows)
+        self._tile_act.triggered.connect(self.tile_windows)
 
         self._cascade_act = QAction(QApplication.translate("DocumentViewManager",
                                                          "&Cascade"), self)
         self._cascade_act.setStatusTip(QApplication.translate("DocumentViewManager",
                                                             "Cascade the document viewers"))
-        self._cascade_act.triggered.connect(self._mdi_area.cascadeSubWindows)
+        self._cascade_act.triggered.connect(self.cascade_windows)
 
         self._next_act = QAction(QApplication.translate("DocumentViewManager",
                                                          "Ne&xt"), self)
@@ -424,6 +436,14 @@ class DocumentViewManager(QMainWindow):
 
         self.update_window_menu()
         self._window_menu.aboutToShow.connect(self.update_window_menu)
+
+    def cascade_windows(self):
+        #Cascade document windows
+        self._mdi_area.cascadeSubWindows()
+
+    def tile_windows(self):
+        #Arrange document windows to occupy the available space in mdi area
+        self._mdi_area.tileSubWindows()
 
     def update_actions(self):
         if self._mdi_area.activeSubWindow():
@@ -464,12 +484,19 @@ class DocumentViewManager(QMainWindow):
             win_action.triggered.connect(self._viewer_mapper.map)
             self._viewer_mapper.setMapping(win_action, window)
 
-    def load_viewer(self, document_widget):
+    def load_viewer(self, document_widget, visible=True):
         """
         Open a new instance of the viewer or activate an existing one if the
         document had been previously loaded.
         :param document_widget: Contains all the necessary information required
         to load the specific document.
+        :type document_widget: DocumentWidget
+        :param visible: True to show the view manager after the viewer has
+        been loaded, otherwise it will be the responsibility of the caller to
+        enable visibility.
+        :type visible: bool
+        :returns: True if the document was successfully loaded, else False.
+        :rtype: bool
         """
         doc_identifier = document_widget.file_identifier()
 
@@ -477,6 +504,8 @@ class DocumentViewManager(QMainWindow):
             doc_sw = self._doc_viewers[doc_identifier]
             self._mdi_area.setActiveSubWindow(doc_sw)
             doc_sw.showNormal()
+
+            return True
 
         else:
             doc_viewer = self._create_viewer(document_widget)
@@ -491,7 +520,7 @@ class DocumentViewManager(QMainWindow):
                 QMessageBox.critical(self, QApplication.translate("DocumentViewManager","Invalid Document"),
                                      msg)
 
-                return
+                return False
 
             doc_viewer.load_document(abs_doc_path)
 
@@ -501,13 +530,15 @@ class DocumentViewManager(QMainWindow):
 
             doc_viewer.show()
 
-        if not self.isVisible():
+        if not self.isVisible() and visible:
             self.setVisible(True)
 
         if self.isMinimized():
             self.showNormal()
 
         self.center()
+
+        return True
 
     def set_active_sub_window(self, viewer):
         if viewer:
@@ -528,8 +559,12 @@ class DocumentViewManager(QMainWindow):
             file_id = document_widget.file_identifier()
             source_entity = document_widget.doc_source_entity()
             profile_name = table_to_profile_name(source_entity)
-            doc_type = document_widget.doc_type_value()
-            file_name, file_extension = guess_extension(document_widget.displayName())
+            doc_type = document_widget.doc_type_value().lower().replace(
+                ' ', '_'
+            )
+            file_name, file_extension = guess_extension(
+                document_widget.displayName()
+            )
 
             abs_path = network_repository + "/" +profile_name + '/' +\
                        unicode(source_entity) + "/" + unicode(doc_type) + "/" +\
