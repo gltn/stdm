@@ -35,6 +35,7 @@ from stdm.settings import current_profile, save_current_profile
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.settings.config_file_updater import ConfigurationFileUpdater
+from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 
 from stdm.ui.change_pwd_dlg import changePwdDlg
 from stdm.ui.doc_generator_dlg import (
@@ -588,7 +589,18 @@ class STDMQGISLoader(object):
                                         "Do you want to backup your data?",
                                             QMessageBox.Yes |
                                         QMessageBox.No) == QMessageBox.Yes:
-                    self.configuration_file_updater.backup_data()
+
+                    # First upgrade config file to latest version
+                    self.configuration_file_updater.\
+                        update_config_file_version()
+
+                    # Create database schema based on updated configuration
+                    # file
+                    if self.load_configuration_to_serializer():
+                        config_updater = ConfigurationSchemaUpdater()
+                        config_updater.exec_()
+                        self.configuration_file_updater.backup_data()
+
                 else:
                     self.configuration_file_updater.\
                         update_config_file_version()

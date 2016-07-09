@@ -31,11 +31,12 @@ from PyQt4.QtXml import QDomDocument
 from ..data.configuration.exception import ConfigurationException
 from ..data.configfile_paths import FilePaths
 from ..data.configuration.stdm_configuration import StdmConfiguration
-from ..data.pg_utils import export_data
+from ..data.pg_utils import export_data, import_data
 
 COLUMN_TYPE_DICT = {'character varying': 'VARCHAR', 'date': 'DATE',
                     'serial': 'SERIAL', 'integer': 'BIGINT', 'lookup':
-                        'LOOKUP', 'double precision': 'DOUBLE'}
+                        'LOOKUP', 'double precision': 'DOUBLE', 'GEOMETRY':
+                        'GEOMETRY'}
 COLUMN_PROPERTY_DICT = {'SERIAL': {"unique": "False", "tip": "",
                                     "minimum": "-9223372036854775808",
                                     "maximum": "9223372036854775807",
@@ -54,7 +55,14 @@ COLUMN_PROPERTY_DICT = {'SERIAL': {"unique": "False", "tip": "",
                                     "index": "False", "mandatory": "False"},
                         'DOUBLE': {"unique": "False", "tip": "",
                                     "minimum": "0", "maximum": "0",
-                                    "index": "False", "mandatory": "False"}}
+                                    "index": "False", "mandatory": "False"},
+                        'GEOMETRY': {"unique": "False", "tip": "",
+                                    "minimum": "0", "maximum":"92233720368547",
+                                    "index": "False", "mandatory": "False"},
+                        'DEFAULT': {"unique": "False", "tip": "",
+                                    "minimum": "0", "maximum":"0",
+                                    "index": "False", "mandatory": "False"},
+                        }
 
 from ..data.pg_utils import export_data
 
@@ -178,6 +186,9 @@ class ConfigurationFileUpdater(object):
     def _set_table_columns(self, table_name, element):
         relations_list = []
 
+        # Index to access table in self.table_list List
+        table_index = 0
+
         for i in range(element.count()):
             columns_node = element.item(i).toElement()
 
@@ -221,6 +232,19 @@ class ConfigurationFileUpdater(object):
 
             if columns_node.tagName() == "geometryz":
                 self.spatial_unit_table.append(table_name)
+                column_dict = OrderedDict()
+                column_dict["col_name"] = 'geom'
+                column_dict["col_search"] = 'no'
+                column_dict["col_descrpt"] = ''
+                column_dict["col_type"] = 'GEOMETRY'
+                column_dict["lookup"] = None
+                column_dict["srid"] = '4326'
+                column_dict["type"] = '0'
+
+                self.table_list.append(column_dict)
+
+                self.table_dict[table_name] = self.table_list
+
 
     def _set_table_attributes(self, element):
 
@@ -364,14 +388,27 @@ class ConfigurationFileUpdater(object):
                                     for k, v in COLUMN_PROPERTY_DICT[col_v].\
                                             iteritems():
                                         column.setAttribute(k, v)
+                                else:
+                                    for k, v in COLUMN_PROPERTY_DICT[
+                                        'DEFAULT'].\
+                                            iteritems():
+                                        column.setAttribute(k, v)
 
                             elif col_k == "lookup" and col_v is not None:
-                                relation = self.doc_old.createElement("Relation")
+                                relation = self.doc_old.createElement(
+                                    "Relation")
                                 relation.setAttribute("name", "fk_" + pref
                                                      + "_" + col_v + "_id_"
                                                      + entity_name + "_" +
                                                      str(self.table_name))
                                 column.appendChild(relation)
+                            if col_v == "GEOMETRY":
+                                geometry =  self.doc_old.createElement(
+                                    "Geometry")
+                                geometry.setAttribute("type", '0')
+                                geometry.setAttribute("srid", '4326')
+                                geometry.setAttribute("layerDisplay", '')
+                                column.appendChild(geometry)
                             columns.appendChild(column)
                     entities.appendChild(columns)
                     profile.appendChild(entities)
@@ -574,6 +611,7 @@ class ConfigurationFileUpdater(object):
 
             if empty_list:
                 conf_prefix = config_profile[:2]
+                self.config_profiles.append(conf_prefix)
                 profile = self.doc_old.createElement("Profile")
                 profile.setAttribute("description", "")
                 profile.setAttribute("name", config_profile)
@@ -668,6 +706,49 @@ class ConfigurationFileUpdater(object):
                         for relation_key, values in values.iteritems():
                             if relation_key == "social_tenure_relationship":
                                 for social_tenure_entity in values:
-                                    r = export_data(social_tenure_entity)
-                                    QMessageBox.information(None, "T",
-                                                            str(r.keys()))
+                                    social_tenure_table = \
+                                        self.config_profiles[0] + "_" + \
+                                        social_tenure_entity
+                                    data = export_data(social_tenure_entity)
+
+                                    keys = data.keys()
+
+                                    # Remove geom columns of line, point and
+                                    #  polygon and replace with on column geom
+                                    original_key_len = len(keys)
+                                    new_keys = []
+                                    for ky in keys:
+                                        if not ky.startswith("geom"):
+                                            new_keys.append(ky)
+                                    if len(new_keys) is not original_key_len:
+                                        new_keys.append('geom')
+
+                                    values = data.fetchall()
+
+                                    # Only get geom columns with values and
+                                    # avoid none geom tables
+                                    new_values = []
+
+                                    if len(new_keys) is not original_key_len:
+                                        for value in values:
+                                            first_v = value[:-3]
+                                            last_v = value[-3:]
+                                            new_last_v = []
+
+                                            for last in last_v:
+                                                if last is not None:
+                                                    new_last_v.append(last)
+
+                                            l = tuple(list(first_v) + \
+                                                       new_last_v)
+
+                                            new_values.append(l)
+                                        new_values = str(new_values).strip(
+                                            "[]")
+                                    else:
+                                        new_values = str(values).strip("[]")
+
+                                    keys = ",".join(new_keys)
+                                    values = new_values
+                                    import_data(social_tenure_table, keys,
+                                                values)
