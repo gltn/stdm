@@ -190,6 +190,13 @@ def export_data(table_name):
 
     return _execute(t)
 
+def import_data(table_name, columns_names, data):
+    sql = "INSERT INTO {0} ({1}) VALUES {2}".format(table_name,
+                                                      columns_names, data)
+    t = text(sql)
+
+    return _execute(t)
+
 def table_column_names(tableName, spatialColumns=False, creation_order=False):
     """
     Returns the column names of the given table name. 
