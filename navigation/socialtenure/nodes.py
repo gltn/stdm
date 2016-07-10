@@ -608,7 +608,7 @@ class STRNode(EntityNode):
         """
         del_msg = QApplication.translate("STRNode",
                                      "This action will remove the social tenure relationship and dependent "
-                                     "supporting documents from the database and the disk. "
+                                     "supporting documents from the database and the documents folder. "
                                      "This action cannot be undone and once removed, it can"
                                      " only be recreated through"
                                      " the 'New Social Tenure Relationship' wizard."

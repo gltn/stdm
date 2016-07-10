@@ -17,7 +17,7 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 import uuid
-
+import logging
 from PyQt4.QtGui import (
     QApplication,
     QImage,
@@ -50,6 +50,9 @@ from qgis.core import (
     QgsProject,
     QgsVectorLayer
 )
+from qgis.utils import (
+    iface
+)
 
 from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.sql.expression import text
@@ -81,7 +84,8 @@ from .chart_configuration import ChartConfigurationCollection
 from .spatial_fields_config import SpatialFieldsConfiguration
 from .photo_configuration import PhotoConfigurationCollection
 from .table_configuration import TableConfigurationCollection
-    
+
+LOGGER = logging.getLogger('stdm')
 class DocumentGenerator(QObject):
     """
     Generates documents from user-defined templates.
@@ -102,8 +106,9 @@ class DocumentGenerator(QObject):
         
         #For cleanup after document compositions have been created
         self._map_memory_layers = []
-
+        self.map_registry = QgsMapLayerRegistry.instance()
         self._table_mem_layers = []
+        self._feature_ids = []
 
         self._link_field = ""
 
@@ -308,7 +313,7 @@ class DocumentGenerator(QObject):
                 # Refresh non-custom map composer items
                 self._refresh_composer_maps(composition,
                                             spatialFieldsConfig.spatialFieldsMapping().keys())
-                            
+
                 # Create memory layers for spatial features and add them to the map
                 for mapId,spfmList in spatialFieldsConfig.spatialFieldsMapping().iteritems():
 
@@ -316,7 +321,7 @@ class DocumentGenerator(QObject):
 
                     if not map_item is None:
                         # #Clear any previous map memory layer
-                        self.clear_temporary_map_layers()
+                        #self.clear_temporary_map_layers()
 
                         for spfm in spfmList:
                             #Use the value of the label field to name the layer
@@ -352,7 +357,6 @@ class DocumentGenerator(QObject):
 
                             if ref_layer is None or not ref_layer.isValid():
                                 continue
-
                             #Add feature
                             bbox = self._add_feature_to_layer(ref_layer, geomWKT)
                             bbox.scale(spfm.zoomLevel())
@@ -368,18 +372,16 @@ class DocumentGenerator(QObject):
                             symbol_layer = spfm.symbolLayer()
                             if not symbol_layer is None:
                                 ref_layer.rendererV2().symbols()[0].changeSymbolLayer(0,spfm.symbolLayer())
-
                             '''
                             Add layer to map and ensure its always added at the top
                             '''
-                            QgsMapLayerRegistry.instance().addMapLayer(ref_layer, False)
-                            QgsProject.instance().layerTreeRoot().insertLayer(0, ref_layer)
+                            self.map_registry.addMapLayer(ref_layer)
+                            #QgsProject.instance().layerTreeRoot().insertLayer(0, ref_layer)
                             self._iface.mapCanvas().setExtent(bbox)
                             self._iface.mapCanvas().refresh()
-
-                            #Add layer to map memory layer list
-                            self._map_memory_layers.append(ref_layer)
-
+                            # Add layer to map memory layer list
+                            self._map_memory_layers.append(ref_layer.id())
+                            self._hide_layer(ref_layer)
                         '''
                         Use root layer tree to get the correct ordering of layers
                         in the legend
@@ -418,10 +420,7 @@ class DocumentGenerator(QObject):
 
                     absDocPath = u"{0}/{1}".format(outputDir, docFileName)
                     self._write_output(composition, outputMode, absDocPath)
-                # # Clear temporary layers
-                # if ref_layer is not None:
-                #     QgsMapLayerRegistry.instance().removeMapLayer(ref_layer.id())
-                #self.clear_temporary_layers()
+
             return True, "Success"
 
         return False, "Document composition could not be generated"
@@ -453,7 +452,8 @@ class DocumentGenerator(QObject):
 
     def clear_temporary_map_layers(self):
         """
-        Clears all memory map layers that were used to create the composition.
+        Clears all memory map layers that were
+        used to create the composition.
         """
         self._clear_layers(self._map_memory_layers)
 
@@ -471,16 +471,30 @@ class DocumentGenerator(QObject):
         self.clear_temporary_table_layers()
 
     def _clear_layers(self, layers):
-
         if layers is None:
             return
         try:
-            for lyr in layers:
-                id = lyr.id()
-                QgsMapLayerRegistry.instance().removeMapLayer(id)
+            for lyr_id in layers:
+                self.map_registry.removeMapLayer(lyr_id)
+                layers.remove(lyr_id)
 
-        except RuntimeError:
-            pass
+        except Exception as ex:
+            LOGGER.debug(
+                'Could not delete temporary designer layer. {}'.
+                    format(ex)
+            )
+
+    def _hide_layer(self, layer):
+        """
+        Hides a layer from the canvas.
+        :param layer: The layer to be hidden.
+        :type layer: QgsVectorLayer
+        :return: None
+        :rtype: NoneType
+        """
+        self._iface.legendInterface().setLayerVisible(
+            layer, False
+        )
 
     def _build_vector_layer(self, layer_name, geom_type, srid):
         """
@@ -488,9 +502,7 @@ class DocumentGenerator(QObject):
         """
         vl_geom_config = u"{0}?crs=epsg:{1!s}&field=name:string(20)&" \
                          u"index=yes".format(geom_type, srid)
-
         ref_layer = QgsVectorLayer(vl_geom_config, layer_name, "memory")
-        
         return ref_layer
 
     def _load_table_layers(self, config_collection):
@@ -509,7 +521,9 @@ class DocumentGenerator(QObject):
         v_layers = []
 
         for conf in table_configs:
+
             layer_name = conf.linked_table()
+
             v_layer = vector_layer(layer_name)
 
             if v_layer is None:
@@ -519,9 +533,10 @@ class DocumentGenerator(QObject):
                 return
 
             v_layers.append(v_layer)
-            self._map_memory_layers.append(v_layer)
 
-        QgsMapLayerRegistry.instance().addMapLayers(v_layers, False)
+            self._map_memory_layers.append(v_layer.id())
+
+        self.map_registry.addMapLayers(v_layers, False)
 
     def _set_table_data(self, composition, config_collection, record):
         #TODO: Clean up code to adopt this design.
@@ -554,6 +569,7 @@ class DocumentGenerator(QObject):
         :param record: Matching record from the result set.
         :type record: object
         """
+
         chart_configs = config_collection.items().values()
 
         for cc in chart_configs:
@@ -637,7 +653,6 @@ class DocumentGenerator(QObject):
         """
         if not isinstance(vlayer, QgsVectorLayer):
             return
-        
         dp = vlayer.dataProvider()
         
         feat = QgsFeature()
@@ -645,7 +660,7 @@ class DocumentGenerator(QObject):
         feat.setGeometry(g)
         
         dp.addFeatures([feat])
-        
+        self._feature_ids.append(feat.id())
         vlayer.updateExtents()
         
         return g.boundingBox()
