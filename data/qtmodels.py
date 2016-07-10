@@ -438,7 +438,7 @@ class PersonTableModel(QAbstractTableModel):
         
         return True
     
-class BaseSTDMTableModel(QAbstractTableModel, QAbstractItemView):
+class BaseSTDMTableModel(QAbstractTableModel):
     """
     Generic table model for use in STDM table views.
     """
@@ -447,17 +447,18 @@ class BaseSTDMTableModel(QAbstractTableModel, QAbstractItemView):
         self._initData = initdata
         self._headerdata = headerdata
 
-    def rowCount(self, parent = QModelIndex()):
+    def rowCount(self, parent=QModelIndex()):
         return len(self._initData)
 
-    def columnCount(self, parent = QModelIndex()):
+    def columnCount(self, parent=QModelIndex()):
         return len(self._headerdata)
 
-    def data(self,index, role):
+    def data(self, index, role):
         if index.row() != -1 and index.column() != -1:
             indexData = self._initData[index.row()][index.column()]
         else:
             return None
+
         if not index.isValid():
             return None
 
@@ -465,13 +466,14 @@ class BaseSTDMTableModel(QAbstractTableModel, QAbstractItemView):
             #Decimal not supported by QVariant so we adapt it to a supported type
             if isinstance(indexData,Decimal):
                 return str(indexData)
+
             else:
                 return indexData
 
         else:
             return None
 
-    def headerData(self, section,orientation,role):
+    def headerData(self, section, orientation, role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self._headerdata[section]
 
@@ -480,10 +482,11 @@ class BaseSTDMTableModel(QAbstractTableModel, QAbstractItemView):
 
         return None
 
-    def setData(self,index,value,role = Qt.EditRole):
+    def setData(self, index, value, role=Qt.EditRole):
         if index.isValid() and role == Qt.EditRole:
             self._initData[index.row()][index.column()] = value
             self.dataChanged.emit(index,index)
+
             return True
 
         return False
@@ -495,7 +498,7 @@ class BaseSTDMTableModel(QAbstractTableModel, QAbstractItemView):
         #             return Qt.ItemIsEnabled | Qt.ItemIsSelectable
         return Qt.ItemIsEditable|Qt.ItemIsSelectable|Qt.ItemIsEnabled
 
-    def insertRows(self,position,rows,parent = QModelIndex()):
+    def insertRows(self, position, rows, parent=QModelIndex()):
         if position < 0 or position > len(self._initData):
             return False
 
@@ -511,7 +514,7 @@ class BaseSTDMTableModel(QAbstractTableModel, QAbstractItemView):
 
         return True
 
-    def removeRows(self,position,count,parent = QModelIndex()):
+    def removeRows(self, position, count, parent=QModelIndex()):
 
         if position < 0 or position > len(self._initData):
             return False
