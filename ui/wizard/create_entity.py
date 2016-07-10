@@ -132,7 +132,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         :param name: entity short_name
         :type name: str
         """
-        return self.profile.entities.has_key(name):
+        return self.profile.entities.has_key(name)
 
     def support_doc(self):
         """
