@@ -31,7 +31,16 @@ from stdm.data.configuration.entity import *
 from stdm.data.configuration.db_items import DbItem
 
 class EntityEditor(QDialog, Ui_dlgEntity):
+    """
+    Dialog to add and edit entities
+    """
     def __init__(self, parent, profile, entity=None, in_db=False):
+        """
+        :param parent: Owner of this dialog
+        :param profile : current profile
+        :param entity : current entity
+        :param in_db : Boolean flag to check if entity exist in database
+        """
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
@@ -69,42 +78,12 @@ class EntityEditor(QDialog, Ui_dlgEntity):
 	formatted_name = formatted_name.replace(' ', "_")
 	return formatted_name.lower()
     
-    def add_entity(self, entity_name):
-        """
-        Creates and adds a new entity to a profile
-        :param entity_name: name of the new entity
-        :type entity_name: str
-        """
-        self.entity = self._create_entity(entity_name)
-        self.profile.add_entity(self.entity)
-        return True
-
-    def dup_check(self, name):
-        """
-        Return True if we have an entity in the current profile with same name
-        as the new entity name
-        :param name: entity name
-        :type name: str
-        """
-        if self.profile.entities.has_key(name):
-            return True
-        else:
-            return False
-
-
-    def _create_entity(self, name):
-        entity = self.profile.create_entity(name, entity_factory,
-                supports_documents=self.support_doc())
-        entity.description = self.edtDesc.text()
-        entity.column_added.connect(self.form_parent.add_column_item)
-        entity.column_removed.connect(self.form_parent.delete_column_item)
-        return entity
-
-    def support_doc(self):
-        values = [False, None, True]
-        return values[self.cbSupportDoc.checkState()]
-
     def bool_to_check(self, state):
+        """
+        Returns a check state given a boolean value
+        :param state : Boolean value
+        :type state: Boolean
+        """
         if state:
             return Qt.Checked
         else:
@@ -112,22 +91,56 @@ class EntityEditor(QDialog, Ui_dlgEntity):
 	    
     def accept(self):
         if self.edtTable.text()=='':
-            self.error_message(QApplication.translate("EntityEditor","Please enter an entity name"))
+            self.error_message(self.tr("Please enter an entity name"))
             return
 
-        entity_name = unicode(self.edtTable.text()).capitalize()
+        entity_short_name = unicode(self.edtTable.text()).capitalize()
 
-        if self.entity is None:
-            if self.dup_check(entity_name):
+        if self.entity is None:  # New entity
+            if self.dup_check(entity_short_name):
                 self.error_message(self.tr("Entity with the same name already exist!"))
                 return
         else:
             self.profile.remove_entity(self.entity.short_name)
 
-        if self.add_entity(entity_name):
+        if self.add_entity(entity_short_name):
             self.done(1)
         else:
             self.done(0)
+
+    def add_entity(self, entity_short_name):
+        """
+        Creates and adds a new entity to a profile
+        :param entity_name: name of the new entity
+        :type entity_name: str
+        """
+        self.entity = self._create_entity(entity_short_name)
+        self.profile.add_entity(self.entity)
+        return True
+
+    def _create_entity(self, short_name):
+        entity = self.profile.create_entity(short_name, entity_factory,
+                supports_documents=self.support_doc())
+        entity.description = self.edtDesc.text()
+        entity.column_added.connect(self.form_parent.add_column_item)
+        entity.column_removed.connect(self.form_parent.delete_column_item)
+        return entity
+
+    def dup_check(self, name):
+        """
+        Return True if we have an entity in the current profile with same 'name'
+        :param name: entity short_name
+        :type name: str
+        """
+        return self.profile.entities.has_key(name):
+
+    def support_doc(self):
+        """
+        Return boolean value representing the check state of supporting
+        document checkbox
+        """
+        values = [False, None, True]
+        return values[self.cbSupportDoc.checkState()]
 
     def reject(self):
         self.done(0)

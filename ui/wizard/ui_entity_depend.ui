@@ -116,6 +116,12 @@ Click 'Delete entity' to proceed.</string>
        </item>
        <item>
         <widget class="QPushButton" name="btnDelete">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="text">
           <string>Delete entity</string>
          </property>
