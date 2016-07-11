@@ -356,8 +356,7 @@ class ConfigurationFileUpdater(object):
                     entities.setAttribute("name", pref + "_" + entity_key)
                     entity_name = pref + "_" + entity_key
                     entities.setAttribute("description", entity_value[0])
-                    entities.setAttribute("shortName", IMPORT + "_" +
-                                          entity_key)
+                    entities.setAttribute("shortName", entity_key)
                     entities.setAttribute("editable", "True")
                     entities.setAttribute("global", "False")
                     entities.setAttribute("associative", "False")
@@ -369,7 +368,7 @@ class ConfigurationFileUpdater(object):
                             iteritems():
                         if k == entity_key:
                             entities.setAttribute("documentTypeLookup", v)
-                            entities.setAttribute("supportsDocuments", "True")
+                            entities.setAttribute("supportsDocuments", "False")
                             break
                         else:
                             entities.setAttribute("supportsDocuments", "False")
@@ -426,32 +425,28 @@ class ConfigurationFileUpdater(object):
                         for relation_v in relation_values:
                             entity_relation = self.doc_old.createElement(
                                 "EntityRelation")
-                            entity_relation.setAttribute("parent",
-                                                         IMPORT +
-                                                         "_" + relation_v)
+                            entity_relation.setAttribute("parent", relation_v)
                             entity_relation.setAttribute("child",
                                             "social_tenure_relationship")
                             entity_relation.setAttribute("parentColumn", "id")
                             entity_relation.setAttribute("childColumn",
-                                                         IMPORT + "_" +
                                                          relation_v + "_" +
                                                          "id")
                             entity_relation.setAttribute(
-                                "name", "fk_" + pref + "_" + IMPORT + "_"
-                                        + relation_v + "_" + "id"
+                                "name", "fk_" + pref + "_" + relation_v + "_" + "id"
                                 "_" + pref + "_" + "social_tenure_relationship"
-                                + "_" + IMPORT + "_" + relation_v + "_" +
+                                + "_" + relation_v + "_" +
                                         "id")
                             relationship.appendChild(entity_relation)
 
                             entity_relation = self.doc_old.createElement(
                                 "EntityRelation")
                             entity_relation.setAttribute(
-                                "parent", "check_" + IMPORT + "_" +
+                                "parent", "check_" +
                                           relation_v +
                                 "_document_type")
                             entity_relation.setAttribute(
-                                "child", IMPORT + "_" + relation_v +
+                                "child", relation_v +
                                 "_supporting_document")
                             entity_relation.setAttribute(
                                 "parentColumn", "id")
@@ -459,10 +454,10 @@ class ConfigurationFileUpdater(object):
                                 "childColumn", "document_type")
                             entity_relation.setAttribute(
                                 "name", "fk_" + pref +
-                                "_check_" + IMPORT + "_" + relation_v +
+                                "_check_" + relation_v +
                                         "_document_type_id_"
                                 + pref +
-                                "_" + IMPORT + "_" + relation_v +
+                                "_" + relation_v +
                                 "_supporting_document_document_type")
 
                             relationship.appendChild(entity_relation)
@@ -470,22 +465,21 @@ class ConfigurationFileUpdater(object):
                             entity_relation = self.doc_old.createElement(
                                 "EntityRelation")
                             entity_relation.setAttribute(
-                                "parent",  IMPORT + "_" + relation_v)
+                                "parent", relation_v)
                             entity_relation.setAttribute(
-                                "child", IMPORT + "_" + relation_v +
+                                "child", relation_v +
                                 "_supporting_document")
                             entity_relation.setAttribute(
                                 "parentColumn", "id")
                             entity_relation.setAttribute(
-                                "childColumn", IMPORT + "_" + relation_v + "_id")
+                                "childColumn", relation_v + "_id")
                             entity_relation.setAttribute(
                                 "name", "fk_" + pref +
-                                "_check_" + IMPORT + "_" + relation_v +
+                                "_check_" + relation_v +
                                         "_id_"
                                 + pref +
-                                "_" + IMPORT + "_" + relation_v +
-                                "_supporting_document_" + IMPORT + "_" +
-                                        relation_v + "_id")
+                                "_" + relation_v +
+                                "_supporting_document_" + relation_v + "_id")
 
                             relationship.appendChild(entity_relation)
 
@@ -494,7 +488,7 @@ class ConfigurationFileUpdater(object):
                             entity_relation.setAttribute(
                                 "parent",  "supporting_document")
                             entity_relation.setAttribute(
-                                "child", IMPORT + "_" + relation_v +
+                                "child", relation_v +
                                 "_supporting_document")
                             entity_relation.setAttribute(
                                 "parentColumn", "id")
@@ -503,7 +497,7 @@ class ConfigurationFileUpdater(object):
                             entity_relation.setAttribute(
                                 "name", "fk_" + pref +
                                 "_supporting_document_id_" + pref +
-                                "_" + IMPORT + "_" + relation_v +
+                                "_" + relation_v +
                                 "_supporting_document_supporting_doc_id")
 
                             relationship.appendChild(entity_relation)
@@ -589,7 +583,7 @@ class ConfigurationFileUpdater(object):
                 social_tenure.setAttribute(
                     "tenureTypeList", "check_tenure_type")
                 social_tenure.setAttribute(
-                    "spatialUnit", IMPORT + "_" + self.spatial_unit_table[0])
+                    "spatialUnit", self.spatial_unit_table[0])
                 for relation_key, relation_values in value.iteritems():
 
                     if relation_key == "social_tenure_relationship":
@@ -600,7 +594,7 @@ class ConfigurationFileUpdater(object):
 
                             if self.spatial_unit_table[0] != relation_v:
                                 social_tenure.setAttribute(
-                                    "party", IMPORT + "_" + relation_v)
+                                    "party", relation_v)
 
                 profile.appendChild(social_tenure)
 
