@@ -354,7 +354,8 @@ class ConfigurationFileUpdater(object):
                     entities.setAttribute("name", pref + "_" + entity_key)
                     entity_name = pref + "_" + entity_key
                     entities.setAttribute("description", entity_value[0])
-                    entities.setAttribute("shortName", entity_value[1])
+                    entities.setAttribute("shortName", "import" + "_" +
+                                          entity_key)
                     entities.setAttribute("editable", "True")
                     entities.setAttribute("global", "False")
                     entities.setAttribute("associative", "False")
