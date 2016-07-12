@@ -1,139 +1,64 @@
+# -*- coding: utf-8 -*-
+"""
+/***************************************************************************
+Name                 : spatial_unit_form
+Description          : GUI classes for managing and viewing supporting
+                       documents.
+Date                 : 15/July/2016
+copyright            : (C) 2016 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+"""
 import re
-import time
-from PyQt4.QtGui import (
-    QLineEdit,
-    QDateEdit,
-    QTextEdit,
-    QDateTimeEdit,
-    QPushButton,
-    QComboBox,
-    QWidget,
-    QDoubleSpinBox,
-    QApplication,
-    QDialogButtonBox,
-    QLabel
+import logging
+from qgis.core import (
+    NULL,
+    QgsFeatureRequest,
+    QgsMessageLog,
+    QgsVectorLayerCache
 )
-from PyQt4.QtCore import pyqtSlot
+from PyQt4.QtGui import (
+    QApplication,
+    QLabel,
+    QHBoxLayout
+)
+
 from qgis.gui import (
     QgsEditorWidgetWrapper,
     QgsEditorConfigWidget,
     QgsEditorWidgetFactory,
     QgsEditorWidgetRegistry
 )
-from qgis.core import (
-    NULL,
-    QgsFeatureRequest,
-    QgsMessageLog
-)
+
 from qgis.utils import (
+    iface,
     QGis
 )
 
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
+
 from stdm.settings import (
     current_profile
 )
+
 from stdm.utils.util import (
     setComboCurrentIndexWithItemData,
     format_name
 )
-from stdm.data.configuration import entity_model
-from stdm.data.mapping import MapperMixin
 
-from stdm.ui.customcontrols.relation_line_edit import (
-    AdministrativeUnitLineEdit,
-    RelatedEntityLineEdit,
-    RelatedEntityLineEdit
-)
+from stdm.ui.helpers import valueHandler
 
-
-
-class STDMFieldWidget():
-    def __init__(self):
-        self.layer = None
-        self.data_source = None
-        self.entity = None
-        self.mapper = None
-
-    def set_layer(self, layer=None):
-        self.layer = layer
-
-    def set_layer_source(self, source):
-        curr_profile = current_profile()
-        self.data_source = source
-        self.entity = curr_profile.entity_by_name(
-            source
-        )
-
-    def qgis_version(self):
-        qgis_version = '.'.join(
-            re.findall("[-+]?\d+[\.]?\d*", QGis.QGIS_VERSION[:4])
-        )
-        return float(qgis_version)
-
-    def crete_widget(self, column, parent):
-        # Get widget factory to be used in value formatter
-        # Get widget factory
-
-        column_obj = self.entity.columns[column]
-        column_widget = ColumnWidgetRegistry.create(
-            column_obj,
-            parent
-        )
-
-        return column_widget
-
-    def set_mapper(self):
-        model = entity_model(self.entity)
-        self.mapper = MapperMixin(model)
-
-    def init_widget(self, column, widget):
-        # Add widget to MapperMixin collection
-        column_obj = self.entity.columns[column]
-        self.mapper.addMapping(
-            column,
-            widget,
-            column_obj.mandatory,
-            pseudoname=column_obj.header()
-        )
-
-    def set_widget(self):
-        for column, widget_type in self.widget_mapping().iteritems():
-            idx = self.layer.fieldNameIndex(column)
-            if self.qgis_version() < 2.14:
-                self.layer.editFormConfig().setWidgetType(idx, widget_type)
-            else:
-                self.layer.setEditorWidgetV2(idx, widget_type)
-
-    def widget_mapping(self):
-        widget_mapping = {}
-        for c in self.entity.columns.values():
-            if c.TYPE_INFO == 'SERIAL':
-                widget_mapping[c.name] = 'Hidden'
-            else:
-                widget_mapping[c.name] = 'stdm_widgets'
-        return widget_mapping
-
-
-def get_layer_source(layer):
-    """
-    Get the layer table name if the source is from the database.
-    :param layer: The layer for which the source is checked
-    :type QGIS vectorlayer
-    :return: The table name of the layer
-    :rtype: String or None
-    """
-    if layer is not None:
-        source = layer.source()
-        vals = dict(re.findall('(\S+)="?(.*?)"? ', source))
-        try:
-            table = vals['table'].split('.')
-            tableName = table[1].strip('"')
-            return tableName
-        except KeyError:
-            return None
-
-STDM_WIDGET = STDMFieldWidget()
+LOGGER = logging.getLogger('stdm')
 
 class WidgetWrapper(QgsEditorWidgetWrapper):
 
@@ -142,92 +67,116 @@ class WidgetWrapper(QgsEditorWidgetWrapper):
             layer, fieldIdx, editor, parent
         )
         self.layer = layer
-        self.formatted_widget = None
+        self.field_idx = fieldIdx
         self.parent = parent
+        self.column = self.field().name()
+
+        self.value = None
+        self.setValue = None
+        self.column_widget = None
+        self.handler_obj = None
+
+    def entity(self):
+        curr_profile = current_profile()
+
+        entity = curr_profile.entity_by_name(
+            self.get_layer_source()
+        )
+        return entity
+
+    def get_layer_source(self):
+        """
+        Get the layer table name if the source
+        is from the database.
+        :param layer: The layer for which the
+        source is checked
+        :type QGIS vectorlayer
+        :return: The table name of the layer
+        :rtype: String or None
+        """
+        if self.layer is not None:
+            source = self.layer.source()
+            vals = dict(
+                re.findall('(\S+)="?(.*?)"? ', source)
+            )
+            try:
+                table = vals['table'].split('.')
+                table_name = table[1].strip('"')
+                return table_name
+            except KeyError:
+                return None
+
+    def format_form(self):
+        title = format_name(
+            self.entity().short_name
+        )
+
+        title = QApplication.translate(
+            'STDMFieldWidget',
+            '{} Editor'.format(title)
+        )
+
+        # Set title and format labels for QGIS form
+        if self.parent.parent() is not None:
+            self.parent.parent().setWindowTitle(title)
+            label = self.parent.parent().findChildren(QLabel)[-1:]
+            if len(label) == 1:
+                text = label[0].text()
+                formatted_text = format_name(text)
+                label[0].setText(formatted_text)
 
     def value(self):
         """ Return the current value of the widget"""
-        if isinstance(self.widget(), QLineEdit):
-            return self.widget().text()
-        elif isinstance(self.widget(), QComboBox):
-            return self.widget().itemData(self.widget().currentIndex())
-        elif isinstance(self.widget(), AdministrativeUnitLineEdit):
-            if not self.control.current_item is None:
-                return self.widget().current_item.id
-            return None
-        elif isinstance(self.widget(), RelatedEntityLineEdit):
-            if not self.control.current_item is None:
-                return self.widget().current_item.id
-            return None
-        elif isinstance(self.widget(), QDateTimeEdit):
-            return self.widget().dateTime().toPyDateTime()
-        elif isinstance(self.widget(), QDateEdit):
-            return self.widget().date().toPyDate()
-        elif isinstance(self.widget(), QTextEdit):
-            return self.widget().toPlainText()
-        elif isinstance(self.widget(), QDoubleSpinBox):
-            self.widget().value()
-        else:
-            return self.widget().value()
+        if not self.handler_obj is None:
+            self.value()
 
     def setValue(self, value):
         """ Set a value on the widget """
-        if value == NULL:
-            pass
-        elif isinstance(value, QComboBox) and value != NULL:
-            self.widget().setValue(value)
-        elif isinstance(self.widget(), QLineEdit) and value != NULL:
-            self.widget().setText(unicode(value))
-        elif isinstance(self.widget(), QComboBox) and value != NULL:
-            setComboCurrentIndexWithItemData(self.widget(), value)
-        elif isinstance(self.widget(), AdministrativeUnitLineEdit) and value != NULL:
-            self.widget().load_current_item_from_id(value)
-        elif isinstance(self.widget(), RelatedEntityLineEdit) and value != NULL:
-            self.widget().load_current_item_from_id(value)
-        elif isinstance(self.widget(), QDateEdit) and value != NULL:
-            self.widget().setDate(value)
-        elif isinstance(self.widget(), QDateTimeEdit) and value != NULL:
-            self.widget().setDateTime(value)
-        elif isinstance(self.widget(), QTextEdit) and value != NULL:
-            self.widget().setText(value)
-        elif isinstance(self.widget(), QDoubleSpinBox) and value != NULL:
-            self.widget().setValue(value)
+        if not self.handler_obj is None:
+            if value != NULL:
+                self.set_value(value)
 
     def createWidget(self, parent):
         """ Create a new empty widget """
-        self.formatted_widget = STDM_WIDGET.crete_widget(
-            self.field().name(), parent
+        column_obj = self.entity().columns[self.column]
+        self.column_widget = ColumnWidgetRegistry.create(
+            column_obj,
+            parent
         )
-        return self.formatted_widget
+
+        return self.column_widget
 
     def valid(self):
+        """
+        Make certain widget types valid and hide the rest.
+        But set to return True as all are valid
+        :return: The validity of certain widget type.
+        :rtype: Boolean
+        """
         return True
 
     def initWidget(self, widget):
         """
-        Style the widget with a yellow background by default
-        and compile the rule
+        Initialize the widget
         """
-        STDM_WIDGET.init_widget(
-            self.field().name(), self.formatted_widget
-        )
-        title = format_name(STDM_WIDGET.entity.short_name)
-        title = QApplication.translate(
-            'STDMFieldWidget',
-            '{} Records'.format(title)
-        )
-        # Set title and format labels for qgis form
-        if self.parent.parent() is not None:
-            self.parent.parent().setWindowTitle(title)
-            for label in self.parent.parent().findChildren(QLabel):
-                text = label.text()
-                formatted_text = format_name(text)
-                label.setText(formatted_text)
+        if not widget is None:
+            self.value_handler = valueHandler(widget)
 
-    @pyqtSlot(unicode)
-    def onTextChanged(self, newText):
-        """ Will be exectued, every time the text is edited """
-        pass
+            if not self.value_handler is None:
+                self.handler_obj = self.value_handler()
+
+                if widget is not None:
+                    self.handler_obj.setControl(widget)
+
+                self.value = getattr(
+                    self.handler_obj, 'value'
+                )
+
+                self.set_value = getattr(
+                    self.handler_obj, 'setValue'
+                )
+
+        self.format_form()
 
 class QGISFieldWidgetConfig(QgsEditorConfigWidget):
     def __init__(self, layer, idx, parent):
@@ -235,24 +184,125 @@ class QGISFieldWidgetConfig(QgsEditorConfigWidget):
             self, layer, idx, parent
         )
 
+        self.setLayout(QHBoxLayout())
+        self.label = QLabel()
+        self.layout().addWidget(self.label)
+
+    def setConfig(self, config):
+        info_text = 'You can modify the data type by changing ' \
+                    'the columns in STDM configuration wizard.'
+        self.label.setText(
+            QApplication.translate(
+                'QGISFieldWidgetConfig', info_text
+            )
+        )
+
+    def config(self):
+
+        pass
 
 class QGISFieldWidgetFactory(QgsEditorWidgetFactory):
     def __init__(self, name):
         QgsEditorWidgetFactory.__init__(self, name)
 
     def create(self, layer, fieldIdx, editor, parent):
-        widget_wrapper = WidgetWrapper(
-            layer, fieldIdx, editor, parent
-        )
-        return widget_wrapper
+        try:
+            widget_wrapper = WidgetWrapper(
+                layer, fieldIdx, editor, parent
+            )
+
+            if not widget_wrapper is None:
+                return widget_wrapper
+
+        except Exception as ex:
+            pass
 
     def configWidget(self, layer, idx, parent):
         return QGISFieldWidgetConfig(layer, idx, parent)
 
-WIDGET_NAME = QApplication.translate(
-    'STDMFieldWidget', 'STDM Widgets'
-)
-WIDGET_FACTORY = QGISFieldWidgetFactory(WIDGET_NAME)
-QgsEditorWidgetRegistry.instance().registerWidget(
-    "stdm_widgets", WIDGET_FACTORY
-)
+
+class STDMFieldWidget():
+    # Instantiate the singleton QgsEditorWidgetRegistry
+    widgetRegistry = QgsEditorWidgetRegistry.instance()
+
+    def __init__(self):
+        self.entity = None
+        self.widget_mapping = {}
+
+    def set_entity(self, source):
+        curr_profile = current_profile()
+        self.entity = curr_profile.entity_by_name(
+            source
+        )
+
+    def qgis_version(self):
+        qgis_version = '.'.join(
+            re.findall(
+                "[-+]?\d+[\.]?\d*",
+                QGis.QGIS_VERSION[:4]
+            )
+        )
+        return float(qgis_version)
+
+    def _set_widget_type(self, layer, column, widget_type_id):
+
+        idx = layer.fieldNameIndex(column.name)
+
+        if self.qgis_version() >= 2.14:
+            layer.editFormConfig().setWidgetType(
+                idx, widget_type_id
+            )
+            # if column.mandatory:
+            #     layer.editFormConfig().setNotNull(idx, True)
+        else:
+            layer.setEditorWidgetV2(
+                idx, widget_type_id
+            )
+
+    def set_widget_mapping(self):
+        self.widget_mapping.clear()
+        for c in self.entity.columns.values():
+
+            if c.TYPE_INFO == 'SERIAL':
+                self.widget_mapping[c] = ['Hidden', None]
+            else:
+                stdm = QApplication.translate(
+                    'STDMFieldWidget', 'STDM'
+                )
+                self.widget_mapping[c] = [
+                    'stdm_{}'.format(
+                        c.TYPE_INFO.lower()
+                    ),
+                    '{} {}'.format(
+                        stdm, c.display_name()
+                    )
+                ]
+
+    def register_factory(self):
+        # The destructor has no effects. It is QGIS bug.
+        # So restarting QGIS is required to destroy
+        # registered stdm widgets.
+        for widget_id_name in self.widget_mapping.values():
+            # add and register stdm widget type only
+            if not widget_id_name[1] is None:
+                widget_name = QApplication.translate(
+                    'STDMFieldWidget', widget_id_name[1]
+                )
+                if widget_id_name[0] not in \
+                        self.widgetRegistry.factories().keys():
+
+                    widget_factory = QGISFieldWidgetFactory(
+                        widget_name
+                    )
+
+                    self.widgetRegistry.registerWidget(
+                        widget_id_name[0], widget_factory
+                    )
+
+    def set_widget_type(self, layer):
+        for col, widget_id_name in \
+                self.widget_mapping.iteritems():
+
+            self._set_widget_type(
+                layer, col, widget_id_name[0]
+            )

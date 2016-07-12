@@ -27,6 +27,7 @@ from PyQt4 import uic
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from qgis.core import *
+
 from gps_tool import GPSToolDialog
 from stdm.settings import (
     current_profile,
@@ -46,12 +47,9 @@ from stdm.settings.registryconfig import (
     RegistryConfig,
     WIZARD_RUN
 )
+
 from stdm.ui.forms.spatial_unit_form import (
-    WidgetWrapper,
-    QGISFieldWidgetConfig,
-    QGISFieldWidgetFactory,
-    STDMFieldWidget,
-    STDM_WIDGET
+    STDMFieldWidget
 )
 
 from stdm.mapping.utils import pg_layerNamesIDMapping
@@ -64,7 +62,7 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 LOGGER = logging.getLogger('stdm')
 
 class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
-    onLayerAdded = pyqtSignal(QgsVectorLayer)
+    onLayerAdded = pyqtSignal(object)
     def __init__(self, iface, plugin):
         """Constructor."""
         QDockWidget.__init__(self, iface.mainWindow())
@@ -79,11 +77,14 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         self.setMaximumHeight(250)
         self._curr_profile = current_profile()
         self._profile_spatial_layers = []
+        self.stdm_fields = STDMFieldWidget()
         self._populate_layers()
 
         self.spatial_unit = None
 
-        self.iface.currentLayerChanged.connect(self.init_form_widgets)
+        #self.iface.currentLayerChanged.connect(register_factory)
+        self.iface.currentLayerChanged.connect(self.control_digitizeToolbar)
+        self.onLayerAdded.connect(self.init_form_widgets)
 
     def _populate_layers(self):
         self.stdm_layers_combo.clear()
@@ -157,7 +158,13 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
                 #Append view to the list of spatial layers
                 self._profile_spatial_layers.append(str_view)
 
-        self.onLayerAdded.connect(self.init_form_widgets)
+    def control_digitizeToolbar(self, curr_layer):
+        table, column = self._layer_table_column(curr_layer)
+        if table not in pg_views():
+            # Make sure digitizing toolbar is enabled
+            self.iface.digitizeToolBar().setEnabled(True)
+        elif table in pg_views():
+            self.iface.digitizeToolBar().setEnabled(False)
 
     def init_form_widgets(self, curr_layer):
         """
@@ -168,20 +175,18 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         :rtype: NoneType
         """
         table, column = self._layer_table_column(curr_layer)
-
         if table not in pg_views():
-            # Make sure digitizing toolbar is enabled
-            self.iface.digitizeToolBar().setEnabled(True)
+
             try:
-                STDM_WIDGET.set_layer(curr_layer)
-                STDM_WIDGET.set_layer_source(table)
-                STDM_WIDGET.set_widget()
-                STDM_WIDGET.set_mapper()
+                # init register form factory
+                self.stdm_fields.set_entity(table)
+                self.stdm_fields.set_widget_mapping()
+                self.stdm_fields.register_factory()
+                self.stdm_fields.set_widget_type(curr_layer)
+
             except Exception as ex:
+                print ex
                 LOGGER.debug(str(ex))
-        # Disable digitizing toolbar for views
-        elif table in pg_views():
-            self.iface.digitizeToolBar().setEnabled(False)
 
     def wizard_run(self):
         """
@@ -299,7 +304,6 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
                               lambda: self._set_layer_display_name(curr_layer,
                                                layer_item.layer_display()))
             #curr_layer.setLayerName(layer_item.layer_display())
-
             self.onLayerAdded.emit(curr_layer)
         else:
             msg = QApplication.translate("Spatial Unit Manager",

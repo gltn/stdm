@@ -50,6 +50,9 @@ from .admin_unit_manager import VIEW,MANAGE,SELECT
 from .ui_entity_browser import Ui_EntityBrowser
 from .helpers import SupportsManageMixin
 from .notification import NotificationBar
+from stdm.utils.util import (
+    format_name
+)
 
 __all__ = ["EntityBrowser", "EntityBrowserWithEditor",
            "ContentGroupEntityBrowser"]
@@ -241,8 +244,10 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
         Protected method to be overridden by subclasses.
         '''
         records = QApplication.translate('EntityBrowser', 'Records')
-
-        return u'{0} {1}'.format(self._entity.short_name, records)
+        formatted_name = format_name(
+            self._entity.short_name
+        )
+        return u'{0} {1}'.format(formatted_name, records)
     
     def setCellFormatters(self,formattermapping):
         '''
@@ -688,7 +693,10 @@ class EntityBrowserWithEditor(EntityBrowser):
                 self.tbActions.addAction(self._newEntityAction)
                 self.tbActions.addAction(self._editEntityAction)
                 self.tbActions.addAction(self._removeEntityAction)
-            
+            # Hide the add button from spatial tables
+            if entity.has_geometry_column():
+                self._newEntityAction.setVisible(False)
+
             self._editor_dlg = EntityEditorDialog
 
     def onNewEntity(self):

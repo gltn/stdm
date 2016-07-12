@@ -230,11 +230,14 @@ class DateEditValueHandler(ControlValueHandler):
     controlType = QDateEdit
 
     def value(self):
-        return self.control.date().toPyDate()
-    
-    def setValue(self,value):
+        return self.control.date()
+
+    def setValue(self, value):
         if value is not None:
-            self.control.setDate(value)
+            try:
+                self.control.setDate(value)
+            except Exception as ex:
+                print ex
 
     def supportsMandatory(self):
         return False
@@ -248,12 +251,16 @@ class DateTimeEditValueHandler(ControlValueHandler):
     '''
     controlType = QDateTimeEdit
 
-    def value(self):
-        return self.control.dateTime().toPyDateTime()
+    def value(self, for_spatial_unit=False):
 
-    def setValue(self,value):
-        if value is not None:
+            return self.control.dateTime()
+
+    def setValue(self,value, for_spatial_unit=False):
+
+        try:
             self.control.setDateTime(value)
+        except Exception as ex:
+            print ex
 
     def supportsMandatory(self):
         return False
