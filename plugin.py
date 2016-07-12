@@ -28,6 +28,7 @@ from PyQt4.QtGui import *
 
 from qgis.core import *
 from qgis.gui import *
+import qgis.utils
 from sqlalchemy.exc import SQLAlchemyError
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings import current_profile, save_current_profile
@@ -94,12 +95,15 @@ from composer import ComposerWrapper
 
 LOGGER = logging.getLogger('stdm')
 
+
 class STDMQGISLoader(object):
 
     viewSTRWin = None
     STR_DISPLAY = QApplication.translate(
-        'STDMQGISLoader', 'New Social Tenure Relationship'
+        'STDMQGISLoader',
+        'New Social Tenure Relationship'
     )
+
     def __init__(self, iface):
         self.iface = iface
 
@@ -138,6 +142,7 @@ class STDMQGISLoader(object):
         home_path = QDesktopServices.storageLocation(
             QDesktopServices.HomeLocation
         )
+
         log_path = '{}/.stdm/logs/stdm_error_{}.log'.format(
             home_path, current_hour
         )
@@ -148,6 +153,9 @@ class STDMQGISLoader(object):
         with open(log_path, 'a') as log_file:
             log_file.write(
                str(tag) + str(level) + str(message)
+            )
+            log_file.write(
+                '\n.........\n'
             )
 
         print 'Error logged.'
@@ -328,7 +336,7 @@ class STDMQGISLoader(object):
                 )
                 self.reset_content_modules_id(
                     title,
-                    pe.message
+                    pe
                 )
 
     def minimum_table_checker(self):
@@ -369,6 +377,9 @@ class STDMQGISLoader(object):
             "STDMQGISLoader",
             'Database Table Error'
         )
+        if None in [self.current_profile.social_tenure.party,
+                    self.current_profile.social_tenure.spatial_unit]:
+            return
         # Check for social tenure entity
         if entity == self.current_profile.social_tenure:
             str_table_status = [
@@ -749,15 +760,16 @@ class STDMQGISLoader(object):
         tbSeparator = QAction(self.iface.mainWindow())
         tbSeparator.setSeparator(True)
 
-        # add separator to menu
-        separator_group = TableContentGroup(username, 'separator', tbSeparator)
-        separator_group.register()
-        self.moduleContentGroups.append(separator_group)
+        if pg_table_exists(self.current_profile.social_tenure.name):
+            # add separator to menu
+            separator_group = TableContentGroup(username, 'separator', tbSeparator)
+            separator_group.register()
+            self.moduleContentGroups.append(separator_group)
 
-        moduleCntGroup = self._create_table_content_group(
-            self.STR_DISPLAY, username, 'new_str.png'
-        )
-        self.moduleContentGroups.append(moduleCntGroup)
+            moduleCntGroup = self._create_table_content_group(
+                self.STR_DISPLAY, username, 'new_str.png'
+            )
+            self.moduleContentGroups.append(moduleCntGroup)
 
         #Create content groups and add items
         self.contentAuthCntGroup = ContentGroup(username)
@@ -1059,16 +1071,16 @@ class STDMQGISLoader(object):
         Slot for showing the wizard for defining a new social
         tenure relationship
         '''
-        try:
-            frmNewSTR = newSTRWiz(self)
-            frmNewSTR.exec_()
-        except Exception as ex:
-            QMessageBox.critical(self.iface.mainWindow(),
-                QApplication.translate(
-                    "STDMPlugin",
-                    "Loading dialog..."),
-                str(ex.message)
-            )
+        # try:
+        frmNewSTR = newSTRWiz(self)
+        frmNewSTR.exec_()
+        # except Exception as ex:
+        #     QMessageBox.critical(self.iface.mainWindow(),
+        #         QApplication.translate(
+        #             "STDMPlugin",
+        #             "Error Loading New STR Wizard"),
+        #         str(ex.message)
+        #     )
 
     def onManageAdminUnits(self):
         '''
@@ -1155,9 +1167,27 @@ class STDMQGISLoader(object):
             importData = ImportData(self.iface.mainWindow())
             status = importData.exec_()
             if status == 1:
-                self.reload_plugin(None)
+                if importData.geomClm.isEnabled():
+                    self.refresh_layers()
         except Exception as ex:
             LOGGER.debug(unicode(ex))
+
+    def refresh_layers(self):
+        """
+        Refresh all database layers.
+        :return: None
+        :rtype: NoneType
+        """
+        layers = qgis.utils.iface.legendInterface().layers()
+        for layer in layers:
+            layer.dataProvider().forceReload()
+            layer.triggerRepaint()
+        if not qgis.utils.iface.activeLayer() is None:
+            canvas = qgis.utils.iface.mapCanvas()
+            canvas.setExtent(
+                qgis.utils.iface.activeLayer().extent()
+            )
+            qgis.utils.iface.mapCanvas().refresh()
 
     def onExportData(self):
         """
@@ -1654,7 +1684,7 @@ class STDMQGISLoader(object):
 
             self.current_profile = None
             # Deletes all the registered widgets
-            QgsEditorWidgetRegistry()
+            #QgsEditorWidgetRegistry()
         except Exception as ex:
             LOGGER.debug(unicode(ex))
 
@@ -1680,10 +1710,8 @@ class STDMQGISLoader(object):
                 (e.name, e.short_name)
                 for e in
                 self.current_profile.entities.values()
-                if (e.TYPE_INFO == 'ENTITY' and
-                not e.has_geometry_column())
+                if (e.TYPE_INFO == 'ENTITY')
             ]
-
 
     def help_contents(self):
         """
@@ -1701,7 +1729,7 @@ class STDMQGISLoader(object):
                 "STDMQGISLoader",
                 title
             ),
-            message_text
+            unicode(message_text)
         )
 
     def _action_separator(self):

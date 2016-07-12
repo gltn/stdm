@@ -196,8 +196,10 @@ class RelatedEntityLineEdit(ForeignKeyLineEdit):
             self.column,
             self.current_item
         )
-
-        self.setText(display_value)
+        try:
+            self.setText(display_value)
+        except Exception as ex:
+            pass
 
     def on_load_foreign_key_browser(self):
         #Show entity browser dialog.
@@ -237,8 +239,10 @@ class AdministrativeUnitLineEdit(ForeignKeyLineEdit):
                 admin_name,
                 self.current_item.Code
             )
-
-        self.setText(admin_name)
+        try:
+            self.setText(admin_name)
+        except Exception as ex:
+            pass
 
     def parent_entity_model(self):
         #Use default admin unit model class.

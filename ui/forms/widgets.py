@@ -309,7 +309,7 @@ class DateTimeWidgetFactory(ColumnWidgetRegistry):
         else:
             dtt.setMinimumDateTime(c.minimum)
 
-        if c.max_use_current_datetimee:
+        if c.max_use_current_datetime:
             dtt.setMaximumDateTime(datetime.today())
         else:
             dtt.setMaximumDateTime(c.maximum)

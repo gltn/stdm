@@ -172,72 +172,58 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         tool_buttons = QToolBar()
         tool_buttons.setObjectName('form_toolbar')
         tool_buttons.setIconSize(QSize(16, 16))
-        tool_buttons.setToolButtonStyle(
-            Qt.ToolButtonTextBesideIcon
-        )
 
         self.addSTR = QAction(QIcon(
             ':/plugins/stdm/images/icons/add.png'),
             QApplication.translate('ViewSTRWidget', 'Add'),
             self
         )
-        self.addSTR.setObjectName('add_str')
 
         self.editSTR = QAction(
             QIcon(':/plugins/stdm/images/icons/edit.png'),
             QApplication.translate('ViewSTRWidget', 'Edit'),
             self
         )
-        self.editSTR.setObjectName('edit_str')
 
         self.deleteSTR = QAction(
             QIcon(':/plugins/stdm/images/icons/remove.png'),
             QApplication.translate('ViewSTRWidget', 'Remove'),
             self
         )
-        self.deleteSTR.setObjectName('delete_str')
 
         tool_buttons.addAction(self.addSTR)
         tool_buttons.addAction(self.editSTR)
         tool_buttons.addAction(self.deleteSTR)
-        tool_buttons.widgetForAction(self.addSTR).setObjectName('add')
-        tool_buttons.widgetForAction(self.editSTR).setObjectName('edit')
-        tool_buttons.widgetForAction(self.deleteSTR).setObjectName('remove')
-        tool_buttons.setStyleSheet(
-            '''
-                QToolButton {
-                    border: 1px inset #777;
-                    border-radius: 2px;
-                    text-align: center;
-                    padding-top: 3px;
-                    width:70px;
-                    padding-bottom: 3px;
-                    margin-right:4px;
-                    background-color: qlineargradient(
-                        x1: 0, y1: 0, x2: 0, y2: 1,
-                        stop: 0 #f6f7fa, stop: 1 #dadbde
-                    );
-                }
-                QToolButton#add {
-                    padding-left: 20%;
-                }
 
-                QToolButton#edit {
-                    padding-left: 18%;
-                }
-                QToolButton#remove {
-                    width:90px;
-                    padding-left:13%;
-                }
-
-                QToolButton:pressed {
-                    background-color: qlineargradient(
-                        x1: 0, y1: 0, x2: 0, y2: 1,
-                        stop: 0 #dadbde, stop: 1 #f6f7fa
-                    );
-                }
-            '''
-        )
+        # tool_buttons.setStyleSheet(
+        #     '''
+        #         QToolButton {
+        #             border: 2px inset #878787;
+        #             border-radius: 2px;
+        #             padding: 4px;
+        #             margin-right: 2px;
+        #              background: qlineargradient(
+        #                 x1: 0, y1: 0, x2: 0, y2: 1,
+        #                 stop: 0 #dddddd,
+        #                 stop: 0.3 #c3c3c3
+        #                 stop: 0.51 #c3c3c3
+        #                 stop: 1.0 #dddddd
+        #             );
+        #
+        #         }
+        #
+        #
+        #         QToolBar QToolButton:open {
+        #             background-color: qlineargradient(
+        #                 x1: 1, y1: 1, x2: 0, y2: 1,
+        #                 stop: 0 #e0e0e0, stop: 1 #c3c3c3
+        #             );
+        #         }
+        #
+        #
+        #
+        #     '''
+        # )
         self.toolbarVBox.addWidget(tool_buttons)
 
     def initGui(self):
@@ -349,7 +335,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         except Exception as pe:
             self._notif_search_config.clear()
-            self._notif_search_config.insertErrorNotification(pe.message)
+            self._notif_search_config.insertErrorNotification(unicode(pe))
 
     def _entity_config_from_profile(self, table_name, short_name):
         """
@@ -540,7 +526,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                     "STDMPlugin",
                     "Loading Error"
                 ),
-                str(ex.message)
+                unicode(ex)
             )
 
     def delete_str(self):
@@ -1018,7 +1004,7 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         propType = queryObjProperty.property.columns[0].type
 
         try:
-            prog_dialog.setValue(7)
+
             if not isinstance(propType, String):
                 results = modelQueryObj.filter(
                     queryObjProperty == search_term
@@ -1029,6 +1015,7 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
                     func.lower(queryObjProperty) == func.lower(search_term)
                 ).all()
 
+            prog_dialog.setValue(7)
         except exc.StatementError:
             return model_root_node, [], search_term
 
