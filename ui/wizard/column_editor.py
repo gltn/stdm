@@ -248,12 +248,12 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 'mandt':{'check_state':False, 'enabled_state':True},
                 'search':{'check_state':True, 'enabled_state':True},
                 'unique':{'check_state':False, 'enabled_state':True},
-                'index':{'check_state':False, 'enabled_state':True},
+                'index':{'check_state':False, 'enabled_state':False},
                 'minimum':0, 'maximum':0,
                 'property':self.bigint_property }
 
         self.type_attribs['TEXT'] = {
-                'mandt':{'check_state':False, 'enabled_state':False},
+                'mandt':{'check_state':False, 'enabled_state':True},
                 'search':{'check_state':False, 'enabled_state':False},
                 'unique':{'check_state':False, 'enabled_state':False},
                 'index':{'check_state':False, 'enabled_state':False},
