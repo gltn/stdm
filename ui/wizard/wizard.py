@@ -974,32 +974,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         model_item, entity, row_id = self.get_model_entity(self.pftableView)
 
-        # don't edit entities that already exist in the database
-        #if pg_table_exists(entity.name):
-            #self.show_message(QApplication.translate("Configuration Wizard", \
-                    #"Editing entity that exist in database is not allowed!"))
-            #return
-
         if model_item:
             profile = self.current_profile()
             in_db = pg_table_exists(entity.name)
+
             editor = EntityEditor(self, profile, entity, in_db)
             result = editor.exec_()
+
             if result == 1:
-                if entity.supports_documents:
-                    # mark the lookup for deletion
-                    doc_name = u'check_{0}_document_type'.format(
-                            entity.short_name.lower())
-                    de = profile.entity(doc_name)
-                    de.action = DbItem.DROP
+                model_index_name = model_item.index(row_id, 0)
+                model_index_desc = model_item.index(row_id, 1)
 
-                self.entity_model.delete_entity(entity)
-
-                self.init_entity_item_model()
-                self.trigger_entity_change()
-
-                self.entity_model.add_entity(editor.entity)
-                self.refresh_lookup_view()
+                model_item.setData(model_index_name, editor.entity.short_name) 
+                model_item.setData(model_index_desc, editor.entity.description) 
 
     def delete_entity(self):
         """
