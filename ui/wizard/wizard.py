@@ -588,6 +588,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.updater_thread.started.connect(self._updater_thread_started)
             self.updater_thread.finished.connect(self.updater_thread.deleteLater)
 
+            self.txtHtml.append(self.tr("Preparing configuration, please wait..."))
+            
             ##*Start the process
             self.updater_thread.start()
 
@@ -841,8 +843,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self.cboProfile.insertItems(0, profiles)
         # Set current profile on the profile combobox.
-        cp = self.current_profile()
-        if cp:
+        cp = current_profile()
+        if not cp is None:
             index = self.cboProfile.findText(cp.name, Qt.MatchFixedString)
             if index >= 0:
                 self.cboProfile.setCurrentIndex(index)
