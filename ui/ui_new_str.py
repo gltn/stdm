@@ -203,8 +203,6 @@ class Ui_frmNewSTR(object):
         self.STRTypePartyBox.setSpacing(0)
         self.STRTypePartyBox.setObjectName(_fromUtf8("STRTypePartyBox"))
         self.verticalLayout_12.addLayout(self.STRTypePartyBox)
-        spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.verticalLayout_12.addItem(spacerItem)
         self.scrollArea_3.setWidget(self.STRTypeWidget)
         self.verticalLayout_7.addWidget(self.scrollArea_3)
         frmNewSTR.addPage(self.frmWizSTRType)

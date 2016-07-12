@@ -48,6 +48,7 @@ from stdm.utils.util import (
     entity_display_columns,
     model_obj_display_data
 )
+
 from stdm.data.configuration import entity_model
 
 from stdm.navigation import (
@@ -64,10 +65,7 @@ from stdm.utils.util import (
     format_name
 )
 
-#from .entity_browser import ForeignKeyBrowser
 from ui_new_str import Ui_frmNewSTR
-
-SELECT = 2303
 
 LOGGER = logging.getLogger('stdm')
 
@@ -88,20 +86,23 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :returns: None
         :rtype: NoneType
         """
-        QWizard.__init__(self, plugin.iface.mainWindow())
+        QWizard.__init__(
+            self, plugin.iface.mainWindow()
+        )
 
         self.setupUi(self)
         self.plugin = plugin
+        self.setOption(QWizard.IndependentPages, True)
         #STR Variables
         self.sel_party = []
         self.sel_spatial_unit = []
-        self.party_row_data = []
+        self.str_type_data = []
         self.sel_str_type = []
         self.row = 0 # number of party rows
         # Current profile instance and properties
         self.curr_profile = current_profile()
         self.social_tenure = self.curr_profile.social_tenure
-
+        self.str_type_table = None
         self.party = self.social_tenure.party
 
         self.spatial_unit = self.social_tenure.spatial_unit
@@ -113,9 +114,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             self.social_tenure, False, True
         )
 
-
         self.party_header = []
-
         self.docs_tab_index = None
         self.docs_tab = None
         self.doc_types = None
@@ -123,8 +122,9 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.str_doc_edit_obj = None
         self.updated_doc_obj = None
         self.updated_str_obj = None
-        self.party_notice = NotificationBar(self.vlPartyNotif)
-
+        self.party_notice = NotificationBar(
+            self.vlPartyNotif
+        )
         self.spatial_unit_notice = NotificationBar(
             self.vlSpatialUnitNotif
         )
@@ -133,7 +133,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         btnFinish = self.button(
             QWizard.FinishButton
         )
-        self.init_preview_map()
+
         # For editing STR
         if str_edit_model is not None:
             title = QApplication.translate(
@@ -144,23 +144,45 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             self.removePage(0)
             self.str_edit_obj = str_edit_model.model()
             self.str_doc_edit_obj = str_edit_model.documents()
-            #self.load_edit_data()
-            self.init_party_str_type_edit()
-            self.init_spatial_unit_edit()
-            self.removed_docs = None
-            self.init_document_type()
-            self.init_document_edit()
 
-        # For creating STR
-        else:
-            self.init_party_add()
-            self.init_spatial_unit_add()
-            self.init_document_type()
+    def initializePage(self, page_id):
+        """
+        Initialize summary page based on user
+        selections.
+        :param id: the page id of the wizard
+        :type id: QWizard id
+        :returns: None
+        :rtype: NoneType
+        """
+        if page_id == 0:
+            if self.str_edit_obj is None:
+                self.create_str_type_table()
+                self.init_party_add()
 
-        self.init_document_add()
-        self.cboDocType.currentIndexChanged.connect(
-            self.init_document_add
-        )
+        if page_id == 1:
+            if self.str_edit_obj is None:
+                self.init_spatial_unit_add()
+            else:
+                self.create_str_type_table()
+
+                self.init_party_str_type_edit()
+                self.init_spatial_unit_edit()
+        if page_id == 2:
+            self.init_preview_map()
+
+        if page_id == 3:
+            self.doc_notice = NotificationBar(
+                self.vlSourceDocNotif
+            )
+        if page_id == 4:
+
+            self.init_documents()
+            self.init_document_add()
+            if not self.str_edit_obj is None:
+                self.init_document_edit()
+
+        if page_id == 5:
+            self.buildSummary()
 
     def init_party_str_type_edit(self):
         """
@@ -172,7 +194,10 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :return:
         :rtype:
         """
-        party_model_obj = getattr(self.str_edit_obj, self.party.name)
+        party_model_obj = getattr(
+            self.str_edit_obj, self.party.name
+        )
+
         self.sel_party.append(party_model_obj)
         str_type_id = self.str_edit_obj.tenure_type
         entity_config = self._load_entity_config(self.party)
@@ -187,9 +212,16 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         party_fk_mapper.setEntities(party_model_obj)
 
-        self.init_str_type(party_model_obj, party_fk_mapper, str_type_id, 0)
+        self.init_str_type(
+            party_model_obj,
+            party_fk_mapper,
+            str_type_id,
+            0
+        )
         self.party_signals(party_fk_mapper)
-        self.resize_to_single_row(party_fk_mapper, self.verticalLayout_2)
+        self.resize_to_single_row(
+            party_fk_mapper, self.verticalLayout_2
+        )
 
     def resize_to_single_row(self, fk_mapper, layout, height=265):
         """
@@ -204,7 +236,10 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         fk_mapper._tbFKEntity.setMinimumSize(QSize(55, 30))
         fk_mapper._tbFKEntity.setMaximumSize(QSize(5550, 100))
         spacer = QSpacerItem(
-            20, height, QSizePolicy.Minimum, QSizePolicy.Expanding
+            20,
+            height,
+            QSizePolicy.Minimum,
+            QSizePolicy.Expanding
         )
         layout.addItem(spacer)
 
@@ -215,47 +250,58 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         )
         self.sel_spatial_unit.append(spatial_unit_model_obj)
 
-        entity_config = self._load_entity_config(self.spatial_unit)
+        entity_config = self._load_entity_config(
+            self.spatial_unit
+        )
         sp_unit_fk_mapper = self._create_fk_mapper(
-            entity_config, self.spatialUnitRecBox, self.spatial_unit_notice
+            entity_config,
+            self.spatialUnitRecBox,
+            self.spatial_unit_notice
         )
 
         vertical_layout = QVBoxLayout()
-        vertical_layout.addWidget(sp_unit_fk_mapper)
+        vertical_layout.addWidget(
+            sp_unit_fk_mapper
+        )
 
-        self.spatialUnitRecBox.setLayout(vertical_layout)
+        self.spatialUnitRecBox.setLayout(
+            vertical_layout
+        )
 
-        sp_unit_fk_mapper.setEntities(spatial_unit_model_obj)
-        self.spatial_unit_signals(sp_unit_fk_mapper)
+        sp_unit_fk_mapper.setEntities(
+            spatial_unit_model_obj
+        )
+        self.spatial_unit_signals(
+            sp_unit_fk_mapper
+        )
         self.resize_to_single_row(
-            sp_unit_fk_mapper, self.verticalLayout_10, 220
+            sp_unit_fk_mapper,
+            self.verticalLayout_10,
+            220
         )
 
     def set_model_obj(self, model_obj, sel_models_cont):
+        if sel_models_cont == self.sel_party:
+            self.party_notice.clear()
         if sel_models_cont == self.sel_spatial_unit:
             self.sel_spatial_unit[:] = []
         elif not self.social_tenure.multi_party:
-
             self.sel_party[:] = []
         sel_models_cont.append(model_obj)
 
-
-    def clear_fk_table_data(self, table_view):
+    def erase_table_data(self, table_view):
 
         if table_view.model().rowCount() > 0:
             table_view.model().rowCount(0)
             table_view.model().removeRow(0)
 
-    def clear_str_type_data(self, party_table, force_clear=False):
-        if force_clear:
-            self.remove_str_type_row([0])
-        else:
-            # Clear existing if multi-party is not
-            #  allowed or on editing mode
-            if not self.social_tenure.multi_party or \
-                            self.str_edit_obj is not None:
-                    if party_table.model().rowCount() > 0:
-                        self.remove_str_type_row([0])
+    def clear_str_type_data(self, party_table):
+        # Clear existing if multi-party is not
+        #  allowed or on editing mode
+        if not self.social_tenure.multi_party or \
+                        self.str_edit_obj is not None:
+                if party_table.model().rowCount() > 0:
+                    self.remove_str_type_row([0])
 
     def party_signals(self, party_table):
 
@@ -265,29 +311,32 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             )
         )
 
-        party_table.beforeEntityAdded.connect(
-            lambda :
-            self.clear_str_type_data(party_table._tbFKEntity)
-        )
-
+        # party_table.beforeEntityAdded.connect(
+        #     lambda :
+        #     self.clear_str_type_data(party_table._tbFKEntity)
+        # )
+        #row = len(self.sel_party) + 1
         party_table.afterEntityAdded.connect(
             lambda model_obj, row: self.init_str_type(
                 model_obj, party_table, 0, row
             )
         )
 
-        # Clear existing if multi-party is not allowed
+        # Clear str type table data if multi-party is
+        #  not allowed or on editing mode
         if not self.social_tenure.multi_party or \
             self.str_edit_obj is not None:
             party_table.beforeEntityAdded.connect(
-                lambda : self.clear_fk_table_data(
+                lambda : self.erase_table_data(
                     party_table._tbFKEntity
                 )
             )
 
         if self.str_edit_obj is not None:
             party_table.beforeEntityAdded.connect(
-                lambda: self.clear_str_type_data(party_table, True)
+                lambda: self.erase_table_data(
+                    self.str_type_table
+                )
             )
 
 
@@ -296,7 +345,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         )
 
         party_table.deletedRows.connect(
-            lambda rows: self.remove_row(rows, self.sel_party)
+            lambda rows: self.remove_model(rows, self.sel_party)
         )
 
     def spatial_unit_signals(self, spatial_unit_table):
@@ -307,7 +356,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             )
         )
         spatial_unit_table.beforeEntityAdded.connect(
-            lambda: self.clear_fk_table_data(
+            lambda: self.erase_table_data(
                 spatial_unit_table._tbFKEntity
             )
         )
@@ -316,7 +365,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         )
 
         spatial_unit_table.deletedRows.connect(
-            lambda rows: self.remove_row(
+            lambda rows: self.remove_model(
                 rows, self.sel_spatial_unit
             )
         )
@@ -370,12 +419,12 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             sp_fk_mapper, self.verticalLayout_10, 250
         )
 
-    def remove_row(self, rows, sel_record):
+    def remove_model(self, rows, sel_record):
         """
         A slot that removes a selected party or
         spatial unit model list.
         :param rows: The list of rows removed.
-        :type table_view: List
+        :type rows: List
         :param sel_record: List of selected records
          from which a model will be removed.
         :type sel_record: List
@@ -385,12 +434,12 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         for row in rows:
             sel_record.pop(row)
 
-    def remove_str_type_row(self, row_position):
+    def remove_str_type_row(self, rows=[0]):
         """
         Removes corresponding social tenure type
         row when a party row is removed.
-        :param row_position: Party row position that is removed.
-        :type row_position: integer
+        :param rows: Party row position that is removed.
+        :type rows: integer
         :returns: None
         :rtype: NoneType
         """
@@ -400,15 +449,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         # we have to multiply by 2 to get the correct
         # position of str_type row to be removed
 
-        for row in row_position:
-            matching_table = row * 2
-            for position, item in enumerate(
-                    self.frmWizSTRType.findChildren(QTableView)
-            ):
-                if item.__class__.__name__ == 'FreezeTableWidget':
-                    if position == matching_table:
-                        self.STRTypePartyBox.removeWidget(item)
-                        item.deleteLater()
+        for row in rows:
+            self.str_type_table.model().removeRow(row)
 
     def copy_party_table(self, row, table_view):
         party_row_data = []
@@ -422,7 +464,12 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         return party_row_data
 
     def add_str_type_data(
-            self, table_view, table_data, row_data
+            self,
+            table_view,
+            table_data,
+            row_data,
+            str_type_id,
+            insert_row
     ):
         """
         :param table_view:
@@ -435,11 +482,18 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :rtype:
         """
         data = [None] + row_data
-        table_data.append(data)
-        table_view.model().layoutChanged.emit()
-        self.update_table_view(table_view, True)
+        self.str_type_data.append(data)
+        self.str_type_table.add_combobox(str_type_id, insert_row)
 
-    def init_str_type(self, party_model, party_table, str_type_id=0, row=0):
+        self.str_type_table.model().layoutChanged.emit()
+        self.update_table_view(
+            self.str_type_table, True
+        )
+        self.enable_str_type_combo(insert_row)
+
+    def init_str_type(
+            self, party_model, party_table, str_type_id=0, row=0
+    ):
         """
         Initialize 'Social Tenure Type page.
         :param str_type_id: The currently being edited STR type id.
@@ -447,38 +501,25 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :return: None
         :rtype: NoteType
         """
-
-        party_data = []
-        headers = self.add_table_headers(
-            self.party,
-            party_data,
-            None,
-            True
-        )
-
-        str_type_table = self.create_str_type_table(
-            self.STRTypeWidget,
-            self.STRTypePartyBox,
-            party_data,
-            headers,
-            str_type_id
-        )
-
-        row_data = self.copy_party_table(row, party_table._tbFKEntity)
-
-        self.add_str_type_data(
-            str_type_table,
-            party_data,
-            row_data
-        )
-
         self.str_type_notice = NotificationBar(
             self.vlSTRTypeNotif
         )
+        if self.str_edit_obj is None:
+            insert_row = len(self.sel_party) - 1
+        else:
+            insert_row = 0
 
+        row_data = self.copy_party_table(
+            row, party_table._tbFKEntity
+        )
 
-
-        self.enable_str_type_combo()
+        self.add_str_type_data(
+            self.str_type_table,
+            self.str_type_data,
+            row_data,
+            str_type_id,
+            insert_row
+        )
 
     def init_document_edit(self):
         """
@@ -507,7 +548,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                             doc_obj, doc_id
                         )
 
-    def init_document_type(self):
+    def init_documents(self):
         """
         Initializes the document type combobox by
         populating data.
@@ -539,7 +580,9 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             scrollArea = QScrollArea(tab_widget)
             scrollArea.setFrameShape(QFrame.NoFrame)
             scrollArea_contents = QWidget()
-            scrollArea_contents.setObjectName('tab_scroll_area_' + doc)
+            scrollArea_contents.setObjectName(
+                'tab_scroll_area_' + doc
+            )
 
             tab_layout = QVBoxLayout(scrollArea_contents)
             tab_layout.setObjectName('layout_' + doc)
@@ -554,10 +597,9 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         self.suppDocumentBox.addWidget(self.docs_tab, 1)
 
-        self.doc_notice = NotificationBar(
-            self.vlSourceDocNotif
+        self.cboDocType.currentIndexChanged.connect(
+            self.init_document_add
         )
-
         self.cboDocType.currentIndexChanged.connect(
             self.match_doc_combo_to_tab
         )
@@ -603,7 +645,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         layout = self.docs_tab.findChild(
             QVBoxLayout, 'layout_' + doc_text
         )
-
+        print doc_id
         self.sourceDocManager.registerContainer(
             layout, doc_id
         )
@@ -655,17 +697,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         )
         return files
 
-    def initializePage(self, id):
-        """
-        Initialize summary page based on user
-        selections.
-        :param id: the page id of the wizard
-        :type id: QWizard id
-        :returns: None
-        :rtype: NoneType
-        """
-        if id == 5:
-            self.buildSummary()
+
 
     def _load_entity_config(self, entity):
         """
@@ -698,9 +730,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         return fk_mapper
 
-    def create_str_type_table(
-            self, parent, container, table_data, headers, str_type_id
-    ):
+    def create_str_type_table(self):
         """
         Creates social tenure type table that is composed
         of each selected party rows with a combobox for
@@ -719,24 +749,25 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :return: QTableView
         :rtype: QTableView
         """
-        table_view = FreezeTableWidget(
-            table_data, headers, str_type_id, parent
+        headers = self.add_str_type_headers()
+
+        self.str_type_table = FreezeTableWidget(
+            self.str_type_data, headers, self.STRTypeWidget
         )
-        table_view.setEditTriggers(
+        self.str_type_table.setEditTriggers(
             QAbstractItemView.NoEditTriggers
         )
 
-        # Select the first column
-
-        container.setSpacing(4)
-        container.setMargin(5)
-        grid_layout = QGridLayout(parent)
+        self.STRTypePartyBox.setSpacing(4)
+        self.STRTypePartyBox.setMargin(5)
+        grid_layout = QGridLayout(self.STRTypeWidget)
         grid_layout.setHorizontalSpacing(5)
         grid_layout.setColumnStretch(4, 5)
-        container.addLayout(grid_layout)
-        container.addWidget(table_view)
+        if len(self.sel_party) < 1:
+            self.STRTypePartyBox.addLayout(grid_layout)
+            self.STRTypePartyBox.addWidget(self.str_type_table)
 
-        return table_view
+        #return table_view
 
     def update_table_view(self, table_view, str_type):
         """
@@ -776,9 +807,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         )
         tableview.verticalHeader().setVisible(True)
 
-    def add_table_headers(
-            self, entity, table_data, tableview, str_type=False
-    ):
+    def add_str_type_headers(self):
         """
         Adds headers data for tableview columns. The
         headers comes from the selected entity.
@@ -796,29 +825,21 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :return: List of Table headers
         :rtype: List
         """
-        db_model = entity_model(entity, True)
+        db_model = entity_model(self.party, True)
         headers = []
         #Load headers
         if db_model is not None:
             entity_display_columns(self.party)
             # Append str type if the method is used for str_type
-            if str_type:
-                #First (ID) column will always be hidden
-                headers.append('Social Tenure Type')
 
-            for col in entity_display_columns(entity):
+            #First (ID) column will always be hidden
+            headers.append('Social Tenure Type')
+
+            for col in entity_display_columns(self.party):
                 headers.append(format_name(col))
-            if not str_type:
-                self.prepare_table_model(
-                    tableview, table_data, headers, self
-                )
-        if entity == self.party:
-            self.party_header = headers
 
-        if str_type:
             return headers
-        else:
-            self.update_table_view(tableview, str_type)
+
 
     def get_party_str_type_data(self):
         """
@@ -852,10 +873,12 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         return str_types
 
-    def enable_str_type_combo(self):
-
-        for item in self.frmWizSTRType.findChildren(QTableView):
-            item.openPersistentEditor(item.model().index(0, 0))
+    def enable_str_type_combo(self, row):
+        model = self.str_type_table.frozen_table_view.model()
+        self.str_type_table.frozen_table_view.\
+            openPersistentEditor(
+            model.index(row, 0)
+        )
 
     def validate_party_count(self, spatial_unit_obj):
         from .foreign_key_mapper import ForeignKeyMapper
@@ -1053,7 +1076,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 msg = QApplication.translate(
                     'newSTRWiz',
                     'Please select an item from the drop down '
-                    'menu under each Social Tenure Type column.'
+                    'menu under each cells in Social Tenure Type column.'
                 )
                 self.str_type_notice.clear()
                 self.str_type_notice.insertErrorNotification(msg)
@@ -1533,11 +1556,13 @@ class ComboBoxDelegate(QItemDelegate):
         return str_combo
 
     def setEditorData( self, comboBox, index ):
-        list_item_index = index.model().data(
-            index, Qt.DisplayRole
-        )
+        list_item_index = None
+        if not index.model() is None:
+            list_item_index = index.model().data(
+                index, Qt.DisplayRole
+            )
         if list_item_index is not None and \
-                not isinstance(list_item_index, (unicode, int)):
+                not isinstance(list_item_index, (unicode, str)):
             value = list_item_index.toInt()
             comboBox.blockSignals(True)
             comboBox.setCurrentIndex(value[0])
@@ -1557,13 +1582,14 @@ class ComboBoxDelegate(QItemDelegate):
 class FreezeTableWidget(QTableView):
 
     def __init__(
-            self, table_data, headers, str_type_id, parent = None, *args
+            self, table_data, headers, parent = None, *args
     ):
         QTableView.__init__(self, parent, *args)
         # set the table model
         table_model = BaseSTDMTableModel(
             table_data, headers, parent
         )
+
         # set the proxy model
         proxy_model = QSortFilterProxyModel(self)
         proxy_model.setSourceModel(table_model)
@@ -1596,7 +1622,7 @@ class FreezeTableWidget(QTableView):
         self.setSelectionMode(QAbstractItemView.NoSelection)
 
         self.shadow = QGraphicsDropShadowEffect(self)
-        self.shadow.setBlurRadius(5)
+        self.shadow.setBlurRadius(3)
         self.shadow.setOffset(2)
         self.shadow.setYOffset(0)
         self.frozen_table_view.setGraphicsEffect(self.shadow)
@@ -1678,22 +1704,7 @@ class FreezeTableWidget(QTableView):
         self.frozen_table_view.setVerticalScrollMode(
             QAbstractItemView.ScrollPerPixel
         )
-        delegate = ComboBoxDelegate(str_type_id)
 
-        # Set delegate to add combobox under
-        # social tenure type column
-        self.frozen_table_view.setItemDelegate(
-            delegate
-        )
-        self.frozen_table_view.setItemDelegateForColumn(
-            0, delegate
-        )
-        index = self.frozen_table_view.model().index(
-            0, 0, QModelIndex()
-        )
-        self.frozen_table_view.model().setData(
-            index, '', Qt.EditRole
-        )
 
         self.frozen_table_view.selectColumn(0)
 
@@ -1710,8 +1721,8 @@ class FreezeTableWidget(QTableView):
         )
         self.setSizePolicy(size_policy)
         self.setMinimumSize(QSize(55, 75))
-        self.setMaximumSize(QSize(5550, 75))
-        self.setGeometry(QRect(0, 0, 619, 75))
+        self.setMaximumSize(QSize(5550, 5555))
+        #self.setGeometry(QRect(0, 0, 619, 75))
         self.SelectionMode(
             QAbstractItemView.SelectColumns
         )
@@ -1736,8 +1747,22 @@ class FreezeTableWidget(QTableView):
         self.verticalScrollBar().valueChanged.connect(
             self.frozen_table_view.verticalScrollBar().setValue
         )
-
-
+    def add_combobox(self, str_type_id, insert_row):
+        delegate = ComboBoxDelegate(str_type_id)
+        # Set delegate to add combobox under
+        # social tenure type column
+        self.frozen_table_view.setItemDelegate(
+            delegate
+        )
+        self.frozen_table_view.setItemDelegateForColumn(
+            0, delegate
+        )
+        index = self.frozen_table_view.model().index(
+            insert_row, 0, QModelIndex()
+        )
+        self.frozen_table_view.model().setData(
+            index, '', Qt.EditRole
+        )
 
     def update_section_width(
             self, logicalIndex, oldSize, newSize

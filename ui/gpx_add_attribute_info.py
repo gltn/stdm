@@ -10,7 +10,9 @@ from sqlalchemy.orm import (
     mapper,
     class_mapper
 )
-
+from stdm.settings import (
+    current_profile
+)
 from stdm.data.database import STDMDb
 from stdm.data.pg_utils import (
     geometryType,
@@ -19,6 +21,7 @@ from stdm.data.pg_utils import (
 from stdm.data.pg_utils import columnType
 
 from ui_gpx_add_attribute_info import Ui_Dialog
+from stdm.ui.forms.editor_dialog import EntityEditorDialog
 
 class _ReflectedModel(object):
     """
@@ -36,7 +39,9 @@ class GPXAttributeInfoDialog(QDialog, Ui_Dialog):
         self._dbSession = STDMDb.instance().session
         self.non_sp_colmns = non_spatial_columns
         self.sp_table = sp_table
+        self.curr_profile = current_profile()
         self.sp_table_colmn = sp_table_colmn
+        self.entity = self.curr_profile.entity_by_name(sp_table)
         self.geom_column_value = geom_column_value
         self.attribute_dict = {}
         self.geom_type = None
@@ -72,6 +77,12 @@ class GPXAttributeInfoDialog(QDialog, Ui_Dialog):
 
         return dsTable
 
+
+    def init_form(self, model):
+        editor = EntityEditorDialog(self.entity, model, self.iface.mainWindow())
+        if editor.exec_() == QDialog.Accepted:
+            pass
+    # your logic
     def create_attribute_info_gui(self):
         """
         Create attribute info table
