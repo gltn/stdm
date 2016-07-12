@@ -128,23 +128,34 @@ class Entity(QObject, TableItem):
         '''
         self.create_id_column = True
 
-        self.supports_documents = supports_documents
-        self.supporting_doc = None
-        self.is_proxy = is_proxy
-        self.updated_columns = OrderedDict()
-
         #Create PK if flag is specified
         if self.create_id_column:
             LOGGER.debug('Creating primary key for %s entity.', self.name)
 
             self._create_serial_column()
 
-        #Enable the attachment of supporting documents if flag is specified
-        if self.supports_documents:
-            self.supporting_doc = EntitySupportingDocument(self.profile, self)
-            self.profile.add_entity(self.supporting_doc)
+        self.supporting_doc = None
+        self._supports_documents = supports_documents
+
+        if self._supports_documents:
+            self.supports_documents = True
+
+        self.is_proxy = is_proxy
+        self.updated_columns = OrderedDict()
 
         LOGGER.debug('%s entity created.', self.name)
+
+    @property
+    def supports_documents(self):
+        return self._supports_documents
+
+    @supports_documents.setter
+    def supports_documents(self, value):
+        #Enable the attachment of supporting documents if flag is specified
+        if value:
+            self._supports_documents = value
+            self.supporting_doc = EntitySupportingDocument(self.profile, self)
+            self.profile.add_entity(self.supporting_doc)
 
     def _create_serial_column(self):
         """
