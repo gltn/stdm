@@ -317,8 +317,11 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
         self.model, self.doc_model = entity_model(self.entity, False, True)
         # add geometry into the model
         self.model_obj = self.model()
-        setattr(self.model_obj, self.sp_col, geom_wkb)
-        self.model_obj.save()
+        #geom_col_obj = self.entity.columns[self.sp_col]
+        srid = self.entity.columns[self.sp_col].srid
+
+        setattr(self.model_obj, self.sp_col, 'SRID={};{}'.format(srid, geom_wkb))
+        #self.model_obj.save()
         #self.gpx_add_attribute_info.create_attribute_info_gui()
         self.gpx_add_attribute_info.init_form(
             self.model
