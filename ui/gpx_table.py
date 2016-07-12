@@ -26,6 +26,9 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
         self.sp_table = sp_table
         self.curr_profile = current_profile()
         self.entity = self.curr_profile.entity_by_name(sp_table)
+        print vars(self.entity)
+        print vars(self.curr_profile)
+        print vars(self.entity.columns[sp_col])
         self.sp_col = sp_col
         self.table_widget = self.tableWidget
         self.map_canvas = self.iface.mapCanvas()
