@@ -494,7 +494,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             if self.type_info == 'ADMIN_SPATIAL_UNIT':
                 self.admin_spatial_unit_property()
                 column = BaseColumn.registered_types[self.type_info] \
-                        (self.entity, **self.form_fields)
+                        (self.form_fields['colname'], self.entity, **self.form_fields)
                 return column
 
             if self.is_property_set(self.type_info):

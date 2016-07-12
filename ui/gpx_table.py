@@ -9,11 +9,13 @@ from stdm.data.pg_utils import (
     non_spatial_table_columns,
     vector_layer
 )
+from stdm.settings import current_profile
 
 from ui_gpx_table_widget import Ui_Dialog
 
 from gpx_add_attribute_info import GPXAttributeInfoDialog
 
+from stdm.data.configuration import entity_model
 
 class GpxTableWidgetDialog(QDialog, Ui_Dialog):
     def __init__(self, iface, curr_layer, gpx_file, active_layer, active_layer_geom, sp_table, sp_col):
@@ -22,6 +24,8 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
         self.iface = iface
         self.curr_layer = curr_layer
         self.sp_table = sp_table
+        self.curr_profile = current_profile()
+        self.entity = self.curr_profile.entity_by_name(sp_table)
         self.sp_col = sp_col
         self.table_widget = self.tableWidget
         self.map_canvas = self.iface.mapCanvas()
@@ -307,8 +311,16 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
                                                              self.sp_table,
                                                              self.sp_col,
                                                              geom_wkb)
-        self.gpx_add_attribute_info.create_attribute_info_gui()
-        self.gpx_add_attribute_info.show()
+        self.model, self.doc_model = entity_model(self.entity, False, True)
+        # add geometry into the model
+        self.model_obj = self.model()
+        setattr(self.model_obj, self.sp_col, geom_wkb)
+        self.model_obj.save()
+        #self.gpx_add_attribute_info.create_attribute_info_gui()
+        self.gpx_add_attribute_info.init_form(
+            self.model
+        )
+        #self.gpx_add_attribute_info.show()
 
     def closeEvent(self, QCloseEvent):
         id = self.vl.id()

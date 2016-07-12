@@ -24,10 +24,13 @@ from PyQt4.QtGui import (
     QComboBox,
     QTextEdit,
     QDateEdit,
+    QApplication,
+    QMessageBox,
     QDateTimeEdit,
     QSpinBox,
     QDoubleSpinBox
 )
+
 from stdm.ui.sourcedocument import SourceDocumentManager
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.customcontrols import CoordinatesWidget
@@ -237,7 +240,15 @@ class DateEditValueHandler(ControlValueHandler):
             try:
                 self.control.setDate(value)
             except Exception as ex:
-                print ex
+                QMessageBox.warning(
+                    None,
+                    QApplication.translate(
+                        'DateEditValueHandler',
+                        "Attribute Table Error"
+                    ),
+                    'The change is not saved. '
+                    'Please use the form to edit data.'
+                )
 
     def supportsMandatory(self):
         return False
@@ -260,7 +271,15 @@ class DateTimeEditValueHandler(ControlValueHandler):
         try:
             self.control.setDateTime(value)
         except Exception as ex:
-            print ex
+            QMessageBox.warning(
+                None,
+                QApplication.translate(
+                    'DateTimeEditValueHandler',
+                    "Attribute Table Error"
+                ),
+                'The change is not saved. '
+                'Please use the form to edit data.'
+            )
 
     def supportsMandatory(self):
         return False
