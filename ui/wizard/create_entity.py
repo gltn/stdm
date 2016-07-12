@@ -46,8 +46,8 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
-	self.profile = profile
-	self.form_parent = parent
+        self.profile = profile
+        self.form_parent = parent
         self.entity = entity
         self.in_db = in_db
 
@@ -178,7 +178,6 @@ class EntityEditor(QDialog, Ui_dlgEntity):
             name = u'{0}_{1}'.format(self.profile.prefix, name)
 
         return name
-            
 
     def reject(self):
         self.done(0)
