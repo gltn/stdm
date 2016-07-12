@@ -17,6 +17,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+
 import sys
 import copy
 
@@ -27,6 +28,7 @@ from PyQt4.QtCore import (
     SIGNAL,
     QSignalMapper
 )
+
 
 from stdm.utils import *
 from stdm.utils.util import getIndex
@@ -373,9 +375,9 @@ class ImportData(QWizard, Ui_frmImport):
                 
         if self.currentId()==2:
             validPage = self.execImport()
-            
-        return validPage        
-        
+
+        return validPage
+
     def setSourceFile(self):
         #Set the file path to the source file
         imageFilters = "Comma Separated Value (*.csv);;ESRI Shapefile (*.shp);;AutoCAD DXF (*.dxf)" 

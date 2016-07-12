@@ -216,7 +216,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
                     c.mandatory,
                     pseudoname=c.header()
                 )
-    
+
                 #Bump up row_id
                 row_id += 1
     

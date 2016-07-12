@@ -671,8 +671,8 @@ class AdministrativeSpatialUnitColumn(ForeignKeyColumn):
     """
     TYPE_INFO = 'ADMIN_SPATIAL_UNIT'
 
-    def __init__(self, entity, **kwargs):
-        args = ['admin_spatial_unit', entity]
+    def __init__(self, name, entity, **kwargs):
+        args = [name, entity]
 
         ForeignKeyColumn.__init__(self, *args, **kwargs)
 
