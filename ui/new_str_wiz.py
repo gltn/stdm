@@ -48,6 +48,7 @@ from stdm.utils.util import (
     entity_display_columns,
     model_obj_display_data
 )
+
 from stdm.data.configuration import entity_model
 
 from stdm.navigation import (
@@ -1075,7 +1076,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 msg = QApplication.translate(
                     'newSTRWiz',
                     'Please select an item from the drop down '
-                    'menu under each Social Tenure Type column.'
+                    'menu under each cells in Social Tenure Type column.'
                 )
                 self.str_type_notice.clear()
                 self.str_type_notice.insertErrorNotification(msg)

@@ -159,7 +159,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             self.onSourceDocumentRemoved
         )
 
-        self._source_doc_manager.setEditPermissions(self._can_edit)
+        self._source_doc_manager.setEditPermissions(False)
 
         self.initGui()
     

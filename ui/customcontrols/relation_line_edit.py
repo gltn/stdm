@@ -20,6 +20,8 @@ email                : stdm@unhabitat.org
 from PyQt4.QtGui import (
     QDialog,
     QHBoxLayout,
+    QApplication,
+    QMessageBox,
     QIcon,
     QItemSelectionModel,
     QLineEdit,
@@ -199,7 +201,15 @@ class RelatedEntityLineEdit(ForeignKeyLineEdit):
         try:
             self.setText(display_value)
         except Exception as ex:
-            pass
+            QMessageBox.warning(
+                None,
+                QApplication.translate(
+                    'AdministrativeUnitLineEdit',
+                    "Attribute Table Error"
+                ),
+                'The change is not saved. '
+                'Please use the form to edit data.'
+            )
 
     def on_load_foreign_key_browser(self):
         #Show entity browser dialog.
@@ -242,7 +252,15 @@ class AdministrativeUnitLineEdit(ForeignKeyLineEdit):
         try:
             self.setText(admin_name)
         except Exception as ex:
-            pass
+            QMessageBox.warning(
+                None,
+                QApplication.translate(
+                    'AdministrativeUnitLineEdit',
+                    "Attribute Table Error"
+                ),
+                'The change is not saved. '
+                'Please use the form to edit data.'
+            )
 
     def parent_entity_model(self):
         #Use default admin unit model class.

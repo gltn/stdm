@@ -21,6 +21,7 @@ email                : stdm@unhabitat.org
 """
 import re
 import logging
+from decimal import Decimal
 from qgis.core import (
     NULL,
     QgsFeatureRequest,
@@ -242,19 +243,19 @@ class STDMFieldWidget():
                 QGis.QGIS_VERSION[:4]
             )
         )
-        return float(qgis_version)
+        return Decimal(qgis_version)
 
     def _set_widget_type(self, layer, column, widget_type_id):
 
         idx = layer.fieldNameIndex(column.name)
 
-        if self.qgis_version() >= 2.14:
+        try:
             layer.editFormConfig().setWidgetType(
                 idx, widget_type_id
             )
-            # if column.mandatory:
-            #     layer.editFormConfig().setNotNull(idx, True)
-        else:
+        # if column.mandatory:
+        #     layer.editFormConfig().setNotNull(idx, True)
+        except Exception as ex:
             layer.setEditorWidgetV2(
                 idx, widget_type_id
             )
