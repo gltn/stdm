@@ -27,6 +27,8 @@ from PyQt4.QtGui import (
 	QMessageBox
 	)
 
+from stdm.data.pg_utils import pg_table_exists 
+
 from stdm.data.configuration.entity import *
 from stdm.data.configuration.db_items import DbItem
 
@@ -57,10 +59,20 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         if self.entity:
             self.edtTable.setText(self.entity.short_name)
             self.edtDesc.setText(self.entity.description)
+
             self.cbSupportDoc.setCheckState( \
                     self.bool_to_check(self.entity.supports_documents))
+
+            if self.entity.supports_documents and self.supporting_document_exists():
+                self.cbSupportDoc.setEnabled(False)
+
         self.edtTable.setEnabled(not self.in_db)
        
+    def supporting_document_exists(self):
+        sd_name = u'{0}_{1}_{2}'.format(self.profile.prefix,
+                          self.entity.short_name.lower(), 'supporting_document')
+        return pg_table_exists(sd_name)
+
     def setLookupTable(self):
         '''def add lookup table'''
         tableName = self.format_table_name(unicode(self.edtTable.text()))
@@ -94,29 +106,28 @@ class EntityEditor(QDialog, Ui_dlgEntity):
             self.error_message(self.tr("Please enter an entity name"))
             return
 
-        entity_short_name = unicode(self.edtTable.text()).capitalize()
+        short_name = unicode(self.edtTable.text()).capitalize()
 
         if self.entity is None:  # New entity
-            if self.dup_check(entity_short_name):
+            if self.dup_check(short_name):
                 self.error_message(self.tr("Entity with the same name already exist!"))
                 return
+            else:
+                self.add_entity(short_name)
+                self.done(0)
         else:
-            self.profile.remove_entity(self.entity.short_name)
-
-        if self.add_entity(entity_short_name):
+            self.edit_entity(short_name)
             self.done(1)
-        else:
-            self.done(0)
 
-    def add_entity(self, entity_short_name):
+    def add_entity(self, short_name):
         """
         Creates and adds a new entity to a profile
         :param entity_name: name of the new entity
         :type entity_name: str
         """
-        self.entity = self._create_entity(entity_short_name)
+        self.entity = self._create_entity(short_name)
         self.profile.add_entity(self.entity)
-        return True
+        #return True
 
     def _create_entity(self, short_name):
         entity = self.profile.create_entity(short_name, entity_factory,
@@ -125,6 +136,11 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         entity.column_added.connect(self.form_parent.add_column_item)
         entity.column_removed.connect(self.form_parent.delete_column_item)
         return entity
+
+    def edit_entity(self, short_name):
+        self.entity.short_name  = short_name
+        self.entity.description = self.edtDesc.text()
+        self.entity.supports_documents = self.support_doc()
 
     def dup_check(self, name):
         """
@@ -140,7 +156,29 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         document checkbox
         """
         values = [False, None, True]
-        return values[self.cbSupportDoc.checkState()]
+        sd = values[self.cbSupportDoc.checkState()]
+        return sd
+
+    def format_internal_name(self, short_name):
+        """
+        Returns a table name used internally by the entity
+        :param short_name: Entity name entered by user
+        :type short_name: str
+        :rtype: str
+        """
+        name = unicode(short_name).strip()
+        name = name.replace(' ', "_")
+        name = name.lower()
+        #Ensure prefix is not duplicated in the names
+        prfx = self.profile.prefix
+        prefix_idx = name.find(prfx, 0, len(prfx))
+
+        #If there is no prefix then append
+        if prefix_idx == -1: 
+            name = u'{0}_{1}'.format(self.profile.prefix, name)
+
+        return name
+            
 
     def reject(self):
         self.done(0)
