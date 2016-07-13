@@ -85,7 +85,7 @@ class ConfigurationFileUpdater(object):
         self.profile_dict = OrderedDict()
         self.profile_list = []
         self.entities_lookup_relations = OrderedDict()
-        self.table_name = None
+        self.table_col_name = None
         self.relations_dict = {}
         self.doc_old = QDomDocument()
         self.spatial_unit_table = []
@@ -172,9 +172,11 @@ class ConfigurationFileUpdater(object):
 
         lookup_dict = OrderedDict()
 
+        # Loop through lookups
         for i in range(element.count()):
             lookup_nodes = element.item(i).toElement()
 
+            # Loop through lookup attributes
             if lookup_nodes.tagName() == "data":
                 lookup_node = lookup_nodes.childNodes()
 
@@ -321,6 +323,9 @@ class ConfigurationFileUpdater(object):
 
     def _create_entity_valuelist_relation_nodes(self, pref, profile, values):
 
+        # Entity relation lookup dict
+        entity_relation_dict = {}
+
         for key, value in values.iteritems():
             if key.endswith("lookup") and value:
                 value_lists = self.doc_old.createElement("ValueLists")
@@ -350,230 +355,254 @@ class ConfigurationFileUpdater(object):
                 value_lists.appendChild(value_list)
                 profile.appendChild(value_lists)
 
-            if key.endswith("table"):
+            if key.endswith("table") and value:
                 for entity_key, entity_value in value.iteritems():
-                    entities = self.doc_old.createElement("Entity")
-                    entities.setAttribute("name", pref + "_" + entity_key)
-                    entity_name = pref + "_" + entity_key
-                    entities.setAttribute("description", entity_value[0])
-                    entities.setAttribute("shortName", entity_key)
-                    entities.setAttribute("editable", "True")
-                    entities.setAttribute("global", "False")
-                    entities.setAttribute("associative", "False")
-                    entities.setAttribute("proxy", "False")
-                    entities.setAttribute("createId", "True")
+                    if entity_key not in ('supporting_document',
+                                             'social_tenure_relationship',
+                                             'str_relations'):
+                        entities = self.doc_old.createElement("Entity")
+                        entities.setAttribute("name", pref + "_" + entity_key)
+                        entity_name = pref + "_" + entity_key
+                        entities.setAttribute("description", entity_value[0])
+                        entities.setAttribute("shortName", entity_key)
+                        entities.setAttribute("editable", "True")
+                        entities.setAttribute("global", "False")
+                        entities.setAttribute("associative", "False")
+                        entities.setAttribute("proxy", "False")
+                        entities.setAttribute("createId", "True")
 
-                    # Adds supporting document check
-                    for k, v in self.check_doc_relation_lookup_dict.\
-                            iteritems():
-                        if k == entity_key:
-                            entities.setAttribute("documentTypeLookup", v)
-                            entities.setAttribute("supportsDocuments", "False")
-                            break
-                        else:
-                            entities.setAttribute("supportsDocuments", "False")
-                            pass
+                        # Adds supporting document check
+                        for k, v in self.check_doc_relation_lookup_dict.\
+                                iteritems():
+                            if k == entity_key:
+                                entities.setAttribute("documentTypeLookup", v)
+                                entities.setAttribute("supportsDocuments", "False")
+                                break
+                            else:
+                                entities.setAttribute("supportsDocuments", "False")
+                                pass
 
-                    column_properties = entity_value[2:]
-                    columns = self.doc_old.createElement("Columns")
-                    for i in column_properties:
-                        column = self.doc_old.createElement("Column")
-                        for col_k, col_v in i.iteritems():
-                            if col_k == "col_name":
-                                column.setAttribute("name", col_v)
-                                self.table_name = col_v
-                            elif col_k == "col_descrpt":
-                                column.setAttribute("description", col_v)
-                            elif col_k == "col_type":
-                                column.setAttribute("TYPE_INFO", col_v)
-                                if COLUMN_PROPERTY_DICT[col_v]:
-                                    for k, v in COLUMN_PROPERTY_DICT[col_v].\
-                                            iteritems():
-                                        column.setAttribute(k, v)
-                                else:
-                                    for k, v in COLUMN_PROPERTY_DICT[
-                                        'DEFAULT'].\
-                                            iteritems():
-                                        column.setAttribute(k, v)
+                        column_properties = entity_value[2:]
+                        columns = self.doc_old.createElement("Columns")
+                        for i in column_properties:
+                            column = self.doc_old.createElement("Column")
+                            for col_k, col_v in i.iteritems():
+                                if col_k == "col_name":
+                                    column.setAttribute("name", col_v)
+                                    self.table_col_name = col_v
+                                elif col_k == "col_descrpt":
+                                    column.setAttribute("description", col_v)
+                                elif col_k == "col_type":
+                                    column.setAttribute("TYPE_INFO", col_v)
+                                    if COLUMN_PROPERTY_DICT[col_v]:
+                                        for k, v in COLUMN_PROPERTY_DICT[col_v].\
+                                                iteritems():
+                                            column.setAttribute(k, v)
+                                    else:
+                                        for k, v in COLUMN_PROPERTY_DICT[
+                                            'DEFAULT'].\
+                                                iteritems():
+                                            column.setAttribute(k, v)
 
-                            elif col_k == "lookup" and col_v is not None:
-                                relation = self.doc_old.createElement(
-                                    "Relation")
-                                relation.setAttribute("name", "fk_" + pref
-                                                     + "_" + col_v + "_id_"
-                                                     + entity_name + "_" +
-                                                     str(self.table_name))
-                                column.appendChild(relation)
-                            if col_v == "GEOMETRY":
-                                geometry =  self.doc_old.createElement(
-                                    "Geometry")
-                                geometry.setAttribute("type", '0')
-                                geometry.setAttribute("srid", '4326')
-                                geometry.setAttribute("layerDisplay", '')
-                                column.appendChild(geometry)
-                            columns.appendChild(column)
-                    entities.appendChild(columns)
-                    profile.appendChild(entities)
+                                elif col_k == "lookup" and col_v is not None:
+                                    relation = self.doc_old.createElement(
+                                        "Relation")
+                                    attribute = "fk_{0}_{1}_id_{2}_{3}".format(
+                                        pref, col_v, entity_name, unicode(
+                                            self.table_col_name))
+                                    relation.setAttribute("name", attribute)
+                                    column.appendChild(relation)
+                                    entity_relation_dict[attribute] = [col_v,
+                                                                   entity_key,
+                                                                   unicode(
+                                                    self.table_col_name)]
+                                if col_v == "GEOMETRY":
+                                    geometry =  self.doc_old.createElement(
+                                        "Geometry")
+                                    geometry.setAttribute("type", '0')
+                                    geometry.setAttribute("srid", '4326')
+                                    geometry.setAttribute("layerDisplay", '')
+                                    column.appendChild(geometry)
+                                columns.appendChild(column)
+                        entities.appendChild(columns)
+                        profile.appendChild(entities)
 
-            if key.endswith("relations") and value:
+            if key.endswith("relations") or key.endswith("lookup"):
                 relationship = self.doc_old.createElement("Relations")
 
-                for relation_key, relation_values in value.iteritems():
+                if key.endswith("relations"):
 
-                    if relation_key == "social_tenure_relationship":
+                    for relation_key, relation_values in value.iteritems():
 
-                        for relation_v in relation_values:
+                        if relation_key == "social_tenure_relationship":
+
+                            for relation_v in relation_values:
+                                entity_relation = self.doc_old.createElement(
+                                    "EntityRelation")
+                                entity_relation.setAttribute("parent", relation_v)
+                                entity_relation.setAttribute("child",
+                                                "social_tenure_relationship")
+                                entity_relation.setAttribute("parentColumn", "id")
+                                entity_relation.setAttribute("childColumn",
+                                                             relation_v + "_" +
+                                                             "id")
+                                entity_relation.setAttribute(
+                                    "name", "fk_" + pref + "_" + relation_v + "_" + "id"
+                                    "_" + pref + "_" + "social_tenure_relationship"
+                                    + "_" + relation_v + "_" +
+                                            "id")
+                                relationship.appendChild(entity_relation)
+
+                                entity_relation = self.doc_old.createElement(
+                                    "EntityRelation")
+                                entity_relation.setAttribute(
+                                    "parent", "check_" +
+                                              relation_v +
+                                    "_document_type")
+                                entity_relation.setAttribute(
+                                    "child", relation_v +
+                                    "_supporting_document")
+                                entity_relation.setAttribute(
+                                    "parentColumn", "id")
+                                entity_relation.setAttribute(
+                                    "childColumn", "document_type")
+                                entity_relation.setAttribute(
+                                    "name", "fk_" + pref +
+                                    "_check_" + relation_v +
+                                            "_document_type_id_"
+                                    + pref +
+                                    "_" + relation_v +
+                                    "_supporting_document_document_type")
+
+                                relationship.appendChild(entity_relation)
+
+                                entity_relation = self.doc_old.createElement(
+                                    "EntityRelation")
+                                entity_relation.setAttribute(
+                                    "parent", relation_v)
+                                entity_relation.setAttribute(
+                                    "child", relation_v +
+                                    "_supporting_document")
+                                entity_relation.setAttribute(
+                                    "parentColumn", "id")
+                                entity_relation.setAttribute(
+                                    "childColumn", relation_v + "_id")
+                                entity_relation.setAttribute(
+                                    "name", "fk_" + pref +
+                                    "_check_" + relation_v +
+                                            "_id_"
+                                    + pref +
+                                    "_" + relation_v +
+                                    "_supporting_document_" + relation_v + "_id")
+
+                                relationship.appendChild(entity_relation)
+
+                                entity_relation = self.doc_old.createElement(
+                                    "EntityRelation")
+                                entity_relation.setAttribute(
+                                    "parent",  "supporting_document")
+                                entity_relation.setAttribute(
+                                    "child", relation_v +
+                                    "_supporting_document")
+                                entity_relation.setAttribute(
+                                    "parentColumn", "id")
+                                entity_relation.setAttribute(
+                                    "childColumn", "supporting_doc_id")
+                                entity_relation.setAttribute(
+                                    "name", "fk_" + pref +
+                                    "_supporting_document_id_" + pref +
+                                    "_" + relation_v +
+                                    "_supporting_document_supporting_doc_id")
+
+                                relationship.appendChild(entity_relation)
+
+                    # Default relations
+                    entity_relation = self.doc_old.createElement("EntityRelation")
+                    entity_relation.setAttribute("parent",
+                                                     "check_social_tenure_"
+                                                     "relationship_document_type")
+                    entity_relation.setAttribute("child",
+                                                     "social_tenure_relationship_"
+                                                     "supporting_document")
+                    entity_relation.setAttribute("parentColumn", "id")
+                    entity_relation.setAttribute("childColumn",
+                                                     "document_type")
+                    entity_relation.setAttribute("name",
+                                                 "fk_" + pref +
+                                                 "_check_social_tenure_"
+                                                 "relationship_document_type_id_"
+                                                 + pref + "_social_tenure_"
+                                                "relationship_supporting_document_"
+                                                "document_type")
+
+                    relationship.appendChild(entity_relation)
+
+                    entity_relation = self.doc_old.createElement("EntityRelation")
+                    entity_relation.setAttribute("parent",
+                                                     "social_tenure_relationship")
+                    entity_relation.setAttribute("child",
+                                                     "social_tenure_relationship_"
+                                                     "supporting_document")
+                    entity_relation.setAttribute("parentColumn", "id")
+                    entity_relation.setAttribute("childColumn",
+                                                     "social_tenure_relationship_"
+                                                     "id")
+                    entity_relation.setAttribute("name",
+                                                     "fk_" + pref + "_social_"
+                                                    "tenure_relationship_id_"
+                                                     + pref +
+                                                     "_social_tenure_relationship_"
+                                                     "supporting_document_social_"
+                                                     "tenure_relationship_id")
+
+                    relationship.appendChild(entity_relation)
+
+                    entity_relation = self.doc_old.createElement("EntityRelation")
+                    entity_relation.setAttribute("parent",
+                                                     "supporting_document")
+                    entity_relation.setAttribute("child",
+                                                     "social_tenure_relationship_"
+                                                     "supporting_document")
+                    entity_relation.setAttribute("parentColumn", "id")
+                    entity_relation.setAttribute("childColumn", pref +
+                                                     "_supporting_doc_id")
+                    entity_relation.setAttribute("name", "fk_" + pref +
+                                                    "_supporting_document_id_" +
+                                                    pref + "_social_tenure_"
+                                                    "relationship_supporting_"
+                                                    "document_" + pref +
+                                                     "_supporting_doc_id")
+
+                    relationship.appendChild(entity_relation)
+
+                    entity_relation = self.doc_old.createElement("EntityRelation")
+                    entity_relation.setAttribute("parent",
+                                                     "check_tenure_type")
+                    entity_relation.setAttribute("child",
+                                                     "social_tenure_relationship")
+                    entity_relation.setAttribute("parentColumn", "id")
+                    entity_relation.setAttribute("childColumn", "tenure_type")
+                    entity_relation.setAttribute("name", "fk_" + pref +
+                                                     "_check_tenure_type_id_" +
+                                                     pref + "_social_tenure_"
+                                                     "relationship_tenure_type")
+
+                    relationship.appendChild(entity_relation)
+
+                # Adding relation that exists within column to Entity
+                # relation nodes
+                elif key.endswith("lookup"):
+                    if entity_relation_dict:
+                        for k, v in entity_relation_dict.iteritems():
                             entity_relation = self.doc_old.createElement(
                                 "EntityRelation")
-                            entity_relation.setAttribute("parent", relation_v)
-                            entity_relation.setAttribute("child",
-                                            "social_tenure_relationship")
+                            QMessageBox.information(None, "T", unicode(v))
+                            entity_relation.setAttribute("parent", v[0])
+                            entity_relation.setAttribute("child", v[1])
+                            entity_relation.setAttribute("name", k)
                             entity_relation.setAttribute("parentColumn", "id")
-                            entity_relation.setAttribute("childColumn",
-                                                         relation_v + "_" +
-                                                         "id")
-                            entity_relation.setAttribute(
-                                "name", "fk_" + pref + "_" + relation_v + "_" + "id"
-                                "_" + pref + "_" + "social_tenure_relationship"
-                                + "_" + relation_v + "_" +
-                                        "id")
+                            entity_relation.setAttribute("childColumn", v[2])
                             relationship.appendChild(entity_relation)
-
-                            entity_relation = self.doc_old.createElement(
-                                "EntityRelation")
-                            entity_relation.setAttribute(
-                                "parent", "check_" +
-                                          relation_v +
-                                "_document_type")
-                            entity_relation.setAttribute(
-                                "child", relation_v +
-                                "_supporting_document")
-                            entity_relation.setAttribute(
-                                "parentColumn", "id")
-                            entity_relation.setAttribute(
-                                "childColumn", "document_type")
-                            entity_relation.setAttribute(
-                                "name", "fk_" + pref +
-                                "_check_" + relation_v +
-                                        "_document_type_id_"
-                                + pref +
-                                "_" + relation_v +
-                                "_supporting_document_document_type")
-
-                            relationship.appendChild(entity_relation)
-
-                            entity_relation = self.doc_old.createElement(
-                                "EntityRelation")
-                            entity_relation.setAttribute(
-                                "parent", relation_v)
-                            entity_relation.setAttribute(
-                                "child", relation_v +
-                                "_supporting_document")
-                            entity_relation.setAttribute(
-                                "parentColumn", "id")
-                            entity_relation.setAttribute(
-                                "childColumn", relation_v + "_id")
-                            entity_relation.setAttribute(
-                                "name", "fk_" + pref +
-                                "_check_" + relation_v +
-                                        "_id_"
-                                + pref +
-                                "_" + relation_v +
-                                "_supporting_document_" + relation_v + "_id")
-
-                            relationship.appendChild(entity_relation)
-
-                            entity_relation = self.doc_old.createElement(
-                                "EntityRelation")
-                            entity_relation.setAttribute(
-                                "parent",  "supporting_document")
-                            entity_relation.setAttribute(
-                                "child", relation_v +
-                                "_supporting_document")
-                            entity_relation.setAttribute(
-                                "parentColumn", "id")
-                            entity_relation.setAttribute(
-                                "childColumn", "supporting_doc_id")
-                            entity_relation.setAttribute(
-                                "name", "fk_" + pref +
-                                "_supporting_document_id_" + pref +
-                                "_" + relation_v +
-                                "_supporting_document_supporting_doc_id")
-
-                            relationship.appendChild(entity_relation)
-
-                # Default relations
-                entity_relation = self.doc_old.createElement("EntityRelation")
-                entity_relation.setAttribute("parent",
-                                                 "check_social_tenure_"
-                                                 "relationship_document_type")
-                entity_relation.setAttribute("child",
-                                                 "social_tenure_relationship_"
-                                                 "supporting_document")
-                entity_relation.setAttribute("parentColumn", "id")
-                entity_relation.setAttribute("childColumn",
-                                                 "document_type")
-                entity_relation.setAttribute("name",
-                                             "fk_" + pref +
-                                             "_check_social_tenure_"
-                                             "relationship_document_type_id_"
-                                             + pref + "_social_tenure_"
-                                            "relationship_supporting_document_"
-                                            "document_type")
-
-                relationship.appendChild(entity_relation)
-
-                entity_relation = self.doc_old.createElement("EntityRelation")
-                entity_relation.setAttribute("parent",
-                                                 "social_tenure_relationship")
-                entity_relation.setAttribute("child",
-                                                 "social_tenure_relationship_"
-                                                 "supporting_document")
-                entity_relation.setAttribute("parentColumn", "id")
-                entity_relation.setAttribute("childColumn",
-                                                 "social_tenure_relationship_"
-                                                 "id")
-                entity_relation.setAttribute("name",
-                                                 "fk_" + pref + "_social_"
-                                                "tenure_relationship_id_"
-                                                 + pref +
-                                                 "_social_tenure_relationship_"
-                                                 "supporting_document_social_"
-                                                 "tenure_relationship_id")
-
-                relationship.appendChild(entity_relation)
-
-                entity_relation = self.doc_old.createElement("EntityRelation")
-                entity_relation.setAttribute("parent",
-                                                 "supporting_document")
-                entity_relation.setAttribute("child",
-                                                 "social_tenure_relationship_"
-                                                 "supporting_document")
-                entity_relation.setAttribute("parentColumn", "id")
-                entity_relation.setAttribute("childColumn", pref +
-                                                 "_supporting_doc_id")
-                entity_relation.setAttribute("name", "fk_" + pref +
-                                                "_supporting_document_id_" +
-                                                pref + "_social_tenure_"
-                                                "relationship_supporting_"
-                                                "document_" + pref +
-                                                 "_supporting_doc_id")
-
-                relationship.appendChild(entity_relation)
-
-                entity_relation = self.doc_old.createElement("EntityRelation")
-                entity_relation.setAttribute("parent",
-                                                 "check_tenure_type")
-                entity_relation.setAttribute("child",
-                                                 "social_tenure_relationship")
-                entity_relation.setAttribute("parentColumn", "id")
-                entity_relation.setAttribute("childColumn", "tenure_type")
-                entity_relation.setAttribute("name", "fk_" + pref +
-                                                 "_check_tenure_type_id_" +
-                                                 pref + "_social_tenure_"
-                                                 "relationship_tenure_type")
-
-                relationship.appendChild(entity_relation)
 
                 profile.appendChild(relationship)
 
@@ -749,10 +778,10 @@ class ConfigurationFileUpdater(object):
                                                        new_last_v)
 
                                             new_values.append(l)
-                                        new_values = str(new_values).strip(
+                                        new_values = unicode(new_values).strip(
                                             "[]")
                                     else:
-                                        new_values = str(values).strip("[]")
+                                        new_values = unicode(values).strip("[]")
 
                                     keys = ",".join(new_keys)
                                     values = new_values
