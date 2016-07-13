@@ -101,6 +101,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.row = 0 # number of party rows
         # Current profile instance and properties
         self.curr_profile = current_profile()
+
+
         self.social_tenure = self.curr_profile.social_tenure
         self.str_type_table = None
         self.party = self.social_tenure.party
@@ -645,7 +647,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         layout = self.docs_tab.findChild(
             QVBoxLayout, 'layout_' + doc_text
         )
-        print doc_id
+
         self.sourceDocManager.registerContainer(
             layout, doc_id
         )
@@ -851,25 +853,26 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :rtype: List
         """
         str_types = []
+        frozen_table = self.str_type_table.frozen_table_view
+        combo_boxes = frozen_table.findChildren(QComboBox)
 
-        for item in self.frmWizSTRType.findChildren(QTableView):
-            if len(item.findChildren(QComboBox)) > 0:
-                str_type = item.findChildren(QComboBox)[0].currentText()
-                str_types.append(str_type)
+        for combo in combo_boxes:
+            str_type = combo.currentText()
+            str_types.append(str_type)
 
-            db_model = entity_model(self.str_type, True)
-            db_obj = db_model()
-            for sel_value in str_types:
-                str_query = db_obj.queryObject().filter(
-                    db_model.value == sel_value
-                ).all()
-                if len(str_query) > 0:
-                    sel_str_type_id = getattr(
-                        str_query[0],
-                        'id',
-                        None
-                    )
-                    self.sel_str_type.append(sel_str_type_id)
+        db_model = entity_model(self.str_type, True)
+        db_obj = db_model()
+        for sel_value in str_types:
+            str_query = db_obj.queryObject().filter(
+                db_model.value == sel_value
+            ).all()
+            if len(str_query) > 0:
+                sel_str_type_id = getattr(
+                    str_query[0],
+                    'id',
+                    None
+                )
+                self.sel_str_type.append(sel_str_type_id)
 
         return str_types
 

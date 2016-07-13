@@ -76,25 +76,20 @@ class GPSToolDialog(QDialog, Ui_Dialog):
                 active_layer = self.iface.activeLayer()
                 active_layer_geometry_typ = int(active_layer.geometryType())
 
-                if not active_layer.isEditable():
-                    QMessageBox.warning(None,"STDM",
-                                        "Current layer is not in edit mode, toogle start editing, to be able to import")
-                else:
+                # Close import dialog to show table
+                self.close_gpx_select_file_gui()
 
-                    # Close import dialog to show table
-                    self.close_gpx_select_file_gui()
-
-                    # QTableWidget dialog
-                    self.gpx_table = GpxTableWidgetDialog(self.iface,
-                                                          self.curr_layer,
-                                                          self.layer_gpx,
-                                                          active_layer,
-                                                          active_layer_geometry_typ,
-                                                          self.sp_table,
-                                                          self.sp_col
-                                                          )
-                    self.gpx_table.populate_qtable_widget()
-                    self.gpx_table.show()
+                # QTableWidget dialog
+                self.gpx_table = GpxTableWidgetDialog(self.iface,
+                                                      self.curr_layer,
+                                                      self.layer_gpx,
+                                                      active_layer,
+                                                      active_layer_geometry_typ,
+                                                      self.sp_table,
+                                                      self.sp_col
+                                                      )
+                self.gpx_table.populate_qtable_widget()
+                self.gpx_table.show()
 
     def get_gpx_file(self):
         return self.tx_fl_edit_gpx.text()
