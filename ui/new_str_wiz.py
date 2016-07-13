@@ -1625,7 +1625,7 @@ class FreezeTableWidget(QTableView):
         self.setSelectionMode(QAbstractItemView.NoSelection)
 
         self.shadow = QGraphicsDropShadowEffect(self)
-        self.shadow.setBlurRadius(3)
+        self.shadow.setBlurRadius(5)
         self.shadow.setOffset(2)
         self.shadow.setYOffset(0)
         self.frozen_table_view.setGraphicsEffect(self.shadow)

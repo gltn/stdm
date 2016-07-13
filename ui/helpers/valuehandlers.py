@@ -239,7 +239,7 @@ class DateEditValueHandler(ControlValueHandler):
         if value is not None:
             try:
                 self.control.setDate(value)
-            except Exception as ex:
+            except RuntimeError:
                 QMessageBox.warning(
                     None,
                     QApplication.translate(
@@ -249,6 +249,8 @@ class DateEditValueHandler(ControlValueHandler):
                     'The change is not saved. '
                     'Please use the form to edit data.'
                 )
+            except TypeError:
+                pass
 
     def supportsMandatory(self):
         return False
@@ -270,7 +272,7 @@ class DateTimeEditValueHandler(ControlValueHandler):
 
         try:
             self.control.setDateTime(value)
-        except Exception as ex:
+        except RuntimeError:
             QMessageBox.warning(
                 None,
                 QApplication.translate(
@@ -280,6 +282,8 @@ class DateTimeEditValueHandler(ControlValueHandler):
                 'The change is not saved. '
                 'Please use the form to edit data.'
             )
+        except TypeError:
+            pass
 
     def supportsMandatory(self):
         return False

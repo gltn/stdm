@@ -450,7 +450,7 @@
         </property>
         <property name="icon">
          <iconset resource="../resources.qrc">
-          <normaloff>:/plugins/stdm/images/icons/attachment.png</normaloff>:/plugins/stdm/images/icons/attachment.png</iconset>
+          <normaloff>:/plugins/stdm/images/icons/document.png</normaloff>:/plugins/stdm/images/icons/document.png</iconset>
         </property>
        </widget>
       </item>
