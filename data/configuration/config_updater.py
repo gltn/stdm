@@ -24,6 +24,8 @@ from PyQt4.QtCore import (
     QObject
 )
 
+from qgis.core import QgsApplication
+
 from sqlalchemy.exc import SQLAlchemyError
 
 from stdm.data.database import (
@@ -115,6 +117,7 @@ class ConfigurationSchemaUpdater(QObject):
         #Delete removed profiles
         for p in self.config.removed_profiles:
             p.deleteLater()
+            QgsApplication.processEvents()
 
         self.config.reset_removed_profiles()
 
@@ -167,6 +170,8 @@ class ConfigurationSchemaUpdater(QObject):
                 msg = self.tr(u'{0} foreign key constraint successfully '
                               'removed.'.format(er.autoname))
                 #self.update_progress.emit(ConfigurationSchemaUpdater.INFORMATION, msg)
+
+            QgsApplication.processEvents()
 
             LOGGER.debug(msg)
 
@@ -226,6 +231,8 @@ class ConfigurationSchemaUpdater(QObject):
 
                 e.update(self.engine, self.metadata)
 
+            QgsApplication.processEvents()
+
     def update_entity_relations(self, profile):
         """
         Update entity relations in the profile by creating the corresponding
@@ -256,6 +263,8 @@ class ConfigurationSchemaUpdater(QObject):
                                   'created.'.format(er.name))
 
                 LOGGER.debug(msg)
+
+            QgsApplication.processEvents()
 
     def _action_text(self, action):
         if action == DbItem.CREATE:
