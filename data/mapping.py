@@ -366,17 +366,29 @@ class MapperMixin(object):
         self._persistModel()
             
     def _persistModel(self):
-        #Persist the model to its corresponding store.
-        if self._mode == SAVE:
-            self._model.save()
-            QMessageBox.information(self, QApplication.translate("MappedDialog","Record Saved"), \
-                                    QApplication.translate("MappedDialog","New record has been successfully saved."))
-            
-        else:
-            self._model.update()
-            QMessageBox.information(self, QApplication.translate("MappedDialog","Record Updated"), \
-                                    QApplication.translate("MappedDialog","Record has been successfully updated."))
-            
+        try:
+            #Persist the model to its corresponding store.
+            if self._mode == SAVE:
+                self._model.save()
+                QMessageBox.information(self, QApplication.translate("MappedDialog","Record Saved"), \
+                                        QApplication.translate("MappedDialog","New record has been successfully saved."))
+
+            else:
+                self._model.update()
+                QMessageBox.information(self, QApplication.translate("MappedDialog","Record Updated"), \
+                                        QApplication.translate("MappedDialog","Record has been successfully updated."))
+        except Exception as ex:
+            QMessageBox.critical(
+                self,
+                QApplication.translate(
+                    "MappedDialog", "Failed to Save Data"
+                ),
+                QApplication.translate(
+                    "MappedDialog",
+                    u'The data could not be saved due to the error: \n{}'
+                        .format(ex.message)
+                )
+            )
         #Close the dialog
         if isinstance(self, QDialog):
             self.postSaveUpdate(self._model)

@@ -13,9 +13,7 @@ from stdm.settings import current_profile
 
 from ui_gpx_table_widget import Ui_Dialog
 
-from gpx_add_attribute_info import GPXAttributeInfoDialog
-
-from stdm.data.configuration import entity_model
+from stdm.ui.forms.editor_dialog import EntityEditorDialog
 
 class GpxTableWidgetDialog(QDialog, Ui_Dialog):
     def __init__(self, iface, curr_layer, gpx_file, active_layer, active_layer_geom, sp_table, sp_col):
@@ -26,9 +24,16 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
         self.sp_table = sp_table
         self.curr_profile = current_profile()
         self.entity = self.curr_profile.entity_by_name(sp_table)
-        print vars(self.entity)
-        print vars(self.curr_profile)
-        print vars(self.entity.columns[sp_col])
+        if self.entity is None:
+            QMessageBox.critical(
+                self, QApplication.translate(
+                    'GpxTableWidgetDialog', 'GPS File Import Error'
+                ),
+                'The selected layer source is not an entity. \n'
+                'Please check if it is not a view or non-STDM Layer.'
+            )
+            return
+
         self.sp_col = sp_col
         self.table_widget = self.tableWidget
         self.map_canvas = self.iface.mapCanvas()
@@ -114,14 +119,21 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
             self.table_widget.setItem(i, 2, item_lat)  # Column 2
             self.table_widget.setItem(i, 3, item_lon)  # Column 3
 
+            self.table_widget.setRowHeight(i, 35)
             # QgsVertex
             vertex_marker = QgsVertexMarker(self.map_canvas)
             vertex_marker.setCenter(QgsPoint(lat, lon))
+            vertex_marker.setIconType(4) # 'ICON_CIRCLE'
+            vertex_marker.setPenWidth(5)
             if check_box_state is Qt.Checked:
                 vertex_marker.setColor(self.green)
+                vertex_marker.setIconType(4)  # 'ICON_CIRCLE'
+                vertex_marker.setPenWidth(5)
                 self.vertex_color = self.green
             elif check_box_state is Qt.Unchecked:
                 vertex_marker.setColor(self.red)
+                vertex_marker.setIconType(4)  # 'ICON_CIRCLE'
+                vertex_marker.setPenWidth(5)
                 self.vertex_color = self.red
 
             # Add vertex to dictionary
@@ -168,12 +180,10 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
 
         # Align table widget content to fit to header size
         self.table_widget.resizeColumnsToContents()
-        # self.table_widget.resizeRowsToContents()
-        self.table_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
+        self.table_widget.resizeRowsToContents()
+        self.table_widget.horizontalHeader().setStretchLastSection(True)
         # Enable selection if entire row
         self.table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)
-
         # Update Extent to new QgsVertext position
         x_min, x_max, y_min, y_max = self.layer_gpx.GetExtent()
         # self.map_canvas.clearExtentHistory()
@@ -183,7 +193,8 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
         self.map_canvas.refresh()
 
         # Show GPX table
-        self.table_widget.show()
+        #self.table_widget.show()
+        self.show()
 
     @pyqtSlot('QTableWidgetItem')
     def gpx_table_widget_item_pressed(self, item):
@@ -225,17 +236,18 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
             if item.checkState() == Qt.Checked:
                 for row, vertex in self.vertex_dict.iteritems():
                     if row == item.row():
-
                         # Set vertex marker green then refresh the map
                         vertex[0].setColor(self.green)
-                        vertex[0].setIconType(2)
+                        vertex[0].setIconType(4)  # 'ICON_CIRCLE'
+                        vertex[0].setPenWidth(5)
                         vertex[3] = Qt.Checked
                         self.map_canvas.refresh()
 
                         if self.active_layer_geometry_typ == 0:
                             for item_row, chkbx_item in self.prv_chkbx_itm_placeholder_dict.iteritems():
                                 self.vertex_dict[item_row][0].setColor(self.red)
-                                self.vertex_dict[item_row][0].setIconType(2)
+                                self.vertex_dict[item_row][0].setIconType(4)
+                                self.vertex_dict[item_row][0].setPenWidth(5)
                                 self.vertex_dict[item_row][3] = Qt.Unchecked
                                 chkbx_item.setCheckState(Qt.Unchecked)
                                 self.map_canvas.refresh()
@@ -247,6 +259,8 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
                 for row, vertex_lon_lat_state in self.vertex_dict.iteritems():
                     if row == item.row():
                         vertex_lon_lat_state[0].setColor(self.red)
+                        vertex_lon_lat_state[0].setIconType(4)
+                        vertex_lon_lat_state[0].setPenWidth(5)
                         vertex_lon_lat_state[3] = Qt.Unchecked
                         self.map_canvas.refresh()
 
@@ -270,7 +284,8 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
             """
         for key, vertex in self.reset_vertex_dict.iteritems():
             vertex[0].setColor(vertex[1])
-            vertex[0].setIconType(2)
+            vertex[0].setIconType(4)
+            vertex[0].setPenWidth(5)
             vertex[2].setCheckState(vertex[3])
         self.map_canvas.refresh()
 
@@ -308,25 +323,15 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
 
         self.iface.mapCanvas().refresh()
 
-        self.gpx_add_attribute_info = GPXAttributeInfoDialog(self.iface,
-                                                             self.curr_layer,
-                                                             non_sp_colms,
-                                                             self.sp_table,
-                                                             self.sp_col,
-                                                             geom_wkb)
-        self.model, self.doc_model = entity_model(self.entity, False, True)
-        # add geometry into the model
-        self.model_obj = self.model()
-        #geom_col_obj = self.entity.columns[self.sp_col]
         srid = self.entity.columns[self.sp_col].srid
+        #init form
+        editor = EntityEditorDialog(self.entity, None, self.iface.mainWindow())
 
-        setattr(self.model_obj, self.sp_col, 'SRID={};{}'.format(srid, geom_wkb))
-        #self.model_obj.save()
-        #self.gpx_add_attribute_info.create_attribute_info_gui()
-        self.gpx_add_attribute_info.init_form(
-            self.model
-        )
-        #self.gpx_add_attribute_info.show()
+        model = editor.model()
+        # add geometry into the model
+        setattr(model, self.sp_col, 'SRID={};{}'.format(srid, geom_wkb))
+
+        editor.exec_()
 
     def closeEvent(self, QCloseEvent):
         id = self.vl.id()
