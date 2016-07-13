@@ -1,6 +1,6 @@
 **Social Tenure Domain Model**
 
-<img src="./images/plugin_interface.png" width="624" height="351" />
+<img src="./images/plugin_interface.png" width="1000" height="562" />
 
 The Social Tenure Domain Model (STDM) is a propoor land information tool that provides a flexible approach for representing people-land relationships. The tool provides a practical approach for representing these relationships independently from the level of formalization or legality of these relationships.
 
