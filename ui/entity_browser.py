@@ -57,7 +57,7 @@ from stdm.utils.util import (
 __all__ = ["EntityBrowser", "EntityBrowserWithEditor",
            "ContentGroupEntityBrowser"]
 
-class _EntityDocumentViewer(object):
+class _EntityDocumentViewerHandler(object):
     """
     Class that loads the document viewer to display all documents
     pertaining to a given entity record.
@@ -140,7 +140,7 @@ class _EntityDocumentViewer(object):
         return dir.exists()
 
 
-class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
+class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
     """
     Dialog for browsing entity records in a table view.
     """
@@ -154,6 +154,14 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
     def __init__(self, entity, parent=None, state=MANAGE):
         QDialog.__init__(self,parent)
         self.setupUi(self)
+
+        #Add maximize buttons
+        self.setWindowFlags(
+            self.windowFlags() |
+            Qt.WindowSystemMenuHint |
+            Qt.WindowMaximizeButtonHint
+        )
+
         SupportsManageMixin.__init__(self, state)
 
         #Init document viewer setup
@@ -166,7 +174,10 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
             entity.short_name,
             viewer_title
         )
-        self._doc_viewer = _EntityDocumentViewer(self.doc_viewer_title, self)
+        self._doc_viewer = _EntityDocumentViewerHandler(
+            self.doc_viewer_title,
+            self
+        )
 
         #Initialize toolbar
         self.tbActions = QToolBar()
@@ -194,10 +205,6 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
         if self.can_view_supporting_documents:
             self._add_view_supporting_docs_btn()
 
-        # Add maximize buttons
-        self.setWindowFlags(self.windowFlags() |
-                            Qt.WindowSystemMenuHint |
-                            Qt.WindowMaximizeButtonHint)
         #Connect signals
         self.buttonBox.accepted.connect(self.onAccept)
         self.tbEntity.doubleClicked[QModelIndex].connect(self.onDoubleClickView)

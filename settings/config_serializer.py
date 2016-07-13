@@ -1516,9 +1516,6 @@ class AdminSpatialUnitColumnSerializer(ForeignKeyColumnSerializer):
     @classmethod
     def _obj_args(cls, args, kwargs, element, assoc_elements,
                   entity_relation_elements):
-        #We need to remove the name of the entity since it is already preset.
-        #col_name = args.pop(0)
-
         return args, kwargs
 
 AdminSpatialUnitColumnSerializer.register()
