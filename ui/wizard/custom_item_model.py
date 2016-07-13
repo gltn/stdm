@@ -69,6 +69,10 @@ class EntitiesModel(QStandardItemModel):
 		    del self._entities[name]
 	    	    LOGGER.debug('%s model entity removed.', name)
 
+    def delete_entity_byname(self, short_name):
+	    if short_name in self._entities:
+		    del self._entities[short_name]
+	    	    LOGGER.debug('%s model entity removed.', short_name)
 
     def _add_row(self, entity):
         '''
@@ -207,7 +211,11 @@ class ColumnEntitiesModel(QStandardItemModel):
 		    name = entity.name
 		    del self._entities[name]
 	    	    LOGGER.debug('%s model entity removed.', name)
-		    
+
+    def delete_entity_byname(self, short_name):
+	    if short_name in self._entities:
+		    del self._entities[short_name]
+	    	    LOGGER.debug('%s model entity removed.', short_name)
 
     def _add_row(self, entity):
         '''
@@ -287,6 +295,11 @@ class LookupEntitiesModel(QStandardItemModel):
 		    del self._entities[name]
 	    	    LOGGER.debug('%s model entity removed.', name)
 
+    def delete_entity_byname(self, short_name):
+	    if short_name in self._entities:
+		    del self._entities[short_name]
+	    	    LOGGER.debug('%s model entity removed.', short_name)
+
     def _add_row(self, entity):
         '''
         name_item = QStandardItem(entity.name())
@@ -364,6 +377,10 @@ class STRColumnEntitiesModel(QStandardItemModel):
 		    del self._entities[name]
 	    	    LOGGER.debug('%s model entity removed.', name)
 		    
+    def delete_entity_byname(self, short_name):
+	    if short_name in self._entities:
+		    del self._entities[short_name]
+	    	    LOGGER.debug('%s model entity removed.', short_name)
 
     def _add_row(self, entity):
         '''

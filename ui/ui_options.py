@@ -25,7 +25,7 @@ except AttributeError:
 class Ui_DlgOptions(object):
     def setupUi(self, DlgOptions):
         DlgOptions.setObjectName(_fromUtf8("DlgOptions"))
-        DlgOptions.resize(610, 539)
+        DlgOptions.resize(626, 545)
         self.gridLayout_6 = QtGui.QGridLayout(DlgOptions)
         self.gridLayout_6.setObjectName(_fromUtf8("gridLayout_6"))
         self.buttonBox = QtGui.QDialogButtonBox(DlgOptions)
@@ -39,7 +39,7 @@ class Ui_DlgOptions(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName(_fromUtf8("scrollArea"))
         self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 588, 473))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 604, 479))
         self.scrollAreaWidgetContents.setObjectName(_fromUtf8("scrollAreaWidgetContents"))
         self.gridLayout_5 = QtGui.QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))

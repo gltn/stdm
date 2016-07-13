@@ -42,23 +42,23 @@ from fk_property import FKProperty
 from lookup_property import LookupProperty
 from multi_select_property import MultiSelectProperty
 
-from datetime import (
-    date,
-    datetime
-)
+import datetime
+
 
 class ColumnEditor(QDialog, Ui_ColumnEditor):
     """
-    Form to add/edit entity columns
+    Dialog to add/edit entity columns
     """
     def __init__(self, parent, **kwargs):
         """
         :param parent: Owner of this dialog
         :type parent: QWidget
-        :param kwargs: Keyword dictionary of the following params;
-         column - Column you editting, None if its a new column
-         entity - Entity you are adding the column
+        :param kwargs: Keyword dictionary of the following parameters;
+         column  - Column you editing, None if its a new column
+         entity  - Entity you are adding the column to
          profile - Current profile
+         in_db   - Boolean flag to indicate if a column has been created in 
+                   the database
         """
         QDialog.__init__(self, parent)
         self.form_parent = parent
@@ -90,12 +90,12 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.fk_entities     = []
         self.lookup_entities = []
 
-        # the current entity should not be part of the foreign key parent table, add it to the exclusion list
+        # the current entity should not be part of the foreign key parent table,
+        # add it to the exclusion list
         self.FK_EXCLUDE.append(self.entity.short_name)
 
         self.cboDataType.currentIndexChanged.connect(self.change_data_type)
 
-        #self.btnTableList.clicked.connect(self.lookupDialog)
         self.btnColProp.clicked.connect(self.data_type_property)
 
         self.type_names = \
@@ -231,10 +231,10 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         """
         Initializes data type attributes. The attributes are used to
         set the form controls state when a particular data type is selected.
-        mandt - enables/disables checkbox 'mandatory field'
-        search - enables/disables checkbox 'is searchable'
-        unique - enables/disables checkbox 'is unique'
-        index - enables/disables checkbox 'column index'
+        mandt - enables/disables checkbox 'Mandatory'
+        search - enables/disables checkbox 'Searchable'
+        unique - enables/disables checkbox 'Unique'
+        index - enables/disables checkbox 'Index'
         *property - function to execute when a data type is selected.
         """
         self.type_attribs['VARCHAR'] = {
@@ -248,12 +248,12 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 'mandt':{'check_state':False, 'enabled_state':True},
                 'search':{'check_state':True, 'enabled_state':True},
                 'unique':{'check_state':False, 'enabled_state':True},
-                'index':{'check_state':False, 'enabled_state':True},
+                'index':{'check_state':False, 'enabled_state':False},
                 'minimum':0, 'maximum':0,
                 'property':self.bigint_property }
 
         self.type_attribs['TEXT'] = {
-                'mandt':{'check_state':False, 'enabled_state':False},
+                'mandt':{'check_state':False, 'enabled_state':True},
                 'search':{'check_state':False, 'enabled_state':False},
                 'unique':{'check_state':False, 'enabled_state':False},
                 'index':{'check_state':False, 'enabled_state':False},
@@ -272,8 +272,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 'search':{'check_state':False, 'enabled_state':True},
                 'unique':{'check_state':False, 'enabled_state':False},
                 'index':{'check_state':False, 'enabled_state':False},
-                'minimum':QtCore.QDate.currentDate(),
-                'maximum':QtCore.QDate.currentDate(),
+                'minimum':datetime.date.min,
+                'maximum':datetime.date.max,
                 'min_use_current_date':False,
                 'max_use_current_date':False,
                 'property':self.date_property }
@@ -283,11 +283,12 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 'search':{'check_state':False, 'enabled_state':True},
                 'unique':{'check_state':False, 'enabled_state':False},
                 'index':{'check_state':False, 'enabled_state':False},
-                'minimum':QtCore.QDateTime.currentDateTime(),
-                'maximum':QtCore.QDateTime.currentDateTime(),
+                'minimum':datetime.datetime.min,
+                'maximum':datetime.datetime.max,
                 'min_use_current_datetime':False,
                 'max_use_current_datetime':False,
                 'property':self.dtime_property }
+
 
         self.type_attribs['FOREIGN_KEY'] = {
                 'mandt':{'check_state':False, 'enabled_state':True},
@@ -337,7 +338,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 	
     def data_type_property(self):
         """
-        Executes the relevant function assigned to the property attribute of 
+        Executes the function assigned to the property attribute of 
         the current selected data type.
         """
         self.type_attribs[self.current_type_info()]['property']()
@@ -376,7 +377,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         """
         Opens a property editor for the Date data type.
         """
-
         editor = DateProperty(self, self.form_fields)
         result = editor.exec_()
         if result == 1:
@@ -406,8 +406,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         Opens a property editor for the Geometry data type.
         If successfull, set the srid(projection), geom_type (LINE, POLYGON...)
         and prop_set which is boolean flag to verify that all the geometry
-        properties are set.  If prop_set is false you are not allowed to save
-        the column.
+        properties are set. 
+        Constraint - If 'prop_set' is False column cannot be saved.
         """
         editor = GeometryProperty(self, self.form_fields)
         result = editor.exec_()
@@ -494,7 +494,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             if self.type_info == 'ADMIN_SPATIAL_UNIT':
                 self.admin_spatial_unit_property()
                 column = BaseColumn.registered_types[self.type_info] \
-                        (self.entity, **self.form_fields)
+                        (self.form_fields['colname'], self.entity, **self.form_fields)
                 return column
 
             if self.is_property_set(self.type_info):

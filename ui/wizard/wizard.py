@@ -152,6 +152,16 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.orig_assets_count = 0  # count of items in StdmConfiguration instance
         self.load_stdm_config()
 
+        self.splitter.setStretchFactor(0, 0)
+        self.splitter.setStretchFactor(1, 1)
+
+        self.splitter_3.setStretchFactor(0, 11)
+        self.splitter_3.setStretchFactor(1, 0)
+        self.splitter.isCollapsible(False)
+        self.splitter_2.isCollapsible(False)
+        self.splitter_3.isCollapsible(False)
+        self.splitter_3.setSizes([330, 150])
+
     def reject(self):
         """
         Event handler for the cancel button.
@@ -588,6 +598,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.updater_thread.started.connect(self._updater_thread_started)
             self.updater_thread.finished.connect(self.updater_thread.deleteLater)
 
+            self.txtHtml.append(self.tr("Preparing configuration, please wait..."))
+            
             ##*Start the process
             self.updater_thread.start()
 
@@ -841,8 +853,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self.cboProfile.insertItems(0, profiles)
         # Set current profile on the profile combobox.
-        cp = self.current_profile()
-        if cp:
+        cp = current_profile()
+        if not cp is None:
             index = self.cboProfile.findText(cp.name, Qt.MatchFixedString)
             if index >= 0:
                 self.cboProfile.setCurrentIndex(index)
@@ -974,32 +986,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         model_item, entity, row_id = self.get_model_entity(self.pftableView)
 
-        # don't edit entities that already exist in the database
-        #if pg_table_exists(entity.name):
-            #self.show_message(QApplication.translate("Configuration Wizard", \
-                    #"Editing entity that exist in database is not allowed!"))
-            #return
-
         if model_item:
             profile = self.current_profile()
             in_db = pg_table_exists(entity.name)
+
             editor = EntityEditor(self, profile, entity, in_db)
             result = editor.exec_()
+
             if result == 1:
-                if entity.supports_documents:
-                    # mark the lookup for deletion
-                    doc_name = u'check_{0}_document_type'.format(
-                            entity.short_name.lower())
-                    de = profile.entity(doc_name)
-                    de.action = DbItem.DROP
+                model_index_name = model_item.index(row_id, 0)
+                model_index_desc = model_item.index(row_id, 1)
 
-                self.entity_model.delete_entity(entity)
-
-                self.init_entity_item_model()
-                self.trigger_entity_change()
-
-                self.entity_model.add_entity(editor.entity)
-                self.refresh_lookup_view()
+                model_item.setData(model_index_name, editor.entity.short_name) 
+                model_item.setData(model_index_desc, editor.entity.description) 
 
     def delete_entity(self):
         """

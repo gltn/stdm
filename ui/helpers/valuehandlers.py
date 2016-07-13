@@ -24,10 +24,13 @@ from PyQt4.QtGui import (
     QComboBox,
     QTextEdit,
     QDateEdit,
+    QApplication,
+    QMessageBox,
     QDateTimeEdit,
     QSpinBox,
     QDoubleSpinBox
 )
+
 from stdm.ui.sourcedocument import SourceDocumentManager
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.customcontrols import CoordinatesWidget
@@ -230,11 +233,24 @@ class DateEditValueHandler(ControlValueHandler):
     controlType = QDateEdit
 
     def value(self):
-        return self.control.date().toPyDate()
-    
-    def setValue(self,value):
+        return self.control.date()
+
+    def setValue(self, value):
         if value is not None:
-            self.control.setDate(value)
+            try:
+                self.control.setDate(value)
+            except RuntimeError:
+                QMessageBox.warning(
+                    None,
+                    QApplication.translate(
+                        'DateEditValueHandler',
+                        "Attribute Table Error"
+                    ),
+                    'The change is not saved. '
+                    'Please use the form to edit data.'
+                )
+            except TypeError:
+                pass
 
     def supportsMandatory(self):
         return False
@@ -248,12 +264,26 @@ class DateTimeEditValueHandler(ControlValueHandler):
     '''
     controlType = QDateTimeEdit
 
-    def value(self):
-        return self.control.dateTime().toPyDateTime()
+    def value(self, for_spatial_unit=False):
 
-    def setValue(self,value):
-        if value is not None:
+            return self.control.dateTime()
+
+    def setValue(self,value, for_spatial_unit=False):
+
+        try:
             self.control.setDateTime(value)
+        except RuntimeError:
+            QMessageBox.warning(
+                None,
+                QApplication.translate(
+                    'DateTimeEditValueHandler',
+                    "Attribute Table Error"
+                ),
+                'The change is not saved. '
+                'Please use the form to edit data.'
+            )
+        except TypeError:
+            pass
 
     def supportsMandatory(self):
         return False
