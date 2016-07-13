@@ -27,7 +27,8 @@ from PyQt4.QtGui import (
     QDesktopServices
 )
 from PyQt4.QtCore import (
-    QDir
+    QDir,
+    QFile
 )
 
 #Load third party libraries
@@ -40,9 +41,12 @@ if third_party_dir not in sys.path:
     sys.path.append(third_party_dir)
     sys.path.append(font_dir)
 
+#Root to the path plugin directory
+USER_PLUGIN_DIR = QDesktopServices.storageLocation(QDesktopServices.HomeLocation) \
+             + '/.stdm'
+
 #Setup logging
-LOG_DIR = QDesktopServices.storageLocation(QDesktopServices.HomeLocation) \
-               + '/.stdm/logs'
+LOG_DIR = u'{0}/logs'.format(USER_PLUGIN_DIR)
 LOG_FILE_PATH = LOG_DIR + '/stdm.log'
 
 def setup_logger():
@@ -60,7 +64,7 @@ def setup_logger():
 
     #File handler for logging debug messages
     file_handler = TimedRotatingFileHandler(LOG_FILE_PATH, when='D',
-                                            interval=30, backupCount=4)
+                                            interval=1, backupCount=14)
     file_handler.setLevel(logging.DEBUG)
 
     #Create formatter and add it to the handler
@@ -71,11 +75,43 @@ def setup_logger():
     logger.addHandler(file_handler)
 
 
+def copy_core_configuration():
+    """
+    Copies the basic STDM configuration to the user directory if there is none.
+    """
+    core_config_path = u'{0}/templates/configuration.stc'.format(
+        os.path.dirname(__file__)
+    )
+
+    #Exit if the core configuration does not exist
+    if not QFile.exists(core_config_path):
+        return
+
+    #File name of previous configuration
+    v1_1_config_path = u'{0}/stdmConfig.xml'.format(USER_PLUGIN_DIR)
+
+    #Only copy the new one if there is no copy of the previous version
+    # since the version updater will automatically handle the upgrade.
+    if QFile.exists(v1_1_config_path):
+        #Version update will handle the migration
+        return
+
+    #Copy config assuming that the plugin user folder has no previous
+    # configuration.
+    conf_file = QFile(core_config_path)
+    conf_dest = u'{0}/configuration.stc'.format(USER_PLUGIN_DIR)
+
+    copy_status = conf_file.copy(conf_dest)
+
+
 def classFactory(iface):
     """
     Load STDMQGISLoader class.
     """
     setup_logger()
+
+    #Copy the basic configuration to the user folder if None exists
+    copy_core_configuration()
 
     from stdm.plugin import STDMQGISLoader
     return STDMQGISLoader(iface)
