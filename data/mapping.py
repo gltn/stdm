@@ -129,7 +129,20 @@ class _AttributeMapper(object):
         '''
 
         if hasattr(self._model, self._attrName):
+
             controlValue = self._valueHandler.value()
+            # The to conditions below fix the issue of
+            # saving data for QGIS forms and other forms.
+            # QGIS only recognizes QDate so we have
+            # keep the control value as QData and
+            # convert it to python date before
+            # saving to the database here.
+            if isinstance(controlValue, QDate):
+                controlValue = controlValue.toPyDate()
+
+            if isinstance(controlValue, QDateTime):
+                controlValue = controlValue.toPyDateTime()
+
             setattr(self._model, self._attrName, controlValue)
     
 class MapperMixin(object):
@@ -185,7 +198,7 @@ class MapperMixin(object):
             
         self._attrMappers.append(attributeMapper)
         self._attr_mapper_collection[attributeMapper.attributeName()] = attributeMapper
-        
+
     def saveMode(self):
         '''
         Return the mode that the mapper is currently configured in.
@@ -330,7 +343,7 @@ class MapperMixin(object):
         
         self.clearNotifications()
         isValid= True
-        
+
         #Validate mandatory fields have been entered by the user.
         for attrMapper in self._attrMappers:
             if attrMapper.isMandatory() and attrMapper.valueHandler().supportsMandatory():
@@ -343,7 +356,7 @@ class MapperMixin(object):
                     isValid = False
                 else:
                     attrMapper.bindModel()
-                    
+
             else:
                 attrMapper.bindModel()
         
@@ -353,17 +366,29 @@ class MapperMixin(object):
         self._persistModel()
             
     def _persistModel(self):
-        #Persist the model to its corresponding store.
-        if self._mode == SAVE:
-            self._model.save()
-            QMessageBox.information(self, QApplication.translate("MappedDialog","Record Saved"), \
-                                    QApplication.translate("MappedDialog","New record has been successfully saved."))
-            
-        else:
-            self._model.update()
-            QMessageBox.information(self, QApplication.translate("MappedDialog","Record Updated"), \
-                                    QApplication.translate("MappedDialog","Record has been successfully updated."))
-            
+        try:
+            #Persist the model to its corresponding store.
+            if self._mode == SAVE:
+                self._model.save()
+                QMessageBox.information(self, QApplication.translate("MappedDialog","Record Saved"), \
+                                        QApplication.translate("MappedDialog","New record has been successfully saved."))
+
+            else:
+                self._model.update()
+                QMessageBox.information(self, QApplication.translate("MappedDialog","Record Updated"), \
+                                        QApplication.translate("MappedDialog","Record has been successfully updated."))
+        except Exception as ex:
+            QMessageBox.critical(
+                self,
+                QApplication.translate(
+                    "MappedDialog", "Failed to Save Data"
+                ),
+                QApplication.translate(
+                    "MappedDialog",
+                    u'The data could not be saved due to the error: \n{}'
+                        .format(ex.args[0])
+                )
+            )
         #Close the dialog
         if isinstance(self, QDialog):
             self.postSaveUpdate(self._model)
