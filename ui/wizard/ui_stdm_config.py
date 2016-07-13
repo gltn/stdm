@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_stdm_config.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created: Wed Jul 13 08:52:40 2016
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,7 +27,7 @@ class Ui_STDMWizard(object):
     def setupUi(self, STDMWizard):
         STDMWizard.setObjectName(_fromUtf8("STDMWizard"))
         STDMWizard.setWindowModality(QtCore.Qt.WindowModal)
-        STDMWizard.resize(786, 718)
+        STDMWizard.resize(585, 540)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -146,6 +147,7 @@ class Ui_STDMWizard(object):
         self.gridLayout_5.setContentsMargins(-1, 3, -1, 9)
         self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))
         self.label_3 = QtGui.QLabel(self.groupBox_17)
+        self.label_3.setMargin(0)
         self.label_3.setIndent(-1)
         self.label_3.setObjectName(_fromUtf8("label_3"))
         self.gridLayout_5.addWidget(self.label_3, 1, 0, 1, 1)
@@ -269,6 +271,8 @@ class Ui_STDMWizard(object):
         self.groupBox.setMinimumSize(QtCore.QSize(0, 0))
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
         self.verticalLayout_8 = QtGui.QVBoxLayout(self.groupBox)
+        self.verticalLayout_8.setSpacing(6)
+        self.verticalLayout_8.setContentsMargins(-1, -1, -1, 9)
         self.verticalLayout_8.setObjectName(_fromUtf8("verticalLayout_8"))
         self.lvEntities = QtGui.QListView(self.groupBox)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
@@ -339,6 +343,7 @@ class Ui_STDMWizard(object):
         self.groupBox_5.setMinimumSize(QtCore.QSize(0, 0))
         self.groupBox_5.setObjectName(_fromUtf8("groupBox_5"))
         self.verticalLayout_3 = QtGui.QVBoxLayout(self.groupBox_5)
+        self.verticalLayout_3.setContentsMargins(-1, 9, -1, -1)
         self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
         self.horizontalLayout_3 = QtGui.QHBoxLayout()
         self.horizontalLayout_3.setSpacing(6)
@@ -429,8 +434,8 @@ class Ui_STDMWizard(object):
         self.verticalLayout_6 = QtGui.QVBoxLayout(self.wpSTR)
         self.verticalLayout_6.setObjectName(_fromUtf8("verticalLayout_6"))
         self.verticalLayout = QtGui.QVBoxLayout()
-        self.verticalLayout.setContentsMargins(80, 50, -1, 5)
         self.verticalLayout.setSpacing(6)
+        self.verticalLayout.setContentsMargins(80, 50, -1, 5)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.label_5 = QtGui.QLabel(self.wpSTR)
         self.label_5.setMinimumSize(QtCore.QSize(0, 0))
@@ -461,8 +466,8 @@ class Ui_STDMWizard(object):
         self.lblPartyDesc.setObjectName(_fromUtf8("lblPartyDesc"))
         self.verticalLayout_6.addWidget(self.lblPartyDesc)
         self.verticalLayout_2 = QtGui.QVBoxLayout()
-        self.verticalLayout_2.setContentsMargins(80, 50, -1, -1)
         self.verticalLayout_2.setSpacing(6)
+        self.verticalLayout_2.setContentsMargins(80, 50, -1, -1)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         self.label_6 = QtGui.QLabel(self.wpSTR)
         self.label_6.setMinimumSize(QtCore.QSize(0, 0))

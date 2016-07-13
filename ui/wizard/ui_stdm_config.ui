@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>786</width>
-    <height>718</height>
+    <width>585</width>
+    <height>540</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -607,6 +607,12 @@
          <string>Entities</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_8">
+         <property name="spacing">
+          <number>6</number>
+         </property>
+         <property name="bottomMargin">
+          <number>9</number>
+         </property>
          <item>
           <widget class="QListView" name="lvEntities">
            <property name="sizePolicy">
@@ -798,6 +804,9 @@
          <string>Lookups</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_3">
+         <property name="topMargin">
+          <number>9</number>
+         </property>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_3">
            <property name="spacing">
