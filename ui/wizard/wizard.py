@@ -161,7 +161,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.splitter_2.isCollapsible(False)
         self.splitter_3.isCollapsible(False)
         self.splitter_3.setSizes([330, 150])
-        
+
     def reject(self):
         """
         Event handler for the cancel button.

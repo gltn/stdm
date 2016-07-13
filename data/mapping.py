@@ -386,7 +386,7 @@ class MapperMixin(object):
                 QApplication.translate(
                     "MappedDialog",
                     u'The data could not be saved due to the error: \n{}'
-                        .format(ex.message)
+                        .format(ex.args[0])
                 )
             )
         #Close the dialog
