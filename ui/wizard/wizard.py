@@ -959,7 +959,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         profile = self.current_profile()
         if profile:
-            editor = EntityEditor(self, profile)
+            params = {}
+            params['parent']  = self
+            params['profile'] = profile
+            editor = EntityEditor(**params)
             editor.exec_()
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
@@ -980,7 +983,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             profile = self.current_profile()
             in_db = pg_table_exists(entity.name)
 
-            editor = EntityEditor(self, profile, entity, in_db)
+            params = {}
+            params['parent']  = self
+            params['profile'] = profile
+            params['entity']  = entity
+            params['in_db']   = in_db
+
+            editor = EntityEditor(**params)
             result = editor.exec_()
 
             if result == 1:
