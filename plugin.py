@@ -298,10 +298,9 @@ class STDMQGISLoader(object):
             try:
                 #Set current profile
                 self.current_profile = current_profile()
+                self.default_profile()
                 self.loadModules()
                 self._user_logged_in = True
-
-                self.default_profile()
 
             except Exception as pe:
                 title = QApplication.translate(
@@ -994,7 +993,8 @@ class STDMQGISLoader(object):
         # Set current profile based on the selected
         # profile in the wizard
         if sel_profile is not None:
-            save_current_profile(sel_profile)
+            if len(sel_profile) > 1:
+                save_current_profile(sel_profile)
 
         self.current_profile = current_profile()
         LOGGER.debug(
