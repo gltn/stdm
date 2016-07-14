@@ -26,6 +26,11 @@ from PyQt4.QtCore import (
     pyqtSignal,
     QObject
 )
+
+from PyQt4.QtGui import (
+        QMessageBox
+)
+
 from stdm.data.configuration.columns import BaseColumn
 from stdm.data.configuration.columns import (
     BaseColumn,
@@ -145,6 +150,13 @@ class Entity(QObject, TableItem):
 
         LOGGER.debug('%s entity created.', self.name)
 
+    def show_message(self, message):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Warning)
+        msg.setWindowTitle("STDM")
+        msg.setText(message)
+        msg.exec_()  
+
     @property
     def supports_documents(self):
         return self._supports_documents
@@ -152,8 +164,8 @@ class Entity(QObject, TableItem):
     @supports_documents.setter
     def supports_documents(self, value):
         #Enable the attachment of supporting documents if flag is specified
+        self._supports_documents = value
         if value:
-            self._supports_documents = value
             self.supporting_doc = EntitySupportingDocument(self.profile, self)
             self.profile.add_entity(self.supporting_doc)
 

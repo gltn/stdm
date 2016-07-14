@@ -44,6 +44,8 @@ from multi_select_property import MultiSelectProperty
 
 import datetime
 
+RESERVED_KEYWORDS = ['id', 'documents', 'spatial_unit', 'supporting_document',
+        'social_tenure', 'social_tenure_relationship']
 
 class ColumnEditor(QDialog, Ui_ColumnEditor):
     """
@@ -434,7 +436,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         Opens a property editor for the ForeignKey data type.
         """
         if len(self.edtColName.displayText())==0:
-            self.error_message("Please enter column name!")
+            self.show_message("Please enter column name!")
             return
 
         # filter list of lookup tables, don't show internal 
@@ -474,7 +476,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         Opens a multi select property editor
         """
         if len(self.edtColName.displayText())==0:
-           self.error_message("Please enter column name!")
+           self.show_message("Please enter column name!")
            return
        
         first_parent = self.form_fields['first_parent']
@@ -503,7 +505,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                                 self.form_fields['geom_type'],
                                 self.entity, **self.form_fields)
             else:
-                self.error_message(self.tr('Please set column properties.'))
+                self.show_message(self.tr('Please set column properties.'))
         else:
             raise self.tr("No type to create!")
 
@@ -598,7 +600,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.form_fields['unique']     = self.cbUnique.isChecked()
         self.form_fields['user_tip']   = unicode(self.edtUserTip.text())
 
-    def error_message(self, message):
+    def show_message(self, message):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle(QApplication.translate("AttributeEditor", "STDM"))
@@ -607,15 +609,20 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
     def accept(self):
         col_name = unicode(self.edtColName.text()).strip()
-
         # column name is not empty
         if len(col_name)==0:
-            self.error_message(self.tr('Please enter the column name!'))
+            self.show_message(self.tr('Please enter the column name!'))
+            return False
+
+        # check for reserved keywords
+        if col_name in RESERVED_KEYWORDS:
+            self.show_message(self.tr(u"'{0}' is a reserved keyword used internally by STDM,"\
+                " please choose another column name.".format(col_name)) )
             return False
 
         if self.column is None:
             if self.dup_check(col_name):
-                self.error_message(self.tr("Column with the same name already exist!"))
+                self.show_message(self.tr("Column with the same name already exist!"))
                 return
         else: 
             self.entity.remove_column(self.column.name)
