@@ -298,8 +298,8 @@ class STDMQGISLoader(object):
             try:
                 #Set current profile
                 self.current_profile = current_profile()
-                self.default_profile()
                 self.loadModules()
+                self.default_profile()
                 self._user_logged_in = True
 
             except Exception as pe:
@@ -725,24 +725,26 @@ class STDMQGISLoader(object):
 
         for k, v in self._moduleItems.iteritems():
 
-            moduleCntGroup = self._create_table_content_group(k, username, 'table.png')
+            moduleCntGroup = self._create_table_content_group(
+                k, username, 'table.png'
+            )
             self._reportModules[k] = v
             self.moduleContentGroups.append(moduleCntGroup)
 
         #create a separator
         tbSeparator = QAction(self.iface.mainWindow())
         tbSeparator.setSeparator(True)
+        if not self.current_profile is None:
+            if pg_table_exists(self.current_profile.social_tenure.name):
+                # add separator to menu
+                separator_group = TableContentGroup(username, 'separator', tbSeparator)
+                separator_group.register()
+                self.moduleContentGroups.append(separator_group)
 
-        if pg_table_exists(self.current_profile.social_tenure.name):
-            # add separator to menu
-            separator_group = TableContentGroup(username, 'separator', tbSeparator)
-            separator_group.register()
-            self.moduleContentGroups.append(separator_group)
-
-            moduleCntGroup = self._create_table_content_group(
-                self.STR_DISPLAY, username, 'new_str.png'
-            )
-            self.moduleContentGroups.append(moduleCntGroup)
+                moduleCntGroup = self._create_table_content_group(
+                    self.STR_DISPLAY, username, 'new_str.png'
+                )
+                self.moduleContentGroups.append(moduleCntGroup)
 
         #Create content groups and add items
         self.contentAuthCntGroup = ContentGroup(username)
