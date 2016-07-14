@@ -42,6 +42,7 @@ from stdm.data.configuration.columns import (
 )
 from stdm.data.mapping import MapperMixin
 from stdm.data.pg_utils import table_column_names
+from stdm.utils.util import format_name
 from stdm.ui.forms.widgets import (
     ColumnWidgetRegistry,
     UserTipLabel
@@ -115,7 +116,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         #Set title
         editor_trans = self.tr('Editor')
-        title = u'{0} {1}'.format(self._entity.short_name, editor_trans)
+        title = u'{0} {1}'.format(format_name(self._entity.short_name), editor_trans)
         self.setWindowTitle(title)
 
     def _init_gui(self):
