@@ -152,6 +152,16 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.orig_assets_count = 0  # count of items in StdmConfiguration instance
         self.load_stdm_config()
 
+        self.splitter.setStretchFactor(0, 0)
+        self.splitter.setStretchFactor(1, 1)
+
+        self.splitter_3.setStretchFactor(0, 11)
+        self.splitter_3.setStretchFactor(1, 0)
+        self.splitter.isCollapsible(False)
+        self.splitter_2.isCollapsible(False)
+        self.splitter_3.isCollapsible(False)
+        self.splitter_3.setSizes([330, 150])
+
     def reject(self):
         """
         Event handler for the cancel button.

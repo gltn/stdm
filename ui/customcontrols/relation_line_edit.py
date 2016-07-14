@@ -187,7 +187,21 @@ class RelatedEntityLineEdit(ForeignKeyLineEdit):
             if hasattr(model_object, c):
                 display_vals.append(getattr(model_object, c))
 
-        return cls.COLUMN_SEPARATOR.join(display_vals)
+        try:
+            return cls.COLUMN_SEPARATOR.join(display_vals)
+
+        except RuntimeError:
+            QMessageBox.warning(
+                None,
+                QApplication.translate(
+                    'DateEditValueHandler',
+                    "Attribute Table Error"
+                ),
+                'The change is not saved. '
+                'Please use the form to edit data.'
+            )
+        except TypeError:
+            pass
 
     def format_display(self):
         #Display based on the configured display columns.
@@ -200,7 +214,8 @@ class RelatedEntityLineEdit(ForeignKeyLineEdit):
         )
         try:
             self.setText(display_value)
-        except Exception as ex:
+        except RuntimeError:
+
             QMessageBox.warning(
                 None,
                 QApplication.translate(
@@ -210,6 +225,8 @@ class RelatedEntityLineEdit(ForeignKeyLineEdit):
                 'The change is not saved. '
                 'Please use the form to edit data.'
             )
+        except TypeError:
+            pass
 
     def on_load_foreign_key_browser(self):
         #Show entity browser dialog.
@@ -251,7 +268,7 @@ class AdministrativeUnitLineEdit(ForeignKeyLineEdit):
             )
         try:
             self.setText(admin_name)
-        except Exception as ex:
+        except RuntimeError:
             QMessageBox.warning(
                 None,
                 QApplication.translate(
@@ -261,6 +278,8 @@ class AdministrativeUnitLineEdit(ForeignKeyLineEdit):
                 'The change is not saved. '
                 'Please use the form to edit data.'
             )
+        except TypeError:
+            pass
 
     def parent_entity_model(self):
         #Use default admin unit model class.
