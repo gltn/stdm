@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_gpx_table_widget.ui'
 #
-# Created: Thu Jul  2 16:05:33 2015
-#      by: PyQt4 UI code generator 4.10.4
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,15 +25,21 @@ except AttributeError:
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName(_fromUtf8("Dialog"))
-        Dialog.resize(429, 687)
+        Dialog.resize(397, 433)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(Dialog.sizePolicy().hasHeightForWidth())
         Dialog.setSizePolicy(sizePolicy)
-        self.gridLayout = QtGui.QGridLayout(Dialog)
-        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.verticalLayout = QtGui.QVBoxLayout(Dialog)
+        self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.tableWidget = QtGui.QTableWidget(Dialog)
+        self.tableWidget.setEnabled(True)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.tableWidget.sizePolicy().hasHeightForWidth())
+        self.tableWidget.setSizePolicy(sizePolicy)
         self.tableWidget.setFocusPolicy(QtCore.Qt.WheelFocus)
         self.tableWidget.setAlternatingRowColors(True)
         self.tableWidget.setObjectName(_fromUtf8("tableWidget"))
@@ -43,37 +48,26 @@ class Ui_Dialog(object):
         self.tableWidget.horizontalHeader().setCascadingSectionResizes(True)
         self.tableWidget.horizontalHeader().setStretchLastSection(True)
         self.tableWidget.verticalHeader().setCascadingSectionResizes(True)
-        self.tableWidget.verticalHeader().setStretchLastSection(True)
-        self.gridLayout.addWidget(self.tableWidget, 0, 0, 1, 1)
-        self.gridLayout_3 = QtGui.QGridLayout()
-        self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
-        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.gridLayout_3.addItem(spacerItem, 0, 1, 1, 1)
+        self.verticalLayout.addWidget(self.tableWidget)
+        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.bt_save = QtGui.QPushButton(Dialog)
         self.bt_save.setCheckable(False)
         self.bt_save.setObjectName(_fromUtf8("bt_save"))
-        self.gridLayout_3.addWidget(self.bt_save, 0, 2, 1, 1)
+        self.horizontalLayout.addWidget(self.bt_save)
+        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem)
         self.bt_reset = QtGui.QPushButton(Dialog)
         self.bt_reset.setCheckable(True)
         self.bt_reset.setObjectName(_fromUtf8("bt_reset"))
-        self.gridLayout_3.addWidget(self.bt_reset, 0, 0, 1, 1)
-        self.gridLayout.addLayout(self.gridLayout_3, 1, 0, 1, 1)
+        self.horizontalLayout.addWidget(self.bt_reset)
+        self.verticalLayout.addLayout(self.horizontalLayout)
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
-        Dialog.setWindowTitle(_translate("Dialog", "GPX Points", None))
+        Dialog.setWindowTitle(_translate("Dialog", "Select GPX Points", None))
         self.bt_save.setText(_translate("Dialog", "Save", None))
         self.bt_reset.setText(_translate("Dialog", "Reset", None))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtGui.QApplication(sys.argv)
-    Dialog = QtGui.QDialog()
-    ui = Ui_Dialog()
-    ui.setupUi(Dialog)
-    Dialog.show()
-    sys.exit(app.exec_())
 

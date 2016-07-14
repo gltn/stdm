@@ -20,7 +20,7 @@ from stdm.data.database import (
 def _bind_metadata(metadata):
     #Ensures there is a connectable set in the metadata
     if metadata.bind is None:
-            metadata.bind = STDMDb.instance().engine
+        metadata.bind = STDMDb.instance().engine
 
 def _rename_supporting_doc_collection(base, local_cls, ref_cls, constraint):
     #Rename document collection property in an entity model

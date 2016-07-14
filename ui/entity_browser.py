@@ -57,9 +57,9 @@ from stdm.utils.util import (
 __all__ = ["EntityBrowser", "EntityBrowserWithEditor",
            "ContentGroupEntityBrowser"]
 
-class _EntityDocumentViewer(object):
+class _EntityDocumentViewerHandler(object):
     """
-    Class for loading the document viewer to display all documents
+    Class that loads the document viewer to display all documents
     pertaining to a given entity record.
     """
     def __init__(self, title='', parent=None):
@@ -72,9 +72,22 @@ class _EntityDocumentViewer(object):
         self._network_doc_path = network_document_path()
         self._network_manager = NetworkFileManager(self._network_doc_path)
 
+    def _create_document_viewer(self, d):
+        doc_widget_proxy = DocumentWidget(
+            fileManager=self._network_manager,
+            mode=DOWNLOAD_MODE,
+            view_manager=self._doc_view_manager
+        )
+        doc_widget_proxy.setModel(d)
+        #Load proxies to the document view manager
+        return self._doc_view_manager.load_viewer(doc_widget_proxy, False)
+
     def load(self, documents):
+        #Reset viewer
+        self._doc_view_manager.reset()
+
         #Assert if the root document directory exists
-        if not self.directory_exists():
+        if not self.root_directory_exists():
             base_msg = QApplication.translate(
                 'EntityBrowser',
                 'The root document directory does not exist'
@@ -84,26 +97,50 @@ class _EntityDocumentViewer(object):
 
             return
 
+        #Configure progress bar
+        num_docs = len(documents)
+        prog_dlg = QProgressDialog('', None, 0, num_docs, self._parent)
+        prog_dlg.setWindowModality(Qt.WindowModal)
+        prog_msg = QApplication.translate(
+            'EntityBrowser',
+            'Loading {0:d} of {1:d}'
+        )
+
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+
         #Create document widgets proxies for loading into the doc viewer
-        for d in documents:
-            doc_widget_proxy = DocumentWidget(
-                fileManager=self._network_manager,
-                mode=DOWNLOAD_MODE,
-                view_manager=self._doc_view_manager
-            )
-            doc_widget_proxy.setModel(d)
+        for i, d in enumerate(documents):
+            #Update progress dialog
+            p_msg = prog_msg.format((i+1), num_docs)
+            prog_dlg.setLabelText(p_msg)
+            prog_dlg.setValue(i)
 
-            #Load proxies to the document view manager
-            self._doc_view_manager.load_viewer(doc_widget_proxy)
+            status = self._create_document_viewer(d)
 
-    def directory_exists(self):
+            if not status:
+                QApplication.restoreOverrideCursor()
+                prog_dlg.hide()
+
+            QApplication.processEvents()
+
+        prog_dlg.setValue(num_docs)
+
+        #Restore pointer cursor
+        QApplication.restoreOverrideCursor()
+
+        self._doc_view_manager.setVisible(True)
+
+        #Cascade document viewers
+        self._doc_view_manager.cascade_windows()
+
+    def root_directory_exists(self):
         #Returns True if the root document directory exists, otherwise False.
         dir = QDir(self._network_doc_path)
 
         return dir.exists()
 
 
-class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
+class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
     """
     Dialog for browsing entity records in a table view.
     """
@@ -117,6 +154,14 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
     def __init__(self, entity, parent=None, state=MANAGE):
         QDialog.__init__(self,parent)
         self.setupUi(self)
+
+        #Add maximize buttons
+        self.setWindowFlags(
+            self.windowFlags() |
+            Qt.WindowSystemMenuHint |
+            Qt.WindowMaximizeButtonHint
+        )
+
         SupportsManageMixin.__init__(self, state)
 
         #Init document viewer setup
@@ -129,7 +174,10 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
             entity.short_name,
             viewer_title
         )
-        self._doc_viewer = _EntityDocumentViewer(self.doc_viewer_title, self)
+        self._doc_viewer = _EntityDocumentViewerHandler(
+            self.doc_viewer_title,
+            self
+        )
 
         #Initialize toolbar
         self.tbActions = QToolBar()
@@ -157,10 +205,6 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
         if self.can_view_supporting_documents:
             self._add_view_supporting_docs_btn()
 
-        # Add maximize buttons
-        self.setWindowFlags(self.windowFlags() |
-                            Qt.WindowSystemMenuHint |
-                            Qt.WindowMaximizeButtonHint)
         #Connect signals
         self.buttonBox.accepted.connect(self.onAccept)
         self.tbEntity.doubleClicked[QModelIndex].connect(self.onDoubleClickView)
@@ -420,7 +464,7 @@ class EntityBrowser(QDialog,Ui_EntityBrowser,SupportsManageMixin):
                 if len(docs) == 0:
                     msg = QApplication.translate(
                         'EntityBrowser',
-                        'There are no supporting documents for the selected entity.'
+                        'There are no supporting documents for the selected record.'
                     )
 
                     QMessageBox.warning(

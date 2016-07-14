@@ -1,24 +1,19 @@
-Social Tenure Domain Model
-==========================
+**Social Tenure Domain Model**
 
-A pro-poor land information tool, implemented as a QGIS plugin, that is based on the ISO-certified Land Administration Domain Model and built on top of free and open source software products. STDM supports the continuum of land rights and is participatory-driven, gender-sensitive, affordable and scalable.
+<img src="./images/plugin_interface.png" width="960" height="562" />
 
-Requirements
-------------
+The Social Tenure Domain Model (STDM) is a propoor land information tool that provides a flexible approach for representing people-land relationships. The tool provides a practical approach for representing these relationships independently from the level of formalization or legality of these relationships.
 
--   [SQLAlchemy][] 0.8 or higher
--   [GeoAlchemy][] 2
--   [reportlab][]
--   [fontTools][]
--   [ttfquery][]
--   [XML to DDL][]
+Some of the functionality provided by the tool include:
 
-  [SQLAlchemy]: https://pypi.python.org/pypi/SQLAlchemy
-  [GeoAlchemy]: https://github.com/geoalchemy/geoalchemy2
-  [reportlab]: https://pypi.python.org/pypi/reportlab
-  [fontTools]: https://pypi.python.org/pypi/FontTools
-  [ttfquery]: https://pypi.python.org/pypi/TTFQuery
-  [XML to DDL]: http://xml2ddl.berlios.de/
+-   Design of new or customization of existing data forms using an intuitive configuration wizards;
 
-  The third party python libraries required to support this plugin are
-  bundled together in the third_party folder inside the STDM plugin folder.
+-   Definition of a custom application-wide hierarchy of administrative units;
+
+-   Design of custom templates for map-based documents/reports;
+
+-   Generation of map-based documents in batch using custom templates;
+
+-   Intuitive import and export wizards that support both textual and spatial data in different formats.
+
+For more information about STDM and its documentation, please visit [www.stdm.gltn.net](http://www.stdm.gltn.net/).

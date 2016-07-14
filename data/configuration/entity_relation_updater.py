@@ -179,7 +179,7 @@ def drop_foreign_key_constraint(entity_relation):
     related cascades(s) having removed the constraint.
     '''
     try:
-        fk_cons.drop()
+        fk_cons.drop(cascade=True)
 
         return True
 
