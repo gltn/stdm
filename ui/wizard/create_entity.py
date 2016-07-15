@@ -36,24 +36,24 @@ class EntityEditor(QDialog, Ui_dlgEntity):
     """
     Dialog to add and edit entities
     """
-    def __init__(self, parent, profile, entity=None, in_db=False):
+    def __init__(self, **kwargs):
         """
         :param parent: Owner of this dialog
         :param profile : current profile
         :param entity : current entity
         :param in_db : Boolean flag to check if entity exist in database
         """
-        QDialog.__init__(self, parent)
+        self.form_parent = kwargs.get('parent', self)
+        self.profile     = kwargs.get('profile', None)
+        self.entity      = kwargs.get('entity', None)
+        self.in_db       = kwargs.get('in_db', False)
+
+        QDialog.__init__(self, self.form_parent)
         self.setupUi(self)
 
-        self.profile = profile
-        self.form_parent = parent
-        self.entity = entity
-        self.in_db = in_db
+        self.init_gui_controls()
 
-        self.initGui()
-
-    def initGui(self):
+    def init_gui_controls(self):
         self.edtTable.setFocus()
 	self.setTabOrder(self.edtTable, self.edtDesc)
         if self.entity:
@@ -73,23 +73,6 @@ class EntityEditor(QDialog, Ui_dlgEntity):
                           self.entity.short_name.lower(), 'supporting_document')
         return pg_table_exists(sd_name)
 
-    def setLookupTable(self):
-        '''def add lookup table'''
-        tableName = self.format_table_name(unicode(self.edtTable.text()))
-        if str(tableName).startswith("check"):
-            self.table = tableName
-        if not str(tableName).startswith("check"):
-            self.table = 'check_'+tableName
-        attrib={}
-        tableDesc = str(self.edtDesc.text())
-        attrib['name'] = self.table
-        attrib['fullname'] = tableDesc
-        
-    def format_table_name(self, name):
-	formatted_name = name.strip()
-	formatted_name = formatted_name.replace(' ', "_")
-	return formatted_name.lower()
-    
     def bool_to_check(self, state):
         """
         Returns a check state given a boolean value
@@ -103,14 +86,14 @@ class EntityEditor(QDialog, Ui_dlgEntity):
 	    
     def accept(self):
         if self.edtTable.text()=='':
-            self.error_message(self.tr("Please enter an entity name"))
+            self.show_message(self.tr("Please enter an entity name"))
             return
 
         short_name = unicode(self.edtTable.text()).capitalize()
 
         if self.entity is None:  # New entity
-            if self.dup_check(short_name):
-                self.error_message(self.tr("Entity with the same name already exist!"))
+            if self.duplicate_check(short_name):
+                self.show_message(self.tr("Entity with the same name already exist!"))
                 return
             else:
                 self.add_entity(short_name)
@@ -142,7 +125,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         self.entity.description = self.edtDesc.text()
         self.entity.supports_documents = self.support_doc()
 
-    def dup_check(self, name):
+    def duplicate_check(self, name):
         """
         Return True if we have an entity in the current profile with same 'name'
         :param name: entity short_name
@@ -156,8 +139,8 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         document checkbox
         """
         values = [False, None, True]
-        sd = values[self.cbSupportDoc.checkState()]
-        return sd
+        cs = values[self.cbSupportDoc.checkState()]
+        return cs
 
     def format_internal_name(self, short_name):
         """
@@ -182,9 +165,9 @@ class EntityEditor(QDialog, Ui_dlgEntity):
     def reject(self):
         self.done(0)
     
-    def error_message(self, Message):
+    def show_message(self, message):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle("STDM")
-        msg.setText(Message)
+        msg.setText(message)
         msg.exec_()  

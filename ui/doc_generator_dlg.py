@@ -43,7 +43,8 @@ from stdm.composer.document_generator import DocumentGenerator
 from stdm.utils.util import (
     getIndex,
     format_name,
-    entity_display_columns
+    entity_display_columns,
+    enable_drag_sort
 )
 
 from .entity_browser import ForeignKeyBrowser
@@ -234,7 +235,9 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         self._doc_generator = DocumentGenerator(self._iface, self)
 
         self._data_source = ""
-        
+
+        enable_drag_sort(self.lstDocNaming)
+
         #Configure generate button
         generateBtn = self.buttonBox.button(QDialogButtonBox.Ok)
         if not generateBtn is None:
@@ -333,7 +336,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         for c in config.data_source_columns():
             model_attr_mapping[c] = format_name(c)
 
-        self.lstDocNaming.load_mapping(model_attr_mapping, True)
+        self.lstDocNaming.load_mapping(model_attr_mapping)
 
     def _load_data_source_columns(self, entity):
         """
@@ -346,7 +349,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         for c in table_cols:
             attr_mapping[c] = format_name(c)
 
-        self.lstDocNaming.load_mapping(attr_mapping, True)
+        self.lstDocNaming.load_mapping(attr_mapping)
 
     def _create_fk_mapper(self, config):
         fk_mapper = ForeignKeyMapper(
