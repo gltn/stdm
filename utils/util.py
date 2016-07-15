@@ -38,6 +38,7 @@ from PyQt4.QtGui import (
     QFileDialog,
     QDialog,
     QAbstractItemView,
+    QTableView,
     QMessageBox
 )
 from stdm.data.configuration import (
@@ -712,9 +713,9 @@ def enable_drag_sort(mv_widget):
     """
     Enables internal drag and drop sorting in
     model/view widgets.
-    :param mw_widget: The model/view widget for which
+    :param mv_widget: The model/view widget for which
     drag and drop sort is enabled
-    :type mw_widget: QTableView, QListView
+    :type mv_widget: QTableView, QListView
     :return: None
     :rtype: NoneType
     """
@@ -730,14 +731,15 @@ def enable_drag_sort(mv_widget):
         QAbstractItemView.InternalMove
     )
 
-    def drop_event(mw_widget, event):
+
+    def drop_event(mv_widget, event):
         """
         A drop event function that prevents overwriting of
         destination rows if a row or cell is a destination
         target.
-        :param mw_widget: The model/view widget for which
+        :param mv_widget: The model/view widget for which
         drag and drop sort is enabled
-        :type mw_widget: QTableView, QListView
+        :type mv_widget: QTableView, QListView
         :param event: The drop event
         :type event: QDropEvent.QDropEvent
         :return: None

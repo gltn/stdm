@@ -35,7 +35,7 @@ from stdm.data.configuration.stdm_configuration import (
         StdmConfiguration, 
         Profile
 )
-
+from stdm.utils.util import enable_drag_sort
 from stdm.data.configuration.entity import entity_factory, Entity
 from stdm.data.configuration.entity_relation import EntityRelation 
 from stdm.data.configuration.columns import BaseColumn
@@ -161,6 +161,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.splitter_2.isCollapsible(False)
         self.splitter_3.isCollapsible(False)
         self.splitter_3.setSizes([330, 150])
+
+
+        # In a code block where you target new profiles with no configuration and db
+        enable_drag_sort(self.tbvColumns)
+        enable_drag_sort(self.lvLookupValues)
+        enable_drag_sort(self.pftableView)
 
     def reject(self):
         """
