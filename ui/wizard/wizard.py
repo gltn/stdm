@@ -507,7 +507,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Read and display default document path
         """
-        doc_path = self.read_settings_path([LOCAL_SOURCE_DOC], '/.stdm/documents/')
+        doc_path = self.read_settings_path([LOCAL_SOURCE_DOC],
+                '/.stdm/documents/')
         self.edtDocPath.setText(doc_path)
 
     def load_output_path(self):
@@ -562,17 +563,42 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.cbMultiParty.setCheckState(self.bool_to_check(
             profile.social_tenure.multi_party))
 
+    def empty_text(self, text):
+        """
+        Validates if a unicode text is empty
+        :rtype: boolean
+        """
+        if text.strip() == '':
+            return True
+        else:
+            return False
+
+    def validate_path_settings(self):
+        """
+        Validate for empty path settings, if path is empty
+        returns a tuple of boolean and message
+        :rtype: tuple (boolean, str)
+        """
+        error_msg = "Please enter {0} !"
+        if self.empty_text(self.edtDocPath.text()):
+            return False, self.tr(error_msg.format("'supporting documents path'"))
+
+        if self.empty_text(self.edtOutputPath.text()):
+            return False, self.tr(error_msg.format("'documents output path'"))
+
+        if self.empty_text(self.edtTemplatePath.text()):
+            return False, self.tr(error_msg.format("'documents template path'"))
+
+        return True, "Ok."
+
     def validateCurrentPage(self):
         validPage = True
 
-        if self.currentId() == 0:
-            self.load_directory_path_settings()
-
-            if self.rbReject.isChecked():
-                message0 = self.tr("To continue with the wizard please comply with ")
-                message1 = self.tr("disclaimer policy by selecting the option 'I Agree'")
-                self.show_message(message0 + message1)
-                validPage = False
+        if self.nextId() == 2:
+            validPage, msg = self.validate_path_settings()
+            if not validPage:
+                self.show_message(msg)
+                return validPage
 
         if self.currentId() == 3:
             self.party_changed(0)
