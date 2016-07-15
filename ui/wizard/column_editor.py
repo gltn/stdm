@@ -112,9 +112,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         name_validator = QtGui.QRegExpValidator(name_regex)
         self.edtColName.setValidator(name_validator)
 
-        if self.column:
-            self.column_to_form(self.column)
-            self.column_to_wa(self.column)
+        #if self.column:
+        self.column_to_form(self.column)
+        self.column_to_wa(self.column)
 
         self.edtColName.setFocus()
         self.edtColName.setEnabled(not self.in_db)
@@ -125,16 +125,18 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         :param column: Column to edit
         :type column: BaseColumn
         """
-        self.edtColName.setText(column.name)
-        self.edtColDesc.setText(column.description)
-        self.edtUserTip.setText(column.user_tip)
-        self.cbMandt.setCheckState(self.bool_to_check(column.mandatory))
-        self.cbSearch.setCheckState(self.bool_to_check(column.searchable))
-        self.cbUnique.setCheckState(self.bool_to_check(column.unique))
-        self.cbIndex.setCheckState(self.bool_to_check(column.index))
+        if column is not None:
+            self.edtColName.setText(column.name)
+            self.edtColDesc.setText(column.description)
+            self.edtUserTip.setText(column.user_tip)
+            self.cbMandt.setChecked(column.mandatory)
+            #self.cbMandt.setCheckState(self.bool_to_check(column.mandatory))
+            self.cbSearch.setCheckState(self.bool_to_check(column.searchable))
+            self.cbUnique.setCheckState(self.bool_to_check(column.unique))
+            self.cbIndex.setCheckState(self.bool_to_check(column.index))
 
-        self.cboDataType.setCurrentIndex( \
-                self.cboDataType.findText(column.display_name()))
+            self.cboDataType.setCurrentIndex( \
+                    self.cboDataType.findText(column.display_name()))
 
     def column_to_wa(self, column):
         """
@@ -143,37 +145,38 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         :param column: Column to edit
         :type column: BaseColumn
         """
-        self.form_fields['colname'] = column.name
-        self.form_fields['value']  = None
-        self.form_fields['mandt']  = column.mandatory
-        self.form_fields['search'] = column.searchable
-        self.form_fields['unique'] = column.unique
-        self.form_fields['index']  = column.index
+        if column is not None:
+            self.form_fields['colname'] = column.name
+            self.form_fields['value']  = None
+            self.form_fields['mandt']  = column.mandatory
+            self.form_fields['search'] = column.searchable
+            self.form_fields['unique'] = column.unique
+            self.form_fields['index']  = column.index
 
-        if hasattr(column, 'minimum'):
-            self.form_fields['minimum'] = column.minimum
-            self.form_fields['maximum'] = column.maximum
+            if hasattr(column, 'minimum'):
+                self.form_fields['minimum'] = column.minimum
+                self.form_fields['maximum'] = column.maximum
 
-        if hasattr(column, 'srid'):
-            self.form_fields['srid'] = column.srid
-            self.form_fields['geom_type'] = column.geom_type
+            if hasattr(column, 'srid'):
+                self.form_fields['srid'] = column.srid
+                self.form_fields['geom_type'] = column.geom_type
 
-        if hasattr(column, 'entity_relation'):
-            self.form_fields['entity_relation'] = column.entity_relation
+            if hasattr(column, 'entity_relation'):
+                self.form_fields['entity_relation'] = column.entity_relation
 
-        if hasattr(column, 'association'):
-            self.form_fields['first_parent'] = column.association.first_parent
-            self.form_fields['second_parent'] = column.association.second_parent
+            if hasattr(column, 'association'):
+                self.form_fields['first_parent'] = column.association.first_parent
+                self.form_fields['second_parent'] = column.association.second_parent
 
-        if hasattr(column, 'min_use_current_date'):
-            self.form_fields['min_use_current_date'] = column.min_use_current_date
-            self.form_fields['max_use_current_date'] = column.max_use_current_date
+            if hasattr(column, 'min_use_current_date'):
+                self.form_fields['min_use_current_date'] = column.min_use_current_date
+                self.form_fields['max_use_current_date'] = column.max_use_current_date
 
-        if hasattr(column, 'min_use_current_datetime'):
-            self.form_fields['min_use_current_datetime'] = \
-                    column.min_use_current_datetime
-            self.form_fields['max_use_current_datetime'] = \
-                    column.max_use_current_datetime
+            if hasattr(column, 'min_use_current_datetime'):
+                self.form_fields['min_use_current_datetime'] = \
+                        column.min_use_current_datetime
+                self.form_fields['max_use_current_datetime'] = \
+                        column.max_use_current_datetime
 
 
     def bool_to_check(self, state):
@@ -290,7 +293,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 'min_use_current_datetime':False,
                 'max_use_current_datetime':False,
                 'property':self.dtime_property }
-
 
         self.type_attribs['FOREIGN_KEY'] = {
                 'mandt':{'check_state':False, 'enabled_state':True},
@@ -547,6 +549,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         opts = self.type_attribs[ti]
         self.set_optionals(opts)
         self.set_min_max_defaults(ti)
+
+        self.column_to_form(self.column)
+        self.column_to_wa(self.column)
 
     def set_optionals(self, opts):
         """

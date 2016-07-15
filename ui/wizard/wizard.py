@@ -7,7 +7,6 @@ copyright            : (C) 2015 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
 email                : stdm@unhabitat.org
  ***************************************************************************/
-
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -454,13 +453,40 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             reg_doc_path = None
 
         if reg_doc_path is not None:
-            return reg_doc_path
+            doc_path = self.verify_path(reg_doc_path)
         else:
-            doc_path = os.path.expanduser('~')+os_path
-            if not os.path.exists(doc_path):
-                os.makedirs(doc_path) 
-            return self.fmt_path_str(doc_path)
+            path = QDir.home().path() + os_path
+            doc_path = self.verify_path(path)
 
+        return doc_path
+
+    def verify_path(self, path):
+        """
+        Returns a path after verifying that it exists in the os.
+        The path is created if it does not exist.
+        :param path: path from registry to verify
+        :type path: str
+        :rtype: str
+        """
+        qdir = QDir()
+        if not qdir.exists(path):
+            doc_path = self.make_os_path(path)
+        else:
+            doc_path = path
+        return doc_path
+
+    def make_os_path(self, path):
+        """
+        Creates and returns an os path
+        :param path: path to create
+        :type path: str
+        :rtype: str
+        """
+        qdir = QDir()
+        if not qdir.mkpath(path):
+            path = ''
+        return path
+   
     def show_license(self):
         """
         Show STDM license file
@@ -1394,6 +1420,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         that have not yet been saved in the database.
         """
         profile = self.current_profile()
+
         if profile:
             if len(self.lvLookups.selectedIndexes()) == 0:
                 self.show_message(QApplication.translate("Configuration Wizard", \
@@ -1401,11 +1428,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 return
 
             row_id, lookup = self._get_entity_item(self.lvLookups)
+            
+            #dependencies = self.all_entities_dependencies()
+            #if self.find_lookup(lookup.name, dependencies):
+                #self.show_message("YES!")
+            #else:
+                #self.show_message("Nonthing")
+
             # don't edit entities that already exist in the database
             if pg_table_exists(lookup.name):
                 self.show_message(QApplication.translate("Configuration Wizard", \
                         "Editing lookup that exist in database is not allowed!"))
                 return
+
             editor = LookupEditor(self, profile, lookup)
             result = editor.exec_()
             if result == 1:
@@ -1415,6 +1450,23 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "Nothing to edit!"))
+
+    def all_entities_dependencies(self):
+        #profiles = self.get_profiles()
+        depends = []
+        #for profile in profiles:
+        for profile in self.stdm_config.profiles.values():
+            for entity in profile.entities.values():
+                depends.append(entity.dependencies())
+        return depends
+
+    def find_lookup(self, name, dependencies):
+        for depend in dependencies:
+            self.show_message(">>>:"+str(depend['entities']))
+            if name in depend['entities']:
+                return True
+        return False
+
 
     def delete_lookup(self):
         """
