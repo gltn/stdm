@@ -271,7 +271,22 @@ class BaseColumn(ColumnItem):
         '_id' is removed if it exists.
         :rtype: str
         """
-        return self.name.replace('_id','').replace('_',' ').title()
+        if '_id' in self.name:
+            if self.name != 'national_id':
+                display_name = self.name[:-3]
+                display_name = display_name.replace(
+                    '_', ' '
+                ).title()
+
+            else:
+                display_name = 'National ID'
+
+        else:
+            display_name = self.name.replace(
+                '_', ' '
+            ).title()
+
+        return display_name
 
     def __setattr__(self, key, value):
         if hasattr(self, '_initialized'):
