@@ -124,13 +124,15 @@ class ModelAtrributesView(QListView):
         """
         Return a dictionary of field names and their corresponding display values.
         """
-        selectedAttrs = {}
+        selectedAttrs = OrderedDict()
         
         for i in range(self._attrModel.rowCount()):
             displayNameItem = self._attrModel.item(i,0)
-            
+
             if displayNameItem.checkState() == Qt.Checked:
-                attrNameItem = self._attrModel.item(i,1)  
+
+                attrNameItem = self._attrModel.item(i,1)
+
                 selectedAttrs[attrNameItem.text()] = displayNameItem.text()
-        
+
         return selectedAttrs

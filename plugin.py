@@ -615,10 +615,10 @@ class STDMQGISLoader(object):
         self.spatialLayerManager.setCheckable(True)
         self.spatialLayerManager.setChecked(True)
 
-        self.createFeatureAct = QAction(QIcon(":/plugins/stdm/images/icons/create_feature.png"), \
-        QApplication.translate("CreateFeatureAction","Create Spatial Unit"), self.iface.mainWindow())
-        self.createFeatureAct.setCheckable(True)
-        self.createFeatureAct.setVisible(False)
+        # self.createFeatureAct = QAction(QIcon(":/plugins/stdm/images/icons/create_feature.png"), \
+        # QApplication.translate("CreateFeatureAction","Create Spatial Unit"), self.iface.mainWindow())
+        # self.createFeatureAct.setCheckable(True)
+        # self.createFeatureAct.setVisible(False)
 
         #SaveEdits action; will not be registered since it is associated with the
         self.saveEditsAct = QAction(QIcon(":/plugins/stdm/images/icons/save_tb.png"), \
@@ -650,7 +650,7 @@ class STDMQGISLoader(object):
         self.spatialEditorAct.triggered.connect(self.onToggleSpatialEditing)
         self.spatialLayerManager.triggered.connect(self.spatialLayerMangerActivate)
         self.saveEditsAct.triggered.connect(self.onSaveEdits)
-        self.createFeatureAct.triggered.connect(self.onCreateFeature)
+        # self.createFeatureAct.triggered.connect(self.onCreateFeature)
         contentMenu.triggered.connect(self.widgetLoader)
 
         self.wzdAct.triggered.connect(self.load_config_wizard)
@@ -695,8 +695,8 @@ class STDMQGISLoader(object):
         spatialLayerManagerCnt = ContentGroup.contentItemFromQAction(self.spatialLayerManager)
         spatialLayerManagerCnt.code = "4E945EE7-D6F9-4E1C-X4AA-0C7F1BC67224"
 
-        createFeatureCnt = ContentGroup.contentItemFromQAction(self.createFeatureAct)
-        createFeatureCnt.code = "71CFDB15-EDB5-410D-82EA-0E982971BC51"
+        # createFeatureCnt = ContentGroup.contentItemFromQAction(self.createFeatureAct)
+        # createFeatureCnt.code = "71CFDB15-EDB5-410D-82EA-0E982971BC51"
 
         wzdConfigCnt = ContentGroup.contentItemFromQAction(self.wzdAct)
         wzdConfigCnt.code = "F16CA4AC-3E8C-49C8-BD3C-96111EA74206"
@@ -781,9 +781,9 @@ class STDMQGISLoader(object):
         self.spatialUnitManagerCntGroup.addContentItem(spatialLayerManagerCnt)
         self.spatialUnitManagerCntGroup.register()
 
-        self.createFeatureCntGroup = ContentGroup(username,self.createFeatureAct)
-        self.createFeatureCntGroup.addContentItem(createFeatureCnt)
-        self.createFeatureCntGroup.register()
+        # self.createFeatureCntGroup = ContentGroup(username,self.createFeatureAct)
+        # self.createFeatureCntGroup.addContentItem(createFeatureCnt)
+        # self.createFeatureCntGroup.register()
 
         self.wzdConfigCntGroup = ContentGroup(username, self.wzdAct)
         self.wzdConfigCntGroup.addContentItem(wzdConfigCnt)
@@ -864,11 +864,11 @@ class STDMQGISLoader(object):
         self.toolbarLoader.addContent(self.docGeneratorCntGroup)
         self.menubarLoader.addContent(self.docGeneratorCntGroup)
 
-        #Group spatial editing tools together
-        self.spatialEditingGroup = QActionGroup(self.iface.mainWindow())
-        self.spatialEditingGroup.addAction(self.createFeatureAct)
+        # #Group spatial editing tools together
+        # self.spatialEditingGroup = QActionGroup(self.iface.mainWindow())
+        # self.spatialEditingGroup.addAction(self.createFeatureAct)
 
-        self.configureMapTools()
+        #self.configureMapTools()
 
         #Load all the content in the container
         self.toolbarLoader.loadContent()
@@ -898,12 +898,12 @@ class STDMQGISLoader(object):
                                  self.spatialLayerMangerDockWidget)
         self.spatialLayerMangerDockWidget.show()
 
-    def configureMapTools(self):
-        '''
-        Configure properties of STDM map tools.
-        '''
-        self.mapToolCreateFeature = StdmMapToolCreateFeature(self.iface)
-        self.mapToolCreateFeature.setAction(self.createFeatureAct)
+    # def configureMapTools(self):
+    #     '''
+    #     Configure properties of STDM map tools.
+    #     '''
+    #     self.mapToolCreateFeature = StdmMapToolCreateFeature(self.iface)
+    #     self.mapToolCreateFeature.setAction(self.createFeatureAct)
 
     def onActionAuthorised(self,name):
         '''
@@ -912,16 +912,16 @@ class STDMQGISLoader(object):
         '''
         pass
 
-    def onContentAdded(self,stdmAction):
-        '''
-        Slot raised when an STDMAction has been added to its corresponding container.
-        '''
-        if stdmAction.Name == self.createFeatureAct.Name:
-            #Insert SaveEdits action
-            self.stdmInitToolbar.insertAction(
-                self.createFeatureAct,
-                self.saveEditsAct
-            )
+    # def onContentAdded(self,stdmAction):
+    #     '''
+    #     Slot raised when an STDMAction has been added to its corresponding container.
+    #     '''
+    #     if stdmAction.Name == self.createFeatureAct.Name:
+    #         #Insert SaveEdits action
+    #         self.stdmInitToolbar.insertAction(
+    #             self.createFeatureAct,
+    #             self.saveEditsAct
+    #         )
 
     def manageAccounts(self):
         '''
@@ -1224,9 +1224,9 @@ class STDMQGISLoader(object):
         else:
             self.spatialEditorAct.setChecked(False)
 
-        if not toggled:
-            self.createFeatureAct.setChecked(False)
-            self.createFeatureAct.setVisible(False)
+        # if not toggled:
+        #     self.createFeatureAct.setChecked(False)
+        #     self.createFeatureAct.setVisible(False)
 
     def onToggleSpatialUnitManger(self,toggled):
         '''
@@ -1242,9 +1242,9 @@ class STDMQGISLoader(object):
         else:
             self.spatialLayerManager.setChecked(False)
 
-        if not toggled:
-            self.createFeatureAct.setChecked(False)
-            self.createFeatureAct.setVisible(False)
+        # if not toggled:
+        #     self.createFeatureAct.setChecked(False)
+        #     self.createFeatureAct.setVisible(False)
 
     def toggleEditing(self,layer):
         '''
@@ -1292,8 +1292,8 @@ class STDMQGISLoader(object):
 
                 return False
 
-            #Enable/show spatial editing tools
-            self.createFeatureAct.setVisible(True)
+            # #Enable/show spatial editing tools
+            # self.createFeatureAct.setVisible(True)
 
             layer.startEditing()
 
@@ -1404,8 +1404,8 @@ class STDMQGISLoader(object):
 
                 return False
 
-            #Enable/show spatial editing tools
-            self.createFeatureAct.setVisible(True)
+            # #Enable/show spatial editing tools
+            # self.createFeatureAct.setVisible(True)
 
             layer.startEditing()
 
@@ -1468,14 +1468,14 @@ class STDMQGISLoader(object):
 
         return teResult
 
-    def onCreateFeature(self):
-        '''
-        Slot raised to activate the digitization
-        process of creating a new feature.
-        '''
-        self.iface.mapCanvas().setMapTool(
-            self.mapToolCreateFeature
-        )
+    # def onCreateFeature(self):
+    #     '''
+    #     Slot raised to activate the digitization
+    #     process of creating a new feature.
+    #     '''
+    #     self.iface.mapCanvas().setMapTool(
+    #         self.mapToolCreateFeature
+    #     )
 
     def onViewSTR(self):
         '''
