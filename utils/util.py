@@ -37,6 +37,7 @@ from PyQt4.QtGui import (
     QPixmap,
     QFileDialog,
     QDialog,
+    QAbstractItemView,
     QMessageBox
 )
 from stdm.data.configuration import (
@@ -365,6 +366,7 @@ def entity_display_columns(entity):
             'MULTIPLE_SELECT'
         ]
     ]
+
     return display_column
 
 def entity_searchable_columns(entity):
@@ -705,3 +707,91 @@ def table_to_profile_name(table_name):
                 ]
 
     return profile_name[0]
+
+def enable_drag_sort(mv_widget):
+    """
+    Enables internal drag and drop sorting in
+    model/view widgets.
+    :param mw_widget: The model/view widget for which
+    drag and drop sort is enabled
+    :type mw_widget: QTableView, QListView
+    :return: None
+    :rtype: NoneType
+    """
+    mv_widget.setDragEnabled(True)
+    mv_widget.setAcceptDrops(True)
+    mv_widget.setSelectionMode(
+        QAbstractItemView.SingleSelection
+    )
+    mv_widget.setDragDropOverwriteMode(False)
+    mv_widget.setDropIndicatorShown(True)
+
+    mv_widget.setDragDropMode(
+        QAbstractItemView.InternalMove
+    )
+
+    def drop_event(mw_widget, event):
+        """
+        A drop event function that prevents overwriting of
+        destination rows if a row or cell is a destination
+        target.
+        :param mw_widget: The model/view widget for which
+        drag and drop sort is enabled
+        :type mw_widget: QTableView, QListView
+        :param event: The drop event
+        :type event: QDropEvent.QDropEvent
+        :return: None
+        :rtype: NoneType
+        """
+        if event.source() == mv_widget:
+            rows = set(
+                [mi.row()
+                for mi in mv_widget.selectedIndexes()
+                ]
+            )
+
+            target_row = mv_widget.indexAt(
+                event.pos()
+            ).row()
+
+            rows.discard(target_row)
+            rows = sorted(rows)
+
+            if not rows:
+                return
+
+            if target_row == -1:
+                target_row = mv_widget.model().rowCount()
+
+            for i in range(len(rows)):
+                mv_widget.model().insertRow(target_row)
+
+            row_mapping = dict()  # Src row to target row.
+            for idx, row in enumerate(rows):
+                if row < target_row:
+                    row_mapping[row] = target_row + idx
+                else:
+                    row_mapping[row + len(rows)] = target_row + idx
+
+            colCount = mv_widget.model().columnCount()
+
+            for src_row, tgt_row in sorted(row_mapping.iteritems()):
+                for col in range(0, colCount):
+                    mv_widget.model().setItem(
+                        tgt_row,
+                        col,
+                        mv_widget.model().takeItem(
+                            src_row, col
+                        )
+                    )
+
+            for row in reversed(
+                    sorted(row_mapping.iterkeys())
+            ):
+                mv_widget.model().removeRow(row)
+
+            event.accept()
+
+            return
+
+    mv_widget.__class__.dropEvent = drop_event
