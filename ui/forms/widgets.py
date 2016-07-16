@@ -580,7 +580,7 @@ class LookupWidgetFactory(ColumnWidgetRegistry):
         #Create a new instance of the class so that we can get the ids
         cls_obj = cls(c)
         lookups = cls_obj.lookups()
-
+        cbo.addItem('', None)
         #Populate combobox
         for id, cd_val in lookups.iteritems():
             cbo.addItem(cd_val[0], id)
