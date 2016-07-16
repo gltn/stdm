@@ -87,7 +87,8 @@ from mapping import (
 
 from stdm.utils.util import (
     getIndex,
-    db_user_tables
+    db_user_tables,
+    format_name
 )
 from mapping.utils import pg_layerNamesIDMapping
 
@@ -604,28 +605,15 @@ class STDMQGISLoader(object):
         self.docGeneratorAct = QAction(QIcon(":/plugins/stdm/images/icons/generate_document.png"), \
         QApplication.translate("DocumentGeneratorAction","Document Generator"), self.iface.mainWindow())
 
-        #Activate spatial unit management tools
-        self.spatialEditorAct = QAction(QIcon(":/plugins/stdm/images/icons/edit24.png"), \
-        QApplication.translate("SpatialEditorAction","Toggle Spatial Unit Editing"), self.iface.mainWindow())
-        self.spatialEditorAct.setCheckable(True)
-
         #Spatial Layer Manager
         self.spatialLayerManager = QAction(QIcon(":/plugins/stdm/images/icons/spatial_unit_manager.png"), \
         QApplication.translate("SpatialEditorAction","Spatial Unit Manager"), self.iface.mainWindow())
         self.spatialLayerManager.setCheckable(True)
         self.spatialLayerManager.setChecked(True)
 
-        # self.createFeatureAct = QAction(QIcon(":/plugins/stdm/images/icons/create_feature.png"), \
-        # QApplication.translate("CreateFeatureAction","Create Spatial Unit"), self.iface.mainWindow())
-        # self.createFeatureAct.setCheckable(True)
-        # self.createFeatureAct.setVisible(False)
-
         #SaveEdits action; will not be registered since it is associated with the
         self.saveEditsAct = QAction(QIcon(":/plugins/stdm/images/icons/save_tb.png"), \
         QApplication.translate("CreateFeatureAction","Save Edits"), self.iface.mainWindow())
-
-        # self.newSTRAct = QAction(QIcon(":/plugins/stdm/images/icons/new_str.png"), \
-        # QApplication.translate("NewSTRToolbarAction","New Social Tenure Relationship"), self.iface.mainWindow())
 
         self.viewSTRAct = QAction(QIcon(":/plugins/stdm/images/icons/view_str.png"), \
         QApplication.translate("ViewSTRToolbarAction","View Social Tenure Relationship"),
@@ -649,13 +637,11 @@ class STDMQGISLoader(object):
         self.docGeneratorAct.triggered.connect(self.onDocumentGenerator)
 
         self.spatialLayerManager.triggered.connect(self.spatialLayerMangerActivate)
-        self.saveEditsAct.triggered.connect(self.onSaveEdits)
-        # self.createFeatureAct.triggered.connect(self.onCreateFeature)
+
         contentMenu.triggered.connect(self.widgetLoader)
 
         self.wzdAct.triggered.connect(self.load_config_wizard)
 
-        # self.newSTRAct.triggered.connect(self.newSTR)
         self.viewSTRAct.triggered.connect(self.onViewSTR)
 
         #Create content items
@@ -689,14 +675,8 @@ class STDMQGISLoader(object):
         documentGeneratorCnt = ContentGroup.contentItemFromQAction(self.docGeneratorAct)
         documentGeneratorCnt.code = "4C0C7EF2-5914-4FDE-96CB-089D44EDDA5A"
 
-        spatialEditingCnt = ContentGroup.contentItemFromQAction(self.spatialEditorAct)
-        spatialEditingCnt.code = "4E945EE7-D6F9-4E1C-A4AA-0C7F1BC67224"
-
         spatialLayerManagerCnt = ContentGroup.contentItemFromQAction(self.spatialLayerManager)
         spatialLayerManagerCnt.code = "4E945EE7-D6F9-4E1C-X4AA-0C7F1BC67224"
-
-        # createFeatureCnt = ContentGroup.contentItemFromQAction(self.createFeatureAct)
-        # createFeatureCnt.code = "71CFDB15-EDB5-410D-82EA-0E982971BC51"
 
         wzdConfigCnt = ContentGroup.contentItemFromQAction(self.wzdAct)
         wzdConfigCnt.code = "F16CA4AC-3E8C-49C8-BD3C-96111EA74206"
@@ -773,17 +753,9 @@ class STDMQGISLoader(object):
         self.adminUnitsCntGroup.setContainerItem(self.manageAdminUnitsAct)
         self.adminUnitsCntGroup.register()
 
-        self.spatialEditingCntGroup = ContentGroup(username, self.spatialEditorAct)
-        self.spatialEditingCntGroup.addContentItem(spatialEditingCnt)
-        self.spatialEditingCntGroup.register()
-
         self.spatialUnitManagerCntGroup = ContentGroup(username,self.spatialLayerManager)
         self.spatialUnitManagerCntGroup.addContentItem(spatialLayerManagerCnt)
         self.spatialUnitManagerCntGroup.register()
-
-        # self.createFeatureCntGroup = ContentGroup(username,self.createFeatureAct)
-        # self.createFeatureCntGroup.addContentItem(createFeatureCnt)
-        # self.createFeatureCntGroup.register()
 
         self.wzdConfigCntGroup = ContentGroup(username, self.wzdAct)
         self.wzdConfigCntGroup.addContentItem(wzdConfigCnt)
@@ -864,12 +836,6 @@ class STDMQGISLoader(object):
         self.toolbarLoader.addContent(self.docGeneratorCntGroup)
         self.menubarLoader.addContent(self.docGeneratorCntGroup)
 
-        # #Group spatial editing tools together
-        # self.spatialEditingGroup = QActionGroup(self.iface.mainWindow())
-        # self.spatialEditingGroup.addAction(self.createFeatureAct)
-
-        #self.configureMapTools()
-
         #Load all the content in the container
         self.toolbarLoader.loadContent()
         self.menubarLoader.loadContent()
@@ -898,30 +864,12 @@ class STDMQGISLoader(object):
                                  self.spatialLayerMangerDockWidget)
         self.spatialLayerMangerDockWidget.show()
 
-    # def configureMapTools(self):
-    #     '''
-    #     Configure properties of STDM map tools.
-    #     '''
-    #     self.mapToolCreateFeature = StdmMapToolCreateFeature(self.iface)
-    #     self.mapToolCreateFeature.setAction(self.createFeatureAct)
-
     def onActionAuthorised(self,name):
         '''
         This slot is raised when a toolbar action is authorised for access by the currently
         logged in user.
         '''
         pass
-
-    # def onContentAdded(self,stdmAction):
-    #     '''
-    #     Slot raised when an STDMAction has been added to its corresponding container.
-    #     '''
-    #     if stdmAction.Name == self.createFeatureAct.Name:
-    #         #Insert SaveEdits action
-    #         self.stdmInitToolbar.insertAction(
-    #             self.createFeatureAct,
-    #             self.saveEditsAct
-    #         )
 
     def manageAccounts(self):
         '''
@@ -959,7 +907,9 @@ class STDMQGISLoader(object):
         if self.current_profile is None:
             return
         self.profile_status_label = QLabel()
-        profile_name = self.current_profile.name
+        profile_name = format_name(
+            self.current_profile.name
+        )
         message = QApplication.translate(
             'STDMPlugin',
             'Current STDM Profile: {}'.format(profile_name)
@@ -1047,16 +997,17 @@ class STDMQGISLoader(object):
         Slot for showing the wizard for defining a new social
         tenure relationship
         '''
-        # try:
-        frmNewSTR = newSTRWiz(self)
-        frmNewSTR.exec_()
-        # except Exception as ex:
-        #     QMessageBox.critical(self.iface.mainWindow(),
-        #         QApplication.translate(
-        #             "STDMPlugin",
-        #             "Error Loading New STR Wizard"),
-        #         str(ex.message)
-        #     )
+        try:
+            frmNewSTR = newSTRWiz(self)
+            frmNewSTR.exec_()
+        except Exception as ex:
+            QMessageBox.critical(self.iface.mainWindow(),
+                QApplication.translate(
+                    "STDMPlugin",
+                    "Error Loading New STR Wizard"
+                ),
+                str(ex.message)
+            )
 
     def onManageAdminUnits(self):
         '''
@@ -1178,52 +1129,13 @@ class STDMQGISLoader(object):
         exportData = ExportData(self.iface.mainWindow())
         exportData.exec_()
 
-    def onSaveEdits(self):
-        '''
-        Slot raised to save changes to STDM layers.
-        '''
-        currLayer = self.iface.activeLayer()
-
-        if currLayer == None:
-            return
-
-        if not isinstance(currLayer, QgsVectorLayer):
-            return
-
-        #Assert if layer is from the SDTM database
-        if not self.isSTDMLayer(currLayer):
-            return
-
-        if not currLayer.commitChanges():
-            self.iface.messageBar().clearWidgets()
-            self.iface.messageBar().pushMessage(
-                QApplication.translate(
-                    "STDMPlugin", "Save STDM Layer"),
-                QApplication.translate(
-                    "STDMPlugin",
-                    "Could not commit changes to {0} layer." .format(
-                        currLayer.name()
-                    )
-                ),
-                level=QgsMessageBar.CRITICAL)
-
-        currLayer.startEditing()
-        currLayer.triggerRepaint()
-
-
     def onToggleSpatialUnitManger(self,toggled):
         '''
         Slot raised on toggling to activate/deactivate
         editing, and load corresponding
         spatial tools.
         '''
-        currLayer = self.iface.activeLayer()
-
-        if currLayer != None:
-            self.spatialUnitMangerToggleEditing(currLayer)
-
-        else:
-            self.spatialLayerManager.setChecked(False)
+        self.spatialLayerManager.setChecked(False)
 
     def onViewSTR(self):
         '''
@@ -1278,8 +1190,12 @@ class STDMQGISLoader(object):
             if self.current_profile is None:
                 self.default_profile()
                 return
-            sel_entity = self.current_profile.entity_by_name(table_name)
-            database_status = self.entity_table_checker(sel_entity)
+            sel_entity = self.current_profile.entity_by_name(
+                table_name
+            )
+            database_status = self.entity_table_checker(
+                sel_entity
+            )
 
             try:
                 if table_name in tbList and database_status:
@@ -1393,9 +1309,8 @@ class STDMQGISLoader(object):
             self.profile_status_label.deleteLater()
             self.profile_status_label = None
             if reload == False:
-                #Clear singleton ref for SQLALchemy connections
+                #Clear singleton ref for SQLAlchemy connections
                 if not data.app_dbconn is None:
-                    #clear_mappers()
                     STDMDb.cleanUp()
                     DeclareMapping.cleanUp()
 
@@ -1407,8 +1322,7 @@ class STDMQGISLoader(object):
                 self.viewSTRWin = None
 
             self.current_profile = None
-            # Deletes all the registered widgets
-            #QgsEditorWidgetRegistry()
+
         except Exception as ex:
             LOGGER.debug(unicode(ex))
 
