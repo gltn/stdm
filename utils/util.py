@@ -465,7 +465,8 @@ def profile_user_tables(profile, include_views=True):
             'ENTITY',
             'ENTITY_SUPPORTING_DOCUMENT',
             'SOCIAL_TENURE',
-            'SUPPORTING_DOCUMENT'
+            'SUPPORTING_DOCUMENT',
+            'VALUE_LIST'
         ]
     ]
     tables = dict(tables)

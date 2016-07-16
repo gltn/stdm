@@ -113,7 +113,7 @@ class WidgetWrapper(QgsEditorWidgetWrapper):
         )
 
         title = QApplication.translate(
-            'STDMFieldWidget',
+            'WidgetWrapper',
             '{} Editor'.format(title)
         )
 
