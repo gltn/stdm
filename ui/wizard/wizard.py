@@ -546,11 +546,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         return CHECK_STATE[state]
 
-        #if state:
-            #return Qt.Checked
-        #else:
-            #return Qt.Unchecked
-
     def multi_party_state_change(self):
         """
         Event handler for the multi party checkbox state change event.
@@ -718,20 +713,20 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def new_update_file(self, info):
         """
         Create an new file for each update
-        :param info: update info to save to file
+        :param info: update info to write to file
         :type info: str
         """
-        fmt_date = datetime.now().strftime('%d%m%Y%H%M')
-        logs_folder = self.get_folder(os.path.expanduser('~') + '/.stdm/update_logs')
-        file_name = logs_folder+'/update_info_'+fmt_date+'.log'
-        #file_name=os.path.expanduser('~') + '/.stdm/update_logs/update_info_'+fmt_date+'.log'
+        fmt_date = datetime.now().strftime('%d%m%Y_%H.%M')
+        logs_folder = self.get_folder(QDir.home().path()+'/.stdm/logs')
+        file_name = logs_folder+'/configuration_update_'+fmt_date+'.log'
         info_file = open(file_name, "w")
         info_file.write(info)
         info_file.close()
 
     def get_folder(self, folder):
-        if not os.path.exists(folder):
-            os.makedirs(folder)
+        qdir = QDir()
+        if not qdir.exists(folder):
+            qdir.mkpath(folder)
         return folder
 
     def get_time_stamp(self):
@@ -1187,8 +1182,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         # from profile entities to view_model
         self.populate_view_models(profile)
-
         self.connect_signals()
+        self.lvLookups.setCurrentIndex(self.lookup_view_model.index(0,0))
 
     def refresh_lookup_view(self):
         """
