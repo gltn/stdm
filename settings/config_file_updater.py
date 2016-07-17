@@ -769,27 +769,66 @@ class ConfigurationFileUpdater(object):
                                     lookup_name = unicode(
                                         value_list_node.attribute(
                                         'name'))
-                                    # QMessageBox.information(None, "Value "
-                                    #                                   "list",
-                                    #                             str(
-                                    #                                 lookup_name + "==" + lookup))
 
                                     if lookup_name == lookup:
-                                        QMessageBox.information(None, "Value "
-                                                                      "list",
-                                                                str(
-                                                                    lookup_name + "==" + lookup + ": " + str(missing_lookup)))
-                                        code_value = doc.createElement("codeValue")
+                                        code_value = doc.createElement(
+                                            "CodeValue")
                                         code_value.setAttribute("value",
                                                                 missing_lookup)
-                                        code_value.setAttribute("code",
-                                                                missing_lookup[0:2].upper())
+
+                                        code = missing_lookup
+
+                                        if code == 0:
+                                            code_value.setAttribute("code", "")
+                                        else:
+                                            code_value.setAttribute("code",
+                                                                    missing_lookup[0:2].upper())
                                         value_list_node.appendChild(code_value)
 
             stream = QTextStream(self.config_file)
             stream << doc.toString()
             self.config_file.close()
             doc.clear()
+
+    def _match_lookup(self, values, lookup_data, lookup_col_index,
+                      num_lookups, check_up):
+
+        # First run to elimiate existing lookups
+        for value in values:
+            for lookup_value, code in \
+                    lookup_data.iteritems():
+                if str(lookup_value) == value[lookup_col_index]:
+                    value[lookup_col_index] = int(code)
+                    break
+
+        # Second run to add missing lookups
+        for value in values:
+            for lookup_value, code in \
+                    lookup_data.items():
+                if str(lookup_value) == value[lookup_col_index]:
+                    value[lookup_col_index] = int(code)
+                    break
+                else:
+                    missing_lookup = value[lookup_col_index]
+                    if missing_lookup is None:
+                        value[lookup_col_index] = 0
+                    else:
+                        if isinstance(missing_lookup, int):
+                            pass
+                        else:
+                            num_lookups += 1
+                            QMessageBox.information(None, "Lookupdata",
+                                                            str(lookup_data))
+                            # self._add_missing_lookup_config("check_{0}".format(check_up), missing_lookup)
+
+                            # Add missing lookup to lookup data
+                            lookup_data[missing_lookup] = num_lookups
+
+                            # Add converted lookup integer to row
+                            value[lookup_col_index] = num_lookups
+
+
+        return values
 
     def _set_social_tenure_table(self):
         for k, v in self.entities_lookup_relations.iteritems():
@@ -832,53 +871,26 @@ class ConfigurationFileUpdater(object):
                 # file if it dosen't exist
                 for check_up, lookup_data in \
                         self.lookup_colum_name_values.iteritems():
-                    QMessageBox.information(None, "Matching", str(check_up +
-                                                                  "columns = " + str(columns)))
                     if check_up in columns:
                         if check_up == "type":
                             lookup_col_index = columns.index(check_up)
                             check_up = "tenure_{0}".format(check_up)
-                            for value in values:
-                                try:
-                                    value[lookup_col_index] = int(value[
-                                                                lookup_col_index])
-                                except (TypeError, ValueError):
-                                    num_lookups = len(lookup_data)
-                                    for lookup_value, code in \
-                                            lookup_data.iteritems():
-                                        if str(lookup_value) == value[lookup_col_index]:
-                                            value[lookup_col_index] = \
-                                                int(code)
-                                            QMessageBox.information(None, "Matching", str(code))
-                                        else:
-                                            missing_lookup = value[lookup_col_index]
-                                            if missing_lookup is None:
-                                                value[lookup_col_index] = 0
-                                            else:
-                                                # QMessageBox.information(None, "Not matching", str(value[lookup_col_index]))
-                                                self._add_missing_lookup_config("check_{0}".format(check_up), missing_lookup)
-                                                # value[lookup_col_index] = code
+                            num_lookups = len(lookup_data)
+                            values = self._match_lookup(values,
+                                                        lookup_data,
+                                                        lookup_col_index,
+                                                        num_lookups,
+                                                        check_up)
                         else:
                             lookup_col_index = columns.index(check_up)
-                            for value in values:
-                                try:
-                                    value[lookup_col_index] = int(value[
-                                                                    lookup_col_index])
-                                except (TypeError, ValueError):
-                                    num_lookups = len(lookup_data)
-                                    for lookup_value, code in \
-                                                lookup_data.iteritems():
-                                        if str(lookup_value) == value[lookup_col_index]:
-                                            # value[lookup_col_index] = \
-                                            #     int(code)
-                                            QMessageBox.information(None, "Matching", str(code))
-                                        else:
-                                            missing_lookup = value[lookup_col_index]
-                                            QMessageBox.information(None, "Not matching", str(value[lookup_col_index]))
-                                            self._add_missing_lookup_config("check_{0}".format(check_up), missing_lookup)
-                                            # value[lookup_col_index] = code
+                            num_lookups = len(lookup_data)
+                            values = self._match_lookup(values,
+                                                        lookup_data,
+                                                        lookup_col_index,
+                                                        num_lookups,
+                                                        check_up)
 
-                # QMessageBox.information(None, "T", str(values))
+                QMessageBox.information(None, "T", str(values))
                 #
                 #
                 #
