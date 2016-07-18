@@ -432,7 +432,7 @@ class ConfigurationFileUpdater(object):
                                 if col_v == "GEOMETRY":
                                     geometry =  self.doc_old.createElement(
                                         "Geometry")
-                                    geometry.setAttribute("type", '0')
+                                    geometry.setAttribute("type", '3')
                                     geometry.setAttribute("srid", '4326')
                                     geometry.setAttribute("layerDisplay", '')
                                     column.appendChild(geometry)
@@ -768,6 +768,17 @@ class ConfigurationFileUpdater(object):
                                         'name'))
 
                                     if lookup_name == lookup:
+                                        code_values_lists = []
+                                        code_value_nodes = \
+                                                value_list_node.childNodes()
+                                        for i in range(code_value_nodes.count()):
+                                            code_value_node = \
+                                                    code_value_nodes.item(i).toElement()
+                                            code_value = unicode(
+                                                code_value_node.attribute(
+                                                'value'))
+                                            code_values_lists.append(code_value)
+
                                         code_value = doc.createElement(
                                             "CodeValue")
                                         code_value.setAttribute("value",
@@ -781,17 +792,12 @@ class ConfigurationFileUpdater(object):
                                             code_value.setAttribute(
                                                 "code", missing_lookup[
                                                         0:3].upper())
-                                        value_list_node.appendChild(code_value)
 
+                                        if missing_lookup not in \
+                                                code_values_lists:
 
-                                        code_value_nodes = \
-                                                value_list_node.childNodes()
-                                        for i in range(code_value_nodes.count()):
-                                            code_value_node = \
-                                                    code_value_nodes.item(i).toElement()
-                                            code_value = unicode(
-                                                code_value_node.attribute(
-                                                'value'))
+                                            value_list_node.appendChild(code_value)
+
             self._create_config_file("configuration.stc")
             stream = QTextStream(self.config_file)
             stream << doc.toString()
@@ -857,10 +863,10 @@ class ConfigurationFileUpdater(object):
                 columns = data.keys()
 
                 # Remove geom columns of line, point and
-                # polygon and replace with on column geom
+                # polygon and replace with one column geom to fit new config
                 original_key_len = len(columns)
                 new_keys = []
-                for ky in keys:
+                for ky in data.keys():
                     if not ky.startswith("geom"):
                         new_keys.append(ky)
                 if len(new_keys) is not original_key_len:
@@ -897,35 +903,33 @@ class ConfigurationFileUpdater(object):
                                                         num_lookups,
                                                         check_up)
 
-                QMessageBox.information(None, "T", str(values))
-                #
-                #
-                #
-                #
-                # if len(new_keys) is not original_key_len:
-                #     for value in values:
-                #         first_v = value[:-3]
-                #         last_v = value[-3:]
-                #         new_last_v = []
-                #
-                #         for last in last_v:
-                #             if last is not None:
-                #                 new_last_v.append(last)
-                #
-                #         l = tuple(list(first_v) + \
-                #                    new_last_v)
-                #
-                #         new_values.append(l)
-                #     new_values = str(new_values).strip(
-                #         "[]")
-                # else:
-                #     new_values = str(values).strip("[]")
-                #
-                # # Remove Unicode
-                # values = new_values.replace("u\'", "\'")
-                #
-                # keys = ",".join(new_keys)
+                # QMessageBox.information(None, "T", str(values))
 
+                if len(new_keys) is not original_key_len:
+                    for value in values:
+                        first_v = value[:-3]
+                        last_v = value[-3:]
+                        new_last_v = []
 
-                # import_data(social_tenure_table, keys,
-                #             values)
+                        for last in last_v:
+                            if last is not None:
+                                new_last_v.append(last)
+
+                        l = tuple(list(first_v) + \
+                                   new_last_v)
+
+                        new_values.append(l)
+                    new_values = str(new_values).strip(
+                        "[]")
+                else:
+                    new_values = str(values).replace("[[", "(")
+                    new_values = str(new_values).replace("]]", ")")
+                    new_values = str(new_values).replace("[", "(")
+                    new_values = str(new_values).replace("]", ")")
+
+                # Remove Unicode
+                values = new_values.replace("u\'", "\'")
+
+                column_keys = ",".join(new_keys)
+
+                import_data(social_tenure_table, column_keys, values)
