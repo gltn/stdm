@@ -88,6 +88,10 @@ LOGGER.setLevel(logging.DEBUG)
 CHECKBOX_VALUES = [False, None, True]
 CHECK_STATE = {True:Qt.Checked, False:Qt.Unchecked}
 
+ORIG_CONFIG_FILE = QDir.home().path()+ '/.stdm/orig_configuration.stc'
+CONFIG_FILE = QDir.home().path()+ '/.stdm/configuration.stc'
+CONFIG_BACKUP_FILE = QDir.home().path()+ '/.stdm/configuration_bak.stc'
+
 class ConfigWizard(QWizard, Ui_STDMWizard):
     wizardFinished = pyqtSignal(object)
     """
@@ -184,7 +188,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Read and load configuration from file 
         """
-        self.load_configuration_from_file()  # ????? trap exception!!!!
+        try:
+            config_file = self.healthy_config_file()
+        except(ConfigurationException, IOError) as e:
+            self.show_message(self.tr(unicode(e) ))
+
+        self.load_configuration_from_file(config_file)  
 
         self.stdm_config = StdmConfiguration.instance()  
         self.orig_assets_count = len(self.stdm_config)
@@ -192,6 +201,78 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.load_profiles()
         self.is_config_done = False
         self.stdm_config.profile_added.connect(self.cbo_add_profile)
+
+    def healthy_config_file(self):
+        """
+        look for a healthy configuration file to load
+        """
+        main_config_file = self.healthy_file(CONFIG_FILE)
+        bak_config_file  = self.healthy_file(CONFIG_BACKUP_FILE)
+        orig_config_file = self.healthy_file(ORIG_CONFIG_FILE)
+
+        if main_config_file and not bak_config_file:
+            self.show_message('Config file')
+            return CONFIG_FILE
+
+        if main_config_file and bak_config_file:
+            self.show_message('user_choose_config')
+            return self.user_choose_config()
+
+        # this scenario is taken care of when you attempt to
+        # run the wizard, we can safely remove it
+        #====>START_REMOVE
+        if not main_config_file and bak_config_file:
+            self.show_message('system_choose_backup_config')
+            return self.system_choose_backup_config()
+
+        if not main_config_file and not bak_config_file:
+            if orig_config_file:
+                self.show_message('system_choose_orig_config')
+                config_file = self.system_choose_orig_config()
+            else:
+                config_file = ''
+        #<======END_REMOVE
+
+        if config_file == '':
+            raise IOError('No configuration file to load')
+
+        return config_file
+
+    def healthy_file(self, config_file):
+        is_healthy = False
+        if QFile.exists(config_file):
+            qf = QFile(config_file)
+            if qf.size() > 0:
+                is_healthy = True
+        return is_healthy
+
+    def system_choose_backup(self):
+        msg = self.tr("Your main configuration file seems to be corrupt!\n" +
+                "The system will revert to the latest configuration " +
+                "backup file " )
+        self.show_message(msg)
+        return CONFIG_BACKUP_FILE
+
+    def system_choose_orig_config(self):
+        msg = self.tr("Your configuration files seems to be corrupt!\n "
+                " The system will revert to the original system configuration file.")
+        self.show_message(msg)
+        return ORIG_CONFIG_FILE
+
+    def user_choose_config(self):
+        """
+        Function assumes both configuration file and backup configuration
+        file exist. Returns either the configuration file or the backup 
+        configuration file depending on what the users selects.
+        :rtype: str
+        """
+        msg = self.tr("Please note that your previous configuration wizard did "
+                "not complete successfully!\n A backup of that session is "
+                " available.\n Would you like to restore the backup session? ")
+        if self.query_box_yesno(msg) == QMessageBox.Yes:
+            return CONFIG_BACKUP_FILE
+        else:
+            return CONFIG_FILE
 
     def check_show_license(self, reg_config):
         """
@@ -306,19 +387,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         self.lvLookups.setCurrentIndex(self.lvLookups.model().index(0,0))
 
-    def load_configuration_from_file(self):
+    def load_configuration_from_file(self, file_name):
         """
         Load configuration object from the file.
         :return: True if the file was successfully
         loaded. Otherwise, False.
         :rtype: bool
         """
-        config_path = QDesktopServices.storageLocation(
-            QDesktopServices.HomeLocation) +\
-                      '/.stdm/configuration.stc'
-        config_serializer = ConfigurationFileSerializer(
-            config_path
-        )
+        #config_path = QDesktopServices.storageLocation(
+            #QDesktopServices.HomeLocation) +\
+                      #'/.stdm/'+file_name
+
+        #config_path = QDesktopServices.storageLocation(unicode(file_name))
+        config_serializer = ConfigurationFileSerializer(file_name)
 
         try:
             config_serializer.load()
@@ -635,6 +716,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         if self.currentId() == 5: # FINAL_PAGE:
             # last page
+
+            # before any updates, backup your current working profile
+            self.backup_config_file()
+
             #* commit config to DB
             self.config_updater = ConfigurationSchemaUpdater()
 
@@ -662,9 +747,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                       COMPOSER_OUTPUT:self.edtOutputPath.text(),
                       COMPOSER_TEMPLATE:self.edtTemplatePath.text()
                      })
-
-
-            # self.wizardFinished.emit(self.cboProfile.currentText())
 
             # compute a new asset count
             self.orig_assets_count = len(self.stdm_config)
@@ -700,7 +782,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         :param info: update iformation to save to file
         :type info: str
         """
-        file_name = os.path.expanduser('~') + '/.stdm/update_info.log'
+        file_name = os.path.expanduser('~') + '/.stdm/logs/configuration_update.log'
         info_file = open(file_name, "a")
         time_stamp = self.get_time_stamp()
         info_file.write('\n')
@@ -778,17 +860,20 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.is_config_done = True
 
             #Write config to a file
-            config_path = os.path.expanduser('~') + '/.stdm/configuration.stc'
-            cfs = ConfigurationFileSerializer(config_path)
+            #config_path = os.path.expanduser('~') + '/.stdm/configuration.stc'
+            cfs = ConfigurationFileSerializer(CONFIG_FILE)
 
             # flag wizard has been run
-            self.reg_config.write({'wizardRun':1})
+            self.reg_config.write({'WizardRun':1})
 
             try:
                 cfs.save()
                 #Save current profile to the registry
                 profile_name = unicode(self.cboProfile.currentText())
                 save_current_profile(profile_name)
+
+                # delete config backup file
+                self.delete_config_backup_file()
 
             except(ConfigurationException, IOError) as e:
                 self.show_message(self.tr(unicode(e) ))
@@ -803,6 +888,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         #Exit thread
         self.updater_thread.quit()
         self.wizardFinished.emit(self.cboProfile.currentText())
+
+    def backup_config_file(self):
+        """
+        """
+        cfs = ConfigurationFileSerializer(CONFIG_BACKUP_FILE)
+        
+        try:
+            cfs.save()
+        except(ConfigurationException, IOError) as e:
+            self.show_message(self.tr(unicode(e) ))
+
+    def delete_config_backup_file(self):
+        QFile.remove(CONFIG_BACKUP_FILE)
 
     def register_fields(self):
         self.setOption(self.HaveHelpButton, True)  
@@ -1649,3 +1747,20 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         msgbox.setDefaultButton(QMessageBox.Cancel);
         result = msgbox.exec_()
         return result
+
+    def query_box_yesno(self, msg):
+        """
+        Show 'Yes/No' query message box
+        :param msg: message to show on the box
+        :type msg: str
+        :rtype: QMessageBox.StandardButton
+        """
+        msgbox = QMessageBox(self)
+        msgbox.setIcon(QMessageBox.Warning)
+        msgbox.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
+        msgbox.setText(msg)
+        msgbox.setStandardButtons(QMessageBox.Yes | QMessageBox.No);
+        msgbox.setDefaultButton(QMessageBox.Yes);
+        result = msgbox.exec_()
+        return result
+
