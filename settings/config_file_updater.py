@@ -254,7 +254,7 @@ class ConfigurationFileUpdater(object):
                 column_dict["col_type"] = 'GEOMETRY'
                 column_dict["lookup"] = None
                 column_dict["srid"] = '4326'
-                column_dict["type"] = '0'
+                column_dict["type"] = '2'
 
                 self.table_list.append(column_dict)
 
@@ -432,7 +432,7 @@ class ConfigurationFileUpdater(object):
                                 if col_v == "GEOMETRY":
                                     geometry =  self.doc_old.createElement(
                                         "Geometry")
-                                    geometry.setAttribute("type", '3')
+                                    geometry.setAttribute("type", '2')
                                     geometry.setAttribute("srid", '4326')
                                     geometry.setAttribute("layerDisplay", '')
                                     column.appendChild(geometry)
@@ -825,14 +825,16 @@ class ConfigurationFileUpdater(object):
                 else:
                     missing_lookup = value[lookup_col_index]
                     if missing_lookup is None:
-                        value[lookup_col_index] = 0
+                        value[lookup_col_index] = None
                     else:
-                        if isinstance(missing_lookup, int):
+                        if isinstance(missing_lookup, int) or missing_lookup\
+                                is None:
                             pass
                         else:
                             num_lookups += 1
                             self._add_missing_lookup_config(
-                                "check_{""0}".format(check_up), missing_lookup)
+                                "check_{0}".format(check_up),
+                                missing_lookup)
 
                             # Add missing lookup to lookup data
                             lookup_data[missing_lookup] = num_lookups
@@ -926,10 +928,15 @@ class ConfigurationFileUpdater(object):
                     new_values = str(new_values).replace("]]", ")")
                     new_values = str(new_values).replace("[", "(")
                     new_values = str(new_values).replace("]", ")")
+                    new_values = str(new_values).replace("None", "NULL")
+                    new_values = str(new_values).replace('NULL', "NULL")
 
                 # Remove Unicode
                 values = new_values.replace("u\'", "\'")
 
                 column_keys = ",".join(new_keys)
+
+                QMessageBox.information(None, "Keys", str(column_keys) +
+                                        "\n" + str(values))
 
                 import_data(social_tenure_table, column_keys, values)
