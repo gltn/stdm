@@ -339,7 +339,7 @@ class ImportData(QWizard, Ui_frmImport):
         self.lstDestTables.clear()
         tables = None
         if type == "textual":
-            tables = profile_user_tables(self.curr_profile)
+            tables = profile_user_tables(self.curr_profile, False)
             
         elif type == "spatial":
             tables = profile_spatial_tables(self.curr_profile)
