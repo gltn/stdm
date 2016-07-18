@@ -211,23 +211,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         orig_config_file = self.healthy_file(ORIG_CONFIG_FILE)
 
         if main_config_file and not bak_config_file:
-            self.show_message('Config file')
             return CONFIG_FILE
 
         if main_config_file and bak_config_file:
-            self.show_message('user_choose_config')
             return self.user_choose_config()
 
         # this scenario is taken care of when you attempt to
         # run the wizard, we can safely remove it
         #====>START_REMOVE
         if not main_config_file and bak_config_file:
-            self.show_message('system_choose_backup_config')
             return self.system_choose_backup_config()
 
         if not main_config_file and not bak_config_file:
             if orig_config_file:
-                self.show_message('system_choose_orig_config')
                 config_file = self.system_choose_orig_config()
             else:
                 config_file = ''
