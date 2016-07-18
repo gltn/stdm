@@ -186,7 +186,7 @@ class ConfigurationFileUpdater(object):
                 count = 1
                 for j in range(lookup_node.count()):
                     lookup = lookup_node.item(j).toElement().text()
-                    code = lookup[0:2].upper()
+                    code = lookup[0:3].upper()
                     lookup_dict[code] = lookup
                     lookup_names[lookup] = count
                     count += 1
@@ -744,9 +744,6 @@ class ConfigurationFileUpdater(object):
 
     def _add_missing_lookup_config(self, lookup, missing_lookup):
         if self.old_config_file:
-            self.version = unicode(self.config.VERSION)
-            self._create_config_file("configuration.stc")
-            self._populate_config_from_old_config()
 
             doc, root = self._get_doc_element(os.path.join(
                 self.file_handler.localPath(), "configuration.stc"))
@@ -781,10 +778,21 @@ class ConfigurationFileUpdater(object):
                                         if code == 0:
                                             code_value.setAttribute("code", "")
                                         else:
-                                            code_value.setAttribute("code",
-                                                                    missing_lookup[0:2].upper())
+                                            code_value.setAttribute(
+                                                "code", missing_lookup[
+                                                        0:3].upper())
                                         value_list_node.appendChild(code_value)
 
+
+                                        code_value_nodes = \
+                                                value_list_node.childNodes()
+                                        for i in range(code_value_nodes.count()):
+                                            code_value_node = \
+                                                    code_value_nodes.item(i).toElement()
+                                            code_value = unicode(
+                                                code_value_node.attribute(
+                                                'value'))
+            self._create_config_file("configuration.stc")
             stream = QTextStream(self.config_file)
             stream << doc.toString()
             self.config_file.close()
@@ -817,9 +825,8 @@ class ConfigurationFileUpdater(object):
                             pass
                         else:
                             num_lookups += 1
-                            QMessageBox.information(None, "Lookupdata",
-                                                            str(lookup_data))
-                            # self._add_missing_lookup_config("check_{0}".format(check_up), missing_lookup)
+                            self._add_missing_lookup_config(
+                                "check_{""0}".format(check_up), missing_lookup)
 
                             # Add missing lookup to lookup data
                             lookup_data[missing_lookup] = num_lookups
