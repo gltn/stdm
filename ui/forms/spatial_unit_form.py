@@ -340,7 +340,6 @@ class STDMFieldWidget():
         request.setFilterFids(fids)
 
         features = self.layer.getFeatures(request)
-
         # get the wkt of the geometry
         for feature in features:
             geom_wkt = feature.geometry().exportToWkt()
@@ -359,13 +358,11 @@ class STDMFieldWidget():
                 geom_column,
                 'SRID={};{}'.format(srid, geom_wkt)
             )
-
         # open editor
         self.editor.exec_()
 
-        self.layer.rollBack()
-        self.layer.startEditing()
-
     def stop_editing(self):
-        print 'stop editing'
-        self.layer.rollBack()
+        # undo when saved to prevent
+        # saving already saved feature.
+        self.layer.undoStack().undo()
+        
