@@ -328,6 +328,8 @@ class STDMFieldWidget():
     def load_stdm_form(self, feature_id):
         srid = None
         geom_column = None
+        geom_wkt = None
+
         for column in self.entity.columns.values():
             if column.TYPE_INFO == 'GEOMETRY':
                 srid = column.srid
@@ -338,12 +340,10 @@ class STDMFieldWidget():
         request.setFilterFids(fids)
 
         features = self.layer.getFeatures(request)
-        geom_wkt = None
 
-        # can now iterate and do fun stuff:
+        # get the wkt of the geometry
         for feature in features:
-            geom = feature.geometry()
-            geom_wkt = geom.exportToWkt()
+            geom_wkt = feature.geometry().exportToWkt()
 
         # init form
         self.editor = EntityEditorDialog(
@@ -351,6 +351,7 @@ class STDMFieldWidget():
         )
 
         self.model = self.editor.model()
+
         if not geom_wkt is None:
             # add geometry into the model
             setattr(
@@ -358,12 +359,13 @@ class STDMFieldWidget():
                 geom_column,
                 'SRID={};{}'.format(srid, geom_wkt)
             )
-        # return editor
-        result = self.editor.exec_()
 
-        if result == 1:
-            self.layer.rollBack()
-            self.layer.startEditing()
+        # open editor
+        self.editor.exec_()
 
+        self.layer.rollBack()
+        self.layer.startEditing()
 
-
+    def stop_editing(self):
+        print 'stop editing'
+        self.layer.rollBack()
