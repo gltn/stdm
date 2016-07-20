@@ -20,6 +20,7 @@ email                : stdm@unhabitat.org
 """
 
 import os
+import logging
 import collections
 from PyQt4 import QtGui
 from PyQt4 import QtCore
@@ -44,6 +45,9 @@ from multi_select_property import MultiSelectProperty
 
 import datetime
 
+LOGGER = logging.getLogger('stdm')
+LOGGER.setLevel(logging.DEBUG)
+
 RESERVED_KEYWORDS = ['id', 'documents', 'spatial_unit', 'supporting_document',
         'social_tenure', 'social_tenure_relationship']
 
@@ -51,7 +55,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
     """
     Dialog to add/edit entity columns
     """
-    def __init__(self, parent, **kwargs):
+    def __init__(self, **kwargs):
         """
         :param parent: Owner of this dialog
         :type parent: QWidget
@@ -62,8 +66,14 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
          in_db   - Boolean flag to indicate if a column has been created in 
                    the database
         """
-        QDialog.__init__(self, parent)
-        self.form_parent = parent
+        
+        self.form_parent = kwargs.get('parent', self)
+        self.column  = kwargs.get('column', None)
+        self.entity  = kwargs.get('entity', None)
+        self.profile = kwargs.get('profile', None)
+        self.in_db = kwargs.get('in_db', False)
+
+        QDialog.__init__(self, self.form_parent)
 
         self.FK_EXCLUDE = [u'supporting_document', u'admin_spatial_unit_set']
 
@@ -73,11 +83,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.setupUi(self)
         self.dtypes = {}
-
-        self.column  = kwargs.get('column', None)
-        self.entity  = kwargs.get('entity', None)
-        self.profile = kwargs.get('profile', None)
-        self.in_db = kwargs.get('in_db', False)
 
         self.type_info = ''
         
@@ -101,11 +106,14 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.btnColProp.clicked.connect(self.data_type_property)
 
         self.type_names = \
-                [str(name) for name in BaseColumn.types_by_display_name().keys()]
+                [unicode(name) for name in BaseColumn.types_by_display_name().keys()]
 
         self.init_controls()
 
     def init_controls(self):
+        """
+        Initialize GUI controls
+        """
         self.popuplate_type_cbo()
 
         name_regex = QtCore.QRegExp('^[a-z][a-z0-9_]*$')
@@ -117,7 +125,11 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.column_to_wa(self.column)
 
         self.edtColName.setFocus()
+
         self.edtColName.setEnabled(not self.in_db)
+        self.cboDataType.setEnabled(not self.in_db)
+        self.btnColProp.setEnabled(not self.in_db)
+
 
     def column_to_form(self, column):
         """
@@ -130,7 +142,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.edtColDesc.setText(column.description)
             self.edtUserTip.setText(column.user_tip)
             self.cbMandt.setChecked(column.mandatory)
-            #self.cbMandt.setCheckState(self.bool_to_check(column.mandatory))
             self.cbSearch.setCheckState(self.bool_to_check(column.searchable))
             self.cbUnique.setCheckState(self.bool_to_check(column.unique))
             self.cbIndex.setCheckState(self.bool_to_check(column.index))
@@ -508,6 +519,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                                 self.entity, **self.form_fields)
             else:
                 self.show_message(self.tr('Please set column properties.'))
+                return
         else:
             raise self.tr("No type to create!")
 
@@ -525,9 +537,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
     def property_by_name(self, ti, name):
         try:
-                return self.dtype_property(ti)['property'][name]
+            return self.dtype_property(ti)['property'][name]
         except:
-                return None
+            return None
 
     def popuplate_type_cbo(self):
         """
@@ -619,29 +631,40 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.show_message(self.tr('Please enter the column name!'))
             return False
 
-        # check for reserved keywords
+        # check for STDM reserved keywords
         if col_name in RESERVED_KEYWORDS:
-            self.show_message(self.tr(u"'{0}' is a reserved keyword used internally by STDM,"\
-                " please choose another column name.".format(col_name)) )
+            self.show_message(self.tr(u"'{0}' is a reserved keyword used internally by STDM.\n"\
+                "Please choose another column name.".format(col_name)) )
             return False
 
-        if self.column is None:
-            if self.dup_check(col_name):
-                self.show_message(self.tr("Column with the same name already exist!"))
-                return
-        else: 
-            self.entity.remove_column(self.column.name)
+        new_column = self.make_column()
+        if new_column is None:
+            LOGGER.debug("Error creating column!")
+            self.show_message('Unable to create column!')
+            return False;
 
-        self.fill_work_area()
-        self.column = self.create_column()
+        if self.column is None:  # new column
+            if self.duplicate_check(col_name):
+                self.show_message(self.tr("Column with the same name already "
+                "exist in this entity!"))
+                return False
 
-        if self.column:
-            self.entity.add_column(self.column)
+            self.entity.add_column(new_column)
+            self.done(0)
+        else:  # editing a column 
+            self.column = new_column
             self.done(1)
-        else:
-            return
 
-    def dup_check(self, name):
+    def make_column(self):
+        """
+        Returns a newly created column
+        :rtype: BaseColumn
+        """
+        self.fill_work_area()
+        col = self.create_column()
+        return col
+
+    def duplicate_check(self, name):
         """
         Return True if we have a column in the current entity with same name
         as our new column

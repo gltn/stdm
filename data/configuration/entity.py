@@ -190,6 +190,16 @@ class Entity(QObject, TableItem):
 
         self.append_updated_column(column)
 
+    def edit_column(self, name, edited_column):
+        """
+        Edit an existing column.
+        :param name: Name of column to edit
+        :type name: str
+        :param edited_column: edited Column
+        :type edited_column: BaseColumn
+        """
+        self.columns[name] = edited_column
+
     def column(self, name):
         """
         :param name: Column name.

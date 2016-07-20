@@ -1127,7 +1127,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def edit_entity(self):
         """
-        Edit selected entity
+        Event handler for editing an entity
         """
         if len(self.pftableView.selectedIndexes())==0:
             self.show_message(QApplication.translate("Configuration Wizard", \
@@ -1395,10 +1395,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if model_item:
             profile = self.current_profile()
             params = {}
+            params['parent'] = self
             params['entity'] = entity
             params['profile'] = profile
 
-            editor = ColumnEditor(self, **params)
+            editor = ColumnEditor(**params)
             result = editor.exec_()
 
             if result == 1:
@@ -1409,29 +1410,35 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def edit_column(self):
         """
-        On click event handler for editing a column
-        Only allow editing of columns that have not yet being persisted to the
-        database
+        Event handler for editing a column.
         """
-        rid, column = self._get_column(self.tbvColumns)
+        rid, column, model_item = self._get_column(self.tbvColumns)
         
         if column and column.action == DbItem.CREATE:
             row_id, entity = self._get_entity(self.lvEntities)
 
-            # Don't edit if a column exist in database
-            #if self.column_exist_in_entity(entity, column):
-                #self.show_message(QApplication.translate("Configuration Wizard", \
-                        #"Editing columns that exist in database is not allowed!"))
-                #return
-
             params = {}
+            params['parent'] = self
             params['column'] = column
             params['entity'] = entity
             params['profile'] = self.current_profile()
             params['in_db'] = self.column_exist_in_entity(entity, column)
-            
-            editor = ColumnEditor(self, **params)
+
+            tmp_column = model_item.entity(column.name)
+
+            editor = ColumnEditor(**params)
             result = editor.exec_()
+            if result == 1: # after successfull editing
+                model_index_name = model_item.index(rid, 0)
+                model_index_dtype = model_item.index(rid, 1)
+                model_index_desc = model_item.index(rid, 2)
+
+                model_item.setData(model_index_name, editor.column.name)
+                model_item.setData(model_index_dtype, editor.column.TYPE_INFO.capitalize())
+                model_item.setData(model_index_desc, editor.column.description)
+
+                model_item.edit_entity(tmp_column, editor.column)
+                entity.edit_column(tmp_column.name, editor.column)
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No column selected for edit!"))
@@ -1480,7 +1487,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         column = None
         if model_item:
             column = model_item.entities().values()[row_id]
-        return row_id, column
+        return row_id, column, model_item
 
     def _get_entity(self, view):
         model_item, entity, row_id = self.get_model_entity(view)
@@ -1491,7 +1498,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Delete selected column, show warning dialog if a column has dependencies.
         """
-        row_id, column = self._get_column(self.tbvColumns)
+        row_id, column, model_item = self._get_column(self.tbvColumns)
         if not column:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No column selected for deletion!"))
@@ -1550,11 +1557,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             row_id, lookup = self._get_entity_item(self.lvLookups)
             
-            #dependencies = self.all_entities_dependencies()
+            # WIP
+            #dependencies = self.all_column_dependencies(profile)
             #if self.find_lookup(lookup.name, dependencies):
                 #self.show_message("YES!")
             #else:
-                #self.show_message("Nonthing")
+                #self.show_message("Nothing")
+            #self.show_relations(profile)
 
             # don't edit entities that already exist in the database
             if pg_table_exists(lookup.name):
@@ -1572,22 +1581,25 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "Nothing to edit!"))
 
-    def all_entities_dependencies(self):
-        #profiles = self.get_profiles()
+    def all_column_dependencies(self, profile):
         depends = []
         #for profile in profiles:
-        for profile in self.stdm_config.profiles.values():
-            for entity in profile.entities.values():
-                depends.append(entity.dependencies())
+        for entity in profile.entities.values():
+            if entity.action <> DbItem.DROP:
+                for column in entity.columns.values():
+                    if column.action <> DbItem.DROP:
+                        depends.append(column.dependencies())
         return depends
 
     def find_lookup(self, name, dependencies):
         for depend in dependencies:
-            self.show_message(">>>:"+str(depend['entities']))
             if name in depend['entities']:
                 return True
         return False
 
+    def show_relations(self, profile):
+        for relation in profile.relations.values():
+            self.show_message(relation.parent.short_name)
 
     def delete_lookup(self):
         """
@@ -1595,6 +1607,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         deleting of 'tenure_type' lookup.
         """
         profile = self.current_profile()
+
+        # WIP
+        #self.show_relations(profile)
+
         if profile:
             if len(self.lvLookups.selectedIndexes()) > 0:
                 row_id, lookup = self._get_entity_item(self.lvLookups)
@@ -1603,6 +1619,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     self.show_message(QApplication.translate("Configuration Wizard",
                         "Cannot delete tenure type lookup table!"))
                     return
+
                 profile.remove_entity(lookup.short_name)
                 self.lookup_view_model.removeRow(row_id)
             else:
