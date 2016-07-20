@@ -152,6 +152,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.setStartId(1)
 
         self.stdm_config = None
+        self.new_profiles = []
         self.orig_assets_count = 0  # count of items in StdmConfiguration instance
         self.load_stdm_config()
 
@@ -1019,6 +1020,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         result = editor.exec_()
         if result == 1:
             profile = self.stdm_config.create_profile(editor.profile_name)
+
+            self.new_profiles.append(editor.profile_name)
             profile.description = editor.desc
             self.connect_entity_signals(profile)
             self.stdm_config.add_profile(profile)
@@ -1278,6 +1281,16 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.populate_view_models(profile)
         self.connect_signals()
         self.lvLookups.setCurrentIndex(self.lookup_view_model.index(0,0))
+
+        # Enable drag and drop for new profiles only
+        if name in self.new_profiles:
+            enable_drag_sort(self.tbvColumns)
+            enable_drag_sort(self.lvLookupValues)
+            enable_drag_sort(self.pftableView)
+        else:
+            self.tbvColumns.setDragEnabled(False)
+            self.lvLookupValues.setDragEnabled(False)
+            self.pftableView.setDragEnabled(False)
 
     def refresh_lookup_view(self):
         """

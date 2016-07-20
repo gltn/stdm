@@ -321,7 +321,7 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         layer.setLayerName(name)
 
     def _layer_table_column(self, layer):
-        #Returns the table and column name that a leyer belongs to.
+        #Returns the table and column name that a layer belongs to.
         table, column = '', ''
 
         if hasattr(layer, 'dataProvider'):

@@ -326,6 +326,13 @@ class STDMFieldWidget():
             )
 
     def load_stdm_form(self, feature_id):
+        """
+        Loads STDM Form
+        :param feature_id:
+        :type feature_id:
+        :return:
+        :rtype:
+        """
         srid = None
         geom_column = None
         geom_wkt = None
@@ -358,11 +365,33 @@ class STDMFieldWidget():
                 geom_column,
                 'SRID={};{}'.format(srid, geom_wkt)
             )
+
         # open editor
         self.editor.exec_()
 
+
+    def refresh_layers(self):
+        """
+        Refresh all database layers.
+        :return: None
+        :rtype: NoneType
+        """
+        layers = iface.legendInterface().layers()
+        for layer in layers:
+            layer.dataProvider().forceReload()
+            layer.triggerRepaint()
+        if not iface.activeLayer() is None:
+            canvas = iface.mapCanvas()
+            canvas.setExtent(
+                iface.activeLayer().extent()
+            )
+            iface.mapCanvas().refresh()
+
     def stop_editing(self):
-        # undo when saved to prevent
-        # saving already saved feature.
+        """
+        Undo editing before saved to prevent
+        duplicate insert.
+        :return: None
+        :rtype: NoneType
+        """
         self.layer.undoStack().undo()
-        

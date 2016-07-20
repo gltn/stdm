@@ -957,7 +957,16 @@ class STDMQGISLoader(object):
         self.wizard.wizardFinished.connect(
             self.reload_plugin
         )
-        self.wizard.exec_()
+        try:
+            self.wizard.exec_()
+        except Exception as ex:
+            QMessageBox.critical(self.iface.mainWindow(),
+                 QApplication.translate(
+                     "STDMPlugin",
+                     "Error Loading the Configuration Wizard"
+                 ),
+                 unicode(ex)
+            )
 
     def changePassword(self):
         '''
@@ -982,7 +991,7 @@ class STDMQGISLoader(object):
                     "STDMPlugin",
                     "Error Loading New STR Wizard"
                 ),
-                str(ex.message)
+                unicode(ex.message)
             )
 
     def onManageAdminUnits(self):
