@@ -19,6 +19,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+import os
 import re
 import logging
 from decimal import Decimal
@@ -26,7 +27,9 @@ from qgis.core import (
     NULL,
     QgsFeatureRequest,
     QgsMessageLog,
-    QgsVectorLayerCache
+    QgsVectorLayerCache,
+    QgsGeometry,
+    QgsFeatureRequest
 )
 from PyQt4.QtGui import (
     QApplication,
@@ -45,12 +48,21 @@ from qgis.utils import (
     iface,
     QGis
 )
+from sqlalchemy import func
 
+from sqlalchemy.sql import (
+    select
+)
+from stdm.data.database import (
+    STDMDb
+)
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
 
 from stdm.settings import (
     current_profile
 )
+
+from stdm.ui.forms.editor_dialog import EntityEditorDialog
 
 from stdm.utils.util import (
     setComboCurrentIndexWithItemData,
@@ -91,7 +103,7 @@ class WidgetWrapper(QgsEditorWidgetWrapper):
         is from the database.
         :param layer: The layer for which the
         source is checked
-        :type QGIS vectorlayer
+        :type QGIS Vector Layer
         :return: The table name of the layer
         :rtype: String or None
         """
@@ -113,18 +125,13 @@ class WidgetWrapper(QgsEditorWidgetWrapper):
         )
 
         title = QApplication.translate(
-            'STDMFieldWidget',
+            'WidgetWrapper',
             '{} Editor'.format(title)
         )
 
-        # Set title and format labels for QGIS form
+        # Set title for QGIS form
         if self.parent.parent() is not None:
             self.parent.parent().setWindowTitle(title)
-            label = self.parent.parent().findChildren(QLabel)[-1:]
-            if len(label) == 1:
-                text = label[0].text()
-                formatted_text = format_name(text)
-                label[0].setText(formatted_text)
 
     def value(self):
         """ Return the current value of the widget"""
@@ -229,6 +236,8 @@ class STDMFieldWidget():
     def __init__(self):
         self.entity = None
         self.widget_mapping = {}
+        self.layer = None
+        self.features_id = []
 
     def set_entity(self, source):
         curr_profile = current_profile()
@@ -248,8 +257,14 @@ class STDMFieldWidget():
     def _set_widget_type(self, layer, column, widget_type_id):
 
         idx = layer.fieldNameIndex(column.name)
+        # Set Alias/ Display names for the column names
+        layer.addAttributeAlias(
+            idx,
+            column.header()
+        )
 
         try:
+
             layer.editFormConfig().setWidgetType(
                 idx, widget_type_id
             )
@@ -259,6 +274,8 @@ class STDMFieldWidget():
             layer.setEditorWidgetV2(
                 idx, widget_type_id
             )
+
+
 
     def set_widget_mapping(self):
         self.widget_mapping.clear()
@@ -301,9 +318,74 @@ class STDMFieldWidget():
                     )
 
     def set_widget_type(self, layer):
+        self.layer = layer
         for col, widget_id_name in \
                 self.widget_mapping.iteritems():
 
             self._set_widget_type(
                 layer, col, widget_id_name[0]
             )
+
+    def load_stdm_form(self, feature_id):
+
+        """
+        Loads STDM Form
+        :param feature_id:
+        :type feature_id:
+        :return:
+        :rtype:
+        """
+        srid = None
+        geom_column = None
+        geom_wkt = None
+        # If the feature is already added, don't
+        # load STDM Form
+        if feature_id in self.features_id:
+            return
+
+        for column in self.entity.columns.values():
+            if column.TYPE_INFO == 'GEOMETRY':
+                srid = column.srid
+                geom_column = column.name
+
+        fids = [feature_id]
+
+        request = QgsFeatureRequest()
+        request.setFilterFids(fids)
+
+        features = self.layer.getFeatures(request)
+        # get the wkt of the geometry
+        for feature in features:
+            geom_wkt = feature.geometry().exportToWkt()
+
+        # init form
+        self.editor = EntityEditorDialog(
+            self.entity, None, iface.mainWindow()
+        )
+
+        self.model = self.editor.model()
+
+        if not geom_wkt is None:
+            # add geometry into the model
+            setattr(
+                self.model,
+                geom_column,
+                'SRID={};{}'.format(srid, geom_wkt)
+            )
+
+        self.features_id.append(feature_id)
+        # open editor
+        result = self.editor.exec_()
+        if result < 1:
+            self.layer.deleteFeature(feature_id)
+
+    def stop_editing(self):
+        """
+        Undo editing before saved to prevent
+        duplicate insert.
+        :return: None
+        :rtype: NoneType
+        """
+        #self.layer.blockSignal(True)
+        self.layer.undoStack().undo()
+        self.layer.rollBack()

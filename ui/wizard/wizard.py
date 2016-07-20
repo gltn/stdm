@@ -7,7 +7,6 @@ copyright            : (C) 2015 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
 email                : stdm@unhabitat.org
  ***************************************************************************/
-
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -89,6 +88,10 @@ LOGGER.setLevel(logging.DEBUG)
 CHECKBOX_VALUES = [False, None, True]
 CHECK_STATE = {True:Qt.Checked, False:Qt.Unchecked}
 
+ORIG_CONFIG_FILE = QDir.home().path()+ '/.stdm/orig_configuration.stc'
+CONFIG_FILE = QDir.home().path()+ '/.stdm/configuration.stc'
+CONFIG_BACKUP_FILE = QDir.home().path()+ '/.stdm/configuration_bak.stc'
+
 class ConfigWizard(QWizard, Ui_STDMWizard):
     wizardFinished = pyqtSignal(object)
     """
@@ -149,6 +152,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.setStartId(1)
 
         self.stdm_config = None
+        self.new_profiles = []
         self.orig_assets_count = 0  # count of items in StdmConfiguration instance
         self.load_stdm_config()
 
@@ -185,7 +189,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Read and load configuration from file 
         """
-        self.load_configuration_from_file()  # ????? trap exception!!!!
+        try:
+            config_file = self.healthy_config_file()
+        except(ConfigurationException, IOError) as e:
+            self.show_message(self.tr(unicode(e) ))
+
+        self.load_configuration_from_file(config_file)  
 
         self.stdm_config = StdmConfiguration.instance()  
         self.orig_assets_count = len(self.stdm_config)
@@ -193,6 +202,74 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.load_profiles()
         self.is_config_done = False
         self.stdm_config.profile_added.connect(self.cbo_add_profile)
+
+    def healthy_config_file(self):
+        """
+        look for a healthy configuration file to load
+        """
+        main_config_file = self.healthy_file(CONFIG_FILE)
+        bak_config_file  = self.healthy_file(CONFIG_BACKUP_FILE)
+        orig_config_file = self.healthy_file(ORIG_CONFIG_FILE)
+
+        if main_config_file and not bak_config_file:
+            return CONFIG_FILE
+
+        if main_config_file and bak_config_file:
+            return self.user_choose_config()
+
+        # this scenario is taken care of when you attempt to
+        # run the wizard, we can safely remove it
+        #====>START_REMOVE
+        if not main_config_file and bak_config_file:
+            return self.system_choose_backup_config()
+
+        if not main_config_file and not bak_config_file:
+            if orig_config_file:
+                config_file = self.system_choose_orig_config()
+            else:
+                config_file = ''
+        #<======END_REMOVE
+
+        if config_file == '':
+            raise IOError('No configuration file to load')
+
+        return config_file
+
+    def healthy_file(self, config_file):
+        is_healthy = False
+        if QFile.exists(config_file):
+            qf = QFile(config_file)
+            if qf.size() > 0:
+                is_healthy = True
+        return is_healthy
+
+    def system_choose_backup(self):
+        msg = self.tr("Your main configuration file seems to be corrupt!\n" +
+                "The system will revert to the latest configuration " +
+                "backup file " )
+        self.show_message(msg)
+        return CONFIG_BACKUP_FILE
+
+    def system_choose_orig_config(self):
+        msg = self.tr("Your configuration files seems to be corrupt!\n "
+                " The system will revert to the original system configuration file.")
+        self.show_message(msg)
+        return ORIG_CONFIG_FILE
+
+    def user_choose_config(self):
+        """
+        Function assumes both configuration file and backup configuration
+        file exist. Returns either the configuration file or the backup 
+        configuration file depending on what the users selects.
+        :rtype: str
+        """
+        msg = self.tr("Please note that your previous configuration wizard did "
+                "not complete successfully!\n A backup of that session is "
+                " available.\n Would you like to restore the backup session? ")
+        if self.query_box_yesno(msg) == QMessageBox.Yes:
+            return CONFIG_BACKUP_FILE
+        else:
+            return CONFIG_FILE
 
     def check_show_license(self, reg_config):
         """
@@ -307,19 +384,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         self.lvLookups.setCurrentIndex(self.lvLookups.model().index(0,0))
 
-    def load_configuration_from_file(self):
+    def load_configuration_from_file(self, file_name):
         """
         Load configuration object from the file.
         :return: True if the file was successfully
         loaded. Otherwise, False.
         :rtype: bool
         """
-        config_path = QDesktopServices.storageLocation(
-            QDesktopServices.HomeLocation) +\
-                      '/.stdm/configuration.stc'
-        config_serializer = ConfigurationFileSerializer(
-            config_path
-        )
+        #config_path = QDesktopServices.storageLocation(
+            #QDesktopServices.HomeLocation) +\
+                      #'/.stdm/'+file_name
+
+        #config_path = QDesktopServices.storageLocation(unicode(file_name))
+        config_serializer = ConfigurationFileSerializer(file_name)
 
         try:
             config_serializer.load()
@@ -460,13 +537,40 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             reg_doc_path = None
 
         if reg_doc_path is not None:
-            return reg_doc_path
+            doc_path = self.verify_path(reg_doc_path)
         else:
-            doc_path = os.path.expanduser('~')+os_path
-            if not os.path.exists(doc_path):
-                os.makedirs(doc_path) 
-            return self.fmt_path_str(doc_path)
+            path = QDir.home().path() + os_path
+            doc_path = self.verify_path(path)
 
+        return doc_path
+
+    def verify_path(self, path):
+        """
+        Returns a path after verifying that it exists in the os.
+        The path is created if it does not exist.
+        :param path: path from registry to verify
+        :type path: str
+        :rtype: str
+        """
+        qdir = QDir()
+        if not qdir.exists(path):
+            doc_path = self.make_os_path(path)
+        else:
+            doc_path = path
+        return doc_path
+
+    def make_os_path(self, path):
+        """
+        Creates and returns an os path
+        :param path: path to create
+        :type path: str
+        :rtype: str
+        """
+        qdir = QDir()
+        if not qdir.mkpath(path):
+            path = ''
+        return path
+   
     def show_license(self):
         """
         Show STDM license file
@@ -487,7 +591,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Read and display default document path
         """
-        doc_path = self.read_settings_path([LOCAL_SOURCE_DOC], '/.stdm/documents/')
+        doc_path = self.read_settings_path([LOCAL_SOURCE_DOC],
+                '/.stdm/documents/')
         self.edtDocPath.setText(doc_path)
 
     def load_output_path(self):
@@ -519,11 +624,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         return CHECK_STATE[state]
 
-        #if state:
-            #return Qt.Checked
-        #else:
-            #return Qt.Unchecked
-
     def multi_party_state_change(self):
         """
         Event handler for the multi party checkbox state change event.
@@ -542,17 +642,42 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.cbMultiParty.setCheckState(self.bool_to_check(
             profile.social_tenure.multi_party))
 
+    def empty_text(self, text):
+        """
+        Validates if a unicode text is empty
+        :rtype: boolean
+        """
+        if text.strip() == '':
+            return True
+        else:
+            return False
+
+    def validate_path_settings(self):
+        """
+        Validate for empty path settings, if path is empty
+        returns a tuple of boolean and message
+        :rtype: tuple (boolean, str)
+        """
+        error_msg = "Please enter {0} !"
+        if self.empty_text(self.edtDocPath.text()):
+            return False, self.tr(error_msg.format("'supporting documents path'"))
+
+        if self.empty_text(self.edtOutputPath.text()):
+            return False, self.tr(error_msg.format("'documents output path'"))
+
+        if self.empty_text(self.edtTemplatePath.text()):
+            return False, self.tr(error_msg.format("'documents template path'"))
+
+        return True, "Ok."
+
     def validateCurrentPage(self):
         validPage = True
 
-        if self.currentId() == 0:
-            self.load_directory_path_settings()
-
-            if self.rbReject.isChecked():
-                message0 = self.tr("To continue with the wizard please comply with ")
-                message1 = self.tr("disclaimer policy by selecting the option 'I Agree'")
-                self.show_message(message0 + message1)
-                validPage = False
+        if self.nextId() == 2:
+            validPage, msg = self.validate_path_settings()
+            if not validPage:
+                self.show_message(msg)
+                return validPage
 
         if self.currentId() == 3:
             self.party_changed(0)
@@ -588,6 +713,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         if self.currentId() == 5: # FINAL_PAGE:
             # last page
+
+            # before any updates, backup your current working profile
+            self.backup_config_file()
+
             #* commit config to DB
             self.config_updater = ConfigurationSchemaUpdater()
 
@@ -615,9 +744,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                       COMPOSER_OUTPUT:self.edtOutputPath.text(),
                       COMPOSER_TEMPLATE:self.edtTemplatePath.text()
                      })
-
-
-            # self.wizardFinished.emit(self.cboProfile.currentText())
 
             # compute a new asset count
             self.orig_assets_count = len(self.stdm_config)
@@ -653,7 +779,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         :param info: update iformation to save to file
         :type info: str
         """
-        file_name = os.path.expanduser('~') + '/.stdm/update_info.log'
+        file_name = os.path.expanduser('~') + '/.stdm/logs/configuration_update.log'
         info_file = open(file_name, "a")
         time_stamp = self.get_time_stamp()
         info_file.write('\n')
@@ -666,20 +792,20 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def new_update_file(self, info):
         """
         Create an new file for each update
-        :param info: update info to save to file
+        :param info: update info to write to file
         :type info: str
         """
-        fmt_date = datetime.now().strftime('%d%m%Y%H%M')
-        logs_folder = self.get_folder(os.path.expanduser('~') + '/.stdm/update_logs')
-        file_name = logs_folder+'/update_info_'+fmt_date+'.log'
-        #file_name=os.path.expanduser('~') + '/.stdm/update_logs/update_info_'+fmt_date+'.log'
+        fmt_date = datetime.now().strftime('%d%m%Y_%H.%M')
+        logs_folder = self.get_folder(QDir.home().path()+'/.stdm/logs')
+        file_name = logs_folder+'/configuration_update_'+fmt_date+'.log'
         info_file = open(file_name, "w")
         info_file.write(info)
         info_file.close()
 
     def get_folder(self, folder):
-        if not os.path.exists(folder):
-            os.makedirs(folder)
+        qdir = QDir()
+        if not qdir.exists(folder):
+            qdir.mkpath(folder)
         return folder
 
     def get_time_stamp(self):
@@ -731,17 +857,20 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.is_config_done = True
 
             #Write config to a file
-            config_path = os.path.expanduser('~') + '/.stdm/configuration.stc'
-            cfs = ConfigurationFileSerializer(config_path)
+            #config_path = os.path.expanduser('~') + '/.stdm/configuration.stc'
+            cfs = ConfigurationFileSerializer(CONFIG_FILE)
 
             # flag wizard has been run
-            self.reg_config.write({'wizardRun':1})
+            self.reg_config.write({'WizardRun':1})
 
             try:
                 cfs.save()
                 #Save current profile to the registry
                 profile_name = unicode(self.cboProfile.currentText())
                 save_current_profile(profile_name)
+
+                # delete config backup file
+                self.delete_config_backup_file()
 
             except(ConfigurationException, IOError) as e:
                 self.show_message(self.tr(unicode(e) ))
@@ -756,6 +885,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         #Exit thread
         self.updater_thread.quit()
         self.wizardFinished.emit(self.cboProfile.currentText())
+
+    def backup_config_file(self):
+        """
+        """
+        cfs = ConfigurationFileSerializer(CONFIG_BACKUP_FILE)
+        
+        try:
+            cfs.save()
+        except(ConfigurationException, IOError) as e:
+            self.show_message(self.tr(unicode(e) ))
+
+    def delete_config_backup_file(self):
+        QFile.remove(CONFIG_BACKUP_FILE)
 
     def register_fields(self):
         self.setOption(self.HaveHelpButton, True)  
@@ -878,6 +1020,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         result = editor.exec_()
         if result == 1:
             profile = self.stdm_config.create_profile(editor.profile_name)
+
+            self.new_profiles.append(editor.profile_name)
             profile.description = editor.desc
             self.connect_entity_signals(profile)
             self.stdm_config.add_profile(profile)
@@ -986,7 +1130,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def edit_entity(self):
         """
-        Edit selected entity
+        Event handler for editing an entity
         """
         if len(self.pftableView.selectedIndexes())==0:
             self.show_message(QApplication.translate("Configuration Wizard", \
@@ -1135,8 +1279,18 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         # from profile entities to view_model
         self.populate_view_models(profile)
-
         self.connect_signals()
+        self.lvLookups.setCurrentIndex(self.lookup_view_model.index(0,0))
+
+        # Enable drag and drop for new profiles only
+        if name in self.new_profiles:
+            enable_drag_sort(self.tbvColumns)
+            enable_drag_sort(self.lvLookupValues)
+            enable_drag_sort(self.pftableView)
+        else:
+            self.tbvColumns.setDragEnabled(False)
+            self.lvLookupValues.setDragEnabled(False)
+            self.pftableView.setDragEnabled(False)
 
     def refresh_lookup_view(self):
         """
@@ -1254,10 +1408,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if model_item:
             profile = self.current_profile()
             params = {}
+            params['parent'] = self
             params['entity'] = entity
             params['profile'] = profile
 
-            editor = ColumnEditor(self, **params)
+            editor = ColumnEditor(**params)
             result = editor.exec_()
 
             if result == 1:
@@ -1268,29 +1423,35 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def edit_column(self):
         """
-        On click event handler for editing a column
-        Only allow editing of columns that have not yet being persisted to the
-        database
+        Event handler for editing a column.
         """
-        rid, column = self._get_column(self.tbvColumns)
+        rid, column, model_item = self._get_column(self.tbvColumns)
         
         if column and column.action == DbItem.CREATE:
             row_id, entity = self._get_entity(self.lvEntities)
 
-            # Don't edit if a column exist in database
-            #if self.column_exist_in_entity(entity, column):
-                #self.show_message(QApplication.translate("Configuration Wizard", \
-                        #"Editing columns that exist in database is not allowed!"))
-                #return
-
             params = {}
+            params['parent'] = self
             params['column'] = column
             params['entity'] = entity
             params['profile'] = self.current_profile()
             params['in_db'] = self.column_exist_in_entity(entity, column)
-            
-            editor = ColumnEditor(self, **params)
+
+            tmp_column = model_item.entity(column.name)
+
+            editor = ColumnEditor(**params)
             result = editor.exec_()
+            if result == 1: # after successfull editing
+                model_index_name = model_item.index(rid, 0)
+                model_index_dtype = model_item.index(rid, 1)
+                model_index_desc = model_item.index(rid, 2)
+
+                model_item.setData(model_index_name, editor.column.name)
+                model_item.setData(model_index_dtype, editor.column.TYPE_INFO.capitalize())
+                model_item.setData(model_index_desc, editor.column.description)
+
+                model_item.edit_entity(tmp_column, editor.column)
+                entity.edit_column(tmp_column.name, editor.column)
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No column selected for edit!"))
@@ -1339,7 +1500,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         column = None
         if model_item:
             column = model_item.entities().values()[row_id]
-        return row_id, column
+        return row_id, column, model_item
 
     def _get_entity(self, view):
         model_item, entity, row_id = self.get_model_entity(view)
@@ -1350,7 +1511,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Delete selected column, show warning dialog if a column has dependencies.
         """
-        row_id, column = self._get_column(self.tbvColumns)
+        row_id, column, model_item = self._get_column(self.tbvColumns)
         if not column:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No column selected for deletion!"))
@@ -1400,6 +1561,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         that have not yet been saved in the database.
         """
         profile = self.current_profile()
+
         if profile:
             if len(self.lvLookups.selectedIndexes()) == 0:
                 self.show_message(QApplication.translate("Configuration Wizard", \
@@ -1407,11 +1569,21 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 return
 
             row_id, lookup = self._get_entity_item(self.lvLookups)
+            
+            # WIP
+            #dependencies = self.all_column_dependencies(profile)
+            #if self.find_lookup(lookup.name, dependencies):
+                #self.show_message("YES!")
+            #else:
+                #self.show_message("Nothing")
+            #self.show_relations(profile)
+
             # don't edit entities that already exist in the database
             if pg_table_exists(lookup.name):
                 self.show_message(QApplication.translate("Configuration Wizard", \
                         "Editing lookup that exist in database is not allowed!"))
                 return
+
             editor = LookupEditor(self, profile, lookup)
             result = editor.exec_()
             if result == 1:
@@ -1422,12 +1594,36 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "Nothing to edit!"))
 
+    def all_column_dependencies(self, profile):
+        depends = []
+        #for profile in profiles:
+        for entity in profile.entities.values():
+            if entity.action <> DbItem.DROP:
+                for column in entity.columns.values():
+                    if column.action <> DbItem.DROP:
+                        depends.append(column.dependencies())
+        return depends
+
+    def find_lookup(self, name, dependencies):
+        for depend in dependencies:
+            if name in depend['entities']:
+                return True
+        return False
+
+    def show_relations(self, profile):
+        for relation in profile.relations.values():
+            self.show_message(relation.parent.short_name)
+
     def delete_lookup(self):
         """
         Event handler for deleting a selected lookup. Does NOT allow
         deleting of 'tenure_type' lookup.
         """
         profile = self.current_profile()
+
+        # WIP
+        #self.show_relations(profile)
+
         if profile:
             if len(self.lvLookups.selectedIndexes()) > 0:
                 row_id, lookup = self._get_entity_item(self.lvLookups)
@@ -1436,6 +1632,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     self.show_message(QApplication.translate("Configuration Wizard",
                         "Cannot delete tenure type lookup table!"))
                     return
+
                 profile.remove_entity(lookup.short_name)
                 self.lookup_view_model.removeRow(row_id)
             else:
@@ -1576,3 +1773,20 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         msgbox.setDefaultButton(QMessageBox.Cancel);
         result = msgbox.exec_()
         return result
+
+    def query_box_yesno(self, msg):
+        """
+        Show 'Yes/No' query message box
+        :param msg: message to show on the box
+        :type msg: str
+        :rtype: QMessageBox.StandardButton
+        """
+        msgbox = QMessageBox(self)
+        msgbox.setIcon(QMessageBox.Warning)
+        msgbox.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
+        msgbox.setText(msg)
+        msgbox.setStandardButtons(QMessageBox.Yes | QMessageBox.No);
+        msgbox.setDefaultButton(QMessageBox.Yes);
+        result = msgbox.exec_()
+        return result
+

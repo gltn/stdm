@@ -93,7 +93,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
 
         if self.entity is None:  # New entity
             if self.duplicate_check(short_name):
-                self.show_message(self.tr("Entity with the same name already exist!"))
+                self.show_message(self.tr("Entity with the same name already exist in the current profile!"))
                 return
             else:
                 self.add_entity(short_name)
