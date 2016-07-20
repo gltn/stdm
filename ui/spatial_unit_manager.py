@@ -183,9 +183,14 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
                 self.stdm_fields.set_widget_mapping()
                 self.stdm_fields.register_factory()
                 self.stdm_fields.set_widget_type(curr_layer)
-
+                curr_layer.editFormConfig().setSuppress(1)
+                curr_layer.featureAdded.connect(
+                    self.stdm_fields.load_stdm_form
+                )
+                curr_layer.beforeCommitChanges.connect(
+                    self.stdm_fields.stop_editing
+                )
             except Exception as ex:
-                print ex
                 LOGGER.debug(str(ex))
 
     def wizard_run(self):

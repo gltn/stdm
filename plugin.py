@@ -593,12 +593,6 @@ class STDMQGISLoader(object):
         self.exportAct = QAction(QIcon(":/plugins/stdm/images/icons/export.png"), \
         QApplication.translate("ReportBuilderAction","Export Data"), self.iface.mainWindow())
 
-        self.surveyAct = QAction(QIcon(":/plugins/stdm/images/icons/survey.png"), \
-        QApplication.translate("NewSurveyToolbarAction","Survey"), self.iface.mainWindow())
-
-        self.farmerAct = QAction(QIcon(":/plugins/stdm/images/icons/farmer.png"), \
-        QApplication.translate("NewFarmerToolbarAction","Content"), self.iface.mainWindow())
-
         self.docDesignerAct = QAction(QIcon(":/plugins/stdm/images/icons/cert_designer.png"), \
         QApplication.translate("DocumentDesignerAction","Document Designer"), self.iface.mainWindow())
 
@@ -610,10 +604,6 @@ class STDMQGISLoader(object):
         QApplication.translate("SpatialEditorAction","Spatial Unit Manager"), self.iface.mainWindow())
         self.spatialLayerManager.setCheckable(True)
         self.spatialLayerManager.setChecked(True)
-
-        #SaveEdits action; will not be registered since it is associated with the
-        self.saveEditsAct = QAction(QIcon(":/plugins/stdm/images/icons/save_tb.png"), \
-        QApplication.translate("CreateFeatureAction","Save Edits"), self.iface.mainWindow())
 
         self.viewSTRAct = QAction(QIcon(":/plugins/stdm/images/icons/view_str.png"), \
         QApplication.translate("ViewSTRToolbarAction","View Social Tenure Relationship"),
@@ -635,13 +625,9 @@ class STDMQGISLoader(object):
         self.importAct.triggered.connect(self.onImportData)
         self.docDesignerAct.triggered.connect(self.onDocumentDesigner)
         self.docGeneratorAct.triggered.connect(self.onDocumentGenerator)
-
         self.spatialLayerManager.triggered.connect(self.spatialLayerMangerActivate)
-
         contentMenu.triggered.connect(self.widgetLoader)
-
         self.wzdAct.triggered.connect(self.load_config_wizard)
-
         self.viewSTRAct.triggered.connect(self.onViewSTR)
 
         #Create content items
@@ -662,12 +648,6 @@ class STDMQGISLoader(object):
 
         exportCnt = ContentGroup.contentItemFromQAction(self.exportAct)
         exportCnt.code = "D0C34436-619D-434E-928C-2CBBDA79C060"
-
-        surveyCnt = ContentGroup.contentItemFromQAction(self.surveyAct)
-        surveyCnt.code = "5620049B-983A-4F85-B0D6-9D83925CC45E"
-
-        farmerCnt = ContentGroup.contentItemFromQAction(self.farmerAct)
-        farmerCnt.code = "99EA7671-85CF-40D6-B417-A3CC49D5A594"
 
         documentDesignerCnt = ContentGroup.contentItemFromQAction(self.docDesignerAct)
         documentDesignerCnt.code = "C4826C19-2AE3-486E-9FF0-32C00A0A517F"
@@ -769,15 +749,6 @@ class STDMQGISLoader(object):
         self.STRCntGroup.updateContentItem().code = "5D45A49D-F640-4A48-94D9-A10F502655F5"
         self.STRCntGroup.deleteContentItem().code = "15E27A59-28F7-42B4-858F-C070E2C3AE10"
         self.STRCntGroup.register()
-
-        self.surveyCntGroup = TableContentGroup(username,
-                                                self.surveyAct.text(),
-                                                self.surveyAct)
-        self.surveyCntGroup.createContentItem().code = "A7783C39-1A5B-4F79-81C2-639C2EA3E8A3"
-        self.surveyCntGroup.readContentItem().code = "CADFC838-DA3C-44C5-A6A8-3B2FC4CA8464"
-        self.surveyCntGroup.updateContentItem().code = "B42AC2C5-7CF5-48E6-A37F-EAE818FBC9BC"
-        self.surveyCntGroup.deleteContentItem().code = "C916ACF3-30E6-45C3-B8E1-22E56D0AFB3E"
-        self.surveyCntGroup.register()
 
         self.docDesignerCntGroup = ContentGroup(username, self.docDesignerAct)
         self.docDesignerCntGroup.addContentItem(documentDesignerCnt)
@@ -912,7 +883,9 @@ class STDMQGISLoader(object):
         )
         message = QApplication.translate(
             'STDMPlugin',
-            'Current STDM Profile: {}'.format(profile_name)
+            'Current STDM Profile: {}'.format(
+                profile_name
+            )
         )
 
         if self.profile_status_label.parent() is None:
@@ -981,7 +954,9 @@ class STDMQGISLoader(object):
         )
 
         # Reload all modules
-        self.wizard.wizardFinished.connect(self.reload_plugin)
+        self.wizard.wizardFinished.connect(
+            self.reload_plugin
+        )
         self.wizard.exec_()
 
     def changePassword(self):
@@ -994,7 +969,8 @@ class STDMQGISLoader(object):
 
     def newSTR(self):
         '''
-        Slot for showing the wizard for defining a new social
+        Slot for showing the wizard for
+        defining a new social
         tenure relationship
         '''
         try:
@@ -1011,7 +987,8 @@ class STDMQGISLoader(object):
 
     def onManageAdminUnits(self):
         '''
-        Slot for showing administrative unit selector dialog.
+        Slot for showing administrative
+        unit selector dialog.
         '''
 
         if self.current_profile is None:
@@ -1091,7 +1068,9 @@ class STDMQGISLoader(object):
             self.minimum_table_checker()
             return
         try:
-            importData = ImportData(self.iface.mainWindow())
+            importData = ImportData(
+                self.iface.mainWindow()
+            )
             status = importData.exec_()
             if status == 1:
                 if importData.geomClm.isEnabled():
