@@ -205,6 +205,9 @@ class ColumnEntitiesModel(QStandardItemModel):
             self._add_row(entity)
             self._entities[entity.name] = entity
 
+    def edit_entity(self, old_entity, new_entity):
+        self._entities[old_entity.name] = new_entity
+
     # ++
     def delete_entity(self, entity):
 	    if entity.name in self._entities:
