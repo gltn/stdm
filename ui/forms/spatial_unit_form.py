@@ -237,6 +237,7 @@ class STDMFieldWidget():
         self.entity = None
         self.widget_mapping = {}
         self.layer = None
+        self.features_id = []
 
     def set_entity(self, source):
         curr_profile = current_profile()
@@ -326,6 +327,7 @@ class STDMFieldWidget():
             )
 
     def load_stdm_form(self, feature_id):
+
         """
         Loads STDM Form
         :param feature_id:
@@ -336,6 +338,10 @@ class STDMFieldWidget():
         srid = None
         geom_column = None
         geom_wkt = None
+        # If the feature is already added, don't
+        # load STDM Form
+        if feature_id in self.features_id:
+            return
 
         for column in self.entity.columns.values():
             if column.TYPE_INFO == 'GEOMETRY':
@@ -343,6 +349,7 @@ class STDMFieldWidget():
                 geom_column = column.name
 
         fids = [feature_id]
+
         request = QgsFeatureRequest()
         request.setFilterFids(fids)
 
@@ -366,26 +373,11 @@ class STDMFieldWidget():
                 'SRID={};{}'.format(srid, geom_wkt)
             )
 
+        self.features_id.append(feature_id)
         # open editor
-        self.editor.exec_()
-
-
-    def refresh_layers(self):
-        """
-        Refresh all database layers.
-        :return: None
-        :rtype: NoneType
-        """
-        layers = iface.legendInterface().layers()
-        for layer in layers:
-            layer.dataProvider().forceReload()
-            layer.triggerRepaint()
-        if not iface.activeLayer() is None:
-            canvas = iface.mapCanvas()
-            canvas.setExtent(
-                iface.activeLayer().extent()
-            )
-            iface.mapCanvas().refresh()
+        result = self.editor.exec_()
+        if result < 1:
+            self.layer.deleteFeature(feature_id)
 
     def stop_editing(self):
         """
@@ -394,4 +386,6 @@ class STDMFieldWidget():
         :return: None
         :rtype: NoneType
         """
+        #self.layer.blockSignal(True)
         self.layer.undoStack().undo()
+        self.layer.rollBack()

@@ -313,11 +313,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             )
         )
 
-        # party_table.beforeEntityAdded.connect(
-        #     lambda :
-        #     self.clear_str_type_data(party_table._tbFKEntity)
-        # )
-        #row = len(self.sel_party) + 1
         party_table.afterEntityAdded.connect(
             lambda model_obj, row: self.init_str_type(
                 model_obj, party_table, 0, row
@@ -340,7 +335,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                     self.str_type_table
                 )
             )
-
 
         party_table.deletedRows.connect(
             self.remove_str_type_row
