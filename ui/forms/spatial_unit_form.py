@@ -388,4 +388,3 @@ class STDMFieldWidget():
         """
         #self.layer.blockSignal(True)
         self.layer.undoStack().undo()
-        self.layer.rollBack()
