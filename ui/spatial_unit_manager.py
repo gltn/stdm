@@ -189,9 +189,9 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
                     self.stdm_fields.load_stdm_form
                 )
 
-                # curr_layer.beforeCommitChanges.connect(
-                #     self.stdm_fields.stop_editing
-                # )
+                curr_layer.beforeCommitChanges.connect(
+                    self.stdm_fields.stop_editing
+                )
 
             except Exception as ex:
                 LOGGER.debug(str(ex))
