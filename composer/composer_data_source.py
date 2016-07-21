@@ -24,9 +24,10 @@ class ComposerDataSource(object):
     """
     Container for data source settings.
     """
-    def __init__(self,dataSourceName="",category = ""):
+    def __init__(self,dataSourceName="",category = "", referenced_table_name=''):
         self._dataSourceName = dataSourceName
         self._dataSourceCategory = category
+        self.referenced_table_name = referenced_table_name
         self._dataFieldmappings = ReverseDict()
         self._spatialFieldsConfig = None
         
@@ -138,7 +139,15 @@ class ComposerDataSource(object):
         
         dataSourceName = dataSourceElem.attribute("name")
         dataSourceCategory = dataSourceElem.attribute("category")
-        composerDS = ComposerDataSource(dataSourceName,dataSourceCategory)
+        referenced_table_name = dataSourceElem.attribute(
+            'referencedTable',
+            ''
+        )
+        composerDS = ComposerDataSource(
+            dataSourceName,
+            dataSourceCategory,
+            referenced_table_name
+            )
         
         #Get data fields
         dataFieldList = dataSourceElem.elementsByTagName("DataField")
@@ -163,6 +172,10 @@ class ComposerDataSource(object):
         dataSourceElement = domDocument.createElement("DataSource")
         dataSourceElement.setAttribute("name",composerWrapper.selectedDataSource())
         dataSourceElement.setAttribute("category",composerWrapper.selectedDataSourceCategory())
+        dataSourceElement.setAttribute(
+            "referencedTable",
+            composerWrapper.selected_referenced_table()
+        )
         
         #Get the configured field names
         for uuid,fieldWidget in composerWrapper.widgetMappings().iteritems():
