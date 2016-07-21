@@ -266,8 +266,6 @@ class OGRReader(object):
                                         "Source Geometry Type: {0}, Destination Geometry Type: {1}".format(layerGeomType,
                                                                                                            self._geomType))
                         return
-    
-            #logging.debug()
             
             try:               
                 #Insert the record
