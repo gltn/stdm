@@ -371,7 +371,32 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         """
         Slot raised to load the template selector dialog.
         """
-        templateSelector = TemplateDocumentSelector(self)
+        current_config = self.current_config()
+        if current_config is None:
+            msg = QApplication.translate(
+                'DocumentGeneratorDialog',
+                'An error occured while trying to determine the data source '
+                'for the current entity.\nPlease check your current profile '
+                'settings.'
+            )
+            QMessageBox.critical(
+                self,
+                QApplication.translate(
+                    'DocumentGeneratorDialog',
+                    'Template Selector'
+                ),
+                msg
+            )
+            return
+
+        #Set the template selector to only load those templates that
+        # reference the current data source.
+        filter_table = current_config.data_source()
+        templateSelector = TemplateDocumentSelector(
+            self,
+            filter_data_source=filter_table
+        )
+        
         if templateSelector.exec_() == QDialog.Accepted:
             docName,docPath = templateSelector.documentMapping()
             
