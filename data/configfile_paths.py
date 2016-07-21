@@ -46,7 +46,7 @@ class FilePaths(object):
         self.userPath = None
         self.cachePath = None
         self.config = RegistryConfig()
-        self.checkPreviousSetting()
+        #self.checkPreviousSetting()
 
     def checkPreviousSetting(self):    
         self.defaultConfigPath()
