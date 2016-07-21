@@ -38,6 +38,7 @@ from PyQt4.QtCore import (
 from PyQt4.QtXml import QDomDocument
 
 from stdm.utils.util import documentTemplates
+from stdm.composer.composer_data_source import composer_data_source
 from stdm.settings.registryconfig import RegistryConfig
 from ..notification import (
                              NotificationBar,
@@ -50,11 +51,16 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
     """
     Dialog for selecting a document template from the saved list.
     """
-    def __init__(self,parent = None,selectMode=True):
+    def __init__(self,parent = None,selectMode=True, filter_data_source=''):
         QDialog.__init__(self,parent)
         self.setupUi(self)
         
         self.notifBar = NotificationBar(self.vlNotification)
+
+        self._mode = selectMode
+
+        #Filter templates by the specified table name
+        self._filter_data_source = filter_data_source
         
         if selectMode:
             self.buttonBox.setVisible(True)
@@ -88,11 +94,35 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
         self._docItemModel.setColumnCount(2)
         
         for name,path in templates.iteritems():
-            docNameItem =  self._createDocNameItem(name)
-            filePathItem = QStandardItem(path)
-            self._docItemModel.appendRow([docNameItem,filePathItem])
+            if self._template_contains_filter_table(path):
+                docNameItem =  self._createDocNameItem(name)
+                filePathItem = QStandardItem(path)
+                self._docItemModel.appendRow([docNameItem,filePathItem])
             
         self.lstDocs.setModel(self._docItemModel)
+
+    def _template_contains_filter_table(self, path):
+        #Returns true if the template refers to the filter data source
+        if not self._filter_data_source:
+            return True
+
+        data_source = composer_data_source(path)
+        if data_source is None:
+            return False
+
+        referenced_table = data_source.referenced_table_name
+        if referenced_table == self._filter_data_source:
+            return True
+
+        return False
+
+    @property
+    def mode(self):
+        return self._mode
+
+    @property
+    def filter_data_source(self):
+        return self._filter_data_source
         
     def _createDocNameItem(self,docName):
         """

@@ -15,6 +15,13 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+from PyQt4.QtCore import (
+    QFile,
+    QIODevice
+)
+from PyQt4.QtXml import (
+    QDomDocument
+)
 from stdm.utils.util import getIndex
 from stdm.utils.reverse_dict import ReverseDict
 
@@ -196,4 +203,31 @@ class ComposerDataSource(object):
                     dataSourceElement.appendChild(fieldElement)
                     
         return dataSourceElement
-        
+
+def composer_data_source(template_file):
+    """
+    Creates a ComposerDataSource object from the specified template file. If
+    the file cannot be opened due to file permissions or if it does not exist
+    then the function will return None.
+    :param template_file: Absolute template file path.
+    :type template_file: str
+    :return: Composer data source object.
+    :rtype: ComposerDataSource
+    """
+    t_file = QFile(template_file)
+
+    #Check if the file exists
+    if not t_file.exists():
+        return None
+
+    #Check if the file can be opened
+    if not t_file.open(QIODevice.ReadOnly):
+        return None
+
+    template_doc = QDomDocument()
+
+    #Populate dom document
+    if template_doc.setContent(t_file):
+        return ComposerDataSource.create(template_doc)
+
+    return None
