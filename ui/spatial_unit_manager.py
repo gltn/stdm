@@ -182,15 +182,16 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
                 self.stdm_fields.set_entity(table)
                 self.stdm_fields.set_widget_mapping()
                 self.stdm_fields.register_factory()
-                self.stdm_fields.features_id[:] = []
                 self.stdm_fields.set_widget_type(curr_layer)
                 curr_layer.editFormConfig().setSuppress(1)
                 curr_layer.featureAdded.connect(
                     self.stdm_fields.load_stdm_form
                 )
-
+                curr_layer.featureDeleted.connect(
+                    self.stdm_fields.on_feature_deleted
+                )
                 curr_layer.beforeCommitChanges.connect(
-                    self.stdm_fields.stop_editing
+                    self.stdm_fields.on_digitizing_saved
                 )
 
             except Exception as ex:
