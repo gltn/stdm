@@ -335,9 +335,16 @@ class MapperMixin(object):
         pass
     
     def submit(self, collect_model=False):
-        '''
-        Slot for saving or updating the model. This will close the dialog on successful submission.
-        '''
+        """
+        Slot for saving or updating the model.
+        This will close the dialog on successful submission.
+        :param collect_model: If set to True only returns
+        the model without saving it to the database.
+        :type collect_model: Boolean
+        :return: If collect_model, returns SQLAlchemy Model
+        if collect model is false returns None
+        :rtype: Class or NoneType
+        """
         if not self.preSaveUpdate():
             return
         
