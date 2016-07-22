@@ -147,7 +147,7 @@ class _AttributeMapper(object):
     
 class MapperMixin(object):
     '''
-    Mixin class for use in a dialog or widget, and does the heavy lifting when it comes to managing attribute mapping.
+    Mixin class for use in a dialog or widget, and manages attribute mapping.
     '''
     def __init__(self,model):
         '''
@@ -334,7 +334,7 @@ class MapperMixin(object):
         '''
         pass
     
-    def submit(self):
+    def submit(self, collect_model=False):
         '''
         Slot for saving or updating the model. This will close the dialog on successful submission.
         '''
@@ -362,9 +362,11 @@ class MapperMixin(object):
         
         if not isValid:
             return
-        
-        self._persistModel()
-            
+        if collect_model:
+            return self.model()
+        else:
+            self._persistModel()
+
     def _persistModel(self):
         try:
             #Persist the model to its corresponding store.

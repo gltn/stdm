@@ -19,7 +19,8 @@ email                : stdm@unhabitat.org
 """
 from collections import OrderedDict
 from PyQt4.QtCore import (
-    Qt
+    Qt,
+    pyqtSignal
 )
 from PyQt4.QtGui import (
     QDialog,
@@ -55,7 +56,9 @@ class EntityEditorDialog(QDialog, MapperMixin):
     """
     Dialog for editing entity attributes.
     """
-    def __init__(self, entity, model=None, parent=None, manage_documents=True):
+    addedModel = pyqtSignal(object)
+
+    def __init__(self, entity, model=None, parent=None, manage_documents=True, collect_model=False):
         """
         Class constructor.
         :param entity: Entity object corresponding to a table object.
@@ -111,6 +114,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         MapperMixin.__init__(self, ent_model)
 
+        self.collect_model = collect_model
         #Initialize UI setup
         self._init_gui()
 
@@ -118,6 +122,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         editor_trans = self.tr('Editor')
         title = u'{0} {1}'.format(format_name(self._entity.short_name), editor_trans)
         self.setWindowTitle(title)
+
 
     def _init_gui(self):
         #Setup base elements
@@ -147,10 +152,18 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.buttonBox.setObjectName('buttonBox')
         self.gridLayout.addWidget(self.buttonBox, next_row, 0, 1, 1)
 
-        #Connect to MapperMixin slots
-        self.buttonBox.accepted.connect(self.submit)
-        self.buttonBox.rejected.connect(self.cancel)
-        
+        if self.collect_model:
+            self.buttonBox.accepted.connect(self.on_model_added)
+            self.buttonBox.rejected.connect(self.cancel)
+        else:
+            #Connect to MapperMixin slots
+            self.buttonBox.accepted.connect(self.submit)
+            self.buttonBox.rejected.connect(self.cancel)
+
+    def on_model_added(self):
+        model = self.submit(True)
+        self.addedModel.emit(model)
+
     def _setup_columns_content_area(self):
         #Only use this if entity supports documents
         self.entity_tab_widget = None

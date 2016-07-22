@@ -614,7 +614,7 @@ class STRNode(EntityNode):
                                      " the 'New Social Tenure Relationship' wizard."
                                      "Would you like to proceed?"
                                      "\nClick Yes to proceed or No to cancel.")
-        del_result = QMessageBox.warning(self.parentWidget(),
+        del_result = QMessageBox.critical(self.parentWidget(),
                                         QApplication.translate("STRNode",
                                             "Delete Social Tenure Relationship"),
                                         del_msg,
