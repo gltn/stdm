@@ -44,7 +44,8 @@ from stdm.utils.util import (
     getIndex,
     format_name,
     entity_display_columns,
-    enable_drag_sort
+    enable_drag_sort,
+    profile_entities
 )
 
 from .entity_browser import ForeignKeyBrowser
@@ -157,14 +158,9 @@ class DocumentGeneratorDialogWrapper(object):
         corresponding EntityConfig objects.
         """
         try:
-            tables = [
-                e
-                for e in
-                self.curr_profile.entities.values()
-                if e.TYPE_INFO == 'ENTITY'
-            ]
 
-            for t in tables:
+
+            for t in profile_entities(self.curr_profile):
                 entity_cfg = self._entity_config_from_profile(
                     str(t.name), t.short_name
                 )
