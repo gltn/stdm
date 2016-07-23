@@ -56,12 +56,15 @@ from stdm.mapping.utils import pg_layerNamesIDMapping
 
 from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(
     os.path.dirname(__file__), 'ui_spatial_unit_manager.ui'))
 
 LOGGER = logging.getLogger('stdm')
 
-class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
+class SpatialUnitManagerDockWidget(
+    QDockWidget, Ui_SpatialUnitManagerWidget
+):
     onLayerAdded = pyqtSignal(object)
     def __init__(self, iface, plugin):
         """Constructor."""
@@ -81,10 +84,13 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         self._populate_layers()
 
         self.spatial_unit = None
-
-        #self.iface.currentLayerChanged.connect(register_factory)
-        self.iface.currentLayerChanged.connect(self.control_digitizeToolbar)
-        self.onLayerAdded.connect(self.init_form_widgets)
+        
+        self.iface.currentLayerChanged.connect(
+            self.control_digitizeToolbar
+        )
+        self.onLayerAdded.connect(
+            self.init_form_widgets
+        )
 
     def _populate_layers(self):
         self.stdm_layers_combo.clear()
@@ -93,73 +99,67 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
 
             return
 
-        self.spatial_unit = self._curr_profile.social_tenure.spatial_unit
+        self.spatial_unit = self._curr_profile.\
+            social_tenure.spatial_unit
 
-        #Get entities containing geometry columns based on the config info
+        # Get entities containing geometry
+        # columns based on the config info
         config_entities = self._curr_profile.entities
-        geom_entities = [ge for ge in config_entities.values()
-                         if ge.TYPE_INFO == 'ENTITY' and
-                         ge.has_geometry_column()]
+        self.geom_entities = [
+            ge for ge in config_entities.values()
+            if ge.TYPE_INFO == 'ENTITY' and
+            ge.has_geometry_column()
+        ]
 
         self._profile_spatial_layers = []
-        sp_tables = spatial_tables()
+        self.sp_tables = spatial_tables()
 
-        # show the warning only if the wizard is run
-        if self.wizard_run():
-            #Check whether the geometry tables specified in the config exist
-            missing_tables = [geom_entity.name for geom_entity in geom_entities
-                              if not geom_entity.name in sp_tables]
-
-            #Notify user of missing tables
-            if len(missing_tables) > 0:
-                msg = QApplication.translate(
-                    'Spatial Unit Manager',
-                    'The following '
-                     'spatial tables '
-                     'are missing in '
-                     'the database:'
-                     '\n {0}\nPlease '
-                     're-run the '
-                     'configuration '
-                     'wizard to create '
-                     'them.'.format('\n'.join(missing_tables)))
-                QMessageBox.warning(
-                    self.iface.mainWindow(),
-                    'Spatial Unit Manager',
-                    msg
-                )
-
-        for e in geom_entities:
+        for e in self.geom_entities:
             table_name = e.name
-            if table_name in sp_tables:
+            if table_name in self.sp_tables:
                 for gc in e.geometry_columns():
                     column_name = gc.name
                     display_name = gc.layer_display()
-                    self._add_geometry_column_to_combo(table_name,
-                                                       column_name,
-                                                       display_name,
-                                                       gc)
+                    self._add_geometry_column_to_combo(
+                        table_name,
+                        column_name,
+                        display_name,
+                        gc
+                    )
 
                 #Add geometry entity to the collection
-                self._profile_spatial_layers.append(table_name)
+                self._profile_spatial_layers.append(
+                    table_name
+                )
 
-        #Append the corresponding(profile) view to the list of entity names
-        str_view = u'{0}_{1}'.format(self._curr_profile.prefix, BASE_STR_VIEW)
-        if str_view in sp_tables:
-            geom_columns = table_column_names(str_view, True)
+        # Append the corresponding(profile)
+        # view to the list of entity names
+        str_view = u'{0}_{1}'.format(
+            self._curr_profile.prefix, BASE_STR_VIEW
+        )
+        if str_view in self.sp_tables:
+            geom_columns = table_column_names(
+                str_view, True
+            )
             if len(geom_columns) > 0:
                 #Pick the first column
                 geom_col = geom_columns[0]
-                view_layer_name = self._curr_profile.social_tenure.layer_display()
-                self._add_geometry_column_to_combo(str_view, geom_col,
-                                                   view_layer_name,
-                                                   self._curr_profile.social_tenure)
-
+                view_layer_name = self._curr_profile.\
+                    social_tenure.layer_display()
+                self._add_geometry_column_to_combo(
+                    str_view, geom_col,
+                    view_layer_name,
+                    self._curr_profile.social_tenure
+                )
                 #Append view to the list of spatial layers
-                self._profile_spatial_layers.append(str_view)
+                self._profile_spatial_layers.append(
+                    str_view
+                )
 
     def control_digitizeToolbar(self, curr_layer):
-        table, column = self._layer_table_column(curr_layer)
+        table, column = self._layer_table_column(
+            curr_layer
+        )
         if table not in pg_views():
             # Make sure digitizing toolbar is enabled
             self.iface.digitizeToolBar().setEnabled(True)
@@ -169,7 +169,8 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
     def init_form_widgets(self, curr_layer):
         """
         Initializes the Layer form widgets.
-        :param curr_layer: The layer for which the widgets are set.
+        :param curr_layer: The layer for which
+        the widgets are set.
         :type curr_layer: QgsVectorLayer
         :return: None
         :rtype: NoneType
@@ -197,30 +198,12 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
             except Exception as ex:
                 LOGGER.debug(str(ex))
 
-    def wizard_run(self):
-        """
-        Checks if you the wizard is run by the user at least once.
-        :param reg_config: registry config reader
-        :return : Return true if the wizard is run
-        :rtype: boolean
-        """
-        self.reg_config = RegistryConfig()
-        wizard_run = self.reg_config.read(
-            [WIZARD_RUN]
-        )
-
-        if len(wizard_run) > 0:
-            wizard_run = wizard_run[WIZARD_RUN]
-
-        if wizard_run == 1 or wizard_run == unicode(1):
-            return True
-        elif wizard_run == 0 or wizard_run == unicode(0):
-            return False
-
     def _format_layer_display_name(self, col, table):
         return u'{0}.{1}'.format(table,col)
 
-    def _add_geometry_column_to_combo(self, table_name, column_name, display, item):
+    def _add_geometry_column_to_combo(
+            self, table_name, column_name, display, item
+    ):
         icon = self._geom_icon(table_name, column_name)
         self.stdm_layers_combo.addItem(icon, display, {
             'table_name': table_name,
@@ -229,21 +212,33 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         )
 
         table = self.spatial_unit.name
-        spatial_column = [c.name for c in self.spatial_unit.columns.values() if c.TYPE_INFO == 'GEOMETRY']
-        spatial_unit_item = unicode(table + '.'+spatial_column[0])
-        index = self.stdm_layers_combo.findText(spatial_unit_item, Qt.MatchFixedString)
+        spatial_column = [
+            c.name
+            for c in self.spatial_unit.columns.values()
+            if c.TYPE_INFO == 'GEOMETRY'
+        ]
+        spatial_unit_item = unicode(
+            table + '.'+spatial_column[0]
+        )
+        index = self.stdm_layers_combo.findText(
+            spatial_unit_item, Qt.MatchFixedString
+        )
         if index >= 0:
              self.stdm_layers_combo.setCurrentIndex(index)
 
 
-    def _layer_info_from_table_column(self, table, column):
-        #Returns the index and item data from the given table and column name
+    def _layer_info_from_table_column(
+            self, table, column
+    ):
+        #Returns the index and item
+        # data from the given table and column name
         idx, layer_info = -1, None
 
         for i in range(self.stdm_layers_combo.count()):
             layer_info = self.stdm_layers_combo.itemData(i)
 
-            if layer_info['table_name'] == table and layer_info['column_name'] == column:
+            if layer_info['table_name'] == table and \
+                            layer_info['column_name'] == column:
                 idx, layer_info = i, layer_info
 
                 break
@@ -257,16 +252,24 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         icon = None
 
         if geometry_typ == 'POLYGON':
-            icon = QIcon(':/plugins/stdm/images/icons/layer_polygon.png')
+            icon = QIcon(
+                ':/plugins/stdm/images/icons/layer_polygon.png'
+            )
 
         elif geometry_typ == 'LINESTRING':
-            icon = QIcon(':/plugins/stdm/images/icons/layer_line.png')
+            icon = QIcon(
+                ':/plugins/stdm/images/icons/layer_line.png'
+            )
 
         elif geometry_typ == 'POINT':
-            icon = QIcon(':/plugins/stdm/images/icons/layer_point.png')
+            icon = QIcon(
+                ':/plugins/stdm/images/icons/layer_point.png'
+            )
 
         else:
-            icon = QIcon(':/plugins/stdm/images/icons/table.png')
+            icon = QIcon(
+                ':/plugins/stdm/images/icons/table.png'
+            )
 
         return icon
 
@@ -278,18 +281,26 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         if self.stdm_layers_combo.count() == 0:
             return
 
-        sp_col_info = self.stdm_layers_combo.itemData(self.stdm_layers_combo.currentIndex())
+        sp_col_info = self.stdm_layers_combo.itemData(
+            self.stdm_layers_combo.currentIndex()
+        )
         if sp_col_info is None:
             # Message: Spatial column information could not be found
-            QMessageBox.warning(self.iface.mainWindow(), 'Spatial Unit Manager',
-                                'Spatial Column Layer Could not be found')
+            QMessageBox.warning(
+                self.iface.mainWindow(),
+                'Spatial Unit Manager',
+                'Spatial Column Layer Could not be found'
+            )
 
         table_name, spatial_column = sp_col_info["table_name"], \
                                      sp_col_info["column_name"]
 
 
-        #Check if the layer has already been added to the map layer registry
-        tab_col = u'{0}.{1}'.format(table_name, spatial_column)
+        #Check if the layer has already been
+        # added to the map layer registry
+        tab_col = u'{0}.{1}'.format(
+            table_name, spatial_column
+        )
         if tab_col in self._map_registry_table_columns():
             return
 
@@ -300,32 +311,51 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
         self.curr_lyr_sp_col = spatial_column
 
         if not layer_item is None:
-            curr_layer = vector_layer(table_name, geom_column=spatial_column,
-                                      layer_name=layer_item.layer_display())
+            curr_layer = vector_layer(
+                table_name,
+                eom_column=spatial_column,
+                layer_name=layer_item.layer_display()
+            )
         else:
-            curr_layer = vector_layer(table_name, geom_column=spatial_column)
+            curr_layer = vector_layer(
+                table_name, geom_column=spatial_column
+            )
 
         if curr_layer.isValid():
-            QgsMapLayerRegistry.instance().addMapLayer(curr_layer)
+            QgsMapLayerRegistry.instance().addMapLayer(
+                curr_layer
+            )
 
             #Required in order for the layer name to be set
-            QTimer.singleShot(100,
-                              lambda: self._set_layer_display_name(curr_layer,
-                                               layer_item.layer_display()))
-            #curr_layer.setLayerName(layer_item.layer_display())
+            QTimer.singleShot(
+                100,
+                lambda: self._set_layer_display_name(
+                    curr_layer,
+                    layer_item.layer_display()
+                )
+            )
+
             self.onLayerAdded.emit(curr_layer)
         else:
-            msg = QApplication.translate("Spatial Unit Manager",
-                                         "'{0}.{1}' layer is invalid, it cannot "
-                                         "be added to the map view.".format(
-                                             table_name,spatial_column))
-            QMessageBox.critical(self.iface.mainWindow(), 'Spatial Unit Manager', msg)
+            msg = QApplication.translate(
+                "Spatial Unit Manager",
+                "'{0}.{1}' layer is invalid, it cannot "
+                "be added to the map view.".format(
+                    table_name,spatial_column
+                )
+            )
+            QMessageBox.critical(
+                self.iface.mainWindow(),
+                'Spatial Unit Manager',
+                msg
+            )
 
     def _set_layer_display_name(self, layer, name):
         layer.setLayerName(name)
 
     def _layer_table_column(self, layer):
-        #Returns the table and column name that a layer belongs to.
+        #Returns the table and column name
+        # that a layer belongs to.
         table, column = '', ''
 
         if hasattr(layer, 'dataProvider'):
@@ -339,7 +369,8 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
 
     def _map_registry_table_columns(self):
         """
-        Returns a list of layers in form of table names concatenated with the
+        Returns a list of layers in form of table
+        names concatenated with the
         column names separated by a full-stop.
         """
         tab_col_names = []
@@ -366,22 +397,31 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
             if table_name:
                 #Check if the table name is in the current profile
                 if table_name in self._profile_spatial_layers:
-                    prompt = u"Set the display name for '{0}' layer".format(layer.name())
-                    display_name, ok = QInputDialog.getText(self,
-                                                            'Spatial Unit '
-                                                            'Manager', prompt)
+                    prompt = \
+                        u"Set the display name for '{0}' layer".format(
+                            layer.name()
+                        )
+                    display_name, ok = QInputDialog.getText(
+                        self,
+                        'Spatial Unit '
+                        'Manager', prompt
+                    )
 
                     if ok and display_name:
                         #Get layer table and columns names
                         table, column = self._layer_table_column(layer)
                         if table and column:
                             idx, layer_info = \
-                                self._layer_info_from_table_column(table,
-                                                                   column)
+                                self._layer_info_from_table_column(
+                                    table,
+                                    column
+                                )
                             #Get item in the combo corresponding to the layer
                             if idx != -1:
-                                self.stdm_layers_combo.setItemText(idx,
-                                                                   display_name)
+                                self.stdm_layers_combo.setItemText(
+                                    idx,
+                                    display_name
+                                )
                                 layer.setLayerName(display_name)
 
                                 #Update configuration item
@@ -394,15 +434,21 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
                                     save_configuration()
 
                 else:
-                    msg = QApplication.translate("Spatial Unit Manager",
-                                                 u"The layer does not "
-                                                 u"belong in the '{0}' "
-                                                 u"profile.\nThe display name "
-                                                 u"will not be set."
-                                                 u"".format(
-                                                     self._curr_profile.name))
-                    QMessageBox.critical(self.iface.mainWindow(),
-                                'Spatial Unit Manager', msg)
+                    msg = QApplication.translate(
+                        "Spatial Unit Manager",
+                        u"The layer does not "
+                        u"belong in the '{0}' "
+                        u"profile.\nThe display name "
+                        u"will not be set."
+                        u"".format(
+                            self._curr_profile.name
+                        )
+                    )
+                    QMessageBox.critical(
+                        self.iface.mainWindow(),
+                        'Spatial Unit Manager',
+                        msg
+                    )
 
     @pyqtSignature("")
     def on_import_gpx_file_button_clicked(self):
@@ -418,7 +464,12 @@ class SpatialUnitManagerDockWidget(QDockWidget, Ui_SpatialUnitManagerWidget):
                 "Manager to import GPX to"
             )
         elif bool(layer_map):
-            self.gps_tool_dialog = GPSToolDialog(self.iface, self.curr_layer, self.curr_lyr_table, self.curr_lyr_sp_col)
+            self.gps_tool_dialog = GPSToolDialog(
+                self.iface,
+                self.curr_layer,
+                self.curr_lyr_table,
+                self.curr_lyr_sp_col
+            )
             self.gps_tool_dialog.show()
 
 

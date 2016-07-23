@@ -460,6 +460,9 @@ class STDMFieldWidget():
             self.feature_models.values()
         )
         # undo each feature created so that qgis
-        # don't try to save the same feature.
+        # don't try to save the same feature again.
+        # It will also clear all the models from
+        # self.feature_models as on_feature_deleted
+        # is raised when a feature is removed.
         for i in range(len(self.feature_models)):
             self.layer.undoStack().undo()
