@@ -710,6 +710,22 @@ def table_to_profile_name(table_name):
 
     return profile_name[0]
 
+def profile_entities(profile):
+    """
+    Return the current profile primary entity tables.
+    :param profile: Profile object
+    :type profile: Object
+    :return: List a list of entities
+    :rtype: List
+    """
+    entities = [
+        e
+        for e in
+        profile.entities.values()
+        if e.TYPE_INFO == 'ENTITY'
+    ]
+    return entities
+
 def enable_drag_sort(mv_widget):
     """
     Enables internal drag and drop sorting in

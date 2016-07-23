@@ -23,12 +23,12 @@ from PyQt4.QtGui import (
 )
 
 from stdm.data.pg_utils import (
-    pg_tables,
     pg_views
 )
 from stdm.settings import current_profile
 from stdm.utils.util import (
     profile_user_tables,
+    profile_entities,
     setComboCurrentIndexWithText
 )
 from .ui_composer_data_source import Ui_frmComposerDataSource
@@ -47,13 +47,20 @@ class ComposerDataSourceSelector(QWidget,Ui_frmComposerDataSource):
         self.rbTables.toggled.connect(self.onShowTables)
         self.rbViews.toggled.connect(self.onShowViews)
 
-        #Load tables
-        self._tables = profile_user_tables(self.curr_profile, False)
+        #Load reference tables
+        self._ref_tables = profile_entities(
+            self.curr_profile
+        )
 
+        #Load all tables
+        self._tables = profile_user_tables(
+            self.curr_profile, False
+        )
         #Populate referenced tables
         self._populate_referenced_tables()
 
-        #Flag for synchronizing data source item change to referenced table
+        # Flag for synchronizing data source
+        # item change to referenced table
         self._sync_data_source = False
         
         #Force views to be loaded
@@ -81,10 +88,11 @@ class ComposerDataSourceSelector(QWidget,Ui_frmComposerDataSource):
     def _populate_referenced_tables(self):
         #Populate combo box with the list of tables names
         self.cboReferencedTable.addItem('')
-        for table_name, short_name in self._tables.iteritems():
+        for entity in self._ref_tables:
             #Check if there is supporting document
-            if not self._contains_supporting_document(table_name):
-                self.cboReferencedTable.addItem(short_name.lower(), table_name)
+            self.cboReferencedTable.addItem(
+                entity.short_name.lower(), entity.name
+            )
 
     def _contains_supporting_document(self, table):
         #Returns true if the table contains 'supporting_document' text
