@@ -103,7 +103,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.vlNotification.setObjectName('vlNotification')
         self._notifBar = NotificationBar(self.vlNotification)
 
-        #Set manage documents only if the entity supports documents
+        # Set manage documents only if the entity supports documents
         if self._entity.supports_documents:
             self._manage_documents = manage_documents
 
