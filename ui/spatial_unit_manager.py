@@ -313,7 +313,7 @@ class SpatialUnitManagerDockWidget(
         if not layer_item is None:
             curr_layer = vector_layer(
                 table_name,
-                eom_column=spatial_column,
+                geom_column=spatial_column,
                 layer_name=layer_item.layer_display()
             )
         else:
