@@ -51,6 +51,7 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
 
         self._geom_type = form_fields['geom_type']
         self._srid = form_fields['srid']
+        self.in_db = form_fields['in_db']
 
         self.init_gui()
 
@@ -68,6 +69,10 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
         self.btnCoord.clicked.connect(self.projection_selector)
         self.cboGeoType.setCurrentIndex(self._geom_type)
         self.btnCoord.setText(unicode(self.srid()))
+
+        # disable controls if columns exist in the database
+        self.btnCoord.setEnabled(not self.in_db)
+        self.cboGeoType.setEnabled(not self.in_db)
 
     def load_geometry_types(self):
         """

@@ -38,7 +38,7 @@
        <enum>QComboBox::InsertAtTop</enum>
       </property>
      </widget>
-     <widget class="QPushButton" name="edtNewlookup">
+     <widget class="QPushButton" name="btnNewlookup">
       <property name="text">
        <string>New lookup ...</string>
       </property>

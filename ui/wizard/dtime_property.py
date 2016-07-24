@@ -45,6 +45,7 @@ class DTimeProperty(QDialog, Ui_DTimeProperty):
 
         self._min_val = form_fields['minimum']
         self._max_val = form_fields['maximum']
+        self.in_db = form_fields['in_db']
 
         self.min_use_current_datetime = form_fields['min_use_current_datetime']
         self.max_use_current_datetime = form_fields['max_use_current_datetime']
@@ -77,6 +78,12 @@ class DTimeProperty(QDialog, Ui_DTimeProperty):
         self.rbMinCurr.setChecked(self.min_use_current_datetime)
         self.rbMaxCurr.setChecked(self.max_use_current_datetime)
 
+        self.edtMinDTime.setEnabled(not self.in_db)
+        self.edtMaxDTime.setEnabled(not self.in_db)
+        self.rbMinFixed.setEnabled(not self.in_db)
+        self.rbMinCurr.setEnabled(not self.in_db)
+        self.rbMaxFixed.setEnabled(not self.in_db)
+        self.rbMaxCurr.setEnabled(not self.in_db)
 
     def min_fixed_toggle_handler(self, checked):
         self.edtMinDTime.setEnabled(checked)

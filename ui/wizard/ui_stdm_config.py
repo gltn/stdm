@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_stdm_config.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created: Sun Jul 24 08:14:01 2016
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -187,6 +188,7 @@ class Ui_STDMWizard(object):
         self.horizontalLayout_3 = QtGui.QHBoxLayout()
         self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
         self.label_3 = QtGui.QLabel(self.groupBox_17)
+        self.label_3.setMargin(0)
         self.label_3.setIndent(-1)
         self.label_3.setObjectName(_fromUtf8("label_3"))
         self.horizontalLayout_3.addWidget(self.label_3)
@@ -276,8 +278,8 @@ class Ui_STDMWizard(object):
         self.groupBox.setMinimumSize(QtCore.QSize(0, 0))
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
         self.verticalLayout_8 = QtGui.QVBoxLayout(self.groupBox)
-        self.verticalLayout_8.setMargin(5)
         self.verticalLayout_8.setSpacing(5)
+        self.verticalLayout_8.setMargin(5)
         self.verticalLayout_8.setObjectName(_fromUtf8("verticalLayout_8"))
         self.lvEntities = QtGui.QListView(self.groupBox)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
@@ -364,8 +366,8 @@ class Ui_STDMWizard(object):
         self.groupBox_5.setMinimumSize(QtCore.QSize(100, 20))
         self.groupBox_5.setObjectName(_fromUtf8("groupBox_5"))
         self.verticalLayout_3 = QtGui.QVBoxLayout(self.groupBox_5)
-        self.verticalLayout_3.setMargin(5)
         self.verticalLayout_3.setSpacing(7)
+        self.verticalLayout_3.setMargin(5)
         self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
         self.horizontalLayout_4 = QtGui.QHBoxLayout()
         self.horizontalLayout_4.setSpacing(6)
@@ -581,7 +583,7 @@ class Ui_STDMWizard(object):
         self.label.setText(_translate("STDMWizard", "Select", None))
         self.btnNewP.setText(_translate("STDMWizard", "New profile", None))
         self.btnPDelete.setText(_translate("STDMWizard", "Delete profile", None))
-        self.label_3.setText(_translate("STDMWizard", "Description", None))
+        self.label_3.setText(_translate("STDMWizard", "Description:", None))
         self.lblDesc.setText(_translate("STDMWizard", "TextLabel", None))
         self.groupBox_18.setTitle(_translate("STDMWizard", "Profile entities ", None))
         self.wpEntityCustom.setTitle(_translate("STDMWizard", "Entity Customization", None))
