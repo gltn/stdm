@@ -374,13 +374,21 @@ class ComposerWrapper(QObject):
         """
         row = self._stdmDataSourceDock.widget().cboDataSource.currentIndex()
         table_name = self._stdmDataSourceDock.widget().cboDataSource.itemData(row)
+
         return table_name
+
+    def selected_referenced_table(self):
+        """
+        :return: Returns the name of currently specified referenced table name.
+        :rtype: str
+        """
+        return self._stdmDataSourceDock.widget().referenced_table_name()
     
     def selectedDataSourceCategory(self):
         """
         Returns the category (view or table) that the data source belongs to.
         """
-        if self.stdmDataSourceDock().widget() != None:
+        if not self.stdmDataSourceDock().widget() is None:
             return self.stdmDataSourceDock().widget().category()
         
         return ""
@@ -466,7 +474,6 @@ class ComposerWrapper(QObject):
         
         if templateDoc.setContent(templateFile):
             table_config_collection = TableConfigurationCollection.create(templateDoc)
-
             '''
             First load vector layers for the table definitions in the config
             collection before loading the composition from file.
@@ -525,6 +532,14 @@ class ComposerWrapper(QObject):
                                  QApplication.translate("ComposerWrapper","Error"),
                                 QApplication.translate("ComposerWrapper","Please specify the "
                                             "data source name for the document composition."))
+            return
+
+        #Assert if the referenced table name has been set
+        if not self.selected_referenced_table():
+            QMessageBox.critical(self.composerView(),
+                                 QApplication.translate("ComposerWrapper","Error"),
+                                QApplication.translate("ComposerWrapper","Please specify the "
+                                            "referenced table name for the selected data source."))
             return
             
         #If it is a new unsaved document template then prompt for the document name.
@@ -655,7 +670,10 @@ class ComposerWrapper(QObject):
             dataSourceWidget = self.stdmDataSourceDock().widget()
             dataSourceWidget.setCategory(composer_data_source.category())
             dataSourceWidget.setSelectedSource(composer_data_source.name())
-            
+            dataSourceWidget.set_referenced_table(
+                composer_data_source.referenced_table_name
+            )
+
             #Set data field controls
             for composerId in composer_data_source.dataFieldMappings().reverse:
                 #Use composer item id since the uuid is stripped off

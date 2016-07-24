@@ -130,9 +130,6 @@ class _EntityDocumentViewerHandler(object):
 
         self._doc_view_manager.setVisible(True)
 
-        #Cascade document viewers
-        self._doc_view_manager.cascade_windows()
-
     def root_directory_exists(self):
         #Returns True if the root document directory exists, otherwise False.
         dir = QDir(self._network_doc_path)

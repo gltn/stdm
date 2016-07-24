@@ -187,7 +187,8 @@ class SupportingDocumentsWidget(QWidget):
 
     def count(self):
         """
-        :return: Returns the number of document types supported by this widget.
+        :return: Returns the number of document types supported by this
+        widget.
         :rtype: int
         """
         return self._cbo_doc_type.count()
