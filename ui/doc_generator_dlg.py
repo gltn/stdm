@@ -396,7 +396,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
             self,
             filter_data_source=filter_table
         )
-        
+
         if templateSelector.exec_() == QDialog.Accepted:
             docName,docPath = templateSelector.documentMapping()
             
