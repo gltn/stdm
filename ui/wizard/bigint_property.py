@@ -52,6 +52,7 @@ class BigintProperty(QDialog, Ui_BigintProperty):
 
         self._min_val = form_fields['minimum']
         self._max_val = form_fields['maximum']
+        self.in_db = form_fields['in_db']
 
         self.init_gui()
 
@@ -67,6 +68,9 @@ class BigintProperty(QDialog, Ui_BigintProperty):
         self.edtMaxVal.setText(str(self._max_val))
 
         self.edtMinVal.setFocus()
+
+        self.edtMinVal.setEnabled(not self.in_db)
+        self.edtMaxVal.setEnabled(not self.in_db)
 	
     def add_values(self):
         """

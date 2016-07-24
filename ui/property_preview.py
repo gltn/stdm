@@ -259,9 +259,11 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
             #Need to force event so that layer is shown
             QCoreApplication.sendEvent(self.local_map, QShowEvent())
         else:
-            self.highlight_spatial_unit(geom)
+            self.highlight_spatial_unit(
+                geom, self.local_map.canvas
+            )
             # Add spatial unit to web viewer
-            self._web_spatial_loader.add_overlay(model, geom_col)
+            #self._web_spatial_loader.add_overlay(model, geom_col)
 
     def clear_sel_highlight(self):
         """
@@ -352,10 +354,12 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
 
         return qgis_geom.boundingBox()
 
-    def highlight_spatial_unit(self, geom):
+    def highlight_spatial_unit(
+            self, geom, map_canvas
+    ):
         layer = self._iface.activeLayer()
-        self.local_map.canvas.setExtent(layer.extent())
-        self.local_map.canvas.refresh()
+        map_canvas.setExtent(layer.extent())
+        map_canvas.refresh()
 
         if self.spatial_unit_layer(layer):
 
@@ -364,18 +368,21 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
             qgis_geom = qgsgeometry_from_wkbelement(geom)
 
             self.sel_highlight = QgsHighlight(
-                self.local_map.canvas, qgis_geom, layer
+                map_canvas, qgis_geom, layer
             )
-            self.sel_highlight.setFillColor(QColor(255,128,0))
+
+            self.sel_highlight.setFillColor(
+                QColor(255,128,0)
+            )
 
             self.sel_highlight.setWidth(3)
             self.sel_highlight.show()
 
             extent = qgis_geom.boundingBox()
-            extent.scale(1.1)
-            self.local_map.canvas.setExtent(extent)
-            self.local_map.canvas.refresh()
-
+            extent.scale(1.5)
+            map_canvas.setExtent(extent)
+            map_canvas.refresh()
+            print layer.name()
         else:
             return
 

@@ -382,10 +382,13 @@ class STDMQGISLoader(object):
 
                 message = QApplication.translate(
                     "STDMQGISLoader",
-                    'The system has detected that database table(s) required in \n'
-                    'in the Social Tenure Relationship is/are missing.\n'
+                    'The system has detected that '
+                    'database table(s) required in \n'
+                    'in the Social Tenure Relationship '
+                    'is/are missing.\n'
                     'Missing table(s) - {}\n'
-                    'Do you want to re-run the Configuration Wizard now?'.
+                    'Do you want to re-run the '
+                    'Configuration Wizard now?'.
                     format(missing_tables)
                 )
                 database_check = QMessageBox.critical(
@@ -406,9 +409,11 @@ class STDMQGISLoader(object):
             if not pg_table_exists(entity.name):
                 message = QApplication.translate(
                     "STDMQGISLoader",
-                    'The system has detected that a required database table - \n'
+                    'The system has detected that '
+                    'a required database table - \n'
                     '{} is missing. \n'
-                    'Do you want to re-run the Configuration Wizard now?'.format(
+                    'Do you want to re-run the '
+                    'Configuration Wizard now?'.format(
                         entity.short_name
                     )
                 )
@@ -603,7 +608,6 @@ class STDMQGISLoader(object):
         self.spatialLayerManager = QAction(QIcon(":/plugins/stdm/images/icons/spatial_unit_manager.png"), \
         QApplication.translate("SpatialEditorAction","Spatial Unit Manager"), self.iface.mainWindow())
         self.spatialLayerManager.setCheckable(True)
-        self.spatialLayerManager.setChecked(True)
 
         self.viewSTRAct = QAction(QIcon(":/plugins/stdm/images/icons/view_str.png"), \
         QApplication.translate("ViewSTRToolbarAction","View Social Tenure Relationship"),
@@ -825,19 +829,108 @@ class STDMQGISLoader(object):
         moduleCntGroup.register()
         return moduleCntGroup
 
-    def create_spatial_unit_manager(self):
-        self.remove_spatial_unit_mgr()
+    def check_spatial_tables(self, show_message=False):
+        """
+        Checks if spatial tables exist in the database.
+        :param show_message: If true, shows an error message.
+        :type show_message: Boolean
+        :return: True if spatial tables exist and False with or
+        without error message if it doesn't exist.
+        :rtype: Boolean
+        """
+        # Get entities containing geometry
+        # columns based on the config info
+        config_entities = self.current_profile.entities
+        self.geom_entities = [
+            ge for ge in config_entities.values()
+            if ge.TYPE_INFO == 'ENTITY' and
+            ge.has_geometry_column()
+            ]
 
-        self.spatialLayerMangerDockWidget = SpatialUnitManagerDockWidget(self.iface, self)
-        self.spatialLayerMangerDockWidget.setWindowTitle(
-            QApplication.translate("STDMQGISLoader", 'Spatial Unit Manager'))
-        self.iface.addDockWidget(Qt.LeftDockWidgetArea,
-                                 self.spatialLayerMangerDockWidget)
-        self.spatialLayerMangerDockWidget.show()
+
+        self.sp_tables = spatial_tables()
+        # Check whether the geometry tables
+        # specified in the config exist
+        missing_tables = [
+            geom_entity.name
+            for geom_entity in self.geom_entities
+            if not geom_entity.name in self.sp_tables
+        ]
+
+        # Notify user of missing tables
+        if len(missing_tables) > 0:
+            if show_message:
+                msg = QApplication.translate(
+                    'Spatial Unit Manager',
+                    'The following spatial tables '
+                    'are missing in the database:'
+                    '\n {0}\n Do you want to re-run the '
+                    'Configuration Wizard now?'.format(
+                            '\n'.join(
+                            missing_tables
+                        )
+                    )
+                )
+                title = QApplication.translate(
+                    'STDMQGISLoader',
+                    'Spatial Table Error'
+                )
+                database_check = QMessageBox.critical(
+                    self.iface.mainWindow(),
+                    title,
+                    msg,
+                    QMessageBox.Yes,
+                    QMessageBox.No
+                )
+                if database_check == QMessageBox.Yes:
+                    self.load_config_wizard()
+
+            return False
+        else:
+            return True
+
+    def create_spatial_unit_manager(
+            self, menu_enable=False
+    ):
+        """
+        Loads spatial unit manager after checking if
+        spatial tables exist. If enabled from STDM toolbar
+        and spatial tables don't exist show error message.
+        :param menu_enable: Weather it is activated from the
+        Menu or not. If True, an error could be show if spatial
+        tables don't exist.
+        :type menu_enable: Boolean
+        :return: None
+        :rtype: NoneType
+        """
+        self.remove_spatial_unit_mgr()
+        if self.check_spatial_tables():
+            self.spatialLayerMangerDockWidget = \
+                SpatialUnitManagerDockWidget(
+                    self.iface, self
+                )
+            self.spatialLayerMangerDockWidget.setWindowTitle(
+                QApplication.translate(
+                    "STDMQGISLoader",
+                    'Spatial Unit Manager'
+                )
+            )
+            self.iface.addDockWidget(
+                Qt.LeftDockWidgetArea,
+                self.spatialLayerMangerDockWidget
+            )
+
+            self.spatialLayerMangerDockWidget.show()
+            self.spatialLayerManager.setChecked(True)
+        else:
+            if menu_enable:
+                self.spatialLayerManager.setChecked(False)
+                self.check_spatial_tables(True)
 
     def onActionAuthorised(self,name):
         '''
-        This slot is raised when a toolbar action is authorised for access by the currently
+        This slot is raised when a toolbar action
+        is authorised for access by the currently
         logged in user.
         '''
         pass
@@ -986,7 +1079,8 @@ class STDMQGISLoader(object):
             frmNewSTR = newSTRWiz(self)
             frmNewSTR.exec_()
         except Exception as ex:
-            QMessageBox.critical(self.iface.mainWindow(),
+            QMessageBox.critical(
+                self.iface.mainWindow(),
                 QApplication.translate(
                     "STDMPlugin",
                     "Error Loading New STR Wizard"
@@ -1371,8 +1465,10 @@ class STDMQGISLoader(object):
         return separator
 
     def spatialLayerMangerActivate(self):
-
-        if self.spatialLayerMangerDockWidget.isVisible():
-            self.spatialLayerMangerDockWidget.hide()
+        if self.spatialLayerMangerDockWidget is None:
+            self.create_spatial_unit_manager(True)
         else:
-            self.spatialLayerMangerDockWidget.show()
+            if self.spatialLayerMangerDockWidget.isVisible():
+                self.spatialLayerMangerDockWidget.hide()
+            else:
+                self.spatialLayerMangerDockWidget.show()

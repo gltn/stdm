@@ -20,21 +20,28 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import os
+import json
 import re
 import logging
 from decimal import Decimal
+from collections import OrderedDict
 from qgis.core import (
     NULL,
     QgsFeatureRequest,
     QgsMessageLog,
     QgsVectorLayerCache,
     QgsGeometry,
-    QgsFeatureRequest
+    QgsFeatureRequest,
+    QgsMapLayerRegistry,
+    QgsFeature,
+    QgsPoint,
+    QgsVectorLayer
 )
 from PyQt4.QtGui import (
     QApplication,
     QLabel,
-    QHBoxLayout
+    QHBoxLayout,
+    QColor
 )
 
 from qgis.gui import (
@@ -56,6 +63,8 @@ from sqlalchemy.sql import (
 from stdm.data.database import (
     STDMDb
 )
+from stdm.data.configuration import entity_model
+
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
 
 from stdm.settings import (
@@ -237,7 +246,10 @@ class STDMFieldWidget():
         self.entity = None
         self.widget_mapping = {}
         self.layer = None
-        self.features_id = []
+        self.feature_models = OrderedDict()
+        self.removed_feature_models=OrderedDict()
+        self.current_feature = None
+        self.editor = None
 
     def set_entity(self, source):
         curr_profile = current_profile()
@@ -327,43 +339,54 @@ class STDMFieldWidget():
             )
 
     def load_stdm_form(self, feature_id):
-
         """
-        Loads STDM Form
-        :param feature_id:
-        :type feature_id:
-        :return:
-        :rtype:
+        Loads STDM Form and collects the model added
+        into the form so that it is saved later.
+        :param feature_id: the ID of a feature that
+        is last added
+        :type feature_id: Integer
+        :return: None
+        :rtype:NoneType
         """
         srid = None
         geom_column = None
-        geom_wkt = None
-        # If the feature is already added, don't
-        # load STDM Form
-        if feature_id in self.features_id:
+        self.current_feature = feature_id
+
+        # If the digitizing save button is clicked,
+        # the featureAdded signal is called but the
+        # feature ids value is over 0. Return to prevent
+        # the dialog from poping up for every feature.
+        if feature_id > 0:
             return
+
+        # If the added feature is removed earlier, add it
+        # back to feature_models and don't show the form.
+        # This happens when redo button(add feature back) is
+        # clicked after an undo button(remove feature)
+        if feature_id in self.removed_feature_models.keys():
+            print vars(self.removed_feature_models[feature_id])
+            self.feature_models[feature_id] = \
+                self.removed_feature_models[feature_id]
+            return
+        # if the feature is already don't show the form
+        # as the model of the feature is
+        # already populated by the form
+        if feature_id in self.feature_models.keys():
+            return
+
+        geom_wkt = self.get_wkt(feature_id)
+        # init form
+        self.editor = EntityEditorDialog(
+            self.entity, None, iface.mainWindow(), True, True
+        )
+
+        self.editor.addedModel.connect(self.on_form_saved)
+        self.model = self.editor.model()
 
         for column in self.entity.columns.values():
             if column.TYPE_INFO == 'GEOMETRY':
                 srid = column.srid
                 geom_column = column.name
-
-        fids = [feature_id]
-
-        request = QgsFeatureRequest()
-        request.setFilterFids(fids)
-
-        features = self.layer.getFeatures(request)
-        # get the wkt of the geometry
-        for feature in features:
-            geom_wkt = feature.geometry().exportToWkt()
-
-        # init form
-        self.editor = EntityEditorDialog(
-            self.entity, None, iface.mainWindow()
-        )
-
-        self.model = self.editor.model()
 
         if not geom_wkt is None:
             # add geometry into the model
@@ -373,18 +396,79 @@ class STDMFieldWidget():
                 'SRID={};{}'.format(srid, geom_wkt)
             )
 
-        self.features_id.append(feature_id)
         # open editor
         result = self.editor.exec_()
         if result < 1:
             self.layer.deleteFeature(feature_id)
 
-    def stop_editing(self):
+    def get_wkt(self, feature_id):
         """
-        Undo editing before saved to prevent
-        duplicate insert.
+        Gets feature geometry in Well-Known Text
+        format and returns it.
+        :param feature_id: Feature id
+        :type feature_id: Integer
+        :return: Well-Known Text format of a geometry
+        :rtype: WKT
+        """
+        geom_wkt = None
+        fids = [feature_id]
+        request = QgsFeatureRequest()
+        request.setFilterFids(fids)
+        features = self.layer.getFeatures(request)
+        # get the wkt of the geometry
+        for feature in features:
+            geom_wkt = feature.geometry().exportToWkt()
+
+        return geom_wkt
+
+    def on_form_saved(self, model):
+        """
+        A slot raised when the save button is clicked
+        in spatial unit form. It adds the feature model
+        in feature_models ordered dictionary to be saved
+        later.
+        :param model: The model holding feature geometry
+        and attributes obtained from the form
+        :type model: SQLAlchemy Model
         :return: None
         :rtype: NoneType
         """
-        #self.layer.blockSignal(True)
-        self.layer.undoStack().undo()
+        self.feature_models[self.current_feature] = model
+        self.editor.accept()
+
+    def on_feature_deleted(self, feature_id):
+        """
+        A slot raised when a feature is deleted
+        in QGIS map canvas via the undo button.
+        It deletes the associated model of the feature.
+        :param feature_id: The id that is removed.
+        :type feature_id: Integer
+        :return: None
+        :rtype: NoneType
+        """
+        if feature_id in self.feature_models.keys():
+            self.removed_feature_models[feature_id] = \
+                self.feature_models[feature_id]
+            del self.feature_models[feature_id]
+
+    def on_digitizing_saved(self):
+        """
+        A slot raised when the save button is clicked
+        on Digitizing Toolbar of QGIS. It saves feature
+        models created by the digitizer and STDM form to
+        the Database.
+        :return: None
+        :rtype: NoneType
+        """
+        ent_model = entity_model(self.entity)
+        entity_obj = ent_model()
+        entity_obj.saveMany(
+            self.feature_models.values()
+        )
+        # undo each feature created so that qgis
+        # don't try to save the same feature again.
+        # It will also clear all the models from
+        # self.feature_models as on_feature_deleted
+        # is raised when a feature is removed.
+        for i in range(len(self.feature_models)):
+            self.layer.undoStack().undo()

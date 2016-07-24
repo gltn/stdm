@@ -501,11 +501,11 @@ class DocumentViewManager(QMainWindow):
         doc_identifier = document_widget.file_identifier()
 
         if doc_identifier in self._doc_viewers:
+
             doc_sw = self._doc_viewers[doc_identifier]
+
             self._mdi_area.setActiveSubWindow(doc_sw)
             doc_sw.showNormal()
-
-            return True
 
         else:
             doc_viewer = self._create_viewer(document_widget)

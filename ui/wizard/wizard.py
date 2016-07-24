@@ -102,6 +102,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.setupUi(self)
         self.register_fields()
 
+        # transfer state between wizard and column editor
+        self.editor_cache = {}
+        self.editor_cache['prop_set'] = None
+
         # directory path settings
         self.init_path_ctrls_event_handlers()
 
@@ -260,35 +264,22 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Function assumes both configuration file and backup configuration
         file exist. Returns either the configuration file or the backup 
-        configuration file depending on what the users selects.
+        configuration file depending on what the users selects to use.
         :rtype: str
         """
         msg = self.tr("Please note that your previous configuration wizard did "
-                "not complete successfully!\n A backup of that session is "
-                " available.\n Would you like to restore the backup session? ")
-        if self.query_box_yesno(msg) == QMessageBox.Yes:
+                "not complete successfully!\n However a backup of work done on "
+                "that session is available.\n Would you like to restore that backup session?\n "
+                "If you choose the NO button, you will lose all your latest changes, \n "
+                "and there could be a mismatch between the database and the "
+                "configuration.")
+
+        if self.query_box_yesno(msg, QMessageBox.Critical) == QMessageBox.Yes:
             return CONFIG_BACKUP_FILE
         else:
             return CONFIG_FILE
 
-    def check_show_license(self, reg_config):
-        """
-        Checks if you need to show the license page. Checks if the flag in the
-        registry has been set. Returns True to show license. If registry key is not yet
-        set, show the license page.
-        :param reg_config: regstry config reader
-        :type reg_config: RegistryConfig
-        :rtype: boolean
-        """
-        show_lic = 1
-        license_key = reg_config.read([SHOW_LICENSE])
-        if len(license_key) > 0:
-            show_lic = license_key[SHOW_LICENSE]
-        if show_lic == 1:
-            return True
-        else:
-            return False
-     
+
     def init_path_ctrls_event_handlers(self):
         """
         Attach OnClick event handlers for the document path buttons
@@ -670,6 +661,20 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         return True, "Ok."
 
+    def enable_str_setup(self, short_name, cbo_text):
+        """
+        Disable STR UI widgets if Social Tenure Relationship has
+        been set in and saved in the database
+        :param short_name: name of party entity in STR
+        :type short_name: unicode
+        :param cbo_text: Text is the combobox
+        :type cbo_text: unicode
+        """
+        if short_name == cbo_text:
+            self.cboParty.setEnabled(False)
+            self.cboSPUnit.setEnabled(False)
+            self.cbMultiParty.setEnabled(False)
+
     def validateCurrentPage(self):
         validPage = True
 
@@ -682,20 +687,25 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if self.currentId() == 3:
             self.party_changed(0)
 
+            curr_profile = self.current_profile()
+
             # get entity with no geometry column
-            idx = self.index_party_table()
-            self.cboParty.setCurrentIndex(idx)
-            #self.spatial_unit_changed(idx)
+            idx1 = self.index_party_table()
+            self.cboParty.setCurrentIndex(idx1)
 
             # get an entity with a geometry column
             idx = self.index_spatial_unit_table()
             self.cboSPUnit.setCurrentIndex(idx)
             self.spatial_unit_changed(idx)
 
-            self.set_multi_party_checkbox(self.current_profile())
+            self.set_multi_party_checkbox(curr_profile)
 
             # verify that lookup entities have values
             validPage = self.validate_empty_lookups()
+
+            if not curr_profile.social_tenure.party is None:
+                self.enable_str_setup(curr_profile.social_tenure.party.short_name,
+                    unicode(self.cboParty.itemText(idx1)) )
 
         if self.currentId() == 4:
             validPage, msg = self.validate_STR()
@@ -1411,6 +1421,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             params['parent'] = self
             params['entity'] = entity
             params['profile'] = profile
+            
+            params['is_new'] = True
 
             editor = ColumnEditor(**params)
             result = editor.exec_()
@@ -1437,14 +1449,16 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             params['profile'] = self.current_profile()
             params['in_db'] = self.column_exist_in_entity(entity, column)
 
+            params['is_new'] = False
+
             tmp_column = model_item.entity(column.name)
 
             editor = ColumnEditor(**params)
             result = editor.exec_()
             if result == 1: # after successfull editing
-                model_index_name = model_item.index(rid, 0)
+                model_index_name  = model_item.index(rid, 0)
                 model_index_dtype = model_item.index(rid, 1)
-                model_index_desc = model_item.index(rid, 2)
+                model_index_desc  = model_item.index(rid, 2)
 
                 model_item.setData(model_index_name, editor.column.name)
                 model_item.setData(model_index_dtype, editor.column.TYPE_INFO.capitalize())
@@ -1564,25 +1578,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         if profile:
             if len(self.lvLookups.selectedIndexes()) == 0:
-                self.show_message(QApplication.translate("Configuration Wizard", \
-                        "No lookup selected for edit!"))
+                self.show_message(self.tr("No lookup selected for edit!"))
                 return
 
             row_id, lookup = self._get_entity_item(self.lvLookups)
-            
-            # WIP
-            #dependencies = self.all_column_dependencies(profile)
-            #if self.find_lookup(lookup.name, dependencies):
-                #self.show_message("YES!")
-            #else:
-                #self.show_message("Nothing")
-            #self.show_relations(profile)
-
-            # don't edit entities that already exist in the database
-            if pg_table_exists(lookup.name):
-                self.show_message(QApplication.translate("Configuration Wizard", \
-                        "Editing lookup that exist in database is not allowed!"))
-                return
 
             editor = LookupEditor(self, profile, lookup)
             result = editor.exec_()
@@ -1594,7 +1593,50 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "Nothing to edit!"))
 
+
+    def delete_lookup(self):
+        """
+        Event handler for deleting a selected lookup. Does NOT allow
+        deleting of 'tenure_type' lookup.
+        """
+        profile = self.current_profile()
+
+        if profile is None:
+            self.show_message(self.tr("Nothing to delete!"))
+
+        if len(self.lvLookups.selectedIndexes()) == 0:
+            self.show_message(self.tr("Select a lookup to delete!"))
+            return
+
+        row_id, lookup = self._get_entity_item(self.lvLookups)
+        # get dependencies for all the columns in all entities for
+        # the current profile
+        dependencies = self.all_column_dependencies(profile)
+        if self.find_lookup(lookup.name, dependencies):
+            self.show_message(self.tr("Cannot delete '{0}' lookup!\n "
+            "Lookup is been used by existing columns."
+            "".format(lookup.name, lookup.name)))
+            return
+
+        msg = self.tr('Delete selected lookup?')
+        if self.query_box_yesno(msg) == QMessageBox.Yes:
+            # dont delete `tenure_type` lookup
+            if lookup.short_name == 'check_tenure_type':
+                self.show_message(self.tr("Cannot delete tenure "
+                "type lookup table!"))
+                return
+
+            profile.remove_entity(lookup.short_name)
+            self.lookup_view_model.removeRow(row_id)
+
     def all_column_dependencies(self, profile):
+        """
+        Returns a list of all column dependencies, for all
+        enitites in the current profile
+        :param profile: current selected profile
+        :type profile: Profile 
+        :rtype: list
+        """
         depends = []
         #for profile in profiles:
         for entity in profile.entities.values():
@@ -1605,42 +1647,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         return depends
 
     def find_lookup(self, name, dependencies):
+        """
+        Returns True if name is in the list of dependencies
+        else False
+        :param name: name to search in the list
+        :type name: str
+        :param dependencies: list to search 
+        :type dependencies: list
+        :rtype: boolean
+        """
         for depend in dependencies:
             if name in depend['entities']:
                 return True
         return False
-
-    def show_relations(self, profile):
-        for relation in profile.relations.values():
-            self.show_message(relation.parent.short_name)
-
-    def delete_lookup(self):
-        """
-        Event handler for deleting a selected lookup. Does NOT allow
-        deleting of 'tenure_type' lookup.
-        """
-        profile = self.current_profile()
-
-        # WIP
-        #self.show_relations(profile)
-
-        if profile:
-            if len(self.lvLookups.selectedIndexes()) > 0:
-                row_id, lookup = self._get_entity_item(self.lvLookups)
-                # dont delete `tenure_type` lookup
-                if lookup.short_name == 'check_tenure_type':
-                    self.show_message(QApplication.translate("Configuration Wizard",
-                        "Cannot delete tenure type lookup table!"))
-                    return
-
-                profile.remove_entity(lookup.short_name)
-                self.lookup_view_model.removeRow(row_id)
-            else:
-                self.show_message(QApplication.translate("Configuration Wizard", \
-                        "No lookup selected for deletion!"))
-        else:
-            self.show_message(QApplication.translate("Configuration Wizard", \
-                    "Nothing to delete!"))
 
     def addValues_byEntity(self, entity):
         """
@@ -1774,7 +1793,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         result = msgbox.exec_()
         return result
 
-    def query_box_yesno(self, msg):
+    def query_box_yesno(self, msg, msg_icon=QMessageBox.Warning):
         """
         Show 'Yes/No' query message box
         :param msg: message to show on the box
@@ -1782,8 +1801,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         :rtype: QMessageBox.StandardButton
         """
         msgbox = QMessageBox(self)
-        msgbox.setIcon(QMessageBox.Warning)
-        msgbox.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
+        msgbox.setIcon(msg_icon)
+        msgbox.setWindowTitle(self.tr("STDM Configuration Wizard"))
         msgbox.setText(msg)
         msgbox.setStandardButtons(QMessageBox.Yes | QMessageBox.No);
         msgbox.setDefaultButton(QMessageBox.Yes);
