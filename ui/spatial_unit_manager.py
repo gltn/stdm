@@ -66,7 +66,7 @@ class SpatialUnitManagerDockWidget(
     QDockWidget, Ui_SpatialUnitManagerWidget
 ):
     onLayerAdded = pyqtSignal(object)
-    def __init__(self, iface, plugin):
+    def __init__(self, iface, plugin=None):
         """Constructor."""
         QDockWidget.__init__(self, iface.mainWindow())
         # Set up the user interface from Designer.

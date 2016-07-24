@@ -23,7 +23,12 @@ from collections import OrderedDict
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-
+from qgis.utils import (
+    iface
+)
+from qgis.gui import (
+   QgsHighlight
+)
 from stdm.data.configuration import entity_model
 from stdm.data.configuration.columns import (
     GeometryColumn,
@@ -31,7 +36,11 @@ from stdm.data.configuration.columns import (
     VirtualColumn
 )
 from stdm.data.configuration.entity import Entity
-from stdm.data.pg_utils import table_column_names
+from stdm.data.pg_utils import(
+    table_column_names,
+    qgsgeometry_from_wkbelement
+)
+
 from stdm.data.qtmodels import (
     BaseSTDMTableModel,
     VerticalHeaderSortFilterProxyModel
@@ -45,13 +54,18 @@ from stdm.ui.sourcedocument import (
     network_document_path,
     DOWNLOAD_MODE
 )
+from stdm.ui.spatial_unit_manager import (
+    SpatialUnitManagerDockWidget
+)
+
 from stdm.ui.document_viewer import DocumentViewManager
 from .admin_unit_manager import VIEW,MANAGE,SELECT
 from .ui_entity_browser import Ui_EntityBrowser
 from .helpers import SupportsManageMixin
 from .notification import NotificationBar
 from stdm.utils.util import (
-    format_name
+    format_name,
+    entity_id_to_attr
 )
 
 __all__ = ["EntityBrowser", "EntityBrowserWithEditor",
@@ -692,7 +706,9 @@ class EntityBrowserWithEditor(EntityBrowser):
     """
     def __init__(self,entity, parent=None, state=MANAGE):
         EntityBrowser.__init__(self, entity, parent, state)
-        
+        self.record_id = 0
+
+        self.sel_highlight = None
         #Add action toolbar if the state contains Manage flag
         if (state & MANAGE) != 0:
             add = QApplication.translate("EntityBrowserWithEditor", "Add")
@@ -734,8 +750,19 @@ class EntityBrowserWithEditor(EntityBrowser):
                 self.tbActions.addAction(self._newEntityAction)
                 self.tbActions.addAction(self._editEntityAction)
                 self.tbActions.addAction(self._removeEntityAction)
-            # Hide the add button from spatial tables
+
+            # hide the add button and add layer preview for spatial entity
             if entity.has_geometry_column():
+                self.add_spatial_unit_layer(entity)
+                self.tbEntity.clicked.connect(
+                    lambda sel_model_index:
+                    self.on_select_attribute(
+                        sel_model_index, entity
+                    )
+                )
+
+                self.shift_spatial_entity_browser()
+                # Hide the add button from spatial tables
                 self._newEntityAction.setVisible(False)
 
             self._editor_dlg = EntityEditorDialog
@@ -857,7 +884,133 @@ class EntityBrowserWithEditor(EntityBrowser):
     
         recordId = recordIdIndex.data()
         self._load_editor_dialog(recordId,recordIdIndex.row())
-        
+
+    def shift_spatial_entity_browser(self):
+        """
+        Shift records manager to the bottom left corner
+        :rtype: NoneType
+        :return: None
+        """
+        parent_height = self.parent().geometry().height()
+        parent_width = self.parent().geometry().width()
+        parent_x = self.parent().geometry().x()
+        parent_y = self.parent().geometry().y()
+        dialog_width = self.width()
+        dialog_height = self.height()
+        self.setGeometry(
+            parent_x,
+            parent_y+parent_height-dialog_height-40,
+            dialog_width,
+            dialog_height
+        )
+
+    def on_select_attribute(self, sel_model_index, entity):
+        """
+        Slot raised when selecting a spatial entity row.
+        :return:
+        :rtype:
+        """
+        selRowIndices = self.tbEntity.\
+            selectionModel().selectedRows(0)
+
+        rowIndex = self._proxyModel.mapToSource(
+            selRowIndices[0]
+        )
+        record_id = rowIndex.data()
+
+        # Get the geometry column
+        gem_column = [
+            column
+            for column in entity.columns.values()
+            if column.TYPE_INFO == 'GEOMETRY'
+        ]
+
+        geom_wkb = entity_id_to_attr(
+            entity,
+            gem_column[0].name,
+            record_id
+        )
+
+        self.highlight_spatial_unit(
+            geom_wkb, iface.mapCanvas()
+        )
+
+
+    def highlight_spatial_unit(
+            self, geom, map_canvas
+    ):
+        layer = iface.activeLayer()
+        map_canvas.setExtent(layer.extent())
+        map_canvas.refresh()
+
+        self.clear_sel_highlight()
+
+        qgis_geom = qgsgeometry_from_wkbelement(geom)
+
+        self.sel_highlight = QgsHighlight(
+            map_canvas, qgis_geom, layer
+        )
+
+        self.sel_highlight.setFillColor(
+            QColor(255, 128, 0)
+        )
+
+        self.sel_highlight.setWidth(3)
+        self.sel_highlight.show()
+
+        extent = qgis_geom.boundingBox()
+        extent.scale(2.1)
+        map_canvas.setExtent(extent)
+        map_canvas.refresh()
+
+    def zoom_to_layer(self):
+        layer = iface.activeLayer()
+        iface.mapCanvas().setExtent(layer.extent())
+        iface.mapCanvas().refresh()
+
+    def clear_sel_highlight(self):
+        """
+        Removes sel_highlight from the canvas.
+        :return:
+        """
+        if self.sel_highlight is not None:
+            self.sel_highlight = None
+
+    def add_spatial_unit_layer(self, entity):
+        sp_unit_manager = SpatialUnitManagerDockWidget(
+            iface
+        )
+
+        table = entity.name
+        spatial_column = [
+            c.name
+            for c in entity.columns.values()
+            if c.TYPE_INFO == 'GEOMETRY'
+        ]
+        spatial_layer_item = unicode(
+            '{}.{}'.format(
+                table, spatial_column[0]
+            )
+        )
+        index = sp_unit_manager.stdm_layers_combo.findText(
+            spatial_layer_item, Qt.MatchFixedString
+        )
+        if index >= 0:
+            sp_unit_manager.stdm_layers_combo.setCurrentIndex(index)
+        # add spatial unit layers on view social tenure.
+        sp_unit_manager.on_add_to_canvas_button_clicked()
+
+    def closeEvent(self, event):
+        """
+        The event handler that is triggered
+        when the dialog is closed.
+        :param event: the event
+        :type QCloseEvent
+        :return: None
+        """
+        self.clear_sel_highlight()
+        self.zoom_to_layer()
+
 class ContentGroupEntityBrowser(EntityBrowserWithEditor):
     """
     Entity browser that loads editing tools based on the content permission

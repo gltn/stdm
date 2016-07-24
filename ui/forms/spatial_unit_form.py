@@ -20,6 +20,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import os
+import json
 import re
 import logging
 from decimal import Decimal
@@ -30,12 +31,17 @@ from qgis.core import (
     QgsMessageLog,
     QgsVectorLayerCache,
     QgsGeometry,
-    QgsFeatureRequest
+    QgsFeatureRequest,
+    QgsMapLayerRegistry,
+    QgsFeature,
+    QgsPoint,
+    QgsVectorLayer
 )
 from PyQt4.QtGui import (
     QApplication,
     QLabel,
-    QHBoxLayout
+    QHBoxLayout,
+    QColor
 )
 
 from qgis.gui import (
