@@ -31,6 +31,11 @@ from .configuration_collection_base import (
 class PhotoConfiguration(LinkedTableItemConfiguration):
     tag_name = "Source"
 
+    def __init__(self, **kwargs):
+        self.document_type = kwargs.pop('document_type', '')
+        self.document_type_id = kwargs.pop('document_type_id', -1)
+        LinkedTableItemConfiguration.__init__(self, **kwargs)
+
     def to_dom_element(self, dom_document):
         """
         :param dom_document: Root composer element.
@@ -40,6 +45,8 @@ class PhotoConfiguration(LinkedTableItemConfiguration):
         :rtype: QDomElement
         """
         ph_element = dom_document.createElement(self.tag_name)
+        ph_element.setAttribute('documentType', self.document_type)
+        ph_element.setAttribute('documentTypeId', str(self.document_type_id))
         self.write_to_dom_element(ph_element)
 
         return ph_element
@@ -60,11 +67,17 @@ class PhotoConfiguration(LinkedTableItemConfiguration):
         ph_table = linked_table_props.linked_table
         source_col = linked_table_props.source_field
         ref_col= linked_table_props.linked_field
+        document_type = dom_element.attribute('documentType', '')
+        document_type_id = dom_element.attribute('documentTypeId', '-1')
 
-        return PhotoConfiguration(linked_table=ph_table,
-                                  source_field=source_col,
-                                  linked_field=ref_col,
-                                  item_id=item_id)
+        return PhotoConfiguration(
+            linked_table=ph_table,
+            source_field=source_col,
+            linked_field=ref_col,
+            item_id=item_id,
+            document_type=document_type,
+            document_type_id=document_type_id
+        )
 
 class PhotoConfigurationCollection(ConfigurationCollectionBase):
     """

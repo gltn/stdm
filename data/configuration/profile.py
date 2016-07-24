@@ -35,7 +35,10 @@ from stdm.data.configuration.association_entity import (
     AssociationEntity
 )
 from stdm.data.configuration.entity_relation import EntityRelation
-from stdm.data.configuration.entity import Entity
+from stdm.data.configuration.entity import (
+    Entity,
+    EntitySupportingDocument
+)
 from stdm.data.configuration.db_items import DbItem
 from stdm.data.configuration.social_tenure import SocialTenure
 from stdm.data.configuration.supporting_document import SupportingDocument
@@ -445,6 +448,14 @@ class Profile(QObject):
         :rtype: list
         """
         return self.entities_by_type_info(ValueList.TYPE_INFO)
+
+    def supporting_document_entities(self):
+        """
+        :return: Returns a list of supporting documents entities in the
+        profile.
+        :rtype: list
+        """
+        return self.entities_by_type_info(EntitySupportingDocument.TYPE_INFO)
 
     def on_delete(self):
         """

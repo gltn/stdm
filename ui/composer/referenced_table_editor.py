@@ -42,6 +42,9 @@ from stdm.data.pg_utils import (
     TABLES,
     VIEWS
 )
+from stdm.settings import (
+    current_profile
+)
 from stdm.utils.util import setComboCurrentIndexWithText
 
 __all__ = ["LinkedTableProps", "ReferencedTableEditor"]
@@ -90,6 +93,37 @@ class ReferencedTableEditor(QWidget):
 
         self.cbo_ref_table.currentIndexChanged[str].connect(self._on_ref_table_changed)
 
+        #Tables that will be omitted from the referenced table list
+        self._omit_ref_tables = []
+
+    def add_omit_table(self, table):
+        """
+        Add a table name that will be omitted from the list of referenced
+        tables.
+        :param table: Table name that will be omitted
+        :type table: str
+        """
+        if not table in self._omit_ref_tables:
+            self._omit_ref_tables.append(table)
+
+    def add_omit_tables(self, tables):
+        """
+        Add a list of tables that will be omitted from the list of referenced
+        tables.
+        :param tables: Table names to be omitted.
+        :type tables: list
+        """
+        for t in tables:
+            self.add_omit_table(t)
+
+    @property
+    def omit_tables(self):
+        """
+        :return: Returns a list of tables that are to be omitted from the
+        list of referenced tables.
+        """
+        return self._omit_ref_tables
+
     def setupUi(self):
         self.setObjectName("ReferencedTableEditor")
         self.gridLayout = QGridLayout(self)
@@ -124,6 +158,11 @@ class ReferencedTableEditor(QWidget):
                                                   "Data source field"))
         self.label_3.setText(QApplication.translate("ReferencedTableEditor",
                                                     "Referencing"))
+
+        self._current_profile = current_profile()
+        self._current_profile_tables = []
+        if not self._current_profile is None:
+            self._current_profile_tables = self._current_profile.table_names()
 
         #Connect signals
         QMetaObject.connectSlotsByName(self)
@@ -218,10 +257,17 @@ class ReferencedTableEditor(QWidget):
 
         source_tables = []
         for t in ref_tables:
+            #Ensure we are dealing with tables in the current profile
+            if not t in self._current_profile_tables:
+                continue
+
+            #Assert if the table is in the list of omitted tables
+            if t in self._omit_ref_tables:
+                continue
+
             if not reg_exp is None:
                 if reg_exp.indexIn(t) >= 0:
                     source_tables.append(t)
-
             else:
                 source_tables.append(t)
 

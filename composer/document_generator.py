@@ -60,11 +60,6 @@ from sqlalchemy.schema import (
     Table,
     MetaData
 )
-from sqlalchemy import (
-    Column,
-    func
-)
-from geoalchemy2 import Geometry
 
 from stdm.settings.registryconfig import RegistryConfig
 from stdm.data.pg_utils import (
@@ -73,6 +68,9 @@ from stdm.data.pg_utils import (
     vector_layer
 )
 from stdm.data.database import STDMDb
+from stdm.settings import (
+    current_profile
+)
 from stdm.ui.sourcedocument import (
     network_document_path
 )
@@ -103,6 +101,10 @@ class DocumentGenerator(QObject):
         self._dbSession = STDMDb.instance().session
         
         self._attr_value_formatters = {}
+
+        self._current_profile = current_profile()
+        if self._current_profile is None:
+            raise Exception('Current data profile has not been set.')
         
         #For cleanup after document compositions have been created
         self._map_memory_layers = []
@@ -594,10 +596,33 @@ class DocumentGenerator(QObject):
             photo_tb = conf.linked_table()
             referenced_column = conf.source_field()
             referencing_column = conf.linked_field()
+            document_type = conf.document_type.replace(' ', '_').lower()
+            document_type_id = int(conf.document_type_id)
+
+            #Get name of base supporting documents table
+            supporting_doc_base = self._current_profile.supporting_document.name
+
+            #Get parent table of supporting document table
+            s_doc_entities = self._current_profile.supporting_document_entities()
+            photo_doc_entities = [de for de in s_doc_entities
+                                   if de.name == photo_tb]
+
+            if len(photo_doc_entities) == 0:
+                continue
+
+            photo_doc_entity = photo_doc_entities[0]
+            document_parent_table = photo_doc_entity.parent_entity.name
 
             #Get id of base photo
-            alchemy_table, results = self._exec_query(photo_tb, referencing_column,
-                                                      getattr(record, referenced_column, ""))
+            alchemy_table, results = self._exec_query(
+                photo_tb,
+                referencing_column,
+                getattr(record, referenced_column, '')
+            )
+
+            #Filter results further based on document type
+            results = [r for r in results
+                       if r.document_type == document_type_id]
 
             '''
             There are no photos in the referenced table column hence insert no
@@ -615,17 +640,34 @@ class DocumentGenerator(QObject):
                     continue
 
             for r in results:
-                base_ph_table, doc_results = self._exec_query(self._base_photo_table,
-                                                          "id", r.id)
+                base_ph_table, doc_results = self._exec_query(
+                    supporting_doc_base,
+                    'id',
+                    r.supporting_doc_id
+                )
 
                 for dr in doc_results:
-                    self._build_photo_path(composition, conf.item_id(), dr.document_type,
-                                           dr.document_id, dr.filename)
+                    self._build_photo_path(
+                        composition,
+                        conf.item_id(),
+                        document_parent_table,
+                        document_type,
+                        dr.document_identifier,
+                        dr.filename
+                    )
 
                 #TODO: Only interested in one photograph, should support more?
                 break
 
-    def _build_photo_path(self, composition, composer_id, doc_type, doc_id, doc_name):
+    def _build_photo_path(
+            self,
+            composition,
+            composer_id,
+            document_parent_table,
+            document_type,
+            doc_id,
+            doc_name
+    ):
         pic_item = composition.getComposerItemById(composer_id)
 
         if pic_item is None:
@@ -640,8 +682,15 @@ class DocumentGenerator(QObject):
             return
 
         img_extension = extensions[1]
-        abs_path = u"{0}/{1}/{2}.{3}".format(network_ph_path, doc_type,
-                                             doc_id, img_extension)
+        profile_name = self._current_profile.name.replace(' ', '_').lower()
+        abs_path = u'{0}/{1}/{2}/{3}/{4}.{5}'.format(
+            network_ph_path,
+            profile_name,
+            document_parent_table,
+            document_type,
+            doc_id,
+            img_extension
+        )
 
         if QFile.exists(abs_path):
             self._composeritem_value_handler(pic_item, abs_path)
