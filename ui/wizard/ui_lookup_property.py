@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_lookup_property.ui'
 #
-# Created: Sun Apr 24 14:30:53 2016
+# Created: Thu Jul 21 11:58:24 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -39,8 +39,8 @@ class Ui_LookupProperty(object):
         self.cboPrimaryEntity = QtGui.QComboBox(self.splitter)
         self.cboPrimaryEntity.setInsertPolicy(QtGui.QComboBox.InsertAtTop)
         self.cboPrimaryEntity.setObjectName(_fromUtf8("cboPrimaryEntity"))
-        self.edtNewlookup = QtGui.QPushButton(self.splitter)
-        self.edtNewlookup.setObjectName(_fromUtf8("edtNewlookup"))
+        self.btnNewlookup = QtGui.QPushButton(self.splitter)
+        self.btnNewlookup.setObjectName(_fromUtf8("btnNewlookup"))
         self.formLayout.setWidget(0, QtGui.QFormLayout.SpanningRole, self.splitter)
         self.buttonBox = QtGui.QDialogButtonBox(LookupProperty)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -56,5 +56,5 @@ class Ui_LookupProperty(object):
     def retranslateUi(self, LookupProperty):
         LookupProperty.setWindowTitle(_translate("LookupProperty", "Lookup property", None))
         self.label.setText(_translate("LookupProperty", "Lookup", None))
-        self.edtNewlookup.setText(_translate("LookupProperty", "New lookup ...", None))
+        self.btnNewlookup.setText(_translate("LookupProperty", "New lookup ...", None))
 

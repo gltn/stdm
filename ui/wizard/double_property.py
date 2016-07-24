@@ -46,6 +46,7 @@ class DoubleProperty(QDialog, Ui_DoubleProperty):
 
         self._min_val = form_fields['minimum']
         self._max_val = form_fields['maximum']
+        self.in_db = form_fields['in_db']
 
         self.init_gui()
 
@@ -62,6 +63,9 @@ class DoubleProperty(QDialog, Ui_DoubleProperty):
 
         self.edtMinVal.setFocus()
 	
+        self.edtMinVal.setEnabled(not self.in_db)
+        self.edtMaxVal.setEnabled(not self.in_db)
+
     def add_values(self):
         """
         Sets min/max properties with values from form widgets

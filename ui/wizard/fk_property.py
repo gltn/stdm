@@ -44,11 +44,12 @@ class FKProperty(QDialog, Ui_FKProperty):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
-        self._entity_relation = relation['entity_relation']
+        self._entity_relation = relation['form_fields']['entity_relation']
         self.fk_entities = relation['fk_entities']
         self.profile = relation['profile']
         self.entity = relation['entity']
         self.column_name = relation['column_name']
+        self.in_db = relation['form_fields']['in_db']
 
         self.column_model = QStandardItemModel()
         self.lvDisplayCol.setModel(self.column_model)
@@ -75,8 +76,12 @@ class FKProperty(QDialog, Ui_FKProperty):
                     self.cboPrimaryUKey.findText(parent_column))
 
             self.show_display_cols(display_cols)
-            
 
+        # Disable controls if column exists in the database
+        self.cboPrimaryEntity.setEnabled(not self.in_db)
+        self.cboPrimaryUKey.setEnabled(not self.in_db)
+        self.lvDisplayCol.setEnabled(not self.in_db)
+            
     def show_display_cols(self, display_cols):
         """
         checks previously selected display columns

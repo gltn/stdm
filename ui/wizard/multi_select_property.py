@@ -30,12 +30,12 @@ class MultiSelectProperty(QDialog, Ui_LookupProperty):
     """
     Editor to create/edit MultiSelect column property
     """
-    def __init__(self, parent, first_parent, entity, profile):
+    def __init__(self, parent, form_fields, entity, profile):
         """
         :param parent: Owner of this window
         :type parent: QWidget
-        :param first_parent: Primary ValueList entity in the association class
-        :type first_parent: ValueList
+        :param form_fields: dictionary with parameters from the column editor
+        :type form_fields: dict
         :param entity: Current entity a column is created for
         :type entity: Entity
         :profile: Current profile
@@ -44,9 +44,10 @@ class MultiSelectProperty(QDialog, Ui_LookupProperty):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
-        self._first_parent = first_parent
+        self._first_parent = form_fields['first_parent']
         self._current_entity = entity
         self._profile = profile
+        self.in_db = form_fields['in_db']
 
         self._lookup_name = ''
         self.init_gui()
@@ -55,13 +56,17 @@ class MultiSelectProperty(QDialog, Ui_LookupProperty):
         """
         Initializes form widgets
         """
-        self.edtNewlookup.clicked.connect(self.create_lookup)
+        self.btnNewlookup.clicked.connect(self.create_lookup)
         lookup_names = self.lookup_entities()
         self.fill_lookup_cbo(lookup_names)
         if self._first_parent:
             self._lookup_name = self._first_parent.short_name
             self.cboPrimaryEntity.setCurrentIndex( \
                     self.cboPrimaryEntity.findText(self._lookup_name))
+
+        # disable controls if column already exists in database
+        self.btnNewlookup.setEnabled(not self.in_db)
+        self.cboPrimaryEntity.setEnabled(not self.in_db)
 
     def create_lookup(self):
         """

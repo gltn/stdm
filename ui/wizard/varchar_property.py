@@ -51,6 +51,7 @@ class VarcharProperty(QDialog, Ui_VarcharProperty):
         self.setupUi(self)
 
         self._max_len = form_fields['maximum']
+        self.in_db = form_fields['in_db']
 
         self.init_gui()
 
@@ -64,6 +65,8 @@ class VarcharProperty(QDialog, Ui_VarcharProperty):
 
         self.edtCharLen.setText(str(self._max_len))
         self.edtCharLen.setFocus()
+
+        self.edtCharLen.setEnabled(not self.in_db)
 	
     def add_len(self):
         """

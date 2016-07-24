@@ -45,6 +45,7 @@ class DateProperty(QDialog, Ui_DateProperty):
 
         self._min_val = form_fields['minimum']
         self._max_val = form_fields['maximum']
+        self.in_db = form_fields['in_db']
 
         self.min_use_current_date = form_fields['min_use_current_date']
         self.max_use_current_date = form_fields['max_use_current_date']
@@ -75,6 +76,14 @@ class DateProperty(QDialog, Ui_DateProperty):
 
         self.rbMinCurr.setChecked(self.min_use_current_date)
         self.rbMaxCurr.setChecked(self.max_use_current_date)
+
+        # disable controls if column already exist in database
+        self.edtMinDate.setEnabled(not self.in_db)
+        self.edtMaxDate.setEnabled(not self.in_db)
+        self.rbMinFixed.setEnabled(not self.in_db)
+        self.rbMinCurr.setEnabled(not self.in_db)
+        self.rbMaxFixed.setEnabled(not self.in_db)
+        self.rbMaxCurr.setEnabled(not self.in_db)
 
     def min_fixed_toggle_handler(self, checked):
         self.edtMinDate.setEnabled(checked)

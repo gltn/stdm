@@ -403,7 +403,7 @@
          <item>
           <widget class="QLabel" name="label_3">
            <property name="text">
-            <string>Description</string>
+            <string>Description:</string>
            </property>
            <property name="margin">
             <number>0</number>
