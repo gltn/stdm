@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_composer_photo_data_source.ui'
 #
-# Created: Mon Jan 05 09:56:02 2015
-#      by: PyQt4 UI code generator 4.10.3
+# Created: Sun Jul 24 19:10:02 2016
+#      by: PyQt4 UI code generator 4.9.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,23 +12,14 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    def _fromUtf8(s):
-        return s
-
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
+    _fromUtf8 = lambda s: s
 
 class Ui_PhotoDataSourceEditor(object):
     def setupUi(self, PhotoDataSourceEditor):
         PhotoDataSourceEditor.setObjectName(_fromUtf8("PhotoDataSourceEditor"))
         PhotoDataSourceEditor.resize(276, 298)
         self.gridLayout = QtGui.QGridLayout(PhotoDataSourceEditor)
-        self.gridLayout.setVerticalSpacing(10)
+        self.gridLayout.setVerticalSpacing(12)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.vl_notification = QtGui.QVBoxLayout()
         self.vl_notification.setObjectName(_fromUtf8("vl_notification"))
@@ -38,16 +29,32 @@ class Ui_PhotoDataSourceEditor(object):
         self.label_4.setObjectName(_fromUtf8("label_4"))
         self.gridLayout.addWidget(self.label_4, 0, 0, 1, 2)
         spacerItem = QtGui.QSpacerItem(20, 118, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout.addItem(spacerItem, 3, 1, 1, 1)
-        self.ref_table = ReferencedTableEditor(PhotoDataSourceEditor)
+        self.gridLayout.addItem(spacerItem, 4, 1, 1, 1)
+        self.groupBox = QtGui.QGroupBox(PhotoDataSourceEditor)
+        self.groupBox.setMinimumSize(QtCore.QSize(0, 0))
+        self.groupBox.setObjectName(_fromUtf8("groupBox"))
+        self.gridLayout_2 = QtGui.QGridLayout(self.groupBox)
+        self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
+        self.ref_table = ReferencedTableEditor(self.groupBox)
         self.ref_table.setObjectName(_fromUtf8("ref_table"))
-        self.gridLayout.addWidget(self.ref_table, 2, 0, 1, 2)
+        self.gridLayout_2.addWidget(self.ref_table, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.groupBox, 2, 0, 1, 2)
+        self.label = QtGui.QLabel(PhotoDataSourceEditor)
+        self.label.setMaximumSize(QtCore.QSize(100, 16777215))
+        self.label.setObjectName(_fromUtf8("label"))
+        self.gridLayout.addWidget(self.label, 3, 0, 1, 1)
+        self.cbo_document_type = QtGui.QComboBox(PhotoDataSourceEditor)
+        self.cbo_document_type.setMinimumSize(QtCore.QSize(0, 30))
+        self.cbo_document_type.setObjectName(_fromUtf8("cbo_document_type"))
+        self.gridLayout.addWidget(self.cbo_document_type, 3, 1, 1, 1)
 
         self.retranslateUi(PhotoDataSourceEditor)
         QtCore.QMetaObject.connectSlotsByName(PhotoDataSourceEditor)
 
     def retranslateUi(self, PhotoDataSourceEditor):
-        PhotoDataSourceEditor.setWindowTitle(_translate("PhotoDataSourceEditor", "Photo Data Source Editor", None))
-        self.label_4.setText(_translate("PhotoDataSourceEditor", "Photo", None))
+        PhotoDataSourceEditor.setWindowTitle(QtGui.QApplication.translate("PhotoDataSourceEditor", "Photo Data Source Editor", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_4.setText(QtGui.QApplication.translate("PhotoDataSourceEditor", "Photo", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate("PhotoDataSourceEditor", "Linked Table Properties", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("PhotoDataSourceEditor", "Document type", None, QtGui.QApplication.UnicodeUTF8))
 
 from .referenced_table_editor import ReferencedTableEditor

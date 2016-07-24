@@ -29,7 +29,8 @@ from stdm.data.pg_utils import (
 from stdm.settings import current_profile
 from stdm.utils.util import (
     profile_user_tables,
-    setComboCurrentIndexWithText
+    setComboCurrentIndexWithText,
+    setComboCurrentIndexWithItemData
 )
 from .ui_composer_data_source import Ui_frmComposerDataSource
 
@@ -118,10 +119,10 @@ class ComposerDataSourceSelector(QWidget,Ui_frmComposerDataSource):
         """
         Set the data source name if it exists in the list.
         """
-        sourceIndex = self.cboDataSource.findText(dataSourceName)
-        
-        if sourceIndex != -1:
-            self.cboDataSource.setCurrentIndex(sourceIndex)
+        setComboCurrentIndexWithItemData(
+            self.cboDataSource,
+            dataSourceName
+        )
 
     def set_referenced_table(self, referenced_table):
         """
@@ -130,7 +131,7 @@ class ComposerDataSourceSelector(QWidget,Ui_frmComposerDataSource):
         :type: str
         """
         if self.category() == 'View':
-            setComboCurrentIndexWithText(
+            setComboCurrentIndexWithItemData(
                 self.cboReferencedTable,
                 referenced_table
             )

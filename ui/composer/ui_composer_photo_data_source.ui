@@ -15,7 +15,7 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="verticalSpacing">
-    <number>10</number>
+    <number>12</number>
    </property>
    <item row="1" column="0" colspan="2">
     <layout class="QVBoxLayout" name="vl_notification"/>
@@ -30,7 +30,7 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
+   <item row="4" column="1">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -44,7 +44,47 @@
     </spacer>
    </item>
    <item row="2" column="0" colspan="2">
-    <widget class="ReferencedTableEditor" name="ref_table" native="true"/>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="title">
+      <string>Linked Table Properties</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0">
+       <widget class="ReferencedTableEditor" name="ref_table" native="true"/>
+      </item>
+     </layout>
+     <zorder>ref_table</zorder>
+     <zorder>ref_table</zorder>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label">
+     <property name="maximumSize">
+      <size>
+       <width>100</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Document type</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QComboBox" name="cbo_document_type">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>30</height>
+      </size>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

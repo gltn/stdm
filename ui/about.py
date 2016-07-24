@@ -74,8 +74,8 @@ class AboutSTDMDialog(QDialog,Ui_frmAbout):
         if self._metadata is None:
             return
 
-        m_version = self._metadata.get('version_installed', None)
-        if m_version is None:
+        installed_version = self._metadata.get('version_installed', None)
+        if installed_version is None:
             return
 
         cursor = self.txtAbout.textCursor()
@@ -88,7 +88,6 @@ class AboutSTDMDialog(QDialog,Ui_frmAbout):
             'AboutSTDMDialog',
             'STDM version'
         )
-        installed_version = '1.2.0'
         version_text = u'{0} {1}'.format(version_msg, installed_version)
         char_format = cursor.blockCharFormat()
         text_format = QTextCharFormat(char_format)
