@@ -313,9 +313,14 @@ class SourceDocumentManager(QObject):
 
                 networkManager = NetworkFileManager(network_document_path())
                 #Add document widget
-                docWidg = DocumentWidget(self.document_model, networkManager, mode=DOWNLOAD_MODE,
-                                         canRemove=self._canEdit,
-                                         view_manager=self._doc_view_manager)
+                docWidg = DocumentWidget(
+                    self.document_model,
+                    networkManager,
+                    mode=DOWNLOAD_MODE,
+                    canRemove=self._canEdit,
+                    view_manager=self._doc_view_manager
+                )
+
                 self._linkWidgetRemovedSignal(docWidg)
                 docWidg.setModel(sourcedoc)
                 container.addWidget(docWidg)
@@ -660,6 +665,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         Open the document referenced by this widget.
         """
         if not self._view_manager is None:
+
             self._view_manager.load_viewer(self)
 
     def setCanRemoveDocument(self,state):

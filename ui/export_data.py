@@ -360,6 +360,7 @@ class ExportData(QWizard,Ui_frmExportWizard):
         #Error Message Box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
+        msg.setWindowTitle('Data Export Error')
         msg.setText(Message)
         msg.exec_()  
 
