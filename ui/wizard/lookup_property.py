@@ -25,11 +25,13 @@ from ui_lookup_property import Ui_LookupProperty
 from stdm.data.configuration.entity_relation import EntityRelation
 from create_lookup import LookupEditor
 
+EX_VALUE_LIST = ['check_tenure_type']
+
 class LookupProperty(QDialog, Ui_LookupProperty):
     """
     Editor to create/edit Lookup column property
     """
-    def __init__(self, parent, entity_relation, profile=None):
+    def __init__(self, parent, form_fields, profile=None):
         """
         :param parent: Owner of this form
         :type parent: QWidget
@@ -41,7 +43,8 @@ class LookupProperty(QDialog, Ui_LookupProperty):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
-        self._entity_relation = entity_relation
+        self._entity_relation = form_fields['entity_relation']
+        self.in_db = form_fields['in_db']
         self._lookup_name = ''
         self._profile = profile
 
@@ -51,13 +54,17 @@ class LookupProperty(QDialog, Ui_LookupProperty):
         """
         Initializes form widgets
         """
-        self.edtNewlookup.clicked.connect(self.create_lookup)
+        self.btnNewlookup.clicked.connect(self.create_lookup)
         lookup_names = self.lookup_entities()
         self.fill_lookup_cbo(lookup_names)
         if self._entity_relation:
             self._lookup_name = self._entity_relation.parent.short_name
             self.cboPrimaryEntity.setCurrentIndex( \
                     self.cboPrimaryEntity.findText(self._lookup_name))
+
+        # disable controls if the column already exist in the database
+        self.cboPrimaryEntity.setEnabled(not self.in_db)
+        self.btnNewlookup.setEnabled(not self.in_db)
 
     def create_lookup(self):
         """
@@ -81,7 +88,8 @@ class LookupProperty(QDialog, Ui_LookupProperty):
         """
         names = []
         for value_list in self._profile.value_lists():
-            names.append(value_list.short_name)
+            if value_list.short_name not in EX_VALUE_LIST:
+                names.append(value_list.short_name)
         return names
 
     def fill_lookup_cbo(self, names):

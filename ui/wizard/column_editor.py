@@ -21,7 +21,9 @@ email                : stdm@unhabitat.org
 
 import os
 import logging
+import datetime
 import collections
+
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 from PyQt4.QtGui import *
@@ -42,8 +44,6 @@ from geometry_property import GeometryProperty
 from fk_property import FKProperty
 from lookup_property import LookupProperty
 from multi_select_property import MultiSelectProperty
-
-import datetime
 
 LOGGER = logging.getLogger('stdm')
 LOGGER.setLevel(logging.DEBUG)
@@ -72,6 +72,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.entity  = kwargs.get('entity', None)
         self.profile = kwargs.get('profile', None)
         self.in_db = kwargs.get('in_db', False)
+        self.is_new = kwargs.get('is_new', True)
 
         QDialog.__init__(self, self.form_parent)
 
@@ -96,6 +97,11 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.fk_entities     = []
         self.lookup_entities = []
+
+        if self.is_new:
+            self.prop_set = None
+        else:
+            self.prop_set = True
 
         # the current entity should not be part of the foreign key parent table,
         # add it to the exclusion list
@@ -128,8 +134,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.edtColName.setEnabled(not self.in_db)
         self.cboDataType.setEnabled(not self.in_db)
-        self.btnColProp.setEnabled(not self.in_db)
-
+        
 
     def column_to_form(self, column):
         """
@@ -217,6 +222,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.form_fields['maximum'] = self.type_attribs.get('maximum', 0)
         self.form_fields['srid'] = self.type_attribs.get('srid', "")
         self.form_fields['geom_type'] = self.type_attribs.get('geom_type', 0)
+        self.form_fields['in_db']  = self.in_db
 
         self.form_fields['entity_relation'] = \
                 self.type_attribs['FOREIGN_KEY'].get('entity_relation', None)
@@ -363,6 +369,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         Opens the property editor for the Varchar data type.
         If successfull, set a minimum column in work area 'form fields'
         """
+
         editor = VarcharProperty(self, self.form_fields)
         result = editor.exec_()
         if result == 1:
@@ -429,7 +436,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         if result == 1:
             self.form_fields['srid'] = editor.coord_sys()
             self.form_fields['geom_type'] = editor.geom_type()
-            self.type_attribs[self.type_info]['prop_set'] = True
+            self.property_set()
+            #self.type_attribs[self.type_info]['prop_set'] = True
 
     def admin_spatial_unit_property(self):
         """
@@ -461,7 +469,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 not in self.FK_EXCLUDE]
 
         relation = {}
-        relation['entity_relation'] = self.form_fields['entity_relation']
+        relation['form_fields'] = self.form_fields
         relation['fk_entities'] = fk_ent
         relation['profile'] = self.profile
         relation['entity'] = self.entity
@@ -471,18 +479,17 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         result = editor.exec_()
         if result == 1:
             self.form_fields['entity_relation'] = editor.entity_relation()
-            self.type_attribs[self.type_info]['prop_set'] = True
+            self.property_set()
 
     def lookup_property(self):
         """
         Opens a lookup type property editor
         """
-        er = self.form_fields['entity_relation']
-        editor = LookupProperty(self, er, profile=self.profile) 
+        editor = LookupProperty(self, self.form_fields, profile=self.profile) 
         result = editor.exec_()
         if result == 1:
             self.form_fields['entity_relation'] = editor.entity_relation()
-            self.type_attribs[self.type_info]['prop_set'] = True
+            self.property_set()
 
     def multi_select_property(self):
         """
@@ -492,20 +499,20 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
            self.show_message("Please enter column name!")
            return
        
-        first_parent = self.form_fields['first_parent']
-        editor = MultiSelectProperty(self, first_parent, self.entity, self.profile) 
+        editor = MultiSelectProperty(self, self.form_fields, self.entity, self.profile) 
         result = editor.exec_()
         if result == 1:
             self.form_fields['first_parent'] = editor.lookup()
             self.form_fields['second_parent'] = self.entity
-            self.type_attribs[self.type_info]['prop_set'] = True
+            self.property_set()
 
     def create_column(self):
         """
         Creates a new BaseColumn.
         """
         column = None
-        if self.type_info:
+
+        if self.type_info <> "":
             if self.type_info == 'ADMIN_SPATIAL_UNIT':
                 self.admin_spatial_unit_property()
                 column = BaseColumn.registered_types[self.type_info] \
@@ -525,6 +532,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         return column
 
+    def property_set(self):
+        self.prop_set = True
+
     def is_property_set(self, ti):
         """
         Checks if column property is set by reading the value of
@@ -533,7 +543,10 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         :type ti: BaseColumn.TYPE_INFO
         :rtype: boolean
         """
-        return self.type_attribs[ti].get('prop_set', True)
+        if self.prop_set is None:
+            return self.type_attribs[self.current_type_info()].get('prop_set', True)
+        else:
+            return self.prop_set
 
     def property_by_name(self, ti, name):
         try:
@@ -556,6 +569,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         ti = self.current_type_info()
         if ti=='':
             return
+
         self.btnColProp.setEnabled(self.type_attribs[ti].has_key('property'))
         self.type_info = ti
         opts = self.type_attribs[ti]
@@ -638,6 +652,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             return False
 
         new_column = self.make_column()
+
         if new_column is None:
             LOGGER.debug("Error creating column!")
             self.show_message('Unable to create column!')
