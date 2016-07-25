@@ -261,8 +261,6 @@ class ForeignKeyMapper(QWidget):
                 if isinstance(c, MultipleSelectColumn):
                     col_name = c.model_attribute_name
 
-                self._entity_attrs.append(col_name)
-
                 #Get widget factory so that we can use the value formatter
                 w_factory = ColumnWidgetRegistry.factory(c.TYPE_INFO)
                 if not w_factory is None:
