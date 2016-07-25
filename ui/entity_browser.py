@@ -1008,8 +1008,9 @@ class EntityBrowserWithEditor(EntityBrowser):
         :type QCloseEvent
         :return: None
         """
-        self.clear_sel_highlight()
-        self.zoom_to_layer()
+        if self._entity.has_geometry_column():
+            self.clear_sel_highlight()
+            self.zoom_to_layer()
 
     def hideEvent(self, hideEvent):
         """
@@ -1019,8 +1020,9 @@ class EntityBrowserWithEditor(EntityBrowser):
         :type QCloseEvent
         :return: None
         """
-        self.clear_sel_highlight()
-        self.zoom_to_layer()
+        if self._entity.has_geometry_column():
+            self.clear_sel_highlight()
+            self.zoom_to_layer()
 
 
 class ContentGroupEntityBrowser(EntityBrowserWithEditor):
