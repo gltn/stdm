@@ -1010,7 +1010,18 @@ class EntityBrowserWithEditor(EntityBrowser):
         """
         self.clear_sel_highlight()
         self.zoom_to_layer()
+    def hideEvent(self, hideEvent):
+        """
+        The event handler that is triggered
+        when the dialog is hidden.
+        :param hideEvent: the event
+        :type QCloseEvent
+        :return: None
+        """
+        self.clear_sel_highlight()
+        self.zoom_to_layer()
 
+        
 class ContentGroupEntityBrowser(EntityBrowserWithEditor):
     """
     Entity browser that loads editing tools based on the content permission
