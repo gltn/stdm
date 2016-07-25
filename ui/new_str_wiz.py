@@ -102,7 +102,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         # Current profile instance and properties
         self.curr_profile = current_profile()
 
-
         self.social_tenure = self.curr_profile.social_tenure
         self.str_type_table = None
         self.party = self.social_tenure.party

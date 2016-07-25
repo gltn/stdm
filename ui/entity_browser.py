@@ -1008,8 +1008,22 @@ class EntityBrowserWithEditor(EntityBrowser):
         :type QCloseEvent
         :return: None
         """
-        self.clear_sel_highlight()
-        self.zoom_to_layer()
+        if self._entity.has_geometry_column():
+            self.clear_sel_highlight()
+            self.zoom_to_layer()
+
+    def hideEvent(self, hideEvent):
+        """
+        The event handler that is triggered
+        when the dialog is hidden.
+        :param hideEvent: the event
+        :type QCloseEvent
+        :return: None
+        """
+        if self._entity.has_geometry_column():
+            self.clear_sel_highlight()
+            self.zoom_to_layer()
+
 
 class ContentGroupEntityBrowser(EntityBrowserWithEditor):
     """
