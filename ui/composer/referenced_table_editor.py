@@ -270,7 +270,7 @@ class ReferencedTableEditor(QWidget):
                     source_tables.append(t)
             else:
                 source_tables.append(t)
-
+        source_tables = source_tables + pg_views()
         self.cbo_ref_table.addItems(source_tables)
 
     def _load_source_table_fields(self, sel):
