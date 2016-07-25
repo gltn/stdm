@@ -420,6 +420,7 @@ class RelatedEntityWidgetFactory(ColumnWidgetRegistry):
 
         #Query all parent entities. Need for optimization
         p_entity = self._column.entity_relation.parent
+
         self._p_entity_cls = entity_model(p_entity, entity_only=True)
         self._p_entity_obj = self._p_entity_cls()
 
