@@ -600,6 +600,7 @@ class STDMQGISLoader(object):
                         config_updater = ConfigurationSchemaUpdater()
                         config_updater.exec_()
                         self.configuration_file_updater.backup_data()
+                        return True
 
                 else:
                     self.configuration_file_updater.\

@@ -905,8 +905,6 @@ class ConfigurationFileUpdater(object):
                                                         num_lookups,
                                                         check_up)
 
-                # QMessageBox.information(None, "T", str(values))
-
                 if len(new_keys) is not original_key_len:
                     for value in values:
                         first_v = value[:-3]
@@ -929,14 +927,10 @@ class ConfigurationFileUpdater(object):
                     new_values = str(new_values).replace("[", "(")
                     new_values = str(new_values).replace("]", ")")
                     new_values = str(new_values).replace("None", "NULL")
-                    new_values = str(new_values).replace('NULL', "NULL")
 
                 # Remove Unicode
                 values = new_values.replace("u\'", "\'")
 
                 column_keys = ",".join(new_keys)
-
-                QMessageBox.information(None, "Keys", str(column_keys) +
-                                        "\n" + str(values))
 
                 import_data(social_tenure_table, column_keys, values)
