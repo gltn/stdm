@@ -295,6 +295,8 @@ class STDMFieldWidget():
 
             if c.TYPE_INFO == 'SERIAL':
                 self.widget_mapping[c] = ['Hidden', None]
+            elif c.TYPE_INFO == 'GEOMETRY':
+                self.widget_mapping[c] = ['TextEdit', None]
             else:
                 stdm = QApplication.translate(
                     'STDMFieldWidget', 'STDM'
@@ -338,6 +340,23 @@ class STDMFieldWidget():
                 layer, col, widget_id_name[0]
             )
 
+    # def get_layer_source(self, layer):
+    #     """
+    #     Get the layer table name if the source is from the database.
+    #     :param layer: The layer for which the source is checked
+    #     :type QgsVectorLayer
+    #     :return: String or None
+    #     """
+    #     source = layer.source()
+    #     vals = dict(re.findall('(\S+)="?(.*?)"? ', source))
+    #     try:
+    #         table = vals['table'].split('.')
+    #         table_name = table[1].strip('"')
+    #         return table_name
+    #     except KeyError:
+    #         return None
+    #
+
     def load_stdm_form(self, feature_id):
         """
         Loads STDM Form and collects the model added
@@ -368,8 +387,8 @@ class STDMFieldWidget():
             self.feature_models[feature_id] = \
                 self.removed_feature_models[feature_id]
             return
-        # if the feature is already don't show the form
-        # as the model of the feature is
+        # if the feature is already in the dict don't
+        # show the form as the model of the feature is
         # already populated by the form
         if feature_id in self.feature_models.keys():
             return
@@ -383,11 +402,17 @@ class STDMFieldWidget():
         self.editor.addedModel.connect(self.on_form_saved)
         self.model = self.editor.model()
 
-        for column in self.entity.columns.values():
-            if column.TYPE_INFO == 'GEOMETRY':
-                srid = column.srid
-                geom_column = column.name
+        # layer source
+        source = self.layer.source()
+        geom_column = source[
+            source.find('(') + 1:source.find(')')
+        ]
+        # get srid with EPSG text
+        full_srid = self.layer.crs().authid().split(':')
 
+        if len(full_srid) > 0:
+            # Only extract the number
+            srid = full_srid[1]
         if not geom_wkt is None:
             # add geometry into the model
             setattr(
@@ -462,6 +487,7 @@ class STDMFieldWidget():
         """
         ent_model = entity_model(self.entity)
         entity_obj = ent_model()
+        print self.feature_models
         entity_obj.saveMany(
             self.feature_models.values()
         )

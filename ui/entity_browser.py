@@ -26,6 +26,7 @@ from PyQt4.QtGui import *
 from qgis.utils import (
     iface
 )
+from qgis.core import QgsMapLayerRegistry
 from qgis.gui import (
    QgsHighlight
 )
@@ -753,12 +754,9 @@ class EntityBrowserWithEditor(EntityBrowser):
 
             # hide the add button and add layer preview for spatial entity
             if entity.has_geometry_column():
-                self.add_spatial_unit_layer(entity)
+                self.add_spatial_unit_layer()
                 self.tbEntity.clicked.connect(
-                    lambda sel_model_index:
-                    self.on_select_attribute(
-                        sel_model_index, entity
-                    )
+                    self.on_select_attribute
                 )
 
                 self.shift_spatial_entity_browser()
@@ -904,7 +902,20 @@ class EntityBrowserWithEditor(EntityBrowser):
             dialog_height
         )
 
-    def on_select_attribute(self, sel_model_index, entity):
+    def geom_columns(self):
+        """
+        Get the geometry column
+        :return:
+        :rtype:
+        """
+        geom_column = [
+            column
+            for column in self._entity.columns.values()
+            if column.TYPE_INFO == 'GEOMETRY'
+        ]
+        return geom_column
+
+    def on_select_attribute(self, sel_model_index):
         """
         Slot raised when selecting a spatial entity row.
         :return:
@@ -918,28 +929,33 @@ class EntityBrowserWithEditor(EntityBrowser):
         )
         record_id = rowIndex.data()
 
-        # Get the geometry column
-        gem_column = [
-            column
-            for column in entity.columns.values()
-            if column.TYPE_INFO == 'GEOMETRY'
-        ]
+        geom_columns = self.geom_columns()
+        for geom in geom_columns:
+            geom_wkb = entity_id_to_attr(
+                self._entity,
+                geom.name,
+                record_id
+            )
 
-        geom_wkb = entity_id_to_attr(
-            entity,
-            gem_column[0].name,
-            record_id
-        )
+            if geom_wkb is not None:
+                lyr_name = self.geom_col_layer_name(geom)
+                layer_list = QgsMapLayerRegistry.instance().\
+                    mapLayersByName(lyr_name)
 
-        self.highlight_spatial_unit(
-            geom_wkb, iface.mapCanvas()
-        )
+                if len(layer_list) > 0:
+                    # set the column layer as active to
+                    # show highlight
+                    iface.setActiveLayer(layer_list[0])
+
+                    self.highlight_geom(
+                        iface.mapCanvas(), layer_list[0], geom_wkb
+                    )
 
 
-    def highlight_spatial_unit(
-            self, geom, map_canvas
+    def highlight_geom(
+            self, map_canvas, layer, geom
     ):
-        layer = iface.activeLayer()
+
         map_canvas.setExtent(layer.extent())
         map_canvas.refresh()
 
@@ -964,9 +980,18 @@ class EntityBrowserWithEditor(EntityBrowser):
         map_canvas.refresh()
 
     def zoom_to_layer(self):
+        """
+        Zooms the map canvas to the extent
+        the active layer.
+        :return:
+        :rtype:
+        """
         layer = iface.activeLayer()
-        iface.mapCanvas().setExtent(layer.extent())
-        iface.mapCanvas().refresh()
+        if not layer is None:
+            iface.mapCanvas().setExtent(
+                layer.extent()
+            )
+            iface.mapCanvas().refresh()
 
     def clear_sel_highlight(self):
         """
@@ -976,29 +1001,38 @@ class EntityBrowserWithEditor(EntityBrowser):
         if self.sel_highlight is not None:
             self.sel_highlight = None
 
-    def add_spatial_unit_layer(self, entity):
+    def geom_col_layer_name(self, col):
+        # Check if the geom has display name, if not,
+        # get layer name with default naming.
+        table = self._entity.name
+        if col.layer_display_name == '':
+            spatial_layer_item = unicode(
+                '{}.{}'.format(
+                    table, col.name
+                )
+            )
+        # use the layer_display_name
+        else:
+            spatial_layer_item = col.layer_display_name
+        return spatial_layer_item
+
+    def add_spatial_unit_layer(self):
         sp_unit_manager = SpatialUnitManagerDockWidget(
             iface
         )
 
-        table = entity.name
-        spatial_column = [
-            c.name
-            for c in entity.columns.values()
-            if c.TYPE_INFO == 'GEOMETRY'
-        ]
-        spatial_layer_item = unicode(
-            '{}.{}'.format(
-                table, spatial_column[0]
+        spatial_column = self.geom_columns()
+
+        for col in spatial_column:
+            spatial_layer_item = self.geom_col_layer_name(col)
+            index = sp_unit_manager.stdm_layers_combo.findText(
+                spatial_layer_item, Qt.MatchFixedString
             )
-        )
-        index = sp_unit_manager.stdm_layers_combo.findText(
-            spatial_layer_item, Qt.MatchFixedString
-        )
-        if index >= 0:
-            sp_unit_manager.stdm_layers_combo.setCurrentIndex(index)
-        # add spatial unit layers on view social tenure.
-        sp_unit_manager.on_add_to_canvas_button_clicked()
+
+            if index >= 0:
+                sp_unit_manager.stdm_layers_combo.setCurrentIndex(index)
+            # add spatial unit layers on view social tenure.
+            sp_unit_manager.on_add_to_canvas_button_clicked()
 
     def closeEvent(self, event):
         """
