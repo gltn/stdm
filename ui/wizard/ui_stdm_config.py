@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_stdm_config.ui'
 #
-# Created: Sun Jul 24 08:14:01 2016
+# Created: Wed Jul 27 17:17:53 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -344,7 +344,9 @@ class Ui_STDMWizard(object):
         self.tbvColumns.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.tbvColumns.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.tbvColumns.setObjectName(_fromUtf8("tbvColumns"))
+        self.tbvColumns.horizontalHeader().setDefaultSectionSize(130)
         self.tbvColumns.horizontalHeader().setStretchLastSection(True)
+        self.tbvColumns.verticalHeader().setDefaultSectionSize(30)
         self.verticalLayout.addWidget(self.tbvColumns)
         self.splitter_2 = QtGui.QSplitter(self.splitter_3)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.MinimumExpanding)
