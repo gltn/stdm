@@ -172,7 +172,7 @@ class ColumnEntityModelItem(QStandardItem):
 
     def _set_entity_properties(self):
         name_item = self._create_item(self._entity.name)
-        col_data_type = self._create_item(self._entity.TYPE_INFO)
+        col_data_type = self._create_item(self._entity.display_name())
         description = self._create_item(unicode(self._entity.description))
 
         self.appendRow([name_item, col_data_type, description])
@@ -228,7 +228,7 @@ class ColumnEntitiesModel(QStandardItemModel):
         '''
         entity_item = ColumnEntityModelItem(entity)
 	name_item = entity_item._create_item(entity.name)
-	col_data_type = entity_item._create_item(entity.TYPE_INFO.capitalize())
+	col_data_type = entity_item._create_item(entity.display_name())
 	description = entity_item._create_item(entity.description)
         self.appendRow([name_item, col_data_type, description])
 
