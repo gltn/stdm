@@ -158,8 +158,6 @@ class DocumentGeneratorDialogWrapper(object):
         corresponding EntityConfig objects.
         """
         try:
-
-
             for t in profile_entities(self.curr_profile):
                 entity_cfg = self._entity_config_from_profile(
                     str(t.name), t.short_name
@@ -392,7 +390,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
             self,
             filter_data_source=filter_table
         )
-        
+
         if templateSelector.exec_() == QDialog.Accepted:
             docName,docPath = templateSelector.documentMapping()
             

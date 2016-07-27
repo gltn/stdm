@@ -281,7 +281,11 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             for c in self.spatial_unit.columns.values()
             if c.TYPE_INFO == 'GEOMETRY'
         ]
-        spatial_unit_item = unicode('{}.{}'.format(table, spatial_column[0]))
+        spatial_unit_item = unicode(
+            '{}.{}'.format(
+                table, spatial_column[0]
+            )
+        )
         index = sp_unit_manager.stdm_layers_combo.findText(
             spatial_unit_item, Qt.MatchFixedString
         )

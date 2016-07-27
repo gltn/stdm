@@ -218,5 +218,12 @@ class ValueList(Entity):
 
         return True
 
+    def lookups(self):
+        """
+        :return: Returns a list of lookup string values.
+        :rtype: list
+        """
+        return self.values.keys()
+
 
 

@@ -66,7 +66,7 @@ class SpatialUnitManagerDockWidget(
     QDockWidget, Ui_SpatialUnitManagerWidget
 ):
     onLayerAdded = pyqtSignal(object)
-    def __init__(self, iface, plugin):
+    def __init__(self, iface, plugin=None):
         """Constructor."""
         QDockWidget.__init__(self, iface.mainWindow())
         # Set up the user interface from Designer.
@@ -134,9 +134,7 @@ class SpatialUnitManagerDockWidget(
 
         # Append the corresponding(profile)
         # view to the list of entity names
-        str_view = u'{0}_{1}'.format(
-            self._curr_profile.prefix, BASE_STR_VIEW
-        )
+        str_view = self._curr_profile.social_tenure.view_name
         if str_view in self.sp_tables:
             geom_columns = table_column_names(
                 str_view, True

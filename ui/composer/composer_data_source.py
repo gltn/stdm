@@ -23,13 +23,15 @@ from PyQt4.QtGui import (
 )
 
 from stdm.data.pg_utils import (
+    pg_tables,
     pg_views
 )
 from stdm.settings import current_profile
 from stdm.utils.util import (
     profile_user_tables,
-    profile_entities,
-    setComboCurrentIndexWithText
+    setComboCurrentIndexWithText,
+    setComboCurrentIndexWithItemData,
+    profile_entities
 )
 from .ui_composer_data_source import Ui_frmComposerDataSource
 
@@ -47,20 +49,19 @@ class ComposerDataSourceSelector(QWidget,Ui_frmComposerDataSource):
         self.rbTables.toggled.connect(self.onShowTables)
         self.rbViews.toggled.connect(self.onShowViews)
 
-        #Load reference tables
+        # Load reference tables
         self._ref_tables = profile_entities(
             self.curr_profile
         )
 
-        #Load all tables
+        # Load all tables
         self._tables = profile_user_tables(
             self.curr_profile, False
         )
         #Populate referenced tables
         self._populate_referenced_tables()
 
-        # Flag for synchronizing data source
-        # item change to referenced table
+        #Flag for synchronizing data source item change to referenced table
         self._sync_data_source = False
         
         #Force views to be loaded
@@ -126,10 +127,10 @@ class ComposerDataSourceSelector(QWidget,Ui_frmComposerDataSource):
         """
         Set the data source name if it exists in the list.
         """
-        sourceIndex = self.cboDataSource.findText(dataSourceName)
-        
-        if sourceIndex != -1:
-            self.cboDataSource.setCurrentIndex(sourceIndex)
+        setComboCurrentIndexWithItemData(
+            self.cboDataSource,
+            dataSourceName
+        )
 
     def set_referenced_table(self, referenced_table):
         """
@@ -138,7 +139,7 @@ class ComposerDataSourceSelector(QWidget,Ui_frmComposerDataSource):
         :type: str
         """
         if self.category() == 'View':
-            setComboCurrentIndexWithText(
+            setComboCurrentIndexWithItemData(
                 self.cboReferencedTable,
                 referenced_table
             )
