@@ -177,10 +177,15 @@ def _entity_select_column(entity, use_inner_join=False, join_parents=False,
                         table_pseudo_name, pseudo_column_name)
                     use_custom_join = True
 
+                    #Check if the column is for tenure type
+                    if c.name != 'tenure_type':
+                        use_inner_join = False
+
                 elif c.TYPE_INFO == 'ADMIN_SPATIAL_UNIT':
                     select_column_name = u'{0}.name AS {1}'.format(
                         table_pseudo_name, pseudo_column_name)
                     use_custom_join = True
+                    use_inner_join = False
 
                 #These are outer joins
                 join_type = 'LEFT JOIN'

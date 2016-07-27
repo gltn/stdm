@@ -26,7 +26,7 @@ from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
 from .pg_utils import foreign_key_parent_tables
 
-SUPPORTING_DOC_TAGS = ["doc", "document", "photo", "str_relations"]
+SUPPORTING_DOC_TAGS = ["supporting_document"]
 
 def supporting_doc_tables_regexp():
     """

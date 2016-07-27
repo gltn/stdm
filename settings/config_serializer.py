@@ -335,8 +335,19 @@ class ProfileSerializer(object):
         #Process deferred items
         for c in deferred_elements:
             el, serializer = c[0], c[1]
+            '''
             serializer.read_xml(el, profile, association_elements,
                         entity_relation_elements)
+            '''
+
+            #Resolve dependency
+            serializer.resolve_dependency(
+                el,
+                profile,
+                element,
+                association_elements,
+                entity_relation_elements
+            )
 
         #Set social tenure entities
         str_el = element.firstChildElement('SocialTenure')
@@ -346,6 +357,36 @@ class ProfileSerializer(object):
                                             entity_relation_elements)
 
         return profile
+
+    @staticmethod
+    def entity_element(profile_element, entity_name):
+        """
+        Searches the profile for an entity with the given short name.
+        :param profile_element: Profile element to search.
+        :type profile_element: QDomElement
+        :param entity_name: Entity short name to search for.
+        :rtype: str
+        :return: Entity element with the corresponding short name, else None
+        if not found.
+        :rtype: QDomElement
+        """
+        e_element = None
+
+        entity_el_list = profile_element.elementsByTagName('Entity')
+
+        for i in range(entity_el_list.count()):
+            entity_element = entity_el_list.item(i).toElement()
+            entity_attribute = entity_element.attribute(
+                EntitySerializer.SHORT_NAME,
+                ''
+            )
+
+            if entity_attribute == entity_name:
+                e_element = entity_element
+
+                break
+
+        return e_element
 
     @staticmethod
     def write_xml(profile, parent_node, document):
@@ -679,7 +720,16 @@ class EntitySerializer(EntitySerializerCollection):
         False.
         :rtype: bool
         """
-        dependency = False
+        dep_cols = EntitySerializer._dependency_columns(element)
+        if len(dep_cols) == 0:
+            return False
+
+        return True
+
+    @classmethod
+    def _dependency_columns(cls, element):
+        #Returns a list of dependency column elements
+        dep_col_elements = []
 
         column_elements = EntitySerializer.column_elements(element)
 
@@ -689,11 +739,96 @@ class EntitySerializer(EntitySerializerCollection):
 
                 #Check if the type info is in the flags' list
                 if type_info in cls.DEPENDENCY_FLAGS:
-                    dependency = True
+                    dep_col_elements.append(ce)
 
-                    break
+        return dep_col_elements
 
-        return dependency
+    @classmethod
+    def resolve_dependency(
+            cls,
+            element,
+            profile,
+            profile_element,
+            association_elements,
+            entity_relation_elements
+    ):
+        """
+        Performs a depth-first addition of an entity to a profile by
+        recursively cascading all related entities first.
+        :param element: Element representing the entity.
+        :type element: QDomElement
+        :param profile: Profile object to be populated with the entity
+        information.
+        :type profile: Profile
+        """
+        dep_cols = EntitySerializer._dependency_columns(element)
+
+        #Add entity directly if there are no dependency columns
+        if len(dep_cols) == 0:
+            EntitySerializer.read_xml(
+                element,
+                profile,
+                association_elements,
+                entity_relation_elements
+            )
+
+            return
+
+        for c in dep_cols:
+            #Get foreign key columns
+            type_info = unicode(c.attribute('TYPE_INFO'))
+
+            if type_info == ForeignKeyColumn.TYPE_INFO:
+                #Get relation element
+                er_element = ForeignKeyColumnSerializer.entity_relation_element(c)
+                relation_name = unicode(er_element.attribute('name', ''))
+                er_element = entity_relation_elements.get(relation_name, None)
+
+                if not er_element is None:
+                    #Get parent
+                    parent = unicode(
+                        er_element.attribute(
+                            EntityRelationSerializer.PARENT,
+                            ''
+                        )
+                    )
+
+                    #Get parent entity element
+                    if parent:
+                        parent_element = ProfileSerializer.entity_element(
+                            profile_element,
+                            parent
+                        )
+
+                        if not parent_element is None:
+                            #Check if parent has dependency
+                            if EntitySerializer.has_dependency(parent_element):
+                                #Resolve dependency
+                                EntitySerializer.resolve_dependency(
+                                    parent_element,
+                                    profile,
+                                    profile_element,
+                                    association_elements,
+                                    entity_relation_elements
+                                )
+
+                            #No more dependencies
+                            else:
+                                EntitySerializer.read_xml(
+                                    parent_element,
+                                    profile,
+                                    association_elements,
+                                    entity_relation_elements
+                                )
+
+        #Now add entity to profile
+        EntitySerializer.read_xml(
+            element,
+            profile,
+            association_elements,
+            entity_relation_elements
+        )
+
 
     @staticmethod
     def write_xml(entity, parent_node, document):
@@ -1462,11 +1597,18 @@ class ForeignKeyColumnSerializer(ColumnSerializerCollection):
     RELATION_TAG = 'Relation'
 
     @classmethod
+    def entity_relation_element(cls, foreign_key_element):
+        #Returns the entity relation element from a foreign key element.
+        return foreign_key_element.firstChildElement(
+            ForeignKeyColumnSerializer.RELATION_TAG
+        )
+
+    @classmethod
     def _obj_args(cls, args, kwargs, element, assoc_elements,
                   entity_relation_elements):
         #Include entity relation information.
-        relation_el = element.firstChildElement(
-            ForeignKeyColumnSerializer.RELATION_TAG
+        relation_el = ForeignKeyColumnSerializer.entity_relation_element(
+            element
         )
 
         if not relation_el.isNull():

@@ -1311,7 +1311,9 @@ class STDMQGISLoader(object):
         """
         STDM Description
         """
-        abtDlg = AboutSTDMDialog(self.iface.mainWindow())
+        plugin_manager = self.iface.pluginManagerInterface()
+        stdm_metadata = plugin_manager.pluginMetadata('stdm')
+        abtDlg = AboutSTDMDialog(self.iface.mainWindow(), stdm_metadata)
         abtDlg.exec_()
 
     def load_license_agreement(self):

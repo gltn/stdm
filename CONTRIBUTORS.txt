@@ -1,5 +1,7 @@
 This file contains a list of people have contributed code to the Social Tenure Domain Model:
 (List in alphabetical order)
 Eric Omwandho <eomwandho@gmail.com>
-John Gitau <john.gitau@unhabitat.org>
+John Gitau <gkahiu@gmail.com>
+Paul Gathogo <pgathogo@gmail.com>
 Solomon Njogu <solomon.njogu@unhabitat.org>
+Wondimagegn Tesfaye <wondim81@gmail.com>
