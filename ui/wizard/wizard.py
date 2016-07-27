@@ -171,11 +171,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.splitter_3.setSizes([330, 150])
 
 
-        # In a code block where you target new profiles with no configuration and db
-        enable_drag_sort(self.tbvColumns)
-        enable_drag_sort(self.lvLookupValues)
-        enable_drag_sort(self.pftableView)
-
     def reject(self):
         """
         Event handler for the cancel button.
@@ -361,7 +356,15 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.edtDocPath.setFocus()
         self.rbReject.setChecked(True)
         self.lblDesc.setText("")
+
         self.pftableView.setColumnWidth(0, 250)
+        
+        self.tbvColumns.horizontalHeader().ResizeToContents
+
+        #self.tbvColumns.setColumnWidth(1, 
+                #self.tbvColumns.columnWidth(1)+100)
+        #self.tbvColumns.setColumnWidth(2,
+                #self.tbvColumns.columnWidth(2)+50)
 
         # Attach multi party checkbox state change event handler
         self.cbMultiParty.stateChanged.connect(self.multi_party_state_change)
@@ -482,7 +485,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Verifies that all lookups in the current profile
         have values. Returns true if all have values else false
-        rtype: bool
+        rtype: boolean
         """
         valid = True
         profile  = self.current_profile()
@@ -661,19 +664,31 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         return True, "Ok."
 
-    def enable_str_setup(self, short_name, cbo_text):
+    def set_str_controls(self, short_name, cbo_text):
         """
         Disable STR UI widgets if Social Tenure Relationship has
-        been set in and saved in the database
-        :param short_name: name of party entity in STR
-        :type short_name: unicode
-        :param cbo_text: Text is the combobox
-        :type cbo_text: unicode
+        been set and saved in the database
         """
         if short_name == cbo_text:
-            self.cboParty.setEnabled(False)
-            self.cboSPUnit.setEnabled(False)
-            self.cbMultiParty.setEnabled(False)
+            self.disable_str_setup()
+        else:
+            self.enable_str_setup()
+            
+    def enable_str_setup(self):
+        """
+        Disable STR UI widgets if Social Tenure Relationship has
+        been set and saved in the database
+        """
+        self.cboParty.setEnabled(True)
+        self.cboSPUnit.setEnabled(True)
+
+    def disable_str_setup(self):
+        """
+        Disable STR UI widgets if Social Tenure Relationship has
+        been set and saved in the database
+        """
+        self.cboParty.setEnabled(False)
+        self.cboSPUnit.setEnabled(False)
 
     def validateCurrentPage(self):
         validPage = True
@@ -703,9 +718,14 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             # verify that lookup entities have values
             validPage = self.validate_empty_lookups()
 
+            short_name = ""
+            party_text = unicode(self.cboParty.itemText(idx1)) 
+
             if not curr_profile.social_tenure.party is None:
-                self.enable_str_setup(curr_profile.social_tenure.party.short_name,
-                    unicode(self.cboParty.itemText(idx1)) )
+                short_name = curr_profile.social_tenure.party.short_name
+
+            self.set_str_controls(short_name, party_text)
+
 
         if self.currentId() == 4:
             validPage, msg = self.validate_STR()

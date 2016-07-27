@@ -118,47 +118,45 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
     def init_controls(self):
         """
-        Initialize GUI controls
+        Initialize GUI controls default state when the dialog window is opened.
         """
-        self.popuplate_type_cbo()
+        self.popuplate_data_type_cbo()
 
         name_regex = QtCore.QRegExp('^[a-z][a-z0-9_]*$')
         name_validator = QtGui.QRegExpValidator(name_regex)
         self.edtColName.setValidator(name_validator)
 
         #if self.column:
-        self.column_to_form(self.column)
-        self.column_to_wa(self.column)
+        if not self.column is None:
+            self.column_to_form(self.column)
+            self.column_to_wa(self.column)
 
         self.edtColName.setFocus()
 
         self.edtColName.setEnabled(not self.in_db)
         self.cboDataType.setEnabled(not self.in_db)
-        
 
     def column_to_form(self, column):
         """
-        Initialize form controls with column data when editting a column.
-        :param column: Column to edit
+        Initializes form controls with Column data.
+        :param column: BaseColumn instance
         :type column: BaseColumn
         """
-        if column is not None:
-            self.edtColName.setText(column.name)
-            self.edtColDesc.setText(column.description)
-            self.edtUserTip.setText(column.user_tip)
-            self.cbMandt.setChecked(column.mandatory)
-            self.cbSearch.setCheckState(self.bool_to_check(column.searchable))
-            self.cbUnique.setCheckState(self.bool_to_check(column.unique))
-            self.cbIndex.setCheckState(self.bool_to_check(column.index))
+        self.edtColName.setText(column.name)
+        self.edtColDesc.setText(column.description)
+        self.edtUserTip.setText(column.user_tip)
+        self.cbMandt.setChecked(column.mandatory)
+        self.cbSearch.setCheckState(self.bool_to_check(column.searchable))
+        self.cbUnique.setCheckState(self.bool_to_check(column.unique))
+        self.cbIndex.setCheckState(self.bool_to_check(column.index))
 
-            self.cboDataType.setCurrentIndex( \
-                    self.cboDataType.findText(column.display_name()))
+        text = column.display_name()
+        self.cboDataType.setCurrentIndex(self.cboDataType.findText(text))
 
     def column_to_wa(self, column):
         """
         Initialize 'work area' form_fields with column data.
-        Used when editing a column
-        :param column: Column to edit
+        :param column: BaseColumn instance
         :type column: BaseColumn
         """
         if column is not None:
@@ -193,7 +191,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                         column.min_use_current_datetime
                 self.form_fields['max_use_current_datetime'] = \
                         column.max_use_current_datetime
-
 
     def bool_to_check(self, state):
         """
@@ -544,7 +541,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         :rtype: boolean
         """
         if self.prop_set is None:
-            return self.type_attribs[self.current_type_info()].get('prop_set', True)
+            return self.type_attribs[ti].get('prop_set', True)
         else:
             return self.prop_set
 
@@ -554,7 +551,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         except:
             return None
 
-    def popuplate_type_cbo(self):
+    def popuplate_data_type_cbo(self):
         """
         Fills the data type combobox widget with BaseColumn type names
         """
@@ -562,13 +559,17 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.cboDataType.insertItems(0, BaseColumn.types_by_display_name().keys())
         self.cboDataType.setCurrentIndex(0)
 
-    def change_data_type(self):
+    def change_data_type(self, index):
         """
         Called by type combobox when you select a different data type.
         """
-        ti = self.current_type_info()
-        if ti=='':
-            return
+
+        #ti = self.current_type_info()
+        #if ti=='':
+            #return
+
+        text = self.cboDataType.itemText(index)
+        ti = BaseColumn.types_by_display_name()[text].TYPE_INFO
 
         self.btnColProp.setEnabled(self.type_attribs[ti].has_key('property'))
         self.type_info = ti
@@ -576,14 +577,15 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.set_optionals(opts)
         self.set_min_max_defaults(ti)
 
-        self.column_to_form(self.column)
-        self.column_to_wa(self.column)
+        #self.column_to_form(self.column, text)
+        #self.column_to_wa(self.column)
 
     def set_optionals(self, opts):
         """
-        Enable/disables form controls by selected data type attribute
-        param opts: Dictionary of selected column type properties
-        type: dictionary
+        Enable/disables form controls based on selected 
+        column data type attributes
+        param opts: Dictionary type properties of selected column
+        type opts: dict
         """
         self.cbMandt.setEnabled(opts['mandt']['enabled_state'])
         self.cbSearch.setEnabled(opts['search']['enabled_state'])
@@ -597,8 +599,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
     def set_min_max_defaults(self, type_info):
         """
-        sets the work area 'form_fields' defaults(minimum/maximum)
-        from the column attribute dictionary
+        sets the work area 'form_fields' default values (minimum/maximum)
+        from the column's type attribute dictionary
         :param type_info: BaseColumn.TYPE_INFO
         :type type_info: str
         """
@@ -611,13 +613,13 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
     def current_type_info(self):
         """
         Returns a TYPE_INFO of a data type
-        :rtype: BaseColumn.TYPE_INFO
+        :rtype: str
         """
         text = self.cboDataType.itemText(self.cboDataType.currentIndex())
         try:
-                return BaseColumn.types_by_display_name()[text].TYPE_INFO
+            return BaseColumn.types_by_display_name()[text].TYPE_INFO
         except:
-                return ''
+            return ''
 
     def fill_work_area(self):
         """
