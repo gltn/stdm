@@ -41,7 +41,8 @@ from PyQt4.QtGui import (
     QApplication,
     QLabel,
     QHBoxLayout,
-    QColor
+    QColor,
+    QMessageBox
 )
 
 from qgis.gui import (
@@ -340,23 +341,6 @@ class STDMFieldWidget():
                 layer, col, widget_id_name[0]
             )
 
-    # def get_layer_source(self, layer):
-    #     """
-    #     Get the layer table name if the source is from the database.
-    #     :param layer: The layer for which the source is checked
-    #     :type QgsVectorLayer
-    #     :return: String or None
-    #     """
-    #     source = layer.source()
-    #     vals = dict(re.findall('(\S+)="?(.*?)"? ', source))
-    #     try:
-    #         table = vals['table'].split('.')
-    #         table_name = table[1].strip('"')
-    #         return table_name
-    #     except KeyError:
-    #         return None
-    #
-
     def load_stdm_form(self, feature_id):
         """
         Loads STDM Form and collects the model added
@@ -368,7 +352,6 @@ class STDMFieldWidget():
         :rtype:NoneType
         """
         srid = None
-        geom_column = None
         self.current_feature = feature_id
 
         # If the digitizing save button is clicked,
@@ -378,12 +361,17 @@ class STDMFieldWidget():
         if feature_id > 0:
             return
 
+        # if the feature is already in the dict don't
+        # show the form as the model of the feature is
+        # already populated by the form
+        if feature_id in self.feature_models.keys():
+            return
+
         # If the added feature is removed earlier, add it
         # back to feature_models and don't show the form.
         # This happens when redo button(add feature back) is
         # clicked after an undo button(remove feature)
         if feature_id in self.removed_feature_models.keys():
-            print vars(self.removed_feature_models[feature_id])
             self.feature_models[feature_id] = \
                 self.removed_feature_models[feature_id]
             return
@@ -392,11 +380,39 @@ class STDMFieldWidget():
         # already populated by the form
         if feature_id in self.feature_models.keys():
             return
-
+        # If the feature is not valid, geom_wkt will be None
+        # So don't launch form for invalid feature and
+        # delete feature
         geom_wkt = self.get_wkt(feature_id)
+
+        if geom_wkt is None:
+            title = QApplication.translate(
+                'STDMFieldWidget',
+                'Spatial Entity Form Error'
+            )
+            msg = QApplication.translate(
+                'STDMFieldWidget',
+                'The feature you have added is invalid. \n '
+                'To fix this issue, remove and add the layer.'
+            )
+            # Message: Spatial column information
+            # could not be found
+            QMessageBox.critical(
+                iface.mainWindow(),
+                title,
+                msg
+            )
+
+            self.layer.deleteFeature(feature_id)
+            self.layer.undoStack().undo()
+            return
         # init form
         self.editor = EntityEditorDialog(
-            self.entity, None, iface.mainWindow(), True, True
+            self.entity,
+            None,
+            iface.mainWindow(),
+            True,
+            True
         )
 
         self.editor.addedModel.connect(self.on_form_saved)
@@ -407,6 +423,7 @@ class STDMFieldWidget():
         geom_column = source[
             source.find('(') + 1:source.find(')')
         ]
+
         # get srid with EPSG text
         full_srid = self.layer.crs().authid().split(':')
 
@@ -440,9 +457,12 @@ class STDMFieldWidget():
         request = QgsFeatureRequest()
         request.setFilterFids(fids)
         features = self.layer.getFeatures(request)
+
         # get the wkt of the geometry
         for feature in features:
-            geom_wkt = feature.geometry().exportToWkt()
+            geometry = feature.geometry()
+            if geometry.isGeosValid():
+                geom_wkt = feature.geometry().exportToWkt()
 
         return geom_wkt
 
@@ -459,6 +479,7 @@ class STDMFieldWidget():
         :rtype: NoneType
         """
         self.feature_models[self.current_feature] = model
+
         self.editor.accept()
 
     def on_feature_deleted(self, feature_id):
@@ -487,7 +508,6 @@ class STDMFieldWidget():
         """
         ent_model = entity_model(self.entity)
         entity_obj = ent_model()
-        print self.feature_models
         entity_obj.saveMany(
             self.feature_models.values()
         )
