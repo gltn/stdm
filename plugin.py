@@ -840,54 +840,55 @@ class STDMQGISLoader(object):
         """
         # Get entities containing geometry
         # columns based on the config info
-        config_entities = self.current_profile.entities
-        self.geom_entities = [
-            ge for ge in config_entities.values()
-            if ge.TYPE_INFO == 'ENTITY' and
-            ge.has_geometry_column()
+        if not self.current_profile is None:
+            config_entities = self.current_profile.entities
+            self.geom_entities = [
+                ge for ge in config_entities.values()
+                if ge.TYPE_INFO == 'ENTITY' and
+                ge.has_geometry_column()
+                ]
+
+
+            self.sp_tables = spatial_tables()
+            # Check whether the geometry tables
+            # specified in the config exist
+            missing_tables = [
+                geom_entity.name
+                for geom_entity in self.geom_entities
+                if not geom_entity.name in self.sp_tables
             ]
 
-
-        self.sp_tables = spatial_tables()
-        # Check whether the geometry tables
-        # specified in the config exist
-        missing_tables = [
-            geom_entity.name
-            for geom_entity in self.geom_entities
-            if not geom_entity.name in self.sp_tables
-        ]
-
-        # Notify user of missing tables
-        if len(missing_tables) > 0:
-            if show_message:
-                msg = QApplication.translate(
-                    'Spatial Unit Manager',
-                    'The following spatial tables '
-                    'are missing in the database:'
-                    '\n {0}\n Do you want to re-run the '
-                    'Configuration Wizard now?'.format(
-                            '\n'.join(
-                            missing_tables
+            # Notify user of missing tables
+            if len(missing_tables) > 0:
+                if show_message:
+                    msg = QApplication.translate(
+                        'Spatial Unit Manager',
+                        'The following spatial tables '
+                        'are missing in the database:'
+                        '\n {0}\n Do you want to re-run the '
+                        'Configuration Wizard now?'.format(
+                                '\n'.join(
+                                missing_tables
+                            )
                         )
                     )
-                )
-                title = QApplication.translate(
-                    'STDMQGISLoader',
-                    'Spatial Table Error'
-                )
-                database_check = QMessageBox.critical(
-                    self.iface.mainWindow(),
-                    title,
-                    msg,
-                    QMessageBox.Yes,
-                    QMessageBox.No
-                )
-                if database_check == QMessageBox.Yes:
-                    self.load_config_wizard()
+                    title = QApplication.translate(
+                        'STDMQGISLoader',
+                        'Spatial Table Error'
+                    )
+                    database_check = QMessageBox.critical(
+                        self.iface.mainWindow(),
+                        title,
+                        msg,
+                        QMessageBox.Yes,
+                        QMessageBox.No
+                    )
+                    if database_check == QMessageBox.Yes:
+                        self.load_config_wizard()
 
-            return False
-        else:
-            return True
+                return False
+            else:
+                return True
 
     def create_spatial_unit_manager(
             self, menu_enable=False
