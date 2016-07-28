@@ -33,6 +33,7 @@ from stdm.settings import (
     current_profile,
     save_configuration
 )
+
 from stdm.data.configuration.social_tenure_updater import BASE_STR_VIEW
 from stdm.data.pg_utils import (
     geometryType,
@@ -86,7 +87,7 @@ class SpatialUnitManagerDockWidget(
         self.spatial_unit = None
         
         self.iface.currentLayerChanged.connect(
-            self.control_digitizeToolbar
+            self.control_digitize_toolbar
         )
         self.onLayerAdded.connect(
             self.init_form_widgets
@@ -154,15 +155,33 @@ class SpatialUnitManagerDockWidget(
                     str_view
                 )
 
-    def control_digitizeToolbar(self, curr_layer):
-        table, column = self._layer_table_column(
-            curr_layer
+    def control_digitize_toolbar(self, curr_layer):
+        if not curr_layer is None:
+            try:
+                table, column = self._layer_table_column(
+                    curr_layer
+                )
+                self.set_canvas_crs(curr_layer)
+                if table not in pg_views():
+                    # Make sure digitizing toolbar is enabled
+                    self.iface.digitizeToolBar().setEnabled(True)
+                elif table in pg_views():
+                    self.iface.digitizeToolBar().setEnabled(False)
+            except Exception:
+                pass
+
+    def set_canvas_crs(self, layer):
+        # Sets canvas CRS
+        # get srid with EPSG text
+        full_srid = layer.crs().authid().split(':')
+        srid = int(full_srid[1])
+        layer_crs = QgsCoordinateReferenceSystem(
+            srid,
+            QgsCoordinateReferenceSystem.EpsgCrsId
         )
-        if table not in pg_views():
-            # Make sure digitizing toolbar is enabled
-            self.iface.digitizeToolBar().setEnabled(True)
-        elif table in pg_views():
-            self.iface.digitizeToolBar().setEnabled(False)
+
+        self.iface.mapCanvas().mapRenderer().setDestinationCrs(layer_crs)
+
 
     def init_form_widgets(self, curr_layer):
         """
@@ -173,8 +192,10 @@ class SpatialUnitManagerDockWidget(
         :return: None
         :rtype: NoneType
         """
+
         table, column = self._layer_table_column(curr_layer)
-        if table not in pg_views():
+
+        if table not in pg_views() and not curr_layer is None:
 
             try:
                 # init register form factory
@@ -186,6 +207,7 @@ class SpatialUnitManagerDockWidget(
                 curr_layer.featureAdded.connect(
                     self.stdm_fields.load_stdm_form
                 )
+
                 curr_layer.featureDeleted.connect(
                     self.stdm_fields.on_feature_deleted
                 )
@@ -193,7 +215,9 @@ class SpatialUnitManagerDockWidget(
                     self.stdm_fields.on_digitizing_saved
                 )
 
+
             except Exception as ex:
+                print ex
                 LOGGER.debug(str(ex))
 
     def _format_layer_display_name(self, col, table):
@@ -271,6 +295,32 @@ class SpatialUnitManagerDockWidget(
 
         return icon
 
+    def geom_col_layer_name(self, table, col):
+        """
+        Returns the layer name based on geom column object.
+        :param col: Column Object
+        :type col: Object
+        :param table: Table name
+        :type table: String
+        :return: Layer name
+        :rtype: String
+        """
+        # Check if the geom has display name, if not,
+        # get layer name with default naming.
+
+        if col.layer_display_name == '':
+            spatial_layer_item = unicode(
+                '{}.{}'.format(
+                    table, col.name
+                )
+            )
+        # use the layer_display_name
+        else:
+            spatial_layer_item = col.layer_display_name
+        return spatial_layer_item
+
+
+
     @pyqtSignature("")
     def on_add_to_canvas_button_clicked(self):
         """
@@ -283,11 +333,20 @@ class SpatialUnitManagerDockWidget(
             self.stdm_layers_combo.currentIndex()
         )
         if sp_col_info is None:
-            # Message: Spatial column information could not be found
+            title = QApplication.translate(
+                'SpatialUnitManagerDockWidget',
+                'Spatial Unit Manager'
+            )
+            msg = QApplication.translate(
+                'SpatialUnitManagerDockWidget',
+                'Spatial Column Layer Could not be found'
+            )
+            # Message: Spatial column information
+            # could not be found
             QMessageBox.warning(
                 self.iface.mainWindow(),
-                'Spatial Unit Manager',
-                'Spatial Column Layer Could not be found'
+                title,
+                msg
             )
 
         table_name, spatial_column = sp_col_info["table_name"], \
@@ -295,14 +354,14 @@ class SpatialUnitManagerDockWidget(
 
 
         #Check if the layer has already been
-        # added to the map layer registry
-        tab_col = u'{0}.{1}'.format(
-            table_name, spatial_column
+        layer_item = sp_col_info.get('item', None)
+
+        layer_name = self.geom_col_layer_name(
+            table_name, layer_item
         )
-        if tab_col in self._map_registry_table_columns():
+        if layer_name in self._map_registry_table_columns():
             return
 
-        layer_item = sp_col_info.get('item', None)
 
         # Used in gpx_table.py
         self.curr_lyr_table = table_name
@@ -320,10 +379,11 @@ class SpatialUnitManagerDockWidget(
             )
 
         if curr_layer.isValid():
+
             QgsMapLayerRegistry.instance().addMapLayer(
                 curr_layer
             )
-
+            self.toggle_entity_multi_layers(curr_layer)
             #Required in order for the layer name to be set
             QTimer.singleShot(
                 100,
@@ -332,7 +392,7 @@ class SpatialUnitManagerDockWidget(
                     layer_item.layer_display()
                 )
             )
-
+            self.zoom_to_layer()
             self.onLayerAdded.emit(curr_layer)
         else:
             msg = QApplication.translate(
@@ -347,6 +407,98 @@ class SpatialUnitManagerDockWidget(
                 'Spatial Unit Manager',
                 msg
             )
+
+    def zoom_to_layer(self):
+        """
+        Zooms the map canvas to the extent
+        the active layer.
+        :return:
+        :rtype:
+        """
+        layer = self.iface.activeLayer()
+        if not layer is None:
+            self.iface.mapCanvas().setExtent(
+                layer.extent()
+            )
+            self.iface.mapCanvas().refresh()
+
+    def geom_columns(self, entity):
+        """
+        Get the geometry column
+        :return:
+        :rtype:
+        """
+        geom_column = [
+            column
+            for column in entity.columns.values()
+            if column.TYPE_INFO == 'GEOMETRY'
+        ]
+        return geom_column
+
+    def same_entity_layers(self):
+        """
+        Returns layer names of an entity if they are
+        more than one in one entity.
+        :return: List in a list
+        :rtype: List
+        """
+        same_entity_layers = []
+        for entity in self.geom_entities:
+            cols = self.geom_columns(entity)
+            layer_list = []
+            if len(cols) > 1:
+                for col in cols:
+                    lyr_name = self.geom_col_layer_name(
+                        entity.name, col
+                    )
+                    layer_list.append(lyr_name)
+                same_entity_layers.append(layer_list)
+        return same_entity_layers
+
+    def toggle_entity_multi_layers(self, new_layer):
+        """
+        Removes other layers created from the entity
+        of the new layer.
+        :param new_layer: The new layer added
+        :type new_layer: QgsVectorLayer
+        :return: None
+        :rtype: NoneType
+        """
+        sel_lyr_name = new_layer.name()
+        layer_lists = [
+            layer_list
+            for layer_list in self.same_entity_layers()
+            if sel_lyr_name in layer_list
+        ]
+        # exclude layers whose entity has only one geometry
+        if len(layer_lists) < 1:
+            return
+        # if the layer_list is the
+        # parent of selected layer
+        for layer_name in layer_lists[0]:
+            # remove other layers
+            # of the same entity
+            if layer_name != sel_lyr_name:
+
+                layer_objects = QgsMapLayerRegistry.\
+                    instance().mapLayersByName(layer_name)
+
+                if len(layer_objects) > 0:
+                    for layer in layer_objects:
+                        # print layer.name()
+                        layer_id = layer.id()
+                        QgsMapLayerRegistry.\
+                            instance().removeMapLayer(layer_id)
+            # Change the crs of the canvas based on the new layer
+            else:
+                layer_list = QgsMapLayerRegistry.instance(). \
+                    mapLayersByName(sel_lyr_name)
+                if len(layer_list) > 0:
+                    self.set_canvas_crs(
+                        layer_list[0]
+                    )
+
+
 
     def _set_layer_display_name(self, layer, name):
         layer.setLayerName(name)
