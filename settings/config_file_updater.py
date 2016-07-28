@@ -31,7 +31,7 @@ from PyQt4.QtXml import QDomDocument
 from ..data.configuration.exception import ConfigurationException
 from ..data.configfile_paths import FilePaths
 from ..data.configuration.stdm_configuration import StdmConfiguration
-from ..data.pg_utils import export_data, import_data
+from ..data.pg_utils import export_data, import_data, pg_table_exists
 
 COLUMN_TYPE_DICT = {'character varying': 'VARCHAR', 'date': 'DATE',
                     'serial': 'SERIAL', 'integer': 'BIGINT', 'lookup':
@@ -860,77 +860,84 @@ class ConfigurationFileUpdater(object):
             for social_tenure_entity in values:
                 social_tenure_table = self.config_profiles[0] + "_" + \
                                         social_tenure_entity
-                data = export_data(social_tenure_entity)
 
-                columns = data.keys()
+                if pg_table_exists(social_tenure_entity):
 
-                # Remove geom columns of line, point and
-                # polygon and replace with one column geom to fit new config
-                original_key_len = len(columns)
-                new_keys = []
-                for ky in data.keys():
-                    if not ky.startswith("geom"):
-                        new_keys.append(ky)
-                if len(new_keys) is not original_key_len:
-                    new_keys.append('geom')
 
-                values = data.fetchall()
+                    data = export_data(social_tenure_entity)
 
-                values = [list(i) for i in values]
+                    columns = data.keys()
 
-                # Only get geom columns with values and
-                # avoid none geom tables
-                new_values = []
+                    # Remove geom columns of line, point and
+                    # polygon and replace with one column geom to fit new config
+                    original_key_len = len(columns)
+                    new_keys = []
+                    for ky in data.keys():
+                        if not ky.startswith("geom"):
+                            new_keys.append(ky)
+                    if len(new_keys) is not original_key_len:
+                        new_keys.append('geom')
 
-                # Converts Var Char lookup to foreign key and add to config
-                # file if it dosen't exist
-                for check_up, lookup_data in \
-                        self.lookup_colum_name_values.iteritems():
-                    if check_up in columns:
-                        if check_up == "type":
-                            lookup_col_index = columns.index(check_up)
-                            check_up = "tenure_{0}".format(check_up)
-                            num_lookups = len(lookup_data)
-                            values = self._match_lookup(values,
-                                                        lookup_data,
-                                                        lookup_col_index,
-                                                        num_lookups,
-                                                        check_up)
-                        else:
-                            lookup_col_index = columns.index(check_up)
-                            num_lookups = len(lookup_data)
-                            values = self._match_lookup(values,
-                                                        lookup_data,
-                                                        lookup_col_index,
-                                                        num_lookups,
-                                                        check_up)
+                    values = data.fetchall()
 
-                if len(new_keys) is not original_key_len:
-                    for value in values:
-                        first_v = value[:-3]
-                        last_v = value[-3:]
-                        new_last_v = []
+                    values = [list(i) for i in values]
 
-                        for last in last_v:
-                            if last is not None:
-                                new_last_v.append(last)
+                    # Only get geom columns with values and
+                    # avoid none geom tables
+                    new_values = []
 
-                        l = tuple(list(first_v) + \
-                                   new_last_v)
+                    # Converts Var Char lookup to foreign key and add to config
+                    # file if it dosen't exist
+                    for check_up, lookup_data in \
+                            self.lookup_colum_name_values.iteritems():
+                        if check_up in columns:
+                            if check_up == "type":
+                                lookup_col_index = columns.index(check_up)
+                                check_up = "tenure_{0}".format(check_up)
+                                num_lookups = len(lookup_data)
+                                values = self._match_lookup(values,
+                                                            lookup_data,
+                                                            lookup_col_index,
+                                                            num_lookups,
+                                                            check_up)
+                            else:
+                                lookup_col_index = columns.index(check_up)
+                                num_lookups = len(lookup_data)
+                                values = self._match_lookup(values,
+                                                            lookup_data,
+                                                            lookup_col_index,
+                                                            num_lookups,
+                                                            check_up)
 
-                        new_values.append(l)
-                    new_values = str(new_values).strip(
-                        "[]")
+                    if len(new_keys) is not original_key_len:
+                        for value in values:
+                            first_v = value[:-3]
+                            last_v = value[-3:]
+                            new_last_v = []
+
+                            for last in last_v:
+                                if last is not None:
+                                    new_last_v.append(last)
+
+                            l = tuple(list(first_v) + \
+                                       new_last_v)
+
+                            new_values.append(l)
+                        new_values = str(new_values).strip(
+                            "[]")
+                    else:
+                        new_values = str(values).replace("[[", "(")
+                        new_values = str(new_values).replace("]]", ")")
+                        new_values = str(new_values).replace("[", "(")
+                        new_values = str(new_values).replace("]", ")")
+                        new_values = str(new_values).replace("None", "NULL")
+
+                    # Remove Unicode
+                    values = new_values.replace("u\'", "\'")
+
+                    column_keys = ",".join(new_keys)
+
+                    import_data(social_tenure_table, column_keys, values)
+
                 else:
-                    new_values = str(values).replace("[[", "(")
-                    new_values = str(new_values).replace("]]", ")")
-                    new_values = str(new_values).replace("[", "(")
-                    new_values = str(new_values).replace("]", ")")
-                    new_values = str(new_values).replace("None", "NULL")
-
-                # Remove Unicode
-                values = new_values.replace("u\'", "\'")
-
-                column_keys = ",".join(new_keys)
-
-                import_data(social_tenure_table, column_keys, values)
+                    pass
