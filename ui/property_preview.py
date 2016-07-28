@@ -213,21 +213,14 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         geom, geom_col = None, ""
 
         for sc in spatial_cols:
-            geom = getattr(model, sc)
+            db_geom = getattr(model, sc)
+            if not db_geom is None:
+                geom = db_geom
 
-            #Use the first non-empty geometry value in the collection
+            #Use the first non-empty geometry
+            # value in the collection
             if not geom is None:
                 geom_col = sc
-
-        if geom is None:
-            msg = QApplication.translate("SpatialPreview",
-                                         "The selected spatial unit does not "
-                                         "contain a valid geometry.")
-            QMessageBox.critical(self, QApplication.translate("SpatialPreview",
-                                                              "Spatial Unit Preview"),
-                                 msg)
-
-            return
 
         geom_type, epsg_code = geometryType(table_name, geom_col)
         if not highlight:
@@ -259,11 +252,10 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
             #Need to force event so that layer is shown
             QCoreApplication.sendEvent(self.local_map, QShowEvent())
         else:
-            self.highlight_spatial_unit(
-                geom, self.local_map.canvas
-            )
-            # Add spatial unit to web viewer
-            #self._web_spatial_loader.add_overlay(model, geom_col)
+            if geom is not None:
+                self.highlight_spatial_unit(
+                    geom, self.local_map.canvas
+                )
 
     def clear_sel_highlight(self):
         """

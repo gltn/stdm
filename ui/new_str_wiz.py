@@ -1505,9 +1505,12 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             if c.TYPE_INFO == 'GEOMETRY'
         ]
         for geom in geometry_col_name:
-            self.propBrowser.add_overlay(
-                self.sel_spatial_unit[0], geom
-            )
+            try:
+                self.propBrowser.add_overlay(
+                    self.sel_spatial_unit[0], geom
+                )
+            except Exception:
+                pass
 
 
 class ComboBoxDelegate(QItemDelegate):
