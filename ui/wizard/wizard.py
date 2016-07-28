@@ -50,6 +50,7 @@ from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 from stdm.data.configuration.db_items import DbItem
 from stdm.data.pg_utils import (
         pg_table_exists, 
+        pg_table_count,
         table_column_names
        )
 from stdm.settings.config_serializer import ConfigurationFileSerializer 
@@ -359,13 +360,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         self.pftableView.setColumnWidth(0, 250)
         
-        self.tbvColumns.horizontalHeader().ResizeToContents
-
-        #self.tbvColumns.setColumnWidth(1, 
-                #self.tbvColumns.columnWidth(1)+100)
-        #self.tbvColumns.setColumnWidth(2,
-                #self.tbvColumns.columnWidth(2)+50)
-
         # Attach multi party checkbox state change event handler
         self.cbMultiParty.stateChanged.connect(self.multi_party_state_change)
 
@@ -385,11 +379,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         loaded. Otherwise, False.
         :rtype: bool
         """
-        #config_path = QDesktopServices.storageLocation(
-            #QDesktopServices.HomeLocation) +\
-                      #'/.stdm/'+file_name
-
-        #config_path = QDesktopServices.storageLocation(unicode(file_name))
         config_serializer = ConfigurationFileSerializer(file_name)
 
         try:
@@ -664,15 +653,16 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         return True, "Ok."
 
-    def set_str_controls(self, short_name, cbo_text):
+    def set_str_controls(self, str_table):
         """
         Disable STR UI widgets if Social Tenure Relationship has
         been set and saved in the database
+        :param str_table: Social Tenure Relationship table
+        :type str_table: str
         """
-        if short_name == cbo_text:
+        self.enable_str_setup()
+        if pg_table_exists(str_table) and pg_table_count(str_table) > 0:
             self.disable_str_setup()
-        else:
-            self.enable_str_setup()
             
     def enable_str_setup(self):
         """
@@ -681,6 +671,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self.cboParty.setEnabled(True)
         self.cboSPUnit.setEnabled(True)
+        self.cbMultiParty.setEnabled(True)
 
     def disable_str_setup(self):
         """
@@ -689,6 +680,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self.cboParty.setEnabled(False)
         self.cboSPUnit.setEnabled(False)
+        self.cbMultiParty.setEnabled(False)
 
     def validateCurrentPage(self):
         validPage = True
@@ -718,13 +710,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             # verify that lookup entities have values
             validPage = self.validate_empty_lookups()
 
-            short_name = ""
-            party_text = unicode(self.cboParty.itemText(idx1)) 
-
-            if not curr_profile.social_tenure.party is None:
-                short_name = curr_profile.social_tenure.party.short_name
-
-            self.set_str_controls(short_name, party_text)
+            # check if social tenure relationship has been setup
+            str_table = curr_profile.prefix +"_social_tenure_relationship"
+            self.set_str_controls(str_table)
 
 
         if self.currentId() == 4:
