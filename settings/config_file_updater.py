@@ -310,7 +310,8 @@ class ConfigurationFileUpdater(object):
                 self.version = unicode(child_node.attribute('version'))
 
             if child_node.tagName() == "profile":
-                profile = unicode(child_node.attribute('name')).lower()
+                profile = unicode(child_node.attribute('name')).\
+                    replace(" ", "_")
                 profile_child_nodes = child_node.childNodes()
                 self._set_table_attributes(profile_child_nodes)
                 self.profile_dict[profile + "_table"] = self.table_dict
@@ -654,7 +655,8 @@ class ConfigurationFileUpdater(object):
                     empty_list.append(k)
 
             if empty_list:
-                conf_prefix = config_profile[:2]
+                # TODO confirm if profile already exists
+                conf_prefix = config_profile[:2].lower()
                 self.config_profiles.append(conf_prefix)
                 profile = self.doc_old.createElement("Profile")
                 profile.setAttribute("description", "")
@@ -863,7 +865,6 @@ class ConfigurationFileUpdater(object):
 
                 if pg_table_exists(social_tenure_entity):
 
-
                     data = export_data(social_tenure_entity)
 
                     columns = data.keys()
@@ -880,64 +881,69 @@ class ConfigurationFileUpdater(object):
 
                     values = data.fetchall()
 
-                    values = [list(i) for i in values]
+                    # Checks if exported data is empty
+                    if len(values) > 0:
+                        values = [list(i) for i in values]
 
-                    # Only get geom columns with values and
-                    # avoid none geom tables
-                    new_values = []
+                        # Only get geom columns with values and
+                        # avoid none geom tables
+                        new_values = []
 
-                    # Converts Var Char lookup to foreign key and add to config
-                    # file if it dosen't exist
-                    for check_up, lookup_data in \
-                            self.lookup_colum_name_values.iteritems():
-                        if check_up in columns:
-                            if check_up == "type":
-                                lookup_col_index = columns.index(check_up)
-                                check_up = "tenure_{0}".format(check_up)
-                                num_lookups = len(lookup_data)
-                                values = self._match_lookup(values,
-                                                            lookup_data,
-                                                            lookup_col_index,
-                                                            num_lookups,
-                                                            check_up)
-                            else:
-                                lookup_col_index = columns.index(check_up)
-                                num_lookups = len(lookup_data)
-                                values = self._match_lookup(values,
-                                                            lookup_data,
-                                                            lookup_col_index,
-                                                            num_lookups,
-                                                            check_up)
+                        # Converts Var Char lookup to foreign key and add to config
+                        # file if it dosen't exist
+                        for check_up, lookup_data in \
+                                self.lookup_colum_name_values.iteritems():
+                            if check_up in columns:
+                                if check_up == "type":
+                                    lookup_col_index = columns.index(check_up)
+                                    check_up = "tenure_{0}".format(check_up)
+                                    num_lookups = len(lookup_data)
+                                    values = self._match_lookup(values,
+                                                                lookup_data,
+                                                                lookup_col_index,
+                                                                num_lookups,
+                                                                check_up)
+                                else:
+                                    lookup_col_index = columns.index(check_up)
+                                    num_lookups = len(lookup_data)
+                                    values = self._match_lookup(values,
+                                                                lookup_data,
+                                                                lookup_col_index,
+                                                                num_lookups,
+                                                                check_up)
 
-                    if len(new_keys) is not original_key_len:
-                        for value in values:
-                            first_v = value[:-3]
-                            last_v = value[-3:]
-                            new_last_v = []
+                        if len(new_keys) is not original_key_len:
+                            for value in values:
+                                first_v = value[:-3]
+                                last_v = value[-3:]
+                                new_last_v = []
 
-                            for last in last_v:
-                                if last is not None:
-                                    new_last_v.append(last)
+                                for last in last_v:
+                                    if last is not None:
+                                        new_last_v.append(last)
 
-                            l = tuple(list(first_v) + \
-                                       new_last_v)
+                                l = tuple(list(first_v) + \
+                                           new_last_v)
 
-                            new_values.append(l)
-                        new_values = str(new_values).strip(
-                            "[]")
+                                new_values.append(l)
+                            new_values = str(new_values).strip(
+                                "[]")
+                        else:
+                            new_values = str(values).replace("[[", "(")
+                            new_values = str(new_values).replace("]]", ")")
+                            new_values = str(new_values).replace("[", "(")
+                            new_values = str(new_values).replace("]", ")")
+                            new_values = str(new_values).replace("None", "NULL")
+
+                        # Remove Unicode
+                        values = new_values.replace("u\'", "\'")
+
+                        column_keys = ",".join(new_keys)
+
+                        import_data(social_tenure_table, column_keys, values)
+
                     else:
-                        new_values = str(values).replace("[[", "(")
-                        new_values = str(new_values).replace("]]", ")")
-                        new_values = str(new_values).replace("[", "(")
-                        new_values = str(new_values).replace("]", ")")
-                        new_values = str(new_values).replace("None", "NULL")
-
-                    # Remove Unicode
-                    values = new_values.replace("u\'", "\'")
-
-                    column_keys = ",".join(new_keys)
-
-                    import_data(social_tenure_table, column_keys, values)
+                        pass
 
                 else:
                     pass
