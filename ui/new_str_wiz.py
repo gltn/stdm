@@ -358,6 +358,9 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         spatial_unit_table.beforeEntityAdded.connect(
             self.validate_party_count
         )
+        spatial_unit_table.afterEntityAdded.connect(
+            self.validate_non_multi_party
+        )
 
         spatial_unit_table.deletedRows.connect(
             lambda rows: self.remove_model(
@@ -899,14 +902,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 notif.setParent(None)
 
 
-        str_obj = self.str_model()
+        usage_count = self.spatial_unit_usage_count(
+            spatial_unit_obj
+        )
+
         self.spatial_unit_notice.clear()
-        # returns the number of entries for a specific parcel.
-        usage_count = str_obj.queryObject(
-            [func.count().label('spatial_unit_count')]
-        ).filter(
-            self.str_model.spatial_unit_id == spatial_unit_obj.id
-        ).first()
 
         # If entry is found, show error and return
         if usage_count.spatial_unit_count > 0:
@@ -926,11 +926,16 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 )
                 return True
             else:
+                spatial_unit = format_name(
+                    self.spatial_unit.short_name
+                )
+                party = format_name(
+                    self.party.short_name
+                )
                 msg = QApplication.translate(
                     "newSTRWiz",
-                    'Unfortunately, this ' +
-                    format_name(self.spatial_unit.short_name) +
-                    ' has already been assigned to a party.'
+                    'Unfortunately, this {} has already been '
+                    'assigned to a {}.'.format(spatial_unit, party)
                 )
                 self.spatial_unit_notice.insertNotification(
                     msg, ERROR
@@ -943,6 +948,46 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         else:
             return True
 
+    def validate_non_multi_party(self, spatial_unit_obj):
+        """
+        Removes added row of spatial unit if the record
+        is already linked to another party.
+        :param spatial_unit_obj:The spatial unit model object
+        :type spatial_unit_obj: SQLAlchemy model Object
+        :return: None
+        :rtype: NoneType
+        """
+        if not self.social_tenure.multi_party:
+            usage_count = self.spatial_unit_usage_count(
+                spatial_unit_obj
+            )
+
+            if usage_count.spatial_unit_count > 0:
+                fk_mapper = self.sender()
+                self.erase_table_data(
+                    fk_mapper._tbFKEntity
+                )
+                self.remove_model(
+                    [0], self.sel_spatial_unit
+                )
+
+    def spatial_unit_usage_count(self, model_obj):
+        """
+        Gets the count of spatial unit usage in the database.
+        :param model_obj: Spatial unit model object
+        :type model_obj: SQLAlchemy model Object
+        :return:
+        :rtype:
+        """
+        # returns the number of entries for a specific parcel.
+        str_obj = self.str_model()
+        usage_count = str_obj.queryObject(
+            [func.count().label('spatial_unit_count')]
+        ).filter(
+            self.str_model.spatial_unit_id == model_obj.id
+        ).first()
+        return usage_count
+
 
     def buildSummary(self):
         """
@@ -950,7 +995,9 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :return: None
         :rtype: NoneType
         """
-        summaryTreeLoader = TreeSummaryLoader(self.twSTRSummary)
+        summaryTreeLoader = TreeSummaryLoader(
+            self.twSTRSummary
+        )
 
         sel_str_types = self.get_party_str_type_data()
         # Add each str type next to each party.
@@ -1514,8 +1561,17 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
 
 class ComboBoxDelegate(QItemDelegate):
-    def __init__(self, str_type_id=0, parent=None):
 
+    def __init__(self, str_type_id=0, parent=None):
+        """
+        It is a combobox delegate embedded in STR Type column.
+        :param str_type_id:
+        :type str_type_id:
+        :param parent:
+        :type parent:
+        :return:
+        :rtype:
+        """
         QItemDelegate.__init__(self, parent)
         self.row = 0
         self.str_type_id = str_type_id
@@ -1536,25 +1592,56 @@ class ComboBoxDelegate(QItemDelegate):
         return str_type_cbo
 
     def str_type_set_data(self):
+        """
+        Sets str type combobox items.
+        :return: STR type id and value.
+        :rtype: OrderedDict
+        """
         str_lookup_obj = self.social_tenure.tenure_type_collection
         str_types = entity_model(str_lookup_obj, True)
         str_type_obj = str_types()
         self.str_type_data = str_type_obj.queryObject().all()
-        strType = [(lookup.id, lookup.value) for lookup in self.str_type_data]
+        str_type = [
+            (lookup.id, lookup.value)
+            for lookup in self.str_type_data
+        ]
 
-        return OrderedDict(strType)
+        return OrderedDict(str_type)
 
     def createEditor(self, parent, option, index):
+        """
+        Creates the combobox inside a parent.
+        :param parent: The container of the cobobox
+        :type parent: QWidget
+        :param option:
+        :type option:
+        :param index: The index where the combobox
+         will be added.
+        :type index: QModelIndex
+        :return: The combobox
+        :rtype: QComboBox
+        """
         str_combo = QComboBox(parent)
         str_combo.insertItem(0, " ")
         for id, type in self.str_type_set_data().iteritems():
             str_combo.addItem(type, id)
 
-        str_combo.setCurrentIndex(self.str_type_id)
+        str_combo.setCurrentIndex(
+            self.str_type_id
+        )
 
         return str_combo
 
-    def setEditorData( self, comboBox, index ):
+    def setEditorData(self, comboBox, index):
+        """
+        Set data to the Combobox.
+        :param comboBox: The STR Type combobox
+        :type comboBox: QCombobox
+        :param index: The model index
+        :type index: QModelIndex
+        :return: None
+        :rtype: NoneType
+        """
         list_item_index = None
         if not index.model() is None:
             list_item_index = index.model().data(
@@ -1568,6 +1655,19 @@ class ComboBoxDelegate(QItemDelegate):
             comboBox.blockSignals(False)
 
     def setModelData(self, editor, model, index):
+        """
+        Gets data from the editor widget and stores
+        it in the specified model at the item index.
+        :param editor: STR Type combobox
+        :type editor: QComboBox
+        :param model: QModel
+        :type model: QModel
+        :param index: The index of the data
+        to be inserted.
+        :type index: QModelIndex
+        :return: None
+        :rtype: NoneType
+        """
         value = editor.currentIndex()
         model.setData(
             index,
@@ -1576,6 +1676,18 @@ class ComboBoxDelegate(QItemDelegate):
         )
 
     def updateEditorGeometry(self, editor, option, index):
+        """
+        Updates the editor for the item specified
+        by index according to the style option given.
+        :param editor: STR Type combobox
+        :type editor: QCombobox
+        :param option: style options
+        :type option: QStyle
+        :param index: index of the combobox item
+        :type index: QModelIndex
+        :return:
+        :rtype:
+        """
         editor.setGeometry(option.rect)
 
 class FreezeTableWidget(QTableView):

@@ -981,6 +981,7 @@ class EntityBrowserWithEditor(EntityBrowser):
                                 layer_id = layer.id()
                                 QgsMapLayerRegistry.\
                                     instance().removeMapLayer(layer_id)
+
                     # Change the crs of the canvas based on the added layer
                     else:
                         layer_list = QgsMapLayerRegistry.instance(). \
@@ -989,6 +990,8 @@ class EntityBrowserWithEditor(EntityBrowser):
                             self.add_spatial_unit_layer(sel_lyr_name)
                             layer_list = QgsMapLayerRegistry.instance(). \
                                 mapLayersByName(sel_lyr_name)
+
+                        iface.setActiveLayer(layer_list[0])
 
                         self.sp_unit_manager.set_canvas_crs(
                             layer_list[0]
@@ -1038,11 +1041,15 @@ class EntityBrowserWithEditor(EntityBrowser):
         #self.sel_highlight[:] = []
 
     def add_spatial_unit_layer(self, layer_name=None):
+
         if not layer_name is None:
             layer_name_item = layer_name
         else:
+
+            # for geom in self.geom_columns():
+
             layer_name_item = self.sp_unit_manager.geom_col_layer_name(
-                self._entity.name, self.geom_columns()[0]
+                self._entity.name, self.geom_columns()[0]#geom
             )
 
         index = self.sp_unit_manager.stdm_layers_combo.findText(
