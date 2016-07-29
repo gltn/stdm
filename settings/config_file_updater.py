@@ -34,7 +34,7 @@ from ..data.configuration.stdm_configuration import StdmConfiguration
 from ..data.pg_utils import export_data, import_data, pg_table_exists
 
 COLUMN_TYPE_DICT = {'character varying': 'VARCHAR', 'date': 'DATE',
-                    'serial': 'SERIAL', 'integer': 'BIGINT', 'lookup':
+                    'serial': 'SERIAL', 'integer': 'INT', 'lookup':
                         'LOOKUP', 'double precision': 'DOUBLE', 'GEOMETRY':
                         'GEOMETRY'}
 COLUMN_PROPERTY_DICT = {'SERIAL': {"unique": "False", "tip": "",
@@ -44,8 +44,10 @@ COLUMN_PROPERTY_DICT = {'SERIAL': {"unique": "False", "tip": "",
                         'VARCHAR': {"unique": "False", "tip": "",
                                     "minimum": "0", "maximum": "30",
                                     "index": "False", "mandatory": "False"},
-                        'BIGINT': {"unique": "False", "tip": "",
-                                    "minimum": "0", "maximum": "100000000",
+                        'INT': {"unique": "False", "tip": "",
+                                    "minimum": "-9223372036854775806",
+                                    "maximum":
+                                    "9223372036854775807",
                                     "index": "False", "mandatory": "False"},
                         'DATE':   {"unique": "False", "tip": "",
                                     "minimum": "0", "maximum": "30",
@@ -94,6 +96,8 @@ class ConfigurationFileUpdater(object):
         self.old_config_file = False
         self.entities = []
         self.lookup_colum_name_values = {}
+        self.exclusions = ('supporting_document', 'social_tenure_relationship',
+                           'str_relations')
 
     def _check_config_folder_exists(self):
         """
@@ -246,6 +250,7 @@ class ConfigurationFileUpdater(object):
                 self.relations_dict[table_name] = relations_list
 
             if columns_node.tagName() == "geometryz":
+                geometry_nodes = columns_node.childNodes()
                 self.spatial_unit_table.append(table_name)
                 column_dict = OrderedDict()
                 column_dict["col_name"] = 'geom'
@@ -369,9 +374,7 @@ class ConfigurationFileUpdater(object):
 
             if key.endswith("table") and value:
                 for entity_key, entity_value in value.iteritems():
-                    if entity_key not in ('supporting_document',
-                                             'social_tenure_relationship',
-                                             'str_relations'):
+                    if entity_key not in self.exclusions:
                         entity_name = pref + "_" + entity_key
                         entities = self.doc_old.createElement("Entity")
                         entities.setAttribute("name", entity_name)
