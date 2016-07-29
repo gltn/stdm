@@ -875,11 +875,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.is_config_done = True
 
             #Write config to a file
-            #config_path = os.path.expanduser('~') + '/.stdm/configuration.stc'
             cfs = ConfigurationFileSerializer(CONFIG_FILE)
 
             # flag wizard has been run
             self.reg_config.write({'WizardRun':1})
+
+            self.reg_config.write({'ConfigUpdated':'-1'})
 
             try:
                 cfs.save()
