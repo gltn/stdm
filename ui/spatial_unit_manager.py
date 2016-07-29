@@ -175,14 +175,15 @@ class SpatialUnitManagerDockWidget(
     def set_canvas_crs(self, layer):
         # Sets canvas CRS
         # get srid with EPSG text
-        full_srid = layer.crs().authid().split(':')
-        srid = int(full_srid[1])
-        layer_crs = QgsCoordinateReferenceSystem(
-            srid,
-            QgsCoordinateReferenceSystem.EpsgCrsId
-        )
+        if layer.isValid():
+            full_srid = layer.crs().authid().split(':')
+            srid = int(full_srid[1])
+            layer_crs = QgsCoordinateReferenceSystem(
+                srid,
+                QgsCoordinateReferenceSystem.EpsgCrsId
+            )
 
-        self.iface.mapCanvas().mapRenderer().setDestinationCrs(layer_crs)
+            self.iface.mapCanvas().mapRenderer().setDestinationCrs(layer_crs)
 
 
     def init_form_widgets(self, curr_layer):
