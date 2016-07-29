@@ -89,7 +89,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         QWizard.__init__(
             self, plugin.iface.mainWindow()
         )
-
+        
         self.setupUi(self)
         self.plugin = plugin
         self.setOption(QWizard.IndependentPages, True)

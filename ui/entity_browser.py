@@ -1060,10 +1060,10 @@ class EntityBrowserWithEditor(EntityBrowser):
             self.clear_sel_highlight()
             # Remove a layer used for preview
             # to avoid a failed digitization
-            # if not iface.activeLayer() is None:
-            #     QgsMapLayerRegistry.instance().removeMapLayer(
-            #         iface.activeLayer().id()
-            #     )
+            if not iface.activeLayer() is None:
+                QgsMapLayerRegistry.instance().removeMapLayer(
+                    iface.activeLayer().id()
+                )
 
 
 class ContentGroupEntityBrowser(EntityBrowserWithEditor):
