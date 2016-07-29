@@ -940,6 +940,8 @@ class EntityBrowserWithEditor(EntityBrowser):
     def on_select_attribute(self, sel_model_index):
         """
         Slot raised when selecting a spatial entity row.
+         :param sel_model_index: Selected row index
+        :type sel_model_index: QModelIndex
         :return:
         :rtype:
         """
@@ -951,13 +953,16 @@ class EntityBrowserWithEditor(EntityBrowser):
         )
         record_id = rowIndex.data()
 
-        layer_names = []
-        for geom in self.geom_columns():
-            lyr_name = self.sp_unit_manager.geom_col_layer_name(
-                self._entity.name, geom
-            )
-            layer_names.append(lyr_name)
+        self.record_feature_highlighter(record_id)
 
+    def record_feature_highlighter(self, record_id):
+        """
+        Highlights a feature of a record.
+        :param record_id: The id of a row
+        :type record_id: Integer
+        :return: None
+        :rtype: NoneType
+        """
         for geom in self.geom_columns():
             geom_wkb = entity_id_to_attr(
                 self._entity,
@@ -966,42 +971,18 @@ class EntityBrowserWithEditor(EntityBrowser):
             )
 
             if geom_wkb is not None:
-                sel_lyr_name = self.sp_unit_manager.\
+                sel_lyr_name = self.sp_unit_manager. \
                     geom_col_layer_name(
                     self._entity.name, geom
                 )
 
-                for layer_name in layer_names:
-                    # remove other layers of the same entity
-                    if layer_name != sel_lyr_name:
-                        layer_list = QgsMapLayerRegistry.instance().\
-                            mapLayersByName(layer_name)
-                        if len(layer_list) > 0:
-                            for layer in layer_list:
-                                layer_id = layer.id()
-                                QgsMapLayerRegistry.\
-                                    instance().removeMapLayer(layer_id)
+                self.add_spatial_unit_layer(sel_lyr_name)
 
-                    # Change the crs of the canvas based on the added layer
-                    else:
-                        layer_list = QgsMapLayerRegistry.instance(). \
-                            mapLayersByName(sel_lyr_name)
-                        if len(layer_list) < 1:
-                            self.add_spatial_unit_layer(sel_lyr_name)
-                            layer_list = QgsMapLayerRegistry.instance(). \
-                                mapLayersByName(sel_lyr_name)
-
-                        iface.setActiveLayer(layer_list[0])
-
-                        self.sp_unit_manager.set_canvas_crs(
-                            layer_list[0]
-                        )
-
-                        self.highlight_geom(
-                            iface.mapCanvas(),
-                            layer_list[0],
-                            geom_wkb
-                        )
+                self.highlight_geom(
+                    iface.mapCanvas(),
+                    iface.activeLayer(),
+                    geom_wkb
+                )
 
     def highlight_geom(
             self, map_canvas, layer, geom
@@ -1016,7 +997,6 @@ class EntityBrowserWithEditor(EntityBrowser):
         self.highlight = QgsHighlight(
             map_canvas, qgis_geom, layer
         )
-
 
         self.highlight.setFillColor(
             QColor(255, 128, 0)
@@ -1038,29 +1018,18 @@ class EntityBrowserWithEditor(EntityBrowser):
         if self.highlight is not None:
             self.highlight = None
 
-        #self.sel_highlight[:] = []
-
     def add_spatial_unit_layer(self, layer_name=None):
-
         if not layer_name is None:
-            layer_name_item = layer_name
+            self.sp_unit_manager.add_layer_by_name(layer_name)
         else:
+            for geom in self.geom_columns():
+                layer_name_item = \
+                    self.sp_unit_manager.geom_col_layer_name(
+                    self._entity.name, geom
+                )
+                self.sp_unit_manager.\
+                    add_layer_by_name(layer_name_item)
 
-            # for geom in self.geom_columns():
-
-            layer_name_item = self.sp_unit_manager.geom_col_layer_name(
-                self._entity.name, self.geom_columns()[0]#geom
-            )
-
-        index = self.sp_unit_manager.stdm_layers_combo.findText(
-            layer_name_item, Qt.MatchFixedString
-        )
-
-        if index >= 0:
-            self.sp_unit_manager.stdm_layers_combo.\
-                setCurrentIndex(index)
-        # add spatial unit layers on view social tenure.
-        self.sp_unit_manager.on_add_to_canvas_button_clicked()
 
     def closeEvent(self, event):
         """
@@ -1072,7 +1041,12 @@ class EntityBrowserWithEditor(EntityBrowser):
         """
         if self._entity.has_geometry_column():
             self.clear_sel_highlight()
-            self.sp_unit_manager.zoom_to_layer()
+            # Remove a layer used for preview
+            # to avoid a failed digitization
+            if not iface.activeLayer() is None:
+                QgsMapLayerRegistry.instance().removeMapLayer(
+                    iface.activeLayer().id()
+                )
 
     def hideEvent(self, hideEvent):
         """
@@ -1084,7 +1058,12 @@ class EntityBrowserWithEditor(EntityBrowser):
         """
         if self._entity.has_geometry_column():
             self.clear_sel_highlight()
-            self.sp_unit_manager.zoom_to_layer()
+            # Remove a layer used for preview
+            # to avoid a failed digitization
+            # if not iface.activeLayer() is None:
+            #     QgsMapLayerRegistry.instance().removeMapLayer(
+            #         iface.activeLayer().id()
+            #     )
 
 
 class ContentGroupEntityBrowser(EntityBrowserWithEditor):
@@ -1099,7 +1078,7 @@ class ContentGroupEntityBrowser(EntityBrowserWithEditor):
         
         self.resize(700,500)
         
-        if not isinstance(tableContentGroup,TableContentGroup):
+        if not isinstance(tableContentGroup, TableContentGroup):
             raise TypeError("Content group is not of type 'TableContentGroup'")
         
         self._tableContentGroup = tableContentGroup

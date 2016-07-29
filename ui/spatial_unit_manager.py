@@ -20,7 +20,6 @@
  *                                                                         *
  ***************************************************************************/
 """
-
 import os
 import logging
 from PyQt4 import uic
@@ -92,6 +91,9 @@ class SpatialUnitManagerDockWidget(
         self.onLayerAdded.connect(
             self.init_form_widgets
         )
+        self.add_to_canvas_button.clicked.connect(
+            self.on_add_to_canvas_button_clicked
+        )
 
     def _populate_layers(self):
         self.stdm_layers_combo.clear()
@@ -161,10 +163,10 @@ class SpatialUnitManagerDockWidget(
                 table, column = self._layer_table_column(
                     curr_layer
                 )
-                self.set_canvas_crs(curr_layer)
                 if table not in pg_views():
                     # Make sure digitizing toolbar is enabled
                     self.iface.digitizeToolBar().setEnabled(True)
+                    self.set_canvas_crs(curr_layer)
                 elif table in pg_views():
                     self.iface.digitizeToolBar().setEnabled(False)
             except Exception:
@@ -211,13 +213,13 @@ class SpatialUnitManagerDockWidget(
                 curr_layer.featureDeleted.connect(
                     self.stdm_fields.on_feature_deleted
                 )
+
                 curr_layer.beforeCommitChanges.connect(
                     self.stdm_fields.on_digitizing_saved
                 )
 
-
             except Exception as ex:
-                print ex
+
                 LOGGER.debug(str(ex))
 
     def _format_layer_display_name(self, col, table):
@@ -295,6 +297,23 @@ class SpatialUnitManagerDockWidget(
 
         return icon
 
+    def add_layer_by_name(self, layer_name):
+        """
+        Add a layer when a name is supplied.
+        :param layer_name: The stdm layer name
+        :type layer_name: String
+        :return: None
+        :rtype: NoneType
+        """
+        index = self.stdm_layers_combo.findText(
+            layer_name, Qt.MatchFixedString
+        )
+        if index >= 0:
+
+            self.stdm_layers_combo.setCurrentIndex(index)
+            # add spatial unit layer.
+            self.on_add_to_canvas_button_clicked()
+
     def geom_col_layer_name(self, table, col):
         """
         Returns the layer name based on geom column object.
@@ -319,9 +338,6 @@ class SpatialUnitManagerDockWidget(
             spatial_layer_item = col.layer_display_name
         return spatial_layer_item
 
-
-
-    @pyqtSignature("")
     def on_add_to_canvas_button_clicked(self):
         """
         Add STDM layer to map canvas.
@@ -359,9 +375,9 @@ class SpatialUnitManagerDockWidget(
         layer_name = self.geom_col_layer_name(
             table_name, layer_item
         )
-        if layer_name in self._map_registry_table_columns():
-            return
 
+        if layer_name in self._map_registry_layer_names():
+            return
 
         # Used in gpx_table.py
         self.curr_lyr_table = table_name
@@ -383,7 +399,10 @@ class SpatialUnitManagerDockWidget(
             QgsMapLayerRegistry.instance().addMapLayer(
                 curr_layer
             )
+
             self.toggle_entity_multi_layers(curr_layer)
+
+            self.set_canvas_crs(curr_layer)
             #Required in order for the layer name to be set
             QTimer.singleShot(
                 100,
@@ -455,6 +474,14 @@ class SpatialUnitManagerDockWidget(
                 same_entity_layers.append(layer_list)
         return same_entity_layers
 
+    def layer_entity_children(self, sel_lyr_name):
+        layer_lists = [
+            layer_list
+            for layer_list in self.same_entity_layers()
+            if sel_lyr_name in layer_list
+        ]
+        return layer_lists
+
     def toggle_entity_multi_layers(self, new_layer):
         """
         Removes other layers created from the entity
@@ -465,12 +492,12 @@ class SpatialUnitManagerDockWidget(
         :rtype: NoneType
         """
         sel_lyr_name = new_layer.name()
-        layer_lists = [
-            layer_list
-            for layer_list in self.same_entity_layers()
-            if sel_lyr_name in layer_list
-        ]
-        # exclude layers whose entity has only one geometry
+        layer_lists = self.layer_entity_children(
+            sel_lyr_name
+        )
+        # Include layers for toggling whose entity
+        # has more than one geometry
+
         if len(layer_lists) < 1:
             return
         # if the layer_list is the
@@ -490,18 +517,21 @@ class SpatialUnitManagerDockWidget(
                         QgsMapLayerRegistry.\
                             instance().removeMapLayer(layer_id)
             # Change the crs of the canvas based on the new layer
-            else:
-                layer_list = QgsMapLayerRegistry.instance(). \
-                    mapLayersByName(sel_lyr_name)
-                if len(layer_list) > 0:
-                    self.set_canvas_crs(
-                        layer_list[0]
-                    )
+
+            layer_list = QgsMapLayerRegistry.instance(). \
+                mapLayersByName(sel_lyr_name)
+            if len(layer_list) > 0:
+                self.set_canvas_crs(
+                    layer_list[0]
+                )
 
 
 
     def _set_layer_display_name(self, layer, name):
-        layer.setLayerName(name)
+        try:
+            layer.setLayerName(name)
+        except RuntimeError:
+            pass
 
     def _layer_table_column(self, layer):
         #Returns the table and column name
@@ -517,21 +547,13 @@ class SpatialUnitManagerDockWidget(
 
         return table, column
 
-    def _map_registry_table_columns(self):
+    def _map_registry_layer_names(self):
         """
-        Returns a list of layers in form of table
-        names concatenated with the
-        column names separated by a full-stop.
+        Returns a list of layers names.
         """
-        tab_col_names = []
         layers = QgsMapLayerRegistry.instance().mapLayers()
-
-        for layer in layers.values():
-            table, column = self._layer_table_column(layer)
-            if table and column:
-                tab_col_names.append(u'{0}.{1}'.format(table, column))
-
-        return tab_col_names
+        layer_names = [lyr.name() for lyr in layers.values()]
+        return layer_names
 
     @pyqtSignature("")
     def on_set_display_name_button_clicked(self):
