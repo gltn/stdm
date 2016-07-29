@@ -361,7 +361,7 @@ class STDMFieldWidget():
         if feature_id > 0:
             return
 
-        # if the feature is already in the dict don't
+        # if the feature is already in the OrderedDict don't
         # show the form as the model of the feature is
         # already populated by the form
         if feature_id in self.feature_models.keys():
@@ -375,11 +375,7 @@ class STDMFieldWidget():
             self.feature_models[feature_id] = \
                 self.removed_feature_models[feature_id]
             return
-        # if the feature is already in the dict don't
-        # show the form as the model of the feature is
-        # already populated by the form
-        if feature_id in self.feature_models.keys():
-            return
+
         # If the feature is not valid, geom_wkt will be None
         # So don't launch form for invalid feature and
         # delete feature
@@ -403,8 +399,7 @@ class STDMFieldWidget():
                 msg
             )
 
-            self.layer.deleteFeature(feature_id)
-            self.layer.undoStack().undo()
+
             return
         # init form
         self.editor = EntityEditorDialog(
@@ -453,9 +448,9 @@ class STDMFieldWidget():
         :rtype: WKT
         """
         geom_wkt = None
-        fids = [feature_id]
+        fid = feature_id
         request = QgsFeatureRequest()
-        request.setFilterFids(fids)
+        request.setFilterFid(fid)
         features = self.layer.getFeatures(request)
 
         # get the wkt of the geometry
@@ -478,9 +473,9 @@ class STDMFieldWidget():
         :return: None
         :rtype: NoneType
         """
-        self.feature_models[self.current_feature] = model
-
-        self.editor.accept()
+        if not model is None:
+            self.feature_models[self.current_feature] = model
+            self.editor.accept()
 
     def on_feature_deleted(self, feature_id):
         """
@@ -511,6 +506,7 @@ class STDMFieldWidget():
         entity_obj.saveMany(
             self.feature_models.values()
         )
+
         # undo each feature created so that qgis
         # don't try to save the same feature again.
         # It will also clear all the models from

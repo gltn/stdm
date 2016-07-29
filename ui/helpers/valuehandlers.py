@@ -182,7 +182,14 @@ class CheckBoxValueHandler(ControlValueHandler):
         return self.control.isChecked()
     
     def setValue(self,value):
-        self.control.setChecked(value)
+        if isinstance(value, str) or \
+                isinstance(value, unicode):
+            if value.lower() in ("yes", "true", "t", "1"):
+                self.control.setChecked(True)
+            else:
+                self.control.setChecked(False)
+        else:
+            self.control.setChecked(value)
         
     def supportsMandatory(self):
         return False

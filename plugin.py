@@ -959,6 +959,10 @@ class STDMQGISLoader(object):
         opt_dlg._apply_btn.clicked.connect(
             lambda: self.reload_plugin(None)
         )
+        opt_dlg.buttonBox.accepted.connect(
+            lambda: self.reload_plugin(None)
+        )
+
         opt_dlg.exec_()
 
 
