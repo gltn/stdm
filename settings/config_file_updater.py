@@ -36,7 +36,7 @@ from ..data.pg_utils import export_data, import_data, pg_table_exists
 COLUMN_TYPE_DICT = {'character varying': 'VARCHAR', 'date': 'DATE',
                     'serial': 'SERIAL', 'integer': 'INT', 'lookup':
                         'LOOKUP', 'double precision': 'DOUBLE', 'GEOMETRY':
-                        'GEOMETRY'}
+                        'GEOMETRY', 'FOREIGN_KEY': 'FOREIGN_KEY'}
 COLUMN_PROPERTY_DICT = {'SERIAL': {"unique": "False", "tip": "",
                                     "minimum": "-9223372036854775808",
                                     "maximum": "9223372036854775807",
@@ -64,7 +64,11 @@ COLUMN_PROPERTY_DICT = {'SERIAL': {"unique": "False", "tip": "",
                         'DEFAULT': {"unique": "False", "tip": "",
                                     "minimum": "0", "maximum":"0",
                                     "index": "False", "mandatory": "False"},
+                        'FOREIGN_KEY': {"unique": "False", "tip": "",
+                                    "minimum": "0", "maximum":"2147483647",
+                                    "index": "False", "mandatory": "False"},
                         }
+GEOMETRY_TYPES = {'LINESTRING': '1', 'POINT': '0', 'POLYGON': '2'}
 
 IMPORT = "import"
 
@@ -195,6 +199,7 @@ class ConfigurationFileUpdater(object):
                     lookup_names[lookup] = count
                     count += 1
 
+        # TODO remove this might rename the wrong column
         self.lookup_dict[lookup_name] = lookup_dict
         if lookup_name == "check_social_tenure_type":
             self.lookup_colum_name_values["type"] = lookup_names
@@ -247,21 +252,43 @@ class ConfigurationFileUpdater(object):
                     relation_node = relations_nodes.item(r).toElement()
                     relation_table = unicode(relation_node.attribute('table'))
                     relations_list.append(relation_table)
+
+                    # Adding column property for table
+                    if table_name not in self.exclusions:
+                        column_dict = OrderedDict()
+                        column_dict["col_name"] = unicode(
+                            relation_node.attribute('table'))
+                        column_dict["col_search"] = 'no'
+                        column_dict["col_descrpt"] = ''
+                        column_dict["col_type"] = 'FOREIGN_KEY'
+                        column_dict["lookup"] = None
+                        self.table_list.append(column_dict)
                 self.relations_dict[table_name] = relations_list
 
             if columns_node.tagName() == "geometryz":
                 geometry_nodes = columns_node.childNodes()
-                self.spatial_unit_table.append(table_name)
-                column_dict = OrderedDict()
-                column_dict["col_name"] = 'geom'
-                column_dict["col_search"] = 'no'
-                column_dict["col_descrpt"] = ''
-                column_dict["col_type"] = 'GEOMETRY'
-                column_dict["lookup"] = None
-                column_dict["srid"] = '4326'
-                column_dict["type"] = '2'
 
-                self.table_list.append(column_dict)
+                self.spatial_unit_table.append(table_name)
+
+                for g in range(geometry_nodes.count()):
+                    geometry_node = geometry_nodes.item(g).toElement()
+
+                    column_dict = OrderedDict()
+                    geom_dict = OrderedDict()
+                    geometry_dict = OrderedDict()
+                    column_dict["col_name"] = unicode(
+                            geometry_node.attribute('column'))
+                    column_dict["col_search"] = 'no'
+                    column_dict["col_descrpt"] = ''
+                    column_dict["lookup"] = None
+                    geom_dict["srid"] = unicode(
+                                            geometry_node.attribute('srid'))
+                    geom_dict["type"] = GEOMETRY_TYPES[unicode(
+                                            geometry_node.attribute('type'))]
+                    # geometry_dict['GEOMETRY'] = geom_dict
+                    column_dict["col_type"] = geom_dict
+
+                    self.table_list.append(column_dict)
 
                 self.table_dict[table_name] = self.table_list
 
@@ -410,16 +437,31 @@ class ConfigurationFileUpdater(object):
                                 elif col_k == "col_descrpt":
                                     column.setAttribute("description", col_v)
                                 elif col_k == "col_type":
-                                    column.setAttribute("TYPE_INFO", col_v)
-                                    if COLUMN_PROPERTY_DICT[col_v]:
-                                        for k, v in COLUMN_PROPERTY_DICT[col_v].\
-                                                iteritems():
-                                            column.setAttribute(k, v)
-                                    else:
+                                    if isinstance(col_v, dict):
                                         for k, v in COLUMN_PROPERTY_DICT[
-                                            'DEFAULT'].\
-                                                iteritems():
-                                            column.setAttribute(k, v)
+                                            'GEOMETRY'].\
+                                                    iteritems():
+                                                column.setAttribute(k, v)
+                                        column.setAttribute("TYPE_INFO",
+                                                            "GEOMETRY")
+                                        geometry = self.doc_old.createElement(
+                                                    "Geometry")
+                                        geometry.setAttribute(
+                                            "layerDisplay", "")
+                                        for k, v in col_v.iteritems():
+                                            geometry.setAttribute(k, v)
+                                        column.appendChild(geometry)
+                                    else:
+                                        column.setAttribute("TYPE_INFO", col_v)
+                                        if COLUMN_PROPERTY_DICT[col_v]:
+                                            for k, v in COLUMN_PROPERTY_DICT[col_v].\
+                                                    iteritems():
+                                                column.setAttribute(k, v)
+                                        else:
+                                            for k, v in COLUMN_PROPERTY_DICT[
+                                                'DEFAULT'].\
+                                                    iteritems():
+                                                column.setAttribute(k, v)
 
                                 elif col_k == "lookup" and col_v is not None:
                                     relation = self.doc_old.createElement(
@@ -433,13 +475,17 @@ class ConfigurationFileUpdater(object):
                                                                    entity_key,
                                                                    unicode(
                                                     self.table_col_name)]
-                                if col_v == "GEOMETRY":
-                                    geometry =  self.doc_old.createElement(
-                                        "Geometry")
-                                    geometry.setAttribute("type", '2')
-                                    geometry.setAttribute("srid", '4326')
-                                    geometry.setAttribute("layerDisplay", '')
-                                    column.appendChild(geometry)
+
+                                if col_v == "FOREIGN_KEY":
+                                    relation = self.doc_old.createElement(
+                                        "Relation")
+                                    relation.setAttribute("name",
+                                                          "fk_{0}_{1}_id_{2}_"
+                                                          "{3}_{4}".format(pref,
+                                                          self.table_col_name,
+                                                          pref, entity_key,
+                                                          self.table_col_name))
+                                    column.appendChild(relation)
                                 columns.appendChild(column)
                         entities.appendChild(columns)
                         profile.appendChild(entities)
@@ -448,6 +494,24 @@ class ConfigurationFileUpdater(object):
                 relationship = self.doc_old.createElement("Relations")
 
                 for relation_key, relation_values in value.iteritems():
+
+                    if relation_key not in self.exclusions:
+
+                        for relation_v in relation_values:
+                            entity_relation = self.doc_old.createElement(
+                                    "EntityRelation")
+                            entity_relation.setAttribute("parent", relation_v)
+                            entity_relation.setAttribute("child",
+                                                relation_key)
+                            entity_relation.setAttribute("parentColumn", "id")
+                            entity_relation.setAttribute("childColumn",
+                                                             relation_v +
+                                                         "_id")
+                            entity_relation.setAttribute(
+                                "name", "fk_{0}_{1}_id_{2}_{3}_{4}".format(
+                                    pref, relation_v, pref, relation_key,
+                                    relation_v))
+                            relationship.appendChild(entity_relation)
 
                     if relation_key == "social_tenure_relationship":
 
@@ -624,19 +688,22 @@ class ConfigurationFileUpdater(object):
                     "layerDisplay", pref + "_vw_social_tenure_relationship")
                 social_tenure.setAttribute(
                     "tenureTypeList", "check_tenure_type")
-                social_tenure.setAttribute(
-                    "spatialUnit", self.spatial_unit_table[0])
+                # social_tenure.setAttribute(
+                #     "spatialUnit", self.spatial_unit_table[0])
                 for relation_key, relation_values in value.iteritems():
 
                     if relation_key == "social_tenure_relationship":
 
                         for relation_v in relation_values:
-                            if self.spatial_unit_table[0] == relation_v:
-                                pass
+                            if self.spatial_unit_table:
+                                for sp_table in self.spatial_unit_table:
+                                    if sp_table in relation_values:
+                                        social_tenure.setAttribute(
+                                                "spatialUnit", sp_table)
 
-                            if self.spatial_unit_table[0] != relation_v:
-                                social_tenure.setAttribute(
-                                    "party", relation_v)
+                                    if sp_table is not relation_v:
+                                        social_tenure.setAttribute(
+                                            "party", relation_v)
 
                 profile.appendChild(social_tenure)
 
@@ -877,7 +944,7 @@ class ConfigurationFileUpdater(object):
                     original_key_len = len(columns)
                     new_keys = []
                     for ky in data.keys():
-                        if not ky.startswith("geom"):
+                        if not ky.startswith("-"):
                             new_keys.append(ky)
                     if len(new_keys) is not original_key_len:
                         new_keys.append('geom')
