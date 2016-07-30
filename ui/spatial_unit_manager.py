@@ -65,7 +65,7 @@ LOGGER = logging.getLogger('stdm')
 class SpatialUnitManagerDockWidget(
     QDockWidget, Ui_SpatialUnitManagerWidget
 ):
-    onLayerAdded = pyqtSignal(object)
+    onLayerAdded = pyqtSignal(str, object)
     def __init__(self, iface, plugin=None):
         """Constructor."""
         QDockWidget.__init__(self, iface.mainWindow())
@@ -89,7 +89,7 @@ class SpatialUnitManagerDockWidget(
             self.control_digitize_toolbar
         )
         self.onLayerAdded.connect(
-            self.init_form_widgets
+            self.init_spatial_form
         )
         self.add_to_canvas_button.clicked.connect(
             self.on_add_to_canvas_button_clicked
@@ -186,42 +186,23 @@ class SpatialUnitManagerDockWidget(
             self.iface.mapCanvas().mapRenderer().setDestinationCrs(layer_crs)
 
 
-    def init_form_widgets(self, curr_layer):
+    def init_spatial_form(self, spatial_column, curr_layer):
         """
-        Initializes the Layer form widgets.
+        Initializes the Layer form.
         :param curr_layer: The layer for which
         the widgets are set.
         :type curr_layer: QgsVectorLayer
         :return: None
         :rtype: NoneType
         """
-
         table, column = self._layer_table_column(curr_layer)
-
         if table not in pg_views() and not curr_layer is None:
-
             try:
-                # init register form factory
-                self.stdm_fields.set_entity(table)
-                self.stdm_fields.set_widget_mapping()
-                self.stdm_fields.register_factory()
-                self.stdm_fields.set_widget_type(curr_layer)
-                curr_layer.editFormConfig().setSuppress(1)
-                curr_layer.featureAdded.connect(
-                    self.stdm_fields.load_stdm_form
+                self.stdm_fields.init_form(
+                    table, spatial_column, curr_layer
                 )
-
-                curr_layer.featureDeleted.connect(
-                    self.stdm_fields.on_feature_deleted
-                )
-
-                curr_layer.beforeCommitChanges.connect(
-                    self.stdm_fields.on_digitizing_saved
-                )
-
             except Exception as ex:
-
-                LOGGER.debug(str(ex))
+                LOGGER.debug(unicode(ex))
 
     def _format_layer_display_name(self, col, table):
         return u'{0}.{1}'.format(table,col)
@@ -413,7 +394,7 @@ class SpatialUnitManagerDockWidget(
                 )
             )
             self.zoom_to_layer()
-            self.onLayerAdded.emit(curr_layer)
+            self.onLayerAdded.emit(spatial_column, curr_layer)
         else:
             msg = QApplication.translate(
                 "Spatial Unit Manager",

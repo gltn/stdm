@@ -89,7 +89,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         QWizard.__init__(
             self, plugin.iface.mainWindow()
         )
-        
+
         self.setupUi(self)
         self.plugin = plugin
         self.setOption(QWizard.IndependentPages, True)
@@ -257,7 +257,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         sp_unit_fk_mapper = self._create_fk_mapper(
             entity_config,
             self.spatialUnitRecBox,
-            self.spatial_unit_notice
+            self.spatial_unit_notice,
+            multi_row=False
         )
 
         vertical_layout = QVBoxLayout()
@@ -350,11 +351,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 model_obj, self.sel_spatial_unit
             )
         )
-        spatial_unit_table.beforeEntityAdded.connect(
-            lambda: self.erase_table_data(
-                spatial_unit_table._tbFKEntity
-            )
-        )
+
         spatial_unit_table.beforeEntityAdded.connect(
             self.validate_party_count
         )
@@ -405,7 +402,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         sp_fk_mapper = self._create_fk_mapper(
             entity_config,
             self.spatialUnitRecBox,
-            self.spatial_unit_notice
+            self.spatial_unit_notice,
+            multi_row=False
         )
         vertical_layout = QVBoxLayout()
         vertical_layout.addWidget(sp_fk_mapper)
@@ -718,11 +716,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         else:
             return None
 
-    def _create_fk_mapper(self, config, parent, notif_bar):
+    def _create_fk_mapper(self, config, parent, notif_bar, multi_row=True):
         from .foreign_key_mapper import ForeignKeyMapper
         fk_mapper = ForeignKeyMapper(config.ds_entity, parent, notif_bar)
         fk_mapper.setDatabaseModel(config.model())
-        fk_mapper.setSupportsList(True)
+        fk_mapper.setSupportsList(multi_row)
         fk_mapper.setDeleteonRemove(False)
         fk_mapper.setNotificationBar(notif_bar)
 
