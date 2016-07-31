@@ -102,6 +102,7 @@ class ConfigurationFileUpdater(object):
         self.lookup_colum_name_values = {}
         self.exclusions = ('supporting_document', 'social_tenure_relationship',
                            'str_relations')
+        self.relation_table = None
 
     def _check_config_folder_exists(self):
         """
@@ -255,14 +256,12 @@ class ConfigurationFileUpdater(object):
 
                     # Adding column property for table
                     if table_name not in self.exclusions:
-                        column_dict = OrderedDict()
-                        column_dict["col_name"] = unicode(
+                        relation_table_name = unicode(
                             relation_node.attribute('table'))
-                        column_dict["col_search"] = 'no'
-                        column_dict["col_descrpt"] = ''
-                        column_dict["col_type"] = 'FOREIGN_KEY'
-                        column_dict["lookup"] = None
-                        self.table_list.append(column_dict)
+                        self.table_list[-(r+1)]["col_type"] = 'FOREIGN_KEY'
+                        self.table_list[-(r+1)]["rlt_tb_name"] = \
+                            relation_table_name
+                        # self.table_list.append(column_dict)
                 self.relations_dict[table_name] = relations_list
 
             if columns_node.tagName() == "geometryz":
@@ -285,7 +284,6 @@ class ConfigurationFileUpdater(object):
                                             geometry_node.attribute('srid'))
                     geom_dict["type"] = GEOMETRY_TYPES[unicode(
                                             geometry_node.attribute('type'))]
-                    # geometry_dict['GEOMETRY'] = geom_dict
                     column_dict["col_type"] = geom_dict
 
                     self.table_list.append(column_dict)
@@ -475,16 +473,18 @@ class ConfigurationFileUpdater(object):
                                                                    entity_key,
                                                                    unicode(
                                                     self.table_col_name)]
+                                if col_k == 'rlt_tb_name':
+                                    self.relation_table = col_v
 
                                 if col_v == "FOREIGN_KEY":
                                     relation = self.doc_old.createElement(
                                         "Relation")
                                     relation.setAttribute("name",
-                                                          "fk_{0}_{1}_id_{2}_"
+                                                          "fk_{0}_{1}_{2}_"
                                                           "{3}_{4}".format(pref,
                                                           self.table_col_name,
                                                           pref, entity_key,
-                                                          self.table_col_name))
+                                                          self.relation_table))
                                     column.appendChild(relation)
                                 columns.appendChild(column)
                         entities.appendChild(columns)
@@ -505,10 +505,9 @@ class ConfigurationFileUpdater(object):
                                                 relation_key)
                             entity_relation.setAttribute("parentColumn", "id")
                             entity_relation.setAttribute("childColumn",
-                                                             relation_v +
-                                                         "_id")
+                                                             relation_v)
                             entity_relation.setAttribute(
-                                "name", "fk_{0}_{1}_id_{2}_{3}_{4}".format(
+                                "name", "fk_{0}_{1}_{2}_{3}_{4}".format(
                                     pref, relation_v, pref, relation_key,
                                     relation_v))
                             relationship.appendChild(entity_relation)
