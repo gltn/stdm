@@ -153,7 +153,23 @@ def pg_table_exists(table_name, include_views=True, schema="public"):
     else:
         return True
 
-def process_report_filter(tableName,columns,whereStr="",sortStmnt=""):
+def pg_table_count(table_name):
+    """
+    Returns a count of records in a table
+    :param table_name: Table to get count of.
+    :type table_name: str
+    :rtype: int
+    """
+    sql_str = "Select COUNT(*) cnt from {0}".format(table_name)
+    sql = text(sql_str)
+
+    results = _execute(sql)
+    for result in results:
+        cnt = result['cnt']
+
+    return cnt
+
+def process_report_filter(tableName, columns, whereStr="", sortStmnt=""):
     #Process the report builder filter    
     sql = "SELECT {0} FROM {1}".format(columns,tableName)
     
@@ -167,7 +183,7 @@ def process_report_filter(tableName,columns,whereStr="",sortStmnt=""):
     
     return _execute(t)
 
-def table_column_names(tableName, spatialColumns=False):
+def table_column_names(tableName, spatialColumns=False, creation_order=False):
     """
     Returns the column names of the given table name. 
     If 'spatialColumns' then the function will lookup for spatial columns in the given 
@@ -177,9 +193,13 @@ def table_column_names(tableName, spatialColumns=False):
         sql = "select f_geometry_column from geometry_columns where f_table_name = :tbname ORDER BY f_geometry_column ASC"
         columnName = "f_geometry_column"
     else:
-        sql = "select column_name from information_schema.columns where table_name = :tbname ORDER BY column_name ASC"
-        columnName = "column_name"
-        
+        if not creation_order:
+            sql = "select column_name from information_schema.columns where table_name = :tbname ORDER BY column_name ASC"
+            columnName = "column_name"
+        else:
+            sql = "select column_name from information_schema.columns where table_name = :tbname"
+            columnName = "column_name"
+
     t = text(sql)
     result = _execute(t,tbname = tableName)
         
@@ -239,7 +259,7 @@ def geometryType(tableName, spatialColumnName, schemaName="public"):
         
     return (geomType,epsg_code)
 
-def unique_column_values(tableName,columnName,quoteDataTypes=["character varying"]):
+def unique_column_values(tableName, columnName, quoteDataTypes=["character varying"]):
     """
     Select unique row values in the specified column.
     Specify the data types of row values which need to be quoted. Default is varchar.
@@ -247,7 +267,7 @@ def unique_column_values(tableName,columnName,quoteDataTypes=["character varying
     dataType = columnType(tableName,columnName)
     quoteRequired = getIndex(quoteDataTypes, dataType)
     
-    sql = "SELECT DISTINCT {0} FROM {1}".format(columnName,tableName)
+    sql = "SELECT DISTINCT {0} FROM {1}".format(columnName, tableName)
     t = text(sql)
     result = _execute(t)
     
@@ -268,14 +288,14 @@ def unique_column_values(tableName,columnName,quoteDataTypes=["character varying
                 
     return uniqueVals
 
-def columnType(tableName,columnName):
+def columnType(tableName, columnName):
     """
     Returns the PostgreSQL data type of the specified column.
     """
     sql = "SELECT data_type FROM information_schema.columns where table_name=:tbName AND column_name=:colName"
     t = text(sql)
     
-    result = _execute(t,tbName = tableName,colName = columnName)
+    result = _execute(t, tbName=tableName, colName=columnName)
 
     dataType = ""
     for r in result:
