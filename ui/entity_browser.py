@@ -661,14 +661,17 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             return
         
         if self._mode == SELECT:
-            #Get the first selected id
-            selId = selIDs[0]
-            self.recordSelected.emit(selId)
+            #Get all selected records
+            for sel_id in selIDs:
+                self.recordSelected.emit(sel_id)
 
-            self._notifBar.insertInformationNotification(
-                QApplication.translate('EntityBrowser',
-                                       'Record has been selected')
+            rec_selected = QApplication.translate(
+                'EntityBrowser',
+                'record(s) selected'
             )
+
+            msg = u'{0:d} {1}.'.format(len(selIDs), rec_selected)
+            self._notifBar.insertInformationNotification(msg)
             
     def addModelToView(self, model_obj):
         '''
