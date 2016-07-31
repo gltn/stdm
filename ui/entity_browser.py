@@ -346,6 +346,18 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         initialized.
         '''
         pass
+
+    def clear_selection(self):
+        """
+        Deselects all selected items in the table view.
+        """
+        self.tbEntity.clearSelection()
+
+    def clear_notifications(self):
+        """
+        Clears all notifications messages in the dialog.
+        """
+        self._notifBar.clear()
     
     def recomputeRecordCount(self):
         '''

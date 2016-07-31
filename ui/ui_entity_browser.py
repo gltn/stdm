@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_entity_browser.ui'
 #
-# Created: Sun Jul 31 09:45:28 2016
+# Created: Sun Jul 31 14:38:15 2016
 #      by: PyQt4 UI code generator 4.9.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -41,7 +41,7 @@ class Ui_EntityBrowser(object):
         self.tbEntity = QtGui.QTableView(EntityBrowser)
         self.tbEntity.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.tbEntity.setAlternatingRowColors(True)
-        self.tbEntity.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)
+        self.tbEntity.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.tbEntity.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.tbEntity.setObjectName(_fromUtf8("tbEntity"))
         self.gridLayout.addWidget(self.tbEntity, 2, 0, 1, 4)
