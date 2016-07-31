@@ -80,7 +80,8 @@ class ModelAtrributesView(QListView):
         try:
             self._loadAttrs(self._dataModel.displayMapping(), sort)
         except AttributeError:
-            #Ignore error if model does not contain the displayMapping static method
+            # Ignore error if model does not contain
+            # the displayMapping static method
             pass
 
     def load_mapping(self, mapping, sort=False):

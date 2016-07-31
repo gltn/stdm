@@ -400,7 +400,8 @@ class DocumentGenerator(QObject):
                 elif filePath is None and len(dataFields) > 0:
                     docFileName = self._build_file_name(data_source, entityFieldName,
                                                       entityFieldValue, dataFields, fileExtension)
-
+                    print   data_source, entityFieldName, entityFieldValue, dataFields, fileExtension
+                    print docFileName
                     # Replace unsupported characters in Windows file naming
                     docFileName = docFileName.replace('/', '_').replace \
                         ('\\', '_').replace(':', '_').strip('*?"<>|')
