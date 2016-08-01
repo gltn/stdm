@@ -962,7 +962,6 @@ class ConfigurationFileUpdater(object):
     def backup_data(self):
         if self.old_config_file:
             keys, values = self._set_social_tenure_table()
-            QMessageBox.information(None, "", str(values))
             for social_tenure_entity in values:
                 social_tenure_table = self.config_profiles[0] + "_" + \
                                         social_tenure_entity[0]
