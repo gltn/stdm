@@ -203,7 +203,7 @@ class ConfigurationFileUpdater(object):
         # TODO remove this might rename the wrong column
         self.lookup_dict[lookup_name] = lookup_dict
         if lookup_name == "check_social_tenure_type":
-            self.lookup_colum_name_values["type"] = lookup_names
+            self.lookup_colum_name_values["tenure_type"] = lookup_names
         else:
             self.lookup_colum_name_values[lookup_name.lstrip("check_")] = \
             lookup_names
@@ -535,7 +535,7 @@ class ConfigurationFileUpdater(object):
                                     pref, relation[0], relation[1], pref,
                                     relation_key, relation[2]))
                             # fk_lo_parcel_id_lo_survey_parcel
-                            entity_relation.setAttribute("display",
+                            entity_relation.setAttribute("displayColumns",
                                                              relation[3])
                             entity_relation.setAttribute("child",
                                                 relation_key)
@@ -558,7 +558,7 @@ class ConfigurationFileUpdater(object):
                                     pref, relation[0], relation[1],
                                     pref, relation_key, relation[2]))
                             # fk_ba_spatial_unit_id_ba_social_tenure_relationship_spatial_unit_id
-                            entity_relation.setAttribute('display_name',
+                            entity_relation.setAttribute('displayColumns',
                                                              relation[3])
                             entity_relation.setAttribute("child",
                                                 relation_key)
@@ -581,7 +581,7 @@ class ConfigurationFileUpdater(object):
                                             relation[0]
                                     + "_supporting_document_document_type")
                             # fk_ba_check_spatial_unit_document_type_id_ba_spatial_unit_supporting_document_document_type
-                            entity_relation.setAttribute('display_name',
+                            entity_relation.setAttribute('displayColumns',
                                                              relation[3])
                             entity_relation.setAttribute("parentColumn", "id")
                             entity_relation.setAttribute(
@@ -601,7 +601,7 @@ class ConfigurationFileUpdater(object):
                                         + relation[1] + "_" + pref +
                                         "_" + relation[0] +
                                         "_supporting_document_" + relation[2])
-                            entity_relation.setAttribute('display_name',
+                            entity_relation.setAttribute('displayColumns',
                                                              relation[3])
                             entity_relation.setAttribute(
                                     "parentColumn", "id")
@@ -620,7 +620,7 @@ class ConfigurationFileUpdater(object):
                                     "_supporting_document_id_" + pref +
                                     "_" + relation[0] +
                                     "_supporting_document_supporting_doc_id")
-                            entity_relation.setAttribute('display_name',
+                            entity_relation.setAttribute('displayColumns',
                                                              relation[3])
                             entity_relation.setAttribute("parentColumn", "id")
                             entity_relation.setAttribute(
@@ -646,6 +646,7 @@ class ConfigurationFileUpdater(object):
                                                  + pref + "_social_tenure_"
                                                 "relationship_supporting_document_"
                                                 "document_type")
+                entity_relation.setAttribute("displayColumn", "")
 
                 relationship.appendChild(entity_relation)
 
@@ -666,6 +667,7 @@ class ConfigurationFileUpdater(object):
                                                      "_social_tenure_relationship_"
                                                      "supporting_document_social_"
                                                      "tenure_relationship_id")
+                entity_relation.setAttribute("displayColumn", "")
 
                 relationship.appendChild(entity_relation)
 
@@ -684,6 +686,7 @@ class ConfigurationFileUpdater(object):
                                                     "relationship_supporting_"
                                                     "document_" + pref +
                                                      "_supporting_doc_id")
+                entity_relation.setAttribute("displayColumn", "")
 
                 relationship.appendChild(entity_relation)
 
@@ -698,6 +701,7 @@ class ConfigurationFileUpdater(object):
                                                      "_check_tenure_type_id_" +
                                                      pref + "_social_tenure_"
                                                      "relationship_tenure_type")
+                entity_relation.setAttribute("displayColumn", "")
 
                 relationship.appendChild(entity_relation)
 
@@ -708,6 +712,7 @@ class ConfigurationFileUpdater(object):
                         entity_relation = self.doc_old.createElement(
                                 "EntityRelation")
                         entity_relation.setAttribute("parent", v[0])
+                        entity_relation.setAttribute("displayColumn", "")
                         entity_relation.setAttribute("child", v[1])
                         entity_relation.setAttribute("name", k)
                         entity_relation.setAttribute("parentColumn", "id")
