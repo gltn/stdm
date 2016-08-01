@@ -728,9 +728,12 @@ class ConfigurationFileUpdater(object):
 
                     if relation_key == "social_tenure_relationship":
                         for relation in relation_values:
+                            if relation_values:
+                                new_relation = [relation_values[0][0],
+                                                relation_values[1][0]]
                             if self.spatial_unit_table:
                                 for sp_table in self.spatial_unit_table:
-                                    if sp_table in relation_values:
+                                    if sp_table in new_relation:
                                         social_tenure.setAttribute(
                                                 "spatialUnit", sp_table)
 
