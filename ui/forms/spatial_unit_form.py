@@ -260,12 +260,14 @@ class STDMFieldWidget():
             self.set_widget_type(curr_layer)
 
             curr_layer.editFormConfig().setSuppress(1)
-
-            curr_layer.featureAdded.connect(
-                lambda feature_id:
-                self.load_stdm_form(feature_id, spatial_column)
-            )
-
+            try:
+                curr_layer.featureAdded.connect(
+                    lambda feature_id:self.load_stdm_form(
+                        feature_id, spatial_column
+                    )
+                )
+            except Exception:
+                pass
             curr_layer.featureDeleted.connect(
                 self.on_feature_deleted
             )
@@ -421,7 +423,10 @@ class STDMFieldWidget():
         # already populated by the form
         if feature_id in self.feature_models.keys():
             return
-
+        # If the feature is removed by the undo button, don't
+        # load the form for it
+        if feature_id in self.removed_feature_models.keys():
+            return
         # If the added feature is removed earlier, add it
         # back to feature_models and don't show the form.
         # This happens when redo button(add feature back) is
@@ -486,6 +491,7 @@ class STDMFieldWidget():
         # open editor
         result = self.editor.exec_()
         if result < 1:
+            self.removed_feature_models[feature_id] = None
             self.layer.deleteFeature(feature_id)
 
     def get_wkt(self, feature_id):

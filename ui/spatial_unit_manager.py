@@ -443,18 +443,30 @@ class SpatialUnitManagerDockWidget(
         :return: List in a list
         :rtype: List
         """
-        same_entity_layers = []
+        entity_layers = []
         for entity in self.geom_entities:
-            cols = self.geom_columns(entity)
-            layer_list = []
-            if len(cols) > 1:
-                for col in cols:
-                    lyr_name = self.geom_col_layer_name(
-                        entity.name, col
-                    )
-                    layer_list.append(lyr_name)
-                same_entity_layers.append(layer_list)
-        return same_entity_layers
+            layer_list = self.entity_layer_names(entity)
+            entity_layers.append(layer_list)
+        return entity_layers
+
+    def entity_layer_names(self, entity):
+        """
+        Returns layer names of an entity if
+        they are more than one in one entity.
+        :param entity: The Entity object
+        :param type: Object
+        :return: List in a list
+        :rtype: List
+        """
+        cols = self.geom_columns(entity)
+        layer_list = []
+
+        for col in cols:
+            lyr_name = self.geom_col_layer_name(
+                entity.name, col
+            )
+            layer_list.append(lyr_name)
+        return layer_list
 
     def layer_entity_children(self, sel_lyr_name):
         layer_lists = [

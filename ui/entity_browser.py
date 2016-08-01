@@ -760,6 +760,9 @@ class EntityBrowserWithEditor(EntityBrowser):
                 self.sp_unit_manager = SpatialUnitManagerDockWidget(
                     iface
                 )
+                self.geom_cols = self.sp_unit_manager.geom_columns(
+                    self._entity
+                )
                 self.add_spatial_unit_layer()
                 self.tbEntity.clicked.connect(
                     self.on_select_attribute
@@ -924,19 +927,6 @@ class EntityBrowserWithEditor(EntityBrowser):
             dialog_height
         )
 
-    def geom_columns(self):
-        """
-        Get the geometry column
-        :return:
-        :rtype:
-        """
-        geom_column = [
-            column
-            for column in self._entity.columns.values()
-            if column.TYPE_INFO == 'GEOMETRY'
-        ]
-        return geom_column
-
     def on_select_attribute(self, sel_model_index):
         """
         Slot raised when selecting a spatial entity row.
@@ -963,7 +953,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         :return: None
         :rtype: NoneType
         """
-        for geom in self.geom_columns():
+        for geom in self.geom_cols:
             geom_wkb = entity_id_to_attr(
                 self._entity,
                 geom.name,
@@ -1022,10 +1012,13 @@ class EntityBrowserWithEditor(EntityBrowser):
         if not layer_name is None:
             self.sp_unit_manager.add_layer_by_name(layer_name)
         else:
-            for geom in self.geom_columns():
+            # As this is used for startup of
+            # entity browser, just add the first geom layer.
+            if len(self.geom_cols) > 0:
                 layer_name_item = \
                     self.sp_unit_manager.geom_col_layer_name(
-                    self._entity.name, geom
+                        self._entity.name,
+                        self.geom_cols[0]
                 )
                 self.sp_unit_manager.\
                     add_layer_by_name(layer_name_item)
@@ -1041,12 +1034,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         """
         if self._entity.has_geometry_column():
             self.clear_sel_highlight()
-            # Remove a layer used for preview
-            # to avoid a failed digitization
-            if not iface.activeLayer() is None:
-                QgsMapLayerRegistry.instance().removeMapLayer(
-                    iface.activeLayer().id()
-                )
+            self.sp_unit_manager.zoom_to_layer()
 
     def hideEvent(self, hideEvent):
         """
@@ -1058,12 +1046,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         """
         if self._entity.has_geometry_column():
             self.clear_sel_highlight()
-            # Remove a layer used for preview
-            # to avoid a failed digitization
-            if not iface.activeLayer() is None:
-                QgsMapLayerRegistry.instance().removeMapLayer(
-                    iface.activeLayer().id()
-                )
+            self.sp_unit_manager.zoom_to_layer()
 
 
 class ContentGroupEntityBrowser(EntityBrowserWithEditor):
@@ -1136,38 +1119,3 @@ class ForeignKeyBrowser(EntityBrowser):
     def title(self):
         return QApplication.translate("EnumeratorEntityBrowser",
                     "%s Entity Records")%(self._data_source_name).replace("_"," ").capitalize()
-
-
-    
-    
-        
-        
-    
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-    

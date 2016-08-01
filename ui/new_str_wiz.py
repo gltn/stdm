@@ -96,14 +96,15 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         #STR Variables
         self.sel_party = []
         self.sel_spatial_unit = []
-        self.str_type_data = []
         self.sel_str_type = []
+        self.str_type_data = []
         self.row = 0 # number of party rows
         # Current profile instance and properties
         self.curr_profile = current_profile()
 
         self.social_tenure = self.curr_profile.social_tenure
         self.str_type_table = None
+
         self.party = self.social_tenure.party
 
         self.spatial_unit = self.social_tenure.spatial_unit
@@ -188,12 +189,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
     def init_party_str_type_edit(self):
         """
         Initializes party table with STR type edit.
-        :param result: The object of the selected STR
-        :type result: Object
-        :param str_type_id: The id of the social tenure type lookup
-        :type str_type_id: Integer
-        :return:
-        :rtype:
+        :return: None
+        :rtype: NoneType
         """
         party_model_obj = getattr(
             self.str_edit_obj, self.party.name
@@ -214,7 +211,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         party_fk_mapper.setEntities(party_model_obj)
 
         self.init_str_type(
-            party_model_obj,
             party_fk_mapper,
             str_type_id,
             0
@@ -245,7 +241,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         layout.addItem(spacer)
 
     def init_spatial_unit_edit(self):
-
+        """
+        Initialize editing for spatial unit page.
+        :return: None
+        :rtype: NoneType
+        """
         spatial_unit_model_obj = getattr(
             self.str_edit_obj, self.spatial_unit.name
         )
@@ -283,30 +283,61 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         )
 
     def set_model_obj(self, model_obj, sel_models_cont):
+        """
+        A slot that sets model objects to party
+        and spatial units.
+        :param model_obj: The model object to be added.
+        :type model_obj: SQLAlchemy Model Object
+        :param sel_models_cont: the model container list.
+        :type sel_models_cont: List
+        :return: None
+        :rtype: NoneType
+        """
         if sel_models_cont == self.sel_party:
             self.party_notice.clear()
         if sel_models_cont == self.sel_spatial_unit:
             self.sel_spatial_unit[:] = []
-        elif not self.social_tenure.multi_party:
+        elif not self.social_tenure.multi_party or \
+                not self.str_edit_obj is None:
             self.sel_party[:] = []
         sel_models_cont.append(model_obj)
 
     def erase_table_data(self, table_view):
-
+        """
+        Clears table rows for a table view.
+        :param table_view: The table view
+        to remove rows from.
+        :type table_view: QTableView
+        :return: None
+        :rtype: NoneType
+        """
         if table_view.model().rowCount() > 0:
             table_view.model().rowCount(0)
             table_view.model().removeRow(0)
 
     def clear_str_type_data(self, party_table):
-        # Clear existing if multi-party is not
-        #  allowed or on editing mode
+        """
+        Clear existing STR type row if multi-
+        party is not allowed or on editing mode.
+        :param party_table: The party table view
+        :type party_table:QTableView
+        :return:None
+        :rtype: NoneType
+        """
+        #
         if not self.social_tenure.multi_party or \
                         self.str_edit_obj is not None:
                 if party_table.model().rowCount() > 0:
                     self.remove_str_type_row([0])
 
     def party_signals(self, party_table):
-
+        """
+        Initializes party signals.
+        :param party_table: The party table view
+        :type party_table: QTableView
+        :return: None
+        :rtype: NoneType
+        """
         party_table.beforeEntityAdded.connect(
             lambda model_obj: self.set_model_obj(
                 model_obj, self.sel_party
@@ -315,7 +346,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         party_table.afterEntityAdded.connect(
             lambda model_obj, row: self.init_str_type(
-                model_obj, party_table, 0, row
+                party_table, 0, row
             )
         )
 
@@ -345,7 +376,13 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         )
 
     def spatial_unit_signals(self, spatial_unit_table):
-
+        """
+        Initializes spatial unit signal.
+        :param spatial_unit_table: Spatial unit table view.
+        :type spatial_unit_table: QTableView
+        :return: None
+        :rtype: NoneType
+        """
         spatial_unit_table.beforeEntityAdded.connect(
             lambda model_obj: self.set_model_obj(
                 model_obj, self.sel_spatial_unit
@@ -359,12 +396,14 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             self.validate_non_multi_party
         )
 
+        spatial_unit_table.afterEntityAdded.connect(
+            self.overlayProperty
+        )
         spatial_unit_table.deletedRows.connect(
             lambda rows: self.remove_model(
                 rows, self.sel_spatial_unit
             )
         )
-
 
     def init_party_add(self):
         """
@@ -372,7 +411,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :returns:None
         :rtype: NoneType
         """
-
         entity_config = self._load_entity_config(self.party)
         party_fk_mapper = self._create_fk_mapper(
             entity_config, self.partyRecBox, self.party_notice
@@ -439,16 +477,19 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :returns: None
         :rtype: NoneType
         """
-        # As there are two tableviews in str type page
-        # due to an additional tableview for social
-        # tenure type combo (FreezeTableWidget),
-        # we have to multiply by 2 to get the correct
-        # position of str_type row to be removed
-
         for row in rows:
             self.str_type_table.model().removeRow(row)
 
     def copy_party_table(self, row, table_view):
+        """
+        Copy rows from party table view.
+        :param row: The row to be copied
+        :type row: Integer
+        :param table_view: The party table view
+        :type table_view: QTableView
+        :return: List of row data
+        :rtype: List
+        """
         party_row_data = []
         model = table_view.model()
         for col in range(model.columnCount()):
@@ -461,19 +502,16 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
     def add_str_type_data(
             self,
-            table_view,
-            table_data,
             row_data,
             str_type_id,
             insert_row
     ):
         """
-        :param table_view:
-        :type table_view:
-        :param db_model:
-        :type db_model:
-        :param table_data:
-        :type table_data:
+        Adds str type date into STR Type table view.
+        :param row_data: The table data
+        :type row_data: List
+        :param str_type_id: The str Type ID
+        :type str_type_id: Integer
         :return:
         :rtype:
         """
@@ -488,12 +526,17 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.enable_str_type_combo(insert_row)
 
     def init_str_type(
-            self, party_model, party_table, str_type_id=0, row=0
+            self, party_table, str_type_id=0, row=0
     ):
         """
         Initialize 'Social Tenure Type page.
-        :param str_type_id: The currently being edited STR type id.
+        :param str_type_id: The currently being
+        :param party_table: The party table view.
+        :type party_table: QTableView
+        edited STR type id.
         :type str_type_id: Integer
+        :param row: The row to copy data to.
+        :type row: Integer
         :return: None
         :rtype: NoteType
         """
@@ -510,8 +553,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         )
 
         self.add_str_type_data(
-            self.str_type_table,
-            self.str_type_data,
             row_data,
             str_type_id,
             insert_row
@@ -688,8 +729,10 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             last_path = '/home'
 
         files = QFileDialog.getOpenFileNames(
-            self, title, last_path, "Source "
-                                  "Documents (*.jpg *.jpeg *.png *.bmp *.tiff *.svg)"
+            self,
+            title,
+            last_path,
+            "Source Documents (*.jpg *.jpeg *.png *.bmp *.tiff *.svg)"
         )
         return files
 
@@ -716,7 +759,23 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         else:
             return None
 
-    def _create_fk_mapper(self, config, parent, notif_bar, multi_row=True):
+    def _create_fk_mapper(
+            self, config, parent, notif_bar, multi_row=True
+    ):
+        """
+        Creates the forign key mapper object.
+        :param config: Entity configuration
+        :type config: Object
+        :param parent: Container of the mapper
+        :type parent: QWidget
+        :param notif_bar: The notification bar
+        :type notif_bar: QVBLayout
+        :param multi_row: Boolean allowing muti-rows
+        in the tableview.
+        :type multi_row: Boolean
+        :return:
+        :rtype:
+        """
         from .foreign_key_mapper import ForeignKeyMapper
         fk_mapper = ForeignKeyMapper(config.ds_entity, parent, notif_bar)
         fk_mapper.setDatabaseModel(config.model())
@@ -763,8 +822,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             self.STRTypePartyBox.addLayout(grid_layout)
             self.STRTypePartyBox.addWidget(self.str_type_table)
 
-        #return table_view
-
     def update_table_view(self, table_view, str_type):
         """
         Updates a tableview by resizing row and headers
@@ -789,19 +846,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             table_view.hideColumn(1)
         else:
             table_view.hideColumn(0)
-
-    def prepare_table_model(
-            self, tableview, table_data, headers, parent
-    ):
-        table_model = BaseSTDMTableModel(
-            table_data, headers, parent
-        )
-        tableview.setModel(table_model)
-
-        tableview.horizontalHeader().setResizeMode(
-            QHeaderView.Interactive
-        )
-        tableview.verticalHeader().setVisible(True)
 
     def add_str_type_headers(self):
         """
@@ -871,6 +915,13 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         return str_types
 
     def enable_str_type_combo(self, row):
+        """
+        Makes the STR Type combobox editable.
+        :param row: The row of STR Type combobox
+        :type row: Integer
+        :return: None
+        :rtype: NoneType
+        """
         model = self.str_type_table.frozen_table_view.model()
         self.str_type_table.frozen_table_view.\
             openPersistentEditor(
@@ -878,6 +929,13 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         )
 
     def validate_party_count(self, spatial_unit_obj):
+        """
+        Validates the number of party assigned to a spatial unt.
+        :param spatial_unit_obj: Spatial unit model object
+        :type spatial_unit_obj: SQL Alchemy Model Object
+        :return: True if the count is ok and false if not.
+        :rtype: Boolean
+        """
         from .foreign_key_mapper import ForeignKeyMapper
         # Get entity browser notification bar
         fk_mapper = self.sender()
@@ -1134,7 +1192,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 self.doc_notice.insertNotification(msg, INFORMATION)
 
         if currPageIndex == 5:
-            isValid = self.on_create_str()
+            isValid = self.commit_str()
         return isValid
 
 
@@ -1239,7 +1297,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
 
         progress.hide()
 
-    def on_create_str(self):
+    def commit_str(self):
         """
         Slot raised when the user clicks on Finish
         button in order to create a new STR entry.
@@ -1387,7 +1445,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             self.spatial_unit_notice.insertErrorNotification(msg)
 
     def init_preview_map(self):
-
+        """
+        Initializes the preview map of spatial unit.
+        :return:
+        :rtype:
+        """
         self.gpOLTitle = self.gpOpenLayers.title()
 
         # Flag for checking whether
@@ -1940,7 +2002,8 @@ class FreezeTableWidget(QTableView):
 
 class EntityConfig(object):
     """
-    Configuration class for specifying the foreign key mapper and document
+    Configuration class for specifying the
+    foreign key mapper and document
     generator settings.
     """
     def __init__(self, **kwargs):

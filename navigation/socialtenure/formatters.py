@@ -114,7 +114,11 @@ class EntityNodeFormatter(STRNodeFormatter):
         self._str_title = QApplication.translate("STRFormatterBase",
                                                  "Social Tenure Relationship")
 
-        self._str_model = entity_model(self.curr_profile.social_tenure)
+        self._str_model, self._str_doc_model = entity_model(
+            self.curr_profile.social_tenure,
+            False,
+            True
+        )
         # Cache for entity supporting document tables.
         # [table_name]:[list of supporting document tables]
         self._entity_supporting_doc_tables = {}

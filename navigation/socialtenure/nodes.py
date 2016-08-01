@@ -226,7 +226,8 @@ class BaseSTRNode(object):
 
     def rootHash(self):
         '''
-        Returns a hash key that is used to identify the lineage of the child nodes i.e.
+        Returns a hash key that is used to identify
+        the lineage of the child nodes i.e.
         which node exactly is the 'forefather'.
         '''
         return self._rootNodeHash
@@ -308,7 +309,7 @@ class BaseSTRNode(object):
     def manageActions(self, modelindex, menu):
         """
         Returns the list of actions to be loaded into the context menu
-        of this node when a user right clicks in the treeview.
+        of this node when a user right clicks in the tree view.
         Default actions are for expanding/collapsing child nodes.
         To be inherited by subclasses for additional custom actions.
         """
@@ -628,9 +629,6 @@ class STRNode(EntityNode):
             #Remove source documents listings
             self.parentWidget()._deleteSourceDocTabs()
             self._model.delete()
-
-            #Insert NoSTR node
-            noSTRNode = NoSTRNode(self.parent())
 
             #Notify model that we have inserted a new child i.e. NoSTRNode
             model.insertRows(index.row(), 1, index.parent())
