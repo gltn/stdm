@@ -270,29 +270,21 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
 
     def add_spatial_unit_layer(self):
-
+        """
+        Adds spatial unit layers on the map canvas when
+        View Social Tenure is launched.
+        :return: None
+        :rtype: NoneType
+        """
         sp_unit_manager = SpatialUnitManagerDockWidget(
             self._plugin.iface, self._plugin
         )
+        spatial_unit_lyr = sp_unit_manager.entity_layer_names(
+            self.spatial_unit
+        )
 
-        table = self.spatial_unit.name
-        spatial_column = [
-            c.name
-            for c in self.spatial_unit.columns.values()
-            if c.TYPE_INFO == 'GEOMETRY'
-        ]
-        spatial_unit_item = unicode(
-            '{}.{}'.format(
-                table, spatial_column[0]
-            )
-        )
-        index = sp_unit_manager.stdm_layers_combo.findText(
-            spatial_unit_item, Qt.MatchFixedString
-        )
-        if index >= 0:
-             sp_unit_manager.stdm_layers_combo.setCurrentIndex(index)
-        # add spatial unit layers on view social tenure.
-        sp_unit_manager.on_add_to_canvas_button_clicked()
+        for lyr in spatial_unit_lyr:
+            sp_unit_manager.add_layer_by_name(lyr)
 
     def _check_permissions(self):
         """
@@ -316,7 +308,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Specify the entity configurations.
         """
         try:
-
             tb_str_entities = [
                 self.curr_profile.social_tenure.party,
                 self.curr_profile.social_tenure.spatial_unit
@@ -512,10 +503,15 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                         if node._model.party_id == \
                                 edit_str.updated_str_obj.party_id:
                             self.btnSearch.click()
+                            index = node.treeView().model().index(0, 0)
+                            node._on_expand(index)
+
                     if node._parent.typeInfo() == 'SPATIAL_UNIT_NODE':
                         if node._model.spatial_unit_id == \
                                 edit_str.updated_str_obj.spatial_unit_id:
                             self.btnSearch.click()
+                            index = node.treeView().model().index(0, 0)
+                            node._on_expand(index)
 
     def load_new_str_wiz(self):
         try:
@@ -540,6 +536,9 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             node = index.internalPointer()
         if isinstance(node, SupportsDocumentsNode):
             node.onDelete(index)
+            self.btnSearch.click()
+            index = node.treeView().model().index(0, 0)
+            node._on_expand(index)
 
     def onSourceDocumentRemoved(self, container_id, doc_uuid, removed_doc):
         """
@@ -561,7 +560,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         :param row_id: Sqlalchemy object representing a feature.
         """
 
-        self.tbPropertyPreview.draw_spatial_unit(model, True, True)
+        self.tbPropertyPreview.draw_spatial_unit(model)
 
     def onTreeViewItemExpanded(self,modelindex):
         """
@@ -591,7 +590,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
     def showEvent(self, event):
         """
-        (Re)load map layers in the viewer canvas.
+        (Re)load map layers in the viewer and main canvas.
         :param event: Window event
         :type event: QShowEvent
         """
@@ -599,10 +598,11 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         self._notify_no_base_layers()
 
-        self.tbPropertyPreview.refresh_canvas_layers()
-        self.tbPropertyPreview.load_web_map()
         # Add spatial unit layer if it doesn't exist
         self.add_spatial_unit_layer()
+
+        self.tbPropertyPreview.refresh_canvas_layers()
+        self.tbPropertyPreview.load_web_map()
 
         return QMainWindow.showEvent(self, event)
 

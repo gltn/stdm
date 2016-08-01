@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_login.ui'
 #
-# Created: Mon May 23 14:10:34 2016
-#      by: PyQt4 UI code generator 4.9.4
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +11,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_frmLogin(object):
     def setupUi(self, frmLogin):
@@ -65,11 +73,11 @@ class Ui_frmLogin(object):
         frmLogin.setTabOrder(self.txtPassword, self.btnBox)
 
     def retranslateUi(self, frmLogin):
-        frmLogin.setWindowTitle(QtGui.QApplication.translate("frmLogin", "STDM Login", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_db_settings.setToolTip(QtGui.QApplication.translate("frmLogin", "Edit database server settings", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_db_settings.setStatusTip(QtGui.QApplication.translate("frmLogin", "Edit database server settings", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_db_settings.setWhatsThis(QtGui.QApplication.translate("frmLogin", "Edit database server settings", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("frmLogin", "UserName", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("frmLogin", "Password", None, QtGui.QApplication.UnicodeUTF8))
+        frmLogin.setWindowTitle(_translate("frmLogin", "STDM Login", None))
+        self.btn_db_settings.setToolTip(_translate("frmLogin", "Edit database server settings", None))
+        self.btn_db_settings.setStatusTip(_translate("frmLogin", "Edit database server settings", None))
+        self.btn_db_settings.setWhatsThis(_translate("frmLogin", "Edit database server settings", None))
+        self.label.setText(_translate("frmLogin", "Username", None))
+        self.label_2.setText(_translate("frmLogin", "Password", None))
 
 from stdm import resources_rc

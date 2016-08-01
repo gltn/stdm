@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_dbconn.ui'
 #
-# Created: Mon May 27 11:59:09 2013
-#      by: PyQt4 UI code generator 4.9.4
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,13 +11,22 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_frmDbConn(object):
     def setupUi(self, frmDbConn):
         frmDbConn.setObjectName(_fromUtf8("frmDbConn"))
-        frmDbConn.resize(320, 208)
-        frmDbConn.setMaximumSize(QtCore.QSize(320, 16777215))
+        frmDbConn.resize(383, 208)
+        frmDbConn.setMaximumSize(QtCore.QSize(500, 16777215))
         self.gridLayout_2 = QtGui.QGridLayout(frmDbConn)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
         self.gridLayout = QtGui.QGridLayout()
@@ -60,8 +68,8 @@ class Ui_frmDbConn(object):
         QtCore.QMetaObject.connectSlotsByName(frmDbConn)
 
     def retranslateUi(self, frmDbConn):
-        frmDbConn.setWindowTitle(QtGui.QApplication.translate("frmDbConn", "PostgreSQL Database Connection", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("frmDbConn", "Host", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("frmDbConn", "Port", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_3.setText(QtGui.QApplication.translate("frmDbConn", "Database", None, QtGui.QApplication.UnicodeUTF8))
+        frmDbConn.setWindowTitle(_translate("frmDbConn", "PostgreSQL Database Connection", None))
+        self.label.setText(_translate("frmDbConn", "Host", None))
+        self.label_2.setText(_translate("frmDbConn", "Port", None))
+        self.label_3.setText(_translate("frmDbConn", "Database", None))
 

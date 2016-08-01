@@ -62,7 +62,7 @@ from notification import (
     SUCCESS,
     WARNING
 )
-
+from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
 from ui_property_preview import Ui_frmPropertyPreview
 
 class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
@@ -170,7 +170,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
             "view_str_spatial_unit",
             "memory")
 
-    def draw_spatial_unit(self, model, highlight=True, clear_existing=True):
+    def draw_spatial_unit(self, model):
         """
         Draw geometry of the given model in the respective local and web views.
         :param model: Source model whose geometry will be drawn.
@@ -192,7 +192,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
 
             return
 
-        table_name = model.__class__.__name__.replace(' ', '_').lower()
+        table_name = self.spatial_unit.name
         if not pg_table_exists(table_name):
             msg = QApplication.translate("SpatialPreview",
                                          "The spatial unit data source could "
@@ -208,54 +208,37 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
 
             return
 
-        spatial_cols = table_column_names(table_name, True)
+        sp_unit_manager = SpatialUnitManagerDockWidget(
+            self.iface()
+        )
+        spatial_cols = sp_unit_manager.geom_columns(
+            self.spatial_unit
+        )
 
         geom, geom_col = None, ""
-
+        sc_obj = None
         for sc in spatial_cols:
-            db_geom = getattr(model, sc)
-            if not db_geom is None:
-                geom = db_geom
 
+            db_geom = getattr(model, sc.name)
             #Use the first non-empty geometry
             # value in the collection
-            if not geom is None:
-                geom_col = sc
+            if not db_geom is None:
+                sc_obj = sc
+                geom_col = sc.name
+                geom = db_geom
+        lyr = sp_unit_manager.geom_col_layer_name(
+            table_name, sc_obj
+        )
 
-        geom_type, epsg_code = geometryType(table_name, geom_col)
-        if not highlight:
-            self._create_vector_layer(geom_type, epsg_code)
-            #Add layer to map
-            QgsMapLayerRegistry.instance().addMapLayer(self._overlay_layer,
-                                                       False)
-            #Ensure it is always added on top
-            QgsProject.instance().layerTreeRoot().insertLayer(0, self._overlay_layer)
+        sp_unit_manager.add_layer_by_name(lyr)
 
-            if clear_existing:
-                self.delete_local_features()
-            extent = self._add_geom_to_map(geom)
-
-            if not extent:
-                return
-            #Add spatial unit to web viewer
-            self._web_spatial_loader.add_overlay(model, geom_col)
-            #Increase bounding box by 50%, so that layer slightly zoomed out
-            extent.scale(1.5)
-
-            #Select feature. Hack for forcing a selection by using inversion
-            self._overlay_layer.invertSelection()
-
-            self._iface.mapCanvas().setExtent(extent)
-            self._iface.mapCanvas().refresh()
-
-            self.refresh_canvas_layers()
-            #Need to force event so that layer is shown
-            QCoreApplication.sendEvent(self.local_map, QShowEvent())
-        else:
-            if geom is not None:
-                self.highlight_spatial_unit(
-                    geom, self.local_map.canvas
-                )
+        if geom is not None:
+            self.highlight_spatial_unit(
+                geom, self.local_map.canvas
+            )
+            self._web_spatial_loader.add_overlay(
+                model, geom_col
+            )
 
     def clear_sel_highlight(self):
         """
@@ -374,7 +357,6 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
             extent.scale(1.5)
             map_canvas.setExtent(extent)
             map_canvas.refresh()
-            print layer.name()
         else:
             return
 
@@ -451,7 +433,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         Slot raised when the property browser finishes loading the content
         """
         if status:
-            if len(self.local_map.canvas_layers()) > 0 and not self._ol_loaded:
+            if len(self.local_map.canvas_layers()) > 0:# and not self._ol_loaded:
                 self.on_sync_extents()
 
             self._ol_loaded = True
@@ -503,7 +485,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         Slot raised to synchronize the webview extents with those of the
         local map canvas.
         """
-        if len(self.local_map.canvas_layers()) > 0 and self._ol_loaded:
+        if len(self.local_map.canvas_layers()) > 0:# and self._ol_loaded:
             curr_extent = self.map_extents()
             self._web_spatial_loader.zoom_to_map_extents(curr_extent)
 
