@@ -7,7 +7,7 @@ The Social Tenure Domain Model (STDM) is a propoor land information tool that pr
 
 Some of the functionality provided by the tool include:
 
--   It enables the design of new or extension of existing data forms using an intuitive configuration wizard;
+-   It enables the design of new or extension of existing data configurations using an intuitive configuration wizard;
 
 -   It allows for the definition of custom, application-wide, hierarchies of administrative units;
 
@@ -19,11 +19,11 @@ Some of the functionality provided by the tool include:
 
 For more information about STDM and its documentation, please visit [www.stdm.gltn.net](http://www.stdm.gltn.net/).
 
-**Third Party Software**
+###Third Party Software
 
-STDM is built on top of free and open source geospatial software products. The client has been developed as a QGIS Python plugin, whereas the backend is based on PostgreSQL/PostGIS database stack. These are required in order to use and apply STDM.
+STDM is built on top of free and open source geospatial software products. The client has been developed as a QGIS Python plugin, whereas the backend is based on a PostgreSQL/PostGIS database stack. These are required prior to using STDM.
 
-**Installation**
+###Installation
 
 STDM can be installed in two ways:
 
@@ -31,9 +31,10 @@ STDM can be installed in two ways:
 
 2.  For advanced users – using the QGIS plugin manager:
 
-    1.  In QGIS Desktop, go to menu **“Plugins -&gt; Manage and Install Plugins…”** On the **“Plugins”** dialog select **“Settings”** tab.
+    1.  In QGIS Desktop, go to menu **“Plugins -&gt; Manage and Install Plugins…”** On the **“Plugins”** dialog, select **“Settings”** tab.
 
-    2.  Click **“Add…”** to open repository details dialog. The dialog allows you to enter STDM repository properties, enter the details as follows<img src="./media/image2.png" width="544" height="309" />:
+    2.  Click **“Add…”** to open repository details dialog. The dialog allows you to enter STDM repository properties, enter the details as shown below:
+        <img src="./images/readme/image3.png" width="520" height="240" />
 
         -   In the **Name** field enter: GLTN Plugin Repository
 
@@ -41,31 +42,28 @@ STDM can be installed in two ways:
 
     3.  Check the **“Enabled”** option then select **“OK”** to close.
 
-        <img src="./images/readme/image3.png" width="520" height="240" />
-
     4.  The GLTN repository entry should now be visible on the **“Plugin repositories”** list.
 
-> <img src="./images/readme/image4.png" width="516" height="273" />
+        <img src="./images/readme/image4.png" width="516" height="273" />
 
-1.  While still on the **“Plugins”** window, select **“Not installed”** tab, then scroll down and look for **“Social Tenure Domain Model”** on the list of **“Not installed”** plugins. Select it and click **“Install plugin”.**
+    5.  While still on the **“Plugins”** window, select **“Not installed”** tab, then scroll down and look for **“Social Tenure Domain Model”** on the list of **“Not installed”** plugins. Select it and click **“Install plugin”.**
 
-    <img src="./images/readme/image5.png" width="550" height="293" />
+    6.  QGIS will download and install the STDM plugin. The plugin should now be available on the **“Installed”** page and also on the QGIS toolbar and main menu respectively.
+        
+        <img src="./images/readme/image5.png" width="550" height="293" />
 
-2.  QGIS will download and install the STDM plugin. The plugin should now be available on the **“Installed”** page and also on the QGIS toolbar and main menu respectively.
+    7.  Now you are ready to start using STDM.
 
-3.  Now you ready to start using STDM.
+    > This option will require that PostgreSQL and PostGIS be installed beforehand. In addition, an empty spatially-enabled database needs to have been created prior to using STDM.
+    >
+    > **Note:** If you have issues when downloading the plugin, first confirm if the network settings are okay. On the QGIS menu go to **“Settings -&gt; Options”** In the **“Options”** dialog box select **“Network”** tab and check your proxy settings are okay. For more details on setting up network options, please read the QGIS documentation available [here](http://docs.qgis.org/testing/en/docs/user_manual/).
 
-> This option will require that PostgreSQL and PostGIS be installed beforehand. In addition, an empty spatially-enabled database needs to have been created prior to using STDM.
->
-> ***Note:** If you have issues when downloading the plugin, first confirm if the network settings are okay. On the QGIS menu go to **“Settings -&gt; Options”** In the **“Options”** dialog box select **“Network”** tab and check your proxy settings are okay. For more details on setting up network options, please read the QGIS documentation available [here](http://docs.qgis.org/testing/en/docs/user_manual/).*
->
-> **License**
->
-> STDM is a free software; you can redistribute it and/or modify it under the terms of the GNU General Public License version 2 (GPL v2) as published by the Free Software Foundation.
->
-> The full GNU General Public License is available in LICENSE.txt or [here](http://www.gnu.org/licenses/gpl-2.0.html).
->
-> **How to Participate**
+###License
+
+STDM is a free software; you can redistribute it and/or modify it under the terms of the GNU General Public License version 2 (GPL v2) as published by the Free Software Foundation. The full GNU General Public License is available in LICENSE.txt or [here](http://www.gnu.org/licenses/gpl-2.0.html).
+    
+
+###How to Participate
 
 -   For more information, please visit [www.stdm.gltn.net](http://www.stdm.gltn.net/) or subscribe to: [lists.osgeo.org/cgi-bin/mailman/listinfo/stdm-user](http://lists.osgeo.org/cgi-bin/mailman/listinfo/stdm-user)
 
