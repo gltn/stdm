@@ -180,8 +180,8 @@ class ConfigurationFileUpdater(object):
     def _rename_old_config_file(self, old_config_file, path):
         old_file_wt_ext = "stdmConfig.xml".rstrip(".xml")
         dt = str(datetime.datetime.now())
-        timestamp = time.strftime('%H%M-%Y%m%d')
-        new_file = os.path.join(path, "{0}{1}.xml".format(old_file_wt_ext,
+        timestamp = time.strftime('%H%M%Y%m%d')
+        new_file = os.path.join(path, "{0}_{1}.xml".format(old_file_wt_ext,
                                                       timestamp))
         os.rename(old_config_file, new_file)
 
