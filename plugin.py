@@ -144,7 +144,7 @@ class STDMQGISLoader(object):
             QDesktopServices.HomeLocation) \
                       + '/.stdm/configuration.stc'
         self.config_serializer = ConfigurationFileSerializer(self.config_path)
-        self.configuration_file_updater = ConfigurationFileUpdater()
+        self.configuration_file_updater = ConfigurationFileUpdater(self.iface)
 
     def initGui(self):
         # Initial actions on starting up the application
