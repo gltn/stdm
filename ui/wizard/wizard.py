@@ -671,7 +671,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self.cboParty.setEnabled(True)
         self.cboSPUnit.setEnabled(True)
-        self.cbMultiParty.setEnabled(True)
 
     def disable_str_setup(self):
         """
@@ -680,7 +679,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self.cboParty.setEnabled(False)
         self.cboSPUnit.setEnabled(False)
-        self.cbMultiParty.setEnabled(False)
 
     def validateCurrentPage(self):
         validPage = True
@@ -879,8 +877,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             # flag wizard has been run
             self.reg_config.write({'WizardRun':1})
-
-            self.reg_config.write({'ConfigUpdated':'-1'})
 
             try:
                 cfs.save()
