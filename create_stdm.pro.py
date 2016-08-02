@@ -2,8 +2,8 @@
 """
 /***************************************************************************
 Name                 : Create STDM Pro
-Description          : GUI classes for managing and viewing supporting
-                       documents.
+Description          : A tool used to list all files of stdm with
+                        translatable text into stdm.pro file.
 Date                 : 30/June/2016
 copyright            : (C) 2016 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
