@@ -582,32 +582,14 @@ class STDMQGISLoader(object):
                 result = self.load_configuration_to_serializer()
                 return result
             else:
+                # First upgrade config file to latest version
+                self.configuration_file_updater.update_config_file_version()
 
-                # If configuration file version is lower than current
-                # and user doesn't want to backup
-                if QMessageBox.information(None, "Update STDM Config",
-                                        "Do you want to backup your data?",
-                                            QMessageBox.Yes |
-                                        QMessageBox.No) == QMessageBox.Yes:
-
-                    # First upgrade config file to latest version
-                    self.configuration_file_updater.\
-                        update_config_file_version()
-
-                    # Create database schema based on updated configuration
-                    # file
-                    if self.load_configuration_to_serializer():
-                        config_updater = ConfigurationSchemaUpdater()
-                        config_updater.exec_()
-                        self.configuration_file_updater.backup_data()
-                        return True
-
-                else:
-                    self.configuration_file_updater.\
-                        update_config_file_version()
-                    # Update .stc version to stdm instance version
-                    result = self.load_configuration_to_serializer()
-                    return result
+                if self.load_configuration_to_serializer():
+                    config_updater = ConfigurationSchemaUpdater()
+                    config_updater.exec_()
+                    self.configuration_file_updater.backup_data()
+                    return True
 
         else:
             return False
