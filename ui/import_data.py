@@ -274,7 +274,7 @@ class ImportData(QWizard, Ui_frmImport):
         #Destination Columns
         tabIndex = int(self.field("tabIndex"))
         self.targetTab = self.destCheckedItem.text()
-        targetCols = table_column_names(self.targetTab)   
+        targetCols = table_column_names(self.targetTab, False, True)
 
         #Remove geometry columns in the target columns list
         for gc in self.geomcols:            
@@ -330,7 +330,7 @@ class ImportData(QWizard, Ui_frmImport):
 
     def loadGeomCols(self,table):
         #Load geometry columns based on the selected table 
-        self.geomcols = table_column_names(table, True)
+        self.geomcols = table_column_names(table, True, True)
         self.geomClm.clear()
         self.geomClm.addItems(self.geomcols)
                 

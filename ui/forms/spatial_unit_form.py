@@ -100,6 +100,11 @@ class WidgetWrapper(QgsEditorWidgetWrapper):
         self.handler_obj = None
 
     def entity(self):
+        """
+        Returns the current entity.
+        :return: Entity Object
+        :rtype: Object
+        """
         curr_profile = current_profile()
 
         entity = curr_profile.entity_by_name(
@@ -128,20 +133,6 @@ class WidgetWrapper(QgsEditorWidgetWrapper):
                 return table_name
             except KeyError:
                 return None
-
-    def format_form(self):
-        title = format_name(
-            self.entity().short_name
-        )
-
-        title = QApplication.translate(
-            'WidgetWrapper',
-            '{} Editor'.format(title)
-        )
-
-        # Set title for QGIS form
-        if self.parent.parent() is not None:
-            self.parent.parent().setWindowTitle(title)
 
     def value(self):
         """ Return the current value of the widget"""
@@ -193,8 +184,6 @@ class WidgetWrapper(QgsEditorWidgetWrapper):
                 self.set_value = getattr(
                     self.handler_obj, 'setValue'
                 )
-
-        self.format_form()
 
 class QGISFieldWidgetConfig(QgsEditorConfigWidget):
     def __init__(self, layer, idx, parent):
@@ -252,23 +241,73 @@ class STDMFieldWidget():
         self.current_feature = None
         self.editor = None
 
+    def init_form(self, table, spatial_column, curr_layer):
+        """
+        Initialize required methods and slots
+        to be used in form initialization.
+        :param table: The table name of the layer
+        :type table: String
+        :param curr_layer: The current layer of form.
+        :type curr_layer: QgsVectorLayer
+        :return: None
+        :rtype: NoneTYpe
+        """
+        try:
+            # init form
+            self.set_entity(table)
+            self.set_widget_mapping()
+            self.register_factory()
+            self.set_widget_type(curr_layer)
+
+            curr_layer.editFormConfig().setSuppress(1)
+            try:
+                curr_layer.featureAdded.connect(
+                    lambda feature_id:self.load_stdm_form(
+                        feature_id, spatial_column
+                    )
+                )
+            except Exception:
+                pass
+            curr_layer.featureDeleted.connect(
+                self.on_feature_deleted
+            )
+
+            curr_layer.beforeCommitChanges.connect(
+                self.on_digitizing_saved
+            )
+
+        except Exception as ex:
+            LOGGER.debug(unicode(ex))
+
     def set_entity(self, source):
+        """
+        Sets the layer entity of the layer
+        based on a table name.
+        :param source: Table name that acts as a layer source.
+        :type source: String
+        :return: None
+        :rtype: NoneType
+        """
         curr_profile = current_profile()
         self.entity = curr_profile.entity_by_name(
             source
         )
 
-    def qgis_version(self):
-        qgis_version = '.'.join(
-            re.findall(
-                "[-+]?\d+[\.]?\d*",
-                QGis.QGIS_VERSION[:4]
-            )
-        )
-        return Decimal(qgis_version)
-
     def _set_widget_type(self, layer, column, widget_type_id):
-
+        """
+        Sets the widget type for each field into
+        QGIS form configuration.
+        :param layer: The layer to which the widget type is set.
+        :type layer: QgsVectorLayer
+        :param column: STDM column object
+        :type column: Object
+        :param widget_type_id: The widget type id which could be
+         the default QGIS or the custom STDM widget id which is
+          based on column.TYPE_INFO.
+        :type widget_type_id: String
+        :return: None
+        :rtype:NoneType
+        """
         idx = layer.fieldNameIndex(column.name)
         # Set Alias/ Display names for the column names
         layer.addAttributeAlias(
@@ -281,16 +320,21 @@ class STDMFieldWidget():
             layer.editFormConfig().setWidgetType(
                 idx, widget_type_id
             )
-        # if column.mandatory:
-        #     layer.editFormConfig().setNotNull(idx, True)
-        except Exception as ex:
+
+        except Exception:
             layer.setEditorWidgetV2(
                 idx, widget_type_id
             )
+            layer.featureFormSuppress(1)
 
 
 
     def set_widget_mapping(self):
+        """
+        Maps each column to QGIS or STDM editor widgets.
+        :return: None
+        :rtype:NoneType
+        """
         self.widget_mapping.clear()
         for c in self.entity.columns.values():
 
@@ -312,6 +356,12 @@ class STDMFieldWidget():
                 ]
 
     def register_factory(self):
+        """
+        Registers each widget type
+        to a QGIS widget factory registry.
+        :return: None
+        :rtype: NoneType
+        """
         # The destructor has no effects. It is QGIS bug.
         # So restarting QGIS is required to destroy
         # registered stdm widgets.
@@ -333,6 +383,13 @@ class STDMFieldWidget():
                     )
 
     def set_widget_type(self, layer):
+        """
+        Sets widget type for each fields in a layer.
+        :param layer: The layer to which the widget type is set.
+        :type layer: QgsVectorLayer
+        :return: None
+        :rtype: NoneType
+        """
         self.layer = layer
         for col, widget_id_name in \
                 self.widget_mapping.iteritems():
@@ -341,7 +398,7 @@ class STDMFieldWidget():
                 layer, col, widget_id_name[0]
             )
 
-    def load_stdm_form(self, feature_id):
+    def load_stdm_form(self, feature_id, spatial_column):
         """
         Loads STDM Form and collects the model added
         into the form so that it is saved later.
@@ -366,7 +423,10 @@ class STDMFieldWidget():
         # already populated by the form
         if feature_id in self.feature_models.keys():
             return
-
+        # If the feature is removed by the undo button, don't
+        # load the form for it
+        if feature_id in self.removed_feature_models.keys():
+            return
         # If the added feature is removed earlier, add it
         # back to feature_models and don't show the form.
         # This happens when redo button(add feature back) is
@@ -388,8 +448,11 @@ class STDMFieldWidget():
             )
             msg = QApplication.translate(
                 'STDMFieldWidget',
-                'The feature you have added is invalid. \n '
-                'To fix this issue, remove and add the layer.'
+                'The feature you have added is invalid. \n'
+                'To fix this issue, check if the feature '
+                'is digitized correctly.  \n'
+                'Removing and re-adding the layer could '
+                'also fix the error.'
             )
             # Message: Spatial column information
             # could not be found
@@ -398,8 +461,6 @@ class STDMFieldWidget():
                 title,
                 msg
             )
-
-
             return
         # init form
         self.editor = EntityEditorDialog(
@@ -413,12 +474,6 @@ class STDMFieldWidget():
         self.editor.addedModel.connect(self.on_form_saved)
         self.model = self.editor.model()
 
-        # layer source
-        source = self.layer.source()
-        geom_column = source[
-            source.find('(') + 1:source.find(')')
-        ]
-
         # get srid with EPSG text
         full_srid = self.layer.crs().authid().split(':')
 
@@ -429,13 +484,14 @@ class STDMFieldWidget():
             # add geometry into the model
             setattr(
                 self.model,
-                geom_column,
+                spatial_column,
                 'SRID={};{}'.format(srid, geom_wkt)
             )
 
         # open editor
         result = self.editor.exec_()
         if result < 1:
+            self.removed_feature_models[feature_id] = None
             self.layer.deleteFeature(feature_id)
 
     def get_wkt(self, feature_id):
@@ -506,7 +562,6 @@ class STDMFieldWidget():
         entity_obj.saveMany(
             self.feature_models.values()
         )
-
         # undo each feature created so that qgis
         # don't try to save the same feature again.
         # It will also clear all the models from

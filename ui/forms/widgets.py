@@ -23,6 +23,7 @@ from datetime import (
     datetime
 )
 
+from PyQt4.QtCore import QCoreApplication
 from PyQt4.QtGui import (
     QCheckBox,
     QComboBox,
@@ -230,6 +231,12 @@ class VarCharWidgetFactory(ColumnWidgetRegistry):
 
         return le
 
+    def format_column_value(self, value):
+        if value is None:
+            return ''
+
+        return super(VarCharWidgetFactory, self).format_column_value(value)
+
 VarCharWidgetFactory.register()
 
 
@@ -399,9 +406,15 @@ class BooleanWidgetFactory(ColumnWidgetRegistry):
         return chb
 
     def format_column_value(self, value):
-        #Format date to string
-        if not value is None:
-            return str(value)
+        #Format to Yes/No
+        if value is None:
+            return ''
+
+        if value:
+            return QCoreApplication.translate('EntityBrowser', 'Yes')
+
+        else:
+            return QCoreApplication.translate('EntityBrowser', 'No')
 
 BooleanWidgetFactory.register()
 
@@ -438,7 +451,7 @@ class RelatedEntityWidgetFactory(ColumnWidgetRegistry):
     def format_column_value(self, value):
         """
         Sets the display based on the values of the display columns separated
-        by single space..
+        by single space.
         :param value: Primary key value fof the parent entity.
         :type value: int
         :return: Display extracted from the selected parent record.

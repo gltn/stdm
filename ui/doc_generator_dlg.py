@@ -29,7 +29,8 @@ from PyQt4.QtGui import (
     QProgressDialog,
     QMessageBox,
     QImageWriter,
-    QFileDialog
+    QFileDialog,
+    QTableView
 )
 from PyQt4.QtCore import (
     Qt,
@@ -221,7 +222,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         self._docTemplatePath = ""
         self._outputFilePath = ""
         self.curr_profile = current_profile()
-
+        self.last_data_source = None
         self._config_mapping = OrderedDict()
         
         self._notif_bar = NotificationBar(self.vlNotification)
@@ -279,10 +280,9 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         config = self.config(index)
 
         if not config is None:
-            self._load_model_columns(config)
-
             #Set data source name
             self._data_source = config.data_source()
+
 
     def on_use_template_datasource(self, state):
         if state == Qt.Checked:
@@ -322,7 +322,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
     def _load_model_columns(self, config):
         """
         Load model columns into the view for specifying file output name.
-        Only those columns of numeric or character type variants will be
+        Only those columns of display type variants will be
         used.
         """
         model_attr_mapping = OrderedDict()
@@ -396,9 +396,9 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
             
             self.lblTemplateName.setText(docName)
             self._docTemplatePath = docPath
-
-            #Load template data source fields
-            self._load_template_datasource_fields()
+            if filter_table != self.last_data_source:
+                #Load template data source fields
+                self._load_template_datasource_fields()
 
     def _load_template_datasource_fields(self):
         #If using template data source
@@ -437,7 +437,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         elif state == Qt.Unchecked:
             self.gbDocNaming.setEnabled(False)
             
-    def reset(self):
+    def reset(self, success_status=False):
         """
         Clears/resets the dialog from user-defined options.
         """
@@ -446,12 +446,20 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         self._data_source = ""
 
         self.lblTemplateName.setText("")
+        # reset form only if generation is successful
+        if success_status:
+            fk_table_view = self.tabWidget.currentWidget().\
+                findChild(QTableView)
+            while fk_table_view.model().rowCount() > 0:
+                fk_table_view.model().rowCount(0)
+                fk_table_view.model().removeRow(0)
 
-        if self.tabWidget.count() > 0 and not self.chk_template_datasource.isChecked():
-            self.on_tab_index_changed(0)
+            if self.tabWidget.count() > 0 and \
+                    not self.chk_template_datasource.isChecked():
+                self.on_tab_index_changed(0)
 
-        if self.cboImageType.count() > 0:
-            self.cboImageType.setCurrentIndex(0)
+            if self.cboImageType.count() > 0:
+                self.cboImageType.setCurrentIndex(0)
         
     def onToggleExportImage(self, state):
         """
@@ -468,9 +476,9 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         Slot raised to initiate the certificate generation process.
         """
         self._notif_bar.clear()
-
+        success_status = True
         config = self.current_config()
-
+        self.last_data_source = config.data_source()
         if config is None:
             self._notif_bar.insertErrorNotification(QApplication.translate("DocumentGeneratorDialog", \
                                             "The entity configuration could not be extracted."))
@@ -566,6 +574,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
                 progressDlg.setValue(i)
 
                 if progressDlg.wasCanceled():
+                    success_status = False
                     break
 
                 #User-defined location
@@ -581,8 +590,9 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
                                                     record.id, outputMode,
                                                     dataFields = documentNamingAttrs,
                                                     fileExtension = fileExtension,
-                                                    data_source = self._data_source)
+                                                    data_source = self.ds_entity.name)
                     self._doc_generator.clear_temporary_layers()
+
                 if not status:
                     result = QMessageBox.warning(self,
                                                  QApplication.translate("DocumentGeneratorDialog",
@@ -591,7 +601,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
 
                     if result == QMessageBox.Abort:
                         progressDlg.close()
-
+                        success_status = False
                         return
 
                 else:
@@ -613,8 +623,9 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
 
             QMessageBox.critical(self, "STDM", QApplication.translate("DocumentGeneratorDialog",
                                                                        "Error Generating documents - %s"%(err_msg)))
+            success_status = False
         #Reset UI
-        self.reset()
+        self.reset(success_status)
 
     def _dummy_template_records(self):
         """

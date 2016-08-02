@@ -31,6 +31,7 @@ CURRENT_PROFILE = 'CurrentProfile'
 LAST_SUPPORTING_DOC_PATH = 'LastDocumentPath'
 SHOW_LICENSE = 'ShowLicense'
 WIZARD_RUN = 'wizardRun'
+CONFIG_UPDATED = 'ConfigUpdated'
 
 def registry_value(key_name):
     """
