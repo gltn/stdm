@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
-Name                 : spatial_unit_form
-Description          : GUI classes for managing and viewing supporting
-                       documents.
+Name                 : Spatial Unit Form
+Description          : Classes that customize QGIS form and use STDM forms
+                      in QGIS 2.14.
 Date                 : 15/July/2016
 copyright            : (C) 2016 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
