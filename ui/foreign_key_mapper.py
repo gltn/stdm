@@ -710,4 +710,10 @@ class ForeignKeyMapper(QWidget):
         """
         self._entitySelector.buttonBox.button(QDialogButtonBox.Cancel).setVisible(False)
 
+        #Clear any previous selections in the entity browser
+        self._entitySelector.clear_selection()
+
+        #Clear any previous notifications
+        self._entitySelector.clear_notifications()
+
         self._entitySelector.exec_()

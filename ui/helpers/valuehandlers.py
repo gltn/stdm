@@ -189,8 +189,11 @@ class CheckBoxValueHandler(ControlValueHandler):
             else:
                 self.control.setChecked(False)
         else:
-            self.control.setChecked(value)
-        
+            if value is None:
+                self.control.setChecked(False)
+            else:
+                self.control.setChecked(False)
+
     def supportsMandatory(self):
         return False
     

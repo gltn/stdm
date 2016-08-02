@@ -183,7 +183,7 @@ def process_report_filter(tableName, columns, whereStr="", sortStmnt=""):
     
     return _execute(t)
 
-def table_column_names(tableName, spatialColumns=False):
+def table_column_names(tableName, spatialColumns=False, creation_order=False):
     """
     Returns the column names of the given table name. 
     If 'spatialColumns' then the function will lookup for spatial columns in the given 
@@ -193,9 +193,13 @@ def table_column_names(tableName, spatialColumns=False):
         sql = "select f_geometry_column from geometry_columns where f_table_name = :tbname ORDER BY f_geometry_column ASC"
         columnName = "f_geometry_column"
     else:
-        sql = "select column_name from information_schema.columns where table_name = :tbname ORDER BY column_name ASC"
-        columnName = "column_name"
-        
+        if not creation_order:
+            sql = "select column_name from information_schema.columns where table_name = :tbname ORDER BY column_name ASC"
+            columnName = "column_name"
+        else:
+            sql = "select column_name from information_schema.columns where table_name = :tbname"
+            columnName = "column_name"
+
     t = text(sql)
     result = _execute(t,tbname = tableName)
         

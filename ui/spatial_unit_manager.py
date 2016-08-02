@@ -65,7 +65,7 @@ LOGGER = logging.getLogger('stdm')
 class SpatialUnitManagerDockWidget(
     QDockWidget, Ui_SpatialUnitManagerWidget
 ):
-    onLayerAdded = pyqtSignal(object)
+    onLayerAdded = pyqtSignal(str, object)
     def __init__(self, iface, plugin=None):
         """Constructor."""
         QDockWidget.__init__(self, iface.mainWindow())
@@ -89,7 +89,7 @@ class SpatialUnitManagerDockWidget(
             self.control_digitize_toolbar
         )
         self.onLayerAdded.connect(
-            self.init_form_widgets
+            self.init_spatial_form
         )
         self.add_to_canvas_button.clicked.connect(
             self.on_add_to_canvas_button_clicked
@@ -175,52 +175,34 @@ class SpatialUnitManagerDockWidget(
     def set_canvas_crs(self, layer):
         # Sets canvas CRS
         # get srid with EPSG text
-        full_srid = layer.crs().authid().split(':')
-        srid = int(full_srid[1])
-        layer_crs = QgsCoordinateReferenceSystem(
-            srid,
-            QgsCoordinateReferenceSystem.EpsgCrsId
-        )
+        if layer.isValid():
+            full_srid = layer.crs().authid().split(':')
+            srid = int(full_srid[1])
+            layer_crs = QgsCoordinateReferenceSystem(
+                srid,
+                QgsCoordinateReferenceSystem.EpsgCrsId
+            )
 
-        self.iface.mapCanvas().mapRenderer().setDestinationCrs(layer_crs)
+            self.iface.mapCanvas().mapRenderer().setDestinationCrs(layer_crs)
 
 
-    def init_form_widgets(self, curr_layer):
+    def init_spatial_form(self, spatial_column, curr_layer):
         """
-        Initializes the Layer form widgets.
+        Initializes the Layer form.
         :param curr_layer: The layer for which
         the widgets are set.
         :type curr_layer: QgsVectorLayer
         :return: None
         :rtype: NoneType
         """
-
         table, column = self._layer_table_column(curr_layer)
-
         if table not in pg_views() and not curr_layer is None:
-
             try:
-                # init register form factory
-                self.stdm_fields.set_entity(table)
-                self.stdm_fields.set_widget_mapping()
-                self.stdm_fields.register_factory()
-                self.stdm_fields.set_widget_type(curr_layer)
-                curr_layer.editFormConfig().setSuppress(1)
-                curr_layer.featureAdded.connect(
-                    self.stdm_fields.load_stdm_form
+                self.stdm_fields.init_form(
+                    table, spatial_column, curr_layer
                 )
-
-                curr_layer.featureDeleted.connect(
-                    self.stdm_fields.on_feature_deleted
-                )
-
-                curr_layer.beforeCommitChanges.connect(
-                    self.stdm_fields.on_digitizing_saved
-                )
-
             except Exception as ex:
-
-                LOGGER.debug(str(ex))
+                LOGGER.debug(unicode(ex))
 
     def _format_layer_display_name(self, col, table):
         return u'{0}.{1}'.format(table,col)
@@ -412,7 +394,7 @@ class SpatialUnitManagerDockWidget(
                 )
             )
             self.zoom_to_layer()
-            self.onLayerAdded.emit(curr_layer)
+            self.onLayerAdded.emit(spatial_column, curr_layer)
         else:
             msg = QApplication.translate(
                 "Spatial Unit Manager",
@@ -461,18 +443,30 @@ class SpatialUnitManagerDockWidget(
         :return: List in a list
         :rtype: List
         """
-        same_entity_layers = []
+        entity_layers = []
         for entity in self.geom_entities:
-            cols = self.geom_columns(entity)
-            layer_list = []
-            if len(cols) > 1:
-                for col in cols:
-                    lyr_name = self.geom_col_layer_name(
-                        entity.name, col
-                    )
-                    layer_list.append(lyr_name)
-                same_entity_layers.append(layer_list)
-        return same_entity_layers
+            layer_list = self.entity_layer_names(entity)
+            entity_layers.append(layer_list)
+        return entity_layers
+
+    def entity_layer_names(self, entity):
+        """
+        Returns layer names of an entity if
+        they are more than one in one entity.
+        :param entity: The Entity object
+        :param type: Object
+        :return: List in a list
+        :rtype: List
+        """
+        cols = self.geom_columns(entity)
+        layer_list = []
+
+        for col in cols:
+            lyr_name = self.geom_col_layer_name(
+                entity.name, col
+            )
+            layer_list.append(lyr_name)
+        return layer_list
 
     def layer_entity_children(self, sel_lyr_name):
         layer_lists = [

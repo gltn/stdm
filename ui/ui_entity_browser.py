@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_entity_browser.ui'
 #
-# Created: Mon Mar 17 16:51:31 2014
-#      by: PyQt4 UI code generator 4.10.3
+# Created: Sun Jul 31 14:38:15 2016
+#      by: PyQt4 UI code generator 4.9.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,16 +12,7 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    def _fromUtf8(s):
-        return s
-
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
+    _fromUtf8 = lambda s: s
 
 class Ui_EntityBrowser(object):
     def setupUi(self, EntityBrowser):
@@ -50,7 +41,7 @@ class Ui_EntityBrowser(object):
         self.tbEntity = QtGui.QTableView(EntityBrowser)
         self.tbEntity.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.tbEntity.setAlternatingRowColors(True)
-        self.tbEntity.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.tbEntity.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.tbEntity.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.tbEntity.setObjectName(_fromUtf8("tbEntity"))
         self.gridLayout.addWidget(self.tbEntity, 2, 0, 1, 4)
@@ -68,8 +59,8 @@ class Ui_EntityBrowser(object):
         QtCore.QMetaObject.connectSlotsByName(EntityBrowser)
 
     def retranslateUi(self, EntityBrowser):
-        EntityBrowser.setWindowTitle(_translate("EntityBrowser", "Dialog", None))
-        self.label.setText(_translate("EntityBrowser", "Look For", None))
-        self.label_2.setText(_translate("EntityBrowser", "In Column", None))
-        self.txtFilterPattern.setPlaceholderText(_translate("EntityBrowser", "Type the filter keyword here...", None))
+        EntityBrowser.setWindowTitle(QtGui.QApplication.translate("EntityBrowser", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("EntityBrowser", "Look For", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("EntityBrowser", "In Column", None, QtGui.QApplication.UnicodeUTF8))
+        self.txtFilterPattern.setPlaceholderText(QtGui.QApplication.translate("EntityBrowser", "Type the filter keyword here...", None, QtGui.QApplication.UnicodeUTF8))
 
