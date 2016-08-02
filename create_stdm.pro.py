@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
-Name                 : Register Parcel
+Name                 : Create STDM Pro
 Description          : GUI classes for managing and viewing supporting
                        documents.
 Date                 : 30/June/2016

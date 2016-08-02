@@ -72,8 +72,8 @@ class DatabaseConnection(object):
         defined.
         """
         dt_source = QgsDataSourceURI()
-        dt_source.setConnection(self.Host, self.Port, self.Database,
-                                self.User.UserName, self.User.Password)
+        dt_source.setConnection(self.Host, unicode(self.Port), self.Database,
+                                self.User.UserName, unicode(self.User.Password))
 
         return dt_source
         
