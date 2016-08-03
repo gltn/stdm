@@ -316,7 +316,6 @@ class STDMFieldWidget():
         )
 
         try:
-
             layer.editFormConfig().setWidgetType(
                 idx, widget_type_id
             )
@@ -325,9 +324,6 @@ class STDMFieldWidget():
             layer.setEditorWidgetV2(
                 idx, widget_type_id
             )
-            layer.featureFormSuppress(1)
-
-
 
     def set_widget_mapping(self):
         """

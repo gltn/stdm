@@ -434,8 +434,13 @@ class STDMQGISLoader(object):
 
     def default_profile(self):
         """
-        Checks if the current profile exists and if it doesn't,
-        asks the user to run Configuration Wizard.
+        Checks if the current profile exists.
+        If there is only one profile, it sets
+        it and run reload_plugin(). If there
+        is more than one profile, it asks the
+        user the set a profile using Options.
+        If no profile exists, it asks the user
+        to run Configuration Wizard.
         :return: None
         :rtype: NoneType
         """
@@ -447,6 +452,10 @@ class STDMQGISLoader(object):
                 "STDMQGISLoader",
                 'Default Profile Error'
             )
+            if len(profiles) == 1:
+                save_current_profile(profiles.keys()[0])
+                self.reload_plugin(profiles.keys()[0])
+                return
             if len(profiles) > 0:
                 solution = 'Do you want to set a profile now?'
             else:

@@ -778,6 +778,7 @@ class EntityBrowserWithEditor(EntityBrowser):
                 self.geom_cols = self.sp_unit_manager.geom_columns(
                     self._entity
                 )
+
                 self.add_spatial_unit_layer()
                 self.tbEntity.clicked.connect(
                     self.on_select_attribute

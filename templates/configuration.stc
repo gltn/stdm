@@ -1,310 +1,611 @@
 <Configuration version="1.2">
- <Profile description="" name="Rural">
-  <ValueLists>
-   <ValueList name="check_social_tenure_relationship_document_type">
-    <CodeValue value="General" code=""/>
-    <CodeValue value="Title Deed" code="TDD"/>
-   </ValueList>
-   <ValueList name="check_tenure_type">
-    <CodeValue value="Tenancy" code="TEN"/>
-    <CodeValue value="Ownership" code="ONS"/>
-   </ValueList>
-   <ValueList name="check_gender">
-    <CodeValue value="Male" code=""/>
-    <CodeValue value="Female" code=""/>
-   </ValueList>
-   <ValueList name="check_farmer_document_type">
-    <CodeValue value="Farmer Card" code="FC"/>
-    <CodeValue value="National Identity" code="ID"/>
-   </ValueList>
-   <ValueList name="check_sec_document_type">
-    <CodeValue value="Registration Certificate" code="RA"/>
-   </ValueList>
-   <ValueList name="check_marital_status">
-    <CodeValue value="Single" code=""/>
-    <CodeValue value="Married" code=""/>
-    <CodeValue value="Divorced" code=""/>
-    <CodeValue value="Widow" code=""/>
-    <CodeValue value="Widower" code=""/>
-    <CodeValue value="Engaged" code=""/>
-   </ValueList>
-   <ValueList name="check_saving_options">
-    <CodeValue value="Bank" code="BNK"/>
-    <CodeValue value="House" code="HSE"/>
-    <CodeValue value="SACCO" code="SCC"/>
-    <CodeValue value="M-Shwari" code=""/>
-    <CodeValue value="Stock Market" code=""/>
-   </ValueList>
-  </ValueLists>
-  <Entity editable="True" global="False" associative="False" description="" proxy="False" createId="True" supportsDocuments="False" shortName="Garden" name="ru_garden">
-   <Columns>
-    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="True" tip="" minimum="0" maximum="30" description="" index="False" name="code" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
-    <Column unique="False" tip="" description="Spatial Information" index="False" name="geometry" searchable="False" TYPE_INFO="GEOMETRY" mandatory="False">
-     <Geometry layerDisplay="Garden" srid="4326" type="2"/>
-    </Column>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" associative="False" description="Settlement Executive Committe" documentTypeLookup="check_sec_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Sec" name="ru_sec">
-   <Columns>
-    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="" minimum="0" maximum="30" description="Name of the committee" index="False" name="name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" associative="False" description="Basic family unit" proxy="False" createId="True" supportsDocuments="False" shortName="Household" name="ru_household">
-   <Columns>
-    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="Unique hosuehold identifier" minimum="0" maximum="30" description="" index="False" name="code" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" associative="False" description="" documentTypeLookup="check_farmer_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Farmer" name="ru_farmer">
-   <Columns>
-    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="True" tip="Farmer identifier number as specified by the association." minimum="0" maximum="30" description="" index="False" name="number" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
-    <Column unique="False" tip="" minimum="0" maximum="30" description="First Name" index="False" name="first_name" searchable="False" TYPE_INFO="VARCHAR" mandatory="True"/>
-    <Column unique="False" tip="" minimum="0" maximum="30" description="Last Name" index="False" name="last_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="True"/>
-    <Column unique="False" tip="" minimum="0" maximum="2147483647" description="" index="False" name="gender" searchable="False" TYPE_INFO="LOOKUP" mandatory="True">
-     <Relation name="fk_ru_check_gender_id_ru_farmer_gender"/>
-    </Column>
-    <Column unique="False" tip="" minimum="0" maximum="2147483647" description="" index="False" name="admin_spatial_unit" searchable="False" TYPE_INFO="ADMIN_SPATIAL_UNIT" mandatory="False">
-     <Relation name="fk_admin_spatial_unit_set_id_ru_farmer_admin_spatial_unit"/>
-    </Column>
-    <Column unique="False" tip="Select the marital status of the farmer" minimum="0" maximum="2147483647" description="" index="False" name="marital_status" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
-     <Relation name="fk_ru_check_marital_status_id_ru_farmer_marital_status"/>
-    </Column>
-    <Column unique="False" tip="Average income" minimum="-2147483648" maximum="2147483647" description="" index="False" name="income" searchable="False" TYPE_INFO="INT" mandatory="False"/>
-    <Column unique="False" tip="Monthly farm productivity" minimum="0.0" maximum="1.79769313486e+308" description="" index="False" name="productivity" searchable="False" TYPE_INFO="DOUBLE" mandatory="False"/>
-    <Column unique="False" tip="" minimum="1900-08-27" maximum="2016-06-21" description="" index="False" name="dob" searchable="False" TYPE_INFO="DATE" mandatory="False">
-     <currentDate minimum="False" maximum="True"/>
-    </Column>
-    <Column unique="False" tip="Briefly explain where you come from" minimum="0" maximum="1073741823" description="" index="False" name="history" searchable="False" TYPE_INFO="TEXT" mandatory="False"/>
-    <Column unique="False" tip="" description="" index="False" name="savings" searchable="False" TYPE_INFO="MULTIPLE_SELECT" mandatory="False">
-     <associationEntity name="ru_savings"/>
-    </Column>
-    <Column unique="False" tip="Basic family unit" minimum="0" maximum="2147483647" description="Basic family unit" index="False" name="household" searchable="False" TYPE_INFO="FOREIGN_KEY" mandatory="False">
-     <Relation name="fk_ru_household_id_ru_farmer_household"/>
-    </Column>
-   </Columns>
-  </Entity>
-  <Associations>
-   <Association secondParent="Farmer" firstParent="check_saving_options" shortName="savings" name="ru_savings"/>
-  </Associations>
-  <Relations>
-   <EntityRelation displayColumns="name,code" child="social_tenure_relationship_supporting_document" parent="check_social_tenure_relationship_document_type" name="fk_ru_check_social_tenure_relationship_document_type_id_ru_social_tenure_relationship_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
-   <EntityRelation displayColumns="" child="social_tenure_relationship_supporting_document" parent="social_tenure_relationship" name="fk_ru_social_tenure_relationship_id_ru_social_tenure_relationship_supporting_document_social_tenure_relationship_id" parentColumn="id" childColumn="social_tenure_relationship_id"/>
-   <EntityRelation displayColumns="" child="social_tenure_relationship_supporting_document" parent="supporting_document" name="fk_ru_supporting_document_id_ru_social_tenure_relationship_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
-   <EntityRelation displayColumns="name,code" child="social_tenure_relationship" parent="check_tenure_type" name="fk_ru_check_tenure_type_id_ru_social_tenure_relationship_tenure_type" parentColumn="id" childColumn="tenure_type"/>
-   <EntityRelation displayColumns="name,code" child="Sec_supporting_document" parent="check_sec_document_type" name="fk_ru_check_sec_document_type_id_ru_sec_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
-   <EntityRelation displayColumns="" child="Sec_supporting_document" parent="Sec" name="fk_ru_sec_id_ru_sec_supporting_document_sec_id" parentColumn="id" childColumn="sec_id"/>
-   <EntityRelation displayColumns="" child="Sec_supporting_document" parent="supporting_document" name="fk_ru_supporting_document_id_ru_sec_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
-   <EntityRelation displayColumns="name,code" child="Farmer_supporting_document" parent="check_farmer_document_type" name="fk_ru_check_farmer_document_type_id_ru_farmer_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
-   <EntityRelation displayColumns="" child="Farmer_supporting_document" parent="Farmer" name="fk_ru_farmer_id_ru_farmer_supporting_document_farmer_id" parentColumn="id" childColumn="farmer_id"/>
-   <EntityRelation displayColumns="" child="Farmer_supporting_document" parent="supporting_document" name="fk_ru_supporting_document_id_ru_farmer_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
-   <EntityRelation displayColumns="name,code" child="Farmer" parent="check_gender" name="fk_ru_check_gender_id_ru_farmer_gender" parentColumn="id" childColumn="gender"/>
-   <EntityRelation displayColumns="name,code" child="Farmer" parent="admin_spatial_unit_set" name="fk_admin_spatial_unit_set_id_ru_farmer_admin_spatial_unit" parentColumn="id" childColumn="admin_spatial_unit"/>
-   <EntityRelation displayColumns="name,code" child="Farmer" parent="check_marital_status" name="fk_ru_check_marital_status_id_ru_farmer_marital_status" parentColumn="id" childColumn="marital_status"/>
-   <EntityRelation displayColumns="" child="savings" parent="check_saving_options" name="fk_ru_check_saving_options_id_ru_savings_ru_check_saving_options_id" parentColumn="id" childColumn="ru_check_saving_options_id"/>
-   <EntityRelation displayColumns="" child="savings" parent="Farmer" name="fk_ru_farmer_id_ru_savings_ru_farmer_id" parentColumn="id" childColumn="ru_farmer_id"/>
-   <EntityRelation displayColumns="code" child="Farmer" parent="Household" name="fk_ru_household_id_ru_farmer_household" parentColumn="id" childColumn="household"/>
-   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Farmer" name="fk_ru_farmer_id_ru_social_tenure_relationship_party_id" parentColumn="id" childColumn="party_id"/>
-   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Garden" name="fk_ru_garden_id_ru_social_tenure_relationship_spatial_unit_id" parentColumn="id" childColumn="spatial_unit_id"/>
-  </Relations>
-  <SocialTenure layerDisplay="Social Tenure Atlas" tenureTypeList="check_tenure_type" spatialUnit="Garden" supportsMultipleParties="0" party="Farmer"/>
- </Profile>
- <Profile description="Rural Context" name="Customary">
+ <Profile description="A configuration best suited to unplanned settlements with no planning and building regulations." name="Informal_Settlement">
   <ValueLists>
    <ValueList name="check_social_tenure_relationship_document_type">
     <CodeValue value="General" code=""/>
    </ValueList>
    <ValueList name="check_tenure_type">
-    <CodeValue value="Occupancy" code="OCC"/>
-    <CodeValue value="Leasehold" code="LSH"/>
-    <CodeValue value="Ownership" code="OWN"/>
-   </ValueList>
-   <ValueList name="check_household_document_type">
-    <CodeValue value="General" code=""/>
-   </ValueList>
-   <ValueList name="check_settlement_executive_committee_document_type">
-    <CodeValue value="General" code=""/>
-   </ValueList>
-   <ValueList name="check_member_profile">
-    <CodeValue value="Disabilities" code=""/>
-    <CodeValue value="Youth" code=""/>
-    <CodeValue value="Elderly" code=""/>
-    <CodeValue value="Widows" code=""/>
-   </ValueList>
-  </ValueLists>
-  <Entity editable="True" global="False" associative="False" description="Basic Family Unit" documentTypeLookup="check_household_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Household" name="cu_household">
-   <Columns>
-    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="" minimum="0" maximum="20" description="Unique household identifier" index="False" name="code" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
-    <Column unique="False" tip="Profile of the committee members" description="" index="False" name="composition" searchable="False" TYPE_INFO="MULTIPLE_SELECT" mandatory="False">
-     <associationEntity name="cu_composition"/>
-    </Column>
-   </Columns>
-  </Entity>
-  <Associations>
-   <Association secondParent="Household" firstParent="check_member_profile" shortName="composition" name="cu_composition"/>
-  </Associations>
-  <Entity editable="True" global="False" associative="False" description="Spatial Unit Representation" proxy="False" createId="True" supportsDocuments="False" shortName="Parcel" name="cu_parcel">
-   <Columns>
-    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="" minimum="0" maximum="20" description="Unique parcel number" index="False" name="identifier" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
-    <Column unique="False" tip="" description="Geometry object" index="False" name="geom" searchable="False" TYPE_INFO="GEOMETRY" mandatory="False">
-     <Geometry layerDisplay="Parcel" srid="4326" type="2"/>
-    </Column>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" associative="False" description="Local authority in the community" documentTypeLookup="check_settlement_executive_committee_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Settlement executive committee" name="cu_settlement_executive_committee">
-   <Columns>
-    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="" minimum="0" maximum="70" description="Full names of the chairman" index="False" name="chairman" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
-   </Columns>
-  </Entity>
-  <Relations>
-   <EntityRelation displayColumns="name,code" child="social_tenure_relationship_supporting_document" parent="check_social_tenure_relationship_document_type" name="fk_cu_check_social_tenure_relationship_document_type_id_cu_social_tenure_relationship_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
-   <EntityRelation displayColumns="" child="social_tenure_relationship_supporting_document" parent="social_tenure_relationship" name="fk_cu_social_tenure_relationship_id_cu_social_tenure_relationship_supporting_document_social_tenure_relationship_id" parentColumn="id" childColumn="social_tenure_relationship_id"/>
-   <EntityRelation displayColumns="" child="social_tenure_relationship_supporting_document" parent="supporting_document" name="fk_cu_supporting_document_id_cu_social_tenure_relationship_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
-   <EntityRelation displayColumns="name,code" child="social_tenure_relationship" parent="check_tenure_type" name="fk_cu_check_tenure_type_id_cu_social_tenure_relationship_tenure_type" parentColumn="id" childColumn="tenure_type"/>
-   <EntityRelation displayColumns="name,code" child="Household_supporting_document" parent="check_household_document_type" name="fk_cu_check_household_document_type_id_cu_household_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
-   <EntityRelation displayColumns="" child="Household_supporting_document" parent="Household" name="fk_cu_household_id_cu_household_supporting_document_household_id" parentColumn="id" childColumn="household_id"/>
-   <EntityRelation displayColumns="" child="Household_supporting_document" parent="supporting_document" name="fk_cu_supporting_document_id_cu_household_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
-   <EntityRelation displayColumns="" child="composition" parent="check_member_profile" name="fk_cu_check_member_profile_id_cu_composition_cu_check_member_profile_id" parentColumn="id" childColumn="cu_check_member_profile_id"/>
-   <EntityRelation displayColumns="" child="composition" parent="Household" name="fk_cu_household_id_cu_composition_cu_household_id" parentColumn="id" childColumn="cu_household_id"/>
-   <EntityRelation displayColumns="name,code" child="Settlement executive committee_supporting_document" parent="check_settlement_executive_committee_document_type" name="fk_cu_check_settlement_executive_committee_document_type_id_cu_settlement_executive_committee_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
-   <EntityRelation displayColumns="" child="Settlement executive committee_supporting_document" parent="Settlement executive committee" name="fk_cu_settlement_executive_committee_id_cu_settlement_executive_committee_supporting_document_settlement_executive_committee_id" parentColumn="id" childColumn="settlement_executive_committee_id"/>
-   <EntityRelation displayColumns="" child="Settlement executive committee_supporting_document" parent="supporting_document" name="fk_cu_supporting_document_id_cu_settlement_executive_committee_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
-   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Household" name="fk_cu_household_id_cu_social_tenure_relationship_party_id" parentColumn="id" childColumn="party_id"/>
-   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Parcel" name="fk_cu_parcel_id_cu_social_tenure_relationship_spatial_unit_id" parentColumn="id" childColumn="spatial_unit_id"/>
-  </Relations>
-  <SocialTenure layerDisplay="Social Tenure View" tenureTypeList="check_tenure_type" spatialUnit="Parcel" supportsMultipleParties="0" party="Household"/>
- </Profile>
- <Profile description="Formal Cadastral Registry" name="Formal">
-  <ValueLists>
-   <ValueList name="check_social_tenure_relationship_document_type">
-    <CodeValue value="General" code=""/>
-   </ValueList>
-   <ValueList name="check_tenure_type">
-    <CodeValue value="Leasehold" code="LSH"/>
-    <CodeValue value="Freehold" code="FRH"/>
+    <CodeValue value="Owner" code=""/>
+    <CodeValue value="Tenant" code=""/>
+    <CodeValue value="Sub-Tenant" code=""/>
+    <CodeValue value="Relative of owner" code=""/>
+    <CodeValue value="Friend of owner" code=""/>
+    <CodeValue value="Relative of Tenant" code=""/>
+    <CodeValue value="Friend of Tenant" code=""/>
+    <CodeValue value="Relative of Sub-Tenant" code=""/>
+    <CodeValue value="Friend of Sub-Tenant" code=""/>
    </ValueList>
    <ValueList name="check_person_document_type">
     <CodeValue value="General" code=""/>
    </ValueList>
+   <ValueList name="check_structure_document_type">
+    <CodeValue value="General" code=""/>
+   </ValueList>
+   <ValueList name="check_gender">
+    <CodeValue value="Female" code="F"/>
+    <CodeValue value="Male" code="M"/>
+   </ValueList>
+   <ValueList name="check_marital_status">
+    <CodeValue value="Married" code=""/>
+    <CodeValue value="Single" code=""/>
+    <CodeValue value="Divorced" code=""/>
+    <CodeValue value="Widow" code=""/>
+    <CodeValue value="Widower" code=""/>
+    <CodeValue value="Cohabiting" code=""/>
+    <CodeValue value="Separated" code=""/>
+   </ValueList>
+   <ValueList name="check_household_relation">
+    <CodeValue value="Husband" code=""/>
+    <CodeValue value="Wife" code=""/>
+    <CodeValue value="Daughter" code=""/>
+    <CodeValue value="Son" code=""/>
+    <CodeValue value="In-law" code=""/>
+    <CodeValue value="Grandchild" code=""/>
+    <CodeValue value="Mother" code=""/>
+    <CodeValue value="Cousin" code=""/>
+    <CodeValue value="Sister" code=""/>
+    <CodeValue value="Brother" code=""/>
+    <CodeValue value="Niece" code=""/>
+    <CodeValue value="Nephew" code=""/>
+   </ValueList>
+   <ValueList name="check_ownership_type">
+    <CodeValue value="Private Individual" code=""/>
+    <CodeValue value="Private Institution" code=""/>
+    <CodeValue value="National Government" code=""/>
+    <CodeValue value="Municipal/City" code=""/>
+    <CodeValue value="Communal" code=""/>
+    <CodeValue value="Unknown" code=""/>
+   </ValueList>
+   <ValueList name="check_related_structures">
+    <CodeValue value="Kitchen" code=""/>
+    <CodeValue value="Toilet" code=""/>
+    <CodeValue value="Bathroom" code=""/>
+    <CodeValue value="Store" code=""/>
+   </ValueList>
+   <ValueList name="check_recognition_status">
+    <CodeValue value="No" code=""/>
+    <CodeValue value="Yes" code=""/>
+   </ValueList>
+   <ValueList name="check_utilities">
+    <CodeValue value="Water" code=""/>
+    <CodeValue value="Toilet" code=""/>
+    <CodeValue value="Electricity" code=""/>
+   </ValueList>
   </ValueLists>
-  <Entity editable="True" global="False" associative="False" description="Represents party" documentTypeLookup="check_person_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Person" name="fo_person">
+  <Entity editable="True" global="False" associative="False" description="A person can be an individual, household or group" documentTypeLookup="check_person_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Person" name="in_person">
    <Columns>
     <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="" minimum="0" maximum="30" description="" index="False" name="names" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="First name of the person" minimum="0" maximum="30" description="First name of the person" index="False" name="first_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="Middle name of the person" minimum="0" maximum="30" description="Middle name of the person" index="False" name="middle_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="Last name of the person" minimum="0" maximum="30" description="Last name of the person" index="False" name="last_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="The identification card number of the person" minimum="0" maximum="30" description="The identification card number of the person" index="False" name="national_id" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="The gender of the person" minimum="0" maximum="2147483647" description="The gender of the person" index="False" name="gender" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_in_check_gender_id_in_person_gender"/>
+    </Column>
+    <Column unique="False" tip="Date of birth of the person" minimum="1852-09-14" maximum="7999-12-31" description="Date of birth of the person" index="False" name="date_of_birth" searchable="False" TYPE_INFO="DATE" mandatory="False">
+     <currentDate minimum="False" maximum="True"/>
+    </Column>
+    <Column unique="False" tip="The marital status of the person" minimum="0" maximum="2147483647" description="The marital status of the person" index="False" name="marital_status" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_in_check_marital_status_id_in_person_marital_status"/>
+    </Column>
+    <Column unique="False" tip="The relation of the person to the household head" minimum="0" maximum="2147483647" description="The relation of the person to the household head" index="False" name="household_relation" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_in_check_household_relation_id_in_person_household_relation"/>
+    </Column>
+    <Column unique="False" tip="The telephone number of the person" minimum="0" maximum="30" description="The telephone number of the person" index="False" name="telephone_number" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="Address of the person" minimum="0" maximum="100" description="Address of the person" index="False" name="address" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="The residence area of the person" minimum="0" maximum="2147483647" description="The residence area of the person" index="False" name="residence_area" searchable="True" TYPE_INFO="ADMIN_SPATIAL_UNIT" mandatory="False">
+     <Relation name="fk_admin_spatial_unit_set_id_in_person_residence_area"/>
+    </Column>
    </Columns>
   </Entity>
-  <Entity editable="True" global="False" associative="False" description="Represents spatial unit" proxy="False" createId="True" supportsDocuments="False" shortName="Parcel" name="fo_parcel">
+  <Entity editable="True" global="False" associative="False" description="A parcel or plot of land" documentTypeLookup="check_structure_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Structure" name="in_structure">
    <Columns>
     <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="" minimum="0" maximum="30" description="Unique number" index="False" name="identifier" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
-    <Column unique="False" tip="" description="Parcel boundaries" index="False" name="extents" searchable="False" TYPE_INFO="GEOMETRY" mandatory="False">
+    <Column unique="False" tip="The unique identifier of the structure" minimum="0" maximum="30" description="The unique identifier of the structure" index="False" name="code" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="User friendly name of the structure" minimum="0" maximum="30" description="User friendly name of the structure" index="False" name="name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="The ownership type of the structure" minimum="0" maximum="2147483647" description="The ownership type of the structure" index="False" name="ownership_type" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_in_check_ownership_type_id_in_structure_ownership_type"/>
+    </Column>
+    <Column unique="False" tip="Related structures within the structure" description="Related structures within the structure" index="False" name="related_structures" searchable="True" TYPE_INFO="MULTIPLE_SELECT" mandatory="False">
+     <associationEntity name="in_related_structures"/>
+    </Column>
+    <Column unique="False" tip="Is the settlement recognized by the authority (ies)?" minimum="0" maximum="2147483647" description="Recognition status of the structure by authorities" index="False" name="recognition_status" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_in_check_recognition_status_id_in_structure_recognition_status"/>
+    </Column>
+    <Column unique="False" tip="Utilities available in the structure" description="Utilities available in the structure" index="False" name="utilities" searchable="True" TYPE_INFO="MULTIPLE_SELECT" mandatory="False">
+     <associationEntity name="in_utilities"/>
+    </Column>
+    <Column unique="True" tip="" description="A digitized geographic extent of the structure" index="False" name="spatial_geometry" searchable="False" TYPE_INFO="GEOMETRY" mandatory="False">
      <Geometry layerDisplay="" srid="4326" type="2"/>
     </Column>
    </Columns>
   </Entity>
-  <Relations>
-   <EntityRelation displayColumns="name,code" child="social_tenure_relationship_supporting_document" parent="check_social_tenure_relationship_document_type" name="fk_fo_check_social_tenure_relationship_document_type_id_fo_social_tenure_relationship_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
-   <EntityRelation displayColumns="" child="social_tenure_relationship_supporting_document" parent="social_tenure_relationship" name="fk_fo_social_tenure_relationship_id_fo_social_tenure_relationship_supporting_document_social_tenure_relationship_id" parentColumn="id" childColumn="social_tenure_relationship_id"/>
-   <EntityRelation displayColumns="" child="social_tenure_relationship_supporting_document" parent="supporting_document" name="fk_fo_supporting_document_id_fo_social_tenure_relationship_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
-   <EntityRelation displayColumns="name,code" child="social_tenure_relationship" parent="check_tenure_type" name="fk_fo_check_tenure_type_id_fo_social_tenure_relationship_tenure_type" parentColumn="id" childColumn="tenure_type"/>
-   <EntityRelation displayColumns="name,code" child="Person_supporting_document" parent="check_person_document_type" name="fk_fo_check_person_document_type_id_fo_person_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
-   <EntityRelation displayColumns="" child="Person_supporting_document" parent="Person" name="fk_fo_person_id_fo_person_supporting_document_person_id" parentColumn="id" childColumn="person_id"/>
-   <EntityRelation displayColumns="" child="Person_supporting_document" parent="supporting_document" name="fk_fo_supporting_document_id_fo_person_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
-   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Person" name="fk_fo_person_id_fo_social_tenure_relationship_party_id" parentColumn="id" childColumn="party_id"/>
-   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Parcel" name="fk_fo_parcel_id_fo_social_tenure_relationship_spatial_unit_id" parentColumn="id" childColumn="spatial_unit_id"/>
-  </Relations>
-  <SocialTenure layerDisplay="fo_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Parcel" supportsMultipleParties="0" party="Person"/>
- </Profile>
- <Profile description="Slum settlement" name="Informal">
-  <ValueLists>
-   <ValueList name="check_social_tenure_relationship_document_type">
-    <CodeValue value="General" code=""/>
-    <CodeValue value="Lease Agreement" code="LA"/>
-    <CodeValue value="Rent receipt" code="RR"/>
-   </ValueList>
-   <ValueList name="check_tenure_type">
-    <CodeValue value="Occupancy" code="OCC"/>
-    <CodeValue value="Tenancy" code="TNC"/>
-   </ValueList>
-   <ValueList name="check_household_document_type">
-    <CodeValue value="Family Photo" code=""/>
-    <CodeValue value="Certificate" code=""/>
-   </ValueList>
-   <ValueList name="check_person_document_type">
-    <CodeValue value="National Identity Card" code="NIC"/>
-    <CodeValue value="Voting Card" code="VC"/>
-   </ValueList>
-   <ValueList name="check_gender">
-    <CodeValue value="Male" code="ML"/>
-    <CodeValue value="Female" code="FML"/>
-   </ValueList>
-   <ValueList name="check_income_sources">
-    <CodeValue value="Formal Employment" code="FE"/>
-    <CodeValue value="Business" code="BSN"/>
-    <CodeValue value="Inheritance" code="INH"/>
-   </ValueList>
-  </ValueLists>
-  <Entity editable="True" global="False" associative="False" description="Basic family unit" documentTypeLookup="check_household_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Household" name="in_household">
-   <Columns>
-    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="Unique identifier of the household" minimum="0" maximum="30" description="Unique identifier of the household" index="False" name="code" searchable="True" TYPE_INFO="VARCHAR" mandatory="True"/>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" associative="False" description="Represents a spatial unit" proxy="False" createId="True" supportsDocuments="False" shortName="Structure" name="in_structure">
-   <Columns>
-    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="" minimum="0" maximum="50" description="Unique address number" index="False" name="identifier" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
-    <Column unique="True" tip="" description="" index="False" name="geometry" searchable="False" TYPE_INFO="GEOMETRY" mandatory="False">
-     <Geometry layerDisplay="Structures" srid="4326" type="2"/>
-    </Column>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" associative="False" description="Individual member of a household" documentTypeLookup="check_person_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Person" name="in_person">
-   <Columns>
-    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="First Name" minimum="0" maximum="50" description="" index="False" name="first_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
-    <Column unique="False" tip="Last name" minimum="0" maximum="50" description="" index="False" name="last_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="True"/>
-    <Column unique="False" tip="Gender" minimum="0" maximum="2147483647" description="" index="False" name="gender" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
-     <Relation name="fk_in_check_gender_id_in_person_gender"/>
-    </Column>
-    <Column unique="False" tip="Monthly income sources" description="" index="False" name="income_sources" searchable="False" TYPE_INFO="MULTIPLE_SELECT" mandatory="False">
-     <associationEntity name="income_sources"/>
-    </Column>
-    <Column unique="False" tip="Where the person was born" minimum="0" maximum="2147483647" description="" index="False" name="admin_spatial_unit" searchable="True" TYPE_INFO="ADMIN_SPATIAL_UNIT" mandatory="False">
-     <Relation name="fk_admin_spatial_unit_set_id_in_person_admin_spatial_unit"/>
-    </Column>
-    <Column unique="False" tip="The household a person belongs to" minimum="0" maximum="2147483647" description="" index="False" name="household" searchable="False" TYPE_INFO="FOREIGN_KEY" mandatory="False">
-     <Relation name="fk_in_household_id_in_person_household"/>
-    </Column>
-   </Columns>
-  </Entity>
   <Associations>
-   <Association secondParent="Person" firstParent="check_income_sources" shortName="income_sources" name="income_sources"/>
+   <Association secondParent="Structure" firstParent="check_related_structures" shortName="related_structures" name="in_related_structures"/>
+   <Association secondParent="Structure" firstParent="check_utilities" shortName="utilities" name="in_utilities"/>
   </Associations>
   <Relations>
    <EntityRelation displayColumns="name,code" child="social_tenure_relationship_supporting_document" parent="check_social_tenure_relationship_document_type" name="fk_in_check_social_tenure_relationship_document_type_id_in_social_tenure_relationship_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship_supporting_document" parent="social_tenure_relationship" name="fk_in_social_tenure_relationship_id_in_social_tenure_relationship_supporting_document_social_tenure_relationship_id" parentColumn="id" childColumn="social_tenure_relationship_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship_supporting_document" parent="supporting_document" name="fk_in_supporting_document_id_in_social_tenure_relationship_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
    <EntityRelation displayColumns="name,code" child="social_tenure_relationship" parent="check_tenure_type" name="fk_in_check_tenure_type_id_in_social_tenure_relationship_tenure_type" parentColumn="id" childColumn="tenure_type"/>
-   <EntityRelation displayColumns="name,code" child="Household_supporting_document" parent="check_household_document_type" name="fk_in_check_household_document_type_id_in_household_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
-   <EntityRelation displayColumns="" child="Household_supporting_document" parent="Household" name="fk_in_household_id_in_household_supporting_document_household_id" parentColumn="id" childColumn="household_id"/>
-   <EntityRelation displayColumns="" child="Household_supporting_document" parent="supporting_document" name="fk_in_supporting_document_id_in_household_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
    <EntityRelation displayColumns="name,code" child="Person_supporting_document" parent="check_person_document_type" name="fk_in_check_person_document_type_id_in_person_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
    <EntityRelation displayColumns="" child="Person_supporting_document" parent="Person" name="fk_in_person_id_in_person_supporting_document_person_id" parentColumn="id" childColumn="person_id"/>
    <EntityRelation displayColumns="" child="Person_supporting_document" parent="supporting_document" name="fk_in_supporting_document_id_in_person_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
    <EntityRelation displayColumns="name,code" child="Person" parent="check_gender" name="fk_in_check_gender_id_in_person_gender" parentColumn="id" childColumn="gender"/>
-   <EntityRelation displayColumns="" child="income_sources" parent="check_income_sources" name="fk_in_check_income_sources_id_income_sources_in_check_income_sources_id" parentColumn="id" childColumn="in_check_income_sources_id"/>
-   <EntityRelation displayColumns="" child="income_sources" parent="Person" name="fk_in_person_id_income_sources_in_person_id" parentColumn="id" childColumn="in_person_id"/>
-   <EntityRelation displayColumns="name,code" child="Person" parent="admin_spatial_unit_set" name="fk_admin_spatial_unit_set_id_in_person_admin_spatial_unit" parentColumn="id" childColumn="admin_spatial_unit"/>
-   <EntityRelation displayColumns="code" child="Person" parent="Household" name="fk_in_household_id_in_person_household" parentColumn="id" childColumn="household"/>
-   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Household" name="fk_in_household_id_in_social_tenure_relationship_party_id" parentColumn="id" childColumn="party_id"/>
+   <EntityRelation displayColumns="name,code" child="Person" parent="check_marital_status" name="fk_in_check_marital_status_id_in_person_marital_status" parentColumn="id" childColumn="marital_status"/>
+   <EntityRelation displayColumns="name,code" child="Person" parent="check_household_relation" name="fk_in_check_household_relation_id_in_person_household_relation" parentColumn="id" childColumn="household_relation"/>
+   <EntityRelation displayColumns="name,code" child="Person" parent="admin_spatial_unit_set" name="fk_admin_spatial_unit_set_id_in_person_residence_area" parentColumn="id" childColumn="residence_area"/>
+   <EntityRelation displayColumns="name,code" child="Structure_supporting_document" parent="check_structure_document_type" name="fk_in_check_structure_document_type_id_in_structure_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
+   <EntityRelation displayColumns="" child="Structure_supporting_document" parent="Structure" name="fk_in_structure_id_in_structure_supporting_document_structure_id" parentColumn="id" childColumn="structure_id"/>
+   <EntityRelation displayColumns="" child="Structure_supporting_document" parent="supporting_document" name="fk_in_supporting_document_id_in_structure_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
+   <EntityRelation displayColumns="name,code" child="Structure" parent="check_ownership_type" name="fk_in_check_ownership_type_id_in_structure_ownership_type" parentColumn="id" childColumn="ownership_type"/>
+   <EntityRelation displayColumns="" child="related_structures" parent="check_related_structures" name="fk_in_check_related_structures_id_in_related_structures_in_check_related_structures_id" parentColumn="id" childColumn="in_check_related_structures_id"/>
+   <EntityRelation displayColumns="" child="related_structures" parent="Structure" name="fk_in_structure_id_in_related_structures_in_structure_id" parentColumn="id" childColumn="in_structure_id"/>
+   <EntityRelation displayColumns="name,code" child="Structure" parent="check_recognition_status" name="fk_in_check_recognition_status_id_in_structure_recognition_status" parentColumn="id" childColumn="recognition_status"/>
+   <EntityRelation displayColumns="" child="utilities" parent="check_utilities" name="fk_in_check_utilities_id_in_utilities_in_check_utilities_id" parentColumn="id" childColumn="in_check_utilities_id"/>
+   <EntityRelation displayColumns="" child="utilities" parent="Structure" name="fk_in_structure_id_in_utilities_in_structure_id" parentColumn="id" childColumn="in_structure_id"/>
+   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Person" name="fk_in_person_id_in_social_tenure_relationship_party_id" parentColumn="id" childColumn="party_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Structure" name="fk_in_structure_id_in_social_tenure_relationship_spatial_unit_id" parentColumn="id" childColumn="spatial_unit_id"/>
   </Relations>
-  <SocialTenure layerDisplay="in_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Structure" supportsMultipleParties="0" party="Household"/>
+  <SocialTenure layerDisplay="in_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Structure" supportsMultipleParties="True" party="Person"/>
+ </Profile>
+ <Profile description="A configuration best suited to local government such as districts, zones, counties and so on." name="Local_Government">
+  <ValueLists>
+   <ValueList name="check_social_tenure_relationship_document_type">
+    <CodeValue value="General" code="G"/>
+   </ValueList>
+   <ValueList name="check_tenure_type">
+    <CodeValue value="Ownership" code="OWN"/>
+    <CodeValue value="Leasehold" code="LEA"/>
+    <CodeValue value="Communal" code="COM"/>
+   </ValueList>
+   <ValueList name="check_gender">
+    <CodeValue value="Female" code="FEM"/>
+    <CodeValue value="Male" code="MAL"/>
+   </ValueList>
+   <ValueList name="check_landuse">
+    <CodeValue value="Agricultural" code="AGR"/>
+    <CodeValue value="Commercial" code="COM"/>
+    <CodeValue value="Industrial" code="IND"/>
+    <CodeValue value="Institutional" code="INS"/>
+    <CodeValue value="Residential" code="RES"/>
+    <CodeValue value="Special purpose" code="SPE"/>
+   </ValueList>
+   <ValueList name="check_marital_status">
+    <CodeValue value="Married" code=""/>
+    <CodeValue value="Single" code=""/>
+    <CodeValue value="Divorced" code=""/>
+    <CodeValue value="Widow" code=""/>
+    <CodeValue value="Widower" code=""/>
+    <CodeValue value="Cohabiting" code=""/>
+    <CodeValue value="Separated" code=""/>
+   </ValueList>
+   <ValueList name="check_parcel_type">
+    <CodeValue value="Private" code="PRI"/>
+    <CodeValue value="Public" code="PUB"/>
+    <CodeValue value="Communal" code="COM"/>
+   </ValueList>
+   <ValueList name="check_special_landuse">
+    <CodeValue value="Military" code="MIL"/>
+    <CodeValue value="NGO" code="NGO"/>
+   </ValueList>
+   <ValueList name="check_officer_rank">
+    <CodeValue value="Assistant" code="ASS"/>
+    <CodeValue value="Cartographer/ Draughtsman" code="CAR"/>
+    <CodeValue value="Chief" code="CHI"/>
+    <CodeValue value="County" code="COU"/>
+    <CodeValue value="Normal" code="NOR"/>
+    <CodeValue value="Senior" code="SEN"/>
+   </ValueList>
+   <ValueList name="check_dispute">
+    <CodeValue value="Border" code="BOR"/>
+    <CodeValue value="Ownership" code="OWN"/>
+    <CodeValue value="Access" code="ACC"/>
+   </ValueList>
+   <ValueList name="check_parcel_document_type">
+    <CodeValue value="General" code="G"/>
+   </ValueList>
+   <ValueList name="check_person_document_type">
+    <CodeValue value="General" code="G"/>
+   </ValueList>
+   <ValueList name="check_farmer_document_type">
+    <CodeValue value="General" code=""/>
+   </ValueList>
+  </ValueLists>
+  <Entity editable="True" global="False" associative="False" description="Person is an individual" documentTypeLookup="check_person_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Person" name="lo_person">
+   <Columns>
+    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="First name" index="False" name="first_name" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Middle name" index="False" name="middle_name" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Last name" index="False" name="last_name" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="2147483647" description="Gender" index="False" name="gender_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_lo_check_gender_id_lo_person_gender_id"/>
+    </Column>
+    <Column unique="False" tip="" minimum="0001-01-01" maximum="9999-12-31" description="date of birth" index="False" name="date_of_birth" searchable="False" TYPE_INFO="DATE" mandatory="False">
+     <currentDate minimum="False" maximum="False"/>
+    </Column>
+    <Column unique="False" tip="The marital status of the person" minimum="0" maximum="2147483647" description="The marital status of the person" index="False" name="marital_status" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_lo_check_marital_status_id_lo_person_marital_status"/>
+    </Column>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="National Identification" index="False" name="national_id" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Physical Address" index="False" name="physical_address" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="telephone_number" index="False" name="telephone_number" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+   </Columns>
+  </Entity>
+  <Entity editable="True" global="False" associative="False" description="Parcel represents the spatial unit" documentTypeLookup="check_parcel_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Parcel" name="lo_parcel">
+   <Columns>
+    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Unique identifier" index="False" name="code" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0.0" maximum="1.79769313486e+308" description="Area of the parcel in square unit" index="False" name="area" searchable="False" TYPE_INFO="DOUBLE" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0.0" maximum="1.79769313486e+308" description="Monetary value of the parcel" index="False" name="value" searchable="False" TYPE_INFO="DOUBLE" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="2147483647" description="Parcel type" index="False" name="parcel_type_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_lo_check_parcel_type_id_lo_parcel_parcel_type_id"/>
+    </Column>
+    <Column unique="False" tip="" minimum="0" maximum="2147483647" description="Land use of the parcel" index="False" name="landuse_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_lo_check_landuse_id_lo_parcel_landuse_id"/>
+    </Column>
+    <Column unique="False" tip="" minimum="0" maximum="2147483647" description="Special land use of the parcel." index="False" name="special_landuse_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_lo_check_special_landuse_id_lo_parcel_special_landuse_id"/>
+    </Column>
+    <Column unique="False" tip="" minimum="0" maximum="2147483647" description="The dispute on the parcel" index="False" name="dispute_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_lo_check_dispute_id_lo_parcel_dispute_id"/>
+    </Column>
+    <Column unique="False" tip="The digital geographic bounder of the parcel" description="The digital geographic bounder of the parcel" index="False" name="spatial_geometery" searchable="False" TYPE_INFO="GEOMETRY" mandatory="False">
+     <Geometry layerDisplay="" srid="4326" type="2"/>
+    </Column>
+   </Columns>
+  </Entity>
+  <Entity editable="True" global="False" associative="False" description="Surveyor is a person who conducts field assessment on a parcel" proxy="False" createId="True" supportsDocuments="False" shortName="Surveyor" name="lo_surveyor">
+   <Columns>
+    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="First name" index="False" name="first_name" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Middle name" index="False" name="middle_name" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Last name" index="False" name="last_name" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="2147483647" description="Gender" index="False" name="gender_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_lo_check_gender_id_lo_surveyor_gender_id"/>
+    </Column>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="National Identification" index="False" name="national_id" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0001-01-01" maximum="9999-12-31" description="Date of birth" index="False" name="date_of_birth" searchable="False" TYPE_INFO="DATE" mandatory="False">
+     <currentDate minimum="False" maximum="False"/>
+    </Column>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Telephone number" index="False" name="telephone_number" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="2147483647" description="Rank of the surveyor" index="False" name="officer_rank_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_lo_check_officer_rank_id_lo_surveyor_officer_rank_id"/>
+    </Column>
+   </Columns>
+  </Entity>
+  <Entity editable="True" global="False" associative="False" description="Planner is a person who handles the plotting and data entry of a parcel" proxy="False" createId="True" supportsDocuments="False" shortName="Planner" name="lo_planner">
+   <Columns>
+    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="First name" index="False" name="first_name" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Middle name" index="False" name="middle_name" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Last name" index="False" name="last_name" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="2147483647" description="Gender" index="False" name="gender_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_lo_check_gender_id_lo_planner_gender_id"/>
+    </Column>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="National Identification" index="False" name="national_id" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0001-01-01" maximum="9999-12-31" description="Date of birth" index="False" name="date_of_birth" searchable="False" TYPE_INFO="DATE" mandatory="False">
+     <currentDate minimum="False" maximum="False"/>
+    </Column>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Telephone number" index="False" name="telephone_number" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="2147483647" description="Rank of the planner" index="False" name="officer_rank_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_lo_check_officer_rank_id_lo_planner_officer_rank_id"/>
+    </Column>
+   </Columns>
+  </Entity>
+  <Entity editable="True" global="False" associative="False" description="Relation of surveyor and planner" proxy="False" createId="True" supportsDocuments="False" shortName="Survey" name="lo_survey">
+   <Columns>
+    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0001-01-01" maximum="9999-12-31" description="The date of survey" index="False" name="date_of_survey" searchable="False" TYPE_INFO="DATE" mandatory="False">
+     <currentDate minimum="False" maximum="False"/>
+    </Column>
+    <Column unique="False" tip="The parcel surveyed" minimum="0" maximum="2147483647" description="The parcel surveyed" index="False" name="parcel" searchable="False" TYPE_INFO="FOREIGN_KEY" mandatory="False">
+     <Relation name="fk_lo_parcel_id_lo_survey_parcel"/>
+    </Column>
+    <Column unique="False" tip="The person who conducted the survey" minimum="0" maximum="2147483647" description="The person who conducted the survey" index="False" name="surveyor" searchable="False" TYPE_INFO="FOREIGN_KEY" mandatory="False">
+     <Relation name="fk_lo_surveyor_id_lo_survey_surveyor"/>
+    </Column>
+    <Column unique="False" tip="The planner refers to the person overseeing the survey. " minimum="0" maximum="2147483647" description="The planner refers to the person overseeing the survey. " index="False" name="planner" searchable="False" TYPE_INFO="FOREIGN_KEY" mandatory="False">
+     <Relation name="fk_lo_planner_id_lo_survey_planner"/>
+    </Column>
+   </Columns>
+  </Entity>
+  <Relations>
+   <EntityRelation displayColumns="name,code" child="social_tenure_relationship_supporting_document" parent="check_social_tenure_relationship_document_type" name="fk_lo_check_social_tenure_relationship_document_type_id_lo_social_tenure_relationship_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
+   <EntityRelation displayColumns="" child="social_tenure_relationship_supporting_document" parent="social_tenure_relationship" name="fk_lo_social_tenure_relationship_id_lo_social_tenure_relationship_supporting_document_social_tenure_relationship_id" parentColumn="id" childColumn="social_tenure_relationship_id"/>
+   <EntityRelation displayColumns="" child="social_tenure_relationship_supporting_document" parent="supporting_document" name="fk_lo_supporting_document_id_lo_social_tenure_relationship_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
+   <EntityRelation displayColumns="name,code" child="social_tenure_relationship" parent="check_tenure_type" name="fk_lo_check_tenure_type_id_lo_social_tenure_relationship_tenure_type" parentColumn="id" childColumn="tenure_type"/>
+   <EntityRelation displayColumns="name,code" child="Person_supporting_document" parent="check_person_document_type" name="fk_lo_check_person_document_type_id_lo_person_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
+   <EntityRelation displayColumns="" child="Person_supporting_document" parent="Person" name="fk_lo_person_id_lo_person_supporting_document_person_id" parentColumn="id" childColumn="person_id"/>
+   <EntityRelation displayColumns="" child="Person_supporting_document" parent="supporting_document" name="fk_lo_supporting_document_id_lo_person_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
+   <EntityRelation displayColumns="name,code" child="Person" parent="check_gender" name="fk_lo_check_gender_id_lo_person_gender_id" parentColumn="id" childColumn="gender_id"/>
+   <EntityRelation displayColumns="name,code" child="Person" parent="check_marital_status" name="fk_lo_check_marital_status_id_lo_person_marital_status" parentColumn="id" childColumn="marital_status"/>
+   <EntityRelation displayColumns="name,code" child="Parcel_supporting_document" parent="check_parcel_document_type" name="fk_lo_check_parcel_document_type_id_lo_parcel_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
+   <EntityRelation displayColumns="" child="Parcel_supporting_document" parent="Parcel" name="fk_lo_parcel_id_lo_parcel_supporting_document_parcel_id" parentColumn="id" childColumn="parcel_id"/>
+   <EntityRelation displayColumns="" child="Parcel_supporting_document" parent="supporting_document" name="fk_lo_supporting_document_id_lo_parcel_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
+   <EntityRelation displayColumns="name,code" child="Parcel" parent="check_parcel_type" name="fk_lo_check_parcel_type_id_lo_parcel_parcel_type_id" parentColumn="id" childColumn="parcel_type_id"/>
+   <EntityRelation displayColumns="name,code" child="Parcel" parent="check_landuse" name="fk_lo_check_landuse_id_lo_parcel_landuse_id" parentColumn="id" childColumn="landuse_id"/>
+   <EntityRelation displayColumns="name,code" child="Parcel" parent="check_special_landuse" name="fk_lo_check_special_landuse_id_lo_parcel_special_landuse_id" parentColumn="id" childColumn="special_landuse_id"/>
+   <EntityRelation displayColumns="name,code" child="Parcel" parent="check_dispute" name="fk_lo_check_dispute_id_lo_parcel_dispute_id" parentColumn="id" childColumn="dispute_id"/>
+   <EntityRelation displayColumns="name,code" child="Surveyor" parent="check_gender" name="fk_lo_check_gender_id_lo_surveyor_gender_id" parentColumn="id" childColumn="gender_id"/>
+   <EntityRelation displayColumns="name,code" child="Surveyor" parent="check_officer_rank" name="fk_lo_check_officer_rank_id_lo_surveyor_officer_rank_id" parentColumn="id" childColumn="officer_rank_id"/>
+   <EntityRelation displayColumns="name,code" child="Planner" parent="check_gender" name="fk_lo_check_gender_id_lo_planner_gender_id" parentColumn="id" childColumn="gender_id"/>
+   <EntityRelation displayColumns="name,code" child="Planner" parent="check_officer_rank" name="fk_lo_check_officer_rank_id_lo_planner_officer_rank_id" parentColumn="id" childColumn="officer_rank_id"/>
+   <EntityRelation displayColumns="code" child="Survey" parent="Parcel" name="fk_lo_parcel_id_lo_survey_parcel" parentColumn="id" childColumn="parcel"/>
+   <EntityRelation displayColumns="national_id" child="Survey" parent="Surveyor" name="fk_lo_surveyor_id_lo_survey_surveyor" parentColumn="id" childColumn="surveyor"/>
+   <EntityRelation displayColumns="national_id" child="Survey" parent="Planner" name="fk_lo_planner_id_lo_survey_planner" parentColumn="id" childColumn="planner"/>
+   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Person" name="fk_lo_person_id_lo_social_tenure_relationship_party_id" parentColumn="id" childColumn="party_id"/>
+   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Parcel" name="fk_lo_parcel_id_lo_social_tenure_relationship_spatial_unit_id" parentColumn="id" childColumn="spatial_unit_id"/>
+   <EntityRelation displayColumns="name,code" child="Farmer_supporting_document" parent="check_farmer_document_type" name="fk_lo_check_farmer_document_type_id_lo_farmer_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
+   <EntityRelation displayColumns="" child="Farmer_supporting_document" parent="Farmer" name="fk_lo_farmer_id_lo_farmer_supporting_document_farmer_id" parentColumn="id" childColumn="farmer_id"/>
+   <EntityRelation displayColumns="" child="Farmer_supporting_document" parent="supporting_document" name="fk_lo_supporting_document_id_lo_farmer_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
+  </Relations>
+  <SocialTenure layerDisplay="lo_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Parcel" supportsMultipleParties="True" party="Person"/>
+ </Profile>
+ <Profile description="A configuration best suited to rural areas with farmers and farm land" name="Rural_Agriculture">
+  <ValueLists>
+   <ValueList name="check_social_tenure_relationship_document_type">
+    <CodeValue value="General" code=""/>
+   </ValueList>
+   <ValueList name="check_tenure_type">
+    <CodeValue value="Adverse Possession" code=""/>
+    <CodeValue value="Communal Ownership" code=""/>
+    <CodeValue value="Family Ownership" code=""/>
+    <CodeValue value="Private Ownership" code=""/>
+    <CodeValue value="Tenancy" code=""/>
+   </ValueList>
+   <ValueList name="check_farmer_document_type">
+    <CodeValue value="General" code=""/>
+   </ValueList>
+   <ValueList name="check_garden_document_type">
+    <CodeValue value="General" code=""/>
+   </ValueList>
+   <ValueList name="check_witness_document_type">
+    <CodeValue value="General" code=""/>
+   </ValueList>
+   <ValueList name="check_gender">
+    <CodeValue value="Female" code="F"/>
+    <CodeValue value="Male" code="M"/>
+   </ValueList>
+   <ValueList name="check_marital_status">
+    <CodeValue value="Married" code=""/>
+    <CodeValue value="Single" code=""/>
+    <CodeValue value="Divorced" code=""/>
+    <CodeValue value="Widow" code=""/>
+    <CodeValue value="Widower" code=""/>
+    <CodeValue value="Cohabiting" code=""/>
+    <CodeValue value="Separated" code=""/>
+   </ValueList>
+   <ValueList name="check_respondent_document_type">
+    <CodeValue value="General" code=""/>
+   </ValueList>
+   <ValueList name="check_respondent_role">
+    <CodeValue value="Child of Farmer" code=""/>
+    <CodeValue value="Farm Manager" code=""/>
+    <CodeValue value="Laborer" code=""/>
+    <CodeValue value="Smallholder Farmer" code=""/>
+    <CodeValue value="Spouse" code=""/>
+   </ValueList>
+   <ValueList name="check_witness_relationship">
+    <CodeValue value="Friend" code=""/>
+    <CodeValue value="Neighbour" code=""/>
+    <CodeValue value="Administrative Unit Leader" code=""/>
+   </ValueList>
+   <ValueList name="check_socio_economic_impact">
+    <CodeValue value="Improved Access to Financial Services" code=""/>
+    <CodeValue value="Improved Access to Health" code=""/>
+    <CodeValue value="Improved Housing Conditions" code=""/>
+    <CodeValue value="Improved Literacy Levels" code=""/>
+    <CodeValue value="Improved Tenure Security" code=""/>
+   </ValueList>
+   <ValueList name="check_input_service">
+    <CodeValue value="Farm Tools" code=""/>
+    <CodeValue value="Fertilizer" code=""/>
+    <CodeValue value="Herbicides" code=""/>
+    <CodeValue value="Pesticides" code=""/>
+    <CodeValue value="Seeding" code=""/>
+    <CodeValue value="Training" code=""/>
+   </ValueList>
+   <ValueList name="check_rank">
+    <CodeValue value="Very High" code="VH"/>
+    <CodeValue value="High" code="H"/>
+    <CodeValue value="Medium" code="M"/>
+    <CodeValue value="Low" code="L"/>
+    <CodeValue value="Very Low" code="VL"/>
+   </ValueList>
+  </ValueLists>
+  <Entity editable="True" global="False" associative="False" description="Refers to a person" documentTypeLookup="check_farmer_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Farmer" name="ru_farmer">
+   <Columns>
+    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="False" tip="First name of the farmer" minimum="0" maximum="30" description="First name of the farmer" index="False" name="first_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="Middle name of the farmer" minimum="0" maximum="30" description="Middle name of the farmer" index="False" name="middle_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="Last name of the farmer" minimum="0" maximum="30" description="Last name of the farmer" index="False" name="last_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="The identification card number of the farmer" minimum="0" maximum="30" description="The identification card number of the farmer" index="False" name="national_id" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="The gender of the farmer" minimum="0" maximum="2147483647" description="The gender of the farmer" index="False" name="gender" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_ru_check_gender_id_ru_farmer_gender"/>
+    </Column>
+    <Column unique="False" tip="Date of birth of the farmer" minimum="1852-09-14" maximum="7999-12-31" description="Date of birth of the farmer" index="False" name="date_of_birth" searchable="False" TYPE_INFO="DATE" mandatory="False">
+     <currentDate minimum="False" maximum="True"/>
+    </Column>
+    <Column unique="False" tip="The marital status of the person" minimum="0" maximum="2147483647" description="The marital status of the person" index="False" name="marital_status" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_ru_check_marital_status_id_ru_farmer_marital_status"/>
+    </Column>
+    <Column unique="False" tip="The telephone number of the farmer" minimum="0" maximum="30" description="The telephone number of the farmer" index="False" name="telephone_number" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="Address of the farmer" minimum="0" maximum="100" description="Address of the farmer" index="False" name="address" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="The residence area of the farmer" minimum="0" maximum="2147483647" description="The residence area of the farmer" index="False" name="residence_area" searchable="True" TYPE_INFO="ADMIN_SPATIAL_UNIT" mandatory="False">
+     <Relation name="fk_admin_spatial_unit_set_id_ru_farmer_residence_area"/>
+    </Column>
+   </Columns>
+  </Entity>
+  <Entity editable="True" global="False" associative="False" description="Refers to the farm land or the spatial unit" documentTypeLookup="check_garden_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Garden" name="ru_garden">
+   <Columns>
+    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="True" tip="The digital geographic bounder of the garden" description="The digital geographic bounder of the garden" index="False" name="spatial_geometry" searchable="False" TYPE_INFO="GEOMETRY" mandatory="False">
+     <Geometry layerDisplay="" srid="4326" type="2"/>
+    </Column>
+    <Column unique="False" tip="The garden's unique identifier" minimum="0" maximum="30" description="The garden's unique identifier" index="False" name="code" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="The administrative unit in which the garden is located" minimum="0" maximum="2147483647" description="The administrative unit in which the garden is located" index="False" name="location" searchable="True" TYPE_INFO="ADMIN_SPATIAL_UNIT" mandatory="False">
+     <Relation name="fk_admin_spatial_unit_set_id_ru_garden_location"/>
+    </Column>
+   </Columns>
+  </Entity>
+  <Entity editable="True" global="False" associative="False" description="Refers to the person collecting data for the survey" proxy="False" createId="True" supportsDocuments="False" shortName="Enumerator" name="ru_enumerator">
+   <Columns>
+    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="False" tip="First name of the enumerator" minimum="0" maximum="30" description="First name of the enumerator" index="False" name="first_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="Middle name of the enumerator" minimum="0" maximum="30" description="Middle name of the enumerator" index="False" name="middle_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="Last name of the enumerator" minimum="0" maximum="30" description="Last name of the enumerator" index="False" name="last_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="The identification card number of the enumerator" minimum="0" maximum="30" description="The identification card number of the enumerator" index="False" name="national_id" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="The gender of the enumerator" minimum="0" maximum="2147483647" description="The gender of the enumerator" index="False" name="gender" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_ru_check_gender_id_ru_enumerator_gender"/>
+    </Column>
+    <Column unique="False" tip="Date of birth of the enumerator" minimum="1852-09-14" maximum="7999-12-31" description="Date of birth of the enumerator" index="False" name="date_of_birth" searchable="False" TYPE_INFO="DATE" mandatory="False">
+     <currentDate minimum="False" maximum="True"/>
+    </Column>
+    <Column unique="False" tip="The telephone number of the enumerator" minimum="0" maximum="30" description="The telephone number of the enumerator" index="False" name="telephone_number" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="Address of the enumerator" minimum="0" maximum="100" description="Address of the enumerator" index="False" name="address" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="The residence area of the enumerator" minimum="0" maximum="2147483647" description="The residence area of the enumerator" index="False" name="residence_area" searchable="True" TYPE_INFO="ADMIN_SPATIAL_UNIT" mandatory="False">
+     <Relation name="fk_admin_spatial_unit_set_id_ru_enumerator_residence_area"/>
+    </Column>
+   </Columns>
+  </Entity>
+  <Entity editable="True" global="False" associative="False" description="Refers to the subject of the survey" documentTypeLookup="check_respondent_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Respondent" name="ru_respondent">
+   <Columns>
+    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="False" tip="First name of the respondent" minimum="0" maximum="30" description="First name of the respondent" index="False" name="first_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="Middle name of the respondent" minimum="0" maximum="30" description="Middle name of the respondent" index="False" name="middle_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="Last name of the respondent" minimum="0" maximum="30" description="Last name of the respondent" index="False" name="last_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="The identification card number of the respondent" minimum="0" maximum="30" description="The identification card number of the respondent" index="False" name="national_id" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="The gender of the respondent" minimum="0" maximum="2147483647" description="The gender of the respondent" index="False" name="gender" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_ru_check_gender_id_ru_respondent_gender"/>
+    </Column>
+    <Column unique="False" tip="Date of birth of the respondent" minimum="1852-09-14" maximum="7999-12-31" description="Date of birth of the respondent" index="False" name="date_of_birth" searchable="False" TYPE_INFO="DATE" mandatory="False">
+     <currentDate minimum="False" maximum="True"/>
+    </Column>
+    <Column unique="False" tip="The marital status of the person" minimum="0" maximum="2147483647" description="The marital status of the person" index="False" name="marital_status" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_ru_check_marital_status_id_ru_respondent_marital_status"/>
+    </Column>
+    <Column unique="False" tip="The telephone number of the respondent" minimum="0" maximum="30" description="The telephone number of the respondent" index="False" name="telephone_number" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="Address of the respondent" minimum="0" maximum="100" description="Address of the respondent" index="False" name="address" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="The residence area of the respondent" minimum="0" maximum="2147483647" description="The residence area of the respondent" index="False" name="residence_area" searchable="True" TYPE_INFO="ADMIN_SPATIAL_UNIT" mandatory="False">
+     <Relation name="fk_admin_spatial_unit_set_id_ru_respondent_residence_area"/>
+    </Column>
+    <Column unique="False" tip="Respondent's role" minimum="0" maximum="2147483647" description="Resondent's role" index="False" name="role" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_ru_check_respondent_role_id_ru_respondent_role"/>
+    </Column>
+   </Columns>
+  </Entity>
+  <Entity editable="True" global="False" associative="False" description="The witness of the respondent" documentTypeLookup="check_witness_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Witness" name="ru_witness">
+   <Columns>
+    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="False" tip="First name of the witness" minimum="0" maximum="30" description="First name of the witness" index="False" name="first_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="Middle name of the witness" minimum="0" maximum="30" description="Middle name of the witness" index="False" name="middle_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="Last name of the witness" minimum="0" maximum="30" description="Last name of the witness" index="False" name="last_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="The identification card number of the witness" minimum="0" maximum="30" description="The identification card number of the witness" index="False" name="national_id" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="The gender of the witness" minimum="0" maximum="2147483647" description="The gender of the witness" index="False" name="gender" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_ru_check_gender_id_ru_witness_gender"/>
+    </Column>
+    <Column unique="False" tip="Date of birth of the witness" minimum="1852-09-14" maximum="7999-12-31" description="Date of birth of the witness" index="False" name="date_of_birth" searchable="False" TYPE_INFO="DATE" mandatory="False">
+     <currentDate minimum="False" maximum="True"/>
+    </Column>
+    <Column unique="False" tip="The telephone number of the witness" minimum="0" maximum="30" description="The telephone number of the witness" index="False" name="telephone_number" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="Address of the witness" minimum="0" maximum="100" description="Address of the witness" index="False" name="address" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="The residence area of the witness" minimum="0" maximum="2147483647" description="The residence area of the witness" index="False" name="residence_area" searchable="True" TYPE_INFO="ADMIN_SPATIAL_UNIT" mandatory="False">
+     <Relation name="fk_admin_spatial_unit_set_id_ru_witness_residence_area"/>
+    </Column>
+    <Column unique="False" tip="The relationship of the witness to the respondent" minimum="0" maximum="2147483647" description="The relationship of the witness to the respondent" index="False" name="relationship" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_ru_check_witness_relationship_id_ru_witness_relationship"/>
+    </Column>
+   </Columns>
+  </Entity>
+  <Entity editable="True" global="False" associative="False" description="The socio-economic impact of the project" proxy="False" createId="True" supportsDocuments="False" shortName="Impact" name="ru_impact">
+   <Columns>
+    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="False" tip="The farmer whose impact is reported" minimum="0" maximum="2147483647" description="The farmer whose impact is reported" index="False" name="farmer" searchable="False" TYPE_INFO="FOREIGN_KEY" mandatory="False">
+     <Relation name="fk_ru_farmer_id_ru_impact_farmer"/>
+    </Column>
+    <Column unique="False" tip="The socio-economic impact on the farmer" description="The socio-economic impact on the farmer" index="False" name="socio_economic_impact" searchable="False" TYPE_INFO="MULTIPLE_SELECT" mandatory="False">
+     <associationEntity name="ru_socio_economic_impact"/>
+    </Column>
+   </Columns>
+  </Entity>
+  <Associations>
+   <Association secondParent="Impact" firstParent="check_socio_economic_impact" shortName="socio_economic_impact" name="ru_socio_economic_impact"/>
+  </Associations>
+  <Entity editable="True" global="False" associative="False" description="Priority inputs to improve livelihood" proxy="False" createId="True" supportsDocuments="False" shortName="Priority" name="ru_priority">
+   <Columns>
+    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="False" tip="The farmer whose priority is recorded" minimum="0" maximum="2147483647" description="The farmer whose priority is recorded" index="False" name="farmer" searchable="False" TYPE_INFO="FOREIGN_KEY" mandatory="False">
+     <Relation name="fk_ru_farmer_id_ru_priority_farmer"/>
+    </Column>
+    <Column unique="False" tip="The input service that is given a priority rank" minimum="0" maximum="2147483647" description="The input service that is given a priority rank" index="False" name="input_service" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_ru_check_input_service_id_ru_priority_input_service"/>
+    </Column>
+    <Column unique="False" tip="The input service priority rank" minimum="0" maximum="2147483647" description="The input service priority rank" index="False" name="rank" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
+     <Relation name="fk_ru_check_rank_id_ru_priority_rank"/>
+    </Column>
+   </Columns>
+  </Entity>
+  <Entity editable="True" global="False" associative="False" description="Refers to the survey of the project" proxy="False" createId="True" supportsDocuments="False" shortName="Survey" name="ru_survey">
+   <Columns>
+    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
+    <Column unique="False" tip="The date of data collection" minimum="2000-09-14" maximum="7999-12-31" description="The date of data collection" index="False" name="enumeration_date" searchable="False" TYPE_INFO="DATE" mandatory="False">
+     <currentDate minimum="False" maximum="True"/>
+    </Column>
+    <Column unique="False" tip="The person collecting the survey data" minimum="0" maximum="2147483647" description="The person collecting the survey data" index="False" name="enumerator" searchable="False" TYPE_INFO="FOREIGN_KEY" mandatory="False">
+     <Relation name="fk_ru_enumerator_id_ru_survey_enumerator"/>
+    </Column>
+    <Column unique="False" tip="The person who is the subject of the survey" minimum="0" maximum="2147483647" description="The person who is the subject of the survey" index="False" name="respondent" searchable="False" TYPE_INFO="FOREIGN_KEY" mandatory="False">
+     <Relation name="fk_ru_respondent_id_ru_survey_respondent"/>
+    </Column>
+    <Column unique="False" tip="The witness of the respondent" minimum="0" maximum="2147483647" description="The witness of the respondent" index="False" name="witness" searchable="False" TYPE_INFO="FOREIGN_KEY" mandatory="False">
+     <Relation name="fk_ru_respondent_id_ru_survey_witness"/>
+    </Column>
+   </Columns>
+  </Entity>
+  <Relations>
+   <EntityRelation displayColumns="name,code" child="social_tenure_relationship_supporting_document" parent="check_social_tenure_relationship_document_type" name="fk_ru_check_social_tenure_relationship_document_type_id_ru_social_tenure_relationship_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
+   <EntityRelation displayColumns="" child="social_tenure_relationship_supporting_document" parent="social_tenure_relationship" name="fk_ru_social_tenure_relationship_id_ru_social_tenure_relationship_supporting_document_social_tenure_relationship_id" parentColumn="id" childColumn="social_tenure_relationship_id"/>
+   <EntityRelation displayColumns="" child="social_tenure_relationship_supporting_document" parent="supporting_document" name="fk_ru_supporting_document_id_ru_social_tenure_relationship_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
+   <EntityRelation displayColumns="name,code" child="social_tenure_relationship" parent="check_tenure_type" name="fk_ru_check_tenure_type_id_ru_social_tenure_relationship_tenure_type" parentColumn="id" childColumn="tenure_type"/>
+   <EntityRelation displayColumns="name,code" child="Farmer_supporting_document" parent="check_farmer_document_type" name="fk_ru_check_farmer_document_type_id_ru_farmer_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
+   <EntityRelation displayColumns="" child="Farmer_supporting_document" parent="Farmer" name="fk_ru_farmer_id_ru_farmer_supporting_document_farmer_id" parentColumn="id" childColumn="farmer_id"/>
+   <EntityRelation displayColumns="" child="Farmer_supporting_document" parent="supporting_document" name="fk_ru_supporting_document_id_ru_farmer_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
+   <EntityRelation displayColumns="name,code" child="Farmer" parent="check_gender" name="fk_ru_check_gender_id_ru_farmer_gender" parentColumn="id" childColumn="gender"/>
+   <EntityRelation displayColumns="name,code" child="Farmer" parent="check_marital_status" name="fk_ru_check_marital_status_id_ru_farmer_marital_status" parentColumn="id" childColumn="marital_status"/>
+   <EntityRelation displayColumns="name,code" child="Farmer" parent="admin_spatial_unit_set" name="fk_admin_spatial_unit_set_id_ru_farmer_residence_area" parentColumn="id" childColumn="residence_area"/>
+   <EntityRelation displayColumns="name,code" child="Garden_supporting_document" parent="check_garden_document_type" name="fk_ru_check_garden_document_type_id_ru_garden_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
+   <EntityRelation displayColumns="" child="Garden_supporting_document" parent="Garden" name="fk_ru_garden_id_ru_garden_supporting_document_garden_id" parentColumn="id" childColumn="garden_id"/>
+   <EntityRelation displayColumns="" child="Garden_supporting_document" parent="supporting_document" name="fk_ru_supporting_document_id_ru_garden_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
+   <EntityRelation displayColumns="name,code" child="Garden" parent="admin_spatial_unit_set" name="fk_admin_spatial_unit_set_id_ru_garden_location" parentColumn="id" childColumn="location"/>
+   <EntityRelation displayColumns="name,code" child="Enumerator" parent="check_gender" name="fk_ru_check_gender_id_ru_enumerator_gender" parentColumn="id" childColumn="gender"/>
+   <EntityRelation displayColumns="name,code" child="Enumerator" parent="admin_spatial_unit_set" name="fk_admin_spatial_unit_set_id_ru_enumerator_residence_area" parentColumn="id" childColumn="residence_area"/>
+   <EntityRelation displayColumns="name,code" child="Respondent_supporting_document" parent="check_respondent_document_type" name="fk_ru_check_respondent_document_type_id_ru_respondent_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
+   <EntityRelation displayColumns="" child="Respondent_supporting_document" parent="Respondent" name="fk_ru_respondent_id_ru_respondent_supporting_document_respondent_id" parentColumn="id" childColumn="respondent_id"/>
+   <EntityRelation displayColumns="" child="Respondent_supporting_document" parent="supporting_document" name="fk_ru_supporting_document_id_ru_respondent_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
+   <EntityRelation displayColumns="name,code" child="Respondent" parent="check_gender" name="fk_ru_check_gender_id_ru_respondent_gender" parentColumn="id" childColumn="gender"/>
+   <EntityRelation displayColumns="name,code" child="Respondent" parent="check_marital_status" name="fk_ru_check_marital_status_id_ru_respondent_marital_status" parentColumn="id" childColumn="marital_status"/>
+   <EntityRelation displayColumns="name,code" child="Respondent" parent="admin_spatial_unit_set" name="fk_admin_spatial_unit_set_id_ru_respondent_residence_area" parentColumn="id" childColumn="residence_area"/>
+   <EntityRelation displayColumns="name,code" child="Respondent" parent="check_respondent_role" name="fk_ru_check_respondent_role_id_ru_respondent_role" parentColumn="id" childColumn="role"/>
+   <EntityRelation displayColumns="name,code" child="Witness_supporting_document" parent="check_witness_document_type" name="fk_ru_check_witness_document_type_id_ru_witness_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
+   <EntityRelation displayColumns="" child="Witness_supporting_document" parent="Witness" name="fk_ru_witness_id_ru_witness_supporting_document_witness_id" parentColumn="id" childColumn="witness_id"/>
+   <EntityRelation displayColumns="" child="Witness_supporting_document" parent="supporting_document" name="fk_ru_supporting_document_id_ru_witness_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
+   <EntityRelation displayColumns="name,code" child="Witness" parent="check_gender" name="fk_ru_check_gender_id_ru_witness_gender" parentColumn="id" childColumn="gender"/>
+   <EntityRelation displayColumns="name,code" child="Witness" parent="admin_spatial_unit_set" name="fk_admin_spatial_unit_set_id_ru_witness_residence_area" parentColumn="id" childColumn="residence_area"/>
+   <EntityRelation displayColumns="name,code" child="Witness" parent="check_witness_relationship" name="fk_ru_check_witness_relationship_id_ru_witness_relationship" parentColumn="id" childColumn="relationship"/>
+   <EntityRelation displayColumns="national_id" child="Impact" parent="Farmer" name="fk_ru_farmer_id_ru_impact_farmer" parentColumn="id" childColumn="farmer"/>
+   <EntityRelation displayColumns="" child="socio_economic_impact" parent="check_socio_economic_impact" name="fk_ru_check_socio_economic_impact_id_ru_socio_economic_impact_ru_check_socio_economic_impact_id" parentColumn="id" childColumn="ru_check_socio_economic_impact_id"/>
+   <EntityRelation displayColumns="" child="socio_economic_impact" parent="Impact" name="fk_ru_impact_id_ru_socio_economic_impact_ru_impact_id" parentColumn="id" childColumn="ru_impact_id"/>
+   <EntityRelation displayColumns="national_id" child="Priority" parent="Farmer" name="fk_ru_farmer_id_ru_priority_farmer" parentColumn="id" childColumn="farmer"/>
+   <EntityRelation displayColumns="name,code" child="Priority" parent="check_input_service" name="fk_ru_check_input_service_id_ru_priority_input_service" parentColumn="id" childColumn="input_service"/>
+   <EntityRelation displayColumns="name,code" child="Priority" parent="check_rank" name="fk_ru_check_rank_id_ru_priority_rank" parentColumn="id" childColumn="rank"/>
+   <EntityRelation displayColumns="national_id" child="Survey" parent="Enumerator" name="fk_ru_enumerator_id_ru_survey_enumerator" parentColumn="id" childColumn="enumerator"/>
+   <EntityRelation displayColumns="national_id" child="Survey" parent="Respondent" name="fk_ru_respondent_id_ru_survey_respondent" parentColumn="id" childColumn="respondent"/>
+   <EntityRelation displayColumns="national_id" child="Survey" parent="Respondent" name="fk_ru_respondent_id_ru_survey_witness" parentColumn="id" childColumn="witness"/>
+   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Farmer" name="fk_ru_farmer_id_ru_social_tenure_relationship_party_id" parentColumn="id" childColumn="party_id"/>
+   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Garden" name="fk_ru_garden_id_ru_social_tenure_relationship_spatial_unit_id" parentColumn="id" childColumn="spatial_unit_id"/>
+  </Relations>
+  <SocialTenure layerDisplay="ru_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Garden" supportsMultipleParties="True" party="Farmer"/>
  </Profile>
 </Configuration>
