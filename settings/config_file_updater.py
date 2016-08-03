@@ -106,6 +106,7 @@ class ConfigurationFileUpdater(object):
         self.exclusions = ('supporting_document', 'social_tenure_relationship',
                            'str_relations')
         self.parent = None
+        self.upgrade = False
 
     def _check_config_folder_exists(self):
         """
@@ -180,7 +181,7 @@ class ConfigurationFileUpdater(object):
     def _rename_old_config_file(self, old_config_file, path):
         old_file_wt_ext = "stdmConfig.xml".rstrip(".xml")
         dt = str(datetime.datetime.now())
-        timestamp = time.strftime('%H%M%Y%m%d')
+        timestamp = time.strftime('%Y_%m_%d_%H_%M')
         new_file = os.path.join(path, "{0}_{1}.xml".format(old_file_wt_ext,
                                                       timestamp))
         os.rename(old_config_file, new_file)
@@ -249,6 +250,19 @@ class ConfigurationFileUpdater(object):
                     except KeyError:
                         column_dict["col_type"] = xml_file_col_type
                     if len(unicode(column_node.attribute('lookup'))) != 0:
+                        lookup_no_list = []
+                        lookup_val = unicode(
+                            column_node.attribute('lookup'))
+
+                        # Check to add lookup into value list if it only
+                        # exists as a column and not as a lookup
+                        for k, v in self.lookup_dict.items():
+                            if lookup_val == k:
+                                lookup_no_list.append(k)
+                        if len(lookup_no_list) < 1:
+                            self.lookup_dict[lookup_val] = {"G": "General"}
+                            self.lookup_colum_name_values[lookup_val.lstrip(
+                                "check_")] = OrderedDict([(u'General', 1)])
                         column_dict["lookup"] = unicode(
                             column_node.attribute('lookup'))
                         column_dict["col_type"] = COLUMN_TYPE_DICT['lookup']
@@ -330,6 +344,14 @@ class ConfigurationFileUpdater(object):
     def _set_table_attributes(self, element):
 
         for i in range(element.count()):
+            profile_child_node = element.item(i).toElement()
+
+            if profile_child_node.tagName() == "lookup":
+                lookup_name = unicode(profile_child_node.attribute('name'))
+                lookup_nodes = profile_child_node.childNodes()
+                self._set_lookup_data(lookup_name, lookup_nodes)
+
+        for i in range(element.count()):
             self.table_list = []
             profile_child_node = element.item(i).toElement()
 
@@ -344,11 +366,6 @@ class ConfigurationFileUpdater(object):
                 columns_nodes = profile_child_node.childNodes()
                 self._set_table_columns(table_name, columns_nodes)
                 self.entities.append(table_name)
-
-            if profile_child_node.tagName() == "lookup":
-                lookup_name = unicode(profile_child_node.attribute('name'))
-                lookup_nodes = profile_child_node.childNodes()
-                self._set_lookup_data(lookup_name, lookup_nodes)
 
         # Adding new lookups for documents and participating strs
         for k, v in self.relations_dict.iteritems():
@@ -572,6 +589,7 @@ class ConfigurationFileUpdater(object):
                             relation_values)
 
                         for relation in relation_values:
+                            ###################################################
                             entity_relation = self.doc_old.createElement(
                                     "EntityRelation")
                             entity_relation.setAttribute("parent", relation[0])
@@ -602,6 +620,7 @@ class ConfigurationFileUpdater(object):
                                                          relation[1])
                             relationship.appendChild(entity_relation)
 
+                            ##################################################
                             entity_relation = self.doc_old.createElement(
                                     "EntityRelation")
                             entity_relation.setAttribute("parent", "check_" +
@@ -622,24 +641,38 @@ class ConfigurationFileUpdater(object):
                                     "childColumn", "document_type")
                             relationship.appendChild(entity_relation)
 
+                            ##################################################
                             entity_relation = self.doc_old.createElement(
                                     "EntityRelation")
                             entity_relation.setAttribute("parent", relation[0])
                             entity_relation.setAttribute("child", relation[0] +
                                         "_supporting_document")
-                            entity_relation.setAttribute("childColumn",
-                                                             relation[2])
-                            entity_relation.setAttribute("name", "fk_" + pref +
+                            for k, v in sp_party_dict.iteritems():
+                                if k == "spatial_unit_table" and v == \
+                                        relation[0]:
+                                    entity_relation.setAttribute("childColumn",
+                                                             "spatial_unit_id")
+                                    entity_relation.setAttribute("name", "fk_" + pref +
                                         "_check_" + relation[0] + "_"
                                         + relation[1] + "_" + pref +
                                         "_" + relation[0] +
-                                        "_supporting_document_" + relation[2])
+                                        "_supporting_document_" + "spatial_unit_id")
+                                if k == "party_table" and v == \
+                                        relation[0]:
+                                    entity_relation.setAttribute("childColumn",
+                                                             "party_id")
+                                    entity_relation.setAttribute("name", "fk_" + pref +
+                                        "_check_" + relation[0] + "_"
+                                        + relation[1] + "_" + pref +
+                                        "_" + relation[0] +
+                                        "_supporting_document_" + "party_id")
                             entity_relation.setAttribute('displayColumns',
                                                              relation[3])
                             entity_relation.setAttribute(
                                     "parentColumn", "id")
                             relationship.appendChild(entity_relation)
 
+                            ##################################################
                             entity_relation = self.doc_old.createElement(
                                     "EntityRelation")
                             entity_relation.setAttribute(
@@ -842,9 +875,16 @@ class ConfigurationFileUpdater(object):
 
                 if QMessageBox.information(None, "Update STDM Configuration",
                                         "Do you want to backup your "
-                                        "configuration file?",
+                                        "configuration file?\n\n"
+                                        "If you click No, your configuration "
+                                        "and data will no longer be accessible "
+                                        "to STDM.\n"
+                                        "If you click Yes, you will be able to "
+                                        "access your old configuration with "
+                                        "the data.",
                                             QMessageBox.Yes |
                                         QMessageBox.No) == QMessageBox.Yes:
+                    self.upgrade = True
                     self.old_config_file = True
                     doc, root = self._get_doc_element(os.path.join(
                         self.file_handler.localPath(), "stdmConfig.xml"))
@@ -858,7 +898,7 @@ class ConfigurationFileUpdater(object):
 
                     # Create configuration node and version
                     self._populate_config_from_old_config()
-                    return True
+                    return self.upgrade
 
                 else:
                     old_config_file = os.path.join(
@@ -866,20 +906,20 @@ class ConfigurationFileUpdater(object):
                     path = self.file_handler.localPath()
                     self._rename_old_config_file(old_config_file, path)
                     self._copy_config_file_from_template()
-                    return True
+                    return self.upgrade
 
             else:
                 # Check of new config format exists
                 if self._check_config_file_exists("configuration.stc"):
-                    return True
+                    return self.upgrade
                 else:
                     # if new config format doesn't exist copy from template
                     self._copy_config_file_from_template()
-                    return True
+                    return self.upgrade
         else:
             self._create_config_folder()
             self._copy_config_file_from_template()
-        return True
+            return self.upgrade
 
     def check_version(self):
         return self._check_config_version()
@@ -1027,7 +1067,7 @@ class ConfigurationFileUpdater(object):
                                            self.iface.messageBar().INFO)
 
             for social_tenure_entity in values:
-                i = 0
+                progress_i = 0
                 social_tenure_table = self.config_profiles[0] + "_" + \
                                         social_tenure_entity[0]
 
@@ -1062,23 +1102,13 @@ class ConfigurationFileUpdater(object):
                         for check_up, lookup_data in \
                                 self.lookup_colum_name_values.iteritems():
                             if check_up in columns:
-                                if check_up == "type":
-                                    lookup_col_index = columns.index(check_up)
-                                    check_up = "tenure_{0}".format(check_up)
-                                    num_lookups = len(lookup_data)
-                                    values = self._match_lookup(values,
-                                                                lookup_data,
-                                                                lookup_col_index,
-                                                                num_lookups,
-                                                                check_up)
-                                else:
-                                    lookup_col_index = columns.index(check_up)
-                                    num_lookups = len(lookup_data)
-                                    values = self._match_lookup(values,
-                                                                lookup_data,
-                                                                lookup_col_index,
-                                                                num_lookups,
-                                                                check_up)
+                                lookup_col_index = columns.index(check_up)
+                                num_lookups = len(lookup_data)
+                                values = self._match_lookup(values,
+                                                            lookup_data,
+                                                            lookup_col_index,
+                                                            num_lookups,
+                                                            check_up)
 
                         if len(new_keys) is not original_key_len:
                             for value in values:
@@ -1117,6 +1147,6 @@ class ConfigurationFileUpdater(object):
                     pass
 
                 time.sleep(1)
-                progress.setValue(i + 1)
-                i += 1
+                progress.setValue(progress_i + 1)
+                progress_i += 1
             self.iface.messageBar().clearWidgets()
