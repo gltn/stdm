@@ -47,28 +47,29 @@ COLUMN_PROPERTY_DICT = {'SERIAL': {"unique": "False", "tip": "",
                                     "minimum": "0", "maximum": "30",
                                     "index": "False", "mandatory": "False"},
                         'INT': {"unique": "False", "tip": "",
-                                    "minimum": "-9223372036854775806",
-                                    "maximum":
-                                    "9223372036854775807",
-                                    "index": "False", "mandatory": "False"},
+                                "minimum": "-9223372036854775806",
+                                "maximum": "9223372036854775807",
+                                "index": "False", "mandatory": "False"},
                         'DATE':   {"unique": "False", "tip": "",
-                                    "minimum": "0", "maximum": "30",
-                                    "index": "False", "mandatory": "False"},
+                                   "minimum": "0", "maximum": "30",
+                                   "index": "False", "mandatory": "False"},
                         'LOOKUP': {"unique": "False", "tip": "",
-                                    "minimum": "0", "maximum": "30",
-                                    "index": "False", "mandatory": "False"},
+                                   "minimum": "0", "maximum": "30",
+                                   "index": "False", "mandatory": "False"},
                         'DOUBLE': {"unique": "False", "tip": "",
-                                    "minimum": "0", "maximum": "0",
-                                    "index": "False", "mandatory": "False"},
+                                   "minimum": "0", "maximum": "0",
+                                   "index": "False", "mandatory": "False"},
                         'GEOMETRY': {"unique": "False", "tip": "",
-                                    "minimum": "0", "maximum":"92233720368547",
-                                    "index": "False", "mandatory": "False"},
+                                     "minimum": "0",
+                                     "maximum": "92233720368547",
+                                     "index": "False", "mandatory": "False"},
                         'DEFAULT': {"unique": "False", "tip": "",
                                     "minimum": "0", "maximum":"0",
                                     "index": "False", "mandatory": "False"},
                         'FOREIGN_KEY': {"unique": "False", "tip": "",
-                                    "minimum": "0", "maximum":"2147483647",
-                                    "index": "False", "mandatory": "False"},
+                                        "minimum": "0", "maximum":"2147483647",
+                                        "index": "False", "mandatory":
+                                            "False"},
                         }
 GEOMETRY_TYPES = {'LINESTRING': '1', 'POINT': '0', 'POLYGON': '2'}
 
@@ -138,6 +139,11 @@ class ConfigurationFileUpdater(object):
             return False
 
     def _get_doc_element(self, path):
+        """
+        Reads provided config file
+        :returns QDomDocument, QDomDocument.documentElement()
+        :rtype tuple
+        """
         config_file = os.path.join(self.file_handler.localPath(), path)
         config_file = QFile(config_file)
         if not config_file.open(QIODevice.ReadOnly):
@@ -152,9 +158,14 @@ class ConfigurationFileUpdater(object):
 
         doc_element = doc.documentElement()
 
-        return (doc, doc_element)
+        return doc, doc_element
 
     def _check_config_version(self):
+        """
+        Checks configuration version
+        :returns True or False
+        :rtype boolean
+        """
         doc, doc_element = self._get_doc_element("configuration.stc")
 
         config_version = doc_element.attribute('version')
@@ -173,25 +184,39 @@ class ConfigurationFileUpdater(object):
             return False
 
     def _copy_config_file_from_template(self):
-
+        """
+        Copies configuration from template
+        """
         shutil.copy(os.path.join(self.file_handler.defaultConfigPath(),
                                  "configuration.stc"),
                     self.file_handler.localPath())
 
     def _rename_old_config_file(self, old_config_file, path):
+        """
+        Renames old configuration file
+        """
         old_file_wt_ext = "stdmConfig.xml".rstrip(".xml")
         dt = str(datetime.datetime.now())
         timestamp = time.strftime('%Y_%m_%d_%H_%M')
         new_file = os.path.join(path, "{0}_{1}.xml".format(old_file_wt_ext,
-                                                      timestamp))
+                                                           timestamp))
         os.rename(old_config_file, new_file)
 
     def _remove_old_config_file(self, config_file):
+        """
+        Delete config file
+        :param config_file:
+        """
         os.remove(os.path.join(self.file_handler.localPath(),
                                config_file))
 
     def _set_lookup_data(self, lookup_name, element):
 
+        """
+        Set look up information and data into dictionaries
+        :param lookup_name:
+        :param element:
+        """
         lookup_dict = OrderedDict()
         # Used for import data conversion
         lookup_names = OrderedDict()
@@ -212,19 +237,25 @@ class ConfigurationFileUpdater(object):
                     lookup_names[lookup] = count
                     count += 1
 
+        # Renames check lookup so that it conforms to new lookup type
         self.lookup_dict[lookup_name] = lookup_dict
         if lookup_name == "check_social_tenure_type":
             self.lookup_colum_name_values["tenure_type"] = lookup_names
         else:
-            self.lookup_colum_name_values[lookup_name.lstrip("check_")] = \
-            lookup_names
+            self.lookup_colum_name_values[
+                lookup_name.lstrip("check_")] = lookup_names
 
     def _set_table_columns(self, table_name, element):
+        """
+        Sets table information to dictionary
+        :param table_name:
+        :param element:
+        """
         relations_list = []
         # relation_dict = {}
 
         # Index to access table in self.table_list List
-        table_index = 0
+        # table_index = 0
 
         for i in range(element.count()):
             columns_node = element.item(i).toElement()
@@ -298,10 +329,6 @@ class ConfigurationFileUpdater(object):
                         # Adding column property for table
                         if table_name not in self.exclusions:
                             list_loc = r + nodes * -1
-                            relation_table_name = unicode(
-                                relation_node.attribute('table'))
-                            relation_table_column = unicode(
-                                relation_node.attribute('fk'))
                             self.table_list[list_loc]["parent"] = \
                                 parent
                             self.table_list[list_loc]["col_type"] = \
@@ -315,6 +342,7 @@ class ConfigurationFileUpdater(object):
                     self.relations_dict[table_name] = relations_list
                     # self.relations_dict[table_name] = relation_dict\
 
+            # Extracts geometryz node to dictionary
             if columns_node.tagName() == "geometryz":
                 geometry_nodes = columns_node.childNodes()
 
@@ -333,16 +361,19 @@ class ConfigurationFileUpdater(object):
                     geom_dict["srid"] = unicode(
                                             geometry_node.attribute('srid'))
                     geom_dict["type"] = GEOMETRY_TYPES[unicode(
-                                            geometry_node.attribute('type'))]
+                        geometry_node.attribute('type'))]
                     column_dict["col_type"] = geom_dict
 
                     self.table_list.append(column_dict)
 
                 self.table_dict[table_name] = self.table_list
 
-
     def _set_table_attributes(self, element):
 
+        """
+        Set table attributes
+        :param element:
+        """
         for i in range(element.count()):
             profile_child_node = element.item(i).toElement()
 
@@ -380,6 +411,7 @@ class ConfigurationFileUpdater(object):
     def _set_version_profile(self, element):
         """
         Internal function to load version and profile to dictionary
+        :param element:
         """
         for i in range(element.count()):
             # Reset values for different profiles
@@ -404,6 +436,11 @@ class ConfigurationFileUpdater(object):
 
     def _create_config_file(self, config_file_name):
 
+        """
+        Method to create configuration file
+        :param config_file_name:
+        :return:
+        """
         self.config_file = QFile(os.path.join(self.file_handler.localPath(),
                                  config_file_name))
 
@@ -416,6 +453,11 @@ class ConfigurationFileUpdater(object):
         return
 
     def _set_sp_unit_part_tables(self, relation_values):
+        """
+        Method determines which relation is either spatial unit type or party
+        :param relation_values:
+        :return: OrderedDict
+        """
         sp_party_dict = OrderedDict()
         new_relation = []
         if relation_values:
@@ -432,6 +474,15 @@ class ConfigurationFileUpdater(object):
                                                 profile_element, values):
 
         # Entity relation lookup dict
+        """
+        Method that create new entity column and valuelist from extracted
+        values from old configration file
+        :param pref:
+        :param profile:
+        :param profile_element:
+        :param values:
+        :return: QDomDocument Element
+        """
         entity_relation_dict = {}
 
         for key, value in values.iteritems():
@@ -518,8 +569,8 @@ class ConfigurationFileUpdater(object):
                                     else:
                                         column.setAttribute("TYPE_INFO", col_v)
                                         if COLUMN_PROPERTY_DICT[col_v]:
-                                            for k, v in COLUMN_PROPERTY_DICT[col_v].\
-                                                    iteritems():
+                                            for k, v in COLUMN_PROPERTY_DICT[
+                                                    col_v].iteritems():
                                                 column.setAttribute(k, v)
                                         else:
                                             for k, v in COLUMN_PROPERTY_DICT[
@@ -535,9 +586,8 @@ class ConfigurationFileUpdater(object):
                                             self.table_col_name))
                                     relation.setAttribute("name", attribute)
                                     column.appendChild(relation)
-                                    entity_relation_dict[attribute] = [col_v,
-                                                                   entity_key,
-                                                                   unicode(
+                                    entity_relation_dict[attribute] = [
+                                        col_v, entity_key, unicode(
                                                     self.table_col_name)]
                                 if col_k == 'parent':
                                     self.parent = col_v
@@ -545,12 +595,11 @@ class ConfigurationFileUpdater(object):
                                 if col_v == "FOREIGN_KEY":
                                     relation = self.doc_old.createElement(
                                         "Relation")
-                                    relation.setAttribute("name",
-                                                          "fk_{0}_{1}_id_{2}_"
-                                                          "{3}_{4}".format(pref,
-                                                                           self.parent,
-                                                                           pref, entity_key,
-                                                                           self.table_col_name))
+                                    relation.setAttribute(
+                                        "name", "fk_{0}_{1}_id_{2}_ {3}_{"
+                                        "4}".format(pref, self.parent, pref,
+                                                    entity_key,
+                                                    self.table_col_name))
                                     column.appendChild(relation)
                             columns.appendChild(column)
                         entities.appendChild(columns)
@@ -566,20 +615,20 @@ class ConfigurationFileUpdater(object):
                         for relation in relation_values:
                             entity_relation = self.doc_old.createElement(
                                     "EntityRelation")
-                            entity_relation.setAttribute("parent",
-                                                             relation[0])
-                            entity_relation.setAttribute("childColumn",
-                                                             relation[2])
+                            entity_relation.setAttribute(
+                                "parent", relation[0])
+                            entity_relation.setAttribute(
+                                "childColumn", relation[2])
                             entity_relation.setAttribute(
                                 "name", "fk_{0}_{1}_{2}_{3}_{4}_{5}".format(
                                     pref, relation[0], relation[1], pref,
                                     relation_key, relation[2]))
-                            entity_relation.setAttribute("displayColumn",
-                                                             relation[3])
-                            entity_relation.setAttribute("child",
-                                                relation_key)
-                            entity_relation.setAttribute("parentColumn",
-                                                         relation[1])
+                            entity_relation.setAttribute(
+                                "displayColumn", relation[3])
+                            entity_relation.setAttribute(
+                                "child", relation_key)
+                            entity_relation.setAttribute(
+                                "parentColumn", relation[1])
 
                             relationship.appendChild(entity_relation)
 
@@ -596,47 +645,49 @@ class ConfigurationFileUpdater(object):
                             for k, v in sp_party_dict.iteritems():
                                 if k == "spatial_unit_table" and v == \
                                         relation[0]:
-                                    entity_relation.setAttribute("childColumn",
-                                                         "spatial_unit_id")
+                                    entity_relation.setAttribute(
+                                        "childColumn", "spatial_unit_id")
                                     entity_relation.setAttribute(
                                         "name", "fk_{0}_{1}_{2}_{3}_{4}_{"
                                         "5}".format(pref, relation[0],
-                                        relation[1], pref, relation_key,
-                                        "spatial_unit_id"))
+                                                    relation[1], pref,
+                                                    relation_key,
+                                                    "spatial_unit_id"))
                                 if k == "party_table" and v == \
                                         relation[0]:
-                                    entity_relation.setAttribute("childColumn",
-                                                         "party_id")
+                                    entity_relation.setAttribute(
+                                        "childColumn", "party_id")
                                     entity_relation.setAttribute(
                                         "name", "fk_{0}_{1}_{2}_{3}_{4}_{"
                                         "5}".format(pref, relation[0],
-                                        relation[1], pref, relation_key,
-                                        "party_id"))
-                            entity_relation.setAttribute('displayColumns',
-                                                             relation[3])
-                            entity_relation.setAttribute("child",
-                                                relation_key)
-                            entity_relation.setAttribute("parentColumn",
-                                                         relation[1])
+                                                    relation[1], pref,
+                                                    relation_key, "party_id"))
+                            entity_relation.setAttribute(
+                                'displayColumns', relation[3])
+                            entity_relation.setAttribute(
+                                "child", relation_key)
+                            entity_relation.setAttribute(
+                                "parentColumn", relation[1])
                             relationship.appendChild(entity_relation)
 
                             ##################################################
                             entity_relation = self.doc_old.createElement(
                                     "EntityRelation")
-                            entity_relation.setAttribute("parent", "check_" +
-                                                  relation[0] +
-                                                         "_document_type")
-                            entity_relation.setAttribute("child", relation[0] +
-                                        "_supporting_document")
+                            entity_relation.setAttribute(
+                                "parent", "check_" + relation[0] +
+                                          "_document_type")
+                            entity_relation.setAttribute(
+                                "child", relation[0] + "_supporting_document")
                             entity_relation.setAttribute(
                                     "name", "fk_" + pref + "_check_" +
                                             relation[0] +
                                     "_document_type_id_" + pref + "_" +
                                             relation[0]
                                     + "_supporting_document_document_type")
-                            entity_relation.setAttribute('displayColumns',
-                                                             relation[3])
-                            entity_relation.setAttribute("parentColumn", "id")
+                            entity_relation.setAttribute(
+                                'displayColumns', relation[3])
+                            entity_relation.setAttribute(
+                                "parentColumn", "id")
                             entity_relation.setAttribute(
                                     "childColumn", "document_type")
                             relationship.appendChild(entity_relation)
@@ -644,30 +695,33 @@ class ConfigurationFileUpdater(object):
                             ##################################################
                             entity_relation = self.doc_old.createElement(
                                     "EntityRelation")
-                            entity_relation.setAttribute("parent", relation[0])
-                            entity_relation.setAttribute("child", relation[0] +
-                                        "_supporting_document")
+                            entity_relation.setAttribute(
+                                "parent", relation[0])
+                            entity_relation.setAttribute(
+                                "child", relation[0] + "_supporting_document")
                             for k, v in sp_party_dict.iteritems():
                                 if k == "spatial_unit_table" and v == \
                                         relation[0]:
-                                    entity_relation.setAttribute("childColumn",
-                                                             "spatial_unit_id")
-                                    entity_relation.setAttribute("name", "fk_" + pref +
-                                        "_check_" + relation[0] + "_"
-                                        + relation[1] + "_" + pref +
+                                    entity_relation.setAttribute(
+                                        "childColumn", "spatial_unit_id")
+                                    entity_relation.setAttribute(
+                                        "name", "fk_" + pref +
+                                                relation[0] + "_" +
+                                                relation[1] + "_" + pref +
                                         "_" + relation[0] +
-                                        "_supporting_document_" + "spatial_unit_id")
+                                        "_supporting_document_" +
+                                                "spatial_unit_id")
                                 if k == "party_table" and v == \
                                         relation[0]:
-                                    entity_relation.setAttribute("childColumn",
-                                                             "party_id")
-                                    entity_relation.setAttribute("name", "fk_" + pref +
-                                        "_check_" + relation[0] + "_"
-                                        + relation[1] + "_" + pref +
-                                        "_" + relation[0] +
+                                    entity_relation.setAttribute(
+                                        "childColumn", "party_id")
+                                    entity_relation.setAttribute(
+                                        "name", "fk_" + pref + relation[0] +
+                                                "_" + relation[1] + "_" +
+                                                pref + "_" + relation[0] +
                                         "_supporting_document_" + "party_id")
-                            entity_relation.setAttribute('displayColumns',
-                                                             relation[3])
+                            entity_relation.setAttribute(
+                                'displayColumns', relation[3])
                             entity_relation.setAttribute(
                                     "parentColumn", "id")
                             relationship.appendChild(entity_relation)
@@ -677,94 +731,93 @@ class ConfigurationFileUpdater(object):
                                     "EntityRelation")
                             entity_relation.setAttribute(
                                         "parent",  "supporting_document")
-                            entity_relation.setAttribute( "child", relation[
-                                0] + "_supporting_document")
+                            entity_relation.setAttribute(
+                                "child", relation[0] + "_supporting_document")
                             entity_relation.setAttribute(
                                     "name", "fk_" + pref +
                                     "_supporting_document_id_" + pref +
                                     "_" + relation[0] +
                                     "_supporting_document_supporting_doc_id")
-                            entity_relation.setAttribute('displayColumns',
-                                                             relation[3])
-                            entity_relation.setAttribute("parentColumn", "id")
+                            entity_relation.setAttribute(
+                                'displayColumns', relation[3])
+                            entity_relation.setAttribute(
+                                "parentColumn", "id")
                             entity_relation.setAttribute(
                                     "childColumn", "supporting_doc_id")
                             relationship.appendChild(entity_relation)
 
                 # Default relations
                 entity_relation = self.doc_old.createElement("EntityRelation")
-                entity_relation.setAttribute("parent",
-                                                     "check_social_tenure_"
-                                                     "relationship_document_type")
-                entity_relation.setAttribute("child",
-                                                     "social_tenure_relationship_"
-                                                     "supporting_document")
-                entity_relation.setAttribute("parentColumn", "id")
-                entity_relation.setAttribute("childColumn",
-                                                     "document_type")
-                entity_relation.setAttribute("name",
-                                                 "fk_" + pref +
-                                                 "_check_social_tenure_"
-                                                 "relationship_document_type_id_"
-                                                 + pref + "_social_tenure_"
-                                                "relationship_supporting_document_"
-                                                "document_type")
-                entity_relation.setAttribute("displayColumns", "")
+                entity_relation.setAttribute(
+                    "parent", "check_social_tenure_relationship_document_type")
+                entity_relation.setAttribute(
+                    "child", "social_tenure_relationship_supporting_document")
+                entity_relation.setAttribute(
+                    "parentColumn", "id")
+                entity_relation.setAttribute(
+                    "childColumn", "document_type")
+                entity_relation.setAttribute(
+                    "name", "fk_" + pref + "_check_social_tenure_relationship_"
+                                           "document_type_id_" + pref +
+                            "_social_tenure_relationship_supporting_document_"
+                            "document_type")
+                entity_relation.setAttribute(
+                    "displayColumns", "")
 
                 relationship.appendChild(entity_relation)
 
                 entity_relation = self.doc_old.createElement("EntityRelation")
-                entity_relation.setAttribute("parent",
-                                                     "social_tenure_relationship")
-                entity_relation.setAttribute("child",
-                                                     "social_tenure_relationship_"
-                                                     "supporting_document")
-                entity_relation.setAttribute("parentColumn", "id")
-                entity_relation.setAttribute("childColumn",
-                                                     "social_tenure_relationship_"
-                                                     "id")
-                entity_relation.setAttribute("name",
-                                                     "fk_" + pref + "_social_"
-                                                    "tenure_relationship_id_"
-                                                     + pref +
-                                                     "_social_tenure_relationship_"
-                                                     "supporting_document_social_"
-                                                     "tenure_relationship_id")
-                entity_relation.setAttribute("displayColumns", "")
+                entity_relation.setAttribute(
+                    "parent", "social_tenure_relationship")
+                entity_relation.setAttribute(
+                    "child", "social_tenure_relationship_supporting_document")
+                entity_relation.setAttribute(
+                    "parentColumn", "id")
+                entity_relation.setAttribute(
+                    "childColumn", "social_tenure_relationship_id")
+                entity_relation.setAttribute(
+                    "name", "fk_" + pref + "_social_tenure_relationship_id_" +
+                            pref +
+                            "_social_tenure_relationship_"
+                            "supporting_document_social_tenure_relationship_id"
+                            "")
+                entity_relation.setAttribute(
+                    "displayColumns", "")
 
                 relationship.appendChild(entity_relation)
 
                 entity_relation = self.doc_old.createElement("EntityRelation")
-                entity_relation.setAttribute("parent",
-                                                     "supporting_document")
-                entity_relation.setAttribute("child",
-                                                     "social_tenure_relationship_"
-                                                     "supporting_document")
-                entity_relation.setAttribute("parentColumn", "id")
-                entity_relation.setAttribute("childColumn", pref +
-                                                     "_supporting_doc_id")
-                entity_relation.setAttribute("name", "fk_" + pref +
-                                                    "_supporting_document_id_" +
-                                                    pref + "_social_tenure_"
-                                                    "relationship_supporting_"
-                                                    "document_" + pref +
-                                                     "_supporting_doc_id")
-                entity_relation.setAttribute("displayColumns", "")
+                entity_relation.setAttribute(
+                    "parent", "supporting_document")
+                entity_relation.setAttribute(
+                    "child", "social_tenure_relationship_supporting_document")
+                entity_relation.setAttribute(
+                    "parentColumn", "id")
+                entity_relation.setAttribute(
+                    "childColumn", pref + "_supporting_doc_id")
+                entity_relation.setAttribute(
+                    "name", "fk_" + pref + "_supporting_document_id_" + pref +
+                            "_social_tenure_relationship_supporting_"
+                            "document_" + pref + "_supporting_doc_id")
+                entity_relation.setAttribute(
+                    "displayColumns", "")
 
                 relationship.appendChild(entity_relation)
 
                 entity_relation = self.doc_old.createElement("EntityRelation")
-                entity_relation.setAttribute("parent",
-                                                     "check_tenure_type")
-                entity_relation.setAttribute("child",
-                                                     "social_tenure_relationship")
-                entity_relation.setAttribute("parentColumn", "id")
-                entity_relation.setAttribute("childColumn", "tenure_type")
-                entity_relation.setAttribute("name", "fk_" + pref +
-                                                     "_check_tenure_type_id_" +
-                                                     pref + "_social_tenure_"
-                                                     "relationship_tenure_type")
-                entity_relation.setAttribute("displayColumns", "")
+                entity_relation.setAttribute(
+                    "parent", "check_tenure_type")
+                entity_relation.setAttribute(
+                    "child", "social_tenure_relationship")
+                entity_relation.setAttribute(
+                    "parentColumn", "id")
+                entity_relation.setAttribute(
+                    "childColumn", "tenure_type")
+                entity_relation.setAttribute(
+                    "name", "fk_" + pref + "_check_tenure_type_id_" + pref +
+                            "_social_tenure_relationship_tenure_type")
+                entity_relation.setAttribute(
+                    "displayColumns", "")
 
                 relationship.appendChild(entity_relation)
 
@@ -789,8 +842,6 @@ class ConfigurationFileUpdater(object):
                     "layerDisplay", profile + "_vw_social_tenure_relationship")
                 social_tenure.setAttribute(
                     "tenureTypeList", "check_tenure_type")
-                # social_tenure.setAttribute(
-                #     "spatialUnit", self.spatial_unit_table[0])
 
                 for relation_key, relation_values in value.iteritems():
 
@@ -800,17 +851,24 @@ class ConfigurationFileUpdater(object):
                         social_tenure.setAttribute("spatialUnit",
                                                    sp_party_dict[
                                                        'spatial_unit_table'])
-                        social_tenure.setAttribute( "party", sp_party_dict[
+                        social_tenure.setAttribute("party", sp_party_dict[
                                                        'party_table'])
 
                 profile_element.appendChild(social_tenure)
 
         return profile_element
 
+    def _create_profile_value_lists_entity_nodes(self,
+                                                 config_profile_values_dict,
+                                                 config):
 
-    def _create_profile_valuelists_entity_nodes(self, dict, config):
-
-        for config_profile, values in dict.iteritems():
+        """
+        Create QtXML nodes
+        :param config_profile_values_dict:
+        :param config:
+        :return: QDocument Element
+        """
+        for config_profile, values in config_profile_values_dict.iteritems():
 
             # Empty list to hold values to confirm if profile is empty
             empty_list = []
@@ -835,18 +893,23 @@ class ConfigurationFileUpdater(object):
                 profile_element.setAttribute("description", "")
                 profile_element.setAttribute("name", config_profile)
                 profile_element = self._create_entity_valuelist_relation_nodes(
-                conf_prefix, config_profile, profile_element, values)
+                                    conf_prefix, config_profile,
+                                    profile_element, values)
                 config.appendChild(profile_element)
 
         return config
 
     def _populate_config_from_old_config(self):
+        """
+        Read old configuration file and uses it content to populate new
+        config file
+        """
         configuration = self.doc_old.createElement("Configuration")
         configuration.setAttribute("version", self.version)
         self.doc_old.appendChild(configuration)
 
         # Create profile valuelists and entity nodes
-        config = self._create_profile_valuelists_entity_nodes(
+        config = self._create_profile_value_lists_entity_nodes(
                     self.entities_lookup_relations, configuration)
 
         # configuration.appendChild(config)
@@ -868,22 +931,23 @@ class ConfigurationFileUpdater(object):
 
     def load(self):
 
+        """
+        Entry code to class
+        :return:
+        """
         if self._check_config_folder_exists():
 
             # Check if old configuration file exists
             if self._check_config_file_exists("stdmConfig.xml"):
 
-                if QMessageBox.information(None, "Update STDM Configuration",
-                                        "Do you want to backup your "
-                                        "configuration file?\n\n"
-                                        "If you click No, your configuration "
-                                        "and data will no longer be accessible "
-                                        "to STDM.\n"
-                                        "If you click Yes, you will be able to "
-                                        "access your old configuration with "
-                                        "the data.",
-                                            QMessageBox.Yes |
-                                        QMessageBox.No) == QMessageBox.Yes:
+                if QMessageBox.information(
+                        None, "Update STDM Configuration",
+                        "Do you want to upgrade your configuration file?\n\n"
+                        "If you click No, your configuration and data will "
+                        "no longer be accessible to STDM.\n"
+                        "If you click Yes, you will be able to access your "
+                        "old configuration with the data.", QMessageBox.Yes
+                                | QMessageBox.No) == QMessageBox.Yes:
                     self.upgrade = True
                     self.old_config_file = True
                     doc, root = self._get_doc_element(os.path.join(
@@ -922,9 +986,16 @@ class ConfigurationFileUpdater(object):
             return self.upgrade
 
     def check_version(self):
+        """
+        Check version of configuration.stc
+        :return:
+        """
         return self._check_config_version()
 
     def update_config_file_version(self):
+        """
+        Updates the version of configuration.stc
+        """
         if self.old_config_file:
             self.version = unicode(self.config.VERSION)
             self._create_config_file("configuration.stc")
@@ -943,41 +1014,50 @@ class ConfigurationFileUpdater(object):
                     doc.clear()
 
     def _add_missing_lookup_config(self, lookup, missing_lookup):
+        """
+        Add missing value_list to configuration file
+        :param lookup:
+        :param missing_lookup:
+        """
         if self.old_config_file:
 
             doc, root = self._get_doc_element(os.path.join(
                 self.file_handler.localPath(), "configuration.stc"))
             child_nodes = root.childNodes()
-            for i in range(child_nodes.count()):
-                child_node = child_nodes.item(i).toElement()
+            for child_i in range(child_nodes.count()):
+                child_node = child_nodes.item(child_i).toElement()
 
                 if child_node.tagName() == "Profile":
                     profile_child_nodes = child_node.childNodes()
 
-                    for i in range(profile_child_nodes.count()):
-                        profile_nodes = profile_child_nodes.item(i).toElement()
+                    for profile_i in range(profile_child_nodes.count()):
+                        profile_nodes = profile_child_nodes.item(profile_i).\
+                            toElement()
                         if profile_nodes.tagName() == "ValueLists":
                             value_list_nodes = profile_nodes.childNodes()
 
-                            for i in range(value_list_nodes.count()):
+                            for value_list_i in range(
+                                    value_list_nodes.count()):
                                 value_list_node = value_list_nodes.item(
-                                    i).toElement()
+                                    value_list_i).toElement()
                                 if value_list_node.tagName() == "ValueList":
                                     lookup_name = unicode(
-                                        value_list_node.attribute(
-                                        'name'))
+                                        value_list_node.attribute('name'))
 
                                     if lookup_name == lookup:
                                         code_values_lists = []
                                         code_value_nodes = \
-                                                value_list_node.childNodes()
-                                        for i in range(code_value_nodes.count()):
+                                            value_list_node.childNodes()
+                                        for code_v_i in range(
+                                                code_value_nodes.count()):
                                             code_value_node = \
-                                                    code_value_nodes.item(i).toElement()
+                                                    code_value_nodes.item(
+                                                        code_v_i).toElement()
                                             code_value = unicode(
                                                 code_value_node.attribute(
-                                                'value'))
-                                            code_values_lists.append(code_value)
+                                                    'value'))
+                                            code_values_lists.append(
+                                                code_value)
 
                                         code_value = doc.createElement(
                                             "CodeValue")
@@ -996,7 +1076,8 @@ class ConfigurationFileUpdater(object):
                                         if missing_lookup not in \
                                                 code_values_lists:
 
-                                            value_list_node.appendChild(code_value)
+                                            value_list_node.appendChild(
+                                                code_value)
 
             self._create_config_file("configuration.stc")
             stream = QTextStream(self.config_file)
@@ -1008,6 +1089,15 @@ class ConfigurationFileUpdater(object):
                       num_lookups, check_up):
 
         # First run to elimiate existing lookups
+        """
+        Match look up values
+        :param values:
+        :param lookup_data:
+        :param lookup_col_index:
+        :param num_lookups:
+        :param check_up:
+        :return: list
+        """
         for value in values:
             for lookup_value, code in \
                     lookup_data.iteritems():
@@ -1041,19 +1131,24 @@ class ConfigurationFileUpdater(object):
 
                             # Add converted lookup integer to row
                             value[lookup_col_index] = num_lookups
-
-
         return values
 
     def _set_social_tenure_table(self):
+        """
+        Set social tenure relations tables
+        :return:
+        """
         for k, v in self.entities_lookup_relations.iteritems():
             for keys, values in v.iteritems():
                 if keys.endswith("relations") and values:
-                    for relation_key, values in values.iteritems():
+                    for relation_key, relation_values in values.iteritems():
                         if relation_key == "social_tenure_relationship":
-                            return keys, values
+                            return keys, relation_values
 
     def backup_data(self):
+        """
+        Method that backups data
+        """
         if self.old_config_file:
             keys, values = self._set_social_tenure_table()
             no_tables = len(values)
@@ -1061,15 +1156,15 @@ class ConfigurationFileUpdater(object):
                 "Importing data...")
             progress = QProgressBar()
             progress.setMaximum(no_tables)
-            progress.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
+            progress.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
             progress_message_bar.layout().addWidget(progress)
-            self.iface.messageBar().pushWidget(progress_message_bar,
-                                           self.iface.messageBar().INFO)
+            self.iface.messageBar(
+            ).pushWidget(progress_message_bar, self.iface.messageBar().INFO)
 
             for social_tenure_entity in values:
                 progress_i = 0
-                social_tenure_table = self.config_profiles[0] + "_" + \
-                                        social_tenure_entity[0]
+                social_tenure_table = \
+                    self.config_profiles[0] + "_" + social_tenure_entity[0]
 
                 if pg_table_exists(social_tenure_entity[0]):
 
@@ -1078,7 +1173,8 @@ class ConfigurationFileUpdater(object):
                     columns = data.keys()
 
                     # Remove geom columns of line, point and
-                    # polygon and replace with one column geom to fit new config
+                    # polygon and replace with one column geom to fit new
+                    # config
                     original_key_len = len(columns)
                     new_keys = []
                     for ky in data.keys():
@@ -1097,8 +1193,8 @@ class ConfigurationFileUpdater(object):
                         # avoid none geom tables
                         new_values = []
 
-                        # Converts Var Char lookup to foreign key and add to config
-                        # file if it dosen't exist
+                        # Converts Var Char lookup to foreign key and add to
+                        #  config file if it dosen't exist
                         for check_up, lookup_data in \
                                 self.lookup_colum_name_values.iteritems():
                             if check_up in columns:
@@ -1120,8 +1216,7 @@ class ConfigurationFileUpdater(object):
                                     if last is not None:
                                         new_last_v.append(last)
 
-                                l = tuple(list(first_v) + \
-                                           new_last_v)
+                                l = tuple(list(first_v) + new_last_v)
 
                                 new_values.append(l)
                             new_values = str(new_values).strip(
@@ -1131,15 +1226,13 @@ class ConfigurationFileUpdater(object):
                             new_values = str(new_values).replace("]]", ")")
                             new_values = str(new_values).replace("[", "(")
                             new_values = str(new_values).replace("]", ")")
-                            new_values = str(new_values).replace("None", "NULL")
+                            new_values = str(new_values).replace("None",
+                                                                 "NULL")
 
                         # Remove Unicode
                         values = new_values.replace("u\'", "\'")
-
                         column_keys = ",".join(new_keys)
-
                         import_data(social_tenure_table, column_keys, values)
-
                     else:
                         pass
 
