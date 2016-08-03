@@ -26,6 +26,7 @@ from PyQt4.QtCore import (
 
 from qgis.core import *
 
+from PyQt4.QtGui import QMessageBox
 from sqlalchemy.sql.expression import text
 from sqlalchemy.exc import SQLAlchemyError
 from geoalchemy2 import WKBElement
@@ -39,6 +40,8 @@ from stdm.utils.util import (
     getIndex,
     PLUGIN_DIR
 )
+
+from sqlalchemy.exc import IntegrityError
 
 _postGISTables = ["spatial_ref_sys", "supporting_document"]
 _postGISViews = ["geometry_columns","raster_columns","geography_columns",
@@ -182,6 +185,34 @@ def process_report_filter(tableName, columns, whereStr="", sortStmnt=""):
     t = text(sql)
     
     return _execute(t)
+
+def export_data(table_name):
+    sql = "SELECT * FROM {0}".format(table_name, )
+
+    t = text(sql)
+
+    return _execute(t)
+
+def import_data(table_name, columns_names, data, **kwargs):
+
+    sql = "INSERT INTO {0} ({1}) VALUES {2}".format(table_name,
+                                                    columns_names, data)
+    t = text(sql)
+    conn = STDMDb.instance().engine.connect()
+    trans = conn.begin()
+
+    try:
+        result = conn.execute(t, **kwargs)
+        trans.commit()
+        return result
+
+    except IntegrityError:
+        trans.rollback()
+        QMessageBox.warning(None, "Data Import", "Data has already been "
+                                                 "imported!")
+
+    conn.close()
+
 
 def table_column_names(tableName, spatialColumns=False, creation_order=False):
     """
