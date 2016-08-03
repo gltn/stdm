@@ -211,7 +211,6 @@ class ConfigurationFileUpdater(object):
                     lookup_names[lookup] = count
                     count += 1
 
-        # TODO remove this might rename the wrong column
         self.lookup_dict[lookup_name] = lookup_dict
         if lookup_name == "check_social_tenure_type":
             self.lookup_colum_name_values["tenure_type"] = lookup_names
@@ -399,6 +398,18 @@ class ConfigurationFileUpdater(object):
                                  self.config_file.errorString()))
         return
 
+    def _set_sp_unit_part_tables(self, relation_values):
+        sp_party_dict = OrderedDict()
+        new_relation = []
+        if relation_values:
+                new_relation = [relation_values[0][0], relation_values[1][0]]
+        if self.spatial_unit_table:
+            for sp_table in self.spatial_unit_table:
+                if sp_table in new_relation:
+                    sp_party_dict['spatial_unit_table'] = sp_table
+                    new_relation.remove(sp_table)
+                    sp_party_dict['party_table'] = new_relation[0]
+        return sp_party_dict
 
     def _create_entity_valuelist_relation_nodes(self, pref, profile,
                                                 profile_element, values):
@@ -557,23 +568,38 @@ class ConfigurationFileUpdater(object):
 
                     if relation_key == "social_tenure_relationship":
 
+                        sp_party_dict = self._set_sp_unit_part_tables(
+                            relation_values)
+
                         for relation in relation_values:
                             entity_relation = self.doc_old.createElement(
                                     "EntityRelation")
                             entity_relation.setAttribute("parent", relation[0])
-                            entity_relation.setAttribute("childColumn",
-                                                         relation[2])
-                            entity_relation.setAttribute(
-                                    "name", "fk_{0}_{1}_{2}_{3}_{4}_{"
-                                            "5}".format(
-                                    pref, relation[0], relation[1],
-                                    pref, relation_key, relation[2]))
-                            entity_relation.setAttribute('displayColumn',
+                            for k, v in sp_party_dict.iteritems():
+                                if k == "spatial_unit_table" and v == \
+                                        relation[0]:
+                                    entity_relation.setAttribute("childColumn",
+                                                         "spatial_unit_id")
+                                    entity_relation.setAttribute(
+                                        "name", "fk_{0}_{1}_{2}_{3}_{4}_{"
+                                        "5}".format(pref, relation[0],
+                                        relation[1], pref, relation_key,
+                                        "spatial_unit_id"))
+                                if k == "party_table" and v == \
+                                        relation[0]:
+                                    entity_relation.setAttribute("childColumn",
+                                                         "party_id")
+                                    entity_relation.setAttribute(
+                                        "name", "fk_{0}_{1}_{2}_{3}_{4}_{"
+                                        "5}".format(pref, relation[0],
+                                        relation[1], pref, relation_key,
+                                        "party_id"))
+                            entity_relation.setAttribute('displayColumns',
                                                              relation[3])
                             entity_relation.setAttribute("child",
                                                 relation_key)
                             entity_relation.setAttribute("parentColumn",
-                                                         relation[2])
+                                                         relation[1])
                             relationship.appendChild(entity_relation)
 
                             entity_relation = self.doc_old.createElement(
@@ -589,7 +615,7 @@ class ConfigurationFileUpdater(object):
                                     "_document_type_id_" + pref + "_" +
                                             relation[0]
                                     + "_supporting_document_document_type")
-                            entity_relation.setAttribute('displayColumn',
+                            entity_relation.setAttribute('displayColumns',
                                                              relation[3])
                             entity_relation.setAttribute("parentColumn", "id")
                             entity_relation.setAttribute(
@@ -608,7 +634,7 @@ class ConfigurationFileUpdater(object):
                                         + relation[1] + "_" + pref +
                                         "_" + relation[0] +
                                         "_supporting_document_" + relation[2])
-                            entity_relation.setAttribute('displayColumn',
+                            entity_relation.setAttribute('displayColumns',
                                                              relation[3])
                             entity_relation.setAttribute(
                                     "parentColumn", "id")
@@ -625,7 +651,7 @@ class ConfigurationFileUpdater(object):
                                     "_supporting_document_id_" + pref +
                                     "_" + relation[0] +
                                     "_supporting_document_supporting_doc_id")
-                            entity_relation.setAttribute('displayColumn',
+                            entity_relation.setAttribute('displayColumns',
                                                              relation[3])
                             entity_relation.setAttribute("parentColumn", "id")
                             entity_relation.setAttribute(
@@ -650,7 +676,7 @@ class ConfigurationFileUpdater(object):
                                                  + pref + "_social_tenure_"
                                                 "relationship_supporting_document_"
                                                 "document_type")
-                entity_relation.setAttribute("displayColumn", "")
+                entity_relation.setAttribute("displayColumns", "")
 
                 relationship.appendChild(entity_relation)
 
@@ -671,7 +697,7 @@ class ConfigurationFileUpdater(object):
                                                      "_social_tenure_relationship_"
                                                      "supporting_document_social_"
                                                      "tenure_relationship_id")
-                entity_relation.setAttribute("displayColumn", "")
+                entity_relation.setAttribute("displayColumns", "")
 
                 relationship.appendChild(entity_relation)
 
@@ -690,7 +716,7 @@ class ConfigurationFileUpdater(object):
                                                     "relationship_supporting_"
                                                     "document_" + pref +
                                                      "_supporting_doc_id")
-                entity_relation.setAttribute("displayColumn", "")
+                entity_relation.setAttribute("displayColumns", "")
 
                 relationship.appendChild(entity_relation)
 
@@ -705,7 +731,7 @@ class ConfigurationFileUpdater(object):
                                                      "_check_tenure_type_id_" +
                                                      pref + "_social_tenure_"
                                                      "relationship_tenure_type")
-                entity_relation.setAttribute("displayColumn", "")
+                entity_relation.setAttribute("displayColumns", "")
 
                 relationship.appendChild(entity_relation)
 
@@ -716,7 +742,7 @@ class ConfigurationFileUpdater(object):
                         entity_relation = self.doc_old.createElement(
                                 "EntityRelation")
                         entity_relation.setAttribute("parent", v[0])
-                        entity_relation.setAttribute("displayColumn", "")
+                        entity_relation.setAttribute("displayColumns", "")
                         entity_relation.setAttribute("child", v[1])
                         entity_relation.setAttribute("name", k)
                         entity_relation.setAttribute("parentColumn", "id")
@@ -736,20 +762,13 @@ class ConfigurationFileUpdater(object):
                 for relation_key, relation_values in value.iteritems():
 
                     if relation_key == "social_tenure_relationship":
-                        new_relation = []
-                        for relation in relation_values:
-                            if relation_values:
-                                new_relation = [relation_values[0][0],
-                                                relation_values[1][0]]
-                            if self.spatial_unit_table:
-                                for sp_table in self.spatial_unit_table:
-                                    if sp_table in new_relation:
-                                        social_tenure.setAttribute(
-                                                "spatialUnit", sp_table)
-
-                                    if sp_table is not relation[0]:
-                                        social_tenure.setAttribute(
-                                            "party", relation[0])
+                        sp_party_dict = self._set_sp_unit_part_tables(
+                            relation_values)
+                        social_tenure.setAttribute("spatialUnit",
+                                                   sp_party_dict[
+                                                       'spatial_unit_table'])
+                        social_tenure.setAttribute( "party", sp_party_dict[
+                                                       'party_table'])
 
                 profile_element.appendChild(social_tenure)
 
