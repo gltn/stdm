@@ -107,7 +107,7 @@ class FilePaths(object):
         """
         returns the path with base configuration file
         """
-        self.baseDir = self._file+"/template/"
+        self.baseDir = self._file+"/templates/"
         return self.baseDir
     
     def setUserConfigPath(self,path=None):
