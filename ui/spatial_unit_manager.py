@@ -506,7 +506,6 @@ class SpatialUnitManagerDockWidget(
 
                 if len(layer_objects) > 0:
                     for layer in layer_objects:
-                        # print layer.name()
                         layer_id = layer.id()
                         QgsMapLayerRegistry.\
                             instance().removeMapLayer(layer_id)
