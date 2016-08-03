@@ -592,7 +592,8 @@ class STDMQGISLoader(object):
                     return True
 
         else:
-            return False
+            result = self.load_configuration_to_serializer()
+            return result
 
 
     def loadModules(self):
