@@ -453,8 +453,9 @@ class STDMQGISLoader(object):
                 'Default Profile Error'
             )
             if len(profiles) == 1:
-                save_current_profile(profiles.keys()[0])
-                self.reload_plugin(profiles.keys()[0])
+                profile_name = profiles.keys()[0]
+                save_current_profile(profile_name)
+                self.reload_plugin(profile_name)
                 return
             if len(profiles) > 0:
                 solution = 'Do you want to set a profile now?'
