@@ -125,6 +125,7 @@ class Entity(QObject, TableItem):
         self.is_associative = False
         self.user_editable = True
         self.columns = OrderedDict()
+        self.updated_columns = OrderedDict()
 
         '''
         We will always create an ID column due to a bug in SQLAlchemy-migrate
@@ -146,16 +147,8 @@ class Entity(QObject, TableItem):
             self.supports_documents = True
 
         self.is_proxy = is_proxy
-        self.updated_columns = OrderedDict()
 
         LOGGER.debug('%s entity created.', self.name)
-
-    def show_message(self, message):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Warning)
-        msg.setWindowTitle("STDM")
-        msg.setText(message)
-        msg.exec_()  
 
     @property
     def supports_documents(self):
@@ -189,16 +182,6 @@ class Entity(QObject, TableItem):
         LOGGER.debug('%s column added to %s entity.', column.name, self.name)
 
         self.append_updated_column(column)
-
-    def edit_column(self, name, edited_column):
-        """
-        Edit an existing column.
-        :param name: Name of column to edit
-        :type name: str
-        :param edited_column: edited Column
-        :type edited_column: BaseColumn
-        """
-        self.columns[name] = edited_column
 
     def column(self, name):
         """
@@ -244,8 +227,8 @@ class Entity(QObject, TableItem):
         :param col: Column instance
         :type col: BaseColumn
         """
-        if self.action == DbItem.CREATE:
-            return
+        if col.name in self.updated_columns:
+            del self.updated_columns[col.name]
 
         self.updated_columns[col.name] = col
 

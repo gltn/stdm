@@ -64,6 +64,9 @@ def entity_updater(entity, engine, metadata):
         LOGGER.debug('Creating %s entity...', entity.name)
         create_entity(entity, table, engine)
 
+        #Clear remnants
+        _remove_dropped_columns(entity, table)
+
     elif entity.action == DbItem.ALTER:
         LOGGER.debug('Altering %s entity...', entity.name)
         update_entity_columns(entity, table, entity.updated_columns.values())
@@ -119,6 +122,19 @@ def _table_column_names(table):
 
     return sp_cols + textual_cols
 
+def _remove_dropped_columns(entity, table):
+    # Drop removed columns
+    updated_cols = entity.updated_columns.values()
+    col_names = _table_column_names(entity.name)
+
+    for c in updated_cols:
+        if c.action == DbItem.DROP:
+            LOGGER.debug('Dropping %s column.', c.name)
+
+            c.update(table, col_names)
+
+            LOGGER.debug('Finished dropping %s column.', c.name)
+
 
 def update_entity_columns(entity, table, columns):
     """
@@ -130,9 +146,9 @@ def update_entity_columns(entity, table, columns):
     :param columns: List of column objects to be updated.
     :type columns: list
     """
-    for c in columns:
-        col_names = _table_column_names(entity.name)
+    col_names = _table_column_names(entity.name)
 
+    for c in columns:
         if c.name != 'id':
             LOGGER.debug('Updating %s column.', c.name)
 

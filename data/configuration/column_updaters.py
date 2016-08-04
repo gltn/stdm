@@ -81,13 +81,18 @@ def _update_col(column, table, data_type, columns):
     if column.action == DbItem.CREATE:
         #Ensure the column does not exist otherwise an exception will be thrown
         if not column.name in columns:
-            alchemy_column.create(table=table, index_name=idx_name,
-                              unique_name=unique_name)
+            alchemy_column.create(
+                table=table,
+                index_name=idx_name,
+                unique_name=unique_name
+            )
 
     elif column.action == DbItem.ALTER:
         #Ensure the column exists before altering
         if column.name in columns:
-            alchemy_column.alter(**_base_col_attrs(column))
+            col_attrs = _base_col_attrs(column)
+            col_attrs['table'] = table
+            alchemy_column.alter(**col_attrs)
 
     elif column.action == DbItem.DROP:
         #Ensure the column exists before dropping

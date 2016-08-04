@@ -288,6 +288,19 @@ class BaseColumn(ColumnItem):
 
         return display_name
 
+    def copy_attrs(self, column):
+        """
+        Copy the values of attributes specified in 'monitor_attrs' class
+        member.
+        :param column: The column object to copy attributes from.
+        :type column: BaseColumn
+        """
+        for attr in self._monitor_attrs:
+            attr_val = getattr(column, attr)
+
+            #Set value
+            setattr(self, attr, attr_val)
+
     def __setattr__(self, key, value):
         if hasattr(self, '_initialized'):
             if key in self._monitor_attrs:
