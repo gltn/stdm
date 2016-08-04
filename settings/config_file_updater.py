@@ -30,6 +30,7 @@ from PyQt4.QtCore import QFile, QIODevice, Qt, QTextStream
 from PyQt4.QtGui import QMessageBox, QProgressBar
 from PyQt4.QtXml import QDomDocument
 
+from ..data.configuration.config_updater import ConfigurationSchemaUpdater
 from ..data.configuration.exception import ConfigurationException
 from ..data.configfile_paths import FilePaths
 from ..data.configuration.stdm_configuration import StdmConfiguration
@@ -1234,6 +1235,8 @@ class ConfigurationFileUpdater(object):
                                                             lookup_col_index,
                                                             num_lookups,
                                                             check_up)
+                            config_updater = ConfigurationSchemaUpdater()
+                            config_updater.exec_()
 
                         if len(new_keys) is not original_key_len:
                             for value in values:
