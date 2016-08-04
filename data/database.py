@@ -32,7 +32,8 @@ from sqlalchemy import (
     Table,
     event,
     func,
-    MetaData
+    MetaData,
+    exc
 )
 from sqlalchemy import (
     Column,
@@ -232,7 +233,10 @@ class Model(object):
     def save(self):            
         db = STDMDb.instance()
         db.session.add(self)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except exc.SQLAlchemyError:
+            db.session.rollback()
             
     def saveMany(self,objects = []):
         '''
@@ -240,20 +244,30 @@ class Model(object):
         '''
         db = STDMDb.instance()
         db.session.add_all(objects)
-        db.session.commit()
-            
+        try:
+            db.session.commit()
+        except exc.SQLAlchemyError:
+            db.session.rollback()
+
     def update(self):
         db = STDMDb.instance()
-        db.session.commit()
+        try:
+            db.session.commit()
+        except exc.SQLAlchemyError:
+            db.session.rollback()
             
     def delete(self):
         db = STDMDb.instance()
         db.session.delete(self)
-        db.session.commit()
-        
+        try:
+            db.session.commit()
+        except exc.SQLAlchemyError:
+            db.session.rollback()
+
     def queryObject(self,args=[]):
         '''
-        The 'args' specifies the attributes/columns that will be returned in the query in a tuple;
+        The 'args' specifies the attributes/columns
+        that will be returned in the query in a tuple;
         Else, the full model object will be returned.
         '''
         db = STDMDb.instance()

@@ -1312,7 +1312,7 @@ class STDMQGISLoader(object):
                 QMessageBox.critical(
                     self.iface.mainWindow(),
                     QApplication.translate(
-                        "STDMPlugin","Loading Dialog..."
+                        "STDMPlugin","Error Loading Entity Browser"
                     ),
                     QApplication.translate(
                         "STDMPlugin",
