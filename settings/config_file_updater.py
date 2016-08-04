@@ -1235,8 +1235,8 @@ class ConfigurationFileUpdater(object):
                                                             lookup_col_index,
                                                             num_lookups,
                                                             check_up)
-                            config_updater = ConfigurationSchemaUpdater()
-                            config_updater.exec_()
+                        config_updater = ConfigurationSchemaUpdater()
+                        config_updater.exec_()
 
                         if len(new_keys) is not original_key_len:
                             for value in values:
