@@ -401,12 +401,12 @@ class ConfigurationFileUpdater(object):
         # Adding new lookups for documents and participating strs
         for k, v in self.relations_dict.iteritems():
             if k == "social_tenure_relationship":
-                for relation in v[0]:
-                    lookup = "check_{0}_document_type".format(relation)
+                for relation in v:
+                    lookup = "check_{0}_document_type".format(relation[0])
                     lookup_code = {"G": "General"}
                     self.lookup_dict[lookup] =\
                         lookup_code
-                    self.check_doc_relation_lookup_dict[relation] = lookup
+                    self.check_doc_relation_lookup_dict[relation[0]] = lookup
 
     def _set_version_profile(self, element):
         """
@@ -942,7 +942,8 @@ class ConfigurationFileUpdater(object):
 
                 if QMessageBox.information(
                         None, "Update STDM Configuration",
-                        "Do you want to upgrade your configuration file?\n\n"
+                        "Do you want to upgrade your configuration file "
+                        "and import your data?\n\n"
                         "If you click No, your configuration and data will "
                         "no longer be accessible to STDM.\n"
                         "If you click Yes, you will be able to access your "
@@ -1145,6 +1146,33 @@ class ConfigurationFileUpdater(object):
                         if relation_key == "social_tenure_relationship":
                             return keys, relation_values
 
+    def _clean_data(self, values):
+        """
+        Cleans data from db
+        :param values:
+        :return: list
+        """
+        new_data_list = []
+        for data_value in values:
+            inner_data_list = []
+            for data in data_value:
+                if not isinstance(data, int) and data is not None and not \
+                        isinstance(data, datetime.date):
+                        if data.find("\'") is not -1:
+                            data = data[:data.find("\'")] + \
+                                                   "$$" + data[data.find(
+                                                "\'") + 1:]
+                            inner_data_list.append(data)
+                        else:
+                            inner_data_list.append(data)
+                elif isinstance(data, datetime.date):
+                    data = data.strftime('%Y-%m-%d')
+                    inner_data_list.append(data)
+                else:
+                    inner_data_list.append(data)
+                    new_data_list.append(inner_data_list)
+        return new_data_list
+
     def backup_data(self):
         """
         Method that backups data
@@ -1163,6 +1191,7 @@ class ConfigurationFileUpdater(object):
 
             for social_tenure_entity in values:
                 progress_i = 0
+                progress.setValue(progress_i)
                 social_tenure_table = \
                     self.config_profiles[0] + "_" + social_tenure_entity[0]
 
@@ -1222,6 +1251,9 @@ class ConfigurationFileUpdater(object):
                             new_values = str(new_values).strip(
                                 "[]")
                         else:
+
+                            values = self._clean_data(values)
+
                             new_values = str(values).replace("[[", "(")
                             new_values = str(new_values).replace("]]", ")")
                             new_values = str(new_values).replace("[", "(")
