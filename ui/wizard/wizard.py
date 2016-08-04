@@ -719,6 +719,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             if validPage:
                 profile = self.current_profile()
 
+                #party
                 party = profile.entity(unicode(self.cboParty.currentText()))
                 spatial_unit = profile.entity(unicode(self.cboSPUnit.currentText()))
 
@@ -1460,7 +1461,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             editor = ColumnEditor(**params)
             result = editor.exec_()
-            if result == 1: # after successfull editing
+
+            if result == 1: # after successfully editing
                 model_index_name  = model_item.index(rid, 0)
                 model_index_dtype = model_item.index(rid, 1)
                 model_index_desc  = model_item.index(rid, 2)
@@ -1470,7 +1472,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 model_item.setData(model_index_desc, editor.column.description)
 
                 model_item.edit_entity(tmp_column, editor.column)
-                entity.edit_column(tmp_column.name, editor.column)
+
+                col = editor.column
+                #Get column from entity and flag the column for editing
+                ref_column = entity.column(col.name)
+                ref_column.copy_attrs(col)
+                ref_column.action = DbItem.ALTER
+
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No column selected for edit!"))
@@ -1538,6 +1546,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         if self.check_column_dependencies(column):
             ent_id, entity = self._get_entity(self.lvEntities)
+
             # delete from the entity
             entity.remove_column(column.name)
 

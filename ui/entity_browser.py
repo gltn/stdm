@@ -794,6 +794,17 @@ class EntityBrowserWithEditor(EntityBrowser):
         '''
         Load editor dialog for adding a new record.
         '''
+        self._notifBar.clear()
+
+        if not self._can_add_edit():
+            msg = QApplication.translate(
+                'EntityBrowserWithEditor',
+                'There are no user-defined columns for this entity.'
+            )
+            self._notifBar.insertErrorNotification(msg)
+
+            return
+
         addEntityDlg = self._editor_dlg(self._entity, parent=self)
 
         result = addEntityDlg.exec_()
@@ -802,12 +813,35 @@ class EntityBrowserWithEditor(EntityBrowser):
             model_obj = addEntityDlg.model()
             self.addModelToView(model_obj)
             self.recomputeRecordCount()
+
+    def _can_add_edit(self):
+        """
+        Check if there are columns specified (apart from id) for the given
+        entity.
+        :return: Returns True if there are other columns apart from id,
+        otherwise False.
+        """
+        columns = self._entity.columns.values()
+
+        if len(columns) < 2:
+            return False
+
+        return True
             
     def onEditEntity(self):
         '''
         Slot raised to load the editor for the selected row.
         '''
         self._notifBar.clear()
+
+        if not self._can_add_edit():
+            msg = QApplication.translate(
+                'EntityBrowserWithEditor',
+                'There are no user-defined columns for this entity.'
+            )
+            self._notifBar.insertErrorNotification(msg)
+
+            return
         
         selRowIndices = self.tbEntity.selectionModel().selectedRows(0)
         
