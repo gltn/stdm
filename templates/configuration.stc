@@ -245,9 +245,6 @@
     <Column unique="False" tip="" minimum="0" maximum="2147483647" description="Land use of the parcel" index="False" name="landuse_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
      <Relation name="fk_lo_check_landuse_id_lo_parcel_landuse_id"/>
     </Column>
-    <Column unique="False" tip="" minimum="0" maximum="2147483647" description="Special land use of the parcel." index="False" name="special_landuse_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
-     <Relation name="fk_lo_check_special_landuse_id_lo_parcel_special_landuse_id"/>
-    </Column>
     <Column unique="False" tip="" minimum="0" maximum="2147483647" description="The dispute on the parcel" index="False" name="dispute_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
      <Relation name="fk_lo_check_dispute_id_lo_parcel_dispute_id"/>
     </Column>
