@@ -43,10 +43,7 @@ from stdm.data.pg_utils import (
 from stdm.data.pg_utils import (
     pg_views
 )
-from stdm.settings.registryconfig import (
-    RegistryConfig,
-    WIZARD_RUN
-)
+
 
 from stdm.ui.forms.spatial_unit_form import (
     STDMFieldWidget
