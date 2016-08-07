@@ -259,7 +259,7 @@ class LookupEntityModelItem(QStandardItem):
         return item
 
     def _set_entity_properties(self):
-        item_name = self._create_item(self._entity.name)
+        item_name = self._create_item(self._entity.short_name)
 
         self.appendRow([item_name])
 
@@ -287,15 +287,18 @@ class LookupEntitiesModel(QStandardItemModel):
         return self._entities
 
     def add_entity(self, entity):
-        if not entity.name in self._entities:
+        if not entity.short_name in self._entities:
             self._add_row(entity)
-            self._entities[entity.name] = entity
+            self._entities[entity.short_name] = entity
+
+    def edit_entity(self, old_entity, new_entity):
+        self._entities[old_entity.short_name] = new_entity
 
     # ++
     def delete_entity(self, entity):
-	    if entity.name in self._entities:
-		    name = entity.name
-		    del self._entities[name]
+	    if entity.short_name in self._entities:
+		    name = entity.short_name
+		    del self._entities[short_name]
 	    	    LOGGER.debug('%s model entity removed.', name)
 
     def delete_entity_byname(self, short_name):
