@@ -101,6 +101,12 @@ class LookupEditor(QDialog, Ui_dlgLookup):
             self.error_message(QApplication.translate("LookupEditor","Lookup name is not given!"))
             return
 
+        if self.edtName.text() == 'check':
+            self.error_message(QApplication.translate("LookupEditor",
+                "'check' is used internally by STDM! "
+                "Select another name for the lookup"))
+            return
+
         new_lookup = self.create_lookup(unicode(self.edtName.text()))
         if self.lookup is None:  # new lookup
             self.profile.add_entity(new_lookup)
