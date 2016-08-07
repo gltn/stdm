@@ -1643,6 +1643,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 model_item.edit_entity(tmp_lookup, editor.lookup)
 
                 profile.entities[tmp_lookup.short_name] = editor.lookup
+                profile.entities[editor.lookup.short_name] = \
+                        profile.entities.pop(tmp_lookup.short_name)
+                
 
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
@@ -1685,6 +1688,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         msg = self.tr('Delete selected lookup?')
         if self.query_box_yesno(msg) == QMessageBox.Yes:
+            profile.entities[lookup.short_name].action = DbItem.DROP
             profile.remove_entity(lookup.short_name)
             self.lookup_view_model.removeRow(row_id)
 
