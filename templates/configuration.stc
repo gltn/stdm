@@ -186,10 +186,6 @@
     <CodeValue value="Public" code="PUB"/>
     <CodeValue value="Communal" code="COM"/>
    </ValueList>
-   <ValueList name="check_special_landuse">
-    <CodeValue value="Military" code="MIL"/>
-    <CodeValue value="NGO" code="NGO"/>
-   </ValueList>
    <ValueList name="check_officer_rank">
     <CodeValue value="Assistant" code="ASS"/>
     <CodeValue value="Cartographer/ Draughtsman" code="CAR"/>
@@ -323,7 +319,6 @@
    <EntityRelation displayColumns="" child="Parcel_supporting_document" parent="supporting_document" name="fk_lo_supporting_document_id_lo_parcel_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
    <EntityRelation displayColumns="name,code" child="Parcel" parent="check_parcel_type" name="fk_lo_check_parcel_type_id_lo_parcel_parcel_type_id" parentColumn="id" childColumn="parcel_type_id"/>
    <EntityRelation displayColumns="name,code" child="Parcel" parent="check_landuse" name="fk_lo_check_landuse_id_lo_parcel_landuse_id" parentColumn="id" childColumn="landuse_id"/>
-   <EntityRelation displayColumns="name,code" child="Parcel" parent="check_special_landuse" name="fk_lo_check_special_landuse_id_lo_parcel_special_landuse_id" parentColumn="id" childColumn="special_landuse_id"/>
    <EntityRelation displayColumns="name,code" child="Parcel" parent="check_dispute" name="fk_lo_check_dispute_id_lo_parcel_dispute_id" parentColumn="id" childColumn="dispute_id"/>
    <EntityRelation displayColumns="name,code" child="Surveyor" parent="check_gender" name="fk_lo_check_gender_id_lo_surveyor_gender_id" parentColumn="id" childColumn="gender_id"/>
    <EntityRelation displayColumns="name,code" child="Surveyor" parent="check_officer_rank" name="fk_lo_check_officer_rank_id_lo_surveyor_officer_rank_id" parentColumn="id" childColumn="officer_rank_id"/>
