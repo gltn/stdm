@@ -16,7 +16,8 @@
     <CodeValue value="Friend of Sub-Tenant" code=""/>
    </ValueList>
    <ValueList name="check_person_document_type">
-    <CodeValue value="General" code=""/>
+    <CodeValue value="Photo" code=""/>
+    <CodeValue value="Identification Card" code=""/>
    </ValueList>
    <ValueList name="check_structure_document_type">
     <CodeValue value="General" code=""/>
@@ -203,22 +204,20 @@
     <CodeValue value="General" code="G"/>
    </ValueList>
    <ValueList name="check_person_document_type">
-    <CodeValue value="General" code="G"/>
-   </ValueList>
-   <ValueList name="check_farmer_document_type">
-    <CodeValue value="General" code=""/>
+    <CodeValue value="Photo" code=""/>
+    <CodeValue value="Identification Card" code=""/>
    </ValueList>
   </ValueLists>
   <Entity editable="True" global="False" associative="False" description="Person is an individual" documentTypeLookup="check_person_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Person" name="lo_person">
    <Columns>
     <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="" minimum="0" maximum="30" description="First name" index="False" name="first_name" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
-    <Column unique="False" tip="" minimum="0" maximum="30" description="Middle name" index="False" name="middle_name" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
-    <Column unique="False" tip="" minimum="0" maximum="30" description="Last name" index="False" name="last_name" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="First name" index="False" name="first_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Middle name" index="False" name="middle_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Last name" index="False" name="last_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
     <Column unique="False" tip="" minimum="0" maximum="2147483647" description="Gender" index="False" name="gender_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
      <Relation name="fk_lo_check_gender_id_lo_person_gender_id"/>
     </Column>
-    <Column unique="False" tip="" minimum="0001-01-01" maximum="9999-12-31" description="date of birth" index="False" name="date_of_birth" searchable="False" TYPE_INFO="DATE" mandatory="False">
+    <Column unique="False" tip="" minimum="0001-01-01" maximum="9999-12-31" description="date of birth" index="False" name="date_of_birth" searchable="True" TYPE_INFO="DATE" mandatory="False">
      <currentDate minimum="False" maximum="False"/>
     </Column>
     <Column unique="False" tip="The marital status of the person" minimum="0" maximum="2147483647" description="The marital status of the person" index="False" name="marital_status" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
@@ -232,7 +231,7 @@
   <Entity editable="True" global="False" associative="False" description="Parcel represents the spatial unit" documentTypeLookup="check_parcel_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Parcel" name="lo_parcel">
    <Columns>
     <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="" minimum="0" maximum="30" description="Unique identifier" index="False" name="code" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Unique identifier" index="False" name="code" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
     <Column unique="False" tip="" minimum="0.0" maximum="1.79769313486e+308" description="Area of the parcel in square unit" index="False" name="area" searchable="False" TYPE_INFO="DOUBLE" mandatory="False"/>
     <Column unique="False" tip="" minimum="0.0" maximum="1.79769313486e+308" description="Monetary value of the parcel" index="False" name="value" searchable="False" TYPE_INFO="DOUBLE" mandatory="False"/>
     <Column unique="False" tip="" minimum="0" maximum="2147483647" description="Parcel type" index="False" name="parcel_type_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
@@ -345,7 +344,8 @@
     <CodeValue value="Tenancy" code=""/>
    </ValueList>
    <ValueList name="check_farmer_document_type">
-    <CodeValue value="General" code=""/>
+    <CodeValue value="National ID" code=""/>
+    <CodeValue value="Photo" code=""/>
    </ValueList>
    <ValueList name="check_garden_document_type">
     <CodeValue value="General" code=""/>
