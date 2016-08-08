@@ -502,7 +502,8 @@ def db_user_tables(profile):
             'ENTITY',
             'ENTITY_SUPPORTING_DOCUMENT',
             'SOCIAL_TENURE',
-            'SUPPORTING_DOCUMENT'
+            'SUPPORTING_DOCUMENT',
+            'VALUE_LIST'
         ]
     ]
     for table in tables:

@@ -26,6 +26,11 @@ from stdm.data.pg_utils import (
    pg_tables,
    spatial_tables
 )
+from stdm.utils.util import (
+
+    profile_user_tables
+)
+from stdm.settings import current_profile
 from stdm.data.importexport.value_translators import ValueTranslatorManager
 
 __all__ = ["TranslatorDialogBase", "TranslatorWidgetManager"]
@@ -79,8 +84,9 @@ class TranslatorDialogBase(object):
         """
         Returns both textual and spatial table names.
         """
-        tables = pg_tables(exclude_lookups=False)
-        tables.extend(spatial_tables(exclude_views=True))
+        curr_profile = current_profile()
+
+        tables = profile_user_tables(curr_profile, False).keys()
 
         return tables
 
