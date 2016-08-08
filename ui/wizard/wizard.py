@@ -1629,7 +1629,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 self.show_message(self.tr("No lookup selected for edit!"))
                 return
 
-            #row_id, lookup = self._get_entity_item(self.lvLookups)
             row_id, lookup, model_item = self._get_model(self.lvLookups)
 
             tmp_lookup = model_item.entity(lookup.short_name)
