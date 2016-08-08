@@ -61,7 +61,9 @@ from stdm.utils.util import (
     entity_searchable_columns,
     entity_display_columns,
     format_name,
-    get_db_attr
+    get_db_attr,
+    entity_attr_to_id,
+    lookup_parent_entity
 )
 from .notification import (
     NotificationBar
@@ -195,35 +197,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         tool_buttons.addAction(self.editSTR)
         tool_buttons.addAction(self.deleteSTR)
 
-        # tool_buttons.setStyleSheet(
-        #     '''
-        #         QToolButton {
-        #             border: 2px inset #878787;
-        #             border-radius: 2px;
-        #             padding: 4px;
-        #             margin-right: 2px;
-        #              background: qlineargradient(
-        #                 x1: 0, y1: 0, x2: 0, y2: 1,
-        #                 stop: 0 #dddddd,
-        #                 stop: 0.3 #c3c3c3
-        #                 stop: 0.51 #c3c3c3
-        #                 stop: 1.0 #dddddd
-        #             );
-        #
-        #         }
-        #
-        #
-        #         QToolBar QToolButton:open {
-        #             background-color: qlineargradient(
-        #                 x1: 1, y1: 1, x2: 0, y2: 1,
-        #                 stop: 0 #e0e0e0, stop: 1 #c3c3c3
-        #             );
-        #         }
-        #
-        #
-        #
-        #     '''
-        # )
         self.toolbarVBox.addWidget(tool_buttons)
 
     def initGui(self):
@@ -233,7 +206,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self.tb_actions.setVisible(False)
         self._load_entity_configurations()
         self.add_tool_buttons()
-        #self.gb_supporting_docs.setCollapsed(True)
 
         #Connect signals
         self.tbSTREntity.currentChanged.connect(self.entityTabIndexChanged)
@@ -896,7 +868,7 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         self.setupUi(self)
         self.config = config
         self.setConfigOptions()
-
+        self.curr_profile = current_profile()
         #Model for storing display and actual mapping values
         self._completer_model = None
         self._proxy_completer_model = None
@@ -1002,17 +974,43 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         queryObjProperty = getattr(
             self.config.STRModel, self.currentFieldName()
         )
+
+
         prog_dialog.setValue(6)
         # Get property type so that the filter can
         # be applied according to the appropriate type
         propType = queryObjProperty.property.columns[0].type
-
+        results = []
         try:
 
             if not isinstance(propType, String):
-                results = modelQueryObj.filter(
-                    queryObjProperty == search_term
-                ).all()
+                entity_name = modelQueryObj._primary_entity._label_name
+                entity = self.curr_profile.entity_by_name(entity_name)
+                col_name = self.currentFieldName()
+                col = entity.columns[
+                    self.currentFieldName()
+                ]
+                # for col in entity.columns.values():
+
+                if col.TYPE_INFO == 'LOOKUP':
+                    lookup_entity = lookup_parent_entity(
+                        self.curr_profile, col_name
+                    )
+                    lkp_model = entity_model(lookup_entity)
+                    lkp_obj = lkp_model()
+                    value_obj = getattr(
+                        lkp_model, 'value'
+                    )
+
+                    result  = lkp_obj.queryObject().filter(
+                        func.lower(value_obj) == func.lower(search_term)
+                    ).first()
+                    if not result is None:
+                        results = modelQueryObj.filter(
+                            queryObjProperty == result.id
+                        ).all()
+                    else:
+                        results = []
 
             else:
                 results = modelQueryObj.filter(
@@ -1047,13 +1045,6 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         field_name = self.cboFilterCol.itemData(curr_index)
 
         if field_name is None:
-            # msg = QApplication.translate(
-            #     'ViewSTR',
-            #     'No searchable column is found for this entity. \n'
-            #     'Mark at least one column searchable for '
-            #     'this entity in Design Forms Wizard.'
-            # )
-
             return
         else:
             return field_name
@@ -1077,13 +1068,15 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         field_formatter = self.config.LookupFormatters.get(
             self.currentFieldName(), None
         )
-        '''
-        Store display and actual values in a model for easier mapping and
-        retrieval when carrying out searches
-        '''
+
+        # Store display and actual values in a
+        # model for easier mapping and
+        # retrieval when carrying out searches
+
         model_attr_mapping = []
 
-        #Check if there are formatters specified for the current field name
+        # Check if there are formaters specified
+        # for the current field name
         for mv in values:
             f_model_values = []
 
@@ -1177,41 +1170,3 @@ class ModelWorker(QObject):
 
         except Exception as ex:
             self.error.emit(unicode(ex))
-
-# class SourceDocumentContainerWidget(QWidget):
-#     """
-#     Widget that enables source documents
-#     of one type to be displayed.
-#     """
-#     def __init__(self, container_id = -1, parent = None):
-#         QWidget.__init__(self,parent)
-#
-#         #Set overall layout for the widget
-#         vtLayout = QVBoxLayout()
-#         self.setLayout(vtLayout)
-#
-#         self.docVtLayout = QVBoxLayout()
-#         vtLayout.addLayout(self.docVtLayout)
-#
-#
-#         #Id of the container
-#         self._containerId = container_id
-#
-#     def container(self):
-#         """
-#         Returns the container in which
-#         source documents will rendered in.
-#         """
-#         return self.docVtLayout
-#
-#     def setContainerId(self, id):
-#         """
-#         Sets the ID of the container.
-#         """
-#         self._containerId = id
-#
-#     def containerId(self):
-#         """
-#         Returns the ID of the container.
-#         """
-#         return self._containerId

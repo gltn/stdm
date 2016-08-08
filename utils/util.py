@@ -41,6 +41,9 @@ from PyQt4.QtGui import (
     QTableView,
     QMessageBox
 )
+from sqlalchemy import (
+    func
+)
 from stdm.data.configuration import (
     entity_model
 )
@@ -659,7 +662,7 @@ def entity_id_to_attr(entity, attr, id):
 
     return attr_val
 
-def entity_attr_to_id(entity, attr_obj, attr_val):
+def entity_attr_to_id(entity, attr_obj, attr_val, lower=False):
     """
     Coverts other column values to id value
     of the same table.
@@ -675,9 +678,16 @@ def entity_attr_to_id(entity, attr_obj, attr_val):
     """
     doc_type_model = entity_model(entity)
     doc_type_obj = doc_type_model()
-    result = doc_type_obj.queryObject().filter(
-        attr_obj == attr_val
-    ).first()
+    if lower:
+
+        result = doc_type_obj.queryObject().filter(
+            func.lower(attr_obj) == func.lower(attr_val)
+        ).first()
+
+    else:
+        result = doc_type_obj.queryObject().filter(
+            attr_obj == attr_val
+        ).first()
     if result is not None:
         attr_id = getattr(
             result,
