@@ -80,7 +80,7 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         formatted_name = formatted_name.replace(' ', "_")
         return formatted_name.lower()
     
-    def add_lookup(self, name):
+    def create_lookup(self, name):
         """
         Creates a lookup entity and add it to a profile.
         If this is an edit, first the previous lookup is removed before
@@ -90,17 +90,28 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         """
         name = self.format_lookup_name(name)
         # if its an edit, remove the existing entry first
-        if self.lookup:
-               self.profile.remove_entity(self.lookup.name)
-        self.lookup = self.profile.create_entity(name, value_list_factory)
-        self.profile.add_entity(self.lookup)
+        #if self.lookup:
+               #self.profile.remove_entity(self.lookup.name)
+        new_lookup = self.profile.create_entity(name, value_list_factory)
+        return new_lookup
+
 	    
     def accept(self):
         if self.edtName.text()=='':
             self.error_message(QApplication.translate("LookupEditor","Lookup name is not given!"))
             return
 
-        self.add_lookup(unicode(self.edtName.text()))
+        if self.edtName.text() == 'check':
+            self.error_message(QApplication.translate("LookupEditor",
+                "'check' is used internally by STDM! "
+                "Select another name for the lookup"))
+            return
+
+        new_lookup = self.create_lookup(unicode(self.edtName.text()))
+        if self.lookup is None:  # new lookup
+            self.profile.add_entity(new_lookup)
+
+        self.lookup = new_lookup
         
         self.done(1)
 

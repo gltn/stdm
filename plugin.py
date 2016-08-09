@@ -73,7 +73,10 @@ from stdm.data.pg_utils import (
     pg_table_exists,
     spatial_tables
 )
-
+from stdm.settings.registryconfig import (
+    RegistryConfig,
+    WIZARD_RUN
+)
 from stdm.ui.license_agreement import LicenseAgreement
 from navigation import (
     STDMAction,
@@ -301,6 +304,7 @@ class STDMQGISLoader(object):
                 self.current_profile = current_profile()
                 self.loadModules()
                 self.default_profile()
+                self.run_wizard()
                 self._user_logged_in = True
 
             except Exception as pe:
@@ -431,6 +435,39 @@ class STDMQGISLoader(object):
             else:
                 return True
 
+    def run_wizard(self):
+        """
+        Checks if the configuration wizard was run before.
+        :return:
+        :rtype:
+        """
+        reg_config = RegistryConfig()
+        wizard_key = reg_config.read(
+            [WIZARD_RUN]
+        )
+
+        wizard_value = wizard_key[WIZARD_RUN]
+        if wizard_value == 0 or wizard_value == '0':
+            title = QApplication.translate(
+                "STDMQGISLoader",
+                'Run Configuration Wizard Error'
+            )
+            message = QApplication.translate(
+                "STDMQGISLoader",
+                'The system has detected that you did not run \n'
+                'the Configuration Wizard so far. \n'
+                'Do you want to run it now? '
+            )
+            default_profile = QMessageBox.critical(
+                self.iface.mainWindow(),
+                title,
+                message,
+                QMessageBox.Yes,
+                QMessageBox.No
+            )
+
+            if default_profile == QMessageBox.Yes:
+                self.load_config_wizard()
 
     def default_profile(self):
         """
@@ -452,40 +489,36 @@ class STDMQGISLoader(object):
                 "STDMQGISLoader",
                 'Default Profile Error'
             )
-            if len(profiles) == 1:
+            if len(profiles) > 0:
                 profile_name = profiles.keys()[0]
                 save_current_profile(profile_name)
                 self.reload_plugin(profile_name)
-                return
-            if len(profiles) > 0:
-                solution = 'Do you want to set a profile now?'
+
             else:
                 solution = 'Do you want to run the ' \
                            'Configuration Wizard now?'
 
-            message = QApplication.translate(
-                "STDMQGISLoader",
-                'The system has detected that there '
-                'is no default profile. \n {}'.format(
-                    solution
+                message = QApplication.translate(
+                    "STDMQGISLoader",
+                    'The system has detected that there '
+                    'is no default profile. \n {}'.format(
+                        solution
+                    )
+
+                )
+                default_profile = QMessageBox.critical(
+                    self.iface.mainWindow(),
+                    title,
+                    message,
+                    QMessageBox.Yes,
+                    QMessageBox.No
                 )
 
-            )
-            default_profile = QMessageBox.critical(
-                self.iface.mainWindow(),
-                title,
-                message,
-                QMessageBox.Yes,
-                QMessageBox.No
-            )
+                if default_profile == QMessageBox.Yes:
 
-            if default_profile == QMessageBox.Yes:
-                if len(profiles) > 0:
-                    self.on_sys_options()
-                else:
                     self.load_config_wizard()
-            else:
-                return
+                else:
+                    return
 
     def load_configuration_from_file(self):
         """
@@ -1312,7 +1345,7 @@ class STDMQGISLoader(object):
                 QMessageBox.critical(
                     self.iface.mainWindow(),
                     QApplication.translate(
-                        "STDMPlugin","Loading Dialog..."
+                        "STDMPlugin","Error Loading Entity Browser"
                     ),
                     QApplication.translate(
                         "STDMPlugin",
