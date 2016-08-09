@@ -116,6 +116,9 @@
     <Column unique="False" tip="Utilities available in the structure" description="Utilities available in the structure" index="False" name="utilities" searchable="True" TYPE_INFO="MULTIPLE_SELECT" mandatory="False">
      <associationEntity name="in_utilities"/>
     </Column>
+    <Column unique="False" tip="Location of the structure." minimum="0" maximum="2147483647" description="Location of the structure." index="False" name="location" searchable="True" TYPE_INFO="ADMIN_SPATIAL_UNIT" mandatory="False">
+     <Relation name="fk_admin_spatial_unit_set_id_in_structure_location"/>
+    </Column>
     <Column unique="True" tip="" description="A digitized geographic extent of the structure" index="False" name="spatial_geometry" searchable="False" TYPE_INFO="GEOMETRY" mandatory="False">
      <Geometry layerDisplay="" srid="4326" type="2"/>
     </Column>
@@ -148,6 +151,7 @@
    <EntityRelation displayColumns="" child="utilities" parent="Structure" name="fk_in_structure_id_in_utilities_in_structure_id" parentColumn="id" childColumn="in_structure_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Person" name="fk_in_person_id_in_social_tenure_relationship_party_id" parentColumn="id" childColumn="party_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Structure" name="fk_in_structure_id_in_social_tenure_relationship_spatial_unit_id" parentColumn="id" childColumn="spatial_unit_id"/>
+   <EntityRelation displayColumns="name,code" child="Structure" parent="admin_spatial_unit_set" name="fk_admin_spatial_unit_set_id_in_structure_location" parentColumn="id" childColumn="location"/>
   </Relations>
   <SocialTenure layerDisplay="informal_settlement_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Structure" supportsMultipleParties="True" party="Person"/>
  </Profile>
@@ -243,6 +247,9 @@
     <Column unique="False" tip="" minimum="0" maximum="2147483647" description="The dispute on the parcel" index="False" name="dispute_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
      <Relation name="fk_lo_check_dispute_id_lo_parcel_dispute_id"/>
     </Column>
+    <Column unique="False" tip="The location of the spatial unit" minimum="0" maximum="2147483647" description="The location of the spatial unit" index="False" name="location" searchable="True" TYPE_INFO="ADMIN_SPATIAL_UNIT" mandatory="False">
+     <Relation name="fk_admin_spatial_unit_set_id_lo_parcel_location"/>
+    </Column>
     <Column unique="False" tip="The digital geographic bounder of the parcel" description="The digital geographic bounder of the parcel" index="False" name="spatial_geometery" searchable="False" TYPE_INFO="GEOMETRY" mandatory="False">
      <Geometry layerDisplay="" srid="4326" type="2"/>
     </Column>
@@ -328,6 +335,7 @@
    <EntityRelation displayColumns="national_id" child="Survey" parent="Planner" name="fk_lo_planner_id_lo_survey_planner" parentColumn="id" childColumn="planner"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Person" name="fk_lo_person_id_lo_social_tenure_relationship_party_id" parentColumn="id" childColumn="party_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Parcel" name="fk_lo_parcel_id_lo_social_tenure_relationship_spatial_unit_id" parentColumn="id" childColumn="spatial_unit_id"/>
+   <EntityRelation displayColumns="name,code" child="Parcel" parent="admin_spatial_unit_set" name="fk_admin_spatial_unit_set_id_lo_parcel_location" parentColumn="id" childColumn="location"/>
   </Relations>
   <SocialTenure layerDisplay="local_government_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Parcel" supportsMultipleParties="True" party="Person"/>
  </Profile>
@@ -440,12 +448,12 @@
   <Entity editable="True" global="False" associative="False" description="Refers to the farm land or the spatial unit" documentTypeLookup="check_garden_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Garden" name="ru_garden">
    <Columns>
     <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="True" tip="The digital geographic bounder of the garden" description="The digital geographic bounder of the garden" index="False" name="spatial_geometry" searchable="False" TYPE_INFO="GEOMETRY" mandatory="False">
-     <Geometry layerDisplay="" srid="4326" type="2"/>
-    </Column>
     <Column unique="False" tip="The garden's unique identifier" minimum="0" maximum="30" description="The garden's unique identifier" index="False" name="code" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
     <Column unique="False" tip="The administrative unit in which the garden is located" minimum="0" maximum="2147483647" description="The administrative unit in which the garden is located" index="False" name="location" searchable="True" TYPE_INFO="ADMIN_SPATIAL_UNIT" mandatory="False">
      <Relation name="fk_admin_spatial_unit_set_id_ru_garden_location"/>
+    </Column>
+    <Column unique="True" tip="The digital geographic bounder of the garden" description="The digital geographic bounder of the garden" index="False" name="spatial_geometry" searchable="False" TYPE_INFO="GEOMETRY" mandatory="False">
+     <Geometry layerDisplay="" srid="4326" type="2"/>
     </Column>
    </Columns>
   </Entity>
@@ -490,7 +498,7 @@
     <Column unique="False" tip="The residence area of the respondent" minimum="0" maximum="2147483647" description="The residence area of the respondent" index="False" name="residence_area" searchable="True" TYPE_INFO="ADMIN_SPATIAL_UNIT" mandatory="False">
      <Relation name="fk_admin_spatial_unit_set_id_ru_respondent_residence_area"/>
     </Column>
-    <Column unique="False" tip="Respondent's role" minimum="0" maximum="2147483647" description="Resondent's role" index="False" name="role" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
+    <Column unique="False" tip="Respondent's role" minimum="0" maximum="2147483647" description="Respondent's role" index="False" name="role" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
      <Relation name="fk_ru_check_respondent_role_id_ru_respondent_role"/>
     </Column>
    </Columns>

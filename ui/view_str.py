@@ -990,7 +990,6 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
                 col = entity.columns[
                     self.currentFieldName()
                 ]
-                # for col in entity.columns.values():
 
                 if col.TYPE_INFO == 'LOOKUP':
                     lookup_entity = lookup_parent_entity(
@@ -1005,6 +1004,10 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
                     result  = lkp_obj.queryObject().filter(
                         func.lower(value_obj) == func.lower(search_term)
                     ).first()
+                    if result is None:
+                        result = lkp_obj.queryObject().filter(
+                            func.lower(value_obj).like(search_term+'%')
+                        ).first()
                     if not result is None:
                         results = modelQueryObj.filter(
                             queryObjProperty == result.id
