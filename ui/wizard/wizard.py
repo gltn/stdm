@@ -470,11 +470,30 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 return index
         return 0
 
-    def validate_empty_lookups(self):
+    def check_empty_entities(self):
+        """
+        """
+        is_empty = True
+
+        profile = self.current_profile()
+        for entity in profile.entities.values():
+            col_count = 0
+            for column in entity.columns.values():
+                if column.action <> DbItem.DROP:
+                    col_count += 1
+                    break
+            if col_count == 0:
+                self.show_message(self.tr("Entity '%s' has no columns!") % entity.short_name)
+                is_empty = False 
+
+        return is_empty
+
+
+    def check_empty_lookups(self):
         """
         Verifies that all lookups in the current profile
         have values. Returns true if all have values else false
-        rtype: boolean
+        :rtype: bool
         """
         valid = True
         profile  = self.current_profile()
@@ -493,9 +512,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def fmt_path_str(self, path):
         """
         Returns a directory path string formatted in a unix format
-        param path: string representing the windows path
-        type path: str
-        rtype: str
+        :param path: string representing the windows path
+        :type path: str
+        :rtype: str
         """
         rpath = r''.join(unicode(path))
         return rpath.replace("\\", "/")
@@ -503,11 +522,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def read_settings_path(self, reg_keys, os_path):
         """
         Returns path settings from the registry or an os folder path
-        param reg_key: list of registry keys to read the path setting
-        type reg_keys: list
-        param os_path: os directory to use if the reg_key is not set
-        type os_path: str
-        rtype: str
+        :param reg_key: list of registry keys to read the path setting
+        :type reg_keys: list
+        :param os_path: os directory to use if the reg_key is not set
+        :type os_path: str
+        :rtype: str
         """
         try:
             # returns a dict {reg_key:reg_value}
@@ -694,6 +713,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             curr_profile = self.current_profile()
 
+            # remove entities with geometry from cboParty
+            #self.remove_geometry_entities()
+
             # get entity with no geometry column
             idx1 = self.index_party_table()
             self.cboParty.setCurrentIndex(idx1)
@@ -706,12 +728,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.set_multi_party_checkbox(curr_profile)
 
             # verify that lookup entities have values
-            validPage = self.validate_empty_lookups()
+            validPage = self.check_empty_lookups()
 
             # check if social tenure relationship has been setup
             str_table = curr_profile.prefix +"_social_tenure_relationship"
             self.set_str_controls(str_table)
-
 
         if self.currentId() == 4:
             validPage, msg = self.validate_STR()
@@ -770,6 +791,16 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             validPage = False
 
         return validPage
+
+    
+    def remove_geometry_entities(self):
+        """
+         Remove any entity with a geometry column from the cboParty
+         combobox
+        """
+        for index, entity in enumerate(self.entity_model.entities().values()):
+            if entity.has_geometry_column():
+                self.cboParty.removeItem(index)
 
     def pause_wizard_dialog(self):
         """
@@ -1443,7 +1474,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Event handler for editing a column.
         """
-        rid, column, model_item = self._get_column(self.tbvColumns)
+        rid, column, model_item = self._get_model(self.tbvColumns)
         
         if column and column.action == DbItem.CREATE:
             row_id, entity = self._get_entity(self.lvEntities)
@@ -1521,7 +1552,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             entity_item = model_item.entities().values()[row_id]
         return row_id, entity_item
 
-    def _get_column(self, view):
+    def _get_model(self, view):
         row_id = -1
         model_item, entity, row_id = self.get_model_entity(view)
         column = None
@@ -1538,7 +1569,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Delete selected column, show warning dialog if a column has dependencies.
         """
-        row_id, column, model_item = self._get_column(self.tbvColumns)
+        row_id, column, model_item = self._get_model(self.tbvColumns)
         if not column:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No column selected for deletion!"))
@@ -1573,12 +1604,15 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Event handler for adding a new lookup to the current profile
         """
+
         profile = self.current_profile()
         if profile:
             editor = LookupEditor(self, profile)
             result = editor.exec_()
+
             if result == 1:
                 self.lookup_view_model.add_entity(editor.lookup)
+                self.refresh_lookup_view()
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No profile selected to add lookup!"))
@@ -1595,18 +1629,31 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 self.show_message(self.tr("No lookup selected for edit!"))
                 return
 
-            row_id, lookup = self._get_entity_item(self.lvLookups)
+            row_id, lookup, model_item = self._get_model(self.lvLookups)
+
+            tmp_lookup = model_item.entity(lookup.short_name)
 
             editor = LookupEditor(self, profile, lookup)
             result = editor.exec_()
+
             if result == 1:
-                self.lookup_view_model.delete_entity(lookup)
-                self.lookup_view_model.removeRow(row_id)
-                self.lookup_view_model.add_entity(editor.lookup)
+                model_index_name  = model_item.index(row_id, 0)
+                model_item.setData(model_index_name, editor.lookup.short_name)
+                model_item.edit_entity(tmp_lookup, editor.lookup)
+
+                profile.entities[tmp_lookup.short_name] = editor.lookup
+                profile.entities[editor.lookup.short_name] = \
+                        profile.entities.pop(tmp_lookup.short_name)
+                
+
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "Nothing to edit!"))
 
+
+    def show_lookups(self, profile):
+        for vl in profile.value_lists():
+            self.show_message(vl.short_name)
 
     def delete_lookup(self):
         """
@@ -1632,14 +1679,15 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             "".format(lookup.name, lookup.name)))
             return
 
+        # dont delete `tenure_type` lookup
+        if lookup.short_name == 'check_tenure_type':
+            self.show_message(self.tr("Cannot delete tenure "
+            "type lookup table!"))
+            return
+
         msg = self.tr('Delete selected lookup?')
         if self.query_box_yesno(msg) == QMessageBox.Yes:
-            # dont delete `tenure_type` lookup
-            if lookup.short_name == 'check_tenure_type':
-                self.show_message(self.tr("Cannot delete tenure "
-                "type lookup table!"))
-                return
-
+            profile.entities[lookup.short_name].action = DbItem.DROP
             profile.remove_entity(lookup.short_name)
             self.lookup_view_model.removeRow(row_id)
 

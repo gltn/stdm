@@ -16,7 +16,8 @@
     <CodeValue value="Friend of Sub-Tenant" code=""/>
    </ValueList>
    <ValueList name="check_person_document_type">
-    <CodeValue value="General" code=""/>
+    <CodeValue value="Photo" code=""/>
+    <CodeValue value="Identification Card" code=""/>
    </ValueList>
    <ValueList name="check_structure_document_type">
     <CodeValue value="General" code=""/>
@@ -186,10 +187,6 @@
     <CodeValue value="Public" code="PUB"/>
     <CodeValue value="Communal" code="COM"/>
    </ValueList>
-   <ValueList name="check_special_landuse">
-    <CodeValue value="Military" code="MIL"/>
-    <CodeValue value="NGO" code="NGO"/>
-   </ValueList>
    <ValueList name="check_officer_rank">
     <CodeValue value="Assistant" code="ASS"/>
     <CodeValue value="Cartographer/ Draughtsman" code="CAR"/>
@@ -207,22 +204,20 @@
     <CodeValue value="General" code="G"/>
    </ValueList>
    <ValueList name="check_person_document_type">
-    <CodeValue value="General" code="G"/>
-   </ValueList>
-   <ValueList name="check_farmer_document_type">
-    <CodeValue value="General" code=""/>
+    <CodeValue value="Photo" code=""/>
+    <CodeValue value="Identification Card" code=""/>
    </ValueList>
   </ValueLists>
   <Entity editable="True" global="False" associative="False" description="Person is an individual" documentTypeLookup="check_person_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Person" name="lo_person">
    <Columns>
     <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="" minimum="0" maximum="30" description="First name" index="False" name="first_name" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
-    <Column unique="False" tip="" minimum="0" maximum="30" description="Middle name" index="False" name="middle_name" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
-    <Column unique="False" tip="" minimum="0" maximum="30" description="Last name" index="False" name="last_name" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="First name" index="False" name="first_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Middle name" index="False" name="middle_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Last name" index="False" name="last_name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
     <Column unique="False" tip="" minimum="0" maximum="2147483647" description="Gender" index="False" name="gender_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
      <Relation name="fk_lo_check_gender_id_lo_person_gender_id"/>
     </Column>
-    <Column unique="False" tip="" minimum="0001-01-01" maximum="9999-12-31" description="date of birth" index="False" name="date_of_birth" searchable="False" TYPE_INFO="DATE" mandatory="False">
+    <Column unique="False" tip="" minimum="0001-01-01" maximum="9999-12-31" description="date of birth" index="False" name="date_of_birth" searchable="True" TYPE_INFO="DATE" mandatory="False">
      <currentDate minimum="False" maximum="False"/>
     </Column>
     <Column unique="False" tip="The marital status of the person" minimum="0" maximum="2147483647" description="The marital status of the person" index="False" name="marital_status" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
@@ -236,7 +231,7 @@
   <Entity editable="True" global="False" associative="False" description="Parcel represents the spatial unit" documentTypeLookup="check_parcel_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Parcel" name="lo_parcel">
    <Columns>
     <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="" minimum="0" maximum="30" description="Unique identifier" index="False" name="code" searchable="False" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="30" description="Unique identifier" index="False" name="code" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
     <Column unique="False" tip="" minimum="0.0" maximum="1.79769313486e+308" description="Area of the parcel in square unit" index="False" name="area" searchable="False" TYPE_INFO="DOUBLE" mandatory="False"/>
     <Column unique="False" tip="" minimum="0.0" maximum="1.79769313486e+308" description="Monetary value of the parcel" index="False" name="value" searchable="False" TYPE_INFO="DOUBLE" mandatory="False"/>
     <Column unique="False" tip="" minimum="0" maximum="2147483647" description="Parcel type" index="False" name="parcel_type_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
@@ -244,9 +239,6 @@
     </Column>
     <Column unique="False" tip="" minimum="0" maximum="2147483647" description="Land use of the parcel" index="False" name="landuse_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
      <Relation name="fk_lo_check_landuse_id_lo_parcel_landuse_id"/>
-    </Column>
-    <Column unique="False" tip="" minimum="0" maximum="2147483647" description="Special land use of the parcel." index="False" name="special_landuse_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
-     <Relation name="fk_lo_check_special_landuse_id_lo_parcel_special_landuse_id"/>
     </Column>
     <Column unique="False" tip="" minimum="0" maximum="2147483647" description="The dispute on the parcel" index="False" name="dispute_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
      <Relation name="fk_lo_check_dispute_id_lo_parcel_dispute_id"/>
@@ -326,7 +318,6 @@
    <EntityRelation displayColumns="" child="Parcel_supporting_document" parent="supporting_document" name="fk_lo_supporting_document_id_lo_parcel_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
    <EntityRelation displayColumns="name,code" child="Parcel" parent="check_parcel_type" name="fk_lo_check_parcel_type_id_lo_parcel_parcel_type_id" parentColumn="id" childColumn="parcel_type_id"/>
    <EntityRelation displayColumns="name,code" child="Parcel" parent="check_landuse" name="fk_lo_check_landuse_id_lo_parcel_landuse_id" parentColumn="id" childColumn="landuse_id"/>
-   <EntityRelation displayColumns="name,code" child="Parcel" parent="check_special_landuse" name="fk_lo_check_special_landuse_id_lo_parcel_special_landuse_id" parentColumn="id" childColumn="special_landuse_id"/>
    <EntityRelation displayColumns="name,code" child="Parcel" parent="check_dispute" name="fk_lo_check_dispute_id_lo_parcel_dispute_id" parentColumn="id" childColumn="dispute_id"/>
    <EntityRelation displayColumns="name,code" child="Surveyor" parent="check_gender" name="fk_lo_check_gender_id_lo_surveyor_gender_id" parentColumn="id" childColumn="gender_id"/>
    <EntityRelation displayColumns="name,code" child="Surveyor" parent="check_officer_rank" name="fk_lo_check_officer_rank_id_lo_surveyor_officer_rank_id" parentColumn="id" childColumn="officer_rank_id"/>
@@ -337,9 +328,6 @@
    <EntityRelation displayColumns="national_id" child="Survey" parent="Planner" name="fk_lo_planner_id_lo_survey_planner" parentColumn="id" childColumn="planner"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Person" name="fk_lo_person_id_lo_social_tenure_relationship_party_id" parentColumn="id" childColumn="party_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Parcel" name="fk_lo_parcel_id_lo_social_tenure_relationship_spatial_unit_id" parentColumn="id" childColumn="spatial_unit_id"/>
-   <EntityRelation displayColumns="name,code" child="Farmer_supporting_document" parent="check_farmer_document_type" name="fk_lo_check_farmer_document_type_id_lo_farmer_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
-   <EntityRelation displayColumns="" child="Farmer_supporting_document" parent="Farmer" name="fk_lo_farmer_id_lo_farmer_supporting_document_farmer_id" parentColumn="id" childColumn="farmer_id"/>
-   <EntityRelation displayColumns="" child="Farmer_supporting_document" parent="supporting_document" name="fk_lo_supporting_document_id_lo_farmer_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
   </Relations>
   <SocialTenure layerDisplay="local_government_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Parcel" supportsMultipleParties="True" party="Person"/>
  </Profile>
@@ -356,7 +344,8 @@
     <CodeValue value="Tenancy" code=""/>
    </ValueList>
    <ValueList name="check_farmer_document_type">
-    <CodeValue value="General" code=""/>
+    <CodeValue value="National ID" code=""/>
+    <CodeValue value="Photo" code=""/>
    </ValueList>
    <ValueList name="check_garden_document_type">
     <CodeValue value="General" code=""/>
@@ -436,8 +425,18 @@
     <Column unique="False" tip="The residence area of the farmer" minimum="0" maximum="2147483647" description="The residence area of the farmer" index="False" name="residence_area" searchable="True" TYPE_INFO="ADMIN_SPATIAL_UNIT" mandatory="False">
      <Relation name="fk_admin_spatial_unit_set_id_ru_farmer_residence_area"/>
     </Column>
+    <Column unique="False" tip="The socio-economic impact on the farmer" description="The socio-economic impact on the farmer" index="False" name="socio_economic_impact" searchable="False" TYPE_INFO="MULTIPLE_SELECT" mandatory="False">
+     <associationEntity name="ru_socio_economic_impact"/>
+    </Column>
+    <Column unique="False" tip="The input service that is given a priority rank" description="The input service that is given a priority rank" index="False" name="input_service" searchable="False" TYPE_INFO="MULTIPLE_SELECT" mandatory="False">
+     <associationEntity name="ru_input_service"/>
+    </Column>
    </Columns>
   </Entity>
+  <Associations>
+   <Association secondParent="Farmer" firstParent="check_socio_economic_impact" shortName="socio_economic_impact" name="ru_socio_economic_impact"/>
+   <Association secondParent="Farmer" firstParent="check_input_service" shortName="input_service" name="ru_input_service"/>
+  </Associations>
   <Entity editable="True" global="False" associative="False" description="Refers to the farm land or the spatial unit" documentTypeLookup="check_garden_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Garden" name="ru_garden">
    <Columns>
     <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
@@ -519,34 +518,6 @@
     </Column>
    </Columns>
   </Entity>
-  <Entity editable="True" global="False" associative="False" description="The socio-economic impact of the project" proxy="False" createId="True" supportsDocuments="False" shortName="Impact" name="ru_impact">
-   <Columns>
-    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="The farmer whose impact is reported" minimum="0" maximum="2147483647" description="The farmer whose impact is reported" index="False" name="farmer" searchable="False" TYPE_INFO="FOREIGN_KEY" mandatory="False">
-     <Relation name="fk_ru_farmer_id_ru_impact_farmer"/>
-    </Column>
-    <Column unique="False" tip="The socio-economic impact on the farmer" description="The socio-economic impact on the farmer" index="False" name="socio_economic_impact" searchable="False" TYPE_INFO="MULTIPLE_SELECT" mandatory="False">
-     <associationEntity name="ru_socio_economic_impact"/>
-    </Column>
-   </Columns>
-  </Entity>
-  <Associations>
-   <Association secondParent="Impact" firstParent="check_socio_economic_impact" shortName="socio_economic_impact" name="ru_socio_economic_impact"/>
-  </Associations>
-  <Entity editable="True" global="False" associative="False" description="Priority inputs to improve livelihood" proxy="False" createId="True" supportsDocuments="False" shortName="Priority" name="ru_priority">
-   <Columns>
-    <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="The farmer whose priority is recorded" minimum="0" maximum="2147483647" description="The farmer whose priority is recorded" index="False" name="farmer" searchable="False" TYPE_INFO="FOREIGN_KEY" mandatory="False">
-     <Relation name="fk_ru_farmer_id_ru_priority_farmer"/>
-    </Column>
-    <Column unique="False" tip="The input service that is given a priority rank" minimum="0" maximum="2147483647" description="The input service that is given a priority rank" index="False" name="input_service" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
-     <Relation name="fk_ru_check_input_service_id_ru_priority_input_service"/>
-    </Column>
-    <Column unique="False" tip="The input service priority rank" minimum="0" maximum="2147483647" description="The input service priority rank" index="False" name="rank" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
-     <Relation name="fk_ru_check_rank_id_ru_priority_rank"/>
-    </Column>
-   </Columns>
-  </Entity>
   <Entity editable="True" global="False" associative="False" description="Refers to the survey of the project" proxy="False" createId="True" supportsDocuments="False" shortName="Survey" name="ru_survey">
    <Columns>
     <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
@@ -575,6 +546,10 @@
    <EntityRelation displayColumns="name,code" child="Farmer" parent="check_gender" name="fk_ru_check_gender_id_ru_farmer_gender" parentColumn="id" childColumn="gender"/>
    <EntityRelation displayColumns="name,code" child="Farmer" parent="check_marital_status" name="fk_ru_check_marital_status_id_ru_farmer_marital_status" parentColumn="id" childColumn="marital_status"/>
    <EntityRelation displayColumns="name,code" child="Farmer" parent="admin_spatial_unit_set" name="fk_admin_spatial_unit_set_id_ru_farmer_residence_area" parentColumn="id" childColumn="residence_area"/>
+   <EntityRelation displayColumns="" child="socio_economic_impact" parent="check_socio_economic_impact" name="fk_ru_check_socio_economic_impact_id_ru_socio_economic_impact_ru_check_socio_economic_impact_id" parentColumn="id" childColumn="ru_check_socio_economic_impact_id"/>
+   <EntityRelation displayColumns="" child="socio_economic_impact" parent="Farmer" name="fk_ru_farmer_id_ru_socio_economic_impact_ru_farmer_id" parentColumn="id" childColumn="ru_farmer_id"/>
+   <EntityRelation displayColumns="" child="input_service" parent="check_input_service" name="fk_ru_check_input_service_id_ru_input_service_ru_check_input_service_id" parentColumn="id" childColumn="ru_check_input_service_id"/>
+   <EntityRelation displayColumns="" child="input_service" parent="Farmer" name="fk_ru_farmer_id_ru_input_service_ru_farmer_id" parentColumn="id" childColumn="ru_farmer_id"/>
    <EntityRelation displayColumns="name,code" child="Garden_supporting_document" parent="check_garden_document_type" name="fk_ru_check_garden_document_type_id_ru_garden_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
    <EntityRelation displayColumns="" child="Garden_supporting_document" parent="Garden" name="fk_ru_garden_id_ru_garden_supporting_document_garden_id" parentColumn="id" childColumn="garden_id"/>
    <EntityRelation displayColumns="" child="Garden_supporting_document" parent="supporting_document" name="fk_ru_supporting_document_id_ru_garden_supporting_document_supporting_doc_id" parentColumn="id" childColumn="supporting_doc_id"/>
@@ -594,12 +569,6 @@
    <EntityRelation displayColumns="name,code" child="Witness" parent="check_gender" name="fk_ru_check_gender_id_ru_witness_gender" parentColumn="id" childColumn="gender"/>
    <EntityRelation displayColumns="name,code" child="Witness" parent="admin_spatial_unit_set" name="fk_admin_spatial_unit_set_id_ru_witness_residence_area" parentColumn="id" childColumn="residence_area"/>
    <EntityRelation displayColumns="name,code" child="Witness" parent="check_witness_relationship" name="fk_ru_check_witness_relationship_id_ru_witness_relationship" parentColumn="id" childColumn="relationship"/>
-   <EntityRelation displayColumns="national_id" child="Impact" parent="Farmer" name="fk_ru_farmer_id_ru_impact_farmer" parentColumn="id" childColumn="farmer"/>
-   <EntityRelation displayColumns="" child="socio_economic_impact" parent="check_socio_economic_impact" name="fk_ru_check_socio_economic_impact_id_ru_socio_economic_impact_ru_check_socio_economic_impact_id" parentColumn="id" childColumn="ru_check_socio_economic_impact_id"/>
-   <EntityRelation displayColumns="" child="socio_economic_impact" parent="Impact" name="fk_ru_impact_id_ru_socio_economic_impact_ru_impact_id" parentColumn="id" childColumn="ru_impact_id"/>
-   <EntityRelation displayColumns="national_id" child="Priority" parent="Farmer" name="fk_ru_farmer_id_ru_priority_farmer" parentColumn="id" childColumn="farmer"/>
-   <EntityRelation displayColumns="name,code" child="Priority" parent="check_input_service" name="fk_ru_check_input_service_id_ru_priority_input_service" parentColumn="id" childColumn="input_service"/>
-   <EntityRelation displayColumns="name,code" child="Priority" parent="check_rank" name="fk_ru_check_rank_id_ru_priority_rank" parentColumn="id" childColumn="rank"/>
    <EntityRelation displayColumns="national_id" child="Survey" parent="Enumerator" name="fk_ru_enumerator_id_ru_survey_enumerator" parentColumn="id" childColumn="enumerator"/>
    <EntityRelation displayColumns="national_id" child="Survey" parent="Respondent" name="fk_ru_respondent_id_ru_survey_respondent" parentColumn="id" childColumn="respondent"/>
    <EntityRelation displayColumns="national_id" child="Survey" parent="Respondent" name="fk_ru_respondent_id_ru_survey_witness" parentColumn="id" childColumn="witness"/>

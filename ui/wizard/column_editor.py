@@ -49,7 +49,7 @@ LOGGER = logging.getLogger('stdm')
 LOGGER.setLevel(logging.DEBUG)
 
 RESERVED_KEYWORDS = ['id', 'documents', 'spatial_unit', 'supporting_document',
-        'social_tenure', 'social_tenure_relationship']
+        'social_tenure', 'social_tenure_relationship','geometry']
 
 class ColumnEditor(QDialog, Ui_ColumnEditor):
     """
@@ -152,6 +152,11 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         text = column.display_name()
         self.cboDataType.setCurrentIndex(self.cboDataType.findText(text))
+
+        ti = self.current_type_info()
+        ps = self.type_attribs[ti].get('prop_set', None)
+        if ps is not None:
+            self.type_attribs[ti]['prop_set']= self.prop_set
 
     def column_to_wa(self, column):
         """
@@ -328,7 +333,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 'mandt':{'check_state':False, 'enabled_state':False},
                 'search':{'check_state':False, 'enabled_state':False},
                 'unique':{'check_state':True, 'enabled_state':False},
-                'index':{'check_state':False, 'enabled_state':False},
+                'index':{'check_state':True, 'enabled_state':False},
                 'srid':"", 'geom_type':0,
                 'property':self.geometry_property, 'prop_set':False }
 
@@ -531,6 +536,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
     def property_set(self):
         self.prop_set = True
+        self.type_attribs[self.current_type_info()]['prop_set'] = True
 
     def is_property_set(self, ti):
         """
@@ -540,10 +546,12 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         :type ti: BaseColumn.TYPE_INFO
         :rtype: boolean
         """
-        if self.prop_set is None:
-            return self.type_attribs[ti].get('prop_set', True)
-        else:
-            return self.prop_set
+        return self.type_attribs[ti].get('prop_set', True)
+
+        #if self.prop_set is None:
+            #return self.type_attribs[ti].get('prop_set', True)
+        #else:
+            #return self.prop_set
 
     def property_by_name(self, ti, name):
         try:
