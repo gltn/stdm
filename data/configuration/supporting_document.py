@@ -31,7 +31,7 @@ LOGGER = logging.getLogger('stdm')
 
 class SupportingDocument(Entity):
     """
-    Base class containing information on all documents that have appended to
+    Base class containing information on all documents that are appended to
     different entities within a given profile.
     """
     TYPE_INFO = 'SUPPORTING_DOCUMENT'

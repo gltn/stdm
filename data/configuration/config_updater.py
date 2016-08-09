@@ -240,7 +240,6 @@ class ConfigurationSchemaUpdater(QObject):
         :param profile: Profile whose foreign key references are to be updated.
         :type profile: Profile
         """
-        from PyQt4.QtGui import QMessageBox
         fks = profile_foreign_keys(profile)
 
         for er in profile.relations.values():
