@@ -65,7 +65,7 @@ class Profile(QObject):
     entity_added = pyqtSignal(Entity)
     entity_removed = pyqtSignal(unicode)
 
-    def __init__(self, name, configuration, is_new=True):
+    def __init__(self, name, configuration):
         """
         :param name: A unique name to identify the profile.
         :type name: str
