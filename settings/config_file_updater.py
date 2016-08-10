@@ -39,7 +39,7 @@ from ..data.pg_utils import export_data, import_data, pg_table_exists
 COLUMN_TYPE_DICT = {'character varying': 'VARCHAR', 'date': 'DATE',
                     'serial': 'SERIAL', 'integer': 'INT', 'lookup':
                         'LOOKUP', 'double precision': 'DOUBLE', 'GEOMETRY':
-                        'GEOMETRY', 'FOREIGN_KEY': 'FOREIGN_KEY'}
+                        'GEOMETRY', 'FOREIGN_KEY': 'FOREIGN_KEY', }
 COLUMN_PROPERTY_DICT = {'SERIAL': {"unique": "False", "tip": "",
                                     "minimum": "-9223372036854775808",
                                     "maximum": "9223372036854775807",
@@ -1149,7 +1149,7 @@ class ConfigurationFileUpdater(object):
 
     def _clean_data(self, values):
         """
-        Cleans data from db
+        Cleans data from db removes apostrophes and converts datetime
         :param values:
         :return: list
         """
@@ -1166,12 +1166,16 @@ class ConfigurationFileUpdater(object):
                             inner_data_list.append(data)
                         else:
                             inner_data_list.append(data)
+
                 elif isinstance(data, datetime.date):
                     data = data.strftime('%Y-%m-%d')
                     inner_data_list.append(data)
+
                 else:
                     inner_data_list.append(data)
-                    new_data_list.append(inner_data_list)
+
+            new_data_list.append(inner_data_list)
+
         return new_data_list
 
     def backup_data(self):
@@ -1267,7 +1271,13 @@ class ConfigurationFileUpdater(object):
                         # Remove Unicode
                         values = new_values.replace("u\'", "\'")
                         column_keys = ",".join(new_keys)
-                        import_data(social_tenure_table, column_keys, values)
+                        print values
+                        if not import_data(social_tenure_table, column_keys,
+                                       values):
+                            QMessageBox.information(None, "Data Import",
+                                                    "Data already exists in "
+                                                    "table {0}".format(
+                                                        social_tenure_table))
                     else:
                         pass
 
