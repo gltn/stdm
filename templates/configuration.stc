@@ -1,5 +1,5 @@
 <Configuration version="1.2">
- <Profile description="A configuration best suited to unplanned settlements with no planning and building regulations." name="Informal_Settlement">
+ <Profile description="The Informal Settlement profile is best suited to unplanned settlements with no planning and building regulations." name="Informal_Settlement">
   <ValueLists>
    <ValueList name="check_social_tenure_relationship_document_type">
     <CodeValue value="General" code=""/>
@@ -155,7 +155,7 @@
   </Relations>
   <SocialTenure layerDisplay="informal_settlement_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Structure" supportsMultipleParties="True" party="Person"/>
  </Profile>
- <Profile description="A configuration best suited to local government such as districts, zones, counties and so on." name="Local_Government">
+ <Profile description="The Local Government profile is best suited to local government such as districts, zones, counties and so on." name="Local_Government">
   <ValueLists>
    <ValueList name="check_social_tenure_relationship_document_type">
     <CodeValue value="General" code="G"/>
@@ -339,7 +339,7 @@
   </Relations>
   <SocialTenure layerDisplay="local_government_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Parcel" supportsMultipleParties="True" party="Person"/>
  </Profile>
- <Profile description="A configuration best suited to rural areas with farmers and farm land" name="Rural_Agriculture">
+ <Profile description="The Rural Agriculture profile is best suited to rural areas with farmers and farm land" name="Rural_Agriculture">
   <ValueLists>
    <ValueList name="check_social_tenure_relationship_document_type">
     <CodeValue value="General" code=""/>
