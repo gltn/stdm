@@ -26,7 +26,6 @@ from PyQt4.QtCore import (
 
 from qgis.core import *
 
-from PyQt4.QtGui import QMessageBox
 from sqlalchemy.sql.expression import text
 from sqlalchemy.exc import SQLAlchemyError
 from geoalchemy2 import WKBElement
@@ -193,6 +192,7 @@ def export_data(table_name):
 
     return _execute(t)
 
+
 def import_data(table_name, columns_names, data, **kwargs):
 
     sql = "INSERT INTO {0} ({1}) VALUES {2}".format(table_name,
@@ -204,12 +204,12 @@ def import_data(table_name, columns_names, data, **kwargs):
     try:
         result = conn.execute(t, **kwargs)
         trans.commit()
+        print result
         return result
 
-    except IntegrityError:
+    except IntegrityError as e:
         trans.rollback()
-        QMessageBox.warning(None, "Data Import", "Data has already been "
-                                                 "imported!")
+        return False
 
     conn.close()
 
