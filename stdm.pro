@@ -39,6 +39,7 @@ SOURCES = \
           ui\foreign_key_mapper.py \
           ui\geometry.py \
           ui\geometry_editor.py \
+          ui\gpx_table.py \
           ui\import_data.py \
           ui\license_agreement.py \
           ui\login_dlg.py \
@@ -59,14 +60,17 @@ SOURCES = \
           ui\composer\table_data_source.py \
           ui\customcontrols\combobox_with_other.py \
           ui\customcontrols\coordinates_editor.py \
+          ui\customcontrols\relation_line_edit.py \
+          ui\forms\spatial_unit_form.py \
+          ui\forms\widgets.py \
           ui\helpers\datamanagemixin.py \
+          ui\helpers\valuehandlers.py \
           ui\importexport\multiple_enumeration_dialog.py \
           ui\importexport\related_table_dialog.py \
           ui\importexport\translator_config.py \
           ui\wizard\bigint_property.py \
           ui\wizard\column_depend.py \
           ui\wizard\column_editor.py \
-          ui\wizard\create_entity.py \
           ui\wizard\create_lookup.py \
           ui\wizard\create_lookup_value.py \
           ui\wizard\double_property.py \
@@ -95,7 +99,6 @@ FORMS =	\
         ui\ui_export_data.ui \
         ui\ui_foreign_key_mapper.ui \
         ui\ui_gps_tool.ui \
-        ui\ui_gps_tool_checked.ui \
         ui\ui_gpx_add_attribute_info.ui \
         ui\ui_gpx_table.ui \
         ui\ui_gpx_table_widget.ui \

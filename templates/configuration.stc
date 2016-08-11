@@ -192,12 +192,11 @@
     <CodeValue value="Communal" code="COM"/>
    </ValueList>
    <ValueList name="check_officer_rank">
-    <CodeValue value="Assistant" code="ASS"/>
-    <CodeValue value="Cartographer/ Draughtsman" code="CAR"/>
-    <CodeValue value="Chief" code="CHI"/>
-    <CodeValue value="County" code="COU"/>
-    <CodeValue value="Normal" code="NOR"/>
-    <CodeValue value="Senior" code="SEN"/>
+    <CodeValue value="Assistant" code=""/>
+    <CodeValue value="Cartographer/ Draughtsman" code=""/>
+    <CodeValue value="Chief" code=""/>
+    <CodeValue value="County" code=""/>
+    <CodeValue value="Senior" code=""/>
    </ValueList>
    <ValueList name="check_dispute">
     <CodeValue value="Border" code="BOR"/>
