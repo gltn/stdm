@@ -874,6 +874,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def config_update_started(self):
         self.button(QWizard.FinishButton).setEnabled(False)
+        self.button(QWizard.CancelButton).setEnabled(False)
         QCoreApplication.processEvents()
 
         self.txtHtml.setFontWeight(75)
@@ -895,6 +896,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.txtHtml.append(msg)
 
     def config_update_completed(self, status):
+        self.button(QWizard.CancelButton).setEnabled(True)
         if status:
             self.txtHtml.setTextColor(QColor(51, 182, 45))
             self.txtHtml.setFontWeight(75)
@@ -1478,6 +1480,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         
         if column and column.action == DbItem.CREATE:
             row_id, entity = self._get_entity(self.lvEntities)
+
 
             params = {}
             params['parent'] = self

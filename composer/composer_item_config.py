@@ -448,6 +448,7 @@ class OpenTemplateConfig(SaveTemplateConfig):
         
         if docSelector.exec_() == QDialog.Accepted:
             docName, file_path = docSelector.documentMapping()
+
             self.composerWrapper().create_new_document_designer(file_path)
             
 OpenTemplateConfig.register()
@@ -477,3 +478,5 @@ class ManageTemplatesConfig(ComposerItemConfig):
         docManager.exec_()
             
 ManageTemplatesConfig.register()
+
+

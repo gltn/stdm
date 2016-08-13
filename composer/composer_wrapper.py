@@ -855,7 +855,7 @@ class ComposerWrapper(QObject):
             
         elif len(selectedItems) > 1:
             self._stdmItemPropDock.setWidget(None)
-        
+
         
         
         
