@@ -126,7 +126,8 @@ class _EntityDocumentViewerHandler(object):
 
         QApplication.setOverrideCursor(Qt.WaitCursor)
 
-        #Create document widgets proxies for loading into the doc viewer
+        # Create document widgets proxies
+        # for loading into the doc viewer
         for i, d in enumerate(documents):
             #Update progress dialog
             p_msg = prog_msg.format((i+1), num_docs)
@@ -149,7 +150,8 @@ class _EntityDocumentViewerHandler(object):
         self._doc_view_manager.setVisible(True)
 
     def root_directory_exists(self):
-        #Returns True if the root document directory exists, otherwise False.
+        # Returns True if the root document
+        # directory exists, otherwise False.
         dir = QDir(self._network_doc_path)
 
         return dir.exists()
@@ -159,11 +161,11 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
     """
     Dialog for browsing entity records in a table view.
     """
-    
-    '''
-    Custom signal that is raised when the dialog is in SELECT state. It contains
-    the record id of the selected row.
-    '''
+
+    # Custom signal that is raised when the dialog
+    # is in SELECT state. It contains
+    # the record id of the selected row.
+
     recordSelected = pyqtSignal(int)
     
     def __init__(self, entity, parent=None, state=MANAGE):
@@ -1017,12 +1019,17 @@ class EntityBrowserWithEditor(EntityBrowser):
                 )
 
                 self.add_spatial_unit_layer(sel_lyr_name)
-
-                self.highlight_geom(
-                    iface.mapCanvas(),
-                    iface.activeLayer(),
-                    geom_wkb
+                layers = QgsMapLayerRegistry.instance().\
+                    mapLayersByName(
+                    sel_lyr_name
                 )
+                if len(layers) > 0:
+
+                    self.highlight_geom(
+                        iface.mapCanvas(),
+                        layers[0],
+                        geom_wkb
+                    )
 
     def highlight_geom(
             self, map_canvas, layer, geom

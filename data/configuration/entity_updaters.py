@@ -194,7 +194,7 @@ def value_list_updater(value_list, engine, metadata):
 
         model_obj = model()
 
-        #If does not exist then create
+        #If it does not exist then create
         if len(matching_items) == 0:
             model_obj.code = cd.code
             model_obj.value = cd.value

@@ -247,6 +247,9 @@ class STDMFieldWidget():
         to be used in form initialization.
         :param table: The table name of the layer
         :type table: String
+        :param spatial_column: The spatial column name
+        of the layer
+        :type spatial_column: String
         :param curr_layer: The current layer of form.
         :type curr_layer: QgsVectorLayer
         :return: None
@@ -401,6 +404,9 @@ class STDMFieldWidget():
         :param feature_id: the ID of a feature that
         is last added
         :type feature_id: Integer
+        :param spatial_column: The spatial column name
+        of the layer
+        :type spatial_column: String
         :return: None
         :rtype:NoneType
         """
