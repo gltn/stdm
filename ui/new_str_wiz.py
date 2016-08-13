@@ -870,7 +870,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         #Load headers
         if db_model is not None:
             entity_display_columns(self.party)
-            # Append str type if the method is used for str_type
+            # Append str type if the method
+            # is used for str_type
 
             #First (ID) column will always be hidden
             headers.append('Social Tenure Type')
@@ -965,17 +966,21 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.spatial_unit_notice.clear()
 
         # If entry is found, show error and return
-        if usage_count.spatial_unit_count > 0:
+        if usage_count > 0:
             if self.social_tenure.multi_party:
-                if usage_count.spatial_unit_count == 1:
+                if usage_count == 1:
                     ocup = ' party.'
                 else:
                     ocup = ' parties.'
                 msg = QApplication.translate(
                     "newSTRWiz",
-                    'This ' + format_name(self.spatial_unit.short_name) +
-                    ' has already been assigned to '+
-                    str(usage_count.spatial_unit_count)+ocup
+                    'This {} has already been assigned to {}{}'.format(
+                        format_name(
+                            self.spatial_unit.short_name
+                        ),
+                        str(usage_count),
+                        ocup
+                    )
                 )
                 self.spatial_unit_notice.insertNotification(
                     msg, INFORMATION
@@ -1018,7 +1023,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 spatial_unit_obj
             )
 
-            if usage_count.spatial_unit_count > 0:
+            if usage_count > 0:
                 fk_mapper = self.sender()
                 self.erase_table_data(
                     fk_mapper._tbFKEntity
@@ -1042,7 +1047,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         ).filter(
             self.str_model.spatial_unit_id == model_obj.id
         ).first()
-        return usage_count
+
+        return usage_count.spatial_unit_count
 
 
     def buildSummary(self):

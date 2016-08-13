@@ -35,7 +35,7 @@ from stdm.data.database import (
 )
 from stdm.data.qtmodels import UsersRolesModel
 from stdm.utils import *
-
+from stdm.utils.util import getIndex
 from ui_content_auth import Ui_frmContentAuth
 
 class contentAuthDlg(QDialog, Ui_frmContentAuth):

@@ -209,6 +209,7 @@ class DocumentGeneratorDialogWrapper(object):
         """
         return self._doc_gen_dlg.exec_()
 
+
 class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
     """
     Dialog that enables a user to generate documents by using configuration
