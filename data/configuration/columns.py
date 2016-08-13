@@ -107,7 +107,7 @@ class BaseColumn(ColumnItem):
         self._intialized = True
 
         #Attributes in the database that need to monitored for any changes
-        self._monitor_attrs = ['mandatory', 'index', 'unique' ]
+        self._monitor_attrs = ['mandatory', 'searchable', 'index', 'unique' ]
 
         self.updated_db_attrs = {}
 
