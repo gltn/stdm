@@ -38,8 +38,9 @@ from ..data.pg_utils import export_data, import_data, pg_table_exists
 
 COLUMN_TYPE_DICT = {'character varying': 'VARCHAR', 'date': 'DATE',
                     'serial': 'SERIAL', 'integer': 'INT', 'lookup':
-                        'LOOKUP', 'double precision': 'DOUBLE', 'GEOMETRY':
-                        'GEOMETRY', 'FOREIGN_KEY': 'FOREIGN_KEY', }
+                    'LOOKUP', 'double precision': 'DOUBLE', 'GEOMETRY':
+                    'GEOMETRY', 'FOREIGN_KEY': 'FOREIGN_KEY', 'boolean': 'BOOL'
+                    , 'text': 'TEXT'}
 COLUMN_PROPERTY_DICT = {'SERIAL': {"unique": "False", "tip": "",
                                     "minimum": "-9223372036854775808",
                                     "maximum": "9223372036854775807",
