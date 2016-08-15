@@ -1183,6 +1183,7 @@ class ConfigurationFileUpdater(object):
         Method that backups data
         """
         if self.old_config_file:
+            # Backup of entities participating in social tenure relationship
             keys, values = self._set_social_tenure_table()
             no_tables = len(values)
             progress_message_bar = self.iface.messageBar().createMessage(
@@ -1271,7 +1272,6 @@ class ConfigurationFileUpdater(object):
                         # Remove Unicode
                         values = new_values.replace("u\'", "\'")
                         column_keys = ",".join(new_keys)
-                        print values
                         if not import_data(social_tenure_table, column_keys,
                                        values):
                             QMessageBox.information(None, "Data Import",
@@ -1288,3 +1288,6 @@ class ConfigurationFileUpdater(object):
                 progress.setValue(progress_i + 1)
                 progress_i += 1
             self.iface.messageBar().clearWidgets()
+
+            # Backup of social tenure relationship tables, str_relations and
+            #  supporting documents.
