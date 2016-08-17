@@ -45,6 +45,7 @@ class TranslatorDialogBase(object):
         self._dest_table = dest_table
         self._dest_col = dest_col
         self._src_col = src_col
+        self._current_profile = current_profile()
 
     def source_columns(self):
         """
@@ -52,6 +53,19 @@ class TranslatorDialogBase(object):
         :rtype: list
         """
         return self._source_cols
+
+    def entity(self):
+        """
+        :return: Returns the entity object corresponding to the destination
+        table.
+        :rtype: Entity
+        """
+        if self._current_profile is None:
+            return None
+
+        return self._current_profile.entity_by_name(
+            self._dest_table
+        )
 
     def selected_source_column(self):
         """
@@ -86,7 +100,10 @@ class TranslatorDialogBase(object):
         """
         curr_profile = current_profile()
 
-        tables = profile_user_tables(curr_profile, False).keys()
+        tables = profile_user_tables(
+            self._current_profile,
+            False
+        ).keys()
 
         return tables
 

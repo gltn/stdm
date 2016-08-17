@@ -380,7 +380,7 @@
        <item row="3" column="0" colspan="4">
         <widget class="QCheckBox" name="chk_virtual">
          <property name="text">
-          <string>Show virtual fields</string>
+          <string>Show virtual columns</string>
          </property>
         </widget>
        </item>
