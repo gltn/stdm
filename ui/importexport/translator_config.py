@@ -17,6 +17,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from collections import OrderedDict
 from PyQt4.QtGui import (
     QApplication,
     QDialog,
@@ -25,15 +26,16 @@ from PyQt4.QtGui import (
 
 from stdm.data.importexport.value_translators import SourceValueTranslator
 
-from .related_table_dialog import RelatedTableDialog
-from .multiple_enumeration_dialog import MultipleEnumerationDialog
+from stdm.ui.importexport.related_table_dialog import RelatedTableDialog
+from stdm.ui.importexport.source_document_dialog import SourceDocumentTranslatorDialog
+from stdm.ui.importexport.multiple_enumeration_dialog import MultipleEnumerationDialog
 
 class ValueTranslatorConfig(object):
     """
     Base class for all import widget translators.
     """
-    translators = {}
-    key = ""
+    translators = OrderedDict()
+    key = ''
 
     @classmethod
     def register(cls):
@@ -65,6 +67,7 @@ class ValueTranslatorConfig(object):
         """
         raise NotImplementedError
 
+
 class RelatedTableTranslatorConfig(ValueTranslatorConfig):
     """
     Configuration for the RelatedTableTranslator widget.
@@ -78,6 +81,25 @@ class RelatedTableTranslatorConfig(ValueTranslatorConfig):
                                   src_col)
 
 RelatedTableTranslatorConfig.register()
+
+class SourceDocumentTranslatorConfig(ValueTranslatorConfig):
+    """
+    Configuration for the SourceDocumentTranslator widget.
+    """
+    key = QApplication.translate("SourceDocumentTranslatorConfig",
+                                 "Supporting documents")
+
+    @staticmethod
+    def create(parent, source_cols, dest_table, dest_col, src_col):
+        return SourceDocumentTranslatorDialog(
+            parent,
+            source_cols,
+            dest_table,
+            dest_col,
+            src_col
+        )
+
+SourceDocumentTranslatorConfig.register()
 
 '''
 class MultipleEnumerationTranslatorConfig(ValueTranslatorConfig):

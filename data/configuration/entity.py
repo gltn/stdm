@@ -37,6 +37,7 @@ from stdm.data.configuration.columns import (
     ForeignKeyColumn,
     GeometryColumn,
     LookupColumn,
+    MultipleSelectColumn,
     SerialColumn
 )
 from stdm.data.configuration.db_items import (
@@ -436,6 +437,24 @@ class Entity(QObject, TableItem):
 
         return self.supporting_doc.document_path()
 
+    def virtual_columns(self):
+        """
+        :return: Returns a list of derived columns such as multi-select
+        columns, supporting document columns separated by document type etc.
+        :rtype: list
+        """
+        virtual_cols = []
+
+        if self.supports_documents:
+            doc_types = self.document_types()
+            virtual_cols.extend(doc_types)
+
+        multi_select_cols = self.columns_by_type_info(
+            MultipleSelectColumn.TYPE_INFO
+        )
+        virtual_cols.extend(multi_select_cols)
+
+        return virtual_cols
 
 class EntitySupportingDocument(Entity):
     """
