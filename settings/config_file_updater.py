@@ -26,6 +26,7 @@ import time
 
 from collections import OrderedDict
 
+import errno
 from PyQt4.QtCore import QFile, QIODevice, Qt, QTextStream
 from PyQt4.QtGui import QMessageBox, QProgressBar
 from PyQt4.QtXml import QDomDocument
@@ -34,7 +35,8 @@ from ..data.configuration.config_updater import ConfigurationSchemaUpdater
 from ..data.configuration.exception import ConfigurationException
 from ..data.configfile_paths import FilePaths
 from ..data.configuration.stdm_configuration import StdmConfiguration
-from ..data.pg_utils import export_data, import_data, pg_table_exists
+from ..data.pg_utils import export_data, import_data, pg_table_exists, \
+    export_data_from_columns
 
 COLUMN_TYPE_DICT = {'character varying': 'VARCHAR', 'date': 'DATE',
                     'serial': 'SERIAL', 'integer': 'INT', 'lookup':
@@ -77,6 +79,32 @@ GEOMETRY_TYPES = {'LINESTRING': '1', 'POINT': '0', 'POLYGON': '2'}
 
 IMPORT = "import"
 
+STR_TABLES = OrderedDict([
+                ('social_tenure_relationship',
+                    OrderedDict([
+                        ('old', ('id', 'social_tenure_type',
+                                          'party', 'spatial_unit')),
+                        ('new', ('id', 'tenure_type', 'party_id',
+                                          'spatial_unit_id'))
+                                 ])
+                ),
+                ('str_relations',
+                    OrderedDict([
+                        ('old', ('id', 'social_tenure_id',
+                                         'source_doc_id')),
+                        ('new', ('id', 'social_tenure_relationship_id',
+                                          'supporting_doc_id'))
+                                 ])
+                 ),
+                ('supporting_document',
+                    OrderedDict([
+                        ('old', ('id', 'document_id', 'filename')),
+                        ('new', ('id', 'document_identifier',
+                                          'filename'))
+                                 ])
+                 )
+            ])
+
 from ..data.pg_utils import export_data
 
 
@@ -90,6 +118,7 @@ class ConfigurationFileUpdater(object):
         self.file_handler = FilePaths()
         self.version = None
         self.config_profiles = []
+        self.config_profiles_prefix = []
         self.table_dict = OrderedDict()
         self.table_list = []
         self.lookup_dict = OrderedDict()
@@ -110,6 +139,10 @@ class ConfigurationFileUpdater(object):
                            'str_relations')
         self.parent = None
         self.upgrade = False
+        self.old_data_folder_path = os.path.join(
+            self.file_handler.localPath(), "Data", "2020")
+        self.new_data_folder_path = os.path.join(
+            self.file_handler.localPath(), "data")
 
     def _check_config_folder_exists(self):
         """
@@ -212,6 +245,15 @@ class ConfigurationFileUpdater(object):
         os.remove(os.path.join(self.file_handler.localPath(),
                                config_file))
 
+    def _mkdir_p(self, path):
+        try:
+            os.makedirs(path)
+        except OSError as exc:  # Python >2.5
+            if exc.errno == errno.EEXIST and os.path.isdir(path):
+                pass
+            else:
+                raise
+
     def _set_lookup_data(self, lookup_name, element):
 
         """
@@ -234,7 +276,7 @@ class ConfigurationFileUpdater(object):
                 count = 1
                 for j in range(lookup_node.count()):
                     lookup = lookup_node.item(j).toElement().text()
-                    code = lookup[0:3].upper()
+                    code = lookup[0:2].upper()
                     lookup_dict[code] = lookup
                     lookup_names[lookup] = count
                     count += 1
@@ -494,6 +536,9 @@ class ConfigurationFileUpdater(object):
                     value_list = self.doc_old.createElement("ValueList")
                     if lookup_key == "check_social_tenure_type":
                         lookup_key = "check_tenure_type"
+
+                    # Place holder for
+
                     value_list.setAttribute("name", lookup_key)
 
                     for k, v in lookup_value.iteritems():
@@ -707,7 +752,7 @@ class ConfigurationFileUpdater(object):
                                     entity_relation.setAttribute(
                                         "childColumn", "spatial_unit_id")
                                     entity_relation.setAttribute(
-                                        "name", "fk_" + pref +
+                                        "name", "fk_" + pref + "_" +
                                                 relation[0] + "_" +
                                                 relation[1] + "_" + pref +
                                         "_" + relation[0] +
@@ -718,7 +763,8 @@ class ConfigurationFileUpdater(object):
                                     entity_relation.setAttribute(
                                         "childColumn", "party_id")
                                     entity_relation.setAttribute(
-                                        "name", "fk_" + pref + relation[0] +
+                                        "name", "fk_" + pref + "_" +
+                                                relation[0] +
                                                 "_" + relation[1] + "_" +
                                                 pref + "_" + relation[0] +
                                         "_supporting_document_" + "party_id")
@@ -890,7 +936,8 @@ class ConfigurationFileUpdater(object):
                 else:
                     config_profile = config_profile
                     conf_prefix = config_profile[:2].lower()
-                self.config_profiles.append(conf_prefix)
+                self.config_profiles_prefix.append(conf_prefix)
+                self.config_profiles.append(config_profile)
                 profile_element = self.doc_old.createElement("Profile")
                 profile_element.setAttribute("description", "")
                 profile_element.setAttribute("name", config_profile)
@@ -1074,7 +1121,7 @@ class ConfigurationFileUpdater(object):
                                         else:
                                             code_value.setAttribute(
                                                 "code", missing_lookup[
-                                                        0:3].upper())
+                                                        0:2].upper())
 
                                         if missing_lookup not in \
                                                 code_values_lists:
@@ -1186,21 +1233,21 @@ class ConfigurationFileUpdater(object):
         if self.old_config_file:
             # Backup of entities participating in social tenure relationship
             keys, values = self._set_social_tenure_table()
-            no_tables = len(values)
             progress_message_bar = self.iface.messageBar().createMessage(
-                "Importing data...")
+                "Importing entities data ...")
             progress = QProgressBar()
-            progress.setMaximum(no_tables)
+            progress.setMaximum(len(values))
             progress.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
             progress_message_bar.layout().addWidget(progress)
             self.iface.messageBar(
             ).pushWidget(progress_message_bar, self.iface.messageBar().INFO)
+            progress_i = 0
+            progress.setValue(progress_i)
 
             for social_tenure_entity in values:
-                progress_i = 0
-                progress.setValue(progress_i)
+
                 social_tenure_table = \
-                    self.config_profiles[0] + "_" + social_tenure_entity[0]
+                    self.config_profiles_prefix[0] + "_" + social_tenure_entity[0]
 
                 if pg_table_exists(social_tenure_entity[0]):
 
@@ -1278,7 +1325,8 @@ class ConfigurationFileUpdater(object):
                             QMessageBox.information(None, "Data Import",
                                                     "Data already exists in "
                                                     "table {0}".format(
-                                                        social_tenure_table))
+                                                        social_tenure_entity[0]
+                                                    ))
                     else:
                         pass
 
@@ -1292,3 +1340,119 @@ class ConfigurationFileUpdater(object):
 
             # Backup of social tenure relationship tables, str_relations and
             #  supporting documents.
+
+            # TODO implement type check and return int
+            # equivalent
+            # social_tenure_type is vchar while tenure
+            # type is integer
+
+            progress_message_bar = self.iface.messageBar().createMessage(
+                "Importing STR tables ...")
+            progress = QProgressBar()
+            progress.setMaximum(len(STR_TABLES))
+            progress.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            progress_message_bar.layout().addWidget(progress)
+            self.iface.messageBar(
+            ).pushWidget(progress_message_bar, self.iface.messageBar().INFO)
+            progress_i = 0
+            progress.setValue(progress_i)
+
+            for STR_tables, v in STR_TABLES.iteritems():
+                old_columns = str(v['old']).strip("()").replace("\'", "")
+                new_columns = str(v['new']).strip("()").replace("\'", "")
+
+                if STR_tables == 'social_tenure_relationship':
+                    new_STR_table = self.config_profiles_prefix[0] + "_" + STR_tables
+                    STR_data = export_data_from_columns(old_columns,
+                                                  STR_tables).fetchall()
+                    new_STR_data_list = []
+                    for data in STR_data:
+                        list_data = list(data)
+                        for tenure_name, tenure_fkey_value in \
+                                self.lookup_colum_name_values[
+                                    'tenure_type'].iteritems():
+                            if tenure_name == list_data[1]:
+                                list_data[1] = tenure_fkey_value
+                                break
+                            else:
+                                continue
+
+                        new_STR_data_list.append(tuple(list_data))
+
+                    new_STR_data = str(new_STR_data_list).strip("[]")
+
+                    if not import_data(new_STR_table, new_columns,
+                                       new_STR_data):
+                            QMessageBox.information(None, "Data Import",
+                                                    "Data already exists in "
+                                                    "table {0}".format(
+                                                        STR_tables
+                                                    ))
+
+                elif STR_tables == 'str_relations':
+                    new_STR_table = self.config_profiles_prefix[0] + \
+                                    "_social_tenure_relationship_supporting_" \
+                                    "document"
+                    STR_data = export_data_from_columns(old_columns,
+                                                  STR_tables).fetchall()
+                    new_STR_data_list = str(STR_data).strip("[]")
+
+                    if not import_data(new_STR_table, new_columns,
+                                       new_STR_data_list):
+                            QMessageBox.information(None, "Data Import",
+                                                    "Data already exists in "
+                                                    "table {0}".format(
+                                                        STR_tables
+                                                    ))
+
+                elif STR_tables == 'supporting_document':
+                    new_STR_table = self.config_profiles_prefix[0] + "_" + STR_tables
+                    STR_data = export_data_from_columns(old_columns,
+                                                  STR_tables).fetchall()
+                    new_STR_data_list = str(STR_data).strip("[]").replace(
+                        "u\'", "\'")
+
+
+                    if not import_data(new_STR_table, new_columns,
+                                       new_STR_data_list):
+                            QMessageBox.information(None, "Data Import",
+                                                    "Data already exists in "
+                                                    "table {0}".format(
+                                                        STR_tables
+                                                    ))
+
+                time.sleep(1)
+                progress.setValue(progress_i + 1)
+                progress_i += 1
+
+            self.iface.messageBar().clearWidgets()
+
+            progress_message_bar = self.iface.messageBar().createMessage(
+                "Importing STR tables ...")
+            progress = QProgressBar()
+            progress.setMaximum(len(os.listdir(self.old_data_folder_path)))
+            progress.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            progress_message_bar.layout().addWidget(progress)
+            self.iface.messageBar(
+            ).pushWidget(progress_message_bar, self.iface.messageBar().INFO)
+            progress_i = 0
+            progress.setValue(progress_i)
+
+            if os.path.isdir(self.old_data_folder_path):
+                src_files = os.listdir(self.old_data_folder_path)
+                for file_name in src_files:
+                    full_file_name = os.path.join(self.old_data_folder_path,
+                                                  file_name)
+                    path_new_directory = os.path.join(self.new_data_folder_path,
+                                                 self.config_profiles[0],
+                                                 self.config_profiles[0] +
+                                                 "_social_tenure_relationship",
+                                                 "general")
+                    self._mkdir_p(path_new_directory)
+                    if os.path.isfile(full_file_name):
+                        shutil.copy(full_file_name, path_new_directory)
+                    time.sleep(1)
+                    progress.setValue(progress_i + 1)
+                    progress_i += 1
+
+                self.iface.messageBar().clearWidgets()
