@@ -192,6 +192,13 @@ def export_data(table_name):
 
     return _execute(t)
 
+def export_data_from_columns(columns, table_name):
+    sql = "SELECT {0} FROM {1}".format(columns, table_name)
+
+    t = text(sql)
+
+    return _execute(t)
+
 
 def import_data(table_name, columns_names, data, **kwargs):
 
