@@ -1376,29 +1376,31 @@ class ConfigurationFileUpdater(object):
                     new_STR_table = self.config_profiles_prefix[0] + "_" + STR_tables
                     STR_data = export_data_from_columns(old_columns,
                                                   STR_tables).fetchall()
-                    new_STR_data_list = []
-                    for data in STR_data:
-                        list_data = list(data)
-                        for tenure_name, tenure_fkey_value in \
-                                self.lookup_colum_name_values[
-                                    'tenure_type'].iteritems():
-                            if tenure_name == list_data[1]:
-                                list_data[1] = tenure_fkey_value
-                                break
-                            else:
-                                continue
 
-                        new_STR_data_list.append(tuple(list_data))
+                    if len(STR_data) > 0:
+                        new_STR_data_list = []
+                        for data in STR_data:
+                            list_data = list(data)
+                            for tenure_name, tenure_fkey_value in \
+                                    self.lookup_colum_name_values[
+                                        'tenure_type'].iteritems():
+                                if tenure_name == list_data[1]:
+                                    list_data[1] = tenure_fkey_value
+                                    break
+                                else:
+                                    continue
 
-                    new_STR_data = str(new_STR_data_list).strip("[]")
+                            new_STR_data_list.append(tuple(list_data))
 
-                    if not import_data(new_STR_table, new_columns,
-                                       new_STR_data):
-                            QMessageBox.information(None, "Data Import",
-                                                    "Data already exists in "
-                                                    "table {0}".format(
-                                                        STR_tables
-                                                    ))
+                        new_STR_data = str(new_STR_data_list).strip("[]")
+
+                        if not import_data(new_STR_table, new_columns,
+                                           new_STR_data):
+                                QMessageBox.information(None, "Data Import",
+                                                        "Data already exists in "
+                                                        "table {0}".format(
+                                                            STR_tables
+                                                        ))
 
                 elif STR_tables == 'str_relations':
                     new_STR_table = self.config_profiles_prefix[0] + \
@@ -1406,15 +1408,17 @@ class ConfigurationFileUpdater(object):
                                     "document"
                     STR_data = export_data_from_columns(old_columns,
                                                   STR_tables).fetchall()
-                    new_STR_data_list = str(STR_data).strip("[]")
 
-                    if not import_data(new_STR_table, new_columns,
-                                       new_STR_data_list):
-                            QMessageBox.information(None, "Data Import",
-                                                    "Data already exists in "
-                                                    "table {0}".format(
-                                                        STR_tables
-                                                    ))
+                    if len(STR_data) > 0:
+                        new_STR_data_list = str(STR_data).strip("[]")
+
+                        if not import_data(new_STR_table, new_columns,
+                                           new_STR_data_list):
+                                QMessageBox.information(None, "Data Import",
+                                                        "Data already exists in "
+                                                        "table {0}".format(
+                                                            STR_tables
+                                                        ))
 
                 elif STR_tables == 'supporting_document':
                     new_STR_table = self.config_profiles_prefix[0] + "_" + \
@@ -1422,17 +1426,19 @@ class ConfigurationFileUpdater(object):
 
                     STR_data = export_data_from_columns(old_columns,
                                                   STR_tables).fetchall()
-                    new_STR_data_list = str(STR_data).strip("[]").replace(
-                        "u\'", "\'")
+
+                    if len(STR_data) > 0:
+                        new_STR_data_list = str(STR_data).strip("[]").replace(
+                            "u\'", "\'")
 
 
-                    if not import_data(new_STR_table, new_columns,
-                                       new_STR_data_list):
-                            QMessageBox.information(None, "Data Import",
-                                                    "Data already exists in "
-                                                    "table {0}".format(
-                                                        STR_tables
-                                                    ))
+                        if not import_data(new_STR_table, new_columns,
+                                           new_STR_data_list):
+                                QMessageBox.information(None, "Data Import",
+                                                        "Data already exists in "
+                                                        "table {0}".format(
+                                                            STR_tables
+                                                        ))
 
                 time.sleep(1)
                 progress.setValue(progress_i + 1)
