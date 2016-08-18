@@ -37,6 +37,10 @@ from ..data.configfile_paths import FilePaths
 from ..data.configuration.stdm_configuration import StdmConfiguration
 from ..data.pg_utils import export_data, import_data, pg_table_exists, \
     export_data_from_columns
+from ..settings.registryconfig import (
+    RegistryConfig,
+    CONFIG_UPDATED
+)
 
 COLUMN_TYPE_DICT = {'character varying': 'VARCHAR', 'date': 'DATE',
                     'serial': 'SERIAL', 'integer': 'INT', 'lookup':
@@ -154,6 +158,7 @@ class ConfigurationFileUpdater(object):
             self.file_handler.localPath(), "Data", "2020")
         self.new_data_folder_path = os.path.join(
             self.file_handler.localPath(), "data")
+        self.reg_config = RegistryConfig()
 
     def _check_config_folder_exists(self):
         """
@@ -997,41 +1002,57 @@ class ConfigurationFileUpdater(object):
         """
         if self._check_config_folder_exists():
 
+            config_updated_dic = self.reg_config.read([CONFIG_UPDATED])
+
+            config_updated_val = config_updated_dic[CONFIG_UPDATED]
+
             # Check if old configuration file exists
             if self._check_config_file_exists("stdmConfig.xml"):
 
-                if QMessageBox.information(
-                        None, "Update STDM Configuration",
-                        "Do you want to upgrade your configuration file "
-                        "and import your data?\n\n"
-                        "If you click No, your configuration and data will "
-                        "no longer be accessible to STDM.\n"
-                        "If you click Yes, you will be able to access your "
-                        "old configuration with the data.", QMessageBox.Yes
-                                | QMessageBox.No) == QMessageBox.Yes:
-                    self.upgrade = True
-                    self.old_config_file = True
-                    doc, root = self._get_doc_element(os.path.join(
-                        self.file_handler.localPath(), "stdmConfig.xml"))
-                    child_nodes = root.childNodes()
+                # if config file exists, check if registry key exists
+                if len(config_updated_dic) < 1:
+                    # if it doesn't exist, create it with a value of False (
+                    # '0')
+                    self.reg_config.write({'ConfigUpdated': '0'})
 
-                    # Parse old configuration to dictionary
-                    self._set_version_profile(child_nodes)
+                if config_updated_val == '0':
 
-                    # Create config file
-                    self._create_config_file("configuration.stc")
+                    if QMessageBox.information(
+                            None, "Update STDM Configuration",
+                            "Do you want to upgrade your configuration file "
+                            "and import your data?\n\n"
+                            "If you click No, your configuration and data will"
+                            "no longer be accessible to STDM.\n"
+                            "If you click Yes, you will be able to access your"
+                            "old configuration with the data.", QMessageBox.Yes
+                                    | QMessageBox.No) == QMessageBox.Yes:
+                        self.upgrade = True
+                        self.old_config_file = True
+                        doc, root = self._get_doc_element(os.path.join(
+                            self.file_handler.localPath(), "stdmConfig.xml"))
+                        child_nodes = root.childNodes()
 
-                    # Create configuration node and version
-                    self._populate_config_from_old_config()
-                    return self.upgrade
+                        # Parse old configuration to dictionary
+                        self._set_version_profile(child_nodes)
 
-                else:
-                    old_config_file = os.path.join(
-                        self.file_handler.localPath(), "stdmConfig.xml")
-                    path = self.file_handler.localPath()
-                    self._rename_old_config_file(old_config_file, path)
-                    self._copy_config_file_from_template()
-                    return self.upgrade
+                        # Create config file
+                        self._create_config_file("configuration.stc")
+
+                        # Create configuration node and version
+                        self._populate_config_from_old_config()
+
+                        self.reg_config.write({'ConfigUpdated': '1'})
+
+                        return self.upgrade
+
+                    else:
+                        # old_config_file = os.path.join(
+                        #     self.file_handler.localPath(), "stdmConfig.xml")
+                        # path = self.file_handler.localPath()
+                        # self._rename_old_config_file(old_config_file, path)
+                        self._copy_config_file_from_template()
+                        self.reg_config.write({'ConfigUpdated': '2'})
+                        return self.upgrade
 
             else:
                 # Check of new config format exists
@@ -1446,32 +1467,39 @@ class ConfigurationFileUpdater(object):
 
             self.iface.messageBar().clearWidgets()
 
-            progress_message_bar = self.iface.messageBar().createMessage(
-                "Importing STR tables ...")
-            progress = QProgressBar()
-            progress.setMaximum(len(os.listdir(self.old_data_folder_path)))
-            progress.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-            progress_message_bar.layout().addWidget(progress)
-            self.iface.messageBar(
-            ).pushWidget(progress_message_bar, self.iface.messageBar().INFO)
-            progress_i = 0
-            progress.setValue(progress_i)
-
             if os.path.isdir(self.old_data_folder_path):
-                src_files = os.listdir(self.old_data_folder_path)
-                for file_name in src_files:
-                    full_file_name = os.path.join(self.old_data_folder_path,
-                                                  file_name)
-                    path_new_directory = os.path.join(self.new_data_folder_path,
-                                                 self.config_profiles[0],
-                                                 self.config_profiles[0] +
-                                                 "_social_tenure_relationship",
-                                                 "general")
-                    self._mkdir_p(path_new_directory)
-                    if os.path.isfile(full_file_name):
-                        shutil.copy(full_file_name, path_new_directory)
-                    time.sleep(1)
-                    progress.setValue(progress_i + 1)
-                    progress_i += 1
+                progress_message_bar = self.iface.messageBar().createMessage(
+                    "Importing STR tables ...")
+                progress = QProgressBar()
+                progress.setMaximum(len(os.listdir(self.old_data_folder_path)))
+                progress.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+                progress_message_bar.layout().addWidget(progress)
+                self.iface.messageBar(
+                ).pushWidget(progress_message_bar, self.iface.messageBar(
 
-                self.iface.messageBar().clearWidgets()
+                ).INFO)
+                progress_i = 0
+                progress.setValue(progress_i)
+
+                if os.path.isdir(self.old_data_folder_path):
+                    src_files = os.listdir(self.old_data_folder_path)
+                    for file_name in src_files:
+                        full_file_name = os.path.join(
+                            self.old_data_folder_path,
+                                                      file_name)
+                        path_new_directory = os.path.join(
+                            self.new_data_folder_path,
+                                                     self.config_profiles[0],
+                                                     self.config_profiles[0] +
+                                                     "_social_tenure_relationship",
+                                                     "general")
+                        self._mkdir_p(path_new_directory)
+                        if os.path.isfile(full_file_name):
+                            shutil.copy(full_file_name, path_new_directory)
+                        time.sleep(1)
+                        progress.setValue(progress_i + 1)
+                        progress_i += 1
+
+                    self.iface.messageBar().clearWidgets()
+
+            return (self.config_profiles[0], )
