@@ -88,6 +88,8 @@ from mapping import (
     StdmMapToolCreateFeature
 )
 
+from stdm.settings.template_updater import TemplateUpdater
+
 from stdm.utils.util import (
     getIndex,
     db_user_tables,
@@ -533,6 +535,10 @@ class STDMQGISLoader(object):
         config_serializer = ConfigurationFileSerializer(
             config_path
         )
+
+        # upgrade_template = TemplateUpdater()
+        #
+        # upgrade_template.process_update()
 
         try:
             config_serializer.load()
