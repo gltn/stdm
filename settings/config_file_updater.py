@@ -49,17 +49,20 @@ COLUMN_PROPERTY_DICT = {'SERIAL': {"unique": "False", "tip": "",
                                     "index": "False", "mandatory": "False"},
                         'VARCHAR': {"unique": "False", "tip": "",
                                     "minimum": "0", "maximum": "30",
-                                    "index": "False", "mandatory": "False"},
+                                    "index": "False", "mandatory": "False",
+                                    "searchable": "True"},
                         'INT': {"unique": "False", "tip": "",
                                 "minimum": "-9223372036854775806",
                                 "maximum": "9223372036854775807",
                                 "index": "False", "mandatory": "False"},
                         'DATE':   {"unique": "False", "tip": "",
                                    "minimum": "0", "maximum": "30",
-                                   "index": "False", "mandatory": "False"},
+                                   "index": "False", "mandatory": "False",
+                                   "searchable": "False"},
                         'LOOKUP': {"unique": "False", "tip": "",
                                    "minimum": "0", "maximum": "30",
-                                   "index": "False", "mandatory": "False"},
+                                   "index": "False", "mandatory": "False",
+                                   "searchable": "True"},
                         'DOUBLE': {"unique": "False", "tip": "",
                                    "minimum": "0", "maximum": "0",
                                    "index": "False", "mandatory": "False"},
@@ -72,6 +75,14 @@ COLUMN_PROPERTY_DICT = {'SERIAL': {"unique": "False", "tip": "",
                                     "index": "False", "mandatory": "False"},
                         'FOREIGN_KEY': {"unique": "False", "tip": "",
                                         "minimum": "0", "maximum":"2147483647",
+                                        "index": "False", "mandatory":
+                                            "False"},
+                        'TEXT': {"unique": "False", "tip": "",
+                                        "minimum": "0", "maximum":"100",
+                                        "index": "False", "mandatory":
+                                            "False"},
+                        'BOOL': {"unique": "False", "tip": "",
+                                        "minimum": "0", "maximum":"10",
                                         "index": "False", "mandatory":
                                             "False"},
                         }
@@ -1406,7 +1417,9 @@ class ConfigurationFileUpdater(object):
                                                     ))
 
                 elif STR_tables == 'supporting_document':
-                    new_STR_table = self.config_profiles_prefix[0] + "_" + STR_tables
+                    new_STR_table = self.config_profiles_prefix[0] + "_" + \
+                                    STR_tables
+
                     STR_data = export_data_from_columns(old_columns,
                                                   STR_tables).fetchall()
                     new_STR_data_list = str(STR_data).strip("[]").replace(
