@@ -54,7 +54,8 @@ from qgis.utils import (
     iface
 )
 
-from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
+
 from sqlalchemy.sql.expression import text
 from sqlalchemy.schema import (
     Table,
@@ -400,8 +401,7 @@ class DocumentGenerator(QObject):
                 elif filePath is None and len(dataFields) > 0:
                     docFileName = self._build_file_name(data_source, entityFieldName,
                                                       entityFieldValue, dataFields, fileExtension)
-                    print   data_source, entityFieldName, entityFieldValue, dataFields, fileExtension
-                    print docFileName
+
                     # Replace unsupported characters in Windows file naming
                     docFileName = docFileName.replace('/', '_').replace \
                         ('\\', '_').replace(':', '_').strip('*?"<>|')
@@ -794,18 +794,22 @@ class DocumentGenerator(QObject):
         """
         meta = MetaData(bind=STDMDb.instance().engine)
         dsTable = Table(dataSourceName, meta, autoload=True)
+        try:
+            if not queryField and not queryValue:
+                #Return all the rows; this is currently limited to 100 rows
+                results = self._dbSession.query(dsTable).limit(100).all()
 
-        if not queryField and not queryValue:
-            #Return all the rows; this is currently limited to 100 rows
-            results = self._dbSession.query(dsTable).limit(100).all()
+            else:
+                if isinstance(queryValue, str) or isinstance(queryValue, unicode):
+                    queryValue = u"'{0}'".format(queryValue)
+                sql = "{0} = :qvalue".format(queryField)
+                results = self._dbSession.query(dsTable).filter(sql).params(qvalue=queryValue).all()
 
-        else:
-            if isinstance(queryValue, str) or isinstance(queryValue, unicode):
-                queryValue = u"'{0}'".format(queryValue)
-            sql = "{0} = :qvalue".format(queryField)
-            results = self._dbSession.query(dsTable).filter(sql).params(qvalue=queryValue).all()
-        
-        return dsTable, results
+            return dsTable, results
+        except SQLAlchemyError as ex:
+            self._dbSession.rollback()
+            raise ex
+
     
     def _composer_output_path(self):
         """
