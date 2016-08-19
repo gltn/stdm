@@ -987,12 +987,12 @@ class ConfigurationFileUpdater(object):
         self.doc_old.clear()
 
         # Rename the old configuration file after parsing it
-        if self._check_config_file_exists("stdmConfig.xml"):
-            # self._remove_old_config_file("stdmConfig.xml")
-            old_config_file = os.path.join(
-                        self.file_handler.localPath(), "stdmConfig.xml")
-            path = self.file_handler.localPath()
-            self._rename_old_config_file(old_config_file, path)
+        # if self._check_config_file_exists("stdmConfig.xml"):
+        #     # self._remove_old_config_file("stdmConfig.xml")
+        #     old_config_file = os.path.join(
+        #                 self.file_handler.localPath(), "stdmConfig.xml")
+        #     path = self.file_handler.localPath()
+        #     self._rename_old_config_file(old_config_file, path)
 
     def load(self):
 
@@ -1004,8 +1004,6 @@ class ConfigurationFileUpdater(object):
 
             config_updated_dic = self.reg_config.read([CONFIG_UPDATED])
 
-            config_updated_val = config_updated_dic[CONFIG_UPDATED]
-
             # Check if old configuration file exists
             if self._check_config_file_exists("stdmConfig.xml"):
 
@@ -1014,6 +1012,8 @@ class ConfigurationFileUpdater(object):
                     # if it doesn't exist, create it with a value of False (
                     # '0')
                     self.reg_config.write({'ConfigUpdated': '0'})
+
+                config_updated_val = config_updated_dic[CONFIG_UPDATED]
 
                 if config_updated_val == '0':
 
@@ -1354,11 +1354,7 @@ class ConfigurationFileUpdater(object):
                         column_keys = ",".join(new_keys)
                         if not import_data(social_tenure_table, column_keys,
                                        values):
-                            QMessageBox.information(None, "Data Import",
-                                                    "Data already exists in "
-                                                    "table {0}".format(
-                                                        social_tenure_entity[0]
-                                                    ))
+                            pass
                     else:
                         pass
 
@@ -1417,11 +1413,7 @@ class ConfigurationFileUpdater(object):
 
                         if not import_data(new_STR_table, new_columns,
                                            new_STR_data):
-                                QMessageBox.information(None, "Data Import",
-                                                        "Data already exists in "
-                                                        "table {0}".format(
-                                                            STR_tables
-                                                        ))
+                            pass
 
                 elif STR_tables == 'str_relations':
                     new_STR_table = self.config_profiles_prefix[0] + \
@@ -1435,11 +1427,7 @@ class ConfigurationFileUpdater(object):
 
                         if not import_data(new_STR_table, new_columns,
                                            new_STR_data_list):
-                                QMessageBox.information(None, "Data Import",
-                                                        "Data already exists in "
-                                                        "table {0}".format(
-                                                            STR_tables
-                                                        ))
+                            pass
 
                 elif STR_tables == 'supporting_document':
                     new_STR_table = self.config_profiles_prefix[0] + "_" + \
@@ -1455,11 +1443,7 @@ class ConfigurationFileUpdater(object):
 
                         if not import_data(new_STR_table, new_columns,
                                            new_STR_data_list):
-                                QMessageBox.information(None, "Data Import",
-                                                        "Data already exists in "
-                                                        "table {0}".format(
-                                                            STR_tables
-                                                        ))
+                            pass
 
                 time.sleep(1)
                 progress.setValue(progress_i + 1)
@@ -1502,4 +1486,4 @@ class ConfigurationFileUpdater(object):
 
                     self.iface.messageBar().clearWidgets()
 
-            return (self.config_profiles[0], )
+            return (self.entities_lookup_relations)
