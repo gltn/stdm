@@ -938,6 +938,7 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         model_root_node = None
 
         prog_dialog = QProgressDialog(self)
+        prog_dialog.setFixedWidth(380)
         prog_dialog.setWindowTitle(
             QApplication.translate(
                 "STRViewEntityWidget",
