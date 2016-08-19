@@ -1481,7 +1481,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if column and column.action == DbItem.CREATE:
             row_id, entity = self._get_entity(self.lvEntities)
 
-
             params = {}
             params['parent'] = self
             params['column'] = column
@@ -1507,11 +1506,16 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
                 model_item.edit_entity(tmp_column, editor.column)
 
-                col = editor.column
+                #tmp_column.copy_attrs(editor.column)
+                entity.columns[tmp_column.name] = editor.column
+                entity.columns[editor.column.name] = \
+                        entity.columns.pop(tmp_column.name)
+
                 #Get column from entity and flag the column for editing
-                ref_column = entity.column(col.name)
-                ref_column.copy_attrs(col)
-                ref_column.action = DbItem.ALTER
+                #col = editor.column
+                #ref_column = entity.column(tmp_column.name)
+                #ref_column.copy_attrs(col)
+                #ref_column.action = DbItem.ALTER
 
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
