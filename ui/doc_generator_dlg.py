@@ -411,6 +411,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
             return
 
         composer_ds, err_msg = self._doc_generator.composer_data_source(template_doc)
+
         if composer_ds is None:
             QMessageBox.critical(self, "Error Generating documents", QApplication.translate("DocumentGeneratorDialog",
                                                 "Error Generating documents - %s"%(err_msg)))
@@ -618,12 +619,18 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
                                     )
 
         except Exception as ex:
-            LOGGER.debug('DocGeneratorDlg-onGenerate: ' + str(ex))
+            LOGGER.debug(str(ex))
             err_msg = sys.exc_info()[1]
             QApplication.restoreOverrideCursor()
 
-            QMessageBox.critical(self, "STDM", QApplication.translate("DocumentGeneratorDialog",
-                                                                       "Error Generating documents - %s"%(err_msg)))
+            QMessageBox.critical(
+                self,
+                "STDM",
+                QApplication.translate(
+                    "DocumentGeneratorDialog",
+                    "Error Generating documents - %s"%(err_msg)
+                )
+            )
             success_status = False
         #Reset UI
         self.reset(success_status)

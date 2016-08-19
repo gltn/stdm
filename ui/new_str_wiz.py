@@ -872,9 +872,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             entity_display_columns(self.party)
             # Append str type if the method
             # is used for str_type
-
+            str_type_header = QApplication.translate(
+                'newSTRWiz', 'Social Tenure Type'
+            )
             #First (ID) column will always be hidden
-            headers.append('Social Tenure Type')
+            headers.append(str_type_header)
 
             for col in entity_display_columns(self.party):
                 headers.append(format_name(col))
