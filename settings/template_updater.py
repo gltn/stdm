@@ -20,26 +20,35 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import os
+import re
+import shutil
+from distutils import dir_util
+from decimal import Decimal
 import glob
 import xml.etree.ElementTree as ET
 
 from PyQt4.QtXml import QDomDocument
 from PyQt4.QtCore import QFile, QIODevice
 from PyQt4.QtGui import (
-    QApplication, QProgressDialog, QLabel
+    QApplication, QProgressDialog, QLabel, QMessageBox
 )
 from qgis.utils import (
     iface
 )
+from qgis.core import QgsApplication
 from sqlalchemy.sql.expression import text
 
 from registryconfig import composer_template_path
 from stdm.data.pg_utils import (
-    _execute, pg_views, table_column_names, pg_table_exists
+    _execute,
+    pg_views,
+    table_column_names,
+    pg_table_exists,
+    foreign_key_parent_tables
 )
 
 class TemplateUpdater():
-    def __init__(self, prefix='ba'):
+    def __init__(self, plugin_dir, prefix='ba', profile='basic'):
         """
         Upgrades old profile templates to version 1.2 profiles.
         :param prefix: The profile prefix of the upgraded profile
@@ -47,6 +56,7 @@ class TemplateUpdater():
         :return: None
         :rtype: NoneType
         """
+        #TODO add profile_vw_social_tenure_relationship
         self.old_new_tables = {
             'party': '{}_party'.format(prefix),
             'spatial_unit':
@@ -54,9 +64,12 @@ class TemplateUpdater():
             'social_tenure_relationship':
                 '{}_social_tenure_relationship'.format(prefix),
             'str_relations':
-                '{}_social_tenure_relationship_supporting_document'.format(prefix)
+                '{}_social_tenure_relationship_supporting_document'.format(prefix),
+            'social_tenure_relations': '{}_vw_social_tenure_relationship'.format(profile)
         }
-
+        self.template_path = composer_template_path()
+        self.plugin_dir = plugin_dir
+        self.old_new_cols_list = []
         self.supporting_doc_columns = {
             'social_tenure_id': 'social_tenure_relationship_id',
             'source_doc_id': 'supporting_doc_id'
@@ -155,7 +168,6 @@ class TemplateUpdater():
                     value[attrs.item(j).nodeName()] = \
                         attrs.item(j).nodeValue()
 
-                #QApplication.processEvents()
                 if 'View' in value.values() or \
                                 'view' in value.values():
 
@@ -219,6 +231,132 @@ class TemplateUpdater():
         else:
             return self.old_new_tables[ref_table]
 
+    def extract_view_tables_columns(self, view_definition):
+        """
+        Extract view tables and columns with a
+        format of table.column.
+        :param view_definition: The Query used to
+        created the view.
+        :type view_definition: String
+        :return: List containing table.column
+        :rtype: List
+        """
+        pattern = re.compile(ur'[a-z]+\w+\.\w+')
+
+        table_cols = re.findall(pattern, view_definition)
+        return table_cols
+
+    def return_lookup(self, table_col):
+        """
+        Returns a lookup table if a column is lookup column.
+        :param table_col: table and column concatenated by '.'
+        :type table_col: String
+        :return: List containing the lookup table name
+        :rtype: List
+        """
+        table_col_list = table_col.split('.')
+        table = table_col_list[0]
+        col = table_col_list[1]
+
+        parent_lookup = [
+            a[1]
+            for a in foreign_key_parent_tables(table)
+            if a[0] == col and 'check_' in a[1]
+        ]
+
+        return parent_lookup
+
+
+    def covert_to_lookup_value(self, view_definition):
+        """
+        Converts a view definition containing lookups
+        with no id to values for better presentation.
+        :param view_definition: The Query used to
+        created the view.
+        :type view_definition: String
+        :return: An updated view definition
+        :rtype: String
+        """
+        table_cols = self.extract_view_tables_columns(
+            view_definition
+        )
+
+        for table_col in table_cols:
+
+            lookup_table_list = self.return_lookup(table_col)
+            table_col_list = table_col.split('.')
+            table = table_col_list[0]
+            column = table_col_list[1]
+            if len(lookup_table_list) > 0:
+                lookup_table = lookup_table_list[0]
+                # if lookup column is used in the middle
+                if '{},'.format(table_col) in view_definition:
+
+                    select_value = '(SELECT {0}.value ' \
+                       'FROM {0} ' \
+                       'WHERE {0}.id =' \
+                       ' {1}) AS {2},'.format(
+                        lookup_table,
+                        table_col,
+                        column
+                    )
+                    view_definition = view_definition.replace(
+                        '{},'.format(table_col), select_value
+                    )
+                # if lookup column is used at the end
+                if ', {}'.format(table_col) in view_definition:
+                    select_value = ', (SELECT {0}.value ' \
+                                   'FROM {0} ' \
+                                   'WHERE {0}.id =' \
+                                   ' {1}) AS {2}'.format(
+                        lookup_table,
+                        table_col,
+                        column
+                    )
+                    view_definition = view_definition.replace(
+                        ', {}'.format(table_col), select_value
+                    )
+                # if lookup column has alias
+                if '{} AS'.format(table_col) in view_definition:
+
+                    select_value = '(SELECT {0}.value ' \
+                                   'FROM {0} ' \
+                                   'WHERE {0}.id =' \
+                                   ' {1})'.format(
+                        lookup_table,
+                        table_col
+                    )
+                    view_definition = view_definition.replace(
+                        table_col, select_value
+                    )
+                # For ordered rows based on lookup
+                # if the join has braces
+                if ') ORDER BY CASE' in view_definition:
+                    order_statement = ' JOIN {0} ON ' \
+                        '({0}.id = {1})) ' \
+                        'ORDER BY CASE {0}.value WHEN'.format(
+                            lookup_table, table_col
+                        )
+                    view_definition = view_definition.replace(
+                        ') ORDER BY CASE {} WHEN'.format(table_col),
+                        order_statement
+                    )
+                # if the join has no braces
+                elif ') ORDER BY CASE' not in view_definition and \
+                                'ORDER BY CASE' in view_definition:
+                    order_statement = ' JOIN {0} ON ' \
+                                      '({0}.id = {1}) ' \
+                                      'ORDER BY CASE {0}.value WHEN'.format(
+                        lookup_table, table_col
+                    )
+                    view_definition = view_definition.replace(
+                        'ORDER BY CASE {} WHEN'.format(table_col),
+                        order_statement
+                    )
+
+        return view_definition
+
+
     def upgrade_view(self, view):
         """
         Upgrades the view with the new
@@ -229,7 +367,9 @@ class TemplateUpdater():
         :rtype: String
         """
         view_def = self.view_details(view)
-
+        # exclude str view of the new configuration
+        if view in self.old_new_tables.values():
+            return
         if not view_def is None:
             query_lines = view_def.splitlines()
             query_list = []
@@ -241,19 +381,39 @@ class TemplateUpdater():
                 query = 'CREATE OR REPLACE VIEW {} AS {}'.format(
                     view, query
                 )
+
             else:
                 for q in query_lines:
-                    query_list.append(self.replace_all(q).strip())
+                    query_list.append(
+                        self.replace_all(q).strip()
+                    )
+
                 query = ' '.join(query_list)
+
                 query = 'CREATE OR REPLACE VIEW new_{} AS {}'.format(
                     view, query
                 )
+
+                # convert lookup id to value
+                query = self.covert_to_lookup_value(query)
 
             try:
                 _execute(query, view_name=view)
                 return 'new_{}'.format(view)
             except Exception as ex:
-                print ex
+                QMessageBox.critical(
+                    iface.mainWindow(),
+                    QApplication.translate(
+                        'TemplateUpdater',
+                        'Template View Upgrade Error'
+                    ),
+                    QApplication.translate(
+                        'TemplateUpdater',
+                        'Failed to update template.'
+                        '{}'.format(ex)
+                    )
+                )
+
                 return None
 
     def replace_all(self, text):
@@ -267,19 +427,27 @@ class TemplateUpdater():
         """
         for old, new in self.old_new_tables.iteritems():
             # update different usage of old tables
+
             text = text.replace(
                 '{}.'.format(old), '{}.'.format(new)
             )
             text = text.replace(
                 '{},'.format(old), '{},'.format(new)
             )
+            if '{}_id'.format(old) in text:
+                text = text.replace(
+                    ' {}'.format(old), ' {}'.format(old)
+                )
+
             text = text.replace(
-                ' {}'.format(old), ' {}'.format(new)
+                ' {} '.format(old), ' {} '.format(new)
             )
             text = text.replace(
                 '({}'.format(old), '({}'.format(new)
             )
-
+            text = text.replace(
+                '{})'.format(old), '{})'.format(new)
+            )
             # update column names
             text = text.replace(
                 'social_tenure_type', 'tenure_type'
@@ -293,7 +461,18 @@ class TemplateUpdater():
                 text = text.replace(
                     '.party', '.party_id'
                 )
-            #print text
+            text = text.replace(
+                'social_tenure_id', 'social_tenure_relationship_id'
+            )
+            # remove text, integer from the query
+            # this is needed to remove data type error
+            text = text.replace(
+                '::text', ''
+            )
+            text = text.replace(
+                '::integer', ''
+            )
+
         return text
 
     def overall_progress(self, parent=None):
@@ -374,17 +553,17 @@ class TemplateUpdater():
         path = self.template_file_path(template)
         with open(path) as f:
 
+            self.old_new_cols_list[:] = []
             tree = ET.parse(f)
             root = tree.getroot()
 
             old_new_cols = self.old_new_columns(
                 old_source, new_source
             )
-            #print old_new_cols
+
             # loop through each elements in the template
             for i, elem in enumerate(root.iter()):
 
-                #TODO replace old view name with new view name
                 if elem.tag == 'DataSource':
                     # view based template
                     if ref_table is not None:
@@ -392,26 +571,73 @@ class TemplateUpdater():
                         if 'referencedTable' not in elem.attrib.keys():
                             elem.set('referencedTable', ref_table)
                         else:
-                            # if the view has ref_table, it is updated already
+                            # if the view has ref_table,
+                            # it is updated already
                             return
-                    # update the DataSource name if still using old_source
+
+                    # return: the template is already updated
+                    elif elem.attrib['name'] == new_source:
+                        return
+                    # update the DataSource name if
+                    #  still using old_source
                     if elem.attrib['name'] == old_source:
                         elem.attrib['name'] = elem.attrib['name'].replace(
                             old_source, new_source
                         )
-                    # return: the template is already updated
-                    elif elem.attrib['name'] == new_source:
-                        return
-
                     self.update_data_source_children(
                         elem, old_new_cols
                     )
+
+
+            other_old_new_col_dic = {
+                k: v
+                for old_new in self.old_new_cols_list
+                for k, v in old_new.items()
+                }
+            if len(other_old_new_col_dic) > 0:
+                old_new_cols = dict(
+                    list(old_new_cols.items()) +
+                    list(other_old_new_col_dic.items())
+                )
+            # Update other elements
+            for i, elem in enumerate(root.iter()):
                 self.update_other_elements(
                     elem, old_source, new_source, old_new_cols
                 )
 
         self.move_file(template, path)
         tree.write(template)
+
+    def update_path_items(self, elem, key, pattern, splitter, path):
+        """
+        Updates old version path with new version path of items.
+        :param elem: The element holding the item.
+        :type elem:  xml.etree.ElementTree.Element
+        :param key: The key of the path item
+        :type key: String
+        :param pattern: The pattern to be searched in the item
+        :type pattern: String
+        :param splitter: The string splitting the path to
+        exclude old path.
+        :type splitter: String
+        :param path: The new absolute path excluding the
+        item unchanged path
+        :type path: String
+        """
+        if pattern in elem.attrib[key]:
+            temp_attrib = elem.attrib[key]
+
+            temp_attrib = temp_attrib.split(
+                splitter
+            )
+
+            if len(temp_attrib) > 0:
+                new_path = ''.join([
+                    path,
+                    temp_attrib[1]
+                ])
+
+                elem.attrib[key] = new_path
 
     def update_other_elements(
             self, elem, old_source, new_source, old_new_cols
@@ -430,13 +656,15 @@ class TemplateUpdater():
         :return:
         :rtype:
         """
-        # Replace old_col columns by new_col columns if different
-        for old_col, new_col in old_new_cols.iteritems():
-            # loop through each attributes
-            # in an element
-            for key, item in elem.attrib.iteritems():
-                # if old_col column name is used,
-                # update to new_col col
+        # loop through each attributes
+        # in an element
+
+        for key, item in elem.attrib.iteritems():
+
+            # Replace old columns by new columns if different
+            for old_col, new_col in old_new_cols.iteritems():
+                # if old column name is used,
+                # update to new col
                 if item == old_col:
                     elem.attrib[key] = new_col
                 # Replace old_source by new_source if different
@@ -444,16 +672,34 @@ class TemplateUpdater():
                     elem.attrib[key] = item.replace(
                         old_source, new_source
                     ).replace(old_col, new_col)
-        # Replace old_tables by new_tables if different
-        for old_col, new_col in self.old_new_tables.iteritems():
-            if old_col != new_col:
-                # loop through each attributes
-                # in an element
-                for key, item in elem.attrib.iteritems():
+            # Replace old_tables by new_tables if different
+            for old_table, new_table in self.old_new_tables.iteritems():
+                if old_table != new_table:
                     # if old_col column name is used,
                     # update to new_col col
-                    if item == old_col:
-                        elem.attrib[key] = new_col
+                    if item == old_table:
+                        elem.attrib[key] = old_table
+
+            # replace static items in QGIS directory
+            #If svg files are used, replace them with the new version
+            qgis_path = QgsApplication.prefixPath().rstrip('.')
+            self.update_path_items(
+                elem,
+                key,
+                '/QGISWI~1.3)F/apps/qgis/svg',
+                '/QGISWI~1.3)F/apps/qgis',
+                qgis_path
+            )
+
+            # If plugin files are used, replace them
+            # with the new version directory
+            self.update_path_items(
+                elem,
+                key,
+                '/plugins/stdm/',
+                '/plugins/stdm',
+                self.plugin_dir
+            )
 
     def update_data_source_children(
             self, elem, old_new_cols
@@ -469,27 +715,39 @@ class TemplateUpdater():
         :rtype: NoneType
         """
         for itm in list(elem):
-            # print itm.attrib
+            # target photo, tables, chart elements
             if len(itm.attrib) < 1:
+                # access each children under photo, table, etc
                 for it in list(itm):
+                    # loop through each child attribute
                     for key, val in it.attrib.iteritems():
                         ref_old_new_cols = None
                         if key == 'table':
-                            # if it is view, upgrade view and
+                            # if it is view, upgrade the view and
                             # replace new view and cols
-                            if it.attrib[key] in pg_views():
+                            if val in pg_views():
+                                old_view = val
+                                if 'new_' in old_view:
+                                    old_view = old_view.lstrip(
+                                        'new_'
+                                    )
+
                                 upgraded_view = self.upgrade_view(
-                                    it.attrib[key]
+                                    old_view
                                 )
-                                it.attrib[key] = upgraded_view
-                                ref_old_new_cols = self.old_new_columns(
-                                    it.attrib[key],
-                                    upgraded_view
-                                )
+                                if not upgraded_view is None:
+                                    ref_old_new_cols = self.old_new_columns(
+                                        it.attrib[key],
+                                        upgraded_view
+                                    )
+                                    it.attrib[key] = upgraded_view
+                                    self.old_new_cols_list.append(ref_old_new_cols)
+
                             # if it is table, get new table from dic
                             # replace old with new and get new cols, old cols
                             else:
                                 if it.attrib[key] in self.old_new_tables.keys():
+
                                     ref_old_new_cols = self.old_new_columns(
                                         it.attrib[key],
                                         self.old_new_tables[
@@ -523,10 +781,10 @@ class TemplateUpdater():
         :return: None
         :rtype: NoneType
         """
-        template_path = composer_template_path()
         old_path = '{}/old_templates'.format(
-            template_path
+            self.template_path
         )
+
         old_template_path = '{}/{}'.format(
             old_path, template
         )
@@ -539,6 +797,18 @@ class TemplateUpdater():
             os.remove(old_template_path)
             os.rename(path, old_template_path)
 
+    def move_back_templates(self):
+        """
+        Moves back the template files from
+        the old_template folder. This is needed
+        for manual update.
+        """
+        old_path = '{}/old_templates'.format(
+            self.template_path
+        )
+        if os.path.exists(old_path):
+            dir_util.copy_tree(old_path, self.template_path)
+
     def old_new_columns(self, old_view, new_view):
         """
         Create a dictionary out of the old and
@@ -550,6 +820,9 @@ class TemplateUpdater():
         :return: Dictionary of old and new view columns
         :rtype: Dictionary
         """
+        if 'new_' in old_view:
+            old_view = old_view.lstrip('new_')
+
         old_columns = table_column_names(
             old_view, False, True
         )
@@ -566,7 +839,7 @@ class TemplateUpdater():
 
         return old_new_cols
 
-    def process_update(self):
+    def process_update(self, force_update=False):
         """
         Updates each templates by creating views.
         :return: None
@@ -574,6 +847,9 @@ class TemplateUpdater():
         """
         self.prog.setRange(0, len(self.templates))
         self.prog.show()
+        if force_update:
+            self.move_back_templates()
+
         for i, template in enumerate(self.templates):
 
             if self.get_source(template) is None:
@@ -634,33 +910,3 @@ class TemplateUpdater():
             self.prog.setValue(i)
         self.prog.hide()
         self.prog.cancel()
-    #
-    # def process_view_template(self, template, old_source):
-    #
-    #     if old_source == 'social_tenure_relations':
-    #         upgraded_view = self.old_new_tables[
-    #             'social_tenure_relations'
-    #         ]
-    #     else:
-    #         # if new view is already created, remove 'new_'
-    #         if 'new_' in old_source:
-    #             old_source = old_source.lstrip('new_')
-    #
-    #         upgraded_view = self.upgrade_view(
-    #             old_source
-    #         )
-    #
-    #     if upgraded_view is None:
-    #         self.progress_message(template, True)
-    #         return
-    #
-    #     ref_table = self.get_referenced_table(
-    #         old_source
-    #     )
-    #     self.progress_message(template)
-    #     self.update_template(
-    #         template,
-    #         old_source,
-    #         upgraded_view,
-    #         ref_table
-    #     )
