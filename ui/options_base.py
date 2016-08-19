@@ -56,6 +56,12 @@ from stdm.ui.login_dlg import loginDlg
 from stdm.ui.notification import NotificationBar
 from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
 from stdm.ui.ui_options import Ui_DlgOptions
+from ..settings.config_file_updater import ConfigurationFileUpdater
+
+from stdm.settings.registryconfig import (
+    RegistryConfig,
+    CONFIG_UPDATED
+)
 
 def pg_profile_names():
     """
@@ -80,11 +86,14 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
     def __init__(self, iface):
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
+        self.iface = iface
 
         self.notif_bar = NotificationBar(self.vlNotification, 6000)
         self._apply_btn = self.buttonBox.button(QDialogButtonBox.Apply)
         self._reg_config = RegistryConfig()
         self._db_config = DatabaseConfig()
+        self.configuration_file_updater = ConfigurationFileUpdater(self.iface)
+        self.reg_config = RegistryConfig()
 
         #Connect signals
         self._apply_btn.clicked.connect(self.apply_settings)
@@ -103,6 +112,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.btn_composer_out_folder.clicked.connect(
             self._on_choose_doc_generator_output_path
         )
+        self.upgradeButton.clicked.connect(self.config_updater())
 
         self._config = StdmConfiguration.instance()
         self._default_style_sheet = self.txtRepoLocation.styleSheet()
@@ -487,3 +497,15 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             return
 
         self.accept()
+
+    def config_updater(self):
+        config_updated_dic = self.reg_config.read([CONFIG_UPDATED])
+
+        # if config file exists, check if registry key exists
+        if len(config_updated_dic) < 1:
+            # if it doesn't exist, create it with a value of False ('0')
+            self.reg_config.write({'ConfigUpdated': '0'})
+
+        self.reg_config.write({'ConfigUpdated': '0'})
+
+        self.configuration_file_updater.load()

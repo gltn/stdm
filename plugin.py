@@ -588,7 +588,9 @@ class STDMQGISLoader(object):
                 if self.load_configuration_to_serializer():
                     config_updater = ConfigurationSchemaUpdater()
                     config_updater.exec_()
+                    profile_entity_lookup_rltns = \
                     self.configuration_file_updater.backup_data()
+                    # TODO pluging template update module here
                     return True
 
         else:
