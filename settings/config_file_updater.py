@@ -1409,7 +1409,8 @@ class ConfigurationFileUpdater(object):
 
                             new_STR_data_list.append(tuple(list_data))
 
-                        new_STR_data = str(new_STR_data_list).strip("[]")
+                        new_STR_data = str(new_STR_data_list).strip("[]").replace(
+                            "u\'", "\'")
 
                         if not import_data(new_STR_table, new_columns,
                                            new_STR_data):
@@ -1423,7 +1424,8 @@ class ConfigurationFileUpdater(object):
                                                   STR_tables).fetchall()
 
                     if len(STR_data) > 0:
-                        new_STR_data_list = str(STR_data).strip("[]")
+                        new_STR_data_list = str(STR_data).strip("[]").replace(
+                            "u\'", "\'")
 
                         if not import_data(new_STR_table, new_columns,
                                            new_STR_data_list):
