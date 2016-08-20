@@ -87,7 +87,7 @@ from mapping import (
     StdmMapToolCreateFeature
 )
 
-from stdm.settings.template_updater import TemplateUpdater
+from stdm.settings.template_updater import TemplateFileUpdater
 
 from stdm.utils.util import (
     getIndex,
@@ -537,9 +537,9 @@ class STDMQGISLoader(object):
             config_path
         )
 
-        # upgrade_template = TemplateUpdater(self.plugin_dir)
-        #
-        # upgrade_template.process_update()
+        upgrade_template = TemplateFileUpdater(self.plugin_dir)
+
+        upgrade_template.process_update(True)
 
         try:
             config_serializer.load()
