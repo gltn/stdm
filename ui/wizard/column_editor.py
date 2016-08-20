@@ -661,7 +661,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         new_column = self.make_column()
 
-
         if new_column is None:
             LOGGER.debug("Error creating column!")
             self.show_message('Unable to create column!')

@@ -207,6 +207,8 @@ class ColumnEntitiesModel(QStandardItemModel):
 
     def edit_entity(self, old_entity, new_entity):
         self._entities[old_entity.name] = new_entity
+        self._entities[new_entity.name] = \
+                self._entities.pop(old_entity.name)
 
     # ++
     def delete_entity(self, entity):
@@ -293,6 +295,8 @@ class LookupEntitiesModel(QStandardItemModel):
 
     def edit_entity(self, old_entity, new_entity):
         self._entities[old_entity.short_name] = new_entity
+        self._entities[new_entity.short_name] = \
+                self._entities.pop(old_entity.short_name)
 
     # ++
     def delete_entity(self, entity):

@@ -107,13 +107,35 @@ class LookupEditor(QDialog, Ui_dlgLookup):
                 "Select another name for the lookup"))
             return
 
-        new_lookup = self.create_lookup(unicode(self.edtName.text()))
-        if self.lookup is None:  # new lookup
-            self.profile.add_entity(new_lookup)
+        short_name = unicode(self.edtName.text())
 
-        self.lookup = new_lookup
+        if self.lookup is None:  # new lookup
+            if self.duplicate_check(short_name):
+                self.show_message(self.tr("Lookup with the same name already exist in the current profile!"))
+                return
+            else:
+                new_lookup = self.create_lookup(short_name)
+                self.profile.add_entity(new_lookup)
+                self.done(0)
+        else:
+            self.edit_lookup(short_name)
+            self.done(1)
+
+           #self.lookup = new_lookup
         
-        self.done(1)
+
+    def duplicate_check(self, name):
+        """
+        Return True if we have an entity in the current profile with same 'name'
+        :param name: entity short_name
+        :type name: str
+        :rtype:boolean
+        """
+        return self.profile.entities.has_key(name)
+
+    def edit_lookup(self, short_name):
+        self.lookup.short_name = short_name
+
 
     def reject(self):
         self.done(0)
