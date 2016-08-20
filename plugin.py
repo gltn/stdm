@@ -536,10 +536,10 @@ class STDMQGISLoader(object):
         config_serializer = ConfigurationFileSerializer(
             config_path
         )
-
-        upgrade_template = TemplateFileUpdater(self.plugin_dir)
-
-        upgrade_template.process_update(True)
+        #
+        # upgrade_template = TemplateFileUpdater(self.plugin_dir)
+        #
+        # upgrade_template.process_update(True)
 
         try:
             config_serializer.load()
