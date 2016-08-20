@@ -18,7 +18,6 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import logging
-import time
 import os.path
 import platform
 from collections import OrderedDict
@@ -88,7 +87,7 @@ from mapping import (
     StdmMapToolCreateFeature
 )
 
-from stdm.settings.template_updater import TemplateUpdater
+from stdm.settings.template_updater import TemplateFileUpdater
 
 from stdm.utils.util import (
     getIndex,
@@ -304,6 +303,7 @@ class STDMQGISLoader(object):
             try:
                 #Set current profile
                 self.current_profile = current_profile()
+
                 self.loadModules()
                 self.default_profile()
                 self.run_wizard()
@@ -496,6 +496,7 @@ class STDMQGISLoader(object):
                 save_current_profile(profile_name)
                 self.reload_plugin(profile_name)
 
+
             else:
                 solution = 'Do you want to run the ' \
                            'Configuration Wizard now?'
@@ -535,10 +536,10 @@ class STDMQGISLoader(object):
         config_serializer = ConfigurationFileSerializer(
             config_path
         )
-
-        # upgrade_template = TemplateUpdater()
         #
-        # upgrade_template.process_update()
+        # upgrade_template = TemplateFileUpdater(self.plugin_dir)
+        #
+        # upgrade_template.process_update(True)
 
         try:
             config_serializer.load()
@@ -629,7 +630,7 @@ class STDMQGISLoader(object):
 
 
         self.options_act = QAction(QIcon(":/plugins/stdm/images/icons/options.png"), \
-                           QApplication.translate("OptionsToolbarAction", "Options..."),
+                           QApplication.translate("OptionsToolbarAction", "Options"),
                            self.iface.mainWindow())
 
         self.manageAdminUnitsAct = QAction(
@@ -1069,6 +1070,7 @@ class STDMQGISLoader(object):
                 save_current_profile(sel_profile)
 
         self.current_profile = current_profile()
+
         LOGGER.debug(
             'Successfully changed '
             'the current profile to {}'.format(
