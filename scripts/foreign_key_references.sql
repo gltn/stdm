@@ -12,4 +12,4 @@ FROM
 WHERE constraint_type = 'FOREIGN KEY';
 
 COMMENT ON VIEW foreign_key_references
-  IS 'View for listing foregn keys and corresponding tables and columns';
+  IS 'View for listing foreign keys and corresponding tables and columns';
