@@ -400,7 +400,8 @@ class ImportData(QWizard, Ui_frmImport):
             
             if not self.dataReader.isValid():
                 self.ErrorInfoMessage("The source file could not be opened."
-                                      "it \nPlease check for the supported file types.")
+                                      "\nPlease check is the given file type "
+                                      "is supported")
                 validPage = False
                 
         if self.currentId()==1:

@@ -658,6 +658,12 @@ class SourceDocumentTranslator(SourceValueTranslator):
         #Create document container
         doc_container = QVBoxLayout()
 
+        #Register container
+        self.source_document_manager.registerContainer(
+            doc_container,
+            self.document_type_id
+        )
+
         for d in docs:
             if not d:
                 continue
@@ -675,13 +681,8 @@ class SourceDocumentTranslator(SourceValueTranslator):
                         abs_doc_path
                     )
                 )
-                raise IOError(msg)
 
-            #Register container
-            self.source_document_manager.registerContainer(
-                doc_container,
-                self.document_type_id
-            )
+                raise IOError(msg)
 
             #Upload supporting document
             self.source_document_manager.insertDocumentFromFile(

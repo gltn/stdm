@@ -221,6 +221,11 @@ class OGRReader(object):
             
             if progress.wasCanceled():
                 break
+
+            #Reset source document manager for new records
+            if destination_entity.supports_documents:
+                if not self._source_doc_manager is None:
+                    self._source_doc_manager.reset()
             
             for f in range(feat_defn.GetFieldCount()):
                 field_defn = feat_defn.GetFieldDefn(f) 
@@ -261,10 +266,6 @@ class OGRReader(object):
                             #Use geometry column SRID in the target table
                             self._geomType,self._targetGeomColSRID = \
                                 geometryType(targettable,geomColumn)
-
-                    #Reset source document manager
-                    if destination_entity.supports_documents:
-                        self._source_doc_manager.reset()
 
                     '''
                     Check if there is a value translator defined for the
