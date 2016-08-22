@@ -211,15 +211,14 @@ def import_data(table_name, columns_names, data, **kwargs):
     try:
         result = conn.execute(t, **kwargs)
         trans.commit()
-        print result
+        conn.close()
         return result
 
     except IntegrityError as e:
+        print e
         trans.rollback()
+        conn.close()
         return False
-
-    conn.close()
-
 
 def table_column_names(tableName, spatialColumns=False, creation_order=False):
     """
