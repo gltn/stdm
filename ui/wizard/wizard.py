@@ -874,6 +874,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def config_update_started(self):
         self.button(QWizard.FinishButton).setEnabled(False)
+        self.button(QWizard.CancelButton).setEnabled(False)
         QCoreApplication.processEvents()
 
         self.txtHtml.setFontWeight(75)
@@ -895,6 +896,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.txtHtml.append(msg)
 
     def config_update_completed(self, status):
+        self.button(QWizard.CancelButton).setEnabled(True)
         if status:
             self.txtHtml.setTextColor(QColor(51, 182, 45))
             self.txtHtml.setFontWeight(75)
@@ -1355,6 +1357,17 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.lookup_item_model.selectionChanged.connect(self.lookup_changed)
         self.lvLookups.setCurrentIndex(self.lookup_view_model.index(0,0))
 
+    def refresh_columns_view(self, entity):
+        """
+        Clears columns in the column view model associated
+        with the columns Table View then re-inserts columns from
+        the entity
+        """
+        self.clear_view_model(self.col_view_model)
+        self.col_view_model = ColumnEntitiesModel()
+        self.tbvColumns.setModel(self.col_view_model)
+        self.populate_columns_view(entity)
+
 
     def profile_changed(self, row_id):
         """
@@ -1474,6 +1487,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Event handler for editing a column.
         """
+
         rid, column, model_item = self._get_model(self.tbvColumns)
         
         if column and column.action == DbItem.CREATE:
@@ -1488,12 +1502,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             params['is_new'] = False
 
-            tmp_column = model_item.entity(column.name)
+            tmp_column = column #model_item.entity(column.name)
 
             editor = ColumnEditor(**params)
             result = editor.exec_()
 
             if result == 1: # after successfully editing
+
                 model_index_name  = model_item.index(rid, 0)
                 model_index_dtype = model_item.index(rid, 1)
                 model_index_desc  = model_item.index(rid, 2)
@@ -1504,11 +1519,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
                 model_item.edit_entity(tmp_column, editor.column)
 
-                col = editor.column
+                tmp_column.copy_attrs(editor.column)
+
+                entity.columns[tmp_column.name] = editor.column
+                entity.columns[editor.column.name] = \
+                        entity.columns.pop(tmp_column.name)
+                
+                self.refresh_columns_view(entity)
+
                 #Get column from entity and flag the column for editing
-                ref_column = entity.column(col.name)
-                ref_column.copy_attrs(col)
-                ref_column.action = DbItem.ALTER
+                #col = editor.column
+                #ref_column = entity.column(tmp_column.name)
+                #ref_column.copy_attrs(col)
+                #ref_column.action = DbItem.ALTER
 
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
@@ -1538,6 +1561,15 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             if entity.TYPE_INFO == 'VALUE_LIST':
                 self.lookup_view_model.add_entity(entity)
                 self.addValues_byEntity(entity)
+
+    def populate_columns_view(self, entity):
+        for column in entity.columns.values():
+            if column.action == DbItem.DROP:
+                continue
+            if column.TYPE_INFO == 'SERIAL':
+                continue
+            self.col_view_model.add_entity(column)
+            
 
     def _get_entity_item(self, view):
         """
@@ -1631,7 +1663,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             row_id, lookup, model_item = self._get_model(self.lvLookups)
 
-            tmp_lookup = model_item.entity(lookup.short_name)
+            tmp_lookup = lookup # model_item.entity(lookup.short_name)
 
             editor = LookupEditor(self, profile, lookup)
             result = editor.exec_()
@@ -1639,12 +1671,14 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             if result == 1:
                 model_index_name  = model_item.index(row_id, 0)
                 model_item.setData(model_index_name, editor.lookup.short_name)
+
                 model_item.edit_entity(tmp_lookup, editor.lookup)
 
                 profile.entities[tmp_lookup.short_name] = editor.lookup
                 profile.entities[editor.lookup.short_name] = \
                         profile.entities.pop(tmp_lookup.short_name)
-                
+
+                self.refresh_lookup_view()
 
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \

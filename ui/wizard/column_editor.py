@@ -107,12 +107,11 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         # add it to the exclusion list
         self.FK_EXCLUDE.append(self.entity.short_name)
 
-        self.cboDataType.currentIndexChanged.connect(self.change_data_type)
-
-        self.btnColProp.clicked.connect(self.data_type_property)
-
         self.type_names = \
                 [unicode(name) for name in BaseColumn.types_by_display_name().keys()]
+
+        self.cboDataType.currentIndexChanged.connect(self.change_data_type)
+        self.btnColProp.clicked.connect(self.data_type_property)
 
         self.init_controls()
 
@@ -142,6 +141,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         :param column: BaseColumn instance
         :type column: BaseColumn
         """
+        text = column.display_name()
+        self.cboDataType.setCurrentIndex(self.cboDataType.findText(text))
+
         self.edtColName.setText(column.name)
         self.edtColDesc.setText(column.description)
         self.edtUserTip.setText(column.user_tip)
@@ -149,9 +151,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.cbSearch.setCheckState(self.bool_to_check(column.searchable))
         self.cbUnique.setCheckState(self.bool_to_check(column.unique))
         self.cbIndex.setCheckState(self.bool_to_check(column.index))
-
-        text = column.display_name()
-        self.cboDataType.setCurrentIndex(self.cboDataType.findText(text))
 
         ti = self.current_type_info()
         ps = self.type_attribs[ti].get('prop_set', None)
@@ -439,7 +438,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.form_fields['srid'] = editor.coord_sys()
             self.form_fields['geom_type'] = editor.geom_type()
             self.property_set()
-            #self.type_attribs[self.type_info]['prop_set'] = True
 
     def admin_spatial_unit_property(self):
         """

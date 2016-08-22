@@ -330,4 +330,3 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
         
         else:
             return valueCollection[keyName]
-        
