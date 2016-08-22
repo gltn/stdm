@@ -1065,6 +1065,13 @@ class ConfigurationFileUpdater(object):
                         self.reg_config.write({'ConfigUpdated': '2'})
                         return self.upgrade
 
+                elif config_updated_val == '1':
+                    self.upgrade = True
+                    return self.upgrade
+
+                else:
+                    return self.upgrade
+
             else:
                 # Check of new config format exists
                 if self._check_config_file_exists("configuration.stc"):
@@ -1451,7 +1458,7 @@ class ConfigurationFileUpdater(object):
 
                     if len(STR_data) > 0:
                         new_STR_data_list = str(STR_data).strip("[]").replace(
-                            "u\'", "\'")
+                            "u\'", "\'").replace("None", "NULL")
 
 
                         if not import_data(new_STR_table, new_columns,
@@ -1498,5 +1505,7 @@ class ConfigurationFileUpdater(object):
                         progress_i += 1
 
                     self.iface.messageBar().clearWidgets()
+
+            print
 
             return (self.entities_lookup_relations)
