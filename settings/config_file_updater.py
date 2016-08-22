@@ -97,25 +97,36 @@ IMPORT = "import"
 STR_TABLES = OrderedDict([
                 ('social_tenure_relationship',
                     OrderedDict([
-                        ('old', ('id', 'social_tenure_type',
-                                          'party', 'spatial_unit')),
-                        ('new', ('id', 'tenure_type', 'party_id',
-                                          'spatial_unit_id'))
+                        ('old', ('id',
+                                 'social_tenure_type',
+                                 'party',
+                                 'spatial_unit')),
+                        ('new', ('id',
+                                 'tenure_type',
+                                 'party_id',
+                                 'spatial_unit_id'))
                                  ])
                 ),
                 ('str_relations',
                     OrderedDict([
-                        ('old', ('id', 'social_tenure_id',
-                                         'source_doc_id')),
-                        ('new', ('id', 'social_tenure_relationship_id',
-                                          'supporting_doc_id'))
+                        ('old', ('id',
+                                 'social_tenure_id',
+                                 'source_doc_id')),
+                        ('new', ('id',
+                                 'social_tenure_relationship_id',
+                                 'supporting_doc_id'))
                                  ])
                  ),
                 ('supporting_document',
                     OrderedDict([
-                        ('old', ('id', 'document_id', 'filename')),
-                        ('new', ('id', 'document_identifier',
-                                          'filename'))
+                        ('old', ('id',
+                                 'document_id',
+                                 'filename',
+                                 'doc_size')),
+                        ('new', ('id',
+                                 'document_identifier',
+                                 'filename',
+                                 'document_size'))
                                  ])
                  )
             ])
