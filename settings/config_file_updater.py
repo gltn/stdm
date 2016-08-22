@@ -107,16 +107,6 @@ STR_TABLES = OrderedDict([
                                  'spatial_unit_id'))
                                  ])
                 ),
-                ('str_relations',
-                    OrderedDict([
-                        ('old', ('id',
-                                 'social_tenure_id',
-                                 'source_doc_id')),
-                        ('new', ('id',
-                                 'social_tenure_relationship_id',
-                                 'supporting_doc_id'))
-                                 ])
-                 ),
                 ('supporting_document',
                     OrderedDict([
                         ('old', ('id',
@@ -127,6 +117,16 @@ STR_TABLES = OrderedDict([
                                  'document_identifier',
                                  'filename',
                                  'document_size'))
+                                 ])
+                 ),
+                ('str_relations',
+                    OrderedDict([
+                        ('old', ('id',
+                                 'social_tenure_id',
+                                 'source_doc_id')),
+                        ('new', ('id',
+                                 'social_tenure_relationship_id',
+                                 'supporting_doc_id'))
                                  ])
                  )
             ])
@@ -1505,7 +1505,5 @@ class ConfigurationFileUpdater(object):
                         progress_i += 1
 
                     self.iface.messageBar().clearWidgets()
-
-            print
 
             return (self.entities_lookup_relations)
