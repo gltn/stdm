@@ -577,8 +577,7 @@ def drop_view(view_name):
     t = text(del_com)
 
     try:
-        result = _execute(t)
-        print vars(result)
+        _execute(t)
         return True
 
     #Error such as view dependencies or the current user is not the owner.
