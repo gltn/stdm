@@ -271,7 +271,7 @@ class Model(object):
         Else, the full model object will be returned.
         '''
         db = STDMDb.instance()
-        #raise NameError(str(self.__class__))
+
         if len(args) == 0:            
             return db.session.query(self.__class__)
         

@@ -41,6 +41,7 @@ from stdm.data.pg_utils import (
    table_column_names,
    geometryType
 )
+from stdm.utils.util import setComboCurrentIndexWithText
 
 from .ui_composer_symbol_editor import Ui_frmComposerSymbolEditor
 from .composer_spcolumn_styler import ComposerSpatialColumnEditor
@@ -60,13 +61,16 @@ class _SimpleMarkerSymbolLayerProxyWidget(QgsSimpleMarkerSymbolLayerV2Widget,
     """
     Use this proxy so that we can manually create a marker symbol layer.
     """
-    def __init__(self, vectorLayer, parent = None):
+    def __init__(self, vectorLayer, parent=None, symbol_layer=None):
         QgsSimpleMarkerSymbolLayerV2Widget.__init__(self, vectorLayer, parent)
 
         #Set symbol layer for the widget
-        self._sym_layer = QgsSimpleMarkerSymbolLayerV2()
-        self._sym_layer.setBorderColor(Qt.red)
-        self._sym_layer.setFillColor(Qt.yellow)
+        self._sym_layer = symbol_layer
+        if self._sym_layer is None:
+            self._sym_layer = QgsSimpleMarkerSymbolLayerV2()
+            self._sym_layer.setBorderColor(Qt.red)
+            self._sym_layer.setFillColor(Qt.yellow)
+
         self.setSymbolLayer(self._sym_layer)
 
         self.remove_data_defined_properties_button()
@@ -76,12 +80,15 @@ class _SimpleLineSymbolLayerProxyWidget(QgsSimpleLineSymbolLayerV2Widget,
     """
     Use this proxy so that we can manually create a line symbol layer.
     """
-    def __init__(self, vectorLayer, parent = None):
+    def __init__(self, vectorLayer, parent=None, symbol_layer=None):
         QgsSimpleLineSymbolLayerV2Widget.__init__(self, vectorLayer, parent)
 
         #Set symbol layer for the widget
-        self._sym_layer = QgsSimpleMarkerSymbolLayerV2()
-        self._sym_layer.setColor(Qt.red)
+        self._sym_layer = symbol_layer
+        if self._sym_layer is None:
+            self._sym_layer = QgsSimpleMarkerSymbolLayerV2()
+            self._sym_layer.setColor(Qt.red)
+
         self.setSymbolLayer(self._sym_layer)
 
         self.remove_data_defined_properties_button()
@@ -93,14 +100,17 @@ class _SimpleFillSymbolLayerProxyWidget(QgsSimpleFillSymbolLayerV2Widget,
     This workaround disconnects all signals associated with the fill color button and manually
     reconnects using the 'colorChanged' signal to load color selection dialog.
     """
-    def __init__(self, vectorLayer, parent = None):
+    def __init__(self, vectorLayer, parent=None, symbol_layer=None):
         QgsSimpleFillSymbolLayerV2Widget.__init__(self, vectorLayer, parent)
         
         #Set symbol layer for the widget
-        self._symLayer = QgsSimpleFillSymbolLayerV2()
-        self._symLayer.setColor(Qt.cyan)
-        self._symLayer.setFillColor(Qt.yellow)
-        self.setSymbolLayer(self._symLayer)
+        self._sym_layer = symbol_layer
+        if self._sym_layer is None:
+            self._sym_layer = QgsSimpleFillSymbolLayerV2()
+            self._sym_layer.setColor(Qt.cyan)
+            self._sym_layer.setFillColor(Qt.yellow)
+
+        self.setSymbolLayer(self._sym_layer)
 
         self.remove_data_defined_properties_button()
         
@@ -158,6 +168,15 @@ class ComposerSymbolEditor(QWidget,Ui_frmComposerSymbolEditor):
             spFieldMappings.append(spFieldMapping)
         
         return spFieldMappings
+
+    def set_current_spatial_field(self, spatial_field):
+        """
+        Selects the current spatial field column in the combo of available
+        spatial columns.
+        :param spatial_field: Name of the spatial field to select.
+        :type spatial_field: str
+        """
+        setComboCurrentIndexWithText(self.cboSpatialFields, spatial_field)
     
     def add_spatial_field_mappings(self, spatial_field_mappings):
         """
@@ -170,8 +189,7 @@ class ComposerSymbolEditor(QWidget,Ui_frmComposerSymbolEditor):
         """
         Add a style editor tab and apply settings defined in the object.
         """
-        styleEditor = self.add_styling_widget(sp_field_mapping.spatialField())
-        styleEditor.applyMapping(sp_field_mapping)
+        self.add_styling_widget(sp_field_mapping)
        
     def on_add_column_styler_widget(self):
         """
@@ -197,32 +215,57 @@ class ComposerSymbolEditor(QWidget,Ui_frmComposerSymbolEditor):
                                                        " check the geometry type"
                                                        " of the spatial column."))
         
-    def add_styling_widget(self, sp_column_name):
+    def add_styling_widget(self, sp_field_mapping):
         """
         Add a styling widget to the field tab widget.
         """
-        symbolEditor,geomType,srid = self._build_symbol_widget(sp_column_name)
+        if isinstance(sp_field_mapping, (str, unicode)):
+            sp_column_name = sp_field_mapping
+            apply_mapping = False
+        else:
+            sp_column_name = sp_field_mapping.spatialField()
+            apply_mapping = True
+
+        symbolEditor,geomType,srid = self._build_symbol_widget(
+            sp_field_mapping
+        )
         
         if symbolEditor is None:
             return None
         
-        styleEditor = ComposerSpatialColumnEditor(sp_column_name,
-                                                  self._composerWrapper)
+        styleEditor = ComposerSpatialColumnEditor(
+            sp_column_name,
+            self._composerWrapper
+        )
         styleEditor.setSymbolEditor(symbolEditor) 
         styleEditor.setGeomType(geomType)
         styleEditor.setSrid(srid)
+
+        #Apply spatial field mapping
+        if apply_mapping:
+            styleEditor.applyMapping(sp_field_mapping)
         
         self.tbFieldProperties.addTab(styleEditor, sp_column_name)
         
         #Add column name and corresponding widget to the collection
         self._editorMappings[sp_column_name] = styleEditor
+
+        #Set current spatial field in the combobox
+        self.set_current_spatial_field(sp_column_name)
         
         return styleEditor  
     
-    def _build_symbol_widget(self, sp_column_name):
+    def _build_symbol_widget(self, sp_field_mapping):
         """
         Build symbol widget based on geometry type.
         """
+        if isinstance(sp_field_mapping, (str, unicode)):
+            sp_column_name = sp_field_mapping
+            sym_layer = None
+        else:
+            sp_column_name = sp_field_mapping.spatialField()
+            sym_layer = sp_field_mapping.symbolLayer()
+
         geom_type,srid = geometryType(self._ds_name, sp_column_name)
 
         if not geom_type:
@@ -233,19 +276,28 @@ class ComposerSymbolEditor(QWidget,Ui_frmComposerSymbolEditor):
         vl = QgsVectorLayer(vlGeomConfig, "stdm_proxy", "memory")
 
         if geom_type == "POINT" or geom_type == "MULTIPOINT":
-            symbol_editor = _SimpleMarkerSymbolLayerProxyWidget(vl)
+            symbol_editor = _SimpleMarkerSymbolLayerProxyWidget(
+                vl,
+                symbol_layer=sym_layer
+            )
             
         elif geom_type == "LINESTRING" or geom_type == "MULTILINESTRING":
-            symbol_editor = _SimpleLineSymbolLayerProxyWidget(vl)
+            symbol_editor = _SimpleLineSymbolLayerProxyWidget(
+                vl,
+                symbol_layer=sym_layer
+            )
             
         elif geom_type == "POLYGON" or geom_type == "MULTIPOLYGON":
-            symbol_editor = _SimpleFillSymbolLayerProxyWidget(vl)
+            symbol_editor = _SimpleFillSymbolLayerProxyWidget(
+                vl,
+                symbol_layer=sym_layer
+            )
             
         else:
-            return None, "", -1
+            return None, '', -1
         
-        return (symbol_editor,geom_type,srid)
-    
+        return symbol_editor, geom_type, srid
+
     def _load_fields(self):
         """
         Load spatial fields/columns of the given data source.

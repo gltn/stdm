@@ -37,9 +37,7 @@ from PyQt4.QtGui import (
     QPixmap,
     QFileDialog,
     QDialog,
-    QAbstractItemView,
-    QTableView,
-    QMessageBox
+    QAbstractItemView
 )
 from sqlalchemy import (
     func
