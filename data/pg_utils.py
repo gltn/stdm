@@ -214,20 +214,16 @@ def import_data(table_name, columns_names, data, **kwargs):
         trans.commit()
 
         conn.close()
-
-        sql_sequence_fix = text(
-            'SELECT setval({0}_id_seq, (SELECT MAX(id) FROM {0}'.format(
-                table_name
-            )
-        )
-        _execute(sql_sequence_fix)
         return result
 
-    except IntegrityError:
+    except IntegrityError as e:
+        print e
         trans.rollback()
         return False
-    except SQLAlchemyError:
+    except SQLAlchemyError as e:
+        print e
         trans.rollback()
+        return False
 
 def table_column_names(tableName, spatialColumns=False, creation_order=False):
     """
