@@ -41,9 +41,7 @@ class STDMProgressDialog:
         :rtype: QProgressDialog
         """
 
-        self.prog = QProgressDialog(
-            parent
-        )
+        self.prog = QProgressDialog(parent)
         self.prog.setFixedWidth(380)
         self.prog.setFixedHeight(100)
         self.prog.setWindowTitle(
@@ -57,7 +55,7 @@ class STDMProgressDialog:
         self.prog.setLabel(label)
 
         self.prog.setCancelButton(None)
-        self.prog.show()
+        #self.prog.show()
 
         return self.prog
 
