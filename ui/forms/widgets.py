@@ -388,6 +388,8 @@ class DoubleWidgetFactory(ColumnWidgetRegistry):
         if not value is None:
             return str(value)
 
+        return ''
+
 DoubleWidgetFactory.register()
 
 
