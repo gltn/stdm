@@ -174,6 +174,7 @@ class ConfigurationFileUpdater(object):
             source_documents_path(), "2020")
         self.new_data_folder_path = source_documents_path()
         self.reg_config = RegistryConfig()
+        self.profiles_detail = {}
 
     def _check_config_folder_exists(self):
         """
@@ -565,13 +566,23 @@ class ConfigurationFileUpdater(object):
         :return: QDomDocument Element
         """
         entity_relation_dict = {}
+        template_dict = {'supporting_document': pref + "_supporting_document",
+                         'social_tenure_relationship':
+                             pref + "_social_tenure_relationship",
+                         'str_relations': pref + "_social_tenure_relationship_"
+                                                 "supporting_document"}
+        self.profiles_detail[profile] = template_dict
 
         for key, value in values.iteritems():
             if key.endswith("lookup") and value:
                 value_lists = self.doc_old.createElement("ValueLists")
                 for lookup_key, lookup_value in value.iteritems():
                     value_list = self.doc_old.createElement("ValueList")
+
+                    template_dict[lookup_key] = pref + "_" + lookup_key
+
                     if lookup_key == "check_social_tenure_type":
+                        template_dict[lookup_key] = pref + "_check_tenure_type"
                         lookup_key = "check_tenure_type"
 
                     # Place holder for
@@ -602,6 +613,7 @@ class ConfigurationFileUpdater(object):
                 for entity_key, entity_value in value.iteritems():
                     if entity_key not in self.exclusions:
                         entity_name = pref + "_" + entity_key
+                        template_dict[entity_key] = entity_name
                         entities = self.doc_old.createElement("Entity")
                         entities.setAttribute("name", entity_name)
                         entities.setAttribute("description", entity_value[0])
@@ -1541,10 +1553,9 @@ class ConfigurationFileUpdater(object):
                                                       file_name)
                         path_new_directory = os.path.join(
                             self.new_data_folder_path,
-                                                     self.config_profiles[0],
-                                                     self.config_profiles[0] +
-                                                     "_social_tenure_relationship",
-                                                     "general")
+                            self.config_profiles[0],
+                            self.config_profiles[0] +
+                            "_social_tenure_relationship", "general")
                         self._mkdir_p(path_new_directory)
                         if os.path.isfile(full_file_name):
                             shutil.copy(full_file_name, path_new_directory)
@@ -1554,4 +1565,6 @@ class ConfigurationFileUpdater(object):
 
                     self.iface.messageBar().clearWidgets()
 
-            return (self.entities_lookup_relations)
+            QMessageBox.information(None, "template return",
+                                    str(self.profiles_detail))
+            return (self.profiles_detail)
