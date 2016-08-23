@@ -1294,7 +1294,7 @@ class ConfigurationFileUpdater(object):
                         isinstance(data, datetime.date):
                         if data.find("\'") is not -1:
                             data = data[:data.find("\'")] + \
-                                                   "$$" + data[data.find(
+                                                   "" + data[data.find(
                                                 "\'") + 1:]
                             inner_data_list.append(data)
                         else:
@@ -1565,6 +1565,4 @@ class ConfigurationFileUpdater(object):
 
                     self.iface.messageBar().clearWidgets()
 
-            QMessageBox.information(None, "template return",
-                                    str(self.profiles_detail))
             return (self.profiles_detail)
