@@ -554,7 +554,7 @@ class STDMQGISLoader(object):
 
             return False
 
-    def load_configuration_from_file(self):
+    def load_configuration_from_file(self, parent=None, force_upgrade=False):
         """
         Load configuration object from the file.
         :return: True if the file was successfully
@@ -568,13 +568,14 @@ class STDMQGISLoader(object):
             config_path
         )
 
-        upgrade_template = TemplateFileUpdater(self.plugin_dir)
+        if force_upgrade:
+            self.configuration_file_updater.progress.prog.setParent(parent)
+            upgrade_status = self.configuration_file_updater.load(parent, True)
+        else:
+            upgrade_status = self.configuration_file_updater.load()
 
-        upgrade_template.process_update(True)
 
-
-
-        if self.configuration_file_updater.load():
+        if upgrade_status:
 
             # Checks configuration file version if its equals to
             # configuration instance returns True, else False
@@ -588,9 +589,33 @@ class STDMQGISLoader(object):
                 if self.load_configuration_to_serializer():
                     config_updater = ConfigurationSchemaUpdater()
                     config_updater.exec_()
-                    profile_entity_lookup_rltns = \
+                    profile_details_dict, progress = \
                     self.configuration_file_updater.backup_data()
-                    # TODO pluging template update module here
+
+                    profile_details = {}
+                    # upgrade profile for each profiles
+                    for profile, tables in profile_details_dict.iteritems():
+                        profile_details[profile] = tables
+                        upgrade_template = TemplateFileUpdater(
+                            self.plugin_dir, profile_details, progress
+                        )
+
+                        if force_upgrade:
+
+                            upgrade_template.process_update(True)
+
+                        else:
+                            upgrade_template.process_update()
+
+                    # Upgrade from options behavior
+                    if force_upgrade:
+
+                        parent.close()
+                        first_profile = profile_details_dict.keys()[0]
+
+                        self.reload_plugin(first_profile)
+                        self.on_sys_options()
+
                     return True
 
         else:
@@ -1042,7 +1067,11 @@ class STDMQGISLoader(object):
         opt_dlg.buttonBox.accepted.connect(
             lambda: self.reload_plugin(None)
         )
-        opt_dlg.upgradeButton.clicked.connect(self.load_configuration_from_file)
+        opt_dlg.upgradeButton.clicked.connect(
+            lambda :self.load_configuration_from_file(
+                opt_dlg, True
+            )
+        )
         opt_dlg.exec_()
 
 
@@ -1100,13 +1129,13 @@ class STDMQGISLoader(object):
                 save_current_profile(sel_profile)
 
         self.current_profile = current_profile()
-
-        LOGGER.debug(
-            'Successfully changed '
-            'the current profile to {}'.format(
-                self.current_profile.name
+        if not self.current_profile is None:
+            LOGGER.debug(
+                'Successfully changed '
+                'the current profile to {}'.format(
+                    self.current_profile.name
+                )
             )
-        )
         try:
             self.loadModules()
             LOGGER.debug(
@@ -1476,9 +1505,10 @@ class STDMQGISLoader(object):
             # Remove Spatial Unit Manager
             self.remove_spatial_unit_mgr()
             # Clear current profile status text
-            self.profile_status_label.deleteLater()
-            self.profile_status_label = None
+
             if reload == False:
+                self.profile_status_label.deleteLater()
+                self.profile_status_label = None
                 #Clear singleton ref for SQLAlchemy connections
                 if not data.app_dbconn is None:
                     STDMDb.cleanUp()
@@ -1486,6 +1516,8 @@ class STDMQGISLoader(object):
 
                 #Remove database reference
                 data.app_dbconn = None
+            else:
+                self.profile_status_label.setText('')
             #Reset View STR Window
             if not self.viewSTRWin is None:
                 del self.viewSTRWin

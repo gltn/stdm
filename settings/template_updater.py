@@ -216,10 +216,10 @@ class TemplateFileHandler:
 #
 
 class TemplateContentReader(
-    TemplateFileHandler, STDMProgressDialog
+    TemplateFileHandler
 ):
 
-    def __init__(self):
+    def __init__(self, progress):
         """
         Reads template content and gets
         the source table of a template.
@@ -231,6 +231,7 @@ class TemplateContentReader(
         #     'Updating Templates...',
         #     iface.mainWindow()
         # )
+        self.prog = progress.prog
 
     def get_template_element(self, path):
         """
@@ -339,32 +340,32 @@ class TemplateContentReader(
 
 
 class TemplateViewHandler:
-    def __init__(self):
+    def __init__(self, old_new_tables):
         """
 
         """
         #TODO add profile_vw_social_tenure_relationship
         #TODO Refactor into 3 class, TemplateContent, TemplateFile, TemplateView
-        old_new_tables = {
-            'basic':{
-            'party': 'ba_party',
-            'spatial_unit':
-                'ba_spatial_unit',
-            'social_tenure_relationship':
-                'ba_social_tenure_relationship',
-                'check_social_tenure_type': 'ba_check_tenure_type',
-            'str_relations':
-                'ba_social_tenure_relationship_supporting_document',
-            'social_tenure_relations': 'basic_vw_social_tenure_relationship'
-            }
-        }
+        # old_new_tables = {
+        #     'basic':{
+        #     'party': 'ba_party',
+        #     'spatial_unit':
+        #         'ba_spatial_unit',
+        #     'social_tenure_relationship':
+        #         'ba_social_tenure_relationship',
+        #         'check_social_tenure_type': 'ba_check_tenure_type',
+        #     'str_relations':
+        #         'ba_social_tenure_relationship_supporting_document',
+        #     'social_tenure_relations': 'basic_vw_social_tenure_relationship'
+        #     }
+        # }
 
         if len(old_new_tables) < 1:
             return
         # self.old_new_tables = old_new_tables.values()[0]
-        # self.profile_name = old_new_tables.keys()[0]
+        self.profile_name = old_new_tables.keys()[0].lower()
         self.old_new_tables = old_new_tables.values()[0]
-        self.profile_name = 'basic'
+        # self.profile_name = 'basic'
         self.documents_path = source_documents_path()
 
         self.supporting_doc_columns = {
@@ -675,7 +676,7 @@ class TemplateFileUpdater(
     TemplateViewHandler,
     STDMProgressDialog
 ):
-    def __init__(self, plugin_dir):
+    def __init__(self, plugin_dir, old_new_tables, progress):
         """
          Upgrades old profile templates to version 1.2 profiles.
         :param plugin_dir: The directory of STDM plugin
@@ -685,14 +686,16 @@ class TemplateFileUpdater(
         :param profile: The profile name that is upgraded
         :type profile: String
         """
-        TemplateContentReader.__init__(self)
-        TemplateViewHandler.__init__(self)
-        STDMProgressDialog.__init__(self)
+        TemplateContentReader.__init__(self, progress)
+        TemplateViewHandler.__init__(self, old_new_tables)
+
+        #STDMProgressDialog.__init__(self)
         self.overall_progress(
             'Updating Templates...',
             iface.mainWindow()
         )
-
+        self.prog = progress.prog
+        self.prog.show()
         self.old_new_cols_list = []
         self.plugin_dir = plugin_dir
 
@@ -1122,6 +1125,7 @@ class TemplateFileUpdater(
         :rtype: NoneType
         """
         self.prog.setRange(0, len(self.templates))
+
         self.prog.show()
         if force_update:
             self.move_back_templates()

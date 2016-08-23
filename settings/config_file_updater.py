@@ -42,6 +42,8 @@ from ..settings.registryconfig import (
     CONFIG_UPDATED,
     source_documents_path
 )
+from distutils import file_util
+from distutils.errors import DistutilsFileError
 
 from ..ui.progress_dialog import STDMProgressDialog
 
@@ -177,7 +179,8 @@ class ConfigurationFileUpdater(object):
         self.new_data_folder_path = source_documents_path()
         self.reg_config = RegistryConfig()
         self.profiles_detail = {}
-        
+        self.progress = STDMProgressDialog()
+
 
     def _check_config_folder_exists(self):
         """
@@ -204,6 +207,7 @@ class ConfigurationFileUpdater(object):
         """
         if os.path.isfile(os.path.join(self.file_handler.localPath(),
                                        config_file)):
+
             return True
         else:
             return False
@@ -273,6 +277,22 @@ class ConfigurationFileUpdater(object):
         new_file = os.path.join(path, "{0}_{1}.xml".format(old_file_wt_ext,
                                                            timestamp))
         os.rename(old_config_file, new_file)
+
+    def _rename_new_config_file(self, path):
+        """
+        Renames old configuration file
+        """
+        config_file = "configuration"
+        dt = str(datetime.datetime.now())
+        timestamp = time.strftime('%Y_%m_%d_%H_%M')
+        new_file = '{}/{}_{}.stc'.format(
+            self.file_handler.localPath(),
+            config_file,
+            timestamp
+        )
+
+        file_util.copy_file(path, new_file)
+
 
     def _remove_old_config_file(self, config_file):
         """
@@ -459,6 +479,7 @@ class ConfigurationFileUpdater(object):
         Set table attributes
         :param element:
         """
+        self.progress.progress_message('Creating', 'configuration')
         for i in range(element.count()):
             profile_child_node = element.item(i).toElement()
 
@@ -526,6 +547,14 @@ class ConfigurationFileUpdater(object):
         :param config_file_name:
         :return:
         """
+        if self._check_config_file_exists('configuration.stc'):
+            path = '{}/{}'.format(
+                self.file_handler.localPath(), 'configuration.stc'
+            )
+
+            self._rename_new_config_file(path)
+
+        self.progress.progress_message('Creating 1.2 configuration file', '')
         self.config_file = QFile(os.path.join(self.file_handler.localPath(),
                                  config_file_name))
 
@@ -575,7 +604,7 @@ class ConfigurationFileUpdater(object):
                          'str_relations': pref + "_social_tenure_relationship_"
                                                  "supporting_document"}
         self.profiles_detail[profile] = template_dict
-
+        self.progress.progress_message('Creating 1.2 configuration file', '')
         for key, value in values.iteritems():
             if key.endswith("lookup") and value:
                 value_lists = self.doc_old.createElement("ValueLists")
@@ -1030,12 +1059,24 @@ class ConfigurationFileUpdater(object):
         #     path = self.file_handler.localPath()
         #     self._rename_old_config_file(old_config_file, path)
 
-    def load(self):
+    def load(self, parent=None, force_upgrade=False):
 
         """
         Entry code to class
         :return:
         """
+        if force_upgrade:
+            self.reg_config.write({'ConfigUpdated': '0'})
+            self.progress.overall_progress(
+                'Upgrading Configuration...',
+                parent
+            )
+        else:
+            self.progress.overall_progress(
+                'Upgrading Configuration...',
+                self.iface.mainWindow()
+            )
+
         if self._check_config_folder_exists():
 
             config_updated_dic = self.reg_config.read([CONFIG_UPDATED])
@@ -1043,22 +1084,24 @@ class ConfigurationFileUpdater(object):
             # Check if old configuration file exists
             if self._check_config_file_exists("stdmConfig.xml"):
 
+
                 # if config file exists, check if registry key exists
                 if len(config_updated_dic) < 1:
                     # if it doesn't exist, create it with a value of False (
                     # '0')
                     self.reg_config.write({'ConfigUpdated': '0'})
 
+
                 config_updated_val = config_updated_dic[CONFIG_UPDATED]
 
                 if config_updated_val == '0':
 
                     if QMessageBox.information(
-                            None, "Update STDM Configuration",
+                            self.iface.mainWindow(), "Update STDM Configuration",
                             "Do you want to upgrade your configuration file "
                             "and import your data?\n\n"
                             "If you click No, your configuration and data will"
-                            "no longer be accessible to STDM.\n"
+                            " no longer be accessible to STDM.\n"
                             "If you click Yes, you will be able to access your"
                             "old configuration with the data.", QMessageBox.Yes
                                     | QMessageBox.No) == QMessageBox.Yes:
@@ -1318,24 +1361,15 @@ class ConfigurationFileUpdater(object):
         """
         Method that backups data
         """
-        progress = STDMProgressDialog()
-        progress.overall_progress(
-            'Updating Configuration...',
-            self.iface.mainWindow()
-        )        
+
         if self.old_config_file:
             # Backup of entities participating in social tenure relationship
             keys, values = self._set_social_tenure_table()
-            # progress_message_bar = self.iface.messageBar().createMessage(
-            #     "Importing entities data ...")
-            #progress = QProgressBar()
-            progress.prog.setMaximum(len(values))
-            #progress_message_bar.layout().addWidget(progress)
-            # self.iface.messageBar(
-            # ).pushWidget(progress_message_bar, self.iface.messageBar().INFO)
-            progress_i = 0
-            progress.prog.setValue(progress_i)
 
+            self.progress.prog.setRange(0, len(values))
+            self.progress.prog.show()
+
+            progress_i = 0
             for social_tenure_entity in values:
 
                 social_tenure_table = \
@@ -1425,9 +1459,8 @@ class ConfigurationFileUpdater(object):
                     pass
 
                 time.sleep(1)
-                progress.prog.setValue(progress_i + 1)
-                progress_i += 1
-            # self.iface.messageBar().clearWidgets()
+                self.progress.prog.setValue(progress_i)
+                progress_i = progress_i + 1
 
             # Backup of social tenure relationship tables, str_relations and
             #  supporting documents.
@@ -1437,16 +1470,12 @@ class ConfigurationFileUpdater(object):
             # social_tenure_type is vchar while tenure
             # type is integer
 
-            # progress_message_bar = self.iface.messageBar().createMessage(
-            #     "Importing STR tables ...")
-            progress.progress_message('Importing STR tables', '')
-            # progress = QProgressBar()
-            progress.prog.setMaximum(len(STR_TABLES))
-            # progress_message_bar.layout().addWidget(progress)
-            # self.iface.messageBar(
-            # ).pushWidget(progress_message_bar, self.iface.messageBar().INFO)
+            self.progress.progress_message('Importing data to the new tables', '')
+
+            self.progress.prog.setRange(0, len(STR_TABLES))
+            self.progress.prog.show()
+
             progress_i = 0
-            progress.prog.setValue(progress_i)
 
             for STR_tables, v in STR_TABLES.iteritems():
                 old_columns = str(v['old']).strip("()").replace("\'", "")
@@ -1533,23 +1562,15 @@ class ConfigurationFileUpdater(object):
                             fix_sequence(new_STR_table)
 
                 time.sleep(1)
-                progress.prog.setValue(progress_i + 1)
-                progress_i += 1
-
-            self.iface.messageBar().clearWidgets()
+                self.progress.prog.setValue(progress_i)
+                progress_i = progress_i + 1
 
             if os.path.isdir(self.old_data_folder_path):
-                # progress_message_bar = self.iface.messageBar().createMessage(
-                #     "Importing STR tables ...")
-                # progress.prog = QProgressBar()
-                progress.prog.setMaximum(len(os.listdir(self.old_data_folder_path)))
-                # progress_message_bar.layout().addWidget(progress.prog)
-                # self.iface.messageBar(
-                # ).pushWidget(progress_message_bar, self.iface.messageBar(
-                #
-                # ).INFO)
+                self.progress.progress_message('Moving documents from 2020 to general', 'folder')
+                self.progress.prog.setRange(0, len(os.listdir(self.old_data_folder_path)))
+                self.progress.prog.show()
+
                 progress_i = 0
-                progress.prog.setValue(progress_i)
 
                 if os.path.isdir(self.old_data_folder_path):
                     src_files = os.listdir(self.old_data_folder_path)
@@ -1566,9 +1587,7 @@ class ConfigurationFileUpdater(object):
                         if os.path.isfile(full_file_name):
                             shutil.copy(full_file_name, path_new_directory)
                         time.sleep(1)
-                        progress.prog.setValue(progress_i + 1)
-                        progress_i += 1
+                        self.progress.prog.setValue(progress_i)
+                        progress_i = progress_i + 1
 
-                    # self.iface.messageBar().clearWidgets()
-
-            return (self.profiles_detail)
+            return self.profiles_detail, self.progress
