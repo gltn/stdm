@@ -106,6 +106,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         self._config = StdmConfiguration.instance()
         self._default_style_sheet = self.txtRepoLocation.styleSheet()
+
         self.init_gui()
 
     def init_gui(self):
