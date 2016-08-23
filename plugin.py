@@ -1042,7 +1042,7 @@ class STDMQGISLoader(object):
         opt_dlg.buttonBox.accepted.connect(
             lambda: self.reload_plugin(None)
         )
-
+        opt_dlg.upgradeButton.clicked.connect(self.load_configuration_from_file)
         opt_dlg.exec_()
 
 

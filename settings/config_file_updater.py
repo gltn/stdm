@@ -43,6 +43,8 @@ from ..settings.registryconfig import (
     source_documents_path
 )
 
+from ..ui.progress_dialog import STDMProgressDialog
+
 COLUMN_TYPE_DICT = {'character varying': 'VARCHAR', 'date': 'DATE',
                     'serial': 'SERIAL', 'integer': 'INT', 'lookup':
                     'LOOKUP', 'double precision': 'DOUBLE', 'GEOMETRY':
@@ -175,6 +177,7 @@ class ConfigurationFileUpdater(object):
         self.new_data_folder_path = source_documents_path()
         self.reg_config = RegistryConfig()
         self.profiles_detail = {}
+        
 
     def _check_config_folder_exists(self):
         """
@@ -979,12 +982,12 @@ class ConfigurationFileUpdater(object):
 
             if empty_list:
                 # Check if config already exists
-                if self.config.profile(config_profile) is not None:
-                    config_profile += "_1"
-                    conf_prefix = config_profile[:2].lower() + "_1"
-                else:
-                    config_profile = config_profile
-                    conf_prefix = config_profile[:2].lower()
+                # if self.config.profile(config_profile) is not None:
+                #     config_profile += "_1"
+                #     conf_prefix = config_profile[:2].lower() + "_1"
+                # else:
+                config_profile = config_profile
+                conf_prefix = config_profile[:2].lower()
                 self.config_profiles_prefix.append(conf_prefix)
                 self.config_profiles.append(config_profile)
                 profile_element = self.doc_old.createElement("Profile")
@@ -1315,19 +1318,23 @@ class ConfigurationFileUpdater(object):
         """
         Method that backups data
         """
+        progress = STDMProgressDialog()
+        progress.overall_progress(
+            'Updating Configuration...',
+            self.iface.mainWindow()
+        )        
         if self.old_config_file:
             # Backup of entities participating in social tenure relationship
             keys, values = self._set_social_tenure_table()
-            progress_message_bar = self.iface.messageBar().createMessage(
-                "Importing entities data ...")
-            progress = QProgressBar()
-            progress.setMaximum(len(values))
-            progress.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-            progress_message_bar.layout().addWidget(progress)
-            self.iface.messageBar(
-            ).pushWidget(progress_message_bar, self.iface.messageBar().INFO)
+            # progress_message_bar = self.iface.messageBar().createMessage(
+            #     "Importing entities data ...")
+            #progress = QProgressBar()
+            progress.prog.setMaximum(len(values))
+            #progress_message_bar.layout().addWidget(progress)
+            # self.iface.messageBar(
+            # ).pushWidget(progress_message_bar, self.iface.messageBar().INFO)
             progress_i = 0
-            progress.setValue(progress_i)
+            progress.prog.setValue(progress_i)
 
             for social_tenure_entity in values:
 
@@ -1418,9 +1425,9 @@ class ConfigurationFileUpdater(object):
                     pass
 
                 time.sleep(1)
-                progress.setValue(progress_i + 1)
+                progress.prog.setValue(progress_i + 1)
                 progress_i += 1
-            self.iface.messageBar().clearWidgets()
+            # self.iface.messageBar().clearWidgets()
 
             # Backup of social tenure relationship tables, str_relations and
             #  supporting documents.
@@ -1430,16 +1437,16 @@ class ConfigurationFileUpdater(object):
             # social_tenure_type is vchar while tenure
             # type is integer
 
-            progress_message_bar = self.iface.messageBar().createMessage(
-                "Importing STR tables ...")
-            progress = QProgressBar()
-            progress.setMaximum(len(STR_TABLES))
-            progress.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-            progress_message_bar.layout().addWidget(progress)
-            self.iface.messageBar(
-            ).pushWidget(progress_message_bar, self.iface.messageBar().INFO)
+            # progress_message_bar = self.iface.messageBar().createMessage(
+            #     "Importing STR tables ...")
+            progress.progress_message('Importing STR tables', '')
+            # progress = QProgressBar()
+            progress.prog.setMaximum(len(STR_TABLES))
+            # progress_message_bar.layout().addWidget(progress)
+            # self.iface.messageBar(
+            # ).pushWidget(progress_message_bar, self.iface.messageBar().INFO)
             progress_i = 0
-            progress.setValue(progress_i)
+            progress.prog.setValue(progress_i)
 
             for STR_tables, v in STR_TABLES.iteritems():
                 old_columns = str(v['old']).strip("()").replace("\'", "")
@@ -1526,24 +1533,23 @@ class ConfigurationFileUpdater(object):
                             fix_sequence(new_STR_table)
 
                 time.sleep(1)
-                progress.setValue(progress_i + 1)
+                progress.prog.setValue(progress_i + 1)
                 progress_i += 1
 
             self.iface.messageBar().clearWidgets()
 
             if os.path.isdir(self.old_data_folder_path):
-                progress_message_bar = self.iface.messageBar().createMessage(
-                    "Importing STR tables ...")
-                progress = QProgressBar()
-                progress.setMaximum(len(os.listdir(self.old_data_folder_path)))
-                progress.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-                progress_message_bar.layout().addWidget(progress)
-                self.iface.messageBar(
-                ).pushWidget(progress_message_bar, self.iface.messageBar(
-
-                ).INFO)
+                # progress_message_bar = self.iface.messageBar().createMessage(
+                #     "Importing STR tables ...")
+                # progress.prog = QProgressBar()
+                progress.prog.setMaximum(len(os.listdir(self.old_data_folder_path)))
+                # progress_message_bar.layout().addWidget(progress.prog)
+                # self.iface.messageBar(
+                # ).pushWidget(progress_message_bar, self.iface.messageBar(
+                #
+                # ).INFO)
                 progress_i = 0
-                progress.setValue(progress_i)
+                progress.prog.setValue(progress_i)
 
                 if os.path.isdir(self.old_data_folder_path):
                     src_files = os.listdir(self.old_data_folder_path)
@@ -1560,9 +1566,9 @@ class ConfigurationFileUpdater(object):
                         if os.path.isfile(full_file_name):
                             shutil.copy(full_file_name, path_new_directory)
                         time.sleep(1)
-                        progress.setValue(progress_i + 1)
+                        progress.prog.setValue(progress_i + 1)
                         progress_i += 1
 
-                    self.iface.messageBar().clearWidgets()
+                    # self.iface.messageBar().clearWidgets()
 
             return (self.profiles_detail)
