@@ -36,10 +36,11 @@ from ..data.configuration.exception import ConfigurationException
 from ..data.configfile_paths import FilePaths
 from ..data.configuration.stdm_configuration import StdmConfiguration
 from ..data.pg_utils import export_data, import_data, pg_table_exists, \
-    export_data_from_columns
+    export_data_from_columns, fix_sequence
 from ..settings.registryconfig import (
     RegistryConfig,
-    CONFIG_UPDATED
+    CONFIG_UPDATED,
+    source_documents_path
 )
 
 COLUMN_TYPE_DICT = {'character varying': 'VARCHAR', 'date': 'DATE',
@@ -170,9 +171,8 @@ class ConfigurationFileUpdater(object):
         self.parent = None
         self.upgrade = False
         self.old_data_folder_path = os.path.join(
-            self.file_handler.localPath(), "Data", "2020")
-        self.new_data_folder_path = os.path.join(
-            self.file_handler.localPath(), "data")
+            source_documents_path(), "2020")
+        self.new_data_folder_path = source_documents_path()
         self.reg_config = RegistryConfig()
 
     def _check_config_folder_exists(self):
@@ -1397,6 +1397,8 @@ class ConfigurationFileUpdater(object):
                         if not import_data(social_tenure_table, column_keys,
                                        values):
                             pass
+                        else:
+                            fix_sequence(social_tenure_table)
                     else:
                         pass
 
@@ -1457,6 +1459,8 @@ class ConfigurationFileUpdater(object):
                         if not import_data(new_STR_table, new_columns,
                                            new_STR_data):
                             pass
+                        else:
+                            fix_sequence(new_STR_table)
 
                 elif STR_tables == 'str_relations':
                     new_STR_table = self.config_profiles_prefix[0] + \
@@ -1480,6 +1484,8 @@ class ConfigurationFileUpdater(object):
                         if not import_data(new_STR_table, new_columns,
                                            new_STR_data_list):
                             pass
+                        else:
+                            fix_sequence(new_STR_table)
 
                 elif STR_tables == 'supporting_document':
                     new_STR_table = self.config_profiles_prefix[0] + "_" + \
@@ -1504,6 +1510,8 @@ class ConfigurationFileUpdater(object):
                         if not import_data(new_STR_table, new_columns,
                                            new_STR_data_list):
                             pass
+                        else:
+                            fix_sequence(new_STR_table)
 
                 time.sleep(1)
                 progress.setValue(progress_i + 1)

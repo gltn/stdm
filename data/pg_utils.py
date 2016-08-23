@@ -199,6 +199,22 @@ def export_data_from_columns(columns, table_name):
 
     return _execute(t)
 
+def fix_sequence(table_name):
+    """
+    Fixes a sequence error that commonly happen
+    after a batch insert such as in
+    import_data(), csv import, etc.
+    :param table_name: The name of the table to be fixed
+    :type table_name: String
+    """
+    sql_sequence_fix = text(
+        'SELECT setval({0}_id_seq, (SELECT MAX(id) FROM {0}'.format(
+            table_name
+        )
+    )
+
+    _execute(sql_sequence_fix)
+
 
 def import_data(table_name, columns_names, data, **kwargs):
 
