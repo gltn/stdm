@@ -116,7 +116,9 @@ STR_TABLES = OrderedDict([
                         ('new', ('id',
                                  'document_identifier',
                                  'filename',
-                                 'document_size'))
+                                 'document_size',
+                                 'source_entity'
+                                 ))
                                  ])
                  ),
                 ('str_relations',
@@ -126,7 +128,9 @@ STR_TABLES = OrderedDict([
                                  'source_doc_id')),
                         ('new', ('id',
                                  'social_tenure_relationship_id',
-                                 'supporting_doc_id'))
+                                 'supporting_doc_id',
+                                 'document_type'
+                                 ))
                                  ])
                  )
             ])
@@ -1462,6 +1466,14 @@ class ConfigurationFileUpdater(object):
                                                   STR_tables).fetchall()
 
                     if len(STR_data) > 0:
+
+                        STR_data = [list(i) for i in STR_data]
+
+                        for row in STR_data:
+                            row.append(1)
+
+                        STR_data = [tuple(i) for i in STR_data]
+
                         new_STR_data_list = str(STR_data).strip("[]").replace(
                             "u\'", "\'")
 
@@ -1477,9 +1489,17 @@ class ConfigurationFileUpdater(object):
                                                   STR_tables).fetchall()
 
                     if len(STR_data) > 0:
+
+                        STR_data = [list(i) for i in STR_data]
+
+                        for row in STR_data:
+                            row.append(self.config_profiles_prefix[0] +
+                                       "_social_tenure_relationship")
+
+                        STR_data = [tuple(i) for i in STR_data]
+
                         new_STR_data_list = str(STR_data).strip("[]").replace(
                             "u\'", "\'").replace("None", "NULL")
-
 
                         if not import_data(new_STR_table, new_columns,
                                            new_STR_data_list):
