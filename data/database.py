@@ -272,11 +272,14 @@ class Model(object):
         '''
         db = STDMDb.instance()
         #raise NameError(str(self.__class__))
-        if len(args) == 0:            
-            return db.session.query(self.__class__)
-        
-        else:
-            return db.session.query(*args)
+        try:
+            if len(args) == 0:
+                return db.session.query(self.__class__)
+
+            else:
+                return db.session.query(*args)
+        except exc.SQLAlchemyError:
+            db.session.rollback()
     
     @classmethod  
     def tr(cls,propname):

@@ -384,10 +384,13 @@ def _execute(sql,**kwargs):
     conn = STDMDb.instance().engine.connect()
     trans = conn.begin()
     result = conn.execute(sql,**kwargs)
-    trans.commit()
-    conn.close()
+    try:
+        trans.commit()
+        conn.close()
+        return result
+    except SQLAlchemyError:
+        trans.rollback()
 
-    return result
 
 def reset_content_roles():
     rolesSet = "truncate table content_base cascade;"
@@ -574,12 +577,13 @@ def drop_view(view_name):
     t = text(del_com)
 
     try:
-        _execute(t)
-
+        result = _execute(t)
+        print vars(result)
         return True
 
     #Error such as view dependencies or the current user is not the owner.
     except SQLAlchemyError:
+
         return False
 
 
