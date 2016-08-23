@@ -208,7 +208,7 @@ def fix_sequence(table_name):
     :type table_name: String
     """
     sql_sequence_fix = text(
-        'SELECT setval({0}_id_seq, (SELECT MAX(id) FROM {0}'.format(
+        "SELECT setval('{0}_id_seq', (SELECT MAX(id) FROM {0}));".format(
             table_name
         )
     )
