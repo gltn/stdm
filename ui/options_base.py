@@ -112,7 +112,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.btn_composer_out_folder.clicked.connect(
             self._on_choose_doc_generator_output_path
         )
-        # self.upgradeButton.clicked.connect(self.config_updater)
+        self.upgradeButton.clicked.connect(self.config_updater)
 
         self._config = StdmConfiguration.instance()
         self._default_style_sheet = self.txtRepoLocation.styleSheet()
