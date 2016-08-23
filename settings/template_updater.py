@@ -29,7 +29,7 @@ import xml.etree.ElementTree as ET
 from PyQt4.QtXml import QDomDocument
 from PyQt4.QtCore import QFile, QIODevice
 from PyQt4.QtGui import (
-    QApplication, QProgressDialog, QLabel, QMessageBox
+    QApplication,  QMessageBox
 )
 
 from qgis.utils import (
@@ -149,72 +149,6 @@ class TemplateFileHandler:
                     ex
                 )
 
-#
-# class TemplateUpdaterProgressDialog:
-#     def __init__(self):
-#         """
-#         Initializes the progress dialog of
-#         the template updater with the option
-#         of updating the label of the dialog.
-#         :return:
-#         :rtype:
-#         """
-#         self.prog = self.overall_progress(iface.mainWindow())
-#
-#     def overall_progress(self, parent=None):
-#         """
-#         Initializes the progress dialog.
-#         :param parent: The parent of the dialog.
-#         :type parent: QWidget
-#         :return: The progress dialog initialized.
-#         :rtype: QProgressDialog
-#         """
-#         prog_dialog = QProgressDialog(
-#             parent
-#         )
-#         prog_dialog.setFixedWidth(380)
-#         prog_dialog.setFixedHeight(100)
-#         prog_dialog.setWindowTitle(
-#             QApplication.translate(
-#                 "TemplateUpdater",
-#                 'Updating templates...'
-#             )
-#         )
-#
-#         label = QLabel()
-#         prog_dialog.setLabel(label)
-#
-#         prog_dialog.setCancelButton(None)
-#         prog_dialog.show()
-#
-#         return prog_dialog
-#
-#     def progress_message(self, val, skip=False):
-#         """
-#         Shows progress message in the progress bar.
-#         :param val: The template name
-#         :type val: String
-#         :param skip: Shows Skipping text if True.
-#         :type skip: Boolean
-#         """
-#         if skip:
-#             text = 'Skipping {}...'.format(val)
-#             self.prog.setLabelText(
-#                 QApplication.translate(
-#                     'TemplateUpdater', text
-#                 )
-#
-#             )
-#         else:
-#             text = 'Updating {}...'.format(val)
-#             self.prog.setLabelText(
-#                 QApplication.translate(
-#                     'TemplateUpdater', text
-#                 )
-#
-#             )
-#
-
 class TemplateContentReader(
     TemplateFileHandler
 ):
@@ -225,12 +159,7 @@ class TemplateContentReader(
         the source table of a template.
         """
         TemplateFileHandler.__init__(self)
-        # STDMProgressDialog.__init__(self)
-        #
-        # self.overall_progress(
-        #     'Updating Templates...',
-        #     iface.mainWindow()
-        # )
+
         self.prog = progress.prog
 
     def get_template_element(self, path):
@@ -342,30 +271,18 @@ class TemplateContentReader(
 class TemplateViewHandler:
     def __init__(self, old_new_tables):
         """
-
+        Updates template views.
+        :param old_new_tables: Dictionary of old and new tables.
+        :type old_new_tables: Dictionary
+        :return:
+        :rtype:
         """
-        #TODO add profile_vw_social_tenure_relationship
-        #TODO Refactor into 3 class, TemplateContent, TemplateFile, TemplateView
-        # old_new_tables = {
-        #     'basic':{
-        #     'party': 'ba_party',
-        #     'spatial_unit':
-        #         'ba_spatial_unit',
-        #     'social_tenure_relationship':
-        #         'ba_social_tenure_relationship',
-        #         'check_social_tenure_type': 'ba_check_tenure_type',
-        #     'str_relations':
-        #         'ba_social_tenure_relationship_supporting_document',
-        #     'social_tenure_relations': 'basic_vw_social_tenure_relationship'
-        #     }
-        # }
-
         if len(old_new_tables) < 1:
             return
-        # self.old_new_tables = old_new_tables.values()[0]
+
         self.profile_name = old_new_tables.keys()[0].lower()
         self.old_new_tables = old_new_tables.values()[0]
-        # self.profile_name = 'basic'
+
         self.documents_path = source_documents_path()
 
         self.supporting_doc_columns = {
@@ -689,7 +606,6 @@ class TemplateFileUpdater(
         TemplateContentReader.__init__(self, progress)
         TemplateViewHandler.__init__(self, old_new_tables)
 
-        #STDMProgressDialog.__init__(self)
         self.overall_progress(
             'Updating Templates...',
             iface.mainWindow()

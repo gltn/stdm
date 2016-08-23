@@ -114,8 +114,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.btn_composer_out_folder.clicked.connect(
             self._on_choose_doc_generator_output_path
         )
-        # self.upgradeButton.clicked.connect(self.config_updater)
-
+       
         self._config = StdmConfiguration.instance()
         self._default_style_sheet = self.txtRepoLocation.styleSheet()
 
@@ -499,27 +498,3 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             return
 
         self.accept()
-
-    # def config_updater(self):
-    #     config_updated_dic = self.reg_config.read([CONFIG_UPDATED])
-    #
-    #     # if config file exists, check if registry key exists
-    #     if len(config_updated_dic) < 1:
-    #         # if it doesn't exist, create it with a value of False ('0')
-    #         self.reg_config.write({'ConfigUpdated': '0'})
-    #
-    #     self.reg_config.write({'ConfigUpdated': '0'})
-    #
-    #     self.configuration_file_updater.load()
-    #     if self.configuration_file_updater.check_version():
-    #         result = self.load_configuration_to_serializer()
-    #         return result
-    #     else:
-    #         # First upgrade config file to latest version
-    #         self.configuration_file_updater.update_config_file_version()
-    #         if self.load_configuration_to_serializer():
-    #             config_updater = ConfigurationSchemaUpdater()
-    #             config_updater.exec_()
-    #             profile_entity_lookup_rltns = \
-    #             self.configuration_file_updater.backup_data()
-    #             # TODO pluging template update module here

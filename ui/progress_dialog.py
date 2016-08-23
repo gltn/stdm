@@ -55,7 +55,6 @@ class STDMProgressDialog:
         self.prog.setLabel(label)
 
         self.prog.setCancelButton(None)
-        #self.prog.show()
 
         return self.prog
 
