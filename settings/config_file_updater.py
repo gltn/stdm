@@ -208,6 +208,8 @@ class ConfigurationFileUpdater(object):
         """
         config_file = os.path.join(self.file_handler.localPath(), path)
         config_file = QFile(config_file)
+        if not self._check_config_file_exists("configuration.stc"):
+            self._copy_config_file_from_template()
         if not config_file.open(QIODevice.ReadOnly):
             raise IOError('Cannot read configuration file. Check read '
                           'permissions.')
