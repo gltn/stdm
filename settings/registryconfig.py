@@ -23,6 +23,7 @@ from PyQt4.QtCore import QSettings
 NETWORK_DOC_RESOURCE = 'NetDocumentResource'
 PATHKEYS = ['Config','NetDocumentResource','ComposerOutputs','ComposerTemplates']
 DATABASE_LOOKUP = 'LookupInit'
+OLD_SOURCE_DOCUMENTS = 'SourceDocuments'
 #There was a mixup in these 2 keys. Consolidation required across the plugin.
 LOCAL_SOURCE_DOC = NETWORK_DOC_RESOURCE
 COMPOSER_OUTPUT = 'ComposerOutputs'
@@ -88,6 +89,13 @@ def source_documents_path():
     :rtype: str
     """
     return registry_value(NETWORK_DOC_RESOURCE)
+
+def old_source_documents_path():
+    """
+    :return: Returns the root path of source documents.
+    :rtype: str
+    """
+    return registry_value(OLD_SOURCE_DOCUMENTS)
 
 
 def last_document_path():

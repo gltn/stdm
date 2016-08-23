@@ -38,7 +38,10 @@ from qgis.core import QgsApplication
 
 from sqlalchemy.sql.expression import text
 
-from registryconfig import composer_template_path
+from registryconfig import (
+    composer_template_path,
+    source_documents_path
+)
 from stdm.data.pg_utils import (
     _execute,
     pg_views,
@@ -122,7 +125,74 @@ class TemplateFileHandler:
             dir_util.copy_tree(old_path, self.template_path)
 
 
-class TemplateContentReader(TemplateFileHandler):
+class TemplateUpdaterProgressDialog:
+    def __init__(self):
+        """
+        Initializes the progress dialog of
+        the template updater with the option
+        of updating the label of the dialog.
+        :return:
+        :rtype:
+        """
+        self.prog = self.overall_progress(iface.mainWindow())
+
+    def overall_progress(self, parent=None):
+        """
+        Initializes the progress dialog.
+        :param parent: The parent of the dialog.
+        :type parent: QWidget
+        :return: The progress dialog initialized.
+        :rtype: QProgressDialog
+        """
+        prog_dialog = QProgressDialog(
+            parent
+        )
+        prog_dialog.setFixedWidth(380)
+        prog_dialog.setFixedHeight(100)
+        prog_dialog.setWindowTitle(
+            QApplication.translate(
+                "TemplateUpdater",
+                'Updating templates...'
+            )
+        )
+
+        label = QLabel()
+        prog_dialog.setLabel(label)
+
+        prog_dialog.setCancelButton(None)
+        prog_dialog.show()
+
+        return prog_dialog
+
+    def progress_message(self, val, skip=False):
+        """
+        Shows progress message in the progress bar.
+        :param val: The template name
+        :type val: String
+        :param skip: Shows Skipping text if True.
+        :type skip: Boolean
+        """
+        if skip:
+            text = 'Skipping {}...'.format(val)
+            self.prog.setLabelText(
+                QApplication.translate(
+                    'TemplateUpdater', text
+                )
+
+            )
+        else:
+            text = 'Updating {}...'.format(val)
+            self.prog.setLabelText(
+                QApplication.translate(
+                    'TemplateUpdater', text
+                )
+
+            )
+
+
+class TemplateContentReader(
+    TemplateFileHandler, TemplateUpdaterProgressDialog
+):
 
     def __init__(self):
         """
@@ -143,6 +213,33 @@ class TemplateContentReader(TemplateFileHandler):
         config_file = os.path.join(path)
         config_file = QFile(config_file)
         if not config_file.open(QIODevice.ReadOnly):
+            template = os.path.basename(path)
+            self.prog.setLabelText(
+                QApplication.translate(
+                    'TemplateUpdater',
+                    'Failed to update {}'.format(
+                        template
+                    )
+                )
+
+            )
+            error_title = QApplication.translate(
+                'TemplateContentReader',
+                'File Reading Error'
+            )
+            error_message = QApplication.translate(
+                'TemplateContentReader',
+                'Failed to update {0}. '
+                'Check the file permission of {0}'.format(
+                    template
+                )
+            )
+
+            QMessageBox.critical(
+                iface.mainWindow(),
+                error_title,
+                error_message
+            )
             return
 
         doc = QDomDocument()
@@ -151,11 +248,12 @@ class TemplateContentReader(TemplateFileHandler):
             config_file
         )
         if not status:
+            print 'status ', path
             return
 
         doc_element = doc.documentElement()
 
-        return doc, doc_element
+        return doc_element
 
     def read_sdt(self, template):
         """
@@ -170,9 +268,11 @@ class TemplateContentReader(TemplateFileHandler):
             template
         )
 
-        doc, root = self.get_template_element(
+        root = self.get_template_element(
             template_path
         )
+        if root is None:
+            return
         child_nodes = root.childNodes()
         return child_nodes
 
@@ -185,6 +285,8 @@ class TemplateContentReader(TemplateFileHandler):
         :rtype: Tuple
         """
         child_nodes = self.read_sdt(template)
+        if child_nodes is None:
+            return
         # loop through the entire sdt
         for i in range(child_nodes.length()):
             if child_nodes.item(i).nodeName() == 'DataSource':
@@ -206,23 +308,30 @@ class TemplateContentReader(TemplateFileHandler):
 
 
 class TemplateViewHandler:
-    def __init__(self, prefix='ba', profile='basic'):
+    def __init__(self):
         """
 
         """
         #TODO add profile_vw_social_tenure_relationship
         #TODO Refactor into 3 class, TemplateContent, TemplateFile, TemplateView
-        self.old_new_tables = {
-            'party': '{}_party'.format(prefix),
+        old_new_tables = {
+            'basic':{
+            'party': 'ba_party',
             'spatial_unit':
-                '{}_spatial_unit'.format(prefix),
+                'ba_spatial_unit',
             'social_tenure_relationship':
-                '{}_social_tenure_relationship'.format(prefix),
+                'ba_social_tenure_relationship',
             'str_relations':
-                '{}_social_tenure_relationship_supporting_document'.format(prefix),
-            'social_tenure_relations': '{}_vw_social_tenure_relationship'.format(profile)
+                'ba_social_tenure_relationship_supporting_document',
+            'social_tenure_relations': 'basic_vw_social_tenure_relationship'
+            }
         }
 
+        if len(old_new_tables) < 1:
+            return
+        self.old_new_tables = old_new_tables.values()[0]
+        self.profile_name = old_new_tables.keys()[0]
+        self.documents_path = source_documents_path()
 
         self.supporting_doc_columns = {
             'social_tenure_id': 'social_tenure_relationship_id',
@@ -341,7 +450,7 @@ class TemplateViewHandler:
             column = table_col_list[1]
             if len(lookup_table_list) > 0:
                 lookup_table = lookup_table_list[0]
-                # if lookup column is used in the middle
+                # if lookup column is used in the begining or middle
                 if '{},'.format(table_col) in view_definition:
 
                     select_value = '(SELECT {0}.value ' \
@@ -356,20 +465,19 @@ class TemplateViewHandler:
                         '{},'.format(table_col), select_value
                     )
                 # if lookup column is used at the end
-                if ', {}'.format(table_col) in view_definition:
+                elif ', {}'.format(table_col) in view_definition:
                     select_value = ', (SELECT {0}.value ' \
                                    'FROM {0} ' \
                                    'WHERE {0}.id =' \
-                                   ' {1}) AS {2}'.format(
-                        lookup_table,
-                        table_col,
-                        column
-                    )
+                                   ' {1})'.format(
+                                        lookup_table,
+                                        table_col
+                                    )
                     view_definition = view_definition.replace(
                         ', {}'.format(table_col), select_value
                     )
                 # if lookup column has alias
-                if '{} AS'.format(table_col) in view_definition:
+                elif '{} AS'.format(table_col) in view_definition:
 
                     select_value = '(SELECT {0}.value ' \
                                    'FROM {0} ' \
@@ -527,77 +635,12 @@ class TemplateViewHandler:
         return text
 
 
-class TemplateUpdaterProgressDialog:
-    def __init__(self):
-        """
-        Initializes the progress dialog of
-        the template updater with the option
-        of updating the label of the dialog.
-        :return:
-        :rtype:
-        """
-        self.prog = self.overall_progress(iface.mainWindow())
-
-    def overall_progress(self, parent=None):
-        """
-        Initializes the progress dialog.
-        :param parent: The parent of the dialog.
-        :type parent: QWidget
-        :return: The progress dialog initialized.
-        :rtype: QProgressDialog
-        """
-        prog_dialog = QProgressDialog(
-            parent
-        )
-        prog_dialog.setFixedWidth(380)
-        prog_dialog.setFixedHeight(100)
-        prog_dialog.setWindowTitle(
-            QApplication.translate(
-                "TemplateUpdater",
-                'Updating templates...'
-            )
-        )
-
-        label = QLabel()
-        prog_dialog.setLabel(label)
-
-        prog_dialog.setCancelButton(None)
-        prog_dialog.show()
-
-        return prog_dialog
-
-    def progress_message(self, val, skip=False):
-        """
-        Shows progress message in the progress bar.
-        :param val: The template name
-        :type val: String
-        :param skip: Shows Skipping text if True.
-        :type skip: Boolean
-        """
-        if skip:
-            text = 'Skipping {}...'.format(val)
-            self.prog.setLabelText(
-                QApplication.translate(
-                    'TemplateUpdater', text
-                )
-
-            )
-        else:
-            text = 'Updating {}...'.format(val)
-            self.prog.setLabelText(
-                QApplication.translate(
-                    'TemplateUpdater', text
-                )
-
-            )
-
-
 class TemplateFileUpdater(
     TemplateContentReader,
     TemplateViewHandler,
     TemplateUpdaterProgressDialog
 ):
-    def __init__(self, plugin_dir, prefix='ba', profile='basic'):
+    def __init__(self, plugin_dir):
         """
          Upgrades old profile templates to version 1.2 profiles.
         :param plugin_dir: The directory of STDM plugin
@@ -608,7 +651,7 @@ class TemplateFileUpdater(
         :type profile: String
         """
         TemplateContentReader.__init__(self)
-        TemplateViewHandler.__init__(self, prefix, profile)
+        TemplateViewHandler.__init__(self)
         TemplateUpdaterProgressDialog.__init__(self)
         self.old_new_cols_list = []
         self.plugin_dir = plugin_dir
@@ -661,7 +704,7 @@ class TemplateFileUpdater(
                     # update the DataSource name if
                     #  still using old_source
                     if elem.attrib['name'] == old_source:
-                        print old_source, new_source
+
                         elem.attrib['name'] = elem.attrib['name'].replace(
                             old_source, new_source
                         )
@@ -676,9 +719,9 @@ class TemplateFileUpdater(
                 for k, v in old_new.items()
                 }
             if len(other_old_new_col_dic) > 0:
-                old_new_cols = dict(
-                    list(old_new_cols.items()) +
-                    list(other_old_new_col_dic.items())
+
+                old_new_cols.update(
+                    other_old_new_col_dic
                 )
             # Update other elements
             for i, elem in enumerate(root.iter()):
@@ -707,17 +750,20 @@ class TemplateFileUpdater(
         """
         if pattern in elem.attrib[key]:
             temp_attrib = elem.attrib[key]
+            if splitter != '':
+                temp_attrib = temp_attrib.split(
+                    splitter
+                )
 
-            temp_attrib = temp_attrib.split(
-                splitter
-            )
+                if len(temp_attrib) > 0:
+                    new_path = ''.join([
+                        path,
+                        temp_attrib[1]
+                    ])
 
-            if len(temp_attrib) > 0:
-                new_path = ''.join([
-                    path,
-                    temp_attrib[1]
-                ])
-
+                    elem.attrib[key] = new_path
+            else:
+                new_path = path
                 elem.attrib[key] = new_path
 
     def update_other_elements(
@@ -772,6 +818,18 @@ class TemplateFileUpdater(
                 qgis_path
             )
 
+            new_path = '{0}/{1}/General'.format(
+                self.documents_path,
+                self.profile_name
+            )
+
+            self.update_path_items(
+                elem,
+                key,
+                '/2020',
+                '',
+                new_path
+            )
             # If plugin files are used, replace them
             # with the new version directory
             self.update_path_items(
@@ -937,9 +995,9 @@ class TemplateFileUpdater(
         old_new_cols = dict(
             zip(old_columns, new_columns)
         )
-        old_new_cols = dict(
-            list(old_new_cols.items()) +
-            list(self.supporting_doc_columns.items())
+
+        old_new_cols.update(
+            self.supporting_doc_columns
         )
 
         return old_new_cols
@@ -957,14 +1015,19 @@ class TemplateFileUpdater(
             upgraded_view = self.old_new_tables[
                 'social_tenure_relations'
             ]
-        else:
-            # if new view is already created, remove 'new_'
-            if 'new_' in old_source:
-                old_source = old_source.lstrip('new_')
-
+        # if old str view is updated already
+        elif self.profile_name in old_source:
+            upgraded_view = self.upgrade_view(
+                'social_tenure_relations'
+            )
+        # if new view is already created, remove 'new_'
+        elif 'new_' in old_source:
+            old_source = old_source.lstrip('new_')
             upgraded_view = self.upgrade_view(
                 old_source
             )
+        else:
+            upgraded_view = None
 
         if upgraded_view is not None:
             self.progress_message(template, True)
