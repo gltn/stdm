@@ -300,13 +300,17 @@ class ConfigurationFileUpdater(object):
             if lookup_nodes.tagName() == "data":
                 lookup_node = lookup_nodes.childNodes()
 
-                count = 1
+                fk = 1
                 for j in range(lookup_node.count()):
                     lookup = lookup_node.item(j).toElement().text()
                     code = lookup[0:2].upper()
+                    if code in lookup_dict.keys():
+                        code = lookup[0:3].upper()
+                    else:
+                        pass
                     lookup_dict[code] = lookup
-                    lookup_names[lookup] = count
-                    count += 1
+                    lookup_names[lookup] = fk
+                    fk += 1
 
         # Renames check lookup so that it conforms to new lookup type
         self.lookup_dict[lookup_name] = lookup_dict
@@ -1188,7 +1192,6 @@ class ConfigurationFileUpdater(object):
     def _match_lookup(self, values, lookup_data, lookup_col_index,
                       num_lookups, check_up):
 
-        # First run to elimiate existing lookups
         """
         Match look up values
         :param values:
@@ -1198,39 +1201,53 @@ class ConfigurationFileUpdater(object):
         :param check_up:
         :return: list
         """
+
+        # First run to elimiate existing lookups
+
         for value in values:
-            for lookup_value, code in \
+            for lookup_value, fk in \
                     lookup_data.iteritems():
-                if str(lookup_value) == value[lookup_col_index]:
-                    value[lookup_col_index] = int(code)
-                    break
+                try:
+                    if int(value[lookup_col_index]) == fk:
+                        value[lookup_col_index] = int(fk)
+                except (ValueError, TypeError):
+                    if value[lookup_col_index] == str(lookup_value):
+                        value[lookup_col_index] = int(fk)
+                        break
 
         # Second run to add missing lookups
         for value in values:
-            for lookup_value, code in \
+            for lookup_value, fk in \
                     lookup_data.items():
-                if str(lookup_value) == value[lookup_col_index]:
-                    value[lookup_col_index] = int(code)
-                    break
-                else:
-                    missing_lookup = value[lookup_col_index]
-                    if missing_lookup is None:
-                        value[lookup_col_index] = None
+
+                try:
+                    if int(value[lookup_col_index]) == fk:
+                        value[lookup_col_index] = int(fk)
+                except (ValueError, TypeError):
+                    if value[lookup_col_index] == str(lookup_value):
+                        value[lookup_col_index] = int(fk)
+                        break
+
                     else:
-                        if isinstance(missing_lookup, int) or missing_lookup\
-                                is None:
-                            pass
+                        missing_lookup = value[lookup_col_index]
+
+                        if missing_lookup is None:
+                            value[lookup_col_index] = None
                         else:
-                            num_lookups += 1
-                            self._add_missing_lookup_config(
-                                "check_{0}".format(check_up),
-                                missing_lookup)
+                            if isinstance(missing_lookup, int) or missing_lookup\
+                                    is None:
+                                pass
+                            else:
+                                num_lookups += 1
+                                self._add_missing_lookup_config(
+                                    "check_{0}".format(check_up),
+                                    missing_lookup)
 
-                            # Add missing lookup to lookup data
-                            lookup_data[missing_lookup] = num_lookups
+                                # Add missing lookup to lookup data
+                                lookup_data[missing_lookup] = num_lookups
 
-                            # Add converted lookup integer to row
-                            value[lookup_col_index] = num_lookups
+                                # Add converted lookup integer to row
+                                value[lookup_col_index] = num_lookups
         return values
 
     def _set_social_tenure_table(self):
@@ -1320,6 +1337,7 @@ class ConfigurationFileUpdater(object):
 
                     # Checks if exported data is empty
                     if len(values) > 0:
+                        # Coverts to list
                         values = [list(i) for i in values]
 
                         # Only get geom columns with values and
