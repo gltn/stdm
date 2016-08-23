@@ -233,11 +233,9 @@ def import_data(table_name, columns_names, data, **kwargs):
         return result
 
     except IntegrityError as e:
-        print e
         trans.rollback()
         return False
     except SQLAlchemyError as e:
-        print e
         trans.rollback()
         return False
 
