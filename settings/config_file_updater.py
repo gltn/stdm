@@ -1340,10 +1340,11 @@ class ConfigurationFileUpdater(object):
             for data in data_value:
                 if not isinstance(data, int) and data is not None and not \
                         isinstance(data, datetime.date):
+
                         if data.find("\'") is not -1:
-                            data = data[:data.find("\'")] + \
-                                                   "\\'" + data[data.find(
-                                                "\'") + 1:]
+                            data = str(data)
+                            data = data.replace("'", "`")
+                    
                             inner_data_list.append(data)
                         else:
                             inner_data_list.append(data)
