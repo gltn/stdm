@@ -41,9 +41,7 @@ class STDMProgressDialog:
         :rtype: QProgressDialog
         """
 
-        self.prog = QProgressDialog(
-            parent
-        )
+        self.prog = QProgressDialog(parent)
         self.prog.setFixedWidth(380)
         self.prog.setFixedHeight(100)
         self.prog.setWindowTitle(
@@ -57,20 +55,20 @@ class STDMProgressDialog:
         self.prog.setLabel(label)
 
         self.prog.setCancelButton(None)
-        self.prog.show()
 
         return self.prog
 
     def progress_message(self, message, val):
         """
         Shows progress message in the progress bar.
+        :param message: Add a text if needed.
+        :type message: String
         :param val: The template name
         :type val: String
-        :param skip: Shows Skipping text if True.
-        :type skip: Boolean
+
         """
 
-        text = '{0} {1}...'.format(val, message)
+        text = '{0} {1}...'.format(message, val)
         self.prog.setLabelText(
             QApplication.translate(
                 'STDMProgressDialog',

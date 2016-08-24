@@ -57,6 +57,14 @@ from stdm.ui.notification import NotificationBar
 from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
 from stdm.ui.ui_options import Ui_DlgOptions
 
+from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
+from ..settings.config_file_updater import ConfigurationFileUpdater
+
+from stdm.settings.registryconfig import (
+    RegistryConfig,
+    CONFIG_UPDATED
+)
+
 def pg_profile_names():
     """
     :return: List containing tuple of PostgreSQL database connection names
@@ -80,11 +88,14 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
     def __init__(self, iface):
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
+        self.iface = iface
 
         self.notif_bar = NotificationBar(self.vlNotification, 6000)
         self._apply_btn = self.buttonBox.button(QDialogButtonBox.Apply)
         self._reg_config = RegistryConfig()
         self._db_config = DatabaseConfig()
+        self.configuration_file_updater = ConfigurationFileUpdater(self.iface)
+        self.reg_config = RegistryConfig()
 
         #Connect signals
         self._apply_btn.clicked.connect(self.apply_settings)
