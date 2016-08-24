@@ -1344,7 +1344,7 @@ class ConfigurationFileUpdater(object):
                         if data.find("\'") is not -1:
                             data = str(data)
                             data = data.replace("'", "`")
-                    
+
                             inner_data_list.append(data)
                         else:
                             inner_data_list.append(data)
