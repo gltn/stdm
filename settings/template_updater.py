@@ -281,6 +281,7 @@ class TemplateViewHandler:
             return
 
         self.profile_name = old_new_tables.keys()[0].lower()
+        self.prefix = self.profile_name[:2]
         self.old_new_tables = old_new_tables.values()[0]
 
         self.documents_path = source_documents_path()
@@ -538,7 +539,6 @@ class TemplateViewHandler:
         :rtype: String
         """
         for old, new in self.old_new_tables.iteritems():
-            # update different usage of old tables
 
             text = text.replace(
                 '{}.'.format(old), '{}.'.format(new)
@@ -550,6 +550,8 @@ class TemplateViewHandler:
                 text = text.replace(
                     ' {}'.format(old), ' {}'.format(old)
                 )
+
+
 
             text = text.replace(
                 ' {} '.format(old), ' {} '.format(new)
@@ -584,6 +586,13 @@ class TemplateViewHandler:
             text = text.replace(
                 '::integer', ''
             )
+
+            if 'social_tenure_relationship_{}_supporting_document'.format(
+                    self.prefix) in text \
+                    and old == 'supporting_document':
+                text = text.replace(
+                    '{}_{}'.format(self.prefix, old), '{}'.format(old)
+                )
 
         return text
 
@@ -1001,7 +1010,7 @@ class TemplateFileUpdater(
                 upgraded_view,
                 ref_table
             )
-            self.progress_message('Skipping', template)
+
         else:
             self.progress_message('Skipping', template)
 
@@ -1020,10 +1029,11 @@ class TemplateFileUpdater(
             ]
 
             if not new_table is None:
-                self.progress_message(template)
+                self.progress_message('Upgrading', template)
                 self.update_template(
                     template, old_source, new_table
                 )
+
             else:
                 self.progress_message('Skipping', template)
 

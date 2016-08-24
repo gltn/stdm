@@ -604,7 +604,7 @@ class ConfigurationFileUpdater(object):
                          'str_relations': pref + "_social_tenure_relationship_"
                                                  "supporting_document"}
         self.profiles_detail[profile] = template_dict
-        self.progress.progress_message('Creating 1.2 configuration file', '')
+        self.progress.progress_message('Creating a new configuration file', '')
         for key, value in values.iteritems():
             if key.endswith("lookup") and value:
                 value_lists = self.doc_old.createElement("ValueLists")
@@ -1079,21 +1079,22 @@ class ConfigurationFileUpdater(object):
 
         if self._check_config_folder_exists():
 
-            config_updated_dic = self.reg_config.read([CONFIG_UPDATED])
-
             # Check if old configuration file exists
             if self._check_config_file_exists("stdmConfig.xml"):
 
+                self.config_updated_dic = self.reg_config.read([CONFIG_UPDATED])
 
                 # if config file exists, check if registry key exists
-                if len(config_updated_dic) < 1:
+                if len(self.config_updated_dic ) < 1:
                     # if it doesn't exist, create it with a value of False (
                     # '0')
                     self.reg_config.write({'ConfigUpdated': '0'})
+                    self.config_updated_dic = self.reg_config.read([CONFIG_UPDATED])
+                    config_updated_val = self.config_updated_dic[CONFIG_UPDATED]
 
+                else:
 
-                config_updated_val = config_updated_dic[CONFIG_UPDATED]
-
+                    config_updated_val = self.config_updated_dic[CONFIG_UPDATED]
                 if config_updated_val == '0':
 
                     if QMessageBox.information(
@@ -1130,7 +1131,7 @@ class ConfigurationFileUpdater(object):
                         # path = self.file_handler.localPath()
                         # self._rename_old_config_file(old_config_file, path)
                         self._copy_config_file_from_template()
-                        self.reg_config.write({'ConfigUpdated': '2'})
+                        self.reg_config.write({'ConfigUpdated': '-1'})
                         return self.upgrade
 
                 elif config_updated_val == '1':
@@ -1141,6 +1142,7 @@ class ConfigurationFileUpdater(object):
                     return self.upgrade
 
             else:
+                self.reg_config.write({'ConfigUpdated': '-1'})
                 # Check of new config format exists
                 if self._check_config_file_exists("configuration.stc"):
                     return self.upgrade
@@ -1340,7 +1342,7 @@ class ConfigurationFileUpdater(object):
                         isinstance(data, datetime.date):
                         if data.find("\'") is not -1:
                             data = data[:data.find("\'")] + \
-                                                   "" + data[data.find(
+                                                   "\\'" + data[data.find(
                                                 "\'") + 1:]
                             inner_data_list.append(data)
                         else:
