@@ -554,7 +554,7 @@ class STDMQGISLoader(object):
 
             return False
 
-    def load_configuration_from_file(self, parent=None, force_upgrade=False):
+    def load_configuration_from_file(self, parent=None, manual=False):
         """
         Load configuration object from the file.
         :return: True if the file was successfully
@@ -568,9 +568,9 @@ class STDMQGISLoader(object):
             config_path
         )
 
-        if force_upgrade:
-            self.configuration_file_updater.progress.prog.setParent(parent)
+        if manual:
             parent.upgradeButton.setEnabled(False)
+            self.configuration_file_updater.progress.prog.setParent(parent)
             upgrade_status = self.configuration_file_updater.load(parent, True)
         else:
 
@@ -602,21 +602,25 @@ class STDMQGISLoader(object):
                             self.plugin_dir, profile_details, progress
                         )
 
-                        if force_upgrade:
+                        upgrade_template.process_update(True)
 
-                            upgrade_template.process_update(True)
-
-                        else:
-                            upgrade_template.process_update()
-
+                    QMessageBox.information(
+                        self.iface.mainWindow(),
+                        QApplication.translate(
+                            'STDMQGISLoader',
+                            'Upgrade STDM Configuration'
+                        ),
+                        QApplication.translate(
+                            'STDMQGISLoader',
+                            'Your configuration has been '
+                            'successfully upgraded!'
+                        )
+                    )
                     # Upgrade from options behavior
-                    if force_upgrade:
-                        parent.upgradeButton.setEnabled(True)
+                    if manual:
                         parent.close()
                         first_profile = profile_details_dict.keys()[0]
-
                         self.reload_plugin(first_profile)
-                        #self.on_sys_options()
 
                     return True
 

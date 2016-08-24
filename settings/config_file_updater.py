@@ -1059,13 +1059,13 @@ class ConfigurationFileUpdater(object):
         #     path = self.file_handler.localPath()
         #     self._rename_old_config_file(old_config_file, path)
 
-    def load(self, parent=None, force_upgrade=False):
+    def load(self, parent=None, manual=False):
 
         """
         Entry code to class
         :return:
         """
-        if force_upgrade:
+        if manual:
             self.reg_config.write({'ConfigUpdated': '0'})
             self.progress.overall_progress(
                 'Upgrading Configuration...',
@@ -1098,7 +1098,7 @@ class ConfigurationFileUpdater(object):
                 if config_updated_val == '0':
 
                     if QMessageBox.information(
-                            self.iface.mainWindow(), "Update STDM Configuration",
+                            self.iface.mainWindow(), "Upgrade STDM Configuration",
                             "Do you want to upgrade your configuration file "
                             "and import your data?\n\n"
                             "If you click No, your configuration and data will"
@@ -1126,10 +1126,6 @@ class ConfigurationFileUpdater(object):
                         return self.upgrade
 
                     else:
-                        # old_config_file = os.path.join(
-                        #     self.file_handler.localPath(), "stdmConfig.xml")
-                        # path = self.file_handler.localPath()
-                        # self._rename_old_config_file(old_config_file, path)
                         self._copy_config_file_from_template()
                         self.reg_config.write({'ConfigUpdated': '-1'})
                         return self.upgrade
