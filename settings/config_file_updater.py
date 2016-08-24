@@ -27,8 +27,9 @@ import time
 from collections import OrderedDict
 
 import errno
-from PyQt4.QtCore import QFile, QIODevice, Qt, QTextStream
-from PyQt4.QtGui import QMessageBox, QProgressBar
+from PyQt4.QtCore import QFile, QIODevice, Qt, QTextStream, pyqtSignal
+from PyQt4.QtGui import QMessageBox, QProgressBar, QDialog, QVBoxLayout, QLabel, QApplication, \
+    QCheckBox, QDialogButtonBox
 from PyQt4.QtXml import QDomDocument
 
 from ..data.configuration.config_updater import ConfigurationSchemaUpdater
@@ -147,6 +148,7 @@ class ConfigurationFileUpdater(object):
     """
     Updates configuration file to new format and migrates data
     """
+    upgradeCanceled = pyqtSignal()
 
     def __init__(self, iface):
         self.iface = iface
@@ -1011,10 +1013,6 @@ class ConfigurationFileUpdater(object):
 
             if empty_list:
                 # Check if config already exists
-                # if self.config.profile(config_profile) is not None:
-                #     config_profile += "_1"
-                #     conf_prefix = config_profile[:2].lower() + "_1"
-                # else:
                 config_profile = config_profile
                 conf_prefix = config_profile[:2].lower()
                 self.config_profiles_prefix.append(conf_prefix)
@@ -1051,13 +1049,55 @@ class ConfigurationFileUpdater(object):
         self.config_file.close()
         self.doc_old.clear()
 
-        # Rename the old configuration file after parsing it
-        # if self._check_config_file_exists("stdmConfig.xml"):
-        #     # self._remove_old_config_file("stdmConfig.xml")
-        #     old_config_file = os.path.join(
-        #                 self.file_handler.localPath(), "stdmConfig.xml")
-        #     path = self.file_handler.localPath()
-        #     self._rename_old_config_file(old_config_file, path)
+    def upgrade_dialog(self):
+        upgrade_dialog = QDialog(
+            self.iface.mainWindow(),
+            Qt.WindowSystemMenuHint | Qt.WindowTitleHint
+        )
+        upgrade_layout = QVBoxLayout(upgrade_dialog)
+        upgrade_label = QLabel()
+        title = QApplication.translate(
+            'ConfigurationFileUpdater', 
+            'Upgrade STDM Configuration'
+        )
+
+        text = QApplication.translate(
+            'ConfigurationFileUpdater',
+            'Do you want to upgrade your configuration file '
+            'and import your data?\n\n'
+            'If you click No, your configuration and data will'
+            ' no longer be accessible to STDM.\n'
+            'If you click Yes, you will be able to access your'
+            'old configuration with the data.'
+        )
+        confirmation_text = QApplication.translate(
+            'ConfigurationFileUpdater',
+            'I don\'t want upgrade my old configuration and migrate my data.'
+        )
+        upgrade_dialog.setWindowTitle(title)
+        upgrade_label.setText(text)
+
+        upgrade_layout.addWidget(upgrade_label)
+        confirm_checkbox = QCheckBox()
+
+        confirm_checkbox.setText(confirmation_text)
+        confirm_checkbox.setStyleSheet(
+            "QCheckBox {color : red; }"
+        )
+        upgrade_layout.addWidget(confirm_checkbox)
+        upgrade_buttons = QDialogButtonBox()
+
+        upgrade_buttons.setStandardButtons(
+            QDialogButtonBox.Yes | QDialogButtonBox.No
+        )
+        upgrade_buttons.accepted.connect(upgrade_dialog.accept)
+        upgrade_buttons.rejected.connect(upgrade_dialog.reject)
+
+        upgrade_layout.addWidget(upgrade_buttons)
+
+        upgrade_dialog.setModal(True)
+        result = upgrade_dialog.exec_()
+        return result, confirm_checkbox.isChecked()
 
     def load(self, parent=None, manual=False):
 
@@ -1097,15 +1137,9 @@ class ConfigurationFileUpdater(object):
                     config_updated_val = self.config_updated_dic[CONFIG_UPDATED]
                 if config_updated_val == '0':
 
-                    if QMessageBox.information(
-                            self.iface.mainWindow(), "Upgrade STDM Configuration",
-                            "Do you want to upgrade your configuration file "
-                            "and import your data?\n\n"
-                            "If you click No, your configuration and data will"
-                            " no longer be accessible to STDM.\n"
-                            "If you click Yes, you will be able to access your"
-                            "old configuration with the data.", QMessageBox.Yes
-                                    | QMessageBox.No) == QMessageBox.Yes:
+                    result, confirmation = self.upgrade_dialog()
+
+                    if result == 1:
                         self.upgrade = True
                         self.old_config_file = True
                         doc, root = self._get_doc_element(os.path.join(
@@ -1125,31 +1159,35 @@ class ConfigurationFileUpdater(object):
 
                         return self.upgrade
 
-                    else:
-                        self._copy_config_file_from_template()
+                    elif result == 0 and confirmation:
+                        self.reg_config.write({'ConfigUpdated': '-2'})
+                        return self.upgrade
+
+                    elif result == 0 and not confirmation:
                         self.reg_config.write({'ConfigUpdated': '-1'})
                         return self.upgrade
+
 
                 elif config_updated_val == '1':
                     self.upgrade = True
                     return self.upgrade
 
                 else:
-                    return self.upgrade
+                    return False
 
             else:
                 self.reg_config.write({'ConfigUpdated': '-1'})
                 # Check of new config format exists
                 if self._check_config_file_exists("configuration.stc"):
-                    return self.upgrade
+                    return False
                 else:
                     # if new config format doesn't exist copy from template
                     self._copy_config_file_from_template()
-                    return self.upgrade
+                    return False
         else:
             self._create_config_folder()
             self._copy_config_file_from_template()
-            return self.upgrade
+            return False
 
     def check_version(self):
         """
