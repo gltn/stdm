@@ -232,11 +232,10 @@ def import_data(table_name, columns_names, data, **kwargs):
         conn.close()
         return result
 
-    except IntegrityError as e:
+    except IntegrityError:
         trans.rollback()
         return False
-    except SQLAlchemyError as e:
-        print e
+    except SQLAlchemyError:
         trans.rollback()
         return False
 
