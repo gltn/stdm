@@ -49,21 +49,14 @@ from stdm.settings.registryconfig import (
     RegistryConfig,
     COMPOSER_OUTPUT,
     COMPOSER_TEMPLATE,
-    NETWORK_DOC_RESOURCE
+    NETWORK_DOC_RESOURCE,
+    CONFIG_UPDATED
 )
 from stdm.utils.util import setComboCurrentIndexWithText
 from stdm.ui.login_dlg import loginDlg
 from stdm.ui.notification import NotificationBar
 from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
 from stdm.ui.ui_options import Ui_DlgOptions
-
-from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
-from ..settings.config_file_updater import ConfigurationFileUpdater
-
-from stdm.settings.registryconfig import (
-    RegistryConfig,
-    CONFIG_UPDATED
-)
 
 def pg_profile_names():
     """
@@ -94,8 +87,6 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self._apply_btn = self.buttonBox.button(QDialogButtonBox.Apply)
         self._reg_config = RegistryConfig()
         self._db_config = DatabaseConfig()
-        self.configuration_file_updater = ConfigurationFileUpdater(self.iface)
-        self.reg_config = RegistryConfig()
 
         #Connect signals
         self._apply_btn.clicked.connect(self.apply_settings)
@@ -118,6 +109,8 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self._config = StdmConfiguration.instance()
         self._default_style_sheet = self.txtRepoLocation.styleSheet()
 
+        self.manage_upgrade()
+       
         self.init_gui()
 
     def init_gui(self):
@@ -498,3 +491,18 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             return
 
         self.accept()
+
+    def manage_upgrade(self):
+
+        self.config_updated_dic = self._reg_config.read(
+            [CONFIG_UPDATED]
+        )
+        # if config file exists, check if registry key exists
+        if len(self.config_updated_dic) > 0:
+            config_updated_val = self.config_updated_dic[
+                CONFIG_UPDATED
+            ]
+            if config_updated_val == '0':
+                self.upgradeButton.setEnabled(True)
+            else:
+                self.upgradeButton.setEnabled(False)
