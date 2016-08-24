@@ -272,7 +272,7 @@ class ConfigurationFileUpdater(object):
         Renames old configuration file
         """
         old_file_wt_ext = "stdmConfig.xml".rstrip(".xml")
-        dt = str(datetime.datetime.now())
+        dt = unicode(datetime.datetime.now())
         timestamp = time.strftime('%Y_%m_%d_%H_%M')
         new_file = os.path.join(path, "{0}_{1}.xml".format(old_file_wt_ext,
                                                            timestamp))
@@ -283,7 +283,7 @@ class ConfigurationFileUpdater(object):
         Renames old configuration file
         """
         config_file = "configuration"
-        dt = str(datetime.datetime.now())
+        dt = unicode(datetime.datetime.now())
         timestamp = time.strftime('%Y_%m_%d_%H_%M')
         new_file = '{}/{}_{}.stc'.format(
             self.file_handler.localPath(),
@@ -1277,7 +1277,7 @@ class ConfigurationFileUpdater(object):
                     if int(value[lookup_col_index]) == fk:
                         value[lookup_col_index] = int(fk)
                 except (ValueError, TypeError):
-                    if value[lookup_col_index] == str(lookup_value):
+                    if value[lookup_col_index] == unicode(lookup_value):
                         value[lookup_col_index] = int(fk)
                         break
 
@@ -1290,7 +1290,7 @@ class ConfigurationFileUpdater(object):
                     if int(value[lookup_col_index]) == fk:
                         value[lookup_col_index] = int(fk)
                 except (ValueError, TypeError):
-                    if value[lookup_col_index] == str(lookup_value):
+                    if value[lookup_col_index] == unicode(lookup_value):
                         value[lookup_col_index] = int(fk)
                         break
 
@@ -1342,7 +1342,7 @@ class ConfigurationFileUpdater(object):
                         isinstance(data, datetime.date):
 
                         if data.find("\'") is not -1:
-                            data = str(data)
+                            data = unicode(data)
                             data = data.replace("'", "`")
 
                             inner_data_list.append(data)
@@ -1434,17 +1434,17 @@ class ConfigurationFileUpdater(object):
                                 l = tuple(list(first_v) + new_last_v)
 
                                 new_values.append(l)
-                            new_values = str(new_values).strip(
+                            new_values = unicode(new_values).strip(
                                 "[]")
                         else:
 
                             values = self._clean_data(values)
 
-                            new_values = str(values).replace("[[", "(")
-                            new_values = str(new_values).replace("]]", ")")
-                            new_values = str(new_values).replace("[", "(")
-                            new_values = str(new_values).replace("]", ")")
-                            new_values = str(new_values).replace("None",
+                            new_values = unicode(values).replace("[[", "(")
+                            new_values = unicode(new_values).replace("]]", ")")
+                            new_values = unicode(new_values).replace("[", "(")
+                            new_values = unicode(new_values).replace("]", ")")
+                            new_values = unicode(new_values).replace("None",
                                                                  "NULL")
 
                         # Remove Unicode
@@ -1481,8 +1481,8 @@ class ConfigurationFileUpdater(object):
             progress_i = 0
 
             for STR_tables, v in STR_TABLES.iteritems():
-                old_columns = str(v['old']).strip("()").replace("\'", "")
-                new_columns = str(v['new']).strip("()").replace("\'", "")
+                old_columns = unicode(v['old']).strip("()").replace("\'", "")
+                new_columns = unicode(v['new']).strip("()").replace("\'", "")
 
                 if STR_tables == 'social_tenure_relationship':
                     new_STR_table = self.config_profiles_prefix[0] + "_" + STR_tables
@@ -1504,7 +1504,7 @@ class ConfigurationFileUpdater(object):
 
                             new_STR_data_list.append(tuple(list_data))
 
-                        new_STR_data = str(new_STR_data_list).strip("[]").replace(
+                        new_STR_data = unicode(new_STR_data_list).strip("[]").replace(
                             "u\'", "\'")
 
                         if not import_data(new_STR_table, new_columns,
@@ -1529,7 +1529,7 @@ class ConfigurationFileUpdater(object):
 
                         STR_data = [tuple(i) for i in STR_data]
 
-                        new_STR_data_list = str(STR_data).strip("[]").replace(
+                        new_STR_data_list = unicode(STR_data).strip("[]").replace(
                             "u\'", "\'")
 
                         if not import_data(new_STR_table, new_columns,
@@ -1555,7 +1555,7 @@ class ConfigurationFileUpdater(object):
 
                         STR_data = [tuple(i) for i in STR_data]
 
-                        new_STR_data_list = str(STR_data).strip("[]").replace(
+                        new_STR_data_list = unicode(STR_data).strip("[]").replace(
                             "u\'", "\'").replace("None", "NULL")
 
                         if not import_data(new_STR_table, new_columns,
