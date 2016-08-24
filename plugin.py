@@ -570,8 +570,10 @@ class STDMQGISLoader(object):
 
         if force_upgrade:
             self.configuration_file_updater.progress.prog.setParent(parent)
+            parent.upgradeButton.setEnabled(False)
             upgrade_status = self.configuration_file_updater.load(parent, True)
         else:
+
             upgrade_status = self.configuration_file_updater.load()
 
 
@@ -609,12 +611,12 @@ class STDMQGISLoader(object):
 
                     # Upgrade from options behavior
                     if force_upgrade:
-
+                        parent.upgradeButton.setEnabled(True)
                         parent.close()
                         first_profile = profile_details_dict.keys()[0]
 
                         self.reload_plugin(first_profile)
-                        self.on_sys_options()
+                        #self.on_sys_options()
 
                     return True
 
