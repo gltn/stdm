@@ -618,6 +618,7 @@ class STDMQGISLoader(object):
                     )
                     # Upgrade from options behavior
                     if manual:
+                        parent.upgradeButton.setEnabled(True)
                         parent.close()
                         first_profile = profile_details_dict.keys()[0]
                         self.reload_plugin(first_profile)
@@ -625,6 +626,9 @@ class STDMQGISLoader(object):
                     return True
 
         else:
+            if manual:
+                parent.upgradeButton.setEnabled(True)
+                parent.manage_upgrade()
             result = self.load_configuration_to_serializer()
             return result
 
@@ -1073,11 +1077,13 @@ class STDMQGISLoader(object):
         opt_dlg.buttonBox.accepted.connect(
             lambda: self.reload_plugin(None)
         )
+
         opt_dlg.upgradeButton.clicked.connect(
             lambda :self.load_configuration_from_file(
                 opt_dlg, True
             )
         )
+
         opt_dlg.exec_()
 
 

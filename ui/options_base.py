@@ -50,7 +50,8 @@ from stdm.settings.registryconfig import (
     COMPOSER_OUTPUT,
     COMPOSER_TEMPLATE,
     NETWORK_DOC_RESOURCE,
-    CONFIG_UPDATED
+    CONFIG_UPDATED,
+    WIZARD_RUN
 )
 from stdm.utils.util import setComboCurrentIndexWithText
 from stdm.ui.login_dlg import loginDlg
@@ -105,12 +106,15 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.btn_composer_out_folder.clicked.connect(
             self._on_choose_doc_generator_output_path
         )
+        self.upgradeButton.toggled.connect(
+            self.manage_upgrade
+        )
 
         self._config = StdmConfiguration.instance()
         self._default_style_sheet = self.txtRepoLocation.styleSheet()
 
         self.manage_upgrade()
-       
+
         self.init_gui()
 
     def init_gui(self):
@@ -493,16 +497,34 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.accept()
 
     def manage_upgrade(self):
+        """
+        A slot raised when the upgrade button is clicked.
+        It disables or enables the upgrade
+        button based on the ConfigUpdated registry value.
+        """
 
         self.config_updated_dic = self._reg_config.read(
             [CONFIG_UPDATED]
+        )
+        self.wizard_run_dic = self._reg_config.read(
+            [WIZARD_RUN]
         )
         # if config file exists, check if registry key exists
         if len(self.config_updated_dic) > 0:
             config_updated_val = self.config_updated_dic[
                 CONFIG_UPDATED
             ]
-            if config_updated_val == '0':
-                self.upgradeButton.setEnabled(True)
-            else:
+
+            # wizard_run_val = self.wizard_run_dic[
+            #     WIZARD_RUN
+            # ]
+
+            # if the user clicked never show checkbox or has upgraded
+            # disable the button or else enable it.
+            if config_updated_val == '-2' or config_updated_val == '1':
                 self.upgradeButton.setEnabled(False)
+            else:
+                self.upgradeButton.setEnabled(True)
+            #
+            # if wizard_run_val == '1' or wizard_run_val == 1:
+            #     self.upgradeButton.setEnabled(False)
