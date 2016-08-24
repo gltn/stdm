@@ -236,6 +236,7 @@ def import_data(table_name, columns_names, data, **kwargs):
         trans.rollback()
         return False
     except SQLAlchemyError as e:
+        print e
         trans.rollback()
         return False
 
