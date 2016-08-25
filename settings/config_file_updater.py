@@ -570,15 +570,25 @@ class ConfigurationFileUpdater(object):
             )
         return
 
-    def append_profile_to_config_file(self, source_config, config_file_name):
+    def append_profile_to_config_file(
+            self, source_config, destination_config
+    ):
+        """
+        Appends a profile from a source configuration into
+        the destination configuration file.
+        :param source_config: The source config/ configuration_updated.stc
+        :type source_config: String
+        :param config_file_name: The destination config / configuration.stc
+        :type config_file_name: String
+        """
         stdm_path = self.file_handler.localPath()
         doc, root = self._get_doc_element(
             source_config
         )
         config_doc, config_root = self._get_doc_element(
-            config_file_name
+            destination_config
         )
-        config_file_path = os.path.join(stdm_path, config_file_name)
+        config_file_path = os.path.join(stdm_path, destination_config)
         config_file = QFile(config_file_path)
         config_file.copy(os.path.join(stdm_path, 'configuration_pre_merged.stc'))
         open_file = config_file.open(
