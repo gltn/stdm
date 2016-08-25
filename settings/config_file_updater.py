@@ -1121,17 +1121,21 @@ class ConfigurationFileUpdater(object):
         text = QApplication.translate(
             'ConfigurationFileUpdater',
             'Do you want to upgrade your configuration file '
-            'and import your data?\n\n'
-            'If you click No, your configuration and data will'
-            ' no longer be accessible to STDM.\n'
-            'If you click Yes, you will be able to access your'
-            'old configuration with the data.'
+            'and import your data?<br><br>'
+            'If you click <b>No</b>, your old configuration, data and templates will '
+            'no longer be accessible in STDM.<br>'
+            'If you click <b>Yes</b>, your old configuration, data and templates '
+            'will be automatically updated to be <br>'
+            'compatible with this version of STDM.'
         )
         confirmation_text = QApplication.translate(
             'ConfigurationFileUpdater',
-            'I don\'t want upgrade my old configuration and migrate my data.'
+            'I don\'t want upgrade my old configuration '
+            'and templates, and migrate my data.'
         )
+
         upgrade_dialog.setWindowTitle(title)
+        upgrade_label.setTextFormat(Qt.RichText)
         upgrade_label.setText(text)
 
         upgrade_layout.addWidget(upgrade_label)
