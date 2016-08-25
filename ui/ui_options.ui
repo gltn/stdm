@@ -333,6 +333,20 @@
          </layout>
         </widget>
        </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Set current profile</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>Upgrade STDM Configuration to 1.2 </string>
+         </property>
+        </widget>
+       </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_6">
          <property name="text">
@@ -350,21 +364,14 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label">
+       <item row="5" column="1">
+        <widget class="QPushButton" name="upgradeButton">
          <property name="text">
-          <string>Set current profile</string>
+          <string>Upgrade</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_9">
-         <property name="text">
-          <string>Upgrade STDM Configuration to 1.2 </string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="2">
+       <item row="2" column="1">
         <widget class="QLineEdit" name="txtRepoLocation">
          <property name="minimumSize">
           <size>
@@ -380,7 +387,7 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="3">
+       <item row="2" column="2">
         <widget class="QToolButton" name="btn_supporting_docs">
          <property name="toolTip">
           <string>Choose supporting documents directory</string>
@@ -397,13 +404,6 @@
            <width>24</width>
            <height>24</height>
           </size>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="1">
-        <widget class="QPushButton" name="upgradeButton">
-         <property name="text">
-          <string>Upgrade</string>
          </property>
         </widget>
        </item>
