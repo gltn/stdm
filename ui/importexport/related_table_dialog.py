@@ -30,9 +30,9 @@ from stdm.data.pg_utils import (
 )
 from stdm.data.importexport.value_translators import RelatedTableTranslator
 
-from ..notification import NotificationBar
-from .translator_widget_base import TranslatorDialogBase
-from .ui_related_table_dialog import Ui_RelatedTableTranslatorDialog
+from stdm.ui.notification import NotificationBar
+from stdm.ui.importexport.translator_widget_base import TranslatorDialogBase
+from stdm.ui.importexport.ui_related_table_dialog import Ui_RelatedTableTranslatorDialog
 
 __all__ = ["RelatedTableDialog"]
 

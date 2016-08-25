@@ -1,7 +1,7 @@
 """
 /***************************************************************************
 Name                 : SupportingDocumentsWidget
-Description          : Widget for managing an entity' supporting documents.
+Description          : Widget for managing an entity's supporting documents.
 Date                 : 24/June/2016
 copyright            : (C) 2016 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
@@ -25,9 +25,6 @@ from PyQt4. QtGui import (
     QGridLayout,
     QIcon,
     QLabel,
-    QMessageBox,
-    QPixmap,
-    QSizePolicy,
     QScrollArea,
     QSpacerItem,
     QTabWidget,
