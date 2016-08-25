@@ -31,39 +31,36 @@ except:
     import gdal
     import ogr
 
-import sqlalchemy
-from sqlalchemy.schema import (
-    Table,
-    MetaData
-)
-from sqlalchemy.orm import (
-    mapper,
-    class_mapper
-)
-
-from stdm.data.database import (
-    STDMDb,
-    table_mapper
-)
 from stdm.ui.stdmdialog import DeclareMapping
 from stdm.data.pg_utils import (
     delete_table_data,
     geometryType
 )
 from stdm.utils.util import getIndex
-
-from .value_translators import (
+from stdm.settings import (
+    current_profile
+)
+from stdm.data.database import (
+    STDMDb
+)
+from stdm.data.importexport.value_translators import (
     IgnoreType,
     ValueTranslatorManager
 )
+from stdm.data.configuration import entity_model
+from stdm.data.configuration.exception import ConfigurationException
+from stdm.ui.sourcedocument import SourceDocumentManager
 
 class OGRReader(object):
     def __init__(self, source_file):
         self._ds = ogr.Open(source_file)
         self._targetGeomColSRID = -1 
-        self._geomType = ""
+        self._geomType = ''
         self._dbSession = STDMDb.instance().session   
-        self._mapped_class = None
+        self._mapped_cls = None
+        self._mapped_doc_cls = None
+        self._current_profile = current_profile()
+        self._source_doc_manager = None
                 
     def getLayer(self):
         #Return the first layer in the data source
@@ -112,25 +109,43 @@ class OGRReader(object):
             fields.append(str(field_defn.GetNameRef()))
             
         return fields
-    
-    def _mapTable(self,dataSourceName):
+
+    def _data_source_entity(self, table_name):
+        entity = self._current_profile.entity_by_name(table_name)
+
+        return entity
+
+    def entity_virtual_columns(self, table_name):
         """
-        Reflect the data source.
+        :param table_name: Name of the target table.
+        :type table_name: str
+        :return: Returns a list of derived columns for the specified target table.
+        :rtype: list
         """
-        meta = MetaData(bind = STDMDb.instance().engine)
-        dsTable = Table(dataSourceName,meta,autoload=True)
-        
-        return dsTable
+        entity = self._data_source_entity(table_name)
+
+        if entity is None:
+            return []
+
+        return entity.virtual_columns()
 
     def _get_mapped_class(self, table_name):
-        return DeclareMapping.instance().tableMapping(table_name)
+        #Get entity from the corresponding table name
+        entity = self._data_source_entity(table_name)
+
+        if entity is None:
+            return None
+
+        ent_model, doc_model = entity_model(entity, with_supporting_document=True)
+
+        return ent_model, doc_model
     
     def _insertRow(self, columnValueMapping):
         """
         Insert a new row using the mapped class instance then mapping column
         names to the corresponding column values.
         """
-        model_instance = self._mapped_class()
+        model_instance = self._mapped_cls()
         
         for col,value in columnValueMapping.iteritems():
             if hasattr(model_instance, col):
@@ -153,7 +168,7 @@ class OGRReader(object):
             raise
     
     def featToDb(self, targettable , columnmatch, append, parentdialog,
-                 geomColumn=None, geomCode=-1, translator_manager=ValueTranslatorManager()):
+                 geomColumn=None, geomCode=-1, translator_manager=None):
         """
         Performs the data import from the source layer to the STDM database.
         :param targettable: Destination table name
@@ -164,17 +179,22 @@ class OGRReader(object):
         containing value translators defined for the destination table columns.
         :type translator_manager: ValueTranslatorManager
         """
+        #Check current profile
+        if self._current_profile is None:
+            msg = QApplication.translate(
+                'OGRReader',
+                'The current profile could not be determined.\nPlease set it '
+                'in the Options dialog or Configuration Wizard.'
+            )
+            raise ConfigurationException(msg)
+
+        if translator_manager is None:
+            translator_manager = ValueTranslatorManager()
+
         #Delete existing rows in the target table if user has chosen to overwrite
         if not append:
             delete_table_data(targettable)
 
-        """
-        #Debug logging
-        logging.basicConfig(level=logging.DEBUG,
-                            format='%(asctime)s %(levelname)s %(message)s',
-                            filename='stdm.log',
-                            filemode='w')        
-        """
         #Container for mapping column names to their corresponding values
         column_value_mapping = {}
         
@@ -188,7 +208,10 @@ class OGRReader(object):
         progress = QProgressDialog("", "&Cancel", init_val, numFeat,
                                    parentdialog)
         progress.setWindowModality(Qt.WindowModal)    
-        lblMsgTemp = "Importing {0} of {1} to STDM..."  
+        lblMsgTemp = "Importing {0} of {1} to STDM..."
+
+        #Set entity for use in translators
+        destination_entity = self._data_source_entity(targettable)
            
         for feat in lyr:
             column_count = 0
@@ -198,6 +221,11 @@ class OGRReader(object):
             
             if progress.wasCanceled():
                 break
+
+            #Reset source document manager for new records
+            if destination_entity.supports_documents:
+                if not self._source_doc_manager is None:
+                    self._source_doc_manager.reset()
             
             for f in range(feat_defn.GetFieldCount()):
                 field_defn = feat_defn.GetFieldDefn(f) 
@@ -209,45 +237,67 @@ class OGRReader(object):
 
                     field_value = feat.GetField(f)
 
+                    #Create mapped class only once
+                    if self._mapped_cls is None:
+                        mapped_cls, mapped_doc_cls = self._get_mapped_class(targettable)
+
+                        if mapped_cls is None:
+                            msg = QApplication.translate(
+                                "OGRReader",
+                                "Something happened that caused the "
+                                "database table not to be mapped to the "
+                                "corresponding model class. Please contact"
+                                " your system administrator."
+                            )
+
+                            raise RuntimeError(msg)
+
+                        self._mapped_cls = mapped_cls
+                        self._mapped_doc_cls = mapped_doc_cls
+
+                        #Create source document manager if the entity supports them
+                        if destination_entity.supports_documents:
+                            self._source_doc_manager = SourceDocumentManager(
+                                destination_entity.supporting_doc,
+                                self._mapped_doc_cls
+                            )
+
+                        if geomColumn is not None:
+                            #Use geometry column SRID in the target table
+                            self._geomType,self._targetGeomColSRID = \
+                                geometryType(targettable,geomColumn)
+
                     '''
-                    Check if there is a value translator defined for the specified destination column.
+                    Check if there is a value translator defined for the
+                    specified destination column.
                     '''
                     value_translator = translator_manager.translator(dest_column)
 
                     if not value_translator is None:
+                        #Set destination table entity
+                        value_translator.entity = destination_entity
+
                         source_col_names = value_translator.source_column_names()
 
                         field_value_mappings = self._map_column_values(feat, feat_defn,
                                                                        source_col_names)
-                        field_value = value_translator.referencing_column_value(field_value_mappings)
+                        #Set source document manager if required
+                        if value_translator.requires_source_document_manager:
+                            value_translator.source_document_manager = self._source_doc_manager
+
+                        field_value = value_translator.referencing_column_value(
+                            field_value_mappings
+                        )
 
                     if not isinstance(field_value, IgnoreType):
                             column_value_mapping[dest_column] = field_value
 
+                    #Set supporting documents
+                    if destination_entity.supports_documents:
+                        column_value_mapping['documents'] = \
+                            self._source_doc_manager.model_objects()
+
                     column_count += 1
-
-                    #Create mapped table only once
-                    if self._mapped_class is None:
-                        #Execute only once, when all fields have been iterated
-                        if column_count == len(columnmatch):
-                            #Add geometry column to the mapping 
-                            if geomColumn is not None:                                                                                                                    
-                                column_value_mapping[geomColumn] = None
-                                
-                                #Use geometry column SRID in the target table
-                                self._geomType,self._targetGeomColSRID = geometryType(targettable,
-                                                                                      geomColumn)
-
-                            mapped_class = self._get_mapped_class(targettable)
-
-                            if mapped_class is None:
-                                msg = QApplication.translate("OGRReader",
-                                                             "Something happened that caused the database table " \
-                                      "not to be mapped to the corresponding model class. Please try again.")
-
-                                raise RuntimeError(msg)
-                                
-                            self._mapped_class = mapped_class
                                                        
             #Only insert geometry if it has been defined by the user
             if geomColumn is not None:
@@ -290,7 +340,7 @@ class OGRReader(object):
         """
         try:
             #Get column type of the enumeration
-            enum_col_type = self._mapped_class.__mapper__.columns[column_name].type
+            enum_col_type = self._mapped_cls.__mapper__.columns[column_name].type
         except KeyError:
             return False, None
 

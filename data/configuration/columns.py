@@ -392,7 +392,7 @@ class VarCharColumn(BoundsColumn):
 
     @classmethod
     def display_name(cls):
-        return tr('Varying-length text')
+        return tr('Varying-length Text')
 
 VarCharColumn.register()
 
@@ -408,7 +408,7 @@ class TextColumn(BoundsColumn):
 
     @classmethod
     def display_name(cls):
-        return tr('Unlimited-length text')
+        return tr('Unlimited-length Text')
 
 TextColumn.register()
 
@@ -424,7 +424,7 @@ class IntegerColumn(BoundsColumn):
 
     @classmethod
     def display_name(cls):
-        return tr('Whole number')
+        return tr('Whole Number')
 
 IntegerColumn.register()
 
@@ -444,7 +444,7 @@ class DoubleColumn(BoundsColumn):
 
     @classmethod
     def display_name(cls):
-        return tr('Decimal number')
+        return tr('Decimal Number')
 
 DoubleColumn.register()
 

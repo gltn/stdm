@@ -40,6 +40,8 @@ from stdm.utils.util import (
     PLUGIN_DIR
 )
 
+from sqlalchemy.exc import IntegrityError
+
 _postGISTables = ["spatial_ref_sys", "supporting_document"]
 _postGISViews = ["geometry_columns","raster_columns","geography_columns",
                  "raster_overviews","foreign_key_references"]
@@ -182,6 +184,60 @@ def process_report_filter(tableName, columns, whereStr="", sortStmnt=""):
     t = text(sql)
     
     return _execute(t)
+
+def export_data(table_name):
+    sql = "SELECT * FROM {0}".format(table_name, )
+
+    t = text(sql)
+
+    return _execute(t)
+
+def export_data_from_columns(columns, table_name):
+    sql = "SELECT {0} FROM {1}".format(columns, table_name)
+
+    t = text(sql)
+
+    return _execute(t)
+
+def fix_sequence(table_name):
+    """
+    Fixes a sequence error that commonly happen
+    after a batch insert such as in
+    import_data(), csv import, etc.
+    :param table_name: The name of the table to be fixed
+    :type table_name: String
+    """
+    sql_sequence_fix = text(
+        "SELECT setval('{0}_id_seq', (SELECT MAX(id) FROM {0}));".format(
+            table_name
+        )
+    )
+
+    _execute(sql_sequence_fix)
+
+
+def import_data(table_name, columns_names, data, **kwargs):
+
+    sql = "INSERT INTO {0} ({1}) VALUES {2}".format(table_name,
+                                                    columns_names, data)
+
+    t = text(sql)
+    conn = STDMDb.instance().engine.connect()
+    trans = conn.begin()
+
+    try:
+        result = conn.execute(t, **kwargs)
+        trans.commit()
+
+        conn.close()
+        return result
+
+    except IntegrityError:
+        trans.rollback()
+        return False
+    except SQLAlchemyError:
+        trans.rollback()
+        return False
 
 def table_column_names(tableName, spatialColumns=False, creation_order=False):
     """
@@ -384,10 +440,13 @@ def _execute(sql,**kwargs):
     conn = STDMDb.instance().engine.connect()
     trans = conn.begin()
     result = conn.execute(sql,**kwargs)
-    trans.commit()
-    conn.close()
+    try:
+        trans.commit()
+        conn.close()
+        return result
+    except SQLAlchemyError:
+        trans.rollback()
 
-    return result
 
 def reset_content_roles():
     rolesSet = "truncate table content_base cascade;"
@@ -575,11 +634,11 @@ def drop_view(view_name):
 
     try:
         _execute(t)
-
         return True
 
     #Error such as view dependencies or the current user is not the owner.
     except SQLAlchemyError:
+
         return False
 
 

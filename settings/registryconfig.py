@@ -89,7 +89,6 @@ def source_documents_path():
     """
     return registry_value(NETWORK_DOC_RESOURCE)
 
-
 def last_document_path():
     """
     :return: Returns the latest path used for uploading supporting documents.
