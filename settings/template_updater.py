@@ -22,13 +22,14 @@ email                : stdm@unhabitat.org
 import os
 import re
 from distutils import dir_util
+from distutils.errors import DistutilsFileError
 import glob
 import xml.etree.ElementTree as ET
 
 from PyQt4.QtXml import QDomDocument
 from PyQt4.QtCore import QFile, QIODevice
 from PyQt4.QtGui import (
-    QApplication, QProgressDialog, QLabel, QMessageBox
+    QApplication,  QMessageBox
 )
 
 from qgis.utils import (
@@ -49,7 +50,7 @@ from stdm.data.pg_utils import (
     pg_table_exists,
     foreign_key_parent_tables
 )
-
+from stdm.ui.progress_dialog import STDMProgressDialog
 
 class TemplateFileHandler:
     def __init__(self):
@@ -121,85 +122,45 @@ class TemplateFileHandler:
         old_path = '{}/old_templates'.format(
             self.template_path
         )
+        error_title = QApplication.translate(
+            'TemplateContentReader',
+            'Old Template Restore Error'
+        )
+        error_access = QApplication.translate(
+            'TemplateContentReader',
+            'Failed to restore the old configuration for re-update. \n'
+            'The system cannot access the file because \n'
+            'it is being used by another process'
+        )
+
         if os.path.exists(old_path):
-            dir_util.copy_tree(old_path, self.template_path)
-
-
-class TemplateUpdaterProgressDialog:
-    def __init__(self):
-        """
-        Initializes the progress dialog of
-        the template updater with the option
-        of updating the label of the dialog.
-        :return:
-        :rtype:
-        """
-        self.prog = self.overall_progress(iface.mainWindow())
-
-    def overall_progress(self, parent=None):
-        """
-        Initializes the progress dialog.
-        :param parent: The parent of the dialog.
-        :type parent: QWidget
-        :return: The progress dialog initialized.
-        :rtype: QProgressDialog
-        """
-        prog_dialog = QProgressDialog(
-            parent
-        )
-        prog_dialog.setFixedWidth(380)
-        prog_dialog.setFixedHeight(100)
-        prog_dialog.setWindowTitle(
-            QApplication.translate(
-                "TemplateUpdater",
-                'Updating templates...'
-            )
-        )
-
-        label = QLabel()
-        prog_dialog.setLabel(label)
-
-        prog_dialog.setCancelButton(None)
-        prog_dialog.show()
-
-        return prog_dialog
-
-    def progress_message(self, val, skip=False):
-        """
-        Shows progress message in the progress bar.
-        :param val: The template name
-        :type val: String
-        :param skip: Shows Skipping text if True.
-        :type skip: Boolean
-        """
-        if skip:
-            text = 'Skipping {}...'.format(val)
-            self.prog.setLabelText(
-                QApplication.translate(
-                    'TemplateUpdater', text
+            try:
+                dir_util.copy_tree(old_path, self.template_path)
+            except DistutilsFileError:
+                QMessageBox.critical(
+                    iface.mainWindow(),
+                    error_title,
+                    error_access
                 )
-
-            )
-        else:
-            text = 'Updating {}...'.format(val)
-            self.prog.setLabelText(
-                QApplication.translate(
-                    'TemplateUpdater', text
+            except Exception as ex:
+                QMessageBox.critical(
+                    iface.mainWindow(),
+                    error_title,
+                    ex
                 )
-
-            )
-
 
 class TemplateContentReader(
-    TemplateFileHandler, TemplateUpdaterProgressDialog
+    TemplateFileHandler
 ):
 
-    def __init__(self):
+    def __init__(self, progress):
         """
         Reads template content and gets
         the source table of a template.
         """
         TemplateFileHandler.__init__(self)
+
+        self.prog = progress.prog
 
     def get_template_element(self, path):
         """
@@ -248,7 +209,7 @@ class TemplateContentReader(
             config_file
         )
         if not status:
-            print 'status ', path
+
             return
 
         doc_element = doc.documentElement()
@@ -308,29 +269,21 @@ class TemplateContentReader(
 
 
 class TemplateViewHandler:
-    def __init__(self):
+    def __init__(self, old_new_tables):
         """
-
+        Updates template views.
+        :param old_new_tables: Dictionary of old and new tables.
+        :type old_new_tables: Dictionary
+        :return:
+        :rtype:
         """
-        #TODO add profile_vw_social_tenure_relationship
-        #TODO Refactor into 3 class, TemplateContent, TemplateFile, TemplateView
-        old_new_tables = {
-            'basic':{
-            'party': 'ba_party',
-            'spatial_unit':
-                'ba_spatial_unit',
-            'social_tenure_relationship':
-                'ba_social_tenure_relationship',
-            'str_relations':
-                'ba_social_tenure_relationship_supporting_document',
-            'social_tenure_relations': 'basic_vw_social_tenure_relationship'
-            }
-        }
-
         if len(old_new_tables) < 1:
             return
+
+        self.profile_name = old_new_tables.keys()[0].lower()
+        self.prefix = self.profile_name[:2]
         self.old_new_tables = old_new_tables.values()[0]
-        self.profile_name = old_new_tables.keys()[0]
+
         self.documents_path = source_documents_path()
 
         self.supporting_doc_columns = {
@@ -526,6 +479,7 @@ class TemplateViewHandler:
         :rtype: String
         """
         view_def = self.view_details(view)
+
         # exclude str view of the new configuration
         if view in self.old_new_tables.values():
             return
@@ -585,7 +539,6 @@ class TemplateViewHandler:
         :rtype: String
         """
         for old, new in self.old_new_tables.iteritems():
-            # update different usage of old tables
 
             text = text.replace(
                 '{}.'.format(old), '{}.'.format(new)
@@ -597,6 +550,8 @@ class TemplateViewHandler:
                 text = text.replace(
                     ' {}'.format(old), ' {}'.format(old)
                 )
+
+
 
             text = text.replace(
                 ' {} '.format(old), ' {} '.format(new)
@@ -632,15 +587,22 @@ class TemplateViewHandler:
                 '::integer', ''
             )
 
+            if 'social_tenure_relationship_{}_supporting_document'.format(
+                    self.prefix) in text \
+                    and old == 'supporting_document':
+                text = text.replace(
+                    '{}_{}'.format(self.prefix, old), '{}'.format(old)
+                )
+
         return text
 
 
 class TemplateFileUpdater(
     TemplateContentReader,
     TemplateViewHandler,
-    TemplateUpdaterProgressDialog
+    STDMProgressDialog
 ):
-    def __init__(self, plugin_dir):
+    def __init__(self, plugin_dir, old_new_tables, progress):
         """
          Upgrades old profile templates to version 1.2 profiles.
         :param plugin_dir: The directory of STDM plugin
@@ -650,9 +612,15 @@ class TemplateFileUpdater(
         :param profile: The profile name that is upgraded
         :type profile: String
         """
-        TemplateContentReader.__init__(self)
-        TemplateViewHandler.__init__(self)
-        TemplateUpdaterProgressDialog.__init__(self)
+        TemplateContentReader.__init__(self, progress)
+        TemplateViewHandler.__init__(self, old_new_tables)
+
+        self.overall_progress(
+            'Updating Templates...',
+            iface.mainWindow()
+        )
+        self.prog = progress.prog
+        self.prog.show()
         self.old_new_cols_list = []
         self.plugin_dir = plugin_dir
 
@@ -957,6 +925,7 @@ class TemplateFileUpdater(
             for key, value in child.attrib.iteritems():
                 ref_old_new_cols = None
                 if key == 'table':
+
                     ref_old_new_cols = self.update_table(
                         key, child
                     )
@@ -1015,11 +984,9 @@ class TemplateFileUpdater(
             upgraded_view = self.old_new_tables[
                 'social_tenure_relations'
             ]
-        # if old str view is updated already
+        # if old str view is updated already use the new one
         elif self.profile_name in old_source:
-            upgraded_view = self.upgrade_view(
-                'social_tenure_relations'
-            )
+            upgraded_view = None
         # if new view is already created, remove 'new_'
         elif 'new_' in old_source:
             old_source = old_source.lstrip('new_')
@@ -1027,22 +994,25 @@ class TemplateFileUpdater(
                 old_source
             )
         else:
-            upgraded_view = None
+            upgraded_view = self.upgrade_view(
+                old_source
+            )
 
         if upgraded_view is not None:
-            self.progress_message(template, True)
+
             ref_table = self.get_referenced_table(
                 old_source
             )
-            self.progress_message(template)
+            self.progress_message('Updating', template)
             self.update_template(
                 template,
                 old_source,
                 upgraded_view,
                 ref_table
             )
+
         else:
-            self.progress_message(template, True)
+            self.progress_message('Skipping', template)
 
     def process_table_template(self, template, old_source):
         """
@@ -1059,15 +1029,16 @@ class TemplateFileUpdater(
             ]
 
             if not new_table is None:
-                self.progress_message(template)
+                self.progress_message('Upgrading', template)
                 self.update_template(
                     template, old_source, new_table
                 )
+
             else:
-                self.progress_message(template, True)
+                self.progress_message('Skipping', template)
 
         else:
-            self.progress_message(template, True)
+            self.progress_message('Skipping', template)
 
 
     def process_update(self, force_update=False):
@@ -1080,6 +1051,7 @@ class TemplateFileUpdater(
         :rtype: NoneType
         """
         self.prog.setRange(0, len(self.templates))
+
         self.prog.show()
         if force_update:
             self.move_back_templates()
@@ -1094,11 +1066,13 @@ class TemplateFileUpdater(
             )
             # Process templates with view source
             if type == 'view':
+
                 self.process_view_template(
                     template, old_source
                 )
             # Process templates with table source
             elif type == 'table':
+
                 self.process_table_template(
                     template, old_source
                 )
