@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_lookup_entity.ui'
 #
-# Created: Sat May 28 12:23:44 2016
+# Created: Thu Aug 25 17:30:53 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,9 +26,10 @@ except AttributeError:
 class Ui_dlgLookup(object):
     def setupUi(self, dlgLookup):
         dlgLookup.setObjectName(_fromUtf8("dlgLookup"))
-        dlgLookup.resize(362, 86)
+        dlgLookup.resize(363, 107)
+        dlgLookup.setMinimumSize(QtCore.QSize(0, 0))
         self.formLayout = QtGui.QFormLayout(dlgLookup)
-        self.formLayout.setSizeConstraint(QtGui.QLayout.SetMaximumSize)
+        self.formLayout.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
         self.formLayout.setObjectName(_fromUtf8("formLayout"))
         self.label_2 = QtGui.QLabel(dlgLookup)
         self.label_2.setMaximumSize(QtCore.QSize(300, 16777215))
@@ -45,7 +46,9 @@ class Ui_dlgLookup(object):
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.formLayout.setWidget(2, QtGui.QFormLayout.FieldRole, self.buttonBox)
+        self.formLayout.setWidget(3, QtGui.QFormLayout.FieldRole, self.buttonBox)
+        spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.formLayout.setItem(2, QtGui.QFormLayout.FieldRole, spacerItem)
 
         self.retranslateUi(dlgLookup)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), dlgLookup.accept)

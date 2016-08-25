@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_entity.ui'
 #
-# Created: Sat May 28 12:27:02 2016
+# Created: Thu Aug 25 17:33:11 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_dlgEntity(object):
     def setupUi(self, dlgEntity):
         dlgEntity.setObjectName(_fromUtf8("dlgEntity"))
-        dlgEntity.resize(308, 129)
+        dlgEntity.resize(308, 149)
         dlgEntity.setMaximumSize(QtCore.QSize(500, 16777215))
         self.formLayout = QtGui.QFormLayout(dlgEntity)
         self.formLayout.setSizeConstraint(QtGui.QLayout.SetMaximumSize)
@@ -54,7 +54,9 @@ class Ui_dlgEntity(object):
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.formLayout.setWidget(3, QtGui.QFormLayout.FieldRole, self.buttonBox)
+        self.formLayout.setWidget(4, QtGui.QFormLayout.FieldRole, self.buttonBox)
+        spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.formLayout.setItem(3, QtGui.QFormLayout.FieldRole, spacerItem)
 
         self.retranslateUi(dlgEntity)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), dlgEntity.accept)
