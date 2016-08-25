@@ -1130,7 +1130,7 @@ class ConfigurationFileUpdater(object):
         )
         confirmation_text = QApplication.translate(
             'ConfigurationFileUpdater',
-            'I don\'t want upgrade my old configuration '
+            'I don\'t want to upgrade my old configuration '
             'and templates, and migrate my data.'
         )
 
