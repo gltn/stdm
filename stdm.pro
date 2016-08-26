@@ -81,13 +81,15 @@ SOURCES = \
           ui\wizard\geometry_property.py \
           ui\wizard\profile_editor.py \
           ui\wizard\varchar_property.py \
-          ui\wizard\wizard.py
+          ui\wizard\wizard.py \
+          utils\util.py
 
 FORMS =	\
         ui\ui_about_stdm.ui \
         ui\ui_adminUnitManager.ui \
         ui\ui_admin_unit.ui \
         ui\ui_changepwd.ui \
+        ui\ui_change_log.ui \
         ui\ui_composer_data_field.ui \
         ui\ui_composer_data_source.ui \
         ui\ui_composer_doc_selector.ui \

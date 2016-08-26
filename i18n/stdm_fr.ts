@@ -387,6 +387,19 @@ S&apos;il vous plait mettez à jour la configuration des tables pour terminer la
     </message>
 </context>
 <context>
+    <name>ChangeLog</name>
+    <message>
+        <location filename="../ui/ui_change_log.ui" line="14"/>
+        <source>What is New?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_change_log.ui" line="21"/>
+        <source>about:blank</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ChangePasswordDialog</name>
     <message>
         <location filename="../ui/change_pwd_dlg.py" line="45"/>
@@ -817,7 +830,7 @@ Please check the geometry type of the spatial column.</source>
 <context>
     <name>ConfigWizard</name>
     <message>
-        <location filename="../plugin.py" line="781"/>
+        <location filename="../plugin.py" line="772"/>
         <source>Configuration Wizard</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1068,30 +1081,15 @@ The system will revert to the latest configuration backup file </source>
 <context>
     <name>ConfigurationFileUpdater</name>
     <message>
-        <location filename="../settings/config_file_updater.py" line="557"/>
+        <location filename="../settings/config_file_updater.py" line="610"/>
         <source>Configuration Upgrade Error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../settings/config_file_updater.py" line="1117"/>
-        <source>Upgrade STDM Configuration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../settings/config_file_updater.py" line="1122"/>
-        <source>Do you want to upgrade your configuration file and import your data?&lt;br&gt;&lt;br&gt;If you click &lt;b&gt;No&lt;/b&gt;, your old configuration, data and templates will no longer be accessible in STDM.&lt;br&gt;If you click &lt;b&gt;Yes&lt;/b&gt;, your old configuration, data and templates will be automatically updated to be &lt;br&gt;compatible with this version of STDM.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../settings/config_file_updater.py" line="1132"/>
-        <source>I don&apos;t want to upgrade my old configuration and templates, and migrate my data.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>ContentAuthorizationToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="734"/>
+        <location filename="../plugin.py" line="725"/>
         <source>Content Authorization</source>
         <translation type="unfinished">Autorisation du contenu</translation>
     </message>
@@ -1523,7 +1521,7 @@ The system will revert to the latest configuration backup file </source>
 <context>
     <name>DocumentDesignerAction</name>
     <message>
-        <location filename="../plugin.py" line="766"/>
+        <location filename="../plugin.py" line="757"/>
         <source>Document Designer</source>
         <translation type="unfinished">Concepteur de document</translation>
     </message>
@@ -1531,52 +1529,52 @@ The system will revert to the latest configuration backup file </source>
 <context>
     <name>DocumentGenerator</name>
     <message>
-        <location filename="../composer/document_generator.py" line="185"/>
+        <location filename="../composer/document_generator.py" line="189"/>
         <source>Empty path to document template</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../composer/document_generator.py" line="189"/>
+        <location filename="../composer/document_generator.py" line="193"/>
         <source>Path to document template does not exist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../composer/document_generator.py" line="196"/>
+        <location filename="../composer/document_generator.py" line="200"/>
         <source>Cannot read template file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../composer/document_generator.py" line="205"/>
+        <location filename="../composer/document_generator.py" line="209"/>
         <source>Cannot read document template contents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../composer/document_generator.py" line="258"/>
+        <location filename="../composer/document_generator.py" line="262"/>
         <source>Cannot read template file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../composer/document_generator.py" line="293"/>
+        <location filename="../composer/document_generator.py" line="305"/>
         <source>No matching records in the database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../composer/document_generator.py" line="414"/>
+        <location filename="../composer/document_generator.py" line="425"/>
         <source>File name could not be generated from the data fields.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../composer/document_generator.py" line="419"/>
+        <location filename="../composer/document_generator.py" line="430"/>
         <source>System could not read the location of the output directory in the registry.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../composer/document_generator.py" line="424"/>
+        <location filename="../composer/document_generator.py" line="435"/>
         <source>Output directory does not exist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../composer/document_generator.py" line="741"/>
+        <location filename="../composer/document_generator.py" line="752"/>
         <source>Memory allocation error. Please try a lower resolution or a smaller paper size.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1584,7 +1582,7 @@ The system will revert to the latest configuration backup file </source>
 <context>
     <name>DocumentGeneratorAction</name>
     <message>
-        <location filename="../plugin.py" line="769"/>
+        <location filename="../plugin.py" line="760"/>
         <source>Document Generator</source>
         <translation type="unfinished">Générateur de documennt</translation>
     </message>
@@ -1966,12 +1964,12 @@ Click Yes to proceed or No to cancel.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/forms/widgets.py" line="423"/>
+        <location filename="../ui/forms/widgets.py" line="530"/>
         <source>Yes</source>
         <translation type="unfinished">Oui</translation>
     </message>
     <message>
-        <location filename="../ui/forms/widgets.py" line="426"/>
+        <location filename="../ui/forms/widgets.py" line="533"/>
         <source>No</source>
         <translation type="unfinished">Non</translation>
     </message>
@@ -2447,7 +2445,7 @@ Do you want to overwrite the existing config?</source>
 <context>
     <name>ImportAction</name>
     <message>
-        <location filename="../plugin.py" line="760"/>
+        <location filename="../plugin.py" line="751"/>
         <source>Import Data</source>
         <translation type="unfinished">Importation des données</translation>
     </message>
@@ -2486,7 +2484,7 @@ Do you want to overwrite the existing config?</source>
 <context>
     <name>LicenseAgreement</name>
     <message>
-        <location filename="../ui/license_agreement.py" line="111"/>
+        <location filename="../ui/license_agreement.py" line="110"/>
         <source>To use STDM please comply with the terms and conditions by selecting the option &quot;I have read and agree ...&quot;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2955,7 +2953,7 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>ManageAdminUnitsToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="751"/>
+        <location filename="../plugin.py" line="742"/>
         <source>Manage Administrative Units</source>
         <translation type="unfinished">Gérer les unités administratives</translation>
     </message>
@@ -2971,7 +2969,7 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>ManageUsersToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="743"/>
+        <location filename="../plugin.py" line="734"/>
         <source>Manage Users-Roles</source>
         <translation type="unfinished">Gestion des utilisateurs et des rôles - stdm</translation>
     </message>
@@ -3160,7 +3158,7 @@ Please set it in the Options dialog or Configuration Wizard.</source>
 <context>
     <name>OptionsToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="747"/>
+        <location filename="../plugin.py" line="738"/>
         <source>Options</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3808,7 +3806,7 @@ They will not be included in the report</source>
 <context>
     <name>ReportBuilderAction</name>
     <message>
-        <location filename="../plugin.py" line="763"/>
+        <location filename="../plugin.py" line="754"/>
         <source>Export Data</source>
         <translation type="unfinished">Exporter les données</translation>
     </message>
@@ -3839,7 +3837,7 @@ They will not be included in the report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="559"/>
+        <location filename="../plugin.py" line="561"/>
         <source>Load Configuration Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3889,7 +3887,7 @@ They will not be included in the report</source>
         <translation type="obsolete">Modules</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="731"/>
+        <location filename="../plugin.py" line="722"/>
         <source>Entities</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3990,7 +3988,7 @@ Removing and re-adding the layer could also fix the error.</source>
         <translation type="unfinished">Concepteur de Document STDM</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1474"/>
+        <location filename="../plugin.py" line="1465"/>
         <source>Unable to load the entity in the browser. Check if the entity is configured correctly. Error: %s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4000,17 +3998,17 @@ Removing and re-adding the layer could also fix the error.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1233"/>
+        <location filename="../plugin.py" line="1224"/>
         <source>Error Loading the Configuration Wizard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1259"/>
+        <location filename="../plugin.py" line="1250"/>
         <source>Error Loading New STR Wizard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1474"/>
+        <location filename="../plugin.py" line="1465"/>
         <source>Error Loading Entity Browser</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4018,7 +4016,7 @@ Removing and re-adding the layer could also fix the error.</source>
 <context>
     <name>STDMQGISLoader</name>
     <message>
-        <location filename="../plugin.py" line="322"/>
+        <location filename="../plugin.py" line="324"/>
         <source>Error Loading Modules</source>
         <translation type="unfinished">Erreur chargement des modules</translation>
     </message>
@@ -4033,7 +4031,7 @@ Removing and re-adding the layer could also fix the error.</source>
         <translation type="unfinished">STDM menu plug-in</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1078"/>
+        <location filename="../plugin.py" line="1069"/>
         <source>Spatial Unit Manager</source>
         <translation type="unfinished">Gérer Unité spatiale</translation>
     </message>
@@ -4048,19 +4046,19 @@ Removing and re-adding the layer could also fix the error.</source>
         <translation type="unfinished">Nouvelle Relation Sociale Foncière</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="365"/>
+        <location filename="../plugin.py" line="367"/>
         <source>Database Table Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="338"/>
+        <location filename="../plugin.py" line="340"/>
         <source>The system has detected that database tables 
 required in this module are missing.
 Do you want to re-run the Configuration Wizard now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="511"/>
+        <location filename="../plugin.py" line="513"/>
         <source>Default Profile Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4090,60 +4088,60 @@ Do you want to re-run the Configuration Wizard now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1040"/>
+        <location filename="../plugin.py" line="1031"/>
         <source>Spatial Table Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="459"/>
+        <location filename="../plugin.py" line="461"/>
         <source>Run Configuration Wizard Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="463"/>
+        <location filename="../plugin.py" line="465"/>
         <source>The system has detected that you did not run 
 the Configuration Wizard so far. 
 Do you want to run it now? </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="578"/>
-        <source>Upgrading Configuration...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../plugin.py" line="650"/>
+        <location filename="../plugin.py" line="637"/>
         <source>Upgrade STDM Configuration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="650"/>
+        <location filename="../plugin.py" line="637"/>
         <source>Your configuration has been successfully upgraded!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1668"/>
+        <location filename="../plugin.py" line="1659"/>
         <source>Config file version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1670"/>
+        <location filename="../plugin.py" line="1661"/>
         <source>Your configuration file is older than the current stdm version, do you want to backupthe configuration and databasedata</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1682"/>
+        <location filename="../plugin.py" line="1673"/>
         <source>Update config file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1684"/>
+        <location filename="../plugin.py" line="1675"/>
         <source>The config version installed is old and outdated STDM will try to apply the required updates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1693"/>
+        <location filename="../plugin.py" line="1684"/>
         <source>STDM has detected that the version of config installed is old and outdated. Delete existing configuration folder or xml file and restart QGIS.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../plugin.py" line="580"/>
+        <source>Upgrading STDM Configuration...</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4638,7 +4636,7 @@ Click Yes to proceed or No to cancel.</source>
         <translation type="obsolete">Editeur Couche Post Gis </translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="773"/>
+        <location filename="../plugin.py" line="764"/>
         <source>Spatial Unit Manager</source>
         <translation type="unfinished">Gérer Unité spatiale</translation>
     </message>
@@ -4679,12 +4677,12 @@ Click Yes to proceed or No to cancel.</source>
 <context>
     <name>SpatialUnitManagerDockWidget</name>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="331"/>
+        <location filename="../ui/spatial_unit_manager.py" line="342"/>
         <source>Spatial Unit Manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="335"/>
+        <location filename="../ui/spatial_unit_manager.py" line="346"/>
         <source>Spatial Column Layer Could not be found</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5082,20 +5080,31 @@ Click Yes to proceed or No to cancel.</source>
 <context>
     <name>TemplateContentReader</name>
     <message>
-        <location filename="../settings/template_updater.py" line="125"/>
+        <location filename="../settings/template_updater.py" line="129"/>
         <source>Old Template Restore Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settings/template_updater.py" line="129"/>
+        <location filename="../settings/template_updater.py" line="133"/>
         <source>Failed to restore the old configuration for re-update. 
 The system cannot access the file because 
 it is being used by another process</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settings/template_updater.py" line="187"/>
+        <location filename="../settings/template_updater.py" line="193"/>
         <source>File Reading Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settings/template_updater.py" line="1107"/>
+        <source>Error Updating Template</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settings/template_updater.py" line="1111"/>
+        <source>Something went wrong while updating the template - {}. 
+</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5204,17 +5213,9 @@ Click Yes to proceed or No to cancel.</source>
     </message>
 </context>
 <context>
-    <name>TemplateUpdater</name>
-    <message>
-        <location filename="../settings/template_updater.py" line="517"/>
-        <source>Template View Upgrade Error</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>ToolbarAdminSettings</name>
     <message>
-        <location filename="../plugin.py" line="713"/>
+        <location filename="../plugin.py" line="704"/>
         <source>Admin Settings</source>
         <translation type="unfinished">Paramètres administrateur</translation>
     </message>
@@ -5224,7 +5225,7 @@ Click Yes to proceed or No to cancel.</source>
         <translation type="obsolete">Paramètres du module</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="718"/>
+        <location filename="../plugin.py" line="709"/>
         <source>Entities</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5383,7 +5384,7 @@ Click Yes to proceed or No to cancel.</source>
 <context>
     <name>ViewSTRToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="777"/>
+        <location filename="../plugin.py" line="768"/>
         <source>View Social Tenure Relationship</source>
         <translation type="unfinished">Apercu Rélation Sociale sur la tenure</translation>
     </message>
@@ -5440,7 +5441,7 @@ Click Yes to proceed or No to cancel.</source>
         <translation type="obsolete">Ajouter une table</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="784"/>
+        <location filename="../plugin.py" line="775"/>
         <source>Entities</source>
         <translation type="unfinished"></translation>
     </message>

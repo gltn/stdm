@@ -116,10 +116,12 @@ class ComposerDataSource(object):
         #Get spatial fields and embed into the dataFields list
         if self._spatialFieldsConfig != None:
             spatialFieldsCollection = self._spatialFieldsConfig.spatialFieldsMapping().values()
-            
+
             for spfEntry in spatialFieldsCollection:
                 spFields = [spm.spatialField() for spm in spfEntry]
+                print spFields
                 labelFields = [spm.labelField() for spm in spfEntry]
+                print labelFields
                 dataFields.extend(spFields)
                 dataFields.extend(labelFields)
         

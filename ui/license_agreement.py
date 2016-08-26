@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
-Name                 : Register Parcel
-Description          : GUI classes for managing and viewing supporting
-                       documents.
+Name                 : Licence Agreement
+Description          : Handles the display of license agreements.
 Date                 : 20/April/2016
 copyright            : (C) 2016 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
