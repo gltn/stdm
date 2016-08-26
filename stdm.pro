@@ -26,8 +26,10 @@ SOURCES = \
           navigation\socialtenure\nodes.py \
           security\membership.py \
           security\roleprovider.py \
+          settings\config_file_updater.py \
           settings\mapping.py \
           settings\module_settings.py \
+          settings\template_updater.py \
           ui\about.py \
           ui\admin_unit_manager.py \
           ui\change_pwd_dlg.py \
@@ -47,6 +49,7 @@ SOURCES = \
           ui\new_role_dlg.py \
           ui\new_str_wiz.py \
           ui\new_user_dlg.py \
+          ui\progress_dialog.py \
           ui\property_preview.py \
           ui\sourcedocument.py \
           ui\spatial_unit_manager.py \
@@ -127,6 +130,7 @@ FORMS =	\
         ui\composer\ui_composer_table_source.ui \
         ui\importexport\ui_multiple_enumeration_dialog.ui \
         ui\importexport\ui_related_table_dialog.ui \
+        ui\importexport\ui_source_document_dialog.ui \
         ui\wizard\ui_bigint_property.ui \
         ui\wizard\ui_column_depend.ui \
         ui\wizard\ui_column_editor.ui \
