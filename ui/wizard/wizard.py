@@ -1521,18 +1521,14 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
                 tmp_column.copy_attrs(editor.column)
 
+                # Replace the current entity with a new one
+                # Apperently, ordered dict key replacement will cause change in 
+                # key positions.
                 entity.columns[tmp_column.name] = editor.column
                 entity.columns[editor.column.name] = \
                         entity.columns.pop(tmp_column.name)
                 
                 self.refresh_columns_view(entity)
-
-                #Get column from entity and flag the column for editing
-                #col = editor.column
-                #ref_column = entity.column(tmp_column.name)
-                #ref_column.copy_attrs(col)
-                #ref_column.action = DbItem.ALTER
-
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No column selected for edit!"))

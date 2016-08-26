@@ -153,7 +153,7 @@ class ConfigurationFileUpdater(object):
     def __init__(self, iface):
         self.iface = iface
         self.file_handler = FilePaths()
-        self.version = None
+        self.version = '1.2'
         self.config_profiles = []
         self.config_profiles_prefix = []
         self.table_dict = OrderedDict()
@@ -214,29 +214,27 @@ class ConfigurationFileUpdater(object):
         else:
             return False
 
-    def _get_doc_element(self, path):
+    def _get_doc_element(self, config_file_name):
         """
         Reads provided config file
         :returns QDomDocument, QDomDocument.documentElement()
         :rtype tuple
         """
-        config_file = os.path.join(self.file_handler.localPath(), path)
-        config_file = QFile(config_file)
-        if not self._check_config_file_exists("configuration.stc"):
-            self._copy_config_file_from_template()
-        if not config_file.open(QIODevice.ReadOnly):
-            raise IOError('Cannot read configuration file. Check read '
-                          'permissions.')
-        doc = QDomDocument()
+        config_file_path = os.path.join(self.file_handler.localPath(), config_file_name)
+        config_file_path = QFile(config_file_path)
+        config_file = os.path.basename(config_file_name)
+        if self._check_config_file_exists(config_file):
 
-        status, msg, line, col = doc.setContent(config_file)
-        if not status:
-            raise ConfigurationException(u'Configuration file cannot be '
-                                         u'loaded: {0}'.format(msg))
+            doc = QDomDocument()
 
-        doc_element = doc.documentElement()
+            status, msg, line, col = doc.setContent(config_file_path)
+            if not status:
+                raise ConfigurationException(u'Configuration file cannot be '
+                                             u'loaded: {0}'.format(msg))
 
-        return doc, doc_element
+            doc_element = doc.documentElement()
+
+            return doc, doc_element
 
     def _check_config_version(self):
         """
@@ -244,7 +242,7 @@ class ConfigurationFileUpdater(object):
         :returns True or False
         :rtype boolean
         """
-        doc, doc_element = self._get_doc_element("configuration.stc")
+        doc, doc_element = self._get_doc_element("configuration_upgraded.stc")
 
         config_version = doc_element.attribute('version')
 
@@ -549,24 +547,83 @@ class ConfigurationFileUpdater(object):
         :param config_file_name:
         :return:
         """
-        if self._check_config_file_exists('configuration.stc'):
-            path = '{}/{}'.format(
-                self.file_handler.localPath(), 'configuration.stc'
-            )
-
-            self._rename_new_config_file(path)
-
         self.progress.progress_message('Creating 1.2 configuration file', '')
         self.config_file = QFile(os.path.join(self.file_handler.localPath(),
                                  config_file_name))
 
         if not self.config_file.open(QIODevice.ReadWrite | QIODevice.Truncate |
                                      QIODevice.Text):
-            QMessageBox.warning(None, "Config Error", "Cannot write file {"
-                                "0}: \n {2}".format(
-                                 self.config_file.fileName(),
-                                 self.config_file.errorString()))
+            title = QApplication.translate(
+                'ConfigurationFileUpdater',
+                'Configuration Upgrade Error'
+            )
+            message = QApplication.translate(
+                'ConfigurationFileUpdater',
+                'Cannot write file {0}: \n {2}'.format(
+                    self.config_file.fileName(),
+                    self.config_file.errorString()
+                )
+            )
+
+            QMessageBox.warning(
+                self.iface.mainWindow(), title, message
+            )
         return
+
+    def append_profile_to_config_file(
+            self, source_config, destination_config
+    ):
+        """
+        Appends a profile from a source configuration into
+        the destination configuration file.
+        :param source_config: The source config/ configuration_updated.stc
+        :type source_config: String
+        :param config_file_name: The destination config / configuration.stc
+        :type config_file_name: String
+        """
+        stdm_path = self.file_handler.localPath()
+        doc, root = self._get_doc_element(
+            source_config
+        )
+        config_doc, config_root = self._get_doc_element(
+            destination_config
+        )
+        config_file_path = os.path.join(stdm_path, destination_config)
+        config_file = QFile(config_file_path)
+        config_file.copy(os.path.join(stdm_path, 'configuration_pre_merged.stc'))
+        open_file = config_file.open(
+            QIODevice.ReadWrite |
+            QIODevice.Truncate |
+            QIODevice.Text
+        )
+
+        if open_file:
+
+            child_nodes = root.childNodes()
+            c_child_nodes = config_root.childNodes()
+            # look through upgraded node
+            for child_i in range(child_nodes.count()):
+                child_node = child_nodes.item(child_i).toElement()
+                if child_node.tagName() == "Profile":
+                    # loop through existing config nodes
+                    for child_j in range(c_child_nodes.count()):
+                        c_child_node = c_child_nodes.item(child_j).toElement()
+                        # if duplicate profile exists, remove it first before
+                        # adding a new one with the same name
+                        if c_child_node.tagName() == "Profile" and \
+                            child_node.attribute('name') \
+                                in self.config.profiles.keys() and \
+                                        child_node.attribute('name') == \
+                                        c_child_node.attribute('name'):
+
+                            config_root.insertBefore(
+                                child_node, c_child_node
+                            )
+                            config_root.removeChild(c_child_node)
+
+            stream = QTextStream(config_file)
+            stream << config_doc.toString()
+            config_file.close()
 
     def _set_sp_unit_part_tables(self, relation_values):
         """
@@ -592,7 +649,7 @@ class ConfigurationFileUpdater(object):
         # Entity relation lookup dict
         """
         Method that create new entity column and valuelist from extracted
-        values from old configration file
+        values from old configuration file
         :param pref:
         :param profile:
         :param profile_element:
@@ -603,10 +660,12 @@ class ConfigurationFileUpdater(object):
         template_dict = {'supporting_document': pref + "_supporting_document",
                          'social_tenure_relationship':
                              pref + "_social_tenure_relationship",
+                         'social_tenure_relations':
+                             '{}_vw_social_tenure_relationship'.format(profile.lower()),
                          'str_relations': pref + "_social_tenure_relationship_"
                                                  "supporting_document"}
         self.profiles_detail[profile] = template_dict
-        self.progress.progress_message('Creating a new configuration file', '')
+
         for key, value in values.iteritems():
             if key.endswith("lookup") and value:
                 value_lists = self.doc_old.createElement("ValueLists")
@@ -1033,7 +1092,7 @@ class ConfigurationFileUpdater(object):
         config file
         """
         configuration = self.doc_old.createElement("Configuration")
-        configuration.setAttribute("version", self.version)
+        configuration.setAttribute("version", '1.2')
         self.doc_old.appendChild(configuration)
 
         # Create profile valuelists and entity nodes
@@ -1064,17 +1123,21 @@ class ConfigurationFileUpdater(object):
         text = QApplication.translate(
             'ConfigurationFileUpdater',
             'Do you want to upgrade your configuration file '
-            'and import your data?\n\n'
-            'If you click No, your configuration and data will'
-            ' no longer be accessible to STDM.\n'
-            'If you click Yes, you will be able to access your'
-            'old configuration with the data.'
+            'and import your data?<br><br>'
+            'If you click <b>No</b>, your old configuration, data and templates will '
+            'no longer be accessible in STDM.<br>'
+            'If you click <b>Yes</b>, your old configuration, data and templates '
+            'will be automatically updated to be <br>'
+            'compatible with this version of STDM.'
         )
         confirmation_text = QApplication.translate(
             'ConfigurationFileUpdater',
-            'I don\'t want upgrade my old configuration and migrate my data.'
+            'I don\'t want to upgrade my old configuration '
+            'and templates, and migrate my data.'
         )
+
         upgrade_dialog.setWindowTitle(title)
+        upgrade_label.setTextFormat(Qt.RichText)
         upgrade_label.setText(text)
 
         upgrade_layout.addWidget(upgrade_label)
@@ -1099,7 +1162,7 @@ class ConfigurationFileUpdater(object):
         result = upgrade_dialog.exec_()
         return result, confirm_checkbox.isChecked()
 
-    def load(self, parent=None, manual=False):
+    def load(self, manual=False):
 
         """
         Entry code to class
@@ -1107,10 +1170,7 @@ class ConfigurationFileUpdater(object):
         """
         if manual:
             self.reg_config.write({'ConfigUpdated': '0'})
-            self.progress.overall_progress(
-                'Upgrading Configuration...',
-                parent
-            )
+
         else:
             self.progress.overall_progress(
                 'Upgrading Configuration...',
@@ -1142,20 +1202,17 @@ class ConfigurationFileUpdater(object):
                     if result == 1:
                         self.upgrade = True
                         self.old_config_file = True
-                        doc, root = self._get_doc_element(os.path.join(
-                            self.file_handler.localPath(), "stdmConfig.xml"))
+                        doc, root = self._get_doc_element("stdmConfig.xml")
                         child_nodes = root.childNodes()
 
                         # Parse old configuration to dictionary
                         self._set_version_profile(child_nodes)
 
                         # Create config file
-                        self._create_config_file("configuration.stc")
+                        self._create_config_file("configuration_upgraded.stc")
 
                         # Create configuration node and version
                         self._populate_config_from_old_config()
-
-                        self.reg_config.write({'ConfigUpdated': '1'})
 
                         return self.upgrade
 
@@ -1167,16 +1224,19 @@ class ConfigurationFileUpdater(object):
                         self.reg_config.write({'ConfigUpdated': '-1'})
                         return self.upgrade
 
-
                 elif config_updated_val == '1':
-                    self.upgrade = True
+                    if not self._check_config_file_exists("configuration.stc"):
+                        self._copy_config_file_from_template()
+                    self.upgrade = False
                     return self.upgrade
 
                 else:
+                    if not self._check_config_file_exists("configuration.stc"):
+                        self._copy_config_file_from_template()
                     return False
 
             else:
-                self.reg_config.write({'ConfigUpdated': '-1'})
+                self.reg_config.write({'ConfigUpdated': '-2'})
                 # Check of new config format exists
                 if self._check_config_file_exists("configuration.stc"):
                     return False
@@ -1196,27 +1256,6 @@ class ConfigurationFileUpdater(object):
         """
         return self._check_config_version()
 
-    def update_config_file_version(self):
-        """
-        Updates the version of configuration.stc
-        """
-        if self.old_config_file:
-            self.version = unicode(self.config.VERSION)
-            self._create_config_file("configuration.stc")
-            self._populate_config_from_old_config()
-        else:
-            doc, root = self._get_doc_element(os.path.join(
-                self.file_handler.localPath(), "configuration.stc"))
-
-            if not root.isNull() and root.hasAttribute('version'):
-                self._create_config_file("configuration.stc")
-                if float(root.attribute('version')) < self.config.VERSION:
-                    root.setAttribute('version', '1.2')
-                    stream = QTextStream(self.config_file)
-                    stream << doc.toString()
-                    self.config_file.close()
-                    doc.clear()
-
     def _add_missing_lookup_config(self, lookup, missing_lookup):
         """
         Add missing value_list to configuration file
@@ -1225,8 +1264,7 @@ class ConfigurationFileUpdater(object):
         """
         if self.old_config_file:
 
-            doc, root = self._get_doc_element(os.path.join(
-                self.file_handler.localPath(), "configuration.stc"))
+            doc, root = self._get_doc_element("configuration_upgraded.stc")
             child_nodes = root.childNodes()
             for child_i in range(child_nodes.count()):
                 child_node = child_nodes.item(child_i).toElement()
@@ -1283,7 +1321,7 @@ class ConfigurationFileUpdater(object):
                                             value_list_node.appendChild(
                                                 code_value)
 
-            self._create_config_file("configuration.stc")
+            self._create_config_file("configuration_upgraded.stc")
             stream = QTextStream(self.config_file)
             stream << doc.toString()
             self.config_file.close()
@@ -1494,8 +1532,6 @@ class ConfigurationFileUpdater(object):
 
                 else:
                     pass
-
-                time.sleep(1)
                 self.progress.prog.setValue(progress_i)
                 progress_i = progress_i + 1
 
@@ -1598,7 +1634,6 @@ class ConfigurationFileUpdater(object):
                         else:
                             fix_sequence(new_STR_table)
 
-                time.sleep(1)
                 self.progress.prog.setValue(progress_i)
                 progress_i = progress_i + 1
 
@@ -1623,7 +1658,7 @@ class ConfigurationFileUpdater(object):
                         self._mkdir_p(path_new_directory)
                         if os.path.isfile(full_file_name):
                             shutil.copy(full_file_name, path_new_directory)
-                        time.sleep(1)
+
                         self.progress.prog.setValue(progress_i)
                         progress_i = progress_i + 1
 
