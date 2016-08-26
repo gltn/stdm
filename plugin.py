@@ -642,7 +642,9 @@ class STDMQGISLoader(object):
                         self.plugin_dir, profile_details, progress
                     )
 
-                    upgrade_template.process_update(True)
+                    template_result = upgrade_template.process_update(True)
+                    if not template_result:
+                        return
 
                 QMessageBox.information(
                     self.iface.mainWindow(),

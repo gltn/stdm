@@ -69,7 +69,7 @@ class TemplateFileHandler:
         Gets the list of templates in the the template path.
         """
         os.chdir(self.template_path)
-        for file in glob.glob("*.sdt"):
+        for file in glob.glob('*.sdt'):
            self.templates.append(file)
 
     def template_file_path(self, template):
@@ -980,7 +980,9 @@ class TemplateFileUpdater(
         the old template data source
         :type old_source: String
         """
+
         if old_source == 'social_tenure_relations':
+            print template
             upgraded_view = self.old_new_tables[
                 'social_tenure_relations'
             ]
@@ -1064,17 +1066,35 @@ class TemplateFileUpdater(
             type, old_source = self.get_source(
                 template
             )
+            try:
             # Process templates with view source
-            if type == 'view':
+                if type == 'view':
 
-                self.process_view_template(
-                    template, old_source
+                    self.process_view_template(
+                        template, old_source
+                    )
+
+                # Process templates with table source
+                elif type == 'table':
+
+                    self.process_table_template(
+                        template, old_source
+                    )
+            except Exception as ex:
+                error_title = QApplication.translate(
+                    'TemplateContentReader',
+                    'Error Updating Template'
                 )
-            # Process templates with table source
-            elif type == 'table':
+                error_message = QApplication.translate(
+                    'TemplateContentReader',
+                    'Something went wrong while '
+                    'updating the template - {}. \n'
+                )
 
-                self.process_table_template(
-                    template, old_source
+                QMessageBox.critical(
+                    iface.mainWindow(),
+                    error_title,
+                    error_message
                 )
 
             self.prog.setValue(i)

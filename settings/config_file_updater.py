@@ -649,7 +649,7 @@ class ConfigurationFileUpdater(object):
         # Entity relation lookup dict
         """
         Method that create new entity column and valuelist from extracted
-        values from old configration file
+        values from old configuration file
         :param pref:
         :param profile:
         :param profile_element:
@@ -660,6 +660,8 @@ class ConfigurationFileUpdater(object):
         template_dict = {'supporting_document': pref + "_supporting_document",
                          'social_tenure_relationship':
                              pref + "_social_tenure_relationship",
+                         'social_tenure_relations':
+                             '{}_vw_social_tenure_relationship'.format(profile.lower()),
                          'str_relations': pref + "_social_tenure_relationship_"
                                                  "supporting_document"}
         self.profiles_detail[profile] = template_dict
@@ -1211,9 +1213,7 @@ class ConfigurationFileUpdater(object):
 
                         # Create configuration node and version
                         self._populate_config_from_old_config()
-                        # self.update_config_file_version(
-                        #     "configuration_upgraded.stc"
-                        # )
+
                         return self.upgrade
 
                     elif result == 0 and confirmation:
@@ -1223,7 +1223,6 @@ class ConfigurationFileUpdater(object):
                     elif result == 0 and not confirmation:
                         self.reg_config.write({'ConfigUpdated': '-1'})
                         return self.upgrade
-
 
                 elif config_updated_val == '1':
                     if not self._check_config_file_exists("configuration.stc"):
