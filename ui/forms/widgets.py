@@ -57,6 +57,7 @@ from stdm.data.configuration.columns import (
 )
 from stdm.data.configuration import entity_model
 from stdm.data.pg_utils import table_column_names
+from stdm.settings import current_profile
 from stdm.ui.customcontrols.relation_line_edit import (
     AdministrativeUnitLineEdit,
     RelatedEntityLineEdit
@@ -131,6 +132,111 @@ class UserTipLabel(QLabel):
             return
 
         self._user_tip = value
+
+
+class EntityValueFormatter(object):
+    """"
+    Provides a convenient way of formatting the values of an entity's column
+    to more friendly display values.
+    """
+    def __init__(self, **kwargs):
+        self.entity_name = kwargs.get('name', '')
+        self.entity = kwargs.get('entity', None)
+
+        self._current_profile = current_profile()
+
+        #Use entity name to set entity object
+        if self.entity is None and self.entity_name:
+            if not self._current_profile is None:
+                self.entity = self._current_profile.entity_by_name(
+                    self.entity_name
+                )
+
+        #User-defined column widgets collection
+        self._registered_columns = {}
+
+    @property
+    def registered_columns(self):
+        """
+        :return: Returns the registered column widget collection containing
+        the name of the column and corresponding widget handler.
+        :rtype: dict
+        """
+        return self._registered_columns
+
+    def register_column(self, name):
+        """
+        Adds the column with the given name to the list of registered columns.
+        :param name: Name of the column.
+        :type name: str
+        :return: Returns True if the column was successfully registered,
+        otherwise False if the column does not exist in the entity or
+        if it is already registered.
+        :rtype: bool
+        """
+        if self.entity is None:
+            return False
+
+        if name in self._registered_columns:
+            return False
+
+        column = self.entity.column(name)
+
+        if column is None:
+            return False
+
+        value_handler_cls = ColumnWidgetRegistry.factory(column.TYPE_INFO)
+        value_handler = value_handler_cls(column)
+
+        #Add handler to collection
+        self._registered_columns[name] = value_handler
+
+        return True
+
+    def register_columns(self, columns):
+        """
+        Registers multiple columns based on their name.
+        :param columns: Column names
+        :type columns: list
+        :return: Returns True if all the columns were successfully
+        registered, otherwise False.
+        :rtype: bool
+        """
+        state = False
+
+        for c in columns:
+            state = self.register_column(c)
+
+        return state
+
+    def value_handler(self, name):
+        """
+        :param name: Name of the column.
+        :type name: str
+        :return: Returns the value handler for the registered column with the given name.
+        :rtype: ColumnWidgetRegistry
+        """
+        return self._registered_columns.get(name, None)
+
+    def column_display_value(self, name, value):
+        """
+        Formats the value of the given column name to a more friendly display
+        value such as for lookups, administrative spatial unit etc.
+        :param name: Name of the column.
+        :type name: str
+        :param value: Column value
+        :type value: object
+        :return: Returns the friendly display value or an empty string if the
+        columns was not registered or there is no matching value.
+        :rtype: str
+        """
+        if not name in self._registered_columns:
+            return value
+
+        value_handler = self._registered_columns.get(name)
+
+        return value_handler.format_column_value(value)
+
 
 class ColumnWidgetRegistry(object):
     """

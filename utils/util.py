@@ -358,11 +358,11 @@ def entity_display_columns(entity):
             'VARCHAR',
             'SERIAL',
             'TEXT',
-            'BIGINT',
+            'INT',
             'DOUBLE',
             'DATE',
             'DATETIME',
-            'YES_NO',
+            'BOOL',
             'LOOKUP',
             'ADMIN_SPATIAL_UNIT',
             'MULTIPLE_SELECT'

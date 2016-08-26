@@ -76,6 +76,7 @@ from stdm.ui.sourcedocument import (
     network_document_path
 )
 from stdm.utils.util import PLUGIN_DIR
+from stdm.ui.forms.widgets import EntityValueFormatter
 
 from .composer_data_source import ComposerDataSource
 from .composer_wrapper import load_table_layers
@@ -116,6 +117,9 @@ class DocumentGenerator(QObject):
         self._link_field = ""
 
         self._base_photo_table = "supporting_document"
+
+        #Value formatter for output files
+        self._file_name_value_formatter = None
 
     def link_field(self):
         """
@@ -270,6 +274,14 @@ class DocumentGenerator(QObject):
                                              u"administrator.".format(composerDS.name()))
                 return False, msg
 
+            #Set file name value formatter
+            self._file_name_value_formatter = EntityValueFormatter(
+                name=data_source
+            )
+
+            #Register field names to be used for file naming
+            self._file_name_value_formatter.register_columns(dataFields)
+
             #TODO: Need to automatically register custom configuration collections
             #Photo config collection
             ph_config_collection = PhotoConfigurationCollection.create(templateDoc)
@@ -379,7 +391,6 @@ class DocumentGenerator(QObject):
                             Add layer to map and ensure its always added at the top
                             '''
                             self.map_registry.addMapLayer(ref_layer)
-                            #QgsProject.instance().layerTreeRoot().insertLayer(0, ref_layer)
                             self._iface.mapCanvas().setExtent(bbox)
                             self._iface.mapCanvas().refresh()
                             # Add layer to map memory layer list
@@ -779,8 +790,15 @@ class DocumentGenerator(QObject):
             ds_values = []
 
             for dt in data_fields:
-                f_value = getattr(rec, dt, "")
-                ds_values.append(unicode(f_value))
+                f_value = getattr(rec, dt, '')
+
+                #Get display value
+                display_value = \
+                    self._file_name_value_formatter.column_display_value(
+                        dt,
+                        f_value
+                    )
+                ds_values.append(display_value)
                     
             return "_".join(ds_values) + "." + fileExtension
             
