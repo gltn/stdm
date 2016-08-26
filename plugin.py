@@ -98,6 +98,7 @@ from stdm.utils.util import (
 from mapping.utils import pg_layerNamesIDMapping
 
 from composer import ComposerWrapper
+from stdm.ui.progress_dialog import STDMProgressDialog
 
 LOGGER = logging.getLogger('stdm')
 
@@ -576,14 +577,11 @@ class STDMQGISLoader(object):
         loaded. Otherwise, False.
         :rtype: bool
         """
-        self.configuration_file_updater.progress.overall_progress(
-            QApplication.translate(
-                'STDMQGISLoader',
-                'Upgrading STDM Configuration...'
-            ),
-            parent
-        )
+        progress = STDMProgressDialog(parent)
 
+        progress.overall_progress(
+            'Upgrading STDM Configuration...',
+        )
 
         home = QDesktopServices.storageLocation(
             QDesktopServices.HomeLocation
@@ -593,19 +591,20 @@ class STDMQGISLoader(object):
 
         if manual:
             parent.upgradeButton.setEnabled(False)
-            self.configuration_file_updater.progress.prog.setParent(parent)
-            upgrade_status = self.configuration_file_updater.load(self.plugin_dir, True)
+            upgrade_status = self.configuration_file_updater.load(
+                self.plugin_dir, progress, True
+            )
 
         else:
-            upgrade_status = self.configuration_file_updater.load(self.plugin_dir)
+            upgrade_status = self.configuration_file_updater.load(
+                self.plugin_dir, progress
+            )
 
         if upgrade_status:
             # Append configuration_upgraded.stc profiles
-            self.configuration_file_updater.progress.prog.show()
-            self.configuration_file_updater.progress.prog.setValue(0)
+
             if os.path.isfile(config_path):
-                self.configuration_file_updater. \
-                    progress.progress_message(
+                progress.progress_message(
                     'Appending the upgraded profile', ''
                 )
 
@@ -620,8 +619,8 @@ class STDMQGISLoader(object):
             if load_result:
                 config_updater = ConfigurationSchemaUpdater()
                 config_updater.exec_()
-                profile_details_dict, progress = \
-                self.configuration_file_updater.backup_data()
+                profile_details_dict = \
+                    self.configuration_file_updater.backup_data()
 
                 profile_details = {}
                 # upgrade profile for each profiles

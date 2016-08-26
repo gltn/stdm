@@ -48,7 +48,7 @@ from ..settings.registryconfig import (
 
 from stdm.utils.util import simple_dialog
 from stdm.ui.change_log import ChangeLog
-from ..ui.progress_dialog import STDMProgressDialog
+
 
 COLUMN_TYPE_DICT = {'character varying': 'VARCHAR', 'date': 'DATE',
                     'serial': 'SERIAL', 'integer': 'INT', 'lookup':
@@ -183,7 +183,7 @@ class ConfigurationFileUpdater(object):
         self.new_data_folder_path = source_documents_path()
         self.reg_config = RegistryConfig()
         self.profiles_detail = {}
-        self.progress = STDMProgressDialog()
+        self.progress = None
         self.log_file_path = '{}/logs/migration.log'.format(
             self.file_handler.localPath()
         )
@@ -1166,12 +1166,13 @@ class ConfigurationFileUpdater(object):
         self.config_file.close()
         self.doc_old.clear()
 
-    def load(self, plugin_path, manual=False):
+    def load(self, plugin_path, progress, manual=False):
 
         """
         Executes the updater and creates configuration_upgraded.stc.
         :return:
         """
+        self.progress = progress
         if self._check_config_folder_exists():
 
             # Check if old configuration file exists
@@ -1205,6 +1206,8 @@ class ConfigurationFileUpdater(object):
                             change_log = ChangeLog(self.iface.mainWindow())
                             change_log.show_change_log(plugin_path)
 
+                    self.progress.show()
+                    self.progress.setValue(0)
                     self.upgrade = True
                     self.old_config_file = True
                     doc, root = self._get_doc_element("stdmConfig.xml")
@@ -1425,8 +1428,8 @@ class ConfigurationFileUpdater(object):
             # Backup of entities participating in social tenure relationship
             keys, values = self._set_social_tenure_table()
 
-            self.progress.prog.setRange(0, len(values))
-            self.progress.prog.show()
+            self.progress.setRange(0, len(values))
+            self.progress.show()
 
             progress_i = 0
             for social_tenure_entity in values:
@@ -1516,7 +1519,7 @@ class ConfigurationFileUpdater(object):
 
                 else:
                     pass
-                self.progress.prog.setValue(progress_i)
+                self.progress.setValue(progress_i)
                 progress_i = progress_i + 1
 
             # Backup of social tenure relationship tables, str_relations and
@@ -1529,8 +1532,8 @@ class ConfigurationFileUpdater(object):
 
             self.progress.progress_message('Importing data to the new tables', '')
 
-            self.progress.prog.setRange(0, len(STR_TABLES))
-            self.progress.prog.show()
+            self.progress.setRange(0, len(STR_TABLES))
+            self.progress.show()
 
             progress_i = 0
 
@@ -1618,13 +1621,13 @@ class ConfigurationFileUpdater(object):
                         else:
                             fix_sequence(new_STR_table)
 
-                self.progress.prog.setValue(progress_i)
+                self.progress.setValue(progress_i)
                 progress_i = progress_i + 1
 
             if os.path.isdir(self.old_data_folder_path):
                 self.progress.progress_message('Moving documents from 2020 to general', 'folder')
-                self.progress.prog.setRange(0, len(os.listdir(self.old_data_folder_path)))
-                self.progress.prog.show()
+                self.progress.setRange(0, len(os.listdir(self.old_data_folder_path)))
+                self.progress.show()
 
                 progress_i = 0
 
@@ -1643,7 +1646,7 @@ class ConfigurationFileUpdater(object):
                         if os.path.isfile(full_file_name):
                             shutil.copy(full_file_name, path_new_directory)
 
-                        self.progress.prog.setValue(progress_i)
+                        self.progress.setValue(progress_i)
                         progress_i = progress_i + 1
 
-            return self.profiles_detail, self.progress
+            return self.profiles_detail
