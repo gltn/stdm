@@ -51,7 +51,7 @@ from stdm.data.pg_utils import (
     foreign_key_parent_tables
 )
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
-from stdm.ui.progress_dialog import STDMProgressDialog
+
 from config_file_updater import ConfigurationFileUpdater
 
 class TemplateFileHandler:
@@ -159,14 +159,12 @@ class TemplateContentReader(
     TemplateFileHandler
 ):
 
-    def __init__(self, progress):
+    def __init__(self):
         """
         Reads template content and gets
         the source table of a template.
         """
         TemplateFileHandler.__init__(self)
-
-        self.prog = progress.prog
 
     def get_template_element(self, path):
         """
@@ -595,8 +593,7 @@ class TemplateViewHandler:
 
 class TemplateFileUpdater(
     TemplateContentReader,
-    TemplateViewHandler,
-    STDMProgressDialog
+    TemplateViewHandler
 ):
 
     def __init__(self, plugin_dir, old_new_tables, progress):
@@ -609,15 +606,16 @@ class TemplateFileUpdater(
         :param profile: The profile name that is upgraded
         :type profile: String
         """
-        TemplateContentReader.__init__(self, progress)
+        TemplateContentReader.__init__(self)
         TemplateViewHandler.__init__(self, old_new_tables)
 
-        self.overall_progress(
-            'Updating Templates...',
-            iface.mainWindow()
-        )
-        self.prog = progress.prog
-        self.prog.show()
+
+        self.prog = progress
+        # self.prog.overall_progress(
+        #     'Updating Templates...',
+        #     iface.mainWindow()
+        # )
+        # self.prog.show()
         self.old_new_cols_list = []
         self.plugin_dir = plugin_dir
 
@@ -1010,7 +1008,7 @@ class TemplateFileUpdater(
             ref_table = self.get_referenced_table(
                 old_source
             )
-            self.progress_message('Updating', template)
+            self.prog.progress_message('Updating', template)
             self.update_template(
                 template,
                 old_source,
@@ -1019,7 +1017,7 @@ class TemplateFileUpdater(
             )
 
         else:
-            self.progress_message('Skipping', template)
+            self.prog.progress_message('Skipping', template)
 
     def process_table_template(self, template, old_source):
         """
@@ -1036,16 +1034,16 @@ class TemplateFileUpdater(
             ]
 
             if not new_table is None:
-                self.progress_message('Upgrading', template)
+                self.prog.progress_message('Upgrading', template)
                 self.update_template(
                     template, old_source, new_table
                 )
 
             else:
-                self.progress_message('Skipping', template)
+                self.prog.progress_message('Skipping', template)
 
         else:
-            self.progress_message('Skipping', template)
+            self.prog.progress_message('Skipping', template)
 
 
     def process_update(self, force_update=False):
@@ -1109,7 +1107,9 @@ class TemplateFileUpdater(
                 error_message = QApplication.translate(
                     'TemplateContentReader',
                     'Something went wrong while '
-                    'updating the template - {}. \n'
+                    'updating the template - {}.'.format(
+                        template
+                    )
                 )
 
                 QMessageBox.critical(

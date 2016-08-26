@@ -20,8 +20,9 @@ email                : stdm@unhabitat.org
 """
 from PyQt4.QtGui import QApplication, QProgressDialog, QLabel
 
-class STDMProgressDialog:
-    def __init__(self):
+class STDMProgressDialog(QProgressDialog):
+    def __init__(self, parent):
+
         """
         Initializes the progress dialog of
         the template updater with the option
@@ -29,10 +30,12 @@ class STDMProgressDialog:
         :return:
         :rtype:
         """
+
+        QProgressDialog.__init__(self, parent)
         self.title = None
         self.prog = None
 
-    def overall_progress(self, title, parent=None):
+    def overall_progress(self, title):
         """
         Initializes the progress dialog.
         :param parent: The parent of the dialog.
@@ -40,11 +43,9 @@ class STDMProgressDialog:
         :return: The progress dialog initialized.
         :rtype: QProgressDialog
         """
-
-        self.prog = QProgressDialog(parent)
-        self.prog.setFixedWidth(380)
-        self.prog.setFixedHeight(100)
-        self.prog.setWindowTitle(
+        self.setFixedWidth(380)
+        self.setFixedHeight(100)
+        self.setWindowTitle(
             QApplication.translate(
                 "STDMProgressDialog",
                 title
@@ -52,11 +53,9 @@ class STDMProgressDialog:
         )
 
         label = QLabel()
-        self.prog.setLabel(label)
+        self.setLabel(label)
 
-        self.prog.setCancelButton(None)
-
-        return self.prog
+        self.setCancelButton(None)
 
     def progress_message(self, message, val):
         """
@@ -67,9 +66,8 @@ class STDMProgressDialog:
         :type val: String
 
         """
-
         text = '{0} {1}...'.format(message, val)
-        self.prog.setLabelText(
+        self.setLabelText(
             QApplication.translate(
                 'STDMProgressDialog',
                 text
@@ -77,3 +75,5 @@ class STDMProgressDialog:
 
         )
 
+    def closeEvent(self, event):
+        event.ignore()
