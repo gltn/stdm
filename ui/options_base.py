@@ -506,25 +506,18 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.config_updated_dic = self._reg_config.read(
             [CONFIG_UPDATED]
         )
-        self.wizard_run_dic = self._reg_config.read(
-            [WIZARD_RUN]
-        )
+
         # if config file exists, check if registry key exists
         if len(self.config_updated_dic) > 0:
             config_updated_val = self.config_updated_dic[
                 CONFIG_UPDATED
             ]
-
-            # wizard_run_val = self.wizard_run_dic[
-            #     WIZARD_RUN
-            # ]
-
-            # if the user clicked never show checkbox or has upgraded
-            # disable the button or else enable it.
-            if config_updated_val == '-2' or config_updated_val == '1':
-                self.upgradeButton.setEnabled(False)
-            else:
+            # If failed to upgrade, enable the upgrade button
+            if config_updated_val == '0':
                 self.upgradeButton.setEnabled(True)
-            #
-            # if wizard_run_val == '1' or wizard_run_val == 1:
-            #     self.upgradeButton.setEnabled(False)
+
+            # disable the button if any other value.
+            else:
+                self.upgradeButton.setEnabled(False)
+        else:
+            self.upgradeButton.setEnabled(False)

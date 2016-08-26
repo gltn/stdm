@@ -136,23 +136,33 @@ class SpatialUnitManagerDockWidget(
         # view to the list of entity names
         str_view = self._curr_profile.social_tenure.view_name
         if str_view in self.sp_tables:
-            geom_columns = table_column_names(
+            self.str_view_geom_columns = table_column_names(
                 str_view, True
             )
-            if len(geom_columns) > 0:
+            if len(self.str_view_geom_columns) > 0:
                 #Pick the first column
-                geom_col = geom_columns[0]
-                view_layer_name = self._curr_profile.\
-                    social_tenure.layer_display()
-                self._add_geometry_column_to_combo(
-                    str_view, geom_col,
-                    view_layer_name,
-                    self._curr_profile.social_tenure
-                )
-                #Append view to the list of spatial layers
-                self._profile_spatial_layers.append(
-                    str_view
-                )
+                # geom_col = geom_columns[0]
+                for i, geom_col in enumerate(self.str_view_geom_columns):
+                    if i > 0:
+                        view_layer_name = self._curr_profile. \
+                            social_tenure.layer_display()
+                        view_layer_name = '{}.{}'.format(
+                            view_layer_name, geom_col
+                        )
+                    else:
+                        view_layer_name = self._curr_profile. \
+                            social_tenure.layer_display()
+
+                    self._add_geometry_column_to_combo(
+                        str_view,
+                        geom_col,
+                        view_layer_name,
+                        self._curr_profile.social_tenure
+                    )
+                    #Append view to the list of spatial layers
+                    self._profile_spatial_layers.append(
+                        view_layer_name
+                    )
 
     def control_digitize_toolbar(self, curr_layer):
         if not curr_layer is None:
@@ -220,6 +230,7 @@ class SpatialUnitManagerDockWidget(
             for c in self.spatial_unit.columns.values()
             if c.TYPE_INFO == 'GEOMETRY'
         ]
+
         spatial_unit_item = unicode(
             table + '.'+spatial_column[0]
         )
@@ -466,11 +477,23 @@ class SpatialUnitManagerDockWidget(
         return layer_list
 
     def layer_entity_children(self, sel_lyr_name):
+
         layer_lists = [
             layer_list
             for layer_list in self.same_entity_layers()
             if sel_lyr_name in layer_list
         ]
+
+
+        str_view = self._curr_profile.social_tenure.view_name
+
+        if len(layer_lists) < 1:
+
+            geom_columns = table_column_names(
+                str_view, True
+            )
+            layer_lists =  [geom_columns]
+
         return layer_lists
 
     def toggle_entity_multi_layers(self, new_layer):
@@ -483,6 +506,7 @@ class SpatialUnitManagerDockWidget(
         :rtype: NoneType
         """
         sel_lyr_name = new_layer.name()
+
         layer_lists = self.layer_entity_children(
             sel_lyr_name
         )

@@ -302,7 +302,9 @@ class STDMQGISLoader(object):
             self.stdmTables = spatial_tables()
 
             #Load the configuration from file
-            config_load_status = self.load_configuration_from_file()
+            config_load_status = self.load_configuration_from_file(
+                self.iface.mainWindow()
+            )
 
             #Exit if the load failed
             if not config_load_status:
@@ -567,7 +569,7 @@ class STDMQGISLoader(object):
             return False
 
 
-    def load_configuration_from_file(self, parent=None, manual=False):
+    def load_configuration_from_file(self, parent, manual=False):
         """
         Load configuration object from the file.
         :return: True if the file was successfully
@@ -577,7 +579,7 @@ class STDMQGISLoader(object):
         self.configuration_file_updater.progress.overall_progress(
             QApplication.translate(
                 'STDMQGISLoader',
-                'Upgrading Configuration...'
+                'Upgrading STDM Configuration...'
             ),
             parent
         )
@@ -588,18 +590,17 @@ class STDMQGISLoader(object):
         )
 
         config_path = '{}/.stdm/configuration.stc'.format(home)
+
         if manual:
             parent.upgradeButton.setEnabled(False)
             self.configuration_file_updater.progress.prog.setParent(parent)
-            upgrade_status = self.configuration_file_updater.load(True)
-
+            upgrade_status = self.configuration_file_updater.load(self.plugin_dir, True)
 
         else:
-            upgrade_status = self.configuration_file_updater.load()
+            upgrade_status = self.configuration_file_updater.load(self.plugin_dir)
 
         if upgrade_status:
-            # Append configuration_backed_up.stc
-            # int configuration.stc
+            # Append configuration_upgraded.stc profiles
             self.configuration_file_updater.progress.prog.show()
             self.configuration_file_updater.progress.prog.setValue(0)
             if os.path.isfile(config_path):
@@ -613,18 +614,6 @@ class STDMQGISLoader(object):
                     'configuration_upgraded.stc',
                     'configuration.stc'
                 )
-            # If configuration.stc doesn't exit re-name
-            # configuration_upgraded.stc
-            else:
-                self.configuration_file_updater. \
-                    progress.progress_message(
-                    'Saving the new configuration file', ''
-                )
-                upgraded_path = '{}/.stdm/configuration_upgraded.stc'.format(
-                    home
-                )
-
-                os.rename(upgraded_path, config_path)
 
             load_result = self.load_configuration_to_serializer()
 
@@ -642,10 +631,7 @@ class STDMQGISLoader(object):
                         self.plugin_dir, profile_details, progress
                     )
 
-                    template_result = upgrade_template.process_update(True)
-                    if not template_result:
-                        return
-
+                    upgrade_template.process_update(True)
                 QMessageBox.information(
                     self.iface.mainWindow(),
                     QApplication.translate(
@@ -659,11 +645,16 @@ class STDMQGISLoader(object):
                     )
                 )
                 # Upgrade from options behavior
+                first_profile = profile_details_dict.keys()[0]
                 if manual:
                     parent.upgradeButton.setEnabled(True)
                     parent.close()
-                    first_profile = profile_details_dict.keys()[0]
                     self.reload_plugin(first_profile)
+                else:
+                    save_current_profile(first_profile)
+                self.configuration_file_updater.append_log(
+                    'Successfully upgraded to STDM 1.2 configuration!'
+                )
                 self.configuration_file_updater.reg_config.write(
                     {'ConfigUpdated': '1'}
                 )
@@ -672,10 +663,9 @@ class STDMQGISLoader(object):
                 )
                 return True
 
-
         else:
             if manual:
-                parent.upgradeButton.setEnabled(True)
+                parent.upgradeButton.setEnabled(False)
                 parent.manage_upgrade()
 
             result = self.load_configuration_to_serializer()
