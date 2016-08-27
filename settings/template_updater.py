@@ -132,10 +132,11 @@ class TemplateFileHandler:
         )
         error_access = QApplication.translate(
             'TemplateContentReader',
-            'Failed to restore the old configuration for re-update. \n'
+            'Failed to restore the old template for re-updating. \n'
             'The system cannot access the file because \n'
             'it is being used by another process'
         )
+
 
         if os.path.exists(old_path):
             try:
@@ -149,11 +150,6 @@ class TemplateFileHandler:
                 self.updater.append_log(str(ex))
             except Exception as ex:
                 self.updater.append_log(str(ex))
-                QMessageBox.critical(
-                    iface.mainWindow(),
-                    error_title,
-                    ex
-                )
 
 class TemplateContentReader(
     TemplateFileHandler
@@ -409,7 +405,7 @@ class TemplateViewHandler:
             column = table_col_list[1]
             if len(lookup_table_list) > 0:
                 lookup_table = lookup_table_list[0]
-                # if lookup column is used in the begining or middle
+                # if lookup column is used in the beginning or middle
                 if '{},'.format(table_col) in view_definition:
 
                     select_value = '(SELECT {0}.value ' \
