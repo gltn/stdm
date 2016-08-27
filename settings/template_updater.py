@@ -50,7 +50,9 @@ from stdm.data.pg_utils import (
     pg_table_exists,
     foreign_key_parent_tables
 )
-from stdm.ui.progress_dialog import STDMProgressDialog
+from stdm.data.configuration.stdm_configuration import StdmConfiguration
+
+from config_file_updater import ConfigurationFileUpdater
 
 class TemplateFileHandler:
     def __init__(self):
@@ -63,13 +65,14 @@ class TemplateFileHandler:
         self.template_path = composer_template_path()
         self.templates = []
         self.populate_templates()
+        self.updater = ConfigurationFileUpdater(iface)
 
     def populate_templates(self):
         """
         Gets the list of templates in the the template path.
         """
         os.chdir(self.template_path)
-        for file in glob.glob("*.sdt"):
+        for file in glob.glob('*.sdt'):
            self.templates.append(file)
 
     def template_file_path(self, template):
@@ -109,7 +112,8 @@ class TemplateFileHandler:
             os.makedirs(old_path)
         try:
             os.rename(path, old_template_path)
-        except WindowsError:
+        except WindowsError as ex:
+            self.updater.append_log(str(ex))
             os.remove(old_template_path)
             os.rename(path, old_template_path)
 
@@ -136,13 +140,15 @@ class TemplateFileHandler:
         if os.path.exists(old_path):
             try:
                 dir_util.copy_tree(old_path, self.template_path)
-            except DistutilsFileError:
+            except DistutilsFileError as ex:
                 QMessageBox.critical(
                     iface.mainWindow(),
                     error_title,
                     error_access
                 )
+                self.updater.append_log(str(ex))
             except Exception as ex:
+                self.updater.append_log(str(ex))
                 QMessageBox.critical(
                     iface.mainWindow(),
                     error_title,
@@ -153,14 +159,12 @@ class TemplateContentReader(
     TemplateFileHandler
 ):
 
-    def __init__(self, progress):
+    def __init__(self):
         """
         Reads template content and gets
         the source table of a template.
         """
         TemplateFileHandler.__init__(self)
-
-        self.prog = progress.prog
 
     def get_template_element(self, path):
         """
@@ -290,7 +294,9 @@ class TemplateViewHandler:
             'social_tenure_id': 'social_tenure_relationship_id',
             'source_doc_id': 'supporting_doc_id'
         }
-
+        config = StdmConfiguration.instance()
+        self.updater = ConfigurationFileUpdater(iface)
+        self.all_profiles = config.profiles.keys()
 
     def view_details(self, view):
         """
@@ -514,19 +520,7 @@ class TemplateViewHandler:
                 _execute(query, view_name=view)
                 return 'new_{}'.format(view)
             except Exception as ex:
-                QMessageBox.critical(
-                    iface.mainWindow(),
-                    QApplication.translate(
-                        'TemplateUpdater',
-                        'Template View Upgrade Error'
-                    ),
-                    QApplication.translate(
-                        'TemplateUpdater',
-                        'Failed to update template.'
-                        '{}'.format(ex)
-                    )
-                )
-
+                self.updater.append_log(str(ex))
                 return None
 
     def replace_all(self, text):
@@ -599,9 +593,9 @@ class TemplateViewHandler:
 
 class TemplateFileUpdater(
     TemplateContentReader,
-    TemplateViewHandler,
-    STDMProgressDialog
+    TemplateViewHandler
 ):
+
     def __init__(self, plugin_dir, old_new_tables, progress):
         """
          Upgrades old profile templates to version 1.2 profiles.
@@ -612,17 +606,19 @@ class TemplateFileUpdater(
         :param profile: The profile name that is upgraded
         :type profile: String
         """
-        TemplateContentReader.__init__(self, progress)
+        TemplateContentReader.__init__(self)
         TemplateViewHandler.__init__(self, old_new_tables)
 
-        self.overall_progress(
-            'Updating Templates...',
-            iface.mainWindow()
-        )
-        self.prog = progress.prog
-        self.prog.show()
+
+        self.prog = progress
+        # self.prog.overall_progress(
+        #     'Updating Templates...',
+        #     iface.mainWindow()
+        # )
+        # self.prog.show()
         self.old_new_cols_list = []
         self.plugin_dir = plugin_dir
+
 
     def update_template(
             self, template, old_source, new_source, ref_table=None
@@ -980,12 +976,21 @@ class TemplateFileUpdater(
         the old template data source
         :type old_source: String
         """
+
+        new_profile_views = [
+            p for p in self.all_profiles
+            if p.lower() in old_source
+        ]
+
         if old_source == 'social_tenure_relations':
             upgraded_view = self.old_new_tables[
                 'social_tenure_relations'
             ]
         # if old str view is updated already use the new one
         elif self.profile_name in old_source:
+            upgraded_view = None
+
+        elif len(new_profile_views) > 0:
             upgraded_view = None
         # if new view is already created, remove 'new_'
         elif 'new_' in old_source:
@@ -1003,7 +1008,7 @@ class TemplateFileUpdater(
             ref_table = self.get_referenced_table(
                 old_source
             )
-            self.progress_message('Updating', template)
+            self.prog.progress_message('Updating', template)
             self.update_template(
                 template,
                 old_source,
@@ -1012,7 +1017,7 @@ class TemplateFileUpdater(
             )
 
         else:
-            self.progress_message('Skipping', template)
+            self.prog.progress_message('Skipping', template)
 
     def process_table_template(self, template, old_source):
         """
@@ -1029,16 +1034,16 @@ class TemplateFileUpdater(
             ]
 
             if not new_table is None:
-                self.progress_message('Upgrading', template)
+                self.prog.progress_message('Upgrading', template)
                 self.update_template(
                     template, old_source, new_table
                 )
 
             else:
-                self.progress_message('Skipping', template)
+                self.prog.progress_message('Skipping', template)
 
         else:
-            self.progress_message('Skipping', template)
+            self.prog.progress_message('Skipping', template)
 
 
     def process_update(self, force_update=False):
@@ -1064,17 +1069,59 @@ class TemplateFileUpdater(
             type, old_source = self.get_source(
                 template
             )
-            # Process templates with view source
-            if type == 'view':
+            try:
+                # Process templates with view source
+                if type == 'view':
+                    self.updater.append_log(
+                        'Trying to upgrade {}'.format(
+                            template
+                        )
+                    )
+                    self.process_view_template(
+                        template, old_source
+                    )
 
-                self.process_view_template(
-                    template, old_source
+                # Process templates with table source
+                elif type == 'table':
+                    self.updater.append_log(
+                        'Trying to upgrade {}'.format(
+                            template
+                        )
+                    )
+                    self.process_table_template(
+                        template, old_source
+                    )
+
+
+            except Exception as ex:
+                self.updater.append_log(
+                    'Failed to upgrade {}'.format(
+                        template
+                    )
                 )
-            # Process templates with table source
-            elif type == 'table':
+                self.updater.append_log(str(ex))
+                error_title = QApplication.translate(
+                    'TemplateContentReader',
+                    'Error Updating Template'
+                )
+                error_message = QApplication.translate(
+                    'TemplateContentReader',
+                    'Something went wrong while '
+                    'updating the template - {}.'.format(
+                        template
+                    )
+                )
 
-                self.process_table_template(
-                    template, old_source
+                QMessageBox.critical(
+                    iface.mainWindow(),
+                    error_title,
+                    error_message
+                )
+            else:
+                self.updater.append_log(
+                    'Successfully upgraded {}'.format(
+                        template
+                    )
                 )
 
             self.prog.setValue(i)
