@@ -23,8 +23,10 @@ import os
 import shutil
 import datetime
 import time
-
+import cStringIO
 from collections import OrderedDict
+
+from distutils import file_util
 
 import errno
 from PyQt4.QtCore import QFile, QIODevice, Qt, QTextStream, pyqtSignal
@@ -43,10 +45,10 @@ from ..settings.registryconfig import (
     CONFIG_UPDATED,
     source_documents_path
 )
-from distutils import file_util
-from distutils.errors import DistutilsFileError
 
-from ..ui.progress_dialog import STDMProgressDialog
+from stdm.utils.util import simple_dialog
+from stdm.ui.change_log import ChangeLog
+
 
 COLUMN_TYPE_DICT = {'character varying': 'VARCHAR', 'date': 'DATE',
                     'serial': 'SERIAL', 'integer': 'INT', 'lookup':
@@ -181,8 +183,43 @@ class ConfigurationFileUpdater(object):
         self.new_data_folder_path = source_documents_path()
         self.reg_config = RegistryConfig()
         self.profiles_detail = {}
-        self.progress = STDMProgressDialog()
+        self.progress = None
+        self.log_file_path = '{}/logs/migration.log'.format(
+            self.file_handler.localPath()
+        )
 
+
+    def create_log_file(self, file_path):
+        """
+        Create a new log file if it doesn't exist.
+        :param file_path: The full path of the file.
+        :type file_path: String
+        :return:
+        :rtype:
+        """
+
+        file_name = os.path.basename(file_path)
+        try:
+            info_file = open(file_name, 'a')
+            info_file.close()
+        except Exception:
+            pass
+
+    def append_log(self, info):
+        """
+        Append info to a single file
+        :param info: update information to save to file
+        :type info: str
+        """
+        info_file = open(self.log_file_path, "a")
+        time_stamp = datetime.datetime.now().strftime(
+            '%d-%m-%Y %H:%M:%S'
+        )
+        info_file.write('\n')
+        info_file.write('{} - '.format(time_stamp))
+        info_file.write(info)
+        info_file.write('\n')
+        info_file.close()
 
     def _check_config_folder_exists(self):
         """
@@ -207,8 +244,10 @@ class ConfigurationFileUpdater(object):
         :returns True if folder exists else False
         :rtype bool
         """
-        if os.path.isfile(os.path.join(self.file_handler.localPath(),
-                                       config_file)):
+        if os.path.isfile(os.path.join(
+                self.file_handler.localPath(),
+                config_file)
+        ):
 
             return True
         else:
@@ -229,8 +268,11 @@ class ConfigurationFileUpdater(object):
 
             status, msg, line, col = doc.setContent(config_file_path)
             if not status:
-                raise ConfigurationException(u'Configuration file cannot be '
-                                             u'loaded: {0}'.format(msg))
+                error_message = u'Configuration file cannot be '
+                u'loaded: {0}'.format(msg)
+                self.append_log(str(error_message))
+
+                raise ConfigurationException(error_message)
 
             doc_element = doc.documentElement()
 
@@ -249,7 +291,10 @@ class ConfigurationFileUpdater(object):
         if config_version:
             config_version = float(config_version)
         else:
-
+            self.append_log('Error extracting version '
+                            'number from the '
+                            'configuration file.'
+                            )
             # Fatal error
             raise ConfigurationException('Error extracting version '
                                          'number from the '
@@ -263,9 +308,16 @@ class ConfigurationFileUpdater(object):
         """
         Copies configuration from template
         """
-        shutil.copy(os.path.join(self.file_handler.defaultConfigPath(),
-                                 "configuration.stc"),
-                    self.file_handler.localPath())
+        config_path = os.path.join(
+            self.file_handler.defaultConfigPath(),
+            'configuration.stc'
+        )
+
+        if not os.path.isfile(config_path):
+            shutil.copy(
+                config_path,
+                self.file_handler.localPath()
+            )
 
     def _rename_old_config_file(self, old_config_file, path):
         """
@@ -307,6 +359,7 @@ class ConfigurationFileUpdater(object):
             os.makedirs(path)
         except OSError as exc:  # Python >2.5
             if exc.errno == errno.EEXIST and os.path.isdir(path):
+
                 pass
             else:
                 raise
@@ -547,7 +600,7 @@ class ConfigurationFileUpdater(object):
         :param config_file_name:
         :return:
         """
-        self.progress.progress_message('Creating 1.2 configuration file', '')
+        self.progress.progress_message('Creating STDM 1.2 configuration file', '')
         self.config_file = QFile(os.path.join(self.file_handler.localPath(),
                                  config_file_name))
 
@@ -588,9 +641,13 @@ class ConfigurationFileUpdater(object):
         config_doc, config_root = self._get_doc_element(
             destination_config
         )
-        config_file_path = os.path.join(stdm_path, destination_config)
+        config_file_path = os.path.join(
+            stdm_path, destination_config
+        )
         config_file = QFile(config_file_path)
-        config_file.copy(os.path.join(stdm_path, 'configuration_pre_merged.stc'))
+        config_file.copy(os.path.join(
+            stdm_path, 'configuration_pre_merged.stc')
+        )
         open_file = config_file.open(
             QIODevice.ReadWrite |
             QIODevice.Truncate |
@@ -598,28 +655,29 @@ class ConfigurationFileUpdater(object):
         )
 
         if open_file:
-
+            # upgraded config from stdmConfig.xml
             child_nodes = root.childNodes()
+            # existing config/ default config
             c_child_nodes = config_root.childNodes()
             # look through upgraded node
             for child_i in range(child_nodes.count()):
                 child_node = child_nodes.item(child_i).toElement()
                 if child_node.tagName() == "Profile":
-                    # loop through existing config nodes
+                    # if duplicate profile exists, remove it first before
+                    # adding a new one with the same name
                     for child_j in range(c_child_nodes.count()):
-                        c_child_node = c_child_nodes.item(child_j).toElement()
-                        # if duplicate profile exists, remove it first before
-                        # adding a new one with the same name
-                        if c_child_node.tagName() == "Profile" and \
-                            child_node.attribute('name') \
-                                in self.config.profiles.keys() and \
-                                        child_node.attribute('name') == \
-                                        c_child_node.attribute('name'):
+                        c_child_node = c_child_nodes.item(0).toElement()
+                        if c_child_node.tagName() == "Profile":
+                            # remove if the same profile name exists
+                            if child_node.attribute('name') ==\
+                                    c_child_node.attribute('name'):
 
-                            config_root.insertBefore(
-                                child_node, c_child_node
-                            )
-                            config_root.removeChild(c_child_node)
+                                config_root.removeChild(c_child_node)
+                    # Insert at the top of the configuration
+                    first_c_child_node = c_child_nodes.item(0).toElement()
+                    config_root.insertBefore(
+                        child_node, first_c_child_node
+                    )
 
             stream = QTextStream(config_file)
             stream << config_doc.toString()
@@ -649,7 +707,7 @@ class ConfigurationFileUpdater(object):
         # Entity relation lookup dict
         """
         Method that create new entity column and valuelist from extracted
-        values from old configration file
+        values from old configuration file
         :param pref:
         :param profile:
         :param profile_element:
@@ -660,6 +718,8 @@ class ConfigurationFileUpdater(object):
         template_dict = {'supporting_document': pref + "_supporting_document",
                          'social_tenure_relationship':
                              pref + "_social_tenure_relationship",
+                         'social_tenure_relations':
+                             '{}_vw_social_tenure_relationship'.format(profile.lower()),
                          'str_relations': pref + "_social_tenure_relationship_"
                                                  "supporting_document"}
         self.profiles_detail[profile] = template_dict
@@ -1027,7 +1087,7 @@ class ConfigurationFileUpdater(object):
 
                 social_tenure = self.doc_old.createElement("SocialTenure")
                 social_tenure.setAttribute(
-                    "layerDisplay", profile + "_vw_social_tenure_relationship")
+                    "layerDisplay", profile.lower() + "_vw_social_tenure_relationship")
                 social_tenure.setAttribute(
                     "tenureTypeList", "check_tenure_type")
 
@@ -1106,140 +1166,70 @@ class ConfigurationFileUpdater(object):
         self.config_file.close()
         self.doc_old.clear()
 
-    def upgrade_dialog(self):
-        upgrade_dialog = QDialog(
-            self.iface.mainWindow(),
-            Qt.WindowSystemMenuHint | Qt.WindowTitleHint
-        )
-        upgrade_layout = QVBoxLayout(upgrade_dialog)
-        upgrade_label = QLabel()
-        title = QApplication.translate(
-            'ConfigurationFileUpdater', 
-            'Upgrade STDM Configuration'
-        )
-
-        text = QApplication.translate(
-            'ConfigurationFileUpdater',
-            'Do you want to upgrade your configuration file '
-            'and import your data?\n\n'
-            'If you click No, your configuration and data will'
-            ' no longer be accessible to STDM.\n'
-            'If you click Yes, you will be able to access your'
-            'old configuration with the data.'
-        )
-        confirmation_text = QApplication.translate(
-            'ConfigurationFileUpdater',
-            'I don\'t want upgrade my old configuration and migrate my data.'
-        )
-        upgrade_dialog.setWindowTitle(title)
-        upgrade_label.setText(text)
-
-        upgrade_layout.addWidget(upgrade_label)
-        confirm_checkbox = QCheckBox()
-
-        confirm_checkbox.setText(confirmation_text)
-        confirm_checkbox.setStyleSheet(
-            "QCheckBox {color : red; }"
-        )
-        upgrade_layout.addWidget(confirm_checkbox)
-        upgrade_buttons = QDialogButtonBox()
-
-        upgrade_buttons.setStandardButtons(
-            QDialogButtonBox.Yes | QDialogButtonBox.No
-        )
-        upgrade_buttons.accepted.connect(upgrade_dialog.accept)
-        upgrade_buttons.rejected.connect(upgrade_dialog.reject)
-
-        upgrade_layout.addWidget(upgrade_buttons)
-
-        upgrade_dialog.setModal(True)
-        result = upgrade_dialog.exec_()
-        return result, confirm_checkbox.isChecked()
-
-    def load(self, manual=False):
+    def load(self, plugin_path, progress, manual=False):
 
         """
-        Entry code to class
+        Executes the updater and creates configuration_upgraded.stc.
         :return:
         """
-        if manual:
-            self.reg_config.write({'ConfigUpdated': '0'})
-
-        else:
-            self.progress.overall_progress(
-                'Upgrading Configuration...',
-                self.iface.mainWindow()
-            )
-
+        self.progress = progress
         if self._check_config_folder_exists():
 
             # Check if old configuration file exists
             if self._check_config_file_exists("stdmConfig.xml"):
 
+                self.append_log('stdmConfig.xml exists')
                 self.config_updated_dic = self.reg_config.read([CONFIG_UPDATED])
 
                 # if config file exists, check if registry key exists
                 if len(self.config_updated_dic ) < 1:
-                    # if it doesn't exist, create it with a value of False (
-                    # '0')
+                    # if it doesn't exist, create it with a value of False ('0')
                     self.reg_config.write({'ConfigUpdated': '0'})
                     self.config_updated_dic = self.reg_config.read([CONFIG_UPDATED])
                     config_updated_val = self.config_updated_dic[CONFIG_UPDATED]
 
                 else:
-
                     config_updated_val = self.config_updated_dic[CONFIG_UPDATED]
+
                 if config_updated_val == '0':
+                    self._copy_config_file_from_template()
+                    self.create_log_file(self.log_file_path)
 
-                    result, confirmation = self.upgrade_dialog()
+                    if not manual:
+                        result, checkbox_result = simple_dialog(
+                            self.iface.mainWindow(),
+                            'Upgrade Information',
+                            'Would you like to view the '
+                            'new features and changes of STDM 1.2?'
+                        )
+                        if result:
+                            change_log = ChangeLog(self.iface.mainWindow())
+                            change_log.show_change_log(plugin_path)
 
-                    if result == 1:
-                        self.upgrade = True
-                        self.old_config_file = True
-                        doc, root = self._get_doc_element("stdmConfig.xml")
-                        child_nodes = root.childNodes()
+                    self.progress.show()
+                    self.progress.setValue(0)
+                    self.upgrade = True
+                    self.old_config_file = True
+                    doc, root = self._get_doc_element("stdmConfig.xml")
+                    child_nodes = root.childNodes()
 
-                        # Parse old configuration to dictionary
-                        self._set_version_profile(child_nodes)
+                    # Parse old configuration to dictionary
+                    self._set_version_profile(child_nodes)
 
-                        # Create config file
-                        self._create_config_file("configuration_upgraded.stc")
+                    # Create config file
+                    self._create_config_file("configuration_upgraded.stc")
 
-                        # Create configuration node and version
-                        self._populate_config_from_old_config()
-                        # self.update_config_file_version(
-                        #     "configuration_upgraded.stc"
-                        # )
-                        return self.upgrade
-
-                    elif result == 0 and confirmation:
-                        self.reg_config.write({'ConfigUpdated': '-2'})
-                        return self.upgrade
-
-                    elif result == 0 and not confirmation:
-                        self.reg_config.write({'ConfigUpdated': '-1'})
-                        return self.upgrade
-
-
-                elif config_updated_val == '1':
-                    if not self._check_config_file_exists("configuration.stc"):
-                        self._copy_config_file_from_template()
-                    self.upgrade = False
+                    # Create configuration node and version
+                    self._populate_config_from_old_config()
+                    self.append_log(
+                        'Created and populated configuration_upgraded.stc'
+                    )
                     return self.upgrade
 
                 else:
                     if not self._check_config_file_exists("configuration.stc"):
                         self._copy_config_file_from_template()
-                    return False
 
-            else:
-                self.reg_config.write({'ConfigUpdated': '-2'})
-                # Check of new config format exists
-                if self._check_config_file_exists("configuration.stc"):
-                    return False
-                else:
-                    # if new config format doesn't exist copy from template
-                    self._copy_config_file_from_template()
                     return False
         else:
             self._create_config_folder()
@@ -1438,8 +1428,8 @@ class ConfigurationFileUpdater(object):
             # Backup of entities participating in social tenure relationship
             keys, values = self._set_social_tenure_table()
 
-            self.progress.prog.setRange(0, len(values))
-            self.progress.prog.show()
+            self.progress.setRange(0, len(values))
+            self.progress.show()
 
             progress_i = 0
             for social_tenure_entity in values:
@@ -1529,7 +1519,7 @@ class ConfigurationFileUpdater(object):
 
                 else:
                     pass
-                self.progress.prog.setValue(progress_i)
+                self.progress.setValue(progress_i)
                 progress_i = progress_i + 1
 
             # Backup of social tenure relationship tables, str_relations and
@@ -1542,8 +1532,8 @@ class ConfigurationFileUpdater(object):
 
             self.progress.progress_message('Importing data to the new tables', '')
 
-            self.progress.prog.setRange(0, len(STR_TABLES))
-            self.progress.prog.show()
+            self.progress.setRange(0, len(STR_TABLES))
+            self.progress.show()
 
             progress_i = 0
 
@@ -1631,13 +1621,13 @@ class ConfigurationFileUpdater(object):
                         else:
                             fix_sequence(new_STR_table)
 
-                self.progress.prog.setValue(progress_i)
+                self.progress.setValue(progress_i)
                 progress_i = progress_i + 1
 
             if os.path.isdir(self.old_data_folder_path):
                 self.progress.progress_message('Moving documents from 2020 to general', 'folder')
-                self.progress.prog.setRange(0, len(os.listdir(self.old_data_folder_path)))
-                self.progress.prog.show()
+                self.progress.setRange(0, len(os.listdir(self.old_data_folder_path)))
+                self.progress.show()
 
                 progress_i = 0
 
@@ -1656,7 +1646,7 @@ class ConfigurationFileUpdater(object):
                         if os.path.isfile(full_file_name):
                             shutil.copy(full_file_name, path_new_directory)
 
-                        self.progress.prog.setValue(progress_i)
+                        self.progress.setValue(progress_i)
                         progress_i = progress_i + 1
 
-            return self.profiles_detail, self.progress
+            return self.profiles_detail

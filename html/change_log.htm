@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta http-equiv="Content-Language" content="en-UK">
+<meta name="rh-authors" content="GLTN" />
+
+<title>What's new</title>
+<link rel="StyleSheet" href="./image_files/base.css" type="text/css">
+ <link rel="StyleSheet" href="./image_files/base.css" type="text/css">
+<style type="text/css">
+#topic_header { background-color:#EFEFEF; }
+
+div.WebHelpPopupMenu { position:absolute;
+left:0px;
+top:0px;
+z-index:4;
+visibility:hidden; }
+
+</style>
+
+</head>
+
+<body>
+
+<h1>What's New in Version 1.2</h1>
+<p>STDM 1.2 is a full release which includes enhanced functionality and 
+ stability improvements. One special highlight is the complete redesign 
+ of the database customization module; this not only improves the stability 
+ of the system but also enables for more data types to be defined by the 
+ user. The following sections summarize changes in different functional 
+ areas of STDM.</p>
+<h2>Database Configuration</h2>
+<p>The configuration backend has been redesigned to be more stable and 
+ extensible. This has opened up the possibility of customizing the tool 
+ further based on the data requirements of the specific application context; 
+ these new features are highlighted below: Data Profiles STDM now supports 
+ the definition of one or more data profiles. A data profile represents 
+ a logical set of interrelated tables for a specific application context 
+ of STDM. For example, an informal settlement profile can contain tables 
+ representing household, structures, household members, priority projects, 
+ etc. whereas, a rural agriculture profile can include information pertaining 
+ to a farmer, garden, productivity and socio-economic impacts. For each 
+ data profile, STDM implicitly creates a social tenure relationship whose 
+ types are user-defined depending on the application context e.g. tenancy, 
+ ownership, leasehold, farming. The default installation is shipped with 
+ three basic data profiles which can either be customized by the user, 
+ deleted or new ones created from scratch.</p>
+<img src="./image_files/profile.jpg" alt="" style="border: none;" border="0"> 
+<h3>Supporting Documents</h3>
+<p>For each new entity, there is now an option for enabling supporting 
+ documents to be attached to a record. By default, this is automatically 
+ enabled for new social tenure relationship definitions.</p>
+<img src="./image_files/clip_image005.png" alt="" width="404" height="221" border="0"> 
+ 
+<p>For each entity with supporting documents enabled, a user-defined set 
+ of document types can also be specified.</p>
+<h3>Column Types</h3>
+<img src="./image_files/clip_image007.png" alt="" width="454" height="579" border="0"> 
+ 
+<p>The following column types can now be added to entities:</p>
+<p><strong>Administrative Spatial Unit</strong> – Specifies a particular 
+ location within a custom administrative unit hierarchy. This can be applied, 
+ for example, when attaching place of birth, previous residence, place 
+ of work, etc. from a preset list of location names.</p>
+<p><strong>Multiple Select Lookup</strong> – For specifying the selection 
+ of one or more choices from a preset list. For instance, when defining 
+ income sources for a person or household, the options can be business, 
+ employment and/or from spouse.</p>
+<p><strong>Related Entity</strong> – For specifying one-to-many relationships 
+ between entities. For instance if a data profile has both ‘household’ 
+ and ‘household members’ entities, then a new column can be added to the 
+ ‘household members’ entity thereby enabling ‘household members’ to be 
+ linked to the ‘household’ that they belong to.</p>
+<p><strong>Unlimited Text</strong> – For specifying free-form text that 
+ has no constraints on the length of characters.</p>
+<p><strong>Boolean – <span style="font-weight: normal;">For specifying 
+ a Yes/No column.</span></strong></p>
+<h3><strong><strong style="font-weight: bold;">Permissible</strong></strong></h3>
+<h4><strong><strong style="font-weight: bold;">Number of Parties per Spatial 
+ Unit</strong></strong></h4>
+<p style="font-weight: normal;"><strong style="font-weight: normal;">A 
+ check constraint can now be applied to limit a single party to one spatial 
+ unit when defining a new social tenure relationship otherwise by default, 
+ multiple parties are allowed to be linked to a single spatial unit using 
+ the ‘new social tenure relationship’ module.</strong></p>
+<strong><strong style="font-weight: bold;"><img src="./image_files/clip_image008.jpg" alt="" width="780" height="584" border="0"> </strong></strong>
+<h3><strong><strong style="font-weight: bold;">Configuration Wizard</strong></strong></h3>
+<p style="font-weight: normal;"><strong style="font-weight: normal;">The 
+ configuration module has been simplified to automatically update the database 
+ by first checking existing tables and updating them accordingly thereby 
+ removing the options of creating new or updating existing tables, as was 
+ the case in the previous versions.</strong></p>
+<strong><strong style="font-weight: bold;"><img src="./image_files/clip_image009.jpg" alt="" width="780" height="587" border="0"> </strong></strong>
+<h4><strong><strong style="font-weight: bold;">Data Entry Forms</strong></strong></h4>
+<p style="font-weight: normal;"><strong><strong style="font-weight: normal;">The 
+ forms are more intuitive with the option of specifying user tips for each 
+ data entry widget. Similarly, supporting documents can be easily uploaded 
+ for each entity based on the document type.</strong></strong></p>
+<strong><img src="./image_files/form.jpg" alt="" style="border: none;" border="0"></strong> 
+ 
+<br><strong>&nbsp;</strong> 
+<br>&nbsp; 
+<br>&nbsp; 
+<br><strong>&nbsp;<img src="./image_files/clip_image014.png" alt="" width="604" height="776" border="0"> </strong>
+<h2><strong><strong style="font-weight: bold;">Entity Browser</strong></strong></h2>
+<p style="font-weight: normal;"><strong><strong style="font-weight: normal;">For 
+ those entities that allow supporting documents to be uploaded, the entity 
+ browser has an additional toolbar item for viewing supporting documents 
+ for a selected record.</strong></strong></p>
+<strong><strong style="font-weight: bold;"><img src="./image_files/clip_image016.png" alt="" width="780" height="536" border="0"> </strong></strong>
+<h3><strong><strong style="font-weight: bold;">Spatial Unit/Spatial Entity 
+ Browser</strong></strong></h3>
+<p style="font-weight: normal;"><strong style="font-weight: normal;">The 
+ Entity Browser of spatial unit or any other entity is now accessible in 
+ the Entities menu. This enables the user to edit, delete and view document 
+ of a spatial unit record. In addition, by single selecting a record, the 
+ user can preview the record’s geometry in QGIS Map Canvas as shown below.</strong></p>
+<strong><strong style="font-weight: bold;"><img src="./image_files/clip_image018.png" alt="" width="779" height="367" border="0"> </strong></strong>
+<h2><strong><strong style="font-weight: bold;">Social Tenure Relationship</strong></strong></h2>
+<h3><strong><strong style="font-weight: bold;">New Social Tenure Relationship 
+ Wizard</strong></strong></h3>
+<p style="font-weight: normal;"><strong><strong style="font-weight: normal;">Multiple 
+ parties can now be linked to a single spatial unit (applicable if this 
+ option has been enabled for the current data profile).</strong></strong></p>
+<strong><strong style="font-weight: bold;"><img src="./image_files/clip_image020.png" alt="" width="551" height="503" border="0"> </strong></strong>
+<p style="font-weight: normal;"><strong><strong style="font-weight: normal;">A 
+ spatial unit can now be selected using any criteria e.g. name, code, use 
+ type etc.</strong></strong></p>
+<strong><strong style="font-weight: bold;"><img src="./image_files/clip_image022.png" alt="" width="539" height="490" border="0"> </strong></strong>
+<p style="font-weight: normal;"><strong><strong style="font-weight: normal;">The 
+ tenure type can now be easily specified for each selected party</strong></strong></p>
+<strong><strong style="font-weight: bold;"><img src="./image_files/clip_image024.png" alt="" width="552" height="506" border="0"> </strong></strong>
+<p style="font-weight: normal;"><strong><strong style="font-weight: normal;">Supporting 
+ documents for social tenure relationships are now grouped based on the 
+ document type. When assigning multiple party for one spatial unit, a copy 
+ of supporting document is created for each party.</strong></strong></p>
+<strong><strong style="font-weight: bold;"><img src="./image_files/clip_image026.png" alt="" width="547" height="500" border="0"> </strong></strong>
+<h3><strong><strong style="font-weight: bold;">View Social Tenure Relationship</strong></strong></h3>
+<p class="MsoNormal" style="font-weight: normal;"><strong style="font-weight: normal;">Existing 
+ social tenure relationship records can be edited from the selected search 
+ using the New Social Tenure Relationship wizard. This gives more flexibility 
+ in modifying the person, spatial unit, social tenure type, and supporting 
+ document for the selected Social Tenure Relationship.</strong></p>
+<strong><strong style="font-weight: bold;"><img src="./image_files/clip_image028.png" alt="" width="768" height="547" border="0"></strong></strong> 
+ 
+<h2><strong><strong style="font-weight: bold;">Spatial Unit Manager</strong></strong></h2>
+<p style="font-weight: normal;"><strong><strong style="font-weight: normal;">The 
+ custom data entry forms have now been incorporated to replace the stock 
+ QGIS forms for vector data sets listed in the ‘Spatial Unit Manager’. 
+ These forms are used when:</strong></strong></p>
+<ul style="list-style: disc;">
+	<li><p style="font-weight: normal;"><strong><strong style="font-weight: normal;">Digitizing 
+	 spatial units in the QGIS map canvas;</strong></strong></p></li>
+	<li><p style="font-weight: normal;"><strong><strong style="font-weight: normal;">Importing 
+	 a single spatial unit from a GPS (GPX) file;</strong></strong></p></li>
+	<li><p style="font-weight: normal;"><strong style="font-weight: normal;">Editing 
+	 attribute data related to a spatial unit.</strong></p></li>
+</ul>
+<strong><strong style="font-weight: bold;"><img src="./image_files/clip_image029.png" alt="" width="461" height="534" border="0"> </strong></strong>
+<h2><strong><strong style="font-weight: bold;">Document Designer</strong></strong></h2>
+<h3><strong><strong style="font-weight: bold;">Image Composer Item</strong></strong></h3>
+<p style="font-weight: normal;"><strong style="font-weight: normal;">Images 
+ can now be added to the document layout based on a specific document type. 
+ If an entity supports, say, four different types of documents then four 
+ separate image composer items (corresponding to each document type) can 
+ be added to the layout and configured accordingly.</strong></p>
+<strong><strong style="font-weight: bold;"><img src="./image_files/clip_image031.jpg" alt="" width="461" height="285" border="0"> </strong></strong>
+<h2><strong><strong style="font-weight: bold;">Document Generator</strong></strong></h2>
+<p style="font-weight: normal;"><strong style="font-weight: normal;">Reports 
+ can be generated for all primary entities in the current profile regardless 
+ of whether they participate in the social tenure relationship. This provides 
+ more flexibility for generating individual or aggregate reports for all 
+ data-sets managed by STDM.</strong></p>
+<p style="font-weight: normal;"><strong style="font-weight: normal;">Output 
+ document naming fields are ordered as they are created in the Configuration 
+ Wizard and they can be sorted by drag and drop as shown the bottom of 
+ the image below.</strong></p>
+<strong><strong style="font-weight: bold;"><img src="./image_files/clip_image032.jpg" alt="" width="551" height="601" border="0"> </strong></strong>
+<h2><strong><strong style="font-weight: bold;">Quick System Settings</strong></strong></h2>
+<p style="font-weight: normal;"><strong><strong style="font-weight: normal;">An 
+ interface has been added for managing most commonly used system settings. 
+ These include:</strong></strong></p>
+<ul style="list-style: disc;">
+	<li><span><strong><strong style="font-weight: normal;">Setting the 
+	 current profile;</strong></strong></span></li>
+	<li><span><strong><strong style="font-weight: normal;">Editing database 
+	 connection properties;</strong></strong></span></li>
+	<li><strong style="font-weight: normal;">Path settings for supporting 
+	 documents, report templates and outputs.</strong></li>
+</ul>
+<strong><img src="./image_files/options525359632.jpg" alt="" style="border: none;" width="545" height="539" border="0"> </strong>
+<h2><strong><strong style="font-weight: bold;">Migration from Previous 
+ Versions</strong></strong></h2>
+<p style="font-weight: normal;">Migration from the previous versions of 
+ STDM is seamless. For existing installations, the upgrade of STDM is done 
+ through the QGIS Plugin manager; that notifies the user to upgrade to 
+ the new version. Then a configuration and data migration is done through 
+ the new Upgrade module. It is accessible on the first time login and from 
+ the Options module.</p>
+<p style="font-weight: normal; font-family: Cambria, serif;"><img src="./image_files/upgrade.jpg" alt="" style="border: none;" border="0"></p>
+<h2><strong><strong style="font-weight: bold;">General</strong></strong></h2>
+<p style="font-weight: normal;"><strong><strong style="font-weight: normal;">The 
+ all-in-one installer for STDM 1.2 is built upon the following packages: 
+ PostgreSQL v9.5, PostGIS 2.2 and QGIS 2.14. The new versions of these 
+ dependencies not only provide improved stability and workflows, but also 
+ include functional enhancements such as row-level security policies, new 
+ geometry processing functions, trace digitizing tools etc. See the links 
+ below for the full list of feature updates:</strong></strong></p>
+<p style="font-weight: normal;"><strong><strong><a href="https://wiki.postgresql.org/wiki/What&#39;s_new_in_PostgreSQL_9.5" style="font-weight: normal;">PostgreSQL 
+ 9.5</a></strong></strong></p>
+<p style="font-weight: normal;"><strong><strong><a href="http://postgis.net/2015/10/07/postgis-2.2.0/" style="font-weight: normal;">PostGIS 
+ 2.2</a></strong></strong></p>
+<p style="font-weight: normal;"><strong><strong><a href="http://qgis.org/en/site/forusers/visualchangelog214/" style="font-weight: normal;">QGIS 
+ 2.14</a></strong></strong></p>
+<p style="font-weight: normal;"><strong><strong style="font-weight: normal;">The 
+ logical flow of the user manual has been greatly improved by incorporating 
+ more illustrations and use-case examples.</strong></strong></p>
+ <div style="width: 100%; position: relative;" id="footer">
+	<p style="font-family: Cambria, serif; font-size: 11pt;">Copyright &copy; &lt;2016&gt; by &lt;UN-Habitat&gt;. All Rights Reserved</p>
+</div>
+<!--<script type="text/javascript" language="javascript1.2">//<![CDATA[-->
+<!--&lt;!&ndash;-->
+<!--if (window.writeIntopicBar)-->
+	<!--writeIntopicBar(0);-->
+
+
+<!--highlightSearch();-->
+<!--//&ndash;&gt;-->
+<!--//]]></script>-->
+
+
+</body></html>

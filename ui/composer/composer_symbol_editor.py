@@ -302,12 +302,13 @@ class ComposerSymbolEditor(QWidget,Ui_frmComposerSymbolEditor):
         """
         Load spatial fields/columns of the given data source.
         """
+
         if not self._ds_name:
             self.cboSpatialFields.clear()
             return
         
         spatialColumns = table_column_names(self._ds_name, True)
-        
+
         if len(spatialColumns) == 0:
             return
         

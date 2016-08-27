@@ -37,7 +37,12 @@ from PyQt4.QtGui import (
     QPixmap,
     QFileDialog,
     QDialog,
-    QAbstractItemView
+    QAbstractItemView,
+    QVBoxLayout,
+    QLabel,
+    QApplication,
+    QCheckBox,
+    QDialogButtonBox
 )
 from sqlalchemy import (
     func
@@ -358,11 +363,11 @@ def entity_display_columns(entity):
             'VARCHAR',
             'SERIAL',
             'TEXT',
-            'BIGINT',
+            'INT',
             'DOUBLE',
             'DATE',
             'DATETIME',
-            'YES_NO',
+            'BOOL',
             'LOOKUP',
             'ADMIN_SPATIAL_UNIT',
             'MULTIPLE_SELECT'
@@ -823,3 +828,75 @@ def enable_drag_sort(mv_widget):
             return
 
     mv_widget.__class__.dropEvent = drop_event
+
+def simple_dialog(parent, title, message, checkbox_text=None, yes_no=True):
+    simple_dialog = QDialog(
+        parent,
+        Qt.WindowSystemMenuHint | Qt.WindowTitleHint
+    )
+    simple_layout = QVBoxLayout(simple_dialog)
+    simple_label = QLabel()
+    title = QApplication.translate(
+        'util',
+        title
+    )
+
+    text = QApplication.translate(
+        'util',
+        message
+    )
+
+
+    simple_dialog.setWindowTitle(title)
+    simple_label.setTextFormat(Qt.RichText)
+    simple_label.setText(text)
+
+    simple_layout.addWidget(simple_label)
+
+    if checkbox_text:
+        confirmation_text = QApplication.translate(
+            'util',
+            checkbox_text
+        )
+        confirm_checkbox = QCheckBox()
+        confirm_checkbox.setText(confirmation_text)
+        simple_layout.addWidget(confirm_checkbox)
+    simple_buttons = QDialogButtonBox()
+
+    if yes_no:
+        simple_buttons.setStandardButtons(
+            QDialogButtonBox.Yes | QDialogButtonBox.No
+        )
+        simple_buttons.rejected.connect(simple_dialog.reject)
+
+    else:
+        simple_buttons.setStandardButtons(
+            QDialogButtonBox.Ok
+        )
+    simple_buttons.accepted.connect(simple_dialog.accept)
+
+    simple_layout.addWidget(simple_buttons)
+
+    simple_dialog.setModal(True)
+    result = simple_dialog.exec_()
+    if not checkbox_text is None:
+        return result, confirm_checkbox.isChecked()
+    else:
+        return result, False
+
+
+def file_text(path):
+    """
+    Read any readable file.
+    :param path: The file path
+    :type path: String
+    :return: The text of the file
+    :rtype: String
+    """
+    try:
+        with open(path, 'r') as inf:
+            text = inf.read()
+        return text
+    except IOError as ex:
+        raise ex
+
