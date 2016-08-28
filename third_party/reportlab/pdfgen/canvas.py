@@ -1039,7 +1039,7 @@ class Canvas(textobject._PDFColorSetter):
         the given commands.  Adobe Reader 6.0 no longer does as this feature is
         deprecated.  5.0, I don't know about (please let us know!). This was
         funded by Bob Marshall of Vector.co.uk and tested on a Lexmark 750.
-        See test_pdfbase_postscript.py for 2 test cases - one will work on
+        See test_pdfbase_postscript.py for 2 tests cases - one will work on
         any Postscript device, the other uses a 'setpapertray' command which
         will error in Distiller but work on printers supporting it.
         """
@@ -1521,7 +1521,7 @@ class Canvas(textobject._PDFColorSetter):
                13cm
         
         Since the last three do not contain a dot, a crude dot-finding
-        rule would place them wrong. So we test for the special case
+        rule would place them wrong. So we tests for the special case
         where no pivot is found, digits are present, but the last character
         is not a digit.  We then work back from the end of the string
         This case is a tad slower but hopefully rare.
@@ -1771,7 +1771,7 @@ class Canvas(textobject._PDFColorSetter):
     def getCurrentPageContent(self):
         """Return uncompressed contents of current page buffer.
 
-        This is useful in creating test cases and assertions of what
+        This is useful in creating tests cases and assertions of what
         got drawn, without necessarily saving pages to disk"""
         return '\n'.join(self._code)
 
@@ -1808,4 +1808,4 @@ if _instanceEscapePDF:
     Canvas._escape = new.instancemethod(_instanceEscapePDF,None,Canvas)
 
 if __name__ == '__main__':
-    print 'For test scripts, look in tests'
+    print 'For tests scripts, look in tests'

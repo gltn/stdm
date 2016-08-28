@@ -31,7 +31,10 @@ from PyQt4.QtCore import (
 
 from qgis.core import *
 
-from stdm.utils import guess_extension
+from stdm.utils.util import (
+    guess_extension,
+    table_to_profile_name
+)
 
 class NetworkFileManager(QObject):
     """
@@ -44,37 +47,55 @@ class NetworkFileManager(QObject):
         self.fileID = None
         self.sourcePath = None
         self.destinationPath = None
-        self._document_type = ""
+        self._entity_source = ''
+        self._doc_type = ''
         
-    def uploadDocument(self,doc_type, fileinfo):
+    def uploadDocument(self, entity_source, doc_type, fileinfo):
         """
         Upload document in central repository
         """
-        self._document_type = doc_type
-
+        self._entity_source = entity_source
+        self._doc_type = doc_type
         self.fileID = self.generateFileID()
         self.sourcePath = fileinfo.filePath()
-
+        profile_name = table_to_profile_name(self._entity_source)
         root_dir = QDir(self.networkPath)
-        if not root_dir.exists(self._document_type):
-            res = root_dir.mkdir(self._document_type)
+        doc_dir = QDir('{}/{}/{}/{}'.format(
+                self.networkPath,
+                unicode(profile_name).lower(),
+                self._entity_source,
+                unicode(self._doc_type).lower().replace(' ', '_')
+            )
+        )
+        doc_path_str = u'{}/{}/{}/{}'.format(
+            self.networkPath,
+            profile_name.lower(),
+            self._entity_source,
+            self._doc_type.lower().replace(' ', '_')
+        ).lower()
+
+        if not doc_dir.exists():
+            res = root_dir.mkpath(doc_path_str)
             if res:
-                root_doc_type_path = self.networkPath + "/" + self._document_type
+                root_doc_type_path = doc_path_str
+
             else:
                 root_doc_type_path = self.networkPath
 
         else:
-            root_doc_type_path = self.networkPath + "/" + self._document_type
+            root_doc_type_path = doc_path_str
 
-        self.destinationPath = root_doc_type_path + "/" + self.fileID + "."  + \
-                               fileinfo.completeSuffix()
+        self.destinationPath = '{}/{}.{}'.format(
+            root_doc_type_path,
+            self.fileID,
+            fileinfo.completeSuffix()
+        )
 
         srcFile = open(self.sourcePath,'rb')
         destinationFile = open(self.destinationPath,'wb')
         
         #srcLen = self.sourceFile.bytesAvailable()
         totalRead = 0
-        
         while True:
             inbytes = srcFile.read(4096)
             if not inbytes:
@@ -83,7 +104,7 @@ class NetworkFileManager(QObject):
             totalRead += len(inbytes)
             #Raise signal on each block written
             self.emit(SIGNAL("blockWritten(int)"),totalRead)
-            
+
         self.emit(SIGNAL("completed(QString)"),self.fileID)
             
         srcFile.close()
@@ -97,30 +118,24 @@ class NetworkFileManager(QObject):
         """
         pass
 
-    def document_type(self):
-        """
-        Document type
-        """
-        return self._document_type
-
-    def set_document_type(self, doc_type):
-        """
-        Specify the document type.
-        """
-        self._document_type = doc_type
-    
-    def deleteDocument(self, docmodel = None):
+    def deleteDocument(self, docmodel = None, doc_type=None):
         """
         Delete the source document from the central repository.
         """
         if not docmodel is None:
             #Build the path from the model variable values.
-            fileName, fileExt = guess_extension(docmodel.file_name)
-        
+            fileName, fileExt = guess_extension(docmodel.filename)
+            profile_name = table_to_profile_name(docmodel.source_entity)
             #Qt always expects the file separator be be "/" regardless of platform.
-            absPath = self.networkPath + "/" + "%d"%(docmodel.doc_type) + "/" +\
-                      docmodel.doc_identifier + fileExt
-            
+            absPath = '{}/{}/{}/{}/{}{}'.format(
+                self.networkPath,
+                profile_name.lower(),
+                docmodel.source_entity,
+                doc_type.lower().replace(' ', '_'),
+                docmodel.document_identifier,
+                fileExt
+            )
+
             return QFile.remove(absPath)
         
         else:
@@ -139,46 +154,35 @@ class DocumentTransferWorker(QObject):
     blockWrite = pyqtSignal("int")
     complete = pyqtSignal("QString")
     
-    def __init__(self, file_manager, file_info, document_type = "",
-                 parent = None):
+    def __init__(
+            self, file_manager, file_info, entity_source='', doc_type='', parent=None):
         QObject.__init__(self,parent)
         self._file_manager = file_manager
         self._file_info = file_info
-        self._doc_type = document_type
-    
-    @pyqtSlot()    
+        self._entity_source = entity_source
+        self._doc_type = doc_type
+        self.file_uuid = None
+
+    @pyqtSlot()
     def transfer(self):
         """
         Initiate document transfer
         """
         self.connect(self._file_manager, SIGNAL("blockWritten(int)"),self.onBlockWritten)
         self.connect(self._file_manager, SIGNAL("completed(QString)"),self.onWriteComplete)
-        self._file_manager.uploadDocument(self._doc_type, self._file_info)
-        
+        self._file_manager.uploadDocument(
+            self._entity_source, self._doc_type, self._file_info
+        )
+        self.file_uuid = self._file_manager.fileID
+
     def onBlockWritten(self,size):
         """
         Propagate event.
         """
         self.blockWrite.emit(size)
         
-    def onWriteComplete(self):
+    def onWriteComplete(self, file_uuid):
         """
         Propagate event.
         """
-        self.complete.emit(self._file_manager.fileID)
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+        self.complete.emit(file_uuid)

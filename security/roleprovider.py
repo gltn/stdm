@@ -17,8 +17,8 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from stdm.data import STDMDb, Role
-from stdm.utils import *
+from stdm.data.database import STDMDb, Role
+from stdm.utils.util import getIndex
 from exception import SecurityException
 
 from sqlalchemy.sql.expression import text

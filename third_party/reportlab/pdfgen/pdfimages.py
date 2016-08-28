@@ -196,7 +196,7 @@ class PDFImage:
 if __name__=='__main__':
     srcfile = os.path.join(
                 os.path.dirname(reportlab.__file__),
-                'test',
+                'tests',
                 'pythonpowered.gif'
                 )
     assert os.path.isfile(srcfile), 'image not found'

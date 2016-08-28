@@ -22,7 +22,7 @@ from PyQt4.QtGui import (
      QMessageBox
 )
 
-from stdm.data import table_column_names
+from stdm.data.pg_utils import table_column_names
 
 from .ui_composer_data_field import Ui_frmComposerFieldEditor
 
@@ -88,7 +88,6 @@ class ComposerFieldSelector(QWidget, Ui_frmComposerFieldEditor):
             return
         
         columnsNames = table_column_names(dataSourceName)
-        
         if len(columnsNames) == 0:
             return
         

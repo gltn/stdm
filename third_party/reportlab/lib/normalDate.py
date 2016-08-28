@@ -599,7 +599,7 @@ class BusinessDate(NormalDate):
 
 if __name__ == '__main__':
     today = NormalDate()
-    print "NormalDate test:"
+    print "NormalDate tests:"
     print "  Today (%s) is: %s %s" % (today, today.dayOfWeekAbbrev(), today.localeFormat())
     yesterday = today - 1
     print "  Yesterday was: %s %s" % (yesterday.dayOfWeekAbbrev(), yesterday.localeFormat())

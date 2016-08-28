@@ -71,6 +71,7 @@ class MirrorMap(QWidget):
         #self.addLayerBtn.setToolButtonStyle( Qt.ToolButtonTextBesideIcon )
         #self.addLayerBtn.setText("Add current layer")
         self.addLayerBtn.setIcon(QIcon(":/plugins/stdm/images/icons/add.png"))
+
         self.addLayerBtn.clicked.connect(self.tool_add_layer)
         gridLayout.addWidget(self.addLayerBtn, 1, 0, 1, 1)
 
@@ -175,14 +176,20 @@ class MirrorMap(QWidget):
         self.canvas.setRenderFlag(prevFlag)
 
     def onCrsChanged(self):
+
         prevFlag = self.canvas.renderFlag()
         self.canvas.setRenderFlag(False)
+        try:
+            renderer = self.iface.mapCanvas().mapRenderer()
+            self._setRendererCrs(
+                self.canvas.mapRenderer(),
+                self._rendererCrs(renderer)
+            )
+            self.canvas.mapRenderer().setMapUnits(renderer.mapUnits())
 
-        renderer = self.iface.mapCanvas().mapRenderer()
-        self._setRendererCrs( self.canvas.mapRenderer(), self._rendererCrs(renderer))
-        self.canvas.mapRenderer().setMapUnits(renderer.mapUnits())
-
-        self.canvas.setRenderFlag(prevFlag)
+            self.canvas.setRenderFlag(prevFlag)
+        except Exception:
+            pass
 
     def onCrsTransformEnabled(self, enabled):
         prevFlag = self.canvas.renderFlag()

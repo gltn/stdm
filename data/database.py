@@ -32,7 +32,8 @@ from sqlalchemy import (
     Table,
     event,
     func,
-    MetaData
+    MetaData,
+    exc
 )
 from sqlalchemy import (
     Column,
@@ -62,7 +63,7 @@ from geoalchemy2 import Geometry
 
 import stdm.data
 
-metadata=MetaData()
+metadata = MetaData()
 
 #Registry of table names and corresponding mappers
 table_registry = defaultdict(set)
@@ -107,6 +108,7 @@ class Singleton(object):
 class NoPostGISError(Exception):
     """Raised when the PostGIS extension is not installed in the specified
     STDM database."""
+    pass
     
 @Singleton
 class STDMDb(object):
@@ -231,7 +233,10 @@ class Model(object):
     def save(self):            
         db = STDMDb.instance()
         db.session.add(self)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except exc.SQLAlchemyError:
+            db.session.rollback()
             
     def saveMany(self,objects = []):
         '''
@@ -239,29 +244,42 @@ class Model(object):
         '''
         db = STDMDb.instance()
         db.session.add_all(objects)
-        db.session.commit()
-            
+        try:
+            db.session.commit()
+        except exc.SQLAlchemyError:
+            db.session.rollback()
+
     def update(self):
         db = STDMDb.instance()
-        db.session.commit()
+        try:
+            db.session.commit()
+        except exc.SQLAlchemyError:
+            db.session.rollback()
             
     def delete(self):
         db = STDMDb.instance()
         db.session.delete(self)
-        db.session.commit()
-        
+        try:
+            db.session.commit()
+        except exc.SQLAlchemyError:
+            db.session.rollback()
+
     def queryObject(self,args=[]):
         '''
-        The 'args' specifies the attributes/columns that will be returned in the query in a tuple;
+        The 'args' specifies the attributes/columns
+        that will be returned in the query in a tuple;
         Else, the full model object will be returned.
         '''
         db = STDMDb.instance()
         #raise NameError(str(self.__class__))
-        if len(args) == 0:            
-            return db.session.query(self.__class__)
-        
-        else:
-            return db.session.query(*args)
+        try:
+            if len(args) == 0:
+                return db.session.query(self.__class__)
+
+            else:
+                return db.session.query(*args)
+        except exc.SQLAlchemyError:
+            db.session.rollback()
     
     @classmethod  
     def tr(cls,propname):
@@ -285,13 +303,6 @@ class Model(object):
         else:
         '''
         return Model.attrTranslations
-    
-class LookupBase(object):
-    '''
-    Base class for all lookup objects.
-    '''
-    id  = Column(Integer,primary_key = True)
-    name = Column(String(50))
                         
 class Content(Model,Base):
     '''
@@ -316,9 +327,9 @@ class Role(Model,Base):
 
 #Table for mapping the many-to-many association of content item to system roles  
 content_roles_table = Table("content_roles", Base.metadata,
-                            Column('content_base_id',Integer, ForeignKey('content_base.id'), primary_key = True),
-                            Column('role_id',Integer, ForeignKey('role.id'), primary_key = True)
-                            )
+    Column('content_base_id',Integer, ForeignKey('content_base.id'), primary_key = True),
+    Column('role_id',Integer, ForeignKey('role.id'), primary_key = True)
+)
 
 class AdminSpatialUnitSet(Model,Base):
     '''
@@ -355,124 +366,23 @@ class AdminSpatialUnitSet(Model,Base):
             
         return separator.join(reverseCode)
 
-        
-class Enumerator(Model,Base):
-    '''
-    Enumerator model configuration.
-    No additional attributes from the ones in person base class.
-    '''
-    __tablename__ = "enumerator"
-    id = Column(Integer,primary_key = True)
-    Surname = Column("sur_name",String(50))
-    Givennames = Column("given_names",String(50))
-    Identity = Column("identity",Integer)
-    Level = Column("level",String(50))
-    Surveys = relationship("Survey",backref="Enumerator")  
+    def hierarchy_names(self, separator="/"):
+        """
+        Return comma separated names of all administrative units
+        :param separator: A symbol used to separate names.
+        :type separator: String
+        :return: The name of all admin units in a hierarchy
+        :rtype: String
+        """
+        name_list = []
+        name_list.append(self.Name)
 
-class Respondent(Model,Base):
-    '''
-    Respondent model configuration.
-    No additional attributes from the ones in person base class.
-    '''
-    __tablename__ = "respondent"
-    id = Column(Integer,primary_key = True)
-    Surname = Column("sur_name",String(50))
-    Givennames = Column("family_names",String(50))
-    Identity = Column("identity",Integer)
-    Relation = Column("relationship",String(50))
+        parent = self.Parent
+        while parent != None:
+            name_list.append(parent.Name)
+            parent = parent.Parent
 
-class Witness(Model,Base):
-    '''
-    Questionnaire respondent witness.
-    '''
-    __tablename__ = "witness"
-    id = Column(Integer,primary_key = True)
-    RelationshipID = Column("relationship_id",Integer)
-    OtherRelationship = Column("other_relationship",String(50))
-    SurveyID = Column("survey_id",Integer,ForeignKey('survey.id'))
-    
-    @staticmethod
-    def displayMapping():
-        '''
-        Base class override.
-        Returns the dictionary containing the translation mapping for the attributes.
-        '''
-        #baseAttrTranslations = BasePersonMixin.displayMapping()
-        attrTranslations = OrderedDict()
-        attrTranslations["RelationshipID"] = QApplication.translate("DatabaseMapping","Relationship") 
-        attrTranslations["OtherRelationship"] = QApplication.translate("DatabaseMapping","Other Relationship") 
-        
-        return attrTranslations
-    
-class Survey(Model,Base):
-    '''
-    Metadata about the questionnaire interview process.
-    '''
-    __tablename__ = "survey"
-    id = Column(Integer,primary_key = True)
-    Code = Column("code",String(20))
-    EnumerationDate = Column("enumeration_date",Date)  
-    EnumeratorID = Column("enumerator_id",Integer,ForeignKey('enumerator.id'))
-    #Witnesses = relationship("Witness",backref="Survey",cascade="all, delete-orphan")
-    RespondentID = Column("respondent_id",Integer,ForeignKey('respondent.id'))
-    Respondent = relationship("Respondent",uselist = False,single_parent = True,cascade = "all, delete-orphan")
-    
-    @staticmethod
-    def displayMapping():
-        #Display translation mappings
-        attrTranslations = OrderedDict()
-        attrTranslations["id"] = "ID" 
-        attrTranslations["Code"] = QApplication.translate("DatabaseMapping","Code") 
-        attrTranslations["EnumerationDate"] = QApplication.translate("DatabaseMapping","Enumeration Date")
-        attrTranslations["EnumeratorID"] = QApplication.translate("DatabaseMapping","Enumerator")
-        #attrTranslations["RespondentID"] = QApplication.translate("DatabaseMapping","Respondent")
-        
-        return attrTranslations
+        # Reverse the items so that the last item added becomes the prefix of the hierarchy code
+        reverse_name = list(reversed(name_list))
 
-class SupportingDocument(Base, Model):
-    """
-    Mixin class for storing metadata for supporting documents.
-    """
-    __tablename__ = "supporting_document"
-
-    id = Column(Integer, primary_key=True)
-    document_id = Column(String(50), unique=True)
-    filename = Column(String(200))
-    doc_size = Column(Integer)
-    document_type = Column(Integer)
-   
-class SupportsRankingMixin(object):
-    '''
-    Mixin item for classes that supporting ranking of items for a farmer. 
-    '''
-    id = Column(Integer,primary_key=True)
-    Rank = Column("rank",Integer)
-    OtherItem = Column("other_item",String(30))
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-
-            
-            
-            
-            
-            
-            
-        
-        
-        
-        
-        
+        return separator.join(reverse_name)

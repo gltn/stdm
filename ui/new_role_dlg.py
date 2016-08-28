@@ -25,8 +25,9 @@ from PyQt4.QtGui import *
 import sqlalchemy
 
 from ui_new_role import Ui_frmNewRole
-from stdm.data import Role
-from stdm.security import SecurityException,RoleProvider
+from stdm.data.database import Role
+from stdm.security.exception import SecurityException
+from stdm.security.roleprovider import RoleProvider
 
 class newRoleDlg(QDialog, Ui_frmNewRole):
     '''

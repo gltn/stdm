@@ -244,7 +244,7 @@ class PoolEvents(event.Events):
     targets, which will be resolved to the ``.pool`` attribute of the
     given engine or the :class:`.Pool` class::
 
-        engine = create_engine("postgresql://scott:tiger@localhost/test")
+        engine = create_engine("postgresql://scott:tiger@localhost/tests")
 
         # will associate with engine.pool
         event.listen(engine, 'checkout', my_on_checkout)
@@ -409,7 +409,7 @@ class ConnectionEvents(event.Events):
                                                         executemany):
             log.info("Received statement: %s" % statement)
 
-        engine = create_engine('postgresql://scott:tiger@localhost/test')
+        engine = create_engine('postgresql://scott:tiger@localhost/tests')
         event.listen(engine, "before_cursor_execute", before_cursor_execute)
 
     or with a specific :class:`.Connection`::

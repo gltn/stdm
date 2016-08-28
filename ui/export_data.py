@@ -20,33 +20,38 @@ email                : gkahiu@gmail.com
 import sys
 from PyQt4.QtGui import *
 from PyQt4.QtCore import (
-                          Qt,
-                          SIGNAL
-                          )
+    Qt,
+    SIGNAL
+)
 
 import sqlalchemy
 
 from stdm.utils import *
+from stdm.utils.util import getIndex
 from stdm.ui.reports import SqlHighlighter
-from stdm.data import (
-                       process_report_filter,
-                       table_column_names,
-                       unique_column_values,
-                       pg_tables
-                       )
-from stdm.data.importexport import (
-                                    OGRWriter,
-                                    vectorFileDir,
-                                    setVectorFileDir
-                                    )
+from stdm.data.pg_utils import (
+    process_report_filter,
+    table_column_names,
+    unique_column_values,
+    pg_tables
+)
+from stdm.data.importexport.writer import OGRWriter
 
+from stdm.data.importexport import (
+    vectorFileDir,
+    setVectorFileDir
+)
+from stdm.settings import current_profile
+from stdm.utils.util import (
+    profile_user_tables
+)
 from .ui_export_data import Ui_frmExportWizard 
 
 class ExportData(QWizard,Ui_frmExportWizard):
     def __init__(self,parent=None):
         QWizard.__init__(self,parent) 
         self.setupUi(self)  
-               
+        self.curr_profile = current_profile()
         #Event Handlers    
         self.btnDestFile.clicked.connect(self.setDestFile)
         self.lstSrcTab.itemSelectionChanged.connect(self.srcSelectChanged)
@@ -145,12 +150,14 @@ class ExportData(QWizard,Ui_frmExportWizard):
     def loadSourceTables(self):
         #Load all STDM tables
         self.lstSrcTab.clear()
-        tables = pg_tables()   
-             
-        for t in tables:            
+        # tables = pg_tables()
+        tables = profile_user_tables(
+            self.curr_profile
+        )
+        for t in tables.keys():
             tabItem = QListWidgetItem(t,self.lstSrcTab)
             tabItem.setIcon(QIcon(":/plugins/stdm/images/icons/table.png"))
-            self.lstSrcTab.addItem(tabItem)         
+            self.lstSrcTab.addItem(tabItem)
         
     def setDestFile(self):
         #Set the file path to the destination file
@@ -165,7 +172,9 @@ class ExportData(QWizard,Ui_frmExportWizard):
         elif self.rbDXF.isChecked():
             ogrFilter = "DXF (*.dxf)"     
                  
-        destFile = QFileDialog.getSaveFileName(self,"Select Output File",vectorFileDir(),ogrFilter)
+        destFile = QFileDialog.getSaveFileName(
+            self,"Select Output File",vectorFileDir(),ogrFilter
+        )
         
         if destFile != "":
             self.txtExportPath.setText(destFile) 
@@ -351,6 +360,7 @@ class ExportData(QWizard,Ui_frmExportWizard):
         #Error Message Box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
+        msg.setWindowTitle('Data Export Error')
         msg.setText(Message)
         msg.exec_()  
 

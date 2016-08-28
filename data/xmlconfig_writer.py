@@ -19,19 +19,19 @@
  *                                                                         *
  ***************************************************************************/
 """
+from PyQt4.QtGui import *
+
 from xml.etree.ElementTree import ElementTree as ET , Element, SubElement,iselement
 from xml2ddl.xml2html import Xml2Html, xml2ddl
 from xml2ddl.diffxml2ddl import DiffXml2Ddl
 from xml2ddl.xml2ddl import Xml2Ddl, readMergeDict
 from xml2ddl.xml2html import Xml2Html
 import xml.etree.ElementTree as Elt
-from PyQt4.QtGui import *
-
 
 from .configfile_paths import FilePaths
+
 xmlobject=FilePaths()
 xml_doc=xmlobject.setUserXMLFile()
-#xml_doc=xmlobject.XMLFile()
 destPath=xmlobject.SQLFile()
 destHtml=xmlobject.HtmlFile()
 sourcePath=xml_doc

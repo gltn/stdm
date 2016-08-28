@@ -598,7 +598,7 @@ class AttributeImpl(object):
                     try:
                         return dict_[key]
                     except KeyError:
-                        # TODO: no test coverage here.
+                        # TODO: no tests coverage here.
                         raise KeyError(
                             "Deferred loader for attribute "
                             "%r failed to populate "
@@ -1191,7 +1191,7 @@ def backref_listeners(attribute, key, uselist):
         event.listen(attribute, "set",
                      emit_backref_from_scalar_set_event,
                      retval=True, raw=True)
-    # TODO: need coverage in test/orm/ of remove event
+    # TODO: need coverage in tests/orm/ of remove event
     event.listen(attribute, "remove",
                  emit_backref_from_collection_remove_event,
                  retval=True, raw=True)

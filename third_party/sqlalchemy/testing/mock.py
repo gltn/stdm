@@ -17,5 +17,5 @@ else:
         from mock import MagicMock, Mock, call, patch
     except ImportError:
         raise ImportError(
-            "SQLAlchemy's test suite requires the "
+            "SQLAlchemy's tests suite requires the "
             "'mock' library as of 0.8.2.")

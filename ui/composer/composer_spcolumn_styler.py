@@ -19,13 +19,17 @@ email                : gkahiu@gmail.com
 """
 from PyQt4.QtGui import (
     QMessageBox,
+    QPushButton,
     QWidget
 )
 from PyQt4.QtCore import Qt
 
-from qgis.core import QgsSymbolLayerV2Utils
+from qgis.core import (
+    QgsSimpleFillSymbolLayerV2,
+    QgsSymbolLayerV2Utils
+)
 
-from stdm.data import (
+from stdm.data.pg_utils import (
     table_column_names
 )
 
@@ -206,7 +210,7 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         self._dsName = dataSourceName
         self._loadFields()  
         
-    def setSymbolEditor(self,editor):
+    def setSymbolEditor(self, editor):
         """
         Set the widget's symbol editor.
         """
@@ -262,7 +266,7 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         
         return sp_field_mapping
     
-    def applyMapping(self,spatialFieldMapping):
+    def applyMapping(self, spatialFieldMapping):
         """
         Configures the widget to use the specified spatial field mapping.
         """
@@ -272,10 +276,7 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         self._srid = spatialFieldMapping.srid()
         self._geomType = spatialFieldMapping.geometryType()
         self.sb_zoom.setValue(spatialFieldMapping.zoomLevel())
-        
-        if not spatialFieldMapping.symbolLayer() is None:
-            self._symbol_editor.setSymbolLayer(spatialFieldMapping.symbolLayer())
-        
+
     def setLabelField(self,labelField):
         """
         Select field label item.
@@ -314,4 +315,3 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         self.cboLabelField.addItem("")
         
         self.cboLabelField.addItems(nonSpatialCols)
-        

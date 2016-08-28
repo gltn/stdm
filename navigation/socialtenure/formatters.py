@@ -31,8 +31,18 @@ from sqlalchemy import (
     String
 )
 
+from stdm.settings import current_profile
+from stdm.data.configuration import entity_model
 from stdm.ui.stdmdialog import DeclareMapping
-from stdm.utils import getIndex
+from stdm.utils.util import (
+    getIndex,
+    entity_display_columns,
+    profile_spatial_tables,
+    lookup_id_to_value,
+    format_name,
+    profile_lookup_columns,
+    model_display_mapping
+)
 
 from .nodes import (
     BaseSTRNode,
@@ -48,8 +58,10 @@ class STRNodeFormatter(object):
     """
     def __init__(self, config, treeview=None, parentwidget=None):
         self._config = config
+        self.curr_profile = current_profile()
 
         headers = self._config.displayColumns.values()
+
         idx = getIndex(headers, "Id")
         if idx != -1:
             id_ref = headers.pop(idx)
@@ -59,6 +71,7 @@ class STRNodeFormatter(object):
 
         self.rootNode = BaseSTRNode(self._headers, view=treeview,
                                     parentWidget=parentwidget)
+
 
     def setData(self, data):
         """
@@ -91,41 +104,55 @@ class EntityNodeFormatter(STRNodeFormatter):
     Generic formatter for rendering an STR entity's values and dependent nodes.
     """
     def __init__(self, config, treeview, parent=None):
-        from stdm.data import (
-            foreign_key_parent_tables,
-            numeric_varchar_columns,
-            spatial_tables
-        )
+
 
         super(EntityNodeFormatter, self).__init__(config, treeview, parent)
 
-        self._str_ref = "social_tenure_relationship"
+        prefix = self.curr_profile.prefix
+        self._str_ref = str(prefix)+"_social_tenure_relationship"
 
         self._str_title = QApplication.translate("STRFormatterBase",
                                                  "Social Tenure Relationship")
 
-        self._str_model = DeclareMapping.instance().tableMapping(self._str_ref)
-
-        '''
-        Cache for entity supporting document tables.
-        [table_name]:[list of supporting document tables]
-        '''
+        self._str_model, self._str_doc_model = entity_model(
+            self.curr_profile.social_tenure,
+            False,
+            True
+        )
+        # Cache for entity supporting document tables.
+        # [table_name]:[list of supporting document tables]
         self._entity_supporting_doc_tables = {}
 
-        '''
-        Set STR display mapping due to a bug in the 'displayMapping'
-        function
-        '''
         self._str_model_disp_mapping = {}
         if not self._str_model is None:
-            self._str_model_disp_mapping = self._str_model.displayMapping()
+            self._str_model_disp_mapping = model_display_mapping(
+                self._str_model, self.curr_profile.social_tenure
+            )
 
-        self._str_num_char_cols = numeric_varchar_columns(self._str_ref)
-        self._fk_references = foreign_key_parent_tables(self._str_ref)
+        self._fk_references = [
+            (
+                e.entity_relation.child_column,
+                e.entity_relation.parent.name,
+                e.entity_relation.parent_column
+            )
+                for e in
+                self.curr_profile.social_tenure.columns.values()
+                if e.TYPE_INFO == 'FOREIGN_KEY'
+        ]
+
+        self._str_num_char_cols = entity_display_columns(
+            self.curr_profile.social_tenure
+        )
 
         self._current_data_source_fk_ref = self._current_data_source_foreign_key_reference()
-        self._numeric_char_cols = numeric_varchar_columns(config.data_source_name)
-        self._spatial_data_sources = spatial_tables()
+        #numeric_char_cols for entities - party and sp_unit
+
+        self._numeric_char_cols = entity_display_columns(
+            self.curr_profile.entity_by_name(config.data_source_name)
+        )
+
+        self._spatial_data_sources = profile_spatial_tables(self.curr_profile).keys()
+
 
     def _format_display_mapping(self, model, display_cols, filter_cols):
         """
@@ -138,8 +165,10 @@ class EntityNodeFormatter(STRNodeFormatter):
         for c in display_cols.keys():
             if c != "id" and c in filter_cols:
                 if hasattr(model, c):
-                    k = c, c.replace("_", " ").title()
-                    disp_mapping[k] = getattr(model, c)
+                    k = c, format_name(c)
+                    disp_mapping[k] = lookup_id_to_value(
+                        self.curr_profile, c, getattr(model, c)
+                    )
 
         return disp_mapping
 
@@ -193,12 +222,12 @@ class EntityNodeFormatter(STRNodeFormatter):
         if self._current_data_source_fk_ref is None:
             return []
 
-        ent_col, str_col = self._current_data_source_fk_ref[0],\
+        ent_col, str_col = self._current_data_source_fk_ref[0], \
                            self._current_data_source_fk_ref[1]
 
-        return self._models_from_fk_reference(entity_model, ent_col,
-                                              self._str_model,
-                                       str_col)
+        return self._models_from_fk_reference(
+            entity_model, ent_col, self._str_model, str_col
+        )
 
     def is_str_defined(self, entity_model):
         """
@@ -209,6 +238,7 @@ class EntityNodeFormatter(STRNodeFormatter):
         Otherwise False.
         :rtype: bool
         """
+
         str_model = self._related_str_models(entity_model)
 
         if str_model is None:
@@ -228,7 +258,8 @@ class EntityNodeFormatter(STRNodeFormatter):
         :return: Supporting document models.
         :rtype: list
         """
-        from stdm.data import (
+
+        from stdm.data.supporting_documents import (
             supporting_doc_tables,
             document_models
         )
@@ -238,6 +269,7 @@ class EntityNodeFormatter(STRNodeFormatter):
             doc_table_ref = self._entity_supporting_doc_tables[entity_table]
         else:
             doc_tables = supporting_doc_tables(entity_table)
+
             if len(doc_tables) > 0:
                 doc_table_ref = doc_tables[0]
                 self._entity_supporting_doc_tables[entity_table] = doc_table_ref
@@ -250,7 +282,11 @@ class EntityNodeFormatter(STRNodeFormatter):
         if not hasattr(model_obj, 'id'):
             return []
 
-        return document_models(doc_link_table, doc_link_col, model_obj.id)
+        return document_models(
+            self.curr_profile.social_tenure,
+            doc_link_col,
+            model_obj.id
+        )
 
     def _create_str_node(self, parent_node, str_model, **kwargs):
         """
@@ -262,9 +298,6 @@ class EntityNodeFormatter(STRNodeFormatter):
         :return: STR Node
         :rtype: STRNode
         """
-        from stdm.data import (
-            numeric_varchar_columns
-        )
 
         display_mapping = self._format_display_mapping(str_model,
                                                       self._str_model_disp_mapping,
@@ -285,16 +318,16 @@ class EntityNodeFormatter(STRNodeFormatter):
 
                 r_entities = self._models_from_fk_reference(str_model, str_col,
                                                             mod_table, mod_col)
-
-                entity_display_cols = numeric_varchar_columns(mod_table)
+                curr_entity = self.curr_profile.entity_by_name(mod_table)
+                entity_display_cols = entity_display_columns(curr_entity)
 
                 for r in r_entities:
                     dm = self._format_display_mapping(r,
-                                                      r.__class__.displayMapping(),
+                                                      model_display_mapping(r.__class__, curr_entity),
                                                       entity_display_cols)
 
                     node = self._spatial_textual_node(mod_table)
-
+                    mod_table = mod_table.replace(self.curr_profile.prefix, '')
                     entity_node = node(dm, parent=str_node,
                                              header=mod_table.replace('_',
                                                                       ' ').title(),
@@ -392,49 +425,14 @@ class EntityNodeFormatter(STRNodeFormatter):
 
                 else:
                     for s in str_entities:
+
                         str_node = self._create_str_node(entity_node, s,
                                                          isChild=True,
                                                          header=self._str_title)
+
 
             else:
                 #The parent node now refers to STR data so we render accordingly
                 str_node = self._create_str_node(self.rootNode, ed)
 
         return self.rootNode
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    

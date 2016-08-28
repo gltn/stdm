@@ -30,8 +30,8 @@ class AssertRule(object):
         raise NotImplementedError()
 
     def rule_passed(self):
-        """Return True if the last test of this rule passed, False if
-        failed, None if no test was applied."""
+        """Return True if the last tests of this rule passed, False if
+        failed, None if no tests was applied."""
 
         raise NotImplementedError()
 

@@ -295,13 +295,13 @@ class DefaultDialect(interfaces.Dialect):
         tests = [
             # detect plain VARCHAR
             expression.cast(
-                expression.literal_column("'test plain returns'"),
+                expression.literal_column("'tests plain returns'"),
                 sqltypes.VARCHAR(60)
             ),
             # detect if there's an NVARCHAR type with different behavior
             # available
             expression.cast(
-                expression.literal_column("'test unicode returns'"),
+                expression.literal_column("'tests unicode returns'"),
                 sqltypes.Unicode(60)
             ),
         ]

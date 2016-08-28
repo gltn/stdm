@@ -1,9 +1,9 @@
 """
 /***************************************************************************
-Name                 : New STR Wizard  
+Name                 : New STR Wizard
 Description          : Wizard that enables users to define a new social tenure
                        relationship.
-Date                 : 3/July/2013 
+Date                 : 3/July/2013
 copyright            : (C) 2013 by John Gitau
 email                : gkahiu@gmail.com
  ***************************************************************************/
@@ -17,385 +17,1526 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+import logging
 from collections import OrderedDict
-from decimal import Decimal
-import sys
 
+from stdm.data.qtmodels import BaseSTDMTableModel
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from PyQt4.QtWebKit import *
-import sqlalchemy
-from sqlalchemy import Table
 
-from ui_new_str import Ui_frmNewSTR
-from notification import NotificationBar,ERROR,INFO, WARNING
+from sqlalchemy import (
+    func
+)
+
+from notification import NotificationBar, ERROR, INFORMATION
 from sourcedocument import *
 
-from stdm.data import STDMDb, Base, tableCols, UserData, table_searchable_cols
-from stdm.navigation import TreeSummaryLoader,WebSpatialLoader, GMAP_SATELLITE, OSM
+from stdm.data.database import (
+    STDMDb,
+    Base
+)
+
+from stdm.settings import (
+    current_profile
+)
+from stdm.settings.registryconfig import (
+    last_document_path,
+    set_last_document_path
+)
+from stdm.utils.util import (
+    format_name,
+    entity_display_columns,
+    model_obj_display_data
+)
+
+from stdm.data.configuration import entity_model
+
+from stdm.navigation import (
+    TreeSummaryLoader,
+    WebSpatialLoader,
+    GMAP_SATELLITE,
+    OSM
+)
+
 from stdm.utils import *
-from .stdmdialog import  DeclareMapping
+from stdm.utils.util import (
+    lookup_id_to_value,
+    entity_id_to_attr,
+    format_name
+)
+
+from ui_new_str import Ui_frmNewSTR
+
+LOGGER = logging.getLogger('stdm')
 
 class newSTRWiz(QWizard, Ui_frmNewSTR):
-    '''
-    This class handles the listing of locality information
-    '''
-    def __init__(self,plugin):
-        QWizard.__init__(self,plugin.iface.mainWindow())
+    """
+    This class enable users choose party,
+    spatial unit, social tenure, and supporting
+    document to create a social tenure relationship.
+    """
+
+    def __init__(self, plugin, str_edit_model=None):
+        """
+        Initializes the ui file, party, spatial unit, social
+        tenure type, and supporting document pages.
+        It also defines class properties.
+        :param plugin: STDM plugin
+        :type plugin: STDMQGISLoader
+        :returns: None
+        :rtype: NoneType
+        """
+        QWizard.__init__(
+            self, plugin.iface.mainWindow()
+        )
+
         self.setupUi(self)
-        
+        self.plugin = plugin
+        self.setOption(QWizard.IndependentPages, True)
         #STR Variables
-        self.selPerson = None
-        self.selProperty = None
-        self.enjoymentRight = None
-        self.conflict = None
-        
-        #Initialize GUI wizard pages
-        self.mapping=DeclareMapping.instance()
-        self.initPerson()
-        
-        self.initProperty()
-        
-        self.initSTRType()
-       
-        self.init_document_type()
-        
-        self.initSourceDocument()
-        
-        #self.initConflict()
-        
-        #Connect signal when the finish button is clicked
-        btnFinish = self.button(QWizard.FinishButton)
-        
-    def initPerson(self):
-        '''
-        Initialize person config
-        '''
-        self.notifPerson = NotificationBar(self.vlPersonNotif)
-        
-        self._initPersonFilter()
-        
-        #Initialize person worker thread for fetching person objects
-        self.personWorker = PersonWorker(self)
-        self.connect(self.personWorker, SIGNAL("retrieved(PyQt_PyObject)"),self._loadPersonInfo)
-        
-        #Init summary tree loaders
-        self.personTreeLoader = TreeSummaryLoader(self.tvPersonInfo,QApplication.translate("newSTRWiz","Party Information"))
-                
-        #Connect signals
-        QObject.connect(self.cboPersonFilterCols, SIGNAL("currentIndexChanged(int)"),self._updatePersonCompleter)
-        
-        #QObject.connect(self.cboPersonFilterCols, SIGNAL("currentIndexChanged(int)"),self.dataReceieved)
-        
-        #Start background thread
-        self.personWorker.start()
-        
-    def initProperty(self):
-        '''
-        Initialize property config
-        '''
-        self.notifProp = NotificationBar(self.vlPropNotif)
-        self.gpOLTitle = self.gpOpenLayers.title()
-        
-        #Flag for checking whether OpenLayers basemaps have been loaded
-        self.olLoaded = False
-        
-        #Initialize lookup for properties
-        propertyWorker = PropertyWorker(self)
-        self.connect(propertyWorker, SIGNAL("retrieved(PyQt_PyObject)"), self._onPropertiesLoaded)
-        
-        #Connect signals
-        QObject.connect(self.gpOpenLayers, SIGNAL("toggled(bool)"), self._onEnableOLGroupbox)             
-        QObject.connect(self.zoomSlider, SIGNAL("sliderReleased()"), self._onZoomChanged)
-        QObject.connect(self.btnResetMap , SIGNAL("clicked()"), self._onResetMap)
-        
-        #Start background thread
-        propertyWorker.start()   
-        
-        self.propBrowser = WebSpatialLoader(self.propWebView,self)
-        self.connect(self.propBrowser,SIGNAL("loadError(QString)"),self._onPropertyBrowserError)
-        self.connect(self.propBrowser,SIGNAL("loadProgress(int)"),self._onPropertyBrowserLoading)
-        self.connect(self.propBrowser,SIGNAL("loadFinished(bool)"),self._onPropertyBrowserFinished)
-        self.connect(self.propBrowser,SIGNAL("zoomChanged(int)"),self.onMapZoomLevelChanged)
-            
-        #Connect signals
-        QObject.connect(self.rbGMaps, SIGNAL("toggled(bool)"),self.onLoadGMaps)
-        QObject.connect(self.rbOSM, SIGNAL("toggled(bool)"),self.onLoadOSM)                               
-            
-    def initializePage(self, id):
-        '''
-        Initialize summary page based on user selections.
-        '''
-        if id == 5:
+        self.sel_party = []
+        self.sel_spatial_unit = []
+        self.sel_str_type = []
+        self.str_type_data = []
+        self.row = 0 # number of party rows
+        # Current profile instance and properties
+        self.curr_profile = current_profile()
+
+        self.social_tenure = self.curr_profile.social_tenure
+        self.str_type_table = None
+
+        self.party = self.social_tenure.party
+
+        self.spatial_unit = self.social_tenure.spatial_unit
+
+        self.str_type = self.curr_profile.\
+            social_tenure.tenure_type_collection
+
+        self.str_model, self.str_doc_model = entity_model(
+            self.social_tenure, False, True
+        )
+
+        self.party_header = []
+        self.docs_tab_index = None
+        self.docs_tab = None
+        self.doc_types = None
+        self.str_edit_obj = None
+        self.str_doc_edit_obj = None
+        self.updated_doc_obj = None
+        self.updated_str_obj = None
+        self.party_notice = NotificationBar(
+            self.vlPartyNotif
+        )
+        self.spatial_unit_notice = NotificationBar(
+            self.vlSpatialUnitNotif
+        )
+        # Connect signal when the finish
+        # button is clicked
+        btnFinish = self.button(
+            QWizard.FinishButton
+        )
+
+        # For editing STR
+        if str_edit_model is not None:
+            title = QApplication.translate(
+                'newSTRWiz',
+                'Edit Social Tenure Relationship'
+            )
+            self.setWindowTitle(title)
+            self.removePage(0)
+            self.str_edit_obj = str_edit_model.model()
+            self.str_doc_edit_obj = str_edit_model.documents()
+
+    def initializePage(self, page_id):
+        """
+        Initialize summary page based on user
+        selections.
+        :param id: the page id of the wizard
+        :type id: QWizard id
+        :returns: None
+        :rtype: NoneType
+        """
+        if page_id == 0:
+            if self.str_edit_obj is None:
+                self.create_str_type_table()
+                self.init_party_add()
+
+        if page_id == 1:
+            if self.str_edit_obj is None:
+                self.init_spatial_unit_add()
+            else:
+                self.create_str_type_table()
+
+                self.init_party_str_type_edit()
+                self.init_spatial_unit_edit()
+        if page_id == 2:
+            self.init_preview_map()
+
+        if page_id == 3:
+            self.doc_notice = NotificationBar(
+                self.vlSourceDocNotif
+            )
+        if page_id == 4:
+
+            self.init_documents()
+            self.init_document_add()
+            if not self.str_edit_obj is None:
+                self.init_document_edit()
+
+        if page_id == 5:
             self.buildSummary()
-            
-    def initSTRType(self):
-        '''
-        Initialize 'Social Tenure Relationship' GUI controls
-        '''
-        person = self.mapping.tableMapping('check_social_tenure_type')
-        Person = person()
-        strTypeFormatter =Person.queryObject().all()
-        strType=[ids.value for ids in strTypeFormatter]
-        strType.insert(0, " ")
-        self.cboSTRType.insertItems(0,strType)
 
-        self.cboSTRType.setCurrentIndex(-1)
-        
-        self.notifSTR = NotificationBar(self.vlSTRTypeNotif)
-        
-        #Register STR selection field
-        self.frmWizSTRType.registerField("STR_Type",self.cboSTRType)
-    
-    def init_document_type(self):
-        '''
-        Initialize 'Right of Enjoyment' GUI controls
-        '''
-        doc_type_model = self.mapping.tableMapping('check_document_type')
-        Docs = doc_type_model()
-        doc_type_list = Docs.queryObject().all()
-        doc_types = [doc.value for doc in doc_type_list]
-        doc_types.insert(0," ")
-        self.cboDocType.insertItems(0,doc_types)
-        self.cboDocType.setCurrentIndex(-1)
+    def init_party_str_type_edit(self):
+        """
+        Initializes party table with STR type edit.
+        :return: None
+        :rtype: NoneType
+        """
+        party_model_obj = getattr(
+            self.str_edit_obj, self.party.name
+        )
 
-        self.vlSourceDocNotif = NotificationBar(self.vlSourceDocNotif)
-        
-    def initSourceDocument(self):
-        '''
-        Initialize source document page
-        '''
-        #Set currency regular expression and currency prefix
-        rx = QRegExp("^\\d{1,12}(([.]\\d{2})*),(\\d{2})$")
-        rxValidator = QRegExpValidator(rx,self)
-        '''
-        '''
-        self.notifSourceDoc = NotificationBar(self.vlSourceDocNotif)
-        
-        #Set source document manager
-        self.sourceDocManager = SourceDocumentManager()
-        self.sourceDocManager.registerContainer(self.vlDocTitleDeed, DEFAULT_DOCUMENT)
-        self.connect(self.btnAddTitleDeed, SIGNAL("clicked()"),self.onUploadTitleDeed)
+        self.sel_party.append(party_model_obj)
+        str_type_id = self.str_edit_obj.tenure_type
+        entity_config = self._load_entity_config(self.party)
+        party_fk_mapper = self._create_fk_mapper(
+            entity_config, self.partyRecBox, self.party_notice
+        )
 
-    def initConflict(self):
+        vertical_layout = QVBoxLayout()
+        vertical_layout.addWidget(party_fk_mapper)
+
+        self.partyRecBox.setLayout(vertical_layout)
+
+        party_fk_mapper.setEntities(party_model_obj)
+
+        self.init_str_type(
+            party_fk_mapper,
+            str_type_id,
+            0
+        )
+        self.party_signals(party_fk_mapper)
+        self.resize_to_single_row(
+            party_fk_mapper, self.verticalLayout_2
+        )
+
+    def resize_to_single_row(self, fk_mapper, layout, height=265):
+        """
+        Reduce the table to one row.
+        :param fk_mapper: Foreign Key mapper class
+        :type fk_mapper: Object
+        :param layout: layout container of the spacer
+        :type layout: QVBoxLayout
+        :return: None
+        :rtype: NoneType
+        """
+        fk_mapper._tbFKEntity.setMinimumSize(QSize(55, 30))
+        fk_mapper._tbFKEntity.setMaximumSize(QSize(5550, 100))
+        spacer = QSpacerItem(
+            20,
+            height,
+            QSizePolicy.Minimum,
+            QSizePolicy.Expanding
+        )
+        layout.addItem(spacer)
+
+    def init_spatial_unit_edit(self):
+        """
+        Initialize editing for spatial unit page.
+        :return: None
+        :rtype: NoneType
+        """
+        spatial_unit_model_obj = getattr(
+            self.str_edit_obj, self.spatial_unit.name
+        )
+        self.sel_spatial_unit.append(spatial_unit_model_obj)
+
+        entity_config = self._load_entity_config(
+            self.spatial_unit
+        )
+        sp_unit_fk_mapper = self._create_fk_mapper(
+            entity_config,
+            self.spatialUnitRecBox,
+            self.spatial_unit_notice,
+            multi_row=False
+        )
+
+        vertical_layout = QVBoxLayout()
+        vertical_layout.addWidget(
+            sp_unit_fk_mapper
+        )
+
+        self.spatialUnitRecBox.setLayout(
+            vertical_layout
+        )
+
+        sp_unit_fk_mapper.setEntities(
+            spatial_unit_model_obj
+        )
+        self.spatial_unit_signals(
+            sp_unit_fk_mapper
+        )
+        self.resize_to_single_row(
+            sp_unit_fk_mapper,
+            self.verticalLayout_10,
+            220
+        )
+
+    def set_model_obj(self, model_obj, sel_models_cont):
+        """
+        A slot that sets model objects to party
+        and spatial units.
+        :param model_obj: The model object to be added.
+        :type model_obj: SQLAlchemy Model Object
+        :param sel_models_cont: the model container list.
+        :type sel_models_cont: List
+        :return: None
+        :rtype: NoneType
+        """
+        if sel_models_cont == self.sel_party:
+            self.party_notice.clear()
+        if sel_models_cont == self.sel_spatial_unit:
+            self.sel_spatial_unit[:] = []
+        elif not self.social_tenure.multi_party or \
+                not self.str_edit_obj is None:
+            self.sel_party[:] = []
+        sel_models_cont.append(model_obj)
+
+    def erase_table_data(self, table_view):
+        """
+        Clears table rows for a table view.
+        :param table_view: The table view
+        to remove rows from.
+        :type table_view: QTableView
+        :return: None
+        :rtype: NoneType
+        """
+        if table_view.model().rowCount() > 0:
+            table_view.model().rowCount(0)
+            table_view.model().removeRow(0)
+
+    def clear_str_type_data(self, party_table):
+        """
+        Clear existing STR type row if multi-
+        party is not allowed or on editing mode.
+        :param party_table: The party table view
+        :type party_table:QTableView
+        :return:None
+        :rtype: NoneType
+        """
+        #
+        if not self.social_tenure.multi_party or \
+                        self.str_edit_obj is not None:
+                if party_table.model().rowCount() > 0:
+                    self.remove_str_type_row([0])
+
+    def party_signals(self, party_table):
+        """
+        Initializes party signals.
+        :param party_table: The party table view
+        :type party_table: QTableView
+        :return: None
+        :rtype: NoneType
+        """
+        party_table.beforeEntityAdded.connect(
+            lambda model_obj: self.set_model_obj(
+                model_obj, self.sel_party
+            )
+        )
+
+        party_table.afterEntityAdded.connect(
+            lambda model_obj, row: self.init_str_type(
+                party_table, 0, row
+            )
+        )
+
+        # Clear str type table data if multi-party is
+        #  not allowed or on editing mode
+        if not self.social_tenure.multi_party or \
+            self.str_edit_obj is not None:
+            party_table.beforeEntityAdded.connect(
+                lambda : self.erase_table_data(
+                    party_table._tbFKEntity
+                )
+            )
+
+        if self.str_edit_obj is not None:
+            party_table.beforeEntityAdded.connect(
+                lambda: self.erase_table_data(
+                    self.str_type_table
+                )
+            )
+
+        party_table.deletedRows.connect(
+            self.remove_str_type_row
+        )
+
+        party_table.deletedRows.connect(
+            lambda rows: self.remove_model(rows, self.sel_party)
+        )
+
+    def spatial_unit_signals(self, spatial_unit_table):
+        """
+        Initializes spatial unit signal.
+        :param spatial_unit_table: Spatial unit table view.
+        :type spatial_unit_table: QTableView
+        :return: None
+        :rtype: NoneType
+        """
+        spatial_unit_table.beforeEntityAdded.connect(
+            lambda model_obj: self.set_model_obj(
+                model_obj, self.sel_spatial_unit
+            )
+        )
+
+        spatial_unit_table.beforeEntityAdded.connect(
+            self.validate_party_count
+        )
+        spatial_unit_table.afterEntityAdded.connect(
+            self.validate_non_multi_party
+        )
+
+        spatial_unit_table.afterEntityAdded.connect(
+            self.overlayProperty
+        )
+        spatial_unit_table.deletedRows.connect(
+            lambda rows: self.remove_model(
+                rows, self.sel_spatial_unit
+            )
+        )
+
+    def init_party_add(self):
+        """
+        Initialize the party page
+        :returns:None
+        :rtype: NoneType
+        """
+        entity_config = self._load_entity_config(self.party)
+        party_fk_mapper = self._create_fk_mapper(
+            entity_config, self.partyRecBox, self.party_notice
+        )
+
+        vertical_layout = QVBoxLayout()
+        vertical_layout.addWidget(party_fk_mapper)
+
+        self.partyRecBox.setLayout(vertical_layout)
+
+        self.party_signals(party_fk_mapper)
+
+        if not self.social_tenure.multi_party:
+            self.resize_to_single_row(
+                party_fk_mapper, self.verticalLayout_2
+            )
+
+    def init_spatial_unit_add(self):
+        """
+        Initialize the spatial unit page.
+        :returns: None
+        :rtype: NoneType
+        """
+        entity_config = self._load_entity_config(
+            self.spatial_unit
+        )
+        sp_fk_mapper = self._create_fk_mapper(
+            entity_config,
+            self.spatialUnitRecBox,
+            self.spatial_unit_notice,
+            multi_row=False
+        )
+        vertical_layout = QVBoxLayout()
+        vertical_layout.addWidget(sp_fk_mapper)
+
+        self.spatialUnitRecBox.setLayout(vertical_layout)
+
+        self.spatial_unit_signals(sp_fk_mapper)
+        self.resize_to_single_row(
+            sp_fk_mapper, self.verticalLayout_10, 250
+        )
+
+    def remove_model(self, rows, sel_record):
+        """
+        A slot that removes a selected party or
+        spatial unit model list.
+        :param rows: The list of rows removed.
+        :type rows: List
+        :param sel_record: List of selected records
+         from which a model will be removed.
+        :type sel_record: List
+        :returns: None
+        :rtype: NoneType
+        """
+        for row in rows:
+            sel_record.pop(row)
+
+    def remove_str_type_row(self, rows=[0]):
+        """
+        Removes corresponding social tenure type
+        row when a party row is removed.
+        :param rows: Party row position that is removed.
+        :type rows: integer
+        :returns: None
+        :rtype: NoneType
+        """
+        for row in rows:
+            self.str_type_table.model().removeRow(row)
+
+    def copy_party_table(self, row, table_view):
+        """
+        Copy rows from party table view.
+        :param row: The row to be copied
+        :type row: Integer
+        :param table_view: The party table view
+        :type table_view: QTableView
+        :return: List of row data
+        :rtype: List
+        """
+        party_row_data = []
+        model = table_view.model()
+        for col in range(model.columnCount()):
+            party_id_idx = model.index(row, col)
+
+            party_row_data.append(model.data(
+                party_id_idx, Qt.DisplayRole
+            ))
+        return party_row_data
+
+    def add_str_type_data(
+            self,
+            row_data,
+            str_type_id,
+            insert_row
+    ):
+        """
+        Adds str type date into STR Type table view.
+        :param row_data: The table data
+        :type row_data: List
+        :param str_type_id: The str Type ID
+        :type str_type_id: Integer
+        :return:
+        :rtype:
+        """
+        data = [None] + row_data
+        self.str_type_data.append(data)
+        self.str_type_table.add_combobox(str_type_id, insert_row)
+
+        self.str_type_table.model().layoutChanged.emit()
+        self.update_table_view(
+            self.str_type_table, True
+        )
+        self.enable_str_type_combo(insert_row)
+
+    def init_str_type(
+            self, party_table, str_type_id=0, row=0
+    ):
+        """
+        Initialize 'Social Tenure Type page.
+        :param str_type_id: The currently being
+        :param party_table: The party table view.
+        :type party_table: QTableView
+        edited STR type id.
+        :type str_type_id: Integer
+        :param row: The row to copy data to.
+        :type row: Integer
+        :return: None
+        :rtype: NoteType
+        """
+        self.str_type_notice = NotificationBar(
+            self.vlSTRTypeNotif
+        )
+        if self.str_edit_obj is None:
+            insert_row = len(self.sel_party) - 1
+        else:
+            insert_row = 0
+
+        row_data = self.copy_party_table(
+            row, party_table._tbFKEntity
+        )
+
+        self.add_str_type_data(
+            row_data,
+            str_type_id,
+            insert_row
+        )
+
+    def init_document_edit(self):
+        """
+        Initializes the supporting document page.
+        :return: None
+        :rtype: NoneType
+        """
+        if self.str_doc_edit_obj is not None:
+            if len(self.str_doc_edit_obj) > 0:
+
+                for doc_id, doc_objs in self.str_doc_edit_obj.iteritems():
+                    index = self.cboDocType.findData(
+                        doc_id
+                    )
+                    doc_text = self.cboDocType.itemText(index)
+
+                    layout = self.docs_tab.findChild(
+                        QVBoxLayout, 'layout_' + doc_text
+                    )
+
+                    self.sourceDocManager.registerContainer(
+                        layout, doc_id
+                    )
+                    for doc_obj in doc_objs:
+                        self.sourceDocManager.insertDocFromModel(
+                            doc_obj, doc_id
+                        )
+
+    def init_documents(self):
+        """
+        Initializes the document type combobox by
+        populating data.
+        :return: None
+        :rtype: NoneType
+        """
+        self.sourceDocManager = SourceDocumentManager(
+            self.social_tenure.supporting_doc, self.str_doc_model, self
+        )
+        doc_entity = self.social_tenure. \
+            supporting_doc.document_type_entity
+
+        doc_type_model = entity_model(doc_entity)
+
+        docs = doc_type_model()
+        doc_type_list = docs.queryObject().all()
+        self.doc_types = [(doc.id, doc.value) for doc in doc_type_list]
+        self.doc_types = OrderedDict(self.doc_types)
+        self.docs_tab = QTabWidget()
+        self.docs_tab_index = OrderedDict()
+
+        for i, (id, doc) in enumerate(self.doc_types.iteritems()):
+            self.docs_tab_index[doc] = i
+            tab_widget = QWidget()
+            tab_widget.setObjectName(doc)
+
+            cont_layout = QVBoxLayout(tab_widget)
+            cont_layout.setObjectName('widget_layout_' + doc)
+            scrollArea = QScrollArea(tab_widget)
+            scrollArea.setFrameShape(QFrame.NoFrame)
+            scrollArea_contents = QWidget()
+            scrollArea_contents.setObjectName(
+                'tab_scroll_area_' + doc
+            )
+
+            tab_layout = QVBoxLayout(scrollArea_contents)
+            tab_layout.setObjectName('layout_' + doc)
+
+            scrollArea.setWidgetResizable(True)
+
+            scrollArea.setWidget(scrollArea_contents)
+            cont_layout.addWidget(scrollArea)
+
+            self.docs_tab.addTab(tab_widget, doc)
+            self.cboDocType.addItem(doc, id)
+
+        self.suppDocumentBox.addWidget(self.docs_tab, 1)
+
+        self.cboDocType.currentIndexChanged.connect(
+            self.init_document_add
+        )
+        self.cboDocType.currentIndexChanged.connect(
+            self.match_doc_combo_to_tab
+        )
+        self.docs_tab.currentChanged.connect(
+            self.match_doc_tab_to_combo
+        )
+
+        self.btnAddDocument.clicked.connect(
+            self.on_upload_document
+        )
+
+    def match_doc_combo_to_tab(self):
+        """
+        Changes the active tab based on the
+        selected value of document type combobox.
+        :return: None
+        :rtype: NoneType
+        """
+        combo_text = self.cboDocType.currentText()
+        if combo_text is not None and len(combo_text) > 0:
+            index = self.docs_tab_index[combo_text]
+            self.docs_tab.setCurrentIndex(index)
+
+    def match_doc_tab_to_combo(self):
+        """
+        Changes the document type combobox value based on the
+        selected tab.
+        :return: None
+        :rtype: NoneType
+        """
+        doc_tab_index = self.docs_tab.currentIndex()
+        self.cboDocType.setCurrentIndex(doc_tab_index)
+
+    def init_document_add(self):
+        """
+        Initialize the supporting document page.
+        :return: None
+        :rtype: NoneType
+        """
+        doc_text = self.cboDocType.currentText()
+        cbo_index = self.cboDocType.currentIndex()
+        doc_id = self.cboDocType.itemData(cbo_index)
+        layout = self.docs_tab.findChild(
+            QVBoxLayout, 'layout_' + doc_text
+        )
+
+        self.sourceDocManager.registerContainer(
+            layout, doc_id
+        )
+
+    def on_upload_document(self):
         '''
-        Initialize 'Conflict' GUI controls
+        Slot raised when the user clicks
+        to upload a title deed
         '''
-        #loadComboSelections(self.cboConflictOccurrence, CheckConflictState) 
-        
-        self.notifConflict = NotificationBar(self.vlConflictNotif,3000)
-        
+        document_str = QApplication.translate(
+            "newSTRWiz",
+            "Specify the Document File Location"
+        )
+
+        documents = self.selectSourceDocumentDialog(document_str)
+
+        cbo_index = self.cboDocType.currentIndex()
+        doc_id = self.cboDocType.itemData(cbo_index)
+        party_count = len(self.sel_party)
+
+        for doc in documents:
+            self.sourceDocManager.insertDocumentFromFile(
+                doc,
+                doc_id,
+                self.social_tenure,
+                party_count
+            )
+        # Set last path
+        if len(documents) > 0:
+            doc = documents[0]
+            fi = QFileInfo(doc)
+            dir_path = fi.absolutePath()
+            set_last_document_path(dir_path)
+
+    def selectSourceDocumentDialog(self, title):
+        '''
+        Displays a file dialog for a user
+        to specify a source document
+        '''
+
+        #Get last path for supporting documents
+        last_path = last_document_path()
+        if last_path is None:
+            last_path = '/home'
+
+        files = QFileDialog.getOpenFileNames(
+            self,
+            title,
+            last_path,
+            "Source Documents (*.jpg *.jpeg *.png *.bmp *.tiff *.svg)"
+        )
+        return files
+
+
+
+    def _load_entity_config(self, entity):
+        """
+        Creates an EntityConfig object from entity.
+        :param entity: The entity object
+        :type entity: Object
+        """
+        table_display_name = format_name(entity.short_name)
+        table_name = entity.name
+        model = entity_model(entity)
+
+        if model is not None:
+            return EntityConfig(
+                title=table_display_name,
+                data_source=table_name,
+                model=model,
+                expression_builder=False,
+                entity_selector=None
+            )
+        else:
+            return None
+
+    def _create_fk_mapper(
+            self, config, parent, notif_bar, multi_row=True
+    ):
+        """
+        Creates the forign key mapper object.
+        :param config: Entity configuration
+        :type config: Object
+        :param parent: Container of the mapper
+        :type parent: QWidget
+        :param notif_bar: The notification bar
+        :type notif_bar: QVBLayout
+        :param multi_row: Boolean allowing muti-rows
+        in the tableview.
+        :type multi_row: Boolean
+        :return:
+        :rtype:
+        """
+        from .foreign_key_mapper import ForeignKeyMapper
+        fk_mapper = ForeignKeyMapper(config.ds_entity, parent, notif_bar)
+        fk_mapper.setDatabaseModel(config.model())
+        fk_mapper.setSupportsList(multi_row)
+        fk_mapper.setDeleteonRemove(False)
+        fk_mapper.setNotificationBar(notif_bar)
+
+        return fk_mapper
+
+    def create_str_type_table(self):
+        """
+        Creates social tenure type table that is composed
+        of each selected party rows with a combobox for
+        social tenure type.
+        :param parent:  The parent of the tableview
+        :type parent: QWidget
+        :param container: The layout that holds the parent
+        :type container: QVBoxLayout
+        :param table_data: The table data that is composed
+            of the added party record. It is empty when
+            the method is called. But gets populated inside
+            the model.
+        :type table_data: List
+        :param headers: Header of the tableview
+        :type headers: List
+        :return: QTableView
+        :rtype: QTableView
+        """
+        headers = self.add_str_type_headers()
+
+        self.str_type_table = FreezeTableWidget(
+            self.str_type_data, headers, self.STRTypeWidget
+        )
+        self.str_type_table.setEditTriggers(
+            QAbstractItemView.NoEditTriggers
+        )
+
+        self.STRTypePartyBox.setSpacing(4)
+        self.STRTypePartyBox.setMargin(5)
+        grid_layout = QGridLayout(self.STRTypeWidget)
+        grid_layout.setHorizontalSpacing(5)
+        grid_layout.setColumnStretch(4, 5)
+        if len(self.sel_party) < 1:
+            self.STRTypePartyBox.addLayout(grid_layout)
+            self.STRTypePartyBox.addWidget(self.str_type_table)
+
+    def update_table_view(self, table_view, str_type):
+        """
+        Updates a tableview by resizing row and headers
+        to content size and by hiding id columns
+        :param table_view: The table view to be updated.
+        :type table_view: QTableView
+        :param str_type: A boolean that sets if it is
+        for str type table or not.
+        :type str_type: Boolean
+        :return: None
+        :rtype: NoneType
+        """
+        # show grid
+        table_view.setShowGrid(True)
+        # set column width to fit contents
+        table_view.resizeColumnsToContents()
+        # set row height
+        table_view.resizeRowsToContents()
+        # enable sorting
+        table_view.setSortingEnabled(False)
+        if str_type:
+            table_view.hideColumn(1)
+        else:
+            table_view.hideColumn(0)
+
+    def add_str_type_headers(self):
+        """
+        Adds headers data for tableview columns. The
+        headers comes from the selected entity.
+        :param entity: The entity for which the table
+        header is created for.
+        :type entity: Entity Object
+        :param table_data: The table data of the table view.
+        :type table_data: List
+        :param tableview: The tableview in which the header
+        is added in.
+        :type tableview: QTableView
+        :param str_type: A boolean whether the header is for
+        str_type or not.
+        :type str_type: Boolean
+        :return: List of Table headers
+        :rtype: List
+        """
+        db_model = entity_model(self.party, True)
+        headers = []
+        #Load headers
+        if db_model is not None:
+            entity_display_columns(self.party)
+            # Append str type if the method
+            # is used for str_type
+            str_type_header = QApplication.translate(
+                'newSTRWiz', 'Social Tenure Type'
+            )
+            #First (ID) column will always be hidden
+            headers.append(str_type_header)
+
+            for col in entity_display_columns(self.party):
+                headers.append(format_name(col))
+
+            return headers
+
+
+    def get_party_str_type_data(self):
+        """
+        Gets party and str_type data from str_type
+        page (page 3 of the wizard). It uses
+        get_table_data() method.
+        :return: A list containing a list of ids of
+        the selected str related table or str_type value.
+        :rtype: List
+        """
+        str_types = []
+        frozen_table = self.str_type_table.frozen_table_view
+        combo_boxes = frozen_table.findChildren(QComboBox)
+
+        for combo in combo_boxes:
+            str_type = combo.currentText()
+            str_types.append(str_type)
+
+        db_model = entity_model(self.str_type, True)
+        db_obj = db_model()
+        for sel_value in str_types:
+            str_query = db_obj.queryObject().filter(
+                db_model.value == sel_value
+            ).all()
+            if len(str_query) > 0:
+                sel_str_type_id = getattr(
+                    str_query[0],
+                    'id',
+                    None
+                )
+                self.sel_str_type.append(sel_str_type_id)
+
+        return str_types
+
+    def enable_str_type_combo(self, row):
+        """
+        Makes the STR Type combobox editable.
+        :param row: The row of STR Type combobox
+        :type row: Integer
+        :return: None
+        :rtype: NoneType
+        """
+        model = self.str_type_table.frozen_table_view.model()
+        self.str_type_table.frozen_table_view.\
+            openPersistentEditor(
+            model.index(row, 0)
+        )
+
+    def validate_party_count(self, spatial_unit_obj):
+        """
+        Validates the number of party assigned to a spatial unt.
+        :param spatial_unit_obj: Spatial unit model object
+        :type spatial_unit_obj: SQL Alchemy Model Object
+        :return: True if the count is ok and false if not.
+        :rtype: Boolean
+        """
+        from .foreign_key_mapper import ForeignKeyMapper
+        # Get entity browser notification bar
+        fk_mapper = self.sender()
+        browser_notif = None
+        if isinstance(fk_mapper, ForeignKeyMapper):
+            # Insert error in entity browser too
+            browser_notif = NotificationBar(
+                fk_mapper._entitySelector.vlNotification
+            )
+
+            layout = fk_mapper._entitySelector.vlNotification
+
+            for i in reversed(range(layout.count())):
+                notif = layout.itemAt(i).widget()
+                for lbl in notif.findChildren(QWidget):
+                    layout.removeWidget(lbl)
+                    lbl.setVisible(False)
+                    lbl.deleteLater()
+
+                notif.setParent(None)
+
+
+        usage_count = self.spatial_unit_usage_count(
+            spatial_unit_obj
+        )
+
+        self.spatial_unit_notice.clear()
+
+        # If entry is found, show error and return
+        if usage_count > 0:
+            if self.social_tenure.multi_party:
+                if usage_count == 1:
+                    ocup = ' party.'
+                else:
+                    ocup = ' parties.'
+                msg = QApplication.translate(
+                    "newSTRWiz",
+                    'This {} has already been assigned to {}{}'.format(
+                        format_name(
+                            self.spatial_unit.short_name
+                        ),
+                        str(usage_count),
+                        ocup
+                    )
+                )
+                self.spatial_unit_notice.insertNotification(
+                    msg, INFORMATION
+                )
+                return True
+            else:
+                spatial_unit = format_name(
+                    self.spatial_unit.short_name
+                )
+                party = format_name(
+                    self.party.short_name
+                )
+                msg = QApplication.translate(
+                    "newSTRWiz",
+                    'Unfortunately, this {} has already been '
+                    'assigned to a {}.'.format(spatial_unit, party)
+                )
+                self.spatial_unit_notice.insertNotification(
+                    msg, ERROR
+                )
+
+                if isinstance(fk_mapper, ForeignKeyMapper):
+                    if browser_notif is not None:
+                        browser_notif.insertErrorNotification(msg)
+                return False
+        else:
+            return True
+
+    def validate_non_multi_party(self, spatial_unit_obj):
+        """
+        Removes added row of spatial unit if the record
+        is already linked to another party.
+        :param spatial_unit_obj:The spatial unit model object
+        :type spatial_unit_obj: SQLAlchemy model Object
+        :return: None
+        :rtype: NoneType
+        """
+        if not self.social_tenure.multi_party:
+            usage_count = self.spatial_unit_usage_count(
+                spatial_unit_obj
+            )
+
+            if usage_count > 0:
+                fk_mapper = self.sender()
+                self.erase_table_data(
+                    fk_mapper._tbFKEntity
+                )
+                self.remove_model(
+                    [0], self.sel_spatial_unit
+                )
+
+    def spatial_unit_usage_count(self, model_obj):
+        """
+        Gets the count of spatial unit usage in the database.
+        :param model_obj: Spatial unit model object
+        :type model_obj: SQLAlchemy model Object
+        :return:
+        :rtype:
+        """
+        # returns the number of entries for a specific parcel.
+        str_obj = self.str_model()
+        usage_count = str_obj.queryObject(
+            [func.count().label('spatial_unit_count')]
+        ).filter(
+            self.str_model.spatial_unit_id == model_obj.id
+        ).first()
+
+        return usage_count.spatial_unit_count
+
+
     def buildSummary(self):
-        '''
-        Display summary information.
-        '''
-        personMapping = self._mapPersonAttributes(self.selPerson)
-        propertyMapping = self._mapPropertyAttributes(self.selProperty)
-        STRMapping = self._mapSTRTypeSelection()
-        
-        #Load summary information in the tree view
-        summaryTreeLoader = TreeSummaryLoader(self.twSTRSummary)
-        summaryTreeLoader.addCollection(personMapping, QApplication.translate("newSTRWiz","Party Information"),
-                                             ":/plugins/stdm/images/icons/user.png")    
-        
-        summaryTreeLoader.addCollection(propertyMapping, QApplication.translate("newSTRWiz","Spatial Unit Information"),
-                                             ":/plugins/stdm/images/icons/property.png")
-                                             
-        summaryTreeLoader.addCollection(STRMapping, QApplication.translate("newSTRWiz","Social Tenure Relationship Information"), 
-                                             ":/plugins/stdm/images/icons/social_tenure.png")    
+        """
+        Display summary information in the tree view.
+        :return: None
+        :rtype: NoneType
+        """
+        summaryTreeLoader = TreeSummaryLoader(
+            self.twSTRSummary
+        )
 
-        #Check the source documents based on the type of property
-        srcDocMapping = self.sourceDocManager.attributeMapping()
+        sel_str_types = self.get_party_str_type_data()
+        # Add each str type next to each party.
+        for q_obj, item in zip(self.sel_party, sel_str_types):
+            party_mapping = model_obj_display_data(
+                q_obj, self.party, self.curr_profile
+            )
 
-        summaryTreeLoader.addCollection(srcDocMapping, QApplication.translate("newSTRWiz","Source Documents"), 
-                                             ":/plugins/stdm/images/icons/attachment.png") 
+            summaryTreeLoader.addCollection(
+                party_mapping,
+                QApplication.translate(
+                    "newSTRWiz","Party Information"),
+                ":/plugins/stdm/images/icons/user.png"
+            )
+
+            str_mapping = self.map_str_type(item)
+            summaryTreeLoader.addCollection(
+                str_mapping,
+                QApplication.translate(
+                    "newSTRWiz",
+                    "Social Tenure Relationship Information"),
+                ":/plugins/stdm/images/icons/social_tenure.png"
+            )
+
+        for q_obj in self.sel_spatial_unit:
+            spatial_unit_mapping = model_obj_display_data(
+                q_obj, self.spatial_unit, self.curr_profile
+            )
+
+            summaryTreeLoader.addCollection(
+                spatial_unit_mapping,
+                QApplication.translate(
+                    "newSTRWiz", "Spatial Unit Information"),
+                ":/plugins/stdm/images/icons/property.png"
+            )
+
+        if self.str_edit_obj is None:
+            #Check the source documents based on the type of property
+            src_doc_mapping = self.sourceDocManager.attributeMapping()
+        else:
+            src_doc_mapping = self.sourceDocManager.attributeMapping(True)
+        summaryTreeLoader.addCollection(
+            src_doc_mapping,
+            QApplication.translate(
+                "newSTRWiz","Source Documents"),
+            ":/plugins/stdm/images/icons/attachment.png"
+        )
       
         summaryTreeLoader.display()  
-    
+
+
     def validateCurrentPage(self):
-        '''
-        Validate the current page before proceeding to the next one
-        '''
+        """
+        Validate the current page before
+        proceeding to the next one and gets and 
+        sets data from each page so that it can be used
+        in on_create_str.
+        :return: None
+        :rtype: NoneType
+        """
         isValid = True
         currPageIndex = self.currentId()       
         
         #Validate person information
         if currPageIndex == 1:
-            if self.selPerson == None:
-                msg = QApplication.translate("newSTRWiz", 
-                                             "Please choose a person for whom you are defining the social tenure relationship for.")
-                self.notifPerson.clear()
-                self.notifPerson.insertNotification(msg, ERROR)
+
+            if len(self.sel_party) == 0:
+                msg = QApplication.translate(
+                    "newSTRWiz",
+                    "Please choose a party for whom you are "
+                    "defining the social tenure relationship for."
+                )
+
+                self.party_notice.clear()
+                self.party_notice.insertNotification(msg, ERROR)
                 isValid = False
-        
+
         #Validate property information
         if currPageIndex == 2:
-            if self.selProperty == None:
-                    msg = QApplication.translate("newSTRWiz", 
-                                                 "Please specify the property to reference. Use the filter capability below.")
-                    self.notifProp.clear()
-                    self.notifProp.insertNotification(msg, ERROR)
-                    isValid = False
-        
-        #Validate STR   
+
+            if len(self.sel_spatial_unit) == 0:
+                msg = QApplication.translate(
+                    "newSTRWiz",
+                    "Please add a spatial unit using the Add button."
+                )
+                self.spatial_unit_notice.clear()
+                self.spatial_unit_notice.insertNotification(
+                    msg, ERROR
+                )
+                isValid = False
+            if len(self.sel_spatial_unit) > 0:
+                # Validate on editing
+                if self.str_edit_obj is not None:
+                    if self.str_edit_obj.spatial_unit_id != \
+                            self.sel_spatial_unit[0].id:
+                        unoccupied = self.validate_party_count(
+                            self.sel_spatial_unit[0]
+                        )
+                        if not unoccupied:
+                            isValid = False
+                # Validate on adding
+                else:
+                    unoccupied = self.validate_party_count(
+                        self.sel_spatial_unit[0]
+                    )
+                    if not unoccupied:
+                        isValid = False
+
+
+        #Validate STR Type
         if currPageIndex == 3:
             #Get current selected index
-            currIndex = self.cboSTRType.currentIndex()
-            if currIndex ==-1:
-                msg = QApplication.translate("newSTRWiz", 
-                                                 "Please specify the social tenure relationship type.")     
-                self.notifSTR.clear()
-                self.notifSTR.insertErrorNotification(msg)
+            str_types = []
+            if self.get_party_str_type_data() is not None:
+                str_types = self.get_party_str_type_data()
+
+
+            if None in str_types or ' ' in str_types or len(str_types) < 1:
+                msg = QApplication.translate(
+                    'newSTRWiz',
+                    'Please select an item from the drop down '
+                    'menu under each cells in Social Tenure Type column.'
+                )
+                self.str_type_notice.clear()
+                self.str_type_notice.insertErrorNotification(msg)
                 isValid = False
 
-        #Validate source document    
-        if currPageIndex == 4:
-            currIndex = self.cboDocType.currentIndex()
-            if currIndex ==-1:
-                msg = QApplication.translate("newSTRWiz",
-                                                 "Please select document type from the list")
-                self.notifSourceDoc.clear()
-                self.notifSourceDoc.insertErrorNotification(msg)
+
+            if len(self.sel_party) > 1:
+                self.doc_notice.clear()
+                msg = QApplication.translate(
+                    'newSTRWiz',
+                    'For each document uploaded, a copy '
+                    'will be made based on the number of parties.'
+                )
+                self.doc_notice.insertNotification(msg, INFORMATION)
 
         if currPageIndex == 5:
-            isValid = self.onCreateSTR()
+            isValid = self.commit_str()
         return isValid
-    
-    def onCreateSTR(self):
-        '''
-        Slot raised when the user clicks on Finish button in order to create a new STR entry.
-        '''
-        isValid = True
-        
-        #Create a progress dialog
-        progDialog = QProgressDialog(self)
-        progDialog.setWindowTitle(QApplication.translate("newSTRWiz", "Creating New STR"))
-        progDialog.setRange(0, 7)
-        progDialog.show()
 
-        socialTenureRel = self.mapping.tableMapping('social_tenure_relationship')
-        str_relation_table = self.mapping.tableMapping('str_relations')
-        STR_relation = str_relation_table()
+
+    def on_add_str(self, progress):
+        """
+        Adds new STR record into the database
+        with a supporting document record, if uploaded.
+        :param progress: The progressbar
+        :type progress: QProgressDialog
+        :return: None
+        :rtype: NoneType
+        """
+        _str_obj = self.str_model()
+        str_objs = []
+        index = 4
+        progress.setValue(3)
+        # Social tenure and supporting document insertion
+        # The code below is have a workaround to enable
+        # batch supporting documents without affecting single
+        # party upload. The reason a hack was needed is,
+        # whenever a document is inserted in a normal way,
+        # duplicate entry is added to the database.
+        no_of_party = len(self.sel_party)
+        for j, (sel_party, str_type_id) in enumerate(
+                zip(self.sel_party, self.sel_str_type)
+        ):
+            # get all model objects
+            doc_objs = self.sourceDocManager.model_objects()
+            # get the number of unique documents.
+            number_of_docs = len(doc_objs) / no_of_party
+
+            str_obj = self.str_model(
+                party_id=sel_party.id,
+                spatial_unit_id=self.sel_spatial_unit[0].id,
+                tenure_type=str_type_id
+            )
+            # Insert Supporting Document if a
+            # supporting document is uploaded.
+            if len(doc_objs) > 0:
+                # # loop through each document objects
+                # loop per each number of documents
+                for k in range(number_of_docs):
+                    # The number of jumps (to avoid duplication) when
+                    # looping though document objects
+                    loop_increment = (k * no_of_party) + j
+                    # append into the str obj
+                    str_obj.documents.append(
+                        doc_objs[loop_increment]
+                    )
+                    
+            str_objs.append(str_obj)
+            index = index + 1
+            progress.setValue(index)
+        _str_obj.saveMany(str_objs)
+
+    def on_edit_str(self, progress):
+        """
+         Adds edits a selected STR record
+         with a supporting document record, if uploaded.
+         :param progress: The progressbar
+         :type progress: QProgressDialog
+         :return: None
+         :rtype: NoneType
+         """
+        _str_obj = self.str_model()
+
+        progress.setValue(3)
+
+        str_edit_obj = _str_obj.queryObject().filter(
+            self.str_model.id == self.str_edit_obj.id
+        ).first()
+
+        str_edit_obj.party_id=self.sel_party[0].id,
+        str_edit_obj.spatial_unit_id=self.sel_spatial_unit[0].id,
+        str_edit_obj.tenure_type=self.sel_str_type[0]
+
+        progress.setValue(5)
+        added_doc_objs = self.sourceDocManager.model_objects()
+
+        self.str_doc_edit_obj = [obj for obj in sum(self.str_doc_edit_obj.values(), [])]
+
+        new_doc_objs = list(set(added_doc_objs) - set(self.str_doc_edit_obj))
+
+        self.updated_str_obj = str_edit_obj
+        # Insert Supporting Document if a new
+        # supporting document is uploaded.
+        if len(new_doc_objs) > 0:
+
+            # looping though newly added objects list
+            for doc_obj in new_doc_objs:
+                # append into the str edit obj
+                str_edit_obj.documents.append(
+                    doc_obj
+                )
+        progress.setValue(7)
+
+        str_edit_obj.update()
+
+        self.updated_str_obj = str_edit_obj
+
+        progress.setValue(10)
+
+        progress.hide()
+
+    def commit_str(self):
+        """
+        Slot raised when the user clicks on Finish
+        button in order to create a new STR entry.
+        :return: None
+        :rtype: NoneType
+        """
+        isValid = True
+        #Create a progress dialog
+        prog_dialog = QProgressDialog(self)
+        prog_dialog.setWindowTitle(
+            QApplication.translate(
+                "newSTRWiz",
+                "Creating New STR"
+            )
+        )
+
 
         try:
-            progDialog.setValue(1)
-            socialTenure = socialTenureRel()
-            socialTenure.party = self.selPerson.id
-            progDialog.setValue(2)
-            socialTenure.spatial_unit = self.selProperty.id
-            progDialog.setValue(3)
-            
-            socialTenure.social_tenure_type = unicode(self.cboSTRType.currentText())
-            progDialog.setValue(6)
 
-            """
-            Save new STR relations and supporting documentation
-            """
-            socialTenure.save()
-            model_objs = self.sourceDocManager.model_objects()
+            if self.str_edit_obj is None:
+                prog_dialog.setRange(0, 4 + len(self.sel_party))
+                prog_dialog.show()
+                self.on_add_str(prog_dialog)
+            else:
+                prog_dialog.setRange(0, 10)
+                prog_dialog.show()
+                self.on_edit_str(prog_dialog)
 
-            if len(model_objs) > 0:
-                for model_obj in model_objs:
-                    model_obj.save()
-                    STR_relation.social_tenure_id = socialTenure.id
-                    STR_relation.source_doc_id = model_obj.id
-                    STR_relation.save()
-
-            progDialog.setValue(7)
-
-            strMsg = unicode(QApplication.translate("newSTRWiz",
-                                            "The social tenure relationship has been successfully created!"))
-            QMessageBox.information(self, QApplication.translate("newSTRWiz", "STR Creation"),
-                                    strMsg)
+            mode = 'created'
+            if self.str_edit_obj is not None:
+                mode = 'updated'
+            strMsg = unicode(QApplication.translate(
+                "newSTRWiz",
+                "The social tenure relationship has "
+                "been successfully {}!".format(mode)
+            ))
+            QMessageBox.information(
+                self, QApplication.translate(
+                    "newSTRWiz", "Social Tenure Relationship"
+                ),
+                strMsg
+            )
 
         except sqlalchemy.exc.OperationalError as oe:
             errMsg = oe.message
-            QMessageBox.critical(self, QApplication.translate("newSTRWiz", "Unexpected Error"),
-                                 errMsg)
-            progDialog.hide()
+            QMessageBox.critical(
+                self,
+                QApplication.translate(
+                    "newSTRWiz", "Unexpected Error"
+                ),
+                errMsg
+            )
+            prog_dialog.hide()
             isValid = False
 
         except sqlalchemy.exc.IntegrityError as ie:
             errMsg = ie.message
-            QMessageBox.critical(self, QApplication.translate("newSTRWiz", "Duplicate Relationship Error"),errMsg)
-            progDialog.hide()
+            QMessageBox.critical(
+                self,
+                QApplication.translate(
+                    "newSTRWiz",
+                    "Duplicate Relationship Error"
+                ),
+                errMsg
+            )
+            prog_dialog.hide()
             isValid = False
-            
+
         except Exception as e:
-            errMsg = str(e)
-            QMessageBox.critical(self, QApplication.translate("newSTRWiz", "Unexpected Error"),errMsg)
-            
+            errMsg = unicode(e)
+            QMessageBox.critical(
+                self,
+                QApplication.translate(
+                    'newSTRWiz','Unexpected Error'
+                ),
+                errMsg
+            )
+
             isValid = False
         finally:
             STDMDb.instance().session.rollback()
-            progDialog.hide()
+            prog_dialog.hide()
 
         return isValid
-            
-    def _loadPersonInfo(self,persons):
-        '''
-        Load person objects
-        '''
-        self.persons = persons 
-        self._updatePersonCompleter(0)
+
+    def on_property_browser_error(self, err):
+        """
+        Slot raised when an error occurs when
+        loading items in the property browser
+        :param err: The error message to be displayed
+        :type err: QString
+        :return: None
+        :rtype: NoneType
+        """
+        self.spatial_unit_notice.clear()
+        self.spatial_unit_notice.insertNotification(
+            err, ERROR
+        )
         
-    def _onPropertiesLoaded(self,propids):
-        '''
-        Slot raised once the property worker has finished retrieving the property IDs.
-        Creates a completer and populates it with the property IDs.
-        '''
-        #Get the items in a tuple and put them in a list
-        
-        propertyIds = [str(pid[0]) for pid in propids]
-       
-        #Configure completer   
-        propCompleter = QCompleter(propertyIds,self)         
-        propCompleter.setCaseSensitivity(Qt.CaseInsensitive)
-        propCompleter.setCompletionMode(QCompleter.PopupCompletion)
-        self.txtPropID.setCompleter(propCompleter)  
-        
-        #Connect 'activated' slot for the completer to load property information
-        self.connect(propCompleter, SIGNAL("activated(const QString&)"),self._updatePropertySummary)      
-        
-    def _onPropertyBrowserError(self,err):
-        '''
-        Slot raised when an error occurs when loading items in the property browser
-        '''
-        self.notifProp.clear()
-        self.notifProp.insertNotification(err, ERROR)
-        
-    def _onPropertyBrowserLoading(self,progress):
-        '''
-        Slot raised when the property browser is loading.
-        Displays the progress of the page loading as a percentage.
-        '''
+    def on_property_browser_loading(self, progress):
+        """
+        Slot raised when the property browser is
+        loading. Displays the progress of the
+        page loading as a percentage.
+        :param progress: load progress
+        :type progress: Integer
+        :return: None
+        :rtype: NoneType
+        """
         if progress <= 0 or progress >= 100:
             self.gpOpenLayers.setTitle(self.gpOLTitle)
         else:
-            self.gpOpenLayers.setTitle("%s (Loading...%s%%)"%(str(self.gpOLTitle),str(progress)))
+            self.gpOpenLayers.setTitle(
+                "%s (Loading...%s%%)"%(
+                    unicode(self.gpOLTitle),
+                    str(progress)
+                )
+            )
             
-    def _onPropertyBrowserFinished(self,status):
-        '''
-        Slot raised when the property browser finishes loading the content
-        '''
+    def on_property_browser_finished(self, status):
+        """
+        Slot raised when the property browser
+        finishes loading the content
+        :param status: Boolean of the load status.
+        :type status: Boolean
+        :return: None
+        :rtype: NoneType
+        """
         if status:
             self.olLoaded = True
             self.overlayProperty()
+            self.spatial_unit_notice.clear()
+            msg = QApplication.translate(
+                'newSTRWiz',
+                'Web overlay may vary from actual '
+                'representation in the local map.'
+            )
+            self.spatial_unit_notice.insertWarningNotification(msg)
         else:
-            self.notifProp.clear()
-            msg = QApplication.translate("newSTRWiz", "Error - The property map cannot be loaded.")   
-            self.notifProp.insertErrorNotification(msg)
-        
-    def _onEnableOLGroupbox(self,state):
-        '''
-        Slot raised when a user chooses to select the group box for enabling/disabling to view
+            self.spatial_unit_notice.clear()
+            msg = QApplication.translate(
+                "newSTRWiz",
+                "Error - The property map cannot be loaded."
+            )
+            self.spatial_unit_notice.insertErrorNotification(msg)
+
+    def init_preview_map(self):
+        """
+        Initializes the preview map of spatial unit.
+        :return:
+        :rtype:
+        """
+        self.gpOLTitle = self.gpOpenLayers.title()
+
+        # Flag for checking whether
+        # OpenLayers base maps have been loaded
+        self.olLoaded = False
+        # Connect signals
+        QObject.connect(
+            self.gpOpenLayers,
+            SIGNAL("toggled(bool)"),
+            self.on_enable_ol_groupbox
+        )
+        QObject.connect(
+            self.zoomSlider,
+            SIGNAL("sliderReleased()"),
+            self.on_zoom_changed
+        )
+        QObject.connect(
+            self.btnResetMap,
+            SIGNAL("clicked()"),
+            self._onResetMap
+        )
+
+        # Start background thread
+        self.propBrowser = WebSpatialLoader(
+            self.propWebView, self
+        )
+        self.connect(
+            self.propBrowser,
+            SIGNAL("loadError(QString)"),
+            self.on_property_browser_error
+        )
+        self.connect(
+            self.propBrowser,
+            SIGNAL("loadProgress(int)"),
+            self.on_property_browser_loading
+        )
+        self.connect(
+            self.propBrowser,
+            SIGNAL("loadFinished(bool)"),
+            self.on_property_browser_finished
+        )
+        self.connect(
+            self.propBrowser,
+            SIGNAL("zoomChanged(int)"),
+            self.onMapZoomLevelChanged
+        )
+
+        # Connect signals
+        QObject.connect(
+            self.rbGMaps,
+            SIGNAL("toggled(bool)"),
+            self.onLoadGMaps
+        )
+        QObject.connect(
+            self.rbOSM,
+            SIGNAL("toggled(bool)"),
+            self.onLoadOSM
+        )
+
+    def on_enable_ol_groupbox(self, state):
+        """
+        Slot raised when a user chooses to select
+        the group box for enabling/disabling to view
         the property in OpenLayers.
-        '''
+        :param state: Boolean of the load status.
+        :type state: Boolean
+        :return: None
+        :rtype: NoneType
+        """
         if state:
-            if self.selProperty is None:
-                self.notifProp.clear()
-                msg = QApplication.translate("newSTRWiz", "You need to specify a property in order to be able to preview it.")   
-                self.notifProp.insertWarningNotification(msg)                
+
+            if len(self.sel_spatial_unit) < 1:
+                self.spatial_unit_notice.clear()
+                msg = QApplication.translate(
+                    "newSTRWiz",
+                    "You have to add a spatial unit record "
+                    "in order to be able to preview it."
+                )
+                self.spatial_unit_notice.insertWarningNotification(msg)                
                 self.gpOpenLayers.setChecked(False)
                 return  
             
@@ -407,486 +1548,497 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             #Remove overlay
             self.propBrowser.removeOverlay()     
             
-    def _onZoomChanged(self):
-        '''
+    def on_zoom_changed(self):
+        """
         Slot raised when the zoom value in the slider changes.
-        This is only raised once the user releases the slider with the mouse.
-        '''
+        This is only raised once the user
+        releases the slider with the mouse.
+        :return: None
+        :rtype: NoneType
+        """
         zoom = self.zoomSlider.value()        
         self.propBrowser.zoom_to_level(zoom)
-            
-    def _initPersonFilter(self):
-        '''
-        Initializes person filter settings
-        '''
-
-        cols=table_searchable_cols('party')
-        if len(cols)>0:
-            for col in cols:
-                self.cboPersonFilterCols.addItem(str(QApplication.translate("newSTRWiz",col.replace('_',' ').title())), col)
-        
-    def _updatePersonCompleter(self,index):
-        '''
-        Updates the person completer based on the person attribute item that the user has selected
-        '''
-        #Clear dependent controls
-        #self.txtFilterPattern.clear()
-        self.cboFilterPattern.clear()
-        self.tvPersonInfo.clear()
-        try:
-            field_name = self.cboPersonFilterCols.currentText().replace(" ","_").lower()
-            data_list =[getattr(array,field_name) for array in self.persons if getattr(array,field_name)!=None]
-            model =QCompleter(data_list)
-            model.setCompletionMode(QCompleter.PopupCompletion)
-            model.setCaseSensitivity(Qt.CaseInsensitive)
-            self.cboFilterPattern.setCompleter(model)
-            self.cboFilterPattern.showPopup()
-        except Exception as ex:
-            msg =ex.message
-            QMessageBox.critical(self,QApplication.translate("SocialTenureRelationship", u"Error Loading values"),
-                                 QApplication.translate("SocialTenureRelationship",
-                                 u"The was an error in sorting the data with the given column, try another %s"%msg))
-            return
-        self.currPersonAttr = str(self.cboPersonFilterCols.itemData(index))            
-        
-        #Create standard model which will always contain the id of the person row then the attribute for use in the completer
-        self.cboFilterPattern.addItem("")
-        for p in self.persons:
-            pVal = getattr(p,self.currPersonAttr)
-            if pVal != "" or pVal != None:
-                self.cboFilterPattern.addItem(pVal,p.id)
-
-        self.cboFilterPattern.activated.connect(self._updatePersonSummary)
-         #self.connect(self.cboFilterPattern, SIGNAL("currentIndexChanged(int)"),self._updatePersonSummary)
-                
-    def _updatePersonSummary(self,index):
-        '''
-        Slot for updating the person information into the tree widget based on the user-selected value
-        '''
-        Person=self.mapping.tableMapping('party')
-        person=Person()
-        #Get the id from the model then the value of the ID model index
 
 
+    def map_str_type(self, item):
+        """
+        Loads the selected social tenure type into an
+        ordered dictionary for the summary page treeview
+        :param item: The social tenure type
+        :type item: OrderedDict
+        :return: 
+        :rtype: 
+        """
+        str_mapping = OrderedDict()
+        str_mapping[
+            QApplication.translate(
+                "newSTRWiz","Tenure Type"
+            )
+        ] = item
+        return str_mapping
 
-        index =self.cboFilterPattern.currentIndex()
-        personId = self.cboFilterPattern.itemData(index)
-        #QMessageBox.information(None,'index',str(data))
-        # personId = pData
-        if personId is not None:
-        #Get person info
-            p = person.queryObject().filter(Person.id == str(personId)).first()
-            if p:
-                self.selPerson = p
-                personInfoMapping = self._mapPersonAttributes(p)
-                personTreeLoader = TreeSummaryLoader(self.tvPersonInfo)
-                personTreeLoader.addCollection(personInfoMapping, QApplication.translate("newSTRWiz","Party Information"),
-                                               ":/plugins/stdm/images/icons/user.png")
-                personTreeLoader.display()
-            
-    def _mapPersonAttributes(self,person):
-        '''
-        Maps the attributes of a person to a more friendly user representation 
-        '''   
-        #Setup formatters        
-        pmapper=self.mapping.tableMapping('party')
-        colMapping = pmapper.displayMapping()
-        colMapping.pop('id')
-        pMapping=OrderedDict()
-        try:
-            for attrib,label in colMapping.iteritems():
-                pMapping[label] = getattr(person,attrib)
-        except:
-            pass
-#                             
-        return pMapping  
-    
-    def _updatePropertySummary(self,propid):
-        '''
-        Update the summary information for the selected property
-        '''
-        property = self.mapping.tableMapping('spatial_unit')
-        Property =property()
-        #propty=Table('spatial_unit',Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
-        #session=STDMDb.instance().session
-        prop =Property.queryObject().filter(property.code == unicode(propid)).first()
-        if prop:
-            propMapping = self._mapPropertyAttributes(prop)
-            
-            #Load information in the tree view
-            propertyTreeLoader = TreeSummaryLoader(self.tvPropInfo)
-            propertyTreeLoader.addCollection(propMapping, QApplication.translate("newSTRWiz","Spatial Unit Information"),
-                                             ":/plugins/stdm/images/icons/property.png")       
-            propertyTreeLoader.display()  
-            
-            self.selProperty = prop
-            
-            #Show property in OpenLayers
-            if self.gpOpenLayers.isChecked():
-                if self.olLoaded:
-                    self.overlayProperty()                      
-    
-    def _mapPropertyAttributes(self,prop):
-            #Configure formatters
-            spMapper = self.mapping.tableMapping('spatial_unit')
-            colMapping = spMapper.displayMapping()
-            colMapping.pop('id')
-            propMapping=OrderedDict()
-            for attrib,label in colMapping.iteritems():
-                propMapping[label] = getattr(prop,attrib)
-            return propMapping
-        
-    def _mapSTRTypeSelection(self):
-        #strTypeFormatter = LookupFormatter(CheckSocialTenureRelationship)
-        #self.cboSTRType.clear()
-        
-        strTypeSelection=self.cboSTRType.currentText()
-        
-        strMapping = OrderedDict()
-        strMapping[str(QApplication.translate("newSTRWiz","STR Type"))] = str(strTypeSelection)
-
-        return strMapping
-    
-    def _mapEnjoyRightSelection(self,enjoyRight):
-        deadAliveFormatter = LookupFormatter(CheckDeadAlive)
-        inheritanceFormatter = LookupFormatter(CheckInheritanceType)
-                
-        enjoyRightMapping = OrderedDict()
-        enjoyRightMapping[str(QApplication.translate("newSTRWiz","Inheritance From"))] = str(inheritanceFormatter.setDisplay(enjoyRight.InheritanceType).toString())
-        enjoyRightMapping[str(QApplication.translate("newSTRWiz","State"))] = str(deadAliveFormatter.setDisplay(enjoyRight.State).toString())
-        enjoyRightMapping[str(QApplication.translate("newSTRWiz","Receiving Date"))] = str(enjoyRight.ReceivingDate.year)
-        
-        return enjoyRightMapping
-    
-    def _mapPrivatePropertyTax(self):
-        privateTaxMapping = OrderedDict()
-        
-        privateTaxMapping[str(QApplication.translate("newSTRWiz","CFPB Payment Year"))] = str(self.dtLastYearCFBP.date().toPyDate().year)
-        
-        taxDec = Decimal(str(self.txtCFBPAmount.text()))
-        taxFormatted = moneyfmt(taxDec,curr = CURRENCY_CODE)
-        privateTaxMapping[str(QApplication.translate("newSTRWiz","CFPB Amount"))] = taxFormatted
-        
-        return privateTaxMapping
-    
-    def _mapStatePropertyTax(self):
-        stateTaxMapping = OrderedDict()
-        
-        stateTaxMapping[str(QApplication.translate("newSTRWiz","Latest Receipt Date"))] = str(self.dtStateReceiptDate.date().toPyDate())
-        
-        taxDec = Decimal(str(self.txtStateReceiptAmount.text()))
-        taxFormatted = moneyfmt(taxDec,curr = CURRENCY_CODE)
-        stateTaxMapping[str(QApplication.translate("newSTRWiz","Amount"))] = taxFormatted
-        stateTaxMapping[str(QApplication.translate("newSTRWiz","Lease Starting Year"))] = str(self.dtStateLeaseYear.date().toPyDate().year)
-        stateTaxMapping[str(QApplication.translate("newSTRWiz","Tax Office"))] = str(self.txtStateTaxOffice.text())
-        
-        return stateTaxMapping
-    
-    def _mapConflict(self,conflict):
-        conflictFormatter = LookupFormatter(CheckConflictState)
-        conflictMapping = OrderedDict()
-        
-        if conflict == None:
-            return conflictMapping
-        
-        conflictMapping[str(QApplication.translate("newSTRWiz","Status"))] = str(conflictFormatter.setDisplay(conflict.StateID).toString())
-        
-        if conflict.Description:
-            conflictMapping[str(QApplication.translate("newSTRWiz","Description"))] = conflict.Description
-            
-        if conflict.Solution:
-            conflictMapping[str(QApplication.translate("newSTRWiz","Solution"))] = conflict.Solution
-         
-        return conflictMapping
-    
     def onLoadGMaps(self,state):
         '''
-        Slot raised when a user clicks to set Google Maps Satellite
-        as the base layer
+        Slot raised when a user clicks to set
+        Google Maps Satellite as the base layer
         '''
         if state:                     
-            self.propBrowser.setBaseLayer(GMAP_SATELLITE)
+            self.propBrowser.setBaseLayer(
+                GMAP_SATELLITE
+            )
         
     def onLoadOSM(self,state):
         '''
-        Slot raised when a user clicks to set OSM as the base layer
+        Slot raised when a user clicks to set
+        OSM as the base layer
         '''
         if state:                     
             self.propBrowser.setBaseLayer(OSM)
             
     def onMapZoomLevelChanged(self,level):
         '''
-        Slot which is raised when the zoom level of the map changes.
+        Slot which is raised when the zoom
+        level of the map changes.
         '''
         self.zoomSlider.setValue(level)
        
     def _onResetMap(self):
         '''
-        Slot raised when the user clicks to reset the property
+        Slot raised when the user clicks
+        to reset the property
         location in the map.
         '''
         self.propBrowser.zoom_to_extents()
        
     def overlayProperty(self):
         '''
-        Overlay property boundaries on the basemap imagery
-        '''                    
-        self.propBrowser.add_overlay(self.selProperty,'geom_polygon')
-        
-    def validateEnjoymentRight(self): 
+        Overlay property boundaries on
+        the basemap imagery
         '''
-        Validate whether the user has specified all the required information
-        '''
-        self.notifEnjoyment.clear()
-        
-        if self.cboDeadAlive.currentIndex() == 0:
-            msg = QApplication.translate("newSTRWiz", 
-                                             "Please specify whether the person is 'Dead' or 'Alive'.")
-            self.notifEnjoyment.insertErrorNotification(msg)
-            return False
-        
-        if self.cboInheritanceType.currentIndex() == 0:
-            msg = QApplication.translate("newSTRWiz", 
-                                             "Please specify the Inheritance Type.")
-            self.notifEnjoyment.insertErrorNotification(msg)
-            return False
-        
-        #Set the right of enjoyment details if both inheritance type and state have been defined
-        if self.cboInheritanceType.currentIndex() != 0 and self.cboDeadAlive.currentIndex() != 0:
-            eRight = EnjoymentRight()
-            #Set the properties
-            setModelAttrFromCombo(eRight,"InheritanceType",self.cboInheritanceType)
-            setModelAttrFromCombo(eRight,"State",self.cboDeadAlive)
-            eRight.ReceivingDate = self.dtReceivingDate.date().toPyDate()
-            
-            self.enjoymentRight = eRight
-            
-            return True
-        
-    def validateSourceDocuments(self):
-        '''
-        Basically validates the entry of tax information.
-        '''
-        isValid = True
-        
-        if self.rbPrivateProperty.isChecked():
-            if self.gpPrivateTaxInfo.isChecked():
-                self.notifSourceDoc.clear()
-                if str(self.txtCFBPAmount.text()) == "": 
-                    self.txtCFBPAmount.setFocus()
-                    msg1 = QApplication.translate("newSTRWiz", 
-                                             "Please enter the tax amount.")
-                    self.notifSourceDoc.insertErrorNotification(msg1)
-                    isValid = False
-                    
-        elif self.rbStateland.isChecked():
-            self.notifSourceDoc.clear()
-            if str(self.txtStateReceiptAmount.text()) == "": 
-                    self.txtStateReceiptAmount.setFocus()
-                    msg2 = QApplication.translate("newSTRWiz", 
-                                             "Please enter the tax amount.")
-                    self.notifSourceDoc.insertErrorNotification(msg2)
-                    isValid = False
-            if str(self.txtStateTaxOffice.text()) == "": 
-                    self.txtStateTaxOffice.setFocus()
-                    msg3 = QApplication.translate("newSTRWiz", 
-                                             "Please specify the tax office.")
-                    self.notifSourceDoc.insertErrorNotification(msg3)
-                    isValid = False
-   
-        return isValid
-    
-    def validateConflict(self): 
-        '''
-        Check if the user has selected that there is a conflict and validate whether the description 
-        and solution have been specified.
-        '''
-        isValid = True
-        
-        nonConflict = QApplication.translate("Lookup","No Conflict")
-        nonConflictIndex = self.cboConflictOccurrence.findText(nonConflict)
-        conflictOccurrence = QApplication.translate("Lookup","Conflict Present")
-        occIndex = self.cboConflictOccurrence.findText(conflictOccurrence)
-        
-        if self.cboConflictOccurrence.currentIndex() == occIndex:
-            self.notifConflict.clear()
-            if str(self.txtConflictDescription.toPlainText()) == "":
-                msg1 = QApplication.translate("newSTRWiz", 
-                                             "Please provide a brief description of the conflict.")
-                self.notifConflict.insertErrorNotification(msg1)
-                isValid = False
-            if str(self.txtConflictSolution.toPlainText()) == "":
-                msg2 = QApplication.translate("newSTRWiz", 
-                                             "Please provide a proposed solution for the specified conflict.")
-                self.notifConflict.insertErrorNotification(msg2)
-                isValid = False
-                
-            if str(self.txtConflictSolution.toPlainText()) != "" and str(self.txtConflictDescription.toPlainText()) != "":
-                self.conflict = Conflict()
-                stateId,ok = self.cboConflictOccurrence.itemData(occIndex).toInt()
-                self.conflict.StateID = stateId
-                self.conflict.Description = str(self.txtConflictDescription.toPlainText())
-                self.conflict.Solution = str(self.txtConflictSolution.toPlainText())
-                
-        #Set conflict object properties
-        if self.cboConflictOccurrence.currentIndex() == nonConflictIndex:
-            self.conflict = Conflict()
-            stateId,ok = self.cboConflictOccurrence.itemData(nonConflictIndex).toInt()
-            self.conflict.StateID = stateId
-   
-        return isValid
-    
-    def onSelectPrivateProperty(self,state):
-        '''
-        Slot raised when the user clicks to load source document page for private property
-        '''
-        if state:
-            self.stkSrcDocList.setCurrentIndex(0)
-        
-    def onSelectStateland(self,state):
-        '''
-        Slot raised when the user clicks to load source document page for private property
-        '''
-        if state:
-            self.stkSrcDocList.setCurrentIndex(1)
-            
-    def onUploadTitleDeed(self):
-        '''
-        Slot raised when the user clicks to upload a title deed
-        '''
-        titleStr = QApplication.translate("newSTRWiz", 
-                                             "Specify the Document File Location")
-        titles = self.selectSourceDocumentDialog(titleStr)
-        
-        for title in titles:
-            self.sourceDocManager.insertDocumentFromFile(title,DEFAULT_DOCUMENT)
-            
-    def onUploadStatutoryRefPaper(self):
-        '''
-        Slot raised when the user clicks to upload a statutory reference paper
-        '''
-        statStr = QApplication.translate("newSTRWiz", 
-                                             "Specify Statutory Reference Paper File Location")
-        stats = self.selectSourceDocumentDialog(statStr)
-        
-        for stat in stats:
-            self.sourceDocManager.insertDocumentFromFile(stat,STATUTORY_REF_PAPER)
-            
-    def onUploadSurveyorRef(self):
-        '''
-        Slot raised when the user clicks to upload a surveyor reference
-        '''
-        surveyorStr = QApplication.translate("newSTRWiz", 
-                                             "Specify Surveyor Reference File Location")
-        surveyorRefs = self.selectSourceDocumentDialog(surveyorStr)
-        
-        for surveyorRef in surveyorRefs:
-            self.sourceDocManager.insertDocumentFromFile(surveyorRef,SURVEYOR_REF)
-            
-    def onUploadNotaryRef(self):
-        '''
-        Slot raised when the user clicks to upload a notary reference
-        '''
-        notaryStr = QApplication.translate("newSTRWiz", 
-                                             "Specify Notary Reference File Location")
-        notaryRefs = self.selectSourceDocumentDialog(notaryStr)
-        
-        for notaryRef in notaryRefs:
-            self.sourceDocManager.insertDocumentFromFile(notaryRef,NOTARY_REF)
+        geometry_col_name = [c.name for c in
+            self.spatial_unit.columns.values()
+            if c.TYPE_INFO == 'GEOMETRY'
+        ]
+        for geom in geometry_col_name:
+            try:
+                self.propBrowser.add_overlay(
+                    self.sel_spatial_unit[0], geom
+                )
+            except Exception:
+                pass
 
-    def validateReceiptScanInsertion(self,documentmanager,scan,containerid):
-        '''
-        Checks and ensures that only one document exists in the specified container.
-        '''
-        container = documentmanager.container(containerid)
-        if container.count() > 0:
-            msg = QApplication.translate("newSTRWiz", "Only one receipt scan can be uploaded.\nWould you like to replace " \
-                                         "the existing one?")
-            result = QMessageBox.warning(self,QApplication.translate("newSTRWiz","Replace Receipt Scan"),msg, QMessageBox.Yes|
-                                         QMessageBox.No)
-            if result == QMessageBox.Yes:
-                docWidget = container.itemAt(0).widget()
-                docWidget.removeDocument()
-                documentmanager.insertDocumentFromFile(scan,containerid)
+
+class ComboBoxDelegate(QItemDelegate):
+
+    def __init__(self, str_type_id=0, parent=None):
+        """
+        It is a combobox delegate embedded in STR Type column.
+        :param str_type_id:
+        :type str_type_id:
+        :param parent:
+        :type parent:
+        :return:
+        :rtype:
+        """
+        QItemDelegate.__init__(self, parent)
+        self.row = 0
+        self.str_type_id = str_type_id
+        self.curr_profile = current_profile()
+        self.social_tenure = self.curr_profile.social_tenure
+
+    def str_type_combo (self):
+        """
+        A slot raised to add new str type
+        matched with the party.
+        :return: None
+        """
+        str_type_cbo = QComboBox()
+        str_type_cbo.setObjectName(
+            'STRTypeCbo'+str(self.row+1)
+        )
+        self.row = self.row + 1
+        return str_type_cbo
+
+    def str_type_set_data(self):
+        """
+        Sets str type combobox items.
+        :return: STR type id and value.
+        :rtype: OrderedDict
+        """
+        str_lookup_obj = self.social_tenure.tenure_type_collection
+        str_types = entity_model(str_lookup_obj, True)
+        str_type_obj = str_types()
+        self.str_type_data = str_type_obj.queryObject().all()
+        str_type = [
+            (lookup.id, lookup.value)
+            for lookup in self.str_type_data
+        ]
+
+        return OrderedDict(str_type)
+
+    def createEditor(self, parent, option, index):
+        """
+        Creates the combobox inside a parent.
+        :param parent: The container of the cobobox
+        :type parent: QWidget
+        :param option:
+        :type option:
+        :param index: The index where the combobox
+         will be added.
+        :type index: QModelIndex
+        :return: The combobox
+        :rtype: QComboBox
+        """
+        str_combo = QComboBox(parent)
+        str_combo.insertItem(0, " ")
+        for id, type in self.str_type_set_data().iteritems():
+            str_combo.addItem(type, id)
+
+        str_combo.setCurrentIndex(
+            self.str_type_id
+        )
+
+        return str_combo
+
+    def setEditorData(self, comboBox, index):
+        """
+        Set data to the Combobox.
+        :param comboBox: The STR Type combobox
+        :type comboBox: QCombobox
+        :param index: The model index
+        :type index: QModelIndex
+        :return: None
+        :rtype: NoneType
+        """
+        list_item_index = None
+        if not index.model() is None:
+            list_item_index = index.model().data(
+                index, Qt.DisplayRole
+            )
+        if list_item_index is not None and \
+                not isinstance(list_item_index, (unicode, str)):
+            value = list_item_index.toInt()
+            comboBox.blockSignals(True)
+            comboBox.setCurrentIndex(value[0])
+            comboBox.blockSignals(False)
+
+    def setModelData(self, editor, model, index):
+        """
+        Gets data from the editor widget and stores
+        it in the specified model at the item index.
+        :param editor: STR Type combobox
+        :type editor: QComboBox
+        :param model: QModel
+        :type model: QModel
+        :param index: The index of the data
+        to be inserted.
+        :type index: QModelIndex
+        :return: None
+        :rtype: NoneType
+        """
+        value = editor.currentIndex()
+        model.setData(
+            index,
+            editor.itemData(
+            value, Qt.DisplayRole)
+        )
+
+    def updateEditorGeometry(self, editor, option, index):
+        """
+        Updates the editor for the item specified
+        by index according to the style option given.
+        :param editor: STR Type combobox
+        :type editor: QCombobox
+        :param option: style options
+        :type option: QStyle
+        :param index: index of the combobox item
+        :type index: QModelIndex
+        :return:
+        :rtype:
+        """
+        editor.setGeometry(option.rect)
+
+class FreezeTableWidget(QTableView):
+
+    def __init__(
+            self, table_data, headers, parent = None, *args
+    ):
+        QTableView.__init__(self, parent, *args)
+        # set the table model
+        table_model = BaseSTDMTableModel(
+            table_data, headers, parent
+        )
+
+        # set the proxy model
+        proxy_model = QSortFilterProxyModel(self)
+        proxy_model.setSourceModel(table_model)
+
+        # Assign a data model for TableView
+        self.setModel(table_model)
+
+        # frozen_table_view - first column
+        self.frozen_table_view = QTableView(self)
+        # Set the model for the widget, fixed column
+        self.frozen_table_view.setModel(table_model)
+        # Hide row headers
+        self.frozen_table_view.verticalHeader().hide()
+        # Widget does not accept focus
+        self.frozen_table_view.setFocusPolicy(
+            Qt.StrongFocus|Qt.TabFocus|Qt.ClickFocus
+        )
+        # The user can not resize columns
+        self.frozen_table_view.horizontalHeader().\
+            setResizeMode(QHeaderView.Fixed)
+        self.frozen_table_view.setObjectName('frozen_table')
+        # Style frozentable view
+        self.frozen_table_view.setStyleSheet(
+            '''
+            #frozen_table{
+                border-top:none;
+            }
+            '''
+        )
+        self.setSelectionMode(QAbstractItemView.NoSelection)
+
+        self.shadow = QGraphicsDropShadowEffect(self)
+        self.shadow.setBlurRadius(5)
+        self.shadow.setOffset(2)
+        self.shadow.setYOffset(0)
+        self.frozen_table_view.setGraphicsEffect(self.shadow)
+
+        # Remove the scroll bar
+        self.frozen_table_view.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarAlwaysOff
+        )
+        self.frozen_table_view.setVerticalScrollBarPolicy(
+            Qt.ScrollBarAlwaysOff
+        )
+
+        # Puts more widgets to the foreground
+        self.viewport().stackUnder(self.frozen_table_view)
+        # # Log in to edit mode - even with one click
+        # Set the properties of the column headings
+        hh = self.horizontalHeader()
+        # Text alignment centered
+        hh.setDefaultAlignment(Qt.AlignCenter)
+
+        # Set the width of columns
+        columns_count = table_model.columnCount(self)
+        for col in xrange(columns_count):
+            if col == 0:
+                # Set the size
+                self.horizontalHeader().resizeSection(
+                    col, 60
+                )
+                # Fix width
+                self.horizontalHeader().setResizeMode(
+                    col, QHeaderView.Fixed
+                )
+                # Width of a fixed column - as in the main widget
+                self.frozen_table_view.setColumnWidth(
+                    col, self.columnWidth(col)
+                )
+            elif col == 1:
+                self.horizontalHeader().resizeSection(
+                    col, 150
+                )
+                self.horizontalHeader().setResizeMode(
+                    col, QHeaderView.Fixed
+                )
+                self.frozen_table_view.setColumnWidth(
+                    col, self.columnWidth(col)
+                )
             else:
-                return
-        else:
-            documentmanager.insertDocumentFromFile(scan,containerid)
-        
-    def selectSourceDocumentDialog(self,title):
-        '''
-        Displays a file dialog for a user to specify a source document
-        '''
-        files = QFileDialog.getOpenFileNames(self,title,"/home","Source "
-                                                                "Documents (*.jpg *.jpeg *.png *.bmp *.tiff *.svg)")
-        return files
-        
-    def uploadDocument(self,path,containerid):
-        '''
-        Upload source document
-        '''
-        self.sourceDocManager.insertDocumentFromFile(path, containerid)
-            
-class PersonWorker(QThread):
-    '''
-    Worker thread for loading person objects into a list
-    '''
-    def __init__(self,parent = None):
-        QThread.__init__(self,parent)
-        
-    def run(self):
-        '''
-        Fetch person objects from the database
-        '''        
-        self.mapping=DeclareMapping.instance()
-        Person=self.mapping.tableMapping('party')
-        p = Person()
-        persons = p.queryObject().all()
-        self.emit(SIGNAL("retrieved(PyQt_PyObject)"),persons)
-        
-class PropertyWorker(QThread):
-    '''
-    Thread for loading property IDs for use in the completer
-    '''
-    def __init__(self,parent = None):
-        QThread.__init__(self,parent)
-        
-    def run(self):
-        '''
-        Fetch property IDs from the database
-        '''
-        pty=Table('spatial_unit',Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
-        session=STDMDb.instance().session
-        properties =session.query(pty.c.code).all()
-        #pty = Property()
+                self.horizontalHeader().resizeSection(
+                    col, 100
+                )
+                # Hide unnecessary columns in the widget fixed columns
+                self.frozen_table_view.setColumnHidden(
+                    col, True
+                )
 
-        #properties = pty.queryObject([Property.spatial_unit_id]).all()      
-        self.emit(SIGNAL("retrieved(PyQt_PyObject)"), properties)
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-            
+        # Set properties header lines
+        vh = self.verticalHeader()
+        vh.setDefaultSectionSize(25) # height lines
+        # text alignment centered
+        vh.setDefaultAlignment(Qt.AlignCenter) 
+        vh.setVisible(True)
+        # Height of rows - as in the main widget
+        self.frozen_table_view.verticalHeader().\
+            setDefaultSectionSize(
+            vh.defaultSectionSize()
+        )
+
+        # Show frozen table view
+        self.frozen_table_view.show()
+        # Set the size of him like the main
+        self.update_frozen_table_geometry()
+
+        self.setHorizontalScrollMode(
+            QAbstractItemView.ScrollPerPixel
+        )
+        self.setVerticalScrollMode(
+            QAbstractItemView.ScrollPerPixel
+        )
+        self.frozen_table_view.setVerticalScrollMode(
+            QAbstractItemView.ScrollPerPixel
+        )
+
+
+        self.frozen_table_view.selectColumn(0)
+
+        self.frozen_table_view.setEditTriggers(
+            QAbstractItemView.AllEditTriggers
+        )
+        size_policy = QSizePolicy(
+            QSizePolicy.Fixed, QSizePolicy.Fixed
+        )
+        size_policy.setHorizontalStretch(0)
+        size_policy.setVerticalStretch(0)
+        size_policy.setHeightForWidth(
+            self.sizePolicy().hasHeightForWidth()
+        )
+        self.setSizePolicy(size_policy)
+        self.setMinimumSize(QSize(55, 75))
+        self.setMaximumSize(QSize(5550, 5555))
+        #self.setGeometry(QRect(0, 0, 619, 75))
+        self.SelectionMode(
+            QAbstractItemView.SelectColumns
+        )
+
+        # set column width to fit contents
+        self.frozen_table_view.resizeColumnsToContents()
+        # set row height
+        self.frozen_table_view.resizeRowsToContents()
+
+        # Connect the headers and scrollbars of
+        # both tableviews together
+        self.horizontalHeader().sectionResized.connect(
+            self.update_section_width
+        )
+        self.verticalHeader().sectionResized.connect(
+            self.update_section_height
+        )
+        self.frozen_table_view.verticalScrollBar().\
+            valueChanged.connect(
+            self.verticalScrollBar().setValue
+        )
+        self.verticalScrollBar().valueChanged.connect(
+            self.frozen_table_view.verticalScrollBar().setValue
+        )
+    def add_combobox(self, str_type_id, insert_row):
+        delegate = ComboBoxDelegate(str_type_id)
+        # Set delegate to add combobox under
+        # social tenure type column
+        self.frozen_table_view.setItemDelegate(
+            delegate
+        )
+        self.frozen_table_view.setItemDelegateForColumn(
+            0, delegate
+        )
+        index = self.frozen_table_view.model().index(
+            insert_row, 0, QModelIndex()
+        )
+        self.frozen_table_view.model().setData(
+            index, '', Qt.EditRole
+        )
+
+    def update_section_width(
+            self, logicalIndex, oldSize, newSize
+    ):
+        if logicalIndex==0 or logicalIndex==1:
+            self.frozen_table_view.setColumnWidth(
+                logicalIndex, newSize
+            )
+            self.update_frozen_table_geometry()
+
+    def update_section_height(
+            self, logicalIndex, oldSize, newSize
+    ):
+        self.frozen_table_view.setRowHeight(
+            logicalIndex, newSize
+        )
+
+    def resizeEvent(self, event):
+        QTableView.resizeEvent(self, event)
+        try:
+            self.update_frozen_table_geometry()
+        except Exception as log:
+            LOGGER.debug(str(log))
+
+
+    def scrollTo(self, index, hint):
+        if index.column() > 1:
+            QTableView.scrollTo(self, index, hint)
+
+    def update_frozen_table_geometry(self):
+        if self.verticalHeader().isVisible():
+            self.frozen_table_view.setGeometry(
+                self.verticalHeader().width() +
+                self.frameWidth(),
+                self.frameWidth(),
+                self.columnWidth(0) +
+                self.columnWidth(1),
+                self.viewport().height() +
+                self.horizontalHeader().height()
+            )
+        else:
+            self.frozen_table_view.setGeometry(
+                self.frameWidth(),
+                self.frameWidth(),
+                self.columnWidth(0) + self.columnWidth(1),
+                self.viewport().height() +
+                self.horizontalHeader().height()
+            )
+
+    # move_cursor override function for correct
+    # left to scroll the keyboard.
+    def move_cursor(self, cursor_action, modifiers):
+        current = QTableView.move_cursor(
+            self, cursor_action, modifiers
+        )
+        if cursor_action == self.MoveLeft and current.column() > 1 and \
+                        self.visualRect(current).topLeft().x() < \
+                        (self.frozen_table_view.columnWidth(0) +
+                             self.frozen_table_view.columnWidth(1)):
+            new_value = self.horizontalScrollBar().value() + \
+                       self.visualRect(current).topLeft().x() - \
+                       (self.frozen_table_view.columnWidth(0) +
+                        self.frozen_table_view.columnWidth(1))
+            self.horizontalScrollBar().setValue(new_value)
+        return current
+
+class EntityConfig(object):
+    """
+    Configuration class for specifying the
+    foreign key mapper and document
+    generator settings.
+    """
+    def __init__(self, **kwargs):
+        self._title = kwargs.pop("title", "")
+        self._link_field = kwargs.pop("link_field", "")
+        self._display_formatters = kwargs.pop("formatters", OrderedDict())
+
+        self._data_source = kwargs.pop("data_source", "")
+        self._ds_columns = []
+        self.curr_profile = current_profile()
+        self.ds_entity = self.curr_profile.entity_by_name(self._data_source)
+
+        self._set_ds_columns()
+
+        self._base_model = kwargs.pop("model", None)
+        self._entity_selector = kwargs.pop("entity_selector", None)
+        self._expression_builder = kwargs.pop("expression_builder", False)
+
+    def _set_ds_columns(self):
+        if not self._data_source:
+            self._ds_columns = []
+
+        else:
+            self._ds_columns = entity_display_columns(
+                self.ds_entity
+            )
+
+    def model(self):
+        return self._base_model
+

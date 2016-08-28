@@ -482,7 +482,7 @@ class CreateTable(_CreateDropBase):
 class _DropView(_CreateDropBase):
     """Semi-public 'DROP VIEW' construct.
 
-    Used by the test suite for dialect-agnostic drops of views.
+    Used by the tests suite for dialect-agnostic drops of views.
     This object will eventually be part of a public "view" API.
 
     """

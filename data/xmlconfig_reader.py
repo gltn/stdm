@@ -19,15 +19,13 @@
  *                                                                         *
  ***************************************************************************/
 """
-#from lxml import  objectify
-
+from PyQt4.QtGui import *
 
 from xml.etree.ElementTree import ElementTree as ET
 from collections import OrderedDict
 from configfile_paths import FilePaths
 import xml.etree.ElementTree as Elt
 from stdm.data.enums import non_editable_tables
-from PyQt4.QtGui import *
 
 try:
     xmlobject = FilePaths()
@@ -35,7 +33,7 @@ try:
     xml_doc = xmlobject.setUserXMLFile()
     html_doc = xmlobject.HtmlFile()
 except Exception as ex:
-    raise ex.message
+    raise TypeError
 
 def parseRootElement():
     if not xml_doc:

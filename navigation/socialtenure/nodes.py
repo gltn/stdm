@@ -18,6 +18,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+import os
 from collections import OrderedDict
 from decimal import Decimal
 
@@ -37,14 +38,22 @@ from PyQt4.QtCore import (
 )
 
 from qgis.core import *
-
+import qgis.utils
 from stdm.utils import *
+from stdm.ui.sourcedocument import source_document_location
+from stdm.settings import current_profile
+from stdm.ui.new_str_wiz import newSTRWiz
 
+from stdm.utils.util import (
+    gen_random_string,
+    entity_id_to_attr
+)
 EDIT_ICON = QIcon(":/plugins/stdm/images/icons/edit.png")
 DELETE_ICON = QIcon(":/plugins/stdm/images/icons/delete.png")
 NO_ACTION_ICON = QIcon(":/plugins/stdm/images/icons/no_action.png")
 
 class BaseSTRNode(object):
+
     """
     Base class for all STR nodes.
     """
@@ -76,7 +85,7 @@ class BaseSTRNode(object):
             self._rootNodeHash = self._parent.rootHash()
 
         #Separator for child text
-        self.separator = " : "
+        self.separator = ": "
 
         if isChild:
             if styleIfChild:
@@ -217,7 +226,8 @@ class BaseSTRNode(object):
 
     def rootHash(self):
         '''
-        Returns a hash key that is used to identify the lineage of the child nodes i.e.
+        Returns a hash key that is used to identify
+        the lineage of the child nodes i.e.
         which node exactly is the 'forefather'.
         '''
         return self._rootNodeHash
@@ -299,7 +309,7 @@ class BaseSTRNode(object):
     def manageActions(self, modelindex, menu):
         """
         Returns the list of actions to be loaded into the context menu
-        of this node when a user right clicks in the treeview.
+        of this node when a user right clicks in the tree view.
         Default actions are for expanding/collapsing child nodes.
         To be inherited by subclasses for additional custom actions.
         """
@@ -487,6 +497,7 @@ class EntityNode(SupportsDocumentsNode):
         prop_val_mapping = self._concat_names_values(self._colname_display_value,
                                                      self._value_formatters)
         for p_val in prop_val_mapping:
+
             ch_ent_node = BaseSTRNode([p_val], self)
     
 class NoSTRNode(BaseSTRNode):
@@ -509,6 +520,7 @@ class STRNode(EntityNode):
     """
     Node for rendering STR information.
     """
+
     def icon(self):
         return QIcon(":/plugins/stdm/images/icons/social_tenure.png")
 
@@ -521,27 +533,32 @@ class STRNode(EntityNode):
         """
         n_data = unicode(node_data)
         display_col_name = n_data.split(self.separator)[0]
-
         return display_col_name.replace(" ", "_").lower(), display_col_name
 
     def _update_str_node(self, index, model):
         view_model = self._view.model()
-
         i = 0
+
         for c_node in self._children:
             row_num = index.row() + i
 
             if c_node.typeInfo() == "BASE_NODE":
+
                 idx = view_model.index(row_num, index.column(), index)
 
-                if idx.isValid():
-                    #Get column name from node display information
-                    node_data = c_node.data(0)
-                    col_name, display_name = self._column_name(node_data)
-                    if hasattr(self._model, col_name):
-                        col_value = getattr(self._model, col_name)
-                        node_value = u"{0}{1} {2}".format(display_name, self.separator, col_value)
-                        view_model.setData(idx, node_value, Qt.DisplayRole)
+                #if idx.isValid():
+
+                #Get column name from node display information
+                node_data = c_node.data(0)
+                col_name, display_name = self._column_name(node_data)
+
+                if hasattr(model, col_name):
+
+                    col_value = getattr(model, col_name)
+
+                    node_value = u"{0}{1} {2}".format(display_name, self.separator, col_value)
+
+                    view_model.setData(idx, node_value, Qt.DisplayRole)
 
             i += 1
 
@@ -549,7 +566,6 @@ class STRNode(EntityNode):
         """
         Method to force STR model editing without browser
         """
-        from stdm.ui.forms.mapper_dialog import CustomFormDialog
 
         if self._model is None:
             msg = QApplication.translate("STRNode","The object representing "
@@ -561,11 +577,24 @@ class STRNode(EntityNode):
             return
 
         try:
-            editEntityDlg = CustomFormDialog(self, model=self._model)
+            node = None
+            if index.isValid():
+                node = index.internalPointer()
+            if index.column() == 0:
+                if isinstance(node, SupportsDocumentsNode):
 
-            result = editEntityDlg.exec_()
-            if result == QDialog.Accepted:
-                self._update_str_node(index, editEntityDlg.model())
+                    edit_str = newSTRWiz(qgis.utils, node)
+                    status = edit_str.exec_()
+
+                    if status == 1:
+                        if node._parent.typeInfo() == 'ENTITY_NODE':
+                            if node._model.party_id == \
+                                    edit_str.updated_str_obj.party_id:
+                                self.parentWidget().btnSearch.click()
+                        if node._parent.typeInfo() == 'SPATIAL_UNIT_NODE':
+                            if node._model.spatial_unit_id == \
+                                    edit_str.updated_str_obj.spatial_unit_id:
+                                self.parentWidget().btnSearch.click()
 
         except Exception as ex:
             msg = ex.message
@@ -580,13 +609,13 @@ class STRNode(EntityNode):
         """
         del_msg = QApplication.translate("STRNode",
                                      "This action will remove the social tenure relationship and dependent "
-                                     "supporting documents from the database. This action cannot be undone "
-                                     "and once removed, it can"
+                                     "supporting documents from the database and the documents folder. "
+                                     "This action cannot be undone and once removed, it can"
                                      " only be recreated through"
-                                     " the  new 'Social Tenure Relationship' "
-                                     "wizard. Would you like to proceed?"
+                                     " the 'New Social Tenure Relationship' wizard."
+                                     "Would you like to proceed?"
                                      "\nClick Yes to proceed or No to cancel.")
-        del_result = QMessageBox.warning(self.parentWidget(),
+        del_result = QMessageBox.critical(self.parentWidget(),
                                         QApplication.translate("STRNode",
                                             "Delete Social Tenure Relationship"),
                                         del_msg,
@@ -594,17 +623,44 @@ class STRNode(EntityNode):
 
         if del_result == QMessageBox.Yes:
             model = self._view.model()
+            self.delete_document_file(self._model.documents)
             model.removeAllChildren(index.row(), self.childCount(), index.parent())
 
             #Remove source documents listings
             self.parentWidget()._deleteSourceDocTabs()
             self._model.delete()
 
-            #Insert NoSTR node
-            noSTRNode = NoSTRNode(self.parent())
-
             #Notify model that we have inserted a new child i.e. NoSTRNode
             model.insertRows(index.row(), 1, index.parent())
+
+    def delete_document_file(self, model_obj_list):
+        """
+        Loops through the deleted document models and delete associated files.
+        :param model_obj_list: List of document model objects
+        :type model_obj_list: List
+        :return: None
+        :rtype: NoneType
+        """
+        for model in model_obj_list:
+            extension = model.filename[model.filename.rfind('.'):]
+            # print 'Generating thumbnail'
+            curr_profile = current_profile()
+            doc_id = model.document_type
+
+            doc_type_entity = curr_profile.social_tenure.\
+                supporting_doc.document_type_entity
+            doc_type_val = entity_id_to_attr(
+                doc_type_entity, 'value', doc_id
+            )
+            doc_path = '{}/{}/{}/{}/{}{}'.format(
+                source_document_location(),
+                unicode(curr_profile.name),
+                unicode(model.source_entity),
+                unicode(doc_type_val),
+                unicode(model.document_identifier),
+                unicode(extension)
+            )
+            os.remove(doc_path)
 
     def manageActions(self, model_index, menu):
         """
@@ -641,17 +697,3 @@ class SpatialUnitNode(EntityNode):
 
     def typeInfo(self):
         return "SPATIAL_UNIT_NODE"
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        

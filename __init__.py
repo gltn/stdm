@@ -20,6 +20,18 @@ email                : stdm@unhabitat.org
 import sys
 import os
 
+import logging
+from logging.handlers import TimedRotatingFileHandler
+
+from PyQt4.QtGui import (
+    QDesktopServices
+)
+from PyQt4.QtCore import (
+    QDir,
+    QFile
+)
+
+#Load third party libraries
 third_party_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                "third_party"))
 font_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -29,11 +41,77 @@ if third_party_dir not in sys.path:
     sys.path.append(third_party_dir)
     sys.path.append(font_dir)
 
+#Root to the path plugin directory
+USER_PLUGIN_DIR = QDesktopServices.storageLocation(QDesktopServices.HomeLocation) \
+             + '/.stdm'
+
+#Setup logging
+LOG_DIR = u'{0}/logs'.format(USER_PLUGIN_DIR)
+LOG_FILE_PATH = LOG_DIR + '/stdm.log'
+
+def setup_logger():
+    logger = logging.getLogger('stdm')
+    logger.setLevel(logging.DEBUG)
+
+    #Create log directory if it does not exist
+    log_folder = QDir()
+    if not log_folder.exists(LOG_DIR):
+        status = log_folder.mkpath(LOG_DIR)
+
+        #Log directory could not be created
+        if not status:
+            raise IOError('Log directory for STDM could not be created.')
+
+    #File handler for logging debug messages
+    file_handler = TimedRotatingFileHandler(LOG_FILE_PATH, when='D',
+                                            interval=1, backupCount=14)
+    file_handler.setLevel(logging.DEBUG)
+
+    #Create formatter and add it to the handler
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+
+    #Add handler to the logger
+    logger.addHandler(file_handler)
+
+
+def copy_core_configuration():
+    """
+    Copies the basic STDM configuration to the user directory if there is none.
+    """
+    core_config_path = u'{0}/templates/configuration.stc'.format(
+        os.path.dirname(__file__)
+    )
+
+    #Exit if the core configuration does not exist
+    if not QFile.exists(core_config_path):
+        return
+
+    #File name of previous configuration
+    v1_1_config_path = u'{0}/stdmConfig.xml'.format(USER_PLUGIN_DIR)
+
+    #Only copy the new one if there is no copy of the previous version
+    # since the version updater will automatically handle the upgrade.
+    if QFile.exists(v1_1_config_path):
+        #Version update will handle the migration
+        return
+
+    #Copy config assuming that the plugin user folder has no previous
+    # configuration.
+    conf_file = QFile(core_config_path)
+    conf_dest = u'{0}/configuration.stc'.format(USER_PLUGIN_DIR)
+
+    copy_status = conf_file.copy(conf_dest)
+
 
 def classFactory(iface):
     """
-    Load STDMQGISLoader class from file stdm
+    Load STDMQGISLoader class.
     """
+    setup_logger()
 
-    from stdm import STDMQGISLoader
+    #Copy the basic configuration to the user folder if None exists
+    copy_core_configuration()
+
+    from stdm.plugin import STDMQGISLoader
     return STDMQGISLoader(iface)

@@ -18,43 +18,100 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from PyQt4.QtGui import (
-                         QDialog,
-                         QDialogButtonBox,
-                         QStandardItemModel,
-                         QStandardItem,
-                         QIcon,
-                         QPixmap,
-                         QApplication,
-                         QIcon,
-                         QInputDialog,
-                         QMessageBox
-                         )
+     QDialog,
+     QDialogButtonBox,
+     QStandardItemModel,
+     QStandardItem,
+     QIcon,
+     QPixmap,
+     QApplication,
+     QIcon,
+     QInputDialog,
+     QMessageBox
+ )
 
 from PyQt4.QtCore import (
-                          QFile,
-                          QIODevice
-                          )
+    QFile,
+    QIODevice
+)
 
 from PyQt4.QtXml import QDomDocument
 
-from stdm.utils import documentTemplates
-from stdm.settings import RegistryConfig
-from ..notification import (
-                             NotificationBar,
-                             ERROR
-                             )
+from stdm.utils.util import documentTemplates
+from stdm.composer.composer_data_source import composer_data_source
+from stdm.settings.registryconfig import RegistryConfig
+from stdm.ui.notification import (
+     NotificationBar,
+     ERROR
+ )
+from stdm.settings import current_profile
+from stdm.ui.composer.ui_composer_doc_selector import Ui_frmDocumentSelector
 
-from .ui_composer_doc_selector import Ui_frmDocumentSelector
+class _DocumentTemplate(object):
+    """
+    Contains basic information about a document template.
+    """
+    def __init__(self, **kwargs):
+        self.name = kwargs.get('name', '')
+        self.path = kwargs.get('path', '')
+        self.data_source = kwargs.get('data_source', None)
+
+    @property
+    def referenced_table_name(self):
+        """
+        :return: Returns the referenced table name.
+        :rtype: str
+        """
+        if self.data_source is None:
+            return ''
+
+        return self.data_source.referenced_table_name
+
+    @staticmethod
+    def build_from_path(name, path):
+        """
+        Creates an instance of the _DocumentTemplate class from the path of
+        a document template.
+        :param name: Template name.
+        :type name: str
+        :param path: Absolute path to the document template.
+        :type path: str
+        :return: Returns an instance of the _DocumentTemplate class from the
+        absolute path of the document template.
+        :rtype: _DocumentTemplate
+        """
+        data_source = composer_data_source(path)
+        kwargs = {
+            'name': name,
+            'path': path,
+            'data_source': data_source
+        }
+
+        return _DocumentTemplate(**kwargs)
+
 
 class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
     """
     Dialog for selecting a document template from the saved list.
     """
-    def __init__(self,parent = None,selectMode=True):
+    def __init__(self, parent=None,selectMode=True, filter_data_source=''):
         QDialog.__init__(self,parent)
         self.setupUi(self)
         
         self.notifBar = NotificationBar(self.vlNotification)
+
+        self._mode = selectMode
+
+        #Filter templates by the specified table name
+        self._filter_data_source = filter_data_source
+
+        #Document templates in current profile
+        self._profile_templates = []
+
+        self._current_profile = current_profile()
+
+        #Load current profile templates
+        self._load_current_profile_templates()
         
         if selectMode:
             self.buttonBox.setVisible(True)
@@ -65,7 +122,12 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
         else:
             self.buttonBox.setVisible(False)
             self.manageButtonBox.setVisible(True)
-            self.setWindowTitle(QApplication.translate("TemplateDocumentSelector","Template Manager"))
+            self.setWindowTitle(
+                QApplication.translate(
+                    "TemplateDocumentSelector",
+                    "Template Manager"
+                )
+            )
             
         #Configure manage buttons
         btnEdit = self.manageButtonBox.button(QDialogButtonBox.Ok)
@@ -86,13 +148,57 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
 
         self._docItemModel = QStandardItemModel(parent)
         self._docItemModel.setColumnCount(2)
-        
-        for name,path in templates.iteritems():
-            docNameItem =  self._createDocNameItem(name)
-            filePathItem = QStandardItem(path)
-            self._docItemModel.appendRow([docNameItem,filePathItem])
+
+        #Append current profile templates to the model.
+        for dt in self._profile_templates:
+            if self._template_contains_filter_table(dt):
+                doc_name_item =  self._createDocNameItem(dt.name)
+                file_path_item = QStandardItem(dt.path)
+                self._docItemModel.appendRow([doc_name_item,file_path_item])
             
         self.lstDocs.setModel(self._docItemModel)
+
+    def _load_current_profile_templates(self):
+        #Loads only those templates that refer to tables in the current
+        # profile.
+        if self._current_profile is None:
+            return
+
+        #Get saved document templates then add to the model
+        templates = documentTemplates()
+
+        profile_tables = self._current_profile.table_names()
+
+        #Get templates for the current profile
+        for name, path in templates.iteritems():
+            doc_temp = _DocumentTemplate.build_from_path(name, path)
+            if doc_temp.data_source is None:
+                continue
+
+            #Assert data source is in the current profile
+            if doc_temp.data_source.referenced_table_name in profile_tables:
+                self._profile_templates.append(doc_temp)
+
+    def _template_contains_filter_table(self, document_template):
+        #Returns true if the template refers to the filter data source
+
+        #If no filter data source defined then always return True
+        if not self._filter_data_source:
+            return True
+
+        referenced_table = document_template.referenced_table_name
+        if referenced_table == self._filter_data_source:
+            return True
+
+        return False
+
+    @property
+    def mode(self):
+        return self._mode
+
+    @property
+    def filter_data_source(self):
+        return self._filter_data_source
         
     def _createDocNameItem(self,docName):
         """
@@ -100,7 +206,13 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
         """
         #Set icon
         icon = QIcon()
-        icon.addPixmap(QPixmap(":/plugins/stdm/images/icons/document.png"), QIcon.Normal, QIcon.Off)
+        icon.addPixmap(
+            QPixmap(
+                ":/plugins/stdm/images/icons/document.png"
+            ),
+            QIcon.Normal,
+            QIcon.Off
+        )
         
         dnItem = QStandardItem(icon,docName)
         
@@ -144,7 +256,7 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
                 docNameItem.setText(docName)
                 filePathItem.setText(newTemplatePath)
                 
-                self.notifBar.insertInfoNotification(QApplication.translate("TemplateDocumentSelector", \
+                self.notifBar.insertSuccessNotification(QApplication.translate("TemplateDocumentSelector", \
                                                                          "'{0}' template has been successfully updated".format(docName)))
                 
             else:
@@ -182,7 +294,7 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
             selectedDocNameIndices = self.lstDocs.selectionModel().selectedRows(0)
             row = selectedDocNameIndices[0].row()
             self._docItemModel.removeRow(row)
-            self.notifBar.insertInfoNotification(QApplication.translate("TemplateDocumentSelector", \
+            self.notifBar.insertSuccessNotification(QApplication.translate("TemplateDocumentSelector", \
                                                                          "'{0}' template has been successfully removed".format(templateName)))
         
         else:
@@ -300,4 +412,3 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
         
         else:
             return valueCollection[keyName]
-        

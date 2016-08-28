@@ -9,7 +9,7 @@
 
 this module is designed to work as a testing-framework-agnostic library,
 so that we can continue to support nose and also begin adding new
-functionality via py.test.
+functionality via py.tests.
 
 """
 
@@ -103,7 +103,7 @@ def setup_options(make_option):
 def read_config():
     global file_config
     file_config = configparser.ConfigParser()
-    file_config.read(['setup.cfg', 'test.cfg'])
+    file_config.read(['setup.cfg', 'tests.cfg'])
 
 
 def pre_begin(opt):
@@ -391,7 +391,7 @@ def _setup_engine(cls):
 def before_test(test, test_module_name, test_class, test_name):
 
     # like a nose id, e.g.:
-    # "test.aaa_profiling.test_compiler.CompileTest.test_update_whereclause"
+    # "tests.aaa_profiling.test_compiler.CompileTest.test_update_whereclause"
     name = test_class.__name__
 
     suffix = "_%s_%s" % (config.db.name, config.db.driver)

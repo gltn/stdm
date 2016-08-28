@@ -19,10 +19,16 @@ email                : gkahiu@gmail.com
 from PyQt4.QtGui import QApplication
 from PyQt4.QtCore import pyqtSignal,QObject
 
-from stdm.security import Authorizer, SecurityException
-from stdm.data import Content, Role, STDMDb, Base
-from stdm.utils import randomCodeGenerator,HashableMixin
 from sqlalchemy import Table
+
+from stdm.data.database import (
+    Content,
+    Role,
+    STDMDb,
+    Base
+)
+from stdm.utils.util import randomCodeGenerator
+from stdm.utils.hashable_mixin import HashableMixin
 
 __all__ = ["ContentGroup,TableContentGroup"]
 
@@ -33,6 +39,8 @@ class ContentGroup(QObject,HashableMixin):
     contentAuthorized = pyqtSignal(Content)
     
     def __init__(self,username,containerItem = None,parent = None):
+        from stdm.security.authorization import Authorizer
+
         QObject.__init__(self,parent)
         HashableMixin.__init__(self)
         self._username = username
@@ -125,18 +133,17 @@ class ContentGroup(QObject,HashableMixin):
             for c in self.contentItems():
                 if isinstance(c,Content):
                     cnt = Content()
-                    #self.content=Table('content_base',Base.metadata,autoload=True,autoload_with=STDMDb.instance().engine)
                     qo = cnt.queryObject()
                     cn = qo.filter(Content.code == c.code).first()
                     
                     #If content not found then add
-                    if cn == None:                            
+                    if cn is None:
                         #Check if the 'postgres' role is defined, if not then create one
                         rl = Role()
                         rolequery = rl.queryObject()
                         role = rolequery.filter(Role.name == pg_account).first()
                         
-                        if role == None:
+                        if role is None:
                             rl.name = pg_account
                             rl.contents = [c]
                             rl.save()                     
@@ -145,10 +152,8 @@ class ContentGroup(QObject,HashableMixin):
                             #Append new content to existing 
                             existingContents.append(c)
                             role.contents = existingContents
-                            role.update()     
-                    
-            #Initialize lookup values
-            #initLookups()
+                            role.update()
+
             
 class TableContentGroup(ContentGroup):
     """

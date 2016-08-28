@@ -28,9 +28,9 @@ from PyQt4.QtNetwork import *
 
 from qgis.core import *
 
-from stdm.settings import getProxy
-from stdm.utils import PLUGIN_DIR
-from stdm.data import STDMDb
+from stdm.settings.tools_network import getProxy
+from stdm.utils.util import PLUGIN_DIR
+from stdm.data.database import STDMDb
 
 from geoalchemy2 import WKBElement 
 
@@ -291,7 +291,6 @@ class WebSpatialLoader(QObject):
             label_js_object = "{'%s':'%s'}" % (labelfield, str(lbl_val))
         
         #Reproject to web mercator
-        #TODO: Remove hardcode of geometry field name
         geom = getattr(sp_unit, geometry_col)
         sp_unit_wkb = self.dbSession.scalar(geom.ST_Transform(900913))
 

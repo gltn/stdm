@@ -20,23 +20,24 @@
  ***************************************************************************/
 """
 import sys
+from collections import OrderedDict
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-#from .entity_browser import ContentGroupEntityBrowser
-
-# create the dialog for zoom to point
 
 from sqlalchemy import Table
 from sqlalchemy.orm import mapper
-from stdm.data import (
+
+from stdm.data.database import (
     Model,
     Base,
     STDMDb
 )
 from .python_object import class_from_table
-from collections import OrderedDict
-import types
 
+import types
+from stdm.settings import (
+    current_profile
+)
 from stdm.data.database import Singleton
 from stdm.third_party.sqlalchemy.exc import NoSuchTableError
 
@@ -51,7 +52,8 @@ class DeclareMapping(object):
         self._mapping = {}
         self.attDictionary = OrderedDict()
         self.tablecol_mapping = OrderedDict()
-    
+
+
     def setTableMapping(self, tablist):
         """
         Method to convert a list of table to mapped table object
@@ -88,6 +90,7 @@ class DeclareMapping(object):
         """
         class_name = table.capitalize()
         class_object = class_from_table(class_name)
+
         return class_object
 
     def table_property(self, reflectedtab):
@@ -105,9 +108,11 @@ class DeclareMapping(object):
         :param table:
         :return: reflected table : sqlalchemy table class
         """
+        # print prefix
         if table not in self._mapping:
-            self.mapper_for_table(table)
-        model_cls = self._mapping[table]
+            self.mapper_for_table(str(table))
+        model_cls = self._mapping[str(table)]
+
         Model.attrTranslations = self.displayMapping(table)
 
         return model_cls

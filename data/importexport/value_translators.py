@@ -25,7 +25,12 @@ import itertools
 from PyQt4.QtGui import (
     QApplication,
     QMessageBox,
+    QVBoxLayout,
     QWidget
+)
+from PyQt4.QtCore import (
+    QDir,
+    QFile
 )
 
 from sqlalchemy.schema import (
@@ -33,13 +38,13 @@ from sqlalchemy.schema import (
     MetaData
 )
 
-from stdm.data import (
+from stdm.data.database import (
     STDMDb,
-    table_column_names,
     table_mapper
 )
+from stdm.data.pg_utils import table_column_names
 
-from stdm.utils import (
+from stdm.utils.util import (
     getIndex
 )
 
@@ -69,6 +74,9 @@ class SourceValueTranslator(object):
         self._parent = None
         self._db_session = STDMDb.instance().session
         self.clear()
+
+        #Primary entity
+        self.entity = None
 
     def clear(self):
         self._referencing_table = ""
@@ -220,6 +228,14 @@ class SourceValueTranslator(object):
         """
         return self._parent
 
+    def requires_source_document_manager(self):
+        """
+        :return: True if the subclass requires a source document manager
+        object, otherwise False (default). To be implemented by
+        subclasses.
+        """
+        return False
+
     def referencing_column_value(self, field_values):
         """
         Abstract method to be implemented by subclasses.
@@ -360,6 +376,7 @@ class ValueTranslatorManager(object):
         if isinstance(translator, SourceValueTranslator):
             self.remove_translator_by_name(translator.name())
 
+
 class RelatedTableTranslator(SourceValueTranslator):
     """
     This class translates values from one or more columns in the referenced
@@ -403,6 +420,7 @@ class RelatedTableTranslator(SourceValueTranslator):
 
         else:
             return getattr(link_table_rec, self._output_referenced_column, IgnoreType())
+
 
 class MultipleEnumerationTranslator(SourceValueTranslator):
     """
@@ -548,6 +566,144 @@ class MultipleEnumerationTranslator(SourceValueTranslator):
                 enum_class_instances.append(enum_class_instance)
 
         return enum_class_instances
+
+
+class SourceDocumentTranslator(SourceValueTranslator):
+    """
+    Reads document paths from the source table and uploads them to the
+    application document repository.
+    """
+    def __init__(self):
+        SourceValueTranslator.__init__(self)
+
+        #Needs to be set prior to uploading the document
+        self.source_document_manager = None
+
+        #Source directory
+        self.source_directory = None
+
+        #Document type id
+        self.document_type_id = None
+
+        #Document type name
+        self.document_type = None
+
+    def requires_source_document_manager(self):
+        return True
+
+    def _create_uploaded_docs_dir(self):
+        #Creates an 'uploaded' directory where uploaded documents are moved to.
+        uploaded_dir = QDir(self.source_directory)
+        uploaded_dir.mkdir('uploaded')
+
+    def referencing_column_value(self, field_values):
+        """
+        Uploads documents based on the file name specified in the source
+        column.
+        :param field_values: Pair of field names and corresponding values i.e.
+        {field1:value1, field2:value2, field3:value3...}
+        :type field_values: dict
+        :return: Ignore type since te source document manager will handle the
+        supporting document uploads.
+        :rtype: IgnoreType
+        """
+        if self.source_document_manager is None or self.entity is None:
+            return IgnoreType
+
+        if self.document_type_id is None:
+            msg = QApplication.translate(
+                'SourceDocumentTranslator',
+                 'Document type has not been set for the source document '
+                'translator.'
+            )
+            raise RuntimeError(msg)
+
+        if self.source_directory is None:
+            msg = QApplication.translate(
+                'SourceDocumentTranslator',
+                u'Source directory for {0} has not been set.'.format(
+                    self.document_type
+                )
+            )
+            raise RuntimeError(msg)
+
+        source_dir = QDir()
+        if not source_dir.exists(self.source_directory):
+            msg = QApplication.translate(
+                'SourceDocumentTranslator',
+                u'Source directory for {0} does not exist.'.format(
+                    self.document_type
+                )
+            )
+            raise IOError(msg)
+
+        if len(field_values) == 0:
+            return IgnoreType
+
+        source_column = field_values.keys()[0]
+
+        #Check if the source column is in the field_values
+        if not source_column in field_values:
+            return IgnoreType
+
+        #Get file name
+        doc_file_name = field_values.get(source_column)
+
+        if not doc_file_name:
+            return IgnoreType
+
+        #Separate files
+        docs = doc_file_name.split(';')
+
+        #Create document container
+        doc_container = QVBoxLayout()
+
+        #Register container
+        self.source_document_manager.registerContainer(
+            doc_container,
+            self.document_type_id
+        )
+
+        for d in docs:
+            if not d:
+                continue
+
+            #Normalize slashes
+            d_name = d.replace('\\','/').strip()
+
+            #Build absolute document path
+            abs_doc_path = u'{0}/{1}'.format(self.source_directory, d_name)
+
+            if not QFile.exists(abs_doc_path):
+                msg = QApplication.translate(
+                    'SourceDocumentTranslator',
+                    u'Supporting document {0} does not exist.'.format(
+                        abs_doc_path
+                    )
+                )
+
+                raise IOError(msg)
+
+            #Upload supporting document
+            self.source_document_manager.insertDocumentFromFile(
+                abs_doc_path,
+                self.document_type_id,
+                self.entity
+            )
+
+        #Move file to 'uploaded' directory
+
+        #Documents are handles by the source document manager so we just
+        # instruct the system to ignore the return value
+        return IgnoreType
+
+
+
+
+
+
+
+
 
 
 

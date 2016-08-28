@@ -651,7 +651,7 @@ class WeakSequence(object):
 
 class OrderedIdentitySet(IdentitySet):
     class _working_set(OrderedSet):
-        # a testing pragma: exempt the OIDS working set from the test suite's
+        # a testing pragma: exempt the OIDS working set from the tests suite's
         # "never call the user's __hash__" assertions.  this is a big hammer,
         # but it's safe here: IDS operates on (id, instance) tuples in the
         # working set.

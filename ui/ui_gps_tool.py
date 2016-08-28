@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_gps_tool.ui'
 #
-# Created: Sun May 10 06:17:05 2015
-#      by: PyQt4 UI code generator 4.10.4
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,7 +25,7 @@ except AttributeError:
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName(_fromUtf8("Dialog"))
-        Dialog.resize(597, 202)
+        Dialog.resize(597, 210)
         self.gridLayout = QtGui.QGridLayout(Dialog)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.groupBox = QtGui.QGroupBox(Dialog)
@@ -41,7 +40,7 @@ class Ui_Dialog(object):
         self.lblGPXFile = QtGui.QLabel(self.groupBox)
         self.lblGPXFile.setObjectName(_fromUtf8("lblGPXFile"))
         self.gridLayout_2.addWidget(self.lblGPXFile, 0, 0, 1, 1)
-        self.tx_fl_edit_gpx = gui.QgsFileDropEdit(self.groupBox)
+        self.tx_fl_edit_gpx = QgsFileDropEdit(self.groupBox)
         self.tx_fl_edit_gpx.setObjectName(_fromUtf8("tx_fl_edit_gpx"))
         self.gridLayout_2.addWidget(self.tx_fl_edit_gpx, 0, 1, 1, 1)
         self.gridLayout_4.addLayout(self.gridLayout_2, 0, 0, 1, 1)
@@ -79,7 +78,7 @@ class Ui_Dialog(object):
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog", None))
+        Dialog.setWindowTitle(_translate("Dialog", "GPS Points Importer", None))
         self.groupBox.setTitle(_translate("Dialog", "Import GPS Points", None))
         self.bn_gpx_select_file.setText(_translate("Dialog", "Browse...", None))
         self.lblGPXFile.setText(_translate("Dialog", "File", None))
@@ -88,14 +87,4 @@ class Ui_Dialog(object):
         self.lblGPXFeatureTypes.setText(_translate("Dialog", "Feature types", None))
         self.rd_gpx_routes.setText(_translate("Dialog", "Route", None))
 
-from qgis import gui
-
-if __name__ == "__main__":
-    import sys
-    app = QtGui.QApplication(sys.argv)
-    Dialog = QtGui.QDialog()
-    ui = Ui_Dialog()
-    ui.setupUi(Dialog)
-    Dialog.show()
-    sys.exit(app.exec_())
-
+from qgis.gui import QgsFileDropEdit

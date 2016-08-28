@@ -24,9 +24,10 @@ from decimal import Decimal
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from modelformatters import LookupFormatter, DoBFormatter
-
-
+from .modelformatters import (
+    LookupFormatter,
+    DoBFormatter
+)
 #Standard colors for widgets supporting alternating rows
 ALT_COLOR_EVEN = QColor(255,165,79)
 ALT_COLOR_ODD = QColor(135,206,255)
@@ -441,84 +442,90 @@ class BaseSTDMTableModel(QAbstractTableModel):
     """
     Generic table model for use in STDM table views.
     """
-    def __init__(self,initdata,headerdata,parent = None):
+    def __init__(self, initdata, headerdata, parent=None):
         QAbstractTableModel.__init__(self,parent)
         self._initData = initdata
-        self._headerdata = headerdata 
-        
-    def rowCount(self, parent = QModelIndex()):
+        self._headerdata = headerdata
+
+    def rowCount(self, parent=QModelIndex()):
         return len(self._initData)
-    
-    def columnCount(self, parent = QModelIndex()):
+
+    def columnCount(self, parent=QModelIndex()):
         return len(self._headerdata)
-    
-    def data(self,index, role):
-        
-        indexData = self._initData[index.row()][index.column()]
-        
-        if not index.isValid():
-            return None
-        
-        elif role == Qt.DisplayRole:   
-            #Decimal not supported by QVariant so we adapt it to a supported type
-            if isinstance(indexData,Decimal):
-                return str(indexData)    
-            else:
-                return indexData
-    
-        else:            
+
+    def data(self, index, role):
+        if index.row() != -1 and index.column() != -1:
+            indexData = self._initData[index.row()][index.column()]
+        else:
             return None
 
-    def headerData(self, section,orientation,role):
+        if not index.isValid():
+            return None
+
+        elif role == Qt.DisplayRole:
+            #Decimal not supported by QVariant so we adapt it to a supported type
+            if isinstance(indexData,Decimal):
+                return str(indexData)
+
+            else:
+                return indexData
+
+        else:
+            return None
+
+    def headerData(self, section, orientation, role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self._headerdata[section]
 
         elif orientation == Qt.Vertical and role == Qt.DisplayRole:
             return section + 1
-        
+
         return None
-    
-    def setData(self,index,value,role = Qt.EditRole):
-        if index.isValid() and role == Qt.EditRole:                                   
-            self._initData[index.row()][index.column()] = value            
+
+    def setData(self, index, value, role=Qt.EditRole):
+        if index.isValid() and role == Qt.EditRole:
+            self._initData[index.row()][index.column()] = value
             self.dataChanged.emit(index,index)
+
             return True
-        
-        return False    
-    
+
+        return False
+
     def flags(self,index):
         if not index.isValid():
             return Qt.ItemIsEnabled
-        
+        # elif index.column() > 1:
+        #             return Qt.ItemIsEnabled | Qt.ItemIsSelectable
         return Qt.ItemIsEditable|Qt.ItemIsSelectable|Qt.ItemIsEnabled
-    
-    def insertRows(self,position,rows,parent = QModelIndex()):
+
+    def insertRows(self, position, rows, parent=QModelIndex()):
         if position < 0 or position > len(self._initData):
             return False
-                
+
         self.beginInsertRows(parent, position, position + rows - 1)
-        
+
         #Initialize column values for the new row
         initRowVals = ["" for c in range(self.columnCount())]
-        
-        for i in range(rows):            
+
+        for i in range(rows):
             self._initData.insert(position,initRowVals)
-        
+
         self.endInsertRows()
-        
+
         return True
-        
-    def removeRows(self,position,count,parent = QModelIndex()):
+
+    def removeRows(self, position, count, parent=QModelIndex()):
+
         if position < 0 or position > len(self._initData):
             return False
-        
+
         self.beginRemoveRows(parent,position,position + count - 1)
-        
-        for i in range(count):            
+
+        for i in range(count):
             del self._initData[position]
-            
+
         self.endRemoveRows()
-        
+
         return True
 
 class VerticalHeaderSortFilterProxyModel(QSortFilterProxyModel):
@@ -526,7 +533,6 @@ class VerticalHeaderSortFilterProxyModel(QSortFilterProxyModel):
     A sort/filter proxy model that ensures row numbers in vertical headers
     are ordered correctly.
     """
-
     def headerData(self, section, orientation, role):
         if orientation == Qt.Vertical and role == Qt.DisplayRole:
             return section + 1
@@ -542,7 +548,7 @@ class STRTreeViewModel(QAbstractItemModel):
         self._rootNode = root
         self._view = view
 
-    def rowCount(self,parent):
+    def rowCount(self, parent=QModelIndex()):
         if not parent.isValid():
             parentNode = self._rootNode
 
@@ -551,7 +557,7 @@ class STRTreeViewModel(QAbstractItemModel):
 
         return parentNode.childCount()
 
-    def columnCount(self,parent=QModelIndex()):
+    def columnCount(self, parent=QModelIndex()):
         return self._rootNode.columnCount()
 
     def _getNode(self,index):
@@ -625,110 +631,110 @@ class STRTreeViewModel(QAbstractItemModel):
         Returns a QModelIndex reference of the parent node.
         """
         if not index.isValid():
-            return QModelIndex() 
-        
+            return QModelIndex()
+
         node = self._getNode(index)
-        
+
         parentNode = node.parent()
-        
+
         if parentNode == self._rootNode or parentNode == None:
             return QModelIndex()
-        
+
         return self.createIndex(parentNode.row(), 0, parentNode)
-    
-    def index(self, row, column, parent):
+
+    def index(self, row, column, parent=QModelIndex()):
         if parent.isValid() and parent.column() != 0:
             return QModelIndex()
-        
+
         parentNode = self._getNode(parent)
-        
+
         childItem = parentNode.child(row)
-        
+
         if childItem:
             return self.createIndex(row, column, childItem)
         else:
             return QModelIndex()
-        
+
     def removeAllChildren(self, position, count, parent=QModelIndex()):
         """
         Removes all children under the node with the specified parent index.
         """
         parentNode = self._getNode(parent)
         success = True
-        
+
         self.beginRemoveRows(parent, position, position + count - 1)
-        
+
         success = parentNode.clear()
-          
+
         self.endRemoveRows()
-        
+
         return success
-        
+
     def removeRows(self,position,count,parent=QModelIndex()):
         """
         Removes count rows starting with the given position under parent from the model.
         """
         parentNode = self._getNode(parent)
         success = True
-        
+
         self.beginRemoveRows(parent, position, position + count - 1)
-        
+
         for row in range(count):
             success = parentNode.removeChild(position)
-          
+
         self.endRemoveRows()
-        
+
         return success
-    
+
     def insertRows(self,position,count,parent=QModelIndex()):
         """
         Insert children starting at the given position for the given parent item.
         """
         parentNode = self._getNode(parent)
         success = True
-        
+
         self.beginInsertRows(parent,position,position + count -1)
-        
+
         '''
         We do not insert any children in this case since the internal methods of the
-        conflict node have already inserted the children nodes that contain the 
+        BaseSTRNode have already inserted the children nodes that contain the
         information.
         '''
-        
+
         self.endInsertRows()
-        
+
         return success
-    
+
     def removeColumns(self,position,columnCount,parent = QModelIndex()):
         success = True
-        
+
         self.beginRemoveColumns(parent, position, position + columnCount-1)
         success = self._rootNode.removeColumns(position, columnCount)
         self.endRemoveColumns()
-        
+
         if self._rootNode.columnCount() == 0:
             self.removeRows(0, self.rowCount())
-        
+
         return success
-    
+
     def clear(self):
         """
         Removes all items (rows and columns) in the model.
         """
         rootChildrenNum = self._rootNode.childCount()
-        
+
         self.beginResetModel()
-        
+
         #Delete each child individually then clear the root node or else there will be indexing issues
         for i in range(rootChildrenNum):
             childNode = self._rootNode.child(i)
             childNode._parent = None
             del childNode
-                       
+
         self._rootNode.clear()
         #TODO: Clear columns
         self.endResetModel()
-        
+
     def setData(self, index, value, role):
         """
         Sets the role data for the item at index to value.
@@ -743,46 +749,4 @@ class STRTreeViewModel(QAbstractItemModel):
             return result
 
         return False
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-    
-     
-            
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+

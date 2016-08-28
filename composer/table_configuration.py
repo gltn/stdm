@@ -128,7 +128,7 @@ class TableItemValueHandler(ItemConfigValueHandler):
         if not table_item.filterFeatures():
             table_item.setFilterFeatures(True)
 
-        source_col_value = getattr(record, self._config_item.source_field(), "")
+        source_col_value = getattr(record, self._config_item.source_field(), '')
         if not source_col_value:
             return
 

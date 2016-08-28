@@ -15,10 +15,10 @@ except:
     import gdal
     import ogr
 
-from stdm.data import (
-                       columnType,
-                       geometryType
-                       )
+from stdm.data.pg_utils import (
+    columnType,
+    geometryType
+)
 from enums import *
 
 class OGRWriter():

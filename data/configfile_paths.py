@@ -23,7 +23,7 @@ import os
 import shutil
 import platform
 import filecmp
-from stdm.utils import PLUGIN_DIR
+from ..utils.util import PLUGIN_DIR
 from PyQt4.QtGui import QApplication, QMessageBox
 DEFAULT_CONFIG="stdmConfig.xml"
 LICENSE="LICENSE.txt"
@@ -32,9 +32,9 @@ BASIC_SQL="stdmConfig.sql"
 CONFIG="Config"
 HELP="stdm.chm"
 
-xmldoc=os.path.dirname(os.path.abspath(__file__))
-#from stdm.config import activeProfile
-from stdm.settings import RegistryConfig
+xmldoc= os.path.dirname(os.path.abspath(__file__))
+
+from ..settings.registryconfig import RegistryConfig
 from .reports import SysFonts
 
 class FilePaths(object):
@@ -46,7 +46,7 @@ class FilePaths(object):
         self.userPath = None
         self.cachePath = None
         self.config = RegistryConfig()
-        self.checkPreviousSetting()
+        # self.checkPreviousSetting()
 
     def checkPreviousSetting(self):    
         self.defaultConfigPath()
@@ -65,7 +65,8 @@ class FilePaths(object):
         return self._file
 
     def cacheFile(self):
-        #To implemented a backup file for comparing edits everytime the user makes changes
+        # To implemented a backup file for comparing edits everytime the user
+        #  makes changes
         path = self.userPath+'/temp/%s'%DEFAULT_CONFIG
         return path
     
@@ -106,7 +107,8 @@ class FilePaths(object):
         """
         returns the path with base configuration file
         """
-        self.baseDir = self._file+"/template/"       
+        self.baseDir = self._file+"/templates/"
+        return self.baseDir
     
     def setUserConfigPath(self,path=None):
         ''' set new path with user configuration'''
@@ -120,10 +122,10 @@ class FilePaths(object):
         self.userConfigPath(self.userPath)
     
     def userConfigPath(self,path=None):
-        #Copy template files to the user directory
+        # Copy template files to the user directory
         try:
-            #self.compare_config_version(FILE)
-            for fileN in [DEFAULT_CONFIG, BASIC_SQL]:
+            # self.compare_config_version(FILE)
+            for fileN in [BASIC_SQL]:
                 if not os.path.isfile(path+'/%s'%fileN):
                     baseFile = self.baseDir +'/%s'%fileN
                     shutil.copy(baseFile,self.userPath)
@@ -144,7 +146,7 @@ class FilePaths(object):
         else:
             path = path
         base_file = self.baseSQLPath()
-        user_file = path +'/%s'%DEFAULT_CONFIG
+        user_file = path + '/%s'%DEFAULT_CONFIG
         if os.path.isfile(user_file):
             if QMessageBox.warning(None, QApplication.translate("FilePaths","Previous user configuration found"),
                                    QApplication.translate("FilePaths",
@@ -238,4 +240,9 @@ class FilePaths(object):
             shutil.copy(base_file, self.userPath)
         except:
             pass
+
+    def get_configuration_file(self):
+        """ Default path to the config file """
+        xml = self.userPath +'/%s'%DEFAULT_CONFIG
+        return xml
 
