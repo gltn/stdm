@@ -1537,7 +1537,7 @@ class ConfigurationFileUpdater(object):
 
             progress_i = 0
 
-            for STR_tables, v in STR_TABLES.iteritems():
+            for i, (STR_tables, v) in enumerate(STR_TABLES.iteritems()):
                 old_columns = unicode(v['old']).strip("()").replace("\'", "")
                 new_columns = unicode(v['new']).strip("()").replace("\'", "")
 
@@ -1633,15 +1633,18 @@ class ConfigurationFileUpdater(object):
 
                 if os.path.isdir(self.old_data_folder_path):
                     src_files = os.listdir(self.old_data_folder_path)
+                    path_new_directory = os.path.join(
+                        self.new_data_folder_path,
+                        self.config_profiles[0].lower(),
+                        self.config_profiles_prefix[0].lower() +
+                        "_social_tenure_relationship", "general"
+                    )
                     for file_name in src_files:
                         full_file_name = os.path.join(
                             self.old_data_folder_path,
-                                                      file_name)
-                        path_new_directory = os.path.join(
-                            self.new_data_folder_path,
-                            self.config_profiles[0],
-                            self.config_profiles[0] +
-                            "_social_tenure_relationship", "general")
+                            file_name
+                        )
+
                         self._mkdir_p(path_new_directory)
                         if os.path.isfile(full_file_name):
                             shutil.copy(full_file_name, path_new_directory)
