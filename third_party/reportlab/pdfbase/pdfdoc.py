@@ -471,7 +471,7 @@ class PDFDocument:
         return File.format(self)
 
     def hasForm(self, name):
-        """test for existence of named form"""
+        """tests for existence of named form"""
         internalname = xObjectName(name)
         return internalname in self.idToObject
 
@@ -566,7 +566,7 @@ import re
 _re_cleanparens=re.compile('[^()]')
 del re
 def _isbalanced(s):
-    '''test whether a string is balanced in parens'''
+    '''tests whether a string is balanced in parens'''
     s = _re_cleanparens.sub('',s)
     n = 0
     for c in s:
@@ -838,7 +838,7 @@ class PDFStream:
         return STREAMFMT % sdict
 
 def teststream(content=None):
-    #content = "" # test
+    #content = "" # tests
     if content is None:
         content = teststreamcontent
     content = string.strip(content)
@@ -846,7 +846,7 @@ def teststream(content=None):
     S = PDFStream(content = content,
                     filters=rl_config.useA85 and [PDFBase85Encode,PDFZCompress] or [PDFZCompress])
     # nothing else needed...
-    S.__Comment__ = "test stream"
+    S.__Comment__ = "tests stream"
     return S
 
 teststreamcontent = """

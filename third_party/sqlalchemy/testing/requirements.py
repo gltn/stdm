@@ -10,7 +10,7 @@
 Provides decorators to mark tests requiring specific feature support from the
 target database.
 
-External dialect test suites should subclass SuiteRequirements
+External dialect tests suites should subclass SuiteRequirements
 to provide specific inclusion/exclusions.
 
 """
@@ -569,7 +569,7 @@ class SuiteRequirements(Requirements):
 
         Basically this::
 
-            select data as foo from test order by foo || 'bar'
+            select data as foo from tests order by foo || 'bar'
 
         Lots of databases including Postgresql don't support this,
         so this is off by default.

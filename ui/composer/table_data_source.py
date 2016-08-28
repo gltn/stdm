@@ -26,7 +26,7 @@ from PyQt4.QtCore import QRegExp
 
 from qgis.core import QgsMapLayerRegistry
 
-from stdm.data import (
+from stdm.data.pg_utils import (
     VIEWS,
     vector_layer
 )
@@ -53,7 +53,7 @@ class ComposerTableDataSourceEditor(QWidget, Ui_TableDataSourceEditor):
         self.ref_table.load_data_source_fields(ds_name)
 
         #Load source tables
-        self.ref_table.load_link_tables(source=VIEWS)
+        self.ref_table.load_link_tables()
 
         #Connect signals
         self._composer_wrapper.dataSourceSelected.connect(self.ref_table.on_data_source_changed)

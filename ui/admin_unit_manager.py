@@ -21,8 +21,8 @@ from collections import OrderedDict
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from stdm.data import (
-    STRTreeViewModel,
+from stdm.data.qtmodels import STRTreeViewModel
+from stdm.data.database import (
     AdminSpatialUnitSet,
     STDMDb,
     Base
@@ -106,14 +106,14 @@ VIEW = 2301
 MANAGE = 2302
 SELECT = 2303 #When widget is used to select one or more records from the table list
 
-class AdminUnitManager(QWidget,Ui_frmAdminUnitManager):
+class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
     '''
     Administrative Unit Manager Widget
     '''
     #Signal raised when the state (view/manage) of the widet changes.
     stateChanged = pyqtSignal('bool')
     
-    def __init__(self,parent=None,State = VIEW):
+    def __init__(self, parent=None, State=VIEW):
         QWidget.__init__(self,parent)
         self.setupUi(self)
         
@@ -126,9 +126,6 @@ class AdminUnitManager(QWidget,Ui_frmAdminUnitManager):
         
         #Configure validating line edit controls
         invalidMsg = "{} already exists."
-        self.txtUnitName.setModelAttr(AdminSpatialUnitSet,"Name")
-        self.txtUnitName.setInvalidMessage(invalidMsg)
-        self.txtUnitName.setNotificationBar(self._notifBar)
         self.txtUnitCode.setModelAttr(AdminSpatialUnitSet,"Code")
         self.txtUnitCode.setInvalidMessage(invalidMsg)
         self.txtUnitCode.setNotificationBar(self._notifBar)
@@ -137,13 +134,19 @@ class AdminUnitManager(QWidget,Ui_frmAdminUnitManager):
         Initialize formatter for the rendering the admin unit nodes and insert
         the root node into the tree view model.
         '''
-        self._adminUnitNodeFormatter = AdminUnitFormatter(self.tvAdminUnits, self)
+        self._adminUnitNodeFormatter = AdminUnitFormatter(
+            self.tvAdminUnits,
+            self
+        )
         self._rtNode = self._adminUnitNodeFormatter.rootNode
         
-        self._adminUnitTreeModel = STRTreeViewModel(self._adminUnitNodeFormatter.root(),view = self.tvAdminUnits)
+        self._adminUnitTreeModel = STRTreeViewModel(
+            self._adminUnitNodeFormatter.root(),
+            view=self.tvAdminUnits
+        )
         self.tvAdminUnits.setModel(self._adminUnitTreeModel)
         self.tvAdminUnits.hideColumn(2)
-        self.tvAdminUnits.setColumnWidth(0,250)
+        self.tvAdminUnits.setColumnWidth(0,220)
         
         #Connects slots
         self.connect(self.btnAdd, SIGNAL("clicked()"), self.onCreateAdminUnit)
@@ -151,6 +154,22 @@ class AdminUnitManager(QWidget,Ui_frmAdminUnitManager):
         self.connect(self.btnRemove, SIGNAL("clicked()"), self.onDeleteSelection)
         self.connect(self._adminUnitTreeModel, SIGNAL("dataChanged(const QModelIndex&,const QModelIndex&)"), self.onModelDataChanged)
         
+    def model(self):
+        """
+        :return: Returns the model associated with the administrative unit
+        view.
+        :rtype: STRTreeViewModel
+        """
+        return self._adminUnitTreeModel
+
+    def selection_model(self):
+        """
+        :return: Returns the selection model associated with the
+        administrative unit tree view.
+        :rtype: QItemSelectionModel
+        """
+        return self.tvAdminUnits.selectionModel()
+
     def state(self):
         '''
         Returns the current state that the widget has been configured in.
@@ -332,7 +351,7 @@ class AdminUnitManager(QWidget,Ui_frmAdminUnitManager):
                     self._notifBar.clear()
                     successmsg = QApplication.translate("AdminUnitManager",
                                          "Administrative unit successfully deleted.") 
-                    self._notifBar.insertInfoNotification(successmsg)
+                    self._notifBar.insertSuccessNotification(successmsg)
         
     def selectedAdministrativeUnit(self):
         '''

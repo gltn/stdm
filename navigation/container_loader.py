@@ -23,11 +23,13 @@ from PyQt4.QtCore import QObject,pyqtSignal
 
 from collections import OrderedDict
 
-from stdm.utils import *
+from stdm.utils.util import getIndex
 import stdm.data
-from stdm.data import Content, Role
+from stdm.data.database import (
+    Content,
+    Role
+)
 from .content_group import ContentGroup
-from stdm.security import Authorizer, SecurityException
 
 class QtContainerLoader(QObject):
     """
@@ -40,7 +42,9 @@ class QtContainerLoader(QObject):
     finished = pyqtSignal()
     #contentAdded = pyqtSignal(Content)
     
-    def __init__(self,parent,container, actionRef = None, register = False):
+    def __init__(self,parent,container, actionRef=None, register=False):
+        from stdm.security.authorization import Authorizer
+
         QObject.__init__(self,parent)
         self._container = container
         self._register = register
@@ -74,6 +78,8 @@ class QtContainerLoader(QObject):
         Add defined items in the specified container.
         """
         #If the user does not belong to any STDM group then the system will raise an error so gracefully terminate
+        from stdm.security.exception import SecurityException
+
         userRoles = self._authorizer.userRoles
         
         if len(userRoles) == 0:

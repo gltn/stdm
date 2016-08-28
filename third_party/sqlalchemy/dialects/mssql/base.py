@@ -67,7 +67,7 @@ support of the "start" and "increment" values::
 
     from sqlalchemy import Table, Integer, Sequence, Column
 
-    Table('test', metadata,
+    Table('tests', metadata,
            Column('id', Integer,
                   Sequence('blah', start=100, increment=10),
                   primary_key=True),
@@ -78,7 +78,7 @@ would yield:
 
 .. sourcecode:: sql
 
-   CREATE TABLE test (
+   CREATE TABLE tests (
      id INTEGER NOT NULL IDENTITY(100,10) PRIMARY KEY,
      name VARCHAR(20) NULL,
      )

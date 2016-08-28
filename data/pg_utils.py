@@ -27,13 +27,20 @@ from PyQt4.QtCore import (
 from qgis.core import *
 
 from sqlalchemy.sql.expression import text
-
+from sqlalchemy.exc import SQLAlchemyError
+from geoalchemy2 import WKBElement
 import stdm.data
-from stdm.data import STDMDb, Base
-from stdm.utils import (
+
+from stdm.data.database import (
+    STDMDb,
+    Base
+)
+from stdm.utils.util import (
     getIndex,
     PLUGIN_DIR
 )
+
+from sqlalchemy.exc import IntegrityError
 
 _postGISTables = ["spatial_ref_sys", "supporting_document"]
 _postGISViews = ["geometry_columns","raster_columns","geography_columns",
@@ -71,12 +78,13 @@ def spatial_tables(exclude_views=False):
 
 def pg_tables(schema="public", exclude_lookups=False):
     """
-    Returns all the tables in the given schema minus the default PostGIS tables.
+    Returns a list of all the tables in the given schema minus the default PostGIS tables.
     Views are also excluded. See separate function for retrieving views.
+    :rtype: list
     """
     t = text("SELECT table_name FROM information_schema.tables WHERE table_schema = :tschema and table_type = :tbtype " \
              "ORDER BY table_name ASC")
-    result = _execute(t,tschema = schema,tbtype = "BASE TABLE")
+    result = _execute(t, tschema=schema, tbtype="BASE TABLE")
         
     pgTables = []
         
@@ -105,11 +113,12 @@ def pg_views(schema="public"):
     """
     t = text("SELECT table_name FROM information_schema.tables WHERE table_schema = :tschema and table_type = :tbtype " \
              "ORDER BY table_name ASC")
-    result = _execute(t,tschema = schema,tbtype = "VIEW")
+    result = _execute(t, tschema = schema, tbtype = "VIEW")
         
     pgViews = []
         
     for r in result:
+
         viewName = r["table_name"]
         
         #Remove default PostGIS tables
@@ -146,7 +155,23 @@ def pg_table_exists(table_name, include_views=True, schema="public"):
     else:
         return True
 
-def process_report_filter(tableName,columns,whereStr="",sortStmnt=""):
+def pg_table_count(table_name):
+    """
+    Returns a count of records in a table
+    :param table_name: Table to get count of.
+    :type table_name: str
+    :rtype: int
+    """
+    sql_str = "Select COUNT(*) cnt from {0}".format(table_name)
+    sql = text(sql_str)
+
+    results = _execute(sql)
+    for result in results:
+        cnt = result['cnt']
+
+    return cnt
+
+def process_report_filter(tableName, columns, whereStr="", sortStmnt=""):
     #Process the report builder filter    
     sql = "SELECT {0} FROM {1}".format(columns,tableName)
     
@@ -160,7 +185,61 @@ def process_report_filter(tableName,columns,whereStr="",sortStmnt=""):
     
     return _execute(t)
 
-def table_column_names(tableName, spatialColumns=False):
+def export_data(table_name):
+    sql = "SELECT * FROM {0}".format(table_name, )
+
+    t = text(sql)
+
+    return _execute(t)
+
+def export_data_from_columns(columns, table_name):
+    sql = "SELECT {0} FROM {1}".format(columns, table_name)
+
+    t = text(sql)
+
+    return _execute(t)
+
+def fix_sequence(table_name):
+    """
+    Fixes a sequence error that commonly happen
+    after a batch insert such as in
+    import_data(), csv import, etc.
+    :param table_name: The name of the table to be fixed
+    :type table_name: String
+    """
+    sql_sequence_fix = text(
+        "SELECT setval('{0}_id_seq', (SELECT MAX(id) FROM {0}));".format(
+            table_name
+        )
+    )
+
+    _execute(sql_sequence_fix)
+
+
+def import_data(table_name, columns_names, data, **kwargs):
+
+    sql = "INSERT INTO {0} ({1}) VALUES {2}".format(table_name,
+                                                    columns_names, data)
+
+    t = text(sql)
+    conn = STDMDb.instance().engine.connect()
+    trans = conn.begin()
+
+    try:
+        result = conn.execute(t, **kwargs)
+        trans.commit()
+
+        conn.close()
+        return result
+
+    except IntegrityError:
+        trans.rollback()
+        return False
+    except SQLAlchemyError:
+        trans.rollback()
+        return False
+
+def table_column_names(tableName, spatialColumns=False, creation_order=False):
     """
     Returns the column names of the given table name. 
     If 'spatialColumns' then the function will lookup for spatial columns in the given 
@@ -170,9 +249,13 @@ def table_column_names(tableName, spatialColumns=False):
         sql = "select f_geometry_column from geometry_columns where f_table_name = :tbname ORDER BY f_geometry_column ASC"
         columnName = "f_geometry_column"
     else:
-        sql = "select column_name from information_schema.columns where table_name = :tbname ORDER BY column_name ASC"
-        columnName = "column_name"
-        
+        if not creation_order:
+            sql = "select column_name from information_schema.columns where table_name = :tbname ORDER BY column_name ASC"
+            columnName = "column_name"
+        else:
+            sql = "select column_name from information_schema.columns where table_name = :tbname"
+            columnName = "column_name"
+
     t = text(sql)
     result = _execute(t,tbname = tableName)
         
@@ -186,8 +269,7 @@ def table_column_names(tableName, spatialColumns=False):
 
 def non_spatial_table_columns(table):
     """
-    Returns non spatial table columns
-    Uses list comprehension
+    Returns non spatial table columns.
     """
     all_columns = table_column_names(table)
 
@@ -233,7 +315,7 @@ def geometryType(tableName, spatialColumnName, schemaName="public"):
         
     return (geomType,epsg_code)
 
-def unique_column_values(tableName,columnName,quoteDataTypes=["character varying"]):
+def unique_column_values(tableName, columnName, quoteDataTypes=["character varying"]):
     """
     Select unique row values in the specified column.
     Specify the data types of row values which need to be quoted. Default is varchar.
@@ -241,7 +323,7 @@ def unique_column_values(tableName,columnName,quoteDataTypes=["character varying
     dataType = columnType(tableName,columnName)
     quoteRequired = getIndex(quoteDataTypes, dataType)
     
-    sql = "SELECT DISTINCT {0} FROM {1}".format(columnName,tableName)
+    sql = "SELECT DISTINCT {0} FROM {1}".format(columnName, tableName)
     t = text(sql)
     result = _execute(t)
     
@@ -262,14 +344,14 @@ def unique_column_values(tableName,columnName,quoteDataTypes=["character varying
                 
     return uniqueVals
 
-def columnType(tableName,columnName):
+def columnType(tableName, columnName):
     """
     Returns the PostgreSQL data type of the specified column.
     """
     sql = "SELECT data_type FROM information_schema.columns where table_name=:tbName AND column_name=:colName"
     t = text(sql)
     
-    result = _execute(t,tbName = tableName,colName = columnName)
+    result = _execute(t, tbName=tableName, colName=columnName)
 
     dataType = ""
     for r in result:
@@ -355,10 +437,16 @@ def _execute(sql,**kwargs):
     """
     Execute the passed in sql statement
     """
-    conn = STDMDb.instance().engine.connect()        
+    conn = STDMDb.instance().engine.connect()
+    trans = conn.begin()
     result = conn.execute(sql,**kwargs)
-    conn.close()
-    return result
+    try:
+        trans.commit()
+        conn.close()
+        return result
+    except SQLAlchemyError:
+        trans.rollback()
+
 
 def reset_content_roles():
     rolesSet = "truncate table content_base cascade;"
@@ -391,7 +479,7 @@ def safely_delete_tables(tables):
 def flush_session_activity():
     STDMDb.instance().session._autoflush()
 
-def vector_layer(table_name, sql="", key="id", geom_column=""):
+def vector_layer(table_name, sql='', key='id', geom_column='', layer_name=''):
     """
     Returns a QgsVectorLayer based on the specified table name.
     """
@@ -408,7 +496,10 @@ def vector_layer(table_name, sql="", key="id", geom_column=""):
     ds_uri = conn.toQgsDataSourceUri()
     ds_uri.setDataSource("public", table_name, geom_column, sql, key)
 
-    v_layer = QgsVectorLayer(ds_uri.uri(), table_name, "postgres")
+    if not layer_name:
+        layer_name = table_name
+
+    v_layer = QgsVectorLayer(ds_uri.uri(), layer_name, "postgres")
 
     return v_layer
 
@@ -479,4 +570,75 @@ def foreign_key_parent_tables(table_name, search_parent=True, filter_exp=None):
         fk_refs.append(fk_ref)
 
     return fk_refs
+
+
+def table_view_dependencies(table_name, column_name=None):
+    """
+    Find database views that are dependent on the given table and
+    optionally the column.
+    :param table_name: Table name
+    :type table_name: str
+    :param column_name: Name of the column whose dependent views are to be
+    extracted.
+    :type column_name: str
+    :return: A list of views which are dependent on the given table name and
+    column respectively.
+    :rtype: list(str)
+    """
+    views = []
+
+    #Load the SQL file depending on whether its table or table/column
+    if column_name is None:
+        script_path = PLUGIN_DIR + '/scripts/table_related_views.sql'
+    else:
+        script_path = PLUGIN_DIR + '/scripts/table_column_related_views.sql'
+
+    script_file = QFile(script_path)
+
+    if not script_file.exists():
+        raise IOError('SQL file for retrieving view dependencies could '
+                      'not be found.')
+
+    else:
+        if not script_file.open(QIODevice.ReadOnly):
+            raise IOError('Failed to read the SQL file for retrieving view '
+                          'dependencies.')
+
+        reader = QTextStream(script_file)
+        sql = reader.readAll()
+        if sql:
+            t = text(sql)
+            if column_name is None:
+                result = _execute(t,table_name=table_name)
+
+            else:
+                result = _execute(t,table_name=table_name, column_name=column_name)
+
+            #Get view names
+            for r in result:
+                view_name = r['view_name']
+                views.append(view_name)
+
+    return views
+
+
+def drop_view(view_name):
+    """
+    Deletes the database view with the given name. The CASCADE command option
+    will be used hence dependent objects will also be dropped.
+    :param view_name: Name of the database view.
+    :type view_name: str
+    """
+    del_com = 'DROP VIEW IF EXISTS {0} CASCADE;'.format(view_name)
+    t = text(del_com)
+
+    try:
+        _execute(t)
+        return True
+
+    #Error such as view dependencies or the current user is not the owner.
+    except SQLAlchemyError:
+
+        return False
+
 

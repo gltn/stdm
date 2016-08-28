@@ -1,9 +1,9 @@
 #Copyright ReportLab Europe Ltd. 2000-2012
 #see license.txt for license details
 __version__='''$Id$'''
-__doc__="""Provides support for the test suite.
+__doc__="""Provides support for the tests suite.
 
-The test suite as a whole, and individual tests, need to share
+The tests suite as a whole, and individual tests, need to share
 certain support functions.  We have to put these in here so they
 can always be imported, and so that individual tests need to import
 nothing more than "reportlab.whatever..."
@@ -18,7 +18,7 @@ def isWritable(D):
     try:
         fn = '00DELETE.ME'
         f = open(fn, 'w')
-        f.write('test of writability - can be deleted')
+        f.write('tests of writability - can be deleted')
         f.close()
         if os.path.isfile(fn):
             os.remove(fn)
@@ -31,7 +31,7 @@ RL_HOME = None
 testsFolder = None
 def setOutDir(name):
     """Is it a writable file system distro being invoked within
-    test directory?  If so, can write test output here.  If not,
+    tests directory?  If so, can write tests output here.  If not,
     it had better go in a temp directory.  Only do this once per
     process"""
     global _OUTDIR, RL_HOME, testsFolder
@@ -72,7 +72,7 @@ def setOutDir(name):
     return _OUTDIR
 
 def outputfile(fn):
-    """This works out where to write test output.  If running
+    """This works out where to write tests output.  If running
     code in a locked down file system, this will be a
     temp directory; otherwise, the output of 'test_foo.py' will
     normally be a file called 'test_foo.pdf', next door.
@@ -88,7 +88,7 @@ def printLocation(depth=1):
             print 'Logs and output files written to folder "%s"' % outDir
 
 def makeSuiteForClasses(*classes):
-    "Return a test suite with tests loaded from provided classes."
+    "Return a tests suite with tests loaded from provided classes."
 
     suite = unittest.TestSuite()
     loader = unittest.TestLoader()
@@ -259,8 +259,8 @@ class CVSGlobDirectoryWalker(GlobDirectoryWalker):
 class SecureTestCase(unittest.TestCase):
     """Secure testing base class with additional pre- and postconditions.
 
-    We try to ensure that each test leaves the environment it has
-    found unchanged after the test is performed, successful or not.
+    We try to ensure that each tests leaves the environment it has
+    found unchanged after the tests is performed, successful or not.
 
     Currently we restore sys.path and the working directory, but more
     of this could be added easily, like removing temporary files or

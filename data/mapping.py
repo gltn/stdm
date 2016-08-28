@@ -25,7 +25,7 @@ from qgis.gui import *
 from qgis.core import *
 
 from stdm.ui.helpers import valueHandler, ControlDirtyTrackerCollection
-from stdm.ui.notification import NotificationBar,ERROR,WARNING,INFO
+from stdm.ui.notification import NotificationBar,ERROR,WARNING, SUCCESS
 
 __all__ = ["SAVE","UPDATE","MapperMixin","QgsFeatureMappperMixin"]
 
@@ -129,12 +129,25 @@ class _AttributeMapper(object):
         '''
 
         if hasattr(self._model, self._attrName):
+
             controlValue = self._valueHandler.value()
-            setattr(self._model,self._attrName,controlValue)
+            # The to conditions below fix the issue of
+            # saving data for QGIS forms and other forms.
+            # QGIS only recognizes QDate so we have
+            # keep the control value as QData and
+            # convert it to python date before
+            # saving to the database here.
+            if isinstance(controlValue, QDate):
+                controlValue = controlValue.toPyDate()
+
+            if isinstance(controlValue, QDateTime):
+                controlValue = controlValue.toPyDateTime()
+
+            setattr(self._model, self._attrName, controlValue)
     
 class MapperMixin(object):
     '''
-    Mixin class for use in a dialog or widget, and does the heavy lifting when it comes to managing attribute mapping.
+    Mixin class for use in a dialog or widget, and manages attribute mapping.
     '''
     def __init__(self,model):
         '''
@@ -159,7 +172,8 @@ class MapperMixin(object):
         #Flag to indicate whether to close the widget or dialog once model has been submitted
         #self.closeOnSubmit = True
         
-    def addMapping(self,attributeName,control,isMandatory = False,pseudoname = "",valueHandler = None,preloadfunc = None):
+    def addMapping(self,attributeName,control,isMandatory=False,
+                   pseudoname='', valueHandler=None, preloadfunc=None):
         '''
         Specify the mapping configuration.
         '''
@@ -184,7 +198,7 @@ class MapperMixin(object):
             
         self._attrMappers.append(attributeMapper)
         self._attr_mapper_collection[attributeMapper.attributeName()] = attributeMapper
-        
+
     def saveMode(self):
         '''
         Return the mode that the mapper is currently configured in.
@@ -320,47 +334,70 @@ class MapperMixin(object):
         '''
         pass
     
-    def submit(self):
-        '''
-        Slot for saving or updating the model. This will close the dialog on successful submission.
-        '''
+    def submit(self, collect_model=False):
+        """
+        Slot for saving or updating the model.
+        This will close the dialog on successful submission.
+        :param collect_model: If set to True only returns
+        the model without saving it to the database.
+        :type collect_model: Boolean
+        :return: If collect_model, returns SQLAlchemy Model
+        if collect model is false returns None
+        :rtype: Class or NoneType
+        """
         if not self.preSaveUpdate():
             return
         
         self.clearNotifications()
         isValid= True
-        
+
         #Validate mandatory fields have been entered by the user.
         for attrMapper in self._attrMappers:
             if attrMapper.isMandatory() and attrMapper.valueHandler().supportsMandatory():
                 if attrMapper.valueHandler().value() == attrMapper.valueHandler().default():
                     #Notify user
-                    msg = QApplication.translate("MappedDialog","(%s) is a required field.")%str(attrMapper.pseudoName())
+                    msg = QApplication.translate("MappedDialog",
+                                                 "'%s' is a required field.")\
+                          %unicode(attrMapper.pseudoName())
                     self._notifBar.insertWarningNotification(msg)
                     isValid = False
                 else:
                     attrMapper.bindModel()
-                    
+
             else:
                 attrMapper.bindModel()
         
         if not isValid:
             return
-        
-        self._persistModel()
-            
-    def _persistModel(self):
-        #Persist the model to its corresponding store.
-        if self._mode == SAVE:
-            self._model.save()
-            QMessageBox.information(self, QApplication.translate("MappedDialog","Record Saved"), \
-                                    QApplication.translate("MappedDialog","New record has been successfully saved"))
-            
+        if collect_model:
+            return self.model()
         else:
-            self._model.update()
-            QMessageBox.information(self, QApplication.translate("MappedDialog","Record Updated"), \
-                                    QApplication.translate("MappedDialog","Record has been successfully updated"))
-            
+            self._persistModel()
+
+    def _persistModel(self):
+        try:
+            #Persist the model to its corresponding store.
+            if self._mode == SAVE:
+                self._model.save()
+                QMessageBox.information(self, QApplication.translate("MappedDialog","Record Saved"), \
+                                        QApplication.translate("MappedDialog","New record has been successfully saved."))
+
+            else:
+                self._model.update()
+                QMessageBox.information(self, QApplication.translate("MappedDialog","Record Updated"), \
+                                        QApplication.translate("MappedDialog","Record has been successfully updated."))
+        except Exception as ex:
+            QMessageBox.critical(
+                self,
+                QApplication.translate(
+                    "MappedDialog", "Failed to Save Data"
+                ),
+                QApplication.translate(
+                    "MappedDialog",
+                    u'The data could not be saved due to the error: \n{}'
+                        .format(ex.args[0])
+                )
+            )
         #Close the dialog
         if isinstance(self, QDialog):
             self.postSaveUpdate(self._model)

@@ -26,7 +26,7 @@ from PyQt4.QtGui import (
 
 from qgis.core import QgsComposerPicture
 
-from stdm.utils import (
+from stdm.utils.util import (
     setComboCurrentIndexWithItemData,
     setComboCurrentIndexWithText
 )

@@ -24,18 +24,23 @@ from .ui_login import Ui_frmLogin
 from .db_conn_dlg import dbconnDlg
 from .notification import NotificationBar,ERROR
 
-from stdm.data import DatabaseConfig, DatabaseConnection
-from stdm.settings import RegistryConfig
-from stdm.security import User
+from stdm.data.config import DatabaseConfig
+from stdm.data.connection import DatabaseConnection
+from stdm.settings.registryconfig import RegistryConfig
+from stdm.security.user import User
 
 SUPERUSER = 'postgres'
+
 class loginDlg(QDialog, Ui_frmLogin):
     '''
     This class handles user authentication for accessing STDM resources
     '''
-    def __init__(self,plugin):
-        QDialog.__init__(self,plugin.iface.mainWindow())
+    def __init__(self, parent=None, test_connect_mode=False):
+        QDialog.__init__(self, parent)
         self.setupUi(self)
+
+        #If dialog is used in the context of testing database connections
+        self._test_connect_mode = test_connect_mode
         
         #gui initialization
         self.initGui()
@@ -49,15 +54,44 @@ class loginDlg(QDialog, Ui_frmLogin):
         Initialize GUI
         '''
         #Change the name of the OK button to Login
-        btnLogin=self.btnBox.button(QDialogButtonBox.Ok)
-        btnLogin.setText(QApplication.translate("loginDlg","Login"))
+        btnLogin = self.btnBox.button(QDialogButtonBox.Ok)
+
+        if self._test_connect_mode:
+            btnLogin.setText(QApplication.translate("LoginDialog", "Test"))
+            self.setWindowTitle(QApplication.translate("LoginDialog",
+                                                       "STDM Database "
+                                                       "Connection"))
+            self.btn_db_settings.setVisible(False)
+
+        else:
+            btnLogin.setText(QApplication.translate("LoginDialog","Login"))
+            self.btn_db_settings.setVisible(True)
+
         #Connect slots
-        self.connect(self.btnBox, SIGNAL("accepted()"), self.acceptdlg)
+        self.btn_db_settings.clicked.connect(self.settingsDialog)
+        self.btnBox.accepted.connect(self.acceptdlg)
         
         #Configure notification bar
         self.notifBar = NotificationBar(self.vlNotification)
-        self.txtUserName.setText('postgres')
-        #self.txtPassword.setText('root')
+
+        if self._test_connect_mode:
+            self.txtUserName.setFocus()
+
+        else:
+            self.txtUserName.setText('postgres')
+            self.txtPassword.setFocus()
+
+    def test_connect_mode(self):
+        return self._test_connect_mode
+
+    def set_database_connection(self, db_connection):
+        """
+        Set database connection object. User object will be overwritten
+        as it will be derived from the username and password controls.
+        :param db_connection: Database connection object
+        :type db_connection: DatabaseConnection
+        """
+        self.dbConn = db_connection
                         
     def validateInput(self):
         '''
@@ -82,7 +116,7 @@ class loginDlg(QDialog, Ui_frmLogin):
         else:
             return True 
         
-    def __setUser(self):
+    def _set_user(self):
         '''
         Create the user object based on the user input
         '''      
@@ -90,31 +124,15 @@ class loginDlg(QDialog, Ui_frmLogin):
         password = self.txtPassword.text()
         self.User = User(username, password)
 
-    def resetSetting(self):
-        '''
-        Add reset button to change the settings incase they are incorrect
-        '''
-        self.btnBox.setStandardButtons(QDialogButtonBox.Reset | QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
-        btnReset=self.btnBox.button(QDialogButtonBox.Reset)
-        btnReset.setText(QApplication.translate('loginDlg','Reset Settings'))
-
-    def onRegistrySettings(self):
-        '''
-        On clicking the reset button, activate the settings dialog
-        '''
-        btnReset=self.btnBox.button(QDialogButtonBox.Reset)
-        btnReset.clicked.connect(self.settingsDialog)
-
-
     def settingsDialog(self):
         '''
         Incase the user clicks reset button to change the settings
         '''
         setting_data = self.reg_setting()
         dbDlg = dbconnDlg(self)
-        dbDlg.txtDatabase.setText(str(setting_data['Database']))
-        dbDlg.txtHost.setText(str(setting_data['Host']))
-        dbDlg.txtPort.setText(str(setting_data['Port']))
+        dbDlg.txtDatabase.setText(unicode(setting_data['Database']))
+        dbDlg.txtHost.setText(unicode(setting_data['Host']))
+        dbDlg.txtPort.setText(unicode(setting_data['Port']))
         dbDlg.exec_()
 
     def reg_setting(self):
@@ -128,38 +146,55 @@ class loginDlg(QDialog, Ui_frmLogin):
         On user clicking the login button
         '''
         isValid = self.validateInput()
+
         if isValid:
             #Set user object
-            self.__setUser()
-            #Get DB connection
-            dbconfig = DatabaseConfig()
-            dbconn = dbconfig.read()
-            if not dbconn:
-                msg = QApplication.translate("loginDlg","The STDM database connection has not been configured in your system.\nWould you like to configure it now?")
-                response = QMessageBox.warning(self, QApplication.translate("LoginDialog","Database Connection"), 
-                                               msg, QMessageBox.Yes|QMessageBox.No, QMessageBox.Yes)
-                if response == QMessageBox.Yes:
-                    dbDlg = dbconnDlg(self)
-                    if dbDlg.exec_() == QDialog.Accepted:
-                        #set the partial database connection properties
-                        dbconn = dbDlg.dbconn
-                #Whatever the outcome of the database settings definition process                
-                if dbconn == None:
-                    return                
+            self._set_user()
+
+            #Get mode and corresponding database connection object
+            if not self._test_connect_mode:
+                #Get DB connection
+                dbconfig = DatabaseConfig()
+                dbconn = dbconfig.read()
+                if  dbconn is None:
+                    msg = QApplication.translate("loginDlg","The STDM database "
+                                                            "connection has not "
+                                                            "been configured in "
+                                                            "your system.\nWould "
+                                                            "you like to configure "
+                                                            "it now?")
+                    response = QMessageBox.warning(self,
+                                                   QApplication.translate(
+                                                       "LoginDialog",
+                                                       "Database Connection"),
+                                                   msg,
+                                                   QMessageBox.Yes|QMessageBox.No,
+                                                   QMessageBox.Yes)
+                    if response == QMessageBox.Yes:
+                        dbDlg = dbconnDlg(self)
+                        if dbDlg.exec_() == QDialog.Accepted:
+                            #set the partial database connection properties
+                            dbconn = dbDlg.dbconn
+
+            else:
+                dbconn = self.dbConn
+
+            #Whatever the outcome of the database settings definition process
+            if dbconn is None:
+                return
+
             dbconn.User = self.User
+
             #Test connection
             success, msg = dbconn.validateConnection()
+
             if success:
                 self.dbConn = dbconn
                 self.accept()
+
             else:
-                QMessageBox.critical(self,
-                                     QApplication.translate("LoginDialog",
-                                "Authentication Failed"),
-                                     msg)
-                if self.User.UserName == SUPERUSER:
-                    self.resetSetting()
-                    self.onRegistrySettings()
+                QMessageBox.critical(self, QApplication.translate(
+                    "LoginDialog", "Authentication Failed"), msg)
                 self.txtPassword.setFocus()
                 self.txtPassword.selectAll()
 

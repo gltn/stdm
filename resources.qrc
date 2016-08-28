@@ -1,9 +1,11 @@
 <RCC>
   <qresource prefix="/plugins/stdm">
+    <file>images/icons/warning_large.png</file>
     <file>images/QGIS Splash.png</file>
     <file>images/icons/edit_settings.png</file>
     <file>images/icons/help-content.png</file>
     <file>images/icons/info.png</file>
+    <file>images/icons/info_small.png</file>
     <file>images/icons/login.png</file>
     <file>images/icons/logout.png</file>
     <file>images/icons/settings.png</file>
@@ -11,21 +13,18 @@
     <file>images/icons/entity_management.png</file>
     <file>images/icons/content_auth.png</file>
     <file>images/icons/users_manage.png</file>
-    <file>images/icons/enumerator.png</file>
-    <file>images/icons/questionaire.png</file>
     <file>images/icons/search.png</file>
     <file>images/icons/add.png</file>
-    <file>images/icons/admin_unit.png</file>
     <file>images/icons/roles.png</file>
     <file>images/icons/user.png</file>
     <file>images/icons/user_mapping.png</file>
-    <file>images/icons/people_icon.png</file>
     <file>images/icons/property_manager.png</file>
     <file>images/icons/update.png</file>
     <file>images/icons/save.png</file>
     <file>images/icons/attachment.png</file>
     <file>images/icons/remove.png</file>
     <file>images/icons/close.png</file>
+    <file>images/icons/close_msg.png</file>
     <file>images/icons/receipt.png</file>
     <file>images/icons/social_tenure.png</file>
     <file>images/icons/inherit.png</file>
@@ -89,5 +88,10 @@
     <file>images/icons/photo_512.png</file>
     <file>images/icons/layer.gif</file>
     <file>images/icons/table_designer.png</file>
+    <file>images/icons/db_server_settings.png</file>
+    <file>images/icons/options.png</file>
+    <file>images/icons/user_tip.png</file>
+    <file>images/icons/select_record.png</file>
+    <file>images/icons/hierarchy.png</file>
   </qresource>
 </RCC>

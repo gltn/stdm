@@ -666,7 +666,7 @@ else:
     XMLParser = SlowXMLParser
 
 # --------------------------------------------------------------------
-# test stuff
+# tests stuff
 
 class TestXMLParser(XMLParser):
 
@@ -748,7 +748,7 @@ def test(args = None):
     if args:
         file = args[0]
     else:
-        file = 'test.xml'
+        file = 'tests.xml'
 
     if file == '-':
         f = sys.stdin

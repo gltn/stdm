@@ -16,11 +16,12 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-
-from PyQt4.QtGui import * 
-from ui_aboutSTDM import Ui_frmAbout
 import sys,os
+
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+
+from ui_aboutSTDM import Ui_frmAbout
 
 class AboutDialog(QDialog):  
     
@@ -37,10 +38,10 @@ class AboutDialog(QDialog):
             
     def initDialog(self):
         #Fetch references
-        logoPixMap=QPixmap(":/plugins/stdm/images/un_habitat.jpg")
+        logoPixMap = QPixmap(":/plugins/stdm/images/un_habitat.jpg")
         self.ui.lblLogo.setPixmap(logoPixMap)
         dirP = os.path.dirname(__file__)
-        normPath=str(dirP) + '\stdm\summary.txt'
+        normPath = unicode(dirP) + '\stdm\summary.txt'
         #absPath=os.path.join(str(dir),'\stdm\summary.txt')
         aboutStream=open(os.path.normpath(normPath))
         about=aboutStream.read()

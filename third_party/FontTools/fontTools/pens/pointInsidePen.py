@@ -17,10 +17,10 @@ ZERO_MINUS_EPSILON = 0 - EPSILON
 
 class PointInsidePen(BasePen):
 
-	"""This pen implements "point inside" testing: to test whether
+	"""This pen implements "point inside" testing: to tests whether
 	a given point lies inside the shape (black) or outside (white).
 	Instances of this class can be recycled, as long as the
-	setTestPoint() method is used to set the new point to test.
+	setTestPoint() method is used to set the new point to tests.
 
 	Typical usage:
 
@@ -34,7 +34,7 @@ class PointInsidePen(BasePen):
 	to use the even-odd algorithm.
 	"""
 
-	# This class implements the classical "shoot a ray from the test point
+	# This class implements the classical "shoot a ray from the tests point
 	# to infinity and count how many times it intersects the outline" (as well
 	# as the non-zero variant, where the counter is incremented if the outline
 	# intersects the ray in one direction and decremented if it intersects in
@@ -49,14 +49,14 @@ class PointInsidePen(BasePen):
 		self.setTestPoint(testPoint, evenOdd)
 
 	def setTestPoint(self, testPoint, evenOdd=0):
-		"""Set the point to test. Call this _before_ the outline gets drawn."""
+		"""Set the point to tests. Call this _before_ the outline gets drawn."""
 		self.testPoint = testPoint
 		self.evenOdd = evenOdd
 		self.firstPoint = None
 		self.intersectionCount = 0
 
 	def getResult(self):
-		"""After the shape has been drawn, getResult() returns True if the test
+		"""After the shape has been drawn, getResult() returns True if the tests
 		point lies within the (black) shape, and False if it doesn't.
 		"""
 		if self.firstPoint is not None:

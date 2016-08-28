@@ -801,7 +801,7 @@ def cjkFragSplit(frags, maxWidths, calcBounds, encoding='utf8'):
             if not lineBreak:
                 if ord(u)<0x3000:
                     # we appear to be inside a non-Asian script section.
-                    # (this is a very crude test but quick to compute).
+                    # (this is a very crude tests but quick to compute).
                     # This is likely to be quite rare so the speed of the
                     # code below is hopefully not a big issue.  The main
                     # situation requiring this is that a document title
@@ -1213,7 +1213,7 @@ class Paragraph(Flowable):
                 else:
                     newWidth = currentWidth
 
-                #test to see if this frag is a line break. If it is we will only act on it
+                #tests to see if this frag is a line break. If it is we will only act on it
                 #if the current width is non-negative or the previous thing was a deliberate lineBreak
                 lineBreak = hasattr(f,'lineBreak')
                 endLine = (newWidth>maxWidth and n>0) or lineBreak

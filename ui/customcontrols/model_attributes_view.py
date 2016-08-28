@@ -20,10 +20,10 @@ email                : gkahiu@gmail.com
 from collections import OrderedDict
 
 from PyQt4.QtGui import (
-                         QListView,
-                         QStandardItemModel,
-                         QStandardItem
-                         )
+     QListView,
+     QStandardItemModel,
+     QStandardItem
+)
 from PyQt4.QtCore import Qt
 
 __all__ = ["ModelAtrributesView"]
@@ -80,7 +80,8 @@ class ModelAtrributesView(QListView):
         try:
             self._loadAttrs(self._dataModel.displayMapping(), sort)
         except AttributeError:
-            #Ignore error if model does not contain the displayMapping static method
+            # Ignore error if model does not contain
+            # the displayMapping static method
             pass
 
     def load_mapping(self, mapping, sort=False):
@@ -124,13 +125,15 @@ class ModelAtrributesView(QListView):
         """
         Return a dictionary of field names and their corresponding display values.
         """
-        selectedAttrs = {}
+        selectedAttrs = OrderedDict()
         
         for i in range(self._attrModel.rowCount()):
             displayNameItem = self._attrModel.item(i,0)
-            
+
             if displayNameItem.checkState() == Qt.Checked:
-                attrNameItem = self._attrModel.item(i,1)  
+
+                attrNameItem = self._attrModel.item(i,1)
+
                 selectedAttrs[attrNameItem.text()] = displayNameItem.text()
-        
+
         return selectedAttrs

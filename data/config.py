@@ -18,13 +18,13 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
-from stdm.settings import RegistryConfig
-from connection import DatabaseConnection
+from .connection import DatabaseConnection
+from stdm.settings.registryconfig import RegistryConfig
 
 class DatabaseConfig(object):
-    '''
-    Reads and writes database settings in the registry
-    '''
+    """
+    Reads and writes database settings in the registry.
+    """
     def __init__(self):
         self.host = "Host"
         self.port = "Port"    
@@ -49,7 +49,7 @@ class DatabaseConfig(object):
         db_settings = {}
         db_settings[self.host] = db_connection.Host
         db_settings[self.port] = db_connection.Port
-        db_settings[self.dbname] = db_connection.Database
+        db_settings[self.db_name] = db_connection.Database
 
         self.reg_config.write(db_settings)
     

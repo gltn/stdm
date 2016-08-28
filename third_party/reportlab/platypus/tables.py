@@ -14,7 +14,7 @@ or columns should be automatically sized.
 All the cell values should be convertible to strings; embedded newline '\\n' characters
 cause the value to wrap (ie are like a traditional linefeed).
 
-See the test output from running this module as a script for a discussion of the method for constructing
+See the tests output from running this module as a script for a discussion of the method for constructing
 tables and table styles.
 """
 from reportlab.platypus.flowables import Flowable, Preformatted, Spacer

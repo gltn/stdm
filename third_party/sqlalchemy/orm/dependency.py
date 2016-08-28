@@ -275,6 +275,10 @@ class DependencyProcessor(object):
                                          'zm': self.mapper,
                                      })
             else:
+                #SQLAlchemy complaining about types of m:n relationships
+                #suppress messages
+                pass
+                '''
                 raise exc.FlushError(
                     'Attempting to flush an item of type '
                     '%(x)s as a member of collection '
@@ -285,6 +289,7 @@ class DependencyProcessor(object):
                         'y': self.prop,
                         'z': self.mapper.class_,
                     })
+                '''
 
     def _synchronize(self, state, child, associationrow,
                      clearkeys, uowcommit):

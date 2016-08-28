@@ -59,7 +59,7 @@ each new connection.
 To set isolation level using :func:`.create_engine`::
 
     engine = create_engine(
-        "postgresql+pg8000://scott:tiger@localhost/test",
+        "postgresql+pg8000://scott:tiger@localhost/tests",
         isolation_level="READ UNCOMMITTED"
     )
 
@@ -111,19 +111,19 @@ omitting the referenced schema name from that definition when the name is
 also in the Postgresql schema search path.  The interaction below
 illustrates this behavior::
 
-    test=> CREATE TABLE test_schema.referred(id INTEGER PRIMARY KEY);
+    tests=> CREATE TABLE test_schema.referred(id INTEGER PRIMARY KEY);
     CREATE TABLE
-    test=> CREATE TABLE referring(
-    test(>         id INTEGER PRIMARY KEY,
-    test(>         referred_id INTEGER REFERENCES test_schema.referred(id));
+    tests=> CREATE TABLE referring(
+    tests(>         id INTEGER PRIMARY KEY,
+    tests(>         referred_id INTEGER REFERENCES test_schema.referred(id));
     CREATE TABLE
-    test=> SET search_path TO public, test_schema;
-    test=> SELECT pg_catalog.pg_get_constraintdef(r.oid, true) FROM
-    test-> pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n
-    test-> ON n.oid = c.relnamespace
-    test-> JOIN pg_catalog.pg_constraint r  ON c.oid = r.conrelid
-    test-> WHERE c.relname='referring' AND r.contype = 'f'
-    test-> ;
+    tests=> SET search_path TO public, test_schema;
+    tests=> SELECT pg_catalog.pg_get_constraintdef(r.oid, true) FROM
+    tests-> pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n
+    tests-> ON n.oid = c.relnamespace
+    tests-> JOIN pg_catalog.pg_constraint r  ON c.oid = r.conrelid
+    tests-> WHERE c.relname='referring' AND r.contype = 'f'
+    tests-> ;
                    pg_get_constraintdef
     ---------------------------------------------------
      FOREIGN KEY (referred_id) REFERENCES referred(id)
@@ -138,17 +138,17 @@ the function.
 On the other hand, if we set the search path back to the typical default
 of ``public``::
 
-    test=> SET search_path TO public;
+    tests=> SET search_path TO public;
     SET
 
 The same query against ``pg_get_constraintdef()`` now returns the fully
 schema-qualified name for us::
 
-    test=> SELECT pg_catalog.pg_get_constraintdef(r.oid, true) FROM
-    test-> pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n
-    test-> ON n.oid = c.relnamespace
-    test-> JOIN pg_catalog.pg_constraint r  ON c.oid = r.conrelid
-    test-> WHERE c.relname='referring' AND r.contype = 'f';
+    tests=> SELECT pg_catalog.pg_get_constraintdef(r.oid, true) FROM
+    tests-> pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n
+    tests-> ON n.oid = c.relnamespace
+    tests-> JOIN pg_catalog.pg_constraint r  ON c.oid = r.conrelid
+    tests-> WHERE c.relname='referring' AND r.contype = 'f';
                          pg_get_constraintdef
     ---------------------------------------------------------------
      FOREIGN KEY (referred_id) REFERENCES test_schema.referred(id)
@@ -160,7 +160,7 @@ were set to include ``test_schema``, and we invoked a table
 reflection process as follows::
 
     >>> from sqlalchemy import Table, MetaData, create_engine
-    >>> engine = create_engine("postgresql://scott:tiger@localhost/test")
+    >>> engine = create_engine("postgresql://scott:tiger@localhost/tests")
     >>> with engine.connect() as conn:
     ...     conn.execute("SET search_path TO test_schema, public")
     ...     meta = MetaData()

@@ -20,12 +20,91 @@ email                : gkahiu@gmail.com
 from PyQt4.QtCore import QSettings
 
 #Names of registry keys
-NETWORK_DOC_RESOURCE = "NetDocumentResource"
-PATHKEYS=['Config','NetDocumentResource','ComposerOutputs','ComposerTemplates']
-DATABASE_LOOKUP = "LookupInit"
-LOCAL_SOURCE_DOC = "SourceDocuments"
+NETWORK_DOC_RESOURCE = 'NetDocumentResource'
+PATHKEYS = ['Config','NetDocumentResource','ComposerOutputs','ComposerTemplates']
+DATABASE_LOOKUP = 'LookupInit'
+#There was a mixup in these 2 keys. Consolidation required across the plugin.
+LOCAL_SOURCE_DOC = NETWORK_DOC_RESOURCE
 COMPOSER_OUTPUT = 'ComposerOutputs'
 COMPOSER_TEMPLATE = 'ComposerTemplates'
+CURRENT_PROFILE = 'CurrentProfile'
+LAST_SUPPORTING_DOC_PATH = 'LastDocumentPath'
+SHOW_LICENSE = 'ShowLicense'
+WIZARD_RUN = 'wizardRun'
+CONFIG_UPDATED = 'ConfigUpdated'
+
+def registry_value(key_name):
+    """
+    Util method for reading the value for the given key.
+    :param key_name: Name of the registry key.
+    :type key_name: str
+    :return: Value of the of the given registry key.
+    :rtype: object
+    """
+    reg_config = RegistryConfig()
+
+    key_value = reg_config.read([key_name])
+
+    if len(key_value) == 0:
+        return None
+
+    else:
+        return key_value[key_name]
+
+
+def set_registry_value(key, value):
+    """
+    Sets the registry key with the specified value. A new key will be created
+    if it does not exist.
+    :param key: Registry key
+    :type: str
+    :param value: Value to be set for the given key.
+    :type value: object
+    """
+    reg_config = RegistryConfig()
+
+    reg_config.write({key: value})
+
+
+def composer_output_path():
+    """
+    :return: Returns the directory path of composer outputs.
+    :rtype: str
+    """
+    return registry_value(COMPOSER_OUTPUT)
+
+
+def composer_template_path():
+    """
+    :return: Returns the directory path of composer templates.
+    :rtype: str
+    """
+    return registry_value(COMPOSER_TEMPLATE)
+
+
+def source_documents_path():
+    """
+    :return: Returns the root path of source documents.
+    :rtype: str
+    """
+    return registry_value(NETWORK_DOC_RESOURCE)
+
+def last_document_path():
+    """
+    :return: Returns the latest path used for uploading supporting documents.
+    :rtype: str
+    """
+    return registry_value(LAST_SUPPORTING_DOC_PATH)
+
+
+def set_last_document_path(path):
+    """
+    Sets the latest path used for uploading supporting documents.
+    :param path: Supporting documents path
+    :type path: str
+    """
+    set_registry_value(LAST_SUPPORTING_DOC_PATH, path)
+
 
 class RegistryConfig(object):
     """
@@ -34,16 +113,17 @@ class RegistryConfig(object):
     def __init__(self):
         self.groupPath = "STDM"
     
-    def read(self,items):
+    def read(self, items):
         """
         Get the value of the user defined items from the STDM registry tree
+        param items: List of registry keys to fetch.
+        type items: list
         """
         userKeys = {}
         settings = QSettings()        
         settings.beginGroup("/")
         groups = settings.childGroups()
         for group in groups:
-            #QMessageBox.information(None, "Info", group)
             if str(group) == self._base_group():
                 for t in items:
                     tKey = self.groupPath + "/" + t

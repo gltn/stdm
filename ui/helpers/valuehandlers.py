@@ -18,14 +18,30 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 
-from PyQt4.QtGui import QLineEdit,QCheckBox,QComboBox,QTextEdit,QDateEdit, \
-QSpinBox,QDoubleSpinBox
+from PyQt4.QtGui import (
+    QLineEdit,
+    QCheckBox,
+    QComboBox,
+    QTextEdit,
+    QDateEdit,
+    QApplication,
+    QMessageBox,
+    QDateTimeEdit,
+    QSpinBox,
+    QDoubleSpinBox
+)
+
 from stdm.ui.sourcedocument import SourceDocumentManager
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.customcontrols import CoordinatesWidget
-from stdm.utils import setComboCurrentIndexWithItemData
+from stdm.utils.util import setComboCurrentIndexWithItemData
 from stdm.ui.customcontrols  import MultipleChoiceCombo
-from stdm.ui.attribute_browser import AttributeBrowser
+#from stdm.ui.attribute_browser import AttributeBrowser
+from stdm.ui.customcontrols.relation_line_edit import (
+    AdministrativeUnitLineEdit,
+    RelatedEntityLineEdit
+)
+from stdm.ui.customcontrols.multi_select_view import MultipleSelectTreeView
 
 class ControlValueHandler(object):
     control = None
@@ -95,9 +111,66 @@ class LineEditValueHandler(ControlValueHandler):
         return True
     
     def default(self):
-        return ""
+        return ''
     
 LineEditValueHandler.register()
+
+
+class AdministrativeUnitLineEditValueHandler(LineEditValueHandler):
+    """
+    Value handler for AdministrativeUnitLineEdit control.
+    """
+    controlType = AdministrativeUnitLineEdit
+
+    def value(self):
+        if not self.control.current_item is None:
+            return self.control.current_item.id
+
+        return None
+
+    def setValue(self, value):
+        if not value is None:
+            self.control.load_current_item_from_id(value)
+
+    def supportsMandatory(self):
+        return True
+
+    def default(self):
+        return None
+
+AdministrativeUnitLineEditValueHandler.register()
+
+
+class RelatedEntityLineEditValueHandler(AdministrativeUnitLineEditValueHandler):
+    """
+    Value handler for RelatedEntityLineEdit control.
+    """
+    controlType = RelatedEntityLineEdit
+
+RelatedEntityLineEditValueHandler.register()
+
+
+class MultipleSelectTreeViewValueHandler(ControlValueHandler):
+    """
+    Value handler for MultipleSelectTreeView control.
+    """
+    controlType = MultipleSelectTreeView
+
+    def value(self):
+        return self.control.selection()
+
+    def setValue(self, value):
+        if not value is None:
+            self.control.set_selection(value)
+
+    def supportsMandatory(self):
+        return True
+
+    def default(self):
+        return []
+
+MultipleSelectTreeViewValueHandler.register()
+
     
 class CheckBoxValueHandler(ControlValueHandler):
     '''
@@ -109,8 +182,18 @@ class CheckBoxValueHandler(ControlValueHandler):
         return self.control.isChecked()
     
     def setValue(self,value):
-        self.control.setChecked(value)
-        
+        if isinstance(value, str) or \
+                isinstance(value, unicode):
+            if value.lower() in ("yes", "true", "t", "1"):
+                self.control.setChecked(True)
+            else:
+                self.control.setChecked(False)
+        else:
+            if value is None:
+                self.control.setChecked(False)
+            else:
+                self.control.setChecked(False)
+
     def supportsMandatory(self):
         return False
     
@@ -160,21 +243,63 @@ class DateEditValueHandler(ControlValueHandler):
     controlType = QDateEdit
 
     def value(self):
-        return self.control.date().toPyDate()
-    
-    def setValue(self,value):
-        try:
-            if value is not None:
+        return self.control.date()
+
+    def setValue(self, value):
+        if value is not None:
+            try:
                 self.control.setDate(value)
-            else:
-                self.control.setValue(None)
-        except:
-            pass
+            except RuntimeError:
+                QMessageBox.warning(
+                    None,
+                    QApplication.translate(
+                        'DateEditValueHandler',
+                        "Attribute Table Error"
+                    ),
+                    'The change is not saved. '
+                    'Please use the form to edit data.'
+                )
+            except TypeError:
+                pass
 
     def supportsMandatory(self):
         return False
     
 DateEditValueHandler.register()
+
+
+class DateTimeEditValueHandler(ControlValueHandler):
+    '''
+    DateTimeEdit value reader.
+    '''
+    controlType = QDateTimeEdit
+
+    def value(self, for_spatial_unit=False):
+
+            return self.control.dateTime()
+
+    def setValue(self,value, for_spatial_unit=False):
+
+        try:
+            self.control.setDateTime(value)
+        except RuntimeError:
+            QMessageBox.warning(
+                None,
+                QApplication.translate(
+                    'DateTimeEditValueHandler',
+                    "Attribute Table Error"
+                ),
+                'The change is not saved. '
+                'Please use the form to edit data.'
+            )
+        except TypeError:
+            pass
+
+    def supportsMandatory(self):
+        return False
+
+DateTimeEditValueHandler.register()
+
     
 class SourceDocManagerValueHandler(ControlValueHandler):
     '''
@@ -182,27 +307,22 @@ class SourceDocManagerValueHandler(ControlValueHandler):
     '''
     controlType = SourceDocumentManager
 
-    def __init__(self,documenttype):
-        self._docType = documenttype
-        
     def value(self):
         #Get source document objects
-        srcDocs = self.control.sourceDocuments(self._docType)
-        #Get document ids
-        docIds = [sd.DocumentID for sd in srcDocs]
-        
-        return ",".join(docIds)
+        return self.control.model_objects()
     
     def setValue(self,value):
-        pass
+        if not value is None:
+            self.control.set_source_documents(value)
     
     def supportsMandatory(self):
         return True
     
     def default(self):
-        return 0
+        return []
     
 SourceDocManagerValueHandler.register()
+
 
 class ForeignKeyMapperValueHandler(ControlValueHandler):
     '''
@@ -220,10 +340,8 @@ class ForeignKeyMapperValueHandler(ControlValueHandler):
         return None
 
     def supportsMandatory(self):
-
         return True
 
-    
 ForeignKeyMapperValueHandler.register()
 
 class SpinBoxValueHandler(ControlValueHandler):
@@ -277,21 +395,6 @@ class CoordinatesWidgetValueHandler(ControlValueHandler):
     
 CoordinatesWidgetValueHandler.register()
 
-class AttributeBrowserValueHandler(ControlValueHandler):
-    controlType = AttributeBrowser
-
-    def value(self):
-        ctlValue = self.control.values()
-        return ctlValue
-
-    def setValue(self, value):
-        if value:
-            self.control.set_values(value)
-
-    def supportsMandatory(self):
-        return True
-
-AttributeBrowserValueHandler.register()
 
 class MultipleChoiceComboBox(ControlValueHandler):
 
@@ -304,7 +407,6 @@ class MultipleChoiceComboBox(ControlValueHandler):
     def setValue(self,value):
         if value:
             self.control.set_values(value)
-
 
 MultipleChoiceComboBox.register()
 

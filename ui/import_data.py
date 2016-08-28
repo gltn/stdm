@@ -17,6 +17,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+
 import sys
 import copy
 
@@ -28,31 +29,38 @@ from PyQt4.QtCore import (
     QSignalMapper
 )
 
+
 from stdm.utils import *
-from stdm.data import (
-    alchemy_table_relationships,
+from stdm.utils.util import getIndex
+from stdm.data.database import alchemy_table_relationships
+from stdm.data.pg_utils import (
     table_column_names,
     pg_tables,
     spatial_tables
 )
 from stdm.data.importexport import (
-    OGRReader,
-    ValueTranslatorManager,
     vectorFileDir,
     setVectorFileDir
 )
+from stdm.data.importexport.value_translators import ValueTranslatorManager
+from stdm.data.importexport.reader import OGRReader
 from .importexport import (
     ValueTranslatorConfig,
     TranslatorWidgetManager
 )
-
+from stdm.settings import current_profile
+from stdm.utils.util import (
+    profile_user_tables,
+    profile_spatial_tables
+)
 from .ui_import_data import Ui_frmImport
 
 class ImportData(QWizard, Ui_frmImport):
     def __init__(self,parent=None):
         QWizard.__init__(self,parent)
         self.setupUi(self) 
-                
+        self.curr_profile = current_profile()
+
         #Connect signals   
         self.btnBrowseSource.clicked.connect(self.setSourceFile)
         self.lstDestTables.itemClicked.connect(self.destSelectChanged)
@@ -65,7 +73,7 @@ class ImportData(QWizard, Ui_frmImport):
         self.lstSrcFields.currentRowChanged[int].connect(self.sourceRowChanged)
         self.lstTargetFields.currentRowChanged[int].connect(self.destRowChanged)
         self.lstTargetFields.currentRowChanged[int].connect(self._enable_disable_trans_tools)
-        self.chk_virtual.toggled.connect(self._on_load_virtual_fields)
+        self.chk_virtual.toggled.connect(self._on_load_virtual_columns)
          
         #Data Reader
         self.dataReader = None
@@ -80,9 +88,6 @@ class ImportData(QWizard, Ui_frmImport):
         self._init_translators()
 
         #self._set_target_fields_stylesheet()
-
-        #Disable virtual fields
-        self.chk_virtual.setVisible(False)
 
     def _init_translators(self):
         translator_menu = QMenu(self)
@@ -129,8 +134,26 @@ class ImportData(QWizard, Ui_frmImport):
                 #Safety precaution
                 if trans_config is None: return
 
-                trans_dlg = trans_config.create(self, self._source_columns(),
-                                                self.targetTab, dest_column, src_column)
+                try:
+                    trans_dlg = trans_config.create(
+                        self,
+                        self._source_columns(),
+                        self.targetTab,
+                        dest_column,
+                        src_column
+                    )
+
+                except RuntimeError as re:
+                    QMessageBox.critical(
+                        self,
+                        QApplication.translate(
+                            'ImportData',
+                            'Value Translator'
+                        ),
+                        unicode(re)
+                    )
+
+                    return
 
             self._handle_translator_dlg(dest_column, trans_dlg)
 
@@ -267,15 +290,26 @@ class ImportData(QWizard, Ui_frmImport):
         #Destination Columns
         tabIndex = int(self.field("tabIndex"))
         self.targetTab = self.destCheckedItem.text()
-        targetCols = table_column_names(self.targetTab)   
-            
+        targetCols = table_column_names(self.targetTab, False, True)
+
         #Remove geometry columns in the target columns list
         for gc in self.geomcols:            
             colIndex = getIndex(targetCols,gc)
             if colIndex != -1:
                 targetCols.remove(gc)
-                
+
+        #Remove 'id' column if there
+        id_idx = getIndex(targetCols, 'id')
+        if id_idx != -1:
+            targetCols.remove('id')
+
         self._add_target_table_columns(targetCols)
+
+        # #Add virtual columns if checkbox is enabled
+        # if self.chk_virtual.isChecked():
+        #     #Force virtual columns to be appended
+        #     self.chk_virtual.setChecked(False)
+        #     self.chk_virtual.setChecked(True)
 
     def _add_target_table_columns(self, items, style=False):
         for item in items:
@@ -287,24 +321,32 @@ class ImportData(QWizard, Ui_frmImport):
 
             self.lstTargetFields.addItem(list_item)
                 
-    def _on_load_virtual_fields(self, state):
+    def _on_load_virtual_columns(self, state):
         """
         Load/unload relationships in the list of destination table columns."
         """
-        relationship_names = alchemy_table_relationships(self.targetTab)
+        virtual_columns = self.dataReader.entity_virtual_columns(self.targetTab)
 
         if state:
-            if len(relationship_names) == 0:
+            if len(virtual_columns) == 0:
                 msg = QApplication.translate("ImportData",
-                    "There are no virtual fields in the specified table.")
-                QMessageBox.warning(self, QApplication.translate("ImportData","Import Data"),
-                                    msg)
+                    "There are no virtual columns for the specified table.")
+                QMessageBox.warning(
+                    self,
+                    QApplication.translate(
+                        'ImportData',
+                        'Import Data'
+                    ),
+                    msg
+                )
                 self.chk_virtual.setChecked(False)
 
-            self._add_target_table_columns(relationship_names, True)
+                return
+
+            self._add_target_table_columns(virtual_columns, True)
 
         else:
-            self._remove_destination_table_fields(relationship_names)
+            self._remove_destination_table_fields(virtual_columns)
 
     def _remove_destination_table_fields(self, fields):
         """Remove the specified columns from the destination view."""
@@ -321,27 +363,27 @@ class ImportData(QWizard, Ui_frmImport):
                 #Delete translator if already defined for the given column
                 self._delete_translator(f)
 
-    def loadGeomCols(self,table):
+    def loadGeomCols(self, table):
         #Load geometry columns based on the selected table 
-        self.geomcols = table_column_names(table, True)
+        self.geomcols = table_column_names(table, True, True)
         self.geomClm.clear()
         self.geomClm.addItems(self.geomcols)
                 
-    def loadTables(self,type):
+    def loadTables(self, type):
         #Load textual or spatial tables
         self.lstDestTables.clear()
-        
+        tables = None
         if type == "textual":
-            tables = pg_tables(exclude_lookups=False)
+            tables = profile_user_tables(self.curr_profile, False)
             
         elif type == "spatial":
-            tables = spatial_tables(exclude_views=True)
-                                
-        for t in tables:            
-            tabItem = QListWidgetItem(t,self.lstDestTables)
-            tabItem.setCheckState(Qt.Unchecked)
-            tabItem.setIcon(QIcon(":/plugins/stdm/images/icons/table.png"))
-            self.lstDestTables.addItem(tabItem)            
+            tables = profile_spatial_tables(self.curr_profile)
+        if tables is not None:
+            for t in tables:
+                tabItem = QListWidgetItem(t,self.lstDestTables)
+                tabItem.setCheckState(Qt.Unchecked)
+                tabItem.setIcon(QIcon(":/plugins/stdm/images/icons/table.png"))
+                self.lstDestTables.addItem(tabItem)
                 
     def validateCurrentPage(self):
         #Validate the current page before proceeding to the next one
@@ -358,7 +400,8 @@ class ImportData(QWizard, Ui_frmImport):
             
             if not self.dataReader.isValid():
                 self.ErrorInfoMessage("The source file could not be opened."
-                                      "it \nPlease check for the supported file types.")
+                                      "\nPlease check is the given file type "
+                                      "is supported")
                 validPage = False
                 
         if self.currentId()==1:
@@ -368,9 +411,9 @@ class ImportData(QWizard, Ui_frmImport):
                 
         if self.currentId()==2:
             validPage = self.execImport()
-            
-        return validPage        
-        
+
+        return validPage
+
     def setSourceFile(self):
         #Set the file path to the source file
         imageFilters = "Comma Separated Value (*.csv);;ESRI Shapefile (*.shp);;AutoCAD DXF (*.dxf)" 
@@ -426,13 +469,23 @@ class ImportData(QWizard, Ui_frmImport):
             self.ErrorInfoMessage(unicode(sys.exc_info()[1]))
 
         return success
+
+    def _clear_dest_table_selections(self, exclude=None):
+        #Clears checked items in destination table list view
+        if exclude is None:
+            exclude = []
+
+        for i in range(self.lstDestTables.count()):
+            item = self.lstDestTables.item(i)
+            if item.checkState() == Qt.Checked and not item.text() in exclude:
+                item.setCheckState(Qt.Unchecked)
         
     def destSelectChanged(self, item):
         """
         Handler when a list widget item is clicked,
         clears previous selections
         """
-        if self.destCheckedItem != None:
+        if not self.destCheckedItem is None:
             if item.checkState() == Qt.Checked:
                 self.destCheckedItem.setCheckState(Qt.Unchecked) 
             else:
@@ -440,7 +493,10 @@ class ImportData(QWizard, Ui_frmImport):
               
         if item.checkState() == Qt.Checked:
             self.destCheckedItem = item
-            
+
+            #Ensure other selected items have been cleared
+            self._clear_dest_table_selections(exclude=[item.text()])
+
             #Load geometry columns if selection is a spatial table
             if self.field("typeSpatial"):
                 self.loadGeomCols(item.text())

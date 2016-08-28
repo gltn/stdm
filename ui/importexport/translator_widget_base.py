@@ -21,12 +21,17 @@ email                : stdm@unhabitat.org
 """
 from PyQt4.QtGui import QMessageBox
 
-from stdm.data import (
+from stdm.data.pg_utils import (
    table_column_names,
    pg_tables,
    spatial_tables
 )
-from stdm.data.importexport import ValueTranslatorManager
+from stdm.utils.util import (
+
+    profile_user_tables
+)
+from stdm.settings import current_profile
+from stdm.data.importexport.value_translators import ValueTranslatorManager
 
 __all__ = ["TranslatorDialogBase", "TranslatorWidgetManager"]
 
@@ -40,6 +45,7 @@ class TranslatorDialogBase(object):
         self._dest_table = dest_table
         self._dest_col = dest_col
         self._src_col = src_col
+        self._current_profile = current_profile()
 
     def source_columns(self):
         """
@@ -47,6 +53,19 @@ class TranslatorDialogBase(object):
         :rtype: list
         """
         return self._source_cols
+
+    def entity(self):
+        """
+        :return: Returns the entity object corresponding to the destination
+        table.
+        :rtype: Entity
+        """
+        if self._current_profile is None:
+            return None
+
+        return self._current_profile.entity_by_name(
+            self._dest_table
+        )
 
     def selected_source_column(self):
         """
@@ -79,8 +98,12 @@ class TranslatorDialogBase(object):
         """
         Returns both textual and spatial table names.
         """
-        tables = pg_tables(exclude_lookups=False)
-        tables.extend(spatial_tables(exclude_views=True))
+        curr_profile = current_profile()
+
+        tables = profile_user_tables(
+            self._current_profile,
+            False
+        ).keys()
 
         return tables
 

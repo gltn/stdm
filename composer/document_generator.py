@@ -17,7 +17,7 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 import uuid
-
+import logging
 from PyQt4.QtGui import (
     QApplication,
     QImage,
@@ -50,30 +50,33 @@ from qgis.core import (
     QgsProject,
     QgsVectorLayer
 )
+from qgis.utils import (
+    iface
+)
 
-from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
+
 from sqlalchemy.sql.expression import text
 from sqlalchemy.schema import (
     Table,
     MetaData
 )
-from sqlalchemy import (
-    Column,
-    func
-)
-from geoalchemy2 import Geometry
 
-from stdm.settings import RegistryConfig
-from stdm.data import (
+from stdm.settings.registryconfig import RegistryConfig
+from stdm.data.pg_utils import (
     geometryType,
     pg_table_exists,
-    STDMDb,
     vector_layer
 )
-from stdm.ui import (
+from stdm.data.database import STDMDb
+from stdm.settings import (
+    current_profile
+)
+from stdm.ui.sourcedocument import (
     network_document_path
 )
-from stdm.utils import PLUGIN_DIR
+from stdm.utils.util import PLUGIN_DIR
+from stdm.ui.forms.widgets import EntityValueFormatter
 
 from .composer_data_source import ComposerDataSource
 from .composer_wrapper import load_table_layers
@@ -81,7 +84,8 @@ from .chart_configuration import ChartConfigurationCollection
 from .spatial_fields_config import SpatialFieldsConfiguration
 from .photo_configuration import PhotoConfigurationCollection
 from .table_configuration import TableConfigurationCollection
-    
+
+LOGGER = logging.getLogger('stdm')
 class DocumentGenerator(QObject):
     """
     Generates documents from user-defined templates.
@@ -99,15 +103,23 @@ class DocumentGenerator(QObject):
         self._dbSession = STDMDb.instance().session
         
         self._attr_value_formatters = {}
+
+        self._current_profile = current_profile()
+        if self._current_profile is None:
+            raise Exception('Current data profile has not been set.')
         
         #For cleanup after document compositions have been created
         self._map_memory_layers = []
-
+        self.map_registry = QgsMapLayerRegistry.instance()
         self._table_mem_layers = []
+        self._feature_ids = []
 
         self._link_field = ""
 
         self._base_photo_table = "supporting_document"
+
+        #Value formatter for output files
+        self._file_name_value_formatter = None
 
     def link_field(self):
         """
@@ -262,6 +274,14 @@ class DocumentGenerator(QObject):
                                              u"administrator.".format(composerDS.name()))
                 return False, msg
 
+            #Set file name value formatter
+            self._file_name_value_formatter = EntityValueFormatter(
+                name=data_source
+            )
+
+            #Register field names to be used for file naming
+            self._file_name_value_formatter.register_columns(dataFields)
+
             #TODO: Need to automatically register custom configuration collections
             #Photo config collection
             ph_config_collection = PhotoConfigurationCollection.create(templateDoc)
@@ -285,38 +305,39 @@ class DocumentGenerator(QObject):
             """
             Iterate through records where a single file output will be generated for each matching record.
             """
+
             for rec in records:
                 composition = QgsComposition(self._map_renderer)
                 composition.loadFromTemplate(templateDoc)
-                
+                ref_layer = None
                 #Set value of composer items based on the corresponding db values
                 for composerId in composerDS.dataFieldMappings().reverse:
                     #Use composer item id since the uuid is stripped off
                     composerItem = composition.getComposerItemById(composerId)
-                    
                     if not composerItem is None:
                         fieldName = composerDS.dataFieldName(composerId)
                         fieldValue = getattr(rec,fieldName)
                         self._composeritem_value_handler(composerItem, fieldValue)
 
-                #Extract photo information
+                # Extract photo information
                 self._extract_photo_info(composition, ph_config_collection, rec)
 
-                #Set table item values based on configuration information
+                # Set table item values based on configuration information
                 self._set_table_data(composition, table_config_collection, rec)
 
-                #Refresh non-custom map composer items
+                # Refresh non-custom map composer items
                 self._refresh_composer_maps(composition,
                                             spatialFieldsConfig.spatialFieldsMapping().keys())
-                            
-                #Create memory layers for spatial features and add them to the map
+
+                # Create memory layers for spatial features and add them to the map
                 for mapId,spfmList in spatialFieldsConfig.spatialFieldsMapping().iteritems():
+
                     map_item = composition.getComposerItemById(mapId)
-                    
+
                     if not map_item is None:
-                        #Clear any previous map memory layer
-                        self.clear_temporary_map_layers()
-                        
+                        # #Clear any previous map memory layer
+                        #self.clear_temporary_map_layers()
+
                         for spfm in spfmList:
                             #Use the value of the label field to name the layer
                             lbl_field = spfm.labelField()
@@ -333,7 +354,7 @@ class DocumentGenerator(QObject):
                                     layerName = self._random_feature_layer_name(spatial_field)
                             else:
                                 layerName = self._random_feature_layer_name(spatial_field)
-                            
+
                             #Extract the geometry using geoalchemy spatial capabilities
                             geom_value = getattr(rec, spatial_field)
                             if geom_value is None:
@@ -345,13 +366,12 @@ class DocumentGenerator(QObject):
                             #Get geometry type
                             geom_type, srid = geometryType(composerDS.name(),
                                                           spatial_field)
-                            
+
                             #Create reference layer with feature
                             ref_layer = self._build_vector_layer(layerName, geom_type, srid)
 
                             if ref_layer is None or not ref_layer.isValid():
                                 continue
-                            
                             #Add feature
                             bbox = self._add_feature_to_layer(ref_layer, geomWKT)
                             bbox.scale(spfm.zoomLevel())
@@ -367,18 +387,15 @@ class DocumentGenerator(QObject):
                             symbol_layer = spfm.symbolLayer()
                             if not symbol_layer is None:
                                 ref_layer.rendererV2().symbols()[0].changeSymbolLayer(0,spfm.symbolLayer())
-
                             '''
                             Add layer to map and ensure its always added at the top
                             '''
-                            QgsMapLayerRegistry.instance().addMapLayer(ref_layer, False)
-                            QgsProject.instance().layerTreeRoot().insertLayer(0, ref_layer)
+                            self.map_registry.addMapLayer(ref_layer)
                             self._iface.mapCanvas().setExtent(bbox)
                             self._iface.mapCanvas().refresh()
-
-                            #Add layer to map memory layer list
-                            self._map_memory_layers.append(ref_layer)
-
+                            # Add layer to map memory layer list
+                            self._map_memory_layers.append(ref_layer.id())
+                            self._hide_layer(ref_layer)
                         '''
                         Use root layer tree to get the correct ordering of layers
                         in the legend
@@ -396,6 +413,11 @@ class DocumentGenerator(QObject):
                     docFileName = self._build_file_name(data_source, entityFieldName,
                                                       entityFieldValue, dataFields, fileExtension)
 
+                    # Replace unsupported characters in Windows file naming
+                    docFileName = docFileName.replace('/', '_').replace \
+                        ('\\', '_').replace(':', '_').strip('*?"<>|')
+
+
                     if not docFileName:
                         return (False, QApplication.translate("DocumentGenerator",
                                     "File name could not be generated from the data fields."))
@@ -409,15 +431,12 @@ class DocumentGenerator(QObject):
                     if not qDir.exists(outputDir):
                         return (False, QApplication.translate("DocumentGenerator",
                                 "Output directory does not exist"))
-                    
+
                     absDocPath = u"{0}/{1}".format(outputDir, docFileName)
                     self._write_output(composition, outputMode, absDocPath)
-            
-            #Clear temporary layers
-            self.clear_temporary_layers()
-            
+
             return True, "Success"
-        
+
         return False, "Document composition could not be generated"
 
     def _random_feature_layer_name(self, sp_field):
@@ -447,7 +466,8 @@ class DocumentGenerator(QObject):
 
     def clear_temporary_map_layers(self):
         """
-        Clears all memory map layers that were used to create the composition.
+        Clears all memory map layers that were
+        used to create the composition.
         """
         self._clear_layers(self._map_memory_layers)
 
@@ -467,23 +487,36 @@ class DocumentGenerator(QObject):
     def _clear_layers(self, layers):
         if layers is None:
             return
-
         try:
-            layer_ids = [lyr.id() for lyr in layers]
-            QgsMapLayerRegistry.instance().removeMapLayers(layer_ids)
+            for lyr_id in layers:
+                self.map_registry.removeMapLayer(lyr_id)
+                layers.remove(lyr_id)
 
-        except RuntimeError:
-            pass
-    
+        except Exception as ex:
+            LOGGER.debug(
+                'Could not delete temporary designer layer. {}'.
+                    format(ex)
+            )
+
+    def _hide_layer(self, layer):
+        """
+        Hides a layer from the canvas.
+        :param layer: The layer to be hidden.
+        :type layer: QgsVectorLayer
+        :return: None
+        :rtype: NoneType
+        """
+        self._iface.legendInterface().setLayerVisible(
+            layer, False
+        )
+
     def _build_vector_layer(self, layer_name, geom_type, srid):
         """
         Builds a memory vector layer based on the spatial field mapping properties.
         """
         vl_geom_config = u"{0}?crs=epsg:{1!s}&field=name:string(20)&" \
                          u"index=yes".format(geom_type, srid)
-
         ref_layer = QgsVectorLayer(vl_geom_config, layer_name, "memory")
-        
         return ref_layer
 
     def _load_table_layers(self, config_collection):
@@ -502,7 +535,9 @@ class DocumentGenerator(QObject):
         v_layers = []
 
         for conf in table_configs:
+
             layer_name = conf.linked_table()
+
             v_layer = vector_layer(layer_name)
 
             if v_layer is None:
@@ -512,9 +547,10 @@ class DocumentGenerator(QObject):
                 return
 
             v_layers.append(v_layer)
-            self._map_memory_layers.append(v_layer)
 
-        QgsMapLayerRegistry.instance().addMapLayers(v_layers, False)
+            self._map_memory_layers.append(v_layer.id())
+
+        self.map_registry.addMapLayers(v_layers, False)
 
     def _set_table_data(self, composition, config_collection, record):
         #TODO: Clean up code to adopt this design.
@@ -547,6 +583,7 @@ class DocumentGenerator(QObject):
         :param record: Matching record from the result set.
         :type record: object
         """
+
         chart_configs = config_collection.items().values()
 
         for cc in chart_configs:
@@ -571,10 +608,33 @@ class DocumentGenerator(QObject):
             photo_tb = conf.linked_table()
             referenced_column = conf.source_field()
             referencing_column = conf.linked_field()
+            document_type = conf.document_type.replace(' ', '_').lower()
+            document_type_id = int(conf.document_type_id)
+
+            #Get name of base supporting documents table
+            supporting_doc_base = self._current_profile.supporting_document.name
+
+            #Get parent table of supporting document table
+            s_doc_entities = self._current_profile.supporting_document_entities()
+            photo_doc_entities = [de for de in s_doc_entities
+                                   if de.name == photo_tb]
+
+            if len(photo_doc_entities) == 0:
+                continue
+
+            photo_doc_entity = photo_doc_entities[0]
+            document_parent_table = photo_doc_entity.parent_entity.name
 
             #Get id of base photo
-            alchemy_table, results = self._exec_query(photo_tb, referencing_column,
-                                                      getattr(record, referenced_column, ""))
+            alchemy_table, results = self._exec_query(
+                photo_tb,
+                referencing_column,
+                getattr(record, referenced_column, '')
+            )
+
+            #Filter results further based on document type
+            results = [r for r in results
+                       if r.document_type == document_type_id]
 
             '''
             There are no photos in the referenced table column hence insert no
@@ -592,17 +652,34 @@ class DocumentGenerator(QObject):
                     continue
 
             for r in results:
-                base_ph_table, doc_results = self._exec_query(self._base_photo_table,
-                                                          "id", r.id)
+                base_ph_table, doc_results = self._exec_query(
+                    supporting_doc_base,
+                    'id',
+                    r.supporting_doc_id
+                )
 
                 for dr in doc_results:
-                    self._build_photo_path(composition, conf.item_id(), dr.document_type,
-                                           dr.document_id, dr.filename)
+                    self._build_photo_path(
+                        composition,
+                        conf.item_id(),
+                        document_parent_table,
+                        document_type,
+                        dr.document_identifier,
+                        dr.filename
+                    )
 
                 #TODO: Only interested in one photograph, should support more?
                 break
 
-    def _build_photo_path(self, composition, composer_id, doc_type, doc_id, doc_name):
+    def _build_photo_path(
+            self,
+            composition,
+            composer_id,
+            document_parent_table,
+            document_type,
+            doc_id,
+            doc_name
+    ):
         pic_item = composition.getComposerItemById(composer_id)
 
         if pic_item is None:
@@ -617,8 +694,15 @@ class DocumentGenerator(QObject):
             return
 
         img_extension = extensions[1]
-        abs_path = u"{0}/{1}/{2}.{3}".format(network_ph_path, doc_type,
-                                             doc_id, img_extension)
+        profile_name = self._current_profile.name.replace(' ', '_').lower()
+        abs_path = u'{0}/{1}/{2}/{3}/{4}.{5}'.format(
+            network_ph_path,
+            profile_name,
+            document_parent_table,
+            document_type,
+            doc_id,
+            img_extension
+        )
 
         if QFile.exists(abs_path):
             self._composeritem_value_handler(pic_item, abs_path)
@@ -630,7 +714,6 @@ class DocumentGenerator(QObject):
         """
         if not isinstance(vlayer, QgsVectorLayer):
             return
-        
         dp = vlayer.dataProvider()
         
         feat = QgsFeature()
@@ -638,7 +721,7 @@ class DocumentGenerator(QObject):
         feat.setGeometry(g)
         
         dp.addFeatures([feat])
-        
+        self._feature_ids.append(feat.id())
         vlayer.updateExtents()
         
         return g.boundingBox()
@@ -707,8 +790,15 @@ class DocumentGenerator(QObject):
             ds_values = []
 
             for dt in data_fields:
-                f_value = getattr(rec, dt, "")
-                ds_values.append(unicode(f_value))
+                f_value = getattr(rec, dt, '')
+
+                #Get display value
+                display_value = \
+                    self._file_name_value_formatter.column_display_value(
+                        dt,
+                        f_value
+                    )
+                ds_values.append(display_value)
                     
             return "_".join(ds_values) + "." + fileExtension
             
@@ -722,18 +812,22 @@ class DocumentGenerator(QObject):
         """
         meta = MetaData(bind=STDMDb.instance().engine)
         dsTable = Table(dataSourceName, meta, autoload=True)
+        try:
+            if not queryField and not queryValue:
+                #Return all the rows; this is currently limited to 100 rows
+                results = self._dbSession.query(dsTable).limit(100).all()
 
-        if not queryField and not queryValue:
-            #Return all the rows; this is currently limited to 100 rows
-            results = self._dbSession.query(dsTable).limit(100).all()
+            else:
+                if isinstance(queryValue, str) or isinstance(queryValue, unicode):
+                    queryValue = u"'{0}'".format(queryValue)
+                sql = "{0} = :qvalue".format(queryField)
+                results = self._dbSession.query(dsTable).filter(sql).params(qvalue=queryValue).all()
 
-        else:
-            if isinstance(queryValue, str) or isinstance(queryValue, unicode):
-                queryValue = u"'{0}'".format(queryValue)
-            sql = "{0} = :qvalue".format(queryField)
-            results = self._dbSession.query(dsTable).filter(sql).params(qvalue=queryValue).all()
-        
-        return dsTable, results
+            return dsTable, results
+        except SQLAlchemyError as ex:
+            self._dbSession.rollback()
+            raise ex
+
     
     def _composer_output_path(self):
         """

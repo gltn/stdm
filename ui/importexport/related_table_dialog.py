@@ -20,20 +20,19 @@ email                : stdm@unhabitat.org
 """
 from PyQt4.QtGui import (
     QApplication,
-    QDialog,
-    QMessageBox
+    QDialog
 )
 
-from stdm.data import (
+from stdm.data.pg_utils import (
    table_column_names,
    pg_tables,
    spatial_tables
 )
-from stdm.data.importexport import RelatedTableTranslator
+from stdm.data.importexport.value_translators import RelatedTableTranslator
 
-from ..notification import NotificationBar
-from .translator_widget_base import TranslatorDialogBase
-from .ui_related_table_dialog import Ui_RelatedTableTranslatorDialog
+from stdm.ui.notification import NotificationBar
+from stdm.ui.importexport.translator_widget_base import TranslatorDialogBase
+from stdm.ui.importexport.ui_related_table_dialog import Ui_RelatedTableTranslatorDialog
 
 __all__ = ["RelatedTableDialog"]
 

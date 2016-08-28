@@ -240,7 +240,7 @@ def testing_engine(url=None, options=None):
 def mock_engine(dialect_name=None):
     """Provides a mocking engine based on the current testing.db.
 
-    This is normally used to test DDL generation flow as emitted
+    This is normally used to tests DDL generation flow as emitted
     by an Engine.
 
     It should not be used in other cases, as assert_compile() and

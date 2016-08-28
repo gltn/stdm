@@ -17,9 +17,9 @@ from ... import util
 class _LiteralRoundTripFixture(object):
     @testing.provide_metadata
     def _literal_round_trip(self, type_, input_, output, filter_=None):
-        """test literal rendering """
+        """tests literal rendering """
 
-        # for literal, we test the literal render in an INSERT
+        # for literal, we tests the literal render in an INSERT
         # into a typed column.  we can then SELECT it back as its
         # official type; ideally we'd be able to use CAST here
         # but MySQL in particular can't CAST fully
@@ -447,7 +447,7 @@ class NumericTest(_LiteralRoundTripFixture, fixtures.TestBase):
 
     @testing.requires.precision_numerics_enotation_large
     def test_enotation_decimal(self):
-        """test exceedingly small decimals.
+        """tests exceedingly small decimals.
 
         Decimal reports values with E notation when the exponent
         is greater than 6.
@@ -476,7 +476,7 @@ class NumericTest(_LiteralRoundTripFixture, fixtures.TestBase):
 
     @testing.requires.precision_numerics_enotation_large
     def test_enotation_decimal_large(self):
-        """test exceedingly large decimals.
+        """tests exceedingly large decimals.
 
         """
 

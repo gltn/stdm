@@ -180,13 +180,13 @@ class ProfileStatsFile(object):
         return \
             "# %s\n"\
             "# This file is written out on a per-environment basis.\n"\
-            "# For each test in aaa_profiling, the corresponding function and \n"\
+            "# For each tests in aaa_profiling, the corresponding function and \n"\
             "# environment is located within this file.  If it doesn't exist,\n"\
-            "# the test is skipped.\n"\
+            "# the tests is skipped.\n"\
             "# If a callcount does exist, it is compared to what we received. \n"\
             "# assertions are raised if the counts do not match.\n"\
             "# \n"\
-            "# To add a new callcount test, apply the function_call_count \n"\
+            "# To add a new callcount tests, apply the function_call_count \n"\
             "# decorator and re-run the tests using the --write-profiles \n"\
             "# option - this file will be rewritten including the new count.\n"\
             "# \n"\
@@ -227,7 +227,7 @@ class ProfileStatsFile(object):
 
 
 def function_call_count(variance=0.05):
-    """Assert a target for a test case's function call count.
+    """Assert a target for a tests case's function call count.
 
     The main purpose of this assertion is to detect changes in
     callcounts for various functions - the actual number is not as important.

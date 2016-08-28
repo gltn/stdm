@@ -16,7 +16,7 @@ import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 
 # whether or not we use unittest changes things dramatically,
-# as far as how py.test collection works.
+# as far as how py.tests collection works.
 
 
 class TestBase(object):
@@ -27,10 +27,10 @@ class TestBase(object):
     # A sequence of requirement names matching testing.requires decorators
     __requires__ = ()
 
-    # A sequence of dialect names to exclude from the test class.
+    # A sequence of dialect names to exclude from the tests class.
     __unsupported_on__ = ()
 
-    # If present, test class is only runnable for the *single* specified
+    # If present, tests class is only runnable for the *single* specified
     # dialect.  If you need multiple, use __unsupported_on__ and invert.
     __only_on__ = None
 
@@ -338,7 +338,7 @@ class MappedTest(_ORMTest, TablesTest, assertions.AssertsExecutionResults):
         fn()
 
     def _teardown_each_mappers(self):
-        # some tests create mappers in the test bodies
+        # some tests create mappers in the tests bodies
         # and will define setup_mappers as None -
         # clear mappers in any case
         if self.run_setup_mappers != 'once':

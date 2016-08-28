@@ -17,16 +17,16 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from collections import defaultdict
+from collections import OrderedDict
 from PyQt4.QtCore import (
     QRegExp
 )
-
-from .database import SupportingDocument
+from stdm.settings import current_profile
+from stdm.data.configuration import entity_model
 from .pg_utils import foreign_key_parent_tables
-from .table_mapper import DeclareMapping
 
-SUPPORTING_DOC_BASE = "supporting_document"
-SUPPORTING_DOC_TAGS = ["doc", "document", "photo", "str_relations"]
+SUPPORTING_DOC_TAGS = ["supporting_document"]
 
 def supporting_doc_tables_regexp():
     """
@@ -53,57 +53,45 @@ def supporting_doc_tables(ref_table):
 
     return  foreign_key_parent_tables(ref_table, False, doc_regexp)
 
-def document_models(doc_link_table, link_column, link_value):
+
+def document_models(entity, link_column, link_value):
     """
     Create supporting document models using information from the linked
     document table.
-    :param doc_link_table: Name of the linked supporting document table.
-    :type doc_link_table: str
-    :param link_column: Name of the column linked to the primary
-    entity table.
+    :param entity: The entity in which the supporting document are uploaded.
+    :type entity: Class
+    :param link_column: Name of the column linking the
+    source document tables to the primary entity table.
     :type link_column: str
     :param link_value: Value of the linked column which is used to retrieve
     the corresponding values of the supporting document primary keys.
     :type link_value: int
     :return: Instances of supporting document models corresponding to the
-    specified record in the document linked table.
+    specified record in the document linked table grouped by document type.
     :rtype: list
     """
-    link_table_model = DeclareMapping.instance().tableMapping(doc_link_table)
-    if link_table_model is None:
+    _str_model, _doc_model = entity_model(
+        entity, False, True
+    )
+
+    if _doc_model is None:
         return []
 
-    if not hasattr(link_table_model, link_column):
+    if not hasattr(_doc_model, link_column):
         return []
 
-    #Get the name of the supporting document foreign key column
-    linked_tables = foreign_key_parent_tables(doc_link_table)
-    supporting_doc_ref = [lt[0] for lt in linked_tables if lt[1] == SUPPORTING_DOC_BASE]
+    _doc_obj = _doc_model()
+    # get the column object for column entity id
+    # in entity supporting_document table.
+    entity_doc_col_obj = getattr(_doc_model, link_column)
+    result = _doc_obj.queryObject().filter(
+        entity_doc_col_obj == link_value
+    ).all()
 
-    #No link found to supporting document table
-    if len(supporting_doc_ref) == 0:
-        return []
+    doc_objs = defaultdict(list)
 
-    supporting_doc_col = supporting_doc_ref[0]
-    linked_table_obj_col = getattr(link_table_model, link_column)
+    for doc_obj in result:
+        doc_objs[doc_obj.document_type].append(doc_obj)
 
-    link_table_instance = link_table_model()
-    link_table_query_obj = link_table_instance.queryObject()
-
-    linked_table_models = link_table_query_obj.filter(linked_table_obj_col == link_value).all()
-
-    supporting_doc_instance = SupportingDocument()
-    sdi_query_obj = supporting_doc_instance.queryObject()
-
-    doc_models = []
-
-    for ltm in linked_table_models:
-        supporting_doc_id = getattr(ltm, supporting_doc_col)
-        supporting_doc_model = sdi_query_obj.filter(SupportingDocument.id == supporting_doc_id).first()
-        if not supporting_doc_model is None:
-            doc_models.append(supporting_doc_model)
-
-    return doc_models
-
-
-
+    doc_objs = OrderedDict(doc_objs)
+    return doc_objs

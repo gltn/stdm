@@ -995,7 +995,7 @@ class RelationshipProperty(StrategizedProperty):
             elif self.property.uselist:
                 raise sa_exc.InvalidRequestError(
                     "Can't compare a collection to an object or collection; "
-                    "use contains() to test for membership.")
+                    "use contains() to tests for membership.")
             else:
                 return _orm_annotate(
                     self.property._optimized_compare(
@@ -1301,7 +1301,7 @@ class RelationshipProperty(StrategizedProperty):
                 raise sa_exc.InvalidRequestError(
                     "Can't compare a collection"
                     " to an object or collection; use "
-                    "contains() to test for membership.")
+                    "contains() to tests for membership.")
             else:
                 return self.__negated_contains_or_equals(other)
 
@@ -2434,7 +2434,7 @@ class JoinCondition(object):
                 self.foreign_key_columns)
 
             if onetomany_fk and manytoone_fk:
-                # fks on both sides.  test for overlap of local/remote
+                # fks on both sides.  tests for overlap of local/remote
                 # with foreign key.
                 # we will gather columns directly from their annotations
                 # without deannotating, so that we can distinguish on a column

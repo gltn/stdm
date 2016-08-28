@@ -1754,7 +1754,7 @@ class ForeignKey(DialectKWArgs, SchemaItem):
         fk_key = (table_key, colname)
 
         if self in metadata._fk_memos[fk_key]:
-            # TODO: no test coverage for self not in memos
+            # TODO: no tests coverage for self not in memos
             metadata._fk_memos[fk_key].remove(self)
 
     def _set_table(self, column, table):

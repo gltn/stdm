@@ -624,5 +624,5 @@ if __name__=="__main__": #NO RUNTESTS
     if a:
         sys.argv = filter(lambda x: x[:7]!='--debug',sys.argv)
         DEBUG = len(a)
-    if '--test' in sys.argv: test()
+    if '--tests' in sys.argv: test()
     else: main()

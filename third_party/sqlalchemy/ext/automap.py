@@ -833,7 +833,8 @@ def _is_many_to_many(automap_base, table):
         [[fk.parent for fk in fk_constraint.elements]
          for fk_constraint in fk_constraints], [])
 
-    if set(cols) != set(table.c):
+    #STDM association entities have 3 columns
+    if len(table.c) > 3:
         return None, None, None
 
     return (

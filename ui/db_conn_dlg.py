@@ -20,8 +20,10 @@ email                : gkahiu@gmail.com
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from ui_dbconn import Ui_frmDbConn
-from stdm.data import DatabaseConnection, DatabaseConfig
+from stdm.data.config import DatabaseConfig
+from stdm.data.connection import DatabaseConnection
+
+from .ui_dbconn import Ui_frmDbConn
 
 class dbconnDlg(QDialog, Ui_frmDbConn):
     '''
@@ -50,7 +52,7 @@ class dbconnDlg(QDialog, Ui_frmDbConn):
         self.txtPort.setValidator(intValidator)
         
         #Connect slots
-        QObject.connect(self.btnBox, SIGNAL("accepted()"), self.acceptdlg)        
+        self.btnBox.accepted.connect(self.acceptdlg)
                         
     def validateInput(self):
         '''
@@ -67,7 +69,8 @@ class dbconnDlg(QDialog, Ui_frmDbConn):
         if self.txtDatabase.text() == "":
             QMessageBox.critical(self, QApplication.translate("DbConnectionDialog","Required field"), 
                                  QApplication.translate("DbConnectionDialog","Database name cannot be empty"))
-            return False  
+            return False
+
         else:
             return True       
         
