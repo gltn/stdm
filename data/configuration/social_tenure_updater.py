@@ -93,8 +93,8 @@ def view_updater(social_tenure, engine):
         social_tenure.party, True, True, True,
         foreign_key_parents=fk_parent_names
     )
-    spatial_unit_columns, spatial_unit_join =  _entity_select_column(
-        social_tenure.spatial_unit, True,
+    spatial_unit_columns, spatial_unit_join = _entity_select_column(
+        social_tenure.spatial_unit, True, join_parents=True,
         foreign_key_parents=fk_parent_names
     )
 
