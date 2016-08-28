@@ -1537,7 +1537,7 @@ class ConfigurationFileUpdater(object):
 
             progress_i = 0
 
-            for i, (STR_tables, v) in enumerate(STR_TABLES.iteritems()):
+            for STR_tables, v in STR_TABLES.iteritems():
                 old_columns = unicode(v['old']).strip("()").replace("\'", "")
                 new_columns = unicode(v['new']).strip("()").replace("\'", "")
 
