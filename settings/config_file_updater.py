@@ -52,7 +52,7 @@ from ..settings.registryconfig import (
 )
 
 from stdm.ui.notification import NotificationBar, ERROR, INFORMATION
-from stdm.utils.util import simple_dialog, simple_folder_dialog
+from stdm.utils.util import simple_dialog
 from stdm.ui.change_log import ChangeLog
 from stdm.ui.ui_upgrade_paths import Ui_UpgradePaths
 
