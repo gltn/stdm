@@ -266,7 +266,9 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
         :returns QDomDocument, QDomDocument.documentElement()
         :rtype tuple
         """
-        config_file_path = os.path.join(self.file_handler.localPath(), config_file_name)
+        config_file_path = os.path.join(
+            self.file_handler.localPath(), config_file_name
+        )
         config_file_path = QFile(config_file_path)
         config_file = os.path.basename(config_file_name)
         if self._check_config_file_exists(config_file):
