@@ -513,7 +513,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
                 CONFIG_UPDATED
             ]
             # If failed to upgrade, enable the upgrade button
-            if config_updated_val == '0':
+            if config_updated_val == '0' or config_updated_val == '-1':
                 self.upgradeButton.setEnabled(True)
 
             # disable the button if any other value.
