@@ -599,7 +599,7 @@ class STDMQGISLoader(object):
             upgrade_status = self.configuration_file_updater.load(
                 self.plugin_dir, progress
             )
-
+        print upgrade_status
         if upgrade_status:
             # Append configuration_upgraded.stc profiles
 

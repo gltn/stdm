@@ -690,7 +690,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
     def on_upload_document(self):
         '''
         Slot raised when the user clicks
-        to upload a title deed
+        to upload a supporting document.
         '''
         document_str = QApplication.translate(
             "newSTRWiz",

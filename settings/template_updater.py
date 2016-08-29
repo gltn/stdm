@@ -233,7 +233,7 @@ class TemplateContentReader(
             template_path
         )
         if root is None:
-            return
+            return None
         child_nodes = root.childNodes()
         return child_nodes
 
