@@ -25,7 +25,7 @@ except AttributeError:
 class Ui_UpgradePaths(object):
     def setupUi(self, UpgradePaths):
         UpgradePaths.setObjectName(_fromUtf8("UpgradePaths"))
-        UpgradePaths.resize(484, 279)
+        UpgradePaths.resize(484, 324)
         self.verticalLayout = QtGui.QVBoxLayout(UpgradePaths)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.notification_bar = QtGui.QVBoxLayout()

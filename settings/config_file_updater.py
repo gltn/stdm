@@ -180,6 +180,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
         self.config = StdmConfiguration.instance()
         self.old_config_file = False
         self.entities = []
+        self.notice = None
         self.lookup_colum_name_values = {}
         self.exclusions = ('supporting_document',
                            'social_tenure_relationship',
@@ -266,7 +267,10 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
         :returns QDomDocument, QDomDocument.documentElement()
         :rtype tuple
         """
-        config_file_path = os.path.join(self.file_handler.localPath(), config_file_name)
+        config_file_path = os.path.join(
+            self.file_handler.localPath(),
+            config_file_name
+        )
         config_file_path = QFile(config_file_path)
         config_file = os.path.basename(config_file_name)
         if self._check_config_file_exists(config_file):
@@ -315,16 +319,22 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
         """
         Copies configuration from template
         """
-        config_path = os.path.join(
+        config_template_path = os.path.join(
             self.file_handler.defaultConfigPath(),
             'configuration.stc'
         )
+        config_path = os.path.join(
+            self.file_handler.localPath(),
+            'configuration.stc'
+        )
 
-        if os.path.isfile(config_path):
+        if os.path.isfile(config_template_path) and \
+                not os.path.isfile(config_path):
             shutil.copy(
-                config_path,
+                config_template_path,
                 self.file_handler.localPath()
             )
+
 
     def _rename_old_config_file(self, old_config_file, path):
         """
@@ -1187,23 +1197,15 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                 data_folder_path = source_documents_path()
                 template_path = composer_template_path()
                 if data_folder_path is None or template_path is None:
-                    self.btn_template.clicked.connect(
-                        self.set_template_path
-                    )
-                    self.btn_supporting_docs.clicked.connect(
-                        self.set_document_path
-                    )
-                    self.btn_output.clicked.connect(
-                        self.set_output_path
-                    )
-                    apply_btn = self.buttonBox.button(
-                        QDialogButtonBox.Apply
-                    )
-                    apply_btn.clicked.connect(
-                        self.validate_path_setting
-                    )
-
-                    self.exec_()
+                    self.init_path_dialog()
+                    # If the paths are not filled still,
+                    # leave the upgrade process
+                    if source_documents_path() is None or \
+                                    composer_template_path() is None:
+                        self.reg_config.write(
+                            {CONFIG_UPDATED: '-1'}
+                        )
+                        return False
 
                 # Set the document paths
                 self.old_data_folder_path = os.path.join(
@@ -1274,18 +1276,69 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
             self._copy_config_file_from_template()
             return False
 
+    def init_path_dialog(self):
+        """
+        Initialize the path setting selection dialog.
+        :return:
+        :rtype:
+        """
+        self.notice = NotificationBar(
+            self.notification_bar
+        )
+        self.btn_template.clicked.connect(
+            self.set_template_path
+        )
+        self.btn_supporting_docs.clicked.connect(
+            self.set_document_path
+        )
+        self.btn_output.clicked.connect(
+            self.set_output_path
+        )
+        apply_btn = self.buttonBox.button(
+            QDialogButtonBox.Apply
+        )
+        apply_btn.clicked.connect(
+            self.validate_path_setting
+        )
+        self.exec_()
+
     def closeEvent(self, event):
+        """
+        Handles the close event of the path dialog.
+        :param event: The close event
+        :type event: QCloseEvent
+        """
         if self.validate_path_setting():
             event.accept()
         else:
-            event.reject()
+            title = QApplication.translate(
+                'ConfigurationFileUpdater',
+                'Migration Error'
+            )
+            message = QApplication.translate(
+                'ConfigurationFileUpdater',
+                'Closing this dialog will lead to '
+                'the cancellation of the migration\n'
+                'and temporary loss of access '
+                'to your existing profile, data and templates.\n'
+                'Are you sure you want to '
+                'cancel the migration process?'
+            )
+            warning_result = QMessageBox.critical(
+                self.iface.mainWindow(),
+                title,
+                message,
+                QMessageBox.Yes,
+                QMessageBox.No
 
+            )
+
+            if warning_result == QMessageBox.Yes:
+                event.accept()
+            else:
+                event.ignore()
 
     def validate_path_setting(self):
-        notice = NotificationBar(
-            self.notification_bar
-        )
-
         error = QApplication.translate(
             'ConfigurationFileUpdater',
             'Please select all the three paths used by STDM.'
@@ -1297,9 +1350,9 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
 
         if self.text_template.text() != '' and \
                         self.text_document.text() != '' and \
-                        self.text_output != '':
-
-            notice.insertSuccessNotification(success)
+                        self.text_output.text() != '':
+            self.notice.clear()
+            self.notice.insertSuccessNotification(success)
             # Commit document path to registry
             self.reg_config.write(
                 {NETWORK_DOC_RESOURCE:
@@ -1321,7 +1374,8 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
             self.close()
             return True
         else:
-            notice.insertErrorNotification(error)
+            self.notice.clear()
+            self.notice.insertErrorNotification(error)
             return False
 
 
