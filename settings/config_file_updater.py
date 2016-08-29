@@ -31,7 +31,7 @@ from distutils import file_util
 import errno
 from PyQt4.QtCore import QFile, QIODevice, Qt, QTextStream, pyqtSignal
 from PyQt4.QtGui import QMessageBox, QProgressBar, QDialog, QVBoxLayout, QLabel, QApplication, \
-    QCheckBox, QDialogButtonBox
+    QCheckBox, QDialogButtonBox, QFileDialog, QLineEdit
 from PyQt4.QtXml import QDomDocument
 
 from ..data.configuration.config_updater import ConfigurationSchemaUpdater
@@ -43,12 +43,18 @@ from ..data.pg_utils import export_data, import_data, pg_table_exists, \
 from ..settings.registryconfig import (
     RegistryConfig,
     CONFIG_UPDATED,
-    source_documents_path
+    source_documents_path,
+    last_document_path,
+    composer_template_path,
+    NETWORK_DOC_RESOURCE,
+    COMPOSER_OUTPUT,
+    COMPOSER_TEMPLATE
 )
 
-from stdm.utils.util import simple_dialog
+from stdm.ui.notification import NotificationBar, ERROR, INFORMATION
+from stdm.utils.util import simple_dialog, simple_folder_dialog
 from stdm.ui.change_log import ChangeLog
-
+from stdm.ui.ui_upgrade_paths import Ui_UpgradePaths
 
 COLUMN_TYPE_DICT = {'character varying': 'VARCHAR', 'date': 'DATE',
                     'serial': 'SERIAL', 'integer': 'INT', 'lookup':
@@ -145,15 +151,16 @@ STR_TABLES = OrderedDict([
 
 from ..data.pg_utils import export_data
 
-
-class ConfigurationFileUpdater(object):
+class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
     """
     Updates configuration file to new format and migrates data
     """
     upgradeCanceled = pyqtSignal()
 
     def __init__(self, iface):
+        QDialog.__init__(self, iface.mainWindow())
         self.iface = iface
+        self.setupUi(self)
         self.file_handler = FilePaths()
         self.version = '1.2'
         self.config_profiles = []
@@ -174,20 +181,20 @@ class ConfigurationFileUpdater(object):
         self.old_config_file = False
         self.entities = []
         self.lookup_colum_name_values = {}
-        self.exclusions = ('supporting_document', 'social_tenure_relationship',
-                           'str_relations')
+        self.exclusions = ('supporting_document',
+                           'social_tenure_relationship',
+                           'str_relations'
+                           )
         self.parent = None
         self.upgrade = False
-        self.old_data_folder_path = os.path.join(
-            source_documents_path(), "2020")
-        self.new_data_folder_path = source_documents_path()
+        self.old_data_folder_path = None
+        self.new_data_folder_path = None
         self.reg_config = RegistryConfig()
         self.profiles_detail = {}
         self.progress = None
         self.log_file_path = '{}/logs/migration.log'.format(
             self.file_handler.localPath()
         )
-
 
     def create_log_file(self, file_path):
         """
@@ -313,7 +320,7 @@ class ConfigurationFileUpdater(object):
             'configuration.stc'
         )
 
-        if not os.path.isfile(config_path):
+        if os.path.isfile(config_path):
             shutil.copy(
                 config_path,
                 self.file_handler.localPath()
@@ -1174,19 +1181,50 @@ class ConfigurationFileUpdater(object):
         """
         self.progress = progress
         if self._check_config_folder_exists():
-
             # Check if old configuration file exists
             if self._check_config_file_exists("stdmConfig.xml"):
+                # Get old and new config path from existing registry
+                data_folder_path = source_documents_path()
+                template_path = composer_template_path()
+                if data_folder_path is None or template_path is None:
+                    self.btn_template.clicked.connect(
+                        self.set_template_path
+                    )
+                    self.btn_supporting_docs.clicked.connect(
+                        self.set_document_path
+                    )
+                    self.btn_output.clicked.connect(
+                        self.set_output_path
+                    )
+                    apply_btn = self.buttonBox.button(
+                        QDialogButtonBox.Apply
+                    )
+                    apply_btn.clicked.connect(
+                        self.validate_path_setting
+                    )
+
+                    self.exec_()
+
+                # Set the document paths
+                self.old_data_folder_path = os.path.join(
+                    source_documents_path(), "2020"
+                )
+                self.new_data_folder_path = source_documents_path()
 
                 self.append_log('stdmConfig.xml exists')
-                self.config_updated_dic = self.reg_config.read([CONFIG_UPDATED])
+                self.config_updated_dic = self.reg_config.read(
+                    [CONFIG_UPDATED]
+                )
 
                 # if config file exists, check if registry key exists
-                if len(self.config_updated_dic ) < 1:
+                if len(self.config_updated_dic) < 1:
                     # if it doesn't exist, create it with a value of False ('0')
                     self.reg_config.write({'ConfigUpdated': '0'})
-                    self.config_updated_dic = self.reg_config.read([CONFIG_UPDATED])
-                    config_updated_val = self.config_updated_dic[CONFIG_UPDATED]
+                    self.config_updated_dic = self.reg_config.read(
+                        [CONFIG_UPDATED]
+                    )
+                    config_updated_val = self.config_updated_dic[
+                        CONFIG_UPDATED]
 
                 else:
                     config_updated_val = self.config_updated_dic[CONFIG_UPDATED]
@@ -1235,6 +1273,134 @@ class ConfigurationFileUpdater(object):
             self._create_config_folder()
             self._copy_config_file_from_template()
             return False
+
+    def closeEvent(self, event):
+        if self.validate_path_setting():
+            event.accept()
+        else:
+            event.reject()
+
+
+    def validate_path_setting(self):
+        notice = NotificationBar(
+            self.notification_bar
+        )
+
+        error = QApplication.translate(
+            'ConfigurationFileUpdater',
+            'Please select all the three paths used by STDM.'
+        )
+        success = QApplication.translate(
+            'ConfigurationFileUpdater',
+            'You have successfully set STDM path settings.'
+        )
+
+        if self.text_template.text() != '' and \
+                        self.text_document.text() != '' and \
+                        self.text_output != '':
+
+            notice.insertSuccessNotification(success)
+            # Commit document path to registry
+            self.reg_config.write(
+                {NETWORK_DOC_RESOURCE:
+                     self.text_document.text()
+                 }
+            )
+            # Commit template path to registry
+            self.reg_config.write(
+                {COMPOSER_TEMPLATE:
+                     self.text_template.text()
+                 }
+            )
+            # Commit output path to registry
+            self.reg_config.write(
+                {COMPOSER_OUTPUT:
+                     self.text_output.text()
+                 }
+            )
+            self.close()
+            return True
+        else:
+            notice.insertErrorNotification(error)
+            return False
+
+
+
+    def set_template_path(self):
+        """
+            Sets the templates path to the registry
+            based on user's selection. This is required
+            if the registry key doesn't exist.
+            """
+        template_str = QApplication.translate(
+            'ConfigurationFileUpdater',
+            'Specify the template folder '
+            'the contains your document templates.'
+        )
+
+        template_path = QFileDialog.getExistingDirectory(
+            self.iface.mainWindow(),
+            template_str
+        )
+        self.text_template.setText(template_path)
+
+        self.append_log(
+            'The template path - {} is set by the user'.format(
+                template_path
+            )
+        )
+
+    def set_output_path(self):
+        """
+            Sets the output path to the registry
+            based on user's selection. This is required
+            if the registry key doesn't exist.
+            """
+        output_str = QApplication.translate(
+            'ConfigurationFileUpdater',
+            'Specify the template folder '
+            'the contains your document templates.'
+        )
+
+        output_path = QFileDialog.getExistingDirectory(
+            self.iface.mainWindow(),
+            output_str
+        )
+        self.text_output.setText(output_path)
+
+        self.append_log(
+            'The template path - {} is set by the user'.format(
+                output_path
+            )
+        )
+
+    def set_document_path(self):
+        """
+        Sets the documents path to the registry
+        based on user's selection. This is required
+        if the registry key doesn't exist.
+        """
+        document_str = QApplication.translate(
+            'ConfigurationFileUpdater',
+            'Specify the document folder '
+            'the contains the 2020 folder.'
+        )
+        last_path = last_document_path()
+
+        if last_path is None:
+            last_path = '/home'
+        document_path = QFileDialog.getExistingDirectory(
+            self.iface.mainWindow(),
+            document_str,
+            last_path
+        )
+        self.text_document.setText(document_path)
+
+        self.append_log(
+            'The document path - {} is set by the user'.format(
+                document_path
+            )
+        )
 
     def check_version(self):
         """
@@ -1651,5 +1817,7 @@ class ConfigurationFileUpdater(object):
 
                         self.progress.setValue(progress_i)
                         progress_i = progress_i + 1
-
+                self.append_log('Moved supporting documents from {} to {}'.format(
+                    self.old_data_folder_path, self.new_data_folder_path
+                ))
             return self.profiles_detail

@@ -31,8 +31,8 @@ from PyQt4.QtCore import (
     QDir,
     Qt,
     QSettings,
-    QFileInfo
-)
+    QFileInfo,
+    QSize)
 from PyQt4.QtGui import (
     QPixmap,
     QFileDialog,
@@ -42,8 +42,8 @@ from PyQt4.QtGui import (
     QLabel,
     QApplication,
     QCheckBox,
-    QDialogButtonBox
-)
+    QDialogButtonBox,
+    QLineEdit, QHBoxLayout, QIcon, QToolButton)
 from sqlalchemy import (
     func
 )
@@ -830,6 +830,25 @@ def enable_drag_sort(mv_widget):
     mv_widget.__class__.dropEvent = drop_event
 
 def simple_dialog(parent, title, message, checkbox_text=None, yes_no=True):
+    """
+    A simple dialog the enable you show an html message with checkbox.
+    :param parent: The parent of the dialog.
+    :type parent: QWidget
+    :param title: The title of the dialog
+    :type title: String
+    :param message: The message of the dialog. Use <br>
+    to add a new line as it is html.
+    :type message: String
+    :param checkbox_text: Add a checkbox text, if None,
+    the checkbox will not be shown.
+    :type checkbox_text: String
+    :param yes_no: A boolean to add the Yes No buttons.
+    If false, the Ok button is shown.
+    :type yes_no: Boolean
+    :return: Tuple containing the dialog exec_ result
+    and the checkbox result.
+    :rtype: Tuple
+    """
     simple_dialog = QDialog(
         parent,
         Qt.WindowSystemMenuHint | Qt.WindowTitleHint
@@ -883,6 +902,102 @@ def simple_dialog(parent, title, message, checkbox_text=None, yes_no=True):
         return result, confirm_checkbox.isChecked()
     else:
         return result, False
+
+
+def simple_folder_dialog(parent, title, message, method):
+    """
+    A simple dialog the enable you show an html message with checkbox.
+    :param parent: The parent of the dialog.
+    :type parent: QWidget
+    :param title: The title of the dialog
+    :type title: String
+    :param message: The message of the dialog. Use <br>
+    to add a new line as it is html.
+    :type message: String
+    :param checkbox_text: Add a checkbox text, if None,
+    the checkbox will not be shown.
+    :type checkbox_text: String
+    :param yes_no: A boolean to add the Yes No buttons.
+    If false, the Ok button is shown.
+    :type yes_no: Boolean
+    :return: Tuple containing the dialog exec_ result
+    and the checkbox result.
+    :rtype: Tuple
+    """
+    simple_dialog = QDialog(
+        parent,
+        Qt.WindowSystemMenuHint | Qt.WindowTitleHint
+    )
+
+    simple_layout = QVBoxLayout(simple_dialog)
+    simple_label = QLabel()
+    title = QApplication.translate(
+        'util',
+        title
+    )
+
+    text = QApplication.translate(
+        'util',
+        message
+    )
+
+    simple_dialog.setWindowTitle(title)
+    simple_label.setTextFormat(Qt.RichText)
+    simple_label.setText(text)
+
+    simple_layout.addWidget(simple_label)
+
+
+    horizontal_layout = QHBoxLayout()
+    simple_line_edit = QLineEdit()
+    btn_template_folder = QToolButton()
+    icon = QIcon()
+    icon.addPixmap(QPixmap(":/plugins/stdm/images/icons/open_file.png"),
+                   QIcon.Normal, QIcon.Off)
+    btn_template_folder.setIcon(icon)
+    btn_template_folder.setIconSize(QSize(24, 24))
+    template_folder_label = QLabel()
+
+    template_folder_label.setText('Template Folder')
+    horizontal_layout.addWidget(template_folder_label)
+    horizontal_layout.addWidget(simple_line_edit)
+    horizontal_layout.addWidget(btn_template_folder)
+    simple_layout.addLayout(horizontal_layout)
+
+
+    horizontal_layout2 = QHBoxLayout()
+    simple_line_edit2 = QLineEdit()
+    btn_document_folder = QToolButton()
+    icon2 = QIcon()
+    icon2.addPixmap(QPixmap(":/plugins/stdm/images/icons/open_file.png"),
+                   QIcon.Normal, QIcon.Off)
+    btn_document_folder.setIcon(icon)
+    btn_document_folder.setIconSize(QSize(24, 24))
+    document_folder_label = QLabel()
+
+    document_folder_label.setText('Template Folder')
+    horizontal_layout2.addWidget(document_folder_label)
+    horizontal_layout2.addWidget(simple_line_edit2)
+    horizontal_layout2.addWidget(btn_document_folder)
+    simple_layout.addLayout(horizontal_layout2)
+
+
+    simple_buttons = QDialogButtonBox()
+
+    simple_buttons.setStandardButtons(
+        QDialogButtonBox.Ok
+    )
+    simple_layout.addWidget(simple_buttons)
+
+    simple_dialog.setModal(True)
+
+    simple_buttons.accepted.connect(simple_dialog.accept)
+    btn_document_folder.clicked.connect(method)
+    btn_template_folder.clicked.connect(method)
+
+    result = simple_dialog.exec_()
+
+    return result, False
 
 
 def file_text(path):

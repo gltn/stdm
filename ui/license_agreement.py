@@ -109,9 +109,9 @@ class LicenseAgreement(QDialog, Ui_LicenseAgreement):
         if not self.checkBoxAgree.isChecked():
             msg = QApplication.translate(
                 'LicenseAgreement',
-                'To use STDM please comply with '
-                'the terms and conditions by selecting'
-                ' the option "I have read and agree ..."'
+                'To use STDM, please accept the terms '
+                'and conditions by selecting'
+                ' the checkbox "I have read and agree ..."'
             )
 
             self.notice_bar.clear()
