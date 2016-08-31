@@ -520,7 +520,6 @@ class STDMQGISLoader(object):
                 save_current_profile(profile_name)
                 self.reload_plugin(profile_name)
 
-
             else:
                 solution = 'Do you want to run the ' \
                            'Configuration Wizard now?'
@@ -1136,7 +1135,8 @@ class STDMQGISLoader(object):
         """
         if self.current_profile is None:
             return
-        self.profile_status_label = QLabel()
+        if self.profile_status_label is None:
+            self.profile_status_label = QLabel()
         profile_name = format_name(
             self.current_profile.name
         )
@@ -1155,17 +1155,14 @@ class STDMQGISLoader(object):
             )
         self.profile_status_label.setText(message)
 
-
     def reload_plugin(self, sel_profile):
         """
-        Reloads stdm plugin without logging out.
+        Reloads STDM plugin without logging out.
         This is to allow modules capture changes
         made by the Configuration Wizard and Options.
         :param sel_profile: the selected profile name
         on the configuration wizard.
         :type: string
-        :return: None
-        :rtype: NoneType
         """
         if self.toolbarLoader is not None:
             self.toolbarLoader.unloadContent()
