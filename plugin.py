@@ -75,7 +75,8 @@ from stdm.data.pg_utils import (
 )
 from stdm.settings.registryconfig import (
     RegistryConfig,
-    WIZARD_RUN
+    WIZARD_RUN,
+    CONFIG_UPDATED
 )
 from stdm.ui.license_agreement import LicenseAgreement
 from navigation import (
@@ -460,7 +461,7 @@ class STDMQGISLoader(object):
         )
         title = QApplication.translate(
             "STDMQGISLoader",
-            'Run Configuration Wizard Error'
+            'Configuration Wizard Error'
         )
         message = QApplication.translate(
             "STDMQGISLoader",
@@ -578,7 +579,6 @@ class STDMQGISLoader(object):
         :rtype: bool
         """
         progress = STDMProgressDialog(parent)
-
         progress.overall_progress(
             'Upgrading STDM Configuration...',
         )
@@ -599,7 +599,7 @@ class STDMQGISLoader(object):
             upgrade_status = self.configuration_file_updater.load(
                 self.plugin_dir, progress
             )
-        print upgrade_status
+
         if upgrade_status:
             # Append configuration_upgraded.stc profiles
 
@@ -651,14 +651,15 @@ class STDMQGISLoader(object):
                     self.reload_plugin(first_profile)
                 else:
                     save_current_profile(first_profile)
-                self.configuration_file_updater.append_log(
-                    'Successfully upgraded to STDM 1.2 configuration!'
-                )
+
                 self.configuration_file_updater.reg_config.write(
-                    {'ConfigUpdated': '1'}
+                    {CONFIG_UPDATED: '1'}
                 )
                 self.configuration_file_updater.reg_config.write(
                     {WIZARD_RUN: 1}
+                )
+                self.configuration_file_updater.append_log(
+                    'Successfully upgraded to STDM 1.2 configuration!'
                 )
                 return True
 
@@ -666,7 +667,8 @@ class STDMQGISLoader(object):
             if manual:
                 parent.upgradeButton.setEnabled(False)
                 parent.manage_upgrade()
-
+            self.configuration_file_updater.\
+                _copy_config_file_from_template()
             result = self.load_configuration_to_serializer()
             return result
 
