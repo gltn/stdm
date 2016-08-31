@@ -855,30 +855,16 @@ def simple_dialog(parent, title, message, checkbox_text=None, yes_no=True):
     )
     simple_layout = QVBoxLayout(simple_dialog)
     simple_label = QLabel()
-    title = QApplication.translate(
-        'util',
-        title
-    )
-
-    text = QApplication.translate(
-        'util',
-        message
-    )
-
 
     simple_dialog.setWindowTitle(title)
     simple_label.setTextFormat(Qt.RichText)
-    simple_label.setText(text)
+    simple_label.setText(message)
 
     simple_layout.addWidget(simple_label)
 
     if checkbox_text:
-        confirmation_text = QApplication.translate(
-            'util',
-            checkbox_text
-        )
         confirm_checkbox = QCheckBox()
-        confirm_checkbox.setText(confirmation_text)
+        confirm_checkbox.setText(checkbox_text)
         simple_layout.addWidget(confirm_checkbox)
     simple_buttons = QDialogButtonBox()
 

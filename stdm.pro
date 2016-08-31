@@ -81,8 +81,7 @@ SOURCES = \
           ui\wizard\geometry_property.py \
           ui\wizard\profile_editor.py \
           ui\wizard\varchar_property.py \
-          ui\wizard\wizard.py \
-          utils\util.py
+          ui\wizard\wizard.py
 
 FORMS =	\
         ui\ui_about_stdm.ui \
@@ -119,6 +118,7 @@ FORMS =	\
         ui\ui_property_preview.ui \
         ui\ui_spatial_unit_manager.ui \
         ui\ui_str_view_entity.ui \
+        ui\ui_upgrade_paths.ui \
         ui\ui_user_role_manage.ui \
         ui\ui_view_str.ui \
         ui\composer\ui_chart_vertical_bar.ui \
