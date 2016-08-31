@@ -461,7 +461,7 @@ class STDMQGISLoader(object):
         )
         title = QApplication.translate(
             "STDMQGISLoader",
-            'Run Configuration Wizard Error'
+            'Configuration Wizard Error'
         )
         message = QApplication.translate(
             "STDMQGISLoader",

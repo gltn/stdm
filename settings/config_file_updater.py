@@ -1236,11 +1236,19 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                     self.create_log_file(self.log_file_path)
 
                     if not manual:
-                        result, checkbox_result = simple_dialog(
-                            self.iface.mainWindow(),
-                            'Upgrade Information',
+                        title = QApplication.translate(
+                            'ConfigurationFileUpdater',
+                            'Upgrade Information'
+                        )
+                        message = QApplication.translate(
+                            'ConfigurationFileUpdater',
                             'Would you like to view the '
                             'new features and changes of STDM 1.2?'
+                        )
+                        result, checkbox_result = simple_dialog(
+                            self.iface.mainWindow(),
+                            title,
+                            message
                         )
                         if result:
                             change_log = ChangeLog(self.iface.mainWindow())
