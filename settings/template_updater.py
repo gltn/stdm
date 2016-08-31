@@ -201,7 +201,7 @@ class TemplateContentReader(
                 error_title,
                 error_message
             )
-            return
+            return None
 
         doc = QDomDocument()
 
@@ -209,8 +209,7 @@ class TemplateContentReader(
             config_file
         )
         if not status:
-
-            return
+            return None
 
         doc_element = doc.documentElement()
 
@@ -247,7 +246,7 @@ class TemplateContentReader(
         """
         child_nodes = self.read_sdt(template)
         if child_nodes is None:
-            return
+            return None
         # loop through the entire sdt
         for i in range(child_nodes.length()):
             if child_nodes.item(i).nodeName() == 'DataSource':
@@ -327,7 +326,7 @@ class TemplateViewHandler:
         """
         definition = self.view_details(view)
         if definition is None:
-            return
+            return None
         lo_def = definition.lower().strip().lstrip('select')
         query_lines = lo_def.splitlines()
         ref_table = None
