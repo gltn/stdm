@@ -604,6 +604,20 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
                     if result == QMessageBox.Abort:
                         progressDlg.close()
                         success_status = False
+
+                        #Restore cursor
+                        QApplication.restoreOverrideCursor()
+
+                        return
+
+                    #If its the last record and user has selected to ignore
+                    if i+1 == len(records):
+                        progressDlg.close()
+                        success_status = False
+
+                        #Restore cursor
+                        QApplication.restoreOverrideCursor()
+
                         return
 
                 else:
@@ -632,6 +646,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
                 )
             )
             success_status = False
+
         #Reset UI
         self.reset(success_status)
 
