@@ -149,8 +149,6 @@ STR_TABLES = OrderedDict([
                  )
             ])
 
-from ..data.pg_utils import export_data
-
 class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
     """
     Updates configuration file to new format and migrates data
