@@ -80,10 +80,10 @@ class STDMProgressDialog(QProgressDialog):
     def closeEvent(self, event):
         title = self.tr('Upgrade Interruption Error')
         message = self.tr(
-            'Closing this progress dialog could lead to <br>'
-            'the interruption the upgrade process.<br>'
-            'This could lead to undesirable upgrade errors.<br>'
-            'Are you sure you want to interrupt the upgrade process?'
+            'Interrupting the upgrading process could lead to data<br>'
+            'corruption due to an incomplete migration of existing data...<br>'
+            '<br>'
+            'Are you sure you want to cancel the upgrading process?'
         )
         warning_result = QMessageBox.critical(
             iface.mainWindow(),
