@@ -42,6 +42,8 @@ def translate_in_file(file_path):
 
     if 'translate' in str(array):
         return True
+    elif 'self.tr(' in str(array):
+        return True
     else:
         return False
 
