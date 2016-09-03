@@ -210,9 +210,19 @@ Click Yes to delete or No to cancel.</source>
 <context>
     <name>AdminUnitSelector</name>
     <message>
-        <location filename="../ui/admin_unit_selector.py" line="75"/>
+        <location filename="../ui/admin_unit_selector.py" line="89"/>
         <source>Please select an administrative unit from the list.</source>
-        <translation type="obsolete">s&apos;il vous plait, Veuillez selectionner l&apos;unité administrative dans la liste </translation>
+        <translation type="unfinished">s&apos;il vous plait, Veuillez selectionner l&apos;unité administrative dans la liste </translation>
+    </message>
+    <message>
+        <location filename="../ui/admin_unit_selector.py" line="69"/>
+        <source>Manage Administrative Units</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/admin_unit_selector.py" line="75"/>
+        <source>Select Administrative Unit</source>
+        <translation type="unfinished">Sélectionnez Unité administrative</translation>
     </message>
 </context>
 <context>
@@ -220,6 +230,14 @@ Click Yes to delete or No to cancel.</source>
     <message>
         <location filename="../ui/customcontrols/relation_line_edit.py" line="272"/>
         <source>Attribute Table Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AssociationEntity</name>
+    <message>
+        <location filename="../data/configuration/association_entity.py" line="109"/>
+        <source>%s does not have an id column. This is required in order to link it to the social tenure relationship table.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1125,6 +1143,54 @@ Are you sure you want to cancel the migration process?</source>
     <message>
         <location filename="../settings/config_file_updater.py" line="1242"/>
         <source>Would you like to view the new features and changes of STDM 1.2?</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ConfigurationSchemaUpdater</name>
+    <message>
+        <location filename="../data/configuration/config_updater.py" line="82"/>
+        <source>The specified configuration is empty, the schema will not be updated.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/config_updater.py" line="148"/>
+        <source>Removing redundant foreign key constraints...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/config_updater.py" line="163"/>
+        <source>Error in removing {0} foreign key constraint.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/config_updater.py" line="170"/>
+        <source>{0} foreign key constraint successfully removed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/config_updater.py" line="257"/>
+        <source>Error in creating {0} foreign key constraint.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/config_updater.py" line="261"/>
+        <source>{0} foreign key constraint successfully created.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/config_updater.py" line="270"/>
+        <source>creating</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/config_updater.py" line="273"/>
+        <source>updating</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/config_updater.py" line="276"/>
+        <source>deleting</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2085,6 +2151,60 @@ Once deleted it cannot be recovered.</source>
     <message>
         <location filename="../ui/wizard/entity_depend.py" line="81"/>
         <source>Views</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>EntityEditor</name>
+    <message>
+        <location filename="../ui/wizard/create_entity.py" line="94"/>
+        <source>Please enter an entity name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/wizard/create_entity.py" line="101"/>
+        <source>Entity with the same name already exist in the current profile!</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>EntityEditorDialog</name>
+    <message>
+        <location filename="../ui/forms/editor_dialog.py" line="90"/>
+        <source>Collection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/forms/editor_dialog.py" line="133"/>
+        <source>Editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/forms/editor_dialog.py" line="159"/>
+        <source>Please fill out all required (*) fields.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/forms/editor_dialog.py" line="310"/>
+        <source>Supporting Documents</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/forms/editor_dialog.py" line="324"/>
+        <source>Primary</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>EntitySupportingDocument</name>
+    <message>
+        <location filename="../data/configuration/entity.py" line="496"/>
+        <source>General</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/entity.py" line="536"/>
+        <source>%s does not have an id column. This is required in order to link it to the supporting document table through this association table.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3194,6 +3314,79 @@ Please set it in the Options dialog or Configuration Wizard.</source>
     <message>
         <location filename="../composer/composer_wrapper.py" line="454"/>
         <source>The specified template does not exist.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>OptionsDialog</name>
+    <message>
+        <location filename="../ui/options_base.py" line="229"/>
+        <source>Supporting Documents Directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="235"/>
+        <source>Document Designer Templates Directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="241"/>
+        <source>Document Generator Output Directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="261"/>
+        <source>Please specify the database host address.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="267"/>
+        <source>Please specify the port number.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="273"/>
+        <source>Please specify the database name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="306"/>
+        <source>Connection to &apos;{0}&apos; database was successful.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="308"/>
+        <source>Database Connection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="319"/>
+        <source>Profile name is empty, current profile will not be set.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="354"/>
+        <source>Please set the supporting documents directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="378"/>
+        <source>Please set the document designer templates directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="403"/>
+        <source>Please set the document generator output directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="423"/>
+        <source>&apos;{0}&apos; directory does not exist.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="484"/>
+        <source>Settings successfully saved.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4640,6 +4833,19 @@ Click Yes to proceed or No to cancel.</source>
     </message>
 </context>
 <context>
+    <name>SocialTenure</name>
+    <message>
+        <location filename="../data/configuration/social_tenure.py" line="170"/>
+        <source>%s does not have an id column. This is required in order to link it to the social tenure relationship table.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/social_tenure.py" line="179"/>
+        <source>%s does not have a geometry column. This is required when setting the spatial unit entity in a social tenure relationship definition.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>SourceDocumentTranslator</name>
     <message>
         <location filename="../data/importexport/value_translators.py" line="620"/>
@@ -4670,6 +4876,43 @@ Click Yes to proceed or No to cancel.</source>
     <message>
         <location filename="../ui/importexport/ui_source_document_dialog.ui" line="58"/>
         <source>...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/importexport/source_document_dialog.py" line="113"/>
+        <source>Invalid table object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/importexport/source_document_dialog.py" line="118"/>
+        <source>The selected destination table does not support documents.
+Hence, this translator is not applicable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/importexport/source_document_dialog.py" line="145"/>
+        <source>The selected column does not correspond to a document type.
+Hence, this translator is not applicable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/importexport/source_document_dialog.py" line="148"/>
+        <source>Invalid Document Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/importexport/source_document_dialog.py" line="156"/>
+        <source>Select Source Document Directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/importexport/source_document_dialog.py" line="200"/>
+        <source>Please set the root directory of source documents.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/importexport/source_document_dialog.py" line="210"/>
+        <source>&apos;{0}&apos; directory does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4926,6 +5169,24 @@ Click Yes to proceed or No to cancel.</source>
     <message>
         <location filename="../mapping/edit_tool.py" line="143"/>
         <source>Layer not editable</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SupportingDocumentsWidget</name>
+    <message>
+        <location filename="../ui/forms/documents.py" line="125"/>
+        <source>Select document type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/forms/documents.py" line="132"/>
+        <source>Add document...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/forms/documents.py" line="249"/>
+        <source>Select</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
