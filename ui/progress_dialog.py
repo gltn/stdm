@@ -18,7 +18,9 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import QApplication, QProgressDialog, QLabel
+
+from PyQt4.QtGui import QApplication, QProgressDialog, QLabel, QMessageBox
+from qgis.utils import iface
 
 class STDMProgressDialog(QProgressDialog):
     def __init__(self, parent):
@@ -76,4 +78,26 @@ class STDMProgressDialog(QProgressDialog):
         )
 
     def closeEvent(self, event):
-        event.ignore()
+        title = self.tr('Upgrade Interruption Error')
+        message = self.tr(
+            'Interrupting the upgrading '
+            'process could lead to data<br>'
+            'corruption due to an incomplete '
+            'migration of existing data.<br>'
+            '<br>'
+            'Are you sure you want to '
+            'cancel the upgrading process?'
+        )
+        warning_result = QMessageBox.critical(
+            iface.mainWindow(),
+            title,
+            message,
+            QMessageBox.Yes,
+            QMessageBox.No
+
+        )
+
+        if warning_result:
+            event.accept()
+        else:
+            event.ignore()
