@@ -29,6 +29,7 @@ from sqlalchemy import (
 from stdm.data.configuration import entity_model
 from stdm.data.configuration.db_items import DbItem
 from stdm.data.pg_utils import (
+    drop_cascade_table,
     drop_view,
     table_column_names
 )
@@ -73,7 +74,8 @@ def entity_updater(entity, engine, metadata):
 
     elif entity.action == DbItem.DROP:
         LOGGER.debug('Deleting %s entity...', entity.name)
-        drop_entity(entity, table, engine)
+        #drop_entity(entity, table, engine)
+        drop_cascade_table(entity.name)
 
 
 def create_entity(entity, table, engine):
