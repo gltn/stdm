@@ -353,7 +353,6 @@ class Profile(QObject):
         :returns: True if the item was successfully removed, otherwise False.
         :rtype: bool
         """
-        print 'Attempting to delete {0}'.format(name)
         if not name in self.entities:
             LOGGER.debug('%s entity cannot be removed. Item does '
                          'not exist.', name)
@@ -361,8 +360,6 @@ class Profile(QObject):
             return False
 
         ent = self.entities[name]
-
-        print 'Removing {0} entity'.format(name)
 
         #Check existing entity relation where this entity is referenced
         parent_relations = self.parent_relations(ent)
@@ -408,7 +405,6 @@ class Profile(QObject):
         removed.
         :type entity: Entity
         """
-        print 'Deleting association entities for {0}'.format(entity.name)
         assoc_entities = self.parent_association_entities(entity)
 
         #Remove association entities
