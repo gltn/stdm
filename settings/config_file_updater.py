@@ -1384,8 +1384,6 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
             self.notice.insertErrorNotification(error)
             return False
 
-
-
     def set_template_path(self):
         """
             Sets the templates path to the registry
