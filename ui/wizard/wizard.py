@@ -93,6 +93,10 @@ ORIG_CONFIG_FILE = QDir.home().path()+ '/.stdm/orig_configuration.stc'
 CONFIG_FILE = QDir.home().path()+ '/.stdm/configuration.stc'
 CONFIG_BACKUP_FILE = QDir.home().path()+ '/.stdm/configuration_bak.stc'
 
+EXCL_ENTITIES = ['SUPPORTING_DOCUMENT', 'SOCIAL_TENURE',
+                 'ADMINISTRATIVE_SPATIAL_UNIT', 'ENTITY_SUPPORTING_DOCUMENT',
+                 'VALUE_LIST', 'ASSOCIATION_ENTITY']
+
 class ConfigWizard(QWizard, Ui_STDMWizard):
     wizardFinished = pyqtSignal(object)
     """
@@ -116,6 +120,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         # register enitity model to different view controllers
         self.entity_model = EntitiesModel()
         self.set_views_entity_model(self.entity_model)
+
+        self.STR_spunit_model = EntitiesModel()
+        self.cboSPUnit.setModel(self.STR_spunit_model)
 
         self.init_entity_item_model()
 
@@ -171,6 +178,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.splitter_3.isCollapsible(False)
         self.splitter_3.setSizes([330, 150])
 
+        self.cboProfile.currentIndexChanged.connect(self.profile_changed)
+        self.set_current_profile()
 
     def reject(self):
         """
@@ -288,7 +297,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Attach event handlers for the profile toolbar
         """
-        self.cboProfile.currentIndexChanged.connect(self.profile_changed)
+        #self.cboProfile.currentIndexChanged.connect(self.profile_changed)
         self.btnNewP.clicked.connect(self.new_profile)
         self.btnPDelete.clicked.connect(self.delete_profile)
 
@@ -309,14 +318,15 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.pftableView.setModel(entity_model)
         self.lvEntities.setModel(entity_model)	
         self.cboParty.setModel(entity_model)
-        self.cboSPUnit.setModel(entity_model)
+        #self.cboSPUnit.setModel(entity_model)
 
     def init_STR_ctrls_event_handlers(self):
         """
         Attach onChange event handlers for the STR combobox 
         """
-        self.cboParty.currentIndexChanged.connect(self.party_changed)
-        self.cboSPUnit.currentIndexChanged.connect(self.spatial_unit_changed)
+        pass
+        #self.cboParty.currentIndexChanged.connect(self.party_changed)
+        #self.cboSPUnit.currentIndexChanged.connect(self.spatial_unit_changed)
 
     def init_entity_ctrls_event_handlers(self):
         """
@@ -424,7 +434,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         entity.column_added.connect(self.add_column_item)
         entity.column_removed.connect(self.delete_column_item)
-
+        
     def validate_STR(self):
         """
         Validate both Party & Spatial Unit entities for STR are properly set. 
@@ -436,13 +446,17 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             return False, self.tr("No entities for creating Social Tenure Relationship")
 
         # check that party and spatial unit entities are not the same
-        if self.cboParty.currentIndex() == self.cboSPUnit.currentIndex():
+        if self.cboParty.currentText() == self.cboSPUnit.currentText():
             return False, self.tr("Party and Spatial Unit entities cannot be the same!")
 
         profile = self.current_profile()
         spatial_unit = profile.entity(unicode(self.cboSPUnit.currentText()))
 
-        # check if th spatial unit entity has a geometry column
+        if spatial_unit is None:
+            return False, self.tr('No spatial unit entity found for '
+            'creating Social Tenure Relationship!')
+
+        # check if the spatial unit entity has a geometry column
         if not spatial_unit.has_geometry_column():
             return False, self.tr("%s entity should have a geometry column!")\
                     % spatial_unit.short_name
@@ -461,14 +475,25 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         return 0
 
 
-    def index_spatial_unit_table(self):
+    def index_spatial_unit_table(self, profile, model):
         """
         Returns an index of the selected spatial unit
         """
-        for index, entity in enumerate(self.entity_model.entities().values()):
-            if entity.has_geometry_column():
-                return index
-        return 0
+        index = 0
+        # first look if STR has been set for current profile, return 
+        # that index
+        if not profile.social_tenure.spatial_unit is None:
+            spunit_name = profile.social_tenure.spatial_unit.short_name
+            items = model.findItems(spunit_name)
+            if len(items) > 0:
+                index = items[0].row()
+        else:
+            for idx, entity in enumerate(model.entities().values()):
+                if entity.has_geometry_column():
+                    index = idx
+                    break
+
+        return index 
 
     def check_empty_entities(self):
         """
@@ -713,17 +738,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             curr_profile = self.current_profile()
 
-            # remove entities with geometry from cboParty
-            #self.remove_geometry_entities()
-
-            # get entity with no geometry column
             idx1 = self.index_party_table()
             self.cboParty.setCurrentIndex(idx1)
 
-            # get an entity with a geometry column
-            idx = self.index_spatial_unit_table()
+            idx = self.index_spatial_unit_table(
+                    curr_profile, self.STR_spunit_model)
             self.cboSPUnit.setCurrentIndex(idx)
-            self.spatial_unit_changed(idx)
+            #self.spatial_unit_changed(idx)
 
             self.set_multi_party_checkbox(curr_profile)
 
@@ -791,16 +812,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             validPage = False
 
         return validPage
-
-    
-    def remove_geometry_entities(self):
-        """
-         Remove any entity with a geometry column from the cboParty
-         combobox
-        """
-        for index, entity in enumerate(self.entity_model.entities().values()):
-            if entity.has_geometry_column():
-                self.cboParty.removeItem(index)
 
     def pause_wizard_dialog(self):
         """
@@ -1033,6 +1044,29 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if len(items) > 0:
             self.entity_model.removeRow(items[0].row())
 
+    def populate_spunit_model(self, profile):
+        self.STR_spunit_model.entities().clear()
+        for entity in profile.entities.values():
+            if entity.action == DbItem.DROP:
+                continue
+
+            if entity.TYPE_INFO not in EXCL_ENTITIES and \
+                    entity.has_geometry_column():
+                        self.STR_spunit_model.add_entity(entity)
+
+    def delete_str_spunit_item(self, name):
+        """
+        Removes an entity from a model
+        param name: Name of entity to delete
+        type name: str
+        """
+        items = self.STR_spunit_model.findItems(name)
+        if len(items) > 0:
+            self.STR_spunit_model.removeRow(items[0].row())
+
+        self.STR_spunit_model.delete_entity_byname(name)
+
+
     def cbo_add_profile(self, profile):
         """
         param profile: List of profile to add in a combobox
@@ -1049,6 +1083,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         type profiles: list
         """
         self.cboProfile.insertItems(0, profiles)
+
+    def set_current_profile(self):
         # Set current profile on the profile combobox.
         cp = current_profile()
         if not cp is None:
@@ -1074,6 +1110,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             profile.description = editor.desc
             self.connect_entity_signals(profile)
             self.stdm_config.add_profile(profile)
+            #self.switch_profile(self.cboProfile.currentText())
 
     def connect_entity_signals(self, profile):
         """
@@ -1192,6 +1229,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             profile = self.current_profile()
             in_db = pg_table_exists(entity.name)
 
+            tmp_short_name = entity.short_name
+
             params = {}
             params['parent']  = self
             params['profile'] = profile
@@ -1207,6 +1246,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
                 model_item.setData(model_index_name, editor.entity.short_name) 
                 model_item.setData(model_index_desc, editor.entity.description) 
+
 
     def delete_entity(self):
         """
@@ -1235,6 +1275,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             self.init_entity_item_model()
             self.trigger_entity_change()
+
+            self.clear_view_model(self.STR_spunit_model)
+            self.populate_spunit_model(profile)
 
     def column_exist_in_entity(self, entity, column):
         """
@@ -1266,7 +1309,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.pftableView.setModel(view_model)
         self.lvEntities.setModel(view_model)
         self.cboParty.setModel(view_model)
-        self.cboSPUnit.setModel(view_model)
+        #self.cboSPUnit.setModel(view_model)
 
     def populate_view_models(self, profile):
         for entity in profile.entities.values():
@@ -1314,10 +1357,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.clear_view_model(self.lookup_view_model)
         self.clear_view_model(self.lookup_value_view_model)
         self.clear_view_model(self.party_item_model)
-        self.clear_view_model(self.spunit_item_model)
+        #self.clear_view_model(self.spunit_item_model)
+        self.clear_view_model(self.STR_spunit_model)
 
         self.entity_model = EntitiesModel()
         self.set_view_model(self.entity_model)
+        self.cboSPUnit.setModel(self.STR_spunit_model)
 
         self.col_view_model = ColumnEntitiesModel()
         self.tbvColumns.setModel(self.col_view_model)
@@ -1328,6 +1373,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         # from profile entities to view_model
         self.populate_view_models(profile)
+        self.populate_spunit_model(profile)
+
         self.connect_signals()
         self.lvLookups.setCurrentIndex(self.lookup_view_model.index(0,0))
 
@@ -1483,6 +1530,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     self.populate_lookup_view(profile)
                     self.lvLookups.setCurrentIndex(self.lookup_view_model.index(0,0))
 
+                # add this entity to STR spatial unit list of selection.
+                if editor.type_info == 'GEOMETRY':
+                    self.STR_spunit_model.add_entity(entity)
+                    print 'hello'
+
     def edit_column(self):
         """
         Event handler for editing a column.
@@ -1493,11 +1545,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if column and column.action == DbItem.CREATE:
             row_id, entity = self._get_entity(self.lvEntities)
 
+            profile = self.current_profile()
             params = {}
             params['parent'] = self
             params['column'] = column
             params['entity'] = entity
-            params['profile'] = self.current_profile()
+            params['profile'] = profile
             params['in_db'] = self.column_exist_in_entity(entity, column)
 
             params['is_new'] = False
@@ -1529,6 +1582,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                         entity.columns.pop(tmp_column.name)
                 
                 self.refresh_columns_view(entity)
+
+                self.clear_view_model(self.STR_spunit_model)
+                self.populate_spunit_model(profile)
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No column selected for edit!"))
@@ -1608,6 +1664,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             # delete from the entity
             entity.remove_column(column.name)
+
+            if not entity.has_geometry_column():
+                self.delete_str_spunit_item(entity.short_name)
+
 
     def check_column_dependencies(self, column):
         """

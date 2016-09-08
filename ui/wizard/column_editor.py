@@ -673,7 +673,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 return False
 
             self.entity.add_column(new_column)
-            self.done(0)
+            self.done(1)
         else:  # editing a column 
             self.column = new_column
             self.done(1)
