@@ -103,22 +103,7 @@ class Entity(QObject, TableItem):
         self.is_global = is_global
         self.short_name = name
 
-        #Append profile prefix if not global
-        if not self.is_global:
-            # format the internal name, replace spaces between words 
-            # with underscore and make all letters lower case.
-            name = unicode(name).strip()
-
-        name = name.replace(' ', "_")
-        name = name.lower()
-            
-        #Ensure prefix is not duplicated in the names
-        prfx = self.profile.prefix
-        prefix_idx = name.find(prfx, 0, len(prfx))
-
-        #If there is no prefix then append
-        if prefix_idx == -1 and not is_global:
-            name = u'{0}_{1}'.format(self.profile.prefix, name)
+        name = self._shortname_to_name(name)
 
         TableItem.__init__(self, name)
 
@@ -150,6 +135,40 @@ class Entity(QObject, TableItem):
         self.is_proxy = is_proxy
 
         LOGGER.debug('%s entity created.', self.name)
+
+    def _shortname_to_name(self, name):
+        # Append profile prefix if not global
+        if not self.is_global:
+            # format the internal name, replace spaces between words
+            # with underscore and make all letters lower case.
+            name = unicode(name).strip()
+
+        name = name.replace(' ', "_")
+        name = name.lower()
+
+        #Ensure prefix is not duplicated in the names
+        prfx = self.profile.prefix
+        prefix_idx = name.find(prfx, 0, len(prfx))
+
+        #If there is no prefix then append
+        if prefix_idx == -1 and not self.is_global:
+            name = u'{0}_{1}'.format(self.profile.prefix, name)
+
+        return name
+
+    def rename(self, shortname):
+        """
+        Updates the entity short name and name to use the new name. This
+        function is used by the profile object and should not be used
+        directly.
+        To rename an entity, please use
+        :py:class:Profile.rename(original_name, new_name) function.
+        :param shortname: New shortname. The table name will also be derived
+        from this as well.
+        :type shortname: str
+        """
+        self.short_name = shortname
+        self.name = self._shortname_to_name(shortname)
 
     @property
     def supports_documents(self):
@@ -475,8 +494,10 @@ class EntitySupportingDocument(Entity):
         #Supporting document ref column
         self.document_reference = ForeignKeyColumn('supporting_doc_id', self)
 
-        normalize_name = self.parent_entity.short_name.replace(' ',
-                                                               '_').lower()
+        normalize_name = self.parent_entity.short_name.replace(
+            ' ',
+            '_'
+        ).lower()
 
         #Entity reference column
         entity_ref_name = u'{0}_{1}'.format(normalize_name, 'id')
