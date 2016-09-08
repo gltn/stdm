@@ -48,6 +48,7 @@ class AssociationEntity(Entity):
     between two entities.
     """
     TYPE_INFO = 'ASSOCIATION_ENTITY'
+    FIRST_PARENT, SECOND_PARENT = range(0, 2)
 
     def __init__(self, name, profile, **kwargs):
         Entity.__init__(self, name, profile, supports_documents=False)

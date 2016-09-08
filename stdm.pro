@@ -16,6 +16,7 @@ SOURCES = \
           data\configuration\config_updater.py \
           data\configuration\entity.py \
           data\configuration\entity_relation.py \
+          data\configuration\profile.py \
           data\configuration\social_tenure.py \
           data\importexport\reader.py \
           data\importexport\value_translators.py \

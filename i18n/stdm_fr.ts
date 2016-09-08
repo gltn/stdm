@@ -236,7 +236,7 @@ Click Yes to delete or No to cancel.</source>
 <context>
     <name>AssociationEntity</name>
     <message>
-        <location filename="../data/configuration/association_entity.py" line="109"/>
+        <location filename="../data/configuration/association_entity.py" line="110"/>
         <source>%s does not have an id column. This is required in order to link it to the social tenure relationship table.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1126,12 +1126,12 @@ Are you sure you want to cancel the migration process?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settings/config_file_updater.py" line="1420"/>
+        <location filename="../settings/config_file_updater.py" line="1418"/>
         <source>Specify the template folder the contains your document templates.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settings/config_file_updater.py" line="1444"/>
+        <location filename="../settings/config_file_updater.py" line="1442"/>
         <source>Specify the document folder the contains the 2020 folder.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3618,6 +3618,11 @@ Please set it in the Options dialog or Configuration Wizard.</source>
     <message>
         <location filename="../ui/wizard/ui_mselect_type_prop.ui" line="70"/>
         <source>New lookup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/profile.py" line="241"/>
+        <source>Entity object type expected.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
