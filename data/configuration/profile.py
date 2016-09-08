@@ -237,7 +237,7 @@ class Profile(QObject):
         """
         #Get corresponding entity
         if not isinstance(item, Entity):
-            return []
+            raise TypeError(self.tr('Entity object type expected.'))
 
         name = item.name
 
@@ -353,6 +353,7 @@ class Profile(QObject):
         :returns: True if the item was successfully removed, otherwise False.
         :rtype: bool
         """
+        print 'Attempting to delete {0}'.format(name)
         if not name in self.entities:
             LOGGER.debug('%s entity cannot be removed. Item does '
                          'not exist.', name)
@@ -360,6 +361,8 @@ class Profile(QObject):
             return False
 
         ent = self.entities[name]
+
+        print 'Removing {0} entity'.format(name)
 
         #Check existing entity relation where this entity is referenced
         parent_relations = self.parent_relations(ent)
@@ -380,6 +383,9 @@ class Profile(QObject):
         for er in remove_relations:
             self.remove_relation(er.name)
 
+        #Remove association entities if any
+        self.remove_association_entities(ent)
+
         #Now remove the entity from the collection
         del_entity = self.entities.pop(name, None)
 
@@ -392,6 +398,22 @@ class Profile(QObject):
         self.entity_removed.emit(name)
 
         return True
+
+    def remove_association_entities(self, entity):
+        """
+        Removes association entities related to the specified primary
+        entity. Searches for primary entity in both first and second
+        parent entities in each association entity.
+        :param entity: Primary entity whose association entities are to be
+        removed.
+        :type entity: Entity
+        """
+        print 'Deleting association entities for {0}'.format(entity.name)
+        assoc_entities = self.parent_association_entities(entity)
+
+        #Remove association entities
+        for ae in assoc_entities:
+            self.remove_entity(ae.short_name)
 
     def create_entity(self, name, factory, **kwargs):
         """
@@ -456,6 +478,47 @@ class Profile(QObject):
         :rtype: list
         """
         return self.entities_by_type_info(EntitySupportingDocument.TYPE_INFO)
+
+    def association_entities(self):
+        """
+        :return: Returns all association entities in the profile.
+        :rtype: list
+        """
+        return self.entities_by_type_info(AssociationEntity.TYPE_INFO)
+
+    def parent_association_entities(
+            self,
+            entity,
+            parent=AssociationEntity.FIRST_PARENT|AssociationEntity.SECOND_PARENT
+    ):
+        """
+        :param entity: First or second parent association entity.
+        :type entity: AssociationEntity
+        :param parent: Specify whether to search for first, second or both
+        parents. Default is bot first and second parents.
+        :type parent: enum
+        :return: Returns a list of association entities which reference the
+        given entity as the first or second parent depending on the search
+        configuration.
+        :rtype: list
+        """
+        parents = []
+
+        #Get first parent if specified
+        if (parent & AssociationEntity.FIRST_PARENT) == AssociationEntity.FIRST_PARENT:
+            first_parents = [ae for ae in self.association_entities()
+                             if ae.first_parent.name == entity.name]
+
+            parents.extend(first_parents)
+
+        #Get second parent if specified
+        if (parent & AssociationEntity.SECOND_PARENT) == AssociationEntity.SECOND_PARENT:
+            second_parents = [ae for ae in self.association_entities()
+                              if ae.second_parent.name == entity.name]
+
+            parents.extend(second_parents)
+
+        return parents
 
     def on_delete(self):
         """
