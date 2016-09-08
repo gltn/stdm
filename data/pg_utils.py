@@ -622,6 +622,28 @@ def table_view_dependencies(table_name, column_name=None):
     return views
 
 
+def drop_cascade_table(table_name):
+    """
+    Safely deletes the table with the specified name using the CASCADE option.
+    :param table_name: Name of the database table.
+    :type table_name: str
+    :return: Returns True if the operation succeeded. otherwise False.
+    :rtype: bool
+    """
+    del_com = 'DROP TABLE IF EXISTS {0} CASCADE;'.format(table_name)
+    t = text(del_com)
+
+    try:
+        _execute(t)
+
+        return True
+
+    #Error if the current user is not the owner.
+    except SQLAlchemyError:
+
+        return False
+
+
 def drop_view(view_name):
     """
     Deletes the database view with the given name. The CASCADE command option

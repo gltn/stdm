@@ -210,9 +210,19 @@ Click Yes to delete or No to cancel.</source>
 <context>
     <name>AdminUnitSelector</name>
     <message>
-        <location filename="../ui/admin_unit_selector.py" line="75"/>
+        <location filename="../ui/admin_unit_selector.py" line="89"/>
         <source>Please select an administrative unit from the list.</source>
-        <translation type="obsolete">s&apos;il vous plait, Veuillez selectionner l&apos;unité administrative dans la liste </translation>
+        <translation type="unfinished">s&apos;il vous plait, Veuillez selectionner l&apos;unité administrative dans la liste </translation>
+    </message>
+    <message>
+        <location filename="../ui/admin_unit_selector.py" line="69"/>
+        <source>Manage Administrative Units</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/admin_unit_selector.py" line="75"/>
+        <source>Select Administrative Unit</source>
+        <translation type="unfinished">Sélectionnez Unité administrative</translation>
     </message>
 </context>
 <context>
@@ -220,6 +230,14 @@ Click Yes to delete or No to cancel.</source>
     <message>
         <location filename="../ui/customcontrols/relation_line_edit.py" line="272"/>
         <source>Attribute Table Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AssociationEntity</name>
+    <message>
+        <location filename="../data/configuration/association_entity.py" line="110"/>
+        <source>%s does not have an id column. This is required in order to link it to the social tenure relationship table.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -830,7 +848,7 @@ Please check the geometry type of the spatial column.</source>
 <context>
     <name>ConfigWizard</name>
     <message>
-        <location filename="../plugin.py" line="773"/>
+        <location filename="../plugin.py" line="772"/>
         <source>Configuration Wizard</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1081,57 +1099,105 @@ The system will revert to the latest configuration backup file </source>
 <context>
     <name>ConfigurationFileUpdater</name>
     <message>
-        <location filename="../settings/config_file_updater.py" line="627"/>
+        <location filename="../settings/config_file_updater.py" line="625"/>
         <source>Configuration Upgrade Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settings/config_file_updater.py" line="1323"/>
+        <location filename="../settings/config_file_updater.py" line="1321"/>
         <source>Migration Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settings/config_file_updater.py" line="1327"/>
+        <location filename="../settings/config_file_updater.py" line="1325"/>
         <source>Closing this dialog will lead to the cancellation of the migration
 and temporary loss of access to your existing profile, data and templates.
 Are you sure you want to cancel the migration process?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settings/config_file_updater.py" line="1351"/>
+        <location filename="../settings/config_file_updater.py" line="1349"/>
         <source>Please select all the three paths used by STDM.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settings/config_file_updater.py" line="1355"/>
+        <location filename="../settings/config_file_updater.py" line="1353"/>
         <source>You have successfully set STDM path settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settings/config_file_updater.py" line="1422"/>
+        <location filename="../settings/config_file_updater.py" line="1418"/>
         <source>Specify the template folder the contains your document templates.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settings/config_file_updater.py" line="1446"/>
+        <location filename="../settings/config_file_updater.py" line="1442"/>
         <source>Specify the document folder the contains the 2020 folder.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settings/config_file_updater.py" line="1240"/>
+        <location filename="../settings/config_file_updater.py" line="1238"/>
         <source>Upgrade Information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settings/config_file_updater.py" line="1244"/>
+        <location filename="../settings/config_file_updater.py" line="1242"/>
         <source>Would you like to view the new features and changes of STDM 1.2?</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ConfigurationSchemaUpdater</name>
+    <message>
+        <location filename="../data/configuration/config_updater.py" line="82"/>
+        <source>The specified configuration is empty, the schema will not be updated.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/config_updater.py" line="148"/>
+        <source>Removing redundant foreign key constraints...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/config_updater.py" line="163"/>
+        <source>Error in removing {0} foreign key constraint.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/config_updater.py" line="170"/>
+        <source>{0} foreign key constraint successfully removed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/config_updater.py" line="257"/>
+        <source>Error in creating {0} foreign key constraint.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/config_updater.py" line="261"/>
+        <source>{0} foreign key constraint successfully created.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/config_updater.py" line="270"/>
+        <source>creating</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/config_updater.py" line="273"/>
+        <source>updating</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/config_updater.py" line="276"/>
+        <source>deleting</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>ContentAuthorizationToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="726"/>
+        <location filename="../plugin.py" line="725"/>
         <source>Content Authorization</source>
         <translation type="unfinished">Autorisation du contenu</translation>
     </message>
@@ -1563,7 +1629,7 @@ Are you sure you want to cancel the migration process?</source>
 <context>
     <name>DocumentDesignerAction</name>
     <message>
-        <location filename="../plugin.py" line="758"/>
+        <location filename="../plugin.py" line="757"/>
         <source>Document Designer</source>
         <translation type="unfinished">Concepteur de document</translation>
     </message>
@@ -1624,7 +1690,7 @@ Are you sure you want to cancel the migration process?</source>
 <context>
     <name>DocumentGeneratorAction</name>
     <message>
-        <location filename="../plugin.py" line="761"/>
+        <location filename="../plugin.py" line="760"/>
         <source>Document Generator</source>
         <translation type="unfinished">Générateur de documennt</translation>
     </message>
@@ -1672,17 +1738,17 @@ Are you sure you want to cancel the migration process?</source>
         <translation type="unfinished">Erreur de générateur de document</translation>
     </message>
     <message>
-        <location filename="../ui/doc_generator_dlg.py" line="619"/>
+        <location filename="../ui/doc_generator_dlg.py" line="633"/>
         <source>Document Generation Complete</source>
         <translation type="unfinished">Génération de document terminé </translation>
     </message>
     <message>
-        <location filename="../ui/doc_generator_dlg.py" line="619"/>
+        <location filename="../ui/doc_generator_dlg.py" line="633"/>
         <source>Document generation has successfully completed.</source>
         <translation type="unfinished">Génération de document effectué avec succès.</translation>
     </message>
     <message>
-        <location filename="../ui/doc_generator_dlg.py" line="665"/>
+        <location filename="../ui/doc_generator_dlg.py" line="680"/>
         <source>Table configurations do not exist or have not been configured properly</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2089,6 +2155,60 @@ Once deleted it cannot be recovered.</source>
     </message>
 </context>
 <context>
+    <name>EntityEditor</name>
+    <message>
+        <location filename="../ui/wizard/create_entity.py" line="94"/>
+        <source>Please enter an entity name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/wizard/create_entity.py" line="101"/>
+        <source>Entity with the same name already exist in the current profile!</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>EntityEditorDialog</name>
+    <message>
+        <location filename="../ui/forms/editor_dialog.py" line="90"/>
+        <source>Collection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/forms/editor_dialog.py" line="133"/>
+        <source>Editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/forms/editor_dialog.py" line="159"/>
+        <source>Please fill out all required (*) fields.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/forms/editor_dialog.py" line="310"/>
+        <source>Supporting Documents</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/forms/editor_dialog.py" line="324"/>
+        <source>Primary</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>EntitySupportingDocument</name>
+    <message>
+        <location filename="../data/configuration/entity.py" line="496"/>
+        <source>General</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/entity.py" line="536"/>
+        <source>%s does not have an id column. This is required in order to link it to the supporting document table through this association table.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>EnumerationTranslatorDialog</name>
     <message>
         <location filename="../ui/importexport/ui_multiple_enumeration_dialog.ui" line="14"/>
@@ -2487,7 +2607,7 @@ Do you want to overwrite the existing config?</source>
 <context>
     <name>ImportAction</name>
     <message>
-        <location filename="../plugin.py" line="752"/>
+        <location filename="../plugin.py" line="751"/>
         <source>Import Data</source>
         <translation type="unfinished">Importation des données</translation>
     </message>
@@ -2995,7 +3115,7 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>ManageAdminUnitsToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="743"/>
+        <location filename="../plugin.py" line="742"/>
         <source>Manage Administrative Units</source>
         <translation type="unfinished">Gérer les unités administratives</translation>
     </message>
@@ -3011,7 +3131,7 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>ManageUsersToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="735"/>
+        <location filename="../plugin.py" line="734"/>
         <source>Manage Users-Roles</source>
         <translation type="unfinished">Gestion des utilisateurs et des rôles - stdm</translation>
     </message>
@@ -3198,9 +3318,82 @@ Please set it in the Options dialog or Configuration Wizard.</source>
     </message>
 </context>
 <context>
+    <name>OptionsDialog</name>
+    <message>
+        <location filename="../ui/options_base.py" line="229"/>
+        <source>Supporting Documents Directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="235"/>
+        <source>Document Designer Templates Directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="241"/>
+        <source>Document Generator Output Directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="261"/>
+        <source>Please specify the database host address.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="267"/>
+        <source>Please specify the port number.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="273"/>
+        <source>Please specify the database name.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="306"/>
+        <source>Connection to &apos;{0}&apos; database was successful.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="308"/>
+        <source>Database Connection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="319"/>
+        <source>Profile name is empty, current profile will not be set.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="354"/>
+        <source>Please set the supporting documents directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="378"/>
+        <source>Please set the document designer templates directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="403"/>
+        <source>Please set the document generator output directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="423"/>
+        <source>&apos;{0}&apos; directory does not exist.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/options_base.py" line="484"/>
+        <source>Settings successfully saved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>OptionsToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="739"/>
+        <location filename="../plugin.py" line="738"/>
         <source>Options</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3425,6 +3618,11 @@ Please set it in the Options dialog or Configuration Wizard.</source>
     <message>
         <location filename="../ui/wizard/ui_mselect_type_prop.ui" line="70"/>
         <source>New lookup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/profile.py" line="241"/>
+        <source>Entity object type expected.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3848,7 +4046,7 @@ They will not be included in the report</source>
 <context>
     <name>ReportBuilderAction</name>
     <message>
-        <location filename="../plugin.py" line="755"/>
+        <location filename="../plugin.py" line="754"/>
         <source>Export Data</source>
         <translation type="unfinished">Exporter les données</translation>
     </message>
@@ -3879,7 +4077,7 @@ They will not be included in the report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="563"/>
+        <location filename="../plugin.py" line="562"/>
         <source>Load Configuration Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3929,7 +4127,7 @@ They will not be included in the report</source>
         <translation type="obsolete">Modules</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="723"/>
+        <location filename="../plugin.py" line="722"/>
         <source>Entities</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4030,7 +4228,7 @@ Removing and re-adding the layer could also fix the error.</source>
         <translation type="unfinished">Concepteur de Document STDM</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1466"/>
+        <location filename="../plugin.py" line="1463"/>
         <source>Unable to load the entity in the browser. Check if the entity is configured correctly. Error: %s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4040,18 +4238,31 @@ Removing and re-adding the layer could also fix the error.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1225"/>
+        <location filename="../plugin.py" line="1222"/>
         <source>Error Loading the Configuration Wizard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1251"/>
+        <location filename="../plugin.py" line="1248"/>
         <source>Error Loading New STR Wizard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1466"/>
+        <location filename="../plugin.py" line="1463"/>
         <source>Error Loading Entity Browser</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>STDMProgressDialog</name>
+    <message>
+        <location filename="../ui/progress_dialog.py" line="81"/>
+        <source>Upgrade Interruption Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/progress_dialog.py" line="82"/>
+        <source>Interrupting the upgrading process could lead to data&lt;br&gt;corruption due to an incomplete migration of existing data.&lt;br&gt;&lt;br&gt;Are you sure you want to cancel the upgrading process?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4073,7 +4284,7 @@ Removing and re-adding the layer could also fix the error.</source>
         <translation type="unfinished">STDM menu plug-in</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1070"/>
+        <location filename="../plugin.py" line="1069"/>
         <source>Spatial Unit Manager</source>
         <translation type="unfinished">Gérer Unité spatiale</translation>
     </message>
@@ -4130,7 +4341,7 @@ Do you want to re-run the Configuration Wizard now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1032"/>
+        <location filename="../plugin.py" line="1031"/>
         <source>Spatial Table Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4142,37 +4353,37 @@ Do you want to run it now? </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="636"/>
+        <location filename="../plugin.py" line="635"/>
         <source>Upgrade STDM Configuration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="636"/>
+        <location filename="../plugin.py" line="635"/>
         <source>Your configuration has been successfully upgraded!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1660"/>
+        <location filename="../plugin.py" line="1657"/>
         <source>Config file version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1662"/>
+        <location filename="../plugin.py" line="1659"/>
         <source>Your configuration file is older than the current stdm version, do you want to backupthe configuration and databasedata</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1674"/>
+        <location filename="../plugin.py" line="1671"/>
         <source>Update config file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1676"/>
+        <location filename="../plugin.py" line="1673"/>
         <source>The config version installed is old and outdated STDM will try to apply the required updates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1685"/>
+        <location filename="../plugin.py" line="1682"/>
         <source>STDM has detected that the version of config installed is old and outdated. Delete existing configuration folder or xml file and restart QGIS.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4627,6 +4838,19 @@ Click Yes to proceed or No to cancel.</source>
     </message>
 </context>
 <context>
+    <name>SocialTenure</name>
+    <message>
+        <location filename="../data/configuration/social_tenure.py" line="170"/>
+        <source>%s does not have an id column. This is required in order to link it to the social tenure relationship table.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/social_tenure.py" line="179"/>
+        <source>%s does not have a geometry column. This is required when setting the spatial unit entity in a social tenure relationship definition.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>SourceDocumentTranslator</name>
     <message>
         <location filename="../data/importexport/value_translators.py" line="620"/>
@@ -4659,6 +4883,43 @@ Click Yes to proceed or No to cancel.</source>
         <source>...</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../ui/importexport/source_document_dialog.py" line="113"/>
+        <source>Invalid table object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/importexport/source_document_dialog.py" line="118"/>
+        <source>The selected destination table does not support documents.
+Hence, this translator is not applicable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/importexport/source_document_dialog.py" line="145"/>
+        <source>The selected column does not correspond to a document type.
+Hence, this translator is not applicable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/importexport/source_document_dialog.py" line="148"/>
+        <source>Invalid Document Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/importexport/source_document_dialog.py" line="156"/>
+        <source>Select Source Document Directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/importexport/source_document_dialog.py" line="200"/>
+        <source>Please set the root directory of source documents.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/importexport/source_document_dialog.py" line="210"/>
+        <source>&apos;{0}&apos; directory does not exist.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SpatialEditorAction</name>
@@ -4673,7 +4934,7 @@ Click Yes to proceed or No to cancel.</source>
         <translation type="obsolete">Editeur Couche Post Gis </translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="765"/>
+        <location filename="../plugin.py" line="764"/>
         <source>Spatial Unit Manager</source>
         <translation type="unfinished">Gérer Unité spatiale</translation>
     </message>
@@ -4917,6 +5178,24 @@ Click Yes to proceed or No to cancel.</source>
     </message>
 </context>
 <context>
+    <name>SupportingDocumentsWidget</name>
+    <message>
+        <location filename="../ui/forms/documents.py" line="125"/>
+        <source>Select document type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/forms/documents.py" line="132"/>
+        <source>Add document...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/forms/documents.py" line="249"/>
+        <source>Select</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>SupportsManageMixin</name>
     <message>
         <location filename="../ui/helpers/datamanagemixin.py" line="36"/>
@@ -5127,7 +5406,7 @@ Click Yes to proceed or No to cancel.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settings/template_updater.py" line="1101"/>
+        <location filename="../settings/template_updater.py" line="1100"/>
         <source>Error Updating Template</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5246,7 +5525,7 @@ Click Yes to proceed or No to cancel.</source>
 <context>
     <name>ToolbarAdminSettings</name>
     <message>
-        <location filename="../plugin.py" line="705"/>
+        <location filename="../plugin.py" line="704"/>
         <source>Admin Settings</source>
         <translation type="unfinished">Paramètres administrateur</translation>
     </message>
@@ -5256,7 +5535,7 @@ Click Yes to proceed or No to cancel.</source>
         <translation type="obsolete">Paramètres du module</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="710"/>
+        <location filename="../plugin.py" line="709"/>
         <source>Entities</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5463,7 +5742,7 @@ Click Yes to proceed or No to cancel.</source>
 <context>
     <name>ViewSTRToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="769"/>
+        <location filename="../plugin.py" line="768"/>
         <source>View Social Tenure Relationship</source>
         <translation type="unfinished">Apercu Rélation Sociale sur la tenure</translation>
     </message>
@@ -5520,7 +5799,7 @@ Click Yes to proceed or No to cancel.</source>
         <translation type="obsolete">Ajouter une table</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="776"/>
+        <location filename="../plugin.py" line="775"/>
         <source>Entities</source>
         <translation type="unfinished"></translation>
     </message>

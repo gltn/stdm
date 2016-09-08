@@ -67,7 +67,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
             if self.entity.supports_documents and self.supporting_document_exists():
                 self.cbSupportDoc.setEnabled(False)
 
-        name_regex = QRegExp('^[A-Za-z][a-z0-9_]*$')
+        name_regex = QRegExp('^[A-Za-z0-9_]*$')
         name_validator = QRegExpValidator(name_regex)
         self.edtTable.setValidator(name_validator)
 
@@ -126,9 +126,13 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         return entity
 
     def edit_entity(self, short_name):
-        self.entity.short_name  = short_name
-        self.entity.description = self.edtDesc.text()
-        self.entity.supports_documents = self.support_doc()
+        # remove old entity
+        self.profile.remove_entity(self.entity.short_name)
+
+        self.entity = self._create_entity(short_name)
+        #self.entity.short_name  = short_name
+        #self.entity.description = self.edtDesc.text()
+        #self.entity.supports_documents = self.support_doc()
 
     def duplicate_check(self, name):
         """

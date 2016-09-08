@@ -149,8 +149,6 @@ STR_TABLES = OrderedDict([
                  )
             ])
 
-from ..data.pg_utils import export_data
-
 class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
     """
     Updates configuration file to new format and migrates data
@@ -1386,8 +1384,6 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
             self.notice.insertErrorNotification(error)
             return False
 
-
-
     def set_template_path(self):
         """
             Sets the templates path to the registry
@@ -1771,83 +1767,92 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
 
                 if STR_tables == 'social_tenure_relationship':
                     new_STR_table = self.config_profiles_prefix[0] + "_" + STR_tables
-                    STR_data = export_data_from_columns(old_columns,
-                                                  STR_tables).fetchall()
 
-                    if len(STR_data) > 0:
-                        new_STR_data_list = []
-                        for data in STR_data:
-                            list_data = list(data)
-                            for tenure_name, tenure_fkey_value in \
-                                    self.lookup_colum_name_values[
-                                        'tenure_type'].iteritems():
-                                if tenure_name == list_data[1]:
-                                    list_data[1] = tenure_fkey_value
-                                    break
-                                else:
-                                    continue
+                    if pg_table_exists(STR_tables):
+                        STR_data = export_data_from_columns(
+                            old_columns,
+                            STR_tables
+                        ).fetchall()
 
-                            new_STR_data_list.append(tuple(list_data))
+                        if len(STR_data) > 0:
+                            new_STR_data_list = []
+                            for data in STR_data:
+                                list_data = list(data)
+                                for tenure_name, tenure_fkey_value in \
+                                        self.lookup_colum_name_values[
+                                            'tenure_type'].iteritems():
+                                    if tenure_name == list_data[1]:
+                                        list_data[1] = tenure_fkey_value
+                                        break
+                                    else:
+                                        continue
 
-                        new_STR_data = unicode(new_STR_data_list).strip("[]").replace(
-                            "u\'", "\'")
+                                new_STR_data_list.append(tuple(list_data))
 
-                        if not import_data(new_STR_table, new_columns,
-                                           new_STR_data):
-                            pass
-                        else:
-                            fix_sequence(new_STR_table)
+                            new_STR_data = unicode(new_STR_data_list).strip("[]").replace(
+                                "u\'", "\'")
+
+                            if not import_data(new_STR_table, new_columns,
+                                               new_STR_data):
+                                pass
+                            else:
+                                fix_sequence(new_STR_table)
 
                 elif STR_tables == 'str_relations':
                     new_STR_table = self.config_profiles_prefix[0] + \
                                     "_social_tenure_relationship_supporting_" \
                                     "document"
-                    STR_data = export_data_from_columns(old_columns,
-                                                  STR_tables).fetchall()
+                    if pg_table_exists(STR_tables):
+                        STR_data = export_data_from_columns(
+                            old_columns,
+                            STR_tables
+                        ).fetchall()
 
-                    if len(STR_data) > 0:
+                        if len(STR_data) > 0:
 
-                        STR_data = [list(i) for i in STR_data]
+                            STR_data = [list(i) for i in STR_data]
 
-                        for row in STR_data:
-                            row.append(1)
+                            for row in STR_data:
+                                row.append(1)
 
-                        STR_data = [tuple(i) for i in STR_data]
+                            STR_data = [tuple(i) for i in STR_data]
 
-                        new_STR_data_list = unicode(STR_data).strip("[]").replace(
-                            "u\'", "\'")
+                            new_STR_data_list = unicode(STR_data).strip("[]").replace(
+                                "u\'", "\'")
 
-                        if not import_data(new_STR_table, new_columns,
-                                           new_STR_data_list):
-                            pass
-                        else:
-                            fix_sequence(new_STR_table)
+                            if not import_data(new_STR_table, new_columns,
+                                               new_STR_data_list):
+                                pass
+                            else:
+                                fix_sequence(new_STR_table)
 
                 elif STR_tables == 'supporting_document':
                     new_STR_table = self.config_profiles_prefix[0] + "_" + \
                                     STR_tables
+                    if pg_table_exists(STR_tables):
+                        STR_data = export_data_from_columns(
+                            old_columns,
+                            STR_tables
+                        ).fetchall()
 
-                    STR_data = export_data_from_columns(old_columns,
-                                                  STR_tables).fetchall()
+                        if len(STR_data) > 0:
 
-                    if len(STR_data) > 0:
+                            STR_data = [list(i) for i in STR_data]
 
-                        STR_data = [list(i) for i in STR_data]
+                            for row in STR_data:
+                                row.append(self.config_profiles_prefix[0] +
+                                           "_social_tenure_relationship")
 
-                        for row in STR_data:
-                            row.append(self.config_profiles_prefix[0] +
-                                       "_social_tenure_relationship")
+                            STR_data = [tuple(i) for i in STR_data]
 
-                        STR_data = [tuple(i) for i in STR_data]
+                            new_STR_data_list = unicode(STR_data).strip("[]").replace(
+                                "u\'", "\'").replace("None", "NULL")
 
-                        new_STR_data_list = unicode(STR_data).strip("[]").replace(
-                            "u\'", "\'").replace("None", "NULL")
-
-                        if not import_data(new_STR_table, new_columns,
-                                           new_STR_data_list):
-                            pass
-                        else:
-                            fix_sequence(new_STR_table)
+                            if not import_data(new_STR_table, new_columns,
+                                               new_STR_data_list):
+                                pass
+                            else:
+                                fix_sequence(new_STR_table)
 
                 self.progress.setValue(progress_i)
                 progress_i = progress_i + 1

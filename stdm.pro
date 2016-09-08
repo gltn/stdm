@@ -11,8 +11,13 @@ SOURCES = \
           data\lookups.py \
           data\mapping.py \
           data\usermodels.py \
+          data\configuration\association_entity.py \
           data\configuration\columns.py \
+          data\configuration\config_updater.py \
+          data\configuration\entity.py \
           data\configuration\entity_relation.py \
+          data\configuration\profile.py \
+          data\configuration\social_tenure.py \
           data\importexport\reader.py \
           data\importexport\value_translators.py \
           mapping\capture_tool.py \
@@ -32,6 +37,7 @@ SOURCES = \
           settings\template_updater.py \
           ui\about.py \
           ui\admin_unit_manager.py \
+          ui\admin_unit_selector.py \
           ui\change_pwd_dlg.py \
           ui\db_conn_dlg.py \
           ui\document_viewer.py \
@@ -49,6 +55,7 @@ SOURCES = \
           ui\new_role_dlg.py \
           ui\new_str_wiz.py \
           ui\new_user_dlg.py \
+          ui\options_base.py \
           ui\progress_dialog.py \
           ui\property_preview.py \
           ui\sourcedocument.py \
@@ -64,16 +71,20 @@ SOURCES = \
           ui\customcontrols\combobox_with_other.py \
           ui\customcontrols\coordinates_editor.py \
           ui\customcontrols\relation_line_edit.py \
+          ui\forms\documents.py \
+          ui\forms\editor_dialog.py \
           ui\forms\spatial_unit_form.py \
           ui\forms\widgets.py \
           ui\helpers\datamanagemixin.py \
           ui\helpers\valuehandlers.py \
           ui\importexport\multiple_enumeration_dialog.py \
           ui\importexport\related_table_dialog.py \
+          ui\importexport\source_document_dialog.py \
           ui\importexport\translator_config.py \
           ui\wizard\bigint_property.py \
           ui\wizard\column_depend.py \
           ui\wizard\column_editor.py \
+          ui\wizard\create_entity.py \
           ui\wizard\create_lookup.py \
           ui\wizard\create_lookup_value.py \
           ui\wizard\double_property.py \
