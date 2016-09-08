@@ -73,6 +73,7 @@ class LookupProperty(QDialog, Ui_LookupProperty):
         """
         editor = LookupEditor(self, self._profile)
         result = editor.exec_()
+
         if result == 1:
             name = editor.lookup.short_name
             names = []
