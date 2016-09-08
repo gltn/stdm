@@ -26,10 +26,6 @@ from PyQt4.QtGui import (
     QRegExpValidator
 )
 from ui_profile import Ui_Profile
-#from stdm.data.xmlconfig_writer import (
-    #writeProfile,
-    #checkProfile
-#)
 
 class ProfileEditor(QDialog, Ui_Profile):
     def __init__(self, parent):
@@ -45,7 +41,7 @@ class ProfileEditor(QDialog, Ui_Profile):
         self.edtProfile.clear()
         self.edtDesc.clear()
         self.edtProfile.setFocus()
-        name_regex = QRegExp('^[A-Za-z][a-z0-9_]*$')
+        name_regex = QRegExp('^[A-Za-z0-9_]*$')
         name_validator = QRegExpValidator(name_regex)
         self.edtProfile.setValidator(name_validator)
         
