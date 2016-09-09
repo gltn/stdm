@@ -178,7 +178,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.splitter_3.isCollapsible(False)
         self.splitter_3.setSizes([330, 150])
 
-        self.cboProfile.currentIndexChanged.connect(self.profile_changed)
+        #self.cboProfile.currentIndexChanged.connect(self.profile_changed)
         self.set_current_profile()
 
     def reject(self):
@@ -297,7 +297,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Attach event handlers for the profile toolbar
         """
-        #self.cboProfile.currentIndexChanged.connect(self.profile_changed)
+        self.cboProfile.currentIndexChanged.connect(self.profile_changed)
         self.btnNewP.clicked.connect(self.new_profile)
         self.btnPDelete.clicked.connect(self.delete_profile)
 

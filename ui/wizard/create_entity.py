@@ -94,7 +94,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
             self.show_message(self.tr("Please enter an entity name"))
             return
 
-        short_name = unicode(self.edtTable.text()).capitalize()
+        short_name = unicode(self.edtTable.text()).title()
 
         if self.entity is None:  # New entity
             if self.duplicate_check(short_name):
