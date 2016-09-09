@@ -1138,25 +1138,28 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Delete the current selected profile, but not the last one.
         """
-        if self.cboProfile.count() == 1:
-            msg0 = self.tr("This is the last profile in your wizard. ")
-            msg1 = self.tr("STDM requirement is to have atleast one profile in your database.")
-            msg2 = self.tr(" Delete is prohibited.")
-            self.show_message(QApplication.translate("Configuration Wizard", \
-                    msg0+msg1+msg2), QMessageBox.Information)
-            return
-
-        msg0 = self.tr("You will loose all items related to this profile i.e \n")
-        msg1 = self.tr("entities, lookups and Social Tenure Relationships.\n")
-        msg2 = self.tr("Are you sure you want to delete this profile?")
-        if self.query_box(msg0+msg1+msg2) == QMessageBox.Cancel:
-            return
-
         profile_name = unicode(self.cboProfile.currentText())
+
+        if self.cboProfile.count() == 1:
+            msg = self.tr('{0} profile cannot be deleted. At least one '
+            'profile is required to exist in the '
+            'STDM configuration. ').format(profile_name)
+
+            self.show_message(QApplication.translate("Configuration Wizard", \
+                    msg), QMessageBox.Warning)
+            return
+
+        msg = self.tr('You will loose all items related to this profile i.e \n'
+        'entities, lookups and Social Tenure Relationships.\n'
+        'Are you sure you want to delete this profile?')
+        if self.query_box(msg) == QMessageBox.Cancel:
+            return
+
         if not self.stdm_config.remove_profile(profile_name):
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "Unable to delete profile!"))
             return
+
         self.load_profile_cbo()
 
     def get_profiles(self):
@@ -1246,7 +1249,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
                 model_item.setData(model_index_name, editor.entity.short_name) 
                 model_item.setData(model_index_desc, editor.entity.description) 
-
 
     def delete_entity(self):
         """
