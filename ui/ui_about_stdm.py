@@ -25,7 +25,7 @@ except AttributeError:
 class Ui_frmAbout(object):
     def setupUi(self, frmAbout):
         frmAbout.setObjectName(_fromUtf8("frmAbout"))
-        frmAbout.resize(613, 527)
+        frmAbout.resize(718, 541)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
