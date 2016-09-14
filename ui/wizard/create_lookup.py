@@ -46,6 +46,10 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         :type parent: QWidget
         :param profile: A profile to add/edit lookup
         :type profile: Profile
+        :type inplace: Flag to check if lookup creation is initiated from the
+                       'normal' lookup creation process -inplace = False,
+                       this is the normal state. If 'inplace' = True, then
+                       creation is initiated from the the lookup selection dialog
         :param lookup: Value list to create, if None this is a new value list
          else its an edit
         :type lookup: ValueList
@@ -54,7 +58,7 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         self.setupUi(self)
 
 	self.profile = profile
-	self.lookup = lookup
+	self.lookup  = lookup
 
         self.init_gui()
 
@@ -89,12 +93,8 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         :type name: str
         """
         name = self.format_lookup_name(name)
-        # if its an edit, remove the existing entry first
-        #if self.lookup:
-               #self.profile.remove_entity(self.lookup.name)
         new_lookup = self.profile.create_entity(name, value_list_factory)
         return new_lookup
-
 	    
     def accept(self):
         if self.edtName.text()=='':
@@ -116,13 +116,12 @@ class LookupEditor(QDialog, Ui_dlgLookup):
             else:
                 new_lookup = self.create_lookup(short_name)
                 self.profile.add_entity(new_lookup)
-                self.done(0)
+                self.lookup = new_lookup
         else:
             self.edit_lookup(short_name)
-            self.done(1)
 
-           #self.lookup = new_lookup
-        
+        self.done(1)
+
 
     def duplicate_check(self, name):
         """
@@ -135,7 +134,6 @@ class LookupEditor(QDialog, Ui_dlgLookup):
 
     def edit_lookup(self, short_name):
         self.lookup.short_name = short_name
-
 
     def reject(self):
         self.done(0)
