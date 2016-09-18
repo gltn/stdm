@@ -165,7 +165,8 @@ class BaseColumn(ColumnItem):
     @classmethod
     def display_name(cls):
         """
-        :returns: A friendly display name for the column. To be implemented by subclasses.
+        :returns: A friendly display name for the column. To be implemented
+        by subclasses.
         :rtype: str
         """
         raise NotImplementedError
@@ -522,10 +523,11 @@ DateTimeColumn.register()
 class GeometryColumn(BaseColumn):
     """
     Represents 2D vector types apart from GEOMETRYCOLLECTION type.
+    EPSG:4326 is the default type used if no SRID is specified.
     """
     TYPE_INFO = 'GEOMETRY'
     sql_updater = geometry_updater
-    POINT, LINE, POLYGON, MULTIPOINT, MULTILINE, MULTIPOLYGON = range(0,6)
+    POINT, LINE, POLYGON, MULTIPOINT, MULTILINE, MULTIPOLYGON = range(0, 6)
 
     def __init__(self, *args, **kwargs):
         if len(args) < 3:
@@ -750,13 +752,13 @@ class MultipleSelectColumn(VirtualColumn):
         return self.association.first_parent
 
     @value_list.setter
-    def value_list(self, val_list):
+    def value_list(self, value_list):
         """
         Set the lookup source.
-        :param val_list: Lookup source.
-        :type val_list: Name of the ValueList or object instance.
+        :param value_list: Lookup source.
+        :type value_list: Name of the ValueList or object instance.
         """
-        self.association.first_parent = val_list
+        self.association.first_parent = value_list
 
     @property
     def model_attribute_name(self):
