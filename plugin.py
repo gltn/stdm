@@ -268,6 +268,7 @@ class STDMQGISLoader(object):
                 db = STDMDb.instance()
 
             except NoPostGISError:
+
                 err_msg = QApplication.translate(
                     "STDM",
                     "STDM cannot be loaded because the system has "
