@@ -20,6 +20,8 @@ email                : stdm@unhabitat.org
 """
 from __future__ import division
 
+import logging
+
 from PyQt4.QtGui import (
     QMdiSubWindow,
     QMdiArea,
@@ -56,6 +58,7 @@ from stdm.utils.util import (
     guess_extension,
     table_to_profile_name
 )
+LOGGER = logging.getLogger('stdm')
 
 class PhotoViewer(QScrollArea):
     """
@@ -305,10 +308,12 @@ class DocumentViewer(QMdiSubWindow):
         """
         if not self._view_widget is None:
             photo_obj = self._view_widget.load_document(doc_path)
-            self.doc_width = photo_obj.width()
-            self.doc_height = photo_obj.height()
-
-            self.update_size(self.doc_width, self.doc_height)
+            try:
+                self.doc_width = photo_obj.width()
+                self.doc_height = photo_obj.height()
+                self.update_size(self.doc_width, self.doc_height)
+            except Exception as message:
+                LOGGER.debug(unicode(message))
 
     def update_size(self, doc_width, doc_height):
         """
