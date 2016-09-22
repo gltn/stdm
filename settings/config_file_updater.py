@@ -615,7 +615,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
         :param config_file_name:
         :return:
         """
-        self.progress.progress_message('Creating STDM 1.2 configuration file', '')
+        self.progress.progress_message('Creating STDM 1.4 configuration file', '')
         self.config_file = QFile(os.path.join(self.file_handler.localPath(),
                                  config_file_name))
 
@@ -1241,7 +1241,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                         message = QApplication.translate(
                             'ConfigurationFileUpdater',
                             'Would you like to view the '
-                            'new features and changes of STDM 1.2?'
+                            'new features and changes of STDM 1.4?'
                         )
                         result, checkbox_result = simple_dialog(
                             self.iface.mainWindow(),
