@@ -593,7 +593,7 @@ class TemplateFileUpdater(
 
     def __init__(self, plugin_dir, old_new_tables, progress):
         """
-         Upgrades old profile templates to version 1.2 profiles.
+         Upgrades old profile templates to version 1.4 profiles.
         :param plugin_dir: The directory of STDM plugin
         :type plugin_dir: String
         :param prefix: The profile prefix of the upgraded profile

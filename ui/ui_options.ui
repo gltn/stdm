@@ -44,7 +44,7 @@
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_5">
-       <item row="4" column="0" colspan="4">
+       <item row="5" column="0" colspan="5">
         <widget class="QGroupBox" name="groupBox_3">
          <property name="maximumSize">
           <size>
@@ -145,7 +145,7 @@
          </layout>
         </widget>
        </item>
-       <item row="1" column="0" colspan="4">
+       <item row="2" column="0" colspan="5">
         <widget class="QGroupBox" name="groupBox">
          <property name="title">
           <string>Database Properties</string>
@@ -333,6 +333,20 @@
          </layout>
         </widget>
        </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>Upgrade STDM Configuration to 1.4 </string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Supporting documents folder</string>
+         </property>
+        </widget>
+       </item>
        <item row="0" column="0">
         <widget class="QLabel" name="label">
          <property name="text">
@@ -340,38 +354,7 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_9">
-         <property name="text">
-          <string>Upgrade STDM Configuration to 1.2 </string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_6">
-         <property name="text">
-          <string>Supporting documents folder</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2" colspan="2">
-        <widget class="QComboBox" name="cbo_profiles">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>30</height>
-          </size>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="1">
-        <widget class="QPushButton" name="upgradeButton">
-         <property name="text">
-          <string>Upgrade</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
+       <item row="3" column="2">
         <widget class="QLineEdit" name="txtRepoLocation">
          <property name="minimumSize">
           <size>
@@ -387,7 +370,7 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="2">
+       <item row="3" column="3">
         <widget class="QToolButton" name="btn_supporting_docs">
          <property name="toolTip">
           <string>Choose supporting documents directory</string>
@@ -403,6 +386,23 @@
           <size>
            <width>24</width>
            <height>24</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QPushButton" name="upgradeButton">
+         <property name="text">
+          <string>Upgrade</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QComboBox" name="cbo_profiles">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
           </size>
          </property>
         </widget>

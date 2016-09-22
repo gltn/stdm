@@ -659,7 +659,7 @@ class STDMQGISLoader(object):
                     {WIZARD_RUN: 1}
                 )
                 self.configuration_file_updater.append_log(
-                    'Successfully upgraded to STDM 1.2 configuration!'
+                    'Successfully migrated to STDM 1.4!'
                 )
                 return True
 
