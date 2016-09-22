@@ -91,6 +91,18 @@ class ValueList(Entity):
 
         return u'{0}_{1}'.format(self.PREFIX, name)
 
+    def rename(self, short_name):
+        """
+        Update the ValueList with the new shortname.
+        :param short_name: New short name of the value list.
+        :type short_name: str
+        """
+        check_short_name = self._append_check(short_name)
+
+        super(ValueList, self).rename(
+            check_short_name
+        )
+
     def add_value(self, value, code=''):
         """
         Add a string value to the CodeValue collection.
