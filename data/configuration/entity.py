@@ -27,10 +27,6 @@ from PyQt4.QtCore import (
     QObject
 )
 
-from PyQt4.QtGui import (
-        QMessageBox
-)
-
 from stdm.data.configuration.columns import BaseColumn
 from stdm.data.configuration.columns import (
     BaseColumn,
@@ -103,22 +99,7 @@ class Entity(QObject, TableItem):
         self.is_global = is_global
         self.short_name = name
 
-        #Append profile prefix if not global
-        if not self.is_global:
-            # format the internal name, replace spaces between words 
-            # with underscore and make all letters lower case.
-            name = unicode(name).strip()
-
-        name = name.replace(' ', "_")
-        name = name.lower()
-            
-        #Ensure prefix is not duplicated in the names
-        prfx = self.profile.prefix
-        prefix_idx = name.find(prfx, 0, len(prfx))
-
-        #If there is no prefix then append
-        if prefix_idx == -1 and not is_global:
-            name = u'{0}_{1}'.format(self.profile.prefix, name)
+        name = self._shortname_to_name(name)
 
         TableItem.__init__(self, name)
 
@@ -150,6 +131,44 @@ class Entity(QObject, TableItem):
         self.is_proxy = is_proxy
 
         LOGGER.debug('%s entity created.', self.name)
+
+    def _shortname_to_name(self, name):
+        # Append profile prefix if not global
+        if not self.is_global:
+            # format the internal name, replace spaces between words
+            # with underscore and make all letters lower case.
+            name = unicode(name).strip()
+
+        name = name.replace(' ', "_")
+        name = name.lower()
+
+        #Ensure prefix is not duplicated in the names
+        prfx = self.profile.prefix
+        prefix_idx = name.find(prfx, 0, len(prfx))
+
+        #If there is no prefix then append
+        if prefix_idx == -1 and not self.is_global:
+            name = u'{0}_{1}'.format(self.profile.prefix, name)
+
+        return name
+
+    def rename(self, shortname):
+        """
+        Updates the entity short name and name to use the new name. This
+        function is used by the profile object and should not be used
+        directly.
+        To rename an entity, please use
+        :py:class:Profile.rename(original_name, new_name) function.
+        :param shortname: New shortname. The table name will also be derived
+        from this as well.
+        :type shortname: str
+        """
+        self.short_name = shortname
+        self.name = self._shortname_to_name(shortname)
+
+        #Rename supporting documents if enabled
+        if self.supports_documents:
+            pass
 
     @property
     def supports_documents(self):
@@ -456,6 +475,7 @@ class Entity(QObject, TableItem):
 
         return virtual_cols
 
+
 class EntitySupportingDocument(Entity):
     """
     An association class that provides the link between a given Entity and
@@ -466,8 +486,7 @@ class EntitySupportingDocument(Entity):
     def __init__(self, profile, parent_entity):
         self.parent_entity = parent_entity
 
-        name = u'{0}_{1}'.format(parent_entity.short_name,
-                                 'supporting_document')
+        name = self._entity_short_name(parent_entity.short_name)
         Entity.__init__(self, name, profile, supports_documents=False)
 
         self.user_editable = False
@@ -475,8 +494,10 @@ class EntitySupportingDocument(Entity):
         #Supporting document ref column
         self.document_reference = ForeignKeyColumn('supporting_doc_id', self)
 
-        normalize_name = self.parent_entity.short_name.replace(' ',
-                                                               '_').lower()
+        normalize_name = self.parent_entity.short_name.replace(
+            ' ',
+            '_'
+        ).lower()
 
         #Entity reference column
         entity_ref_name = u'{0}_{1}'.format(normalize_name, 'id')
@@ -510,6 +531,11 @@ class EntitySupportingDocument(Entity):
         self._update_fk_references()
 
         LOGGER.debug('%s entity successfully initialized', self.name)
+
+    def _entity_short_name(self, parent_entity_name):
+        name = u'{0}_{1}'.format(parent_entity_name,
+                                 'supporting_document')
+        return name
 
     def _doc_type_vl(self, name):
         #Search for the document type value list based on the given name
@@ -550,6 +576,36 @@ class EntitySupportingDocument(Entity):
                                             self.profile.supporting_document)
         self.document_reference.set_entity_relation_attr('parent_column',
                                                          'id')
+
+    def rename(self, shortname):
+        """
+        Updates the supporting document references when the parent entity is
+        renamed. This renames the shortname and name, foreign key column and
+        the name of the document type lookup.
+        :param shortname: Shortname of the parent entity.
+        :type shortname: str
+        """
+        supporting_docs_shortname = self._entity_short_name(shortname)
+
+        #Update shortname and name
+        super(EntitySupportingDocument, self).rename(
+            supporting_docs_shortname
+        )
+
+        #Get entity relations and update entity references
+        parent_relations = self.parent_relations(self)
+        child_relations = self.child_relations(self)
+
+        #Update relations
+        for pr in parent_relations:
+            pr.parent = self
+
+        for cr in child_relations:
+            cr.child = self
+
+        #Rename lookup for supporting documents lookup
+        if not self._doc_types_value_list is None:
+            self._doc_types_value_list.rename()
 
     def document_types(self):
         """
