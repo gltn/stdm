@@ -27,10 +27,6 @@ from PyQt4.QtCore import (
     QObject
 )
 
-from PyQt4.QtGui import (
-        QMessageBox
-)
-
 from stdm.data.configuration.columns import BaseColumn
 from stdm.data.configuration.columns import (
     BaseColumn,
@@ -169,6 +165,10 @@ class Entity(QObject, TableItem):
         """
         self.short_name = shortname
         self.name = self._shortname_to_name(shortname)
+
+        #Rename supporting documents if enabled
+        if self.supports_documents:
+            pass
 
     @property
     def supports_documents(self):
@@ -475,6 +475,7 @@ class Entity(QObject, TableItem):
 
         return virtual_cols
 
+
 class EntitySupportingDocument(Entity):
     """
     An association class that provides the link between a given Entity and
@@ -485,8 +486,7 @@ class EntitySupportingDocument(Entity):
     def __init__(self, profile, parent_entity):
         self.parent_entity = parent_entity
 
-        name = u'{0}_{1}'.format(parent_entity.short_name,
-                                 'supporting_document')
+        name = self._entity_short_name(parent_entity.short_name)
         Entity.__init__(self, name, profile, supports_documents=False)
 
         self.user_editable = False
@@ -532,6 +532,11 @@ class EntitySupportingDocument(Entity):
 
         LOGGER.debug('%s entity successfully initialized', self.name)
 
+    def _entity_short_name(self, parent_entity_name):
+        name = u'{0}_{1}'.format(parent_entity_name,
+                                 'supporting_document')
+        return name
+
     def _doc_type_vl(self, name):
         #Search for the document type value list based on the given name
         value_lists = self.profile.value_lists()
@@ -571,6 +576,36 @@ class EntitySupportingDocument(Entity):
                                             self.profile.supporting_document)
         self.document_reference.set_entity_relation_attr('parent_column',
                                                          'id')
+
+    def rename(self, shortname):
+        """
+        Updates the supporting document references when the parent entity is
+        renamed. This renames the shortname and name, foreign key column and
+        the name of the document type lookup.
+        :param shortname: Shortname of the parent entity.
+        :type shortname: str
+        """
+        supporting_docs_shortname = self._entity_short_name(shortname)
+
+        #Update shortname and name
+        super(EntitySupportingDocument, self).rename(
+            supporting_docs_shortname
+        )
+
+        #Get entity relations and update entity references
+        parent_relations = self.parent_relations(self)
+        child_relations = self.child_relations(self)
+
+        #Update relations
+        for pr in parent_relations:
+            pr.parent = self
+
+        for cr in child_relations:
+            cr.child = self
+
+        #Rename lookup for supporting documents lookup
+        if not self._doc_types_value_list is None:
+            self._doc_types_value_list.rename()
 
     def document_types(self):
         """
