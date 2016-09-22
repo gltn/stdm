@@ -353,7 +353,6 @@ class Profile(QObject):
         :returns: True if the item was successfully removed, otherwise False.
         :rtype: bool
         """
-        print 'Attempting to delete {0}'.format(name)
         if not name in self.entities:
             LOGGER.debug('%s entity cannot be removed. Item does '
                          'not exist.', name)
@@ -361,8 +360,6 @@ class Profile(QObject):
             return False
 
         ent = self.entities[name]
-
-        print 'Removing {0} entity'.format(name)
 
         #Check existing entity relation where this entity is referenced
         parent_relations = self.parent_relations(ent)
@@ -408,7 +405,6 @@ class Profile(QObject):
         removed.
         :type entity: Entity
         """
-        print 'Deleting association entities for {0}'.format(entity.name)
         assoc_entities = self.parent_association_entities(entity)
 
         #Remove association entities
@@ -536,3 +532,63 @@ class Profile(QObject):
         :rtype: list(str)
         """
         return [e.name for e in self.entities.values()]
+
+    def rename(self, original_name, new_name):
+        """
+        Renames the entity with the given short name to use the new name.
+        This only works if the entity has not yet been created in the
+        database.
+        :param original_name: Original short name of the entity to be
+        renamed.
+        :type original_name: str
+        :param new_name: Updated entity short name.
+        :type new_name: str
+        :return: Returns True if the renaming succeeded, else False.
+        """
+        if not original_name in self.entities:
+            LOGGER.debug('%s entity cannot be renamed. Item does '
+                         'not exist.', original_name)
+
+            return False
+
+        ent = self.entities[original_name]
+
+        #Get entity relations and update entity references
+        parent_relations = self.parent_relations(ent)
+        child_relations = self.child_relations(ent)
+
+        #Check if the entity participates in either of the STR definitions
+        update_party = False
+        if not self.social_tenure.party is None:
+            update_party = True \
+                if self.social_tenure.party.name == original_name \
+                else False
+
+        update_spatial_unit = False
+        if not self.social_tenure.spatial_unit is None:
+            update_spatial_unit = True \
+                if self.social_tenure.spatial_unit.name == original_name \
+                else False
+
+        #Remove entity from the collection
+        rn_entity = self.entities.pop(original_name)
+        rn_entity.rename(new_name)
+
+        #Re-insert the entity
+        self.add_entity(rn_entity)
+
+        #Update relations
+        for pr in parent_relations:
+            pr.parent = rn_entity
+
+        for cr in child_relations:
+            cr.child = rn_entity
+
+        #Update entities in the STR definition
+        if update_party:
+            self.social_tenure.party = rn_entity
+
+        if update_spatial_unit:
+            self.social_tenure.spatial_unit = rn_entity
+
+        return True

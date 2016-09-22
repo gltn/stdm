@@ -1,7 +1,7 @@
 """
 /***************************************************************************
 Name                 : ConfigurationSchemaUpdater
-Description          : Updates the StdmConfiguration instance in the databaase.
+Description          : Updates the StdmConfiguration instance in the database.
 Date                 : 25/December/2015
 copyright            : (C) 2015 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
