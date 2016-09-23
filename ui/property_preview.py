@@ -348,9 +348,9 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
             self.sel_highlight = QgsHighlight(
                 map_canvas, qgis_geom, layer
             )
-            rgb = selection_color()
+            rgba = selection_color()
             self.sel_highlight.setFillColor(
-                QColor(rgb[0],rgb[1],rgb[2])
+                QColor(rgba[0], rgba[1], rgba[2], rgba[3])
             )
 
             self.sel_highlight.setWidth(3)
