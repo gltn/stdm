@@ -49,6 +49,9 @@ from stdm.data.qtmodels import (
     BaseSTDMTableModel,
     VerticalHeaderSortFilterProxyModel
 )
+from stdm.settings.registryconfig import (
+    selection_color
+)
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
 from stdm.navigation import TableContentGroup
 from stdm.network.filemanager import NetworkFileManager
@@ -1045,8 +1048,9 @@ class EntityBrowserWithEditor(EntityBrowser):
             map_canvas, qgis_geom, layer
         )
 
+        rgb = selection_color()
         self.highlight.setFillColor(
-            QColor(255, 128, 0)
+            QColor(rgb[0], rgb[1], rgb[2])
         )
 
         self.highlight.setWidth(3)

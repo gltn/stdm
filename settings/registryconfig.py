@@ -32,6 +32,7 @@ LAST_SUPPORTING_DOC_PATH = 'LastDocumentPath'
 SHOW_LICENSE = 'ShowLicense'
 WIZARD_RUN = 'wizardRun'
 CONFIG_UPDATED = 'ConfigUpdated'
+SUB_QGIS = '/Qgis'
 
 def registry_value(key_name):
     """
@@ -104,6 +105,27 @@ def set_last_document_path(path):
     :type path: str
     """
     set_registry_value(LAST_SUPPORTING_DOC_PATH, path)
+
+
+def selection_color():
+    """
+    Gets qgis default selection color.
+    Returns:
+        The default selection color.
+        Tuple
+
+    """
+    color_config = QGISRegistryConfig(SUB_QGIS)
+
+    red_dic = color_config.read(['default_selection_color_red'])
+    green_dic = color_config.read(['default_selection_color_green'])
+    blue_dic = color_config.read(['default_selection_color_blue'])
+
+    red = red_dic['default_selection_color_red']
+    green = green_dic['default_selection_color_green']
+    blue = blue_dic['default_selection_color_blue']
+
+    return red, green, blue
 
 
 class RegistryConfig(object):
