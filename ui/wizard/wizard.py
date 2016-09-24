@@ -774,7 +774,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             # last page
 
             # before any updates, backup your current working profile
-            #self.backup_config_file()
+            self.backup_config_file()
 
             #* commit config to DB
             self.config_updater = ConfigurationSchemaUpdater()
