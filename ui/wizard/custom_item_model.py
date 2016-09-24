@@ -62,6 +62,10 @@ class EntitiesModel(QStandardItemModel):
             self._add_row(entity)
             self._entities[entity.short_name] = entity
 
+    def edit_entity(self, old_entity, new_entity):
+        self._entities[old_entity.name] = new_entity
+        self._entities[new_entity.name] = \
+                self._entities.pop(old_entity.name)
     # ++
     def delete_entity(self, entity):
 	    if entity.short_name in self._entities:
