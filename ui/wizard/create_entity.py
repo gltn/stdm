@@ -127,12 +127,14 @@ class EntityEditor(QDialog, Ui_dlgEntity):
 
     def edit_entity(self, short_name):
         # remove old entity
-        self.profile.remove_entity(self.entity.short_name)
+        #self.profile.remove_entity(self.entity.short_name)
+        #self.entity = self._create_entity(short_name)
 
-        self.entity = self._create_entity(short_name)
-        #self.entity.short_name  = short_name
-        #self.entity.description = self.edtDesc.text()
-        #self.entity.supports_documents = self.support_doc()
+        self.entity.short_name  = short_name
+        self.entity.description = self.edtDesc.text()
+        self.entity.supports_documents = self.support_doc()
+
+        self.profile.rename(self.entity.short_name, short_name)
 
     def duplicate_check(self, name):
         """

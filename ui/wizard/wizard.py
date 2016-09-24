@@ -774,7 +774,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             # last page
 
             # before any updates, backup your current working profile
-            self.backup_config_file()
+            #self.backup_config_file()
 
             #* commit config to DB
             self.config_updater = ConfigurationSchemaUpdater()
@@ -1234,6 +1234,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             tmp_short_name = entity.short_name
 
+            tmp_entity = entity;
+
             params = {}
             params['parent']  = self
             params['profile'] = profile
@@ -1249,6 +1251,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
                 model_item.setData(model_index_name, editor.entity.short_name) 
                 model_item.setData(model_index_desc, editor.entity.description) 
+
+                model_item.edit_entity(tmp_entity, editor.entity)
+
+                #self.refresh_entity_view()
+
 
     def delete_entity(self):
         """
@@ -1389,6 +1396,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.tbvColumns.setDragEnabled(False)
             self.lvLookupValues.setDragEnabled(False)
             self.pftableView.setDragEnabled(False)
+
+    def refresh_entity_view(self):
+        self.clear_view_model(self.entity_model)
+        self.entity_model = EntitiesModel()
+        self.set_view_model(self.entity_model)
+        self.populate_view_models(self.current_profile())
 
     def refresh_lookup_view(self):
         """
