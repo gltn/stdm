@@ -120,12 +120,13 @@ def selection_color():
     red_dic = color_config.read(['default_selection_color_red'])
     green_dic = color_config.read(['default_selection_color_green'])
     blue_dic = color_config.read(['default_selection_color_blue'])
+    alpha_dic = color_config.read(['default_selection_color_alpha'])
 
-    red = red_dic['default_selection_color_red']
-    green = green_dic['default_selection_color_green']
-    blue = blue_dic['default_selection_color_blue']
-
-    return red, green, blue
+    red = int(red_dic['default_selection_color_red'])
+    green = int(green_dic['default_selection_color_green'])
+    blue = int(blue_dic['default_selection_color_blue'])
+    alpha = int(alpha_dic['default_selection_color_alpha'])
+    return red, green, blue, alpha
 
 
 class RegistryConfig(object):
