@@ -1048,9 +1048,9 @@ class EntityBrowserWithEditor(EntityBrowser):
             map_canvas, qgis_geom, layer
         )
 
-        rgb = selection_color()
+        rgba = selection_color()
         self.highlight.setFillColor(
-            QColor(rgb[0], rgb[1], rgb[2])
+            QColor(rgba[0], rgba[1], rgba[2], rgba[3])
         )
 
         self.highlight.setWidth(3)
