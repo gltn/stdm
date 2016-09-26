@@ -1049,9 +1049,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         )
 
         rgba = selection_color()
-        self.highlight.setFillColor(
-            QColor(rgba[0], rgba[1], rgba[2], rgba[3])
-        )
+        self.highlight.setFillColor(rgba)
 
         self.highlight.setWidth(3)
         self.highlight.show()
