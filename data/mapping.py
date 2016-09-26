@@ -361,14 +361,14 @@ class MapperMixin(object):
                           %unicode(attrMapper.pseudoName())
                     self._notifBar.insertWarningNotification(msg)
                     isValid = False
-                else:
-                    attrMapper.bindModel()
 
-            else:
-                attrMapper.bindModel()
-        
         if not isValid:
             return
+
+        #Bind model once all attributes are valid
+        for attrMapper in self._attrMappers:
+            attrMapper.bindModel()
+
         if collect_model:
             return self.model()
         else:
