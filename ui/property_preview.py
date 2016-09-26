@@ -54,6 +54,9 @@ from stdm.data.pg_utils import(
     table_column_names,
     qgsgeometry_from_wkbelement
 )
+from stdm.settings.registryconfig import (
+    selection_color
+)
 from stdm.data.database import STDMDb
 
 from notification import (
@@ -345,9 +348,9 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
             self.sel_highlight = QgsHighlight(
                 map_canvas, qgis_geom, layer
             )
-
+            rgba = selection_color()
             self.sel_highlight.setFillColor(
-                QColor(255,128,0)
+                QColor(rgba[0], rgba[1], rgba[2], rgba[3])
             )
 
             self.sel_highlight.setWidth(3)
