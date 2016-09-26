@@ -18,7 +18,7 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from PyQt4.QtCore import QSettings
-
+from PyQt4.QtGui import QColor
 #Names of registry keys
 NETWORK_DOC_RESOURCE = 'NetDocumentResource'
 PATHKEYS = ['Config','NetDocumentResource','ComposerOutputs','ComposerTemplates']
@@ -117,16 +117,38 @@ def selection_color():
     """
     color_config = QGISRegistryConfig(SUB_QGIS)
 
-    red_dic = color_config.read(['default_selection_color_red'])
-    green_dic = color_config.read(['default_selection_color_green'])
-    blue_dic = color_config.read(['default_selection_color_blue'])
-    alpha_dic = color_config.read(['default_selection_color_alpha'])
+    red_dic = color_config.read(
+        ['default_selection_color_red']
+    )
+    green_dic = color_config.read(
+        ['default_selection_color_green']
+    )
+    blue_dic = color_config.read(
+        ['default_selection_color_blue']
+    )
+    alpha_dic = color_config.read(
+        ['default_selection_color_alpha']
+    )
 
-    red = int(red_dic['default_selection_color_red'])
-    green = int(green_dic['default_selection_color_green'])
-    blue = int(blue_dic['default_selection_color_blue'])
-    alpha = int(alpha_dic['default_selection_color_alpha'])
-    return red, green, blue, alpha
+    selection_red = int(
+        red_dic['default_selection_color_red']
+    )
+    selection_green = int(
+        green_dic['default_selection_color_green']
+    )
+    selection_blue = int(
+        blue_dic['default_selection_color_blue']
+    )
+    selection_alpha = int(
+        alpha_dic['default_selection_color_alpha']
+    )
+    rgba = QColor(
+        selection_red,
+        selection_green,
+        selection_blue,
+        selection_alpha
+    )
+    return rgba
 
 
 class RegistryConfig(object):
