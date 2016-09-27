@@ -123,18 +123,23 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         entity.description = self.edtDesc.text()
         entity.column_added.connect(self.form_parent.add_column_item)
         entity.column_removed.connect(self.form_parent.delete_column_item)
+
         return entity
 
     def edit_entity(self, short_name):
         # remove old entity
         #self.profile.remove_entity(self.entity.short_name)
         #self.entity = self._create_entity(short_name)
+        old_short_name = self.entity.short_name
 
-        self.entity.short_name  = short_name
+        if old_short_name <> short_name:
+            status = self.profile.rename(old_short_name, short_name)
+            self.entity.short_name = short_name
+            
         self.entity.description = self.edtDesc.text()
         self.entity.supports_documents = self.support_doc()
 
-        self.profile.rename(self.entity.short_name, short_name)
+        print 'Status: {0}'.format(str(status))
 
     def duplicate_check(self, name):
         """

@@ -91,17 +91,23 @@ class ValueList(Entity):
 
         return u'{0}_{1}'.format(self.PREFIX, name)
 
-    def rename(self, short_name):
+    def rename_entity(self, short_name):
         """
         Update the ValueList with the new shortname.
         :param short_name: New short name of the value list.
         :type short_name: str
         """
+        #Remove the object then re-insert so as to update index
+        vl_entity = self.profile.entities.pop(self.short_name)
+
         check_short_name = self._append_check(short_name)
 
         super(ValueList, self).rename(
             check_short_name
         )
+
+        #Re-insert the entity
+        self.profile.add_entity(self, True)
 
     def add_value(self, value, code=''):
         """
