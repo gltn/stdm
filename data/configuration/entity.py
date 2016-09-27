@@ -168,7 +168,7 @@ class Entity(QObject, TableItem):
 
         #Rename supporting documents if enabled
         if self.supports_documents:
-            pass
+            self.supporting_doc.rename(shortname)
 
     @property
     def supports_documents(self):
@@ -504,7 +504,7 @@ class EntitySupportingDocument(Entity):
         self.entity_reference = ForeignKeyColumn(entity_ref_name, self)
 
         #Document types
-        vl_name = u'check_{0}_document_type'.format(normalize_name)
+        vl_name = self._doc_type_name(normalize_name)
         self._doc_types_value_list = self._doc_type_vl(vl_name)
         if self._doc_types_value_list is None:
             self._doc_types_value_list = self.profile.create_value_list(
@@ -536,6 +536,11 @@ class EntitySupportingDocument(Entity):
         name = u'{0}_{1}'.format(parent_entity_name,
                                  'supporting_document')
         return name
+
+    def _doc_type_name(self, normalize_name):
+        vl_name = u'check_{0}_document_type'.format(normalize_name)
+
+        return vl_name
 
     def _doc_type_vl(self, name):
         #Search for the document type value list based on the given name
@@ -585,16 +590,27 @@ class EntitySupportingDocument(Entity):
         :param shortname: Shortname of the parent entity.
         :type shortname: str
         """
-        supporting_docs_shortname = self._entity_short_name(shortname)
+        #Remove the object then re-insert so as to update index
+        doc_entity = self.profile.entities.pop(self.short_name)
+
+        supporting_docs_shortname = self._entity_short_name(
+            shortname
+        ).replace(
+            ' ',
+            '_'
+        ).lower()
 
         #Update shortname and name
         super(EntitySupportingDocument, self).rename(
             supporting_docs_shortname
         )
 
+        #Re-insert the entity
+        self.profile.add_entity(self, True)
+
         #Get entity relations and update entity references
-        parent_relations = self.parent_relations(self)
-        child_relations = self.child_relations(self)
+        parent_relations = self.profile.parent_relations(self)
+        child_relations = self.profile.child_relations(self)
 
         #Update relations
         for pr in parent_relations:
@@ -605,7 +621,12 @@ class EntitySupportingDocument(Entity):
 
         #Rename lookup for supporting documents lookup
         if not self._doc_types_value_list is None:
-            self._doc_types_value_list.rename()
+            norm_parent_short_name = self.parent_entity.short_name.replace(
+                ' ',
+                '_'
+            ).lower()
+            vl_name = self._doc_type_name(norm_parent_short_name)
+            self._doc_types_value_list.rename_entity(vl_name)
 
     def document_types(self):
         """
