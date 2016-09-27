@@ -322,13 +322,16 @@ class Profile(QObject):
 
         return True
 
-    def add_entity(self, item):
+    def add_entity(self, item, suppress_signal=False):
         """
         Add an entity object to the collection.
         :param item: Entity to add to the collection. If there is an
         existing item in the collection with the same name, then it will be
         replaced with this item.
         :type item: Entity
+        :param suppress_signal: True to suppress the 'entity_added' signal
+        from being emitted. Default behavior is to emit the signal.
+        :type suppress_signal: bool
         """
         #If there is an existing item with the same name,
         # and that item action is not DROP, then do not add this.
@@ -341,8 +344,9 @@ class Profile(QObject):
 
         LOGGER.debug('%s entity added to %s profile', item.short_name, self.name)
 
-        #Raise entity added signal
-        self.entity_added.emit(item)
+        #Raise entity added signal if enabled
+        if not suppress_signal:
+            self.entity_added.emit(item)
 
     def remove_entity(self, name):
         """
@@ -551,31 +555,34 @@ class Profile(QObject):
 
             return False
 
+        #Check if the entity participates in either of the STR definitions
+        update_party = False
+        if not self.social_tenure.party is None:
+            update_party = True \
+                if self.social_tenure.party.short_name == original_name \
+                else False
+
+            print str(update_party)
+
+        update_spatial_unit = False
+        if not self.social_tenure.spatial_unit is None:
+            update_spatial_unit = True \
+                if self.social_tenure.spatial_unit.short_name == original_name \
+                else False
+
         ent = self.entities[original_name]
 
         #Get entity relations and update entity references
         parent_relations = self.parent_relations(ent)
         child_relations = self.child_relations(ent)
 
-        #Check if the entity participates in either of the STR definitions
-        update_party = False
-        if not self.social_tenure.party is None:
-            update_party = True \
-                if self.social_tenure.party.name == original_name \
-                else False
-
-        update_spatial_unit = False
-        if not self.social_tenure.spatial_unit is None:
-            update_spatial_unit = True \
-                if self.social_tenure.spatial_unit.name == original_name \
-                else False
-
         #Remove entity from the collection
         rn_entity = self.entities.pop(original_name)
+
         rn_entity.rename(new_name)
 
         #Re-insert the entity
-        self.add_entity(rn_entity)
+        self.add_entity(rn_entity, True)
 
         #Update relations
         for pr in parent_relations:
