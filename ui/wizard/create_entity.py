@@ -139,8 +139,6 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         self.entity.description = self.edtDesc.text()
         self.entity.supports_documents = self.support_doc()
 
-        print 'Status: {0}'.format(str(status))
-
     def duplicate_check(self, name):
         """
         Return True if we have an entity in the current profile with same 'name'

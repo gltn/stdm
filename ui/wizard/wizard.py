@@ -705,7 +705,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         :type str_table: str
         """
         self.enable_str_setup()
-        if pg_table_exists(str_table) and pg_table_count(str_table) > 0:
+        if pg_table_exists(str_table):  # and pg_table_count(str_table) > 0:
             self.disable_str_setup()
             
     def enable_str_setup(self):
@@ -1254,8 +1254,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
                 model_item.edit_entity(tmp_entity, editor.entity)
 
-                #self.refresh_entity_view()
+                self.clear_view_model(self.STR_spunit_model)
+                self.populate_spunit_model(profile)
 
+                self.refresh_lookup_view()
 
     def delete_entity(self):
         """
@@ -1318,7 +1320,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.pftableView.setModel(view_model)
         self.lvEntities.setModel(view_model)
         self.cboParty.setModel(view_model)
-        #self.cboSPUnit.setModel(view_model)
 
     def populate_view_models(self, profile):
         for entity in profile.entities.values():
@@ -1429,7 +1430,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.col_view_model = ColumnEntitiesModel()
         self.tbvColumns.setModel(self.col_view_model)
         self.populate_columns_view(entity)
-
 
     def profile_changed(self, row_id):
         """
@@ -1636,7 +1636,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             if column.TYPE_INFO == 'SERIAL':
                 continue
             self.col_view_model.add_entity(column)
-            
 
     def _get_entity_item(self, view):
         """
@@ -1683,7 +1682,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             if not entity.has_geometry_column():
                 self.delete_str_spunit_item(entity.short_name)
 
-
     def check_column_dependencies(self, column):
         """
         Checks if a columns has dependencies, 
@@ -1707,7 +1705,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Event handler for adding a new lookup to the current profile
         """
-
         profile = self.current_profile()
         if profile:
             editor = LookupEditor(self, profile)
@@ -1941,7 +1938,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         msg.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
         msg.setText(QApplication.translate("STDM Configuration Wizard",message))
         msg.exec_()
-
 
     def query_box(self, msg):
         """
