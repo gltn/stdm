@@ -63,12 +63,16 @@ class ValueEditor(QDialog, Ui_LookupValue):
         """
         initializes the form widgets
         """
-	code_regex = QtCore.QRegExp('^[A-Z0-9]{1,5}$')
+	code_regex = QtCore.QRegExp('[A-Z0-9]{1,5}$')
 	code_validator = QtGui.QRegExpValidator(code_regex)
 	self.edtCode.setValidator(code_validator)
 	if self.code_value:
 		self.edtValue.setText(self.code_value.value)
 		self.edtCode.setText(self.code_value.code)
+
+        val_regex = QtCore.QRegExp('[A-Za-z0-9\s]{1,50}$')
+        code_validator = QtGui.QRegExpValidator(val_regex)
+        self.edtValue.setValidator(code_validator)
 	self.edtValue.setFocus()
 	
     def add_value(self):
@@ -81,13 +85,15 @@ class ValueEditor(QDialog, Ui_LookupValue):
         
         # if its an edit, first remove the previous value
         if self.code_value:
-                self.lookup.remove_value(self.code_value.value)
+                #self.lookup.remove_value(self.code_value.value)
+                self.lookup.rename(self.code_value.value, value)
+                return
 
-        self.lookup.add_code_value(CodeValue(code,value))
+        self.lookup.add_code_value(CodeValue(code, value))
 	    
     def accept(self):
         if self.edtValue.text()=='':
-                self.error_message(QApplication.translate("ValueEditor","Lookup value is not given!"))
+                self.error_message(QApplication.translate("ValueEditor", "Please provide a Lookup value."))
                 return
 
         self.add_value()

@@ -1841,7 +1841,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             val = QStandardItem(txt)
             self.lookup_value_view_model.appendRow(val)
 
-    def add_values(self, values):
+    def add_values(self, values, test=False):
         """
         Populate lookup values model.
         :param values: list of lookup values
@@ -1849,6 +1849,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self.lookup_value_view_model.clear()
         for v in values:
+            if v.updated_value <> "":
+                v.value = v.updated_value
+
             val = QStandardItem(v.value)
             self.lookup_value_view_model.appendRow(val)
 
@@ -1908,7 +1911,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         value_editor = ValueEditor(self, lookup, code_value)
         result = value_editor.exec_()
         if result == 1:
-            self.add_values(value_editor.lookup.values.values())
+            self.add_values(value_editor.lookup.values.values(), test=True)
 
     def delete_lookup_value(self):
         """
