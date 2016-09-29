@@ -67,7 +67,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
             if self.entity.supports_documents and self.supporting_document_exists():
                 self.cbSupportDoc.setEnabled(False)
 
-        name_regex = QRegExp('^[A-Za-z0-9_]*$')
+        name_regex = QRegExp('[A-Za-z0-9_]*$')
         name_validator = QRegExpValidator(name_regex)
         self.edtTable.setValidator(name_validator)
 
@@ -94,7 +94,8 @@ class EntityEditor(QDialog, Ui_dlgEntity):
             self.show_message(self.tr("Please enter an entity name"))
             return
 
-        short_name = unicode(self.edtTable.text()).title()
+        sn = unicode(self.edtTable.text())
+        short_name = sn[0].upper()+sn[1:]
 
         if self.entity is None:  # New entity
             if self.duplicate_check(short_name):
