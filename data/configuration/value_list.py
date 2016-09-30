@@ -51,6 +51,7 @@ class CodeValue(object):
         self.code = code
         self.value = value
         self.updated_value = ''
+        self.updated_code = ''
 
 
 class ValueList(Entity):
@@ -154,13 +155,15 @@ class ValueList(Entity):
         for cv in value_list.values.values():
             self.add_code_value(cv)
 
-    def rename(self, old_value, new_value):
+    def rename(self, old_value, new_value, new_code):
         """
         Rename a value in the lookup collection.
         :param old_value: Previous value.
         :type old_value: str
         :param new_value: Updated value.
         :type new_value: str
+        :param new_code: New code of the updated value.
+        :type new_code: str
         :returns: True if the value was successfully replaced, otherwise
         False.
         :rtype: bool
@@ -173,6 +176,7 @@ class ValueList(Entity):
 
         code_value = self.values[old_value]
         code_value.updated_value = new_value
+        code_value.updated_code = new_code
 
         LOGGER.debug('%s lookup value has been updated to %s in the %s value '
                      'list.', old_value, new_value, self.name)
