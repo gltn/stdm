@@ -527,6 +527,7 @@ class BaseSTDMTableModel(QAbstractTableModel):
         self.endRemoveRows()
 
         return True
+    
 
 class VerticalHeaderSortFilterProxyModel(QSortFilterProxyModel):
     """
