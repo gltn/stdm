@@ -877,11 +877,22 @@ class EntityBrowserWithEditor(EntityBrowser):
                 "table below to be deleted."
             )
             self._notifBar.insertWarningNotification(msg)
+
             return
-        
-        rowIndex = self._proxyModel.mapToSource(selRowIndices[0])
-        recordid = rowIndex.data()
-        self._deleteRecord(recordid,rowIndex.row())
+
+        rec_ids, row_numbers = [], []
+
+        #Delete selected records
+        for ri in selRowIndices:
+            source_row_index = self._proxyModel.mapToSource(ri)
+            record_id = source_row_index.data()
+            row_number = source_row_index.row()
+
+            rec_ids.append(record_id)
+            row_numbers.append(row_number)
+
+        #Delete selected records
+        self._deleteRecord(rec_ids, row_numbers)
             
     def _load_editor_dialog(self, recid, rownumber):
         '''
@@ -912,45 +923,56 @@ class EntityBrowserWithEditor(EntityBrowser):
 
                 self._tableModel.setData(prop_idx, attr_val)
         
-    def _deleteRecord(self, recid, rownumber):
+    def _deleteRecord(self, rec_ids, row_numbers):
         '''
         Delete the record with the given id and remove it from the table view.
         '''
+        if not isinstance(rec_ids, list):
+            rec_ids = [rec_ids]
+
+        if not isinstance(row_numbers, list):
+            row_numbers = [row_numbers]
+
         msg = QApplication.translate(
             "EntityBrowserWithEditor",
-            "Are you sure you want to delete the selected record?\n"
+            "Are you sure you want to delete the selected record(s)?\n"
             "Once deleted it cannot be recovered."
         )
         response = QMessageBox.warning(
             self,
             QApplication.translate(
-                "RespondentEntityBrowser",
-                "Delete Record"),
+                "EntityBrowserWithEditor",
+                "Delete Record(s)"),
             msg,
             QMessageBox.Yes|QMessageBox.No, QMessageBox.No
         )
                 
         if response == QMessageBox.Yes:
-            self._tableModel.removeRows(rownumber,1) 
-                                     
-            #Remove record from the database
-            dbHandler = self._dbmodel()
-            entity = dbHandler.queryObject().filter(
-                self._dbmodel.id == recid
-            ).first()
-            
-            if entity:
-                entity.delete()
+            for i, rec_id in enumerate(rec_ids):
+                self._tableModel.removeRows(row_numbers[i], 1)
 
-                #Clear previous notifications
-                self._notifBar.clear()
-                        
-                #User notification
-                delMsg = QApplication.translate(
-                    "EntityBrowserWithEditor",
-                    "Record has been successfully deleted!"
-                )
-                self._notifBar.insertInformationNotification(delMsg)
+                #Remove record from the database
+                dbHandler = self._dbmodel()
+                entity = dbHandler.queryObject().filter(
+                    self._dbmodel.id == rec_id
+                ).first()
+
+                if entity:
+                    entity.delete()
+
+                    #Clear previous notifications
+                    self._notifBar.clear()
+
+                    #Notify user
+                    delMsg = QApplication.translate(
+                        "EntityBrowserWithEditor",
+                        "Record(s) successfully deleted!"
+                    )
+
+                    self._notifBar.insertInformationNotification(delMsg)
+
+            #Update number of records
+            self.recomputeRecordCount()
 
     def onDoubleClickView(self, modelindex):
         '''
