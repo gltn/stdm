@@ -237,7 +237,7 @@ class STDMFieldWidget():
         self.widget_mapping = {}
         self.layer = None
         self.feature_models = OrderedDict()
-        self.removed_feature_models=OrderedDict()
+        self.removed_feature_models = OrderedDict()
         self.current_feature = None
         self.editor = None
 
@@ -426,10 +426,7 @@ class STDMFieldWidget():
         if feature_id in self.feature_models.keys():
             return
         # If the feature is removed by the undo button, don't
-        # load the form for it
-        if feature_id in self.removed_feature_models.keys():
-            return
-        # If the added feature is removed earlier, add it
+        # load the form for it but add it
         # back to feature_models and don't show the form.
         # This happens when redo button(add feature back) is
         # clicked after an undo button(remove feature)
