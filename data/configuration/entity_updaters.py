@@ -214,8 +214,9 @@ def value_list_updater(value_list, engine, metadata):
 
                 needs_update = True
 
-            if item.code != cd.code:
-                item.code = cd.code
+            if cd.updated_code:
+                item.code = cd.updated_code
+                cd.updated_code = ''
 
                 needs_update = True
 

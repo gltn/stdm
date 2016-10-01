@@ -528,6 +528,7 @@ class BaseSTDMTableModel(QAbstractTableModel):
 
         return True
 
+
 class VerticalHeaderSortFilterProxyModel(QSortFilterProxyModel):
     """
     A sort/filter proxy model that ensures row numbers in vertical headers
