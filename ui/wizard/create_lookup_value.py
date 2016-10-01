@@ -81,13 +81,14 @@ class ValueEditor(QDialog, Ui_LookupValue):
         exist then removes it and then adds the new one.
         """
         value = unicode(self.edtValue.text())
-        code  = unicode(self.edtCode.text())
+        code = unicode(self.edtCode.text())
         
         # if its an edit, first remove the previous value
         if self.code_value:
-                #self.lookup.remove_value(self.code_value.value)
-                self.lookup.rename(self.code_value.value, value)
-                return
+            #self.lookup.remove_value(self.code_value.value)
+            self.lookup.rename(self.code_value.value, value)
+
+            return
 
         self.lookup.add_code_value(CodeValue(code, value))
 	    

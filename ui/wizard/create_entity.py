@@ -136,7 +136,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         if old_short_name <> short_name:
             status = self.profile.rename(old_short_name, short_name)
             self.entity.short_name = short_name
-            
+
         self.entity.description = self.edtDesc.text()
         self.entity.supports_documents = self.support_doc()
 
