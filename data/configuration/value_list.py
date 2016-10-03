@@ -183,6 +183,18 @@ class ValueList(Entity):
 
         return True
 
+    def update_index(self, lookup_value):
+        """
+        Updates the CodeValue index to use the updated lookup value.
+        :param lookup_value: Previous lookup value used in the index.
+        :type lookup_value: str
+        """
+        if not lookup_value in self.values:
+            return
+
+        code_value = self.values.pop(lookup_value)
+        self.values[code_value.updated_value] = code_value
+
     def code_value(self, value):
         """
         :param value: Value whose corresponding CodeValue object will be
