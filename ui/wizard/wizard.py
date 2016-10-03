@@ -1911,7 +1911,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         value_editor = ValueEditor(self, lookup, code_value)
         result = value_editor.exec_()
         if result == 1:
-            self.add_values(value_editor.lookup.values.values(), test=True)
+            model_item_name = self.lookup_value_view_model.index(model_index.row(), 0)
+            self.lookup_value_view_model.setData(
+                    model_item_name, value_editor.edtValue.text())
+            
+            #self.add_values(value_editor.lookup.values.values(), test=True)
 
     def delete_lookup_value(self):
         """
