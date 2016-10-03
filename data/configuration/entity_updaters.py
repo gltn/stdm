@@ -209,19 +209,25 @@ def value_list_updater(value_list, engine, metadata):
 
             #Check if the values have changed and update accordingly
             if cd.updated_value:
+                value_list.update_index(item.value)
                 item.value = cd.updated_value
+                cd.value = cd.updated_value
                 cd.updated_value = ''
 
                 needs_update = True
 
             if cd.updated_code:
                 item.code = cd.updated_code
+                cd.code = cd.updated_code
                 cd.updated_code = ''
 
                 needs_update = True
 
             if needs_update:
                 item.update()
+
+    #Refresh lookup values
+    db_values = model_obj.queryObject().all()
 
     #Remove redundant values in the database
     for db_val in db_values:
@@ -234,7 +240,9 @@ def value_list_updater(value_list, engine, metadata):
 
         #Delete if it does not exist in the configuration collection
         if code_value is None:
-            lookup_obj = model_obj.queryObject().filter(model.value == lookup_val).one()
+            lookup_obj = model_obj.queryObject().filter(
+                model.value == lookup_val
+            ).one()
             if not lookup_obj is None:
                 lookup_obj.delete()
 

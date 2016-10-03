@@ -857,6 +857,17 @@ class EntityBrowserWithEditor(EntityBrowser):
             self._notifBar.insertWarningNotification(msg)
 
             return
+
+        #Exit if more than one record has been selected
+        if len(selRowIndices) > 1:
+            msg = QApplication.translate(
+                "EntityBrowserWithEditor",
+                "Multiple selection detected, please choose one record "
+                "only for editing."
+            )
+            self._notifBar.insertWarningNotification(msg)
+
+            return
         
         rowIndex = self._proxyModel.mapToSource(selRowIndices[0])
         recordid = rowIndex.data()
