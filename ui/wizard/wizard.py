@@ -1604,6 +1604,14 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No column selected for edit!"))
 
+    def find_updated_value(self, lookup, text):
+        cv = None
+        for code_value in lookup.values.values():
+            if code_value.updated_value == text:
+                cv = code_value
+                break
+        return cv
+                
     def clear_lookup_view(self):
         """
         Clears items from the model attached to the lookup view
@@ -1841,7 +1849,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             val = QStandardItem(txt)
             self.lookup_value_view_model.appendRow(val)
 
-    def add_values(self, values, test=False):
+    def add_values(self, values):
         """
         Populate lookup values model.
         :param values: list of lookup values
@@ -1899,14 +1907,21 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             return
 
         self.lookup_item_model.currentIndex()
-        # get selected lookup value
+        # get selected value text
         model_index = self.lvLookupValues.selectedIndexes()[0]
         value_text = self.lookup_value_view_model.itemFromIndex(model_index).text()
 
         # get selected lookup
         row_id, lookup = self._get_entity_item(self.lvLookups)
-        lookup_view_model = self.lookup_item_model.currentIndex().model().entity_byId(row_id)
-        code_value = lookup_view_model.values[unicode(value_text)]
+        lookup = self.lookup_item_model.currentIndex().model().entity_byId(row_id)
+
+        # Hack to rename a lookup value
+        vt = unicode(value_text)
+        try:
+            code_value = lookup.values[vt]
+        except:
+            code_value = self.find_updated_value(lookup, vt)
+        ####
 
         value_editor = ValueEditor(self, lookup, code_value)
         result = value_editor.exec_()
