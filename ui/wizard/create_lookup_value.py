@@ -47,7 +47,7 @@ class ValueEditor(QDialog, Ui_LookupValue):
         :type parent: QWidget
         :param lookup: A value list object to add the value
         :type lookup: ValueList
-        :param code_value: A value to add to the lookup, if None this is a new
+        :param code_value: A value object to add to the lookup, if None this is a new
          value, else its an edit.
         :type code_value: CodeValue
         """
@@ -67,8 +67,13 @@ class ValueEditor(QDialog, Ui_LookupValue):
 	code_validator = QtGui.QRegExpValidator(code_regex)
 	self.edtCode.setValidator(code_validator)
 	if self.code_value:
-		self.edtValue.setText(self.code_value.value)
-		self.edtCode.setText(self.code_value.code)
+            if self.code_value.updated_value == '':
+                self.edtValue.setText(self.code_value.value)
+                self.edtCode.setText(self.code_value.code)
+            else:
+                self.edtValue.setText(self.code_value.updated_value)
+                self.edtCode.setText(self.code_value.updated_code)
+
 
         val_regex = QtCore.QRegExp('[A-Za-z0-9\s]{1,50}$')
         code_validator = QtGui.QRegExpValidator(val_regex)
@@ -86,10 +91,8 @@ class ValueEditor(QDialog, Ui_LookupValue):
         # if its an edit, first remove the previous value
         if self.code_value:
             self.lookup.rename(self.code_value.value, value, code)
-
-            return
-
-        self.lookup.add_code_value(CodeValue(code, value))
+        else:
+            self.lookup.add_code_value(CodeValue(code, value))
 	    
     def accept(self):
         if self.edtValue.text()=='':
