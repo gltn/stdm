@@ -86,7 +86,7 @@ class ValueEditor(QDialog, Ui_LookupValue):
         # if its an edit, first remove the previous value
         if self.code_value:
             #self.lookup.remove_value(self.code_value.value)
-            self.lookup.rename(self.code_value.value, value)
+            self.lookup.rename(self.code_value.value, value, code)
 
             return
 
