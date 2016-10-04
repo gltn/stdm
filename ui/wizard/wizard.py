@@ -1914,7 +1914,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             model_item_name = self.lookup_value_view_model.index(model_index.row(), 0)
             self.lookup_value_view_model.setData(
                     model_item_name, value_editor.edtValue.text())
-            
             #self.add_values(value_editor.lookup.values.values(), test=True)
 
     def delete_lookup_value(self):
