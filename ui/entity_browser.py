@@ -916,7 +916,25 @@ class EntityBrowserWithEditor(EntityBrowser):
             row_number = source_row_index.row()
 
             #Delete record
-            self._delete_record(record_id, row_number)
+            result = self._delete_record(record_id, row_number)
+
+            if not result:
+                title = QApplication.translate(
+                'EntityBrowserWithEditor',
+                'Delete Record(s)'
+                )
+
+                msg =  QApplication.translate(
+                'EntityBrowserWithEditor',
+                'An error occured while attempting to delete a record, this '
+                'is most likely caused by a dependency issue.\nPlease check '
+                'if the record has dependencies such as social tenure '
+                'relationship or related entities. If it has then delete '
+                'these dependencies first.'
+                )
+                QMessageBox.critical(self, title, msg)
+
+                break
 
             #Refresh list of selected records
             sel_row_indices = self.tbEntity.selectionModel().selectedRows(0)
@@ -954,6 +972,8 @@ class EntityBrowserWithEditor(EntityBrowser):
         """
         Delete the record with the given id and remove it from the table view.
         """
+        del_result = True
+
         #Remove record from the database
         dbHandler = self._dbmodel()
         entity = dbHandler.queryObject().filter(
@@ -961,7 +981,10 @@ class EntityBrowserWithEditor(EntityBrowser):
         ).first()
 
         if entity:
-            entity.delete()
+            result = entity.delete()
+
+            if not result:
+                return False
 
             self._tableModel.removeRows(row_number, 1)
 
@@ -978,6 +1001,8 @@ class EntityBrowserWithEditor(EntityBrowser):
 
             #Update number of records
             self.recomputeRecordCount()
+
+        return del_result
 
     def onDoubleClickView(self, modelindex):
         '''
