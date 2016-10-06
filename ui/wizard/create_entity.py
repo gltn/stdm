@@ -67,7 +67,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
             if self.entity.supports_documents and self.supporting_document_exists():
                 self.cbSupportDoc.setEnabled(False)
 
-        name_regex = QRegExp('[A-Za-z0-9_]*$')
+        name_regex = QRegExp('[A-Za-z0-9_\s]*$')
         name_validator = QRegExpValidator(name_regex)
         self.edtTable.setValidator(name_validator)
 
