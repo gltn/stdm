@@ -783,6 +783,7 @@ class EntityBrowserWithEditor(EntityBrowser):
                 self.geom_cols = self.sp_unit_manager.geom_columns(
                     self._entity
                 )
+                self.selection_layer = None
 
                 self.add_spatial_unit_layer()
                 self.tbEntity.clicked.connect(
@@ -1019,15 +1020,17 @@ class EntityBrowserWithEditor(EntityBrowser):
         """
         selRowIndices = self.tbEntity.\
             selectionModel().selectedRows(0)
+        record_ids = []
+        for sel_row_index in selRowIndices:
+            rowIndex = self._proxyModel.mapToSource(
+                sel_row_index
+            )
+            record_id = rowIndex.data()
+            record_ids.append(record_id)
 
-        rowIndex = self._proxyModel.mapToSource(
-            selRowIndices[0]
-        )
-        record_id = rowIndex.data()
+        self.record_feature_highlighter(record_ids)
 
-        self.record_feature_highlighter(record_id)
-
-    def record_feature_highlighter(self, record_id):
+    def record_feature_highlighter(self, record_ids):
         """
         Highlights a feature of a record.
         :param record_id: The id of a row
@@ -1035,11 +1038,15 @@ class EntityBrowserWithEditor(EntityBrowser):
         :return: None
         :rtype: NoneType
         """
+        if len(record_ids) < 1:
+            return
+
         for geom in self.geom_cols:
+
             geom_wkb = entity_id_to_attr(
                 self._entity,
                 geom.name,
-                record_id
+                record_ids[0]
             )
 
             if geom_wkb is not None:
@@ -1054,45 +1061,12 @@ class EntityBrowserWithEditor(EntityBrowser):
                     sel_lyr_name
                 )
                 if len(layers) > 0:
-
-                    self.highlight_geom(
-                        iface.mapCanvas(),
-                        layers[0],
-                        geom_wkb
-                    )
-
-    def highlight_geom(
-            self, map_canvas, layer, geom
-    ):
-
-        map_canvas.setExtent(layer.extent())
-        map_canvas.refresh()
-
-        self.clear_sel_highlight()
-
-        qgis_geom = qgsgeometry_from_wkbelement(geom)
-        self.highlight = QgsHighlight(
-            map_canvas, qgis_geom, layer
-        )
-
-        rgba = selection_color()
-        self.highlight.setFillColor(rgba)
-
-        self.highlight.setWidth(3)
-        self.highlight.show()
-        extent = qgis_geom.boundingBox()
-
-        extent.scale(2.1)
-        map_canvas.setExtent(extent)
-        map_canvas.refresh()
-
-    def clear_sel_highlight(self):
-        """
-        Removes sel_highlight from the canvas.
-        :return:
-        """
-        if self.highlight is not None:
-            self.highlight = None
+                    layers[0].removeSelection()
+                    layers[0].select(record_ids)
+                    bounding_box = layers[0].boundingBoxOfSelected()
+                    iface.mapCanvas().setExtent(bounding_box)
+                    iface.mapCanvas().refresh()
+                    self.selection_layer = layers[0]
 
     def add_spatial_unit_layer(self, layer_name=None):
         if not layer_name is None:
@@ -1119,7 +1093,8 @@ class EntityBrowserWithEditor(EntityBrowser):
         :return: None
         """
         if self._entity.has_geometry_column():
-            self.clear_sel_highlight()
+            if not self.selection_layer is None:
+                self.selection_layer.removeSelection()
             self.sp_unit_manager.zoom_to_layer()
 
     def hideEvent(self, hideEvent):
@@ -1131,7 +1106,8 @@ class EntityBrowserWithEditor(EntityBrowser):
         :return: None
         """
         if self._entity.has_geometry_column():
-            self.clear_sel_highlight()
+            if not self.selection_layer is None:
+                self.selection_layer.removeSelection()
             self.sp_unit_manager.zoom_to_layer()
 
 

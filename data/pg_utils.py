@@ -664,3 +664,80 @@ def drop_view(view_name):
         return False
 
 
+def data_from_id (id, column_name, trim_col=True):
+    """
+    Returns one or multiple rows, when provided
+    with column name or table name. In case of
+    column names with _id suffix, trim will remove the _id.
+    :param id: The id of the table to fetched
+    :type integer - serial
+    :param column_name: This could be column name or table name
+    :type string
+
+    :param trim_col: Removes the last three characters of the column name.
+    This is useful for foreign key tables
+    :type boolean
+    :return: List - Rowproxy
+    """
+    if id is not None and isinstance(id, int):
+        if trim_col:
+            table_name = column_name[:-3]
+        else:
+            table_name = column_name
+        exists = pg_table_exists(
+            table_name,
+            include_views=False
+        )
+        # If a match found
+        if exists:
+            table = alchemy_table(table_name)
+            session=STDMDb.instance().session
+
+            row_data = session.execute(select(
+                [table]
+            ).where(
+                table.c.id == id
+            )).first()
+            return row_data
+        else:
+            return id
+    else:
+        return id
+
+
+
+def parent_child_table_data(parent_id, remote_table, parent=None, one_row=True):
+    """
+
+    :param parent_id: The id of the parent table
+    :type integer
+    :param remote_table: The name of the remote table
+    :type string
+    :param parent: The name of the parent table
+    :type string
+    :return: list
+    """
+    try:
+        remote_table_model = alchemy_table(remote_table)
+        parent_tb_column = parent+'_id'
+        session_engine=STDMDb.instance().session
+        if one_row:
+            select_data = select([remote_table_model]).where(
+                remote_table_model.c[parent_tb_column] == parent_id
+            )
+            remote_result = session_engine.execute(select_data)
+            record = remote_result.first()
+            return record
+        else:
+            select_data = select(
+                [remote_table_model],
+                and_(remote_table_model.c[parent_tb_column] == parent_id)
+            )
+
+            remote_result = session_engine.execute(select_data)
+            record = remote_result.fetchall()
+            return record
+
+    except Exception as ex:
+        pass
+

@@ -666,6 +666,28 @@ def entity_id_to_attr(entity, attr, id):
 
     return attr_val
 
+
+def entity_id_to_model(entity, id):
+    #TODO update comment
+    """
+    Converts an entity column id to another
+    column value of the same record.
+    :param entity: Entity
+    :type entity: Class
+    :param attr: Column name
+    :type attr: String
+    :param id: Id of the entity
+    :type id: Integer
+    :return: a column value if a match found
+    :rtype: Integer or String
+    """
+    model = entity_model(entity)
+    model_obj = model()
+    result = model_obj.queryObject().filter(
+        model.id == id
+    ).first()
+    return result
+
 def entity_attr_to_id(entity, attr_obj, attr_val, lower=False):
     """
     Coverts other column values to id value
@@ -702,6 +724,7 @@ def entity_attr_to_id(entity, attr_obj, attr_val, lower=False):
         attr_id = attr_val
 
     return attr_id
+
 
 def table_to_profile_name(table_name):
     """
