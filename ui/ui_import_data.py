@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_import_data.ui'
 #
-# Created: Thu Nov 13 16:30:03 2014
-#      by: PyQt4 UI code generator 4.10.3
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -106,6 +105,9 @@ class Ui_frmImport(object):
         self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
         self.lstSrcFields = QtGui.QListWidget(self.groupBox_5)
         self.lstSrcFields.setMinimumSize(QtCore.QSize(0, 250))
+        self.lstSrcFields.setDragEnabled(True)
+        self.lstSrcFields.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
+        self.lstSrcFields.setDefaultDropAction(QtCore.Qt.MoveAction)
         self.lstSrcFields.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.lstSrcFields.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.lstSrcFields.setObjectName(_fromUtf8("lstSrcFields"))
@@ -186,6 +188,10 @@ class Ui_frmImport(object):
         self.gridLayout_4.addWidget(self.chk_virtual, 3, 0, 1, 4)
         self.lstTargetFields = QtGui.QListWidget(self.groupBox_6)
         self.lstTargetFields.setMinimumSize(QtCore.QSize(0, 250))
+        self.lstTargetFields.setDragEnabled(True)
+        self.lstTargetFields.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
+        self.lstTargetFields.setDefaultDropAction(QtCore.Qt.MoveAction)
+        self.lstTargetFields.setAlternatingRowColors(True)
         self.lstTargetFields.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.lstTargetFields.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.lstTargetFields.setObjectName(_fromUtf8("lstTargetFields"))
@@ -225,3 +231,6 @@ class Ui_frmImport(object):
         self.btn_add_translator.setWhatsThis(_translate("frmImport", "<html><head/><body><p>Use value translators to transform the value from the corresponding source table column in order to adopt it to a format that adaptible to the destination column.</p></body></html>", None))
         self.btn_edit_translator.setToolTip(_translate("frmImport", "Edit value translator", None))
         self.chk_virtual.setText(_translate("frmImport", "Show virtual columns", None))
+        self.lstTargetFields.setSortingEnabled(False)
+
+from stdm import resources_rc
