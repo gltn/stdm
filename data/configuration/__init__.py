@@ -41,7 +41,6 @@ def _gen_relationship(base, direction, return_fn,
 
     elif direction is ONETOMANY:
         kw['cascade'] = 'all, delete-orphan'
-        #kw['passive_deletes'] = True
 
     return generate_relationship(base, direction, return_fn,
                                  attrname, local_cls, referred_cls, **kw)

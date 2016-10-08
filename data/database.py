@@ -257,12 +257,18 @@ class Model(object):
             db.session.rollback()
             
     def delete(self):
+        op_result = True
+
         db = STDMDb.instance()
         db.session.delete(self)
+
         try:
             db.session.commit()
         except exc.SQLAlchemyError:
+            op_result = False
             db.session.rollback()
+
+        return op_result
 
     def queryObject(self,args=[]):
         '''
