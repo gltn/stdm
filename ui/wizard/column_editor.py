@@ -45,6 +45,8 @@ from fk_property import FKProperty
 from lookup_property import LookupProperty
 from multi_select_property import MultiSelectProperty
 
+from stdm.ui.notification import NotificationBar, INFORMATION
+
 LOGGER = logging.getLogger('stdm')
 LOGGER.setLevel(logging.DEBUG)
 
@@ -115,6 +117,14 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.init_controls()
 
+        self.notice_bar = NotificationBar(self.notif_bar)
+        self.show_notification()
+
+    def show_notification(self):
+        msg = self.tr('Column names should be in lower case with no spaces.')
+        self.notice_bar.clear()
+        self.notice_bar.insertNotification(msg, INFORMATION)
+
     def init_controls(self):
         """
         Initialize GUI controls default state when the dialog window is opened.
@@ -134,6 +144,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.edtColName.setEnabled(not self.in_db)
         self.cboDataType.setEnabled(not self.in_db)
+
+        self.buttonBox.button(QtGui.QDialogButtonBox.Cancel).clicked.connect(self.cancel)
 
     def column_to_form(self, column):
         """
@@ -677,6 +689,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         else:  # editing a column 
             self.column = new_column
             self.done(1)
+
+    def cancel(self):
+        self.done(0)
 
     def make_column(self):
         """
