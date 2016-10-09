@@ -91,7 +91,11 @@ class SpatialUnitManagerDockWidget(
             self.on_add_to_canvas_button_clicked
         )
         self.feature_details_btn.clicked.connect(
-            self.feature_details.feature_details_activate
+            self.feature_details.activate_feature_details
+        )
+
+        self.iface.currentLayerChanged.connect(
+            lambda :self.feature_details.activate_feature_details(False)
         )
 
     def _populate_layers(self):
