@@ -22,6 +22,7 @@ email                : stdm@unhabitat.org
 
 import re
 from collections import OrderedDict
+
 from PyQt4.QtGui import (
     QDockWidget,
     QMessageBox,
@@ -31,8 +32,7 @@ from PyQt4.QtGui import (
     QStandardItemModel,
     QIcon,
     QApplication,
-    QColor,
-    QScrollArea
+    QColor
 )
 from PyQt4.QtCore import (
     Qt
@@ -44,30 +44,30 @@ from qgis.core import (
     QgsFeatureRequest,
     QgsExpression
 )
-from sqlalchemy.sql import (
-    select
-)
 
 from stdm.settings import current_profile
 from stdm.data.database import (
-    STDMDb,
-    alchemy_table
+    STDMDb
+)
+from stdm.settings.registryconfig import (
+    selection_color
+)
+from stdm.data.configuration import (
+    entity_model
 )
 from stdm.data.pg_utils import (
-    spatial_tables,
-    foreign_key_parent_tables,
-    numeric_varchar_columns,
-
-    data_from_id,
-    pg_tables,
-    #AdminSpatialUnitSet,
-    parent_child_table_data
+    spatial_tables
 )
+
+from stdm.ui.forms.editor_dialog import EntityEditorDialog
+
+from stdm.ui.forms.widgets import ColumnWidgetRegistry
 from stdm.utils.util import (
     format_name,
-    lookup_id_to_value,
     entity_id_to_model
+
 )
+from ui_feature_details import Ui_DetailsDock
 
 class LayerSelectionHandler:
     def __init__(self, iface, plugin):
@@ -94,14 +94,14 @@ class LayerSelectionHandler:
                 return features
             except:
                 not_feature_table = QApplication.translate(
-                    'FeatureDetails',
+                    'LayerSelectionHandler',
                     'You have selected feature layer from view. '
                     'Please select a feature layer that uses the '
                     'main feature table.'
                 )
                 QMessageBox.information(
                     self.iface.mainWindow(),
-                    "Error",
+                    'Feature Details Error',
                     not_feature_table
                 )
 
@@ -130,12 +130,13 @@ class LayerSelectionHandler:
         active_layer = self.iface.activeLayer()
         if active_layer is None:
             no_layer_msg = QApplication.translate(
-                'FeatureDetails',
-                'Please select a feature layer to view feature details.'
+                'LayerSelectionHandler',
+                'Please select a spatial entity '
+                'layer to view feature details.'
             )
             QMessageBox.critical(
                 self.iface.mainWindow(),
-                "Error",
+                'Feature Details Error',
                 no_layer_msg
             )
 
@@ -191,9 +192,29 @@ class LayerSelectionHandler:
         if self.sel_highlight is not None:
             self.sel_highlight = None
 
+
+    def refresh_layers(self):
+        """
+        Refresh all database layers.
+        :return: None
+        :rtype: NoneType
+        """
+        layers = self.iface.legendInterface().layers()
+        for layer in layers:
+            layer.dataProvider().forceReload()
+            layer.triggerRepaint()
+        if not self.iface.activeLayer() is None:
+            canvas = self.iface.mapCanvas()
+            canvas.setExtent(
+                self.iface.activeLayer().extent()
+            )
+            self.iface.mapCanvas().refresh()
+
+
     def multi_select_highlight(self, index):
         """
-        Highlights a feature with rubberBald class when selecting
+        Highlights a feature with rubberBald
+        class when selecting
         features are more than one.
         :param index: Selected QTreeView item index
         :type Integer
@@ -204,93 +225,96 @@ class LayerSelectionHandler:
 class DetailsModel:
     def __init__(self):
 
-        self.engine = STDMDb.instance().session
+        self._entity = None
+        self.column_formatter = OrderedDict()
+        self.formatted_columns = OrderedDict()
+        self.current_profile = current_profile()
+        self.formatted_record = OrderedDict()
+        self.display_columns = None
 
-    def filter_child_columns(self, table_name, str_table, filter_fk = True):
+    def set_entity(self, entity):
+        self._entity = entity
+
+    def set_formatter(self, entity=None):
+        self.format_columns(entity)
+
+    def format_columns(self, entity=None):
+        if entity is None:
+            entity = self._entity
+        if entity is None:
+            return
+        for col in entity.columns.values():
+            col_name = col.name
+
+            # Get widget factory so that we can use the value formatter
+            widget_factory = ColumnWidgetRegistry.factory(
+                col.TYPE_INFO
+            )
+            if not widget_factory is None:
+                formatter = widget_factory(col)
+                self.column_formatter[col_name] = formatter
+
+    def display_column_object(self, entity):
         """
-        Filters the columns to be used as a child by
-        filtering out binary, foreign keys and primary keys.
-        :param table_name: The name of str table or any relationship table
-        :type String
-        :param str_table: The alchemy str table object
-        :type String
-        :param filter_fk: Boolean to filter include or exclude foreign keys
-        :type Boolean
-        :return: List
+        Returns entity display columns.
+        :param entity: Entity
+        :type entity: Class
+        :return: List of column names.
+        :rtype: List
         """
-        detail_alchemy_column = []
-        if filter_fk:
-            disp_fk_cols = numeric_varchar_columns(table_name)
-            for col in disp_fk_cols:
-                if col != 'id' and col != 'geom_polygon':
-                    detail_alchemy_column.append(str_table.c[col])
-        else:
-            pass
-            ###TODO replace with current profile table columns
-            # config_table_reader = ConfigTableReader()
-            # disp_cols = config_table_reader.table_columns(table_name)
-            # for col in disp_cols:
-            #     if col != 'id' and col != 'geom_polygon':
-            #
-            #         detail_alchemy_column.append(str_table.c[col])
+        self.display_columns = [
+            c
+            for c in
+            entity.columns.values()
+            if c.TYPE_INFO in [
+                'VARCHAR',
+                'TEXT',
+                'INT',
+                'DOUBLE',
+                'DATE',
+                'DATETIME',
+                'BOOL',
+                'LOOKUP',
+                'ADMIN_SPATIAL_UNIT'
+                #'MULTIPLE_SELECT'
+            ]
+            ]
 
-        return detail_alchemy_column
-
-
-    def str_tables_data(
-            self,
-            str_used_table_name,
-            str_table,
-            str_column_name,
-            spatial_unit_id,
-            fetchall=True
-    ):
-        """
-        Generate date for str used tables ready to be used for tree view.
-        :param str_used_table_name: The name of the table used by
-        str eg. feature, person
-        :type String
-        :param str_table: sqlalchemy table object for str
-        :type sqlalchemy table object
-        :param str_column_name: the column name of str used tables in str
-        eg. spatial_unit_id, party_id
-        :type String
-        :param spatial_unit_id: The selected feature spatial unit id
-        :type Integer
-        :return: sqlalchemy result.RowProxy Dictionary
-        """
-
-        str_used_table = alchemy_table(str_used_table_name)
-        str_child_columns = self.filter_child_columns(
-            str_used_table_name, str_used_table, False
+    def feature_STR_link(self, feature_id):
+        STR_model = entity_model(
+            self.current_profile.social_tenure
         )
-        str_child_columns.append(str_used_table.c.id)
-        select_str_row = select(str_child_columns).where(
-            str_table.c[str_column_name] == str_used_table.c.id
-        ).where(
-            str_table.c.spatial_unit_id == spatial_unit_id
-        ).order_by(str_table.c.id)
+        model_obj = STR_model()
+        result = model_obj.queryObject().filter(
+            STR_model.spatial_unit_id == feature_id
+        ).all()
 
-        str_result = self.engine.execute(select_str_row)
-        if fetchall:
-            str_record = str_result.fetchall()
-            columns = str_result.keys()
+        return result
 
-            record_cont = []
-            for i, recs in enumerate(str_record):
-                data_dic = OrderedDict(zip(columns, recs))
 
-                record_cont.append(data_dic)
-            return record_cont
-        else:
-            str_record = str_result.first()
+    def column_widget_registry(self, model, entity):
+        self.formatted_record.clear()
+        self.display_column_object(entity)
+        for col in self.display_columns:
+            col_val = getattr(model, col.name)
+            # Check if there are display formatters and apply if
+            # one exists for the given attribute.
+            if col.name in self.column_formatter:
+                formatter = self.column_formatter[col.name]
+                col_val = formatter.format_column_value(col_val)
+            self.formatted_record[col.header()] = col_val
 
-            return str_record
+class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
+    def __init__(self, iface, spatial_unit_dock):
 
-class DetailsDockWidget(QDockWidget):
-    def __init__(self, iface):
         QDockWidget.__init__(self, iface.mainWindow())
-    
+        self.setupUi(self)
+        self.spatial_unit_dock = spatial_unit_dock
+        self.iface = iface
+        self.edit_btn.setDisabled(True)
+        self.delete_btn.setDisabled(True)
+        LayerSelectionHandler.__init__(self, iface, spatial_unit_dock)
+        self.setBaseSize(300,5000)
 
     def init_dock(self):
         """
@@ -305,13 +329,6 @@ class DetailsDockWidget(QDockWidget):
             )
         )
 
-class DetailsDockWidgetHandler(LayerSelectionHandler, DetailsDockWidget):
-    def __init__(self, iface, spatial_unit_dock):
-        DetailsDockWidget.__init__(self, iface)
-
-        LayerSelectionHandler.__init__(self, iface, spatial_unit_dock)
-        self.spatial_unit_dock = spatial_unit_dock
-        self.iface = iface
 
     def close_dock(self, tool):
         """
@@ -335,10 +352,13 @@ class DetailsDockWidgetHandler(LayerSelectionHandler, DetailsDockWidget):
         :type QCloseEvent
         :return: None
         """
-        self.close_dock(self._plugin.show_parcel_details_act)
+        self.close_dock(
+            self.spatial_unit_dock.feature_details_btn
+        )
 
-class DetailsTreeView(DetailsModel, DetailsDockWidgetHandler):
-    def __init__(self, iface, plugin):
+
+class DetailsTreeView(DetailsModel, DetailsDockWidget):
+    def __init__(self, iface, spatial_unit_dock):
 
         """
         The method initializes the dockwidget.
@@ -348,62 +368,95 @@ class DetailsTreeView(DetailsModel, DetailsDockWidgetHandler):
         :type class
         :return: None
         """
-        DetailsDockWidgetHandler.__init__(self, iface, plugin)
+        DetailsDockWidget.__init__(self, iface, spatial_unit_dock)
+
         DetailsModel.__init__(self)
+
+        self.spatial_unit_dock = spatial_unit_dock
+
         self.view = QTreeView()
         self.view.setSelectionBehavior(
             QAbstractItemView.SelectRows
         )
-        self.feature_ids = []
+        #self.feature_ids = []
         self.layer_table = None
+        self.entity = None
+        self.feature_models = {}
+        self.STR_models = {}
+        self.removed_feature = None
+        self.selected_root = None
         self.model = QStandardItemModel()
         self.view.setModel(self.model)
         self.view.setUniformRowHeights(True)
         self.view.setRootIsDecorated(True)
+        self.view.setAlternatingRowColors(True)
+        self.view.setWordWrap(True)
+        self.view.setHeaderHidden(True)
+        self.view.setEditTriggers(
+            QAbstractItemView.NoEditTriggers
+        )
         self.current_profile = current_profile()
-        self.view.resizeColumnToContents(100)
-        self.view.setHeaderHidden(False)
+        self.social_tenure = self.current_profile.social_tenure
+        self.spatial_unit = self.social_tenure.spatial_unit
 
+        self.view.setMinimumWidth(250)
 
-    def feature_details_activate(self):
+    def set_layer_entity(self):
+        self.layer_table = self.get_layer_source(
+            self.iface.activeLayer()
+        )
+        if self.layer_table in spatial_tables():
+            self.entity = self.current_profile.entity_by_name(
+                self.layer_table
+            )
+
+        else:
+            self.treeview_error('The layer is not a spatial entity layer. ')
+
+    def activate_feature_details(self, button_clicked=True):
         """
         Action for showing feature details.
         :return:
         """
         # Get the active layer.
-
-        # active_layer = self.iface.activeLayer()
-        title = QApplication.translate("STDMQGISLoader", "Feature Details")
-
-        select_feature =  QApplication.translate(
-            "STDMQGISLoader",
-            "Please select a feature to view their details."
-        )
-
-       # new_feature_details_dock = FeatureDetails(self.iface, self)
-        # create instance for active_layer_check()
         active_layer = self.iface.activeLayer()
-        if active_layer is not None:
+        if active_layer is not None and \
+                self.spatial_unit_dock.feature_details_btn.isChecked():
             # if feature detail dock is not defined or hidden, create empty dock.
-            if self is None or \
-                    self.isHidden():
-
+            if self is None or self.isHidden():
                 # if the selected layer is not a feature layer, show not
                 # feature layer. (implicitly included in the if statement).
-                if self.feature_layer(active_layer) == False:
+                if not self.feature_layer(active_layer):
                     self.spatial_unit_dock.feature_details_btn.setChecked(False)
+                    return
                 # If the selected layer is feature layer, get data and
                 # display treeview in a dock widget
                 else:
+                    select_feature = QApplication.translate(
+                        "STDMQGISLoader",
+                        "Please select a feature to view their details."
+                    )
                     self.init_dock()
-                    self.add_tree_view() ###TODO fix reference of this method
-                    self.treeview_error(title, select_feature)
+                    self.add_tree_view()
+                    self.model.clear()
+                    self.treeview_error(select_feature)
+
                     # enable the select tool
                     self.activate_select_tool()
+                    # set entity from active layer in the child class
+                    self.set_layer_entity()
+                    # set entity for the super class DetailModel
+                    self.set_entity(self.entity)
+                    # Registery column widget
+                    self.set_formatter()
+                    #set formatter for social tenure relationship.
+                    self.set_formatter(self.social_tenure)
+                    self.set_formatter(self.social_tenure.party)
                     # pull data, show treeview
                     active_layer.selectionChanged.connect(
                         self.show_tree
                     )
+                    self.steam_signals(self.entity)
 
             # if feature_detail dock is open, toggle close
             else:
@@ -413,7 +466,8 @@ class DetailsTreeView(DetailsModel, DetailsDockWidgetHandler):
                 self.feature_details = None
         # if no active layer, show error message and uncheck the feature tool
         else:
-            self.active_layer_check()
+            if button_clicked:
+                self.active_layer_check()
             self.spatial_unit_dock.feature_details_btn.setChecked(False)
 
     def add_tree_view(self):
@@ -421,235 +475,148 @@ class DetailsTreeView(DetailsModel, DetailsDockWidgetHandler):
         Adds tree view to the dock widget and sets style.
         :return: None
         """
-        self.setWidget(self.view)
-        self.view.setEditTriggers(
-            QAbstractItemView.NoEditTriggers)
+        self.tree_scrollArea.setWidget(self.view)
 
-    def init_tree_view(self):
+    def clear_feature_models(self):
+        self.feature_models.clear()
+
+    def reset_tree_view(self, no_feature=False):
         #clear feature_ids list, model and highlight
         self.model.clear()
-        self.clear_sel_highlight() # remove sel_highlight
-        self.feature_ids[:] = []
 
+        self.clear_sel_highlight() # remove sel_highlight
+        self.disable_buttons(no_feature)
+        if self.removed_feature is None:
+            self.STR_models.clear()
+            self.feature_models.clear()
+        else:
+            self.removed_feature = None
         features = self.selected_features()
         # if the selected feature is over 1,
         # activate multi_select_highlight
-        if len(features) > 1 or not features is None:
+        if not features is None:
             self.view.clicked.connect(
                 self.multi_select_highlight
             )
         # if there is at least one selected feature
         if len(features) > 0:
-            self.init_dock()
             self.add_tree_view()
-            self.feature_ids = features
+            #self.feature_ids = features
+
+    def disable_buttons(self, bool):
+        self.edit_btn.setDisabled(bool)
+        self.delete_btn.setDisabled(bool)
 
     def show_tree(self):
-        self.init_tree_view()
-        self.layer_table = self.get_layer_source(
-            self.iface.activeLayer()
-        )
-        self.entity = self.current_profile.entity_by_name(
-            self.layer_table
-        )
-
-        roots = self.add_parent_tree()
-        if roots is None:
+        selected_features = self.selected_features()
+        if len(selected_features) < 1:
+            self.reset_tree_view(True)
             return
-        for id, root in roots.iteritems():
-            db_model = entity_id_to_model(self.entity, id)
-            self.add_children(db_model, root)
+        if not self.entity is None:
+            self.reset_tree_view()
+            if len(selected_features) < 1:
+                self.disable_buttons(True)
+                return
 
-    def add_parent_tree(self):
-        if len(self.feature_ids) < 1:
-            return
+            layer_icon = QIcon(':/plugins/stdm/images/icons/layer.gif')
+            roots = self.add_parent_tree(
+                layer_icon, format_name(self.entity.short_name)
+            )
+            if roots is None:
+                return
+
+            for id, root in roots.iteritems():
+                db_model = entity_id_to_model(self.entity, id)
+
+                self.add_roots(db_model, root, id)
+
+    def add_parent_tree(self, icon, title):
         roots = OrderedDict()
-        for feature_id in self.feature_ids:
-            root = QStandardItem('Feature {}'.format(feature_id))
+        for feature_id in self.selected_features():
+            root = QStandardItem(icon, title)
+            root.setData(feature_id)
+            self.set_bold(root)
             self.model.appendRow(root)
             roots[feature_id] = root
         return roots
 
+    def add_roots(self, model, parent, feature_id):
+        self.feature_models[feature_id] = model
+        if model is None:
+            return
+        self.column_widget_registry(model, self.entity)
 
-    def add_children(self, model, parent):
-
-        model_dict = dict(model.__dict__)
-        model_dict.pop('_sa_instance_state', None)
-
-        for col, row in model_dict.iteritems():
+        for i, (col, row) in enumerate(self.formatted_record.iteritems()):
             child = QStandardItem('{}: {}'.format(col, row))
-            parent.appendRow([child])
-        self.expand_node(parent)
-    #
-    # def show_feature_details(self):
-    #     """
-    #     On select pull the selected feature detail into to a tree view.
-    #     :return:
-    #     """
-    #     # clear existing tree model. Do all model methods after this.
-    #     self.model.clear()
-    #     self.clear_sel_highlight()  # remove sel_highlight
-    #
-    #     if self.selected_features() is not None:
-    #         features = self.selected_features()
-    #     else:
-    #         return
-    #
-    #       #if the selected feature is over 1, activate multi_select_highlight
-    #     if len(features) > 1:
-    #
-    #         self.view.clicked.connect(self.multi_select_highlight)
-    #
-    #     # if there is at least one selected feature
-    #     if len(features) > 0:
-    #
-    #         self.init_dock()
-    #         self.add_tree_view()
-    #         count_title = 'Selected Feature(s) (' + str(len(features)) + ')'
-    #         self.model.setHorizontalHeaderLabels([count_title])
-    #         # create node for every selected feature
-    #         root = None
-    #         for spatial_unit_id, feature_code in features.iteritems():
-    #
-    #             root = QStandardItem('Feature '+str(feature_code))
-    #             str_table_name = self.current_profile.social_tenure.name
-    #             str_table = alchemy_table(str_table_name)
-    #             #get unique foreign key tables details.
-    #             str_used_tables = set(foreign_key_parent_tables(str_table_name))
-    #
-    #             str_fk_columns = []  # prepare str fk columns for sqlalchemy
-    #             for fk_col in str_used_tables:
-    #                 str_fk_columns.append(str_table.c[fk_col[0]])
-    #
-    #             # get list of all str_alchemy column names with str fk columns
-    #             str_columns = self.filter_child_columns(
-    #                 str_table_name, str_table, True
-    #             )
-    #             # get all str table without the fk columns
-    #             none_fk_str_columns = [item for item in str_columns
-    #                                    if item not in str_fk_columns]
-    #             none_fk_str_columns.append(str_table.c.party_id)
-    #             # get str node data
-    #             select_str = select(
-    #                 none_fk_str_columns
-    #             ).where(str_table.c.spatial_unit_id == spatial_unit_id)
-    #             str_result_str = self.engine.execute(select_str)
-    #             #str_record_str = str_result_str.first()
-    #             str_record_str = str_result_str.fetchall()
-    #
-    #             no_str_icon = QIcon(
-    #                 ':/plugins/stdm/images/icons/remove.png'
-    #             )
-    #
-    #             # Show No str message if str_record_str is None for a feature
-    #             if len(str_record_str) == 0:
-    #                 # self.add_tree_view()
-    #                 self.treeview_error(
-    #                     count_title,
-    #                     'Feature '+str(feature_code)+' - No STR defined',
-    #                     no_str_icon
-    #                 )
-    #                 continue
-    #
-    #             # Create Treeview
-    #             for table in str_used_tables:
-    #
-    #                 str_column_name = table[0]
-    #                 str_used_table_name = table[1]
-    #                 str_used_pk_id = table[2]
-    #
-    #                 # Insert data of spatial unit table under the
-    #                 # get root (feature) as a child of root
-    #                 if str_used_table_name == 'feature':
-    #
-    #                     feature_str_record = self.str_tables_data(
-    #                         str_used_table_name,
-    #                         str_table,
-    #                         str_column_name,
-    #                         spatial_unit_id,
-    #                         False
-    #                     )
-    #                      # add under Feature - root
-    #                     self.create_details_tree(
-    #                         feature_str_record,
-    #                         root,
-    #                         'feature',
-    #                         spatial_unit_id,
-    #                         ['survey']
-    #                     )
-    #
-    #             steam = None
-    #             branch = None
-    #             for i, str_rec in enumerate(str_record_str):
-    #                 print str_rec
-    #                 str_icon = QIcon(
-    #                     ':/plugins/stdm/images/icons/social_tenure.png'
-    #                 )
-    #                 steam = QStandardItem(
-    #                     str_icon,
-    #                     'Social Tenure Relationship'
-    #
-    #                                  )
-    #                 # add social tenure after feature
-    #                 # details but before party.
-    #                 self.add_steam(steam, root, str_rec)
-    #                 self.set_bold(steam)
-    #                 for table in str_used_tables:
-    #                     print table
-    #                     str_column_name = table[0]
-    #                     str_used_table_name = table[1]
-    #                     str_used_pk_id = table[2]
-    #                     # return data for party table.
-    #
-    #                     if str_used_table_name not in spatial_tables() and \
-    #                                     str_rec[str_column_name] is not None:
-    #
-    #                          # return data for tables other than spatial unit
-    #                          # table.
-    #                         str_record_2 = self.str_tables_data(
-    #                             str_used_table_name,
-    #                             str_table,
-    #                             str_column_name,
-    #                             spatial_unit_id
-    #                         )
-    #
-    #
-    #                         if str_record_2[i]['id'] == str_rec[str_column_name]:
-    #                             sub_str_icon = QIcon(
-    #                                 ':/plugins/stdm/images/icons/table.png'
-    #                             )
-    #                             branch = QStandardItem(
-    #                                 sub_str_icon, format_name(str_used_table_name)
-    #                             )
-    #                             self.set_bold(branch)   # set bold all branches
-    #
-    #                             self.add_steam(
-    #                                 branch,
-    #                                 steam,
-    #                                 str_record_2[i],
-    #                                 str_used_table_name,
-    #                                 str_record_2[i]['id'],
-    #                                 ['service_payment']
-    #                             )
-    #
-    #
-    #             self.model.appendRow(root)
-    #             # expand nodes
-    #             self.expand_node(branch)
-    #             self.expand_node(steam)
-    #
-    #             #self.set_bold(steam)
-    #             self.set_bold(root)
-    #         self.expand_node(root)   # Expand the last selected root-Feature
-    #
-    #     else:
-    #         self.treeview_error(
-    #             'Error',
-    #             'You have not selected a feature. Please select a \n'
-    #             'feature to view the details.'
-    #         )
-    #
 
+            parent.appendRow([child])
+            child.setSelectable(True)
+            # Add Social Tenure Relationship steam as a last child
+            if i == len(self.formatted_record)-1:
+                self.add_STR_child(parent, feature_id)
+        self.expand_node(parent)
+
+    def add_STR_steam(self, parent, STR_id):
+        str_icon = QIcon(
+            ':/plugins/stdm/images/icons/social_tenure.png'
+        )
+        title = 'Social Tenure Relationship'
+        str_root = QStandardItem(str_icon, title)
+        str_root.setData(STR_id)
+        self.set_bold(str_root)
+        parent.appendRow([str_root])
+        return str_root
+    def add_no_STR_steam(self, parent):
+        if self.entity.name == self.spatial_unit.name:
+            no_str_icon = QIcon(
+                ':/plugins/stdm/images/icons/remove.png'
+            )
+            title = 'No STR Defined'
+            no_str_root = QStandardItem(no_str_icon, title)
+            self.set_bold(no_str_root)
+            parent.appendRow([no_str_root])
+
+    def add_STR_child(self, parent, feature_id):
+        if len(self.feature_STR_link(feature_id)) < 1:
+            self.add_no_STR_steam(parent)
+            return
+        for record in self.feature_STR_link(feature_id):
+            self.STR_models[record.id] = record
+            str_root = self.add_STR_steam(parent, record.id)
+            # add STR children
+            self.column_widget_registry(record, self.social_tenure)
+            for i, (col, row) in enumerate(
+                    self.formatted_record.iteritems()
+            ):
+                STR_child = QStandardItem(
+                    '{}: {}'.format(col, row)
+                )
+                STR_child.setSelectable(True)
+                str_root.appendRow([STR_child])
+                if i == len(self.formatted_record)-1:
+                    self.add_party_child(
+                        str_root, record.party_id
+                    )
+
+    def add_party_steam(self, parent):
+        party_icon = QIcon(
+            ':/plugins/stdm/images/icons/table.png'
+        )
+        title = format_name(self.social_tenure.party.short_name)
+        party_root = QStandardItem(party_icon, title)
+        self.set_bold(party_root)
+        parent.appendRow([party_root])
+        return party_root
+
+    def add_party_child(self, parent, party_id):
+        party_root = self.add_party_steam(parent)
+        db_model = entity_id_to_model(self.social_tenure.party, party_id)
+        # add STR children
+        self.column_widget_registry(db_model, self.social_tenure.party)
+        for col, row in self.formatted_record.iteritems():
+            party_child = QStandardItem('{}: {}'.format(col, row))
+            party_child.setSelectable(False)
+            party_root.appendRow([party_child])
 
     def set_bold(self, standard_item):
         """
@@ -662,9 +629,7 @@ class DetailsTreeView(DetailsModel, DetailsDockWidgetHandler):
         font.setBold(True)
         standard_item.setFont(font)
 
-
-
-    def treeview_error(self, title, message, icon=None):
+    def treeview_error(self, message, icon=None):
         """
         Displays error message in feature details treeview.
         :param title: the title of the treeview.
@@ -682,349 +647,10 @@ class DetailsTreeView(DetailsModel, DetailsDockWidgetHandler):
             root = QStandardItem(not_feature_ft_msg)
         else:
             root = QStandardItem(icon, not_feature_ft_msg)
-        self.model.setHorizontalHeaderLabels([title])
+
         self.view.setRootIsDecorated(False)
         self.model.appendRow(root)
         self.view.setRootIsDecorated(True)
-    #
-    # def create_details_tree(
-    #         self,
-    #         data,
-    #         parent,
-    #         parent_name=None,
-    #         spatial_unit_id = None,
-    #         external_table = None
-    # ):
-    #     """
-    #     Generates feature details tree node.
-    #     :param data: The database record from sqlalchemy
-    #     :type: sqlalchemy result proxy
-    #     :param parent: The parent containing the children
-    #     :type: QStandarItem
-    #     :param parent_name: The label to be added under parent.
-    #     :type: String
-    #     :param spatial_unit_id: The id of the selected feature
-    #     :type: Integer
-    #     :param external_table: list of external tables
-    #     using the feature id as foreign key.
-    #     :type: List
-    #     :return: None
-    #     """
-    #     self.add_children(
-    #         data,
-    #         parent,
-    #         spatial_unit_id,
-    #         external_table,
-    #         parent_name
-    #     )
-    #     self.add_tree_view()
-    #     self.view.setAlternatingRowColors(True)
-    #
-    #
-    #
-    # def add_children0(
-    #         self,
-    #         data,
-    #         parent,
-    #         spatial_unit_id=None,
-    #         external_table=None,
-    #         parent_name=None
-    # ):
-    #     """
-    #     Add children into tree view.
-    #     :param data: The database record from sqlalchemy
-    #     :type: sqlalchemy result proxy
-    #     :param parent: The parent containing the children
-    #     :type: QStandarItem
-    #     :param spatial_unit_id: The id of the selected feature
-    #     :type: Integer
-    #     :param external_table: list of external tables
-    #     using the feature id as foreign key.
-    #     :type: List
-    #     :param parent_name: The label to be added under parent.
-    #     :type: String
-    #     :return: None
-    #     """
-    #     # If record_party has values, insert it on the tree
-    #
-    #     if data is not None:
-    #
-    #         for col, row in data.items():
-    #             if col != 'id' and col[:-3] not in ['feature', 'person', 'institution']:   # hide ids
-    #                 if col.find('_id') != -1:
-    #                     #if the column is foreign key column, create sub children
-    #                     if col[:-3] in pg_tables():
-    #                         child = QStandardItem(format_name(col[:-3]))
-    #                         if data_from_id(row, col) is not None:
-    #                             for col2, row2 in data_from_id(row, col).items():
-    #                                 if col2 != 'id':   # hide ids
-    #                                     #if column is a fk or lookup column
-    #                                     if col2.find('_id') != -1:
-    #                                         # foreign keys are not present on all str tables
-    #                                         # if the column is foreign key column, create sub children
-    #                                         if col2[:-3] in pg_tables():
-    #                                             child2 = QStandardItem(format_name(col2[:-3]))
-    #                                             if data_from_id(row2, col2) is not None:
-    #
-    #                                                 for col3, row3 in data_from_id(row2, col2).items():
-    #                                                     if col3 != 'id': #hide ids
-    #                                                         #if column is a fk or lookup column
-    #                                                         if col3.find('_id') != -1:
-    #                                                             # if the column is foreign key column, create sub children
-    #                                                             if col3[:-3] in pg_tables():
-    #                                                                 child3 = QStandardItem('{}: {}'.format(
-    #                                                                             format_name(col3),
-    #                                                                             row3
-    #                                                                             )
-    #                                                                 )
-    #                                                             # col is a lookup column
-    #                                                             else:
-    #                                                                 child3 = QStandardItem('{}: {}'.format(
-    #                                                                     format_name(col3[:-3]),
-    #                                                                      lookup_id_to_value(self.current_profile, col3, row3))
-    #                                                                 )
-    #                                                             child2.appendRow([child3])
-    #                                                          # if it is other column show data as is
-    #                                                         else:
-    #
-    #                                                             child3 = QStandardItem('{}: {}'.format(
-    #                                                                         format_name(col3),
-    #                                                                         row3
-    #                                                                         )
-    #                                                             )
-    #                                                             child2.appendRow([child3])
-    #
-    #
-    #                                         # col is a lookup column
-    #
-    #                                         child2 = QStandardItem('{}: {}'.format(
-    #                                                 format_name(col2[:-3]),
-    #                                                 lookup_id_to_value(self.current_profile, col2, row2)
-    #                                             )
-    #                                         )
-    #                                         child.appendRow([child2])
-    #                                     # if it is other column show data as is
-    #                                     else:
-    #                                         child2 = QStandardItem('{}: {}'.format(
-    #                                                 format_name(col2),
-    #                                                 row2
-    #                                             )
-    #                                         )
-    #                                     child.appendRow([child2])
-    #
-    #                             parent.appendRow([child])
-    #                     ###TODO format administrative units
-    #                     # # Look for Admin unit and format. Only added for feature as it is a feature column
-    #                     # elif col.find('admin') != -1:
-    #                     #     admin_unit_set = AdminSpatialUnitSet()
-    #                     #     sel_admin_unit = admin_unit_set.queryObject().filter(AdminSpatialUnitSet.id == row).first()
-    #                     #     if sel_admin_unit is not None:
-    #                     #         full_admin_unit = sel_admin_unit.hierarchy_names(', ')
-    #                     #     else:
-    #                     #         full_admin_unit = 'None'
-    #                     #     child = QStandardItem('{}: {}'.format(
-    #                     #             'Administrative Unit',
-    #                     #              full_admin_unit
-    #                     #         )
-    #                     #     )
-    #                     #     parent.appendRow([child])
-    #                     #if the the column is a lookup column or has id in it
-    #                     else:
-    #                         if col == 'national_id':
-    #                             child = QStandardItem('{}: {}'.format(
-    #                                     'National ID',
-    #                                     row
-    #                                 )
-    #                             )
-    #                             parent.appendRow([child])
-    #                         else:
-    #                             child = QStandardItem('{}: {}'.format(
-    #                                  format_name(col[:-3]),
-    #                                  lookup_id_to_value(self.current_profile, col, row))
-    #                             )
-    #                             parent.appendRow([child])
-    #
-    #                 #if it is other column show data as is
-    #                 else:
-    #                     if col == 'area':
-    #
-    #                         child = QStandardItem('{}: {}'.format(
-    #                                 format_name(col),
-    #                                 format(row, '.4f')
-    #                             )
-    #                         )
-    #                     else:
-    #                         child = QStandardItem('{}: {}'.format(
-    #                                 format_name(col),
-    #                                 row
-    #                             )
-    #                         )
-    #                     parent.appendRow([child])
-    #
-    #         #if it is external table
-    #
-    #         if external_table is not None:
-    #             for ext in external_table:
-    #
-    #                 ext_data_list = parent_child_table_data(spatial_unit_id, ext, parent_name, False)
-    #                 # ext_data[0] is the first value which is id
-    #
-    #                 if ext_data_list is not None:
-    #                     for ext_data in ext_data_list:
-    #                         rates_payment_data = parent_child_table_data(
-    #                             ext_data[0], 'rates_payment', ext, False
-    #                         )
-    #                         # Index will limit the number of loops
-    #                         # for rates payment generation to 1
-    #                         index = 0
-    #                         # remove id, spatial_unit_id, and column with None data
-    #                         # as they are not included in the loop
-    #                         ext_data_len = len(filter(None, ext_data)) - 2
-    #
-    #                         child1 = QStandardItem(format_name(ext))
-    #                         if ext_data is not None:
-    #                             for col, row in ext_data.items():
-    #
-    #                                 # if the column is foreign key column,
-    #                                 # create sub children eg. surveyor_id
-    #                                 if col != 'id' and col != parent_name+'_id' and row != None: #hide ids
-    #                                     # add all rates payment rows related to service_payment_id
-    #                                     if ext == 'service_payment':
-    #
-    #                                       # if normal value columns
-    #                                         if col.find('_id') == -1:
-    #                                             child2 = QStandardItem('{}: {}'.format(
-    #                                                     format_name(col),
-    #                                                     row
-    #                                                 )
-    #                                             )
-    #                                             child1.appendRow([child2])
-    #
-    #                                         elif col.find('_id') != -1:
-    #                                             if col[:-3] in pg_tables():
-    #
-    #                                                 child2 =  QStandardItem(format_name(col[:-3]))
-    #                                                 # If the table has foreign tables create tree
-    #                                                 if data_from_id(row, col) != row:
-    #                                                     for col2, row2 in data_from_id(row, col).items():
-    #                                                         if col2 != 'id': #hide ids
-    #                                                             # if column is a fk or lookup column
-    #                                                             if col2.find('_id') != -1:
-    #                                                                 # if the column is foreign key column, create sub children
-    #                                                                 # Foreign key tables this deep are not present for Turkana case
-    #                                                                 # col is a lookup column
-    #                                                                 if col2[:-3] not in pg_tables():
-    #                                                                     child3 = QStandardItem('{}: {}'.format(
-    #                                                                             format_name(col2[:-3]),
-    #                                                                             lookup_id_to_value(self.current_profile, col2, row2)
-    #                                                                         )
-    #                                                                     )
-    #                                                                     child2.appendRow([child3])
-    #                                                              # if it is other column show data as is
-    #                                                             else:
-    #                                                                 child3 = QStandardItem('{}: {}'.format(
-    #                                                                         format_name(col2),
-    #                                                                         row2
-    #                                                                     )
-    #                                                                 )
-    #                                                                 child2.appendRow([child3])
-    #                                                 child1.appendRow([child2])
-    #                                             # if lookup column
-    #                                             else:
-    #                                                 child2 = QStandardItem('{}: {}'.format(
-    #                                                         format_name(col[:-3]),
-    #                                                         lookup_id_to_value(self.current_profile, col, row)
-    #                                                     )
-    #                                                 )
-    #                                                 child1.appendRow([child2])
-    #                                         index = index+1
-    #
-    #                                         # Add rates and services table
-    #                                         # create rates payment only in the last loop
-    #                                         # after all others are added in the tree
-    #                                         if index == ext_data_len:
-    #                                             if rates_payment_data is not None:
-    #                                                 child2 = QStandardItem("Services Paid")
-    #                                                 for ext_data_rates in rates_payment_data:
-    #                                                     service_payment_row = list()
-    #
-    #                                                     for col4, row4 in ext_data_rates.items():
-    #
-    #                                                         if col4 == 'service_type_id':
-    #
-    #                                                             service_payment_row.append(lookup_id_to_value(self.current_profile, col4, row4))
-    #                                                         if col4 == 'amount':
-    #                                                             service_payment_row.append(format_name(col4))
-    #                                                             service_payment_row.append(row4)
-    #                                                          # if service type and amount are added create node
-    #                                                         if len(service_payment_row) == 3:
-    #
-    #                                                             child3 = QStandardItem('{} - {}: {}'.format(
-    #                                                                     *service_payment_row
-    #                                                                 )
-    #                                                             )
-    #                                                             child2.appendRow([child3])
-    #                                                 child1.appendRow([child2])
-    #
-    #                                     # for survey table
-    #                                     else:
-    #                                         if col[:-3] in pg_tables():
-    #                                             child2 =  QStandardItem(format_name(col[:-3]))
-    #                                             # If the table has foreign tables create tree
-    #                                             if data_from_id(row, col) is not None:
-    #                                                 for col2, row2 in data_from_id(row, col).items():
-    #                                                     if col2 != 'id': #hide ids
-    #                                                         # if column is a fk or lookup column
-    #                                                         if col2.find('_id') != -1:
-    #                                                             # if the column is foreign key column, create sub children
-    #                                                             # Foreign key tables this deep are not present for Turkana case
-    #                                                             # col is a lookup column
-    #                                                             if col2[:-3] not in pg_tables():
-    #                                                                 child3 = QStandardItem('{}: {}'.format(
-    #                                                                         format_name(col2[:-3]),
-    #                                                                         lookup_id_to_value(self.current_profile, col2, row2)
-    #                                                                     )
-    #                                                                 )
-    #                                                                 child2.appendRow([child3])
-    #                                                          # if it is other column show data as is
-    #                                                         else:
-    #                                                             child3 = QStandardItem('{}: {}'.format(
-    #                                                                     format_name(col2),
-    #                                                                     row2
-    #                                                                 )
-    #                                                             )
-    #                                                             child2.appendRow([child3])
-    #                                             child1.appendRow([child2])
-    #                                         # If not fk column
-    #                                         else:
-    #                                             child2 = QStandardItem('{}: {}'.format(
-    #                                                     format_name(col),
-    #                                                     row
-    #                                                 )
-    #                                             )
-    #                                             child1.appendRow([child2])
-    #                         parent.appendRow([child1])
-    #
-    # def add_steam(self, child, parent, str_record, parent_name=None, spatial_unit_id = None, external_table = None):
-    #     """
-    #     Creates a node with children into a parent node.
-    #     :param child: node to be added
-    #     :type QStandardItem
-    #     :param parent: node to hold the child
-    #     :type QStandardItem
-    #     :param str_record: data used to populate the tree
-    #     :type sqlalchemy result proxy
-    #     :param parent_name: The label to be added under parent.
-    #     :type: String
-    #     :param spatial_unit_id: The id of the selected feature
-    #     :type: Integer
-    #     :param external_table: list of external tables
-    #     using the feature id as foreign key.
-    #     :type: List
-    #     :return: None
-    #     """
-    #     parent.appendRow([child])
-    #     self.create_details_tree(str_record, child,  parent_name, spatial_unit_id, external_table)
 
     def expand_node(self, parent):
         """
@@ -1047,21 +673,26 @@ class DetailsTreeView(DetailsModel, DetailsDockWidgetHandler):
         """
         map = self.iface.mapCanvas()
         try:
+
             # Get the selected item text using the index
-            selected_item = self.model.itemFromIndex(index).text()
+            selected_item = self.model.itemFromIndex(index)
+            # Use mutli-select only when more than 1 items are selected.
+            if self.layer.selectedFeatures() < 2:
+                return
+            self.selected_root = selected_item
             # Split the text to get the key and value.
-            selected_item = selected_item.split()
-            selected_key = selected_item[0]
-            selected_value = selected_item[1]
+            selected_item_text = selected_item.text()
+
+            selected_value = selected_item.data()
             # If the first word is feature, expand & highlight.
-            if selected_key == "Feature":
+            if selected_item_text == format_name(self.spatial_unit.short_name):
                 self.view.expand(index)  # expand the item
                 # Clear any existing highlight
                 self.clear_sel_highlight()
                 # Insert highlight
                 # Create expression to target the selected feature
                 expression = QgsExpression(
-                    "\"id\"='" + selected_value + "'"
+                    "\"id\"='" + str(selected_value) + "'"
                 )
                 # Get feature iteration based on the expression
                 ft_iteration = self.layer.getFeatures(
@@ -1074,8 +705,9 @@ class DetailsTreeView(DetailsModel, DetailsDockWidgetHandler):
                     geom = feature.geometry()
                     self.sel_highlight = QgsHighlight(map, geom, self.layer)
 
-                    self.sel_highlight.setFillColor(QColor(255, 128, 0))
-                    self.sel_highlight.setWidth(3)
+                    self.sel_highlight.setFillColor(selection_color())
+                    self.sel_highlight.setWidth(4)
+                    self.sel_highlight.setColor(QColor(212,95,0, 255))
                     self.sel_highlight.show()
                     break
         except AttributeError:
@@ -1083,3 +715,167 @@ class DetailsTreeView(DetailsModel, DetailsDockWidgetHandler):
             pass
         except IndexError:
             pass
+
+    def steam_signals(self, entity):
+        self.edit_btn.clicked.connect(
+            lambda : self.edit_selected_steam(
+                entity
+            )
+        )
+        self.delete_btn.clicked.connect(
+            lambda : self.delete_selected_item(
+                entity
+            )
+        )
+
+    def steam_data(self, mode):
+        item = None
+        # One item is selected and number of feature is also 1
+        if len(self.layer.selectedFeatures()) == 1 and \
+                        len(self.view.selectedIndexes()) == 1:
+            index = self.view.selectedIndexes()[0]
+            item = self.model.itemFromIndex(index)
+            result = item.data()
+
+        # One item is selected on the map but not on the treeview
+        elif len(self.layer.selectedFeatures()) == 1 and \
+                        len(self.view.selectedIndexes()) == 0:
+            item = self.model.item(0, 0)
+            result = item.data()
+
+        # multiple features are selected but one treeview item is selected
+        elif len(self.layer.selectedFeatures()) > 1 and \
+                        len(self.view.selectedIndexes()) == 1:
+            item = self.selected_root
+            result = self.selected_root.data()
+        # multiple features are selected but no treeview item is selected
+        elif len(self.layer.selectedFeatures()) > 1 and \
+             len(self.view.selectedIndexes()) == 0:
+            result = 'Please, select an item to {}.'.format(mode)
+        else:
+            result = 'Please, select at least one feature to {}.'.format(mode)
+        if result is None:
+            print item
+            if item is None:
+                item = self.model.item(0, 0)
+                result = item.data()
+            else:
+                result = item.parent().data()
+        return result, item
+
+    def edit_selected_steam(self, entity):
+        id, item = self.steam_data('edit')
+        str_edit = None
+        if id is None:
+            return
+        if isinstance(id, str):
+            data_error = QApplication.translate('DetailsTreeView', id)
+            QMessageBox.warning(
+                self.iface.mainWindow(), "Edit Error", data_error
+            )
+            return
+        if item.text() == 'Social Tenure Relationship':
+           model = self.STR_models[id]
+           print item.text()
+           str_edit = True
+           ##TODO add STR wizard edit mode here.
+        else:
+            model = self.feature_models[id]
+
+            editor = EntityEditorDialog(
+                entity, model, self.iface.mainWindow()
+            )
+            editor.exec_()
+        #root = self.find_root(entity, id)
+        self.view.expand(item.index())
+        if not str_edit:
+            self.update_edited_steam(entity, id)
+        else:
+            self.update_edited_steam(self.social_tenure, id)
+
+    def delete_selected_item(self, entity):
+        str_edit = False
+        id, item = self.steam_data('delete')
+        if isinstance(id, str):
+            data_error = QApplication.translate(
+                'DetailsTreeView', id
+            )
+            QMessageBox.warning(
+                self.iface.mainWindow(),
+                'Delete Error',
+                data_error
+            )
+            return
+        if item.text() == 'Social Tenure Relationship':
+            str_edit = True
+            db_model = self.STR_models[id]
+        else:
+            db_model = self.feature_models[id]
+        delete_warning = QApplication.translate(
+            'DetailsTreeView',
+            'Are you sure you want to delete '
+            'the selected record(s)?\n'
+            'This action cannot be undone.'
+        )
+        delete_question = QMessageBox.warning(
+            self.iface.mainWindow(),
+            "Delete Warning",
+            delete_warning,
+            QMessageBox.Yes | QMessageBox.No
+        )
+        if delete_question == QMessageBox.Yes:
+            db_model.delete()
+
+
+            if str_edit:
+                del self.STR_models[id]
+            else:
+                self.removed_feature = id
+                del self.feature_models[id]
+
+            self.updated_removed_steam(str_edit, item)
+        else:
+            return
+
+    def update_edited_steam(self, entity, feature_id):
+
+        # remove rows before adding the updated ones.
+        self.layer.setSelectedFeatures(
+            self.feature_models.keys()
+        )
+        root = self.find_root(entity, feature_id)
+        if root is None:
+            return
+        self.view.selectionModel().select(
+            root.index(), self.view.selectionModel().Select
+        )
+        self.multi_select_highlight(root.index())
+
+    def find_root(self, entity, feature_id):
+        all_roots = self.model.findItems(
+            format_name(entity.short_name)
+        )
+        root = None
+        for item in all_roots:
+            if item.data() == feature_id:
+                root = item
+                break
+        return root
+
+    def updated_removed_steam(self, STR_edit, item):
+        if not STR_edit:
+            if len(self.feature_models) > 1:
+                self.refresh_layers()
+            feature_ids = self.feature_models.keys()
+            self.layer.setSelectedFeatures(
+                feature_ids
+            )
+        else:
+            item.removeRows(0, 2)
+            item.setText('No STR Definded')
+            no_str_icon = QIcon(
+                ':/plugins/stdm/images/icons/remove.png'
+            )
+            item.setIcon(no_str_icon)
+
+

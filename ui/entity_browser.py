@@ -49,9 +49,7 @@ from stdm.data.qtmodels import (
     BaseSTDMTableModel,
     VerticalHeaderSortFilterProxyModel
 )
-from stdm.settings.registryconfig import (
-    selection_color
-)
+
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
 from stdm.navigation import TableContentGroup
 from stdm.network.filemanager import NetworkFileManager

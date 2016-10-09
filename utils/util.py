@@ -376,6 +376,7 @@ def entity_display_columns(entity):
 
     return display_column
 
+
 def entity_searchable_columns(entity):
     """
     Returns searchable entity columns.

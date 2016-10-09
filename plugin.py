@@ -1384,26 +1384,14 @@ class STDMQGISLoader(object):
             status = importData.exec_()
             if status == 1:
                 if importData.geomClm.isEnabled():
-                    self.refresh_layers()
+                    canvas = self.iface.mapCanvas()
+                    active_layer = self.iface.activeLayer()
+                    if not active_layer is None:
+                        canvas.zoomToFullExtent()
+                        extent = active_layer.extent()
+                        canvas.setExtent(extent)
         except Exception as ex:
             LOGGER.debug(unicode(ex))
-
-    def refresh_layers(self):
-        """
-        Refresh all database layers.
-        :return: None
-        :rtype: NoneType
-        """
-        layers = qgis.utils.iface.legendInterface().layers()
-        for layer in layers:
-            layer.dataProvider().forceReload()
-            layer.triggerRepaint()
-        if not qgis.utils.iface.activeLayer() is None:
-            canvas = qgis.utils.iface.mapCanvas()
-            canvas.setExtent(
-                qgis.utils.iface.activeLayer().extent()
-            )
-            qgis.utils.iface.mapCanvas().refresh()
 
     def onExportData(self):
         """
