@@ -30,9 +30,7 @@ from qgis.core import (
     QgsMapLayerRegistry,
     QgsCoordinateReferenceSystem
 )
-from qgis.gui import (
-   QgsHighlight
-)
+
 from stdm.data.configuration import entity_model
 from stdm.data.configuration.columns import (
     GeometryColumn,
