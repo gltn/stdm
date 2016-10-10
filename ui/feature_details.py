@@ -52,6 +52,7 @@ from stdm.data.database import (
 from stdm.settings.registryconfig import (
     selection_color
 )
+
 from stdm.data.configuration import (
     entity_model
 )
@@ -368,6 +369,7 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
         :type class
         :return: None
         """
+        from stdm.ui.entity_browser import _EntityDocumentViewerHandler
         DetailsDockWidget.__init__(self, iface, spatial_unit_dock)
 
         DetailsModel.__init__(self)
@@ -382,6 +384,7 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
         self.layer_table = None
         self.entity = None
         self.feature_models = {}
+        self.party_models = {}
         self.STR_models = {}
         self.removed_feature = None
         self.selected_root = None
@@ -398,8 +401,15 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
         self.current_profile = current_profile()
         self.social_tenure = self.current_profile.social_tenure
         self.spatial_unit = self.social_tenure.spatial_unit
-
+        self.party = self.social_tenure.party
         self.view.setMinimumWidth(250)
+        self.doc_viewer_title = QApplication.translate(
+            'EntityBrowser',
+            'Document Viewer'
+        )
+        self.doc_viewer = _EntityDocumentViewerHandler(
+            self.doc_viewer_title, self.iface.mainWindow()
+        )
 
     def set_layer_entity(self):
         self.layer_table = self.get_layer_source(
@@ -451,7 +461,7 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
                     self.set_formatter()
                     #set formatter for social tenure relationship.
                     self.set_formatter(self.social_tenure)
-                    self.set_formatter(self.social_tenure.party)
+                    self.set_formatter(self.party)
                     # pull data, show treeview
                     active_layer.selectionChanged.connect(
                         self.show_tree
@@ -548,9 +558,9 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
 
         for i, (col, row) in enumerate(self.formatted_record.iteritems()):
             child = QStandardItem('{}: {}'.format(col, row))
-
+            child.setSelectable(False)
             parent.appendRow([child])
-            child.setSelectable(True)
+
             # Add Social Tenure Relationship steam as a last child
             if i == len(self.formatted_record)-1:
                 self.add_STR_child(parent, feature_id)
@@ -591,28 +601,33 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
                 STR_child = QStandardItem(
                     '{}: {}'.format(col, row)
                 )
-                STR_child.setSelectable(True)
+                STR_child.setSelectable(False)
                 str_root.appendRow([STR_child])
                 if i == len(self.formatted_record)-1:
                     self.add_party_child(
                         str_root, record.party_id
                     )
 
-    def add_party_steam(self, parent):
+    def add_party_steam(self, parent, party_id):
         party_icon = QIcon(
             ':/plugins/stdm/images/icons/table.png'
         )
-        title = format_name(self.social_tenure.party.short_name)
+        title = format_name(self.party.short_name)
         party_root = QStandardItem(party_icon, title)
+        party_root.setData(party_id)
         self.set_bold(party_root)
+
         parent.appendRow([party_root])
+        party_root.setEditable(False)
         return party_root
 
     def add_party_child(self, parent, party_id):
-        party_root = self.add_party_steam(parent)
-        db_model = entity_id_to_model(self.social_tenure.party, party_id)
+
+        db_model = entity_id_to_model(self.party, party_id)
+        self.party_models[party_id] = db_model
+        party_root = self.add_party_steam(parent, party_id)
         # add STR children
-        self.column_widget_registry(db_model, self.social_tenure.party)
+        self.column_widget_registry(db_model, self.party)
         for col, row in self.formatted_record.iteritems():
             party_child = QStandardItem('{}: {}'.format(col, row))
             party_child.setSelectable(False)
@@ -727,9 +742,16 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
                 entity
             )
         )
+        self.view_document_btn.clicked.connect(
+            lambda : self.view_steam_document(
+                entity
+            )
+        )
 
     def steam_data(self, mode):
         item = None
+        # if self.view.currentIndex().text() == format_name(self.party):
+        #     return None, None
         # One item is selected and number of feature is also 1
         if len(self.layer.selectedFeatures()) == 1 and \
                         len(self.view.selectedIndexes()) == 1:
@@ -755,7 +777,7 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
         else:
             result = 'Please, select at least one feature to {}.'.format(mode)
         if result is None:
-            print item
+
             if item is None:
                 item = self.model.item(0, 0)
                 result = item.data()
@@ -765,7 +787,8 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
 
     def edit_selected_steam(self, entity):
         id, item = self.steam_data('edit')
-        str_edit = None
+
+        feature_edit = True
         if id is None:
             return
         if isinstance(id, str):
@@ -774,11 +797,20 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
                 self.iface.mainWindow(), "Edit Error", data_error
             )
             return
+
         if item.text() == 'Social Tenure Relationship':
-           model = self.STR_models[id]
-           print item.text()
-           str_edit = True
-           ##TODO add STR wizard edit mode here.
+            model = self.STR_models[id]
+
+            feature_edit = False
+            ##TODO add STR wizard edit mode here.
+        elif item.text() == format_name(self.party.short_name):
+            feature_edit = False
+
+            model = self.party_models[id]
+            editor = EntityEditorDialog(
+                self.party, model, self.iface.mainWindow()
+            )
+            editor.exec_()
         else:
             model = self.feature_models[id]
 
@@ -788,7 +820,7 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
             editor.exec_()
         #root = self.find_root(entity, id)
         self.view.expand(item.index())
-        if not str_edit:
+        if feature_edit:
             self.update_edited_steam(entity, id)
         else:
             self.update_edited_steam(self.social_tenure, id)
@@ -809,8 +841,46 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
         if item.text() == 'Social Tenure Relationship':
             str_edit = True
             db_model = self.STR_models[id]
-        else:
+
+        elif item.text() == format_name(self.spatial_unit.short_name) and \
+            len(self.STR_models) == 0:
             db_model = self.feature_models[id]
+
+
+        elif (item.text() == format_name(self.spatial_unit.short_name) and
+            len(self.STR_models) > 0):
+
+            delete_warning = QApplication.translate(
+                'DetailsTreeView',
+                'You have to first delete the social tenure \n'
+                'relationship to delete the {} record.\n'.format(
+                    item.text()
+                )
+
+            )
+            QMessageBox.warning(
+                self.iface.mainWindow(),
+                'Delete Error',
+                delete_warning
+            )
+            return
+        elif item.text() == format_name(self.party.short_name) and \
+            len(self.STR_models) > 0:
+            delete_warning = QApplication.translate(
+                'DetailsTreeView',
+                'You have to first delete the social tenure \n'
+                'relationship to delete the {} record.\n'.format(
+                    item.text()
+                )
+            )
+            QMessageBox.warning(
+                self.iface.mainWindow(),
+                'Delete Error',
+                delete_warning
+            )
+            return
+        else:
+            return
         delete_warning = QApplication.translate(
             'DetailsTreeView',
             'Are you sure you want to delete '
@@ -825,7 +895,6 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
         )
         if delete_question == QMessageBox.Yes:
             db_model.delete()
-
 
             if str_edit:
                 del self.STR_models[id]
@@ -878,4 +947,38 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
             )
             item.setIcon(no_str_icon)
 
+    def view_steam_document(self, entity):
+        # Slot raised to show the document viewer for the selected entity
 
+        id, item = self.steam_data('edit')
+
+        if id is None:
+            return
+        if isinstance(id, str):
+            data_error = QApplication.translate('DetailsTreeView', id)
+            QMessageBox.warning(
+                self.iface.mainWindow(), "Edit Error", data_error
+            )
+            return
+        if item.text() == 'Social Tenure Relationship':
+            db_model = self.STR_models[id]
+        else:
+            db_model = self.feature_models[id]
+
+        if not db_model is None:
+            docs = db_model.documents
+            # Notify there are no documents for the selected doc
+            if len(docs) == 0:
+                msg = QApplication.translate(
+                    'EntityBrowser',
+                    'There are no supporting documents '
+                    'for the selected record.'
+                )
+
+                QMessageBox.warning(
+                    self,
+                    self.doc_viewer_title,
+                    msg
+                )
+            else:
+                self.doc_viewer.load(docs)
