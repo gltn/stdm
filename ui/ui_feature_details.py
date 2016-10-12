@@ -26,6 +26,7 @@ class Ui_DetailsDock(object):
     def setupUi(self, DetailsDock):
         DetailsDock.setObjectName(_fromUtf8("DetailsDock"))
         DetailsDock.resize(400, 300)
+        DetailsDock.setAllowedAreas(QtCore.Qt.AllDockWidgetAreas)
         self.dockWidgetContents = QtGui.QWidget()
         self.dockWidgetContents.setObjectName(_fromUtf8("dockWidgetContents"))
         self.verticalLayout = QtGui.QVBoxLayout(self.dockWidgetContents)
@@ -79,8 +80,11 @@ class Ui_DetailsDock(object):
 
     def retranslateUi(self, DetailsDock):
         DetailsDock.setWindowTitle(_translate("DetailsDock", "Feature Details", None))
+        self.edit_btn.setToolTip(_translate("DetailsDock", "Edit attribute details", None))
         self.edit_btn.setText(_translate("DetailsDock", "...", None))
+        self.delete_btn.setToolTip(_translate("DetailsDock", "Delete a record", None))
         self.delete_btn.setText(_translate("DetailsDock", "...", None))
+        self.view_document_btn.setToolTip(_translate("DetailsDock", "View record supporting documents", None))
         self.view_document_btn.setText(_translate("DetailsDock", "...", None))
 
 from stdm import resources_rc
