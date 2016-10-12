@@ -10,6 +10,9 @@
     <height>300</height>
    </rect>
   </property>
+  <property name="allowedAreas">
+   <set>Qt::AllDockWidgetAreas</set>
+  </property>
   <property name="windowTitle">
    <string>Feature Details</string>
   </property>
@@ -24,6 +27,9 @@
           <width>23</width>
           <height>22</height>
          </size>
+        </property>
+        <property name="toolTip">
+         <string>Edit attribute details</string>
         </property>
         <property name="text">
          <string>...</string>
@@ -47,6 +53,9 @@
           <width>23</width>
           <height>22</height>
          </size>
+        </property>
+        <property name="toolTip">
+         <string>Delete a record</string>
         </property>
         <property name="text">
          <string>...</string>
@@ -76,6 +85,9 @@
           <width>16777215</width>
           <height>16777215</height>
          </size>
+        </property>
+        <property name="toolTip">
+         <string>View record supporting documents</string>
         </property>
         <property name="text">
          <string>...</string>

@@ -223,7 +223,7 @@ class LayerSelectionHandler:
         """
         pass
 
-class DetailsModel:
+class DetailsDBHandler:
     def __init__(self):
 
         self._entity = None
@@ -358,7 +358,7 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
         )
 
 
-class DetailsTreeView(DetailsModel, DetailsDockWidget):
+class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
     def __init__(self, iface, spatial_unit_dock):
 
         """
@@ -372,7 +372,7 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
         from stdm.ui.entity_browser import _EntityDocumentViewerHandler
         DetailsDockWidget.__init__(self, iface, spatial_unit_dock)
 
-        DetailsModel.__init__(self)
+        DetailsDBHandler.__init__(self)
 
         self.spatial_unit_dock = spatial_unit_dock
 
@@ -386,6 +386,7 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
         self.feature_models = {}
         self.party_models = {}
         self.STR_models = {}
+        self.feature_STR_model = {}
         self.removed_feature = None
         self.selected_root = None
         self.model = QStandardItemModel()
@@ -430,6 +431,7 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
         """
         # Get the active layer.
         active_layer = self.iface.activeLayer()
+        # TODO fix feature_details_btn is deleted error.
         if active_layer is not None and \
                 self.spatial_unit_dock.feature_details_btn.isChecked():
             # if feature detail dock is not defined or hidden, create empty dock.
@@ -607,6 +609,7 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
                     self.add_party_child(
                         str_root, record.party_id
                     )
+        self.feature_STR_model[feature_id] = self.STR_models.keys()
 
     def add_party_steam(self, parent, party_id):
         party_icon = QIcon(
@@ -738,9 +741,7 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
             )
         )
         self.delete_btn.clicked.connect(
-            lambda : self.delete_selected_item(
-                entity
-            )
+            self.delete_selected_item
         )
         self.view_document_btn.clicked.connect(
             lambda : self.view_steam_document(
@@ -825,9 +826,10 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
         else:
             self.update_edited_steam(self.social_tenure, id)
 
-    def delete_selected_item(self, entity):
+    def delete_selected_item(self):
         str_edit = False
         id, item = self.steam_data('delete')
+
         if isinstance(id, str):
             data_error = QApplication.translate(
                 'DetailsTreeView', id
@@ -843,17 +845,18 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
             db_model = self.STR_models[id]
 
         elif item.text() == format_name(self.spatial_unit.short_name) and \
-            len(self.STR_models) == 0:
+            id not in self.feature_STR_model.keys():
             db_model = self.feature_models[id]
 
+        # if spatial unit is linked to STR, don't allow delete
+        elif item.text() == format_name(self.spatial_unit.short_name) and \
+                        id in self.feature_STR_model.keys():
 
-        elif (item.text() == format_name(self.spatial_unit.short_name) and
-            len(self.STR_models) > 0):
 
             delete_warning = QApplication.translate(
                 'DetailsTreeView',
                 'You have to first delete the social tenure \n'
-                'relationship to delete the {} record.\n'.format(
+                'relationship to delete the {} record.'.format(
                     item.text()
                 )
 
@@ -864,12 +867,12 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
                 delete_warning
             )
             return
-        elif item.text() == format_name(self.party.short_name) and \
-            len(self.STR_models) > 0:
+        # If it is party node, STR exists and don't allow delete.
+        elif item.text() == format_name(self.party.short_name):
             delete_warning = QApplication.translate(
                 'DetailsTreeView',
                 'You have to first delete the social tenure \n'
-                'relationship to delete the {} record.\n'.format(
+                'relationship to delete the {} record.'.format(
                     item.text()
                 )
             )
@@ -887,6 +890,7 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
             'the selected record(s)?\n'
             'This action cannot be undone.'
         )
+
         delete_question = QMessageBox.warning(
             self.iface.mainWindow(),
             "Delete Warning",
@@ -918,6 +922,7 @@ class DetailsTreeView(DetailsModel, DetailsDockWidget):
         self.view.selectionModel().select(
             root.index(), self.view.selectionModel().Select
         )
+        self.expand_node(root)
         self.multi_select_highlight(root.index())
 
     def find_root(self, entity, feature_id):
