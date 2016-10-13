@@ -38,11 +38,12 @@ from PyQt4.QtCore import (
     Qt
 )
 from qgis.gui import (
-   QgsHighlight
+    QgsHighlight
 )
 from qgis.core import (
     QgsFeatureRequest,
-    QgsExpression
+    QgsExpression,
+    QgsMapLayer
 )
 
 from stdm.settings import current_profile
@@ -83,28 +84,33 @@ class LayerSelectionHandler:
         id and code as key and value.
         :return: Dictionary
         """
-        layer = self.iface.activeLayer()
-        if self.feature_layer(layer):
-            try:
-                self.layer = self.iface.activeLayer()
-                selected_features = layer.selectedFeatures()
-                features = []
+        self.layer = self.iface.activeLayer()
+        if self.feature_layer(self.layer):
+           # try:
 
-                for feature in selected_features:
-                    features.append(feature["id"])
-                return features
-            except:
-                not_feature_table = QApplication.translate(
-                    'LayerSelectionHandler',
-                    'You have selected feature layer from view. '
-                    'Please select a feature layer that uses the '
-                    'main feature table.'
-                )
-                QMessageBox.information(
-                    self.iface.mainWindow(),
-                    'Feature Details Error',
-                    not_feature_table
-                )
+            selected_features = self.layer.selectedFeatures()
+            features = []
+            field_names = [field.name() for field in self.layer.pendingFields()]
+            for feature in selected_features:
+                if 'id' in field_names:
+                    features.append(feature['id'])
+            return features
+        else:
+            return None
+
+            # except Exception as ex:
+            #     print ex
+            #     not_feature_table = QApplication.translate(
+            #         'LayerSelectionHandler',
+            #         'You have selected feature layer from view. '
+            #         'Please select a feature layer that uses the '
+            #         'main feature table.'
+            #     )
+            #     QMessageBox.warning(
+            #         self.iface.mainWindow(),
+            #         'Feature Details Error',
+            #         not_feature_table
+            #     )
 
     def get_layer_source(self, layer):
         """
@@ -148,16 +154,17 @@ class LayerSelectionHandler:
         :type QGIS vectorlayer
         :return: Boolean
         """
-        layer_source = self.get_layer_source(active_layer)
-        if layer_source in spatial_tables():
+        #layer_source = self.get_layer_source(active_layer)
+        if active_layer.type() == QgsMapLayer.VectorLayer:
             return True
+
         else:
             not_feature_msg = QApplication.translate(
                 'FeatureDetails',
-                'You have selected a non-feature layer. '
-                'Please select a feature layer to view the details.'
+                'You have selected a raster layer. '
+                'Please select a vector layer to view the details.'
             )
-            QMessageBox.information(
+            QMessageBox.warning(
                 self.iface.mainWindow(),
                 "Error",
                 not_feature_msg
@@ -310,10 +317,11 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
 
         QDockWidget.__init__(self, iface.mainWindow())
         self.setupUi(self)
-        self.spatial_unit_dock = spatial_unit_dock
+        self.plugin = spatial_unit_dock
         self.iface = iface
         self.edit_btn.setDisabled(True)
         self.delete_btn.setDisabled(True)
+        self.view_document_btn.setDisabled(True)
         LayerSelectionHandler.__init__(self, iface, spatial_unit_dock)
         self.setBaseSize(300,5000)
 
@@ -354,12 +362,12 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
         :return: None
         """
         self.close_dock(
-            self.spatial_unit_dock.feature_details_btn
+            self.plugin.feature_details_act
         )
 
 
 class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
-    def __init__(self, iface, spatial_unit_dock):
+    def __init__(self, iface, plugin):
 
         """
         The method initializes the dockwidget.
@@ -370,11 +378,11 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :return: None
         """
         from stdm.ui.entity_browser import _EntityDocumentViewerHandler
-        DetailsDockWidget.__init__(self, iface, spatial_unit_dock)
+        DetailsDockWidget.__init__(self, iface, plugin)
 
         DetailsDBHandler.__init__(self)
 
-        self.spatial_unit_dock = spatial_unit_dock
+        self.plugin = plugin
 
         self.view = QTreeView()
         self.view.setSelectionBehavior(
@@ -421,8 +429,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 self.layer_table
             )
 
-        else:
-            self.treeview_error('The layer is not a spatial entity layer. ')
 
     def activate_feature_details(self, button_clicked=True):
         """
@@ -431,15 +437,15 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         """
         # Get the active layer.
         active_layer = self.iface.activeLayer()
-        # TODO fix feature_details_btn is deleted error.
+        # TODO fix feature_details_act is deleted error.
         if active_layer is not None and \
-                self.spatial_unit_dock.feature_details_btn.isChecked():
+                self.plugin.feature_details_act.isChecked():
             # if feature detail dock is not defined or hidden, create empty dock.
             if self is None or self.isHidden():
                 # if the selected layer is not a feature layer, show not
                 # feature layer. (implicitly included in the if statement).
                 if not self.feature_layer(active_layer):
-                    self.spatial_unit_dock.feature_details_btn.setChecked(False)
+                    self.plugin.feature_details_act.setChecked(False)
                     return
                 # If the selected layer is feature layer, get data and
                 # display treeview in a dock widget
@@ -451,7 +457,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                     self.init_dock()
                     self.add_tree_view()
                     self.model.clear()
-                    self.treeview_error(select_feature)
+                   # self.treeview_error(select_feature)
 
                     # enable the select tool
                     self.activate_select_tool()
@@ -473,14 +479,16 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             # if feature_detail dock is open, toggle close
             else:
                 self.close_dock(
-                    self.spatial_unit_dock.feature_details_btn
+                    self.plugin.feature_details_act
                 )
                 self.feature_details = None
+        # elif not button_clicked:
+        #     print self.feature_layer(active_layer)
         # if no active layer, show error message and uncheck the feature tool
         else:
             if button_clicked:
                 self.active_layer_check()
-            self.spatial_unit_dock.feature_details_btn.setChecked(False)
+            self.plugin.feature_details_act.setChecked(False)
 
     def add_tree_view(self):
         """
@@ -518,19 +526,28 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
     def disable_buttons(self, bool):
         self.edit_btn.setDisabled(bool)
         self.delete_btn.setDisabled(bool)
+        self.view_document_btn.setDisabled(bool)
 
     def show_tree(self):
-        selected_features = self.selected_features()
-        if len(selected_features) < 1:
-            self.reset_tree_view(True)
+
+        if self.selected_features() is None:
             return
+        layer_icon = QIcon(':/plugins/stdm/images/icons/layer.gif')
+
+        selected_features = self.selected_features()
+        ### add non entity layer for views and shape files.
+        if len(selected_features) < 1:
+            self.reset_tree_view()
+            self.add_non_entity_parent(layer_icon)
+            # self.reset_tree_view(True)
+            return
+
         if not self.entity is None:
             self.reset_tree_view()
             if len(selected_features) < 1:
                 self.disable_buttons(True)
                 return
 
-            layer_icon = QIcon(':/plugins/stdm/images/icons/layer.gif')
             roots = self.add_parent_tree(
                 layer_icon, format_name(self.entity.short_name)
             )
@@ -541,16 +558,47 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 db_model = entity_id_to_model(self.entity, id)
 
                 self.add_roots(db_model, root, id)
+        else:
+            self.add_non_entity_parent(layer_icon)
+
+    def add_non_entity_parent(self, layer_icon):
+        # layer = self.iface.activeLayer()
+        # if self.layer is None:
+        #     return
+        selected_features = self.layer.selectedFeatures()
+        field_names = [field.name() for field in self.layer.pendingFields()]
+        print field_names
+
+        for elem in selected_features:
+            parent = QStandardItem(
+                layer_icon,
+                format_name(self.layer.name())
+            )
+            feature_map = OrderedDict(
+                zip(field_names, elem.attributes())
+            )
+
+            for k, v, in feature_map.iteritems():
+                if k != 'id':
+                    child = QStandardItem('{}: {}'.format(
+                        format_name(k, False), v)
+                    )
+                    child.setSelectable(False)
+                    parent.appendRow([child])
+            self.model.appendRow(parent)
+            self.set_bold(parent)
+            self.expand_node(parent)
 
     def add_parent_tree(self, icon, title):
         roots = OrderedDict()
-        for feature_id in self.selected_features():
-            root = QStandardItem(icon, title)
-            root.setData(feature_id)
-            self.set_bold(root)
-            self.model.appendRow(root)
-            roots[feature_id] = root
-        return roots
+        if self.selected_features() is not None:
+            for feature_id in self.selected_features():
+                root = QStandardItem(icon, title)
+                root.setData(feature_id)
+                self.set_bold(root)
+                self.model.appendRow(root)
+                roots[feature_id] = root
+            return roots
 
     def add_roots(self, model, parent, feature_id):
         self.feature_models[feature_id] = model
