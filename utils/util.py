@@ -328,7 +328,7 @@ def date_from_string(str_val):
     """
     return datetime.strptime(str(str_val), '%Y-%m-%d').date()
 
-def format_name(attr):
+def format_name(attr, trim_id=True):
     """
     Formats the column names by removing id
     from lookups and fk columns and capitalize.
@@ -336,7 +336,7 @@ def format_name(attr):
     :param attr: column name
     :return: string - formatted column name
     """
-    if '_id' in attr:
+    if '_id' in attr and trim_id:
         if attr != 'national_id':
             display_name = attr[:-3]
             display_name = display_name.replace('_', ' ').title()

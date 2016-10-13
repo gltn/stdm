@@ -102,6 +102,8 @@ from mapping.utils import pg_layerNamesIDMapping
 from composer import ComposerWrapper
 from stdm.ui.progress_dialog import STDMProgressDialog
 
+from stdm.ui.feature_details import DetailsTreeView
+
 LOGGER = logging.getLogger('stdm')
 
 
@@ -677,6 +679,8 @@ class STDMQGISLoader(object):
 
 
     def loadModules(self):
+
+        self.details_tree_view = DetailsTreeView(self.iface, self)
         '''
         Define and add modules to the menu and/or toolbar using the module loader
         '''
@@ -768,6 +772,12 @@ class STDMQGISLoader(object):
         QApplication.translate("SpatialEditorAction","Spatial Unit Manager"), self.iface.mainWindow())
         self.spatialLayerManager.setCheckable(True)
 
+        #Spatial Layer Manager
+        self.feature_details_act = QAction(QIcon(":/plugins/stdm/images/icons/feature_details.png"), \
+        QApplication.translate("SpatialEditorAction","Spatial Entity Details"), self.iface.mainWindow())
+        self.feature_details_act.setCheckable(True)
+
+
         self.viewSTRAct = QAction(QIcon(":/plugins/stdm/images/icons/view_str.png"), \
         QApplication.translate("ViewSTRToolbarAction","View Social Tenure Relationship"),
         self.iface.mainWindow())
@@ -791,6 +801,11 @@ class STDMQGISLoader(object):
         self.docDesignerAct.triggered.connect(self.onDocumentDesigner)
         self.docGeneratorAct.triggered.connect(self.onDocumentGenerator)
         self.spatialLayerManager.triggered.connect(self.spatialLayerMangerActivate)
+        self.feature_details_act.triggered.connect(self.details_tree_view.activate_feature_details)
+
+        self.iface.currentLayerChanged.connect(
+            lambda :self.details_tree_view.activate_feature_details(False)
+        )
         contentMenu.triggered.connect(self.widgetLoader)
         self.wzdAct.triggered.connect(self.load_config_wizard)
         self.viewSTRAct.triggered.connect(self.onViewSTR)
@@ -823,6 +838,9 @@ class STDMQGISLoader(object):
 
         spatialLayerManagerCnt = ContentGroup.contentItemFromQAction(self.spatialLayerManager)
         spatialLayerManagerCnt.code = "4E945EE7-D6F9-4E1C-X4AA-0C7F1BC67224"
+
+        feature_details_cnt = ContentGroup.contentItemFromQAction(self.feature_details_act)
+        feature_details_cnt.code = '2adff3f8-bda9-49f9-b37d-caeed9889ab6'
 
         wzdConfigCnt = ContentGroup.contentItemFromQAction(self.wzdAct)
         wzdConfigCnt.code = "F16CA4AC-3E8C-49C8-BD3C-96111EA74206"
@@ -903,6 +921,10 @@ class STDMQGISLoader(object):
         self.spatialUnitManagerCntGroup.addContentItem(spatialLayerManagerCnt)
         self.spatialUnitManagerCntGroup.register()
 
+        self.feature_details_cnt_group = ContentGroup(username, self.feature_details_act)
+        self.feature_details_cnt_group.addContentItem(feature_details_cnt)
+        self.feature_details_cnt_group.register()
+
         self.wzdConfigCntGroup = ContentGroup(username, self.wzdAct)
         self.wzdConfigCntGroup.addContentItem(wzdConfigCnt)
         self.wzdConfigCntGroup.register()
@@ -951,6 +973,9 @@ class STDMQGISLoader(object):
 
         self.menubarLoader.addContent(self.spatialUnitManagerCntGroup)
         self.toolbarLoader.addContent(self.spatialUnitManagerCntGroup)
+
+        self.toolbarLoader.addContent(self.feature_details_cnt_group)
+        self.menubarLoader.addContent(self.feature_details_cnt_group)
 
         self.toolbarLoader.addContent(self.STRCntGroup)
         self.menubarLoader.addContent(self.STRCntGroup)
@@ -1600,6 +1625,9 @@ class STDMQGISLoader(object):
                 data.app_dbconn = None
             else:
                 self.profile_status_label.setText('')
+            # Remove parcel Details Dock
+            if self.details_tree_view:
+                self.details_tree_view.close()
             #Reset View STR Window
             if not self.viewSTRWin is None:
                 del self.viewSTRWin
