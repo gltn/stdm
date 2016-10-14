@@ -23,6 +23,8 @@ email                : stdm@unhabitat.org
 import re
 from collections import OrderedDict
 
+from PyQt4.QtCore import QDate
+from PyQt4.QtCore import QDateTime
 from PyQt4.QtGui import (
     QDockWidget,
     QMessageBox,
@@ -66,7 +68,8 @@ from stdm.ui.forms.editor_dialog import EntityEditorDialog
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
 from stdm.utils.util import (
     format_name,
-    entity_id_to_model
+    entity_id_to_model,
+    profile_spatial_tables
 
 )
 from ui_feature_details import Ui_DetailsDock
@@ -84,8 +87,7 @@ class LayerSelectionHandler:
         id and code as key and value.
         :return: Dictionary
         """
-        self.layer = self.iface.activeLayer()
-        if self.feature_layer(self.layer):
+        if self.stdm_layer(self.layer):
            # try:
 
             selected_features = self.layer.selectedFeatures()
@@ -96,21 +98,22 @@ class LayerSelectionHandler:
                     features.append(feature['id'])
             return features
         else:
+
             return None
 
-            # except Exception as ex:
-            #     print ex
-            #     not_feature_table = QApplication.translate(
-            #         'LayerSelectionHandler',
-            #         'You have selected feature layer from view. '
-            #         'Please select a feature layer that uses the '
-            #         'main feature table.'
-            #     )
-            #     QMessageBox.warning(
-            #         self.iface.mainWindow(),
-            #         'Feature Details Error',
-            #         not_feature_table
-            #     )
+    def non_stdm_layer_error(self):
+        not_feature_msg = QApplication.translate(
+            'FeatureDetails',
+            'You have selected a non-STDM layer. \n'
+            'Please select an STDM layer to view \n'
+            'the details.'
+        )
+
+        QMessageBox.warning(
+            self.iface.mainWindow(),
+            QApplication.translate('DetailsTreeView', 'Invalid Layer Error'),
+            not_feature_msg
+        )
 
     def get_layer_source(self, layer):
         """
@@ -119,7 +122,11 @@ class LayerSelectionHandler:
         :type QGIS vectorlayer
         :return: String or None
         """
+        if layer is None:
+            return None
         source = layer.source()
+        if source is None:
+            return
         vals = dict(re.findall('(\S+)="?(.*?)"? ', source))
         try:
             table = vals['table'].split('.')
@@ -143,32 +150,22 @@ class LayerSelectionHandler:
             )
             QMessageBox.critical(
                 self.iface.mainWindow(),
-                'Feature Details Error',
+                QApplication.translate('DetailsTreeView', 'Feature Details Error'),
                 no_layer_msg
             )
 
-    def feature_layer(self, active_layer):
+    def stdm_layer(self, active_layer):
         """
         Check whether the layer is feature layer or not.
         :param active_layer: The layer to be checked
         :type QGIS vectorlayer
         :return: Boolean
         """
-        #layer_source = self.get_layer_source(active_layer)
-        if active_layer.type() == QgsMapLayer.VectorLayer:
+        layer_source = self.get_layer_source(active_layer)
+        
+        if layer_source is not None:
             return True
-
         else:
-            not_feature_msg = QApplication.translate(
-                'FeatureDetails',
-                'You have selected a raster layer. '
-                'Please select a vector layer to view the details.'
-            )
-            QMessageBox.warning(
-                self.iface.mainWindow(),
-                "Error",
-                not_feature_msg
-            )
             return False
 
 
@@ -353,6 +350,7 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
         self.hide()
         self.clear_sel_highlight()
 
+
     def closeEvent(self, event):
         """
         On close of the dock window, this event is executed
@@ -365,6 +363,10 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
             self.plugin.feature_details_act
         )
 
+    def hideEvent(self, event):
+        self.close_dock(
+            self.plugin.feature_details_act
+        )
 
 class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
     def __init__(self, iface, plugin):
@@ -413,7 +415,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         self.party = self.social_tenure.party
         self.view.setMinimumWidth(250)
         self.doc_viewer_title = QApplication.translate(
-            'EntityBrowser',
+            'DetailsTreeView',
             'Document Viewer'
         )
         self.doc_viewer = _EntityDocumentViewerHandler(
@@ -435,60 +437,70 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         Action for showing feature details.
         :return:
         """
-        # Get the active layer.
-        active_layer = self.iface.activeLayer()
-        # TODO fix feature_details_act is deleted error.
-        if active_layer is not None and \
-                self.plugin.feature_details_act.isChecked():
-            # if feature detail dock is not defined or hidden, create empty dock.
-            if self is None or self.isHidden():
-                # if the selected layer is not a feature layer, show not
-                # feature layer. (implicitly included in the if statement).
-                if not self.feature_layer(active_layer):
-                    self.plugin.feature_details_act.setChecked(False)
-                    return
-                # If the selected layer is feature layer, get data and
-                # display treeview in a dock widget
-                else:
-                    select_feature = QApplication.translate(
-                        "STDMQGISLoader",
-                        "Please select a feature to view their details."
-                    )
-                    self.init_dock()
-                    self.add_tree_view()
-                    self.model.clear()
-                   # self.treeview_error(select_feature)
-
-                    # enable the select tool
-                    self.activate_select_tool()
-                    # set entity from active layer in the child class
-                    self.set_layer_entity()
-                    # set entity for the super class DetailModel
-                    self.set_entity(self.entity)
-                    # Registery column widget
-                    self.set_formatter()
-                    #set formatter for social tenure relationship.
-                    self.set_formatter(self.social_tenure)
-                    self.set_formatter(self.party)
-                    # pull data, show treeview
-                    active_layer.selectionChanged.connect(
-                        self.show_tree
-                    )
-                    self.steam_signals(self.entity)
-
-            # if feature_detail dock is open, toggle close
-            else:
-                self.close_dock(
-                    self.plugin.feature_details_act
-                )
-                self.feature_details = None
-        # elif not button_clicked:
-        #     print self.feature_layer(active_layer)
-        # if no active layer, show error message and uncheck the feature tool
-        else:
+        # Get and set the active layer.
+        self.layer = self.iface.activeLayer()
+        # if no active layer, show error message
+        # and uncheck the feature tool
+        if self.layer is None:
             if button_clicked:
                 self.active_layer_check()
             self.plugin.feature_details_act.setChecked(False)
+
+            return
+        # If the button is unchecked, close dock.
+        if not self.plugin.feature_details_act.isChecked():
+            self.close_dock(self.plugin.feature_details_act)
+            self.feature_details = None
+            return
+        # if the selected layer is not an stdm layer,
+        # show not feature layer.
+        if not self.stdm_layer(self.layer):
+            if button_clicked and self.isHidden():
+                # show popup message if dock is hidden and button clicked
+                self.non_stdm_layer_error()
+                self.plugin.feature_details_act.setChecked(False)
+            elif not button_clicked and not self.isHidden():
+                # show tree message if dock is open and button clicked
+                not_feature_msg = QApplication.translate(
+                    'FeatureDetails',
+                    'Please select an STDM layer to view \n'
+                    'the details.'
+                )
+                self.model.clear()
+                self.treeview_error(not_feature_msg)
+        # If the selected layer is feature layer, get data and
+        # display treeview in a dock widget
+        else:
+            self.prepare_for_selection()
+
+    def prepare_for_selection(self):
+        select_feature = 'Please select a feature ' \
+                         'to view their details.'
+        self.init_dock()
+        self.add_tree_view()
+        self.model.clear()
+        self.treeview_error(select_feature)
+        # enable the select tool
+        self.activate_select_tool()
+        self.update_tree_source(self.layer)
+
+    def update_tree_source(self, active_layer):
+        if active_layer.type() != QgsMapLayer.VectorLayer:
+            return
+        # set entity from active layer in the child class
+        self.set_layer_entity()
+        # set entity for the super class DetailModel
+        self.set_entity(self.entity)
+        # Registery column widget
+        self.set_formatter()
+        # set formatter for social tenure relationship.
+        self.set_formatter(self.social_tenure)
+        self.set_formatter(self.party)
+        # pull data, show treeview
+        active_layer.selectionChanged.connect(
+            self.show_tree
+        )
+        self.steam_signals(self.entity)
 
     def add_tree_view(self):
         """
@@ -518,6 +530,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             self.view.clicked.connect(
                 self.multi_select_highlight
             )
+        if features is None:
+            return
         # if there is at least one selected feature
         if len(features) > 0:
             self.add_tree_view()
@@ -529,36 +543,38 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         self.view_document_btn.setDisabled(bool)
 
     def show_tree(self):
-
         if self.selected_features() is None:
+            self.reset_tree_view()
+            not_supported = 'Spatial Details is not ' \
+                             'supported for this layer.'
+            self.treeview_error(not_supported)
             return
-        layer_icon = QIcon(':/plugins/stdm/images/icons/layer.gif')
-
         selected_features = self.selected_features()
         ### add non entity layer for views and shape files.
         if len(selected_features) < 1:
             self.reset_tree_view()
-            self.add_non_entity_parent(layer_icon)
-            # self.reset_tree_view(True)
+            self.disable_buttons(True)
             return
+        layer_icon = QIcon(':/plugins/stdm/images/icons/layer.gif')
 
+        if len(selected_features) < 1:
+            self.disable_buttons(True)
+            select_feature = 'You have not selected a feature.'
+            self.treeview_error(select_feature)
+            return
         if not self.entity is None:
             self.reset_tree_view()
-            if len(selected_features) < 1:
-                self.disable_buttons(True)
-                return
-
             roots = self.add_parent_tree(
                 layer_icon, format_name(self.entity.short_name)
             )
-            if roots is None:
-                return
 
             for id, root in roots.iteritems():
                 db_model = entity_id_to_model(self.entity, id)
 
                 self.add_roots(db_model, root, id)
         else:
+            self.reset_tree_view()
+            self.disable_buttons(True)
             self.add_non_entity_parent(layer_icon)
 
     def add_non_entity_parent(self, layer_icon):
@@ -567,7 +583,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         #     return
         selected_features = self.layer.selectedFeatures()
         field_names = [field.name() for field in self.layer.pendingFields()]
-        print field_names
 
         for elem in selected_features:
             parent = QStandardItem(
@@ -579,6 +594,10 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             )
 
             for k, v, in feature_map.iteritems():
+                if isinstance(v, QDate):
+                    v = v.toPyDate()
+                if isinstance(v, QDateTime):
+                    v = v.toPyDateTime()
                 if k != 'id':
                     child = QStandardItem('{}: {}'.format(
                         format_name(k, False), v)
@@ -591,14 +610,14 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
 
     def add_parent_tree(self, icon, title):
         roots = OrderedDict()
-        if self.selected_features() is not None:
-            for feature_id in self.selected_features():
-                root = QStandardItem(icon, title)
-                root.setData(feature_id)
-                self.set_bold(root)
-                self.model.appendRow(root)
-                roots[feature_id] = root
-            return roots
+        # if self.selected_features() is not None:
+        for feature_id in self.selected_features():
+            root = QStandardItem(icon, title)
+            root.setData(feature_id)
+            self.set_bold(root)
+            self.model.appendRow(root)
+            roots[feature_id] = root
+        return roots
 
     def add_roots(self, model, parent, feature_id):
         self.feature_models[feature_id] = model
@@ -843,7 +862,9 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         if isinstance(id, str):
             data_error = QApplication.translate('DetailsTreeView', id)
             QMessageBox.warning(
-                self.iface.mainWindow(), "Edit Error", data_error
+                self.iface.mainWindow(),
+                QApplication.translate('DetailsTreeView', 'Edit Error'),
+                data_error
             )
             return
 
@@ -884,7 +905,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             )
             QMessageBox.warning(
                 self.iface.mainWindow(),
-                'Delete Error',
+                QApplication.translate('DetailsTreeView', 'Delete Error'),
                 data_error
             )
             return
@@ -911,7 +932,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             )
             QMessageBox.warning(
                 self.iface.mainWindow(),
-                'Delete Error',
+                QApplication.translate('DetailsTreeView', 'Delete Error'),
                 delete_warning
             )
             return
@@ -926,7 +947,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             )
             QMessageBox.warning(
                 self.iface.mainWindow(),
-                'Delete Error',
+                QApplication.translate('DetailsTreeView', 'Delete Error'),
                 delete_warning
             )
             return
@@ -941,7 +962,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
 
         delete_question = QMessageBox.warning(
             self.iface.mainWindow(),
-            "Delete Warning",
+            QApplication.translate('DetailsTreeView', 'Delete Warning'),
             delete_warning,
             QMessageBox.Yes | QMessageBox.No
         )
@@ -1010,7 +1031,9 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         if isinstance(id, str):
             data_error = QApplication.translate('DetailsTreeView', id)
             QMessageBox.warning(
-                self.iface.mainWindow(), "Edit Error", data_error
+                self.iface.mainWindow(),
+                QApplication.translate('DetailsTreeView', 'Edit Error'),
+                data_error
             )
             return
         if item.text() == 'Social Tenure Relationship':
@@ -1029,7 +1052,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 )
 
                 QMessageBox.warning(
-                    self,
+                    self.iface.mainWindow(),
                     self.doc_viewer_title,
                     msg
                 )

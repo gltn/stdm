@@ -803,7 +803,7 @@ class STDMQGISLoader(object):
         self.spatialLayerManager.triggered.connect(self.spatialLayerMangerActivate)
         self.feature_details_act.triggered.connect(self.details_tree_view.activate_feature_details)
 
-        self.iface.currentLayerChanged.connect(
+        self.iface.mapCanvas().currentLayerChanged.connect(
             lambda :self.details_tree_view.activate_feature_details(False)
         )
         contentMenu.triggered.connect(self.widgetLoader)
@@ -1563,6 +1563,8 @@ class STDMQGISLoader(object):
             self.stdmInitToolbar.removeAction(self.changePasswordAct)
             self.stdmInitToolbar.removeAction(self.wzdAct)
             self.stdmInitToolbar.removeAction(self.spatialLayerManager)
+            self.feature_details_act.setChecked(False)
+            self.stdmInitToolbar.removeAction(self.feature_details_act)
             self.stdmInitToolbar.removeAction(self.contentAuthAct)
             self.stdmInitToolbar.removeAction(self.usersAct)
             self.stdmInitToolbar.removeAction(self.options_act)
@@ -1625,9 +1627,7 @@ class STDMQGISLoader(object):
                 data.app_dbconn = None
             else:
                 self.profile_status_label.setText('')
-            # Remove parcel Details Dock
-            if self.details_tree_view:
-                self.details_tree_view.close()
+
             #Reset View STR Window
             if not self.viewSTRWin is None:
                 del self.viewSTRWin
