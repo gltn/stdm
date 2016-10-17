@@ -104,6 +104,8 @@ from stdm.ui.progress_dialog import STDMProgressDialog
 
 from stdm.ui.feature_details import DetailsTreeView
 
+from stdm.ui.social_tenure_relationship.str_tree_view import STRTreeView
+
 LOGGER = logging.getLogger('stdm')
 
 
@@ -1307,18 +1309,21 @@ class STDMQGISLoader(object):
         defining a new social
         tenure relationship
         '''
-        try:
-            frmNewSTR = newSTRWiz(self)
-            frmNewSTR.exec_()
-        except Exception as ex:
-            QMessageBox.critical(
-                self.iface.mainWindow(),
-                QApplication.translate(
-                    "STDMPlugin",
-                    "Error Loading New STR Wizard"
-                ),
-                unicode(ex.message)
-            )
+        # try:
+            # frmNewSTR = newSTRWiz(self)
+            # frmNewSTR.exec_()
+        str_editor = STRTreeView(self.iface)
+        str_editor.open()
+
+        # except Exception as ex:
+        #     QMessageBox.critical(
+        #         self.iface.mainWindow(),
+        #         QApplication.translate(
+        #             "STDMPlugin",
+        #             "Error Loading New STR Wizard"
+        #         ),
+        #         unicode(ex.message)
+        #     )
 
     def onManageAdminUnits(self):
         '''

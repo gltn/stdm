@@ -515,6 +515,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :return:
         :rtype:
         """
+        print row_data
         data = [None] + row_data
         self.str_type_data.append(data)
         self.str_type_table.add_combobox(str_type_id, insert_row)
@@ -722,7 +723,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         Displays a file dialog for a user
         to specify a source document
         '''
-
         #Get last path for supporting documents
         last_path = last_document_path()
         if last_path is None:
@@ -1244,7 +1244,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 # loop per each number of documents
                 for k in range(number_of_docs):
                     # The number of jumps (to avoid duplication) when
-                    # looping though document objects
+                    # looping though document objects in multiple party
                     loop_increment = (k * no_of_party) + j
                     # append into the str obj
                     str_obj.documents.append(
@@ -1321,7 +1321,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 "Creating New STR"
             )
         )
-
 
         try:
 

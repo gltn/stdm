@@ -531,7 +531,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Render the geometry of the given spatial unit in the spatial view.
         :param row_id: Sqlalchemy object representing a feature.
         """
-
         self.tbPropertyPreview.draw_spatial_unit(model)
 
     def onTreeViewItemExpanded(self,modelindex):
