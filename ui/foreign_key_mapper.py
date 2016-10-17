@@ -303,7 +303,8 @@ class ForeignKeyMapper(QWidget):
 
         self._tbFKEntity.horizontalHeader().setResizeMode(QHeaderView.Interactive)
         self._tbFKEntity.verticalHeader().setVisible(True)
-        
+
+
     def databaseModel(self):
         '''
         Returns the database model that represents the foreign key entity.
@@ -562,7 +563,8 @@ class ForeignKeyMapper(QWidget):
         
     def _onRecordSelectedEntityBrowser(self, rec, row_number=-1):
         '''
-        Slot raised when the user has clicked the select button in the 'EntityBrowser' dialog
+        Slot raised when the user has clicked the select button
+        in the 'EntityBrowser' dialog
         to add the selected record to the table's list.
         Add the record to the foreign key table using the mappings.
         '''
@@ -603,14 +605,16 @@ class ForeignKeyMapper(QWidget):
 
     def _validate_unique_columns(self,model,exclude_row = -1):
         """
-        Loop through the attributes of the model to assert for existing row values that should be unique based on
+        Loop through the attributes of the model to assert
+        for existing row values that should be unique based on
         the configuration of unique columns.
         """
         for colIndex,replace in self._uniqueValueColIndices.items():
             attrName = self._dbmodel.displayMapping().keys()[colIndex]
             attrValue = getattr(model,attrName)
 
-            #Check to see if there are cell formatters so that the correct value is searched for in the model
+            # Check to see if there are cell formatters so
+            # that the correct value is searched for in the model
             if attrName in self._cell_formatters:
                 attrValue = self._cell_formatters[attrName](attrValue)
 
@@ -638,7 +642,8 @@ class ForeignKeyMapper(QWidget):
 
     def _insertModelToView(self, model_obj, row_number = -1):
         """
-        Insert the given database model instance into the view at the given row number position.
+        Insert the given database model instance into the view
+        at the given row number position.
         """
         if row_number == -1:
             row_number = self._tableModel.rowCount()
@@ -673,6 +678,47 @@ class ForeignKeyMapper(QWidget):
         self._tbFKEntity.resizeColumnsToContents()
 
         return row_number
+
+    def insert_model_to_table(self, model_obj, row_number=-1):
+        """
+         Insert the given database model instance into the view
+         at the given row number position.
+         """
+        if row_number == -1:
+            row_number = self._tableModel.rowCount()
+            self._tableModel.insertRows(row_number, 1)
+        # In some instances, we will need to get the model object with
+        # backrefs included else exceptions will be raised on missing
+        # attributes
+        q_objs = self._modelInstanceFromIds([model_obj.id])
+
+        if len(q_objs) == 0:
+            return
+
+        model_obj = q_objs[0]
+
+        for i, attr in enumerate(self._entity_attrs):
+            prop_idx = self._tableModel.index(row_number, i)
+            attr_val = getattr(model_obj, attr)
+
+            # Check if there are display formatters and apply if one exists
+            # for the given attribute.
+
+            if attr in self._cell_formatters:
+                formatter = self._cell_formatters[attr]
+                attr_val = formatter.format_column_value(attr_val)
+
+            self._tableModel.setData(prop_idx, attr_val)
+
+        self._tbFKEntity.resizeColumnsToContents()
+
+        return row_number
+
+    def remove_rows(self):
+        row_count = self._tbFKEntity.model().rowCount()
+
+        self._tbFKEntity.model().removeRows(0, row_count)
+
 
     def vector_layer(self):
         """
