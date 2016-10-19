@@ -73,7 +73,7 @@ class ComboBoxDelegate(QItemDelegate):
     def createEditor(self, parent, option, index):
         """
         Creates the combobox inside a parent.
-        :param parent: The container of the cobobox
+        :param parent: The container of the combobox
         :type parent: QWidget
         :param option:
         :type option:
@@ -87,10 +87,10 @@ class ComboBoxDelegate(QItemDelegate):
         str_combo.insertItem(0, " ")
         for id, type in self.str_type_set_data().iteritems():
             str_combo.addItem(type, id)
-
-        str_combo.setCurrentIndex(
-            self.str_type_id
-        )
+        if self.str_type_id is not None:
+            str_combo.setCurrentIndex(
+                self.str_type_id
+            )
 
         return str_combo
 

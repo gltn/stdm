@@ -409,6 +409,13 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         self.view.setEditTriggers(
             QAbstractItemView.NoEditTriggers
         )
+        self.view.setStyleSheet(
+            '''
+            QTreeView:!active {
+                selection-background-color: #72a6d9;
+            }
+            '''
+        )
         self.current_profile = current_profile()
         self.social_tenure = self.current_profile.social_tenure
         self.spatial_unit = self.social_tenure.spatial_unit

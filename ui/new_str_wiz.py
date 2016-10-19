@@ -515,7 +515,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :return:
         :rtype:
         """
-        print row_data
         data = [None] + row_data
         self.str_type_data.append(data)
         self.str_type_table.add_combobox(str_type_id, insert_row)
