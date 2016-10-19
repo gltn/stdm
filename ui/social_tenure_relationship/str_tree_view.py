@@ -11,7 +11,8 @@ from PyQt4.QtGui import (
     QStandardItem,
     QTreeView,
     QApplication,
-    QDialog
+    QDialog,
+    QAbstractItemView
 )
 from stdm.settings import current_profile
 from stdm.ui.sourcedocument import SourceDocumentManager
@@ -22,7 +23,7 @@ from str_components import (
     STRType,
     SupportingDocuments
 )
-from str_data import STRDataStore
+from str_data import STRDataStore, STRDBHandler
 
 class STRTreeView(QDialog, Ui_STREditor):
     PartyClicked = pyqtSignal()
@@ -50,10 +51,22 @@ class STRTreeView(QDialog, Ui_STREditor):
         QTimer.singleShot(22, self.init_party_component)
         self.tree_view.clicked.connect(self.bind_component_to_tree_view)
         self.tree_view.clicked.connect(self.sync_data)
+        self.tree_view.setEditTriggers(
+            QAbstractItemView.NoEditTriggers
+        )
+        self.tree_view.setStyleSheet(
+            '''
+            QTreeView:!active {
+                selection-background-color: #72a6d9;
+            }
+            '''
+        )
+        self.tree_view.setRootIsDecorated(True)
         self.splitter.isCollapsible(False)
         self.splitter.setSizes([220, 550])
         self.splitter.setChildrenCollapsible(False)
         self.buttonBox.accepted.connect(self.test_save_str)
+        self.buttonBox.accepted.connect(self.save_str)
         self.copied_party_row = OrderedDict()
 
 
@@ -91,9 +104,6 @@ class STRTreeView(QDialog, Ui_STREditor):
         )
 
     def init_supporting_documents(self):
-        # index = self.tree_view.currentIndex()
-        # current_item = self.tree_view_model.itemFromIndex(index)
-        # str_number = current_item.data()
         if self.supporting_doc_component is not None:
             return
         self.supporting_doc_component = SupportingDocuments(
@@ -101,6 +111,9 @@ class STRTreeView(QDialog, Ui_STREditor):
             self.doc_type_cbo,
             self.add_documents_btn,
             self.str_notification
+        )
+        self.supporting_doc_component.add_documents_btn.clicked.connect(
+            lambda :self.supporting_doc_component.on_upload_document()
         )
         self.set_str_doc_models()
 
@@ -155,7 +168,7 @@ class STRTreeView(QDialog, Ui_STREditor):
         item = QStandardItem(
             q_icon, name_text
         )
-        #unique_data = '{}-{}'.format(name, self.str_number)
+
         item.setData(self.str_number)
         str_root.appendRow([item])
 
@@ -163,9 +176,10 @@ class STRTreeView(QDialog, Ui_STREditor):
         self.str_number = self.str_number + 1
         self.str_node()
         if self.supporting_doc_component is not None:
-            self.supporting_doc_component.update_str_number(self.str_number)
-            self.supporting_doc_component.create_doc_tab()
-            self.supporting_doc_component.init_document_add()
+            pass
+            #self.supporting_doc_component.update_str_number(self.str_number)
+            #self.supporting_doc_component.update_container(self.str_number)
+            #self.supporting_doc_component.init_document_add(self.str_number)
 
     def remove_str_tree_node(self):
         indexes = self.tree_view.selectedIndexes()
@@ -179,58 +193,80 @@ class STRTreeView(QDialog, Ui_STREditor):
     def bind_component_to_tree_view(self, index):
         selected_item = self.tree_view_model.itemFromIndex(index)
         str_number = selected_item.data()
-        # data_store = self.data_store[str_number]
+        data_store = self.data_store[str_number]
 
         if selected_item.text() == 'Social Tenure Relationship {}'\
                 .format(str_number):
-            self.component_container.setCurrentIndex(0)
-            self.top_description.setCurrentIndex(0)
+            self.bind_str()
 
         if selected_item.text() == 'Party':
-            QTimer.singleShot(50, self.init_str_type_component)
-            QTimer.singleShot(50, self.init_spatial_unit_component)
-            self.component_container.setCurrentIndex(1)
-            self.top_description.setCurrentIndex(1)
+            self.bind_party()
 
-            self.party_component.party_fk_mapper.beforeEntityAdded.connect(
-                lambda model:self.set_party_data(model, self.data_store)
-            )
-            self.party_component.party_fk_mapper.afterEntityAdded.connect(
-                lambda model: self.set_str_type_data(self.data_store, 0, model)
-            )
 
         if selected_item.text() == 'Spatial Unit':
-            self.component_container.setCurrentIndex(2)
-            self.mirror_map.set_iface(self.iface)
-            self.mirror_map.load_web_map()
-
-            self.spatial_unit_component.spatial_unit_fk_mapper.\
-                beforeEntityAdded.connect(
-                lambda model: self.set_spatial_unit_data(
-                    model, self.data_store
-                )
-            )
-            self.top_description.setCurrentIndex(2)
+            self.bind_spatial_unit()
 
         if selected_item.text() == 'Tenure Type':
-            self.component_container.setCurrentIndex(3)
-            QTimer.singleShot(50, self.init_supporting_documents)
-            self.top_description.setCurrentIndex(3)
+            self.bind_tenure_type()
+
 
         if selected_item.text() == 'Supporting Documents':
-            self.component_container.setCurrentIndex(4)
-            self.top_description.setCurrentIndex(4)
-            self.supporting_doc_component.onUploadDocument.connect(
-                lambda model_objs: self.set_supporting_documents(
-                    model_objs, self.data_store
-                )
-            )
+            self.bind_supporting_documents(str_number)
 
+    def bind_str(self):
+        self.component_container.setCurrentIndex(0)
+        self.top_description.setCurrentIndex(0)
+
+    def bind_party(self):
+        QTimer.singleShot(50, self.init_str_type_component)
+        QTimer.singleShot(50, self.init_spatial_unit_component)
+        self.component_container.setCurrentIndex(1)
+        self.top_description.setCurrentIndex(1)
+        self.party_component.party_fk_mapper.beforeEntityAdded.connect(
+            lambda model: self.set_party_data(model, self.data_store)
+        )
+        self.party_component.party_fk_mapper.afterEntityAdded.connect(
+            lambda model, row_number: self.set_str_type_data(
+                self.data_store, 0, model.id, row_number
+            )
+        )
+
+
+    def bind_spatial_unit(self):
+        self.component_container.setCurrentIndex(2)
+        self.mirror_map.set_iface(self.iface)
+        self.mirror_map.load_web_map()
+        self.spatial_unit_component.spatial_unit_fk_mapper. \
+            beforeEntityAdded.connect(
+            lambda model: self.set_spatial_unit_data(
+                model, self.data_store
+            )
+        )
+        self.top_description.setCurrentIndex(2)
+
+    def bind_tenure_type(self):
+        self.component_container.setCurrentIndex(3)
+        QTimer.singleShot(50, self.init_supporting_documents)
+        self.top_description.setCurrentIndex(3)
+
+    def bind_supporting_documents(self, str_number):
+        self.component_container.setCurrentIndex(4)
+        self.top_description.setCurrentIndex(4)
+        self.doc_type_cbo.currentIndexChanged.connect(
+            lambda: self.supporting_doc_component.
+                update_container(str_number)
+        )
+        self.supporting_doc_component.onUploadDocument.connect(
+            lambda model_objs: self.set_supporting_documents(
+                model_objs, self.data_store
+            )
+        )
 
     def sync_data(self, index):
         selected_item = self.tree_view_model.itemFromIndex(index)
         str_number = selected_item.data()
         data_store = self.data_store[str_number]
+
 
         if selected_item.text() == 'Party':
             self.toggle_party_models(
@@ -245,7 +281,31 @@ class STRTreeView(QDialog, Ui_STREditor):
             self.toggle_str_type_models(data_store)
 
         if selected_item.text() == 'Supporting Documents':
-            self.toggle_supporting_doc_models(data_store, str_number)
+            self.toggle_supporting_doc(
+                data_store, str_number
+            )
+
+    def init_str_type_signal(self, data_store, party_id, row):
+        if self.str_type_component is None:
+            return
+        str_type_combos = self.str_type_component.str_type_combobox()
+        print str_type_combos
+
+        # str_type_combos[row].currentIndexChanged.connect(
+        #         lambda index: self.update_str_type_data(
+        #             index, data_store, party_id
+        #         )
+        #     )
+
+
+    def update_str_type_data(self, index, data_store, party_id):
+        str_combo = self.sender()
+        print str_combo
+
+        str_type_id = str_combo.itemData(index)
+
+        data_store.str_type[party_id] = str_type_id
+
     def get_table_data(self, table_view):
         model = table_view.model()
         table_data = []
@@ -253,11 +313,9 @@ class STRTreeView(QDialog, Ui_STREditor):
         table_data.append(model.data(
             spatial_unit_idx, Qt.DisplayRole
         ))
-        print table_data
 
     def toggle_party_models(self, fk_mapper, data_store):
         fk_mapper.remove_rows()
-
         for i, model_obj in enumerate(data_store.party.values()):
             fk_mapper.insert_model_to_table(
                 model_obj
@@ -266,13 +324,18 @@ class STRTreeView(QDialog, Ui_STREditor):
     def toggle_spatial_unit_models(self, fk_mapper, data_store):
         fk_mapper.remove_rows()
 
-        for i, model_obj in enumerate(data_store.spatial_unit.values()):
+        for i, model_obj in enumerate(
+                data_store.spatial_unit.values()
+        ):
             fk_mapper.insert_model_to_table(
                 model_obj
             )
 
     def toggle_str_type_models(self, data_store):
+        #self.set_str_type_combo_data(data_store)
+
         party_count = len(data_store.party)
+
         self.str_type_component.remove_table_data(
             self.str_type_component.str_type_table,
             party_count
@@ -280,15 +343,23 @@ class STRTreeView(QDialog, Ui_STREditor):
 
         for i, (party_id, str_type_id) in \
                 enumerate(data_store.str_type.iteritems()):
+
+            self.init_str_type_signal(data_store, party_id, i)
+            # print self.copied_party_row[party_id]
+            # print str_type_id
             self.str_type_component.add_str_type_data(
                 self.copied_party_row[party_id],
                 str_type_id,
                 i
             )
 
-    def toggle_supporting_doc_models(self, data_store, str_number):
-        self.supporting_doc_component.update_str_number(str_number)
-        self.supporting_doc_component.init_document_add()
+    def toggle_supporting_doc(self, data_store, str_number):
+
+        party_count = len(data_store.party)
+        # update party count
+        self.supporting_doc_component.party_count(party_count)
+        # update the current widget container widget to be used.
+        self.supporting_doc_component.update_container(str_number)
 
     def set_party_data(self, model, store):
         data_store_obj = self.current_data_store(store)
@@ -300,23 +371,44 @@ class STRTreeView(QDialog, Ui_STREditor):
         data_store_obj = self.current_data_store(store)
         data_store_obj.spatial_unit[model.id] = model
 
-    def set_str_type_data(self, store, str_type_id, model):
-        party_id = model.id
+    def set_str_type_data(
+            self, store, str_type_id, party_id, row_number
+    ):
+        """
+        Adds STR type rows using party records selected.
+        :param store:
+        :type store:
+        :param str_type_id:
+        :type str_type_id:
+        :param party_id:
+        :type party_id:
+        :param row_number:
+        :type row_number:
+        :return:
+        :rtype:
+        """
         data_store_obj = self.current_data_store(store)
+
         data_store_obj.str_type[party_id] = str_type_id
         row_data = self.str_type_component.copy_party_table(
             self.party_component.party_fk_mapper._tbFKEntity,
-            len(data_store_obj.str_type) - 1
+            row_number
         )
+        self.str_type_component.enable_str_type_combo(row_number)
 
         self.copied_party_row[party_id] = row_data
+
+      #  self.init_str_type_signal(data_store_obj, party_id)
+
+        # QTimer.singleShot(
+        #     50, lambda:
+        #     self.init_str_type_signal(data_store_obj, party_id)
+        # )
 
     def set_supporting_documents(self, model_objs, store):
         data_store_obj = self.current_data_store(store)
 
-        data_store_obj.supporting_document.extend(
-            model_objs
-        )
+        data_store_obj.supporting_document = model_objs
 
     def current_data_store(self, store):
         index = self.tree_view.currentIndex()
@@ -363,6 +455,11 @@ class STRTreeView(QDialog, Ui_STREditor):
         if selected_item.text() == 'Supporting Documents':
             pass
 
+    def save_str(self):
+        db_handler = STRDBHandler(self.data_store, self.str_model)
+        db_handler.save_str()
+
+
     def test_save_str(self):
         print self.data_store
         for key, value in self.data_store.iteritems():
@@ -370,3 +467,4 @@ class STRTreeView(QDialog, Ui_STREditor):
             print key, value.spatial_unit
             print key, value.str_type
             print key, value.supporting_document
+

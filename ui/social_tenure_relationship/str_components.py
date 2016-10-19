@@ -1,9 +1,11 @@
 from collections import OrderedDict
 from PyQt4.QtCore import (
     pyqtSignal,
-    QObject
+    QObject,
+    Qt,
+    QFileInfo,
+    QRegExp
 )
-from PyQt4.QtCore import Qt, QFileInfo
 
 from PyQt4.QtGui import (
     QVBoxLayout,
@@ -14,7 +16,8 @@ from PyQt4.QtGui import (
     QTabWidget,
     QScrollArea,
     QFrame,
-    QFileDialog
+    QFileDialog,
+    QComboBox
 )
 
 # from sqlalchemy import (
@@ -269,69 +272,13 @@ class SpatialUnit(ComponentUtility):
 
 class STRType(ComponentUtility):
     def __init__(self, container_widget, box, notification_bar):
+        #TODO capture str type data
         ComponentUtility.__init__(self, box)
         self.container_widget = container_widget
         self.container_box = box
         self.notification_bar = notification_bar
         self.str_type_data = []
         self.create_str_type_table()
-
-    # def init_str_type(
-    #         self, party_table, str_type_id=0, row=0
-    # ):
-    #     """
-    #     Initialize 'Social Tenure Type page.
-    #     :param str_type_id: The currently being
-    #     :param party_table: The party table view.
-    #     :type party_table: QTableView
-    #     edited STR type id.
-    #     :type str_type_id: Integer
-    #     :param row: The row to copy data to.
-    #     :type row: Integer
-    #     :return: None
-    #     :rtype: NoteType
-    #     """
-    #
-    #     # if self.str_edit_obj is None:
-    #     #     insert_row = len(self.sel_party) - 1
-    #     # else:
-    #     #insert_row = 0
-    #
-    #     row_data = self.copy_party_table(
-    #         row, party_table._tbFKEntity
-    #     )
-    #
-    #     self.add_str_type_data(
-    #         row_data,
-    #         str_type_id,
-    #         row
-    #     )
-    #
-    # def update_str_type_data(
-    #         self, row_data, str_type_id=0, row=0
-    # ):
-    #     """
-    #     Initialize 'Social Tenure Type page.
-    #     :param str_type_id: The currently being
-    #     :param party_table: The party table view.
-    #     :type party_table: QTableView
-    #     edited STR type id.
-    #     :type str_type_id: Integer
-    #     :param row: The row to copy data from.
-    #     :type row: Integer
-    #     :return: None
-    #     :rtype: NoteType
-    #     """
-    #
-    #     # if self.str_edit_obj is None:
-    #     #     insert_row = len(self.sel_party) - 1
-    #     # else:
-    #     #insert_row = 0
-    #     self.add_str_type_data(
-    #         row_data,
-    #         str_type_id,
-    #         row
-    #     )
 
     def add_str_type_data(
             self,
@@ -374,6 +321,7 @@ class STRType(ComponentUtility):
             party_row_data.append(model.data(
                 party_id_idx, Qt.DisplayRole
             ))
+        #self.enable_str_type_combo(row)
         return party_row_data
 
     def add_str_type_headers(self):
@@ -382,15 +330,6 @@ class STRType(ComponentUtility):
         headers comes from the selected entity.
         :param entity: The entity for which the table
         header is created for.
-        :type entity: Entity Object
-        :param table_data: The table data of the table view.
-        :type table_data: List
-        :param tableview: The tableview in which the header
-        is added in.
-        :type tableview: QTableView
-        :param str_type: A boolean whether the header is for
-        str_type or not.
-        :type str_type: Boolean
         :return: List of Table headers
         :rtype: List
         """
@@ -458,27 +397,45 @@ class STRType(ComponentUtility):
             openPersistentEditor(
             model.index(row, 0)
         )
-    #
-    # def str_type_add_signals(self, party_fk_mapper):
-    #     """
-    #     Initializes party signals.
-    #     :param party_table: The party table view
-    #     :type party_table: QTableView
-    #     :return: None
-    #     :rtype: NoneType
-    #     """
-    #     # party_table.beforeEntityAdded.connect(
-    #     #     lambda model_obj: self.set_model_obj(
-    #     #         model_obj, self.sel_party
-    #     #     )
-    #     # )
-    #
-    #     party_fk_mapper.afterEntityAdded.connect(
-    #         lambda model_obj, row: self.init_str_type(
-    #             party_fk_mapper, 0, row
-    #         )
-    #     )
 
+    def str_type_data(self):
+        """
+        Gets party and str_type data from str_type
+        page (page 3 of the wizard). It uses
+        get_table_data() method.
+        :return: A list containing a list of ids of
+        the selected str related table or str_type value.
+        :rtype: List
+        """
+        str_types = []
+        frozen_table = self.str_type_table.frozen_table_view
+        combo_boxes = frozen_table.findChildren(QComboBox)
+
+        for combo in combo_boxes:
+            index = combo.currentIndex()
+            str_type = combo.itemData(index)
+            str_types.append(str_type)
+
+
+        return str_types
+
+
+    def str_type_combobox(self):
+        """
+        Gets party and str_type data from str_type
+        page (page 3 of the wizard). It uses
+        get_table_data() method.
+        :return: A list containing a list of ids of
+        the selected str related table or str_type value.
+        :rtype: List
+        """
+
+        frozen_table = self.str_type_table.frozen_table_view
+
+        combo_boxes = frozen_table.findChildren(QComboBox)
+
+
+        return combo_boxes
 
 class SupportingDocuments(ComponentUtility):
     onUploadDocument = pyqtSignal(list)
@@ -489,9 +446,9 @@ class SupportingDocuments(ComponentUtility):
         self.notification_bar = notification_bar
         self.str_number = 1
         self.add_documents_btn = add_documents_btn
+        self.str_numbers = [1]
+        self.current_party_count = None
         self.init_documents()
-        self.init_document_add()
-
 
     def init_documents(self):
         """
@@ -508,51 +465,82 @@ class SupportingDocuments(ComponentUtility):
         self.doc_notice = NotificationBar(
             self.notification_bar
         )
-        self.doc_tab_data()
-        self.create_doc_tab()
 
-        self.doc_type_cbo.currentIndexChanged.connect(
-            self.init_document_add
-        )
+        self.create_doc_tab_populate_combobox()
+
         self.doc_type_cbo.currentIndexChanged.connect(
             self.match_doc_combo_to_tab
         )
         self.docs_tab.currentChanged.connect(
             self.match_doc_tab_to_combo
         )
-        self.add_documents_btn.clicked.connect(
-            self.on_upload_document
-        )
 
+    def party_count(self, count):
+        self.current_party_count = count
 
-    def create_doc_tab(self):
+    def create_doc_tab_populate_combobox(self):
+
+        self.doc_tab_data()
         self.docs_tab = QTabWidget()
         self.docs_tab_index = OrderedDict()
         for i, (id, doc) in enumerate(self.doc_types.iteritems()):
             self.docs_tab_index[doc] = i
+            # the tab widget containing the document widget layout
+            # and the child of the tab.
             tab_widget = QWidget()
             tab_widget.setObjectName(doc)
-
+            # The layout of the tab widget
             cont_layout = QVBoxLayout(tab_widget)
-            cont_layout.setObjectName('widget_layout_' + doc)
-            scrollArea = QScrollArea(tab_widget)
-            scrollArea.setFrameShape(QFrame.NoFrame)
-            scrollArea_contents = QWidget()
-            scrollArea_contents.setObjectName(
-                'tab_scroll_area_' + doc
+            cont_layout.setObjectName(
+                'widget_layout_{}'.format(doc)
             )
-            tab_layout = QVBoxLayout(scrollArea_contents)
-            tab_layout.setObjectName('layout_{}{}'.format(doc, self.str_number))
-            scrollArea.setWidgetResizable(True)
-            scrollArea.setWidget(scrollArea_contents)
-            cont_layout.addWidget(scrollArea)
+            # the scroll area widget inside the tab widget.
+            scroll_area = QScrollArea(tab_widget)
+            scroll_area.setFrameShape(QFrame.NoFrame)
+            scroll_area.setObjectName(
+                'tab_scroll_area_{}'.format(doc)
+            )
 
+            layout_widget = QWidget()
+            # the widget the is under the scroll area content and
+            # the widget containing the document widget layout
+            # This widget is hidden and shown based on the STR number
+            layout_widget.setObjectName(
+                'widget_{}'.format(doc)
+            )
+
+            doc_widget_layout = QVBoxLayout(layout_widget)
+            doc_widget_layout.setObjectName(
+                'doc_widget_layout_{}'.format(
+                    doc
+                )
+            )
+            doc_widget = QWidget()
+            doc_widget.setObjectName(
+                'doc_widget_{}_{}'.format(doc, self.str_number)
+            )
+
+            doc_widget_layout.addWidget(doc_widget)
+
+            # the layout containing document widget.
+            ### This is the layout that is registered to add uploaded
+            # supporting documents widgets into.
+            tab_layout = QVBoxLayout(doc_widget)
+            tab_layout.setObjectName(
+                'layout_{}_{}'.format(doc, self.str_number)
+            )
+
+            scroll_area.setWidgetResizable(True)
+            scroll_area.setWidget(layout_widget)
+
+            cont_layout.addWidget(scroll_area)
+            # Add the tab widget with the document
+            # type name to create a tab.
             self.docs_tab.addTab(tab_widget, doc)
-            self.doc_type_cbo.addItem(doc, id)
-            self.container_box.addWidget(self.docs_tab, 1)
 
-    def update_str_number(self, str_number):
-        self.str_number = str_number
+            self.container_box.addWidget(self.docs_tab, 1)
+            if len(self.str_numbers) == 1:
+                self.doc_type_cbo.addItem(doc, id)
 
     def doc_tab_data(self):
         doc_entity = self.social_tenure. \
@@ -560,8 +548,13 @@ class SupportingDocuments(ComponentUtility):
         doc_type_model = entity_model(doc_entity)
         docs = doc_type_model()
         doc_type_list = docs.queryObject().all()
-        self.doc_types = [(doc.id, doc.value) for doc in doc_type_list]
+        self.doc_types = [(doc.id, doc.value)
+                          for doc in doc_type_list
+                          ]
         self.doc_types = OrderedDict(self.doc_types)
+
+
+
 
     def match_doc_combo_to_tab(self):
         """
@@ -585,23 +578,73 @@ class SupportingDocuments(ComponentUtility):
         doc_tab_index = self.docs_tab.currentIndex()
         self.doc_type_cbo.setCurrentIndex(doc_tab_index)
 
-    def init_document_add(self):
-        """
-        Initialize the supporting document page.
-        :return: None
-        :rtype: NoneType
-        """
+    def hide_doc_widgets(self, widget, visibility):
+        widget.setHidden(visibility)
+
+    def update_container(self, str_number):
+        ##TODO add a remove method or code block here
         doc_text = self.doc_type_cbo.currentText()
         cbo_index = self.doc_type_cbo.currentIndex()
         doc_id = self.doc_type_cbo.itemData(cbo_index)
-        layout = self.docs_tab.findChild(
-            QVBoxLayout, 'layout_{}{}'.format(doc_text, self.str_number)
+        scroll_area = self.docs_tab.findChild(
+            QScrollArea, 'tab_scroll_area_{}'.format(
+                doc_text, str_number
+            )
         )
-        print layout.objectName()
+        doc_widget = scroll_area.findChild(
+            QWidget, 'doc_widget_{}_{}'.format(
+                doc_text, str_number
+            )
+        )
+        # If the doc widget doesn't exist create it for new STR instance
+        if doc_widget is None:
+            # find the doc_widget layout that contains
+            # all STR doc widget layouts. Single
+            # doc_widget_layout is created for each document type.
+            # But all doc_widgets for each STR instance and
+            # document types will be added here.
+            doc_widget_layout =  scroll_area.findChild(
+                QVBoxLayout, 'doc_widget_layout_{}'.format(doc_text)
+            )
 
+            doc_widget = QWidget()
+            doc_widget.setObjectName(
+                'doc_widget_{}_{}'.format(doc_text, str_number)
+            )
+            self.hide_all_other_widget(doc_text, str_number)
+            doc_widget_layout.addWidget(doc_widget)
+            # Create the layout so that layouts are registered in
+            # which uploaded document widgets are added.
+            layout = QVBoxLayout(doc_widget)
+            layout.setObjectName('layout_{}_{}'.format(
+                    doc_text, str_number
+                )
+            )
+        # If the doc widget exists, get the lowest
+        # layout so that it is registered.
+        else:
+            # hide all other widgets
+            self.hide_all_other_widget(doc_text, str_number)
+            # show the current doc widget to display
+            # the document widgets for the current tab.
+            self.hide_doc_widgets(doc_widget, False)
+            layout = doc_widget.findChild(
+                QVBoxLayout, 'layout_{}_{}'.format(
+                    doc_text, str_number
+                )
+            )
+        # register layout
         self.supporting_doc_manager.registerContainer(
             layout, doc_id
         )
+
+    def hide_all_other_widget(self, doc_text, str_number):
+        expression = QRegExp('doc_widget*')
+        # hide all existing widgets in all layouts
+        for widget in self.docs_tab.findChildren(QWidget, expression):
+            if widget.objectName() != 'doc_widget_{}_{}'.format(
+                    doc_text, str_number):
+                self.hide_doc_widgets(widget, True)
 
     def on_upload_document(self):
         '''
@@ -616,17 +659,14 @@ class SupportingDocuments(ComponentUtility):
 
         cbo_index = self.doc_type_cbo.currentIndex()
         doc_id = self.doc_type_cbo.itemData(cbo_index)
-        #party_count = len(self.sel_party)
-        # TODO use self.sel_party
-        party_count = 1
+
         for doc in documents:
             self.supporting_doc_manager.insertDocumentFromFile(
                 doc,
                 doc_id,
                 self.social_tenure,
-                party_count
+                self.current_party_count
             )
-
 
         # Set last path
         if len(documents) > 0:
