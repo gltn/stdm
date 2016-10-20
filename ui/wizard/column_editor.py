@@ -145,6 +145,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.edtColName.setEnabled(not self.in_db)
         self.cboDataType.setEnabled(not self.in_db)
 
+        self.buttonBox.button(QtGui.QDialogButtonBox.Ok).clicked.connect(self.accept)
         self.buttonBox.button(QtGui.QDialogButtonBox.Cancel).clicked.connect(self.cancel)
 
     def column_to_form(self, column):
