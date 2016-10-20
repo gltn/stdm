@@ -94,7 +94,8 @@ from stdm.settings.template_updater import TemplateFileUpdater
 from stdm.utils.util import (
     getIndex,
     db_user_tables,
-    format_name
+    format_name,
+    setComboCurrentIndexWithText
 )
 from mapping.utils import pg_layerNamesIDMapping
 
@@ -136,6 +137,7 @@ class STDMQGISLoader(object):
         # STDM Tables
         self.stdmTables = []
 
+        self.stdm_config = StdmConfiguration.instance()
 
         self.spatialLayerMangerDockWidget = None
 
@@ -313,24 +315,26 @@ class STDMQGISLoader(object):
             if not config_load_status:
                 return
 
-            try:
-                #Set current profile
-                self.current_profile = current_profile()
+            # try:
 
-                self.loadModules()
-                self.default_profile()
-                self.run_wizard()
-                self._user_logged_in = True
+            #Set current profile
+            self.current_profile = current_profile()
 
-            except Exception as pe:
-                title = QApplication.translate(
-                    "STDMQGISLoader",
-                    "Error Loading Modules"
-                )
-                self.reset_content_modules_id(
-                    title,
-                    pe
-                )
+            self.loadModules()
+
+            self.default_profile()
+            self.run_wizard()
+            self._user_logged_in = True
+            #
+            # except Exception as pe:
+            #     title = QApplication.translate(
+            #         "STDMQGISLoader",
+            #         "Error Loading Modules"
+            #     )
+            #     self.reset_content_modules_id(
+            #         title,
+            #         pe
+            #     )
 
     def minimum_table_checker(self):
 
@@ -509,8 +513,7 @@ class STDMQGISLoader(object):
         :rtype: NoneType
         """
         if self.current_profile is None:
-            stdm_config = StdmConfiguration.instance()
-            profiles = stdm_config.profiles
+            profiles = self.stdm_config.profiles
 
             title = QApplication.translate(
                 "STDMQGISLoader",
@@ -721,6 +724,7 @@ class STDMQGISLoader(object):
         stdmEntityMenu.setTitle(QApplication.translate("STDMEntityMenu","Entities"))
 
         #Define actions
+
         self.contentAuthAct = QAction(
             QIcon(":/plugins/stdm/images/icons/content_auth.png"),
             QApplication.translate(
@@ -774,6 +778,8 @@ class STDMQGISLoader(object):
         self.ModuleAct = QAction(QIcon(":/plugins/stdm/images/icons/table_designer.png"),\
                     QApplication.translate("WorkspaceConfig","Entities"), self.iface.mainWindow())
 
+        # Add current profiles to profiles combobox
+        self.load_profiles_combobox()
 
         #Connect the slots for the actions above
         self.contentAuthAct.triggered.connect(self.contentAuthorization)
@@ -788,6 +794,7 @@ class STDMQGISLoader(object):
         contentMenu.triggered.connect(self.widgetLoader)
         self.wzdAct.triggered.connect(self.load_config_wizard)
         self.viewSTRAct.triggered.connect(self.onViewSTR)
+
 
         #Create content items
         contentAuthCnt = ContentGroup.contentItemFromQAction(self.contentAuthAct)
@@ -865,7 +872,7 @@ class STDMQGISLoader(object):
                 )
                 self.moduleContentGroups.append(moduleCntGroup)
 
-        #Create content groups and add items
+        # Create content groups and add items
         self.contentAuthCntGroup = ContentGroup(username)
         self.contentAuthCntGroup.addContentItem(contentAuthCnt)
         self.contentAuthCntGroup.setContainerItem(self.contentAuthAct)
@@ -925,7 +932,7 @@ class STDMQGISLoader(object):
         self.exportCntGroup.addContentItem(exportCnt)
         self.exportCntGroup.register()
 
-        #Add Design Forms menu and tool bar actions
+        # Add Design Forms menu and tool bar actions
         self.toolbarLoader.addContent(self.wzdConfigCntGroup)
         self.menubarLoader.addContent(self.wzdConfigCntGroup)
 
@@ -970,9 +977,44 @@ class STDMQGISLoader(object):
         self.toolbarLoader.loadContent()
         self.menubarLoader.loadContent()
 
+        # Add profiles_combobox in front of the configuration wizard
+        self.stdmInitToolbar.insertWidget(
+            self.wzdAct, self.profiles_combobox
+        )
+
         self.create_spatial_unit_manager()
 
         self.profile_status_message()
+
+    def load_profiles_combobox(self):
+        """
+        Create a combobox and load existing profiles.
+        """
+        self.profiles_combobox = QComboBox(self.iface.mainWindow())
+        if self.current_profile is None:
+            return
+
+        profile_names = self.stdm_config.profiles.keys()
+
+        self.profiles_combobox.clear()
+        self.profiles_combobox.addItems(profile_names)
+        self.profiles_combobox.setStyleSheet(
+            """
+            QComboBox {
+                border: 2px solid #4b85ca;
+                border-radius: 4px;
+                padding: 1px 18px 1px 3px;
+                width: 9em;
+            }
+            QFrame { border: 2px solid #4b85ca; }
+            """
+        )
+        setComboCurrentIndexWithText(
+            self.profiles_combobox, self.current_profile.name
+        )
+        self.profiles_combobox.currentIndexChanged[str].connect(
+            self.reload_plugin
+        )
 
     def _create_table_content_group(self, k, username, icon):
         content_action = QAction(
@@ -1342,26 +1384,14 @@ class STDMQGISLoader(object):
             status = importData.exec_()
             if status == 1:
                 if importData.geomClm.isEnabled():
-                    self.refresh_layers()
+                    canvas = self.iface.mapCanvas()
+                    active_layer = self.iface.activeLayer()
+                    if not active_layer is None:
+                        canvas.zoomToFullExtent()
+                        extent = active_layer.extent()
+                        canvas.setExtent(extent)
         except Exception as ex:
             LOGGER.debug(unicode(ex))
-
-    def refresh_layers(self):
-        """
-        Refresh all database layers.
-        :return: None
-        :rtype: NoneType
-        """
-        layers = qgis.utils.iface.legendInterface().layers()
-        for layer in layers:
-            layer.dataProvider().forceReload()
-            layer.triggerRepaint()
-        if not qgis.utils.iface.activeLayer() is None:
-            canvas = qgis.utils.iface.mapCanvas()
-            canvas.setExtent(
-                qgis.utils.iface.activeLayer().extent()
-            )
-            qgis.utils.iface.mapCanvas().refresh()
 
     def onExportData(self):
         """
@@ -1555,10 +1585,12 @@ class STDMQGISLoader(object):
             # Remove Spatial Unit Manager
             self.remove_spatial_unit_mgr()
             # Clear current profile status text
-
+            self.profiles_combobox.deleteLater()
+            self.profiles_combobox = None
             if reload == False:
                 self.profile_status_label.deleteLater()
                 self.profile_status_label = None
+
                 #Clear singleton ref for SQLAlchemy connections
                 if not data.app_dbconn is None:
                     STDMDb.cleanUp()

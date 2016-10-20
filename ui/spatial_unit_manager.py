@@ -44,25 +44,24 @@ from stdm.data.pg_utils import (
     pg_views
 )
 
-
 from stdm.ui.forms.spatial_unit_form import (
     STDMFieldWidget
 )
+from feature_details import DetailsTreeView
 
 from stdm.mapping.utils import pg_layerNamesIDMapping
 
 from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
 
-FORM_CLASS, _ = uic.loadUiType(
-    os.path.join(
-    os.path.dirname(__file__), 'ui_spatial_unit_manager.ui'))
 
 LOGGER = logging.getLogger('stdm')
+
 
 class SpatialUnitManagerDockWidget(
     QDockWidget, Ui_SpatialUnitManagerWidget
 ):
     onLayerAdded = pyqtSignal(str, object)
+
     def __init__(self, iface, plugin=None):
         """Constructor."""
         QDockWidget.__init__(self, iface.mainWindow())
@@ -74,14 +73,14 @@ class SpatialUnitManagerDockWidget(
         self.curr_lyr_table = None
         self.curr_lyr_sp_col = None
         self.curr_layer = None
-        self.setMaximumHeight(250)
+        self.setMaximumHeight(300)
         self._curr_profile = current_profile()
         self._profile_spatial_layers = []
         self.stdm_fields = STDMFieldWidget()
         self._populate_layers()
-
+        self.feature_details = DetailsTreeView(iface, self)
         self.spatial_unit = None
-        
+
         self.iface.currentLayerChanged.connect(
             self.control_digitize_toolbar
         )
@@ -91,15 +90,21 @@ class SpatialUnitManagerDockWidget(
         self.add_to_canvas_button.clicked.connect(
             self.on_add_to_canvas_button_clicked
         )
+        self.feature_details_btn.clicked.connect(
+            self.feature_details.activate_feature_details
+        )
+
+        self.iface.currentLayerChanged.connect(
+            lambda :self.feature_details.activate_feature_details(False)
+        )
 
     def _populate_layers(self):
         self.stdm_layers_combo.clear()
 
         if self._curr_profile is None:
-
             return
 
-        self.spatial_unit = self._curr_profile.\
+        self.spatial_unit = self._curr_profile. \
             social_tenure.spatial_unit
 
         # Get entities containing geometry
@@ -109,7 +114,7 @@ class SpatialUnitManagerDockWidget(
             ge for ge in config_entities.values()
             if ge.TYPE_INFO == 'ENTITY' and
             ge.has_geometry_column()
-        ]
+            ]
 
         self._profile_spatial_layers = []
         self.sp_tables = spatial_tables()
@@ -127,7 +132,7 @@ class SpatialUnitManagerDockWidget(
                         gc
                     )
 
-                #Add geometry entity to the collection
+                # Add geometry entity to the collection
                 self._profile_spatial_layers.append(
                     table_name
                 )
@@ -140,7 +145,7 @@ class SpatialUnitManagerDockWidget(
                 str_view, True
             )
             if len(self.str_view_geom_columns) > 0:
-                #Pick the first column
+                # Pick the first column
                 # geom_col = geom_columns[0]
                 for i, geom_col in enumerate(self.str_view_geom_columns):
                     if i > 0:
@@ -159,7 +164,7 @@ class SpatialUnitManagerDockWidget(
                         view_layer_name,
                         self._curr_profile.social_tenure
                     )
-                    #Append view to the list of spatial layers
+                    # Append view to the list of spatial layers
                     self._profile_spatial_layers.append(
                         view_layer_name
                     )
@@ -179,6 +184,7 @@ class SpatialUnitManagerDockWidget(
             except Exception:
                 pass
 
+
     def set_canvas_crs(self, layer):
         # Sets canvas CRS
         # get srid with EPSG text
@@ -191,7 +197,6 @@ class SpatialUnitManagerDockWidget(
             )
 
             self.iface.mapCanvas().mapRenderer().setDestinationCrs(layer_crs)
-
 
     def init_spatial_form(self, spatial_column, curr_layer):
         """
@@ -212,7 +217,7 @@ class SpatialUnitManagerDockWidget(
                 LOGGER.debug(unicode(ex))
 
     def _format_layer_display_name(self, col, table):
-        return u'{0}.{1}'.format(table,col)
+        return u'{0}.{1}'.format(table, col)
 
     def _add_geometry_column_to_combo(
             self, table_name, column_name, display, item
@@ -222,29 +227,28 @@ class SpatialUnitManagerDockWidget(
             'table_name': table_name,
             'column_name': column_name,
             'item': item}
-        )
+                                       )
 
         table = self.spatial_unit.name
         spatial_column = [
             c.name
             for c in self.spatial_unit.columns.values()
             if c.TYPE_INFO == 'GEOMETRY'
-        ]
+            ]
 
         spatial_unit_item = unicode(
-            table + '.'+spatial_column[0]
+            table + '.' + spatial_column[0]
         )
         index = self.stdm_layers_combo.findText(
             spatial_unit_item, Qt.MatchFixedString
         )
         if index >= 0:
-             self.stdm_layers_combo.setCurrentIndex(index)
-
+            self.stdm_layers_combo.setCurrentIndex(index)
 
     def _layer_info_from_table_column(
             self, table, column
     ):
-        #Returns the index and item
+        # Returns the index and item
         # data from the given table and column name
         idx, layer_info = -1, None
 
@@ -260,7 +264,7 @@ class SpatialUnitManagerDockWidget(
         return idx, layer_info
 
     def _geom_icon(self, table, column):
-        #Get column type and apply the appropriate icon
+        # Get column type and apply the appropriate icon
         geometry_typ = unicode(geometryType(table, column)[0])
 
         icon = None
@@ -299,7 +303,6 @@ class SpatialUnitManagerDockWidget(
             layer_name, Qt.MatchFixedString
         )
         if index >= 0:
-
             self.stdm_layers_combo.setCurrentIndex(index)
             # add spatial unit layer.
             self.on_add_to_canvas_button_clicked()
@@ -358,8 +361,7 @@ class SpatialUnitManagerDockWidget(
         table_name, spatial_column = sp_col_info["table_name"], \
                                      sp_col_info["column_name"]
 
-
-        #Check if the layer has already been
+        # Check if the layer has already been
         layer_item = sp_col_info.get('item', None)
 
         layer_name = self.geom_col_layer_name(
@@ -393,7 +395,7 @@ class SpatialUnitManagerDockWidget(
             self.toggle_entity_multi_layers(curr_layer)
 
             self.set_canvas_crs(curr_layer)
-            #Required in order for the layer name to be set
+            # Required in order for the layer name to be set
             QTimer.singleShot(
                 100,
                 lambda: self._set_layer_display_name(
@@ -408,7 +410,7 @@ class SpatialUnitManagerDockWidget(
                 "Spatial Unit Manager",
                 "'{0}.{1}' layer is invalid, it cannot "
                 "be added to the map view.".format(
-                    table_name,spatial_column
+                    table_name, spatial_column
                 )
             )
             QMessageBox.critical(
@@ -441,7 +443,7 @@ class SpatialUnitManagerDockWidget(
             column
             for column in entity.columns.values()
             if column.TYPE_INFO == 'GEOMETRY'
-        ]
+            ]
         return geom_column
 
     def same_entity_layers(self):
@@ -482,17 +484,15 @@ class SpatialUnitManagerDockWidget(
             layer_list
             for layer_list in self.same_entity_layers()
             if sel_lyr_name in layer_list
-        ]
-
+            ]
 
         str_view = self._curr_profile.social_tenure.view_name
 
         if len(layer_lists) < 1:
-
             geom_columns = table_column_names(
                 str_view, True
             )
-            layer_lists =  [geom_columns]
+            layer_lists = [geom_columns]
 
         return layer_lists
 
@@ -522,13 +522,13 @@ class SpatialUnitManagerDockWidget(
             # of the same entity
             if layer_name != sel_lyr_name:
 
-                layer_objects = QgsMapLayerRegistry.\
+                layer_objects = QgsMapLayerRegistry. \
                     instance().mapLayersByName(layer_name)
 
                 if len(layer_objects) > 0:
                     for layer in layer_objects:
                         layer_id = layer.id()
-                        QgsMapLayerRegistry.\
+                        QgsMapLayerRegistry. \
                             instance().removeMapLayer(layer_id)
             # Change the crs of the canvas based on the new layer
 
@@ -539,8 +539,6 @@ class SpatialUnitManagerDockWidget(
                     layer_list[0]
                 )
 
-
-
     def _set_layer_display_name(self, layer, name):
         try:
             layer.setLayerName(name)
@@ -548,7 +546,7 @@ class SpatialUnitManagerDockWidget(
             pass
 
     def _layer_table_column(self, layer):
-        #Returns the table and column name
+        # Returns the table and column name
         # that a layer belongs to.
         table, column = '', ''
 
@@ -581,7 +579,7 @@ class SpatialUnitManagerDockWidget(
             table_name = layer_names_ids.get(layer.id(), '')
 
             if table_name:
-                #Check if the table name is in the current profile
+                # Check if the table name is in the current profile
                 if table_name in self._profile_spatial_layers:
                     prompt = \
                         u"Set the display name for '{0}' layer".format(
@@ -594,7 +592,7 @@ class SpatialUnitManagerDockWidget(
                     )
 
                     if ok and display_name:
-                        #Get layer table and columns names
+                        # Get layer table and columns names
                         table, column = self._layer_table_column(layer)
                         if table and column:
                             idx, layer_info = \
@@ -602,7 +600,7 @@ class SpatialUnitManagerDockWidget(
                                     table,
                                     column
                                 )
-                            #Get item in the combo corresponding to the layer
+                            # Get item in the combo corresponding to the layer
                             if idx != -1:
                                 self.stdm_layers_combo.setItemText(
                                     idx,
@@ -610,13 +608,13 @@ class SpatialUnitManagerDockWidget(
                                 )
                                 layer.setLayerName(display_name)
 
-                                #Update configuration item
+                                # Update configuration item
                                 config_item = layer_info.get('item', None)
                                 if not config_item is None:
                                     config_item.layer_display_name = \
                                         display_name
 
-                                    #Update configuration
+                                    # Update configuration
                                     save_configuration()
 
                 else:
@@ -658,7 +656,6 @@ class SpatialUnitManagerDockWidget(
             )
             self.gps_tool_dialog.show()
 
-
     def closeEvent(self, event):
         """
         On close of the dock window, this event is executed
@@ -668,4 +665,3 @@ class SpatialUnitManagerDockWidget(
         :return: None
         """
         self._plugin.spatialLayerManager.setChecked(False)
-

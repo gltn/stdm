@@ -1,7 +1,6 @@
 <RCC>
   <qresource prefix="/plugins/stdm">
     <file>images/icons/warning_large.png</file>
-    <file>images/QGIS Splash.png</file>
     <file>images/icons/edit_settings.png</file>
     <file>images/icons/help-content.png</file>
     <file>images/icons/info.png</file>
@@ -93,5 +92,6 @@
     <file>images/icons/user_tip.png</file>
     <file>images/icons/select_record.png</file>
     <file>images/icons/hierarchy.png</file>
+    <file>images/icons/feature_details.png</file>
   </qresource>
 </RCC>

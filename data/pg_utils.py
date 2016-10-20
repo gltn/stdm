@@ -669,5 +669,3 @@ def drop_view(view_name):
     except SQLAlchemyError:
 
         return False
-
-
