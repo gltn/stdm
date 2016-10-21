@@ -82,6 +82,7 @@ class Profile(QObject):
         #Base entity for supporting documents within the profile
         self.supporting_document = SupportingDocument(self)
 
+        #Init STR
         self.social_tenure = self._create_social_tenure()
 
         self._admin_spatial_unit = AdministrativeSpatialUnit(self)
