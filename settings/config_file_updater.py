@@ -277,8 +277,8 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
 
             status, msg, line, col = doc.setContent(config_file_path)
             if not status:
-                error_message = u'Configuration file cannot be '
-                u'loaded: {0}'.format(msg)
+                error_message = u'Configuration file cannot be loaded: {0}'.\
+                    format(msg)
                 self.append_log(str(error_message))
 
                 raise ConfigurationException(error_message)
