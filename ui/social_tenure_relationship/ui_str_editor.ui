@@ -172,8 +172,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>328</width>
-           <height>439</height>
+           <width>220</width>
+           <height>418</height>
           </rect>
          </property>
          <property name="sizePolicy">
@@ -206,7 +206,7 @@
         <property name="currentIndex">
          <number>0</number>
         </property>
-        <widget class="QWidget" name="componentPage1" native="true">
+        <widget class="QWidget" name="componentPage1">
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
            <widget class="QLabel" name="str_introduction">
@@ -233,7 +233,13 @@
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="componentPage2"/>
+        <widget class="QWidget" name="componentPage2">
+         <layout class="QVBoxLayout" name="verticalLayout_16">
+          <item>
+           <layout class="QVBoxLayout" name="party_layout"/>
+          </item>
+         </layout>
+        </widget>
         <widget class="QWidget" name="componentPage3">
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
@@ -290,8 +296,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>631</width>
-               <height>427</height>
+               <width>100</width>
+               <height>30</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_12">
