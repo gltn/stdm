@@ -74,12 +74,26 @@ class ComponentUtility(QObject):
         :return:
         :rtype:
         """
-        fk_mapper = ForeignKeyMapper(config.ds_entity, parent, notif_bar)
+        fk_mapper = ForeignKeyMapper(
+            config.ds_entity, parent, notif_bar
+        )
         fk_mapper.setDatabaseModel(config.model())
         fk_mapper.setSupportsList(multi_row)
         fk_mapper.setDeleteonRemove(False)
         fk_mapper.setNotificationBar(notif_bar)
+
         return fk_mapper
+
+
+    def _entity_groups(self, type='STR'):
+        if type == 'STR':
+            str_entities = [
+                self.current_profile.social_tenure.party,
+                self.current_profile.social_tenure.spatial_unit
+            ]
+            return str_entities
+
+
 
     def _load_entity_config(self, entity):
         """
@@ -147,12 +161,46 @@ class ComponentUtility(QObject):
 
 
 class Party(ComponentUtility):
-    def __init__(self, box, notification_bar):
+    def __init__(self, selected_party, box, party_layout, notification_bar):
         ComponentUtility.__init__(self, box)
         self.container_box = box
+        self.party_layout = party_layout
         self.notification_bar = notification_bar
+        self.selected_party = selected_party
+
+        # self.party_group = [self.party, self.spatial_unit]
 
         self.init_party()
+        #self.party_entity_combo_signal()
+
+    #
+    # def party_entities(self):
+    #
+    #
+    # def party_entity_combo_signal(self):
+    #
+    #     self.party_fk_mapper.entity_combo.currentIndexChanged.connect(
+    #         self.switch_entity
+    #     )
+    #
+    #
+    # def switch_entity(self, index):
+    #     table = self.party_fk_mapper.entity_combo.itemData(index)
+    #     self.selected_party = self.current_profile.entity_by_name(table)
+    #
+    #     self.party_fk_mapper.setParent(None)
+    #
+    #     self.init_party()
+    #
+    #     #
+    #     #
+    #     # self.init_party_component(new_entity)
+    #
+    #
+    #     # vertical_layout = QVBoxLayout()
+    #     # self.party_layout.addWidget(self.party_component.party_fk_mapper)
+    #     #self.party_fk_mapper.show()
+
 
     def init_party(self):
         """
@@ -160,17 +208,29 @@ class Party(ComponentUtility):
         :returns:None
         :rtype: NoneType
         """
-        entity_config = self._load_entity_config(self.party)
+        #if index is None:
+
+        if self.selected_party is None:
+            entity_config = self._load_entity_config(self.party)
+        else:
+            entity_config = self._load_entity_config(self.selected_party)
+
         self.party_fk_mapper = self._create_fk_mapper(
             entity_config,
             self.container_box,
             self.notification_bar,
             self.social_tenure.multi_party
         )
-        vertical_layout = QVBoxLayout()
-        vertical_layout.addWidget(self.party_fk_mapper)
-        self.container_box.setLayout(vertical_layout)
-        #
+        # self.party_fk_mapper.show()
+        # self.party_fk_mapper.populate_entities_combo(self.party_group)
+        # vertical_layout = QVBoxLayout()
+        self.party_layout.addWidget(self.party_fk_mapper)
+        # self.party_fk_mapper.entity_combo.currentIndexChanged.connect(
+        #     self.switch_entity
+        # )
+
+        # self.container_box.setLayout(vertical_layout)
+
         # self.party_signals(party_fk_mapper)
         #
         # if not self.social_tenure.multi_party:
@@ -225,6 +285,8 @@ class Party(ComponentUtility):
         # )
 
 
+
+
 class SpatialUnit(ComponentUtility):
     def __init__(self, box, mirror_map, notification_bar):
         ComponentUtility.__init__(self, box)
@@ -271,13 +333,14 @@ class SpatialUnit(ComponentUtility):
 
 
 class STRType(ComponentUtility):
-    def __init__(self, container_widget, box, notification_bar):
+    def __init__(self, container_widget, box, notification_bar, party=None):
         #TODO capture str type data
         ComponentUtility.__init__(self, box)
         self.container_widget = container_widget
         self.container_box = box
         self.notification_bar = notification_bar
         self.str_type_data = []
+        self.selected_party = party
         self.create_str_type_table()
 
     def add_str_type_data(
@@ -301,7 +364,7 @@ class STRType(ComponentUtility):
 
         self.str_type_table.model().layoutChanged.emit()
 
-        self.enable_str_type_combo(insert_row)
+        #self.enable_str_type_combo(insert_row)
 
     def copy_party_table(self, table_view, row):
         """
@@ -324,6 +387,7 @@ class STRType(ComponentUtility):
         #self.enable_str_type_combo(row)
         return party_row_data
 
+
     def add_str_type_headers(self):
         """
         Adds headers data for tableview columns. The
@@ -333,6 +397,8 @@ class STRType(ComponentUtility):
         :return: List of Table headers
         :rtype: List
         """
+        if not self.selected_party is None:
+            self.party = self.selected_party
         db_model = entity_model(self.party, True)
         headers = []
         #Load headers
@@ -383,7 +449,6 @@ class STRType(ComponentUtility):
         #     self.container_box.addLayout(grid_layout)
         #     self.container_box.addWidget(self.str_type_table)
 
-
     def enable_str_type_combo(self, row):
         """
         Makes the STR Type combobox editable.
@@ -429,13 +494,21 @@ class STRType(ComponentUtility):
         the selected str related table or str_type value.
         :rtype: List
         """
-
         frozen_table = self.str_type_table.frozen_table_view
-
         combo_boxes = frozen_table.findChildren(QComboBox)
-
-
         return combo_boxes
+
+    def remove_str_type_row(self, rows=[0]):
+        """
+        Removes corresponding social tenure type
+        row when a party row is removed.
+        :param rows: Party row position that is removed.
+        :type rows: integer
+        :returns: None
+        :rtype: NoneType
+        """
+        for row in rows:
+            self.str_type_table.model().removeRow(row)
 
 class SupportingDocuments(ComponentUtility):
     onUploadDocument = pyqtSignal(list)

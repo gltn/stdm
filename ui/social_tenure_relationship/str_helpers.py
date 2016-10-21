@@ -336,6 +336,9 @@ class FreezeTableWidget(QTableView):
         self.frozen_table_view.model().setData(
             index, '', Qt.EditRole
         )
+        self.frozen_table_view.openPersistentEditor(
+            self.frozen_table_view.model().index(insert_row, 0)
+        )
 
     def update_section_width(
             self, logicalIndex, oldSize, newSize

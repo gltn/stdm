@@ -142,6 +142,7 @@ class ForeignKeyMapper(QWidget):
         from stdm.ui.entity_browser import EntityBrowser
 
         QWidget.__init__(self, parent)
+        self.current_profile = current_profile()
 
         self._entity = entity
         
@@ -175,16 +176,21 @@ class ForeignKeyMapper(QWidget):
         layout.setSpacing(4)
         layout.setMargin(5)
 
-        grid_layout = QGridLayout(self)
-        grid_layout.setHorizontalSpacing(5)
-        grid_layout.addWidget(self._add_entity_btn, 0, 0, 1, 1)
-        grid_layout.addWidget(self._filter_entity_btn, 0, 1, 1, 1)
-        grid_layout.addWidget(self._edit_entity_btn, 0, 2, 1, 1)
-        grid_layout.addWidget(self._delete_entity_btn, 0, 3, 1, 1)
-        grid_layout.setColumnStretch(4, 5)
+        self.grid_layout = QGridLayout(self)
+        self.grid_layout.setHorizontalSpacing(5)
+        self.grid_layout.addWidget(self._add_entity_btn, 0, 0, 1, 1)
+        self.grid_layout.addWidget(self._filter_entity_btn, 0, 1, 1, 1)
+        self.grid_layout.addWidget(self._edit_entity_btn, 0, 2, 1, 1)
+        self.grid_layout.addWidget(self._delete_entity_btn, 0, 3, 1, 1)
+        self.grid_layout.setColumnStretch(4, 5)
 
-        layout.addLayout(grid_layout)
+        layout.addLayout(self.grid_layout)
         layout.addWidget(self._tbFKEntity)
+        self.social_tenure = self.current_profile.social_tenure
+
+        # self.party_group = [self.social_tenure.party, self.social_tenure.spatial_unit]
+        # self.init_party_entity_combo()
+        #
 
         self._dbmodel = entity_model(entity)
         self._tableModel = None
@@ -216,6 +222,42 @@ class ForeignKeyMapper(QWidget):
         self._entitySelector.recordSelected.connect(
             self._onRecordSelectedEntityBrowser
         )
+    #
+    # def init_party_entity_combo(self):
+    #     self.entity_combo = QComboBox()
+    #     self.grid_layout.addWidget(self.entity_combo, 0, 6, 1, 1)
+    #    # self.party_layout.addWidget(self.entity_combo)
+    #     self.entity_combo.setMaximumWidth(100)
+    #     self.entity_combo.move(200, 20)
+    #     self.entity_combo.setVisible(True)
+    #     for entity in self.party_group:
+    #         self.entity_combo.addItem(
+    #             entity.short_name, entity.name
+    #         )
+    #
+    # def party_entity_combo_signal(self):
+    #
+    #     self.entity_combo.currentIndexChanged.connect(
+    #         self.switch_entity
+    #     )
+    #
+    #
+    # def switch_entity(self, index):
+    #     table = self.entity_combo.itemData(index)
+    #     new_entity = self.current_profile.entity_by_name(table)
+    #    # layout = self.componentPage2.findChild(QVBoxLayout)
+    #    #  print layout
+    #
+    #     self.party_component.party_fk_mapper.setParent(None)
+    #
+    #     self.party_component = None
+    #
+    #     self.init_party_component(new_entity)
+    #
+    #
+    #     # vertical_layout = QVBoxLayout()
+    #     self.party_layout.addWidget(self.party_component.party_fk_mapper)
+    #     self.party_component.party_fk_mapper.show()
 
     def _init_fk_columns(self):
         """
