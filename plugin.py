@@ -104,7 +104,7 @@ from stdm.ui.progress_dialog import STDMProgressDialog
 
 from stdm.ui.feature_details import DetailsTreeView
 
-from stdm.ui.social_tenure_relationship.str_tree_view import STRTreeView
+from stdm.ui.social_tenure.str_tree_view import STRTreeView
 
 LOGGER = logging.getLogger('stdm')
 
@@ -1312,7 +1312,7 @@ class STDMQGISLoader(object):
         # try:
             # frmNewSTR = newSTRWiz(self)
             # frmNewSTR.exec_()
-        str_editor = STRTreeView(self.iface)
+        str_editor = STRTreeView(self)
         str_editor.open()
 
         # except Exception as ex:

@@ -1093,7 +1093,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             summaryTreeLoader.addCollection(
                 spatial_unit_mapping,
                 QApplication.translate(
-                    "newSTRWiz", "Spatial Unit Information"),
+                    "newSTRWiz", "Spatial Unit Information"
+                ),
                 ":/plugins/stdm/images/icons/property.png"
             )
 

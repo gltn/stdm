@@ -172,6 +172,8 @@ class NotificationItem(QWidget,Ui_frmNotificationItem):
         '''
         Capture mouse release event when the user clicks to close the message
         '''
+        if QEvent is None:
+            return False
         if watched == self.lblClose and e.type() == QEvent.MouseButtonRelease:
             self.messageClosed.emit(self.code)
             self.deleteLater()

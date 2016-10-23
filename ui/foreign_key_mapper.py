@@ -188,10 +188,6 @@ class ForeignKeyMapper(QWidget):
         layout.addWidget(self._tbFKEntity)
         self.social_tenure = self.current_profile.social_tenure
 
-        # self.party_group = [self.social_tenure.party, self.social_tenure.spatial_unit]
-        # self.init_party_entity_combo()
-        #
-
         self._dbmodel = entity_model(entity)
         self._tableModel = None
         self._notifBar = notification_bar
@@ -222,42 +218,6 @@ class ForeignKeyMapper(QWidget):
         self._entitySelector.recordSelected.connect(
             self._onRecordSelectedEntityBrowser
         )
-    #
-    # def init_party_entity_combo(self):
-    #     self.entity_combo = QComboBox()
-    #     self.grid_layout.addWidget(self.entity_combo, 0, 6, 1, 1)
-    #    # self.party_layout.addWidget(self.entity_combo)
-    #     self.entity_combo.setMaximumWidth(100)
-    #     self.entity_combo.move(200, 20)
-    #     self.entity_combo.setVisible(True)
-    #     for entity in self.party_group:
-    #         self.entity_combo.addItem(
-    #             entity.short_name, entity.name
-    #         )
-    #
-    # def party_entity_combo_signal(self):
-    #
-    #     self.entity_combo.currentIndexChanged.connect(
-    #         self.switch_entity
-    #     )
-    #
-    #
-    # def switch_entity(self, index):
-    #     table = self.entity_combo.itemData(index)
-    #     new_entity = self.current_profile.entity_by_name(table)
-    #    # layout = self.componentPage2.findChild(QVBoxLayout)
-    #    #  print layout
-    #
-    #     self.party_component.party_fk_mapper.setParent(None)
-    #
-    #     self.party_component = None
-    #
-    #     self.init_party_component(new_entity)
-    #
-    #
-    #     # vertical_layout = QVBoxLayout()
-    #     self.party_layout.addWidget(self.party_component.party_fk_mapper)
-    #     self.party_component.party_fk_mapper.show()
 
     def _init_fk_columns(self):
         """
@@ -492,11 +452,16 @@ class ForeignKeyMapper(QWidget):
         Slot raised on clicking to remove the selected entity.
         '''
         selectedRowIndices = self._tbFKEntity.selectionModel().selectedRows(0)
+
         deleted_rows = []
         if len(selectedRowIndices) == 0:
-            msg = QApplication.translate("ForeignKeyMapper","Please select the record to be removed.")   
+            msg = QApplication.translate(
+                "ForeignKeyMapper",
+                "Please select the record to be removed."
+            )
             self._notifBar.clear()
             self._notifBar.insertWarningNotification(msg)
+            return
             
         for selectedRowIndex in selectedRowIndices:
             #Delete record from database if flag has been set to True
@@ -512,7 +477,9 @@ class ForeignKeyMapper(QWidget):
                     delRec.delete()
             
             self._removeRow(selectedRowIndex.row())
+
             deleted_rows.append(selectedRowIndex.row())
+
         self.deletedRows.emit(deleted_rows)
             
     def _recordIds(self):

@@ -542,6 +542,9 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         for deleting and opening a source
         document respectively.
         """
+        if QEvent is None:
+            return False
+
         if watched == self.lblClose and e.type() == QEvent.MouseButtonRelease:
             self.removeDocument()
             return True

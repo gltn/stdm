@@ -522,7 +522,10 @@ class BaseSTDMTableModel(QAbstractTableModel):
         self.beginRemoveRows(parent,position,position + count - 1)
 
         for i in range(count):
-            del self._initData[position]
+            try:
+                del self._initData[position]
+            except IndexError:
+                pass
 
         self.endRemoveRows()
 
