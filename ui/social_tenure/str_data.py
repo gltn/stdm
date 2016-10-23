@@ -5,6 +5,18 @@ QMessageBox,
 QProgressDialog
 )
 
+from qgis.utils import (
+    iface
+)
+
+from sqlalchemy import exc
+from stdm.data.database import (
+    STDMDb,
+    Base
+)
+
+from stdm.ui.progress_dialog import STDMProgressDialog
+
 
 class STRDataStore():
     def __init__(self):
@@ -26,15 +38,18 @@ class STRDataStore():
 
 class STRDBHandler():
     def __init__(
-            self,
-            data_store,
-            str_model,
-            str_edit_obj=None
+            self, data_store, str_model, str_edit_model=None
     ):
         self.str_model = str_model
         self.data_store = data_store
+        self.str_edit_obj = None
+        self.progress = STDMProgressDialog(iface.mainWindow())
 
-        self.str_edit_obj = str_edit_obj
+        self.str_edit_model = str_edit_model
+        if str_edit_model is not None:
+            self.str_edit_obj = str_edit_model.model()
+            self.str_doc_edit_obj = str_edit_model.documents()
+
 
     def on_add_str(self, str_store):
         """
@@ -45,6 +60,7 @@ class STRDBHandler():
         :return: None
         :rtype: NoneType
         """
+
         _str_obj = self.str_model()
         str_objs = []
 
@@ -59,7 +75,7 @@ class STRDBHandler():
         no_of_party = len(str_store.party)
         for j, (party_id, str_type_id) in \
                 enumerate(str_store.str_type.iteritems()):
-            # get all model objects
+            # get all doc model objects
             doc_objs = str_store.supporting_document
             # get the number of unique documents.
             number_of_docs = len(doc_objs) / no_of_party
@@ -85,16 +101,25 @@ class STRDBHandler():
 
             str_objs.append(str_obj)
             index = index + 1
-            #progress.setValue(index)
         _str_obj.saveMany(str_objs)
 
     def save_str(self):
+        if self.str_edit_obj is None:
+            for str_store in self.data_store.values():
+                self.on_add_str(str_store)
 
-        for i, str_store in self.data_store.iteritems():
-            self.on_add_str(str_store)
+        else:
+            if len(self.data_store) == 1:
+
+                updated_str_obj = self.on_edit_str(
+                    self.data_store[1]
+                )
+                return updated_str_obj
+            else:
+                return None
 
 
-    def on_edit_str(self, progress):
+    def on_edit_str(self, str_store):
         """
          Adds edits a selected STR record
          with a supporting document record, if uploaded.
@@ -103,26 +128,28 @@ class STRDBHandler():
          :return: None
          :rtype: NoneType
          """
-        _str_obj = self.str_model()
 
-        progress.setValue(3)
+        _str_obj = self.str_model()
 
         str_edit_obj = _str_obj.queryObject().filter(
             self.str_model.id == self.str_edit_obj.id
         ).first()
 
-        str_edit_obj.party_id = self.sel_party[0].id,
-        str_edit_obj.spatial_unit_id = self.sel_spatial_unit[0].id,
-        str_edit_obj.tenure_type = self.sel_str_type[0]
+        str_edit_obj.party_id = str_store.party.keys()[0],
+        str_edit_obj.spatial_unit_id = str_store.spatial_unit.keys()[0],
+        str_edit_obj.tenure_type = str_store.str_type.keys()[0]
 
-        progress.setValue(5)
-        added_doc_objs = self.source_doc_manager.model_objects()
+        # get all doc model objects
+        added_doc_objs = str_store.supporting_document
 
-        self.str_doc_edit_obj = [obj for obj in sum(self.str_doc_edit_obj.values(), [])]
+        #added_doc_objs = self.source_doc_manager.model_objects()
 
-        new_doc_objs = list(set(added_doc_objs) - set(self.str_doc_edit_obj))
+        self.str_doc_edit_obj = \
+            [obj for obj in sum(self.str_doc_edit_obj.values(), [])]
 
-        self.updated_str_obj = str_edit_obj
+        new_doc_objs = list(set(added_doc_objs) -
+                            set(self.str_doc_edit_obj))
+
         # Insert Supporting Document if a new
         # supporting document is uploaded.
         if len(new_doc_objs) > 0:
@@ -133,15 +160,10 @@ class STRDBHandler():
                 str_edit_obj.documents.append(
                     doc_obj
                 )
-        progress.setValue(7)
 
         str_edit_obj.update()
 
-        self.updated_str_obj = str_edit_obj
-
-        progress.setValue(10)
-
-        progress.hide()
+        return str_edit_obj
 
     def commit_str(self):
         """
@@ -152,78 +174,92 @@ class STRDBHandler():
         """
         isValid = True
         # Create a progress dialog
-        prog_dialog = QProgressDialog(self)
-        prog_dialog.setWindowTitle(
-            QApplication.translate(
-                "newSTRWiz",
-                "Creating New STR"
-            )
-        )
-
         try:
-
+            self.progress.setRange(0, len(self.data_store) - 1)
+            self.progress.show()
             if self.str_edit_obj is None:
-                prog_dialog.setRange(0, 4 + len(self.sel_party))
-                prog_dialog.show()
-                self.on_add_str(prog_dialog)
-            else:
-                prog_dialog.setRange(0, 10)
-                prog_dialog.show()
-                self.on_edit_str(prog_dialog)
+                self.progress.overall_progress(
+                    'Creating a STR...',
+                )
 
+                for i, str_store in enumerate(self.data_store.values()):
+                    self.progress.progress_message(
+                        'Saving STR {}'.format(i+1), ''
+                    )
+                    self.progress.setValue(i)
+
+                    self.on_add_str(str_store)
+
+            else:
+                self.progress.setValue(0)
+                self.progress.overall_progress(
+                    'Editing a STR...',
+                )
+                self.progress.progress_message('Updating STR', '')
+                updated_str_obj = self.on_edit_str(
+                    self.data_store[1]
+                )
+
+                self.progress.setValue(1)
+                return updated_str_obj
+            self.progress.hide()
             mode = 'created'
             if self.str_edit_obj is not None:
                 mode = 'updated'
-            strMsg = unicode(QApplication.translate(
-                "newSTRWiz",
+            strMsg = QApplication.translate(
+                "STRDBHandler",
                 "The social tenure relationship has "
                 "been successfully {}!".format(mode)
-            ))
+            )
             QMessageBox.information(
-                self, QApplication.translate(
-                    "newSTRWiz", "Social Tenure Relationship"
+                iface.mainWindow(), QApplication.translate(
+                    "STRDBHandler", "Social Tenure Relationship"
                 ),
                 strMsg
             )
 
-        except sqlalchemy.exc.OperationalError as oe:
+        except exc.OperationalError as oe:
             errMsg = oe.message
             QMessageBox.critical(
-                self,
+                iface.mainWindow(),
                 QApplication.translate(
-                    "newSTRWiz", "Unexpected Error"
+                    "STRDBHandler", "Unexpected Error"
                 ),
                 errMsg
             )
-            prog_dialog.hide()
+            self.progress.hide()
             isValid = False
+            STDMDb.instance().session.rollback()
 
-        except sqlalchemy.exc.IntegrityError as ie:
+        except exc.IntegrityError as ie:
             errMsg = ie.message
             QMessageBox.critical(
-                self,
+                iface.mainWindow(),
                 QApplication.translate(
-                    "newSTRWiz",
+                    "STRDBHandler",
                     "Duplicate Relationship Error"
                 ),
                 errMsg
             )
-            prog_dialog.hide()
+            self.progress.hide()
             isValid = False
+            STDMDb.instance().session.rollback()
 
         except Exception as e:
             errMsg = unicode(e)
             QMessageBox.critical(
-                self,
+                iface.mainWindow(),
                 QApplication.translate(
-                    'newSTRWiz', 'Unexpected Error'
+                    'STRDBHandler', 'Unexpected Error'
                 ),
                 errMsg
             )
 
             isValid = False
+            STDMDb.instance().session.rollback()
+            self.progress.hide()
         finally:
             STDMDb.instance().session.rollback()
-            prog_dialog.hide()
+            self.progress.hide()
 
         return isValid

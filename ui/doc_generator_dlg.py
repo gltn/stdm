@@ -34,7 +34,8 @@ from PyQt4.QtGui import (
 )
 from PyQt4.QtCore import (
     Qt,
-    QFileInfo
+    QFileInfo,
+    QTimer
 )
 
 from stdm.settings import current_profile
@@ -151,7 +152,8 @@ class DocumentGeneratorDialogWrapper(object):
 
         self.curr_profile = current_profile()
         #Load entity configurations
-        self._load_entity_configurations()
+        QTimer.singleShot(22, self._load_entity_configurations)
+        #self._load_entity_configurations()
 
     def _load_entity_configurations(self):
         """
@@ -189,7 +191,7 @@ class DocumentGeneratorDialogWrapper(object):
                             data_source=table_name,
                             model=model,
                             expression_builder=True,
-                            entity_selector=ForeignKeyBrowser)
+                            entity_selector=None)
 
         else:
             return None
@@ -669,11 +671,14 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         :param event: Window event
         :type event: QShowEvent
         """
+        QTimer.singleShot(500, self.check_entity_config)
+
+        return QDialog.showEvent(self, event)
+
+    def check_entity_config(self):
         if len(self._config_mapping) == 0:
             self._notif_bar.clear()
 
-            msg = QApplication.translate("DocumentGeneratorDialog","Table "
-                "configurations do not exist or have not been configured properly")
+            msg = QApplication.translate("DocumentGeneratorDialog", "Table "
+                                                                    "configurations do not exist or have not been configured properly")
             self._notif_bar.insertErrorNotification(msg)
-
-        return QDialog.showEvent(self, event)

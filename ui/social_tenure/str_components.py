@@ -37,7 +37,7 @@ from stdm.settings.registryconfig import (
     last_document_path,
     set_last_document_path
 )
-from stdm.ui.social_tenure_relationship.str_helpers import (
+from stdm.ui.social_tenure.str_helpers import (
     EntityConfig, FreezeTableWidget
 )
 
@@ -168,39 +168,7 @@ class Party(ComponentUtility):
         self.notification_bar = notification_bar
         self.selected_party = selected_party
 
-        # self.party_group = [self.party, self.spatial_unit]
-
         self.init_party()
-        #self.party_entity_combo_signal()
-
-    #
-    # def party_entities(self):
-    #
-    #
-    # def party_entity_combo_signal(self):
-    #
-    #     self.party_fk_mapper.entity_combo.currentIndexChanged.connect(
-    #         self.switch_entity
-    #     )
-    #
-    #
-    # def switch_entity(self, index):
-    #     table = self.party_fk_mapper.entity_combo.itemData(index)
-    #     self.selected_party = self.current_profile.entity_by_name(table)
-    #
-    #     self.party_fk_mapper.setParent(None)
-    #
-    #     self.init_party()
-    #
-    #     #
-    #     #
-    #     # self.init_party_component(new_entity)
-    #
-    #
-    #     # vertical_layout = QVBoxLayout()
-    #     # self.party_layout.addWidget(self.party_component.party_fk_mapper)
-    #     #self.party_fk_mapper.show()
-
 
     def init_party(self):
         """
@@ -221,71 +189,8 @@ class Party(ComponentUtility):
             self.notification_bar,
             self.social_tenure.multi_party
         )
-        # self.party_fk_mapper.show()
-        # self.party_fk_mapper.populate_entities_combo(self.party_group)
-        # vertical_layout = QVBoxLayout()
+
         self.party_layout.addWidget(self.party_fk_mapper)
-        # self.party_fk_mapper.entity_combo.currentIndexChanged.connect(
-        #     self.switch_entity
-        # )
-
-        # self.container_box.setLayout(vertical_layout)
-
-        # self.party_signals(party_fk_mapper)
-        #
-        # if not self.social_tenure.multi_party:
-
-        #     self.resize_to_single_row(
-        #         party_fk_mapper, self.verticalLayout_2
-        #     )
-    #
-    # def party_signals(self, party_table):
-    #     """
-    #     Initializes party signals.
-    #     :param party_table: The party table view
-    #     :type party_table: QTableView
-    #     :return: None
-    #     :rtype: NoneType
-    #     """
-    #     # party_table.beforeEntityAdded.connect(
-    #     #     lambda model_obj: self.set_model_obj(
-    #     #         model_obj, self.sel_party
-    #     #     )
-    #     # )
-    #
-    #     party_table.afterEntityAdded.connect(
-    #         lambda model_obj, row: self.init_str_type(
-    #             party_table, 0, row
-    #         )
-    #     )
-        #
-        # # Clear str type table data if multi-party is
-        # #  not allowed or on editing mode
-        # if not self.social_tenure.multi_party or \
-        #     self.str_edit_obj is not None:
-        #     party_table.beforeEntityAdded.connect(
-        #         lambda : self.erase_table_data(
-        #             party_table._tbFKEntity
-        #         )
-        #     )
-        #
-        # if self.str_edit_obj is not None:
-        #     party_table.beforeEntityAdded.connect(
-        #         lambda: self.erase_table_data(
-        #             self.str_type_table
-        #         )
-        #     )
-        #
-        # party_table.deletedRows.connect(
-        #     self.remove_str_type_row
-        # )
-        #
-        # party_table.deletedRows.connect(
-        #     lambda rows: self.remove_model(rows, self.sel_party)
-        # )
-
-
-
 
 class SpatialUnit(ComponentUtility):
     def __init__(self, box, mirror_map, notification_bar):
@@ -312,17 +217,6 @@ class SpatialUnit(ComponentUtility):
         vertical_layout = QVBoxLayout()
         vertical_layout.addWidget(self.spatial_unit_fk_mapper)
         self.container_box.setLayout(vertical_layout)
-        #
-        # self.spatial_unit_signals(spatial_unit_fk_mapper)
-        #
-        # if not self.social_tenure.multi_spatial_unit:
-        #     self.resize_to_single_row(
-        #         spatial_unit_fk_mapper, self.verticalLayout_2
-        #     )
-    # def spatial_unit_init_signals(self, party_fk_mapper):
-    #     party_fk_mapper.afterEntityAdded.connect(
-    #         lambda model_obj, row: self.init_spatial_unit()
-    #     )
 
     def draw_spatial_unit(self, model):
         """
@@ -423,9 +317,7 @@ class STRType(ComponentUtility):
         of each selected party rows with a combobox for
         social tenure type.
         """
-        self.str_type_notice = NotificationBar(
-            self.notification_bar
-        )
+
         headers = self.add_str_type_headers()
 
         self.str_type_table = FreezeTableWidget(
@@ -445,9 +337,6 @@ class STRType(ComponentUtility):
         grid_layout.setColumnStretch(4, 5)
         self.container_box.addLayout(grid_layout)
         self.container_box.addWidget(self.str_type_table)
-        # if len(self.sel_party) < 1:
-        #     self.container_box.addLayout(grid_layout)
-        #     self.container_box.addWidget(self.str_type_table)
 
     def enable_str_type_combo(self, row):
         """
@@ -480,7 +369,6 @@ class STRType(ComponentUtility):
             index = combo.currentIndex()
             str_type = combo.itemData(index)
             str_types.append(str_type)
-
 
         return str_types
 
@@ -534,9 +422,6 @@ class SupportingDocuments(ComponentUtility):
             self.social_tenure.supporting_doc,
             self.str_doc_model,
             iface.mainWindow()
-        )
-        self.doc_notice = NotificationBar(
-            self.notification_bar
         )
 
         self.create_doc_tab_populate_combobox()

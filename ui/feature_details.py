@@ -75,6 +75,7 @@ from stdm.utils.util import (
 from ui_feature_details import Ui_DetailsDock
 
 class LayerSelectionHandler:
+    ##TODO fix duplicate feature details dock on profile switch
     def __init__(self, iface, plugin):
         self.layer = None
         self.iface = iface

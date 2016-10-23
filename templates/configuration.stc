@@ -69,7 +69,6 @@
    </ValueList>
    <ValueList name="check_utilities">
     <CodeValue value="Water" code=""/>
-    <CodeValue value="Toilet" code=""/>
     <CodeValue value="Electricity" code=""/>
    </ValueList>
   </ValueLists>
