@@ -275,21 +275,25 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         :return: Boolean
         """
         if self.active_layer_check():
-            layer_source = self.get_layer_source(active_layer)
-            if layer_source == self.spatial_unit.name:
-                return True
-            else:
-                not_sp_msg = QApplication.translate(
-                    'SpatialPreview',
-                    'You have selected a non-spatial_unit layer. '
-                    'Please select a spatial unit layer to preview.'
-                )
-                QMessageBox.information(
-                    self._iface.mainWindow(),
-                    "Error",
-                    not_sp_msg
-                )
-                return
+            layers = self.iface().legendInterface().layers()
+
+            for layer in layers:
+                layer_source = self.get_layer_source(layer)
+                if layer_source == self.spatial_unit.name:
+                    self.iface().setActiveLayer(layer)
+                    return True
+
+            not_sp_msg = QApplication.translate(
+                'SpatialPreview',
+                'You have selected a non-spatial_unit layer. '
+                'Please select a spatial unit layer to preview.'
+            )
+            QMessageBox.information(
+                self._iface.mainWindow(),
+                "Error",
+                not_sp_msg
+            )
+
 
     def active_layer_check(self):
         """

@@ -63,6 +63,10 @@ from stdm.data.pg_utils import (
     spatial_tables
 )
 
+from stdm.data.supporting_documents import (
+    supporting_doc_tables,
+    document_models
+)
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
 
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
@@ -72,6 +76,8 @@ from stdm.utils.util import (
     profile_spatial_tables
 
 )
+
+from stdm.ui.social_tenure.str_tree_view import EditSTRTreeView
 from ui_feature_details import Ui_DetailsDock
 
 class LayerSelectionHandler:
@@ -237,6 +243,7 @@ class DetailsDBHandler:
         self.current_profile = current_profile()
         self.formatted_record = OrderedDict()
         self.display_columns = None
+        self._entity_supporting_doc_tables = {}
 
     def set_entity(self, entity):
         self._entity = entity
@@ -309,6 +316,42 @@ class DetailsDBHandler:
                 formatter = self.column_formatter[col.name]
                 col_val = formatter.format_column_value(col_val)
             self.formatted_record[col.header()] = col_val
+
+
+    def _supporting_doc_models(self, entity_table, model_obj):
+        """
+        Creates supporting document models using information from the
+        entity table and values in the model object.
+        :param entity_table: Name of the entity table.
+        :type entity_table: str
+        :param model_obj: Model instance.
+        :type model_obj: object
+        :return: Supporting document models.
+        :rtype: list
+        """
+        #Only one document table per entity for now
+        if entity_table in self._entity_supporting_doc_tables:
+            doc_table_ref = self._entity_supporting_doc_tables[entity_table]
+        else:
+            doc_tables = supporting_doc_tables(entity_table)
+
+            if len(doc_tables) > 0:
+                doc_table_ref = doc_tables[0]
+                self._entity_supporting_doc_tables[entity_table] = doc_table_ref
+
+            else:
+                return []
+
+        doc_link_col, doc_link_table = doc_table_ref[0], doc_table_ref[1]
+
+        if not hasattr(model_obj, 'id'):
+            return []
+
+        return document_models(
+            self.current_profile.social_tenure,
+            doc_link_col,
+            model_obj.id
+        )
 
 class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
     def __init__(self, iface, spatial_unit_dock):
@@ -878,8 +921,14 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
 
         if item.text() == 'Social Tenure Relationship':
             model = self.STR_models[id]
+            documents = self._supporting_doc_models(
+                self.social_tenure.name, model
+            )
+            node_data = model, documents
 
             feature_edit = False
+            edit_str = EditSTRTreeView(self._plugin, node_data)
+            status = edit_str.exec_()
             ##TODO add STR wizard edit mode here.
         elif item.text() == format_name(self.party.short_name):
             feature_edit = False
