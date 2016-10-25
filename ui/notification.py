@@ -31,7 +31,7 @@ SUCCESS = 2006
 WARNING = 2007
 INFORMATION = 2008
 
-class NotificationBar(object): 
+class NotificationBar(QObject, object):
     '''
     Used to display notifications in a vertical layout in order for 
     important user messages to be inserted in a widget.
@@ -39,7 +39,10 @@ class NotificationBar(object):
     To change this default behaviour, change the value of the 'timerinterval'
     parameter in the constructor.
     '''
-    def __init__(self,layout,timerinterval = 10000): 
+    userClosed = pyqtSignal()
+    onShow = pyqtSignal()
+    def __init__(self,layout,timerinterval = 10000):
+        QObject.__init__(self)
         self.interval = timerinterval
 
         if isinstance(layout,QVBoxLayout):                        
@@ -97,12 +100,17 @@ class NotificationBar(object):
                 frameStyle = self.warningStyleSheet
                 font_color = self.warning_font_color
 
-            notificationItem.setMessage(message,notificationType,frameStyle, font_color)
+            notificationItem.setMessage(
+                message,notificationType,frameStyle, font_color
+            )
             self.layout.addWidget(notificationItem)
-            self._notifications[str(notificationItem.code)] = notificationItem
+            self._notifications[
+                str(notificationItem.code)
+            ] = notificationItem
             
             #Reset the timer
-            self.timer.start() 
+            self.timer.start()
+            self.onShow.emit()
             
     def insertErrorNotification(self,message):
         '''
@@ -147,6 +155,7 @@ class NotificationBar(object):
         strCode = str(code)
         if strCode in self._notifications:
             del self._notifications[strCode]
+            self.userClosed.emit()
    
 class NotificationItem(QWidget,Ui_frmNotificationItem):
     

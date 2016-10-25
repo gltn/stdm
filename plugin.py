@@ -1025,15 +1025,21 @@ class STDMQGISLoader(object):
 
         self.profiles_combobox.clear()
         self.profiles_combobox.addItems(profile_names)
+
         self.profiles_combobox.setStyleSheet(
             """
-            QComboBox {
-                border: 2px solid #4b85ca;
-                border-radius: 4px;
-                padding: 1px 18px 1px 3px;
-                width: 9em;
-            }
-            QFrame { border: 2px solid #4b85ca; }
+         QComboBox {
+            border: 2px solid #4b85ca;
+            border-radius: 2px;
+            background: #fff;
+            padding: 1px 23px 1px 3px;
+            min-width: 6em;
+            color: #06477f;
+            padding: 1px 5px 1px 3px;
+            width: 115px;
+            height: 18px;
+        }
+        QFrame { border: 2px solid #4b85ca; }
             """
         )
         setComboCurrentIndexWithText(
@@ -1743,7 +1749,7 @@ class STDMQGISLoader(object):
                                             QMessageBox.No) == QMessageBox.Yes:
                 handler.update_config_file()
             else:
-                err_msg =QApplication.translate("STDMQGISLoader",
+                err_msg = QApplication.translate("STDMQGISLoader",
                                                      "STDM has detected that "
                                                      "the version of config "
                                                      "installed is old and "

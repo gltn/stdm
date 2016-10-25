@@ -519,11 +519,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.str_type_data.append(data)
         self.str_type_table.add_combobox(str_type_id, insert_row)
 
-        self.str_type_table.model().layoutChanged.emit()
+        self.enable_str_type_combo(insert_row)
         self.update_table_view(
             self.str_type_table, True
         )
-        self.enable_str_type_combo(insert_row)
+        self.str_type_table.model().layoutChanged.emit()
 
     def init_str_type(
             self, party_table, str_type_id=0, row=0
@@ -976,9 +976,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 msg = QApplication.translate(
                     "newSTRWiz",
                     'This {} has already been assigned to {}{}'.format(
-                        format_name(
-                            self.spatial_unit.short_name
-                        ),
+                        format_name(self.spatial_unit.short_name),
                         str(usage_count),
                         ocup
                     )

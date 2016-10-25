@@ -38,17 +38,21 @@ class STRDataStore():
 
 class STRDBHandler():
     def __init__(
-            self, data_store, str_model, str_edit_model=None
+            self, data_store, str_model, str_edit_node=None
     ):
         self.str_model = str_model
         self.data_store = data_store
         self.str_edit_obj = None
         self.progress = STDMProgressDialog(iface.mainWindow())
 
-        self.str_edit_model = str_edit_model
-        if str_edit_model is not None:
-            self.str_edit_obj = str_edit_model.model()
-            self.str_doc_edit_obj = str_edit_model.documents()
+        self.str_edit_node = str_edit_node
+        if str_edit_node is not None:
+            if isinstance(str_edit_node, tuple):
+                self.str_edit_obj = str_edit_node[0]
+                self.str_doc_edit_obj = str_edit_node[1]
+            else:
+                self.str_edit_obj = str_edit_node.model()
+                self.str_doc_edit_obj = str_edit_node.documents()
 
 
     def on_add_str(self, str_store):
@@ -128,7 +132,6 @@ class STRDBHandler():
          :return: None
          :rtype: NoneType
          """
-
         _str_obj = self.str_model()
 
         str_edit_obj = _str_obj.queryObject().filter(
@@ -137,12 +140,10 @@ class STRDBHandler():
 
         str_edit_obj.party_id = str_store.party.keys()[0],
         str_edit_obj.spatial_unit_id = str_store.spatial_unit.keys()[0],
-        str_edit_obj.tenure_type = str_store.str_type.keys()[0]
+        str_edit_obj.tenure_type = str_store.str_type.values()[0]
 
         # get all doc model objects
         added_doc_objs = str_store.supporting_document
-
-        #added_doc_objs = self.source_doc_manager.model_objects()
 
         self.str_doc_edit_obj = \
             [obj for obj in sum(self.str_doc_edit_obj.values(), [])]

@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import logging
 
 from PyQt4.QtCore import (
     Qt,
@@ -22,6 +23,7 @@ from stdm.utils.util import (
     entity_display_columns
 )
 
+LOGGER = logging.getLogger('stdm')
 class ComboBoxDelegate(QItemDelegate):
 
     def __init__(self, str_type_id=0, parent=None):
@@ -207,7 +209,6 @@ class FreezeTableWidget(QTableView):
         self.frozen_table_view.setVerticalScrollBarPolicy(
             Qt.ScrollBarAlwaysOff
         )
-
         # Puts more widgets to the foreground
         self.viewport().stackUnder(self.frozen_table_view)
         # # Log in to edit mode - even with one click
@@ -218,7 +219,7 @@ class FreezeTableWidget(QTableView):
 
         # Set the width of columns
         columns_count = table_model.columnCount(self)
-        for col in xrange(columns_count):
+        for col in range(columns_count):
             if col == 0:
                 # Set the size
                 self.horizontalHeader().resizeSection(
@@ -244,7 +245,7 @@ class FreezeTableWidget(QTableView):
                 )
             else:
                 self.horizontalHeader().resizeSection(
-                    col, 100
+                    col, 150
                 )
                 # Hide unnecessary columns in the widget fixed columns
                 self.frozen_table_view.setColumnHidden(
@@ -262,11 +263,11 @@ class FreezeTableWidget(QTableView):
             setDefaultSectionSize(
             vh.defaultSectionSize()
         )
-
+        # self.frozen_table_view.verticalHeader().setVisible(True)
         # Show frozen table view
         self.frozen_table_view.show()
         # Set the size of him like the main
-        self.update_frozen_table_geometry()
+        #self.update_frozen_table_geometry()
 
         self.setHorizontalScrollMode(
             QAbstractItemView.ScrollPerPixel
@@ -307,6 +308,7 @@ class FreezeTableWidget(QTableView):
 
         # Connect the headers and scrollbars of
         # both tableviews together
+
         self.horizontalHeader().sectionResized.connect(
             self.update_section_width
         )
@@ -363,7 +365,6 @@ class FreezeTableWidget(QTableView):
         except Exception as log:
             LOGGER.debug(str(log))
 
-
     def scrollTo(self, index, hint):
         if index.column() > 1:
             QTableView.scrollTo(self, index, hint)
@@ -374,8 +375,7 @@ class FreezeTableWidget(QTableView):
                 self.verticalHeader().width() +
                 self.frameWidth(),
                 self.frameWidth(),
-                self.columnWidth(0) +
-                self.columnWidth(1),
+                self.columnWidth(0) + self.columnWidth(1),
                 self.viewport().height() +
                 self.horizontalHeader().height()
             )

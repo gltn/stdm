@@ -20,9 +20,6 @@ from PyQt4.QtGui import (
     QComboBox
 )
 
-# from sqlalchemy import (
-#     func
-# )
 from qgis.utils import iface
 from stdm.ui.notification import NotificationBar, ERROR, INFORMATION
 from stdm.ui.sourcedocument import SourceDocumentManager
@@ -203,7 +200,6 @@ class SpatialUnit(ComponentUtility):
             self.draw_spatial_unit
         )
 
-
     def init_spatial_unit(self):
         """
         Initialize the spatial_unit page
@@ -223,12 +219,27 @@ class SpatialUnit(ComponentUtility):
         Render the geometry of the given spatial unit in the spatial view.
         :param row_id: Sqlalchemy object representing a feature.
         """
+        self._notify_no_base_layers()
         self.mirror_map.draw_spatial_unit(model)
 
+    def _notify_no_base_layers(self):
+        """
+        Checks if there are any base layers that will be used when
+        visualizing the spatial units. If there are no base layers
+        then insert warning message.
+        """
+        num_layers = len(iface.legendInterface().layers())
+        if num_layers == 0:
+            msg = QApplication.translate(
+                'SpatialUnit',
+                'No basemap layers are loaded in the '
+                'current project. Basemap layers '
+                'enhance the visualization of spatial units.'
+            )
+            self.notification_bar.insertWarningNotification(msg)
 
 class STRType(ComponentUtility):
     def __init__(self, container_widget, box, notification_bar, party=None):
-        #TODO capture str type data
         ComponentUtility.__init__(self, box)
         self.container_widget = container_widget
         self.container_box = box
@@ -255,10 +266,9 @@ class STRType(ComponentUtility):
         data = [None] + row_data
         self.str_type_data.append(data)
         self.str_type_table.add_combobox(str_type_id, insert_row)
-
+        self.update_table_view(self.str_type_table, True)
+        self.enable_str_type_combo(insert_row)
         self.str_type_table.model().layoutChanged.emit()
-
-        #self.enable_str_type_combo(insert_row)
 
     def copy_party_table(self, table_view, row):
         """
@@ -278,9 +288,8 @@ class STRType(ComponentUtility):
             party_row_data.append(model.data(
                 party_id_idx, Qt.DisplayRole
             ))
-        #self.enable_str_type_combo(row)
-        return party_row_data
 
+        return party_row_data
 
     def add_str_type_headers(self):
         """
@@ -317,7 +326,6 @@ class STRType(ComponentUtility):
         of each selected party rows with a combobox for
         social tenure type.
         """
-
         headers = self.add_str_type_headers()
 
         self.str_type_table = FreezeTableWidget(
@@ -326,15 +334,13 @@ class STRType(ComponentUtility):
         self.str_type_table.setEditTriggers(
             QAbstractItemView.NoEditTriggers
         )
-        # Hide id from STR Type table
-        self.update_table_view(
-            self.str_type_table, True
-        )
+
         self.container_box.setSpacing(4)
         self.container_box.setMargin(5)
         grid_layout = QGridLayout(self.container_widget)
         grid_layout.setHorizontalSpacing(5)
         grid_layout.setColumnStretch(4, 5)
+
         self.container_box.addLayout(grid_layout)
         self.container_box.addWidget(self.str_type_table)
 
