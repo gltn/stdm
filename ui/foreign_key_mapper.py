@@ -41,7 +41,10 @@ from stdm.data.qtmodels import BaseSTDMTableModel
 from stdm.utils.util import getIndex
 from stdm.ui.admin_unit_manager import SELECT
 from stdm.settings import current_profile
-from stdm.ui.forms.widgets import ColumnWidgetRegistry
+from stdm.ui.forms.widgets import (
+    ColumnWidgetRegistry,
+    WidgetException
+)
 
 __all__ = ["ForeignKeyMapper", "ForeignKeyMapperExpressionDialog"]
 
@@ -266,8 +269,23 @@ class ForeignKeyMapper(QWidget):
                 #Get widget factory so that we can use the value formatter
                 w_factory = ColumnWidgetRegistry.factory(c.TYPE_INFO)
                 if not w_factory is None:
-                    formatter = w_factory(c)
-                    self._cell_formatters[col_name] = formatter
+                    try:
+                        formatter = w_factory(c)
+                        self._cell_formatters[col_name] = formatter
+                    except WidgetException as we:
+                        msg = QApplication.translate(
+                            'ForeignKeyMapper',
+                            'Error in creating column:'
+                        )
+                        msg = '{0} {1}\n{2}'.format(msg, c.name, unicode(we))
+                        QMessageBox.critical(
+                            self,
+                            QApplication.translate(
+                                'ForeignKeyMapper',
+                                'Widget Creation Error'
+                            ),
+                            msg
+                        )
 
                 #Set searchable columns
                 if c.searchable:
