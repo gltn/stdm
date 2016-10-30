@@ -323,7 +323,6 @@ class STDMQGISLoader(object):
 
                 #Set current profile
                 self.current_profile = current_profile()
-                print self.current_profile.social_tenure.party.name
 
                 if self.current_profile is None:
                     result = self.default_profile()
@@ -1321,21 +1320,20 @@ class STDMQGISLoader(object):
         defining a new social
         tenure relationship
         '''
-        # try:
-            # frmNewSTR = newSTRWiz(self)
-            # frmNewSTR.exec_()
-        str_editor = STRTreeView(self)
-        str_editor.open()
+        try:
 
-        # except Exception as ex:
-        #     QMessageBox.critical(
-        #         self.iface.mainWindow(),
-        #         QApplication.translate(
-        #             "STDMPlugin",
-        #             "Error Loading New STR Wizard"
-        #         ),
-        #         unicode(ex.message)
-        #     )
+            str_editor = STRTreeView(self)
+            str_editor.open()
+
+        except Exception as ex:
+            QMessageBox.critical(
+                self.iface.mainWindow(),
+                QApplication.translate(
+                    'STDMQGISLoader',
+                    'Error Loading New STR Wizard'
+                ),
+                ex
+            )
 
     def onManageAdminUnits(self):
         '''
