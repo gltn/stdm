@@ -677,7 +677,9 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Load source documents into document listing widget.
         """
         # Configure progress dialog
-        progress_msg = QApplication.translate("ViewSTR", "Loading supporting documents...")
+        progress_msg = QApplication.translate(
+            "ViewSTR", "Loading supporting documents..."
+        )
 
         progress_dialog = QProgressDialog(self)
         if len(source_docs) > 0:
