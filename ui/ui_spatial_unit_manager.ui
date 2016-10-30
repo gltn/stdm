@@ -22,35 +22,6 @@
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QToolButton" name="feature_details_btn">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="mouseTracking">
-       <bool>false</bool>
-      </property>
-      <property name="toolTip">
-       <string>Feature details</string>
-      </property>
-      <property name="accessibleName">
-       <string>Tool</string>
-      </property>
-      <property name="text">
-       <string>Feature Details</string>
-      </property>
-      <property name="icon">
-       <iconset resource="../resources.qrc">
-        <normaloff>:/plugins/stdm/images/icons/feature_details.png</normaloff>:/plugins/stdm/images/icons/feature_details.png</iconset>
-      </property>
-      <property name="checkable">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item>
      <widget class="QGroupBox" name="groupBox">
       <property name="sizeIncrement">
        <size>

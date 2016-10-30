@@ -33,7 +33,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import mapper
 
-from .new_str_wiz import newSTRWiz
+from stdm.ui.social_tenure.str_tree_view import STRTreeView, EditSTRTreeView
 
 import stdm.data
 
@@ -89,7 +89,11 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self.setupUi(self)
 
         self._plugin = plugin
-        self.tbPropertyPreview.set_iface(self._plugin.iface)
+        QTimer.singleShot(
+            300,
+            lambda :self.tbPropertyPreview.set_iface(self._plugin.iface)
+        )
+        #self.tbPropertyPreview.set_iface(self._plugin.iface)
         self.curr_profile = current_profile()
 
         self.spatial_unit = self.curr_profile.social_tenure.spatial_unit
@@ -163,6 +167,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         self._source_doc_manager.setEditPermissions(False)
 
+
         self.initGui()
     
     def add_tool_buttons(self):
@@ -204,7 +209,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Initialize widget
         """
         self.tb_actions.setVisible(False)
-        self._load_entity_configurations()
+        QTimer.singleShot(30, self._load_entity_configurations)
+        #self._load_entity_configurations()
         self.add_tool_buttons()
 
         #Connect signals
@@ -231,11 +237,11 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         else:
             self.deleteSTR.setDisabled(True)
 
-        self.addSTR.triggered.connect(self.load_new_str_wiz)
+        self.addSTR.triggered.connect(self.load_new_str_editor)
 
         self.deleteSTR.triggered.connect(self.delete_str)
 
-        self.editSTR.triggered.connect(self.load_edit_str_wiz)
+        self.editSTR.triggered.connect(self.load_edit_str_editor)
 
         #Load async for the current widget
         self.entityTabIndexChanged(0)
@@ -458,7 +464,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                     self.editSTR.setDisabled(True)
                     self.deleteSTR.setDisabled(True)
 
-    def load_edit_str_wiz(self):
+    def load_edit_str_editor(self):
 
         index = self.tvSTRResults.currentIndex()
         node = None
@@ -467,7 +473,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         if index.column() == 0:
             if isinstance(node, SupportsDocumentsNode):
 
-                edit_str = newSTRWiz(self._plugin, node)
+                edit_str = EditSTRTreeView(self._plugin, node)
                 status = edit_str.exec_()
 
                 if status == 1:
@@ -485,10 +491,10 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                             index = node.treeView().model().index(0, 0)
                             node._on_expand(index)
 
-    def load_new_str_wiz(self):
+    def load_new_str_editor(self):
         try:
             # Check type of node and perform corresponding action
-            add_str = newSTRWiz(self._plugin)
+            add_str = STRTreeView(self._plugin)
             add_str.exec_()
 
         except Exception as ex:
@@ -531,7 +537,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Render the geometry of the given spatial unit in the spatial view.
         :param row_id: Sqlalchemy object representing a feature.
         """
-
         self.tbPropertyPreview.draw_spatial_unit(model)
 
     def onTreeViewItemExpanded(self,modelindex):
@@ -567,17 +572,17 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         :type event: QShowEvent
         """
         self.setEnabled(True)
-
-        self._notify_no_base_layers()
-
-        # Add spatial unit layer if it doesn't exist
-        self.add_spatial_unit_layer()
-
-        self.tbPropertyPreview.refresh_canvas_layers()
-        self.tbPropertyPreview.load_web_map()
+        QTimer.singleShot(200, self.init_mirror_map)
+        #self.init_mirror_map()
 
         return QMainWindow.showEvent(self, event)
 
+    def init_mirror_map(self):
+        self._notify_no_base_layers()
+        # Add spatial unit layer if it doesn't exist
+        self.add_spatial_unit_layer()
+        self.tbPropertyPreview.refresh_canvas_layers()
+        self.tbPropertyPreview.load_web_map()
 
     def _notify_no_base_layers(self):
         """
@@ -672,7 +677,9 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Load source documents into document listing widget.
         """
         # Configure progress dialog
-        progress_msg = QApplication.translate("ViewSTR", "Loading supporting documents...")
+        progress_msg = QApplication.translate(
+            "ViewSTR", "Loading supporting documents..."
+        )
 
         progress_dialog = QProgressDialog(self)
         if len(source_docs) > 0:

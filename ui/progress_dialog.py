@@ -49,7 +49,7 @@ class STDMProgressDialog(QProgressDialog):
         self.setFixedHeight(100)
         self.setWindowTitle(
             QApplication.translate(
-                "STDMProgressDialog",
+                'STDMProgressDialog',
                 title
             )
         )
@@ -78,15 +78,10 @@ class STDMProgressDialog(QProgressDialog):
         )
 
     def closeEvent(self, event):
-        title = self.tr('Upgrade Interruption Error')
+        title = self.tr('Interruption Error')
         message = self.tr(
-            'Interrupting the upgrading '
-            'process could lead to data<br>'
-            'corruption due to an incomplete '
-            'migration of existing data.<br>'
-            '<br>'
             'Are you sure you want to '
-            'cancel the upgrading process?'
+            'cancel the process?'
         )
         warning_result = QMessageBox.critical(
             iface.mainWindow(),
