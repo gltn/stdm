@@ -102,6 +102,10 @@ from mapping.utils import pg_layerNamesIDMapping
 from composer import ComposerWrapper
 from stdm.ui.progress_dialog import STDMProgressDialog
 
+from stdm.ui.feature_details import DetailsTreeView
+
+from stdm.ui.social_tenure.str_tree_view import STRTreeView
+
 LOGGER = logging.getLogger('stdm')
 
 
@@ -177,7 +181,7 @@ class STDMQGISLoader(object):
         QApplication.translate("ChangePasswordToolbarAction","Change Password"), self.iface.mainWindow(),
         "8C425E0E-3761-43F5-B0B2-FB8A9C3C8E4B")
         self.helpAct = STDMAction(QIcon(":/plugins/stdm/images/icons/help-content.png"), \
-        QApplication.translate("ConfigTableReader","Help Contents"), self.iface.mainWindow(),
+        QApplication.translate("STDMQGISLoader","Help Contents"), self.iface.mainWindow(),
         "7A61CEA9-2A64-45F6-A40F-D83987D416EB")
         self.helpAct.setShortcut(Qt.Key_F10)
 
@@ -315,26 +319,30 @@ class STDMQGISLoader(object):
             if not config_load_status:
                 return
 
-            # try:
+            try:
 
-            #Set current profile
-            self.current_profile = current_profile()
+                #Set current profile
+                self.current_profile = current_profile()
+                print self.current_profile.social_tenure.party.name
 
-            self.loadModules()
+                if self.current_profile is None:
+                    result = self.default_profile()
+                    if not result:
+                        return
+                self.loadModules()
+                self.default_profile()
+                self.run_wizard()
+                self._user_logged_in = True
 
-            self.default_profile()
-            self.run_wizard()
-            self._user_logged_in = True
-            #
-            # except Exception as pe:
-            #     title = QApplication.translate(
-            #         "STDMQGISLoader",
-            #         "Error Loading Modules"
-            #     )
-            #     self.reset_content_modules_id(
-            #         title,
-            #         pe
-            #     )
+            except Exception as pe:
+                title = QApplication.translate(
+                    "STDMQGISLoader",
+                    "Error Loading Modules"
+                )
+                self.reset_content_modules_id(
+                    title,
+                    pe
+                )
 
     def minimum_table_checker(self):
 
@@ -547,8 +555,9 @@ class STDMQGISLoader(object):
                 if default_profile == QMessageBox.Yes:
 
                     self.load_config_wizard()
+                    return True
                 else:
-                    return
+                    return False
 
     def load_configuration_to_serializer(self):
         try:
@@ -677,6 +686,8 @@ class STDMQGISLoader(object):
 
 
     def loadModules(self):
+
+        self.details_tree_view = DetailsTreeView(self.iface, self)
         '''
         Define and add modules to the menu and/or toolbar using the module loader
         '''
@@ -768,6 +779,12 @@ class STDMQGISLoader(object):
         QApplication.translate("SpatialEditorAction","Spatial Unit Manager"), self.iface.mainWindow())
         self.spatialLayerManager.setCheckable(True)
 
+        #Spatial Layer Manager
+        self.feature_details_act = QAction(QIcon(":/plugins/stdm/images/icons/feature_details.png"), \
+        QApplication.translate("SpatialEditorAction","Spatial Entity Details"), self.iface.mainWindow())
+        self.feature_details_act.setCheckable(True)
+
+
         self.viewSTRAct = QAction(QIcon(":/plugins/stdm/images/icons/view_str.png"), \
         QApplication.translate("ViewSTRToolbarAction","View Social Tenure Relationship"),
         self.iface.mainWindow())
@@ -791,6 +808,11 @@ class STDMQGISLoader(object):
         self.docDesignerAct.triggered.connect(self.onDocumentDesigner)
         self.docGeneratorAct.triggered.connect(self.onDocumentGenerator)
         self.spatialLayerManager.triggered.connect(self.spatialLayerMangerActivate)
+        self.feature_details_act.triggered.connect(self.details_tree_view.activate_feature_details)
+
+        self.iface.mapCanvas().currentLayerChanged.connect(
+            lambda :self.details_tree_view.activate_feature_details(False)
+        )
         contentMenu.triggered.connect(self.widgetLoader)
         self.wzdAct.triggered.connect(self.load_config_wizard)
         self.viewSTRAct.triggered.connect(self.onViewSTR)
@@ -823,6 +845,9 @@ class STDMQGISLoader(object):
 
         spatialLayerManagerCnt = ContentGroup.contentItemFromQAction(self.spatialLayerManager)
         spatialLayerManagerCnt.code = "4E945EE7-D6F9-4E1C-X4AA-0C7F1BC67224"
+
+        feature_details_cnt = ContentGroup.contentItemFromQAction(self.feature_details_act)
+        feature_details_cnt.code = '2adff3f8-bda9-49f9-b37d-caeed9889ab6'
 
         wzdConfigCnt = ContentGroup.contentItemFromQAction(self.wzdAct)
         wzdConfigCnt.code = "F16CA4AC-3E8C-49C8-BD3C-96111EA74206"
@@ -903,6 +928,10 @@ class STDMQGISLoader(object):
         self.spatialUnitManagerCntGroup.addContentItem(spatialLayerManagerCnt)
         self.spatialUnitManagerCntGroup.register()
 
+        self.feature_details_cnt_group = ContentGroup(username, self.feature_details_act)
+        self.feature_details_cnt_group.addContentItem(feature_details_cnt)
+        self.feature_details_cnt_group.register()
+
         self.wzdConfigCntGroup = ContentGroup(username, self.wzdAct)
         self.wzdConfigCntGroup.addContentItem(wzdConfigCnt)
         self.wzdConfigCntGroup.register()
@@ -952,6 +981,9 @@ class STDMQGISLoader(object):
         self.menubarLoader.addContent(self.spatialUnitManagerCntGroup)
         self.toolbarLoader.addContent(self.spatialUnitManagerCntGroup)
 
+        self.toolbarLoader.addContent(self.feature_details_cnt_group)
+        self.menubarLoader.addContent(self.feature_details_cnt_group)
+
         self.toolbarLoader.addContent(self.STRCntGroup)
         self.menubarLoader.addContent(self.STRCntGroup)
 
@@ -998,15 +1030,21 @@ class STDMQGISLoader(object):
 
         self.profiles_combobox.clear()
         self.profiles_combobox.addItems(profile_names)
+
         self.profiles_combobox.setStyleSheet(
             """
-            QComboBox {
-                border: 2px solid #4b85ca;
-                border-radius: 4px;
-                padding: 1px 18px 1px 3px;
-                width: 9em;
-            }
-            QFrame { border: 2px solid #4b85ca; }
+         QComboBox {
+            border: 2px solid #4b85ca;
+            border-radius: 2px;
+            background: #fff;
+            padding: 1px 23px 1px 3px;
+            min-width: 6em;
+            color: #06477f;
+            padding: 1px 5px 1px 3px;
+            width: 115px;
+            height: 18px;
+        }
+        QFrame { border: 2px solid #4b85ca; }
             """
         )
         setComboCurrentIndexWithText(
@@ -1221,7 +1259,9 @@ class STDMQGISLoader(object):
                 save_current_profile(sel_profile)
 
         self.current_profile = current_profile()
+
         if not self.current_profile is None:
+
             LOGGER.debug(
                 'Successfully changed '
                 'the current profile to {}'.format(
@@ -1230,6 +1270,7 @@ class STDMQGISLoader(object):
             )
         try:
             self.loadModules()
+
             LOGGER.debug(
                 'Successfully reloaded all modules.'
             )
@@ -1254,9 +1295,7 @@ class STDMQGISLoader(object):
         )
 
         # Reload all modules
-        self.wizard.wizardFinished.connect(
-            self.reload_plugin
-        )
+        self.wizard.wizardFinished.connect(self.reload_plugin)
         try:
             self.wizard.exec_()
         except Exception as ex:
@@ -1282,18 +1321,21 @@ class STDMQGISLoader(object):
         defining a new social
         tenure relationship
         '''
-        try:
-            frmNewSTR = newSTRWiz(self)
-            frmNewSTR.exec_()
-        except Exception as ex:
-            QMessageBox.critical(
-                self.iface.mainWindow(),
-                QApplication.translate(
-                    "STDMPlugin",
-                    "Error Loading New STR Wizard"
-                ),
-                unicode(ex.message)
-            )
+        # try:
+            # frmNewSTR = newSTRWiz(self)
+            # frmNewSTR.exec_()
+        str_editor = STRTreeView(self)
+        str_editor.open()
+
+        # except Exception as ex:
+        #     QMessageBox.critical(
+        #         self.iface.mainWindow(),
+        #         QApplication.translate(
+        #             "STDMPlugin",
+        #             "Error Loading New STR Wizard"
+        #         ),
+        #         unicode(ex.message)
+        #     )
 
     def onManageAdminUnits(self):
         '''
@@ -1538,6 +1580,8 @@ class STDMQGISLoader(object):
             self.stdmInitToolbar.removeAction(self.changePasswordAct)
             self.stdmInitToolbar.removeAction(self.wzdAct)
             self.stdmInitToolbar.removeAction(self.spatialLayerManager)
+            self.feature_details_act.setChecked(False)
+            self.stdmInitToolbar.removeAction(self.feature_details_act)
             self.stdmInitToolbar.removeAction(self.contentAuthAct)
             self.stdmInitToolbar.removeAction(self.usersAct)
             self.stdmInitToolbar.removeAction(self.options_act)
@@ -1579,7 +1623,6 @@ class STDMQGISLoader(object):
         try:
             if not self._user_logged_in:
                 return
-
             #Remove STDM layers
             self.removeSTDMLayers()
             # Remove Spatial Unit Manager
@@ -1587,7 +1630,11 @@ class STDMQGISLoader(object):
             # Clear current profile status text
             self.profiles_combobox.deleteLater()
             self.profiles_combobox = None
-            if reload == False:
+
+            self.details_tree_view.close_dock(
+                self.feature_details_act
+            )
+            if not reload:
                 self.profile_status_label.deleteLater()
                 self.profile_status_label = None
 
@@ -1595,11 +1642,11 @@ class STDMQGISLoader(object):
                 if not data.app_dbconn is None:
                     STDMDb.cleanUp()
                     DeclareMapping.cleanUp()
-
                 #Remove database reference
                 data.app_dbconn = None
             else:
                 self.profile_status_label.setText('')
+
             #Reset View STR Window
             if not self.viewSTRWin is None:
                 del self.viewSTRWin
@@ -1710,7 +1757,7 @@ class STDMQGISLoader(object):
                                             QMessageBox.No) == QMessageBox.Yes:
                 handler.update_config_file()
             else:
-                err_msg =QApplication.translate("STDMQGISLoader",
+                err_msg = QApplication.translate("STDMQGISLoader",
                                                      "STDM has detected that "
                                                      "the version of config "
                                                      "installed is old and "

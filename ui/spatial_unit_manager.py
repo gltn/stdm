@@ -47,7 +47,6 @@ from stdm.data.pg_utils import (
 from stdm.ui.forms.spatial_unit_form import (
     STDMFieldWidget
 )
-from feature_details import DetailsTreeView
 
 from stdm.mapping.utils import pg_layerNamesIDMapping
 
@@ -78,7 +77,7 @@ class SpatialUnitManagerDockWidget(
         self._profile_spatial_layers = []
         self.stdm_fields = STDMFieldWidget()
         self._populate_layers()
-        self.feature_details = DetailsTreeView(iface, self)
+
         self.spatial_unit = None
 
         self.iface.currentLayerChanged.connect(
@@ -89,13 +88,6 @@ class SpatialUnitManagerDockWidget(
         )
         self.add_to_canvas_button.clicked.connect(
             self.on_add_to_canvas_button_clicked
-        )
-        self.feature_details_btn.clicked.connect(
-            self.feature_details.activate_feature_details
-        )
-
-        self.iface.currentLayerChanged.connect(
-            lambda :self.feature_details.activate_feature_details(False)
         )
 
     def _populate_layers(self):

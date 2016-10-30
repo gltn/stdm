@@ -519,11 +519,11 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.str_type_data.append(data)
         self.str_type_table.add_combobox(str_type_id, insert_row)
 
-        self.str_type_table.model().layoutChanged.emit()
+        self.enable_str_type_combo(insert_row)
         self.update_table_view(
             self.str_type_table, True
         )
-        self.enable_str_type_combo(insert_row)
+        self.str_type_table.model().layoutChanged.emit()
 
     def init_str_type(
             self, party_table, str_type_id=0, row=0
@@ -722,7 +722,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         Displays a file dialog for a user
         to specify a source document
         '''
-
         #Get last path for supporting documents
         last_path = last_document_path()
         if last_path is None:
@@ -977,9 +976,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 msg = QApplication.translate(
                     "newSTRWiz",
                     'This {} has already been assigned to {}{}'.format(
-                        format_name(
-                            self.spatial_unit.short_name
-                        ),
+                        format_name(self.spatial_unit.short_name),
                         str(usage_count),
                         ocup
                     )
@@ -1094,7 +1091,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
             summaryTreeLoader.addCollection(
                 spatial_unit_mapping,
                 QApplication.translate(
-                    "newSTRWiz", "Spatial Unit Information"),
+                    "newSTRWiz", "Spatial Unit Information"
+                ),
                 ":/plugins/stdm/images/icons/property.png"
             )
 
@@ -1244,7 +1242,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 # loop per each number of documents
                 for k in range(number_of_docs):
                     # The number of jumps (to avoid duplication) when
-                    # looping though document objects
+                    # looping though document objects in multiple party
                     loop_increment = (k * no_of_party) + j
                     # append into the str obj
                     str_obj.documents.append(
@@ -1321,7 +1319,6 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 "Creating New STR"
             )
         )
-
 
         try:
 
