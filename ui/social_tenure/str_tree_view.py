@@ -500,7 +500,7 @@ class STRTreeView(QDialog, Ui_STREditor):
         QTimer.singleShot(50, self.init_spatial_unit_component)
         self.component_container.setCurrentIndex(1)
         self.top_description.setCurrentIndex(1)
-        self.entity_combo.setHidden(False)
+        self.entity_combo.setHidden(True)
         self.entity_combo_label.setHidden(False)
 
     def bind_spatial_unit(self):
@@ -914,7 +914,7 @@ class STRTreeView(QDialog, Ui_STREditor):
 
     def set_spatial_unit_data(self, model):
         current_store = self.current_data_store()
-
+        current_store.spatial_unit.clear()
         current_store.spatial_unit[model.id] = model
 
     def set_str_type_data(

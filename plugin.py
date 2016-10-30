@@ -181,7 +181,7 @@ class STDMQGISLoader(object):
         QApplication.translate("ChangePasswordToolbarAction","Change Password"), self.iface.mainWindow(),
         "8C425E0E-3761-43F5-B0B2-FB8A9C3C8E4B")
         self.helpAct = STDMAction(QIcon(":/plugins/stdm/images/icons/help-content.png"), \
-        QApplication.translate("ConfigTableReader","Help Contents"), self.iface.mainWindow(),
+        QApplication.translate("STDMQGISLoader","Help Contents"), self.iface.mainWindow(),
         "7A61CEA9-2A64-45F6-A40F-D83987D416EB")
         self.helpAct.setShortcut(Qt.Key_F10)
 
@@ -319,26 +319,30 @@ class STDMQGISLoader(object):
             if not config_load_status:
                 return
 
-            # try:
+            try:
 
-            #Set current profile
-            self.current_profile = current_profile()
+                #Set current profile
+                self.current_profile = current_profile()
+                print self.current_profile.social_tenure.party.name
 
-            self.loadModules()
+                if self.current_profile is None:
+                    result = self.default_profile()
+                    if not result:
+                        return
+                self.loadModules()
+                self.default_profile()
+                self.run_wizard()
+                self._user_logged_in = True
 
-            self.default_profile()
-            self.run_wizard()
-            self._user_logged_in = True
-            #
-            # except Exception as pe:
-            #     title = QApplication.translate(
-            #         "STDMQGISLoader",
-            #         "Error Loading Modules"
-            #     )
-            #     self.reset_content_modules_id(
-            #         title,
-            #         pe
-            #     )
+            except Exception as pe:
+                title = QApplication.translate(
+                    "STDMQGISLoader",
+                    "Error Loading Modules"
+                )
+                self.reset_content_modules_id(
+                    title,
+                    pe
+                )
 
     def minimum_table_checker(self):
 
@@ -551,8 +555,9 @@ class STDMQGISLoader(object):
                 if default_profile == QMessageBox.Yes:
 
                     self.load_config_wizard()
+                    return True
                 else:
-                    return
+                    return False
 
     def load_configuration_to_serializer(self):
         try:
@@ -1254,7 +1259,9 @@ class STDMQGISLoader(object):
                 save_current_profile(sel_profile)
 
         self.current_profile = current_profile()
+
         if not self.current_profile is None:
+
             LOGGER.debug(
                 'Successfully changed '
                 'the current profile to {}'.format(
@@ -1263,6 +1270,7 @@ class STDMQGISLoader(object):
             )
         try:
             self.loadModules()
+
             LOGGER.debug(
                 'Successfully reloaded all modules.'
             )
@@ -1287,9 +1295,7 @@ class STDMQGISLoader(object):
         )
 
         # Reload all modules
-        self.wizard.wizardFinished.connect(
-            self.reload_plugin
-        )
+        self.wizard.wizardFinished.connect(self.reload_plugin)
         try:
             self.wizard.exec_()
         except Exception as ex:
@@ -1617,7 +1623,6 @@ class STDMQGISLoader(object):
         try:
             if not self._user_logged_in:
                 return
-
             #Remove STDM layers
             self.removeSTDMLayers()
             # Remove Spatial Unit Manager
@@ -1625,7 +1630,11 @@ class STDMQGISLoader(object):
             # Clear current profile status text
             self.profiles_combobox.deleteLater()
             self.profiles_combobox = None
-            if reload == False:
+
+            self.details_tree_view.close_dock(
+                self.feature_details_act
+            )
+            if not reload:
                 self.profile_status_label.deleteLater()
                 self.profile_status_label = None
 
@@ -1633,7 +1642,6 @@ class STDMQGISLoader(object):
                 if not data.app_dbconn is None:
                     STDMDb.cleanUp()
                     DeclareMapping.cleanUp()
-
                 #Remove database reference
                 data.app_dbconn = None
             else:

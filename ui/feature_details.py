@@ -81,7 +81,6 @@ from stdm.ui.social_tenure.str_tree_view import EditSTRTreeView
 from ui_feature_details import Ui_DetailsDock
 
 class LayerSelectionHandler:
-    ##TODO fix duplicate feature details dock on profile switch
     def __init__(self, iface, plugin):
         self.layer = None
         self.iface = iface
@@ -391,8 +390,8 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
         self.iface.actionPan().trigger()
         tool.setChecked(False)
         self.clear_feature_selection()
-        self.hide()
         self.clear_sel_highlight()
+        self.hide()
 
 
     def closeEvent(self, event):
@@ -488,6 +487,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         Action for showing feature details.
         :return:
         """
+
         # Get and set the active layer.
         self.layer = self.iface.activeLayer()
         # if no active layer, show error message
@@ -929,6 +929,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             feature_edit = False
             edit_str = EditSTRTreeView(self._plugin, node_data)
             status = edit_str.exec_()
+            print vars(edit_str.updated_str_obj)
             ##TODO add STR wizard edit mode here.
         elif item.text() == format_name(self.party.short_name):
             feature_edit = False
