@@ -501,7 +501,7 @@ class STRTreeView(QDialog, Ui_STREditor):
         self.component_container.setCurrentIndex(1)
         self.top_description.setCurrentIndex(1)
         self.entity_combo.setHidden(True)
-        self.entity_combo_label.setHidden(False)
+        self.entity_combo_label.setHidden(True)
 
     def bind_spatial_unit(self):
         self.component_container.setCurrentIndex(2)
