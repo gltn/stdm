@@ -129,6 +129,11 @@ def selection_color():
     alpha_dic = color_config.read(
         ['default_selection_color_alpha']
     )
+    if len(red_dic) < 1 or len(green_dic) < 1 or \
+                    len(blue_dic) < 1 or len(alpha_dic) < 1:
+        rgba = QColor(255, 255, 0, 255)
+
+        return rgba
 
     selection_red = int(
         red_dic['default_selection_color_red']
