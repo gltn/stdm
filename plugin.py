@@ -1029,23 +1029,23 @@ class STDMQGISLoader(object):
 
         self.profiles_combobox.clear()
         self.profiles_combobox.addItems(profile_names)
-
-        self.profiles_combobox.setStyleSheet(
-            """
-         QComboBox {
-            border: 2px solid #4b85ca;
-            border-radius: 2px;
-            background: #fff;
-            padding: 1px 23px 1px 3px;
-            min-width: 6em;
-            color: #06477f;
-            padding: 1px 5px 1px 3px;
-            width: 115px;
-            height: 18px;
-        }
-        QFrame { border: 2px solid #4b85ca; }
-            """
-        )
+        #
+        # self.profiles_combobox.setStyleSheet(
+        #     """
+        #  QComboBox {
+        #     border: 2px solid #4b85ca;
+        #     border-radius: 2px;
+        #     background: #fff;
+        #     padding: 1px 23px 1px 3px;
+        #     min-width: 6em;
+        #     color: #06477f;
+        #     padding: 1px 5px 1px 3px;
+        #     width: 115px;
+        #     height: 18px;
+        # }
+        # QFrame { border: 2px solid #4b85ca; }
+        #     """
+        # )
         setComboCurrentIndexWithText(
             self.profiles_combobox, self.current_profile.name
         )
