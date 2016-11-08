@@ -1029,23 +1029,39 @@ class STDMQGISLoader(object):
 
         self.profiles_combobox.clear()
         self.profiles_combobox.addItems(profile_names)
-        #
-        # self.profiles_combobox.setStyleSheet(
-        #     """
-        #  QComboBox {
-        #     border: 2px solid #4b85ca;
-        #     border-radius: 2px;
-        #     background: #fff;
-        #     padding: 1px 23px 1px 3px;
-        #     min-width: 6em;
-        #     color: #06477f;
-        #     padding: 1px 5px 1px 3px;
-        #     width: 115px;
-        #     height: 18px;
-        # }
-        # QFrame { border: 2px solid #4b85ca; }
-        #     """
-        # )
+
+        self.profiles_combobox.setStyleSheet(
+            """
+             QComboBox {
+                border: 2px solid #4b85ca;
+                border-radius: 3px;
+                padding: 1px 18px 1px 3px;
+                min-width: 6em;
+            }
+
+            QComboBox:editable {
+                background: white;
+            }
+
+            QComboBox:!editable, QComboBox::drop-down:editable {
+                 background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                             stop: 0 #f8f8f8, stop: 0.4 #eeeeee,
+                                             stop: 0.5 #e6e6e6, stop: 1.0 #cecece);
+            }
+
+            /* QComboBox gets the "on" state when the popup is open */
+            QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+                background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                            stop: 0 #D3D3D3, stop: 0.4 #D8D8D8,
+                                            stop: 0.5 #DDDDDD, stop: 1.0 #E1E1E1);
+            }
+
+            QComboBox:on { /* shift the text when the popup opens */
+                padding-top: 3px;
+                padding-left: 4px;
+            }
+            """
+        )
         setComboCurrentIndexWithText(
             self.profiles_combobox, self.current_profile.name
         )
