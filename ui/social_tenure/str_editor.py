@@ -43,7 +43,7 @@ from stdm.utils.util import (
 )
 from str_data import STRDataStore, STRDBHandler
 
-class STRTreeView(QDialog, Ui_STREditor):
+class InitSTREditor(QDialog, Ui_STREditor):
 
     partyInit = pyqtSignal()
     spatialUnitInit = pyqtSignal()
@@ -51,6 +51,11 @@ class STRTreeView(QDialog, Ui_STREditor):
     strTypeUpdated = pyqtSignal()
 
     def __init__(self, plugin):
+        """
+        Initializes the STR editor.
+        :param plugin: The plugin object
+        :type plugin: Object
+        """
 
         # TODO add multi-party entity support to db
         QDialog.__init__(self, plugin.iface.mainWindow())
@@ -85,6 +90,11 @@ class STRTreeView(QDialog, Ui_STREditor):
         self.init_str_editor()
 
     def init_str_editor(self):
+        """
+        Initializes the GUI of the STR editor.
+        :return:
+        :rtype:
+        """
         self.init_party_entity_combo()
         self.init_notification()
         self.splitter.isCollapsible(False)
@@ -94,17 +104,16 @@ class STRTreeView(QDialog, Ui_STREditor):
         self.buttonBox.button(
             QDialogButtonBox.Save
         ).setEnabled(False)
-        self.str_editor_signals()
-
-    def str_editor_signals(self):
-        self.add_str_btn.clicked.connect(self.add_str_tree_node)
-        self.remove_str_btn.clicked.connect(
-            self.remove_str_tree_node
-        )
-        self.buttonBox.accepted.connect(self.test_save_str)
-        self.buttonBox.accepted.connect(self.save_str)
+        # self.str_editor_signals()
 
     def init_notification(self):
+        """
+        Initializes the notification object and
+        connects signals and slot that toggles
+        top description and the notification bar.
+        :return:
+        :rtype:
+        """
         self.notice = NotificationBar(
             self.str_notification
         )
@@ -118,16 +127,94 @@ class STRTreeView(QDialog, Ui_STREditor):
             lambda: self.top_description_visibility(False)
         )
 
-    def party_entity_combo_signal(self):
+    def init_tree_view(self):
+        """
+        Initializes the tree view and model
+        and adds it into the left scrollArea.
+        :return:
+        :rtype:
+        """
+        self.tree_view = QTreeView()
+        self.tree_view_model = QStandardItemModel()
+        self.tree_view.setModel(self.tree_view_model)
+        self.scrollArea.setWidget(self.tree_view)
+        self.tree_view.setHeaderHidden(True)
+        self.tree_view.setAlternatingRowColors(True)
 
+        self.tree_view.setEditTriggers(
+            QAbstractItemView.NoEditTriggers
+        )
+        self.tree_view.setStyleSheet(
+            '''
+            QTreeView:!active {
+                selection-background-color: #72a6d9;
+            }
+            '''
+        )
+        self.view_selection = self.tree_view.selectionModel()
+
+    def party_signals(self):
+        """
+        Connects party and str_type
+        related slots and signals.
+        :return:
+        :rtype:
+        """
+        self.party_component.party_fk_mapper.beforeEntityAdded.connect(
+            lambda model: self.set_party_data(model)
+        )
+        self.party_component.party_fk_mapper.afterEntityAdded.connect(
+            lambda model, row_number: self.set_str_type_data(
+                0, model.id, row_number
+            )
+        )
+        self.party_component.party_fk_mapper.deletedRows.connect(
+            self.remove_party_str_row_model
+        )
+
+    def remove_party_str_row_model(self, row_numbers):
+        """
+        Removes party and str_type row from the data store.
+        :param row_numbers: The row numbers of removed row.
+        :type row_numbers: List
+        :return:
+        :rtype:
+        """
+        current_store = self.current_data_store()
+
+        for row_number in row_numbers:
+            party_keys = current_store.party.keys()
+
+            try:
+                removed_key = party_keys[row_number]
+                del current_store.party[removed_key]
+                del current_store.str_type[removed_key]
+            except IndexError:
+                pass
+
+        self.str_type_component.remove_str_type_row(row_numbers)
+
+    def party_entity_combo_signal(self):
+        """
+        Connects the signal or entity_combo with
+        switch_entity method that toggles
+        ForeignKeyMapper for each selected party entity.
+        :return:
+        :rtype:
+        """
         self.entity_combo.currentIndexChanged.connect(
             self.switch_entity
         )
 
     def init_party_entity_combo(self):
+        """
+        Creates the party entity combobox.
+        :return:
+        :rtype:
+        """
         self.entity_combo_label = QLabel()
         combo_text = QApplication.translate(
-            'STRTreeView', 'Select a Party Entity: '
+            'InitSTREditor', 'Select a Party Entity: '
         )
         self.entity_combo_label.setText(combo_text)
         self.entity_combo_label.setParent(self)
@@ -149,19 +236,42 @@ class STRTreeView(QDialog, Ui_STREditor):
         self.party_layout.setAlignment(Qt.AlignRight)
 
     def top_description_visibility(self, visible):
-
+        """
+        Sets the visibility of top description.
+        :param visible: A boolean that shows or
+        hides top description.
+        :type visible:
+        :return:
+        :rtype:
+        """
         if visible:
             self.top_description.show()
         else:
             self.top_description.hide()
 
     def resizeEvent(self, QResizeEvent):
+        """
+        Adjusts the position of the entity
+        combo based on the dialog resize.
+        :param QResizeEvent:
+        :type QResizeEvent:
+        :return:
+        :rtype:
+        """
         new_size = QResizeEvent.size()
         width = new_size.width()
         self.entity_combo.move(width - 127, 70)
         self.entity_combo_label.move(width - 260, 70)
 
     def init_party_component(self, party=None):
+        """
+        Initializes the party component.
+        :param party: Party entity object.
+        If party is none, the default party loads.
+        :type party: Object
+        :return:
+        :rtype:
+        """
         if self.party_component is not None:
             return
 
@@ -180,7 +290,15 @@ class STRTreeView(QDialog, Ui_STREditor):
         self.partyInit.emit()
 
     def init_str_type_component(self, party=None):
-        # Init STR Type
+        """
+        Initializes the str type component.
+        :param party: Party entity object.
+        If party is none, the default party loads.
+        :param party:
+        :type party:
+        :return:
+        :rtype:
+        """
         if self.str_type_component is not None:
             return
         self.str_type_component = STRType(
@@ -191,7 +309,11 @@ class STRTreeView(QDialog, Ui_STREditor):
         )
 
     def init_spatial_unit_component(self):
-
+        """
+        Initializes the spatial unit component.
+        :return:
+        :rtype:
+        """
         if self.spatial_unit_component is not None:
             return
         self.spatial_unit_component = SpatialUnit(
@@ -202,7 +324,37 @@ class STRTreeView(QDialog, Ui_STREditor):
         self.spatial_unit_signals()
         self.spatialUnitInit.emit()
 
+    def init_str_type_signal(self, data_store, party_id):
+        """
+        Connects str type combobox signals to a slot.
+        :param data_store: Current datastore
+        :type data_store: Dictionary
+        :param party_id: The added party model id.
+        :type party_id: String
+        :return:
+        :rtype:
+        """
+        if self.str_type_component is None:
+            return
+        # gets all the comboboxes including the ones in other pages.
+        str_type_combos = self.str_type_component.str_type_combobox()
+
+        for str_type_combo in str_type_combos:
+            # connect comboboxes that are only newly added
+            if str_type_combo not in self.str_type_combo_connected:
+                str_type_combo.currentIndexChanged.connect(
+                    lambda index: self.update_str_type_data(
+                        index, data_store, party_id
+                    )
+                )
+                self.str_type_combo_connected.append(str_type_combo)
+
     def init_supporting_documents(self):
+        """
+        Initialize the supporting documents component.
+        :return:
+        :rtype:
+        """
         if self.supporting_doc_component is not None:
             return
         self.supporting_doc_component = SupportingDocuments(
@@ -217,69 +369,12 @@ class STRTreeView(QDialog, Ui_STREditor):
         self.set_str_doc_models()
         self.docsInit.emit()
 
-    def party_signals(self):
-        self.party_component.party_fk_mapper.beforeEntityAdded.connect(
-            lambda model: self.set_party_data(model)
-        )
-        self.party_component.party_fk_mapper.afterEntityAdded.connect(
-            lambda model, row_number: self.set_str_type_data(
-                0, model.id, row_number
-            )
-        )
-        self.party_component.party_fk_mapper.deletedRows.connect(
-            self.remove_party_str_row_model
-        )
-
-    def spatial_unit_signals(self):
-        self.spatial_unit_component.spatial_unit_fk_mapper. \
-            beforeEntityAdded.connect(
-            lambda model: self.set_spatial_unit_data(
-                model
-            )
-        )
-        self.spatial_unit_component.spatial_unit_fk_mapper. \
-            deletedRows.connect(
-            self.remove_spatial_unit_model
-        )
-
-    def set_str_doc_models(self):
-        models = self.supporting_doc_component.str_doc_models()
-        self.str_model = models[0]
-        self.str_doc_model = models[1]
-
-    def init_tree_view(self):
-        self.tree_view = QTreeView()
-        self.tree_view_model = QStandardItemModel()
-        self.tree_view.setModel(self.tree_view_model)
-        self.scrollArea.setWidget(self.tree_view)
-        self.tree_view.setHeaderHidden(True)
-        self.tree_view.setAlternatingRowColors(True)
-
-        self.tree_view.setEditTriggers(
-            QAbstractItemView.NoEditTriggers
-        )
-        self.tree_view.setStyleSheet(
-            '''
-            QTreeView:!active {
-                selection-background-color: #72a6d9;
-            }
-            '''
-        )
-        self.view_selection = self.tree_view.selectionModel()
-
-        self.tree_view_signals()
-
-    def tree_view_signals(self):
-        self.view_selection.currentChanged.connect(
-            self.validate_page
-        )
-        self.view_selection.currentChanged.connect(
-            self.bind_component_to_tree_view
-        )
-        self.view_selection.currentChanged.connect(self.sync_data)
-        self.tree_view.clicked.connect(self.validation_error)
-
     def str_node(self):
+        """
+        Creates the STR node with its children.
+        :return:
+        :rtype:
+        """
         str_icon = QIcon(
             ':/plugins/stdm/images/icons/new_str.png'
         )
@@ -297,23 +392,36 @@ class STRTreeView(QDialog, Ui_STREditor):
         self.data_store[self.str_number] = STRDataStore()
 
     def translate_str_items(self):
+        """
+        Translates the texts of the STR items.
+        :return:
+        :rtype:
+        """
         self.str_text = QApplication.translate(
-            'STRTreeView', 'Social Tenure Relationship'
+            'InitSTREditor', 'Social Tenure Relationship'
         )
         self.party_text = QApplication.translate(
-            'STRTreeView', 'Party'
+            'InitSTREditor', 'Party'
         )
         self.spatial_unit_text = QApplication.translate(
-            'STRTreeView', 'Spatial Unit'
+            'InitSTREditor', 'Spatial Unit'
         )
         self.tenure_type_text = QApplication.translate(
-            'STRTreeView', 'Tenure Type'
+            'InitSTREditor', 'Tenure Type'
         )
         self.supporting_doc_text = QApplication.translate(
-            'STRTreeView', 'Supporting Documents'
+            'InitSTREditor', 'Supporting Documents'
         )
 
     def str_children(self, str_root):
+        """
+        Creates STR children and
+        populates self.str_items dictionary.
+        :param str_root: The STR root item.
+        :type str_root: QStandardItem
+        :return:
+        :rtype:
+        """
         self.translate_str_items()
         children = OrderedDict()
         children[self.party_text] = 'user.png'
@@ -334,26 +442,23 @@ class STRTreeView(QDialog, Ui_STREditor):
         ]
         party_item.setEnabled(True)
 
-    def str_item(self, text, str_number):
-        item = self.str_items['%s%s'%(text, str_number)]
-        return item
-
-    def current_item(self):
-        index = self.tree_view.currentIndex()
-        item = self.tree_view_model.itemFromIndex(index)
-        return item
-
-    def current_str_number(self):
-        item = self.current_item()
-        str_number = item.data()
-        return str_number
-
     def child_item(self, str_root, name, icon):
+        """
+        Creates the child item of str_root.
+        :param str_root:  The STR root item.
+        :type str_root: QStandardItem
+        :param name: The item name
+        :type name: String
+        :param icon: The icon image of the item.
+        :type icon: String
+        :return: The child item
+        :rtype: QStandardItem
+        """
         q_icon = QIcon(
             ':/plugins/stdm/images/icons/{}'.format(icon)
         )
         name_text = QApplication.translate(
-            'STRTreeView', name
+            'InitSTREditor', name
         )
         item = QStandardItem(
             q_icon, name_text
@@ -370,77 +475,58 @@ class STRTreeView(QDialog, Ui_STREditor):
         return item
 
     def add_str_tree_node(self):
+        """
+        Adds the first STR tree node.
+        :return:
+        :rtype:
+        """
         self.str_number = self.str_number + 1
         self.str_node()
         self.buttonBox.button(
             QDialogButtonBox.Save
         ).setEnabled(False)
 
-    def validate_str_delete(self, selected_str):
-        if len(selected_str) < 1:
-            warning = 'Please first select on STR tree node or ' \
-                      'children you would like to delete.'
-            warning_message = QApplication.translate(
-                'STRTreeView', warning
-            )
-            self.notice.insertWarningNotification(
-                warning_message
-            )
-            return False
-        else:
-            text = 'Are you sure you want to ' \
-                   'delete the selected STR entry?'
-            text2 = 'STR Delete Warning'
-            question = QApplication.translate(
-                'STRTreeView', text
-            )
-            title = QApplication.translate(
-                'STRTreeView', text2
-            )
-            result = self.message(
-                title, question, 'warning', True
-            )
-            if result == QMessageBox.No:
-                return False
-            else:
-                return True
+    def str_item(self, text, str_number):
+        """
+        Gets the str_item by text and str_number.
+        :param text: The translated text of items.
+        :type text: String
+        :param str_number: The current STR number
+        :type str_number: Integer
+        :return:
+        :rtype:
+        """
+        item = self.str_items['%s%s'%(text, str_number)]
+        return item
 
-    def remove_str_tree_node(self):
-        selected_indexes = self.tree_view.selectedIndexes()
-        result = self.validate_str_delete(selected_indexes)
-        if not result:
-            return
-        index = selected_indexes[0]
-        selected_item = self.tree_view_model.itemFromIndex(index)
-        str_number = selected_item.data()
-        self.tree_view_model.removeRows(index.row(), 1)
-        self.remove_str_node_models(str_number)
-        self.enable_save_button()
+    def current_item(self):
+        """
+        Gets the currently selected tree_view item.
+        :return: The currently selected item
+        :rtype: QStandardItem
+        """
+        index = self.tree_view.currentIndex()
+        item = self.tree_view_model.itemFromIndex(index)
+        return item
 
-    def remove_str_node_models(self, str_number):
-        del self.data_store[str_number]
-
-    def remove_party_str_row_model(self, row_numbers):
-        current_store = self.current_data_store()
-
-        for row_number in row_numbers:
-            party_keys = current_store.party.keys()
-
-            try:
-                removed_key = party_keys[row_number]
-                del current_store.party[removed_key]
-                del current_store.str_type[removed_key]
-            except IndexError:
-                pass
-
-        self.str_type_component.remove_str_type_row(row_numbers)
-
-    def remove_spatial_unit_model(self):
-        current_store = self.current_data_store()
-        current_store.spatial_unit.clear()
-
+    def current_str_number(self):
+        """
+        Gets the currently selected str_number.
+        :return: The currently selected str_number
+        :rtype: Integer
+        """
+        item = self.current_item()
+        str_number = item.data()
+        return str_number
 
     def switch_entity(self, index):
+        """
+        Switches the ForeignKeyMapper of a selected party entity.
+        :param index: The Combobox current index.
+        :type index: QModelIndex
+        :return:
+        :rtype:
+        """
         table = self.entity_combo.itemData(index)
         new_entity = self.current_profile.entity_by_name(table)
         self.party_component.party_fk_mapper.setParent(None)
@@ -459,14 +545,52 @@ class STRTreeView(QDialog, Ui_STREditor):
         self.init_str_type_component(new_entity)
         self.party_signals()
 
-
     def clear_store_on_switch(self):
+        """
+        Clear party and STR type store
+        on switch of the party entity.
+        :return:
+        :rtype:
+        """
         current_store = self.current_data_store()
         current_store.party.clear()
         current_store.str_type.clear()
 
+
+    def update_str_type_data(self, index, data_store, party_id):
+        """
+
+        :param index:
+        :type index:
+        :param data_store:
+        :type data_store:
+        :param party_id:
+        :type party_id:
+        :return:
+        :rtype:
+        """
+        str_combo = self.sender()
+
+        str_type_id = str_combo.itemData(index)
+
+        data_store.str_type[party_id] = str_type_id
+
+        self.strTypeUpdated.emit()
+
+    def current_data_store(self):
+        index = self.tree_view.currentIndex()
+        selected_item = self.tree_view_model.itemFromIndex(index)
+        data_store_obj = self.data_store[selected_item.data()]
+        return data_store_obj
+
+
+class BindSTREditor(InitSTREditor):
+    def __init__(self, plugin):
+        InitSTREditor.__init__(self, plugin)
+
     def bind_component_to_tree_view(self, current, previous):
         selected_item = self.tree_view_model.itemFromIndex(current)
+
         if selected_item is None:
             return
         str_number = selected_item.data()
@@ -526,16 +650,9 @@ class STRTreeView(QDialog, Ui_STREditor):
         self.entity_combo.setHidden(True)
         self.entity_combo_label.setHidden(True)
 
-    def supporting_doc_signals(self, str_number):
-        self.doc_type_cbo.currentIndexChanged.connect(
-            lambda: self.supporting_doc_component.
-                update_container(str_number)
-        )
-        self.supporting_doc_component.onUploadDocument.connect(
-            lambda model_objs: self.set_supporting_documents(
-                model_objs
-            )
-        )
+class SyncSTREditorData(BindSTREditor):
+    def __init__(self, plugin):
+        BindSTREditor.__init__(self, plugin)
 
     def sync_data(self, current, previous):
         selected_item = self.tree_view_model.itemFromIndex(current)
@@ -560,6 +677,58 @@ class STRTreeView(QDialog, Ui_STREditor):
             self.toggle_supporting_doc(
                 data_store, str_number
             )
+
+
+    def toggle_party_models(self, fk_mapper, data_store):
+        fk_mapper.remove_rows()
+        for i, model_obj in enumerate(data_store.party.values()):
+            fk_mapper.insert_model_to_table(
+                model_obj
+            )
+
+    def toggle_spatial_unit_models(self, fk_mapper, data_store):
+        fk_mapper.remove_rows()
+
+        for i, model_obj in enumerate(
+                data_store.spatial_unit.values()
+        ):
+            fk_mapper.insert_model_to_table(
+                model_obj
+            )
+
+    def toggle_str_type_models(self, data_store):
+        #self.set_str_type_combo_data(data_store)
+        party_count = len(data_store.party)
+
+        self.str_type_component.remove_table_data(
+            self.str_type_component.str_type_table,
+            party_count
+        )
+
+        for i, (party_id, str_type_id) in \
+                enumerate(data_store.str_type.iteritems()):
+
+            self.str_type_component.add_str_type_data(
+                self.copied_party_row[party_id],
+                str_type_id,
+                i
+            )
+
+            self.init_str_type_signal(
+                data_store, party_id
+            )
+
+    def toggle_supporting_doc(self, data_store, str_number):
+        party_count = len(data_store.party)
+        # update party count
+        self.supporting_doc_component.party_count(party_count)
+        # update the current widget container widget to be used.
+        self.supporting_doc_component.update_container(str_number)
+
+
+class ValidateSTREditor(SyncSTREditorData):
+    def __init__(self, plugin):
+        SyncSTREditorData.__init__(self, plugin)
 
     def validate_page(self, current, previous):
         selected_item = self.tree_view_model.itemFromIndex(current)
@@ -645,6 +814,7 @@ class STRTreeView(QDialog, Ui_STREditor):
                 if not child.isEnabled():
                     return False
         return True
+
     def validate_party_length(self, store, item):
 
         if len(store.party) < 1:
@@ -676,12 +846,14 @@ class STRTreeView(QDialog, Ui_STREditor):
 
     def validation_error(self, index):
         item = self.tree_view_model.itemFromIndex(index)
+        if item is None:
+            return
         if not item.isEnabled():
             warning = 'You should first select a ' \
                       'record in the enabled items to open the ' \
                       '%s component.'%item.text()
             warning_message = QApplication.translate(
-                'STRTreeView', warning
+                'ValidateSTREditor', warning
             )
             self.notice.clear()
             self.notice.insertWarningNotification(
@@ -716,7 +888,7 @@ class STRTreeView(QDialog, Ui_STREditor):
                 QTimer.singleShot(
                     10100, lambda: self.remove_browser_notice(fk_mapper)
                 )
-                self.allowed_multi_party_info(
+                self.allow_multi_party_info(
                     browser_notif, usage_count
                 )
                 return True
@@ -744,7 +916,7 @@ class STRTreeView(QDialog, Ui_STREditor):
             self.party.short_name
         )
         msg = QApplication.translate(
-            'STRTreeView',
+            'ValidateSTREditor',
             'Unfortunately, this {} has already been '
             'assigned to a {}.'.format(spatial_unit, party)
         )
@@ -753,11 +925,11 @@ class STRTreeView(QDialog, Ui_STREditor):
             if browser_notif is not None:
                 browser_notif.insertErrorNotification(msg)
 
-    def allowed_multi_party_info(self, browser_notif, usage_count):
+    def allow_multi_party_info(self, browser_notif, usage_count):
 
         occupant = '%s(s)' % format_name(self.party.short_name)
         msg = QApplication.translate(
-            'STRTreeView',
+            'ValidateSTREditor',
             'This {} has already been assigned to {} {}.'.format(
                 format_name(self.spatial_unit.short_name),
                 str(usage_count),
@@ -800,10 +972,31 @@ class STRTreeView(QDialog, Ui_STREditor):
                 )
                 store = self.current_data_store()
                 store.spatial_unit.clear()
+
                 item = self.current_item()
+                self.enable_next(item, 2, False)
                 self.validate_spatial_unit_length(
                     store, item
                 )
+
+    def spatial_unit_current_usage_count(self, current_id):
+        """
+        Gets the current usage count in this DataStore objects
+        by looping through self.data_store.
+
+        :return: usage count of spatial unit
+        :rtype: Integer
+        """
+        spatial_unit_ids = []
+        for data_store in self.data_store.values():
+            for spatial_unit_obj in data_store.spatial_unit.values():
+                spatial_unit_ids.append(spatial_unit_obj.id)
+        print spatial_unit_ids
+        if spatial_unit_ids.count(current_id) > 1:
+            return spatial_unit_ids.count(current_id)
+        elif spatial_unit_ids.count(current_id) <= 1:
+            return 0
+
 
     def spatial_unit_usage_count(self, model_obj):
         """
@@ -820,90 +1013,49 @@ class STRTreeView(QDialog, Ui_STREditor):
         ).filter(
             self.str_model.spatial_unit_id == model_obj.id
         ).first()
-
-        return usage_count.spatial_unit_count
-
-    def init_str_type_signal(self, data_store, party_id):
-
-        if self.str_type_component is None:
-            return
-        # gets all the comboboxes including the ones in other pages.
-        str_type_combos = self.str_type_component.str_type_combobox()
-
-        for str_type_combo in str_type_combos:
-            # connect comboboxes that are only newly added
-            if str_type_combo not in self.str_type_combo_connected:
-                str_type_combo.currentIndexChanged.connect(
-                    lambda index: self.update_str_type_data(
-                        index, data_store, party_id
-                    )
-                )
-                self.str_type_combo_connected.append(str_type_combo)
-
-    def update_str_type_data(self, index, data_store, party_id):
-        str_combo = self.sender()
-
-        str_type_id = str_combo.itemData(index)
-
-        data_store.str_type[party_id] = str_type_id
-
-        self.strTypeUpdated.emit()
+        #TODO add a session rollback here and show error.
+        current = self.spatial_unit_current_usage_count(model_obj.id)
+        print (current + usage_count.spatial_unit_count)
+        return current + usage_count.spatial_unit_count
 
 
-    def get_table_data(self, table_view):
-        model = table_view.model()
-        table_data = []
-        spatial_unit_idx = model.index(0, 0)
-        table_data.append(model.data(
-            spatial_unit_idx, Qt.DisplayRole
-        ))
+class STREditor(ValidateSTREditor):
+    def __init__(self, plugin):
+        InitSTREditor.__init__(self, plugin)
+        self._plugin = plugin
 
-    def toggle_party_models(self, fk_mapper, data_store):
-        fk_mapper.remove_rows()
-        for i, model_obj in enumerate(data_store.party.values()):
-            fk_mapper.insert_model_to_table(
-                model_obj
+        self.str_editor_signals()
+        # self.validator = ValidateSTREditor(plugin)
+        # self.sync = SyncSTREditorData(plugin)
+        # self.bind = BindSTREditor(plugin)
+        self.tree_view_signals()
+
+    def str_editor_signals(self):
+        self.add_str_btn.clicked.connect(
+            self.add_str_tree_node
+        )
+        self.remove_str_btn.clicked.connect(
+            self.remove_str_tree_node
+        )
+        self.buttonBox.accepted.connect(self.test_save_str)
+        self.buttonBox.accepted.connect(self.save_str)
+
+    def spatial_unit_signals(self):
+        self.spatial_unit_component.spatial_unit_fk_mapper. \
+            beforeEntityAdded.connect(
+            lambda model: self.set_spatial_unit_data(
+                model
             )
-
-    def toggle_spatial_unit_models(self, fk_mapper, data_store):
-        fk_mapper.remove_rows()
-
-        for i, model_obj in enumerate(
-                data_store.spatial_unit.values()
-        ):
-            fk_mapper.insert_model_to_table(
-                model_obj
-            )
-
-    def toggle_str_type_models(self, data_store):
-        #self.set_str_type_combo_data(data_store)
-        party_count = len(data_store.party)
-
-        self.str_type_component.remove_table_data(
-            self.str_type_component.str_type_table,
-            party_count
+        )
+        self.spatial_unit_component.spatial_unit_fk_mapper. \
+            deletedRows.connect(
+            self.remove_spatial_unit_model
         )
 
-        for i, (party_id, str_type_id) in \
-                enumerate(data_store.str_type.iteritems()):
-
-            self.str_type_component.add_str_type_data(
-                self.copied_party_row[party_id],
-                str_type_id,
-                i
-            )
-
-            self.init_str_type_signal(
-                data_store, party_id
-            )
-
-
-    def toggle_supporting_doc(self, data_store, str_number):
-        party_count = len(data_store.party)
-        # update party count
-        self.supporting_doc_component.party_count(party_count)
-        # update the current widget container widget to be used.
-        self.supporting_doc_component.update_container(str_number)
+    def set_str_doc_models(self):
+        models = self.supporting_doc_component.str_doc_models()
+        self.str_model = models[0]
+        self.str_doc_model = models[1]
 
     def set_party_data(self, model):
         current_data_store = self.current_data_store()
@@ -946,29 +1098,88 @@ class STRTreeView(QDialog, Ui_STREditor):
             row_data, str_type_id, row_number
         )
 
+    def supporting_doc_signals(self, str_number):
+        self.doc_type_cbo.currentIndexChanged.connect(
+            lambda: self.supporting_doc_component.
+                update_container(str_number)
+        )
+        self.supporting_doc_component.onUploadDocument.connect(
+            lambda model_objs: self.set_supporting_documents(
+                model_objs
+            )
+        )
+
     def set_supporting_documents(self, model_objs):
         current_store = self.current_data_store()
 
         current_store.supporting_document = model_objs
 
-    def current_data_store(self):
-        index = self.tree_view.currentIndex()
+    def tree_view_signals(self):
+
+        self.view_selection.currentChanged.connect(
+            self.validate_page
+        )
+        self.view_selection.currentChanged.connect(
+            self.bind_component_to_tree_view
+        )
+        self.view_selection.currentChanged.connect(
+            self.sync_data
+        )
+        self.tree_view.clicked.connect(
+            self.validation_error
+        )
+
+    def validate_str_delete(self, selected_str):
+        if len(selected_str) < 1:
+            warning = 'Please first select on STR tree node or ' \
+                      'children you would like to delete.'
+            warning_message = QApplication.translate(
+                'STREditor', warning
+            )
+            self.notice.insertWarningNotification(
+                warning_message
+            )
+            return False
+        else:
+            text = 'Are you sure you want to ' \
+                   'delete the selected STR entry?'
+            text2 = 'STR Delete Warning'
+            question = QApplication.translate(
+                'STREditor', text
+            )
+            title = QApplication.translate(
+                'STREditor', text2
+            )
+            result = self.message(
+                title, question, 'warning', True
+            )
+            if result == QMessageBox.No:
+                return False
+            else:
+                return True
+
+    def remove_str_tree_node(self):
+        selected_indexes = self.tree_view.selectedIndexes()
+        result = self.validate_str_delete(selected_indexes)
+        if not result:
+            return
+        index = selected_indexes[0]
         selected_item = self.tree_view_model.itemFromIndex(index)
-        data_store_obj = self.data_store[selected_item.data()]
-        return data_store_obj
+        str_number = selected_item.data()
+        self.tree_view_model.removeRows(index.row(), 1)
+        self.remove_str_node_models(str_number)
+        self.enable_save_button()
 
+    def remove_str_node_models(self, str_number):
+        del self.data_store[str_number]
 
-    def enable_component_items(self):
-        for row in range(self.tree_view_model.rowCount()):
-            root = self.tree_view_model.item(row)
-            for child_row in range(root.rowCount()):
-                child = root.child(child_row, 0)
-                child.setEnabled(True)
+    def remove_spatial_unit_model(self):
+        current_store = self.current_data_store()
+        current_store.spatial_unit.clear()
 
     def save_str(self):
         db_handler = STRDBHandler(self.data_store, self.str_model)
         db_handler.commit_str()
-
 
     def test_save_str(self):
         print self.data_store
@@ -979,19 +1190,19 @@ class STRTreeView(QDialog, Ui_STREditor):
             print key, value.supporting_document
 
     def message(self, title, message, type='information', yes_no=False):
-        header = QApplication.translate('STRTreeView', title)
-        body = QApplication.translate('STRTreeView', message)
+        header = QApplication.translate('STREditor', title)
+        body = QApplication.translate('STREditor', message)
         buttons = None
         result = None
         if yes_no:
             buttons = QMessageBox.Yes | QMessageBox.No
 
-        if type=='information':
+        if type == 'information':
             result = QMessageBox.information(
                 self.iface.mainWindow(), header, body, buttons
             )
 
-        elif type=='warning' and yes_no:
+        elif type == 'warning' and yes_no:
             result = QMessageBox.warning(
                 self.iface.mainWindow(), header, body, buttons
             )
@@ -999,14 +1210,14 @@ class STRTreeView(QDialog, Ui_STREditor):
         return result
 
     def translate(self, message):
-        msg = QApplication.translate('STRTreeView', message)
+        msg = QApplication.translate('STREditor', message)
         return msg
 
 
-class EditSTRTreeView(STRTreeView, QTreeView):
+class EditSTREditor(STREditor):
 
     def __init__(self, plugin, str_edit_node):
-        STRTreeView.__init__(self, plugin)
+        STREditor.__init__(self, plugin)
 
         self.str_edit_node = str_edit_node
         try:
@@ -1019,7 +1230,7 @@ class EditSTRTreeView(STRTreeView, QTreeView):
         self.updated_str_obj = None
 
         title = QApplication.translate(
-            'newSTRWiz',
+            'EditSTREditor',
             'Edit Social Tenure Relationship'
         )
         self.setWindowTitle(title)
@@ -1070,7 +1281,9 @@ class EditSTRTreeView(STRTreeView, QTreeView):
         self.init_str_type_signal(
             self.data_store[1], self.str_edit_obj.party_id
         )
-        doc_item = self.str_item(self.tenure_type_text, self.str_number)
+        doc_item = self.str_item(
+            self.tenure_type_text, self.str_number
+        )
 
         doc_item.setEnabled(True)
 
@@ -1095,7 +1308,9 @@ class EditSTRTreeView(STRTreeView, QTreeView):
             self.str_edit_obj.spatial_unit_id
         ] = spatial_unit_model_obj
 
-        doc_item = self.str_item(self.spatial_unit_text, self.str_number)
+        doc_item = self.str_item(
+            self.spatial_unit_text, self.str_number
+        )
 
         doc_item.setEnabled(True)
 
@@ -1105,7 +1320,9 @@ class EditSTRTreeView(STRTreeView, QTreeView):
         :return: None
         :rtype: NoneType
         """
-        doc_item = self.str_item(self.supporting_doc_text, self.str_number)
+        doc_item = self.str_item(
+            self.supporting_doc_text, self.str_number
+        )
 
         if len(self.str_doc_edit_obj) < 1:
             doc_item.setEnabled(True)
@@ -1173,7 +1390,6 @@ class EditSTRTreeView(STRTreeView, QTreeView):
         )
 
         self.updated_str_obj = db_handler.commit_str()
-
 
     def test_save_str(self):
         print self.data_store

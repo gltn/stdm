@@ -152,7 +152,7 @@ class ExportData(QWizard,Ui_frmExportWizard):
         self.lstSrcTab.clear()
         # tables = pg_tables()
         tables = profile_user_tables(
-            self.curr_profile
+            self.curr_profile, True, True
         )
         for t in tables.keys():
             tabItem = QListWidgetItem(t,self.lstSrcTab)
