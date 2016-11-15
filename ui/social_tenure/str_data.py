@@ -246,6 +246,23 @@ class STRDBHandler():
             isValid = False
             STDMDb.instance().session.rollback()
 
+        except exc.InternalError:
+
+            QMessageBox.critical(
+                iface.mainWindow(),
+                QApplication.translate(
+                    'STRDBHandler',
+                    'InternalError Error'
+                ),
+                QApplication.translate(
+                    'STRDBHandler',
+                    'Sorry, there is an internal error. \n'
+                    'Restart QGIS to fix the issue.'
+                )
+            )
+            self.progress.hide()
+            isValid = False
+            STDMDb.instance().session.rollback()
         except Exception as e:
             errMsg = unicode(e)
             QMessageBox.critical(
@@ -260,6 +277,19 @@ class STRDBHandler():
             STDMDb.instance().session.rollback()
             self.progress.hide()
         finally:
+            QMessageBox.critical(
+                iface.mainWindow(),
+                QApplication.translate(
+                    'STRDBHandler', 'Unexpected Error'
+                ),
+                QApplication.translate(
+                    'STRDBHandler',
+                    'Sorry, unexpected error happened.\n'
+                    'The record(s) is not saved to the database. \n'
+                    'Try again. If the issue persists, \n'
+                    'contact the system administrator. '
+                )
+            )
             STDMDb.instance().session.rollback()
             self.progress.hide()
 

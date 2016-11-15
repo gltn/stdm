@@ -449,7 +449,7 @@ def profile_spatial_tables(profile):
     spatial_tables = dict(spatial_tables)
     return spatial_tables
 
-def profile_user_tables(profile, include_views=True):
+def profile_user_tables(profile, include_views=True, admin=False):
     """
     Returns user accessible tables from current profile and pg_views
     .
@@ -464,18 +464,33 @@ def profile_user_tables(profile, include_views=True):
     from stdm.data.pg_utils import (
         pg_views
     )
-    tables = [
-        (e.name, e.short_name)
-        for e in
-        profile.entities.values()
-        if e.TYPE_INFO in [
-            'ENTITY',
-            'ENTITY_SUPPORTING_DOCUMENT',
-            'SOCIAL_TENURE',
-            'SUPPORTING_DOCUMENT',
-            'VALUE_LIST'
+    if not admin:
+        tables = [
+            (e.name, e.short_name)
+            for e in
+            profile.entities.values()
+            if e.TYPE_INFO in [
+                'ENTITY',
+                'ENTITY_SUPPORTING_DOCUMENT',
+                'SOCIAL_TENURE',
+                'SUPPORTING_DOCUMENT',
+                'VALUE_LIST'
+            ]
         ]
-    ]
+    else:
+        tables = [
+            (e.name, e.short_name)
+            for e in
+            profile.entities.values()
+            if e.TYPE_INFO in [
+                'ENTITY',
+                'ENTITY_SUPPORTING_DOCUMENT',
+                'ADMINISTRATIVE_SPATIAL_UNIT',
+                'SOCIAL_TENURE',
+                'SUPPORTING_DOCUMENT',
+                'VALUE_LIST'
+            ]
+        ]
     tables = dict(tables)
     if include_views:
         for view in pg_views():
