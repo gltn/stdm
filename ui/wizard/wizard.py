@@ -324,7 +324,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Attach onChange event handlers for the STR combobox 
         """
-        pass
+        self.cboParty.currentIndexChanged.connect(self.on_str_party_changed)
         #self.cboParty.currentIndexChanged.connect(self.party_changed)
         #self.cboSPUnit.currentIndexChanged.connect(self.spatial_unit_changed)
 
@@ -381,6 +381,21 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.lvLookupValues.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
 
         self.lvLookups.setCurrentIndex(self.lvLookups.model().index(0,0))
+
+    def on_str_party_changed(self, idx):
+        """
+        Slot raised when the index of the party combobox changes.
+        :param idx: Current item index.
+        :type idx: int
+        """
+        if idx == -1:
+            return
+
+        #Update tenure view based on the selected party
+        if self.currentId() == 4:
+            profile = self.current_profile()
+            party = profile.entity(unicode(self.cboParty.currentText()))
+            self.dg_tenure.add_party_entity(party)
 
     def load_configuration_from_file(self, file_name):
         """
@@ -638,9 +653,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 '/.stdm/reports/templates')
         self.edtTemplatePath.setText(templates_path)
 
-    def initializePage(self, int):
+    def initializePage(self, id):
         if self.currentId() == 0:
             self.show_license()
+
+        if id == 4:
+            c_profile = self.current_profile()
+            self.dg_tenure.profile = c_profile
 
     def bool_to_check(self, state):
         """
