@@ -93,5 +93,8 @@
     <file>images/icons/select_record.png</file>
     <file>images/icons/hierarchy.png</file>
     <file>images/icons/feature_details.png</file>
+    <file>images/icons/major_annotation.png</file>
+    <file>images/icons/minor_annotation.png</file>
+    <file>images/icons/save_image.png</file>
   </qresource>
 </RCC>
