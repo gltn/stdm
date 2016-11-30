@@ -325,8 +325,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Attach onChange event handlers for the STR combobox 
         """
         self.cboParty.currentIndexChanged.connect(self.on_str_party_changed)
-        #self.cboParty.currentIndexChanged.connect(self.party_changed)
-        #self.cboSPUnit.currentIndexChanged.connect(self.spatial_unit_changed)
+        self.cboSPUnit.currentIndexChanged.connect(
+            self.on_str_spatial_unit_changed
+        )
 
     def init_entity_ctrls_event_handlers(self):
         """
@@ -394,8 +395,31 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         #Update tenure view based on the selected party
         if self.currentId() == 4:
             profile = self.current_profile()
-            party = profile.entity(unicode(self.cboParty.currentText()))
+            party_name = self.cboParty.currentText()
+            if not party_name:
+                return
+
+            party = profile.entity(party_name)
             self.dg_tenure.add_party_entity(party)
+
+    def on_str_spatial_unit_changed(self, idx):
+        """
+        Slot raised when the index of the spatial unit combobox changes.
+        :param idx: Current item index.
+        :type idx: int
+        """
+        if idx == -1:
+            return
+
+        #Update tenure view based on the selected spatial unit
+        if self.currentId() == 4:
+            profile = self.current_profile()
+            sp_unit = self.cboSPUnit.currentText()
+            if not sp_unit:
+                return
+
+            spatial_unit = profile.entity(sp_unit)
+            self.dg_tenure.set_spatial_unit(spatial_unit)
 
     def load_configuration_from_file(self, file_name):
         """
@@ -660,6 +684,14 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if id == 4:
             c_profile = self.current_profile()
             self.dg_tenure.profile = c_profile
+
+            #If there is an item in the party combobox then set it in the view
+            party_idx = self.cboParty.currentIndex()
+            self.on_str_party_changed(party_idx)
+
+            #Update spatial unit as well
+            sp_unit_idx = self.cboSPUnit.currentIndex()
+            self.on_str_spatial_unit_changed(sp_unit_idx)
 
     def bool_to_check(self, state):
         """
@@ -1567,7 +1599,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 # add this entity to STR spatial unit list of selection.
                 if editor.type_info == 'GEOMETRY':
                     self.STR_spunit_model.add_entity(entity)
-                    print 'hello'
 
     def edit_column(self):
         """

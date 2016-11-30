@@ -17,7 +17,6 @@ email                : gkahiu at gmail dot com
  *                                                                         *
  ***************************************************************************/
 """
-import sys
 import math
 
 from PyQt4.QtGui import (
@@ -25,6 +24,8 @@ from PyQt4.QtGui import (
     QBrush,
     QColor,
     QComboBox,
+    QCursor,
+    QDialog,
     QFont,
     QFontMetrics,
     QGraphicsItem,
@@ -38,6 +39,7 @@ from PyQt4.QtGui import (
     QLabel,
     QLinearGradient,
     QKeyEvent,
+    QMessageBox,
     QPainter,
     QPainterPath,
     QPen,
@@ -63,7 +65,7 @@ from PyQt4.QtCore import (
 )
 
 from stdm import resources_rc
-
+from stdm.ui.image_export_settings import ImageExportSettings
 
 class Arrow(QGraphicsLineItem):
     """
@@ -250,8 +252,14 @@ class Arrow(QGraphicsLineItem):
         center_line = QLineF(self.start_item.center(), self.end_item.center())
 
         #Get intersection points
-        start_intersection_point = self._intersection_point(self._start_item, center_line)
-        end_intersection_point = self._intersection_point(self._end_item, center_line)
+        start_intersection_point = self._intersection_point(
+            self._start_item,
+            center_line
+        )
+        end_intersection_point = self._intersection_point(
+            self._end_item,
+            center_line
+        )
 
         #Do not draw if there are no intersection points
         if start_intersection_point is None or end_intersection_point is None:
@@ -397,7 +405,6 @@ class EntityIconRenderer(BaseIconRender):
 
         h_col_pen = QPen(self.pen)
         h_col_pen.setColor(QColor('#32A7BB'))
-        #h_col_pen.setColor(QColor('#1399FC'))
         p.setPen(h_col_pen)
 
         delta_v = 12 / 3.0
@@ -1069,6 +1076,20 @@ class EntityItem(BaseTenureItem):
             self.update()
 
 
+def _updated_code_values(value_list):
+    vl = []
+
+    #Use updated values in the value list
+    for cd in value_list.values.values():
+        lk_value = cd.value
+        if cd.updated_value:
+            lk_value = cd.updated_value
+
+        vl.append(lk_value)
+
+    return vl
+
+
 class TenureRelationshipItem(BaseTenureItem):
     """
     Renders the profile's tenure relationship by listing the tenure types.
@@ -1100,7 +1121,9 @@ class TenureRelationshipItem(BaseTenureItem):
 
     def _on_set_entity(self):
         if not self._entity is None:
-            self.items = self.entity.tenure_type_lookup.value_list.lookups()
+            self.items = _updated_code_values(
+                self.entity.tenure_type_lookup.value_list
+            )
             self.update()
 
 
@@ -1136,8 +1159,9 @@ class TenureDocumentItem(BaseTenureItem):
     def _on_set_entity(self):
         if not self._entity is None:
             supporting_doc = self.entity.supporting_doc
-            self.items = supporting_doc.doc_type.value_list.lookups()
-
+            self.items = _updated_code_values(
+                supporting_doc.doc_type.value_list
+            )
             self.update()
 
 
@@ -1247,8 +1271,14 @@ class ProfileTenureView(QGraphicsView):
     MIN_DPI = 72
     MAX_DPI = 600
 
+    #Enums for add party policy
+    ADD_TO_EXISTING, REMOVE_PREVIOUS = range(2)
+
     def __init__(self, parent=None, profile=None):
         super(ProfileTenureView, self).__init__(parent)
+
+        #Add party policy
+        self.add_party_policy = ProfileTenureView.REMOVE_PREVIOUS
 
         #Init items
         #Container for party entities and corresponding items
@@ -1350,6 +1380,11 @@ class ProfileTenureView(QGraphicsView):
         """
         if party.short_name in self._party_items:
             self.remove_party(party.short_name)
+
+        #Remove previous if set in the policy
+        if self.add_party_policy == ProfileTenureView.REMOVE_PREVIOUS:
+            for p in self._party_items.keys():
+                self.remove_party(p)
 
         #Hide default party placeholder
         self._default_party_item.hide()
@@ -1462,18 +1497,20 @@ class ProfileTenureView(QGraphicsView):
                     self.scene().removeItem(item)
                     item.deleteLater()
 
-    def save_image_to_file(self, path, resolution=96):
+    def save_image_to_file(self, path, resolution=96, background=Qt.white):
         """
         Saves the profile tenure view image to file using A4 paper size.
         :param path: Absolute path where the image will be saved.
         :type path: str
         :param resolution: Resolution in dpi. Default is 96.
         :type resolution: int
+        :param background: Background color of the image:
+        :type background: QColor
         :return: Returns True if the operation succeeded, otherwise False. If
         False then a corresponding message is returned as well.
         :rtype: (bool, str)
         """
-        image = self.image(resolution)
+        image = self.image(resolution, background)
 
         if image.isNull():
             msg = self.tr('Constructed image is null.')
@@ -1600,6 +1637,11 @@ class ProfileTenureDiagram(QWidget):
         self._setup_widgets()
         self._current_zoom_factor = 1.0
 
+        #Image export options
+        self._path = ''
+        self._resolution = 96
+        self._bg_color = Qt.transparent
+
     def scene_mode(self):
         """
         :return: Returns the current state of the scene.
@@ -1652,9 +1694,15 @@ class ProfileTenureDiagram(QWidget):
         )
         self.export_image.setIcon(export_image_icon)
         self.export_image.setToolTip(self.tr('Save as Image...'))
+        self.export_image.clicked.connect(self.on_image_export_settings)
         self.layout.addWidget(self.export_image, 0, 2, 1, 1)
 
-        spacer_item = QSpacerItem(288, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        spacer_item = QSpacerItem(
+            288,
+            20,
+            QSizePolicy.Expanding,
+            QSizePolicy.Minimum
+        )
         self.layout.addItem(spacer_item, 0, 3, 1, 1)
 
         self.label = QLabel(self)
@@ -1689,6 +1737,46 @@ class ProfileTenureDiagram(QWidget):
         :rtype: QSize
         """
         return self._profile_view.image_size(resolution)
+
+    def on_image_export_settings(self):
+        """
+        Slot raised to show the dialog for image export settings.
+        """
+        img_export = ImageExportSettings(
+            self,
+            image_path=self._path,
+            resolution=self._resolution,
+            background=self._bg_color
+        )
+
+        if img_export.exec_() == QDialog.Accepted:
+            self._path = img_export.path
+            self._resolution = img_export.resolution
+            self._bg_color = img_export.background_color
+
+            QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+
+            #Attempt to save the image
+            status, msg = self.save_image_to_file(
+                self._path,
+                self._resolution,
+                self._bg_color
+            )
+
+            QApplication.restoreOverrideCursor()
+
+            if status:
+                QMessageBox.information(
+                    self,
+                    self.tr('Profile Tenure View'),
+                    self.tr('Image saved successfully.')
+                )
+            else:
+                QMessageBox.critical(
+                    self,
+                    self.tr('Profile Tenure View'),
+                    msg
+                )
 
     def on_major_annotation_toggled(self, state):
         """
@@ -1770,18 +1858,24 @@ class ProfileTenureDiagram(QWidget):
         """
         return self._profile_view.valid()
 
-    def save_image_to_file(self, path, resolution):
+    def save_image_to_file(self, path, resolution, background=Qt.white):
         """
         Saves the profile tenure view image to file using A4 paper size.
         :param path: Absolute path where the image will be saved.
         :type path: str
         :param resolution: Resolution in dpi. Default is 96.
         :type resolution: int
+        :param background: Background color of the image.
+        :type background: QColor
         :return: Returns True if the operation succeeded, otherwise False. If
         False then a corresponding message is returned as well.
         :rtype: (bool, str)
         """
-        return self._profile_view.save_image_to_file(path, resolution)
+        return self._profile_view.save_image_to_file(
+            path,
+            resolution,
+            background
+        )
 
     def set_spatial_unit(self, spatial_unit):
         """
