@@ -1593,6 +1593,7 @@ class ProfileTenureView(QGraphicsView):
 
         painter = QPainter(img)
         painter.setRenderHint(QPainter.Antialiasing, True)
+        painter.setRenderHint(QPainter.TextAntialiasing, True)
         self.scene().render(painter)
         painter.end()
 
