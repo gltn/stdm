@@ -620,6 +620,16 @@ class ForeignKeyColumn(IntegerColumn):
         if self.entity_relation.valid()[0]:
             self.profile.add_entity_relation(self.entity_relation)
 
+    @property
+    def parent(self):
+        """
+        :return: Returns the parent entity referenced by this foreign key.
+        Returns None if not specified.
+        .. versionadded:: 1.5
+        :rtype: Entity
+        """
+        return self.entity_relation.parent
+
     def set_entity_relation_attr(self, attr, val):
         """
         Sets the specified property of the entity relation object.

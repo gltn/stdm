@@ -41,7 +41,7 @@ class SocialTenure(Entity):
     Main class that represents 'people-land' relationships.
     """
     TYPE_INFO = 'SOCIAL_TENURE'
-    PARTY, SPATIAL_UNIT, SOCIAL_TENURE_TYPE = range(0,3)
+    PARTY, SPATIAL_UNIT, SOCIAL_TENURE_TYPE = range(0, 3)
     BASE_STR_VIEW = 'vw_social_tenure_relationship'
     tenure_type_list = 'tenure_type'
     view_creator = view_updater
@@ -76,6 +76,9 @@ class SocialTenure(Entity):
         self.add_column(self.spatial_unit_foreign_key)
         self.add_column(self.tenure_type_lookup)
 
+        #Added in v1.5
+        self._party_columns = []
+
         #Specify if a spatial unit should only be linked to one party
         self.multi_party = True
 
@@ -91,6 +94,16 @@ class SocialTenure(Entity):
             return self.layer_display_name
 
         return self.view_name
+
+    @property
+    def parties(self):
+        """
+        :return: Returns a collection of party entities.
+        .. versionadded:: 1.5
+        :rtype: list
+        """
+        return [pc.parent for pc in self._party_columns
+                if not pc.parent is None]
 
     @property
     def view_name(self):
