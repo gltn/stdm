@@ -93,5 +93,6 @@
     <file>images/icons/select_record.png</file>
     <file>images/icons/hierarchy.png</file>
     <file>images/icons/feature_details.png</file>
+    <file>images/icons/period.png</file>
   </qresource>
 </RCC>

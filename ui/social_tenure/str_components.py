@@ -1,4 +1,9 @@
 from collections import OrderedDict
+from datetime import (
+    date
+)
+from dateutil.relativedelta import relativedelta
+from PyQt4.QtCore import QDateTime
 from PyQt4.QtCore import (
     pyqtSignal,
     QObject,
@@ -6,6 +11,7 @@ from PyQt4.QtCore import (
     QFileInfo,
     QRegExp
 )
+from PyQt4.QtGui import QSpinBox
 
 from PyQt4.QtGui import (
     QVBoxLayout,
@@ -114,9 +120,10 @@ class ComponentUtility(QObject):
             return None
 
     def clear_component(self):
-        for widget in self.container_box.findChildren(QWidget):
-            if isinstance(widget, ForeignKeyMapper):
-                widget.hide()
+        if not self.container_box is None:
+            for widget in self.container_box.findChildren(QWidget):
+                if isinstance(widget, ForeignKeyMapper):
+                    widget.hide()
 
     def update_table_view(self, table_view, str_type):
         """
@@ -660,4 +667,62 @@ class SupportingDocuments(ComponentUtility):
         )
         return files
 
+class ValidityPeriod():
+    def __init__(self, str_editor):
+        self.str_editor = str_editor
+        self.from_date =  self.str_editor.validity_from_date
+        self.to_date = self.str_editor.validity_to_date
 
+        self.init_dates()
+        str_editor.number_of_year.valueChanged.connect(
+            self.bind_to_date_by_year
+        )
+        self.to_date.dateChanged.connect(
+            self.bind_year_by_dates_range
+        )
+        self.from_date.dateChanged.connect(
+            self.bind_year_by_dates_range
+        )
+
+    def init_dates(self):
+        """
+        Initialize the dates by setting the current date.
+        :return:
+        :rtype:
+        """
+        self.from_date.setDate(
+            date.today()
+        )
+        self.to_date.setDate(
+            date.today()
+        )
+
+    def bind_to_date_by_year(self, increment):
+        """
+        A slot raised when validity years is specified.
+        It changes the end date of the validity.
+        :param increment: The new value of year spinbox.
+        :type increment: Integer
+        :return:
+        :rtype:
+        """
+        before_date = self.to_date.date().currentDate()
+        after_date = date(
+            before_date.year() + increment,
+            before_date.month(),
+            before_date.day()
+        )
+        self.to_date.setDate(after_date)
+
+    def bind_year_by_dates_range(self):
+        """
+        A slot raised when from or to dates are changed.
+        It updates the year spinbox. Note that,
+        there is no rounding.
+        :return:
+        :rtype:
+        """
+        years = relativedelta(
+            self.to_date.date().toPyDate(),
+            self.from_date.date().toPyDate()).years
+        self.str_editor.number_of_year.setValue(years)
