@@ -85,18 +85,18 @@
            </widget>
           </item>
           <item>
-           <widget class="QSpinBox" name="sb_zoom">
+           <widget class="QDoubleSpinBox" name="sb_zoom">
             <property name="minimumSize">
              <size>
               <width>0</width>
               <height>32</height>
              </size>
             </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
             <property name="maximum">
-             <number>32</number>
+             <double>16.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>1.500000000000000</double>
             </property>
            </widget>
           </item>
@@ -133,8 +133,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>290</width>
-            <height>303</height>
+            <width>282</width>
+            <height>292</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_5">

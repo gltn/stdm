@@ -991,7 +991,7 @@ class ValidateSTREditor(SyncSTREditorData):
         for data_store in self.data_store.values():
             for spatial_unit_obj in data_store.spatial_unit.values():
                 spatial_unit_ids.append(spatial_unit_obj.id)
-        print spatial_unit_ids
+
         if spatial_unit_ids.count(current_id) > 1:
             return spatial_unit_ids.count(current_id)
         elif spatial_unit_ids.count(current_id) <= 1:

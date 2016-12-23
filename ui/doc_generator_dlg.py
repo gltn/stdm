@@ -571,83 +571,83 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         progressDlg = QProgressDialog(self)
         progressDlg.setMaximum(len(records))
 
-        try:
-            QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+        # try:
+        QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
 
-            for i, record in enumerate(records):
-                progressDlg.setValue(i)
+        for i, record in enumerate(records):
+            progressDlg.setValue(i)
 
-                if progressDlg.wasCanceled():
+            if progressDlg.wasCanceled():
+                success_status = False
+                break
+
+            #User-defined location
+            if self.chkUseOutputFolder.checkState() == Qt.Unchecked:
+                status,msg = self._doc_generator.run(self._docTemplatePath, entity_field_name,
+                                              record.id, outputMode,
+                                              filePath = self._outputFilePath)
+                self._doc_generator.clear_temporary_layers()
+            #Output folder location using custom naming
+            else:
+
+                status, msg = self._doc_generator.run(self._docTemplatePath, entity_field_name,
+                                                record.id, outputMode,
+                                                dataFields = documentNamingAttrs,
+                                                fileExtension = fileExtension,
+                                                data_source = self.ds_entity.name)
+                self._doc_generator.clear_temporary_layers()
+
+            if not status:
+                result = QMessageBox.warning(self,
+                                             QApplication.translate("DocumentGeneratorDialog",
+                                                                    "Document Generate Error"),
+                                             msg, QMessageBox.Ignore | QMessageBox.Abort)
+
+                if result == QMessageBox.Abort:
+                    progressDlg.close()
                     success_status = False
-                    break
 
-                #User-defined location
-                if self.chkUseOutputFolder.checkState() == Qt.Unchecked:
-                    status,msg = self._doc_generator.run(self._docTemplatePath, entity_field_name,
-                                                  record.id, outputMode,
-                                                  filePath = self._outputFilePath)
-                    self._doc_generator.clear_temporary_layers()
-                #Output folder location using custom naming
-                else:
+                    #Restore cursor
+                    QApplication.restoreOverrideCursor()
 
-                    status, msg = self._doc_generator.run(self._docTemplatePath, entity_field_name,
-                                                    record.id, outputMode,
-                                                    dataFields = documentNamingAttrs,
-                                                    fileExtension = fileExtension,
-                                                    data_source = self.ds_entity.name)
-                    self._doc_generator.clear_temporary_layers()
+                    return
 
-                if not status:
-                    result = QMessageBox.warning(self,
-                                                 QApplication.translate("DocumentGeneratorDialog",
-                                                                        "Document Generate Error"),
-                                                 msg, QMessageBox.Ignore | QMessageBox.Abort)
+                #If its the last record and user has selected to ignore
+                if i+1 == len(records):
+                    progressDlg.close()
+                    success_status = False
 
-                    if result == QMessageBox.Abort:
-                        progressDlg.close()
-                        success_status = False
+                    #Restore cursor
+                    QApplication.restoreOverrideCursor()
 
-                        #Restore cursor
-                        QApplication.restoreOverrideCursor()
+                    return
 
-                        return
+            else:
+                progressDlg.setValue(len(records))
 
-                    #If its the last record and user has selected to ignore
-                    if i+1 == len(records):
-                        progressDlg.close()
-                        success_status = False
+        QApplication.restoreOverrideCursor()
 
-                        #Restore cursor
-                        QApplication.restoreOverrideCursor()
+        QMessageBox.information(self,
+            QApplication.translate("DocumentGeneratorDialog",
+                                   "Document Generation Complete"),
+            QApplication.translate("DocumentGeneratorDialog",
+                                "Document generation has successfully completed.")
+                                )
 
-                        return
-
-                else:
-                    progressDlg.setValue(len(records))
-
-            QApplication.restoreOverrideCursor()
-
-            QMessageBox.information(self,
-                QApplication.translate("DocumentGeneratorDialog",
-                                       "Document Generation Complete"),
-                QApplication.translate("DocumentGeneratorDialog",
-                                    "Document generation has successfully completed.")
-                                    )
-
-        except Exception as ex:
-            LOGGER.debug(str(ex))
-            err_msg = sys.exc_info()[1]
-            QApplication.restoreOverrideCursor()
-
-            QMessageBox.critical(
-                self,
-                "STDM",
-                QApplication.translate(
-                    "DocumentGeneratorDialog",
-                    "Error Generating documents - %s"%(err_msg)
-                )
-            )
-            success_status = False
+        # except Exception as ex:
+        #     LOGGER.debug(str(ex))
+        #     err_msg = sys.exc_info()[1]
+        #     QApplication.restoreOverrideCursor()
+        #
+        #     QMessageBox.critical(
+        #         self,
+        #         "STDM",
+        #         QApplication.translate(
+        #             "DocumentGeneratorDialog",
+        #             "Error Generating documents - %s"%(err_msg)
+        #         )
+        #     )
+        #     success_status = False
 
         #Reset UI
         self.reset(success_status)

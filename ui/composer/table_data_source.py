@@ -24,7 +24,7 @@ from PyQt4.QtGui import (
 )
 from PyQt4.QtCore import QRegExp
 
-from qgis.core import QgsMapLayerRegistry
+from qgis.core import QgsMapLayerRegistry, QgsComposerFrame
 
 from stdm.data.pg_utils import (
     VIEWS,
@@ -39,12 +39,16 @@ from .referenced_table_editor import LinkedTableProps
 from .ui_composer_table_source import Ui_TableDataSourceEditor
 
 class ComposerTableDataSourceEditor(QWidget, Ui_TableDataSourceEditor):
-    def __init__(self, composer_wrapper, table_item, parent=None):
+    def __init__(self, composer_wrapper, frame_item, parent=None):
         QWidget.__init__(self, parent)
         self.setupUi(self)
 
         self._composer_wrapper = composer_wrapper
-        self._composer_table_item = table_item
+        if isinstance(frame_item, QgsComposerFrame):
+            self._composer_table_item = frame_item.multiFrame()
+
+        else:
+            self._composer_table_item = frame_item
 
         self._notif_bar = NotificationBar(self.vl_notification)
 
