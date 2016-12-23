@@ -106,6 +106,8 @@ from stdm.ui.feature_details import DetailsTreeView
 
 from stdm.ui.social_tenure.str_editor import STREditor
 
+from stdm.settings.config_updater import UpdateUtils
+
 LOGGER = logging.getLogger('stdm')
 
 
@@ -589,6 +591,8 @@ class STDMQGISLoader(object):
         loaded. Otherwise, False.
         :rtype: bool
         """
+        update = UpdateUtils('configuration_act.stc')
+        update.run()
         progress = STDMProgressDialog(parent)
         progress.overall_progress(
             'Upgrading STDM Configuration...',

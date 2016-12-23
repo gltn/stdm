@@ -16,6 +16,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+from PyQt4.QtCore import QRegExp
 from PyQt4.QtGui import (
     QApplication,
     QComboBox,
@@ -35,10 +36,14 @@ from PyQt4.QtGui import (
 from PyQt4.QtCore import QFile
 
 from qgis.gui import (
-    QgsCollapsibleGroupBoxBasic
+    QgsCollapsibleGroupBoxBasic,
+    QgsMapLayerComboBox
 )
 from qgis.core import (
     QgsComposerArrow,
+    QgsComposerAttributeTableV2,
+    QgsComposerFrame,
+    QgsComposerTableColumn,
     QgsComposerAttributeTable,
     QgsComposerLabel,
     QgsComposerMap,
@@ -248,50 +253,54 @@ class TableFormatter(BaseComposerItemFormatter):
     """
     Add widget for formatting an attribute table item.
     """
-    def apply(self, table_item, composerWrapper, fromTemplate=False):
-        if not isinstance(table_item, QgsComposerAttributeTable):
+    def apply(self, frame_item, composerWrapper, fromTemplate=False):
+
+        if not isinstance(frame_item, QgsComposerFrame):
             return
 
+        table_item = frame_item.multiFrame()
         #Get the table editor widget and configure widgets
         table_editor = composerWrapper.itemDock().widget()
+
         if not table_editor is None:
             self._configure_table_editor_properties(table_editor)
 
         if not fromTemplate:
             table_item.setComposerMap(None)
+            text = '     Choose the data source of the table and ' \
+                   'the link columns in the STDM item properties.'
+            table_text = QApplication.translate('TabelFormatter', text)
+            default_column = QgsComposerTableColumn(table_text)
+
+            table_item.setColumns([default_column])
+
             #Create data properties editor and it to the dock widget
             table_data_source_editor = ComposerTableDataSourceEditor(composerWrapper, table_item)
             stdmDock = composerWrapper.stdmItemDock()
             stdmDock.setWidget(table_data_source_editor)
 
             #Add widget to the composer wrapper widget mapping collection
-            composerWrapper.addWidgetMapping(table_item.uuid(), table_data_source_editor)
+            composerWrapper.addWidgetMapping(frame_item.uuid(), table_data_source_editor)
 
         #Set ID to match UUID
-        table_item.setId(table_item.uuid())
+            frame_item.setId(frame_item.uuid())
 
     def _configure_table_editor_properties(self, base_table_editor):
         qgis_version = QGis.QGIS_VERSION_INT
-
         #Get scroll area first
         scroll_area = base_table_editor.findChild(QScrollArea,"scrollArea")
+
         if not scroll_area is None:
+
             contents_widget = scroll_area.widget()
+            object_names = ['^mRefreshPushButton$'] ##, '^mLayerLabel$', '^mLayerComboBox$', ]
 
-            main_properties_groupbox = contents_widget.findChild(QGroupBox, "groupBox")
-            if not main_properties_groupbox is None:
-                layer_lbl = main_properties_groupbox.findChild(QLabel, "mLayerLabel")
-                if not layer_lbl is None:
-                    layer_lbl.setVisible(False)
+            for object_name in object_names:
+                name_regex = QRegExp(object_name)
+                for widget in contents_widget.findChildren(QWidget, name_regex):
+                    widget.setVisible(False)
 
-                layer_combo = main_properties_groupbox.findChild(QComboBox, "mLayerComboBox")
-                if not layer_combo is None:
-                    layer_combo.setVisible(False)
-
-                refresh_btn = main_properties_groupbox.findChild(QPushButton, "mRefreshPushButton")
-                if not refresh_btn is None:
-                    refresh_btn.setVisible(False)
-
+                main_properties_groupbox = contents_widget.findChild(QGroupBox, "groupBox")
                 #Version 2.4
                 if qgis_version >= 20400 and qgis_version <= 20600:
                     self._hide_filter_controls(main_properties_groupbox)
@@ -300,6 +309,8 @@ class TableFormatter(BaseComposerItemFormatter):
                 feature_filter_groupbox = contents_widget.findChild(QGroupBox, "groupBox_5")
                 if not feature_filter_groupbox is None:
                     self._hide_filter_controls(feature_filter_groupbox)
+            appearance_groupbox = contents_widget.findChild(QGroupBox, "groupBox_6")
+            appearance_groupbox.setVisible(True)
 
 
     def _hide_filter_controls(self, groupbox):

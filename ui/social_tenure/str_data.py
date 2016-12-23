@@ -277,19 +277,7 @@ class STRDBHandler():
             STDMDb.instance().session.rollback()
             self.progress.hide()
         finally:
-            QMessageBox.critical(
-                iface.mainWindow(),
-                QApplication.translate(
-                    'STRDBHandler', 'Unexpected Error'
-                ),
-                QApplication.translate(
-                    'STRDBHandler',
-                    'Sorry, unexpected error happened.\n'
-                    'The record(s) is not saved to the database. \n'
-                    'Try again. If the issue persists, \n'
-                    'contact the system administrator. '
-                )
-            )
+
             STDMDb.instance().session.rollback()
             self.progress.hide()
 

@@ -248,7 +248,7 @@ class TableConfig(ComposerItemConfig):
         return tb_act
 
     def on_action_triggered(self, state):
-        self.composerView().setCurrentTool(QgsComposerView.AddTable)
+        self.composerView().setCurrentTool(QgsComposerView.AddAttributeTable)
 
     def on_action_toggled(self, checked):
         if checked:

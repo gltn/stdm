@@ -514,9 +514,10 @@ class DocumentGenerator(QObject):
         """
         Builds a memory vector layer based on the spatial field mapping properties.
         """
-        vl_geom_config = u"{0}?crs=epsg:{1!s}&field=name:string(20)&" \
+        vl_geom_config = u"{0}?crs=epsg:{1:d}&field=name:string(20)&" \
                          u"index=yes".format(geom_type, srid)
-        ref_layer = QgsVectorLayer(vl_geom_config, layer_name, "memory")
+
+        ref_layer = QgsVectorLayer(vl_geom_config, unicode(layer_name), "memory")
         return ref_layer
 
     def _load_table_layers(self, config_collection):

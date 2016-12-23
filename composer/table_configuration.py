@@ -30,7 +30,8 @@ from .configuration_collection_base import (
 )
 from qgis.core import (
     QgsMapLayerRegistry,
-    QgsVectorLayer
+    QgsVectorLayer,
+    QgsComposerFrame
 )
 
 from .photo_configuration import PhotoConfiguration
@@ -97,15 +98,24 @@ class TableItemValueHandler(ItemConfigValueHandler):
     to fetch the corresponding rows from the linked table in the database.
     """
     def set_data_source_record(self, record):
+
         table_item = self.composer_item()
+        try:
+            cols = table_item.columns()
+        except AttributeError:
+            cols = table_item.multiFrame().columns()
         if table_item is None:
             return
+        if isinstance(table_item, QgsComposerFrame):
+            table_item = table_item.multiFrame()
+
 
         '''
         Capture saved column settings since we are about to reset the vector
         layer
         '''
         display_attrs_cols = []
+
         cols = table_item.columns()
 
         for col in cols:
