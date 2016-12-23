@@ -36,7 +36,8 @@ from str_components import (
     Party,
     SpatialUnit,
     STRType,
-    SupportingDocuments
+    SupportingDocuments,
+    ValidityPeriod
 )
 from stdm.utils.util import (
     format_name
@@ -77,6 +78,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
         self.str_model = None
         self.str_doc_model = None
         self.spatial_unit_component = None
+        self.validity_period_component = None
 
         self.str_type_combo_connected = []
         # TODO Get list of party entities from the configuration
@@ -85,7 +87,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
         self.str_type_component = None
         # TODO use the first party entity among many, if many or the only one
         QTimer.singleShot(22, self.init_party_component)
-
+        self.init_validity_period_component()
         self.copied_party_row = OrderedDict()
         self.init_str_editor()
 
@@ -369,6 +371,12 @@ class InitSTREditor(QDialog, Ui_STREditor):
         self.set_str_doc_models()
         self.docsInit.emit()
 
+    def init_validity_period_component(self):
+        if self.validity_period_component is not None:
+            return
+        self.validity_period_component = ValidityPeriod(self)
+
+
     def str_node(self):
         """
         Creates the STR node with its children.
@@ -413,6 +421,10 @@ class InitSTREditor(QDialog, Ui_STREditor):
             'InitSTREditor', 'Supporting Documents'
         )
 
+        self.validity_period_text = QApplication.translate(
+            'InitSTREditor', 'Validity Period'
+        )
+
     def str_children(self, str_root):
         """
         Creates STR children and
@@ -428,6 +440,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
         children[self.spatial_unit_text] = 'property.png'
         children[self.tenure_type_text] = 'social_tenure.png'
         children[self.supporting_doc_text] = 'document.png'
+        children[self.validity_period_text] = 'period.png'
         for name, icon in children.iteritems():
             item = self.child_item(str_root, name, icon)
             self.str_items[
@@ -612,6 +625,8 @@ class BindSTREditor(InitSTREditor):
             self.bind_supporting_documents(
                 str_number
             )
+        if selected_item.text() == self.validity_period_text:
+            self.bind_validity_period()
 
     def bind_str(self):
         self.component_container.setCurrentIndex(0)
@@ -639,6 +654,7 @@ class BindSTREditor(InitSTREditor):
     def bind_tenure_type(self):
         self.component_container.setCurrentIndex(3)
         QTimer.singleShot(50, self.init_supporting_documents)
+        #QTimer.singleShot(50, self.init_validity_period_component)
         self.top_description.setCurrentIndex(3)
         self.entity_combo.setHidden(True)
         self.entity_combo_label.setHidden(True)
@@ -647,6 +663,13 @@ class BindSTREditor(InitSTREditor):
         self.component_container.setCurrentIndex(4)
         self.top_description.setCurrentIndex(4)
         self.supporting_doc_signals(str_number)
+        self.entity_combo.setHidden(True)
+        self.entity_combo_label.setHidden(True)
+
+    def bind_validity_period(self):
+        self.component_container.setCurrentIndex(5)
+        self.top_description.setCurrentIndex(5)
+        #self.supporting_doc_signals(str_number)
         self.entity_combo.setHidden(True)
         self.entity_combo_label.setHidden(True)
 
@@ -842,6 +865,7 @@ class ValidateSTREditor(SyncSTREditorData):
         else:
 
             self.enable_next(selected_item, 3, True)
+            self.enable_next(selected_item, 4, True)
             self.enable_save_button()
 
     def validation_error(self, index):
