@@ -2,6 +2,8 @@ from collections import OrderedDict
 from datetime import (
     date
 )
+
+from PyQt4.QtGui import QDoubleSpinBox
 from dateutil.relativedelta import relativedelta
 from PyQt4.QtCore import QDateTime
 from PyQt4.QtCore import (
@@ -59,19 +61,18 @@ class ComponentUtility(QObject):
     def str_doc_models(self):
         return self.str_model, self.str_doc_model
 
-
     def _create_fk_mapper(
             self, config, parent, notif_bar, multi_row=True
     ):
         """
-        Creates the forign key mapper object.
+        Creates the foreign key mapper object.
         :param config: Entity configuration
         :type config: Object
         :param parent: Container of the mapper
         :type parent: QWidget
         :param notif_bar: The notification bar
         :type notif_bar: QVBLayout
-        :param multi_row: Boolean allowing muti-rows
+        :param multi_row: Boolean allowing multi-rows
         in the tableview.
         :type multi_row: Boolean
         :return:
@@ -95,8 +96,6 @@ class ComponentUtility(QObject):
                 self.current_profile.social_tenure.spatial_unit
             ]
             return str_entities
-
-
 
     def _load_entity_config(self, entity):
         """
@@ -146,9 +145,10 @@ class ComponentUtility(QObject):
         # enable sorting
         table_view.setSortingEnabled(False)
         if str_type:
-            table_view.hideColumn(1)
+            table_view.hideColumn(2)
         else:
             table_view.hideColumn(0)
+
 
     def remove_table_data(self, table_view, row_count):
         """
@@ -270,12 +270,15 @@ class STRType(ComponentUtility):
         :return:
         :rtype:
         """
-        data = [None] + row_data
+        data = [None, None] + row_data
         self.str_type_data.append(data)
-        self.str_type_table.add_combobox(str_type_id, insert_row)
+        self.str_type_table.add_widgets(str_type_id, insert_row)
+        #self.str_type_table.add_share_box(insert_row)
         self.update_table_view(self.str_type_table, True)
-        self.enable_str_type_combo(insert_row)
+       # self.enable_str_type_widgets(insert_row)
         self.str_type_table.model().layoutChanged.emit()
+        ## select the first column (STR Type)
+        self.str_type_table.frozen_table_view.selectColumn(0)
 
     def copy_party_table(self, table_view, row):
         """
@@ -319,12 +322,15 @@ class STRType(ComponentUtility):
             str_type_header = QApplication.translate(
                 'STRType', 'Social Tenure Type'
             )
+            share_header = QApplication.translate(
+                'STRType', 'Ownership Share'
+            )
             #First (ID) column will always be hidden
             headers.append(str_type_header)
+            headers.append(share_header)
 
             for col in entity_display_columns(self.party):
                 headers.append(format_name(col))
-
             return headers
 
     def create_str_type_table(self):
@@ -334,7 +340,6 @@ class STRType(ComponentUtility):
         social tenure type.
         """
         headers = self.add_str_type_headers()
-
         self.str_type_table = FreezeTableWidget(
             self.str_type_data, headers, self.container_widget
         )
@@ -351,7 +356,7 @@ class STRType(ComponentUtility):
         self.container_box.addLayout(grid_layout)
         self.container_box.addWidget(self.str_type_table)
 
-    def enable_str_type_combo(self, row):
+    def enable_str_type_widgets(self, row):
         """
         Makes the STR Type combobox editable.
         :param row: The row of STR Type combobox
@@ -360,10 +365,11 @@ class STRType(ComponentUtility):
         :rtype: NoneType
         """
         model = self.str_type_table.frozen_table_view.model()
-        self.str_type_table.frozen_table_view. \
-            openPersistentEditor(
-            model.index(row, 0)
-        )
+        for i in range(0, 1):
+            self.str_type_table.frozen_table_view. \
+                openPersistentEditor(
+                model.index(row, i)
+            )
 
     def str_type_data(self):
         """
@@ -382,22 +388,28 @@ class STRType(ComponentUtility):
             index = combo.currentIndex()
             str_type = combo.itemData(index)
             str_types.append(str_type)
-
         return str_types
-
 
     def str_type_combobox(self):
         """
-        Gets party and str_type data from str_type
-        page (page 3 of the wizard). It uses
-        get_table_data() method.
-        :return: A list containing a list of ids of
-        the selected str related table or str_type value.
+        Gets str type comboboxes.
+        :return: A list containing a list comboboxes
         :rtype: List
         """
         frozen_table = self.str_type_table.frozen_table_view
         combo_boxes = frozen_table.findChildren(QComboBox)
         return combo_boxes
+
+    def ownership_share(self):
+        """
+        Gets ownership_share double spin boxes.
+        :return: A list containing a list double spin boxes
+        :rtype: List
+        """
+        frozen_table = self.str_type_table.frozen_table_view
+        spinboxes = frozen_table.findChildren(QDoubleSpinBox)
+        # print 'spinboxes ', len(spinboxes)
+        return spinboxes
 
     def remove_str_type_row(self, rows=[0]):
         """
