@@ -106,7 +106,7 @@ class SpatialUnitManagerDockWidget(
             ge for ge in config_entities.values()
             if ge.TYPE_INFO == 'ENTITY' and
             ge.has_geometry_column()
-            ]
+        ]
 
         self._profile_spatial_layers = []
         self.sp_tables = spatial_tables()

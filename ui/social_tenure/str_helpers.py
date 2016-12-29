@@ -16,6 +16,7 @@ from PyQt4.QtGui import (
     QSizePolicy,
     QSortFilterProxyModel
 )
+from PyQt4.QtGui import QDoubleSpinBox
 from stdm.data.qtmodels import BaseSTDMTableModel
 from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
@@ -24,7 +25,7 @@ from stdm.utils.util import (
 )
 
 LOGGER = logging.getLogger('stdm')
-class ComboBoxDelegate(QItemDelegate):
+class STRTypeDelegate(QItemDelegate):
 
     def __init__(self, str_type_id=0, parent=None):
         """
@@ -37,23 +38,24 @@ class ComboBoxDelegate(QItemDelegate):
         :rtype:
         """
         QItemDelegate.__init__(self, parent)
-        self.row = 0
+        #self.row = 0
         self.str_type_id = str_type_id
         self.curr_profile = current_profile()
+
         self.social_tenure = self.curr_profile.social_tenure
 
-    def str_type_combo (self):
-        """
-        A slot raised to add new str type
-        matched with the party.
-        :return: None
-        """
-        str_type_cbo = QComboBox()
-        str_type_cbo.setObjectName(
-            'STRTypeCbo'+str(self.row+1)
-        )
-        self.row = self.row + 1
-        return str_type_cbo
+    # def str_type_combo (self):
+    #     """
+    #     A slot raised to add new str type
+    #     matched with the party.
+    #     :return: None
+    #     """
+    #     str_type_cbo = QComboBox()
+    #     str_type_cbo.setObjectName(
+    #         'STRTypeCbo'+str(self.row+1)
+    #     )
+    #     self.row = self.row + 1
+    #     return str_type_cbo
 
     def str_type_set_data(self):
         """
@@ -85,18 +87,25 @@ class ComboBoxDelegate(QItemDelegate):
         :return: The combobox
         :rtype: QComboBox
         """
-        str_combo = QComboBox(parent)
-        str_combo.insertItem(0, " ")
-        for id, type in self.str_type_set_data().iteritems():
-            str_combo.addItem(type, id)
-        if self.str_type_id is not None:
-            str_combo.setCurrentIndex(
-                self.str_type_id
-            )
 
-        return str_combo
+        if index.column() == 0:
+            str_combo = QComboBox(parent)
+            str_combo.insertItem(0, " ")
+            for id, type in self.str_type_set_data().iteritems():
+                str_combo.addItem(type, id)
+            if self.str_type_id is not None:
+                str_combo.setCurrentIndex(
+                    self.str_type_id
+                )
+            return str_combo
+        elif index.column() == 1:
+            spinbox = QDoubleSpinBox(parent)
+            spinbox.setObjectName(unicode(index.row()))
+            spinbox.setMinimum(0.00)
+            spinbox.setMaximum(100.00)
+            return spinbox
 
-    def setEditorData(self, comboBox, index):
+    def setEditorData(self, widget, index):
         """
         Set data to the Combobox.
         :param comboBox: The STR Type combobox
@@ -106,17 +115,22 @@ class ComboBoxDelegate(QItemDelegate):
         :return: None
         :rtype: NoneType
         """
-        list_item_index = None
-        if not index.model() is None:
-            list_item_index = index.model().data(
-                index, Qt.DisplayRole
-            )
-        if list_item_index is not None and \
-                not isinstance(list_item_index, (unicode, str)):
-            value = list_item_index.toInt()
-            comboBox.blockSignals(True)
-            comboBox.setCurrentIndex(value[0])
-            comboBox.blockSignals(False)
+        if index.column() == 0:
+            list_item_index = None
+            if not index.model() is None:
+                list_item_index = index.model().data(
+                    index, Qt.DisplayRole
+                )
+            if list_item_index is not None and \
+                    not isinstance(list_item_index, (unicode, str)):
+                value = list_item_index.toInt()
+                widget.blockSignals(True)
+                widget.setCurrentIndex(value[0])
+                widget.blockSignals(False)
+        # if index.column() == 1:
+        #     widget.blockSignals(True)
+        #     widget.setValue(100.00)
+        #     widget.blockSignals(False)
 
     def setModelData(self, editor, model, index):
         """
@@ -132,12 +146,15 @@ class ComboBoxDelegate(QItemDelegate):
         :return: None
         :rtype: NoneType
         """
-        value = editor.currentIndex()
-        model.setData(
-            index,
-            editor.itemData(
-            value, Qt.DisplayRole)
-        )
+        if index.column() == 0:
+            value = editor.currentIndex()
+            model.setData(
+                index,
+                editor.itemData(
+                value, Qt.DisplayRole)
+            )
+        if index.column() == 1:
+            pass
 
     def updateEditorGeometry(self, editor, option, index):
         """
@@ -161,21 +178,18 @@ class FreezeTableWidget(QTableView):
     ):
         QTableView.__init__(self, parent, *args)
         # set the table model
-        table_model = BaseSTDMTableModel(
+        self.table_model = BaseSTDMTableModel(
             table_data, headers, parent
         )
-
         # set the proxy model
         proxy_model = QSortFilterProxyModel(self)
-        proxy_model.setSourceModel(table_model)
-
+        proxy_model.setSourceModel(self.table_model)
         # Assign a data model for TableView
-        self.setModel(table_model)
-
+        self.setModel(self.table_model)
         # frozen_table_view - first column
         self.frozen_table_view = QTableView(self)
         # Set the model for the widget, fixed column
-        self.frozen_table_view.setModel(table_model)
+        self.frozen_table_view.setModel(self.table_model)
         # Hide row headers
         self.frozen_table_view.verticalHeader().hide()
         # Widget does not accept focus
@@ -186,22 +200,8 @@ class FreezeTableWidget(QTableView):
         self.frozen_table_view.horizontalHeader().\
             setResizeMode(QHeaderView.Fixed)
         self.frozen_table_view.setObjectName('frozen_table')
-        # Style frozentable view
-        self.frozen_table_view.setStyleSheet(
-            '''
-            #frozen_table{
-                border-top:none;
-            }
-            '''
-        )
         self.setSelectionMode(QAbstractItemView.NoSelection)
-
-        self.shadow = QGraphicsDropShadowEffect(self)
-        self.shadow.setBlurRadius(5)
-        self.shadow.setOffset(2)
-        self.shadow.setYOffset(0)
-        self.frozen_table_view.setGraphicsEffect(self.shadow)
-
+        self.set_style()
         # Remove the scroll bar
         self.frozen_table_view.setHorizontalScrollBarPolicy(
             Qt.ScrollBarAlwaysOff
@@ -217,8 +217,80 @@ class FreezeTableWidget(QTableView):
         # Text alignment centered
         hh.setDefaultAlignment(Qt.AlignCenter)
 
+        self.set_column_width()
+        # Set properties header lines
+        vh = self.verticalHeader()
+        vh.setDefaultSectionSize(25) # height lines
+        # text alignment centered
+        vh.setDefaultAlignment(Qt.AlignCenter)
+        vh.setVisible(True)
+        # Height of rows - as in the main widget
+        self.frozen_table_view.verticalHeader().\
+            setDefaultSectionSize(
+            vh.defaultSectionSize()
+        )
+        # Show frozen table view
+        self.frozen_table_view.show()
+        # Set the size of him like the main
+
+        self.setHorizontalScrollMode(
+            QAbstractItemView.ScrollPerPixel
+        )
+        self.setVerticalScrollMode(
+            QAbstractItemView.ScrollPerPixel
+        )
+        self.frozen_table_view.setVerticalScrollMode(
+            QAbstractItemView.ScrollPerPixel
+        )
+        ## select the first column (STR Type)
+        self.frozen_table_view.selectColumn(0)
+
+        self.frozen_table_view.setEditTriggers(
+            QAbstractItemView.AllEditTriggers
+        )
+        self.set_size()
+        self.signals()
+
+    def set_size(self):
+        size_policy = QSizePolicy(
+            QSizePolicy.Fixed, QSizePolicy.Fixed
+        )
+        size_policy.setHorizontalStretch(0)
+        size_policy.setVerticalStretch(0)
+        size_policy.setHeightForWidth(
+            self.sizePolicy().hasHeightForWidth()
+        )
+        self.setSizePolicy(size_policy)
+        self.setMinimumSize(QSize(55, 75))
+        self.setMaximumSize(QSize(5550, 5555))
+        self.SelectionMode(
+            QAbstractItemView.SelectColumns
+        )
+        # set column width to fit contents
+        self.frozen_table_view.resizeColumnsToContents()
+        # set row height
+        self.frozen_table_view.resizeRowsToContents()
+
+    def signals(self):
+        # Connect the headers and scrollbars of
+        # both tableviews together
+        self.horizontalHeader().sectionResized.connect(
+            self.update_section_width
+        )
+        self.verticalHeader().sectionResized.connect(
+            self.update_section_height
+        )
+        self.frozen_table_view.verticalScrollBar(). \
+            valueChanged.connect(
+            self.verticalScrollBar().setValue
+        )
+        self.verticalScrollBar().valueChanged.connect(
+            self.frozen_table_view.verticalScrollBar().setValue
+        )
+
+    def set_column_width(self):
         # Set the width of columns
-        columns_count = table_model.columnCount(self)
+        columns_count = self.table_model.columnCount(self)
         for col in range(columns_count):
             if col == 0:
                 # Set the size
@@ -247,83 +319,29 @@ class FreezeTableWidget(QTableView):
                 self.horizontalHeader().resizeSection(
                     col, 150
                 )
-                # Hide unnecessary columns in the widget fixed columns
+                # Hide unnecessary columns in the
+                # widget fixed columns
                 self.frozen_table_view.setColumnHidden(
                     col, True
                 )
 
-        # Set properties header lines
-        vh = self.verticalHeader()
-        vh.setDefaultSectionSize(25) # height lines
-        # text alignment centered
-        vh.setDefaultAlignment(Qt.AlignCenter)
-        vh.setVisible(True)
-        # Height of rows - as in the main widget
-        self.frozen_table_view.verticalHeader().\
-            setDefaultSectionSize(
-            vh.defaultSectionSize()
+    def set_style(self):
+        # Style frozentable view
+        self.frozen_table_view.setStyleSheet(
+            '''
+            #frozen_table{
+                border-top:none;
+            }
+            '''
         )
-        # self.frozen_table_view.verticalHeader().setVisible(True)
-        # Show frozen table view
-        self.frozen_table_view.show()
-        # Set the size of him like the main
-        #self.update_frozen_table_geometry()
+        self.shadow = QGraphicsDropShadowEffect(self)
+        self.shadow.setBlurRadius(5)
+        self.shadow.setOffset(2)
+        self.shadow.setYOffset(0)
+        self.frozen_table_view.setGraphicsEffect(self.shadow)
 
-        self.setHorizontalScrollMode(
-            QAbstractItemView.ScrollPerPixel
-        )
-        self.setVerticalScrollMode(
-            QAbstractItemView.ScrollPerPixel
-        )
-        self.frozen_table_view.setVerticalScrollMode(
-            QAbstractItemView.ScrollPerPixel
-        )
-
-
-        self.frozen_table_view.selectColumn(0)
-
-        self.frozen_table_view.setEditTriggers(
-            QAbstractItemView.AllEditTriggers
-        )
-        size_policy = QSizePolicy(
-            QSizePolicy.Fixed, QSizePolicy.Fixed
-        )
-        size_policy.setHorizontalStretch(0)
-        size_policy.setVerticalStretch(0)
-        size_policy.setHeightForWidth(
-            self.sizePolicy().hasHeightForWidth()
-        )
-        self.setSizePolicy(size_policy)
-        self.setMinimumSize(QSize(55, 75))
-        self.setMaximumSize(QSize(5550, 5555))
-        #self.setGeometry(QRect(0, 0, 619, 75))
-        self.SelectionMode(
-            QAbstractItemView.SelectColumns
-        )
-
-        # set column width to fit contents
-        self.frozen_table_view.resizeColumnsToContents()
-        # set row height
-        self.frozen_table_view.resizeRowsToContents()
-
-        # Connect the headers and scrollbars of
-        # both tableviews together
-
-        self.horizontalHeader().sectionResized.connect(
-            self.update_section_width
-        )
-        self.verticalHeader().sectionResized.connect(
-            self.update_section_height
-        )
-        self.frozen_table_view.verticalScrollBar().\
-            valueChanged.connect(
-            self.verticalScrollBar().setValue
-        )
-        self.verticalScrollBar().valueChanged.connect(
-            self.frozen_table_view.verticalScrollBar().setValue
-        )
-    def add_combobox(self, str_type_id, insert_row):
-        delegate = ComboBoxDelegate(str_type_id)
+    def add_widgets(self, str_type_id, insert_row):
+        delegate = STRTypeDelegate(str_type_id)
         # Set delegate to add combobox under
         # social tenure type column
         self.frozen_table_view.setItemDelegate(
@@ -338,9 +356,14 @@ class FreezeTableWidget(QTableView):
         self.frozen_table_view.model().setData(
             index, '', Qt.EditRole
         )
+
         self.frozen_table_view.openPersistentEditor(
             self.frozen_table_view.model().index(insert_row, 0)
         )
+        self.frozen_table_view.openPersistentEditor(
+            self.frozen_table_view.model().index(insert_row, 1)
+        )
+
 
     def update_section_width(
             self, logicalIndex, oldSize, newSize
@@ -438,3 +461,4 @@ class EntityConfig(object):
 
     def model(self):
         return self._base_model
+

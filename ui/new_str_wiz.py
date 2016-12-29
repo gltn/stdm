@@ -1107,22 +1107,22 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                 "newSTRWiz","Source Documents"),
             ":/plugins/stdm/images/icons/attachment.png"
         )
-      
-        summaryTreeLoader.display()  
+
+        summaryTreeLoader.display()
 
 
     def validateCurrentPage(self):
         """
         Validate the current page before
-        proceeding to the next one and gets and 
+        proceeding to the next one and gets and
         sets data from each page so that it can be used
         in on_create_str.
         :return: None
         :rtype: NoneType
         """
         isValid = True
-        currPageIndex = self.currentId()       
-        
+        currPageIndex = self.currentId()
+
         #Validate person information
         if currPageIndex == 1:
 
@@ -1248,7 +1248,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                     str_obj.documents.append(
                         doc_objs[loop_increment]
                     )
-                    
+
             str_objs.append(str_obj)
             index = index + 1
             progress.setValue(index)
@@ -1401,7 +1401,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         self.spatial_unit_notice.insertNotification(
             err, ERROR
         )
-        
+
     def on_property_browser_loading(self, progress):
         """
         Slot raised when the property browser is
@@ -1421,7 +1421,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                     str(progress)
                 )
             )
-            
+
     def on_property_browser_finished(self, status):
         """
         Slot raised when the property browser
@@ -1533,18 +1533,18 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
                     "You have to add a spatial unit record "
                     "in order to be able to preview it."
                 )
-                self.spatial_unit_notice.insertWarningNotification(msg)                
+                self.spatial_unit_notice.insertWarningNotification(msg)
                 self.gpOpenLayers.setChecked(False)
-                return  
-            
+                return
+
             #Load property overlay
-            if not self.olLoaded:                
-                self.propBrowser.load()            
-                   
+            if not self.olLoaded:
+                self.propBrowser.load()
+
         else:
             #Remove overlay
-            self.propBrowser.removeOverlay()     
-            
+            self.propBrowser.removeOverlay()
+
     def on_zoom_changed(self):
         """
         Slot raised when the zoom value in the slider changes.
@@ -1553,7 +1553,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         :return: None
         :rtype: NoneType
         """
-        zoom = self.zoomSlider.value()        
+        zoom = self.zoomSlider.value()
         self.propBrowser.zoom_to_level(zoom)
 
 
@@ -1563,8 +1563,8 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         ordered dictionary for the summary page treeview
         :param item: The social tenure type
         :type item: OrderedDict
-        :return: 
-        :rtype: 
+        :return:
+        :rtype:
         """
         str_mapping = OrderedDict()
         str_mapping[
@@ -1579,26 +1579,26 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         Slot raised when a user clicks to set
         Google Maps Satellite as the base layer
         '''
-        if state:                     
+        if state:
             self.propBrowser.setBaseLayer(
                 GMAP_SATELLITE
             )
-        
+
     def onLoadOSM(self,state):
         '''
         Slot raised when a user clicks to set
         OSM as the base layer
         '''
-        if state:                     
+        if state:
             self.propBrowser.setBaseLayer(OSM)
-            
+
     def onMapZoomLevelChanged(self,level):
         '''
         Slot which is raised when the zoom
         level of the map changes.
         '''
         self.zoomSlider.setValue(level)
-       
+
     def _onResetMap(self):
         '''
         Slot raised when the user clicks
@@ -1606,7 +1606,7 @@ class newSTRWiz(QWizard, Ui_frmNewSTR):
         location in the map.
         '''
         self.propBrowser.zoom_to_extents()
-       
+
     def overlayProperty(self):
         '''
         Overlay property boundaries on
@@ -1858,7 +1858,7 @@ class FreezeTableWidget(QTableView):
         vh = self.verticalHeader()
         vh.setDefaultSectionSize(25) # height lines
         # text alignment centered
-        vh.setDefaultAlignment(Qt.AlignCenter) 
+        vh.setDefaultAlignment(Qt.AlignCenter)
         vh.setVisible(True)
         # Height of rows - as in the main widget
         self.frozen_table_view.verticalHeader().\

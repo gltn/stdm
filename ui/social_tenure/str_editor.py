@@ -1,10 +1,12 @@
 from collections import OrderedDict
 
+from PyQt4.QtCore import QRegExp
 from PyQt4.QtCore import (
     pyqtSignal,
     QTimer,
     Qt
 )
+from PyQt4.QtGui import QDoubleSpinBox
 
 from PyQt4.QtGui import (
     QIcon,
@@ -50,6 +52,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
     spatialUnitInit = pyqtSignal()
     docsInit = pyqtSignal()
     strTypeUpdated = pyqtSignal()
+    shareUpdated = pyqtSignal()
 
     def __init__(self, plugin):
         """
@@ -81,6 +84,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
         self.validity_period_component = None
 
         self.str_type_combo_connected = []
+        self.share_spinbox_connected = []
         # TODO Get list of party entities from the configuration
         self.party_group = [self.party, self.spatial_unit]
 
@@ -326,7 +330,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
         self.spatial_unit_signals()
         self.spatialUnitInit.emit()
 
-    def init_str_type_signal(self, data_store, party_id):
+    def init_str_type_signal(self, data_store, party_id, str_number):
         """
         Connects str type combobox signals to a slot.
         :param data_store: Current datastore
@@ -340,6 +344,22 @@ class InitSTREditor(QDialog, Ui_STREditor):
             return
         # gets all the comboboxes including the ones in other pages.
         str_type_combos = self.str_type_component.str_type_combobox()
+        spinboxes = self.str_type_component.ownership_share()
+        for spinbox in spinboxes:
+            if spinbox not in self.share_spinbox_connected:
+
+                first_name = spinbox.objectName()
+                spinbox.setObjectName(
+                    '{}_{}_{}'.format(str_number, party_id, first_name)
+                )
+
+                spinbox.valueChanged.connect(
+                    self.link_share_spinboxes
+                )
+
+                #print 'called'
+                self.share_spinbox_connected.append(spinbox)
+        self.shareUpdated.connect(self.update_ownership_share_data)
 
         for str_type_combo in str_type_combos:
             # connect comboboxes that are only newly added
@@ -350,6 +370,75 @@ class InitSTREditor(QDialog, Ui_STREditor):
                     )
                 )
                 self.str_type_combo_connected.append(str_type_combo)
+
+    def init_share_spinboxes(self, data_store, row_count):
+        spinboxes = self.str_type_component.ownership_share()
+        for spinbox in spinboxes:
+            if spinbox in self.share_spinbox_connected:
+                str_number, party_id, current_row = \
+                    self.extract_from_object_name(spinbox)
+                if party_id in data_store.share.keys():
+                    self.blockSignals(True)
+                    spinbox.setValue(data_store.share[party_id])
+                    self.blockSignals(False)
+
+                else:
+                    self.blockSignals(True)
+                    spinbox.setValue(100.00/row_count)
+                    self.blockSignals(False)
+                    data_store.share[party_id] = 100.00 / row_count
+
+    def link_share_spinboxes(self, increment):
+        current_spinbox = self.sender()
+        spinboxes = self.str_type_component.ownership_share()
+
+        str_number, party_id, current_row = \
+            self.extract_from_object_name(current_spinbox)
+        next_spinbox = self.find_next_spinbox(current_row, spinboxes)
+        if next_spinbox.value() == 0:
+            str_number, party_id, current_row = \
+                self.extract_from_object_name(next_spinbox)
+            next_spinbox = self.find_next_spinbox(current_row, spinboxes)
+        spinbox_value_sum = 0
+        for spinbox in spinboxes:
+            if spinbox.objectName().startswith('{}_'.format(str_number)):
+                spinbox_value_sum = spinbox_value_sum + spinbox.value()
+        value_change = spinbox_value_sum - 100
+        next_value = next_spinbox.value() - value_change
+
+        next_spinbox.setValue(next_value)
+        self.shareUpdated.emit()
+
+    def find_next_spinbox(self, current_row, spinboxes):
+        next_row = current_row + 1
+        next_spinboxes = [spinbox for spinbox in spinboxes
+                          if spinbox.objectName().endswith('_{}'.format(next_row))]
+        if len(next_spinboxes) > 0:
+            next_spinbox = next_spinboxes[0]
+        else:
+            next_spinboxes = [spinbox for spinbox in spinboxes
+                              if spinbox.objectName().endswith('_0')]
+            next_spinbox = next_spinboxes[0]
+        return next_spinbox
+
+    def update_ownership_share_data(self):
+        spinboxes = self.str_type_component.ownership_share()
+        for spinbox in spinboxes:
+            if spinbox in self.share_spinbox_connected:
+                str_number_ext, party_id, current_row = \
+                    self.extract_from_object_name(spinbox)
+                self.data_store[str_number_ext].share[party_id] = spinbox.value()
+
+    def extract_from_object_name(self, current_spinbox):
+        current_name = current_spinbox.objectName()
+        current_name_split = current_name.split('_')
+        if len(current_name_split) == 3:
+            current_row = current_name_split[2]
+            current_party_id = current_name_split[1]
+            str_number = current_name_split[0]
+            return int(str_number), int(current_party_id), int(current_row)
+        else:
+            return None, None, None
 
     def init_supporting_documents(self):
         """
@@ -375,7 +464,6 @@ class InitSTREditor(QDialog, Ui_STREditor):
         if self.validity_period_component is not None:
             return
         self.validity_period_component = ValidityPeriod(self)
-
 
     def str_node(self):
         """
@@ -572,22 +660,20 @@ class InitSTREditor(QDialog, Ui_STREditor):
 
     def update_str_type_data(self, index, data_store, party_id):
         """
-
-        :param index:
-        :type index:
-        :param data_store:
-        :type data_store:
-        :param party_id:
-        :type party_id:
+        Gets str_type date from the comboboxes and set it to
+        the current data store.
+        :param index: Index of the combobox
+        :type index: QModelIndex
+        :param data_store: The current data store
+        :type data_store: OrderedDict
+        :param party_id: The party id matching the combobox.
+        :type party_id: Integer
         :return:
         :rtype:
         """
         str_combo = self.sender()
-
         str_type_id = str_combo.itemData(index)
-
         data_store.str_type[party_id] = str_type_id
-
         self.strTypeUpdated.emit()
 
     def current_data_store(self):
@@ -595,7 +681,6 @@ class InitSTREditor(QDialog, Ui_STREditor):
         selected_item = self.tree_view_model.itemFromIndex(index)
         data_store_obj = self.data_store[selected_item.data()]
         return data_store_obj
-
 
 class BindSTREditor(InitSTREditor):
     def __init__(self, plugin):
@@ -678,10 +763,12 @@ class SyncSTREditorData(BindSTREditor):
         BindSTREditor.__init__(self, plugin)
 
     def sync_data(self, current, previous):
+
         selected_item = self.tree_view_model.itemFromIndex(current)
         if selected_item is None:
             return
         str_number = selected_item.data()
+
         data_store = self.data_store[str_number]
 
         if selected_item.text() == self.party_text:
@@ -694,13 +781,12 @@ class SyncSTREditorData(BindSTREditor):
                 data_store
             )
         if selected_item.text() == self.tenure_type_text:
-            self.toggle_str_type_models(data_store)
+            self.toggle_str_type_models(data_store, str_number)
 
         if selected_item.text() == self.supporting_doc_text:
             self.toggle_supporting_doc(
                 data_store, str_number
             )
-
 
     def toggle_party_models(self, fk_mapper, data_store):
         fk_mapper.remove_rows()
@@ -719,7 +805,7 @@ class SyncSTREditorData(BindSTREditor):
                 model_obj
             )
 
-    def toggle_str_type_models(self, data_store):
+    def toggle_str_type_models(self, data_store, str_number):
         #self.set_str_type_combo_data(data_store)
         party_count = len(data_store.party)
 
@@ -727,6 +813,8 @@ class SyncSTREditorData(BindSTREditor):
             self.str_type_component.str_type_table,
             party_count
         )
+        ## select the first column (STR Type)
+        self.str_type_component.str_type_table.selectColumn(0)
 
         for i, (party_id, str_type_id) in \
                 enumerate(data_store.str_type.iteritems()):
@@ -738,8 +826,12 @@ class SyncSTREditorData(BindSTREditor):
             )
 
             self.init_str_type_signal(
-                data_store, party_id
+                data_store, party_id, str_number
             )
+        self.init_share_spinboxes(data_store, party_count)
+
+        #self.init_share_spinbox()
+
 
     def toggle_supporting_doc(self, data_store, str_number):
         party_count = len(data_store.party)
@@ -1117,10 +1209,15 @@ class STREditor(ValidateSTREditor):
         )
 
         self.copied_party_row[party_id] = row_data
-        ##TODO check if this has no effect. Added to fix miss aligned frozen tableview.
+
         self.str_type_component.add_str_type_data(
             row_data, str_type_id, row_number
         )
+        str_number = self.current_str_number()
+        # self.init_share_spinboxes(current_store, party_id, row_number)
+        #self.init_str_type_signal(current_store, party_id, str_number)
+
+
 
     def supporting_doc_signals(self, str_number):
         self.doc_type_cbo.currentIndexChanged.connect(
@@ -1386,7 +1483,7 @@ class EditSTREditor(STREditor):
             self, str_type_id, party_id, row_number
     ):
         """
-        Adds STR type rows using party records selected.
+
         :param store:
         :type store:
         :param str_type_id:
@@ -1401,6 +1498,7 @@ class EditSTREditor(STREditor):
         store = self.current_data_store()
         store.str_type.clear()
         store.str_type[party_id] = str_type_id
+        # store.share[party_id] =
         row_data = self.str_type_component.copy_party_table(
             self.party_component.party_fk_mapper._tbFKEntity,
             row_number

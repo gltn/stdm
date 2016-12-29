@@ -23,6 +23,7 @@ class STRDataStore():
         self.party = OrderedDict()
         self.spatial_unit = OrderedDict()
         self.str_type = OrderedDict()
+        self.share = OrderedDict()
         self.supporting_document = []
         self.source_doc_manager = None
 
