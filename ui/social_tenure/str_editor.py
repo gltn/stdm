@@ -52,7 +52,8 @@ class InitSTREditor(QDialog, Ui_STREditor):
     spatialUnitInit = pyqtSignal()
     docsInit = pyqtSignal()
     strTypeUpdated = pyqtSignal()
-    shareUpdated = pyqtSignal()
+    shareUpdated = pyqtSignal(list, QDoubleSpinBox)
+    shareUpdatedOnZero = pyqtSignal(float)
 
     def __init__(self, plugin):
         """
@@ -72,7 +73,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
         self.supporting_doc_component = None
         self.str_items = {}
         self.add_str_tree_node()
-
+        self.party_count = OrderedDict()
         self.current_profile = current_profile()
         self.social_tenure = self.current_profile.social_tenure
         self.party = self.social_tenure.party
@@ -193,12 +194,26 @@ class InitSTREditor(QDialog, Ui_STREditor):
 
             try:
                 removed_key = party_keys[row_number]
+                ### apply this if incrementing the
+                # next spinbox is preferred over resetting.
+                # spinboxes = self.str_type_component.ownership_share()
+                # for spinbox in spinboxes:
+                #     if spinbox in self.share_spinbox_connected:
+                #         name = spinbox.objectName()
+                #         split_name = name.split('_')
+                #         if int(split_name[1]) == removed_key:
+                #             spinbox.setValue(0.00)
+
                 del current_store.party[removed_key]
                 del current_store.str_type[removed_key]
+
+
             except IndexError:
                 pass
 
         self.str_type_component.remove_str_type_row(row_numbers)
+
+        self.reset_share_spinboxes(current_store)
 
     def party_entity_combo_signal(self):
         """
@@ -330,116 +345,6 @@ class InitSTREditor(QDialog, Ui_STREditor):
         self.spatial_unit_signals()
         self.spatialUnitInit.emit()
 
-    def init_str_type_signal(self, data_store, party_id, str_number):
-        """
-        Connects str type combobox signals to a slot.
-        :param data_store: Current datastore
-        :type data_store: Dictionary
-        :param party_id: The added party model id.
-        :type party_id: String
-        :return:
-        :rtype:
-        """
-        if self.str_type_component is None:
-            return
-        # gets all the comboboxes including the ones in other pages.
-        str_type_combos = self.str_type_component.str_type_combobox()
-        spinboxes = self.str_type_component.ownership_share()
-        for spinbox in spinboxes:
-            if spinbox not in self.share_spinbox_connected:
-
-                first_name = spinbox.objectName()
-                spinbox.setObjectName(
-                    '{}_{}_{}'.format(str_number, party_id, first_name)
-                )
-
-                spinbox.valueChanged.connect(
-                    self.link_share_spinboxes
-                )
-
-                #print 'called'
-                self.share_spinbox_connected.append(spinbox)
-        self.shareUpdated.connect(self.update_ownership_share_data)
-
-        for str_type_combo in str_type_combos:
-            # connect comboboxes that are only newly added
-            if str_type_combo not in self.str_type_combo_connected:
-                str_type_combo.currentIndexChanged.connect(
-                    lambda index: self.update_str_type_data(
-                        index, data_store, party_id
-                    )
-                )
-                self.str_type_combo_connected.append(str_type_combo)
-
-    def init_share_spinboxes(self, data_store, row_count):
-        spinboxes = self.str_type_component.ownership_share()
-        for spinbox in spinboxes:
-            if spinbox in self.share_spinbox_connected:
-                str_number, party_id, current_row = \
-                    self.extract_from_object_name(spinbox)
-                if party_id in data_store.share.keys():
-                    self.blockSignals(True)
-                    spinbox.setValue(data_store.share[party_id])
-                    self.blockSignals(False)
-
-                else:
-                    self.blockSignals(True)
-                    spinbox.setValue(100.00/row_count)
-                    self.blockSignals(False)
-                    data_store.share[party_id] = 100.00 / row_count
-
-    def link_share_spinboxes(self, increment):
-        current_spinbox = self.sender()
-        spinboxes = self.str_type_component.ownership_share()
-
-        str_number, party_id, current_row = \
-            self.extract_from_object_name(current_spinbox)
-        next_spinbox = self.find_next_spinbox(current_row, spinboxes)
-        if next_spinbox.value() == 0:
-            str_number, party_id, current_row = \
-                self.extract_from_object_name(next_spinbox)
-            next_spinbox = self.find_next_spinbox(current_row, spinboxes)
-        spinbox_value_sum = 0
-        for spinbox in spinboxes:
-            if spinbox.objectName().startswith('{}_'.format(str_number)):
-                spinbox_value_sum = spinbox_value_sum + spinbox.value()
-        value_change = spinbox_value_sum - 100
-        next_value = next_spinbox.value() - value_change
-
-        next_spinbox.setValue(next_value)
-        self.shareUpdated.emit()
-
-    def find_next_spinbox(self, current_row, spinboxes):
-        next_row = current_row + 1
-        next_spinboxes = [spinbox for spinbox in spinboxes
-                          if spinbox.objectName().endswith('_{}'.format(next_row))]
-        if len(next_spinboxes) > 0:
-            next_spinbox = next_spinboxes[0]
-        else:
-            next_spinboxes = [spinbox for spinbox in spinboxes
-                              if spinbox.objectName().endswith('_0')]
-            next_spinbox = next_spinboxes[0]
-        return next_spinbox
-
-    def update_ownership_share_data(self):
-        spinboxes = self.str_type_component.ownership_share()
-        for spinbox in spinboxes:
-            if spinbox in self.share_spinbox_connected:
-                str_number_ext, party_id, current_row = \
-                    self.extract_from_object_name(spinbox)
-                self.data_store[str_number_ext].share[party_id] = spinbox.value()
-
-    def extract_from_object_name(self, current_spinbox):
-        current_name = current_spinbox.objectName()
-        current_name_split = current_name.split('_')
-        if len(current_name_split) == 3:
-            current_row = current_name_split[2]
-            current_party_id = current_name_split[1]
-            str_number = current_name_split[0]
-            return int(str_number), int(current_party_id), int(current_row)
-        else:
-            return None, None, None
-
     def init_supporting_documents(self):
         """
         Initialize the supporting documents component.
@@ -464,6 +369,159 @@ class InitSTREditor(QDialog, Ui_STREditor):
         if self.validity_period_component is not None:
             return
         self.validity_period_component = ValidityPeriod(self)
+        self.validity_period_signals()
+
+
+    def init_str_type_signal(self, data_store, party_id, str_number):
+        """
+        Connects str type combobox signals to a slot.
+        :param data_store: Current datastore
+        :type data_store: Dictionary
+        :param party_id: The added party model id.
+        :type party_id: String
+        :return:
+        :rtype:
+        """
+        if self.str_type_component is None:
+            return
+        # gets all the comboboxes including the ones in other pages.
+        str_type_combos = self.str_type_component.str_type_combobox()
+        spinboxes = self.str_type_component.ownership_share()
+        for spinbox in spinboxes:
+            if spinbox not in self.share_spinbox_connected:
+
+                first_name = spinbox.objectName()
+                spinbox.setObjectName(
+                    '{}_{}_{}'.format(str_number, party_id, first_name)
+                )
+
+                spinbox.valueChanged.connect(
+                    self.update_spinbox
+                )
+                self.share_spinbox_connected.append(spinbox)
+        self.shareUpdated.connect(self.update_ownership_share_data)
+        self.shareUpdated.connect(self.update_spinbox_when_zero)
+        self.shareUpdatedOnZero.connect(self.update_ownership_share_data)
+        for str_type_combo in str_type_combos:
+            # connect comboboxes that are only newly added
+            if str_type_combo not in self.str_type_combo_connected:
+                str_type_combo.currentIndexChanged.connect(
+                    lambda index: self.update_str_type_data(
+                        index, data_store, party_id
+                    )
+                )
+                self.str_type_combo_connected.append(str_type_combo)
+
+    def reset_share_spinboxes(self, data_store):
+        row_count = len(data_store.party)
+        spinboxes = self.str_type_component.ownership_share()
+        for spinbox in spinboxes:
+            if spinbox in self.share_spinbox_connected:
+                str_number, party_id, current_row = \
+                    self.extract_from_object_name(spinbox)
+                # if party_id in data_store.share.keys():
+                #     self.blockSignals(True)
+                #     spinbox.setValue(data_store.share[party_id])
+                #     self.blockSignals(False)
+                #
+                # else:
+                self.blockSignals(True)
+                spinbox.setValue(100.00 / row_count)
+                self.blockSignals(False)
+                data_store.share[party_id] = 100.00 / row_count
+    def init_share_spinboxes(self, data_store, row_count):
+        spinboxes = self.str_type_component.ownership_share()
+        for spinbox in spinboxes:
+            if spinbox in self.share_spinbox_connected:
+                str_number, party_id, current_row = \
+                    self.extract_from_object_name(spinbox)
+                if party_id in data_store.share.keys():
+                    self.blockSignals(True)
+                    spinbox.setValue(data_store.share[party_id])
+                    self.blockSignals(False)
+
+                else:
+                    self.blockSignals(True)
+                    spinbox.setValue(100.00/row_count)
+                    self.blockSignals(False)
+                    data_store.share[party_id] = 100.00 / row_count
+
+    def execute_spinbox_update(self, spinboxes, current_spinbox):
+        str_number, party_id, current_row = \
+            self.extract_from_object_name(current_spinbox)
+        # print str_number, party_id, current_row
+        if current_row is None:
+            return None
+        next_spinbox = self.find_next_spinbox(current_row, spinboxes)
+        spinbox_value_sum = 0
+        for spinbox in spinboxes:
+            if spinbox.objectName().startswith('{}_'.format(str_number)):
+                spinbox_value_sum = spinbox_value_sum + spinbox.value()
+        value_change = spinbox_value_sum - 100
+        next_value = next_spinbox.value() - value_change
+        #self.blockSignals(True)
+        next_spinbox.setValue(next_value)
+        #self.blockSignals(False)
+        return next_spinbox
+
+    def update_spinbox(self, increment):
+        current_spinbox = self.sender()
+        spinboxes = self.str_type_component.ownership_share()
+
+        next_spinbox = self.execute_spinbox_update(
+            spinboxes, current_spinbox
+        )
+
+        self.shareUpdated.emit(spinboxes, next_spinbox)
+
+    def update_spinbox_when_zero(self, spinboxes, next_spinbox):
+        if next_spinbox is None:
+            return
+        if next_spinbox.value() == 0:
+            spinbox = self.execute_spinbox_update(
+                spinboxes, next_spinbox
+            )
+
+            self.shareUpdatedOnZero.emit(spinbox.value())
+            if spinbox.value() == 0:
+                self.update_spinbox_when_zero(
+                    spinboxes, spinbox
+                )
+
+    def find_next_spinbox(self, current_row, spinboxes):
+        next_row = current_row + 1
+        next_spinboxes = [spinbox for spinbox in spinboxes
+                          if spinbox.objectName().
+                              endswith('_{}'.format(next_row))]
+        if len(next_spinboxes) > 0:
+            next_spinbox = next_spinboxes[0]
+        else:
+            next_spinboxes = [spinbox for spinbox in spinboxes
+                              if spinbox.objectName().endswith('_0')]
+            next_spinbox = next_spinboxes[0]
+        return next_spinbox
+
+    def update_ownership_share_data(self):
+        spinboxes = self.str_type_component.ownership_share()
+        data_store = self.current_data_store()
+        for spinbox in spinboxes:
+            if spinbox in self.share_spinbox_connected:
+                str_number_ext, party_id, current_row = \
+                    self.extract_from_object_name(spinbox)
+                data_store.share[party_id] = spinbox.value()
+
+    def extract_from_object_name(self, current_spinbox):
+        current_name = current_spinbox.objectName()
+        current_name_split = current_name.split('_')
+        if len(current_name_split) == 3:
+            current_row = current_name_split[2]
+            current_party_id = current_name_split[1]
+            str_number = current_name_split[0]
+            return int(str_number), \
+                   int(current_party_id), \
+                   int(current_row)
+        else:
+            return None, None, None
 
     def str_node(self):
         """
@@ -787,6 +845,8 @@ class SyncSTREditorData(BindSTREditor):
             self.toggle_supporting_doc(
                 data_store, str_number
             )
+        if selected_item.text() == self.validity_period_text:
+            self.toggle_validity_period(data_store, str_number)
 
     def toggle_party_models(self, fk_mapper, data_store):
         fk_mapper.remove_rows()
@@ -806,15 +866,24 @@ class SyncSTREditorData(BindSTREditor):
             )
 
     def toggle_str_type_models(self, data_store, str_number):
-        #self.set_str_type_combo_data(data_store)
-        party_count = len(data_store.party)
 
+        party_count = len(data_store.party)
+        # If new party row is added after spinboxes values are set,
+        # reset spinbox values into equal values based on the new count
+        if str_number in self.party_count.keys():
+
+            if len(self.party_count) > 0 and \
+                            party_count > \
+                            self.party_count[str_number]:
+                self.reset_share_spinboxes(data_store)
+
+        self.party_count[str_number] = party_count
         self.str_type_component.remove_table_data(
             self.str_type_component.str_type_table,
             party_count
         )
-        ## select the first column (STR Type)
-        self.str_type_component.str_type_table.selectColumn(0)
+        # ## select the first column (STR Type)
+        # self.str_type_component.str_type_table.selectColumn(0)
 
         for i, (party_id, str_type_id) in \
                 enumerate(data_store.str_type.iteritems()):
@@ -824,14 +893,10 @@ class SyncSTREditorData(BindSTREditor):
                 str_type_id,
                 i
             )
-
             self.init_str_type_signal(
                 data_store, party_id, str_number
             )
         self.init_share_spinboxes(data_store, party_count)
-
-        #self.init_share_spinbox()
-
 
     def toggle_supporting_doc(self, data_store, str_number):
         party_count = len(data_store.party)
@@ -840,6 +905,17 @@ class SyncSTREditorData(BindSTREditor):
         # update the current widget container widget to be used.
         self.supporting_doc_component.update_container(str_number)
 
+    def toggle_validity_period(self, data_store, str_number):
+        from_date = data_store.validity_period['from_date']
+        to_date = data_store.validity_period['to_date']
+        if from_date is None or to_date is None:
+            data_store.validity_period['from_date'] = \
+                self.validity_from_date.date()
+            data_store.validity_period['to_date'] = \
+                self.validity_to_date.date()
+        else:
+            self.validity_from_date.setDate(from_date)
+            self.validity_to_date.setDate(to_date)
 
 class ValidateSTREditor(SyncSTREditorData):
     def __init__(self, plugin):
@@ -906,14 +982,17 @@ class ValidateSTREditor(SyncSTREditorData):
         )
 
     def enable_next(self, selected_item, child_row, enable=True):
-        str_root = selected_item.parent()
-        if str_root is None:
-            return
-        next_item = str_root.child(child_row, 0)
-        next_item.setEnabled(enable)
+        try:
+            str_root = selected_item.parent()
 
-        self.enable_save_button()
+            if str_root is None:
+                return
+            next_item = str_root.child(child_row, 0)
+            next_item.setEnabled(enable)
 
+            self.enable_save_button()
+        except Exception:
+            pass
     def enable_save_button(self):
         result = self.str_validity_status()
 
@@ -1131,7 +1210,6 @@ class ValidateSTREditor(SyncSTREditorData):
         ).first()
         #TODO add a session rollback here and show error.
         current = self.spatial_unit_current_usage_count(model_obj.id)
-        print (current + usage_count.spatial_unit_count)
         return current + usage_count.spatial_unit_count
 
 
@@ -1213,11 +1291,20 @@ class STREditor(ValidateSTREditor):
         self.str_type_component.add_str_type_data(
             row_data, str_type_id, row_number
         )
-        str_number = self.current_str_number()
-        # self.init_share_spinboxes(current_store, party_id, row_number)
-        #self.init_str_type_signal(current_store, party_id, str_number)
+    def validity_period_signals(self):
+        self.validity_from_date.dateChanged.connect(
+            self.set_validity_period_data
+        )
+        self.validity_to_date.dateChanged.connect(
+            self.set_validity_period_data
+        )
 
-
+    def set_validity_period_data(self, date):
+        store = self.current_data_store()
+        if self.sender().objectName() == 'from_date':
+            store.validity_period['from_date'] = date
+        else:
+            store.validity_period['to_date'] = date
 
     def supporting_doc_signals(self, str_number):
         self.doc_type_cbo.currentIndexChanged.connect(
@@ -1309,6 +1396,8 @@ class STREditor(ValidateSTREditor):
             print key, value.spatial_unit
             print key, value.str_type
             print key, value.supporting_document
+            print key, value.validity_period
+            print key, value.share
 
     def message(self, title, message, type='information', yes_no=False):
         header = QApplication.translate('STREditor', title)
@@ -1510,7 +1599,6 @@ class EditSTREditor(STREditor):
         db_handler = STRDBHandler(
             self.data_store, self.str_model, self.str_edit_node
         )
-
         self.updated_str_obj = db_handler.commit_str()
 
     def test_save_str(self):
@@ -1520,4 +1608,6 @@ class EditSTREditor(STREditor):
             print key, value.spatial_unit
             print key, value.str_type
             print key, value.supporting_document
+            print key, value.validity_period
+            print key, value.share
 
