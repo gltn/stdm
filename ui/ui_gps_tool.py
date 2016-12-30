@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_gps_tool.ui'
 #
-# Created: Tue Nov 22 17:01:57 2016
+# Created: Sun Dec 25 19:46:56 2016
 #      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -29,13 +29,17 @@ class Ui_Dialog(object):
         Dialog.setWindowModality(QtCore.Qt.NonModal)
         Dialog.resize(588, 480)
         Dialog.setModal(False)
-        self.gridLayout = QtGui.QGridLayout(Dialog)
-        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
-        self.verticalLayout = QtGui.QVBoxLayout()
+        self.verticalLayout_2 = QtGui.QVBoxLayout(Dialog)
+        self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
+        self.gpx_import_tab = QtGui.QTabWidget(Dialog)
+        self.gpx_import_tab.setObjectName(_fromUtf8("gpx_import_tab"))
+        self.gpx_feature_tab = QtGui.QWidget()
+        self.gpx_feature_tab.setObjectName(_fromUtf8("gpx_feature_tab"))
+        self.verticalLayout = QtGui.QVBoxLayout(self.gpx_feature_tab)
         self.verticalLayout.setSpacing(5)
-        self.verticalLayout.setContentsMargins(0, 5, 5, 5)
+        self.verticalLayout.setContentsMargins(1, 5, 5, 5)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
-        self.gpx_data_source_groupbox = QtGui.QGroupBox(Dialog)
+        self.gpx_data_source_groupbox = QtGui.QGroupBox(self.gpx_feature_tab)
         self.gpx_data_source_groupbox.setObjectName(_fromUtf8("gpx_data_source_groupbox"))
         self.gridLayout_2 = QtGui.QGridLayout(self.gpx_data_source_groupbox)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
@@ -73,7 +77,7 @@ class Ui_Dialog(object):
         self.gpx_feature_type_layout.addWidget(self.feature_type_cb)
         self.gridLayout_2.addLayout(self.gpx_feature_type_layout, 1, 0, 1, 1)
         self.verticalLayout.addWidget(self.gpx_data_source_groupbox)
-        self.gpx_table_groupbox = QtGui.QGroupBox(Dialog)
+        self.gpx_table_groupbox = QtGui.QGroupBox(self.gpx_feature_tab)
         self.gpx_table_groupbox.setObjectName(_fromUtf8("gpx_table_groupbox"))
         self.gridLayout_3 = QtGui.QGridLayout(self.gpx_table_groupbox)
         self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
@@ -106,6 +110,8 @@ class Ui_Dialog(object):
         self.gpx_table_layout.addLayout(self.table_button_layout)
         self.gridLayout_3.addLayout(self.gpx_table_layout, 0, 0, 1, 1)
         self.verticalLayout.addWidget(self.gpx_table_groupbox)
+        self.gpx_import_tab.addTab(self.gpx_feature_tab, _fromUtf8(""))
+        self.verticalLayout_2.addWidget(self.gpx_import_tab)
         self.gpx_load_layout = QtGui.QHBoxLayout()
         self.gpx_load_layout.setObjectName(_fromUtf8("gpx_load_layout"))
         spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
@@ -117,10 +123,10 @@ class Ui_Dialog(object):
         self.cancel_bt = QtGui.QPushButton(Dialog)
         self.cancel_bt.setObjectName(_fromUtf8("cancel_bt"))
         self.gpx_load_layout.addWidget(self.cancel_bt)
-        self.verticalLayout.addLayout(self.gpx_load_layout)
-        self.gridLayout.addLayout(self.verticalLayout, 0, 0, 1, 1)
+        self.verticalLayout_2.addLayout(self.gpx_load_layout)
 
         self.retranslateUi(Dialog)
+        self.gpx_import_tab.setCurrentIndex(0)
         self.feature_type_cb.setCurrentIndex(-1)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
         Dialog.setTabOrder(self.file_le, self.file_select_bt)
@@ -128,8 +134,6 @@ class Ui_Dialog(object):
         Dialog.setTabOrder(self.feature_type_cb, self.table_widget)
         Dialog.setTabOrder(self.table_widget, self.select_all_bt)
         Dialog.setTabOrder(self.select_all_bt, self.clear_all_bt)
-        Dialog.setTabOrder(self.clear_all_bt, self.load_bt)
-        Dialog.setTabOrder(self.load_bt, self.cancel_bt)
 
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(_translate("Dialog", "GPS Data Import", None))
@@ -143,6 +147,7 @@ class Ui_Dialog(object):
         self.gpx_table_groupbox.setTitle(_translate("Dialog", "Data View", None))
         self.select_all_bt.setText(_translate("Dialog", "Select All", None))
         self.clear_all_bt.setText(_translate("Dialog", "Clear All", None))
+        self.gpx_import_tab.setTabText(self.gpx_import_tab.indexOf(self.gpx_feature_tab), _translate("Dialog", "Feature Import", None))
         self.load_bt.setText(_translate("Dialog", "Load", None))
         self.cancel_bt.setText(_translate("Dialog", "Cancel", None))
 

@@ -146,11 +146,13 @@ def select_unselect_item(point_row_attr, map_canvas, item=None, color='#008000')
     for row, point_attr in enumerate(point_row_attr):
         for attr in point_attr:
             if item:
+                # On individual checkbox click
                 if row == item.row() and item.column() == 0:
                     _change_item_vertex_state(attr, color)
                     qgs_point = attr['qgs_point']
                     checkbox_flag = True
             else:
+                # On select all or clear all button click
                 if attr['checkbox'].checkState() == qc.Qt.Unchecked and color == '#008000':
                     _change_item_vertex_state(attr, color, qc.Qt.Checked)
                     qgs_point = attr['qgs_point']

@@ -17,6 +17,9 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         self.entity = entity
         self.sp_table = sp_table
         self.sp_col = sp_col
+        self.entity_editor = None
+        self._init_entity_editor()
+        self.active_layer = self.iface.activeLayer()
         self.map_canvas = self.iface.mapCanvas()
         self.init_gpx_file = None
         self.point_row_attr = None
@@ -38,6 +41,21 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         self.load_bt.clicked.connect(self._load_feature)
         self.cancel_bt.clicked.connect(self.close)
 
+    def _init_entity_editor(self):
+        """
+        Instantiates entity editor and add its widgets to
+        the GPX import tool as tabs
+        :return: None
+        :rtype:None
+        """
+        self.entity_editor = EntityEditorDialog(self.entity, None, self)
+        self.entity_editor.buttonBox.hide()  # Hide entity editor buttons
+        for tab_text, tab_object in self.entity_editor.entity_editor_widgets.items():
+            if tab_text != 'no_tab':
+                self.gpx_import_tab.addTab(tab_object, str(tab_text))
+            else:
+                self.gpx_import_tab.addTab(tab_object, 'Primary')
+
     def _set_file_path(self):
         """
         Open file select dialog when browse button is clicked
@@ -57,6 +75,9 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         """
         gpx_file = str(self.file_le.text()).strip()
         if gpx_source.validate_file_path(gpx_file):
+            if self.point_row_attr:
+                self._refresh_map_canvas()
+                self._reset_widget()
             self._enable_widget(gpx_file)
         else:
             self._disable_widget()
@@ -91,7 +112,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
                 self._reset_table_layer()
                 self._disable_widget(True)
         else:
-            self.file_le.setText("")
+            # self.file_le.setText("")
             self._reset_table_layer()
             self._disable_widget(False, True)
 
@@ -104,6 +125,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         if self.prev_temp_mem_layer and len(gpx_view.get_layer_by_name(self.temp_layer_name)) != 0:
             gpx_view.remove_vertex(self.map_canvas, self.prev_point_row_attr)
             gpx_view.remove_map_layer(self.map_canvas, self.prev_temp_mem_layer)
+            return True
 
     def _disable_widget(self, enable_cb=False, on_load=None):
         """
@@ -143,7 +165,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
     def _enable_disable_button_widgets(self, state=False, load_state=None):
         """
         Disables or enables table widget buttons
-        :param state: True or false to enable or disable buttons
+        :param state: True or false to enable or disable all buttons
         :return: None
         :rtype: None
         """
@@ -154,6 +176,18 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         else:
             self.load_bt.setEnabled(load_state)
 
+    def _refresh_map_canvas(self):
+        """
+        Refresh map canvas on file source or feature type change
+        :return: None
+        :rtype: None
+        """
+        curr_layer = vector_layer(self.sp_table, geom_column=self.sp_col)
+        layer_extent = curr_layer.extent()
+        gpx_view.remove_vertex(self.map_canvas, self.point_row_attr)
+        self.map_canvas.setExtent(layer_extent)
+        self.map_canvas.refresh()
+
     def _show_data(self, index):
         """
         Initializes loading of GPX data
@@ -163,7 +197,6 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         """
         gpx_file = str(self.file_le.text()).strip()
         feature_type = self.feature_type_cb.currentText()
-        active_layer = self.iface.activeLayer()
         columns = 4
         headers = ["", "Point Name", "Latitude", "Longitude"]
         if feature_type:
@@ -171,10 +204,10 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
             gpx_layer, feature_count = gpx_source.get_feature_layer(gpx_data_source, feature_type)
             self.uncheck_counter = feature_count
             if gpx_layer:
-                self.geom_type = gpx_source.get_active_layer_type(active_layer)
+                self.geom_type, int_geom_type = gpx_source.get_active_layer_type(self.active_layer)
                 if self.geom_type:
-                    self._populate_data(gpx_layer, active_layer, feature_count, columns, headers)
-                    self._enable_disable_button_widgets(True)
+                    self._populate_data(gpx_layer, feature_count, columns, headers)
+                    self._enable_disable_load_on_feature_type_click(int_geom_type)
                     self.prev_temp_mem_layer = self.temp_mem_layer
                     self.prev_point_row_attr = list(self.point_row_attr)
                     self.init_gpx_file = gpx_file
@@ -184,21 +217,21 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
             else:
                 qg.QMessageBox.information(None, 'STDM', 'The selected feature type has no features')
                 if self.table_widget.columnCount() > 0:
+                    if self.point_row_attr:
+                        self._refresh_map_canvas()
                     self._reset_widget(gpx_file, True)
                 return None
 
-    def _populate_data(self, gpx_layer, active_layer, feature_count, columns, headers):
+    def _populate_data(self, gpx_layer, feature_count, columns, headers):
         """
         Populates table widget with data and creates temporary layer
         :param gpx_layer: Input GPX layer
-        :param active_layer: Current active layer
         :param feature_count: Number of features
         :param columns: Number of table widget columns
         :param headers: Table widget field names
         :return: None
         :rtype: None
         """
-
         point_list = []
         self.qgs_point_list = []
         self.point_row_attr = []
@@ -213,7 +246,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
             self.point_row_attr.append([{'marker': marker, 'checkbox': check_box, 'qgs_point': point}])
         self._set_table_header_property(table_widget)
         self._remove_prev_layer()
-        self.temp_mem_layer = gpx_view.create_feature(active_layer, self.geom_type, point_list, self.temp_layer_name)
+        self.temp_mem_layer = gpx_view.create_feature(self.active_layer, self.geom_type, point_list, self.temp_layer_name)
         gpx_view.add_map_layer(self.temp_mem_layer)
         gpx_view.set_layer_extent(self.map_canvas, gpx_layer)
         self.qgs_point_list = list(point_list)
@@ -273,6 +306,22 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         table_widget.resizeColumnsToContents()
         table_widget.horizontalHeader().setStretchLastSection(enable)
 
+    def _enable_disable_load_on_feature_type_click(self, int_geom_type):
+        """
+        Enables or disables load button on feature type load to the table
+        widget based on the number of features and geometry type.
+        :param int_geom_type: Geometry type as an integer
+        :return: None
+        :rtype: None
+        """
+        if self.uncheck_counter > int_geom_type:
+            self._enable_disable_button_widgets(True)
+        elif self.uncheck_counter <= int_geom_type:
+            self._enable_disable_button_widgets(None, False)
+            qg.QMessageBox.information(
+                None, 'STDM', 'Number of features are too few to be loaded as {0}'.format(self.geom_type)
+            )
+
     def _table_widget_checkbox_clicked(self, item):
         """
         On item click
@@ -281,32 +330,32 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :rtype: None
         """
         if item.checkState() == qc.Qt.Unchecked:
-            gpx_view.select_unselect_item(self.point_row_attr, self.map_canvas, item, '#FF0000')
             count, qgs_point = gpx_view.select_unselect_item(self.point_row_attr, self.map_canvas, item, '#FF0000')
             self._unchecked_gpx_point(qgs_point)
-            self._check_box_click_counter(count)
+            self._enable_disable_load_on_checkbox_click(count)
         else:
-            gpx_view.select_unselect_item(self.point_row_attr, self.map_canvas, item)
             count, qgs_point = gpx_view.select_unselect_item(self.point_row_attr, self.map_canvas, item)
             self._checked_gpx_point(qgs_point)
-            self._check_box_click_counter(count, True)
+            self._enable_disable_load_on_checkbox_click(count, True)
 
-    def _check_box_click_counter(self, click_count, checked=None):
+    def _enable_disable_load_on_checkbox_click(self, click_count, checked=None):
         """
-        Counts clicks if a checkbox is checked or unchecked
+        Counts clicks if a checkbox is checked or unchecked and
+        enables or disables the load button.
         :param click_count: Number of clicks
         :param checked: Checked flag
         :return: None
         :rtype: None
         """
         if click_count:
+            active_geom_type = int(self.iface.activeLayer().geometryType())
             if checked:
                 self.uncheck_counter += 1
-                if self.uncheck_counter > 0:
+                if self.uncheck_counter > active_geom_type:
                     self._enable_disable_button_widgets(None, True)
             else:
                 self.uncheck_counter -= 1
-                if self.uncheck_counter == 0:
+                if self.uncheck_counter <= active_geom_type:
                     self._enable_disable_button_widgets(None, False)
 
     def _unchecked_gpx_point(self, qgs_point):
@@ -361,17 +410,31 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         """
         new_geometry = gpx_view.create_geometry(self.geom_type, self.qgs_point_list)
         geometry_wkb = new_geometry.exportToWkt()
-        curr_layer = vector_layer(self.sp_table, geom_column=self.sp_col)
-        gpx_view.remove_vertex(self.map_canvas, self.point_row_attr)
         srid = self.entity.columns[self.sp_col].srid
-        editor = EntityEditorDialog(self.entity, None, self.iface.mainWindow())
-        model = editor.model()
+        model = self.entity_editor.model()
         setattr(model, self.sp_col, 'SRID={};{}'.format(srid, geometry_wkb))
-        editor.exec_()
-        # Set extent and reset widgets
-        self.map_canvas.setExtent(curr_layer.extent())
-        self.map_canvas.refresh()
-        self._reset_widget()
+        self.entity_editor.submit()
+        self._reload_entity_editor()
+
+    def _reload_entity_editor(self):
+        """
+        Reloads entity editor and its widget
+        to the GPX import tab widget.
+        :return: None
+        :rtype: None
+        """
+        tab_count = self.gpx_import_tab.count()
+        if tab_count > 1:
+            for i in reversed(range(tab_count)):
+                if i != 0:
+                    tab_object = self.gpx_import_tab.widget(i)
+                    self.gpx_import_tab.removeTab(i)
+                    tab_object.deleteLater()
+                    del tab_object
+            if self.entity_editor is not None:
+                self.entity_editor.deleteLater()
+                self.entity_editor = None
+            self._init_entity_editor()
 
     def closeEvent(self, event):
         """
@@ -383,21 +446,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         if len(gpx_view.get_layer_by_name(self.temp_layer_name)) != 0:
             gpx_view.remove_vertex(self.map_canvas, self.point_row_attr)
             gpx_view.remove_map_layer(self.map_canvas, self.temp_mem_layer)
+        if self.point_row_attr:
+            self._refresh_map_canvas()
         event.accept()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
