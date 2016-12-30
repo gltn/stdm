@@ -24,6 +24,9 @@ class STRDataStore():
         self.spatial_unit = OrderedDict()
         self.str_type = OrderedDict()
         self.share = OrderedDict()
+        self.validity_period = OrderedDict()
+        self.validity_period['from_date'] = None
+        self.validity_period['to_date'] = None
         self.supporting_document = []
         self.source_doc_manager = None
 

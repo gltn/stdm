@@ -1,8 +1,11 @@
+import calendar
 from collections import OrderedDict
 from datetime import (
     date
 )
 
+import time
+from dateutil.rrule import rrule, MONTHLY
 from PyQt4.QtGui import QDoubleSpinBox
 from dateutil.relativedelta import relativedelta
 from PyQt4.QtCore import QDateTime
@@ -686,15 +689,19 @@ class ValidityPeriod():
         self.to_date = self.str_editor.validity_to_date
 
         self.init_dates()
-        str_editor.number_of_year.valueChanged.connect(
-            self.bind_to_date_by_year
+        str_editor.tenure_duration.valueChanged.connect(
+            self.bind_to_date_by_year_month
         )
         self.to_date.dateChanged.connect(
-            self.bind_year_by_dates_range
+            self.bind_year_month_by_dates_range
         )
         self.from_date.dateChanged.connect(
-            self.bind_year_by_dates_range
+            self.bind_year_month_by_dates_range
         )
+        self.from_date.dateChanged.connect(
+            self.set_minimum_to_date
+        )
+        self.set_minimum_to_date()
 
     def init_dates(self):
         """
@@ -709,7 +716,7 @@ class ValidityPeriod():
             date.today()
         )
 
-    def bind_to_date_by_year(self, increment):
+    def bind_to_date_by_year_month(self, increment):
         """
         A slot raised when validity years is specified.
         It changes the end date of the validity.
@@ -718,15 +725,32 @@ class ValidityPeriod():
         :return:
         :rtype:
         """
+
         before_date = self.to_date.date().currentDate()
-        after_date = date(
-            before_date.year() + increment,
-            before_date.month(),
-            before_date.day()
-        )
+        if self.str_editor.in_years.isChecked():
+            after_date = date(
+                before_date.year() + increment,
+                before_date.month(),
+                before_date.day()
+            )
+        else:
+            after_date = self.add_months(
+                before_date, increment
+            )
         self.to_date.setDate(after_date)
 
-    def bind_year_by_dates_range(self):
+
+    def add_months(self, source_date, months):
+        month = source_date.month() - 1 + months
+        year = int(source_date.year() + month / 12)
+        month = month % 12 + 1
+        day = min(
+            source_date.day,
+            calendar.monthrange(year, month)[1]
+        )
+        return date(year, month, day)
+
+    def bind_year_month_by_dates_range(self):
         """
         A slot raised when from or to dates are changed.
         It updates the year spinbox. Note that,
@@ -734,7 +758,16 @@ class ValidityPeriod():
         :return:
         :rtype:
         """
-        years = relativedelta(
-            self.to_date.date().toPyDate(),
-            self.from_date.date().toPyDate()).years
-        self.str_editor.number_of_year.setValue(years)
+        to_date = self.to_date.date().toPyDate()
+        from_date = self.from_date.date().toPyDate()
+        if self.str_editor.in_years.isChecked():
+            period = relativedelta(to_date, from_date).years
+        else:
+            year_diff = to_date.year - from_date.year
+
+            period = to_date.month - from_date.month + (12 * year_diff)
+
+        self.str_editor.tenure_duration.setValue(period)
+
+    def set_minimum_to_date(self):
+        self.to_date.setMinimumDate(self.from_date.date())
