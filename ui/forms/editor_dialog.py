@@ -97,7 +97,9 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         self._entity = entity
         self._fk_browsers = OrderedDict()
-
+        self.entity_tab_widget = None
+        self.entity_scroll_area = None
+        self.entity_editor_widgets = OrderedDict()
         #Set notification layout bar
         self.vlNotification = QVBoxLayout()
         self.vlNotification.setObjectName('vlNotification')
@@ -128,6 +130,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.collect_model = collect_model
         #Initialize UI setup
         self._init_gui()
+        self._get_entity_editor_widgets()
 
         #Set title
         editor_trans = self.tr('Editor')
@@ -200,7 +203,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
     def _setup_columns_content_area(self):
         #Only use this if entity supports documents
-        self.entity_tab_widget = None
+        # self.entity_tab_widget = None
         self.doc_widget = None
 
         self.entity_scroll_area = QScrollArea(self)
@@ -407,3 +410,19 @@ class EntityEditorDialog(QDialog, MapperMixin):
         text = text.replace(c, asterisk_highlight)
 
         return u'<html><head/><body><p>{0}</p></body></html>'.format(text)
+
+    def _get_entity_editor_widgets(self):
+        """
+        Gets entity editor widgets and appends them to a dictionary
+        :return: None
+        :rtype: None
+        """
+        if self.entity_tab_widget:
+            tab_count = self.entity_tab_widget.count()
+            for i in range(tab_count):
+                tab_object = self.entity_tab_widget.widget(i)
+                tab_text = self.entity_tab_widget.tabText(i)
+                self.entity_editor_widgets[tab_text] = tab_object
+        else:
+            self.entity_editor_widgets['no_tab'] = self.entity_scroll_area
+

@@ -82,4 +82,4 @@ def get_active_layer_type(active_layer):
         return None
     for i, geom_type in enumerate(geometry_types):
         if active_layer_geom_type == i:
-            return geom_type
+            return geom_type, active_layer_geom_type
