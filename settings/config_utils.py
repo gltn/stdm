@@ -8,7 +8,7 @@ from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.configfile_paths import FilePaths
 
 
-class UpdateUtils():
+class ConfigUtils():
     def __init__(self, stc_file):
 
         self.file_handler = FilePaths()
@@ -58,6 +58,7 @@ class UpdateUtils():
             self.file_handler.localPath(),
             config_file_name
         )
+
         config_file_path = QFile(config_file_path)
         config_file = os.path.basename(config_file_name)
         if self.check_config_file_exists(config_file):
@@ -73,7 +74,6 @@ class UpdateUtils():
                 raise ConfigurationException(error_message)
 
             self.doc_element = self.document.documentElement()
-
 
     def find_node(self, name):
         """
@@ -92,16 +92,51 @@ class UpdateUtils():
             nodes.append(node)
         return nodes
 
-    def set_attribute(self, nodes, attr, value):
+    def add_attribute_to_nodes(self, nodes, attr, value):
+        """
+        Adds an attribute with value to node lists.
+        :param nodes: List of nodes
+        :type nodes: QNodeList
+        :param attr: The attribute text
+        :type attr: String
+        :param value: The value of the attribute.
+        :type value: String
+        :return:
+        :rtype:
+        """
         for node in nodes:
             element = node.toElement()
             element.setAttribute(attr, value)
-        #print self.document.toString()
+        print self.document.toString()
 
-    def set_attribute_to_node(self, node_name, attr, value):
+    def remove_attribute(self, node_list, attr):
+        for node in node_list:
+            element = node.toElement()
+            if element.hasAttribute(attr):
+                element.removeAttribute(attr)
+
+    def remove_attribute_node(self, node_list, attr):
+        for node in node_list:
+            element = node.toElement()
+            if element.hasAttribute(attr):
+                element.removeAttributeNode(attr)
+
+    def add_attribute_by_node_name(self, node_name, attr, value):
+        """
+        Add attribute with value to nodes by node name.
+        :param node_name: The name of the node.
+        :type node_name: Strong
+        :param attr: The attribute text
+        :type attr: String
+        :param value: The value of the attribute.
+        :type value: String
+        :return:
+        :rtype:
+        """
         nodes = self.find_node(node_name)
-        self.set_attribute(nodes, attr, value)
+        self.add_attribute_to_nodes(nodes, attr, value)
 
     def run(self):
         nodes = self.find_node('Entity')
-        self.set_attribute(nodes, 'Wondie', 'Tesfaye')
+
+        self.add_attribute_to_nodes(nodes, 'Test', 'One')

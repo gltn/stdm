@@ -99,9 +99,11 @@ class STRTypeDelegate(QItemDelegate):
                 )
             return str_combo
         elif index.column() == 1:
+
             spinbox = QDoubleSpinBox(parent)
             spinbox.setObjectName(unicode(index.row()))
             spinbox.setMinimum(0.00)
+            spinbox.setSuffix('%')
             spinbox.setMaximum(100.00)
             return spinbox
 
