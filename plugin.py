@@ -46,7 +46,7 @@ from stdm.ui.login_dlg import loginDlg
 from stdm.ui.manage_accounts_dlg import manageAccountsDlg
 from stdm.ui.content_auth_dlg import contentAuthDlg
 from stdm.ui.options_base import OptionsDialog
-from stdm.ui.new_str_wiz import newSTRWiz
+
 from stdm.ui.view_str import ViewSTRWidget
 from stdm.ui.admin_unit_selector import AdminUnitSelector
 from stdm.ui.entity_browser import (
@@ -104,7 +104,7 @@ from stdm.ui.progress_dialog import STDMProgressDialog
 
 from stdm.ui.feature_details import DetailsTreeView
 
-from stdm.ui.social_tenure.str_tree_view import STRTreeView
+from stdm.ui.social_tenure.str_editor import STREditor
 
 LOGGER = logging.getLogger('stdm')
 
@@ -372,7 +372,7 @@ class STDMQGISLoader(object):
         Checks if the database table for a given entity exists.
         In case the table doesn't exists, it shows an error message.
         :param entity: Entity
-        :type entity: Class
+        :type entity: Object
         :return: True if there is no missing table and false
         if there is a missing table.
         :rtype: Boolean
@@ -381,85 +381,31 @@ class STDMQGISLoader(object):
             "STDMQGISLoader",
             'Database Table Error'
         )
-        if None in [self.current_profile.social_tenure.party,
-                    self.current_profile.social_tenure.spatial_unit]:
-            return
-        # Check for social tenure entity
-        if entity == self.current_profile.social_tenure:
-            str_table_status = [
-                (
-                    str(entity.party.short_name),
-                    pg_table_exists(entity.party.name)
-                ),
-                (
-                    str(entity.spatial_unit.short_name),
-                    pg_table_exists(entity.spatial_unit.name)
-                ),
-                (
-                    str(entity.short_name),
-                    pg_table_exists(entity.name)
-                )
-            ]
-            str_table_status = dict(str_table_status)
-            missing_tables = [
-                 key
-                 for key, value in str_table_status.iteritems()
-                 if not value
-            ]
-            if len(missing_tables) > 0:
-                missing_tables = str(missing_tables).strip("[]")
-                missing_tables = missing_tables.replace("'", "")
 
-                message = QApplication.translate(
-                    "STDMQGISLoader",
-                    'The system has detected that '
-                    'database table(s) required in \n'
-                    'in the Social Tenure Relationship '
-                    'is/are missing.\n'
-                    'Missing table(s) - {}\n'
-                    'Do you want to re-run the '
-                    'Configuration Wizard now?'.
-                    format(missing_tables)
+        if not pg_table_exists(entity.name):
+            message = QApplication.translate(
+                "STDMQGISLoader",
+                'The system has detected that '
+                'a required database table - \n'
+                '{} is missing. \n'
+                'Do you want to re-run the '
+                'Configuration Wizard now?'.format(
+                    entity.short_name
                 )
-                database_check = QMessageBox.critical(
-                    self.iface.mainWindow(),
-                    title,
-                    message,
-                    QMessageBox.Yes,
-                    QMessageBox.No
-                )
-                if database_check == QMessageBox.Yes:
-                    self.load_config_wizard()
-                else:
-                    return False
-            else: # If no table is missing, return True
-                return True
-        # Check for other entities
-        else:
-            if not pg_table_exists(entity.name):
-                message = QApplication.translate(
-                    "STDMQGISLoader",
-                    'The system has detected that '
-                    'a required database table - \n'
-                    '{} is missing. \n'
-                    'Do you want to re-run the '
-                    'Configuration Wizard now?'.format(
-                        entity.short_name
-                    )
-                )
-                database_check = QMessageBox.critical(
-                    self.iface.mainWindow(),
-                    title,
-                    message,
-                    QMessageBox.Yes,
-                    QMessageBox.No
-                )
-                if database_check == QMessageBox.Yes:
-                    self.load_config_wizard()
-                else:
-                    return False
+            )
+            database_check = QMessageBox.critical(
+                self.iface.mainWindow(),
+                title,
+                message,
+                QMessageBox.Yes,
+                QMessageBox.No
+            )
+            if database_check == QMessageBox.Yes:
+                self.load_config_wizard()
             else:
-                return True
+                return False
+        else:
+            return True
 
     def run_wizard(self):
         """
@@ -1032,18 +978,34 @@ class STDMQGISLoader(object):
 
         self.profiles_combobox.setStyleSheet(
             """
-         QComboBox {
-            border: 2px solid #4b85ca;
-            border-radius: 2px;
-            background: #fff;
-            padding: 1px 23px 1px 3px;
-            min-width: 6em;
-            color: #06477f;
-            padding: 1px 5px 1px 3px;
-            width: 115px;
-            height: 18px;
-        }
-        QFrame { border: 2px solid #4b85ca; }
+             QComboBox {
+                border: 2px solid #4b85ca;
+                border-radius: 3px;
+                padding: 1px 18px 1px 3px;
+                min-width: 6em;
+            }
+
+            QComboBox:editable {
+                background: white;
+            }
+
+            QComboBox:!editable, QComboBox::drop-down:editable {
+                 background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                             stop: 0 #f8f8f8, stop: 0.4 #eeeeee,
+                                             stop: 0.5 #e6e6e6, stop: 1.0 #cecece);
+            }
+
+            /* QComboBox gets the "on" state when the popup is open */
+            QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+                background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                            stop: 0 #D3D3D3, stop: 0.4 #D8D8D8,
+                                            stop: 0.5 #DDDDDD, stop: 1.0 #E1E1E1);
+            }
+
+            QComboBox:on { /* shift the text when the popup opens */
+                padding-top: 3px;
+                padding-left: 4px;
+            }
             """
         )
         setComboCurrentIndexWithText(
@@ -1320,20 +1282,20 @@ class STDMQGISLoader(object):
         defining a new social
         tenure relationship
         '''
-        try:
+        # try:
 
-            str_editor = STRTreeView(self)
-            str_editor.open()
+        str_editor = STREditor(self)
+        str_editor.open()
 
-        except Exception as ex:
-            QMessageBox.critical(
-                self.iface.mainWindow(),
-                QApplication.translate(
-                    'STDMQGISLoader',
-                    'Error Loading New STR Wizard'
-                ),
-                ex
-            )
+        # except Exception as ex:
+        #     QMessageBox.critical(
+        #         self.iface.mainWindow(),
+        #         QApplication.translate(
+        #             'STDMQGISLoader',
+        #             'Error Loading New STR Wizard'
+        #         ),
+        #         str(ex)
+        #     )
 
     def onManageAdminUnits(self):
         '''
@@ -1498,6 +1460,7 @@ class STDMQGISLoader(object):
             database_status = self.entity_table_checker(
                 self.current_profile.social_tenure
             )
+
             if database_status:
                 self.newSTR()
 

@@ -96,5 +96,6 @@
     <file>images/icons/major_annotation.png</file>
     <file>images/icons/minor_annotation.png</file>
     <file>images/icons/save_image.png</file>
+    <file>images/icons/period.png</file>
   </qresource>
 </RCC>

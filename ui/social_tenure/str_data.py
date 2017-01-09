@@ -23,6 +23,10 @@ class STRDataStore():
         self.party = OrderedDict()
         self.spatial_unit = OrderedDict()
         self.str_type = OrderedDict()
+        self.share = OrderedDict()
+        self.validity_period = OrderedDict()
+        self.validity_period['from_date'] = None
+        self.validity_period['to_date'] = None
         self.supporting_document = []
         self.source_doc_manager = None
 
@@ -246,6 +250,23 @@ class STRDBHandler():
             isValid = False
             STDMDb.instance().session.rollback()
 
+        except exc.InternalError:
+
+            QMessageBox.critical(
+                iface.mainWindow(),
+                QApplication.translate(
+                    'STRDBHandler',
+                    'InternalError Error'
+                ),
+                QApplication.translate(
+                    'STRDBHandler',
+                    'Sorry, there is an internal error. \n'
+                    'Restart QGIS to fix the issue.'
+                )
+            )
+            self.progress.hide()
+            isValid = False
+            STDMDb.instance().session.rollback()
         except Exception as e:
             errMsg = unicode(e)
             QMessageBox.critical(
@@ -260,6 +281,7 @@ class STRDBHandler():
             STDMDb.instance().session.rollback()
             self.progress.hide()
         finally:
+
             STDMDb.instance().session.rollback()
             self.progress.hide()
 

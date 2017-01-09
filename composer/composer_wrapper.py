@@ -38,7 +38,7 @@ from PyQt4.QtXml import QDomDocument
 
 from qgis.core import (
     QgsComposerArrow,
-    QgsComposerAttributeTable,
+    QgsComposerAttributeTableV2,
     QgsComposerLabel,
     QgsComposerItem,
     QgsComposerMap,
@@ -844,7 +844,7 @@ class ComposerWrapper(QObject):
                     elif isinstance(editor_widget, ComposerChartConfigEditor):
                         itemFormatter = ChartFormatter()
 
-                elif isinstance(composer_item, QgsComposerAttributeTable):
+                elif isinstance(composer_item, QgsComposerAttributeTableV2):
                     itemFormatter = TableFormatter()
 
                 if not itemFormatter is None:
