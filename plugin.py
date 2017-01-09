@@ -46,7 +46,7 @@ from stdm.ui.login_dlg import loginDlg
 from stdm.ui.manage_accounts_dlg import manageAccountsDlg
 from stdm.ui.content_auth_dlg import contentAuthDlg
 from stdm.ui.options_base import OptionsDialog
-from stdm.ui.new_str_wiz import newSTRWiz
+
 from stdm.ui.view_str import ViewSTRWidget
 from stdm.ui.admin_unit_selector import AdminUnitSelector
 from stdm.ui.entity_browser import (
