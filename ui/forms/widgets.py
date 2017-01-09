@@ -52,11 +52,11 @@ from stdm.data.configuration.columns import (
     IntegerColumn,
     LookupColumn,
     MultipleSelectColumn,
+    PercentColumn,
     TextColumn,
     VarCharColumn
 )
 from stdm.data.configuration import entity_model
-from stdm.data.pg_utils import table_column_names
 from stdm.settings import current_profile
 from stdm.ui.customcontrols.relation_line_edit import (
     AdministrativeUnitLineEdit,
@@ -77,7 +77,12 @@ class UserTipLabel(QLabel):
         QLabel.__init__(self, parent)
 
         #Set size policy
-        self.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
+        self.setSizePolicy(
+            QSizePolicy(
+                QSizePolicy.Fixed,
+                QSizePolicy.Fixed
+            )
+        )
 
         self.setMouseTracking(True)
 
@@ -292,7 +297,10 @@ class ColumnWidgetRegistry(object):
         factory = ColumnWidgetRegistry.factory(c.TYPE_INFO)
 
         if not factory is None:
-            return factory._create_widget(c, parent)
+            w = factory._create_widget(c, parent)
+            factory._widget_configuration(w, c)
+
+            return w
 
         return None
 
@@ -314,6 +322,15 @@ class ColumnWidgetRegistry(object):
     def _create_widget(cls, c, parent):
         #For implementation by sub-classes to create the appropriate widget.
         raise NotImplementedError
+
+    @classmethod
+    def _widget_configuration(cls, widget, c):
+        """
+        For optionally configurating the widget created by :func:`_create_widget`.
+        To be implemnted by sub-classes as default implementation does nothing.
+        .. versionadded:: 1.5
+        """
+        pass
 
     def format_column_value(self, value):
         """
@@ -468,7 +485,7 @@ class IntegerWidgetFactory(ColumnWidgetRegistry):
         return sb
 
     def format_column_value(self, value):
-        #Format date to string
+        #Format int to string
         if not value is None:
             return str(value)
 
@@ -494,13 +511,26 @@ class DoubleWidgetFactory(ColumnWidgetRegistry):
         return dsb
 
     def format_column_value(self, value):
-        #Format date to string
+        #Format double to string
         if not value is None:
             return str(value)
 
         return ''
 
 DoubleWidgetFactory.register()
+
+
+class PercentWidgetFactory(DoubleWidgetFactory):
+    """
+    Creates a widget for specifying percentage values.
+    """
+    COLUMN_TYPE_INFO = PercentColumn.TYPE_INFO
+    _TYPE_PREFIX = 'psb_'
+
+    @classmethod
+    def _widget_configuration(cls, widget, c):
+        #Add percentage suffix
+        widget.setSuffix(' %')
 
 
 class BooleanWidgetFactory(ColumnWidgetRegistry):
@@ -742,6 +772,7 @@ class LookupWidgetFactory(ColumnWidgetRegistry):
 
 
 LookupWidgetFactory.register()
+
 
 class MultipleSelectWidgetFactory(LookupWidgetFactory):
     """

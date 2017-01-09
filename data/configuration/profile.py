@@ -147,13 +147,20 @@ class Profile(QObject):
         :type value: str
         """
         if entity_type == SocialTenure.PARTY:
-            attr = 'party'
+            # Renamed from 'party' in v1.5
+            attr = 'parties'
 
         elif entity_type == SocialTenure.SPATIAL_UNIT:
             attr = 'spatial_unit'
 
         elif entity_type == SocialTenure.SOCIAL_TENURE_TYPE:
             attr = 'tenure_type_collection'
+
+        elif entity_type == SocialTenure.START_DATE:
+            attr = 'start_date'
+
+        elif entity_type == SocialTenure.END_DATE:
+            attr = 'end_date'
 
         else:
             LOGGER.debug('%s is an invalid enumeration for social tenure '
@@ -172,7 +179,10 @@ class Profile(QObject):
         if attr != 'supporting_docs':
             setattr(self.social_tenure, attr, val)
 
-            LOGGER.debug('Value for %s attribute has been successfully set.', attr)
+            LOGGER.debug(
+                'Value for %s attribute has been successfully set.',
+                attr
+            )
 
     def entity(self, name):
         """

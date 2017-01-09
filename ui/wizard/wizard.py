@@ -61,6 +61,7 @@ from stdm.settings import (
     current_profile,
     save_current_profile
 )
+from stdm.ui.notification import NotificationBar
 
 from stdm.settings.registryconfig import (
         RegistryConfig,
@@ -97,8 +98,10 @@ EXCL_ENTITIES = ['SUPPORTING_DOCUMENT', 'SOCIAL_TENURE',
                  'ADMINISTRATIVE_SPATIAL_UNIT', 'ENTITY_SUPPORTING_DOCUMENT',
                  'VALUE_LIST', 'ASSOCIATION_ENTITY']
 
+
 class ConfigWizard(QWizard, Ui_STDMWizard):
     wizardFinished = pyqtSignal(object)
+
     """
     STDM configuration wizard editor
     """
@@ -106,6 +109,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         QWizard.__init__(self, parent)
         self.setupUi(self)
         self.register_fields()
+
+        # Initialize notification bars
+        self._notif_bar_str = NotificationBar(self.vl_notification_str)
 
         # transfer state between wizard and column editor
         self.editor_cache = {}
@@ -178,8 +184,76 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.splitter_3.isCollapsible(False)
         self.splitter_3.setSizes([330, 150])
 
-        #self.cboProfile.currentIndexChanged.connect(self.profile_changed)
         self.set_current_profile()
+
+        self._init_str_ctrls()
+
+    def _init_str_ctrls(self):
+        # Collapse STR date range group boxes
+        self.gb_start_dates.setCollapsed(False)
+        self.gb_end_dates.setCollapsed(False)
+
+        # Set default dates
+        current_date = QDate.currentDate()
+        self.dt_start_minimum.setDate(current_date)
+        self.dt_start_maximum.setDate(current_date)
+        self.dt_end_minimum.setDate(current_date)
+        self.dt_end_maximum.setDate(current_date)
+
+        # Connect signals
+        self.dt_start_minimum.dateChanged.connect(
+            self._on_str_start_min_date_changed
+        )
+        self.dt_start_maximum.dateChanged.connect(
+            self._on_str_start_max_date_changed
+        )
+        self.dt_end_minimum.dateChanged.connect(
+            self._on_str_end_min_date_changed
+        )
+        self.dt_end_maximum.dateChanged.connect(
+            self._on_str_end_max_date_changed
+        )
+
+    def _on_str_start_min_date_changed(self, date):
+        # Adjust limit of complementary control
+        if date > self.dt_start_maximum.date():
+            msg = self.tr(
+                'Minimum start date is greater than maximum start '
+                'date.'
+            )
+            self._notif_bar_str.clear()
+            self._notif_bar_str.insertWarningNotification(msg)
+
+
+    def _on_str_start_max_date_changed(self, date):
+        # Adjust limit of complementary control
+        if date < self.dt_start_minimum.date():
+            msg = self.tr(
+                'Maximum start date is less than minimum start '
+                'date.'
+            )
+            self._notif_bar_str.clear()
+            self._notif_bar_str.insertWarningNotification(msg)
+
+    def _on_str_end_min_date_changed(self, date):
+        # Adjust limit of complementary control
+        if date > self.dt_end_maximum.date():
+            msg = self.tr(
+                'Minimum end date is greater than maximum end '
+                'date.'
+            )
+            self._notif_bar_str.clear()
+            self._notif_bar_str.insertWarningNotification(msg)
+
+    def _on_str_end_max_date_changed(self, date):
+        # Adjust limit of complementary control
+        if date < self.dt_end_minimum.date():
+            msg = self.tr(
+                'Maximum end date is less than minimum end '
+                'date.'
+            )
+            self._notif_bar_str.clear()
+            self._notif_bar_str.insertWarningNotification(msg)
 
     def reject(self):
         """
@@ -316,15 +390,20 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         :type entity_model: EntitiesModel
         """
         self.pftableView.setModel(entity_model)
-        self.lvEntities.setModel(entity_model)	
-        self.cboParty.setModel(entity_model)
-        #self.cboSPUnit.setModel(entity_model)
+        self.lvEntities.setModel(entity_model)
 
     def init_STR_ctrls_event_handlers(self):
         """
-        Attach onChange event handlers for the STR combobox 
+        Attach onChange event handlers for the STR combobox.
         """
-        self.cboParty.currentIndexChanged.connect(self.on_str_party_changed)
+        # Connect party (de)selection
+        self.lst_parties.party_selected.connect(
+            self._on_party_selected
+        )
+        self.lst_parties.party_deselected.connect(
+            self._on_party_deselected
+        )
+
         self.cboSPUnit.currentIndexChanged.connect(
             self.on_str_spatial_unit_changed
         )
@@ -383,24 +462,32 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         self.lvLookups.setCurrentIndex(self.lvLookups.model().index(0,0))
 
-    def on_str_party_changed(self, idx):
-        """
-        Slot raised when the index of the party combobox changes.
-        :param idx: Current item index.
-        :type idx: int
-        """
-        if idx == -1:
+    def _on_party_selected(self, item):
+        # Handle selection of a party entity.
+        # Check if the party has also been set as the spatial unit.
+        party_name = item.text()
+        if party_name == self.cboSPUnit.currentText():
+            self._notif_bar_str.clear()
+            msg = self.tr(
+                "The selected entity has also been set as the profile's "
+                "social tenure relationship spatial unit."
+            )
+            self._notif_bar_str.insertWarningNotification(msg)
+            item.setCheckState(Qt.Unchecked)
+
             return
 
-        #Update tenure view based on the selected party
-        if self.currentId() == 4:
-            profile = self.current_profile()
-            party_name = self.cboParty.currentText()
-            if not party_name:
-                return
+        # Add party item to view
+        p = self.current_profile()
+        if not p is None:
+            party_entity = p.entity(party_name)
+            self.dg_tenure.add_party_entity(party_entity)
 
-            party = profile.entity(party_name)
-            self.dg_tenure.add_party_entity(party)
+    def _on_party_deselected(self, item):
+        # Handle deselection of a party entity
+        # Remove party graphic item from the view
+        party_name = item.text()
+        self.dg_tenure.remove_party(party_name)
 
     def on_str_spatial_unit_changed(self, idx):
         """
@@ -411,7 +498,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if idx == -1:
             return
 
-        #Update tenure view based on the selected spatial unit
+        # Update tenure view based on the selected spatial unit
         if self.currentId() == 4:
             profile = self.current_profile()
             sp_unit = self.cboSPUnit.currentText()
@@ -420,6 +507,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             spatial_unit = profile.entity(sp_unit)
             self.dg_tenure.set_spatial_unit(spatial_unit)
+
+            # Uncheck the entity in the list of parties
+            self.lst_parties.deselect_party(sp_unit)
 
     def load_configuration_from_file(self, file_name):
         """
@@ -482,23 +572,50 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         # check if any entities exist,
         if self.entity_model.rowCount() == 0:
-            return False, self.tr("No entities for creating Social Tenure Relationship")
+            return False, self.tr(
+                'No entities for creating social tenure relationship.'
+            )
 
-        # check that party and spatial unit entities are not the same
-        if self.cboParty.currentText() == self.cboSPUnit.currentText():
-            return False, self.tr("Party and Spatial Unit entities cannot be the same!")
+        # Validate parties
+        if len(self.lst_parties.parties()) == 0:
+            return False, self.tr(
+                'Please select at least one party from the list of applicable '
+                'party entities.'
+            )
 
         profile = self.current_profile()
         spatial_unit = profile.entity(unicode(self.cboSPUnit.currentText()))
 
         if spatial_unit is None:
             return False, self.tr('No spatial unit entity found for '
-            'creating Social Tenure Relationship!')
+            'creating Social Tenure Relationship.')
 
         # check if the spatial unit entity has a geometry column
         if not spatial_unit.has_geometry_column():
-            return False, self.tr("%s entity should have a geometry column!")\
+            return False, self.tr("%s entity should have a geometry column.")\
                     % spatial_unit.short_name
+
+        # Validate date ranges
+        if self.gb_start_dates.isChecked():
+            if self.dt_start_minimum.date() > self.dt_start_maximum.date():
+                msg = self.tr(
+                    'Minimum start date is greater than maximum start date.'
+                )
+                return False, msg
+
+        if self.gb_end_dates.isChecked():
+            if self.dt_end_minimum.date() > self.dt_end_maximum.date():
+                msg = self.tr(
+                    'Minimum end date is greater than maximum end date.'
+                )
+                return False, msg
+
+        if self.gb_start_dates.isChecked() and self.gb_end_dates.isChecked():
+            if self.dt_start_minimum.date() >= self.dt_end_maximum.date():
+                msg = self.tr(
+                    'Minimum start date should be less than maximum end date.'
+                )
+                return False, msg
 
         return True, self.tr("Ok")
 
@@ -681,17 +798,44 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if self.currentId() == 0:
             self.show_license()
 
+        # STR page
         if id == 4:
             c_profile = self.current_profile()
+
+            # Set profile in the corresponding controls in the STR page
+            self.lst_parties.profile = c_profile
+            self.lst_parties.social_tenure = c_profile.social_tenure
             self.dg_tenure.profile = c_profile
 
-            #If there is an item in the party combobox then set it in the view
-            party_idx = self.cboParty.currentIndex()
-            self.on_str_party_changed(party_idx)
-
-            #Update spatial unit as well
+            # Update spatial unit as well
             sp_unit_idx = self.cboSPUnit.currentIndex()
             self.on_str_spatial_unit_changed(sp_unit_idx)
+
+            # Set validity date ranges
+            self._set_str_validity_ranges()
+
+    def _set_str_validity_ranges(self):
+        # Set the start/end validity dates if specified
+        social_tenure = self.current_profile().social_tenure
+        validity_start_col = social_tenure.validity_start_column
+        validity_end_col = social_tenure.validity_end_column
+
+        # Start range
+        if validity_start_col.minimum > validity_start_col.SQL_MIN and \
+                        validity_start_col.maximum < validity_start_col.SQL_MAX:
+            self.gb_start_dates.setChecked(True)
+            self.dt_start_maximum.setDate(validity_start_col.maximum)
+            self.dt_start_minimum.setDate(validity_start_col.minimum)
+
+        # End range
+        if validity_end_col.minimum > validity_end_col.SQL_MIN and \
+                        validity_end_col.maximum < validity_end_col.SQL_MAX:
+            self.gb_end_dates.setChecked(True)
+            self.dt_end_maximum.setDate(validity_end_col.maximum)
+            self.dt_end_minimum.setDate(validity_end_col.minimum)
+
+        # Suppress warning notifications
+        self._notif_bar_str.clear()
 
     def bool_to_check(self, state):
         """
@@ -756,7 +900,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         :type str_table: str
         """
         self.enable_str_setup()
-        if pg_table_exists(str_table):  # and pg_table_count(str_table) > 0:
+        if pg_table_exists(str_table):
             self.disable_str_setup()
             
     def enable_str_setup(self):
@@ -764,16 +908,24 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Disable STR UI widgets if Social Tenure Relationship has
         been set and saved in the database
         """
-        self.cboParty.setEnabled(True)
-        self.cboSPUnit.setEnabled(True)
+        self._enable_disable_str_ctrls(True)
 
     def disable_str_setup(self):
         """
         Disable STR UI widgets if Social Tenure Relationship has
         been set and saved in the database
         """
-        self.cboParty.setEnabled(False)
-        self.cboSPUnit.setEnabled(False)
+        self._enable_disable_str_ctrls(False)
+
+    def _enable_disable_str_ctrls(self, state):
+        self.lst_parties.setEnabled(state)
+        self.cboSPUnit.setEnabled(state)
+        self.gb_start_dates.setEnabled(state)
+        self.gb_end_dates.setEnabled(state)
+        self.dt_start_minimum.setEnabled(state)
+        self.dt_start_maximum.setEnabled(state)
+        self.dt_end_minimum.setEnabled(state)
+        self.dt_end_maximum.setEnabled(state)
 
     def validateCurrentPage(self):
         validPage = True
@@ -785,17 +937,14 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 return validPage
 
         if self.currentId() == 3:
-            self.party_changed(0)
-
             curr_profile = self.current_profile()
 
             idx1 = self.index_party_table()
-            self.cboParty.setCurrentIndex(idx1)
+            #self.cboParty.setCurrentIndex(idx1)
 
             idx = self.index_spatial_unit_table(
                     curr_profile, self.STR_spunit_model)
             self.cboSPUnit.setCurrentIndex(idx)
-            #self.spatial_unit_changed(idx)
 
             self.set_multi_party_checkbox(curr_profile)
 
@@ -812,12 +961,32 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             if validPage:
                 profile = self.current_profile()
 
-                #party
-                party = profile.entity(unicode(self.cboParty.currentText()))
+                # Set STR entities
+                parties = self.lst_parties.parties()
                 spatial_unit = profile.entity(unicode(self.cboSPUnit.currentText()))
 
-                profile.set_social_tenure_attr(SocialTenure.PARTY, party)
+                profile.set_social_tenure_attr(SocialTenure.PARTY, parties)
                 profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT, spatial_unit)
+
+                # Date ranges
+                if self.gb_start_dates.isChecked():
+                    min_start_date = self.dt_start_minimum.date().toPyDate()
+                    max_start_date = self.dt_start_maximum.date().toPyDate()
+
+                    profile.set_social_tenure_attr(
+                        SocialTenure.START_DATE,
+                        (min_start_date, max_start_date)
+                    )
+
+                if self.gb_end_dates.isChecked():
+                    min_end_date = self.dt_end_minimum.date().toPyDate()
+                    max_end_date = self.dt_end_maximum.date().toPyDate()
+
+                    profile.set_social_tenure_attr(
+                        SocialTenure.END_DATE,
+                        (min_end_date, max_end_date)
+                    )
+
             else:
                 self.show_message(self.tr(msg))
 
@@ -1370,7 +1539,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self.pftableView.setModel(view_model)
         self.lvEntities.setModel(view_model)
-        self.cboParty.setModel(view_model)
 
     def populate_view_models(self, profile):
         for entity in profile.entities.values():
@@ -1394,7 +1562,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.lookup_item_model = self.lvLookups.selectionModel()
         self.lookup_item_model.selectionChanged.connect(self.lookup_changed)
 
-        self.cboParty.currentIndexChanged.emit(self.cboParty.currentIndex())
+        #self.cboParty.currentIndexChanged.emit(self.cboParty.currentIndex())
         self.cboSPUnit.currentIndexChanged.emit(self.cboSPUnit.currentIndex())
 
     def switch_profile(self, name):
@@ -1538,19 +1706,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.addColumns(self.col_view_model, columns)
 
             self.tbvColumns.setModel(self.col_view_model)
-
-    def party_changed(self, row_id):
-        """
-        Event handler for STR party combobox - event currentIndexChanged.
-        """
-        cbo_model = self.cboParty.model()
-        try:
-            columns = cbo_model.entity_byId(row_id).columns.values()
-            self.party_item_model.clear()
-            self.party_item_model = STRColumnEntitiesModel()
-            self.addColumns(self.party_item_model, columns)
-        except:
-            pass
 
     def spatial_unit_changed(self, row_id):
         """

@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_column_editor.ui'
 #
-# Created: Wed Oct 05 16:10:05 2016
-#      by: PyQt4 UI code generator 4.11.3
+# Created: Sat Jan 07 09:35:13 2017
+#      by: PyQt4 UI code generator 4.9.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,16 +12,7 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    def _fromUtf8(s):
-        return s
-
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
+    _fromUtf8 = lambda s: s
 
 class Ui_ColumnEditor(object):
     def setupUi(self, ColumnEditor):
@@ -65,6 +56,7 @@ class Ui_ColumnEditor(object):
         sizePolicy.setHeightForWidth(self.cboDataType.sizePolicy().hasHeightForWidth())
         self.cboDataType.setSizePolicy(sizePolicy)
         self.cboDataType.setEditable(False)
+        self.cboDataType.setInsertPolicy(QtGui.QComboBox.InsertAlphabetically)
         self.cboDataType.setObjectName(_fromUtf8("cboDataType"))
         self.gridLayout.addWidget(self.cboDataType, 3, 1, 1, 1)
         self.btnColProp = QtGui.QPushButton(ColumnEditor)
@@ -144,17 +136,17 @@ class Ui_ColumnEditor(object):
         ColumnEditor.setTabOrder(self.cbUnique, self.cbIndex)
 
     def retranslateUi(self, ColumnEditor):
-        ColumnEditor.setWindowTitle(_translate("ColumnEditor", "Column editor", None))
-        self.label_3.setText(_translate("ColumnEditor", "Description", None))
-        self.edtColDesc.setPlaceholderText(_translate("ColumnEditor", "Column Description", None))
-        self.label_11.setText(_translate("ColumnEditor", "User tip", None))
-        self.edtUserTip.setPlaceholderText(_translate("ColumnEditor", "Enter text to appear in the form as a tooltip", None))
-        self.label_4.setText(_translate("ColumnEditor", "Column data type", None))
-        self.btnColProp.setText(_translate("ColumnEditor", "Column properties ...", None))
-        self.edtColName.setPlaceholderText(_translate("ColumnEditor", "Enter column name", None))
-        self.label_2.setText(_translate("ColumnEditor", "Column name", None))
-        self.cbMandt.setText(_translate("ColumnEditor", "Mandatory", None))
-        self.cbSearch.setText(_translate("ColumnEditor", "Searchable", None))
-        self.cbUnique.setText(_translate("ColumnEditor", "Unique", None))
-        self.cbIndex.setText(_translate("ColumnEditor", "Column Indexed", None))
+        ColumnEditor.setWindowTitle(QtGui.QApplication.translate("ColumnEditor", "Column editor", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_3.setText(QtGui.QApplication.translate("ColumnEditor", "Description", None, QtGui.QApplication.UnicodeUTF8))
+        self.edtColDesc.setPlaceholderText(QtGui.QApplication.translate("ColumnEditor", "Column Description", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_11.setText(QtGui.QApplication.translate("ColumnEditor", "User tip", None, QtGui.QApplication.UnicodeUTF8))
+        self.edtUserTip.setPlaceholderText(QtGui.QApplication.translate("ColumnEditor", "Enter text to appear in the form as a tooltip", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_4.setText(QtGui.QApplication.translate("ColumnEditor", "Column data type", None, QtGui.QApplication.UnicodeUTF8))
+        self.btnColProp.setText(QtGui.QApplication.translate("ColumnEditor", "Column properties ...", None, QtGui.QApplication.UnicodeUTF8))
+        self.edtColName.setPlaceholderText(QtGui.QApplication.translate("ColumnEditor", "Enter column name", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("ColumnEditor", "Column name", None, QtGui.QApplication.UnicodeUTF8))
+        self.cbMandt.setText(QtGui.QApplication.translate("ColumnEditor", "Mandatory", None, QtGui.QApplication.UnicodeUTF8))
+        self.cbSearch.setText(QtGui.QApplication.translate("ColumnEditor", "Searchable", None, QtGui.QApplication.UnicodeUTF8))
+        self.cbUnique.setText(QtGui.QApplication.translate("ColumnEditor", "Unique", None, QtGui.QApplication.UnicodeUTF8))
+        self.cbIndex.setText(QtGui.QApplication.translate("ColumnEditor", "Column Indexed", None, QtGui.QApplication.UnicodeUTF8))
 

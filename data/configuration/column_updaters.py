@@ -34,6 +34,7 @@ from sqlalchemy import (
 from sqlalchemy.exc import ProgrammingError
 
 from migrate.changeset import *
+from migrate.changeset.constraint import CheckConstraint
 
 from geoalchemy2 import Geometry
 
@@ -58,16 +59,67 @@ def _base_col_attrs(col):
     return col_attrs
 
 
+def _quote_value(value):
+    # Encloses value in single quotes
+    return u'\'{0}\''.format(value)
+
+
+def check_constraint(column, sa_column, table):
+    """
+    Creates minimum and/or maximum check constraints.
+    .. versionadded:: 1.5
+    :param column: BoundsColumn object.
+    :type column: BoundsColumn
+    :param sa_column: SQLAlchemy column object
+    :type sa_column: Column
+    :param table: SQLAlchemy table object
+    :type table: Table
+    :return: Returns a check constraint object.
+    :rtype: CheckConstraint
+    """
+    if not hasattr(table.c, column.name):
+        return None
+
+    col_attr = getattr(table.c, column.name)
+
+    min_value = str(column.minimum)
+    max_value = str(column.maximum)
+
+    # Check if the values need to be enclosed in single quotes
+    if column.value_requires_quote():
+        min_value = _quote_value(min_value)
+        max_value = _quote_value(max_value)
+
+    # Create SQL statements
+    min_sql = u'{0} >= {1}'.format(column.name, min_value)
+    max_sql = u'{0} <= {1}'.format(column.name, max_value)
+
+    if column.minimum > column.SQL_MIN and column.maximum == column.SQL_MAX:
+        return CheckConstraint(min_sql, columns=[col_attr])
+
+    if column.minimum == column.SQL_MIN and column.maximum < column.SQL_MAX:
+        return CheckConstraint(max_sql, columns=[col_attr])
+
+    if column.minimum > column.SQL_MIN and column.maximum < column.SQL_MAX:
+        min_max_sql = u'{0} AND {1}'.format(min_sql, max_sql)
+
+        return CheckConstraint(min_max_sql, columns=[col_attr])
+
+    return None
+
+
 def _update_col(column, table, data_type, columns):
     """
     Update the column based on the database operation.
     :param column: Base column.
     :type column: BaseColumn
-    :returns: SQLAlchemy column object.
-    :rtype: Column
     :param columns: Existing column names in the database for the given table.
     :type columns: list
+    :returns: SQLAlchemy column object.
+    :rtype: Column
     """
+    from stdm.data.configuration.columns import BoundsColumn
+
     alchemy_column = Column(column.name, data_type, **_base_col_attrs(column))
 
     idx_name = None
@@ -79,7 +131,7 @@ def _update_col(column, table, data_type, columns):
         unique_name = u'unq_{0}_{1}'.format(column.entity.name, column.name)
 
     if column.action == DbItem.CREATE:
-        #Ensure the column does not exist otherwise an exception will be thrown
+        # Ensure the column does not exist otherwise an exception will be thrown
         if not column.name in columns:
             alchemy_column.create(
                 table=table,
@@ -87,20 +139,30 @@ def _update_col(column, table, data_type, columns):
                 unique_name=unique_name
             )
 
+            # Create check constraints accordingly
+            if isinstance(column, BoundsColumn) and \
+                    column.can_create_check_constraints():
+                # Create check constraint if need be
+                chk_const = check_constraint(
+                    column, alchemy_column, table
+                )
+                if not chk_const is None:
+                    chk_const.create()
+
     elif column.action == DbItem.ALTER:
-        #Ensure the column exists before altering
+        # Ensure the column exists before altering
         if column.name in columns:
             col_attrs = _base_col_attrs(column)
             col_attrs['table'] = table
             alchemy_column.alter(**col_attrs)
 
     elif column.action == DbItem.DROP:
-        #Ensure the column exists before dropping
+        # Ensure the column exists before dropping
         if column.name in columns:
             _clear_ref_in_entity_relations(column)
             alchemy_column.drop(table=table)
 
-    #Ensure column is added to the table
+    # Ensure column is added to the table
     if alchemy_column.table is None:
         alchemy_column._set_parent(table)
 
@@ -117,6 +179,7 @@ def _clear_ref_in_entity_relations(column):
     #Flag profile to remove entity relations that reference the given column
     for er in referenced_relations:
         column.profile.remove_relation(er.name)
+
 
 def base_column_updater(base_column, table, columns):
     """

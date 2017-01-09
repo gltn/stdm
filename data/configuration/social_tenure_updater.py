@@ -21,6 +21,8 @@ email                : stdm@unhabitat.org
 
 import logging
 
+from copy import deepcopy
+
 from sqlalchemy.sql.expression import text
 from migrate.changeset import *
 
@@ -45,7 +47,7 @@ _exclude_view_column_types = ['MULTIPLE_SELECT']
 
 def view_deleter(social_tenure, engine):
     """
-    Deletes the database view using the information in the social tenure
+    Deletes str database views using the information in the social tenure
     object.
     :param social_tenure: Social tenure object containing the view
     information.
@@ -53,11 +55,11 @@ def view_deleter(social_tenure, engine):
     :param engine: SQLAlchemy connectable object.
     :type engine: Engine
     """
-    view_name = social_tenure.view_name
+    views = social_tenure.views.keys()
 
-    LOGGER.debug('Attempting to delete %s view...', view_name)
-
-    drop_view(view_name)
+    for v in views:
+        LOGGER.debug('Attempting to delete %s view...', v)
+        drop_view(v)
 
 
 def view_updater(social_tenure, engine):
@@ -70,35 +72,74 @@ def view_updater(social_tenure, engine):
     """
     view_name = social_tenure.view_name
 
-    #Check if there is an existing one and delete if it exists
-    LOGGER.debug('Checking if %s view exists...', view_name)
+    views = social_tenure.views
+    #Loop thru view name, primary entity items
+    for v, pe in views.iteritems():
+        # Check if there is an existing one and omit delete if it exists
+        LOGGER.debug('Checking if %s view exists...', v)
 
-    #Do not create if it already exists
-    if pg_table_exists(view_name):
-        return
+        # Do not create if it already exists
+        if pg_table_exists(v):
+            continue
 
-    #Collection for foreign key parents so that appropriate pseudo names
+        #Create view based on the primary entity
+        _create_primary_entity_view(social_tenure, pe, v)
+
+
+def _create_primary_entity_view(social_tenure, primary_entity, view_name):
+    """
+
+    :param social_tenure:
+    :param primary_entity:
+    :param view_name:
+    :return:
+    """
+    # Collection for foreign key parents so that appropriate pseudo names
     # can be constructed if more than one parent is used for the same entity.
     fk_parent_names = {}
 
-    #Create the SQL statement for creating the view where party is the
-    # primary entity
+    party_col_names = deepcopy(social_tenure.party_columns.keys())
+
+    # Flag to check if primary entity is a spatial unit entity
+    pe_is_spatial = False
+
+    # Check if the primary entity is a party in the STR collection
+    if not social_tenure.is_str_party_entity(primary_entity):
+        pe_is_spatial = True
+
+    else:
+        p_fk_col_name = u'{0}_id'.format(primary_entity.short_name.lower())
+        # Exclude other parties from the join statement
+        if p_fk_col_name in party_col_names:
+            party_col_names.remove(p_fk_col_name)
+
+    # Create the SQL statement WRT the primary entity
     str_columns, str_join = _entity_select_column(
         social_tenure,
         True,
         True,
-        foreign_key_parents=fk_parent_names
+        foreign_key_parents=fk_parent_names,
+        omit_join_statement_columns=party_col_names
     )
-    party_columns, party_join = _entity_select_column(
-        social_tenure.party, True, True, True,
-        foreign_key_parents=fk_parent_names
-    )
+
+    party_columns, party_join = [], []
+
+    # Omit party entities in the spatial unit join
+    if not pe_is_spatial:
+        party_columns, party_join = _entity_select_column(
+            primary_entity, True, True, True,
+            foreign_key_parents=fk_parent_names
+        )
+
     spatial_unit_columns, spatial_unit_join = _entity_select_column(
-        social_tenure.spatial_unit, True, join_parents=True,
+        social_tenure.spatial_unit,
+        True,
+        join_parents=True,
+        is_primary=pe_is_spatial,
         foreign_key_parents=fk_parent_names
     )
 
-    view_columns = str_columns + party_columns +  spatial_unit_columns
+    view_columns = party_columns + str_columns + spatial_unit_columns
     join_statement = str_join + party_join + spatial_unit_join
 
     if len(view_columns) == 0:
@@ -107,7 +148,7 @@ def view_updater(social_tenure, engine):
 
         return
 
-    #Create SQL statement
+    # Create SQL statement
     create_view_sql = u'CREATE VIEW {0} AS SELECT {1} FROM {2} {3}'.format(
         view_name, ','.join(view_columns), social_tenure.name,
         ' '.join(join_statement))
@@ -116,9 +157,17 @@ def view_updater(social_tenure, engine):
 
     result = _execute(normalized_create_view_sql)
 
-def _entity_select_column(entity, use_inner_join=False, join_parents=False,
-                          is_primary=False, foreign_key_parents=None):
-    #Check if the entity exists in the database
+
+def _entity_select_column(
+        entity,
+        use_inner_join=False,
+        join_parents=False,
+        is_primary=False,
+        foreign_key_parents=None,
+        omit_view_columns=None,
+        omit_join_statement_columns=None
+):
+    # Check if the entity exists in the database
     if not pg_table_exists(entity.name):
         msg = u'{0} table does not exist, social tenure view will not be ' \
               u'created.'.format(entity.name)
@@ -126,17 +175,25 @@ def _entity_select_column(entity, use_inner_join=False, join_parents=False,
 
         raise ConfigurationException(msg)
 
+    if omit_view_columns is None:
+        omit_view_columns = []
+
+    if omit_join_statement_columns is None:
+        omit_join_statement_columns = []
+
     column_names = []
     join_statements = []
 
     columns = entity.columns.values()
 
-    #Create foreign key parent collection if none is specified
+    # Create foreign key parent collection if none is specified
     if foreign_key_parents is None:
         foreign_key_parents = {}
 
+    str_entity = entity.profile.social_tenure
+
     for c in columns:
-        if not c.TYPE_INFO in _exclude_view_column_types:
+        if c.TYPE_INFO not in _exclude_view_column_types:
             normalized_entity_sname = entity.short_name.replace(
                 ' ', '_'
             ).lower()
@@ -150,34 +207,37 @@ def _entity_select_column(entity, use_inner_join=False, join_parents=False,
             if is_primary and c.name == 'id':
                 select_column_name = col_select_name
 
-            #Use custom join flag
+            # Use custom join flag
             use_custom_join = False
 
             if isinstance(c, ForeignKeyColumn) and join_parents:
                 LOGGER.debug('Creating STR: Getting parent for %s column', c.name)
+                fk_parent_entity = c.entity_relation.parent
                 parent_table = c.entity_relation.parent.name
                 LOGGER.debug('Parent found')
                 select_column_name = ''
 
-                #Handle renaming of parent table names to appropriate
+                # Handle renaming of parent table names to appropriate
                 # pseudonames.
                 if not parent_table in foreign_key_parents:
                     foreign_key_parents[parent_table] = []
 
                 pseudo_names = foreign_key_parents.get(parent_table)
-                #Get pseudoname to use
+                # Get pseudoname to use
                 table_pseudo_name = u'{0}_{1}'.format(
                     parent_table, (len(pseudo_names) + 1)
                 )
                 pseudo_names.append(table_pseudo_name)
 
-                #Map lookup and admin unit values by default
+                # Map lookup and admin unit values by default
                 if c.TYPE_INFO == 'LOOKUP':
                     select_column_name = u'{0}.value AS {1}'.format(
-                        table_pseudo_name, pseudo_column_name)
+                        table_pseudo_name,
+                        pseudo_column_name
+                    )
                     use_custom_join = True
 
-                    #Check if the column is for tenure type
+                    # Check if the column is for tenure type
                     if c.name != 'tenure_type':
                         use_inner_join = False
 
@@ -187,9 +247,12 @@ def _entity_select_column(entity, use_inner_join=False, join_parents=False,
                     use_custom_join = True
                     use_inner_join = False
 
-                #These are outer joins
+                # These are outer joins
                 join_type = 'LEFT JOIN'
-                if use_inner_join:
+
+                # Use inner join only if parent entity is an STR entity
+                if use_inner_join and \
+                        str_entity.is_str_entity(fk_parent_entity):
                     join_type = 'INNER JOIN'
 
                 if use_custom_join:
@@ -203,10 +266,14 @@ def _entity_select_column(entity, use_inner_join=False, join_parents=False,
                         c.entity_relation.parent_column
                     )
 
-                join_statements.append(join_statement)
+                # Assert if the column is in the list of omitted join columns
+                if c.name not in omit_join_statement_columns:
+                    join_statements.append(join_statement)
 
-            if select_column_name:
-                column_names.append(select_column_name)
+            # Assert if the column is in the list of omitted view columns
+            if c.name not in omit_view_columns:
+                if select_column_name:
+                    column_names.append(select_column_name)
 
     return column_names, join_statements
 

@@ -475,6 +475,19 @@ class Entity(QObject, TableItem):
 
         return virtual_cols
 
+    def __eq__(self, other):
+        """
+        Compares entity using the name.
+        :param other: Entity object.
+        :type other: Entity
+        :return: True if the entity is equal, else False.
+        :rtype: bool
+        """
+        if other.name != self.name:
+            return False
+
+        return True
+
 
 class EntitySupportingDocument(Entity):
     """

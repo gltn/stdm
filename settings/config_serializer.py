@@ -434,6 +434,11 @@ class SocialTenureSerializer(object):
     TENURE_TYPE = 'tenureTypeList'
     LAYER_DISPLAY = 'layerDisplay'
     MULTIPARTY = 'supportsMultipleParties'
+    VALIDITY_TAG = 'Validity'
+    START_TAG = 'Start'
+    END_TAG = 'End'
+    MINIMUM = 'minimum'
+    MAXIMUM = 'maximum'
 
     @staticmethod
     def read_xml(child_element, profile, association_elements,
@@ -448,7 +453,7 @@ class SocialTenureSerializer(object):
         """
         party = unicode(child_element.attribute(
             SocialTenureSerializer.PARTY, '')
-        )
+        ).strip()
         spatial_unit = unicode(child_element.attribute(
             SocialTenureSerializer.SPATIAL_UNIT, '')
         )
@@ -459,9 +464,12 @@ class SocialTenureSerializer(object):
             SocialTenureSerializer.MULTIPARTY, '')
         )
 
-        #Set STR attributes
+        # Set STR attributes
         if party:
-            profile.set_social_tenure_attr(SocialTenure.PARTY, party)
+            # Get list of party names
+            parties = party.split(',')
+            parties = [p.strip() for p in parties]
+            profile.set_social_tenure_attr(SocialTenure.PARTY, parties)
 
         if spatial_unit:
             profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT,
@@ -472,6 +480,84 @@ class SocialTenureSerializer(object):
 
         if multi_party:
             profile.social_tenure.multi_party = _str_to_bool(multi_party)
+
+        # Set start validity ranges
+        start_min_dt = SocialTenureSerializer._read_validity_date(
+            child_element,
+            SocialTenureSerializer.START_TAG,
+            SocialTenureSerializer.MINIMUM
+        )
+        start_max_dt = SocialTenureSerializer._read_validity_date(
+            child_element,
+            SocialTenureSerializer.START_TAG,
+            SocialTenureSerializer.MAXIMUM
+        )
+        if not start_min_dt is None and not start_max_dt is None:
+            profile.set_social_tenure_attr(
+                SocialTenure.START_DATE,
+                (start_min_dt, start_max_dt)
+            )
+
+        # Set end validity ranges
+        end_min_dt = SocialTenureSerializer._read_validity_date(
+            child_element,
+            SocialTenureSerializer.END_TAG,
+            SocialTenureSerializer.MINIMUM
+        )
+        end_max_dt = SocialTenureSerializer._read_validity_date(
+            child_element,
+            SocialTenureSerializer.END_TAG,
+            SocialTenureSerializer.MAXIMUM
+        )
+        if not end_min_dt is None and not end_max_dt is None:
+            profile.set_social_tenure_attr(
+                SocialTenure.END_DATE,
+                (end_min_dt, end_max_dt)
+            )
+
+    @staticmethod
+    def _read_validity_date(str_element, tag_name, min_max):
+        # Returns the validity start/end minimum/maximum dates
+        validities = str_element.elementsByTagName(
+            SocialTenureSerializer.VALIDITY_TAG
+        )
+        if validities.count() == 0:
+            return None
+
+        validity_node = validities.item(0)
+        validity_el = validity_node.toElement()
+
+        if tag_name == SocialTenureSerializer.START_TAG:
+            start_tags = validity_el.elementsByTagName(
+                SocialTenureSerializer.START_TAG
+            )
+            if start_tags.count() == 0:
+                return None
+
+            start_node = start_tags.item(0)
+            start_el = start_node.toElement()
+
+            if start_el.hasAttribute(min_max):
+                return date_from_string(start_el.attribute(min_max))
+            else:
+                return None
+
+        if tag_name == SocialTenureSerializer.END_TAG:
+            end_tags = validity_el.elementsByTagName(
+                SocialTenureSerializer.END_TAG
+            )
+            if end_tags.count() == 0:
+                return None
+
+            end_node = end_tags.item(0)
+            end_el = end_node.toElement()
+
+            if end_el.hasAttribute(min_max):
+                return date_from_string(end_el.attribute(min_max))
+            else:
+                return None
+
+        return None
 
     @staticmethod
     def write_xml(social_tenure, parent_node, document):
@@ -484,21 +570,113 @@ class SocialTenureSerializer(object):
         :param document: Represents main document object.
         :type document: QDomDocument
         """
+        party_names = [p.short_name for p in social_tenure.parties]
+        cs_party_names = ','.join(party_names)
+
         social_tenure_element = document.createElement('SocialTenure')
 
         social_tenure_element.setAttribute(SocialTenureSerializer.PARTY,
-                                           social_tenure.party.short_name)
+                                           cs_party_names)
         social_tenure_element.setAttribute(SocialTenureSerializer.SPATIAL_UNIT,
                                         social_tenure.spatial_unit.short_name)
         social_tenure_element.setAttribute(SocialTenureSerializer.TENURE_TYPE,
                                     social_tenure.tenure_type_collection.short_name)
         social_tenure_element.setAttribute(SocialTenureSerializer.LAYER_DISPLAY,
                                     social_tenure.layer_display())
-
         social_tenure_element.setAttribute(SocialTenureSerializer.MULTIPARTY,
                                     str(social_tenure.multi_party))
 
+        # Append validity dates if specified (v1.5)
+        if social_tenure.validity_start_column.minimum > social_tenure.validity_start_column.SQL_MIN:
+            # Add minimum date
+            SocialTenureSerializer._add_validity(
+                social_tenure_element,
+                document,
+                SocialTenureSerializer.START_TAG,
+                SocialTenureSerializer.MINIMUM,
+                social_tenure.validity_start_column.minimum
+            )
+
+        if social_tenure.validity_start_column.maximum < social_tenure.validity_start_column.SQL_MAX:
+            # Add maximum date
+            SocialTenureSerializer._add_validity(
+                social_tenure_element,
+                document,
+                SocialTenureSerializer.START_TAG,
+                SocialTenureSerializer.MAXIMUM,
+                social_tenure.validity_start_column.maximum
+            )
+
+        if social_tenure.validity_end_column.minimum > social_tenure.validity_end_column.SQL_MIN:
+            # Add minimum date
+            SocialTenureSerializer._add_validity(
+                social_tenure_element,
+                document,
+                SocialTenureSerializer.END_TAG,
+                SocialTenureSerializer.MINIMUM,
+                social_tenure.validity_end_column.minimum
+            )
+
+        if social_tenure.validity_end_column.maximum < social_tenure.validity_end_column.SQL_MAX:
+            # Add maximum date
+            SocialTenureSerializer._add_validity(
+                social_tenure_element,
+                document,
+                SocialTenureSerializer.END_TAG,
+                SocialTenureSerializer.MAXIMUM,
+                social_tenure.validity_end_column.maximum
+            )
+
         parent_node.appendChild(social_tenure_element)
+
+    @staticmethod
+    def _add_validity(str_element, document, tag_name, min_max, value):
+        # Get validity node
+        validities = str_element.elementsByTagName(
+            SocialTenureSerializer.VALIDITY_TAG
+        )
+        if validities.count() == 0:
+            validity_el = document.createElement(
+                SocialTenureSerializer.VALIDITY_TAG
+            )
+            str_element.appendChild(validity_el)
+        else:
+            validity_node = validities.item(0)
+            validity_el = validity_node.toElement()
+
+        # Append start date
+        if tag_name == SocialTenureSerializer.START_TAG:
+            start_tags = validity_el.elementsByTagName(
+                SocialTenureSerializer.START_TAG
+            )
+            if start_tags.count() == 0:
+                start_el = document.createElement(
+                    SocialTenureSerializer.START_TAG
+                )
+                validity_el.appendChild(start_el)
+            else:
+                start_node = start_tags.item(0)
+                start_el = start_node.toElement()
+
+            # Set minimum or maximum
+            start_el.setAttribute(min_max, str(value))
+
+        # Append end date
+        if tag_name == SocialTenureSerializer.END_TAG:
+            end_tags = validity_el.elementsByTagName(
+                SocialTenureSerializer.END_TAG
+            )
+            if end_tags.count() == 0:
+                end_el = document.createElement(
+                    SocialTenureSerializer.END_TAG
+                )
+                validity_el.appendChild(end_el)
+            else:
+                end_node = end_tags.item(0)
+                end_el = end_node.toElement()
+
+            # Set minimum or maximum
+            end_el.setAttribute(min_max, str(value))
 
 
 class EntitySerializerCollection(object):
@@ -1647,6 +1825,15 @@ class LookupColumnSerializer(ForeignKeyColumnSerializer):
     COLUMN_TYPE_INFO = 'LOOKUP'
 
 LookupColumnSerializer.register()
+
+
+class PercentColumnSerializer(DoubleColumnSerializer):
+    """
+    (De)serializes percent column type.
+    """
+    COLUMN_TYPE_INFO = 'PERCENT'
+
+PercentColumnSerializer.register()
 
 
 class AdminSpatialUnitColumnSerializer(ForeignKeyColumnSerializer):
