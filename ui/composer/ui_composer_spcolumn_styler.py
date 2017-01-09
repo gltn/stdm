@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_composer_spcolumn_styler.ui'
 #
-# Created: Tue Feb 24 11:28:48 2015
-#      by: PyQt4 UI code generator 4.10.3
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -60,10 +59,10 @@ class Ui_frmComposerSpatialColumnEditor(object):
         self.label.setWordWrap(True)
         self.label.setObjectName(_fromUtf8("label"))
         self.verticalLayout_2.addWidget(self.label)
-        self.sb_zoom = QtGui.QSpinBox(self.groupBox_2)
+        self.sb_zoom = QtGui.QDoubleSpinBox(self.groupBox_2)
         self.sb_zoom.setMinimumSize(QtCore.QSize(0, 32))
-        self.sb_zoom.setMinimum(1)
-        self.sb_zoom.setMaximum(32)
+        self.sb_zoom.setMaximum(16.0)
+        self.sb_zoom.setProperty("value", 1.5)
         self.sb_zoom.setObjectName(_fromUtf8("sb_zoom"))
         self.verticalLayout_2.addWidget(self.sb_zoom)
         self.gridLayout_2.addWidget(self.groupBox_2, 1, 0, 1, 1)
@@ -78,7 +77,7 @@ class Ui_frmComposerSpatialColumnEditor(object):
         self.styleScrollArea.setWidgetResizable(True)
         self.styleScrollArea.setObjectName(_fromUtf8("styleScrollArea"))
         self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 290, 303))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 282, 292))
         self.scrollAreaWidgetContents.setObjectName(_fromUtf8("scrollAreaWidgetContents"))
         self.gridLayout_5 = QtGui.QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))

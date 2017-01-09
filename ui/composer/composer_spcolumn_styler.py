@@ -160,7 +160,8 @@ class SpatialFieldMapping(object):
         spColumnElement.setAttribute("itemid",self._itemId)
         spColumnElement.setAttribute("srid",self._srid)
         spColumnElement.setAttribute("geomType",self._geomType)
-        spColumnElement.setAttribute("zoom",self._zoom_level)
+
+        spColumnElement.setAttribute("zoom",str(self._zoom_level))
         symbolElement = domDocument.createElement("Symbol")
         
         #Append symbol properties element

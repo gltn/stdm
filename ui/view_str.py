@@ -33,7 +33,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import mapper
 
-from stdm.ui.social_tenure.str_tree_view import STRTreeView, EditSTRTreeView
+from stdm.ui.social_tenure.str_editor import STREditor, EditSTREditor
 
 import stdm.data
 
@@ -473,7 +473,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         if index.column() == 0:
             if isinstance(node, SupportsDocumentsNode):
 
-                edit_str = EditSTRTreeView(self._plugin, node)
+                edit_str = EditSTREditor(self._plugin, node)
                 status = edit_str.exec_()
 
                 if status == 1:
@@ -494,7 +494,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
     def load_new_str_editor(self):
         try:
             # Check type of node and perform corresponding action
-            add_str = STRTreeView(self._plugin)
+            add_str = STREditor(self._plugin)
             add_str.exec_()
 
         except Exception as ex:

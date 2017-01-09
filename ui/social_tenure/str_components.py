@@ -1,4 +1,14 @@
+import calendar
 from collections import OrderedDict
+from datetime import (
+    date
+)
+
+import time
+from dateutil.rrule import rrule, MONTHLY
+from PyQt4.QtGui import QDoubleSpinBox
+from dateutil.relativedelta import relativedelta
+from PyQt4.QtCore import QDateTime
 from PyQt4.QtCore import (
     pyqtSignal,
     QObject,
@@ -6,6 +16,7 @@ from PyQt4.QtCore import (
     QFileInfo,
     QRegExp
 )
+from PyQt4.QtGui import QSpinBox
 
 from PyQt4.QtGui import (
     QVBoxLayout,
@@ -44,7 +55,9 @@ class ComponentUtility(QObject):
         self.container_box = box
         self.current_profile = current_profile()
         self.social_tenure = self.current_profile.social_tenure
-        self.party = self.social_tenure.party
+        self.parties = self.social_tenure.parties
+        if len(self.parties) > 0:
+            self.party_1 = self.parties[0]
         self.spatial_unit = self.social_tenure.spatial_unit
         self.str_model, self.str_doc_model = entity_model(
             self.social_tenure, False, True
@@ -53,19 +66,18 @@ class ComponentUtility(QObject):
     def str_doc_models(self):
         return self.str_model, self.str_doc_model
 
-
     def _create_fk_mapper(
             self, config, parent, notif_bar, multi_row=True
     ):
         """
-        Creates the forign key mapper object.
+        Creates the foreign key mapper object.
         :param config: Entity configuration
         :type config: Object
         :param parent: Container of the mapper
         :type parent: QWidget
         :param notif_bar: The notification bar
         :type notif_bar: QVBLayout
-        :param multi_row: Boolean allowing muti-rows
+        :param multi_row: Boolean allowing multi-rows
         in the tableview.
         :type multi_row: Boolean
         :return:
@@ -90,8 +102,6 @@ class ComponentUtility(QObject):
             ]
             return str_entities
 
-
-
     def _load_entity_config(self, entity):
         """
         Creates an EntityConfig object from entity.
@@ -114,9 +124,10 @@ class ComponentUtility(QObject):
             return None
 
     def clear_component(self):
-        for widget in self.container_box.findChildren(QWidget):
-            if isinstance(widget, ForeignKeyMapper):
-                widget.hide()
+        if not self.container_box is None:
+            for widget in self.container_box.findChildren(QWidget):
+                if isinstance(widget, ForeignKeyMapper):
+                    widget.hide()
 
     def update_table_view(self, table_view, str_type):
         """
@@ -139,9 +150,10 @@ class ComponentUtility(QObject):
         # enable sorting
         table_view.setSortingEnabled(False)
         if str_type:
-            table_view.hideColumn(1)
+            table_view.hideColumn(2)
         else:
             table_view.hideColumn(0)
+
 
     def remove_table_data(self, table_view, row_count):
         """
@@ -176,7 +188,7 @@ class Party(ComponentUtility):
         #if index is None:
 
         if self.selected_party is None:
-            entity_config = self._load_entity_config(self.party)
+            entity_config = self._load_entity_config(self.party_1)
         else:
             entity_config = self._load_entity_config(self.selected_party)
 
@@ -263,12 +275,15 @@ class STRType(ComponentUtility):
         :return:
         :rtype:
         """
-        data = [None] + row_data
+        data = [None, None] + row_data
         self.str_type_data.append(data)
-        self.str_type_table.add_combobox(str_type_id, insert_row)
+        self.str_type_table.add_widgets(str_type_id, insert_row)
+        #self.str_type_table.add_share_box(insert_row)
         self.update_table_view(self.str_type_table, True)
-        self.enable_str_type_combo(insert_row)
+       # self.enable_str_type_widgets(insert_row)
         self.str_type_table.model().layoutChanged.emit()
+        ## select the first column (STR Type)
+        self.str_type_table.frozen_table_view.selectColumn(0)
 
     def copy_party_table(self, table_view, row):
         """
@@ -301,23 +316,26 @@ class STRType(ComponentUtility):
         :rtype: List
         """
         if not self.selected_party is None:
-            self.party = self.selected_party
-        db_model = entity_model(self.party, True)
+            self.party_1 = self.selected_party
+        db_model = entity_model(self.party_1, True)
         headers = []
         #Load headers
         if db_model is not None:
-            entity_display_columns(self.party)
+            entity_display_columns(self.party_1)
             # Append str type if the method
             # is used for str_type
             str_type_header = QApplication.translate(
                 'STRType', 'Social Tenure Type'
             )
+            share_header = QApplication.translate(
+                'STRType', 'Share         '
+            )
             #First (ID) column will always be hidden
             headers.append(str_type_header)
+            headers.append(share_header)
 
-            for col in entity_display_columns(self.party):
+            for col in entity_display_columns(self.party_1):
                 headers.append(format_name(col))
-
             return headers
 
     def create_str_type_table(self):
@@ -327,7 +345,6 @@ class STRType(ComponentUtility):
         social tenure type.
         """
         headers = self.add_str_type_headers()
-
         self.str_type_table = FreezeTableWidget(
             self.str_type_data, headers, self.container_widget
         )
@@ -344,7 +361,7 @@ class STRType(ComponentUtility):
         self.container_box.addLayout(grid_layout)
         self.container_box.addWidget(self.str_type_table)
 
-    def enable_str_type_combo(self, row):
+    def enable_str_type_widgets(self, row):
         """
         Makes the STR Type combobox editable.
         :param row: The row of STR Type combobox
@@ -352,11 +369,12 @@ class STRType(ComponentUtility):
         :return: None
         :rtype: NoneType
         """
-        model = self.str_type_table.frozen_table_view.model()
-        self.str_type_table.frozen_table_view. \
-            openPersistentEditor(
-            model.index(row, 0)
-        )
+        frozen_table = self.str_type_table.frozen_table_view
+        model = frozen_table.model()
+        for i in range(0, 1):
+            frozen_table.openPersistentEditor(
+                model.index(row, i)
+            )
 
     def str_type_data(self):
         """
@@ -375,22 +393,28 @@ class STRType(ComponentUtility):
             index = combo.currentIndex()
             str_type = combo.itemData(index)
             str_types.append(str_type)
-
         return str_types
-
 
     def str_type_combobox(self):
         """
-        Gets party and str_type data from str_type
-        page (page 3 of the wizard). It uses
-        get_table_data() method.
-        :return: A list containing a list of ids of
-        the selected str related table or str_type value.
+        Gets str type comboboxes.
+        :return: A list containing a list comboboxes
         :rtype: List
         """
         frozen_table = self.str_type_table.frozen_table_view
         combo_boxes = frozen_table.findChildren(QComboBox)
         return combo_boxes
+
+    def ownership_share(self):
+        """
+        Gets ownership_share double spin boxes.
+        :return: A list containing a list double spin boxes
+        :rtype: List
+        """
+        frozen_table = self.str_type_table.frozen_table_view
+        spinboxes = frozen_table.findChildren(QDoubleSpinBox)
+        # print 'spinboxes ', len(spinboxes)
+        return spinboxes
 
     def remove_str_type_row(self, rows=[0]):
         """
@@ -660,4 +684,115 @@ class SupportingDocuments(ComponentUtility):
         )
         return files
 
+class ValidityPeriod():
+    def __init__(self, str_editor):
+        self.str_editor = str_editor
+        self.from_date =  self.str_editor.validity_from_date
+        self.to_date = self.str_editor.validity_to_date
 
+        self.init_dates()
+        str_editor.tenure_duration.valueChanged.connect(
+            self.bind_to_date_by_year_month
+        )
+        str_editor.in_years.clicked.connect(
+            self.adjust_to_year
+        )
+        str_editor.in_months.clicked.connect(
+            self.adjust_to_month
+        )
+        self.to_date.dateChanged.connect(
+            self.bind_year_month_by_dates_range
+        )
+        self.from_date.dateChanged.connect(
+            self.bind_year_month_by_dates_range
+        )
+        self.from_date.dateChanged.connect(
+            self.set_minimum_to_date
+        )
+        self.set_minimum_to_date()
+
+    def init_dates(self):
+        """
+        Initialize the dates by setting the current date.
+        :return:
+        :rtype:
+        """
+        self.from_date.setDate(
+            date.today()
+        )
+        self.to_date.setDate(
+            date.today()
+        )
+
+    def bind_to_date_by_year_month(self, increment):
+        """
+        A slot raised when validity years is specified.
+        It changes the end date of the validity.
+        :param increment: The new value of year spinbox.
+        :type increment: Integer
+        :return:
+        :rtype:
+        """
+
+        before_date = self.to_date.date().currentDate()
+        if self.str_editor.in_years.isChecked():
+            after_date = date(
+                before_date.year() + increment,
+                before_date.month(),
+                before_date.day()
+            )
+        else:
+            after_date = self.add_months(
+                before_date, increment
+            )
+        self.to_date.setDate(after_date)
+
+    def adjust_to_year(self):
+        duration = self.str_editor.tenure_duration.value()
+        before_date = self.to_date.date().currentDate()
+        after_date = date(
+            before_date.year() + duration,
+            before_date.month(),
+            before_date.day()
+        )
+        self.to_date.setDate(after_date)
+
+    def adjust_to_month(self):
+        duration = self.str_editor.tenure_duration.value()
+        before_date = self.to_date.date().currentDate()
+        after_date = self.add_months(
+            before_date, duration
+        )
+        self.to_date.setDate(after_date)
+
+    def add_months(self, source_date, months):
+        month = source_date.month() - 1 + months
+        year = int(source_date.year() + month / 12)
+        month = month % 12 + 1
+        day = min(
+            source_date.day,
+            calendar.monthrange(year, month)[1]
+        )
+        return date(year, month, day)
+
+    def bind_year_month_by_dates_range(self):
+        """
+        A slot raised when from or to dates are changed.
+        It updates the year spinbox. Note that,
+        there is no rounding.
+        :return:
+        :rtype:
+        """
+        to_date = self.to_date.date().toPyDate()
+        from_date = self.from_date.date().toPyDate()
+        if self.str_editor.in_years.isChecked():
+            period = relativedelta(to_date, from_date).years
+        else:
+            year_diff = to_date.year - from_date.year
+
+            period = to_date.month - from_date.month + (12 * year_diff)
+
+        self.str_editor.tenure_duration.setValue(period)
+
+    def set_minimum_to_date(self):
+        self.to_date.setMinimumDate(self.from_date.date())

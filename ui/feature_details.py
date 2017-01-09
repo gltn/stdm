@@ -77,7 +77,7 @@ from stdm.utils.util import (
 
 )
 
-from stdm.ui.social_tenure.str_tree_view import EditSTRTreeView
+from stdm.ui.social_tenure.str_editor import EditSTREditor
 from ui_feature_details import Ui_DetailsDock
 
 class LayerSelectionHandler:
@@ -927,10 +927,9 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             node_data = model, documents
 
             feature_edit = False
-            edit_str = EditSTRTreeView(self._plugin, node_data)
+            edit_str = EditSTREditor(self._plugin, node_data)
             status = edit_str.exec_()
-            print vars(edit_str.updated_str_obj)
-            ##TODO add STR wizard edit mode here.
+
         elif item.text() == format_name(self.party.short_name):
             feature_edit = False
 
