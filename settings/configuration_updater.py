@@ -10,7 +10,7 @@ class BaseConfigurationUpdater(object):
 
     @classmethod
     def register(self, cls):
-        v = cls.TO_VERSION
+        to_version = cls.TO_VERSION
         previous_updater = None
         if len(self.UPDATERS) > 0:
             updaters = BaseConfigurationUpdater.UPDATERS.values()
