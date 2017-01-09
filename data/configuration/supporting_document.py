@@ -50,7 +50,7 @@ class SupportingDocument(Entity):
 
         LOGGER.debug('%s supporting document initialized.', self.name)
 
-        #Add columns to the entity
+        # Add columns to the entity
         self.add_column(self.creation_date)
         self.add_column(self.document_identifier)
         self.add_column(self.document_type)

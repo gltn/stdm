@@ -74,7 +74,7 @@ class Arrow(QGraphicsLineItem):
     and width of the arrow base.
     """
     def __init__(self, start_item, end_item, base_width=None,
-                 tip_angle=None, fill_arrow_head=True,
+                 tip_angle=None, fill_arrow_head=False,
                  parent_item=None, scene=None):
         """
         Class constructor
@@ -208,6 +208,8 @@ class Arrow(QGraphicsLineItem):
             self._angle = max_angle
         else:
             self._angle = angle
+
+        self.update()
 
     @property
     def arrow_points(self):
@@ -390,17 +392,11 @@ class EntityIconRenderer(BaseIconRender):
         p.setPen(Qt.NoPen)
         p.drawRect(cols_header_rect)
 
-        #Draw vertical column separator
-        v_start_point = self.upper_left + QPointF(8.0, 0)
-        v_end_point = self.upper_left + QPointF(8.0, 16.0)
-        col_vertical_sep = QLineF(v_start_point, v_end_point)
-        p.setPen(self.pen)
-        p.drawLine(col_vertical_sep)
-
-        #Draw horizontal separators
+        # Draw horizontal separators
         h1_start_point = self.upper_left + QPointF(0, 4.0)
         h1_end_point = self.upper_left + QPointF(self.width, 4.0)
         h1_sep = QLineF(h1_start_point, h1_end_point)
+        p.setPen(self.pen)
         p.drawLine(h1_sep)
 
         h_col_pen = QPen(self.pen)
@@ -418,6 +414,13 @@ class EntityIconRenderer(BaseIconRender):
             y += delta_v
 
             p.drawLine(h_sep)
+
+        # Draw vertical column separator
+        v_start_point = self.upper_left + QPointF(8.0, 0)
+        v_end_point = self.upper_left + QPointF(8.0, 16.0)
+        col_vertical_sep = QLineF(v_start_point, v_end_point)
+        p.setPen(self.pen)
+        p.drawLine(col_vertical_sep)
 
         p.restore()
 
@@ -1277,11 +1280,11 @@ class ProfileTenureView(QGraphicsView):
     def __init__(self, parent=None, profile=None):
         super(ProfileTenureView, self).__init__(parent)
 
-        #Add party policy
-        self.add_party_policy = ProfileTenureView.REMOVE_PREVIOUS
+        # Add party policy
+        self.add_party_policy = ProfileTenureView.ADD_TO_EXISTING
 
-        #Init items
-        #Container for party entities and corresponding items
+        # Init items
+        # Container for party entities and corresponding items
         self._default_party_item = EntityItem()
         self._party_items = {}
         self._sp_item = EntityItem()
@@ -1297,29 +1300,30 @@ class ProfileTenureView(QGraphicsView):
 
         self.setRenderHint(QPainter.Antialiasing)
         self.setRenderHint(QPainter.TextAntialiasing)
+        self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
         self.setResizeAnchor(QGraphicsView.AnchorViewCenter)
 
         self.setScene(scene)
 
-        #Connect signals
+        # Connect signals
         scene.annotation_inserted.connect(self.annotation_inserted)
 
-        #Add items to view
+        # Add items to view
         self.scene().addItem(self._default_party_item)
         self.scene().addItem(self._str_item)
         self.scene().addItem(self._sp_item)
         self.scene().addItem(self._supporting_doc_item)
 
-        #Position items
+        # Position items
         self._default_party_item.setPos(210, 20)
         self._str_item.setPos(400, 20)
         self._sp_item.setPos(590, 20)
         self._supporting_doc_item.setPos(400, 220)
 
-        #Ensure vertical scroll is at the top
+        # Ensure vertical scroll is at the top
         self.centerOn(490.0, 20.0)
 
-        #Link social tenure item to supporting documents item
+        # Link social tenure item to supporting documents item
         self.add_arrow(self._supporting_doc_item, self._str_item)
 
     def annotation_inserted(self, item):
@@ -1339,11 +1343,11 @@ class ProfileTenureView(QGraphicsView):
         return self._profile
 
     def _update_profile(self):
-        #Update profile objects and render
+        # Update profile objects and render
         if self._profile is None:
             return
 
-        #Remove existing party items
+        # Remove existing party items
         for p in self._party_items.keys():
             self.remove_party(p)
 
@@ -1353,12 +1357,21 @@ class ProfileTenureView(QGraphicsView):
         self._str_item.entity = str_ent
         self._supporting_doc_item.entity = str_ent
 
-        #Add party entities
-        party = str_ent.party
-        if party is None:
+        # Add party entities
+        parties = str_ent.parties
+        if len(parties) == 0:
             self._default_party_item.show()
         else:
-            self.add_party_entity(party)
+            self.add_parties(parties)
+
+    def add_parties(self, parties):
+        """
+        Add party items to the view.
+        :param parties: List of party entities.
+        :type parties: list
+        """
+        for p in parties:
+            self.add_party_entity(p)
 
     @profile.setter
     def profile(self, profile):
@@ -1371,6 +1384,15 @@ class ProfileTenureView(QGraphicsView):
 
         self._update_profile()
 
+    def _highest_party_z_order(self):
+        # Returns the highest z-order of party graphic items.
+        z = 0
+        for p in self._party_items.values():
+            if p.zValue() > z:
+                z = p.zValue()
+
+        return z
+
     def add_party_entity(self, party):
         """
         Adds a party entity to the view. If there is a existing one with the
@@ -1381,16 +1403,25 @@ class ProfileTenureView(QGraphicsView):
         if party.short_name in self._party_items:
             self.remove_party(party.short_name)
 
-        #Remove previous if set in the policy
+        # Remove previous if set in the policy
         if self.add_party_policy == ProfileTenureView.REMOVE_PREVIOUS:
             for p in self._party_items.keys():
                 self.remove_party(p)
 
-        #Hide default party placeholder
+        # Hide default party placeholder
         self._default_party_item.hide()
 
         p_item = EntityItem()
         p_item.entity = party
+
+        # Set z-order
+        z = self._highest_party_z_order()
+        if z == 0:
+            z = 1.0
+        else:
+            z = z + 1.1
+        p_item.setZValue(z)
+
         self.scene().addItem(p_item)
 
         if len(self._party_items) == 0:
@@ -1398,10 +1429,10 @@ class ProfileTenureView(QGraphicsView):
         else:
             self.auto_position(p_item)
 
-        #Add to collection
+        # Add to collection
         self._party_items[party.short_name] = p_item
 
-        #Add connection arrow to social tenure item
+        # Add connection arrow to social tenure item
         self.add_arrow(p_item, self._str_item)
 
     def auto_position(self, item):
@@ -1411,12 +1442,23 @@ class ProfileTenureView(QGraphicsView):
         :param item: Party entity item.
         :type item: EntityItem
         """
-        pass
+        item_count = len(self._party_items)
+
+        # Just in case it is called externally
+        if item_count == 0:
+            return
+
+        factor = item_count + 1
+        dx, dy = 5 * factor, 10 * factor
+
+        pos_x, pos_y = 205 + dx, 10 + dy
+        item.setPos(pos_x, pos_y)
 
     def remove_party(self, name):
         """
         Removes the party with the specified name from the collection.
         :param name: Party name
+        :type name: str
         :return: Returns True if the operation succeeded, otherwise False if
         the party with the specified name does not exist in the collection.
         :rtype: bool
@@ -1430,7 +1472,7 @@ class ProfileTenureView(QGraphicsView):
 
         del p_item
 
-        #Show default party item
+        # Show default party item
         if len(self._party_items) == 0:
             self._default_party_item.show()
 
@@ -1456,7 +1498,7 @@ class ProfileTenureView(QGraphicsView):
         self._sp_item.entity = spatial_unit
 
         if not spatial_unit is None:
-            #Add arrow linking social tenure to spatial unit item
+            # Add arrow linking social tenure to spatial unit item
             self.add_arrow(self._str_item, self._sp_item)
 
     def add_arrow(self, start_item, end_item, **kwargs):
@@ -1473,7 +1515,12 @@ class ProfileTenureView(QGraphicsView):
         arrow = Arrow(start_item, end_item, **kwargs)
         start_item.add_arrow(arrow)
         end_item.add_arrow(arrow)
-        arrow.setZValue(100.0)
+
+        # Set z-value
+        ref_z = end_item.zValue()
+        if start_item.zValue() > end_item.zValue():
+            ref_z = start_item.zValue()
+        arrow.setZValue(ref_z + 1.0)
         self.scene().addItem(arrow)
         arrow.update_position()
 
@@ -1487,6 +1534,13 @@ class ProfileTenureView(QGraphicsView):
             self._delete_selected_annotation_items()
 
         super(ProfileTenureView, self).keyPressEvent(event)
+
+    def deselect_items(self):
+        """
+        Deselects all graphic items in the scene.
+        """
+        for item in self.scene().selectedItems():
+            item.setSelected(False)
 
     def _delete_selected_annotation_items(self):
         #Deletes selected annotation items in the scene
@@ -1517,7 +1571,7 @@ class ProfileTenureView(QGraphicsView):
 
             return False, msg
 
-        #Test if file is writeable
+        # Test if file is writeable
         fl = QFile(path)
         if not fl.open(QIODevice.WriteOnly):
             msg = self.tr('The image file cannot be saved in the '
@@ -1525,7 +1579,7 @@ class ProfileTenureView(QGraphicsView):
 
             return False, msg
 
-        #Attempt to save to file
+        # Attempt to save to file
         save_op = image.save(fl)
 
         if not save_op:
@@ -1536,11 +1590,11 @@ class ProfileTenureView(QGraphicsView):
         return True, ''
 
     def _resolution_in_mm(self, resolution):
-        #Calculates the resolution in mm
+        # Calculates the resolution in mm
         return resolution / 25.4
 
     def _resolution_in_m(self, resolution):
-        #Calculates the resolution in mm
+        # Calculates the resolution in mm
         return self._resolution_in_mm(resolution) * 1000
 
     def image_size(self, resolution):
@@ -1591,6 +1645,9 @@ class ProfileTenureView(QGraphicsView):
         img.setDotsPerMeterY(int(dpm))
         img.fill(background)
 
+        # Deselect selected items
+        self.deselect_items()
+
         painter = QPainter(img)
         painter.setRenderHint(QPainter.Antialiasing, True)
         painter.setRenderHint(QPainter.TextAntialiasing, True)
@@ -1638,7 +1695,7 @@ class ProfileTenureDiagram(QWidget):
         self._setup_widgets()
         self._current_zoom_factor = 1.0
 
-        #Image export options
+        # Image export options
         self._path = ''
         self._resolution = 96
         self._bg_color = Qt.transparent
@@ -1662,6 +1719,7 @@ class ProfileTenureDiagram(QWidget):
 
     def _setup_widgets(self):
         self.layout = QGridLayout(self)
+        self.layout.setContentsMargins(2, 4, 2, 9)
 
         self.minor_annotation = QToolButton(self)
         self.minor_annotation.setMaximumSize(QSize(24, 24))
@@ -1671,7 +1729,7 @@ class ProfileTenureDiagram(QWidget):
         )
         self.minor_annotation.setIcon(minor_icon)
         self.minor_annotation.setCheckable(True)
-        self.minor_annotation.setToolTip(self.tr('Minor Annotation'))
+        self.minor_annotation.setToolTip(self.tr('Add Minor Annotation'))
         self.minor_annotation.toggled.connect(self.on_minor_annotation_toggled)
         self.layout.addWidget(self.minor_annotation, 0, 0, 1, 1)
 
@@ -1683,7 +1741,7 @@ class ProfileTenureDiagram(QWidget):
         )
         self.major_annotation.setIcon(major_icon)
         self.major_annotation.setCheckable(True)
-        self.major_annotation.setToolTip(self.tr('Major Annotation'))
+        self.major_annotation.setToolTip(self.tr('Add Major Annotation'))
         self.major_annotation.toggled.connect(self.on_major_annotation_toggled)
         self.layout.addWidget(self.major_annotation, 0, 1, 1, 1)
 
@@ -1694,7 +1752,7 @@ class ProfileTenureDiagram(QWidget):
             QPixmap(':/plugins/stdm/images/icons/save_image.png')
         )
         self.export_image.setIcon(export_image_icon)
-        self.export_image.setToolTip(self.tr('Save as Image...'))
+        self.export_image.setToolTip(self.tr('Save Image...'))
         self.export_image.clicked.connect(self.on_image_export_settings)
         self.layout.addWidget(self.export_image, 0, 2, 1, 1)
 
@@ -1770,7 +1828,7 @@ class ProfileTenureDiagram(QWidget):
                 QMessageBox.information(
                     self,
                     self.tr('Profile Tenure View'),
-                    self.tr('Image saved successfully.')
+                    self.tr('Image successfully saved.')
                 )
             else:
                 QMessageBox.critical(
@@ -1892,6 +1950,15 @@ class ProfileTenureDiagram(QWidget):
         Clears the spatial unit entity.
         """
         self._profile_view.invalidate_spatial_unit()
+
+    def add_parties(self, parties):
+        """
+        Add party items to the view.
+        :param parties: List of party entities.
+        :type parties: list
+        """
+        for p in parties:
+            self.add_party_entity(p)
 
     def add_party_entity(self, party):
         """

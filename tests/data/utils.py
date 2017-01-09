@@ -22,6 +22,7 @@ PERSON_ENTITY = 'person'
 SPATIAL_UNIT_ENTITY = 'spatial_unit'
 HOUSEHOLD_ENTITY = 'household'
 SURVEYOR_ENTITY = 'suveyor'
+COMMUNITY_ENTITY = 'community'
 
 DB_USER = 'postgres'
 DB_PASS = 'admin'
@@ -68,11 +69,20 @@ def create_spatial_unit_entity(profile):
 def create_surveyor_entity(profile):
     return create_entity(profile, SURVEYOR_ENTITY, **full_entity_opt_args)
 
+def create_community_entity(profile):
+    return create_entity(profile, COMMUNITY_ENTITY, **full_entity_opt_args)
+
 def add_surveyor_entity(profile):
     surveyor = create_surveyor_entity(profile)
     profile.add_entity(surveyor)
 
     return surveyor
+
+def add_community_entity(profile):
+    community = create_community_entity(profile)
+    profile.add_entity(community)
+
+    return community
 
 def add_person_entity(profile):
     entity = create_person_entity(profile)
@@ -141,6 +151,10 @@ def append_surveyor_columns(surveyor):
     surveyor.add_column(first_name)
     surveyor.add_column(last_name)
 
+def append_community_columns(community):
+    name = VarCharColumn('comm_name', community, maximum=100)
+    community.add_column(name)
+
 def populate_configuration(config):
     profile = add_basic_profile(config)
 
@@ -168,6 +182,10 @@ def populate_configuration(config):
     save_options_column.value_list = save_options
     person_entity.add_column(save_options_column)
 
+    #Add community entity
+    community = add_community_entity(profile)
+    append_community_columns(community)
+
     #Append surveyor columns
     surveyor = add_surveyor_entity(profile)
     append_surveyor_columns(surveyor)
@@ -181,7 +199,7 @@ def populate_configuration(config):
     spatial_unit.add_column(surveyor_id_col)
 
     #Set STR entities
-    profile.set_social_tenure_attr(SocialTenure.PARTY, person_entity)
+    profile.set_social_tenure_attr(SocialTenure.PARTY, [person_entity, community])
     profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT, spatial_unit)
 
 

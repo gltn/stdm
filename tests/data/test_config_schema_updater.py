@@ -23,13 +23,11 @@ class TestConfigurationSchemaUpdater(TestCase):
     def test_exec_(self):
         engine = create_alchemy_engine()
         config_updater = ConfigurationSchemaUpdater(engine)
+        config_updater.update_completed.connect(self._on_complete)
         config_updater.exec_()
 
-        update_result = True
-
-        #Hardwire result
-        self.assertTrue(update_result)
-
+    def _on_complete(self, result):
+        self.assertTrue(result)
 
 def suite():
     suite = makeSuite(TestConfigurationSchemaUpdater, 'test')

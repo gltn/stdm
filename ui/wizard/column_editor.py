@@ -355,6 +355,12 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 'unique':{'check_state':False, 'enabled_state':False},
                 'index':{'check_state':False, 'enabled_state':False}
                 }
+        self.type_attribs['PERCENT'] = {
+            'mandt': {'check_state': False, 'enabled_state': False},
+            'search': {'check_state': False, 'enabled_state': True},
+            'unique': {'check_state': False, 'enabled_state': False},
+            'index': {'check_state': False, 'enabled_state': False}
+        }
 
         self.type_attribs['ADMIN_SPATIAL_UNIT'] ={
                 'mandt':{'check_state':False, 'enabled_state':True},
@@ -541,7 +547,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 self.show_message(self.tr('Please set column properties.'))
                 return
         else:
-            raise self.tr("No type to create!")
+            raise self.tr("No type to create.")
 
         return column
 
@@ -558,11 +564,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         :rtype: boolean
         """
         return self.type_attribs[ti].get('prop_set', True)
-
-        #if self.prop_set is None:
-            #return self.type_attribs[ti].get('prop_set', True)
-        #else:
-            #return self.prop_set
 
     def property_by_name(self, ti, name):
         try:
@@ -582,22 +583,21 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         """
         Called by type combobox when you select a different data type.
         """
-
-        #ti = self.current_type_info()
-        #if ti=='':
-            #return
-
         text = self.cboDataType.itemText(index)
         ti = BaseColumn.types_by_display_name()[text].TYPE_INFO
+
+        if ti not in self.type_attribs:
+            msg = self.tr('Column type attributes not be found.')
+            self.notice_bar.clear()
+            self.notice_bar.insertErrorNotification(msg)
+
+            return
 
         self.btnColProp.setEnabled(self.type_attribs[ti].has_key('property'))
         self.type_info = ti
         opts = self.type_attribs[ti]
         self.set_optionals(opts)
         self.set_min_max_defaults(ti)
-
-        #self.column_to_form(self.column, text)
-        #self.column_to_wa(self.column)
 
     def set_optionals(self, opts):
         """

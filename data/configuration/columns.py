@@ -316,6 +316,33 @@ class BaseColumn(ColumnItem):
 
         object.__setattr__(self, key, value)
 
+    def value_requires_quote(self):
+        """
+        :return: Return True if the column value requires quoting in an SQL
+        statement. To be overidden by sub-classes.
+        .. versionadded:: 1.5
+        :rtype: bool
+        """
+        return False
+
+    def __eq__(self, other):
+        """
+        Compares if the column name and entity name are equal with those
+        of this object.
+        :param other: Column object
+        :type other: BaseColumn
+        :return: Returns True if the column object is equal, else False.
+        :rtype: bool
+        """
+        if other.name != self.name:
+            return False
+
+        if other.entity.name != self.entity.name:
+            return False
+
+        return True
+
+
 class BoundsColumn(BaseColumn):
     """
     For columns types with constraints on minimum and maximum length.
@@ -381,6 +408,16 @@ class BoundsColumn(BaseColumn):
         else:
             self._maximum = val
 
+    def can_create_check_constraints(self):
+        """
+        :return: Return True if the updater should issue check constraints
+        for minimum and maximum values respectively.
+        To be implemented by subclasses.
+        .. versionadded:: 1.5
+        :rtype: bool
+        """
+        return True
+
 
 class VarCharColumn(BoundsColumn):
     """
@@ -394,6 +431,11 @@ class VarCharColumn(BoundsColumn):
     @classmethod
     def display_name(cls):
         return tr('Varying-length Text')
+
+    def can_create_check_constraints(self):
+        #No need to create constraints since the extents are set while
+        # creating the column.
+        return False
 
 VarCharColumn.register()
 
@@ -410,6 +452,10 @@ class TextColumn(BoundsColumn):
     @classmethod
     def display_name(cls):
         return tr('Unlimited-length Text')
+
+    def can_create_check_constraints(self):
+        #Not applicable.
+        return False
 
 TextColumn.register()
 
@@ -435,7 +481,7 @@ class DoubleColumn(BoundsColumn):
     Corresponds to double precision data type.
     """
     TYPE_INFO = 'DOUBLE'
-    SQL_MIN = sys.float_info.min
+    SQL_MIN = -sys.float_info.min
     SQL_MAX = sys.float_info.max
     sql_updater = double_updater
 
@@ -465,6 +511,10 @@ class SerialColumn(IntegerColumn):
     def user_editable(self):
         return False
 
+    def can_create_check_constraints(self):
+        # Values handled by the db hence no constraints should be created.
+        return False
+
 
 class DateColumn(BoundsColumn):
     """
@@ -482,6 +532,9 @@ class DateColumn(BoundsColumn):
         self.max_use_current_date = kwargs.pop('max_use_current_date', False)
 
         BoundsColumn.__init__(self, *args, **kwargs)
+
+    def value_requires_quote(self):
+        return True
 
     @classmethod
     def display_name(cls):
@@ -512,6 +565,9 @@ class DateTimeColumn(BoundsColumn):
         )
 
         BoundsColumn.__init__(self, *args, **kwargs)
+
+    def value_requires_quote(self):
+        return True
 
     @classmethod
     def display_name(cls):
@@ -662,6 +718,10 @@ class ForeignKeyColumn(IntegerColumn):
     def display_name(cls):
         return tr('Related Entity')
 
+    def can_create_check_constraints(self):
+        # No need since columns will be referencing pks
+        return False
+
 ForeignKeyColumn.register()
 
 
@@ -784,6 +844,28 @@ class MultipleSelectColumn(VirtualColumn):
         return tr('Multiple Select Lookup')
 
 MultipleSelectColumn.register()
+
+
+class PercentColumn(DoubleColumn):
+    """
+    Provides a range of 0.0 to 100. Any user-defined minimum and/or maximum
+    value will be overridden by 0 and 100 respectively.
+    .. versionadded:: 1.5
+    """
+    TYPE_INFO = 'PERCENT'
+
+    def __init__(self, *args, **kwargs):
+        #Set/override user-defined min amd max respectively
+        kwargs['minimum'] = 0
+        kwargs['maximum'] = 100
+
+        super(PercentColumn, self).__init__(*args, **kwargs)
+
+    @classmethod
+    def display_name(cls):
+        return tr('Percent')
+
+PercentColumn.register()
 
 #TODO: Include ExpressionColumn
 
