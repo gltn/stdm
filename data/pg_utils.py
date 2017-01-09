@@ -609,10 +609,17 @@ def table_view_dependencies(table_name, column_name=None):
         if sql:
             t = text(sql)
             if column_name is None:
-                result = _execute(t,table_name=table_name)
+                result = _execute(
+                    t,
+                    table_name=table_name
+                )
 
             else:
-                result = _execute(t,table_name=table_name, column_name=column_name)
+                result = _execute(
+                    t,
+                    table_name=table_name,
+                    column_name=column_name
+                )
 
             #Get view names
             for r in result:
