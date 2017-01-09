@@ -326,7 +326,7 @@ class STRType(ComponentUtility):
                 'STRType', 'Social Tenure Type'
             )
             share_header = QApplication.translate(
-                'STRType', 'Ownership Share'
+                'STRType', 'Share         '
             )
             #First (ID) column will always be hidden
             headers.append(str_type_header)
@@ -367,10 +367,10 @@ class STRType(ComponentUtility):
         :return: None
         :rtype: NoneType
         """
-        model = self.str_type_table.frozen_table_view.model()
+        frozen_table = self.str_type_table.frozen_table_view
+        model = frozen_table.model()
         for i in range(0, 1):
-            self.str_type_table.frozen_table_view. \
-                openPersistentEditor(
+            frozen_table.openPersistentEditor(
                 model.index(row, i)
             )
 
@@ -692,6 +692,12 @@ class ValidityPeriod():
         str_editor.tenure_duration.valueChanged.connect(
             self.bind_to_date_by_year_month
         )
+        str_editor.in_years.clicked.connect(
+            self.adjust_to_year
+        )
+        str_editor.in_months.clicked.connect(
+            self.adjust_to_month
+        )
         self.to_date.dateChanged.connect(
             self.bind_year_month_by_dates_range
         )
@@ -739,6 +745,23 @@ class ValidityPeriod():
             )
         self.to_date.setDate(after_date)
 
+    def adjust_to_year(self):
+        duration = self.str_editor.tenure_duration.value()
+        before_date = self.to_date.date().currentDate()
+        after_date = date(
+            before_date.year() + duration,
+            before_date.month(),
+            before_date.day()
+        )
+        self.to_date.setDate(after_date)
+
+    def adjust_to_month(self):
+        duration = self.str_editor.tenure_duration.value()
+        before_date = self.to_date.date().currentDate()
+        after_date = self.add_months(
+            before_date, duration
+        )
+        self.to_date.setDate(after_date)
 
     def add_months(self, source_date, months):
         month = source_date.month() - 1 + months

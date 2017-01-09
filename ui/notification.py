@@ -41,6 +41,7 @@ class NotificationBar(QObject, object):
     '''
     userClosed = pyqtSignal()
     onShow = pyqtSignal()
+    onClear = pyqtSignal()
     def __init__(self,layout, timerinterval = 10000):
         QObject.__init__(self)
         self.interval = timerinterval
@@ -146,6 +147,7 @@ class NotificationBar(QObject, object):
                 lbl.setVisible(False)
                 lbl.deleteLater()
             self._notifications = {}
+        self.onClear.emit()
             
     def onNotificationClosed(self,code):
         '''

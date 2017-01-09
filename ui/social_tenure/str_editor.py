@@ -130,6 +130,9 @@ class InitSTREditor(QDialog, Ui_STREditor):
         self.notice.timer.timeout.connect(
             lambda: self.top_description_visibility(True)
         )
+        self.notice.onClear.connect(
+            lambda: self.top_description_visibility(True)
+        )
         self.notice.onShow.connect(
             lambda: self.top_description_visibility(False)
         )
@@ -395,10 +398,9 @@ class InitSTREditor(QDialog, Ui_STREditor):
                     '{}_{}_{}'.format(str_number, party_id, first_name)
                 )
 
-                spinbox.valueChanged.connect(
-                    self.update_spinbox
-                )
+                spinbox.valueChanged.connect(self.update_spinbox)
                 self.share_spinbox_connected.append(spinbox)
+
         self.shareUpdated.connect(self.update_ownership_share_data)
         self.shareUpdated.connect(self.update_spinbox_when_zero)
         self.shareUpdatedOnZero.connect(self.update_ownership_share_data)
@@ -419,16 +421,12 @@ class InitSTREditor(QDialog, Ui_STREditor):
             if spinbox in self.share_spinbox_connected:
                 str_number, party_id, current_row = \
                     self.extract_from_object_name(spinbox)
-                # if party_id in data_store.share.keys():
-                #     self.blockSignals(True)
-                #     spinbox.setValue(data_store.share[party_id])
-                #     self.blockSignals(False)
-                #
-                # else:
+
                 self.blockSignals(True)
                 spinbox.setValue(100.00 / row_count)
                 self.blockSignals(False)
                 data_store.share[party_id] = 100.00 / row_count
+
     def init_share_spinboxes(self, data_store, row_count):
         spinboxes = self.str_type_component.ownership_share()
         for spinbox in spinboxes:
@@ -561,7 +559,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
             'InitSTREditor', 'Spatial Unit'
         )
         self.tenure_type_text = QApplication.translate(
-            'InitSTREditor', 'Tenure Type'
+            'InitSTREditor', 'Tenure Information'
         )
         self.supporting_doc_text = QApplication.translate(
             'InitSTREditor', 'Supporting Documents'
@@ -786,6 +784,7 @@ class BindSTREditor(InitSTREditor):
         self.entity_combo_label.setHidden(True)
 
     def bind_spatial_unit(self):
+        self.notice.clear()
         self.component_container.setCurrentIndex(2)
         self.mirror_map.set_iface(self.iface)
         self.mirror_map.refresh_canvas_layers()
@@ -795,14 +794,16 @@ class BindSTREditor(InitSTREditor):
         self.entity_combo_label.setHidden(True)
 
     def bind_tenure_type(self):
+        self.notice.clear()
         self.component_container.setCurrentIndex(3)
         QTimer.singleShot(50, self.init_supporting_documents)
-        #QTimer.singleShot(50, self.init_validity_period_component)
         self.top_description.setCurrentIndex(3)
+
         self.entity_combo.setHidden(True)
         self.entity_combo_label.setHidden(True)
 
     def bind_supporting_documents(self, str_number):
+        self.notice.clear()
         self.component_container.setCurrentIndex(4)
         self.top_description.setCurrentIndex(4)
         self.supporting_doc_signals(str_number)
@@ -810,6 +811,7 @@ class BindSTREditor(InitSTREditor):
         self.entity_combo_label.setHidden(True)
 
     def bind_validity_period(self):
+        self.notice.clear()
         self.component_container.setCurrentIndex(5)
         self.top_description.setCurrentIndex(5)
         #self.supporting_doc_signals(str_number)
