@@ -64,6 +64,10 @@ from stdm.ui.customcontrols.relation_line_edit import (
 )
 from stdm.ui.customcontrols.multi_select_view import MultipleSelectTreeView
 
+class WidgetException(Exception):
+    """General exceptions thrown when creating form widgets."""
+    pass
+
 class UserTipLabel(QLabel):
     """
     Custom label that shows an information icon and a tip containing the
@@ -541,6 +545,14 @@ class RelatedEntityWidgetFactory(ColumnWidgetRegistry):
 
         #Query all parent entities. Need for optimization
         p_entity = self._column.entity_relation.parent
+
+        if p_entity is None:
+            msg = QCoreApplication.translate(
+                'RelatedEntityWidgetFactory',
+                'The parent entity could not be determined. The input control '
+                'will not be created.'
+            )
+            raise WidgetException(msg)
 
         self._p_entity_cls = entity_model(p_entity, entity_only=True)
         self._p_entity_obj = self._p_entity_cls()
