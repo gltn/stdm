@@ -47,32 +47,42 @@ USER_PLUGIN_DIR = QDesktopServices.storageLocation(QDesktopServices.HomeLocation
 
 #Setup logging
 LOG_DIR = u'{0}/logs'.format(USER_PLUGIN_DIR)
-LOG_FILE_PATH = LOG_DIR + '/stdm.log'
+LOG_FILE_PATH = LOG_DIR + '/stdm_log'
+
 
 def setup_logger():
-    logger = logging.getLogger('stdm')
-    logger.setLevel(logging.DEBUG)
+    from stdm.settings.registryconfig import debug_logging
 
-    #Create log directory if it does not exist
+    logger = logging.getLogger('stdm')
+    logger.setLevel(logging.ERROR)
+
+    # Create log directory if it does not exist
     log_folder = QDir()
     if not log_folder.exists(LOG_DIR):
         status = log_folder.mkpath(LOG_DIR)
 
-        #Log directory could not be created
+        # Log directory could not be created
         if not status:
             raise IOError('Log directory for STDM could not be created.')
 
-    #File handler for logging debug messages
+    # File handler for logging debug messages
     file_handler = TimedRotatingFileHandler(LOG_FILE_PATH, when='D',
                                             interval=1, backupCount=14)
     file_handler.setLevel(logging.DEBUG)
 
-    #Create formatter and add it to the handler
+    # Create formatter and add it to the handler
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)
 
-    #Add handler to the logger
+    # Add handler to the logger
     logger.addHandler(file_handler)
+
+    # Enable/disable debugging. Defaults to ERROR level.
+    lvl = debug_logging()
+    if lvl:
+        file_handler.setLevel(logging.DEBUG)
+    else:
+        file_handler.setLevel(logging.ERROR)
 
 
 def copy_core_configuration():
