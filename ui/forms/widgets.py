@@ -532,6 +532,8 @@ class PercentWidgetFactory(DoubleWidgetFactory):
         #Add percentage suffix
         widget.setSuffix(' %')
 
+PercentWidgetFactory.register()
+
 
 class BooleanWidgetFactory(ColumnWidgetRegistry):
     """

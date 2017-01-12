@@ -17,9 +17,8 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-import os
+import logging
 
-from PyQt4 import uic
 from PyQt4.QtGui import (
     QDialog,
     QDialogButtonBox,
@@ -28,6 +27,7 @@ from PyQt4.QtGui import (
     QMessageBox
 )
 from PyQt4.QtCore import(
+    Qt,
     QDir,
     QTimer,
     SIGNAL
@@ -44,6 +44,8 @@ from stdm.settings import (
 from stdm.settings.registryconfig import (
     composer_output_path,
     composer_template_path,
+    debug_logging,
+    set_debug_logging,
     source_documents_path,
     QGISRegistryConfig,
     RegistryConfig,
@@ -138,6 +140,13 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         #Load directory paths
         self._load_directory_paths()
+
+        # Debug logging
+        lvl = debug_logging()
+        if lvl:
+            self.chk_logging.setCheckState(Qt.Checked)
+        else:
+            self.chk_logging.setCheckState(Qt.Unchecked)
 
     def load_profiles(self):
         """
@@ -446,13 +455,24 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         return True
 
     def _restore_stylesheet(self, textbox):
-        #Slot raised to restore the original stylesheet of the textbox control
+        # Slot raised to restore the original stylesheet of the textbox control
         textbox.setStyleSheet(self._default_style_sheet)
 
-        #Get reference to timer and delete
+        # Get reference to timer and delete
         sender = self.sender()
         if not sender is None:
             sender.deleteLater()
+
+    def apply_debug_logging(self):
+        # Save debug logging
+        logger = logging.getLogger('stdm')
+
+        if self.chk_logging.checkState() == Qt.Checked:
+            logger.setLevel(logging.DEBUG)
+            set_debug_logging(True)
+        else:
+            logger.setLevel(logging.ERROR)
+            set_debug_logging(False)
 
     def apply_settings(self):
         """
@@ -480,6 +500,8 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         #Set document generator output path
         if not self.set_document_output_path():
             return False
+
+        self.apply_debug_logging()
 
         msg = self.tr('Settings successfully saved.')
         self.notif_bar.insertSuccessNotification(msg)
