@@ -33,6 +33,7 @@ SHOW_LICENSE = 'ShowLicense'
 WIZARD_RUN = 'wizardRun'
 CONFIG_UPDATED = 'ConfigUpdated'
 SUB_QGIS = '/Qgis'
+DEBUG_LOG = 'Debug'
 
 def registry_value(key_name):
     """
@@ -97,6 +98,30 @@ def last_document_path():
     """
     return registry_value(LAST_SUPPORTING_DOC_PATH)
 
+
+def debug_logging():
+    """
+    :return: Returns whether debug logging has been enabled.
+    :rtype: bool
+    """
+    dbg = registry_value(DEBUG_LOG)
+    if dbg is None or dbg == 0:
+        return False
+
+    return True
+
+
+def set_debug_logging(state):
+    """
+    Enable or disable debug logging.
+    :param state: True to enable, False to disable.
+    :type state: bool
+    """
+    lvl = 0
+    if state:
+        lvl = 1
+
+    set_registry_value(DEBUG_LOG, lvl)
 
 def set_last_document_path(path):
     """
