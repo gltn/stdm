@@ -53,6 +53,8 @@ from stdm.utils.util import (
     datetime_from_string
 )
 
+from stdm.data.configfile_paths import FilePaths
+
 LOGGER = logging.getLogger('stdm')
 
 
@@ -67,6 +69,10 @@ class ConfigurationFileSerializer(object):
         """
         self.path = path
         self.config = StdmConfiguration.instance()
+        self.file_handler = FilePaths()
+        self.log_file_path = '{}/logs/migration.log'.format(
+            self.file_handler.localPath()
+        )
 
     def save(self):
         """
@@ -150,6 +156,8 @@ class ConfigurationFileSerializer(object):
         object, else False with None document object.
         :rtype: tuple(bool, QDomDocument)
         """
+        self.append_log('Started the update process.')
+
         #TODO: Need to plugin the updater object
         return False, None
 
@@ -222,6 +230,23 @@ class ConfigurationFileSerializer(object):
                                          'administrator.')
 
         return doc
+
+    def append_log(self, info):
+        """
+        Append info to a single file
+        :param info: update information to save to file
+        :type info: str
+        """
+        info_file = open(self.log_file_path, "a")
+        time_stamp = datetime.datetime.now().strftime(
+            '%d-%m-%Y %H:%M:%S'
+        )
+        info_file.write('\n')
+        info_file.write('{} - '.format(time_stamp))
+
+        info_file.write(info)
+        info_file.write('\n')
+        info_file.close()
 
 
 def _populate_collections_from_element(element, tag_name, collection):
