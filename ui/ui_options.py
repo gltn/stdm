@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_options.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created: Thu Jan 12 14:08:26 2017
+#      by: PyQt4 UI code generator 4.9.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,16 +12,7 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    def _fromUtf8(s):
-        return s
-
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
+    _fromUtf8 = lambda s: s
 
 class Ui_DlgOptions(object):
     def setupUi(self, DlgOptions):
@@ -42,7 +34,7 @@ class Ui_DlgOptions(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName(_fromUtf8("scrollArea"))
         self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 604, 516))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 608, 527))
         self.scrollAreaWidgetContents.setObjectName(_fromUtf8("scrollAreaWidgetContents"))
         self.gridLayout_5 = QtGui.QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))
@@ -151,13 +143,13 @@ class Ui_DlgOptions(object):
         self.gridLayout_5.addWidget(self.groupBox, 2, 0, 1, 5)
         self.label_9 = QtGui.QLabel(self.scrollAreaWidgetContents)
         self.label_9.setObjectName(_fromUtf8("label_9"))
-        self.gridLayout_5.addWidget(self.label_9, 6, 0, 1, 1)
-        self.label_6 = QtGui.QLabel(self.scrollAreaWidgetContents)
-        self.label_6.setObjectName(_fromUtf8("label_6"))
-        self.gridLayout_5.addWidget(self.label_6, 3, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.label_9, 7, 0, 1, 1)
         self.label = QtGui.QLabel(self.scrollAreaWidgetContents)
         self.label.setObjectName(_fromUtf8("label"))
         self.gridLayout_5.addWidget(self.label, 0, 0, 1, 1)
+        self.label_6 = QtGui.QLabel(self.scrollAreaWidgetContents)
+        self.label_6.setObjectName(_fromUtf8("label_6"))
+        self.gridLayout_5.addWidget(self.label_6, 3, 0, 1, 1)
         self.txtRepoLocation = QtGui.QLineEdit(self.scrollAreaWidgetContents)
         self.txtRepoLocation.setMinimumSize(QtCore.QSize(0, 30))
         self.txtRepoLocation.setMaxLength(500)
@@ -171,11 +163,14 @@ class Ui_DlgOptions(object):
         self.gridLayout_5.addWidget(self.btn_supporting_docs, 3, 3, 1, 1)
         self.upgradeButton = QtGui.QPushButton(self.scrollAreaWidgetContents)
         self.upgradeButton.setObjectName(_fromUtf8("upgradeButton"))
-        self.gridLayout_5.addWidget(self.upgradeButton, 6, 1, 1, 1)
+        self.gridLayout_5.addWidget(self.upgradeButton, 7, 1, 1, 1)
         self.cbo_profiles = QtGui.QComboBox(self.scrollAreaWidgetContents)
         self.cbo_profiles.setMinimumSize(QtCore.QSize(0, 30))
         self.cbo_profiles.setObjectName(_fromUtf8("cbo_profiles"))
         self.gridLayout_5.addWidget(self.cbo_profiles, 0, 2, 1, 1)
+        self.chk_logging = QtGui.QCheckBox(self.scrollAreaWidgetContents)
+        self.chk_logging.setObjectName(_fromUtf8("chk_logging"))
+        self.gridLayout_5.addWidget(self.chk_logging, 6, 0, 1, 1)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.verticalLayout.addWidget(self.scrollArea)
         self.buttonBox = QtGui.QDialogButtonBox(DlgOptions)
@@ -189,29 +184,30 @@ class Ui_DlgOptions(object):
         QtCore.QMetaObject.connectSlotsByName(DlgOptions)
 
     def retranslateUi(self, DlgOptions):
-        DlgOptions.setWindowTitle(_translate("DlgOptions", "Options", None))
-        self.groupBox_3.setTitle(_translate("DlgOptions", "Document Composer", None))
-        self.btn_template_folder.setToolTip(_translate("DlgOptions", "Choose templates directory", None))
-        self.btn_template_folder.setText(_translate("DlgOptions", "...", None))
-        self.label_8.setText(_translate("DlgOptions", "Output folder", None))
-        self.label_7.setText(_translate("DlgOptions", "Template folder", None))
-        self.btn_composer_out_folder.setToolTip(_translate("DlgOptions", "Choose output directory", None))
-        self.btn_composer_out_folder.setText(_translate("DlgOptions", "...", None))
-        self.groupBox.setTitle(_translate("DlgOptions", "Database Properties", None))
-        self.label_5.setText(_translate("DlgOptions", "<html><head/><body><p><span style=\" font-weight:600;\">Note:</span> Changes to the database connection properties will only take effect upon the next login</p></body></html>", None))
-        self.label_3.setText(_translate("DlgOptions", "Port", None))
-        self.label_2.setText(_translate("DlgOptions", "Host", None))
-        self.chk_pg_connections.setText(_translate("DlgOptions", "Extract from existing connection", None))
-        self.label_4.setText(_translate("DlgOptions", "Database", None))
-        self.btn_db_conn_clear.setToolTip(_translate("DlgOptions", "Clear database connection properties", None))
-        self.btn_db_conn_clear.setText(_translate("DlgOptions", "Clear", None))
-        self.btn_test_db_connection.setToolTip(_translate("DlgOptions", "Test database connection", None))
-        self.btn_test_db_connection.setText(_translate("DlgOptions", "Test connection...", None))
-        self.label_9.setText(_translate("DlgOptions", "Upgrade STDM Configuration to 1.4 ", None))
-        self.label_6.setText(_translate("DlgOptions", "Supporting documents folder", None))
-        self.label.setText(_translate("DlgOptions", "Set current profile", None))
-        self.btn_supporting_docs.setToolTip(_translate("DlgOptions", "Choose supporting documents directory", None))
-        self.btn_supporting_docs.setText(_translate("DlgOptions", "...", None))
-        self.upgradeButton.setText(_translate("DlgOptions", "Upgrade", None))
+        DlgOptions.setWindowTitle(QtGui.QApplication.translate("DlgOptions", "Options", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_3.setTitle(QtGui.QApplication.translate("DlgOptions", "Document Composer", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_template_folder.setToolTip(QtGui.QApplication.translate("DlgOptions", "Choose templates directory", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_template_folder.setText(QtGui.QApplication.translate("DlgOptions", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_8.setText(QtGui.QApplication.translate("DlgOptions", "Output folder", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_7.setText(QtGui.QApplication.translate("DlgOptions", "Template folder", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_composer_out_folder.setToolTip(QtGui.QApplication.translate("DlgOptions", "Choose output directory", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_composer_out_folder.setText(QtGui.QApplication.translate("DlgOptions", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate("DlgOptions", "Database Properties", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_5.setText(QtGui.QApplication.translate("DlgOptions", "<html><head/><body><p><span style=\" font-weight:600;\">Note:</span> Changes to the database connection properties will only take effect upon the next login</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_3.setText(QtGui.QApplication.translate("DlgOptions", "Port", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("DlgOptions", "Host", None, QtGui.QApplication.UnicodeUTF8))
+        self.chk_pg_connections.setText(QtGui.QApplication.translate("DlgOptions", "Extract from existing connection", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_4.setText(QtGui.QApplication.translate("DlgOptions", "Database", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_db_conn_clear.setToolTip(QtGui.QApplication.translate("DlgOptions", "Clear database connection properties", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_db_conn_clear.setText(QtGui.QApplication.translate("DlgOptions", "Clear", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_test_db_connection.setToolTip(QtGui.QApplication.translate("DlgOptions", "Test database connection", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_test_db_connection.setText(QtGui.QApplication.translate("DlgOptions", "Test connection...", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_9.setText(QtGui.QApplication.translate("DlgOptions", "Upgrade STDM Configuration to 1.4 ", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("DlgOptions", "Set current profile", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_6.setText(QtGui.QApplication.translate("DlgOptions", "Supporting documents folder", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_supporting_docs.setToolTip(QtGui.QApplication.translate("DlgOptions", "Choose supporting documents directory", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_supporting_docs.setText(QtGui.QApplication.translate("DlgOptions", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.upgradeButton.setText(QtGui.QApplication.translate("DlgOptions", "Upgrade", None, QtGui.QApplication.UnicodeUTF8))
+        self.chk_logging.setText(QtGui.QApplication.translate("DlgOptions", "Debug logging", None, QtGui.QApplication.UnicodeUTF8))
 
 from stdm import resources_rc
