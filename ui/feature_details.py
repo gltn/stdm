@@ -287,10 +287,10 @@ class DetailsDBHandler:
                 'DATETIME',
                 'BOOL',
                 'LOOKUP',
-                'ADMIN_SPATIAL_UNIT'
-                #'MULTIPLE_SELECT'
+                'ADMIN_SPATIAL_UNIT',
+                'PERCENT'
             ]
-            ]
+        ]
 
     def feature_STR_link(self, feature_id):
         STR_model = entity_model(
@@ -315,7 +315,6 @@ class DetailsDBHandler:
                 formatter = self.column_formatter[col.name]
                 col_val = formatter.format_column_value(col_val)
             self.formatted_record[col.header()] = col_val
-
 
     def _supporting_doc_models(self, entity_table, model_obj):
         """
@@ -462,7 +461,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         self.current_profile = current_profile()
         self.social_tenure = self.current_profile.social_tenure
         self.spatial_unit = self.social_tenure.spatial_unit
-        self.party = self.social_tenure.party
+
         self.view.setMinimumWidth(250)
         self.doc_viewer_title = QApplication.translate(
             'DetailsTreeView',
@@ -546,7 +545,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         self.set_formatter()
         # set formatter for social tenure relationship.
         self.set_formatter(self.social_tenure)
-        self.set_formatter(self.party)
+        for party in self.social_tenure.parties:
+            self.set_formatter(party)
         # pull data, show treeview
         active_layer.selectionChanged.connect(
             self.show_tree
@@ -706,6 +706,25 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             self.set_bold(no_str_root)
             parent.appendRow([no_str_root])
 
+    def current_party(self, record):
+        """
+        Gets the current party column name in STR
+        table by finding party column with value
+        other than None.
+        :param record: The STR record or result.
+        :type record: Dictionary
+        :return: The party column name with value.
+        :rtype: String
+        """
+        parties = self.social_tenure.parties
+
+        for party in parties:
+            party_name = party.short_name.lower()
+            party_id = '{}_id'.format(party_name)
+            if record[party_id] != None:
+                return party, party_id
+
+
     def add_STR_child(self, parent, feature_id):
         if len(self.feature_STR_link(feature_id)) < 1:
             self.add_no_STR_steam(parent)
@@ -723,17 +742,31 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 )
                 STR_child.setSelectable(False)
                 str_root.appendRow([STR_child])
-                if i == len(self.formatted_record)-1:
+                record_dict = record.__dict__
+                party, party_id = self.current_party(record_dict)
+
+                if i == len(self.formatted_record) - 1:
                     self.add_party_child(
-                        str_root, record.party_id
+                        str_root, party, record_dict[party_id]
                     )
         self.feature_STR_model[feature_id] = self.STR_models.keys()
 
-    def add_party_steam(self, parent, party_id):
+    def add_party_steam(self, parent, party_entity, party_id):
+        """
+        Add party steam with table icon and entity short name.
+        :param parent: The parent of the party steam - STR steam.
+        :type parent: QStandardItem
+        :param party_entity: The party entity object.
+        :type party_entity: Object
+        :param party_id: The id of the party entity
+        :type party_id: Integer
+        :return: The party root item
+        :rtype: QStandardItem
+        """
         party_icon = QIcon(
             ':/plugins/stdm/images/icons/table.png'
         )
-        title = format_name(self.party.short_name)
+        title = format_name(party_entity.short_name)
         party_root = QStandardItem(party_icon, title)
         party_root.setData(party_id)
         self.set_bold(party_root)
@@ -742,13 +775,25 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         party_root.setEditable(False)
         return party_root
 
-    def add_party_child(self, parent, party_id):
-
-        db_model = entity_id_to_model(self.party, party_id)
+    def add_party_child(self, parent, party_entity, party_id):
+        """
+        Add party children to the treeview.
+        :param parent: The parent of the tree child
+        :type parent: QStandardItem
+        :param party_entity: The current party entity object
+        :type party_entity: Object
+        :param party_id: The id of the party
+        :type party_id: Integer
+        :return:
+        :rtype:
+        """
+        db_model = entity_id_to_model(party_entity, party_id)
         self.party_models[party_id] = db_model
-        party_root = self.add_party_steam(parent, party_id)
+        party_root = self.add_party_steam(
+            parent, party_entity, party_id
+        )
         # add STR children
-        self.column_widget_registry(db_model, self.party)
+        self.column_widget_registry(db_model, party_entity)
         for col, row in self.formatted_record.iteritems():
             party_child = QStandardItem('{}: {}'.format(col, row))
             party_child.setSelectable(False)
@@ -869,8 +914,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
 
     def steam_data(self, mode):
         item = None
-        # if self.view.currentIndex().text() == format_name(self.party):
-        #     return None, None
+
         # One item is selected and number of feature is also 1
         if len(self.layer.selectedFeatures()) == 1 and \
                         len(self.view.selectedIndexes()) == 1:
@@ -905,37 +949,43 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         return result, item
 
     def edit_selected_steam(self, entity):
+
         id, item = self.steam_data('edit')
 
         feature_edit = True
         if id is None:
             return
         if isinstance(id, str):
-            data_error = QApplication.translate('DetailsTreeView', id)
+            data_error = QApplication.translate(
+                'DetailsTreeView', id
+            )
             QMessageBox.warning(
                 self.iface.mainWindow(),
-                QApplication.translate('DetailsTreeView', 'Edit Error'),
+                QApplication.translate(
+                    'DetailsTreeView', 'Edit Error'
+                ),
                 data_error
             )
             return
-
+        str_model = self.STR_models[id]
+        str_model_dict = str_model.__dict__
+        party, party_id = self.current_party(str_model_dict)
         if item.text() == 'Social Tenure Relationship':
-            model = self.STR_models[id]
             documents = self._supporting_doc_models(
-                self.social_tenure.name, model
+                self.social_tenure.name, str_model
             )
-            node_data = model, documents
+            node_data = str_model, documents
 
             feature_edit = False
             edit_str = EditSTREditor(self._plugin, node_data)
             status = edit_str.exec_()
 
-        elif item.text() == format_name(self.party.short_name):
+        elif item.text() == format_name(party.short_name):
             feature_edit = False
 
             model = self.party_models[id]
             editor = EntityEditorDialog(
-                self.party, model, self.iface.mainWindow()
+                party, model, self.iface.mainWindow()
             )
             editor.exec_()
         else:
@@ -966,6 +1016,10 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 data_error
             )
             return
+
+        str_model = self.STR_models[id]
+        str_model_dict = str_model.__dict__
+        party, party_id = self.current_party(str_model_dict)
         if item.text() == 'Social Tenure Relationship':
             str_edit = True
             db_model = self.STR_models[id]
@@ -994,7 +1048,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             )
             return
         # If it is party node, STR exists and don't allow delete.
-        elif item.text() == format_name(self.party.short_name):
+        elif item.text() == format_name(party.short_name):
             delete_warning = QApplication.translate(
                 'DetailsTreeView',
                 'You have to first delete the social tenure \n'

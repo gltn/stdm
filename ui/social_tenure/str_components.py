@@ -14,6 +14,7 @@ from PyQt4.QtCore import (
     QObject,
     Qt,
     QFileInfo,
+    QDate,
     QRegExp
 )
 from PyQt4.QtGui import QSpinBox
@@ -153,7 +154,6 @@ class ComponentUtility(QObject):
             table_view.hideColumn(2)
         else:
             table_view.hideColumn(0)
-
 
     def remove_table_data(self, table_view, row_count):
         """
@@ -407,7 +407,7 @@ class STRType(ComponentUtility):
 
     def ownership_share(self):
         """
-        Gets ownership_share double spin boxes.
+        Gets ownership_share double spin box widgets.
         :return: A list containing a list double spin boxes
         :rtype: List
         """
@@ -689,7 +689,8 @@ class ValidityPeriod():
         self.str_editor = str_editor
         self.from_date =  self.str_editor.validity_from_date
         self.to_date = self.str_editor.validity_to_date
-
+        self.current_profile = current_profile()
+        self.social_tenure = self.current_profile.social_tenure
         self.init_dates()
         str_editor.tenure_duration.valueChanged.connect(
             self.bind_to_date_by_year_month
@@ -710,6 +711,8 @@ class ValidityPeriod():
             self.set_minimum_to_date
         )
         self.set_minimum_to_date()
+        self.set_range_from_date()
+        self.set_range_to_date()
 
     def init_dates(self):
         """
@@ -750,16 +753,17 @@ class ValidityPeriod():
     def adjust_to_year(self):
         duration = self.str_editor.tenure_duration.value()
         before_date = self.to_date.date().currentDate()
+
         after_date = date(
             before_date.year() + duration,
-            before_date.month(),
-            before_date.day()
+            self.to_date.date().month(),
+            self.to_date.date().day()
         )
         self.to_date.setDate(after_date)
 
     def adjust_to_month(self):
         duration = self.str_editor.tenure_duration.value()
-        before_date = self.to_date.date().currentDate()
+        before_date = self.from_date.date()
         after_date = self.add_months(
             before_date, duration
         )
@@ -796,3 +800,27 @@ class ValidityPeriod():
 
     def set_minimum_to_date(self):
         self.to_date.setMinimumDate(self.from_date.date())
+
+    def set_range_from_date(self):
+        minimum_date = self.social_tenure.validity_start_column.minimum
+        maximum_date = self.social_tenure.validity_start_column.maximum
+
+        self.from_date.setDateRange(
+            minimum_date, maximum_date
+        )
+
+    def set_range_to_date(self):
+        """
+        Sets the the range of the start and end date using
+        ranges specified in the configuration.
+        :return:
+        :rtype:
+        """
+        minimum_date = self.social_tenure.validity_end_column.minimum
+        maximum_date = self.social_tenure.validity_end_column.maximum
+
+        self.to_date.setDateRange(
+            minimum_date, maximum_date
+        )
+
+

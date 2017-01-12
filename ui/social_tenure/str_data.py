@@ -1,4 +1,6 @@
 from collections import OrderedDict
+
+from PyQt4.QtCore import QDate
 from PyQt4.QtGui import (
 QApplication,
 QMessageBox,
@@ -9,7 +11,7 @@ from qgis.utils import (
     iface
 )
 
-from sqlalchemy import exc
+from sqlalchemy import exc, inspect
 from stdm.data.database import (
     STDMDb,
     Base
@@ -58,13 +60,12 @@ class STRDBHandler():
                 self.str_edit_obj = str_edit_node.model()
                 self.str_doc_edit_obj = str_edit_node.documents()
 
-
     def on_add_str(self, str_store):
         """
         Adds new STR record into the database
         with a supporting document record, if uploaded.
-        :param progress: The progressbar
-        :type progress: QProgressDialog
+        :param str_store: The data store of str components
+        :type progress: STRDataStore
         :return: None
         :rtype: NoneType
         """
@@ -72,8 +73,12 @@ class STRDBHandler():
         _str_obj = self.str_model()
         str_objs = []
 
+        inst = inspect(_str_obj)
+        str_columns = [c_attr.key for c_attr in inst.mapper.column_attrs]
+        party_name = str_store.party.values()[0].__table__.name
+
         index = 4
-        #progress.setValue(3)
+        # progress.setValue(3)
         # Social tenure and supporting document insertion
         # The code below is have a workaround to enable
         # batch supporting documents without affecting single
@@ -81,6 +86,7 @@ class STRDBHandler():
         # whenever a document is inserted in a normal way,
         # duplicate entry is added to the database.
         no_of_party = len(str_store.party)
+
         for j, (party_id, str_type_id) in \
                 enumerate(str_store.str_type.iteritems()):
             # get all doc model objects
@@ -88,11 +94,19 @@ class STRDBHandler():
             # get the number of unique documents.
             number_of_docs = len(doc_objs) / no_of_party
 
-            str_obj = self.str_model(
-                party_id=party_id,
-                spatial_unit_id=str_store.spatial_unit.keys()[0],
-                tenure_type=str_type_id
-            )
+            party_entity_id = '{}_id'.format(party_name[3:])
+            start_date = str_store.validity_period['from_date']
+            end_date = str_store.validity_period['to_date']
+
+            str_args = {
+                party_entity_id: party_id,
+                'spatial_unit_id': str_store.spatial_unit.keys()[0],
+                'tenure_type': str_type_id,
+                'validity_start': start_date.toPyDate(),
+                'validity_end': end_date.toPyDate(),
+                'tenure_share': str_store.share[party_id]
+            }
+            str_obj = self.str_model(**str_args)
             # Insert Supporting Document if a
             # supporting document is uploaded.
             if len(doc_objs) > 0:
@@ -117,11 +131,14 @@ class STRDBHandler():
                 self.on_add_str(str_store)
 
         else:
+            print len(self.data_store)
             if len(self.data_store) == 1:
+
 
                 updated_str_obj = self.on_edit_str(
                     self.data_store[1]
                 )
+
                 return updated_str_obj
             else:
                 return None
@@ -129,10 +146,10 @@ class STRDBHandler():
 
     def on_edit_str(self, str_store):
         """
-         Adds edits a selected STR record
-         with a supporting document record, if uploaded.
-         :param progress: The progressbar
-         :type progress: QProgressDialog
+         Updates an STR data with new data.
+         :param str_store: The store of edited data
+         with existing data.
+         :type str_store: STRDataStore
          :return: None
          :rtype: NoneType
          """
@@ -142,9 +159,26 @@ class STRDBHandler():
             self.str_model.id == self.str_edit_obj.id
         ).first()
 
-        str_edit_obj.party_id = str_store.party.keys()[0],
+        party_name = str_store.party.values()[0].__table__.name
+        party_entity_id = '{}_id'.format(party_name[3:])
+
+        start_date = str_store.validity_period['from_date']
+        end_date = str_store.validity_period['to_date']
+        if isinstance(start_date, QDate):
+            start_date = start_date.toPyDate()
+        if isinstance(end_date, QDate):
+            end_date = end_date.toPyDate()
+
+        party_id = getattr(self.str_model, party_entity_id)
+
+        party_id = str_store.party.keys()[0],
         str_edit_obj.spatial_unit_id = str_store.spatial_unit.keys()[0],
-        str_edit_obj.tenure_type = str_store.str_type.values()[0]
+        str_edit_obj.tenure_type = str_store.str_type.values()[0],
+        str_edit_obj.validity_start = start_date,
+        str_edit_obj.validity_end = end_date,
+        str_edit_obj.tenure_share = str_store.share[
+            str_store.party.keys()[0]
+        ]
 
         # get all doc model objects
         added_doc_objs = str_store.supporting_document
@@ -155,7 +189,7 @@ class STRDBHandler():
         new_doc_objs = list(set(added_doc_objs) -
                             set(self.str_doc_edit_obj))
 
-        # Insert Supporting Document if a new
+        # Insert supporting document if a new
         # supporting document is uploaded.
         if len(new_doc_objs) > 0:
 
@@ -167,6 +201,7 @@ class STRDBHandler():
                 )
 
         str_edit_obj.update()
+        #print vars(str_edit_obj)
 
         return str_edit_obj
 
@@ -180,14 +215,17 @@ class STRDBHandler():
         isValid = True
         # Create a progress dialog
         try:
-            self.progress.setRange(0, len(self.data_store) - 1)
+
             self.progress.show()
             if self.str_edit_obj is None:
+                self.progress.setRange(0, len(self.data_store) - 1)
                 self.progress.overall_progress(
                     'Creating a STR...',
                 )
 
-                for i, str_store in enumerate(self.data_store.values()):
+                for i, str_store in enumerate(
+                        self.data_store.values()
+                ):
                     self.progress.progress_message(
                         'Saving STR {}'.format(i+1), ''
                     )
@@ -196,6 +234,7 @@ class STRDBHandler():
                     self.on_add_str(str_store)
 
             else:
+                self.progress.setRange(0, 1)
                 self.progress.setValue(0)
                 self.progress.overall_progress(
                     'Editing a STR...',
