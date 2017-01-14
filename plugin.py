@@ -106,6 +106,11 @@ from stdm.ui.feature_details import DetailsTreeView
 
 from stdm.ui.social_tenure.str_editor import STREditor
 
+
+
+from stdm.settings.database_backup import *
+from stdm.settings.database_updaters import DatabaseUpdater
+
 LOGGER = logging.getLogger('stdm')
 
 
@@ -504,13 +509,64 @@ class STDMQGISLoader(object):
                 else:
                     return False
 
+    def on_update_progress(self, message):
+        """
+        A slot raised when update_progress signal is emitted
+        in ConfigurationSerializer, ConfigurationUpdater and
+        and of the Updaters.
+        :param message: The progress message.
+        :type message: String
+        :return:
+        :rtype:
+        """
+        self.progress.show()
+        self.progress.setRange(0, 0)
+        self.progress.progress_message(message)
+
+    def on_update_complete(self, document):
+        """
+        A slot raised when the update_complete signal is emitted.
+        It runs post update tasks such as closing progress dialog
+        and showing a success message.
+        :param document: The updated dom document
+        :type document: QDomDocument
+        :return:
+        :rtype:
+        """
+        config_updater = ConfigurationSchemaUpdater()
+        config_updater.exec_()
+        print 'complete STDMQGISLoaoder'
+        self.progress.hide()
+        self.progress.cancel()
+        # QMessageBox.information(
+        #     self.iface.mainWindow(),
+        #     'Update Complete',
+        #     'The configuration is successfully upgraded!'
+        # )
+
+    def on_start_database_update(self, document):
+
+        db_updater = DatabaseUpdater(document)
+        db_updater.upgrade_database()
+
+
     def load_configuration_to_serializer(self):
         try:
+            self.config_serializer.update_complete.connect(
+                self.on_update_complete
+            )
+            self.config_serializer.update_progress.connect(
+                self.on_update_progress
+            )
             self.config_serializer.load()
+
             return True
+
         except IOError as io_err:
             QMessageBox.critical(self.iface.mainWindow(),
-                    QApplication.translate('STDM', 'Load Configuration Error'),
+                    QApplication.translate(
+                        'STDM', 'Load Configuration Error'
+                    ),
                     unicode(io_err))
 
             return False
@@ -535,8 +591,8 @@ class STDMQGISLoader(object):
         loaded. Otherwise, False.
         :rtype: bool
         """
-        progress = STDMProgressDialog(parent)
-        progress.overall_progress(
+        self.progress = STDMProgressDialog(parent)
+        self.progress.overall_progress(
             'Upgrading STDM Configuration...',
         )
 
@@ -549,19 +605,19 @@ class STDMQGISLoader(object):
         if manual:
             parent.upgradeButton.setEnabled(False)
             upgrade_status = self.configuration_file_updater.load(
-                self.plugin_dir, progress, True
+                self.plugin_dir, self.progress, True
             )
 
         else:
             upgrade_status = self.configuration_file_updater.load(
-                self.plugin_dir, progress
+                self.plugin_dir, self.progress
             )
 
         if upgrade_status:
             # Append configuration_upgraded.stc profiles
 
             if os.path.isfile(config_path):
-                progress.progress_message(
+                self.progress.progress_message(
                     'Appending the upgraded profile', ''
                 )
 
@@ -584,10 +640,11 @@ class STDMQGISLoader(object):
                 for profile, tables in profile_details_dict.iteritems():
                     profile_details[profile] = tables
                     upgrade_template = TemplateFileUpdater(
-                        self.plugin_dir, profile_details, progress
+                        self.plugin_dir, profile_details, self.progress
                     )
 
                     upgrade_template.process_update(True)
+
                 QMessageBox.information(
                     self.iface.mainWindow(),
                     QApplication.translate(
@@ -616,7 +673,8 @@ class STDMQGISLoader(object):
                     {WIZARD_RUN: 1}
                 )
                 self.configuration_file_updater.append_log(
-                    'Successfully migrated to STDM 1.4!'
+                    'Successfully migrated STDM '
+                    'Configuration to version 1.2!'
                 )
                 return True
 
@@ -978,34 +1036,54 @@ class STDMQGISLoader(object):
 
         self.profiles_combobox.setStyleSheet(
             """
-             QComboBox {
+        QComboBox {
                 border: 2px solid #4b85ca;
-                border-radius: 3px;
+                border-radius: 0px;
                 padding: 1px 18px 1px 3px;
                 min-width: 6em;
             }
+         QComboBox:editable {
+             background: white;
+         }
 
-            QComboBox:editable {
-                background: white;
-            }
-
-            QComboBox:!editable, QComboBox::drop-down:editable {
+         QComboBox:!editable, QComboBox::drop-down:editable {
                  background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                             stop: 0 #f8f8f8, stop: 0.4 #eeeeee,
-                                             stop: 0.5 #e6e6e6, stop: 1.0 #cecece);
-            }
+                                            stop: 0 #f8f8f8, stop: 0.4 #eeeeee,
+                                          stop: 0.5 #e6e6e6, stop: 1.0 #cecece);
+         }
 
-            /* QComboBox gets the "on" state when the popup is open */
-            QComboBox:!editable:on, QComboBox::drop-down:editable:on {
-                background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                            stop: 0 #D3D3D3, stop: 0.4 #D8D8D8,
-                                            stop: 0.5 #DDDDDD, stop: 1.0 #E1E1E1);
-            }
+         /* QComboBox gets the "on" state when the popup is open */
+         QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+                     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                    stop: 0 #D3D3D3, stop: 0.4 #D8D8D8,
+                                                    stop: 0.5 #DDDDDD, stop: 1.0 #E1E1E1);
+         }
 
-            QComboBox:on { /* shift the text when the popup opens */
-                padding-top: 3px;
-                padding-left: 4px;
-            }
+         QComboBox:on { /* shift the text when the popup opens */
+             padding-top: 3px;
+             padding-left: 4px;
+         }
+
+         QComboBox::drop-down {
+             subcontrol-origin: padding;
+             subcontrol-position: top right;
+             width: 15px;
+
+             border-left-width: 1px;
+             border-left-color: darkgray;
+             border-left-style: solid; /* just a single line */
+             border-top-right-radius: 3px; /* same radius as the QComboBox */
+             border-bottom-right-radius: 3px;
+         }
+
+         QComboBox::down-arrow {
+             image: url(:/plugins/stdm/images/icons/down_arrow.png);
+         }
+
+         QComboBox::down-arrow:on { /* shift the arrow when popup is open */
+             top: 1px;
+             left: 1px;
+         }
             """
         )
         setComboCurrentIndexWithText(

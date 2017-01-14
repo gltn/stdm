@@ -27,8 +27,11 @@ from datetime import (
 from PyQt4.QtCore import (
     QFile,
     QFileInfo,
-    QIODevice
+    QIODevice,
+    QObject,
+    pyqtSignal
 )
+from PyQt4.QtCore import QThread
 from PyQt4.QtXml import (
     QDomDocument,
     QDomElement,
@@ -48,6 +51,8 @@ from stdm.data.configuration.columns import (
     BaseColumn,
     ForeignKeyColumn
 )
+
+from stdm.settings.config_updaters import ConfigurationUpdater
 from stdm.utils.util import (
     date_from_string,
     datetime_from_string
@@ -55,18 +60,24 @@ from stdm.utils.util import (
 
 from stdm.data.configfile_paths import FilePaths
 
+from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
+
 LOGGER = logging.getLogger('stdm')
 
 
-class ConfigurationFileSerializer(object):
+class ConfigurationFileSerializer(QObject):
     """
     (De)serializes configuration object from/to a specified file object.
     """
-    def __init__(self, path):
+    update_progress = pyqtSignal(str)
+    update_complete = pyqtSignal(QDomDocument)
+
+    def __init__(self, path, parent=None):
         """
         :param path: File location where the configuration will be saved.
         :type path: str
         """
+        QObject.__init__(self, parent)
         self.path = path
         self.config = StdmConfiguration.instance()
         self.file_handler = FilePaths()
@@ -157,9 +168,65 @@ class ConfigurationFileSerializer(object):
         :rtype: tuple(bool, QDomDocument)
         """
         self.append_log('Started the update process.')
+        config_updater = ConfigurationUpdater(document)
+        # Thread to handle update progress
+        # self.updater_thread = QThread(self)
+        # #config_updater.moveToThread(self.updater_thread)
+        # self.updater_thread.start()
+        # # self.updater_thread.started.connect(
+        # #     self.on_update_progress
+        # # )
+        config_updater.update_progress.connect(
+            self.on_update_progress
+        )
+        status, dom_document, db_updater = config_updater.exec_()
+        self.on_update_complete(db_updater, dom_document)
 
-        #TODO: Need to plugin the updater object
-        return False, None
+        return status, dom_document
+
+    def on_update_complete(self, db_updater, updated_document):
+        """
+        Loads the updated dom document into configuration instance.
+        It then saves it to configuration.stc using save() method.
+        :param document: The updated dom document
+        :type document: QDomDocument
+        :return:
+        :rtype:
+        """
+        doc_element = updated_document.documentElement()
+
+        self._load_config_items(doc_element)
+        self.append_log(
+            'Loaded the updated configuration to '
+            'STDM configuration instance.'
+        )
+        self.update_progress.emit(
+            'Loaded the updated configuration to '
+            'STDM configuration instance.'
+        )
+        self.save()
+        self.append_log(
+            'Successfully created configuration.stc '
+            'with the latest config version.'
+        )
+        config_updater = ConfigurationSchemaUpdater()
+        config_updater.exec_()
+
+        db_updater.upgrade_database()
+
+        self.update_complete.emit(updated_document)
+
+
+    def on_update_progress(self, message):
+        """
+        A slot raised when an update progress signal is emitted
+        from any of the updaters through ConfigurationUpdater.
+        :param message: The progress message
+        :type message: String
+        :return:
+        :rtype:
+        """
+        self.update_progress.emit(message)
 
     def read_xml(self, document):
         """
@@ -177,11 +244,11 @@ class ConfigurationFileSerializer(object):
 
         if doc_element.isNull():
             #Its an older config file hence, try upgrade
-            document = self._update_status(document)
+            updated_document = self._update_status(document)
 
         if not doc_element.hasAttribute('version'):
             #Again, an older version
-            document = self._update_status(document)
+            updated_document = self._update_status(document)
 
         #Check version
         config_version = doc_element.attribute('version')
@@ -196,9 +263,11 @@ class ConfigurationFileSerializer(object):
 
         if config_version < StdmConfiguration.instance().VERSION:
             #Upgrade configuration
-            document = self._update_status(document)
+            updated_document = self._update_status(document)
 
-        doc_element = document.documentElement()
+            doc_element = updated_document.documentElement()
+        elif config_version == StdmConfiguration.instance().VERSION:
+            doc_element = document.documentElement()
 
         #All should be well at this point so start parsing the items
         self._load_config_items(doc_element)
@@ -213,6 +282,7 @@ class ConfigurationFileSerializer(object):
             profile_element = profile_elements.item(i).toElement()
             profile = ProfileSerializer.read_xml(profile_element, element,
                                                  self.config)
+
 
             if not profile is None:
                 self.config.add_profile(profile)
@@ -238,7 +308,7 @@ class ConfigurationFileSerializer(object):
         :type info: str
         """
         info_file = open(self.log_file_path, "a")
-        time_stamp = datetime.datetime.now().strftime(
+        time_stamp = datetime.now().strftime(
             '%d-%m-%Y %H:%M:%S'
         )
         info_file.write('\n')
