@@ -1211,7 +1211,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                 )
                 self.new_data_folder_path = source_documents_path()
 
-                self.append_log('stdmConfig.xml exists')
+                #self.append_log('stdmConfig.xml exists')
                 self.config_updated_dic = self.reg_config.read(
                     [CONFIG_UPDATED]
                 )

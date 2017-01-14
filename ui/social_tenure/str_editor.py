@@ -245,7 +245,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
         """
         self.entity_combo_label = QLabel()
         combo_text = QApplication.translate(
-            'InitSTREditor', 'Select a Party Entity: '
+            'InitSTREditor', 'Select a party entity '
         )
         self.entity_combo_label.setText(combo_text)
         self.entity_combo_label.setParent(self)
