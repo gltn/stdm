@@ -532,8 +532,7 @@ def profile_lookup_columns(profile):
 def lookup_parent_entity(profile, col):
     """
     Gets lookup column's parent entity.
-    :param profile:
-    :type profile:
+    :param profile:  Object
     :param col: The lookup's child column name
     :type col: String
     :return: List of parent lookup entity
@@ -541,39 +540,12 @@ def lookup_parent_entity(profile, col):
     """
     parent_entity = [
         r.parent for r in profile.relations.values()
-        if r.child_column == col
+        if r.child_column == col and 'check_' in r.parent.name
     ]
-
-    return parent_entity[0]
-
-
-def model_lookup_id_to_value(id, db_model):
-    """
-    Converts the id of a lookup table
-    to value using the db model.
-    :param id: The id value of the lookup table
-    :type id: Integer
-    :param db_model: Database model
-    :type db_model: Class
-    :return: Integer for id or String if no value is found
-    :rtype: Integer or String
-    """
-    if isinstance(id, int):
-        db_obj = db_model()
-        query = db_obj.queryObject().filter(
-            db_model.id == id
-        ).first()
-        if query is not None:
-            value = getattr(
-                query,
-                'value',
-                None
-            )
-            return value
-        else:
-            return id
+    if len(parent_entity) > 0:
+        return parent_entity[0]
     else:
-        return id
+        return None
 
 def lookup_id_to_value(profile, col, id):
     """
@@ -591,18 +563,22 @@ def lookup_id_to_value(profile, col, id):
     """
     if col in profile_lookup_columns(profile):
         parent_entity = lookup_parent_entity(profile, col)
-        db_model = entity_model(parent_entity)
-        db_obj = db_model()
-        query = db_obj.queryObject().filter(
-            db_model.id == id
-        ).first()
-        if query is not None:
-            value = getattr(
-                query,
-                'value',
-                None
-            )
-            return value
+        if not parent_entity is None:
+            db_model = entity_model(parent_entity)
+            db_obj = db_model()
+            query = db_obj.queryObject().filter(
+                db_model.id == id
+            ).first()
+            if query is not None:
+                value = getattr(
+                    query,
+                    'value',
+                    None
+                )
+                return value
+            else:
+                return id
+        # if the column is a related entity column
         else:
             return id
     else:
