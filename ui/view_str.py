@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from datetime import date
 from sqlalchemy import exc
 from collections import OrderedDict
 import logging
@@ -75,7 +76,9 @@ from .sourcedocument import (
 
 from ui_view_str import Ui_frmManageSTR
 from ui_str_view_entity import Ui_frmSTRViewEntity
-
+from stdm.ui.social_tenure.str_components import (
+    ValidityPeriod
+)
 
 LOGGER = logging.getLogger('stdm')
 
@@ -286,11 +289,12 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Specify the entity configurations.
         """
         try:
-            tb_str_entities = [
-                self.curr_profile.social_tenure.party,
+            spatial_unit = [
+
                 self.curr_profile.social_tenure.spatial_unit
             ]
-
+            self.parties = self.curr_profile.social_tenure.parties
+            tb_str_entities = self.parties + spatial_unit
             for t in tb_str_entities:
 
                 entity_cfg = self._entity_config_from_profile(
@@ -464,6 +468,26 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                     self.editSTR.setDisabled(True)
                     self.deleteSTR.setDisabled(True)
 
+    def str_party_column_obj(self, record):
+        """
+        Gets the current party column name in STR
+        table by finding party column with value
+        other than None.
+        :param record: The STR record or result.
+        :type record: Dictionary
+        :return: The party column name with value.
+        :rtype: String
+        """
+
+        for party in self.parties:
+            party_name = party.short_name.lower()
+            party_id = '{}_id'.format(party_name)
+            if party_id not in record.__dict__:
+                return None
+            if record.__dict__[party_id] != None:
+                party_id_obj = getattr(self.str_model, party_id)
+                return party_id_obj
+
     def load_edit_str_editor(self):
 
         index = self.tvSTRResults.currentIndex()
@@ -474,12 +498,24 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             if isinstance(node, SupportsDocumentsNode):
 
                 edit_str = EditSTREditor(self._plugin, node)
+
+
                 status = edit_str.exec_()
 
                 if status == 1:
+
                     if node._parent.typeInfo() == 'ENTITY_NODE':
-                        if node._model.party_id == \
-                                edit_str.updated_str_obj.party_id:
+                        node_party_id = self.str_party_column_obj(
+                            node._model
+                        )
+                        edit_str_party_id = self.str_party_column_obj(
+                            edit_str.updated_str_obj
+                        )
+                        if node_party_id is None or \
+                                        edit_str_party_id is None:
+                            return
+                        if node_party_id == \
+                                edit_str_party_id:
                             self.btnSearch.click()
                             index = node.treeView().model().index(0, 0)
                             node._on_expand(index)
@@ -869,6 +905,7 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
     asyncStarted = pyqtSignal()
     asyncFinished = pyqtSignal()
 
+
     def __init__(self, config, formatter=None, parent=None):
         QWidget.__init__(self, parent)
         EntitySearchItem.__init__(self, formatter)
@@ -876,6 +913,8 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         self.config = config
         self.setConfigOptions()
         self.curr_profile = current_profile()
+        self.social_tenure = self.curr_profile.social_tenure
+        self.str_model = entity_model(self.social_tenure)
         #Model for storing display and actual mapping values
         self._completer_model = None
         self._proxy_completer_model = None
@@ -884,7 +923,55 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         self.cboFilterCol.currentIndexChanged.connect(
             self._on_column_index_changed
         )
+        self.init_validity_dates()
+        self.validity_from_date.dateChanged.connect(
+            self.set_minimum_to_date
+        )
+        self.validity.setDisabled(True)
+        self.init_validity_checkbox()
 
+    def init_validity_checkbox(self):
+        self.check_box_list = []
+        self.validity_checkbox = QCheckBox()
+
+        self.check_box_list.append(self.validity_checkbox)
+        self.tbSTRViewEntity.tabBar().setTabButton(
+            self.tbSTRViewEntity.tabBar().count() - 1,
+            QTabBar.LeftSide, self.validity_checkbox
+        )
+        self.validity_checkbox.stateChanged.connect(self.toggle_validity_period)
+
+    def toggle_validity_period(self, state):
+        if state == Qt.Checked:
+            self.validity.setDisabled(False)
+        else:
+            self.validity.setDisabled(True)
+
+
+    def set_minimum_to_date(self):
+        """
+        Set the minimum to date based on the
+        change in value of from date.
+        :return:
+        :rtype:
+        """
+        self.validity_to_date.setMinimumDate(
+            self.validity_from_date.date()
+        )
+
+
+    def init_validity_dates(self):
+        """
+        Initialize the dates by setting the current date.
+        :return:
+        :rtype:
+        """
+        self.validity_from_date.setDate(
+            date.today()
+        )
+        self.validity_to_date.setDate(
+            date.today()
+        )
     def setConfigOptions(self):
         """
         Apply configuration options.
@@ -979,10 +1066,16 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         modelInstance = self.config.STRModel()
 
         modelQueryObj = modelInstance.queryObject()
+        # if self.validity.isEnabled():
+        #     from_date = self.validity_from_date.date().toPyDate()
+        #     to_date = self.validity_to_date.date().toPyDate()
+        #     modelQueryObj = modelQueryObj.filter(
+        #         modelInstance.validity_start >= from_date).filter(
+        #         modelInstance.validity_end <= to_date
+        #     )
         queryObjProperty = getattr(
             self.config.STRModel, self.currentFieldName()
         )
-
 
         prog_dialog.setValue(6)
         # Get property type so that the filter can
@@ -990,7 +1083,6 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         propType = queryObjProperty.property.columns[0].type
         results = []
         try:
-
             if not isinstance(propType, String):
                 entity_name = modelQueryObj._primary_entity._label_name
                 entity = self.curr_profile.entity_by_name(entity_name)
@@ -1016,10 +1108,12 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
                         result = lkp_obj.queryObject().filter(
                             func.lower(value_obj).like(search_term+'%')
                         ).first()
+
                     if not result is None:
                         results = modelQueryObj.filter(
                             queryObjProperty == result.id
                         ).all()
+
                     else:
                         results = []
 
@@ -1027,6 +1121,10 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
                 results = modelQueryObj.filter(
                     func.lower(queryObjProperty) == func.lower(search_term)
                 ).all()
+            if self.validity.isEnabled():
+                valid_str_ids = self.str_validity_period_filter(results)
+            else:
+                valid_str_ids = None
 
             prog_dialog.setValue(7)
         except exc.StatementError:
@@ -1034,10 +1132,38 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
 
         if self.formatter is not None:
             self.formatter.setData(results)
-            model_root_node = self.formatter.root()
+            model_root_node = self.formatter.root(valid_str_ids)
             prog_dialog.setValue(10)
             prog_dialog.hide()
         return model_root_node, results, search_term
+
+    def str_validity_period_filter(self, results):
+        """
+        Filter the entity results using validity period in STR table.
+        :param results: Entity result
+        :type results: SQLAlchemy result proxy
+        :return: Valid list of STR ids
+        :rtype: List
+        """
+        self.str_model_obj = self.str_model()
+        valid_str_ids = []
+        for result in results:
+            from_date = self.validity_from_date.date().toPyDate()
+            to_date = self.validity_to_date.date().toPyDate()
+            entity_id = '{}_id'.format(result.__table__.name[3:])
+            str_column_obj = getattr(self.str_model, entity_id)
+            str_result = self.str_model_obj.queryObject().filter(
+                self.str_model.validity_start >= from_date).filter(
+                self.str_model.validity_end <= to_date
+            ).filter(str_column_obj==result.id).all()
+
+            for res in str_result:
+                valid_str_ids.append(res.id)
+
+        return valid_str_ids
+
+
+
 
     def reset(self):
         """

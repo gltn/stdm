@@ -692,6 +692,7 @@ class ValidityPeriod():
         self.current_profile = current_profile()
         self.social_tenure = self.current_profile.social_tenure
         self.init_dates()
+
         str_editor.tenure_duration.valueChanged.connect(
             self.bind_to_date_by_year_month
         )
@@ -799,6 +800,12 @@ class ValidityPeriod():
         self.str_editor.tenure_duration.setValue(period)
 
     def set_minimum_to_date(self):
+        """
+        Set the minimum to date based on the
+        change in value of from date.
+        :return:
+        :rtype:
+        """
         self.to_date.setMinimumDate(self.from_date.date())
 
     def set_range_from_date(self):

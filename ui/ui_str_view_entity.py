@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_str_view_entity.ui'
 #
-# Created: Fri Oct 17 08:54:19 2014
-#      by: PyQt4 UI code generator 4.10.3
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -31,6 +30,9 @@ class Ui_frmSTRViewEntity(object):
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.tbSTRViewEntity = QtGui.QTabWidget(frmSTRViewEntity)
         self.tbSTRViewEntity.setTabPosition(QtGui.QTabWidget.South)
+        self.tbSTRViewEntity.setDocumentMode(False)
+        self.tbSTRViewEntity.setTabsClosable(False)
+        self.tbSTRViewEntity.setMovable(False)
         self.tbSTRViewEntity.setObjectName(_fromUtf8("tbSTRViewEntity"))
         self.filter = QtGui.QWidget()
         self.filter.setObjectName(_fromUtf8("filter"))
@@ -51,6 +53,33 @@ class Ui_frmSTRViewEntity(object):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/filter.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.tbSTRViewEntity.addTab(self.filter, icon, _fromUtf8(""))
+        self.validity = QtGui.QWidget()
+        self.validity.setObjectName(_fromUtf8("validity"))
+        self.verticalLayout = QtGui.QVBoxLayout(self.validity)
+        self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
+        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
+        self.label_2 = QtGui.QLabel(self.validity)
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.horizontalLayout.addWidget(self.label_2)
+        self.validity_from_date = QtGui.QDateEdit(self.validity)
+        self.validity_from_date.setCalendarPopup(True)
+        self.validity_from_date.setObjectName(_fromUtf8("validity_from_date"))
+        self.horizontalLayout.addWidget(self.validity_from_date)
+        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.horizontalLayout_2 = QtGui.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
+        self.lable_3 = QtGui.QLabel(self.validity)
+        self.lable_3.setObjectName(_fromUtf8("lable_3"))
+        self.horizontalLayout_2.addWidget(self.lable_3)
+        self.validity_to_date = QtGui.QDateEdit(self.validity)
+        self.validity_to_date.setCalendarPopup(True)
+        self.validity_to_date.setObjectName(_fromUtf8("validity_to_date"))
+        self.horizontalLayout_2.addWidget(self.validity_to_date)
+        self.verticalLayout.addLayout(self.horizontalLayout_2)
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/period_blue.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.tbSTRViewEntity.addTab(self.validity, icon1, _fromUtf8(""))
         self.gridLayout.addWidget(self.tbSTRViewEntity, 0, 0, 1, 1)
 
         self.retranslateUi(frmSTRViewEntity)
@@ -62,3 +91,8 @@ class Ui_frmSTRViewEntity(object):
         self.label.setText(_translate("frmSTRViewEntity", "in column", None))
         self.txtFilterPattern.setPlaceholderText(_translate("frmSTRViewEntity", "Look for", None))
         self.tbSTRViewEntity.setTabText(self.tbSTRViewEntity.indexOf(self.filter), _translate("frmSTRViewEntity", "Filter", None))
+        self.label_2.setText(_translate("frmSTRViewEntity", "Validity from", None))
+        self.lable_3.setText(_translate("frmSTRViewEntity", "to", None))
+        self.tbSTRViewEntity.setTabText(self.tbSTRViewEntity.indexOf(self.validity), _translate("frmSTRViewEntity", "Validity Period", None))
+
+from stdm import resources_rc

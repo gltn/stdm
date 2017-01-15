@@ -267,7 +267,7 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
         # sql_min = DateColumn.SQL_MIN
         sql_min = '1900-01-01'
         # sql_max = DateColumn.SQL_MAX
-        sql_max = '3999-12-31'
+        sql_max = '7999-12-31'
 
         # Add validity node and elements
         for parent_node, str_element in social_tenure_elements.iteritems():
