@@ -373,7 +373,7 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
 
         self.setWindowTitle(
             QApplication.translate(
-                'DetailsDockWidget', 'Feature Details'
+                'DetailsDockWidget', 'Spatial Entity Details'
             )
         )
 
@@ -721,6 +721,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         for party in parties:
             party_name = party.short_name.lower()
             party_id = '{}_id'.format(party_name)
+            if not party_id in record:
+                return None, None
             if record[party_id] != None:
                 return party, party_id
 
@@ -1125,8 +1127,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 feature_ids
             )
         else:
-            item.removeRows(0, 2)
-            item.setText('No STR Definded')
+            item.removeRows(0, 5)
+            item.setText('No STR Defined')
             no_str_icon = QIcon(
                 ':/plugins/stdm/images/icons/remove.png'
             )

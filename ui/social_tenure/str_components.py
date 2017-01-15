@@ -728,29 +728,6 @@ class ValidityPeriod():
             date.today()
         )
 
-    def bind_to_date_by_year_month(self, increment):
-        """
-        A slot raised when validity years is specified.
-        It changes the end date of the validity.
-        :param increment: The new value of year spinbox.
-        :type increment: Integer
-        :return:
-        :rtype:
-        """
-
-        before_date = self.to_date.date().currentDate()
-        if self.str_editor.in_years.isChecked():
-            after_date = date(
-                before_date.year() + increment,
-                before_date.month(),
-                before_date.day()
-            )
-        else:
-            after_date = self.add_months(
-                before_date, increment
-            )
-        self.to_date.setDate(after_date)
-
     def adjust_to_year(self):
         duration = self.str_editor.tenure_duration.value()
         before_date = self.to_date.date().currentDate()
@@ -761,6 +738,7 @@ class ValidityPeriod():
             self.to_date.date().day()
         )
         self.to_date.setDate(after_date)
+
 
     def adjust_to_month(self):
         duration = self.str_editor.tenure_duration.value()
@@ -780,6 +758,30 @@ class ValidityPeriod():
         )
         return date(year, month, day)
 
+    def bind_to_date_by_year_month(self, increment):
+        """
+        A slot raised when validity year is specified.
+        It changes the end date of the validity.
+        :param increment: The new value of year spinbox.
+        :type increment: Integer
+        :return:
+        :rtype:
+        """
+        current_year = self.to_date.date().currentDate().year()
+
+        if self.str_editor.in_years.isChecked():
+            after_date = date(
+                current_year + increment,
+                self.to_date.date().month(),
+                self.to_date.date().day()
+            )
+        else:
+            after_date = self.add_months(
+                self.to_date.date().currentDate(), increment
+            )
+
+        self.to_date.setDate(after_date)
+
     def bind_year_month_by_dates_range(self):
         """
         A slot raised when from or to dates are changed.
@@ -790,14 +792,17 @@ class ValidityPeriod():
         """
         to_date = self.to_date.date().toPyDate()
         from_date = self.from_date.date().toPyDate()
+
         if self.str_editor.in_years.isChecked():
             period = relativedelta(to_date, from_date).years
         else:
             year_diff = to_date.year - from_date.year
 
             period = to_date.month - from_date.month + (12 * year_diff)
-
+        # Fixes the value freeze when editing STR
+        # period = period + 1
         self.str_editor.tenure_duration.setValue(period)
+
 
     def set_minimum_to_date(self):
         """

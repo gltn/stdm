@@ -245,7 +245,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
         """
         self.entity_combo_label = QLabel()
         combo_text = QApplication.translate(
-            'InitSTREditor', 'Select a party entity '
+            'InitSTREditor', 'Select a party entity'
         )
         self.entity_combo_label.setText(combo_text)
         self.entity_combo_label.setParent(self)
@@ -1267,9 +1267,7 @@ class STREditor(ValidateSTREditor):
         self._plugin = plugin
 
         self.str_editor_signals()
-        # self.validator = ValidateSTREditor(plugin)
-        # self.sync = SyncSTREditorData(plugin)
-        # self.bind = BindSTREditor(plugin)
+
         self.tree_view_signals()
 
     def str_editor_signals(self):
@@ -1548,7 +1546,9 @@ class EditSTREditor(STREditor):
             40, lambda: self.populate_str_type(str_type_id)
         )
         self.party_component.party_fk_mapper.setSupportsList(False)
+
         self.set_party_active()
+        self.buttonBox.button(QDialogButtonBox.Save).setEnabled(True)
 
     def populate_str_type(self, str_type_id):
 
