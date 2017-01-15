@@ -225,35 +225,35 @@ class ComposerSymbolEditor(QWidget,Ui_frmComposerSymbolEditor):
         else:
             sp_column_name = sp_field_mapping.spatialField()
             apply_mapping = True
+        if not self._build_symbol_widget(sp_field_mapping) is None:
+            symbolEditor,geomType,srid = self._build_symbol_widget(
+                sp_field_mapping
+            )
+        
+            if symbolEditor is None:
+                return None
 
-        symbolEditor,geomType,srid = self._build_symbol_widget(
-            sp_field_mapping
-        )
-        
-        if symbolEditor is None:
-            return None
-        
-        styleEditor = ComposerSpatialColumnEditor(
-            sp_column_name,
-            self._composerWrapper
-        )
-        styleEditor.setSymbolEditor(symbolEditor) 
-        styleEditor.setGeomType(geomType)
-        styleEditor.setSrid(srid)
+            styleEditor = ComposerSpatialColumnEditor(
+                sp_column_name,
+                self._composerWrapper
+            )
+            styleEditor.setSymbolEditor(symbolEditor)
+            styleEditor.setGeomType(geomType)
+            styleEditor.setSrid(srid)
 
-        #Apply spatial field mapping
-        if apply_mapping:
-            styleEditor.applyMapping(sp_field_mapping)
-        
-        self.tbFieldProperties.addTab(styleEditor, sp_column_name)
-        
-        #Add column name and corresponding widget to the collection
-        self._editorMappings[sp_column_name] = styleEditor
+            #Apply spatial field mapping
+            if apply_mapping:
+                styleEditor.applyMapping(sp_field_mapping)
 
-        #Set current spatial field in the combobox
-        self.set_current_spatial_field(sp_column_name)
-        
-        return styleEditor  
+            self.tbFieldProperties.addTab(styleEditor, sp_column_name)
+
+            #Add column name and corresponding widget to the collection
+            self._editorMappings[sp_column_name] = styleEditor
+
+            #Set current spatial field in the combobox
+            self.set_current_spatial_field(sp_column_name)
+
+            return styleEditor
     
     def _build_symbol_widget(self, sp_field_mapping):
         """
