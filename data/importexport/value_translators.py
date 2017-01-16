@@ -33,6 +33,7 @@ from PyQt4.QtCore import (
     QFile
 )
 
+from sqlalchemy import func
 from sqlalchemy.schema import (
     Table,
     MetaData
@@ -162,7 +163,7 @@ class SourceValueTranslator(object):
     def add_source_reference_column(self, source_column, ref_table_column):
         """
         Append the source column name and the matched reference table name
-        whose value will be participate in deducing the value for the
+        whose value will participate in deducing the value for the
         referencing column.
         :param source_column: Source table column name
         :type source_column: str
@@ -422,6 +423,68 @@ class RelatedTableTranslator(SourceValueTranslator):
             return getattr(link_table_rec, self._output_referenced_column, IgnoreType())
 
 
+class LookupValueTranslator(RelatedTableTranslator):
+    """
+    Translator for lookup values.
+    """
+    def __init__(self, **kwargs):
+        super(LookupValueTranslator, self).__init__()
+
+        self.default_value = kwargs.get('default', '')
+        self._lk_value_column = 'value'
+
+    def referencing_column_value(self, field_values):
+        """
+        Searches a corresponding record from the linked table using one or more
+        pairs of field names and their corresponding values.
+        :param field_values: Pair of field names and corresponding values i.e.
+        {field1:value1, field2:value2, field3:value3...}
+        :type field_values: dict
+        :return: Value of the referenced column in the linked table.
+        :rtype: object
+        """
+        if not self._referenced_table:
+            msg = QApplication.translate(
+                'LookupValueTranslator',
+                'Lookup table has not been set.'
+            )
+            raise ValueError(msg)
+
+        if len(field_values) == 0:
+            return IgnoreType
+
+        source_column = field_values.keys()[0]
+
+        # Check if the source column is in the field_values
+        if not source_column in field_values:
+            return IgnoreType
+
+        # Assume the source column is the first (and only) one in field_values
+        source_column = field_values.keys()[0]
+        lookup_value = field_values.get(source_column)
+
+        # Create lookup table object
+        lookup_table = self._table(self._referenced_table)
+
+        lk_value_column_obj = getattr(lookup_table.c, self._lk_value_column)
+
+        # Get corresponding lookup value record
+        lookup_rec = self._db_session.query(lookup_table).filter(
+            func.lower(lk_value_column_obj) == func.lower(lookup_value)
+        ).first()
+
+        # Use default value if record is empty
+        if lookup_rec is None and self.default_value:
+            lookup_rec = self._db_session.query(lookup_table).filter(
+                lk_value_column_obj == self.default_value
+            ).first()
+
+        if lookup_rec is None:
+            return IgnoreType()
+
+        return getattr(lookup_rec, 'id', IgnoreType())
+
+
 class MultipleEnumerationTranslator(SourceValueTranslator):
     """
     This class translates enumeration values from a source column separated by
@@ -642,11 +705,11 @@ class SourceDocumentTranslator(SourceValueTranslator):
 
         source_column = field_values.keys()[0]
 
-        #Check if the source column is in the field_values
+        # Check if the source column is in the field_values
         if not source_column in field_values:
             return IgnoreType
 
-        #Get file name
+        # Get file name
         doc_file_name = field_values.get(source_column)
 
         if not doc_file_name:
@@ -668,10 +731,10 @@ class SourceDocumentTranslator(SourceValueTranslator):
             if not d:
                 continue
 
-            #Normalize slashes
+            # Normalize slashes
             d_name = d.replace('\\','/').strip()
 
-            #Build absolute document path
+            # Build absolute document path
             abs_doc_path = u'{0}/{1}'.format(self.source_directory, d_name)
 
             if not QFile.exists(abs_doc_path):
@@ -684,16 +747,16 @@ class SourceDocumentTranslator(SourceValueTranslator):
 
                 raise IOError(msg)
 
-            #Upload supporting document
+            # Upload supporting document
             self.source_document_manager.insertDocumentFromFile(
                 abs_doc_path,
                 self.document_type_id,
                 self.entity
             )
 
-        #Move file to 'uploaded' directory
+        # Move file to 'uploaded' directory
 
-        #Documents are handles by the source document manager so we just
+        # Documents are handles by the source document manager so we just
         # instruct the system to ignore the return value
         return IgnoreType
 
