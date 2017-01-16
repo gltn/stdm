@@ -98,7 +98,9 @@ class LayerSelectionHandler:
 
             selected_features = self.layer.selectedFeatures()
             features = []
-            field_names = [field.name() for field in self.layer.pendingFields()]
+            field_names = [
+                field.name()
+                for field in self.layer.pendingFields()]
             for feature in selected_features:
                 if 'id' in field_names:
                     features.append(feature['id'])
@@ -156,7 +158,9 @@ class LayerSelectionHandler:
             )
             QMessageBox.critical(
                 self.iface.mainWindow(),
-                QApplication.translate('DetailsTreeView', 'Feature Details Error'),
+                QApplication.translate(
+                    'DetailsTreeView', 'Feature Details Error'
+                ),
                 no_layer_msg
             )
 
