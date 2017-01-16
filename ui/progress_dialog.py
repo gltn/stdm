@@ -59,7 +59,7 @@ class STDMProgressDialog(QProgressDialog):
 
         self.setCancelButton(None)
 
-    def progress_message(self, message, val):
+    def progress_message(self, message, val=None):
         """
         Shows progress message in the progress bar.
         :param message: Add a text if needed.
@@ -68,14 +68,17 @@ class STDMProgressDialog(QProgressDialog):
         :type val: String
 
         """
-        text = '{0} {1}...'.format(message, val)
+        if val is None:
+            text = '{0} ...'.format(message)
+        else:
+            text = '{0} {1}...'.format(message, val)
         self.setLabelText(
             QApplication.translate(
                 'STDMProgressDialog',
                 text
             )
-
         )
+        print text
 
     def closeEvent(self, event):
         title = self.tr('Interruption Error')
