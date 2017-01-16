@@ -39,6 +39,9 @@ from migrate.changeset.constraint import CheckConstraint
 from geoalchemy2 import Geometry
 
 from stdm.data.configuration.db_items import DbItem
+from stdm.data.pg_utils import (
+    drop_cascade_column
+)
 
 LOGGER = logging.getLogger('stdm')
 
@@ -160,7 +163,9 @@ def _update_col(column, table, data_type, columns):
         # Ensure the column exists before dropping
         if column.name in columns:
             _clear_ref_in_entity_relations(column)
-            alchemy_column.drop(table=table)
+            # Use drop cascade command
+            drop_cascade_column(column.entity.name, column.name)
+            #alchemy_column.drop(table=table)
 
     # Ensure column is added to the table
     if alchemy_column.table is None:

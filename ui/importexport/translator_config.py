@@ -28,6 +28,7 @@ from stdm.data.importexport.value_translators import SourceValueTranslator
 
 from stdm.ui.importexport.related_table_dialog import RelatedTableDialog
 from stdm.ui.importexport.source_document_dialog import SourceDocumentTranslatorDialog
+from stdm.ui.importexport.lookup_dialog import LookupDialog
 from stdm.ui.importexport.multiple_enumeration_dialog import MultipleEnumerationDialog
 
 class ValueTranslatorConfig(object):
@@ -82,6 +83,7 @@ class RelatedTableTranslatorConfig(ValueTranslatorConfig):
 
 RelatedTableTranslatorConfig.register()
 
+
 class SourceDocumentTranslatorConfig(ValueTranslatorConfig):
     """
     Configuration for the SourceDocumentTranslator widget.
@@ -100,6 +102,26 @@ class SourceDocumentTranslatorConfig(ValueTranslatorConfig):
         )
 
 SourceDocumentTranslatorConfig.register()
+
+
+class LookupTranslatorConfig(ValueTranslatorConfig):
+    """
+    Configuration for the SourceDocumentTranslator widget.
+    """
+    key = QApplication.translate("LookupTranslatorConfig",
+                                 "Lookup values")
+
+    @staticmethod
+    def create(parent, source_cols, dest_table, dest_col, src_col):
+        return LookupDialog(
+            parent,
+            source_cols,
+            dest_table,
+            dest_col,
+            src_col
+        )
+
+LookupTranslatorConfig.register()
 
 '''
 class MultipleEnumerationTranslatorConfig(ValueTranslatorConfig):
