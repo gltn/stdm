@@ -49,7 +49,8 @@ from .nodes import (
     EntityNode,
     NoSTRNode,
     SpatialUnitNode,
-    STRNode
+    STRNode,
+    InvalidSTRNode
 )
 
 class STRNodeFormatter(object):
@@ -405,7 +406,16 @@ class EntityNodeFormatter(STRNodeFormatter):
         else:
             return EntityNode
 
-    def root(self):
+    def root(self, valid_str_ids=None):
+        """
+        Root method shows the different tree nodes based on data.
+
+        :param valid_str_ids: List of valid str nodes
+        within the validity period.
+        :type valid_str_ids: List
+        :return:
+        :rtype:
+        """
         for ed in self._data:
             disp_mapping = self._format_display_mapping(ed,
                                                         self._config.displayColumns,
@@ -425,14 +435,31 @@ class EntityNodeFormatter(STRNodeFormatter):
 
                 else:
                     for s in str_entities:
+                        # if no validity period is specified
+                        if valid_str_ids is None:
 
-                        str_node = self._create_str_node(entity_node, s,
-                                                         isChild=True,
-                                                         header=self._str_title)
-
+                            str_node = self._create_str_node(
+                                entity_node, s,
+                                isChild=True,
+                                header=self._str_title
+                            )
+                        # if validity period is specified
+                        else:
+                            # the str is within the validity period specified
+                            if s.id in valid_str_ids:
+                                str_node = self._create_str_node(
+                                    entity_node, s,
+                                    isChild=True,
+                                    header=self._str_title
+                                )
+                            # if the str is not valid, show invalid STR
+                            else:
+                                no_str_node = InvalidSTRNode(entity_node)
 
             else:
-                #The parent node now refers to STR data so we render accordingly
+                # The parent node now refers to STR data so we render accordingly
                 str_node = self._create_str_node(self.rootNode, ed)
+
+
 
         return self.rootNode

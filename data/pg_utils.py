@@ -695,3 +695,39 @@ def drop_view(view_name):
     except SQLAlchemyError:
 
         return False
+
+def copy_from_column_to_another(table, source, destination):
+
+    sql = 'UPDATE {0} SET {1} = {2};'.format(table, destination, source)
+    t = text(sql)
+    result = _execute(t)
+    print dir(result)
+
+def remove_constraint(child, child_col):
+    # Validate that the referenced columns exist in the respective tables.
+    # Parent table
+    constraint = '{}_{}_fkey'.format(child, child_col)
+    sql = 'ALTER TABLE IF EXISTS {} DROP CONSTRAINT {};'.format(
+        child, constraint
+    )
+    t = text(sql)
+    _execute(t)
+def add_constraint(child_table, child_column, parent_table):
+    # Validate that the referenced columns exist in the respective tables.
+    # Parent table
+    remove_constraint(child_table, child_column)
+    sql = 'ALTER TABLE {0} ' \
+          'ADD CONSTRAINT {0}_{1}_fkey FOREIGN KEY ({1}) ' \
+          'REFERENCES {2} (id) MATCH SIMPLE ' \
+          'ON UPDATE NO ACTION ON DELETE NO ACTION;'.format(
+                child_table, child_column, parent_table
+    )
+    t = text(sql)
+    _execute(t)
+
+def drop_column(table, column):
+    sql = 'ALTER TABLE {} DROP COLUMN {} CASCADE;'.format(
+        table, column
+    )
+    t = text(sql)
+    _execute(t)

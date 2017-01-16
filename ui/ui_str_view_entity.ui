@@ -22,6 +22,15 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
+     <property name="documentMode">
+      <bool>false</bool>
+     </property>
+     <property name="tabsClosable">
+      <bool>false</bool>
+     </property>
+     <property name="movable">
+      <bool>false</bool>
+     </property>
      <widget class="QWidget" name="filter">
       <attribute name="icon">
        <iconset resource="../resources.qrc">
@@ -63,6 +72,53 @@
           </size>
          </property>
         </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="validity">
+      <attribute name="icon">
+       <iconset resource="../resources.qrc">
+        <normaloff>:/plugins/stdm/images/icons/period_blue.png</normaloff>:/plugins/stdm/images/icons/period_blue.png</iconset>
+      </attribute>
+      <attribute name="title">
+       <string>Validity Period</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Validity from</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDateEdit" name="validity_from_date">
+           <property name="calendarPopup">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QLabel" name="lable_3">
+           <property name="text">
+            <string>to</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDateEdit" name="validity_to_date">
+           <property name="calendarPopup">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>

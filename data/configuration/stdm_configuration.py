@@ -38,7 +38,7 @@ class StdmConfiguration(QObject):
     information is grouped into profiles, where only one profile instance can
     be active in the system.
     """
-    VERSION = 1.2
+    VERSION = 1.3
     profile_added = pyqtSignal(Profile)
     profile_removed = pyqtSignal(unicode)
 

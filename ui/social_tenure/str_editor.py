@@ -50,6 +50,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
 
     partyInit = pyqtSignal()
     spatialUnitInit = pyqtSignal()
+    validity_init = pyqtSignal()
     docsInit = pyqtSignal()
     strTypeUpdated = pyqtSignal()
     shareUpdated = pyqtSignal(list, QDoubleSpinBox)
@@ -75,6 +76,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
         self.party_count = OrderedDict()
         self.current_profile = current_profile()
         self.social_tenure = self.current_profile.social_tenure
+
         self.parties = self.social_tenure.parties
 
         if len(self.parties) > 0:
@@ -97,7 +99,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
         self.str_type_component = None
         # TODO use the first party entity among many, if many or the only one
         QTimer.singleShot(22, self.init_party_component)
-        self.init_validity_period_component()
+
         self.copied_party_row = OrderedDict()
         self.init_str_editor()
 
@@ -243,7 +245,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
         """
         self.entity_combo_label = QLabel()
         combo_text = QApplication.translate(
-            'InitSTREditor', 'Select a Party Entity: '
+            'InitSTREditor', 'Select a party entity'
         )
         self.entity_combo_label.setText(combo_text)
         self.entity_combo_label.setParent(self)
@@ -378,7 +380,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
             return
         self.validity_period_component = ValidityPeriod(self)
         self.validity_period_signals()
-
+        self.validity_init.emit()
 
     def init_str_type_signal(self, data_store, party_id, str_number):
         """
@@ -439,8 +441,12 @@ class InitSTREditor(QDialog, Ui_STREditor):
                 str_number, party_id, current_row = \
                     self.extract_from_object_name(spinbox)
                 if party_id in data_store.share.keys():
+
                     self.blockSignals(True)
-                    spinbox.setValue(data_store.share[party_id])
+                    if data_store.share[party_id] is None:
+                        spinbox.setValue(100.00)
+                    else:
+                        spinbox.setValue(data_store.share[party_id])
                     self.blockSignals(False)
 
                 else:
@@ -450,11 +456,23 @@ class InitSTREditor(QDialog, Ui_STREditor):
                     data_store.share[party_id] = 100.00 / row_count
 
     def execute_spinbox_update(self, spinboxes, current_spinbox):
+        """
+        Update other spinbox values based on the current spinbox.
+        :param spinboxes: All spinbox in the table.
+        :type spinboxes: List
+        :param current_spinbox: The current spinbox with value change.
+        :type current_spinbox: QDoubleSpinBox
+        :return: The next spinbox with value that will change
+        :rtype: QDoubleSpinBox
+        """
         str_number, party_id, current_row = \
             self.extract_from_object_name(current_spinbox)
         # print str_number, party_id, current_row
         if current_row is None:
             return None
+        if len(spinboxes) < 2:
+            return None
+
         next_spinbox = self.find_next_spinbox(current_row, spinboxes)
         spinbox_value_sum = 0
         for spinbox in spinboxes:
@@ -462,6 +480,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
                 spinbox_value_sum = spinbox_value_sum + spinbox.value()
         value_change = spinbox_value_sum - 100
         next_value = next_spinbox.value() - value_change
+
         #self.blockSignals(True)
         next_spinbox.setValue(next_value)
         #self.blockSignals(False)
@@ -474,7 +493,9 @@ class InitSTREditor(QDialog, Ui_STREditor):
         next_spinbox = self.execute_spinbox_update(
             spinboxes, current_spinbox
         )
-
+        # if next_spinbox is None:
+        #     return
+        #
         self.shareUpdated.emit(spinboxes, next_spinbox)
 
     def update_spinbox_when_zero(self, spinboxes, next_spinbox):
@@ -719,6 +740,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
         current_store = self.current_data_store()
         current_store.party.clear()
         current_store.str_type.clear()
+        current_store.share.clear()
 
 
     def update_str_type_data(self, index, data_store, party_id):
@@ -804,6 +826,7 @@ class BindSTREditor(InitSTREditor):
         self.notice.clear()
         self.component_container.setCurrentIndex(3)
         QTimer.singleShot(50, self.init_supporting_documents)
+        QTimer.singleShot(50, self.init_validity_period_component)
         self.top_description.setCurrentIndex(3)
 
         self.entity_combo.setHidden(True)
@@ -931,6 +954,15 @@ class ValidateSTREditor(SyncSTREditorData):
         SyncSTREditorData.__init__(self, plugin)
 
     def validate_page(self, current, previous):
+        """
+        Validates str components pages when tree item is clicked.
+        :param current: The newly clicked item index
+        :type current: QModelIndex
+        :param previous: The previous item index
+        :type previous: QModelIndex
+        :return:
+        :rtype:
+        """
         selected_item = self.tree_view_model.itemFromIndex(current)
         if selected_item is None:
             return
@@ -1235,9 +1267,7 @@ class STREditor(ValidateSTREditor):
         self._plugin = plugin
 
         self.str_editor_signals()
-        # self.validator = ValidateSTREditor(plugin)
-        # self.sync = SyncSTREditorData(plugin)
-        # self.bind = BindSTREditor(plugin)
+
         self.tree_view_signals()
 
     def str_editor_signals(self):
@@ -1317,7 +1347,7 @@ class STREditor(ValidateSTREditor):
 
     def set_validity_period_data(self, date):
         store = self.current_data_store()
-        if self.sender().objectName() == 'from_date':
+        if self.sender().objectName() == 'validity_from_date':
             store.validity_period['from_date'] = date
         else:
             store.validity_period['to_date'] = date
@@ -1454,7 +1484,10 @@ class EditSTREditor(STREditor):
             self.str_doc_edit_obj = str_edit_node[1]
 
         self.updated_str_obj = None
-
+        self.str_edit_dict = self.str_edit_obj.__dict__
+        self.party, self.party_column = self.current_party(
+            self.str_edit_dict
+        )
         title = QApplication.translate(
             'EditSTREditor',
             'Edit Social Tenure Relationship'
@@ -1467,45 +1500,73 @@ class EditSTREditor(STREditor):
         QTimer.singleShot(33, self.init_str_type_component)
         QTimer.singleShot(55, self.init_spatial_unit_component)
         QTimer.singleShot(77, self.init_supporting_documents)
+        QTimer.singleShot(80, self.init_validity_period_component)
 
         self.partyInit.connect(self.populate_party_str_store)
         self.spatialUnitInit.connect(self.populate_spatial_unit_store)
         self.docsInit.connect(self.populate_supporting_doc_store)
+        self.validity_init.connect(self.populate_validity_store)
+
+    def current_party(self, record):
+        """
+        Gets the current party column name in STR
+        table by finding party column with value
+        other than None.
+        :param record: The STR record or result.
+        :type record: Dictionary
+        :return: The party column name with value.
+        :rtype: String
+        """
+        parties = self.social_tenure.parties
+
+        for party in parties:
+            party_name = party.short_name.lower()
+            party_id = '{}_id'.format(party_name)
+            if record[party_id] != None:
+                return party, party_id
 
     def populate_party_str_store(self):
+
         party_model_obj = getattr(
             self.str_edit_obj, self.party.name
         )
-
+        self.data_store[1].party.clear()
         self.data_store[1].party[
-            self.str_edit_obj.party_id
+            self.str_edit_dict[self.party_column]
         ] = party_model_obj
         str_type_id = self.str_edit_obj.tenure_type
         self.data_store[1].str_type[
-            self.str_edit_obj.party_id
+            self.str_edit_dict[self.party_column]
         ] = str_type_id
-
+        tenure_share =  self.str_edit_obj.tenure_share
+        self.data_store[1].share[
+            party_model_obj.id
+        ] = tenure_share
         QTimer.singleShot(
-            40, lambda :self.populate_str_type(str_type_id)
+            40, lambda: self.populate_str_type(str_type_id)
         )
         self.party_component.party_fk_mapper.setSupportsList(False)
+
         self.set_party_active()
+        self.buttonBox.button(QDialogButtonBox.Save).setEnabled(True)
 
     def populate_str_type(self, str_type_id):
+
         self.init_str_type_component()
+        party_id = self.str_edit_dict[self.party_column]
         # populate str type column
         self.set_str_type_data(
             str_type_id,
-            self.str_edit_obj.party_id,
+            party_id,
             0
         )
         self.str_type_component.add_str_type_data(
-            self.copied_party_row[self.str_edit_obj.party_id],
+            self.copied_party_row[party_id],
             str_type_id,
             0
         )
         self.init_str_type_signal(
-            self.data_store[1], self.str_edit_obj.party_id
+            self.data_store[1], party_id, 1
         )
         doc_item = self.str_item(
             self.tenure_type_text, self.str_number
@@ -1529,6 +1590,7 @@ class EditSTREditor(STREditor):
         spatial_unit_model_obj = getattr(
             self.str_edit_obj, self.spatial_unit.name
         )
+        self.data_store[1].spatial_unit.clear()
 
         self.data_store[1].spatial_unit[
             self.str_edit_obj.spatial_unit_id
@@ -1536,6 +1598,19 @@ class EditSTREditor(STREditor):
 
         doc_item = self.str_item(
             self.spatial_unit_text, self.str_number
+        )
+
+        doc_item.setEnabled(True)
+
+    def populate_validity_store(self):
+        start_date = self.str_edit_obj.validity_start
+        end_date = self.str_edit_obj.validity_end
+        self.data_store[1].validity_period.clear()
+        self.data_store[1].validity_period['from_date'] = start_date
+        self.data_store[1].validity_period['to_date'] = end_date
+
+        doc_item = self.str_item(
+            self.validity_period_text, self.str_number
         )
 
         doc_item.setEnabled(True)
@@ -1602,6 +1677,8 @@ class EditSTREditor(STREditor):
         """
         store = self.current_data_store()
         store.str_type.clear()
+        store.share.clear()
+
         store.str_type[party_id] = str_type_id
         # store.share[party_id] =
         row_data = self.str_type_component.copy_party_table(
