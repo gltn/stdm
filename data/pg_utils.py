@@ -651,6 +651,32 @@ def drop_cascade_table(table_name):
         return False
 
 
+def drop_cascade_column(table_name, column):
+    """
+    Safely deletes the column contained in the given table using the CASCADE option.
+    :param table_name: Name of the database table.
+    :type table_name: str
+    :param column: Name of the column to delete.
+    :type column: str
+    :return: Returns True if the operation succeeded. otherwise False.
+    :rtype: bool
+    """
+    del_com = 'ALTER TABLE {0} DROP COLUMN IF EXISTS {1} CASCADE;'.format(
+        table_name,
+        column
+    )
+    t = text(del_com)
+
+    try:
+        _execute(t)
+
+        return True
+
+    #Error if the current user is not the owner.
+    except SQLAlchemyError:
+        return False
+
+
 def drop_view(view_name):
     """
     Deletes the database view with the given name. The CASCADE command option
