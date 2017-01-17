@@ -51,9 +51,11 @@ from stdm.ui.social_tenure.str_helpers import (
 )
 
 class ComponentUtility(QObject):
-    def __init__(self, box):
+    def __init__(self):
+        """
+        A utility class for STR components.
+        """
         super(ComponentUtility, self).__init__()
-        self.container_box = box
         self.current_profile = current_profile()
         self.social_tenure = self.current_profile.social_tenure
         self.parties = self.social_tenure.parties
@@ -65,6 +67,12 @@ class ComponentUtility(QObject):
         )
 
     def str_doc_models(self):
+        """
+        A getter method for entity model of STR model and
+        supporting document model.
+        :return: STR and supporting document models
+        :rtype: Tuple
+        """
         return self.str_model, self.str_doc_model
 
     def _create_fk_mapper(
@@ -94,15 +102,6 @@ class ComponentUtility(QObject):
 
         return fk_mapper
 
-
-    def _entity_groups(self, type='STR'):
-        if type == 'STR':
-            str_entities = [
-                self.current_profile.social_tenure.party,
-                self.current_profile.social_tenure.spatial_unit
-            ]
-            return str_entities
-
     def _load_entity_config(self, entity):
         """
         Creates an EntityConfig object from entity.
@@ -124,15 +123,9 @@ class ComponentUtility(QObject):
         else:
             return None
 
-    def clear_component(self):
-        if not self.container_box is None:
-            for widget in self.container_box.findChildren(QWidget):
-                if isinstance(widget, ForeignKeyMapper):
-                    widget.hide()
-
     def update_table_view(self, table_view, str_type):
         """
-        Updates a tableview by resizing row and headers
+        Updates a QTableView by resizing row and headers
         to content size and by hiding id columns
         :param table_view: The table view to be updated.
         :type table_view: QTableView
@@ -171,7 +164,19 @@ class ComponentUtility(QObject):
 
 class Party(ComponentUtility):
     def __init__(self, selected_party, box, party_layout, notification_bar):
-        ComponentUtility.__init__(self, box)
+        """
+        Handles the loading of party ForeignKeyMapper.
+        :param selected_party: The currently selected party entity.
+        :type selected_party: Object
+        :param box: The container widget of the component.
+        :type box: QWidget
+        :param party_layout: The layout containing the widget.
+        :type party_layout: QVBoxLayout
+        :param notification_bar: The NotificationBar object that
+        displays notification.
+        :type notification_bar: Object
+        """
+        ComponentUtility.__init__(self)
         self.container_box = box
         self.party_layout = party_layout
         self.notification_bar = notification_bar
@@ -182,10 +187,9 @@ class Party(ComponentUtility):
     def init_party(self):
         """
         Initialize the party page
-        :returns:None
-        :rtype: NoneType
+        :returns:
+        :rtype:
         """
-        #if index is None:
 
         if self.selected_party is None:
             entity_config = self._load_entity_config(self.party_1)
@@ -202,8 +206,19 @@ class Party(ComponentUtility):
         self.party_layout.addWidget(self.party_fk_mapper)
 
 class SpatialUnit(ComponentUtility):
+
     def __init__(self, box, mirror_map, notification_bar):
-        ComponentUtility.__init__(self, box)
+        """
+        Handles the loading of spatial ForeignKeyMapper and the preview map.
+        :param box: The container widget of the component.
+        :type box: QWidget
+        :param mirror_map: The preview map object.
+        :type mirror_map: Object
+        :param notification_bar: The NotificationBar object that
+        displays notification.
+        :type notification_bar: Object
+        """
+        ComponentUtility.__init__(self)
         self.container_box = box
         self.notification_bar = notification_bar
         self.mirror_map = mirror_map
@@ -215,8 +230,8 @@ class SpatialUnit(ComponentUtility):
     def init_spatial_unit(self):
         """
         Initialize the spatial_unit page
-        :returns:None
-        :rtype: NoneType
+        :returns:
+        :rtype:
         """
         entity_config = self._load_entity_config(self.spatial_unit)
         self.spatial_unit_fk_mapper = self._create_fk_mapper(
@@ -229,7 +244,8 @@ class SpatialUnit(ComponentUtility):
     def draw_spatial_unit(self, model):
         """
         Render the geometry of the given spatial unit in the spatial view.
-        :param row_id: Sqlalchemy object representing a feature.
+        :param model:SQLAlchemy object representing a feature.
+        :type model: SQLAlchemy model object
         """
         self._notify_no_base_layers()
         self.mirror_map.draw_spatial_unit(model)
@@ -252,7 +268,21 @@ class SpatialUnit(ComponentUtility):
 
 class STRType(ComponentUtility):
     def __init__(self, container_widget, box, notification_bar, party=None):
-        ComponentUtility.__init__(self, box)
+        """
+        Handles the STR type component for loading tenure type and share
+        widgets in a QTableView.
+        :param container_widget: The container widget for the component.
+        :type container_widget: QWidget
+        :param box: The layout holding the container widget.
+        :type box: QVBoxLayout
+        :param notification_bar: The NotificationBar object that
+        displays notification.
+        :type notification_bar: Object
+        :param party: The party entity from with STR type component rows are
+        populated. By default, if None, the first party component is used.
+        :type party: Object
+        """
+        ComponentUtility.__init__(self)
         self.container_widget = container_widget
         self.container_box = box
         self.notification_bar = notification_bar
@@ -272,15 +302,17 @@ class STRType(ComponentUtility):
         :type row_data: List
         :param str_type_id: The str Type ID
         :type str_type_id: Integer
+        :param insert_row: The row in which the STR type row is is added.
+        :type insert_row: Integer
         :return:
         :rtype:
         """
         data = [None, None] + row_data
         self.str_type_data.append(data)
         self.str_type_table.add_widgets(str_type_id, insert_row)
-        #self.str_type_table.add_share_box(insert_row)
+
         self.update_table_view(self.str_type_table, True)
-       # self.enable_str_type_widgets(insert_row)
+
         self.str_type_table.model().layoutChanged.emit()
         ## select the first column (STR Type)
         self.str_type_table.frozen_table_view.selectColumn(0)
@@ -308,7 +340,7 @@ class STRType(ComponentUtility):
 
     def add_str_type_headers(self):
         """
-        Adds headers data for tableview columns. The
+        Adds headers data for QTableView columns. The
         headers comes from the selected entity.
         :param entity: The entity for which the table
         header is created for.
@@ -397,8 +429,8 @@ class STRType(ComponentUtility):
 
     def str_type_combobox(self):
         """
-        Gets str type comboboxes.
-        :return: A list containing a list comboboxes
+        Gets str type QComboBox.
+        :return: A list containing a STR type QComboBox
         :rtype: List
         """
         frozen_table = self.str_type_table.frozen_table_view
@@ -420,8 +452,8 @@ class STRType(ComponentUtility):
         """
         Removes corresponding social tenure type
         row when a party row is removed.
-        :param rows: Party row position that is removed.
-        :type rows: integer
+        :param rows: List of party row position that is removed.
+        :type rows: List
         :returns: None
         :rtype: NoneType
         """
@@ -431,7 +463,19 @@ class STRType(ComponentUtility):
 class SupportingDocuments(ComponentUtility):
     onUploadDocument = pyqtSignal(list)
     def __init__(self, box, combobox, add_documents_btn, notification_bar):
-        ComponentUtility.__init__(self, box)
+        """
+        Handles the supporting documents component loading.
+        :param box: The layout holding the container widget.
+        :type box: QVBoxLayout
+        :param combobox: The combobox loading supporting document types.
+        :type combobox: QComboBox
+        :param add_documents_btn: The add supporting document button
+        :type add_documents_btn: QPushButton
+        :param notification_bar: The NotificationBar object that displays
+        notification.
+        :type notification_bar: Object
+        """
+        ComponentUtility.__init__(self)
         self.container_box = box
         self.doc_type_cbo = combobox
         self.notification_bar = notification_bar
@@ -464,10 +508,22 @@ class SupportingDocuments(ComponentUtility):
         )
 
     def party_count(self, count):
+        """
+        A setter for current_party_count that is used to determined
+        the number of copies for each supporting document.
+        :param count: The number of currently added party records.
+        :type count: Integer
+        :return:
+        :rtype:
+        """
         self.current_party_count = count
 
     def create_doc_tab_populate_combobox(self):
-
+        """
+        Creates the supporting document component widget.
+        :return:
+        :rtype:
+        """
         self.doc_tab_data()
         self.docs_tab = QTabWidget()
         self.docs_tab_index = OrderedDict()
@@ -531,6 +587,11 @@ class SupportingDocuments(ComponentUtility):
                 self.doc_type_cbo.addItem(doc, id)
 
     def doc_tab_data(self):
+        """
+        Sets the document types in the social tenure entity.
+        :return:
+        :rtype:
+        """
         doc_entity = self.social_tenure. \
             supporting_doc.document_type_entity
         doc_type_model = entity_model(doc_entity)
@@ -540,9 +601,6 @@ class SupportingDocuments(ComponentUtility):
                           for doc in doc_type_list
                           ]
         self.doc_types = OrderedDict(self.doc_types)
-
-
-
 
     def match_doc_combo_to_tab(self):
         """
@@ -566,11 +624,29 @@ class SupportingDocuments(ComponentUtility):
         doc_tab_index = self.docs_tab.currentIndex()
         self.doc_type_cbo.setCurrentIndex(doc_tab_index)
 
-    def hide_doc_widgets(self, widget, visibility):
+    @staticmethod
+    def hide_doc_widgets(widget, visibility):
+        """
+        Hides or shows the visibility of the supporting document
+        container widgets.
+        :param widget: The widget to which the visibility is set.
+        :type widget: QWidget
+        :param visibility: A boolean to show or hide visibility.
+        True hides widget and False shows it.
+        :type visibility: Boolean
+        :return:
+        :rtype:
+        """
         widget.setHidden(visibility)
 
     def update_container(self, str_number):
-        ##TODO add a remove method or code block here
+        """
+        Update the current supporting document widget container to be used.
+        :param str_number: The STR node number
+        :type str_number: Integer
+        :return:
+        :rtype:
+        """
         doc_text = self.doc_type_cbo.currentText()
         cbo_index = self.doc_type_cbo.currentIndex()
         doc_id = self.doc_type_cbo.itemData(cbo_index)
@@ -627,6 +703,16 @@ class SupportingDocuments(ComponentUtility):
         )
 
     def hide_all_other_widget(self, doc_text, str_number):
+        """
+        Hides all other supporting document widget except the current
+        STR node widget.
+        :param doc_text: The current document type selected.
+        :type doc_text: String
+        :param str_number: The STR node number
+        :type str_number: Integer
+        :return:
+        :rtype:
+        """
         expression = QRegExp('doc_widget*')
         # hide all existing widgets in all layouts
         for widget in self.docs_tab.findChildren(QWidget, expression):
@@ -667,10 +753,13 @@ class SupportingDocuments(ComponentUtility):
             self.onUploadDocument.emit(model_objs)
 
     def select_file_dialog(self, title):
-        '''
-        Displays a file dialog for a user
-        to specify a source document
-        '''
+        """
+        Displays a file dialog for a user to specify a source document
+        :param title: The title of the file dialog
+        :type title: String
+        :return:
+        :rtype:
+        """
         #Get last path for supporting documents
         last_path = last_document_path()
         if last_path is None:
@@ -686,6 +775,11 @@ class SupportingDocuments(ComponentUtility):
 
 class ValidityPeriod():
     def __init__(self, str_editor):
+        """
+        Handles the validity period component logic.
+        :param str_editor: The STREditor object.
+        :type str_editor: Object
+        """
         self.str_editor = str_editor
         self.from_date =  self.str_editor.validity_from_date
         self.to_date = self.str_editor.validity_to_date
@@ -729,6 +823,12 @@ class ValidityPeriod():
         )
 
     def adjust_to_year(self):
+        """
+        Adjusts the date range based on years using the numbers
+        specified in the tenure duration spinbox.
+        :return:
+        :rtype:
+        """
         duration = self.str_editor.tenure_duration.value()
         before_date = self.to_date.date().currentDate()
 
@@ -739,8 +839,13 @@ class ValidityPeriod():
         )
         self.to_date.setDate(after_date)
 
-
     def adjust_to_month(self):
+        """
+        Adjusts the date range based on month using the numbers
+        specified in the tenure duration spinbox.
+        :return:
+        :rtype:
+        """
         duration = self.str_editor.tenure_duration.value()
         before_date = self.from_date.date()
         after_date = self.add_months(
@@ -748,7 +853,18 @@ class ValidityPeriod():
         )
         self.to_date.setDate(after_date)
 
-    def add_months(self, source_date, months):
+    @staticmethod
+    def add_months(source_date, months):
+        """
+        Adds months on a date.
+        :param source_date: The date on which the months are
+        going to be added
+        :type source_date: date
+        :param months: The number of months to be added
+        :type months: Integer
+        :return: The new date with the added months
+        :rtype: date
+        """
         month = source_date.month() - 1 + months
         year = int(source_date.year() + month / 12)
         month = month % 12 + 1
@@ -814,6 +930,12 @@ class ValidityPeriod():
         self.to_date.setMinimumDate(self.from_date.date())
 
     def set_range_from_date(self):
+        """
+        Sets the date rage on start date of the validity period as
+        specified in the configuration.
+        :return:
+        :rtype:
+        """
         minimum_date = self.social_tenure.validity_start_column.minimum
         maximum_date = self.social_tenure.validity_start_column.maximum
 
@@ -823,8 +945,8 @@ class ValidityPeriod():
 
     def set_range_to_date(self):
         """
-        Sets the the range of the start and end date using
-        ranges specified in the configuration.
+        Sets the date rage on end date of the validity period date as
+        specified in the configuration.
         :return:
         :rtype:
         """
@@ -834,5 +956,3 @@ class ValidityPeriod():
         self.to_date.setDateRange(
             minimum_date, maximum_date
         )
-
-

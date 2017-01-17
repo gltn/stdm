@@ -1125,7 +1125,7 @@ class SyncSTREditorData(BindSTREditor):
         party_count = len(data_store.party)
         # update party count
         self.supporting_doc_component.party_count(party_count)
-        # update the current widget container widget to be used.
+        # update the current widget container to be used.
         self.supporting_doc_component.update_container(str_number)
 
     def toggle_validity_period(self, data_store, str_number):
