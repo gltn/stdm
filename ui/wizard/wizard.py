@@ -463,16 +463,30 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         return True, self.tr("Ok")
 
-    def index_party_table(self):
+    def index_party_table(self,  profile, model):
         """
-        Returns an index of the selected party unit
+        Returns an index of the selected party unit in STR
+        :param profile: current selected profile
+        :type profile: Profile
+        :param model: custom entities model for views
+        :type model: EntitiesModel
         """
-        for index, entity in enumerate(self.entity_model.entities().values()):
-            if entity.has_geometry_column():
-                continue
-            else:
-                return index
-        return 0
+        index = 0
+        # first look if STR has been set for current profile, return 
+        # index of the set party
+        if not profile.social_tenure.party is None:
+            party_name = profile.social_tenure.party.short_name
+            items = model.findItems(party_name)
+            if len(items) > 0:
+                index = items[0].row()
+        else:
+            for idx, entity in enumerate(self.entity_model.entities().values()):
+                if entity.has_geometry_column():
+                    continue
+                else:
+                    index = idx
+                    break
+        return index 
 
 
     def index_spatial_unit_table(self, profile, model):
@@ -738,7 +752,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             curr_profile = self.current_profile()
 
-            idx1 = self.index_party_table()
+            idx1 = self.index_party_table(curr_profile, self.entity_model)
             self.cboParty.setCurrentIndex(idx1)
 
             idx = self.index_spatial_unit_table(
@@ -1392,11 +1406,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if name in self.new_profiles:
             enable_drag_sort(self.tbvColumns)
             enable_drag_sort(self.lvLookupValues)
-            enable_drag_sort(self.pftableView)
         else:
             self.tbvColumns.setDragEnabled(False)
             self.lvLookupValues.setDragEnabled(False)
-            self.pftableView.setDragEnabled(False)
 
     def refresh_entity_view(self):
         self.clear_view_model(self.entity_model)
