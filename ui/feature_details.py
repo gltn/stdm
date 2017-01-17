@@ -94,8 +94,6 @@ class LayerSelectionHandler:
         :return: Dictionary
         """
         if self.stdm_layer(self.layer):
-           # try:
-
             selected_features = self.layer.selectedFeatures()
             features = []
             field_names = [
@@ -168,7 +166,7 @@ class LayerSelectionHandler:
         """
         Check whether the layer is feature layer or not.
         :param active_layer: The layer to be checked
-        :type QGIS vectorlayer
+        :type QGIS VectorLayer
         :return: Boolean
         """
         layer_source = self.get_layer_source(active_layer)
