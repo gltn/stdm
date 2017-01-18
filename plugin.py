@@ -1039,7 +1039,7 @@ class STDMQGISLoader(object):
         QComboBox {
                 border: 2px solid #4b85ca;
                 border-radius: 0px;
-                padding: 1px 18px 1px 3px;
+                padding: 1px 3px 1px 3px;
                 min-width: 6em;
             }
          QComboBox:editable {
