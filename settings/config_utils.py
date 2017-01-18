@@ -1,5 +1,5 @@
 import os
-
+from collections import OrderedDict
 import datetime
 from PyQt4.QtCore import QFile
 from PyQt4.QtXml import QDomDocument
@@ -8,14 +8,19 @@ from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.configfile_paths import FilePaths
 
 
-class ConfigUtils():
-    def __init__(self, stc_file):
+class ConfigurationUtils():
+    PROFILE = 'Profile'
+    SOCIAL_TENURE = 'SocialTenure'
+    CONFIGURATION = 'Configuration'
+
+    def __init__(self, document):
 
         self.file_handler = FilePaths()
         self.log_file_path = '{}/logs/migration.log'.format(
             self.file_handler.localPath()
         )
-        self.read_stc(stc_file)
+        self.document = document
+        #self.read_stc(stc_file)
 
     def append_log(self, info):
         """
@@ -135,6 +140,50 @@ class ConfigUtils():
         """
         nodes = self.find_node(node_name)
         self.add_attribute_to_nodes(nodes, attr, value)
+
+    def profile_first_child(self, tag_name):
+        """
+        Gets the first child of profile node
+        with a specified tag name.
+        :param tag_name: The tag name to be used
+        to search the child.
+        :type tag_name: String
+        :return: Dictionary of parent (profile node) and
+        the child element.
+        :rtype: OrderedDict
+        """
+        profile_nodes = self.find_node(self.PROFILE)
+        first_child = OrderedDict()
+        for profile_node in profile_nodes:
+            profile_child = profile_node.firstChildElement(
+                tag_name
+            )
+            first_child[profile_node] = profile_child
+        return first_child
+
+    def profile_element(self):
+        config_nodes = self.find_node(self.CONFIGURATION)
+        if len(config_nodes) < 1:
+            return None
+        config_node = config_nodes[0]
+        print config_node.firstChildElement(self.PROFILE)
+
+
+
+
+
+
+    def social_tenure_elements(self):
+        """
+        Get all social tenure element in a dom_document.
+        :return: List of social tenure element
+        :rtype: OrderedDict
+        """
+        social_tenure_nodes = self.profile_first_child(
+            self.SOCIAL_TENURE
+        )
+        return social_tenure_nodes
+
 
     def run(self):
         nodes = self.find_node('Entity')

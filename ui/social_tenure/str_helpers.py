@@ -38,24 +38,10 @@ class STRTypeDelegate(QItemDelegate):
         :rtype:
         """
         QItemDelegate.__init__(self, parent)
-        #self.row = 0
         self.str_type_id = str_type_id
         self.curr_profile = current_profile()
 
         self.social_tenure = self.curr_profile.social_tenure
-
-    # def str_type_combo (self):
-    #     """
-    #     A slot raised to add new str type
-    #     matched with the party.
-    #     :return: None
-    #     """
-    #     str_type_cbo = QComboBox()
-    #     str_type_cbo.setObjectName(
-    #         'STRTypeCbo'+str(self.row+1)
-    #     )
-    #     self.row = self.row + 1
-    #     return str_type_cbo
 
     def str_type_set_data(self):
         """
@@ -129,10 +115,6 @@ class STRTypeDelegate(QItemDelegate):
                 widget.blockSignals(True)
                 widget.setCurrentIndex(value[0])
                 widget.blockSignals(False)
-        # if index.column() == 1:
-        #     widget.blockSignals(True)
-        #     widget.setValue(100.00)
-        #     widget.blockSignals(False)
 
     def setModelData(self, editor, model, index):
         """
