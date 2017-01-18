@@ -514,6 +514,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         self.feature_str_model = {}
         self.removed_feature = None
         self.selected_root = None
+        self.party_items = {}
         self.model = QStandardItemModel()
         self.view.setModel(self.model)
         self.view.setUniformRowHeights(True)
@@ -584,7 +585,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             self.close_dock(self.plugin.feature_details_act)
             self.feature_details = None
             return
-        # if the selected layer is not an stdm layer,
+        # if the selected layer is not an STDM layer,
         # show not feature layer.
         if not self.stdm_layer(self.layer):
             if button_clicked and self.isHidden():
@@ -671,6 +672,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         if self.removed_feature is None:
             self.str_models.clear()
             self.feature_models.clear()
+            self.party_items.clear()
         else:
             self.removed_feature = None
         features = self.selected_features()
@@ -915,9 +917,11 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 party, party_id = self.current_party(record_dict)
 
                 if i == len(self.formatted_record) - 1:
-                    self.add_party_child(
+                    party_root = self.add_party_child(
                         str_root, party, record_dict[party_id]
                     )
+                    self.party_items[party_root] = party
+
         self.feature_str_model[feature_id] = self.str_models.keys()
 
     def add_party_steam(self, parent, party_entity, party_id):
@@ -953,8 +957,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :type party_entity: Object
         :param party_id: The id of the party
         :type party_id: Integer
-        :return:
-        :rtype:
+        :return: The party root item
+        :rtype: QStandardItem
         """
         db_model = entity_id_to_model(party_entity, party_id)
         self.party_models[party_id] = db_model
@@ -967,9 +971,10 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             party_child = QStandardItem('{}: {}'.format(col, row))
             party_child.setSelectable(False)
             party_root.appendRow([party_child])
+        return party_root
 
     @staticmethod
-    def set_bold(self, standard_item):
+    def set_bold(standard_item):
         """
         Make a text of QStandardItem to bold.
         :param standard_item: QStandardItem
@@ -1158,10 +1163,9 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 data_error
             )
             return
-        str_model = self.str_models[id]
-        str_model_dict = str_model.__dict__
-        party, party_id = self.current_party(str_model_dict)
+        # STR steam - edit social tenure relationship
         if item.text() == 'Social Tenure Relationship':
+            str_model = self.str_models[item.data()]
             documents = self._supporting_doc_models(
                 self.social_tenure.name, str_model
             )
@@ -1170,8 +1174,9 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             feature_edit = False
             edit_str = EditSTREditor(node_data)
             status = edit_str.exec_()
-
-        elif item.text() == format_name(party.short_name):
+        # party steam - edit party
+        elif item in self.party_items.keys():
+            party = self.party_items[item]
             feature_edit = False
 
             model = self.party_models[id]
@@ -1179,6 +1184,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 party, model, self.iface.mainWindow()
             )
             editor.exec_()
+         # Edit spatial entity
         else:
             model = self.feature_models[id]
 
@@ -1186,7 +1192,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 entity, model, self.iface.mainWindow()
             )
             editor.exec_()
-        #root = self.find_root(entity, id)
+
         self.view.expand(item.index())
         if feature_edit:
             self.update_edited_steam(entity, id)
