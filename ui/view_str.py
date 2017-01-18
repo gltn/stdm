@@ -497,8 +497,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         if index.column() == 0:
             if isinstance(node, SupportsDocumentsNode):
 
-                edit_str = EditSTREditor(self._plugin, node)
-
+                edit_str = EditSTREditor(node)
 
                 status = edit_str.exec_()
 
@@ -530,7 +529,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
     def load_new_str_editor(self):
         try:
             # Check type of node and perform corresponding action
-            add_str = STREditor(self._plugin)
+            add_str = STREditor()
             add_str.exec_()
 
         except Exception as ex:

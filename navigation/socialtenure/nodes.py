@@ -38,11 +38,10 @@ from PyQt4.QtCore import (
 )
 
 from qgis.core import *
-import qgis.utils
+
 from stdm.utils import *
 from stdm.ui.sourcedocument import source_document_location
 from stdm.settings import current_profile
-from stdm.ui.new_str_wiz import newSTRWiz
 
 from stdm.utils.util import (
     gen_random_string,
@@ -581,6 +580,8 @@ class STRNode(EntityNode):
             i += 1
 
     def onEdit(self, index):
+        from stdm.ui.social_tenure.str_editor import EditSTREditor
+
         """
         Method to force STR model editing without browser
         """
@@ -601,7 +602,7 @@ class STRNode(EntityNode):
             if index.column() == 0:
                 if isinstance(node, SupportsDocumentsNode):
 
-                    edit_str = newSTRWiz(qgis.utils, node)
+                    edit_str = EditSTREditor(node)
                     status = edit_str.exec_()
 
                     if status == 1:
