@@ -1,3 +1,23 @@
+# -*- coding: utf-8 -*-
+"""
+/***************************************************************************
+Name                 : Database Backup
+Description          : Backs up the STDM database.
+Date                 : 10/January/2017
+copyright            : (C) 2017 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+"""
 import csv
 import os
 import sys
