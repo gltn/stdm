@@ -20,7 +20,9 @@ email                : stdm@unhabitat.org
 """
 from collections import OrderedDict
 
-from PyQt4.QtCore import QRegExp
+from qgis.utils import (
+    iface
+)
 from PyQt4.QtCore import (
     pyqtSignal,
     QTimer,
@@ -44,9 +46,10 @@ from PyQt4.QtGui import (
     QItemSelectionModel,
     QSizePolicy,
     QSpacerItem,
-    QVBoxLayout
+    QVBoxLayout,
+    QLabel
 )
-from PyQt4.QtGui import QLabel
+
 from sqlalchemy import (
     func
 )
@@ -66,6 +69,7 @@ from stdm.utils.util import (
 )
 from str_data import STRDataStore, STRDBHandler
 
+
 class InitSTREditor(QDialog, Ui_STREditor):
 
     partyInit = pyqtSignal()
@@ -76,16 +80,13 @@ class InitSTREditor(QDialog, Ui_STREditor):
     shareUpdated = pyqtSignal(list, QDoubleSpinBox)
     shareUpdatedOnZero = pyqtSignal(float)
 
-    def __init__(self, plugin):
+    def __init__(self):
         """
         Initializes the STR editor.
-        :param plugin: The plugin object
-        :type plugin: Object
         """
-        # TODO add multi-party entity support to db
-        QDialog.__init__(self, plugin.iface.mainWindow())
+        QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
-        self.iface = plugin.iface
+        self.iface = iface
         self.str_number = 0
         self.data_store = OrderedDict()
         self.party_item_index = None
@@ -138,7 +139,6 @@ class InitSTREditor(QDialog, Ui_STREditor):
         self.buttonBox.button(
             QDialogButtonBox.Save
         ).setEnabled(False)
-        # self.str_editor_signals()
 
     def init_notification(self):
         """
@@ -842,14 +842,12 @@ class InitSTREditor(QDialog, Ui_STREditor):
         return data_store_obj
 
 class BindSTREditor(InitSTREditor):
-    def __init__(self, plugin):
+    def __init__(self):
         """
         Binds the STR components tree items with the stack widgets
         containing the component widgets.
-        :param plugin: The plugin object.
-        :type plugin: Object
         """
-        InitSTREditor.__init__(self, plugin)
+        InitSTREditor.__init__(self)
 
     def bind_component_to_tree_view(self, current, previous):
         """
@@ -1006,14 +1004,12 @@ class BindSTREditor(InitSTREditor):
 
 class SyncSTREditorData(BindSTREditor):
 
-    def __init__(self, plugin):
+    def __init__(self):
         """
         Synchronizes data in the data store to each components
         when the tree items are clicked.
-        :param plugin: The plugin object.
-        :type plugin: Object
         """
-        BindSTREditor.__init__(self, plugin)
+        BindSTREditor.__init__(self)
 
     def sync_data(self, current, previous):
         """
@@ -1171,14 +1167,12 @@ class SyncSTREditorData(BindSTREditor):
             self.validity_to_date.setDate(to_date)
 
 class ValidateSTREditor(SyncSTREditorData):
-    def __init__(self, plugin):
+    def __init__(self):
         """
         Validates the STR editor. Validates user inputs and the
         enabling of buttons and treeview items.
-        :param plugin: The plugin object.
-        :type plugin: Object
         """
-        SyncSTREditorData.__init__(self, plugin)
+        SyncSTREditorData.__init__(self)
 
     def validate_page(self, current, previous):
         """
@@ -1610,14 +1604,11 @@ class ValidateSTREditor(SyncSTREditorData):
 
 
 class STREditor(ValidateSTREditor):
-    def __init__(self, plugin):
+    def __init__(self):
         """
         Wrapper class for STR Editor for new STR record editor user interface.
-        :param plugin: The STDM plugin object
-        :type plugin: Object
         """
-        InitSTREditor.__init__(self, plugin)
-        self._plugin = plugin
+        InitSTREditor.__init__(self)
 
         self.str_editor_signals()
 
@@ -1636,7 +1627,7 @@ class STREditor(ValidateSTREditor):
         self.remove_str_btn.clicked.connect(
             self.remove_str_tree_node
         )
-        self.buttonBox.accepted.connect(self.test_save_str)
+
         self.buttonBox.accepted.connect(self.save_str)
 
     def spatial_unit_signals(self):
@@ -1879,16 +1870,6 @@ class STREditor(ValidateSTREditor):
         db_handler = STRDBHandler(self.data_store, self.str_model)
         db_handler.commit_str()
 
-    def test_save_str(self):
-        print self.data_store
-        for key, value in self.data_store.iteritems():
-            print key, value.party
-            print key, value.spatial_unit
-            print key, value.str_type
-            print key, value.supporting_document
-            print key, value.validity_period
-            print key, value.share
-
     def message(self, title, message, type='information', yes_no=False):
         """
         Shows popup message box.
@@ -1930,16 +1911,14 @@ class STREditor(ValidateSTREditor):
 
 class EditSTREditor(STREditor):
 
-    def __init__(self, plugin, str_edit_node):
+    def __init__(self, str_edit_node):
         """
         The Edit user interface of the STR Editor.
-        :param plugin: The plugin object.
-        :type plugin: Object
         :param str_edit_node: The STR editable model containing
         the supporting document models.
         :type str_edit_node: List or STRNODE
         """
-        STREditor.__init__(self, plugin)
+        STREditor.__init__(self)
 
         self.str_edit_node = str_edit_node
         try:
@@ -2058,7 +2037,6 @@ class EditSTREditor(STREditor):
         :rtype:
         """
         self.component_container.setCurrentIndex(1)
-        self.top_description.setCurrentIndex(1)
         # Select the party item
         self.tree_view.selectionModel().setCurrentIndex(
             self.party_item_index, QItemSelectionModel.Select
@@ -2195,13 +2173,13 @@ class EditSTREditor(STREditor):
             self.data_store, self.str_model, self.str_edit_node
         )
         self.updated_str_obj = db_handler.commit_str()
-
-    def test_save_str(self):
-        print self.data_store
-        for key, value in self.data_store.iteritems():
-            print key, value.party
-            print key, value.spatial_unit
-            print key, value.str_type
-            print key, value.supporting_document
-            print key, value.validity_period
-            print key, value.share
+    #
+    # def test_save_str(self):
+    #     print self.data_store
+    #     for key, value in self.data_store.iteritems():
+    #         print key, value.party
+    #         print key, value.spatial_unit
+    #         print key, value.str_type
+    #         print key, value.supporting_document
+    #         print key, value.validity_period
+    #         print key, value.share

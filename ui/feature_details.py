@@ -1168,7 +1168,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             node_data = str_model, documents
 
             feature_edit = False
-            edit_str = EditSTREditor(self._plugin, node_data)
+            edit_str = EditSTREditor(node_data)
             status = edit_str.exec_()
 
         elif item.text() == format_name(party.short_name):
