@@ -516,6 +516,24 @@ class NoSTRNode(BaseSTRNode):
     def typeInfo(self):
         return "NO_STR_NODE"
 
+
+class InvalidSTRNode(BaseSTRNode):
+    """
+    Node for showing that no STR relationship exists.
+    """
+
+    def __init__(self, parent=None):
+        invalid_str_text = unicode(QApplication.translate("NoSTRNode",
+                                                   "Invalid STR"))
+
+        super(InvalidSTRNode, self).__init__([invalid_str_text], parent)
+
+    def icon(self):
+        return QIcon(":/plugins/stdm/images/icons/period_blue.png")
+
+    def typeInfo(self):
+        return "INVALID_STR_NODE"
+
 class STRNode(EntityNode):
     """
     Node for rendering STR information.

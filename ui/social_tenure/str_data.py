@@ -2,9 +2,8 @@ from collections import OrderedDict
 
 from PyQt4.QtCore import QDate
 from PyQt4.QtGui import (
-QApplication,
-QMessageBox,
-QProgressDialog
+    QApplication,
+    QMessageBox
 )
 
 from qgis.utils import (
@@ -32,16 +31,6 @@ class STRDataStore():
         self.supporting_document = []
         self.source_doc_manager = None
 
-    def remove_party_data(self, id):
-        del self.party[id]
-
-    def remove_spatial_data(self, id):
-        del self.spatial_unit[id]
-
-
-    def remove_str_type_data(self, party_id):
-        del self.str_type[party_id]
-
 class STRDBHandler():
     def __init__(
             self, data_store, str_model, str_edit_node=None
@@ -65,7 +54,7 @@ class STRDBHandler():
         Adds new STR record into the database
         with a supporting document record, if uploaded.
         :param str_store: The data store of str components
-        :type progress: STRDataStore
+        :type str_store: STRDataStore
         :return: None
         :rtype: NoneType
         """
@@ -73,12 +62,10 @@ class STRDBHandler():
         _str_obj = self.str_model()
         str_objs = []
 
-        inst = inspect(_str_obj)
-        str_columns = [c_attr.key for c_attr in inst.mapper.column_attrs]
         party_name = str_store.party.values()[0].__table__.name
 
         index = 4
-        # progress.setValue(3)
+
         # Social tenure and supporting document insertion
         # The code below is have a workaround to enable
         # batch supporting documents without affecting single
@@ -126,14 +113,21 @@ class STRDBHandler():
         _str_obj.saveMany(str_objs)
 
     def save_str(self):
+        """
+        Calls the create and update methods based on the presence and
+        absence of the STR edit model object.
+        :return: The updated STR model object or None. The updated STR model
+        object is used by Spatial Entity Details or the View STR to
+        update the respective QTreeView.
+        :rtype:
+        """
         if self.str_edit_obj is None:
             for str_store in self.data_store.values():
                 self.on_add_str(str_store)
+            return None
 
         else:
-            print len(self.data_store)
             if len(self.data_store) == 1:
-
 
                 updated_str_obj = self.on_edit_str(
                     self.data_store[1]
@@ -142,7 +136,6 @@ class STRDBHandler():
                 return updated_str_obj
             else:
                 return None
-
 
     def on_edit_str(self, str_store):
         """
@@ -159,9 +152,6 @@ class STRDBHandler():
             self.str_model.id == self.str_edit_obj.id
         ).first()
 
-        party_name = str_store.party.values()[0].__table__.name
-        party_entity_id = '{}_id'.format(party_name[3:])
-
         start_date = str_store.validity_period['from_date']
         end_date = str_store.validity_period['to_date']
         if isinstance(start_date, QDate):
@@ -169,9 +159,6 @@ class STRDBHandler():
         if isinstance(end_date, QDate):
             end_date = end_date.toPyDate()
 
-        party_id = getattr(self.str_model, party_entity_id)
-
-        party_id = str_store.party.keys()[0],
         str_edit_obj.spatial_unit_id = str_store.spatial_unit.keys()[0],
         str_edit_obj.tenure_type = str_store.str_type.values()[0],
         str_edit_obj.validity_start = start_date,
@@ -201,7 +188,6 @@ class STRDBHandler():
                 )
 
         str_edit_obj.update()
-        #print vars(str_edit_obj)
 
         return str_edit_obj
 

@@ -651,6 +651,32 @@ def drop_cascade_table(table_name):
         return False
 
 
+def drop_cascade_column(table_name, column):
+    """
+    Safely deletes the column contained in the given table using the CASCADE option.
+    :param table_name: Name of the database table.
+    :type table_name: str
+    :param column: Name of the column to delete.
+    :type column: str
+    :return: Returns True if the operation succeeded. otherwise False.
+    :rtype: bool
+    """
+    del_com = 'ALTER TABLE {0} DROP COLUMN IF EXISTS {1} CASCADE;'.format(
+        table_name,
+        column
+    )
+    t = text(del_com)
+
+    try:
+        _execute(t)
+
+        return True
+
+    #Error if the current user is not the owner.
+    except SQLAlchemyError:
+        return False
+
+
 def drop_view(view_name):
     """
     Deletes the database view with the given name. The CASCADE command option
@@ -669,3 +695,78 @@ def drop_view(view_name):
     except SQLAlchemyError:
 
         return False
+
+def copy_from_column_to_another(table, source, destination):
+    """
+    Copy data from one column to another column
+    within the same table.
+    :param table: The table name holding the two columns
+    :type table: String
+    :param source: The source column name
+    :type source: String
+    :param destination: The destination column name
+    :type destination: String
+    :return:
+    :rtype:
+    """
+    sql = 'UPDATE {0} SET {1} = {2};'.format(table, destination, source)
+    t = text(sql)
+    result = _execute(t)
+
+def remove_constraint(child, child_col):
+    """
+    Removes constraint from the current database.
+    :param child: The child table name
+    :type child: String
+    :param child_col: The child column name
+    :type child_col: String
+    :return:
+    :rtype:
+    """
+    # Validate that the referenced columns exist in the respective tables.
+    # Parent table
+    constraint = '{}_{}_fkey'.format(child, child_col)
+    sql = 'ALTER TABLE IF EXISTS {} DROP CONSTRAINT {};'.format(
+        child, constraint
+    )
+    t = text(sql)
+    _execute(t)
+
+def add_constraint(child_table, child_column, parent_table):
+    """
+    Adds constraint to a table.
+    :param child_table: The table name in which the constraint is added.
+    :type child_table: String
+    :param child_column: The foreign key column/child column name
+    :type child_column: String
+    :param parent_table: The source/parent table name
+    :type parent_table: String
+    :return:
+    :rtype:
+    """
+
+    remove_constraint(child_table, child_column)
+    sql = 'ALTER TABLE {0} ' \
+          'ADD CONSTRAINT {0}_{1}_fkey FOREIGN KEY ({1}) ' \
+          'REFERENCES {2} (id) MATCH SIMPLE ' \
+          'ON UPDATE NO ACTION ON DELETE NO ACTION;'.format(
+                child_table, child_column, parent_table
+    )
+    t = text(sql)
+    _execute(t)
+
+def drop_column(table, column):
+    """
+    Deletes column from a table.
+    :param table: The table name in which the column resides.
+    :type table: String
+    :param column: The column name to be deleted.
+    :type column: String
+    :return:
+    :rtype:
+    """
+    sql = 'ALTER TABLE {} DROP COLUMN {} CASCADE;'.format(
+        table, column
+    )
+    t = text(sql)
+    _execute(t)

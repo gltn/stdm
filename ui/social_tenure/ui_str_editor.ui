@@ -25,98 +25,20 @@
      <item>
       <layout class="QVBoxLayout" name="str_notification"/>
      </item>
-     <item>
-      <widget class="QStackedWidget" name="top_description">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="currentIndex">
-        <number>0</number>
-       </property>
-       <widget class="QWidget" name="page">
-        <layout class="QVBoxLayout" name="verticalLayout_15">
-         <item>
-          <widget class="QLabel" name="label_6">
-           <property name="font">
-            <font>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>The Social Tenure Relationship</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="page_2">
-        <layout class="QVBoxLayout" name="verticalLayout_10">
-         <item>
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Select the party by searching through the existing record.</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="page_3">
-        <layout class="QVBoxLayout" name="verticalLayout_11">
-         <item>
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Select the spatial unit that could be parcel, land or building, structure and so on.</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="page_4">
-        <layout class="QVBoxLayout" name="verticalLayout_13">
-         <item>
-          <widget class="QLabel" name="label_5">
-           <property name="text">
-            <string>Select the type of relationship that the specified party has with the selected spatial unit.</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="page_5">
-        <layout class="QVBoxLayout" name="verticalLayout_14">
-         <item>
-          <widget class="QLabel" name="label">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Upload one or more supporting documents under each document types (Optional).</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="page_6">
-        <layout class="QVBoxLayout" name="verticalLayout_18">
-         <item>
-          <widget class="QLabel" name="label_10">
-           <property name="text">
-            <string>Specify the validity number of years or the validity dates.</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </widget>
-     </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QWidget" name="top_description" native="true">
+     <layout class="QVBoxLayout" name="verticalLayout_10">
+      <item>
+       <widget class="QLabel" name="description_lbl">
+        <property name="text">
+         <string>The Social Tenure Relationship</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
     <widget class="QSplitter" name="splitter">
@@ -256,7 +178,7 @@
             <x>0</x>
             <y>0</y>
             <width>220</width>
-            <height>388</height>
+            <height>379</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -386,7 +308,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>680</width>
+             <width>682</width>
              <height>426</height>
             </rect>
            </property>

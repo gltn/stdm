@@ -94,11 +94,11 @@ class LayerSelectionHandler:
         :return: Dictionary
         """
         if self.stdm_layer(self.layer):
-           # try:
-
             selected_features = self.layer.selectedFeatures()
             features = []
-            field_names = [field.name() for field in self.layer.pendingFields()]
+            field_names = [
+                field.name()
+                for field in self.layer.pendingFields()]
             for feature in selected_features:
                 if 'id' in field_names:
                     features.append(feature['id'])
@@ -156,7 +156,9 @@ class LayerSelectionHandler:
             )
             QMessageBox.critical(
                 self.iface.mainWindow(),
-                QApplication.translate('DetailsTreeView', 'Feature Details Error'),
+                QApplication.translate(
+                    'DetailsTreeView', 'Feature Details Error'
+                ),
                 no_layer_msg
             )
 
@@ -164,7 +166,7 @@ class LayerSelectionHandler:
         """
         Check whether the layer is feature layer or not.
         :param active_layer: The layer to be checked
-        :type QGIS vectorlayer
+        :type QGIS VectorLayer
         :return: Boolean
         """
         layer_source = self.get_layer_source(active_layer)
@@ -373,7 +375,7 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
 
         self.setWindowTitle(
             QApplication.translate(
-                'DetailsDockWidget', 'Feature Details'
+                'DetailsDockWidget', 'Spatial Entity Details'
             )
         )
 
@@ -721,6 +723,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         for party in parties:
             party_name = party.short_name.lower()
             party_id = '{}_id'.format(party_name)
+            if not party_id in record:
+                return None, None
             if record[party_id] != None:
                 return party, party_id
 
@@ -1125,8 +1129,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 feature_ids
             )
         else:
-            item.removeRows(0, 2)
-            item.setText('No STR Definded')
+            item.removeRows(0, 5)
+            item.setText('No STR Defined')
             no_str_icon = QIcon(
                 ':/plugins/stdm/images/icons/remove.png'
             )
