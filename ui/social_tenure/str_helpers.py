@@ -1,3 +1,23 @@
+# -*- coding: utf-8 -*-
+"""
+/***************************************************************************
+Name                 : STR Helpers
+Description          : Helper classes for Social tenure editor.
+Date                 : 10/November/2016
+copyright            : (C) 2016 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+"""
 from collections import OrderedDict
 import logging
 
@@ -30,10 +50,10 @@ class STRTypeDelegate(QItemDelegate):
     def __init__(self, str_type_id=0, parent=None):
         """
         It is a combobox delegate embedded in STR Type column.
-        :param str_type_id:
-        :type str_type_id:
-        :param parent:
-        :type parent:
+        :param str_type_id: The tenure type id.
+        :type str_type_id: Integer
+        :param parent: The parent of the item delegate.
+        :type parent: QWidget
         :return:
         :rtype:
         """
@@ -65,8 +85,9 @@ class STRTypeDelegate(QItemDelegate):
         Creates the combobox inside a parent.
         :param parent: The container of the combobox
         :type parent: QWidget
-        :param option:
-        :type option:
+        :param option: QStyleOptionViewItem class is used to describe the
+        parameters used to draw an item in a view widget.
+        :type option: Object
         :param index: The index where the combobox
          will be added.
         :type index: QModelIndex
@@ -160,7 +181,19 @@ class FreezeTableWidget(QTableView):
     def __init__(
             self, table_data, headers, parent = None, *args
     ):
-        QTableView.__init__(self, parent, *args)
+        """
+        Creates two QTableViews one of which is a frozen table while the
+        other one can scroll behind it.
+        :param table_data: The data that goes into the tables
+        :type table_data: List
+        :param headers: The header data of the tables.
+        :type headers: List
+        :param parent: The parent of the QTableView
+        :type parent: QWidget
+        :param args:
+        :type args:
+        """
+        QTableView.__init__(self, parent)
         # set the table model
         self.table_model = BaseSTDMTableModel(
             table_data, headers, parent
@@ -236,6 +269,11 @@ class FreezeTableWidget(QTableView):
         self.signals()
 
     def set_size(self):
+        """
+        Sets the size and size policy of the tables.
+        :return:
+        :rtype:
+        """
         size_policy = QSizePolicy(
             QSizePolicy.Fixed, QSizePolicy.Fixed
         )
@@ -256,6 +294,11 @@ class FreezeTableWidget(QTableView):
         self.frozen_table_view.resizeRowsToContents()
 
     def signals(self):
+        """
+        Connects signals of the tables.
+        :return:
+        :rtype:
+        """
         # Connect the headers and scrollbars of
         # both tableviews together
         self.horizontalHeader().sectionResized.connect(
@@ -273,6 +316,11 @@ class FreezeTableWidget(QTableView):
         )
 
     def set_column_width(self):
+        """
+        Sets the column width of the frozen QTableView.
+        :return:
+        :rtype:
+        """
         # Set the width of columns
         columns_count = self.table_model.columnCount(self)
         for col in range(columns_count):
@@ -310,6 +358,11 @@ class FreezeTableWidget(QTableView):
                 )
 
     def set_style(self):
+        """
+        Sets the style of the frozen table.
+        :return:
+        :rtype:
+        """
         # Style frozentable view
         self.frozen_table_view.setStyleSheet(
             '''
@@ -325,6 +378,15 @@ class FreezeTableWidget(QTableView):
         self.frozen_table_view.setGraphicsEffect(self.shadow)
 
     def add_widgets(self, str_type_id, insert_row):
+        """
+        Adds widget delete into the frozen table.
+        :param str_type_id: The STR type id of the tenure type combobox
+        :type str_type_id: Integer
+        :param insert_row: The row number the widgets to be added.
+        :type insert_row: Integer
+        :return:
+        :rtype:
+        """
         delegate = STRTypeDelegate(str_type_id)
         # Set delegate to add combobox under
         # social tenure type column
@@ -348,10 +410,20 @@ class FreezeTableWidget(QTableView):
             self.frozen_table_view.model().index(insert_row, 1)
         )
 
-
     def update_section_width(
             self, logicalIndex, oldSize, newSize
     ):
+        """
+        Updates frozen table column width and geometry.
+        :param logicalIndex: The section's logical number
+        :type logicalIndex: Integer
+        :param oldSize: The old size of the section
+        :type oldSize: Integer
+        :param newSize: The new size of the section
+        :type newSize: Integer
+        :return:
+        :rtype:
+        """
         if logicalIndex==0 or logicalIndex==1:
             self.frozen_table_view.setColumnWidth(
                 logicalIndex, newSize
@@ -361,11 +433,30 @@ class FreezeTableWidget(QTableView):
     def update_section_height(
             self, logicalIndex, oldSize, newSize
     ):
+        """
+        Updates frozen table column height.
+        :param logicalIndex: The section's logical number
+        :type logicalIndex: Integer
+        :param oldSize: The old size of the section
+        :type oldSize: Integer
+        :param newSize: The new size of the section
+        :type newSize: Integer
+        :return:
+        :rtype:
+        """
         self.frozen_table_view.setRowHeight(
             logicalIndex, newSize
         )
 
     def resizeEvent(self, event):
+        """
+        Handles the resize event of the frozen table view.
+        It updates the frozen table view geometry on resize of table.
+        :param event: The event
+        :type event: QEvent
+        :return:
+        :rtype:
+        """
         QTableView.resizeEvent(self, event)
         try:
             self.update_frozen_table_geometry()
@@ -373,10 +464,26 @@ class FreezeTableWidget(QTableView):
             LOGGER.debug(str(log))
 
     def scrollTo(self, index, hint):
+        """
+        Scrolls the view if necessary to ensure that the item at index is
+        visible. The view will try to position the item according to the
+        given hint.
+        :param index: The scroll index
+        :type index: QModelIndex
+        :param hint: The scroll hint
+        :type hint: Integer
+        :return:
+        :rtype:
+        """
         if index.column() > 1:
             QTableView.scrollTo(self, index, hint)
 
     def update_frozen_table_geometry(self):
+        """
+        Updates the frozen table view geometry.
+        :return:
+        :rtype:
+        """
         if self.verticalHeader().isVisible():
             self.frozen_table_view.setGeometry(
                 self.verticalHeader().width() +
@@ -395,9 +502,19 @@ class FreezeTableWidget(QTableView):
                 self.horizontalHeader().height()
             )
 
-    # move_cursor override function for correct
-    # left to scroll the keyboard.
     def move_cursor(self, cursor_action, modifiers):
+        """
+        Override function for correct left to scroll the keyboard.
+        Returns a QModelIndex object pointing to the next object in the
+        table view, based on the given cursorAction and keyboard modifiers
+        specified by modifiers.
+        :param cursor_action: The cursor action
+        :type cursor_action: Integer
+        :param modifiers: Qt.KeyboardModifier value.
+        :type modifiers: Object
+        :return: The current cursor position.
+        :rtype: QModelIndex
+        """
         current = QTableView.move_cursor(
             self, cursor_action, modifiers
         )
@@ -413,12 +530,14 @@ class FreezeTableWidget(QTableView):
         return current
 
 class EntityConfig(object):
-    """
-    Configuration class for specifying the
-    foreign key mapper and document
-    generator settings.
-    """
+
     def __init__(self, **kwargs):
+        """
+        Configuration class for specifying the foreign key mapper and document
+        generator settings.
+        :param kwargs:
+        :type kwargs:
+        """
         self._title = kwargs.pop("title", "")
         self._link_field = kwargs.pop("link_field", "")
         self._display_formatters = kwargs.pop("formatters", OrderedDict())
@@ -435,6 +554,11 @@ class EntityConfig(object):
         self._expression_builder = kwargs.pop("expression_builder", False)
 
     def _set_ds_columns(self):
+        """
+        Sets the data source columns.
+        :return:
+        :rtype:
+        """
         if not self._data_source:
             self._ds_columns = []
 
@@ -444,5 +568,10 @@ class EntityConfig(object):
             )
 
     def model(self):
+        """
+        A getter method that returns the model of the entity.
+        :return: The model of the entity
+        :rtype: SQLAlchemy Model
+        """
         return self._base_model
 

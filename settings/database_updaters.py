@@ -1,3 +1,23 @@
+# -*- coding: utf-8 -*-
+"""
+/***************************************************************************
+Name                 : Database Updater
+Description          : Updates the STDM database to newer versions.
+Date                 : 10/January/2017
+copyright            : (C) 2017 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+"""
 from collections import OrderedDict
 from datetime import datetime, date, time
 from PyQt4.QtCore import QObject, pyqtSignal
@@ -78,11 +98,14 @@ class DatabaseUpdater(QObject):
         info_file.close()
 
     def backup_database(self):
-        # Load items afresh
-        # Check tag and version attribute first
         pass
 
     def upgrade_database(self):
+        """
+        Updates database to the configuration version one step newer.
+        :return:
+        :rtype:
+        """
         updater = self.version_updater()
         updater_instance = updater(self.log_file_path)
         updater_instance.exec_()
@@ -116,6 +139,13 @@ class DatabaseVersionUpdater(QObject):
     db_update_progress = pyqtSignal(str)
 
     def __init__(self, log_file, parent=None):
+        """
+        Database version updater that registers all database updaters.
+        :param log_file: The log file object
+        :type log_file: Object
+        :param parent: The parent of the QObject
+        :type parent: QWidget/NoneType
+        """
         QObject.__init__(self, parent)
         self.config = StdmConfiguration.instance()
         self.log_file = log_file
@@ -177,7 +207,7 @@ class DatabaseVersionUpdater13(DatabaseVersionUpdater):
             copy_from_column_to_another(
                 str(social_tenure.name), old_column, new_column
             )
-            #remove_constraint(str(social_tenure.name), old_column)
+
             drop_column(social_tenure.name, old_column)
             add_constraint(
                 str(social_tenure.name), new_column, party_table

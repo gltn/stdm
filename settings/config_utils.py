@@ -1,3 +1,23 @@
+# -*- coding: utf-8 -*-
+"""
+/***************************************************************************
+Name                 : Configuration Utilities
+Description          : Utility class for STDM configuration.
+Date                 : 10/January/2017
+copyright            : (C) 2017 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+"""
 import os
 from collections import OrderedDict
 import datetime
@@ -14,13 +34,16 @@ class ConfigurationUtils():
     CONFIGURATION = 'Configuration'
 
     def __init__(self, document):
-
+        """
+        A utility class for STDM configuration.
+        :param document: The configuration
+        :type document: QDomDocument
+        """
         self.file_handler = FilePaths()
         self.log_file_path = '{}/logs/migration.log'.format(
             self.file_handler.localPath()
         )
         self.document = document
-        #self.read_stc(stc_file)
 
     def append_log(self, info):
         """
@@ -112,19 +135,6 @@ class ConfigurationUtils():
         for node in nodes:
             element = node.toElement()
             element.setAttribute(attr, value)
-        print self.document.toString()
-
-    def remove_attribute(self, node_list, attr):
-        for node in node_list:
-            element = node.toElement()
-            if element.hasAttribute(attr):
-                element.removeAttribute(attr)
-
-    def remove_attribute_node(self, node_list, attr):
-        for node in node_list:
-            element = node.toElement()
-            if element.hasAttribute(attr):
-                element.removeAttributeNode(attr)
 
     def add_attribute_by_node_name(self, node_name, attr, value):
         """
@@ -160,18 +170,6 @@ class ConfigurationUtils():
             )
             first_child[profile_node] = profile_child
         return first_child
-
-    def profile_element(self):
-        config_nodes = self.find_node(self.CONFIGURATION)
-        if len(config_nodes) < 1:
-            return None
-        config_node = config_nodes[0]
-        print config_node.firstChildElement(self.PROFILE)
-
-
-
-
-
 
     def social_tenure_elements(self):
         """
