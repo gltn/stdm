@@ -212,7 +212,7 @@ class STDMQGISLoader(object):
         #Create actions
         actions=self.menu_bar.actions()
         currAction=actions[len(actions)-1]
-        #add actions to the menu bar
+        # add actions to the menu bar
         self.menu_bar.insertMenu(
             currAction,
             self.stdmMenu
@@ -1039,7 +1039,7 @@ class STDMQGISLoader(object):
         QComboBox {
                 border: 2px solid #4b85ca;
                 border-radius: 0px;
-                padding: 1px 18px 1px 3px;
+                padding: 1px 3px 1px 3px;
                 min-width: 6em;
             }
          QComboBox:editable {
@@ -1360,20 +1360,20 @@ class STDMQGISLoader(object):
         defining a new social
         tenure relationship
         '''
-        # try:
+        try:
 
-        str_editor = STREditor(self)
-        str_editor.open()
+            str_editor = STREditor()
+            str_editor.open()
 
-        # except Exception as ex:
-        #     QMessageBox.critical(
-        #         self.iface.mainWindow(),
-        #         QApplication.translate(
-        #             'STDMQGISLoader',
-        #             'Error Loading New STR Wizard'
-        #         ),
-        #         str(ex)
-        #     )
+        except Exception as ex:
+            QMessageBox.critical(
+                self.iface.mainWindow(),
+                QApplication.translate(
+                    'STDMQGISLoader',
+                    'Error Loading the STR Editor'
+                ),
+                str(ex)
+            )
 
     def onManageAdminUnits(self):
         '''

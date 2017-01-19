@@ -1,3 +1,23 @@
+# -*- coding: utf-8 -*-
+"""
+/***************************************************************************
+Name                 : Configuration Updater
+Description          : Updates the STDM configuration to newer versions.
+Date                 : 10/January/2017
+copyright            : (C) 2017 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+"""
 from collections import OrderedDict
 from datetime import datetime, date, time
 from PyQt4.QtCore import QObject, pyqtSignal
@@ -15,6 +35,14 @@ class ConfigurationUpdater(QObject):
     update_progress = pyqtSignal(str)
 
     def __init__(self, document, parent=None):
+        """
+        A wrapper class for configuration updaters. It starts the running of
+        Configuration version updater that is the first updater.
+        :param document: The QDomDocument of the configuration
+        :type document: QDomDocument
+        :param parent: The parent of the QObject, even though unused.
+        :type parent: QWidget/NoneType
+        """
         QObject.__init__(self, parent)
         self.file_handler = FilePaths()
         self.log_file_path = '{}/logs/migration.log'.format(
@@ -44,6 +72,11 @@ class ConfigurationUpdater(QObject):
         info_file.close()
 
     def version(self):
+        """
+        Gets the version of the configuration QDomDocument.
+        :return: The version of the configuration
+        :rtype: float
+        """
         # Load items afresh
         # Check tag and version attribute first
         doc_element = self.document.documentElement()
@@ -67,12 +100,27 @@ class ConfigurationUpdater(QObject):
         return config_version
 
     def version_updater(self, version):
+        """
+        Selects and returns the current configuration version updater
+        using the version of the configuration to be updated.
+        :param version: The version of the configuration
+        :type version: float
+        :return: The updater class or None if not found.
+        :rtype: Class/NoneType
+        """
         if version in self.base_updater.UPDATERS:
             return self.base_updater.UPDATERS[version]
         else:
             return None
 
     def exec_(self):
+        """
+        Creates the instance of the updater and executes the updater.
+        :return: A tuple containing the update status, the updated
+        configuration QDomDocument, and the db updater class for
+        the version upgraded.
+        :rtype: Tuple
+        """
         version = self.version()
         updater = self.version_updater(version)
 
@@ -133,6 +181,16 @@ class ConfigurationVersionUpdater(QObject):
     update_progress = pyqtSignal(str)
 
     def __init__(self, document, log_file, parent=None):
+        """
+        A parent class for the version updaters designed for each
+        configuration version.
+        :param document: The configuration to be updated.
+        :type document: QDomDocument
+        :param log_file: The log file object
+        :type log_file: file
+        :param parent: The parent of QObject
+        :type parent: QWidget/NoneType
+        """
         QObject.__init__(self, parent)
         self.document = document
         self.log_file = log_file
@@ -185,6 +243,20 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
     MAXIMUM = 'maximum'
 
     def _add_validity(self, str_element, tag_name, min_max, value):
+        """
+        Adds the validity periods to the STR element of the configuration.
+        :param str_element: The Social tenure element.
+        :type str_element: QDomElement
+        :param tag_name: The name of the child elements  - start and end.
+        :type tag_name: String
+        :param min_max: The attribute of the child elements - minimum and
+        maximum
+        :type min_max: String
+        :param value: The minimum or maximum dates
+        :type value: String
+        :return:
+        :rtype:
+        """
         # Get validity node
         validities = str_element.elementsByTagName(
             self.VALIDITY_TAG
@@ -236,8 +308,10 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
         """
         Run the current version update and starts
         the next version update.
-        :return:
-        :rtype:
+        :return: A tuple containing the update status, the updated
+        configuration QDomDocument, and the db updater class for
+        the version upgraded.
+        :rtype: Tuple
         """
 
         self.append_log(
@@ -249,7 +323,8 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
 
         self.append_log(
             'Successfully backed up up the database to version {}.'
-                .format(self.TO_VERSION))
+                .format(self.TO_VERSION)
+        )
 
         social_tenure_elements = self.config_utils.\
             social_tenure_elements()
@@ -265,7 +340,7 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
             )
         )
         # sql_min = DateColumn.SQL_MIN
-        sql_min = '1900-01-01'
+        sql_min = '1700-01-01'
         # sql_max = DateColumn.SQL_MAX
         sql_max = '7999-12-31'
 
@@ -285,7 +360,6 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
             )
             parent_node.appendChild(str_element)
 
-
         # Initialize the next updater if it exists.
         if not self.NEXT_UPDATER is None:
             next_updater = self.NEXT_UPDATER(
@@ -303,7 +377,7 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
                 )
             )
             next_updater.exec_()
-        #TODO add an if condition if the to version is the ...
+        # TODO add an if condition if the to version is the ...
         # latest version to be sure when emitting update_complete signal.
         else:
 
