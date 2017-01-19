@@ -212,7 +212,7 @@ class STDMQGISLoader(object):
         #Create actions
         actions=self.menu_bar.actions()
         currAction=actions[len(actions)-1]
-        #add actions to the menu bar
+        # add actions to the menu bar
         self.menu_bar.insertMenu(
             currAction,
             self.stdmMenu

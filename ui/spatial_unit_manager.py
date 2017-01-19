@@ -55,7 +55,6 @@ from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
 
 LOGGER = logging.getLogger('stdm')
 
-
 class SpatialUnitManagerDockWidget(
     QDockWidget, Ui_SpatialUnitManagerWidget
 ):
@@ -94,9 +93,10 @@ class SpatialUnitManagerDockWidget(
         self.stdm_layers_combo.clear()
 
         if self._curr_profile is None:
+
             return
 
-        self.spatial_unit = self._curr_profile. \
+        self.spatial_unit = self._curr_profile.\
             social_tenure.spatial_unit
 
         # Get entities containing geometry
@@ -176,7 +176,6 @@ class SpatialUnitManagerDockWidget(
             except Exception:
                 pass
 
-
     def set_canvas_crs(self, layer):
         # Sets canvas CRS
         # get srid with EPSG text
@@ -219,14 +218,14 @@ class SpatialUnitManagerDockWidget(
             'table_name': table_name,
             'column_name': column_name,
             'item': item}
-                                       )
+        )
 
         table = self.spatial_unit.name
         spatial_column = [
             c.name
             for c in self.spatial_unit.columns.values()
             if c.TYPE_INFO == 'GEOMETRY'
-            ]
+        ]
 
         spatial_unit_item = unicode(
             table + '.' + spatial_column[0]
@@ -235,7 +234,8 @@ class SpatialUnitManagerDockWidget(
             spatial_unit_item, Qt.MatchFixedString
         )
         if index >= 0:
-            self.stdm_layers_combo.setCurrentIndex(index)
+             self.stdm_layers_combo.setCurrentIndex(index)
+
 
     def _layer_info_from_table_column(
             self, table, column
@@ -295,6 +295,7 @@ class SpatialUnitManagerDockWidget(
             layer_name, Qt.MatchFixedString
         )
         if index >= 0:
+
             self.stdm_layers_combo.setCurrentIndex(index)
             # add spatial unit layer.
             self.on_add_to_canvas_button_clicked()
@@ -435,7 +436,7 @@ class SpatialUnitManagerDockWidget(
             column
             for column in entity.columns.values()
             if column.TYPE_INFO == 'GEOMETRY'
-            ]
+        ]
         return geom_column
 
     def same_entity_layers(self):
@@ -476,11 +477,13 @@ class SpatialUnitManagerDockWidget(
             layer_list
             for layer_list in self.same_entity_layers()
             if sel_lyr_name in layer_list
-            ]
+        ]
+
 
         str_view = self._curr_profile.social_tenure.view_name
 
         if len(layer_lists) < 1:
+
             geom_columns = table_column_names(
                 str_view, True
             )
@@ -514,13 +517,13 @@ class SpatialUnitManagerDockWidget(
             # of the same entity
             if layer_name != sel_lyr_name:
 
-                layer_objects = QgsMapLayerRegistry. \
+                layer_objects = QgsMapLayerRegistry.\
                     instance().mapLayersByName(layer_name)
 
                 if len(layer_objects) > 0:
                     for layer in layer_objects:
                         layer_id = layer.id()
-                        QgsMapLayerRegistry. \
+                        QgsMapLayerRegistry.\
                             instance().removeMapLayer(layer_id)
             # Change the crs of the canvas based on the new layer
 
@@ -631,22 +634,40 @@ class SpatialUnitManagerDockWidget(
         """
         Method to load GPS dialog
         """
+        entity_obj = self._valid_entity()
         layer_map = QgsMapLayerRegistry.instance().mapLayers()
-        if not bool(layer_map):
-            QMessageBox.warning(
-                self,
-                "STDM",
-                "You must add a layer first from Spatial Unit "
-                "Manager to import GPX to"
-            )
-        elif bool(layer_map):
+        if layer_map and entity_obj:
             self.gps_tool_dialog = GPSToolDialog(
                 self.iface,
-                self.curr_layer,
+                entity_obj,
                 self.curr_lyr_table,
                 self.curr_lyr_sp_col
             )
             self.gps_tool_dialog.show()
+        elif not layer_map:
+            QMessageBox.warning(
+                self,
+                "STDM",
+                "You must add a layer first from Spatial Unit Manager to import GPX to"
+            )
+        elif not entity_obj:
+                QMessageBox.critical(
+                    self, QApplication.translate('GpxTableWidgetDialog', 'GPS File Import Error'),
+                    'The selected layer source is not an entity. View or a non-STDM Layer is not allowed.'
+                )
+
+    def _valid_entity(self):
+        """
+        Checks if the current active layer in the layer panel
+        represents a valid entity in the current profile
+        :return: Error object
+        :rtype: Object
+        """
+        entity_profile = current_profile()
+        entity_obj = entity_profile.entity_by_name(self.curr_lyr_table)
+        if entity_obj is None:
+            return None
+        return entity_obj
 
     def closeEvent(self, event):
         """

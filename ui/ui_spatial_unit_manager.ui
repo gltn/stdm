@@ -7,21 +7,50 @@
     <x>0</x>
     <y>0</y>
     <width>405</width>
-    <height>285</height>
+    <height>392</height>
    </rect>
-  </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>DockWidget</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
+   <layout class="QGridLayout" name="gridLayout_2">
+    <item row="4" column="0">
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>119</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="2" column="0">
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="title">
+       <string>Import Feature:</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="0">
+        <widget class="QPushButton" name="import_gpx_file_button">
+         <property name="text">
+          <string>GPS Feature Import</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="1" column="0">
      <widget class="QGroupBox" name="groupBox">
       <property name="sizeIncrement">
        <size>
@@ -33,27 +62,8 @@
        <string>Manage Layers:</string>
       </property>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="1" column="0">
-        <widget class="QLabel" name="layerLebel">
-         <property name="maximumSize">
-          <size>
-           <width>70</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Layer</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
+       <item row="0" column="1">
         <widget class="QComboBox" name="stdm_layers_combo">
-         <property name="minimumSize">
-          <size>
-           <width>30</width>
-           <height>22</height>
-          </size>
-         </property>
          <property name="sizeIncrement">
           <size>
            <width>0</width>
@@ -71,68 +81,42 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="0" colspan="2">
+       <item row="1" column="0" colspan="2">
         <widget class="QPushButton" name="add_to_canvas_button">
-         <property name="minimumSize">
-          <size>
-           <width>300</width>
-           <height>26</height>
-          </size>
-         </property>
          <property name="text">
           <string>Add Layer to Canvas</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="0" colspan="2">
+       <item row="2" column="0" colspan="2">
         <widget class="QPushButton" name="set_display_name_button">
-         <property name="minimumSize">
-          <size>
-           <width>30</width>
-           <height>26</height>
-          </size>
-         </property>
          <property name="text">
           <string>Set Display Name</string>
          </property>
         </widget>
        </item>
-      </layout>
-     </widget>
-    </item>
-    <item>
-     <widget class="QGroupBox" name="groupBox_2">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="title">
-       <string>Import Feature:</string>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_3">
        <item row="0" column="0">
-        <widget class="QPushButton" name="import_gpx_file_button">
-         <property name="minimumSize">
+        <widget class="QLabel" name="layerLebel">
+         <property name="maximumSize">
           <size>
-           <width>30</width>
-           <height>26</height>
+           <width>70</width>
+           <height>16777215</height>
           </size>
          </property>
          <property name="text">
-          <string>From GPX File...</string>
+          <string>Layer</string>
          </property>
         </widget>
        </item>
       </layout>
      </widget>
     </item>
+    <item row="0" column="0">
+     <layout class="QVBoxLayout" name="NotificationBar"/>
+    </item>
    </layout>
   </widget>
  </widget>
- <resources>
-  <include location="../resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
