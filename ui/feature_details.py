@@ -82,7 +82,7 @@ class LayerSelectionHandler(object):
     """
      Handles all tasks related to the layer.
     """
-    def __init__(self, iface, plugin):
+    def __init__(self, iface):
         """
         Initializes the LayerSelectionHandler.
         :param iface: The QGIS Interface object
@@ -92,8 +92,8 @@ class LayerSelectionHandler(object):
         """
         self.layer = None
         self.iface = iface
-        self._plugin = plugin
         self.sel_highlight = None
+        self.current_profile = current_profile()
 
     def selected_features(self):
         """
@@ -139,7 +139,7 @@ class LayerSelectionHandler(object):
         """
         Get the layer table name if the source is from the database.
         :param layer: The layer for which the source is checked
-        :type layer: QGIS vectorlayer
+        :type layer: QgsVectorLayer
         :return: The table name or none if no table name found.
         :rtype: String or None
         """
@@ -152,6 +152,9 @@ class LayerSelectionHandler(object):
         try:
             table = vals['table'].split('.')
             tableName = table[1].strip('"')
+            entity_table = self.current_profile.entity_by_name(tableName)
+            if entity_table is None:
+                return None
             return tableName
         except KeyError:
             return None
@@ -412,7 +415,7 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
         self.edit_btn.setDisabled(True)
         self.delete_btn.setDisabled(True)
         self.view_document_btn.setDisabled(True)
-        LayerSelectionHandler.__init__(self, iface, plugin)
+        LayerSelectionHandler.__init__(self, iface)
         self.setBaseSize(300,5000)
 
     def init_dock(self):
@@ -1167,9 +1170,9 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             )
             return
 
-        str_model = self.str_models[id]
-        str_model_dict = str_model.__dict__
-        party, party_id = self.current_party(str_model_dict)
+        # str_model = self.str_models[id]
+        # str_model_dict = str_model.__dict__
+        # party, party_id = self.current_party(str_model_dict)
         if item.text() == 'Social Tenure Relationship':
             str_edit = True
             db_model = self.str_models[id]
@@ -1198,7 +1201,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             )
             return
         # If it is party node, STR exists and don't allow delete.
-        elif item.text() == format_name(party.short_name):
+        elif item in self.party_items:
             delete_warning = QApplication.translate(
                 'DetailsTreeView',
                 'You have to first delete the social tenure \n'
