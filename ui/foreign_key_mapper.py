@@ -142,37 +142,42 @@ class ForeignKeyMapper(QWidget):
 
     def __init__(self, entity, parent=None, notification_bar=None,
                  enable_list=True, can_filter=False):
-        from stdm.ui.entity_browser import EntityBrowser
 
         QWidget.__init__(self, parent)
         self.current_profile = current_profile()
 
-        self._entity = entity
-        
         self._tbFKEntity = QTableView(self)
         self._tbFKEntity.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self._tbFKEntity.setAlternatingRowColors(True)
         self._tbFKEntity.setSelectionBehavior(QAbstractItemView.SelectRows)
 
         self._add_entity_btn = QToolButton(self)
-        self._add_entity_btn.setToolTip(QApplication.translate("ForeignKeyMapper","Add"))
-        self._add_entity_btn.setIcon(QIcon(":/plugins/stdm/images/icons/add.png"))
+        self._add_entity_btn.setToolTip(
+            QApplication.translate("ForeignKeyMapper","Add"))
+        self._add_entity_btn.setIcon(
+            QIcon(":/plugins/stdm/images/icons/add.png"))
         self._add_entity_btn.clicked.connect(self.onAddEntity)
 
         self._edit_entity_btn = QToolButton(self)
         self._edit_entity_btn.setVisible(False)
-        self._edit_entity_btn.setToolTip(QApplication.translate("ForeignKeyMapper","Edit"))
-        self._edit_entity_btn.setIcon(QIcon(":/plugins/stdm/images/icons/edit.png"))
+        self._edit_entity_btn.setToolTip(
+            QApplication.translate("ForeignKeyMapper","Edit"))
+        self._edit_entity_btn.setIcon(
+            QIcon(":/plugins/stdm/images/icons/edit.png"))
 
         self._filter_entity_btn = QToolButton(self)
         self._filter_entity_btn.setVisible(False)
-        self._filter_entity_btn.setToolTip(QApplication.translate("ForeignKeyMapper","Select by expression"))
-        self._filter_entity_btn.setIcon(QIcon(":/plugins/stdm/images/icons/filter.png"))
+        self._filter_entity_btn.setToolTip(
+            QApplication.translate("ForeignKeyMapper","Select by expression"))
+        self._filter_entity_btn.setIcon(
+            QIcon(":/plugins/stdm/images/icons/filter.png"))
         self._filter_entity_btn.clicked.connect(self.onFilterEntity)
 
         self._delete_entity_btn = QToolButton(self)
-        self._delete_entity_btn.setToolTip(QApplication.translate("ForeignKeyMapper","Remove"))
-        self._delete_entity_btn.setIcon(QIcon(":/plugins/stdm/images/icons/remove.png"))
+        self._delete_entity_btn.setToolTip(
+            QApplication.translate("ForeignKeyMapper","Remove"))
+        self._delete_entity_btn.setIcon(
+            QIcon(":/plugins/stdm/images/icons/remove.png"))
         self._delete_entity_btn.clicked.connect(self.onRemoveEntity)
 
         layout = QVBoxLayout(self)
@@ -191,7 +196,6 @@ class ForeignKeyMapper(QWidget):
         layout.addWidget(self._tbFKEntity)
         self.social_tenure = self.current_profile.social_tenure
 
-        self._dbmodel = entity_model(entity)
         self._tableModel = None
         self._notifBar = notification_bar
         self._headers = []
@@ -209,15 +213,27 @@ class ForeignKeyMapper(QWidget):
             self._filter_entity_btn.setVisible(True)
             self._edit_entity_btn.setVisible(False)
 
-        self._init_fk_columns()
+        self.set_entity(entity)
 
+    def set_entity(self, entity):
+        """
+        Sets new entity and updates the ForeignKeyMapper with a new
+        :param entity: The entity of the ForeignKeyMapper
+        :type entity:Object
+        """
+        from stdm.ui.entity_browser import EntityBrowser
+
+        self._entity = entity
+
+        self._dbmodel = entity_model(entity)
+        self._init_fk_columns()
         self._entitySelector = EntityBrowser(
             self._entity,
             parent=self,
             state=SELECT
         )
 
-        #Connect signals
+        # Connect signals
         self._entitySelector.recordSelected.connect(
             self._onRecordSelectedEntityBrowser
         )
@@ -228,15 +244,21 @@ class ForeignKeyMapper(QWidget):
         method also initializes the table headers, entity column and cell
         formatters.
         """
+        self._headers[:] = []
+        self._entity_attrs[:] = []
         if self._dbmodel is None:
-            msg = QApplication.translate('ForeignKeyMapper', 'The data model for '
-                                                          'the entity could '
-                                                          'not be loaded, '
-                                                          'please contact '
-                                                          'your database '
-                                                          'administrator.')
-            QMessageBox.critical(self, QApplication.translate('EntityBrowser',
-                                                              'Entity Browser'),
+            msg = QApplication.translate(
+                'ForeignKeyMapper', 'The data model for '
+                                  'the entity could '
+                                  'not be loaded, '
+                                  'please contact '
+                                  'your database '
+                                  'administrator.'
+            )
+            QMessageBox.critical(
+                self, QApplication.translate('EntityBrowser',
+                                             'Entity Browser'
+                                             ),
                                  msg)
 
             return
@@ -321,7 +343,9 @@ class ForeignKeyMapper(QWidget):
         #First (id) column will always be hidden
         self._tbFKEntity.hideColumn(0)
 
-        self._tbFKEntity.horizontalHeader().setResizeMode(QHeaderView.Interactive)
+        self._tbFKEntity.horizontalHeader().setResizeMode(
+            QHeaderView.Interactive
+        )
         self._tbFKEntity.verticalHeader().setVisible(True)
 
 

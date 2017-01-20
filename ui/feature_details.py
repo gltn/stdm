@@ -48,9 +48,7 @@ from qgis.core import (
 )
 
 from stdm.settings import current_profile
-from stdm.data.database import (
-    STDMDb
-)
+
 from stdm.settings.registryconfig import (
     selection_color
 )
@@ -81,10 +79,12 @@ from ui_feature_details import Ui_DetailsDock
 
 
 class LayerSelectionHandler(object):
-
+    """
+     Handles all tasks related to the layer.
+    """
     def __init__(self, iface, plugin):
         """
-        Handles all aspect related to the layer.
+        Initializes the LayerSelectionHandler.
         :param iface: The QGIS Interface object
         :type iface: Object
         :param plugin: The STDM plugin object
@@ -119,8 +119,6 @@ class LayerSelectionHandler(object):
     def non_stdm_layer_error(self):
         """
         Shows an error if the layer is not an STDM entity layer.
-        :return:
-        :rtype:
         """
         not_feature_msg = QApplication.translate(
             'FeatureDetails',
@@ -131,7 +129,9 @@ class LayerSelectionHandler(object):
 
         QMessageBox.warning(
             self.iface.mainWindow(),
-            QApplication.translate('DetailsTreeView', 'Invalid Layer Error'),
+            QApplication.translate(
+                'DetailsTreeView', 'Invalid Layer Error'
+            ),
             not_feature_msg
         )
 
@@ -160,8 +160,6 @@ class LayerSelectionHandler(object):
         """
         Check if there is active layer and if not, displays
         a message box to select a feature layer.
-        :return:
-        :rtype:
         """
         active_layer = self.iface.activeLayer()
         if active_layer is None:
@@ -193,12 +191,9 @@ class LayerSelectionHandler(object):
         else:
             return False
 
-
     def clear_feature_selection(self):
         """
         Clears selection of layer(s).
-        :return:
-        :rtype:
         """
         map = self.iface.mapCanvas()
         for layer in map.layers():
@@ -209,8 +204,6 @@ class LayerSelectionHandler(object):
     def activate_select_tool(self):
         """
         Enables the select tool to be used to select features.
-        :return:
-        :rtype:
         """
         self.iface.actionSelect().trigger()
         layer_select_tool = self.iface.mapCanvas().mapTool()
@@ -219,8 +212,6 @@ class LayerSelectionHandler(object):
     def clear_sel_highlight(self):
         """
         Removes sel_highlight from the canvas.
-        :return:
-        :rtype:
         """
         if self.sel_highlight is not None:
             self.sel_highlight = None
@@ -228,8 +219,6 @@ class LayerSelectionHandler(object):
     def refresh_layers(self):
         """
         Refresh all database layers.
-        :return:
-        :rtype:
         """
         layers = self.iface.legendInterface().layers()
         for layer in layers:
@@ -249,16 +238,16 @@ class LayerSelectionHandler(object):
         features are more than one.
         :param index: Selected QTreeView item index
         :type index: Integer
-        :return:
-        :rtype:
         """
         pass
 
 class DetailsDBHandler:
-
+    """
+    Handles the database linkage of the spatial entity details.
+    """
     def __init__(self):
         """
-        Handles the database linkage of the spatial entity details.
+        Initializes the DetailsDBHandler.
         """
         self._entity = None
         self.column_formatter = OrderedDict()
@@ -273,8 +262,6 @@ class DetailsDBHandler:
         Sets the spatial entity.
         :param entity: The entity object
         :type entity: Object
-        :return:
-        :rtype:
         """
         self._entity = entity
 
@@ -283,8 +270,6 @@ class DetailsDBHandler:
         Sets the column widget formatter.
         :param entity: The entity for which the columns are to be formatted.
         :type entity: Object
-        :return:
-        :rtype:
         """
         self.format_columns(entity)
 
@@ -293,8 +278,6 @@ class DetailsDBHandler:
         Formats the columns using the ColumnWidgetRegistry factory method.
         :param entity: The entity of the columns to be formatted.
         :type entity: Object
-        :return:
-        :rtype:
         """
         if entity is None:
             entity = self._entity
@@ -363,8 +346,6 @@ class DetailsDBHandler:
         :type model: SQLAlchemy model
         :param entity: The entity object
         :type entity: Object
-        :return:
-        :rtype:
         """
         self.formatted_record.clear()
         self.display_column_object(entity)
@@ -413,9 +394,12 @@ class DetailsDBHandler:
         )
 
 class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
+    """
+    The logic for the spatial entity details dock widget.
+    """
     def __init__(self, iface, plugin):
         """
-        The logic for the spatial entity details dock widget.
+        Initializes the DetailsDockWidget.
         :param iface: The QGIS interface
         :type iface: Object
         :param plugin: The STDM plugin object
@@ -434,8 +418,6 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
     def init_dock(self):
         """
         Creates dock on right dock widget area and set window title.
-        :return:
-        :rtype:
         """
         self.iface.addDockWidget(Qt.RightDockWidgetArea, self)
 
@@ -477,22 +459,23 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
         using the close_dock method.
         :param event: The close event
         :type event: QCloseEvent
-        :return: None
         """
         self.close_dock(
             self.plugin.feature_details_act
         )
 
 class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
+    """
+    Avails the treeview dock widget. This class must be called
+    to add the widget.
+    """
     def __init__(self, iface, plugin):
-
         """
         The method initializes the dockwidget.
         :param iface: QGIS user interface class
         :type iface: Object
         :param plugin: The STDM plugin
         :type plugin: class
-        :return: None
         """
         from stdm.ui.entity_browser import _EntityDocumentViewerHandler
         DetailsDockWidget.__init__(self, iface, plugin)
@@ -505,7 +488,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         self.view.setSelectionBehavior(
             QAbstractItemView.SelectRows
         )
-        #self.feature_ids = []
+
         self.layer_table = None
         self.entity = None
         self.feature_models = {}
@@ -548,8 +531,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
     def set_layer_entity(self):
         """
         Sets the entity property using the layer table.
-        :return:
-        :rtype:
         """
         self.layer_table = self.get_layer_source(
             self.iface.activeLayer()
@@ -568,8 +549,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :param button_clicked: A boolean to identify if it is activated
         because of button click or because of change in the active layer.
         :type button_clicked: Boolean
-        :return:
-        :rtype:
         """
         # Get and set the active layer.
         self.layer = self.iface.activeLayer()
@@ -609,8 +588,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
     def prepare_for_selection(self):
         """
         Prepares the dock widget for data loading.
-        :return:
-        :rtype:
         """
         select_feature = 'Please select a feature ' \
                          'to view their details.'
@@ -627,8 +604,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         Updates the treeview source in case of layer change.
         :param active_layer: The active layer on the canvas.
         :type active_layer: QgsVectorLayer
-        :return:
-        :rtype:
         """
         if active_layer.type() != QgsMapLayer.VectorLayer:
             return
@@ -651,8 +626,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
     def add_tree_view(self):
         """
         Adds tree view to the dock widget and sets style.
-        :return:
-        :rtype:
         """
         self.tree_scrollArea.setWidget(self.view)
 
@@ -661,8 +634,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         Resets the treeview by clearing feature highlights,
         disabling edit, delete, and view document buttons,
         and adding an empty treeview if a feature is selected.
-        :return:
-        :rtype:
         """
         #clear feature_ids list, model and highlight
         self.model.clear()
@@ -694,8 +665,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         the dock widget.
         :param bool: A boolean setting the disabled status. True disables it.
         :type bool: Boolean
-        :return:
-        :rtype:
         """
         self.edit_btn.setDisabled(bool)
         self.delete_btn.setDisabled(bool)
@@ -704,8 +673,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
     def show_tree(self):
         """
         Shows the treeview.
-        :return:
-        :rtype:
         """
         if self.selected_features() is None:
             self.reset_tree_view()
@@ -746,8 +713,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         Adds details of layers that are view based.
         :param layer_icon: The icon of the tree node.
         :type layer_icon: QIcon
-        :return:
-        :rtype:
         """
         selected_features = self.layer.selectedFeatures()
         field_names = [field.name() for field in self.layer.pendingFields()]
@@ -805,8 +770,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :type parent: QStandardItem
         :param feature_id: The feature id
         :type feature_id: Integer
-        :return:
-        :rtype:
         """
         self.feature_models[feature_id] = model
         if model is None:
@@ -848,8 +811,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         Adds NO STR Defined steam.
         :param parent: The root node.
         :type parent: QStandardItem
-        :return:
-        :rtype:
         """
         if self.entity.name == self.spatial_unit.name:
             no_str_icon = QIcon(
@@ -887,8 +848,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :type parent: QStandardItem
         :param feature_id: The feature id or the id of the layer table.
         :type feature_id: Integer
-        :return:
-        :rtype:
         """
         if self.layer_table is None:
             return
@@ -979,8 +938,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         Make a text of QStandardItem to bold.
         :param standard_item: QStandardItem
         :type standard_item: QStandardItem
-        :return:
-        :rtype:
         """
         font = standard_item.font()
         font.setBold(True)
@@ -1025,8 +982,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         features are more than one.
         :param index: Selected QTreeView item index
         :type index: Integer
-        :return:
-        :rtype:
         """
         map = self.iface.mapCanvas()
         try:
@@ -1078,8 +1033,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         Connects buttons to the steams in the treeview.
         :param entity: The entity to be edited or its document viewed.
         :type entity: Object
-        :return:
-        :rtype:
         """
         self.edit_btn.clicked.connect(
             lambda : self.edit_selected_steam(
@@ -1104,7 +1057,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :rtype: Tuple
         """
         item = None
-
         # One item is selected and number of feature is also 1
         if len(self.layer.selectedFeatures()) == 1 and \
                         len(self.view.selectedIndexes()) == 1:
@@ -1130,7 +1082,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         else:
             result = 'Please, select at least one feature to {}.'.format(mode)
         if result is None:
-
             if item is None:
                 item = self.model.item(0, 0)
                 result = item.data()
@@ -1143,8 +1094,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         Edits the record based on the selected item in the tree view.
         :param entity: The entity of the record.
         :type entity: Object
-        :return:
-        :rtype:
         """
         id, item = self.steam_data('edit')
 
@@ -1165,6 +1114,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             return
         # STR steam - edit social tenure relationship
         if item.text() == 'Social Tenure Relationship':
+
             str_model = self.str_models[item.data()]
             documents = self._supporting_doc_models(
                 self.social_tenure.name, str_model
@@ -1173,11 +1123,11 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
 
             feature_edit = False
             edit_str = EditSTREditor(node_data)
-            status = edit_str.exec_()
+            edit_str.exec_()
         # party steam - edit party
         elif item in self.party_items.keys():
+
             party = self.party_items[item]
-            feature_edit = False
 
             model = self.party_models[id]
             editor = EntityEditorDialog(
@@ -1202,8 +1152,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
     def delete_selected_item(self):
         """
         Deletes the selected item.
-        :return:
-        :rtype:
         """
         str_edit = False
         id, item = self.steam_data('delete')
@@ -1299,8 +1247,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :type entity: Object
         :param feature_id: The feature id
         :type feature_id: Integer
-        :return:
-        :rtype:
         """
         # remove rows before adding the updated ones.
         self.layer.setSelectedFeatures(
@@ -1344,8 +1290,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :type str_edit: Boolean
         :param item: The root item to be removed
         :type item: QStandardItem
-        :return:
-        :rtype:
         """
         if not str_edit:
             if len(self.feature_models) > 1:
@@ -1369,8 +1313,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         record.
         :param entity: The entity object
         :type entity: Object
-        :return:
-        :rtype:
         """
         # Slot raised to show the document viewer for the selected entity
 

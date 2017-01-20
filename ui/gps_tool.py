@@ -515,7 +515,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
 
     def _clear_all_items(self):
         """
-        Unchecks all items which are checked and slears the feature
+        Unchecks all items which are checked and clears the feature
         :return: None
         :rtype: None
         """

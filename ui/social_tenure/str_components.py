@@ -24,20 +24,15 @@ from datetime import (
     date
 )
 
-import time
-from dateutil.rrule import rrule, MONTHLY
-from PyQt4.QtGui import QDoubleSpinBox
 from dateutil.relativedelta import relativedelta
-from PyQt4.QtCore import QDateTime
+
 from PyQt4.QtCore import (
     pyqtSignal,
     QObject,
     Qt,
     QFileInfo,
-    QDate,
     QRegExp
 )
-from PyQt4.QtGui import QSpinBox
 
 from PyQt4.QtGui import (
     QVBoxLayout,
@@ -49,7 +44,12 @@ from PyQt4.QtGui import (
     QScrollArea,
     QFrame,
     QFileDialog,
-    QComboBox
+    QComboBox,
+    QLabel,
+    QMessageBox,
+    QSizePolicy,
+    QSpacerItem,
+    QDoubleSpinBox
 )
 
 from qgis.utils import iface
@@ -71,20 +71,35 @@ from stdm.ui.social_tenure.str_helpers import (
 )
 
 class ComponentUtility(QObject):
+    """
+    A utility class for STR components.
+    """
     def __init__(self):
         """
-        A utility class for STR components.
+        Initialize the STR component class.
         """
         super(ComponentUtility, self).__init__()
         self.current_profile = current_profile()
         self.social_tenure = self.current_profile.social_tenure
         self.parties = self.social_tenure.parties
+        self.str_model = None
+        self.str_doc_model = None
         if len(self.parties) > 0:
             self.party_1 = self.parties[0]
         self.spatial_unit = self.social_tenure.spatial_unit
-        self.str_model, self.str_doc_model = entity_model(
-            self.social_tenure, False, True
-        )
+        try:
+            self.str_model, self.str_doc_model = entity_model(
+                self.social_tenure, False, True
+            )
+        except Exception as ex:
+            QMessageBox.critical(
+                iface.mainWindow(),
+                QApplication.translate(
+                    'ComponentUtility',
+                    'Database Error'
+                ),
+                str(ex)
+            )
 
     def str_doc_models(self):
         """
@@ -96,7 +111,7 @@ class ComponentUtility(QObject):
         return self.str_model, self.str_doc_model
 
     def _create_fk_mapper(
-            self, config, parent, notif_bar, multi_row=True
+            self, config, parent, notif_bar, multi_row=True, is_party=False
     ):
         """
         Creates the foreign key mapper object.
@@ -109,10 +124,13 @@ class ComponentUtility(QObject):
         :param multi_row: Boolean allowing multi-rows
         in the tableview.
         :type multi_row: Boolean
-        :return:
-        :rtype:
         """
-        fk_mapper = ForeignKeyMapper(
+        fk_mapper_cls = ForeignKeyMapper
+        if is_party:
+            fk_mapper_cls = PartyForeignKeyMapper
+        if config is None:
+            return None
+        fk_mapper = fk_mapper_cls(
             config.ds_entity, parent, notif_bar
         )
         fk_mapper.setDatabaseModel(config.model())
@@ -130,7 +148,10 @@ class ComponentUtility(QObject):
         """
         table_display_name = format_name(entity.short_name)
         table_name = entity.name
-        model = entity_model(entity)
+        try:
+            model = entity_model(entity)
+        except Exception:
+            return None
 
         if model is not None:
             return EntityConfig(
@@ -152,8 +173,6 @@ class ComponentUtility(QObject):
         :param str_type: A boolean that sets if it is
         for str type table or not.
         :type str_type: Boolean
-        :return: None
-        :rtype: NoneType
         """
         # show grid
         table_view.setShowGrid(True)
@@ -174,12 +193,61 @@ class ComponentUtility(QObject):
         :param table_view: The table view
         to remove rows from.
         :type table_view: QTableView
-        :return: None
-        :rtype: NoneType
         """
         row_count = table_view.model().rowCount()
 
         table_view.model().removeRows(0, row_count)
+
+
+class PartyForeignKeyMapper(ForeignKeyMapper):
+    """
+    ForeignKeyMapper wrapper class for party entity.
+    """
+    def __init__(self, *args, **kwargs):
+        """
+        Initializes PartyForeignKeyMapper.
+        :param args:
+        :type args:
+        :param kwargs:
+        :type kwargs:
+        """
+        super(PartyForeignKeyMapper, self).__init__(*args, **kwargs)
+        self.init_party_entity_combo()
+
+    def init_party_entity_combo(self):
+        """
+        Creates the party entity combobox.
+        """
+        self.entity_combo_label = QLabel()
+        combo_text = QApplication.translate(
+            'PartyForeignKeyMapper', 'Select a party entity'
+        )
+        self.entity_combo_label.setText(combo_text)
+
+        self.entity_combo = QComboBox()
+        self.spacer_item = QSpacerItem(
+            288,
+            20,
+            QSizePolicy.Expanding,
+            QSizePolicy.Minimum
+        )
+        self.grid_layout.addItem(self.spacer_item, 0, 4, 1, 1)
+
+        self.grid_layout.addWidget(self.entity_combo_label, 0, 5, 1, 1)
+        self.grid_layout.addWidget(self.entity_combo, 0, 6, 1, 1)
+
+        self.populate_parties()
+
+    def populate_parties(self):
+        """
+        Populates the party entities in the entities combobox.
+        """
+        self.parties = current_profile().social_tenure.parties
+
+        for entity in self.parties:
+            self.entity_combo.addItem(
+                entity.short_name, entity.name
+            )
 
 
 class Party(ComponentUtility):
@@ -207,21 +275,23 @@ class Party(ComponentUtility):
     def init_party(self):
         """
         Initialize the party page
-        :returns:
-        :rtype:
         """
 
         if self.selected_party is None:
             entity_config = self._load_entity_config(self.party_1)
         else:
             entity_config = self._load_entity_config(self.selected_party)
-
+        if entity_config is None:
+            return
         self.party_fk_mapper = self._create_fk_mapper(
             entity_config,
             self.container_box,
             self.notification_bar,
-            self.social_tenure.multi_party
+            self.social_tenure.multi_party,
+            True
         )
+        if self.party_fk_mapper is None:
+            return
 
         self.party_layout.addWidget(self.party_fk_mapper)
 
@@ -243,15 +313,14 @@ class SpatialUnit(ComponentUtility):
         self.notification_bar = notification_bar
         self.mirror_map = mirror_map
         self.init_spatial_unit()
-        self.spatial_unit_fk_mapper.afterEntityAdded.connect(
-            self.draw_spatial_unit
-        )
+        if self.spatial_unit_fk_mapper is not None:
+            self.spatial_unit_fk_mapper.afterEntityAdded.connect(
+                self.draw_spatial_unit
+            )
 
     def init_spatial_unit(self):
         """
         Initialize the spatial_unit page
-        :returns:
-        :rtype:
         """
         entity_config = self._load_entity_config(self.spatial_unit)
         self.spatial_unit_fk_mapper = self._create_fk_mapper(
@@ -324,8 +393,6 @@ class STRType(ComponentUtility):
         :type str_type_id: Integer
         :param insert_row: The row in which the STR type row is is added.
         :type insert_row: Integer
-        :return:
-        :rtype:
         """
         data = [None, None] + row_data
         self.str_type_data.append(data)
@@ -334,7 +401,7 @@ class STRType(ComponentUtility):
         self.update_table_view(self.str_type_table, True)
 
         self.str_type_table.model().layoutChanged.emit()
-        ## select the first column (STR Type)
+        # select the first column (STR Type)
         self.str_type_table.frozen_table_view.selectColumn(0)
 
     def copy_party_table(self, table_view, row):
@@ -418,8 +485,6 @@ class STRType(ComponentUtility):
         Makes the STR Type combobox editable.
         :param row: The row of STR Type combobox
         :type row: Integer
-        :return: None
-        :rtype: NoneType
         """
         frozen_table = self.str_type_table.frozen_table_view
         model = frozen_table.model()
@@ -474,8 +539,6 @@ class STRType(ComponentUtility):
         row when a party row is removed.
         :param rows: List of party row position that is removed.
         :type rows: List
-        :returns: None
-        :rtype: NoneType
         """
         for row in rows:
             self.str_type_table.model().removeRow(row)
@@ -509,8 +572,6 @@ class SupportingDocuments(ComponentUtility):
         """
         Initializes the document type combobox by
         populating data.
-        :return: None
-        :rtype: NoneType
         """
         self.supporting_doc_manager = SourceDocumentManager(
             self.social_tenure.supporting_doc,
@@ -533,16 +594,12 @@ class SupportingDocuments(ComponentUtility):
         the number of copies for each supporting document.
         :param count: The number of currently added party records.
         :type count: Integer
-        :return:
-        :rtype:
         """
         self.current_party_count = count
 
     def create_doc_tab_populate_combobox(self):
         """
         Creates the supporting document component widget.
-        :return:
-        :rtype:
         """
         self.doc_tab_data()
         self.docs_tab = QTabWidget()
@@ -609,8 +666,6 @@ class SupportingDocuments(ComponentUtility):
     def doc_tab_data(self):
         """
         Sets the document types in the social tenure entity.
-        :return:
-        :rtype:
         """
         doc_entity = self.social_tenure. \
             supporting_doc.document_type_entity
@@ -626,8 +681,6 @@ class SupportingDocuments(ComponentUtility):
         """
         Changes the active tab based on the
         selected value of document type combobox.
-        :return: None
-        :rtype: NoneType
         """
         combo_text = self.doc_type_cbo.currentText()
         if combo_text is not None and len(combo_text) > 0:
@@ -638,8 +691,6 @@ class SupportingDocuments(ComponentUtility):
         """
         Changes the document type combobox value based on the
         selected tab.
-        :return: None
-        :rtype: NoneType
         """
         doc_tab_index = self.docs_tab.currentIndex()
         self.doc_type_cbo.setCurrentIndex(doc_tab_index)
@@ -654,8 +705,6 @@ class SupportingDocuments(ComponentUtility):
         :param visibility: A boolean to show or hide visibility.
         True hides widget and False shows it.
         :type visibility: Boolean
-        :return:
-        :rtype:
         """
         widget.setHidden(visibility)
 
@@ -664,8 +713,6 @@ class SupportingDocuments(ComponentUtility):
         Update the current supporting document widget container to be used.
         :param str_number: The STR node number
         :type str_number: Integer
-        :return:
-        :rtype:
         """
         doc_text = self.doc_type_cbo.currentText()
         cbo_index = self.doc_type_cbo.currentIndex()
@@ -730,8 +777,6 @@ class SupportingDocuments(ComponentUtility):
         :type doc_text: String
         :param str_number: The STR node number
         :type str_number: Integer
-        :return:
-        :rtype:
         """
         expression = QRegExp('doc_widget*')
         # hide all existing widgets in all layouts
@@ -777,8 +822,6 @@ class SupportingDocuments(ComponentUtility):
         Displays a file dialog for a user to specify a source document
         :param title: The title of the file dialog
         :type title: String
-        :return:
-        :rtype:
         """
         #Get last path for supporting documents
         last_path = last_document_path()
@@ -832,8 +875,6 @@ class ValidityPeriod():
     def init_dates(self):
         """
         Initialize the dates by setting the current date.
-        :return:
-        :rtype:
         """
         self.from_date.setDate(
             date.today()
@@ -846,8 +887,6 @@ class ValidityPeriod():
         """
         Adjusts the date range based on years using the numbers
         specified in the tenure duration spinbox.
-        :return:
-        :rtype:
         """
         duration = self.str_editor.tenure_duration.value()
         before_date = self.to_date.date().currentDate()
@@ -863,8 +902,6 @@ class ValidityPeriod():
         """
         Adjusts the date range based on month using the numbers
         specified in the tenure duration spinbox.
-        :return:
-        :rtype:
         """
         duration = self.str_editor.tenure_duration.value()
         before_date = self.from_date.date()
@@ -900,8 +937,6 @@ class ValidityPeriod():
         It changes the end date of the validity.
         :param increment: The new value of year spinbox.
         :type increment: Integer
-        :return:
-        :rtype:
         """
         current_year = self.to_date.date().currentDate().year()
 
@@ -923,8 +958,6 @@ class ValidityPeriod():
         A slot raised when from or to dates are changed.
         It updates the year spinbox. Note that,
         there is no rounding.
-        :return:
-        :rtype:
         """
         to_date = self.to_date.date().toPyDate()
         from_date = self.from_date.date().toPyDate()
@@ -944,8 +977,6 @@ class ValidityPeriod():
         """
         Set the minimum to date based on the
         change in value of from date.
-        :return:
-        :rtype:
         """
         self.to_date.setMinimumDate(self.from_date.date())
 
@@ -953,8 +984,6 @@ class ValidityPeriod():
         """
         Sets the date rage on start date of the validity period as
         specified in the configuration.
-        :return:
-        :rtype:
         """
         minimum_date = self.social_tenure.validity_start_column.minimum
         maximum_date = self.social_tenure.validity_start_column.maximum
@@ -967,8 +996,6 @@ class ValidityPeriod():
         """
         Sets the date rage on end date of the validity period date as
         specified in the configuration.
-        :return:
-        :rtype:
         """
         minimum_date = self.social_tenure.validity_end_column.minimum
         maximum_date = self.social_tenure.validity_end_column.maximum
