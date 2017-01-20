@@ -1,7 +1,7 @@
 **Social Tenure Domain Model**
 ==============================
 
-<img src="./images/readme/image1.png" width="624" height="351" />
+[![STDM Screenshot](/images/readme/image1.png)](http://stdm.gltn.net/)
 
 The Social Tenure Domain Model (STDM) is a propoor land information tool that provides a flexible approach for representing people-land relationships. The tool provides a practical approach for representing these relationships independent of the level of formality, legality and technical accuracy.
 
@@ -72,3 +72,5 @@ STDM is a free software; you can redistribute it and/or modify it under the term
 -   If you find an issue working with STDM, please report it so that developers can check and fix it. To report a bug, subscribe to: [lists.osgeo.org/cgi-bin/mailman/listinfo/stdm-dev](http://lists.osgeo.org/cgi-bin/mailman/listinfo/stdm-dev) or post it in GitHub at: <https://github.com/gltn/stdm/issues>
 
 -   To browse the source codes or extend the core platform, access the repository here: <https://github.com/gltn/stdm>
+
+[![Join the chat at https://gitter.im/gltn-stdm](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/gltn-stdm)
