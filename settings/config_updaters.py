@@ -21,10 +21,13 @@ email                : stdm@unhabitat.org
 from collections import OrderedDict
 from datetime import datetime, date, time
 from PyQt4.QtCore import QObject, pyqtSignal
+from PyQt4.QtGui import QApplication
+
 from PyQt4.QtXml import QDomDocument
 from stdm.data.configuration.columns import (
     DateColumn
 )
+from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.settings.config_utils import ConfigurationUtils
 
 from stdm.data.configfile_paths import FilePaths
@@ -33,6 +36,7 @@ from stdm.settings.database_updaters import DatabaseUpdater
 class ConfigurationUpdater(QObject):
     update_complete = pyqtSignal(QDomDocument)
     update_progress = pyqtSignal(str)
+    version_updated = pyqtSignal(QDomDocument)
 
     def __init__(self, document, parent=None):
         """
@@ -124,7 +128,6 @@ class ConfigurationUpdater(QObject):
         version = self.version()
         updater = self.version_updater(version)
 
-
         if not updater is None:
             self.append_log(
                 'Found updater - {}.'.format(updater)
@@ -132,23 +135,26 @@ class ConfigurationUpdater(QObject):
             updater_instance = updater(
                 self.document, self.log_file_path
             )
+
+            updater_instance.update_complete.connect(
+                self.on_update_complete
+            )
             updater_instance.update_progress.connect(
                 self.on_update_progress
             )
-            updater_instance.update_complete.connect(
-                self.on_update_complete
+            updater_instance.version_updated.connect(
+                self.on_version_updated
             )
-            status, document, db_updater = updater_instance.exec_()
-            updater_instance.update_complete.connect(
-                self.on_update_complete
-            )
-            return status, document, db_updater
+            updater_instance.exec_()
+            return True, self.document
+
         else:
 
             self.append_log(
                 'No updater found for this configuration '
                 'with version number {}.'.format(version)
             )
+            return False, None
 
     def on_update_progress(self, message):
         """
@@ -170,20 +176,32 @@ class ConfigurationUpdater(QObject):
         """
         self.update_complete.emit(document)
 
-
+    def on_version_updated(self, document):
+        """
+        A slot raised when a specific version of a configuration is updated.
+        :param document: The updated dom document
+        :type document: QDomDocument
+        :return:
+        :rtype:
+        """
+        self.version_updated.emit(document)
 
 class ConfigurationVersionUpdater(QObject):
+    """
+    A parent class for the version updaters designed for each
+    configuration version.
+    """
     FROM_VERSION = None
     TO_VERSION = None
     UPDATERS = OrderedDict()
     NEXT_UPDATER = None
     update_complete = pyqtSignal(QDomDocument)
+    version_updated = pyqtSignal(QDomDocument)
     update_progress = pyqtSignal(str)
 
     def __init__(self, document, log_file, parent=None):
         """
-        A parent class for the version updaters designed for each
-        configuration version.
+        Initializes ConfigurationVersionUpdater.
         :param document: The configuration to be updated.
         :type document: QDomDocument
         :param log_file: The log file object
@@ -194,8 +212,8 @@ class ConfigurationVersionUpdater(QObject):
         QObject.__init__(self, parent)
         self.document = document
         self.log_file = log_file
+        self.config = StdmConfiguration.instance()
         self.config_utils = ConfigurationUtils(document)
-        self.db_updater = DatabaseUpdater(document)
 
 
     @classmethod
@@ -204,8 +222,6 @@ class ConfigurationVersionUpdater(QObject):
         Registers a class in UPDATERS dictionary.
         :param cls: The updater class to be registered.
         :type cls: Class
-        :return:
-        :rtype:
         """
         if len(ConfigurationVersionUpdater.UPDATERS) > 0:
             updaters = ConfigurationVersionUpdater.UPDATERS.values()
@@ -232,7 +248,11 @@ class ConfigurationVersionUpdater(QObject):
         info_file.write('\n')
         info_file.close()
 
+
 class ConfigVersionUpdater13(ConfigurationVersionUpdater):
+    """
+    Updates the configuration version 1.2 to version 1.3.
+    """
     FROM_VERSION = 1.2
     TO_VERSION = 1.3
 
@@ -254,8 +274,6 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
         :type min_max: String
         :param value: The minimum or maximum dates
         :type value: String
-        :return:
-        :rtype:
         """
         # Get validity node
         validities = str_element.elementsByTagName(
@@ -313,37 +331,55 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
         the version upgraded.
         :rtype: Tuple
         """
+        self.update_current_version()
+        # To be used by the db updater for intermediate updates.
+        self.version_updated.emit(self.document)
+        #TODO update the dom_document version in the next version
+        # Not the latest version and found updater for the next version
+        if not self.NEXT_UPDATER is None and \
+                        self.config.VERSION > self.TO_VERSION:
+            next_updater = self.NEXT_UPDATER(self.document, self.log_file)
+            message = QApplication.translate(
+                'ConfigVersionUpdater13',
+                'Started updating configuration version {}'.format(
+                    self.NEXT_UPDATER.TO_VERSION
+                )
+            )
+            self.update_progress.emit(message)
+            self.append_log('Initializing {}'.format(self.NEXT_UPDATER))
+            next_updater.exec_()
 
-        self.append_log(
-            'Started the backup the database version {}.'
-                .format(self.FROM_VERSION)
-        )
+        # Updating to the latest version
+        elif self.NEXT_UPDATER is None and \
+                        self.config.VERSION == self.TO_VERSION:
+            self.update_complete.emit(self.document)
+            self.append_log(
+                'Successfully updated dom_document to version'.format(
+                    self.TO_VERSION
+                )
+            )
 
-        self.db_updater.backup_database()
-
-        self.append_log(
-            'Successfully backed up up the database to version {}.'
-                .format(self.TO_VERSION)
-        )
-
-        social_tenure_elements = self.config_utils.\
-            social_tenure_elements()
+    def update_current_version(self):
+        """
+        Updates the updaters version to the next or latest updater.
+        """
+        social_tenure_elements = self.config_utils.social_tenure_elements()
         # Emit start progress
-        self.update_progress.emit(
+        message = QApplication.translate(
+            'ConfigVersionUpdater13',
             'Starting to update to configuration version {}'.format(
                 self.TO_VERSION
             )
         )
+        self.update_progress.emit(message)
         self.append_log(
-            'Starting to update to configuration version {}'.format(
-                self.TO_VERSION
-            )
+            'Starting to update to configuration version {}'.
+                format(self.TO_VERSION)
         )
         # sql_min = DateColumn.SQL_MIN
         sql_min = '1700-01-01'
         # sql_max = DateColumn.SQL_MAX
         sql_max = '7999-12-31'
-
         # Add validity node and elements
         for parent_node, str_element in social_tenure_elements.iteritems():
             self._add_validity(
@@ -359,35 +395,5 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
                 str_element, self.END_TAG, self.MAXIMUM, sql_max
             )
             parent_node.appendChild(str_element)
-
-        # Initialize the next updater if it exists.
-        if not self.NEXT_UPDATER is None:
-            next_updater = self.NEXT_UPDATER(
-                self.document, self.log_file
-            )
-            self.update_progress.emit(
-                'Started updating configuration version {}'.format(
-                    self.NEXT_UPDATER.TO_VERSION
-                )
-            )
-
-            self.append_log(
-                'Initializing {}'.format(
-                    self.NEXT_UPDATER
-                )
-            )
-            next_updater.exec_()
-        # TODO add an if condition if the to version is the ...
-        # latest version to be sure when emitting update_complete signal.
-        else:
-
-            self.update_complete.emit(self.document)
-
-            self.append_log(
-                'Successfully updated dom_document to version'.format(
-                    self.TO_VERSION
-                )
-            )
-            return True, self.document, self.db_updater
 
 ConfigVersionUpdater13.register()

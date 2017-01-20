@@ -113,7 +113,7 @@ def set_feature_vertex_marker(map_canvas, lon, lat, color='#008000'):
     :param lat: Vertex latitude value
     :param lon: Vertex longitude value
     :param color: Vertex color
-    :return marker: Vertex objcet
+    :return marker: Vertex object
     :rtype marker: Object
     """
     marker = q_gui.QgsVertexMarker(map_canvas)
@@ -460,14 +460,4 @@ def delete_feature(map_canvas, temp_mem_layer):
         feature_ids = [feature.id() for feature in temp_mem_layer.getFeatures()]
         temp_mem_layer.deleteFeatures(feature_ids)
     map_canvas.refresh()
-
-
-
-
-
-
-
-
-
-
 

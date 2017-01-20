@@ -755,6 +755,7 @@ def profile_entities(profile):
     ]
     return entities
 
+
 def enable_drag_sort(mv_widget):
     """
     Enables internal drag and drop sorting in

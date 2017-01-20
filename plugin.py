@@ -533,9 +533,8 @@ class STDMQGISLoader(object):
         :return:
         :rtype:
         """
-        config_updater = ConfigurationSchemaUpdater()
-        config_updater.exec_()
-        print 'complete STDMQGISLoaoder'
+        # TODO remove this line below when schema updater is refactored
+        self.config_serializer.on_version_updated(document)
         self.progress.hide()
         self.progress.cancel()
         # QMessageBox.information(
@@ -544,18 +543,15 @@ class STDMQGISLoader(object):
         #     'The configuration is successfully upgraded!'
         # )
 
-    def on_start_database_update(self, document):
-
-        db_updater = DatabaseUpdater(document)
-        db_updater.upgrade_database()
-
-
     def load_configuration_to_serializer(self):
         try:
             self.config_serializer.update_complete.connect(
                 self.on_update_complete
             )
             self.config_serializer.update_progress.connect(
+                self.on_update_progress
+            )
+            self.config_serializer.db_update_progress.connect(
                 self.on_update_progress
             )
             self.config_serializer.load()

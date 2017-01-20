@@ -19,8 +19,9 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 from collections import OrderedDict
-from datetime import datetime, date, time
+from datetime import datetime
 from PyQt4.QtCore import QObject, pyqtSignal
+from PyQt4.QtGui import QApplication
 from PyQt4.QtXml import QDomDocument
 
 from stdm.data.pg_utils import (
@@ -97,8 +98,7 @@ class DatabaseUpdater(QObject):
         info_file.write('\n')
         info_file.close()
 
-    def backup_database(self):
-        pass
+
 
     def upgrade_database(self):
         """
@@ -108,6 +108,8 @@ class DatabaseUpdater(QObject):
         """
         updater = self.version_updater()
         updater_instance = updater(self.log_file_path)
+        updater_instance.db_update_progress.connect(self.db_update_progress)
+
         updater_instance.exec_()
 
     def on_update_progress(self, message):
@@ -129,6 +131,14 @@ class DatabaseUpdater(QObject):
         :rtype:
         """
         self.db_update_complete.emit(document)
+
+    def on_db_update_progress(self, message):
+        """
+        A slot raised when the database update progress signal is emitted.
+        :param message: The progress message
+        :type message: String
+        """
+        self.db_update_progress.emit(message)
 
 class DatabaseVersionUpdater(QObject):
     FROM_VERSION = None
@@ -189,6 +199,26 @@ class DatabaseVersionUpdater13(DatabaseVersionUpdater):
     TO_VERSION = 1.3
 
     columns = {}
+    def __init__(self, log_file):
+        DatabaseVersionUpdater.__init__(self, log_file)
+
+    def backup_database(self):
+        """
+        Backups up the database and emits signals on the progress.
+        """
+        self.append_log('Started the backup the database version {}.'
+            .format(self.FROM_VERSION)
+        )
+        self.append_log('Successfully backed up up the database to version {}.'
+            .format(self.TO_VERSION)
+        )
+        message = QApplication.translate(
+            'DatabaseVersionUpdater13',
+            'Successfully backed up the database to version {}.'.format(
+                self.TO_VERSION
+            )
+        )
+        self.db_update_progress.emit(message)
 
     def update_str_table(self):
         for profile in self.config.profiles.values():
@@ -196,8 +226,9 @@ class DatabaseVersionUpdater13(DatabaseVersionUpdater):
             social_tenure = profile.social_tenure
             if not pg_table_exists(social_tenure.name, False):
                 return
-
             parties = social_tenure.parties
+            if len(parties) < 1:
+                return
             party = parties[0].short_name.lower()
             party_table = parties[0].name
             old_column = 'party_id'
@@ -220,6 +251,7 @@ class DatabaseVersionUpdater13(DatabaseVersionUpdater):
         :return:
         :rtype:
         """
+        self.backup_database()
         self.update_str_table()
         # Initialize the next updater if it exists.
         if not self.NEXT_UPDATER is None:
@@ -232,10 +264,16 @@ class DatabaseVersionUpdater13(DatabaseVersionUpdater):
             self.db_update_complete.emit()
 
             self.append_log(
-                'Successfully updated dom_document to version'.format(
+                'Successfully updated the database to version {}'.format(
                     self.TO_VERSION
                 )
             )
-            return True
+            message = QApplication.translate(
+                'DatabaseVersionUpdater13',
+                'Successfully updated the database to version {}'.format(
+                    self.TO_VERSION
+                )
+            )
+            self.db_update_progress.emit(message)
 
 DatabaseVersionUpdater13.register()

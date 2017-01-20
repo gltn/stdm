@@ -75,17 +75,12 @@ class STRDBHandler():
         with a supporting document record, if uploaded.
         :param str_store: The data store of str components
         :type str_store: STRDataStore
-        :return: None
-        :rtype: NoneType
         """
-
         _str_obj = self.str_model()
         str_objs = []
 
         party_name = str_store.party.values()[0].__table__.name
-
         index = 4
-
         # Social tenure and supporting document insertion
         # The code below is have a workaround to enable
         # batch supporting documents without affecting single
@@ -132,39 +127,12 @@ class STRDBHandler():
             index = index + 1
         _str_obj.saveMany(str_objs)
 
-    def save_str(self):
-        """
-        Calls the create and update methods based on the presence and
-        absence of the STR edit model object.
-        :return: The updated STR model object or None. The updated STR model
-        object is used by Spatial Entity Details or the View STR to
-        update the respective QTreeView.
-        :rtype:
-        """
-        if self.str_edit_obj is None:
-            for str_store in self.data_store.values():
-                self.on_add_str(str_store)
-            return None
-
-        else:
-            if len(self.data_store) == 1:
-
-                updated_str_obj = self.on_edit_str(
-                    self.data_store[1]
-                )
-
-                return updated_str_obj
-            else:
-                return None
-
     def on_edit_str(self, str_store):
         """
          Updates an STR data with new data.
          :param str_store: The store of edited data
          with existing data.
          :type str_store: STRDataStore
-         :return: None
-         :rtype: NoneType
          """
         _str_obj = self.str_model()
 
@@ -215,8 +183,6 @@ class STRDBHandler():
         """
         Slot raised when the user clicks on Finish
         button in order to create a new STR entry.
-        :return: None
-        :rtype: NoneType
         """
         isValid = True
         # Create a progress dialog

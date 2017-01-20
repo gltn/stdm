@@ -34,9 +34,9 @@ from PyQt4.QtGui import (
     QGraphicsDropShadowEffect,
     QHeaderView,
     QSizePolicy,
-    QSortFilterProxyModel
+    QSortFilterProxyModel,
+    QDoubleSpinBox
 )
-from PyQt4.QtGui import QDoubleSpinBox
 from stdm.data.qtmodels import BaseSTDMTableModel
 from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
@@ -46,16 +46,16 @@ from stdm.utils.util import (
 
 LOGGER = logging.getLogger('stdm')
 class STRTypeDelegate(QItemDelegate):
-
+    """
+    It is a combobox delegate embedded in STR Type column.
+    """
     def __init__(self, str_type_id=0, parent=None):
         """
-        It is a combobox delegate embedded in STR Type column.
+        Initializes STRTypeDelegate and QItemDelegate.
         :param str_type_id: The tenure type id.
         :type str_type_id: Integer
         :param parent: The parent of the item delegate.
         :type parent: QWidget
-        :return:
-        :rtype:
         """
         QItemDelegate.__init__(self, parent)
         self.str_type_id = str_type_id
@@ -121,8 +121,6 @@ class STRTypeDelegate(QItemDelegate):
         :type comboBox: QCombobox
         :param index: The model index
         :type index: QModelIndex
-        :return: None
-        :rtype: NoneType
         """
         if index.column() == 0:
             list_item_index = None
@@ -148,8 +146,6 @@ class STRTypeDelegate(QItemDelegate):
         :param index: The index of the data
         to be inserted.
         :type index: QModelIndex
-        :return: None
-        :rtype: NoneType
         """
         if index.column() == 0:
             value = editor.currentIndex()
@@ -171,8 +167,6 @@ class STRTypeDelegate(QItemDelegate):
         :type option: QStyle
         :param index: index of the combobox item
         :type index: QModelIndex
-        :return:
-        :rtype:
         """
         editor.setGeometry(option.rect)
 
@@ -296,8 +290,6 @@ class FreezeTableWidget(QTableView):
     def signals(self):
         """
         Connects signals of the tables.
-        :return:
-        :rtype:
         """
         # Connect the headers and scrollbars of
         # both tableviews together
@@ -318,8 +310,6 @@ class FreezeTableWidget(QTableView):
     def set_column_width(self):
         """
         Sets the column width of the frozen QTableView.
-        :return:
-        :rtype:
         """
         # Set the width of columns
         columns_count = self.table_model.columnCount(self)
@@ -360,8 +350,6 @@ class FreezeTableWidget(QTableView):
     def set_style(self):
         """
         Sets the style of the frozen table.
-        :return:
-        :rtype:
         """
         # Style frozentable view
         self.frozen_table_view.setStyleSheet(
@@ -384,8 +372,6 @@ class FreezeTableWidget(QTableView):
         :type str_type_id: Integer
         :param insert_row: The row number the widgets to be added.
         :type insert_row: Integer
-        :return:
-        :rtype:
         """
         delegate = STRTypeDelegate(str_type_id)
         # Set delegate to add combobox under
@@ -421,8 +407,6 @@ class FreezeTableWidget(QTableView):
         :type oldSize: Integer
         :param newSize: The new size of the section
         :type newSize: Integer
-        :return:
-        :rtype:
         """
         if logicalIndex==0 or logicalIndex==1:
             self.frozen_table_view.setColumnWidth(
@@ -441,8 +425,6 @@ class FreezeTableWidget(QTableView):
         :type oldSize: Integer
         :param newSize: The new size of the section
         :type newSize: Integer
-        :return:
-        :rtype:
         """
         self.frozen_table_view.setRowHeight(
             logicalIndex, newSize
@@ -454,8 +436,6 @@ class FreezeTableWidget(QTableView):
         It updates the frozen table view geometry on resize of table.
         :param event: The event
         :type event: QEvent
-        :return:
-        :rtype:
         """
         QTableView.resizeEvent(self, event)
         try:
@@ -472,8 +452,6 @@ class FreezeTableWidget(QTableView):
         :type index: QModelIndex
         :param hint: The scroll hint
         :type hint: Integer
-        :return:
-        :rtype:
         """
         if index.column() > 1:
             QTableView.scrollTo(self, index, hint)
@@ -481,8 +459,6 @@ class FreezeTableWidget(QTableView):
     def update_frozen_table_geometry(self):
         """
         Updates the frozen table view geometry.
-        :return:
-        :rtype:
         """
         if self.verticalHeader().isVisible():
             self.frozen_table_view.setGeometry(
@@ -556,8 +532,6 @@ class EntityConfig(object):
     def _set_ds_columns(self):
         """
         Sets the data source columns.
-        :return:
-        :rtype:
         """
         if not self._data_source:
             self._ds_columns = []
