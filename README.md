@@ -1,5 +1,7 @@
 **Social Tenure Domain Model**
 ==============================
+[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/gltn-stdm)
+
 
 <img src="./images/readme/image1.png" width="624" height="351" />
 
