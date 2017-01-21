@@ -1460,8 +1460,6 @@ class STREditor(ValidateSTREditor):
 
         self.buttonBox.accepted.connect(self.save_str)
 
-        self.buttonBox.accepted.connect(self.test_save_str)
-
     def spatial_unit_signals(self):
         """
         Spatial unit component signals.
