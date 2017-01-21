@@ -803,11 +803,11 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         """
 
         if not self._docSize is None:
-            display_doc_size = str(size(self._docSize))
+            display_doc_size = unicode(size(self._docSize))
         else:
             display_doc_size = '0'
 
-        html = '<html>' \
+        html = u'<html>' \
                    '<head/>' \
                    '<body>' \
                        '<p>' \
@@ -825,7 +825,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
                        '</p>' \
                    '</body>' \
                '</html>'.format(
-            str(self._displayName),
+            unicode(self._displayName),
             display_doc_size
         )
         self.lblName.setText(html)
