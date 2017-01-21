@@ -200,16 +200,15 @@ class ConfigurationFileSerializer(QObject):
         self._load_config_items(doc_element)
         self.append_log(
             'Loaded the updated configuration to '
-            'STDM configuration instance.'
+            'STDM configuration.'
         )
         self.update_progress.emit(
             'Loaded the updated configuration to '
-            'STDM configuration instance.'
+            'STDM configuration.'
         )
         self.save()
         self.append_log(
-            'Successfully created configuration.stc '
-            'with the latest config version.'
+            'Successfully created an updated configuration.stc.'
         )
 
         self.update_complete.emit(updated_document)

@@ -57,7 +57,8 @@ from stdm.data.configuration import (
     entity_model
 )
 from stdm.data.pg_utils import (
-    spatial_tables
+    spatial_tables,
+    pg_views
 )
 
 from stdm.data.supporting_documents import (
@@ -71,10 +72,10 @@ from stdm.utils.util import (
     format_name,
     entity_id_to_model,
     profile_spatial_tables
-
 )
 
 from stdm.ui.social_tenure.str_editor import EditSTREditor
+
 from ui_feature_details import Ui_DetailsDock
 
 
@@ -151,11 +152,15 @@ class LayerSelectionHandler(object):
         vals = dict(re.findall('(\S+)="?(.*?)"? ', source))
         try:
             table = vals['table'].split('.')
-            tableName = table[1].strip('"')
-            entity_table = self.current_profile.entity_by_name(tableName)
-            if entity_table is None:
+
+            table_name = table[1].strip('"')
+            if table_name in pg_views():
+                return table_name
+
+            entity_table = self.current_profile.entity_by_name(table_name)
+            if entity_table is None :
                 return None
-            return tableName
+            return table_name
         except KeyError:
             return None
 
@@ -256,7 +261,7 @@ class DetailsDBHandler:
         self.column_formatter = OrderedDict()
         self.formatted_columns = OrderedDict()
         self.current_profile = current_profile()
-        self.formatted_record = OrderedDict()
+        self._formatted_record = OrderedDict()
         self.display_columns = None
         self._entity_supporting_doc_tables = {}
 
@@ -323,6 +328,26 @@ class DetailsDBHandler:
             ]
         ]
 
+    def feature_model(self, entity, id):
+        """
+        Gets the model of an entity based on an id and the entity.
+        :param entity: Entity
+        :type entity: Object
+        :param id: Id of the record
+        :type id: Integer
+        :return: SQLAlchemy result proxy
+        :rtype: Object
+        """
+        model = entity_model(entity)
+        model_obj = model()
+        result = model_obj.queryObject().filter(
+            model.id == id
+        ).all()
+        if len(result) > 0:
+            return result[0]
+        else:
+            return None
+
     def feature_str_link(self, feature_id):
         """
         Gets all STR records linked to a feature, if the layer is a
@@ -350,16 +375,19 @@ class DetailsDBHandler:
         :param entity: The entity object
         :type entity: Object
         """
-        self.formatted_record.clear()
+
+        self._formatted_record.clear()
+
         self.display_column_object(entity)
         for col in self.display_columns:
             col_val = getattr(model, col.name)
+
             # Check if there are display formatters and apply if
             # one exists for the given attribute.
             if col.name in self.column_formatter:
                 formatter = self.column_formatter[col.name]
                 col_val = formatter.format_column_value(col_val)
-            self.formatted_record[col.header()] = col_val
+            self._formatted_record[col.header()] = col_val
 
     def _supporting_doc_models(self, entity_table, model_obj):
         """
@@ -501,6 +529,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         self.removed_feature = None
         self.selected_root = None
         self.party_items = {}
+
         self.model = QStandardItemModel()
         self.view.setModel(self.model)
         self.view.setUniformRowHeights(True)
@@ -541,7 +570,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         if self.layer_table is None:
             return
 
-        if self.layer_table in spatial_tables():
+        if self.layer_table in spatial_tables() and \
+                        self.layer_table not in pg_views():
             self.entity = self.current_profile.entity_by_name(
                 self.layer_table
             )
@@ -679,23 +709,22 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         """
         if self.selected_features() is None:
             self.reset_tree_view()
-            not_supported = 'Spatial Details is not ' \
-                             'supported for this layer.'
+
+            not_supported = QApplication.translate(
+                'DetailsTreeView',
+                'Spatial Entity Details is not supported for this layer.'
+            )
             self.treeview_error(not_supported)
             return
         selected_features = self.selected_features()
-        ### add non entity layer for views and shape files.
+        ### add non entity layer for views.
+
         if len(selected_features) < 1:
             self.reset_tree_view()
             self.disable_buttons(True)
             return
         layer_icon = QIcon(':/plugins/stdm/images/icons/layer.gif')
 
-        if len(selected_features) < 1:
-            self.disable_buttons(True)
-            select_feature = 'You have not selected a feature.'
-            self.treeview_error(select_feature)
-            return
         if not self.entity is None:
             self.reset_tree_view()
             roots = self.add_parent_tree(
@@ -703,9 +732,16 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             )
 
             for id, root in roots.iteritems():
-                db_model = entity_id_to_model(self.entity, id)
+                str_records = self.feature_str_link(id)
+                if len(str_records) > 0:
+                    db_model = getattr(str_records[0], self.entity.name)
 
-                self.add_root_children(db_model, root, id)
+                else:
+                    db_model = self.feature_model(self.entity, id)
+
+                self.add_root_children(db_model, root, str_records)
+
+
         else:
             self.reset_tree_view()
             self.disable_buttons(True)
@@ -718,9 +754,11 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :type layer_icon: QIcon
         """
         selected_features = self.layer.selectedFeatures()
+        # TODO fix no key value added error
         field_names = [field.name() for field in self.layer.pendingFields()]
 
         for elem in selected_features:
+
             parent = QStandardItem(
                 layer_icon,
                 format_name(self.layer.name())
@@ -755,7 +793,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :rtype: OrderedDict
         """
         roots = OrderedDict()
-        # if self.selected_features() is not None:
+
         for feature_id in self.selected_features():
             root = QStandardItem(icon, title)
             root.setData(feature_id)
@@ -764,28 +802,35 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             roots[feature_id] = root
         return roots
 
-    def add_root_children(self, model, parent, feature_id):
+    def add_root_children(self, model, parent, str_records):
         """
         Adds the root children.
         :param model: The entity model
         :type model: SQL Alchemy model
         :param parent: The root of the children
         :type parent: QStandardItem
-        :param feature_id: The feature id
-        :type feature_id: Integer
+        :param str_records: STR record models linked to the spatial unit.
+        :type str_records: List
         """
-        self.feature_models[feature_id] = model
         if model is None:
             return
-        self.column_widget_registry(model, self.entity)
+        self.feature_models[model.id] = model
 
-        for i, (col, row) in enumerate(self.formatted_record.iteritems()):
+        self.column_widget_registry(model, self.entity)
+        for i, (col, row) in enumerate(self._formatted_record.iteritems()):
             child = QStandardItem('{}: {}'.format(col, row))
             child.setSelectable(False)
-            parent.appendRow([child])
+            try:
+                parent.appendRow([child])
+            except RuntimeError:
+                pass
             # Add Social Tenure Relationship steam as a last child
-            if i == len(self.formatted_record)-1:
-                self.add_str_child(parent, feature_id)
+            if i == len(self._formatted_record) - 1:
+                if len(str_records) > 0:
+                    self.add_str_child(parent, str_records, model.id)
+                else:
+                    self.add_no_str_steam(parent)
+
         self.expand_node(parent)
 
     def add_str_steam(self, parent, str_id):
@@ -806,7 +851,10 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         str_root = QStandardItem(str_icon, title)
         str_root.setData(str_id)
         self.set_bold(str_root)
-        parent.appendRow([str_root])
+        try:
+            parent.appendRow([str_root])
+        except RuntimeError:
+            pass
         return str_root
 
     def add_no_str_steam(self, parent):
@@ -844,12 +892,14 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             if record[party_id] != None:
                 return party, party_id
 
-    def add_str_child(self, parent, feature_id):
+    def add_str_child(self, parent, str_records, feature_id):
         """
         Adds STR children into the treeview.
         :param parent: The root node.
         :type parent: QStandardItem
-        :param feature_id: The feature id or the id of the layer table.
+        :param str_records: STR record models linked to the spatial unit.
+        :type str_records: List
+        :param feature_id: The selected feature id.
         :type feature_id: Integer
         """
         if self.layer_table is None:
@@ -857,30 +907,30 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         # If the layer table is not spatial unit table, don't show STR node.
         if self.layer_table != self.spatial_unit.name:
             return
-        if self.feature_str_link(feature_id) is None:
+        if str_records is None:
             return
-        if len(self.feature_str_link(feature_id)) < 1:
-            self.add_no_str_steam(parent)
-            return
-        for record in self.feature_str_link(feature_id):
+        for record in str_records:
             self.str_models[record.id] = record
             str_root = self.add_str_steam(parent, record.id)
             # add STR children
             self.column_widget_registry(record, self.social_tenure)
-            for i, (col, row) in enumerate(
-                    self.formatted_record.iteritems()
-            ):
+
+            for i, (col, row) in enumerate(self._formatted_record.iteritems()):
                 str_child = QStandardItem(
                     '{}: {}'.format(col, row)
                 )
                 str_child.setSelectable(False)
-                str_root.appendRow([str_child])
+                try:
+                    str_root.appendRow([str_child])
+                except RuntimeError:
+                    pass
                 record_dict = record.__dict__
                 party, party_id = self.current_party(record_dict)
+                party_model = getattr(record, party.name)
 
-                if i == len(self.formatted_record) - 1:
+                if i == len(self._formatted_record) - 1:
                     party_root = self.add_party_child(
-                        str_root, party, record_dict[party_id]
+                        str_root, party, party_model
                     )
                     self.party_items[party_root] = party
 
@@ -910,26 +960,26 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         party_root.setEditable(False)
         return party_root
 
-    def add_party_child(self, parent, party_entity, party_id):
+    def add_party_child(self, parent, party_entity, party_model):
         """
         Add party children to the treeview.
         :param parent: The parent of the tree child
         :type parent: QStandardItem
         :param party_entity: The current party entity object
         :type party_entity: Object
-        :param party_id: The id of the party
-        :type party_id: Integer
+        :param party_model: The model of the party record
+        :type party_model: SQLAlchemy Model
         :return: The party root item
         :rtype: QStandardItem
         """
-        db_model = entity_id_to_model(party_entity, party_id)
-        self.party_models[party_id] = db_model
+        party_id = party_model.id
+        self.party_models[party_id] = party_model
         party_root = self.add_party_steam(
             parent, party_entity, party_id
         )
         # add STR children
-        self.column_widget_registry(db_model, party_entity)
-        for col, row in self.formatted_record.iteritems():
+        self.column_widget_registry(party_model, party_entity)
+        for col, row in self._formatted_record.iteritems():
             party_child = QStandardItem('{}: {}'.format(col, row))
             party_child.setSelectable(False)
             party_root.appendRow([party_child])
@@ -976,8 +1026,11 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :type QStandardItem
         :return:None
         """
-        index = self.model.indexFromItem(parent)
-        self.view.expand(index)
+        try:
+            index = self.model.indexFromItem(parent)
+            self.view.expand(index)
+        except RuntimeError:
+            pass
 
     def multi_select_highlight(self, index):
         """
@@ -1127,6 +1180,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             feature_edit = False
             edit_str = EditSTREditor(node_data)
             edit_str.exec_()
+
         # party steam - edit party
         elif item in self.party_items.keys():
 
@@ -1170,9 +1224,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             )
             return
 
-        # str_model = self.str_models[id]
-        # str_model_dict = str_model.__dict__
-        # party, party_id = self.current_party(str_model_dict)
         if item.text() == 'Social Tenure Relationship':
             str_edit = True
             db_model = self.str_models[id]

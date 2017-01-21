@@ -131,35 +131,37 @@ class SpatialUnitManagerDockWidget(
 
         # Append the corresponding(profile)
         # view to the list of entity names
-        str_view = self._curr_profile.social_tenure.view_name
-        if str_view in self.sp_tables:
-            self.str_view_geom_columns = table_column_names(
-                str_view, True
-            )
-            if len(self.str_view_geom_columns) > 0:
-                # Pick the first column
-                # geom_col = geom_columns[0]
-                for i, geom_col in enumerate(self.str_view_geom_columns):
-                    if i > 0:
-                        view_layer_name = self._curr_profile. \
-                            social_tenure.layer_display()
-                        view_layer_name = '{}.{}'.format(
-                            view_layer_name, geom_col
-                        )
-                    else:
-                        view_layer_name = self._curr_profile. \
-                            social_tenure.layer_display()
+        str_views = self._curr_profile.social_tenure.views.keys()
 
-                    self._add_geometry_column_to_combo(
-                        str_view,
-                        geom_col,
-                        view_layer_name,
-                        self._curr_profile.social_tenure
-                    )
-                    # Append view to the list of spatial layers
-                    self._profile_spatial_layers.append(
-                        view_layer_name
-                    )
+        for str_view in str_views:
+            if str_view in self.sp_tables:
+                self.str_view_geom_columns = table_column_names(
+                    str_view, True
+                )
+                if len(self.str_view_geom_columns) > 0:
+                    # Pick the first column
+                    # geom_col = geom_columns[0]
+                    for i, geom_col in enumerate(self.str_view_geom_columns):
+                        if i > 0:
+                            view_layer_name = self._curr_profile. \
+                                social_tenure.layer_display()
+                            view_layer_name = '{}.{}'.format(
+                                view_layer_name, geom_col
+                            )
+                        else:
+                            view_layer_name = self._curr_profile. \
+                                social_tenure.layer_display()
+
+                        self._add_geometry_column_to_combo(
+                            str_view,
+                            geom_col,
+                            view_layer_name,
+                            self._curr_profile.social_tenure
+                        )
+                        # Append view to the list of spatial layers
+                        self._profile_spatial_layers.append(
+                            view_layer_name
+                        )
 
     def control_digitize_toolbar(self, curr_layer):
         if not curr_layer is None:

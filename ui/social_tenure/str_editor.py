@@ -985,6 +985,7 @@ class SyncSTREditorData(BindSTREditor):
             self.init_str_type_signal(
                 data_store, party_id, str_number
             )
+
         self.init_share_spinboxes(data_store)
 
     def toggle_supporting_doc(self, data_store, str_number):
@@ -1006,21 +1007,23 @@ class SyncSTREditorData(BindSTREditor):
         """
         Toggles the validity period component data store
         when the validity period treeview item is clicked.
-        :param data_store:
-        :type data_store:
-        :param str_number:
-        :type str_number:
+        :param data_store: The current data store
+        :type data_store: STRDataStore
+        :param str_number: The current STR root number.
+        :type str_number: Integer
         """
         from_date = data_store.validity_period['from_date']
         to_date = data_store.validity_period['to_date']
+
         if from_date is None or to_date is None:
-            data_store.validity_period['from_date'] = \
+            from_date = data_store.validity_period['from_date'] = \
                 self.validity_from_date.date()
-            data_store.validity_period['to_date'] = \
+            to_date = data_store.validity_period['to_date'] = \
                 self.validity_to_date.date()
-        else:
-            self.validity_from_date.setDate(from_date)
-            self.validity_to_date.setDate(to_date)
+
+        self.validity_from_date.setDate(from_date)
+        self.validity_to_date.setDate(to_date)
+
 
 class ValidateSTREditor(SyncSTREditorData):
     """
@@ -1375,7 +1378,6 @@ class ValidateSTREditor(SyncSTREditorData):
         is already linked to another party.
         :param spatial_unit_obj:The spatial unit model object
         :type spatial_unit_obj: SQLAlchemy model Object
-
         """
         if not self.social_tenure.multi_party:
             usage_count = self.spatial_unit_usage_count(
@@ -1459,17 +1461,6 @@ class STREditor(ValidateSTREditor):
         self.buttonBox.accepted.connect(self.save_str)
 
         self.buttonBox.accepted.connect(self.test_save_str)
-
-    def test_save_str(self):
-        print self.data_store
-        for key, value in self.data_store.iteritems():
-            print key, value.party
-            print key, value.spatial_unit
-            print key, value.str_type
-            print key, value.supporting_document
-            print key, value.validity_period
-            print key, value.share
-
 
     def spatial_unit_signals(self):
         """
@@ -1796,14 +1787,12 @@ class EditSTREditor(STREditor):
         self.data_store[1].party[
             self.str_edit_dict[self.party_column]
         ] = party_model_obj
+
         str_type_id = self.str_edit_obj.tenure_type
         self.data_store[1].str_type[
             self.str_edit_dict[self.party_column]
         ] = str_type_id
-        tenure_share =  self.str_edit_obj.tenure_share
-        self.data_store[1].share[
-            party_model_obj.id
-        ] = tenure_share
+
         QTimer.singleShot(
             40, lambda: self.populate_str_type(str_type_id)
         )
@@ -1834,6 +1823,11 @@ class EditSTREditor(STREditor):
         self.init_str_type_signal(
             self.data_store[1], party_id, 1
         )
+
+        tenure_share = self.str_edit_obj.tenure_share
+
+        self.data_store[1].share[party_id] = float(tenure_share)
+
         doc_item = self.str_item(
             self.tenure_type_text, self.str_number
         )
@@ -1881,6 +1875,7 @@ class EditSTREditor(STREditor):
         start_date = self.str_edit_obj.validity_start
         end_date = self.str_edit_obj.validity_end
         self.data_store[1].validity_period.clear()
+
         self.data_store[1].validity_period['from_date'] = start_date
         self.data_store[1].validity_period['to_date'] = end_date
 
@@ -1971,13 +1966,3 @@ class EditSTREditor(STREditor):
             self.data_store, self.str_model, self.str_edit_node
         )
         self.updated_str_obj = db_handler.commit_str()
-
-    def test_save_str(self):
-        print self.data_store
-        for key, value in self.data_store.iteritems():
-            print key, value.party
-            print key, value.spatial_unit
-            print key, value.str_type
-            print key, value.supporting_document
-            print key, value.validity_period
-            print key, value.share
