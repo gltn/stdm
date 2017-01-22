@@ -22,8 +22,7 @@ email                : stdm@unhabitat.org
 import re
 from collections import OrderedDict
 
-from PyQt4.QtCore import QDate
-from PyQt4.QtCore import QDateTime
+from PyQt4.QtCore import Qt, QDateTime, QDate
 from PyQt4.QtGui import (
     QDockWidget,
     QMessageBox,
@@ -35,16 +34,15 @@ from PyQt4.QtGui import (
     QApplication,
     QColor
 )
-from PyQt4.QtCore import (
-    Qt
-)
+
 from qgis.gui import (
     QgsHighlight
 )
 from qgis.core import (
     QgsFeatureRequest,
     QgsExpression,
-    QgsMapLayer
+    QgsMapLayer,
+    NULL
 )
 
 from stdm.settings import current_profile
@@ -375,17 +373,21 @@ class DetailsDBHandler:
         :param entity: The entity object
         :type entity: Object
         """
-
         self._formatted_record.clear()
 
         self.display_column_object(entity)
         for col in self.display_columns:
-            col_val = getattr(model, col.name)
-
+            if isinstance(model, OrderedDict):
+                col_val = model[col.name]
+            else:
+                col_val = getattr(model, col.name)
             # Check if there are display formatters and apply if
             # one exists for the given attribute.
+            if col_val == NULL:
+                col_val = None
             if col.name in self.column_formatter:
                 formatter = self.column_formatter[col.name]
+
                 col_val = formatter.format_column_value(col_val)
             self._formatted_record[col.header()] = col_val
 
@@ -559,6 +561,28 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         self.doc_viewer = _EntityDocumentViewerHandler(
             self.doc_viewer_title, self.iface.mainWindow()
         )
+        self.view_selection = self.view.selectionModel()
+
+        self.view_selection.currentChanged.connect(
+            self.on_tree_view_item_clicked
+        )
+
+    def on_tree_view_item_clicked(self, current, previous):
+        """
+        Disables the delete button if the party node is clicked and enable it
+        if other items are clicked.
+        :param current: The newly clicked item index
+        :type current: QModelIndex
+        :param previous: The previous item index
+        :type previous: QModelIndex
+        """
+        selected_item = self.model.itemFromIndex(current)
+        if selected_item is None:
+            return
+        if selected_item in self.party_items.keys():
+            self.delete_btn.setEnabled(False)
+        else:
+            self.delete_btn.setEnabled(True)
 
     def set_layer_entity(self):
         """
@@ -717,30 +741,33 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             self.treeview_error(not_supported)
             return
         selected_features = self.selected_features()
-        ### add non entity layer for views.
 
         if len(selected_features) < 1:
             self.reset_tree_view()
             self.disable_buttons(True)
             return
         layer_icon = QIcon(':/plugins/stdm/images/icons/layer.gif')
-
+        ### add non entity layer for views.
         if not self.entity is None:
             self.reset_tree_view()
             roots = self.add_parent_tree(
                 layer_icon, format_name(self.entity.short_name)
             )
-
+            if roots is None:
+                return
             for id, root in roots.iteritems():
                 str_records = self.feature_str_link(id)
                 if len(str_records) > 0:
                     db_model = getattr(str_records[0], self.entity.name)
 
                 else:
-                    db_model = self.feature_model(self.entity, id)
+                    data = self.features_data(id)
+                    if len(self.features_data(id)) > 0:
+                        db_model = data[0]
+                    else:
+                        db_model = self.feature_model(self.entity, id)
 
                 self.add_root_children(db_model, root, str_records)
-
 
         else:
             self.reset_tree_view()
@@ -753,20 +780,11 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :param layer_icon: The icon of the tree node.
         :type layer_icon: QIcon
         """
-        selected_features = self.layer.selectedFeatures()
-        # TODO fix no key value added error
-        field_names = [field.name() for field in self.layer.pendingFields()]
-
-        for elem in selected_features:
-
+        for feature_map in self.features_data():
             parent = QStandardItem(
                 layer_icon,
                 format_name(self.layer.name())
             )
-            feature_map = OrderedDict(
-                zip(field_names, elem.attributes())
-            )
-
             for k, v, in feature_map.iteritems():
                 if isinstance(v, QDate):
                     v = v.toPyDate()
@@ -782,25 +800,55 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             self.set_bold(parent)
             self.expand_node(parent)
 
-    def add_parent_tree(self, icon, title):
+    def features_data(self, feature_id=None):
         """
-        Adds the top root of the treeview into the model.
-        :param icon: The icon of the item
-        :type icon: QIcon
-        :param title: The title of the item
-        :type title: String
-        :return: The root QStandardItem with the feature id
-        :rtype: OrderedDict
+        Gets data column and value of a feature from
+        the selected layer and features.
+        :param feature_id: The feature id
+        :type feature_id: Integer
+        :return: List of feature data with column and value
+        :rtype: List
         """
-        roots = OrderedDict()
+        selected_features = self.layer.selectedFeatures()
+        field_names = [field.name() for field in self.layer.pendingFields()]
+        feature_data = []
 
-        for feature_id in self.selected_features():
-            root = QStandardItem(icon, title)
-            root.setData(feature_id)
-            self.set_bold(root)
-            self.model.appendRow(root)
-            roots[feature_id] = root
-        return roots
+        for elem in selected_features:
+            if not feature_id is None:
+                if elem.id() == feature_id:
+                    feature_map = OrderedDict(
+                        zip(field_names, elem.attributes())
+                    )
+                    feature_data.append(feature_map)
+                    break
+            else:
+                feature_map = OrderedDict(
+                    zip(field_names, elem.attributes())
+                )
+                feature_data.append(feature_map)
+        return feature_data
+
+    def add_parent_tree(self, icon, title):
+            """
+            Adds the top root of the treeview into the model.
+            :param icon: The icon of the item
+            :type icon: QIcon
+            :param title: The title of the item
+            :type title: String
+            :return: The root QStandardItem with the feature id
+            :rtype: OrderedDict
+            """
+            roots = OrderedDict()
+            selected_features = self.selected_features()
+            if selected_features is None:
+                return None
+            for feature_id in selected_features:
+                root = QStandardItem(icon, title)
+                root.setData(feature_id)
+                self.set_bold(root)
+                self.model.appendRow(root)
+                roots[feature_id] = root
+            return roots
 
     def add_root_children(self, model, parent, str_records):
         """
@@ -812,9 +860,14 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :param str_records: STR record models linked to the spatial unit.
         :type str_records: List
         """
+
         if model is None:
             return
-        self.feature_models[model.id] = model
+        if isinstance(model, OrderedDict):
+            feature_id = model['id']
+        else:
+            feature_id = model.id
+        self.feature_models[feature_id] = model
 
         self.column_widget_registry(model, self.entity)
         for i, (col, row) in enumerate(self._formatted_record.iteritems()):
@@ -827,10 +880,9 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             # Add Social Tenure Relationship steam as a last child
             if i == len(self._formatted_record) - 1:
                 if len(str_records) > 0:
-                    self.add_str_child(parent, str_records, model.id)
+                    self.add_str_child(parent, str_records, feature_id)
                 else:
                     self.add_no_str_steam(parent)
-
         self.expand_node(parent)
 
     def add_str_steam(self, parent, str_id):
@@ -1251,21 +1303,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 delete_warning
             )
             return
-        # If it is party node, STR exists and don't allow delete.
-        elif item in self.party_items:
-            delete_warning = QApplication.translate(
-                'DetailsTreeView',
-                'You have to first delete the social tenure \n'
-                'relationship to delete the {} record.'.format(
-                    item.text()
-                )
-            )
-            QMessageBox.warning(
-                self.iface.mainWindow(),
-                QApplication.translate('DetailsTreeView', 'Delete Error'),
-                delete_warning
-            )
-            return
         else:
             return
         delete_warning = QApplication.translate(
@@ -1290,7 +1327,9 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 self.removed_feature = id
                 del self.feature_models[id]
 
-            self.updated_removed_steam(str_edit, item)
+            remaining_str = len(self.str_models)
+
+            self.updated_removed_steam(str_edit, item, remaining_str)
         else:
             return
 
@@ -1336,7 +1375,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 break
         return root
 
-    def updated_removed_steam(self, str_edit, item):
+    def updated_removed_steam(self, str_edit, item, remaining_str=0):
         """
         Updates a removed steam int the treeview by showing No STR defined.
         :param str_edit: A boolean showing if the delete is on STR steam or
@@ -1344,6 +1383,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :type str_edit: Boolean
         :param item: The root item to be removed
         :type item: QStandardItem
+        :param remaining_str: Remaining STR nodes after the delete
+        :type remaining_str: Integer
         """
         if not str_edit:
             if len(self.feature_models) > 1:
@@ -1354,11 +1395,17 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             )
         else:
             item.removeRows(0, 5)
-            item.setText('No STR Defined')
-            no_str_icon = QIcon(
-                ':/plugins/stdm/images/icons/remove.png'
-            )
-            item.setIcon(no_str_icon)
+            # No other STR record remains for the spatial unit,
+            # show No STR Defined
+            if remaining_str == 0:
+                item.setText('No STR Defined')
+                no_str_icon = QIcon(
+                    ':/plugins/stdm/images/icons/remove.png'
+                )
+                item.setIcon(no_str_icon)
+            else:
+                row = item.row()
+                item.parent().removeRow(row)
 
     def view_steam_document(self, entity):
         """
