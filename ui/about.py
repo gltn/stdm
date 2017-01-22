@@ -4,7 +4,7 @@ Name                 : About STDM Dialog
 Description          : Provides a brief narrative of STDM
 Date                 : 11/April/11
 copyright            : (C) 2011 by John Gitau
-email                : gkahiu@gmail.com 
+email                : gkahiu@gmail.com
  ***************************************************************************/
 
 /***************************************************************************
@@ -50,7 +50,9 @@ class AboutSTDMDialog(QDialog,Ui_frmAbout):
         aboutLocation = PLUGIN_DIR + "/html/about.htm"
         if QFile.exists(aboutLocation):
             aboutFile = QFile(aboutLocation)
+
             if not aboutFile.open(QIODevice.ReadOnly):
+
                 QMessageBox.critical(self,
                                      QApplication.translate("AboutSTDMDialog","Open Operation Error"),
                                      QApplication.translate("AboutSTDMDialog","Cannot read 'About STDM' source file."))
@@ -59,7 +61,6 @@ class AboutSTDMDialog(QDialog,Ui_frmAbout):
             reader = QTextStream(aboutFile)
             aboutSTDM = reader.readAll()
             self.txtAbout.setHtml(aboutSTDM)
-
             #Insert plugin info
             self._insert_metadata_info()
 

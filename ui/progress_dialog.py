@@ -47,12 +47,7 @@ class STDMProgressDialog(QProgressDialog):
         """
         self.setFixedWidth(380)
         self.setFixedHeight(100)
-        self.setWindowTitle(
-            QApplication.translate(
-                'STDMProgressDialog',
-                title
-            )
-        )
+        self.setWindowTitle(title)
 
         label = QLabel()
         self.setLabel(label)
@@ -72,13 +67,7 @@ class STDMProgressDialog(QProgressDialog):
             text = '{0} ...'.format(message)
         else:
             text = '{0} {1}...'.format(message, val)
-        self.setLabelText(
-            QApplication.translate(
-                'STDMProgressDialog',
-                text
-            )
-        )
-        print text
+        self.setLabelText(text)
 
     def closeEvent(self, event):
         title = self.tr('Interruption Error')
