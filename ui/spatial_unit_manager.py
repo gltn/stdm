@@ -138,6 +138,7 @@ class SpatialUnitManagerDockWidget(
                 self.str_view_geom_columns = table_column_names(
                     str_view, True
                 )
+
                 if len(self.str_view_geom_columns) > 0:
                     # Pick the first column
                     # geom_col = geom_columns[0]
@@ -160,7 +161,7 @@ class SpatialUnitManagerDockWidget(
                         )
                         # Append view to the list of spatial layers
                         self._profile_spatial_layers.append(
-                            view_layer_name
+                            str_view
                         )
 
     def control_digitize_toolbar(self, curr_layer):
