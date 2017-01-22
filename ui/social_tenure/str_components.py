@@ -530,7 +530,6 @@ class STRType(ComponentUtility):
         """
         frozen_table = self.str_type_table.frozen_table_view
         spinboxes = frozen_table.findChildren(QDoubleSpinBox)
-        # print 'spinboxes ', len(spinboxes)
         return spinboxes
 
     def remove_str_type_row(self, rows=[0]):

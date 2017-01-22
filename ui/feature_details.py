@@ -389,7 +389,13 @@ class DetailsDBHandler:
                 formatter = self.column_formatter[col.name]
 
                 col_val = formatter.format_column_value(col_val)
-            self._formatted_record[col.header()] = col_val
+            if col.header() == QApplication.translate(
+                    'DetailsDBHandler', 'Tenure Share'
+            ):
+                share = '{} (%)'.format(col.header())
+                self._formatted_record[share] = col_val
+            else:
+                self._formatted_record[col.header()] = col_val
 
     def _supporting_doc_models(self, entity_table, model_obj):
         """
@@ -541,6 +547,10 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         self.view.setHeaderHidden(True)
         self.view.setEditTriggers(
             QAbstractItemView.NoEditTriggers
+        )
+        self.str_text = QApplication.translate(
+            'DetailsTreeView',
+            'Social Tenure Relationship'
         )
         self.view.setStyleSheet(
             '''
@@ -899,8 +909,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         str_icon = QIcon(
             ':/plugins/stdm/images/icons/social_tenure.png'
         )
-        title = 'Social Tenure Relationship'
-        str_root = QStandardItem(str_icon, title)
+
+        str_root = QStandardItem(str_icon, self.str_text)
         str_root.setData(str_id)
         self.set_bold(str_root)
         try:
@@ -1221,7 +1231,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             )
             return
         # STR steam - edit social tenure relationship
-        if item.text() == 'Social Tenure Relationship':
+        if item.text() == self.str_text:
 
             str_model = self.str_models[item.data()]
             documents = self._supporting_doc_models(
@@ -1238,14 +1248,14 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
 
             party = self.party_items[item]
 
-            model = self.party_models[id]
+            model = self.feature_model(self.party_items[item], id)
             editor = EntityEditorDialog(
                 party, model, self.iface.mainWindow()
             )
             editor.exec_()
          # Edit spatial entity
         else:
-            model = self.feature_models[id]
+            model = self.feature_model(entity, id)
 
             editor = EntityEditorDialog(
                 entity, model, self.iface.mainWindow()
@@ -1276,7 +1286,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             )
             return
 
-        if item.text() == 'Social Tenure Relationship':
+        if item.text() == self.str_text:
             str_edit = True
             db_model = self.str_models[id]
 
@@ -1415,8 +1425,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :param entity: The entity object
         :type entity: Object
         """
-        # Slot raised to show the document viewer for the selected entity
-
         id, item = self.steam_data('edit')
 
         if id is None:
@@ -1429,11 +1437,13 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 data_error
             )
             return
-        if item.text() == 'Social Tenure Relationship':
-            db_model = self.str_models[id]
-        else:
-            db_model = self.feature_models[id]
 
+        if item.text() == self.str_text:
+            db_model = self.str_models[id]
+        elif item in self.party_items:
+            db_model = self.feature_model(self.party_items[item], id)
+        else:
+            db_model = self.feature_model(entity, id)
         if not db_model is None:
             docs = db_model.documents
             # Notify there are no documents for the selected doc

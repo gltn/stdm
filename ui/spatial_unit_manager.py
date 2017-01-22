@@ -141,7 +141,6 @@ class SpatialUnitManagerDockWidget(
 
                 if len(self.str_view_geom_columns) > 0:
                     # Pick the first column
-                    # geom_col = geom_columns[0]
                     for i, geom_col in enumerate(self.str_view_geom_columns):
                         if i > 0:
                             view_layer_name = self._curr_profile. \

@@ -32,6 +32,8 @@ SOURCES = \
           security\membership.py \
           security\roleprovider.py \
           settings\config_file_updater.py \
+          settings\config_updaters.py \
+          settings\database_updaters.py \
           settings\mapping.py \
           settings\module_settings.py \
           settings\template_updater.py \
@@ -43,17 +45,17 @@ SOURCES = \
           ui\document_viewer.py \
           ui\doc_generator_dlg.py \
           ui\entity_browser.py \
+          ui\feature_details.py \
           ui\fkbase_form.py \
           ui\foreign_key_mapper.py \
           ui\geometry.py \
           ui\geometry_editor.py \
-          ui\gpx_table.py \
+          ui\image_export_settings.py \
           ui\import_data.py \
           ui\license_agreement.py \
           ui\login_dlg.py \
           ui\manage_accounts_dlg.py \
           ui\new_role_dlg.py \
-          ui\new_str_wiz.py \
           ui\new_user_dlg.py \
           ui\options_base.py \
           ui\progress_dialog.py \
@@ -77,10 +79,14 @@ SOURCES = \
           ui\forms\widgets.py \
           ui\helpers\datamanagemixin.py \
           ui\helpers\valuehandlers.py \
+          ui\importexport\lookup_dialog.py \
           ui\importexport\multiple_enumeration_dialog.py \
           ui\importexport\related_table_dialog.py \
           ui\importexport\source_document_dialog.py \
           ui\importexport\translator_config.py \
+          ui\social_tenure\str_components.py \
+          ui\social_tenure\str_data.py \
+          ui\social_tenure\str_editor.py \
           ui\wizard\bigint_property.py \
           ui\wizard\column_depend.py \
           ui\wizard\column_editor.py \
@@ -91,6 +97,7 @@ SOURCES = \
           ui\wizard\entity_depend.py \
           ui\wizard\geometry_property.py \
           ui\wizard\profile_editor.py \
+          ui\wizard\profile_tenure_view.py \
           ui\wizard\varchar_property.py \
           ui\wizard\wizard.py
 
@@ -107,16 +114,13 @@ FORMS =	\
         ui\ui_composer_symbol_editor.ui \
         ui\ui_content_auth.ui \
         ui\ui_dbconn.ui \
-        ui\ui_dbmanage.ui \
         ui\ui_doc_generator.ui \
         ui\ui_doc_item.ui \
         ui\ui_entity_browser.ui \
         ui\ui_export_data.ui \
-        ui\ui_foreign_key_mapper.ui \
+        ui\ui_feature_details.ui \
         ui\ui_gps_tool.ui \
-        ui\ui_gpx_add_attribute_info.ui \
-        ui\ui_gpx_table.ui \
-        ui\ui_gpx_table_widget.ui \
+        ui\ui_image_export_settings.ui \
         ui\ui_import_data.ui \
         ui\ui_license_agreement.ui \
         ui\ui_login.ui \
@@ -141,9 +145,11 @@ FORMS =	\
         ui\composer\ui_composer_spcolumn_styler.ui \
         ui\composer\ui_composer_symbol_editor.ui \
         ui\composer\ui_composer_table_source.ui \
+        ui\importexport\ui_lookup_dialog.ui \
         ui\importexport\ui_multiple_enumeration_dialog.ui \
         ui\importexport\ui_related_table_dialog.ui \
         ui\importexport\ui_source_document_dialog.ui \
+        ui\social_tenure\ui_str_editor.ui \
         ui\wizard\ui_bigint_property.ui \
         ui\wizard\ui_column_depend.ui \
         ui\wizard\ui_column_editor.ui \

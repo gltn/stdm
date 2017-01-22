@@ -83,8 +83,17 @@
        <property name="spacing">
         <number>1</number>
        </property>
-       <property name="margin">
+       <property name="leftMargin">
+        <number>10</number>
+       </property>
+       <property name="topMargin">
         <number>1</number>
+       </property>
+       <property name="rightMargin">
+        <number>10</number>
+       </property>
+       <property name="bottomMargin">
+        <number>10</number>
        </property>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -178,7 +187,7 @@
             <x>0</x>
             <y>0</y>
             <width>220</width>
-            <height>379</height>
+            <height>370</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -309,7 +318,7 @@
              <x>0</x>
              <y>0</y>
              <width>682</width>
-             <height>426</height>
+             <height>417</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">

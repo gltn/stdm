@@ -537,11 +537,6 @@ class STDMQGISLoader(object):
         self.config_serializer.on_version_updated(document)
         self.progress.hide()
         self.progress.cancel()
-        # QMessageBox.information(
-        #     self.iface.mainWindow(),
-        #     'Update Complete',
-        #     'The configuration is successfully upgraded!'
-        # )
 
     def load_configuration_to_serializer(self):
         try:
