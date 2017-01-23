@@ -99,13 +99,17 @@ class STRDBHandler():
             party_entity_id = '{}_id'.format(party_name[3:])
             start_date = str_store.validity_period['from_date']
             end_date = str_store.validity_period['to_date']
+            if isinstance(start_date, QDate):
+                start_date = start_date.toPyDate()
+            if isinstance(end_date, QDate):
+                end_date = end_date.toPyDate()
 
             str_args = {
                 party_entity_id: party_id,
                 'spatial_unit_id': str_store.spatial_unit.keys()[0],
                 'tenure_type': str_type_id,
-                'validity_start': start_date.toPyDate(),
-                'validity_end': end_date.toPyDate(),
+                'validity_start': start_date,
+                'validity_end': end_date,
                 'tenure_share': str_store.share[party_id]
             }
             str_obj = self.str_model(**str_args)
@@ -186,114 +190,117 @@ class STRDBHandler():
         """
         isValid = True
         # Create a progress dialog
-        #try:
+        try:
 
-        self.progress.show()
-        if self.str_edit_obj is None:
-            self.progress.setRange(0, len(self.data_store) - 1)
-            self.progress.overall_progress(
-                'Creating a STR...',
-            )
-
-            for i, str_store in enumerate(
-                    self.data_store.values()
-            ):
-                self.progress.progress_message(
-                    'Saving STR {}'.format(i+1), ''
+            self.progress.show()
+            if self.str_edit_obj is None:
+                QApplication.processEvents()
+                self.progress.setRange(0, len(self.data_store) - 1)
+                self.progress.overall_progress(
+                    'Creating a STR...',
                 )
-                self.progress.setValue(i)
 
-                self.on_add_str(str_store)
+                for i, str_store in enumerate(
+                        self.data_store.values()
+                ):
+                    self.progress.progress_message(
+                        'Saving STR {}'.format(i+1), ''
+                    )
+                    self.progress.setValue(i)
 
-        else:
-            self.progress.setRange(0, 1)
-            self.progress.setValue(0)
-            self.progress.overall_progress(
-                'Editing a STR...',
+                    self.on_add_str(str_store)
+
+            else:
+                QApplication.processEvents()
+                self.progress.setRange(0, 1)
+                self.progress.setValue(0)
+                self.progress.overall_progress(
+                    'Editing a STR...',
+                )
+
+                self.progress.progress_message('Updating STR', '')
+                updated_str_obj = self.on_edit_str(
+                    self.data_store[1]
+                )
+
+                self.progress.setValue(1)
+                return updated_str_obj
+            self.progress.hide()
+            mode = 'created'
+            if self.str_edit_obj is not None:
+                mode = 'updated'
+            strMsg = QApplication.translate(
+                "STRDBHandler",
+                "The social tenure relationship has "
+                "been successfully {}!".format(mode)
             )
-            self.progress.progress_message('Updating STR', '')
-            updated_str_obj = self.on_edit_str(
-                self.data_store[1]
+            QMessageBox.information(
+                iface.mainWindow(), QApplication.translate(
+                    "STRDBHandler", "Social Tenure Relationship"
+                ),
+                strMsg
             )
 
-            self.progress.setValue(1)
-            return updated_str_obj
-        self.progress.hide()
-        mode = 'created'
-        if self.str_edit_obj is not None:
-            mode = 'updated'
-        strMsg = QApplication.translate(
-            "STRDBHandler",
-            "The social tenure relationship has "
-            "been successfully {}!".format(mode)
-        )
-        QMessageBox.information(
-            iface.mainWindow(), QApplication.translate(
-                "STRDBHandler", "Social Tenure Relationship"
-            ),
-            strMsg
-        )
-        #
-        # except exc.OperationalError as oe:
-        #     errMsg = oe.message
-        #     QMessageBox.critical(
-        #         iface.mainWindow(),
-        #         QApplication.translate(
-        #             "STRDBHandler", "Unexpected Error"
-        #         ),
-        #         errMsg
-        #     )
-        #     self.progress.hide()
-        #     isValid = False
-        #     STDMDb.instance().session.rollback()
-        #
-        # except exc.IntegrityError as ie:
-        #     errMsg = ie.message
-        #     QMessageBox.critical(
-        #         iface.mainWindow(),
-        #         QApplication.translate(
-        #             "STRDBHandler",
-        #             "Duplicate Relationship Error"
-        #         ),
-        #         errMsg
-        #     )
-        #     self.progress.hide()
-        #     isValid = False
-        #     STDMDb.instance().session.rollback()
-        #
-        # except exc.InternalError:
-        #
-        #     QMessageBox.critical(
-        #         iface.mainWindow(),
-        #         QApplication.translate(
-        #             'STRDBHandler',
-        #             'InternalError Error'
-        #         ),
-        #         QApplication.translate(
-        #             'STRDBHandler',
-        #             'Sorry, there is an internal error. \n'
-        #             'Restart QGIS to fix the issue.'
-        #         )
-        #     )
-        #     self.progress.hide()
-        #     isValid = False
-        #     STDMDb.instance().session.rollback()
-        # except Exception as e:
-        #     errMsg = unicode(e)
-        #     QMessageBox.critical(
-        #         iface.mainWindow(),
-        #         QApplication.translate(
-        #             'STRDBHandler', 'Unexpected Error'
-        #         ),
-        #         errMsg
-        #     )
-        #
-        #     isValid = False
-        #     STDMDb.instance().session.rollback()
-        #     self.progress.hide()
-        # finally:
-        #
-        #     STDMDb.instance().session.rollback()
-        #     self.progress.hide()
-        #
-        # return isValid
+        except exc.OperationalError as oe:
+            errMsg = oe.message
+            QMessageBox.critical(
+                iface.mainWindow(),
+                QApplication.translate(
+                    "STRDBHandler", "Unexpected Error"
+                ),
+                errMsg
+            )
+            self.progress.hide()
+            isValid = False
+            STDMDb.instance().session.rollback()
+
+        except exc.IntegrityError as ie:
+            errMsg = ie.message
+            QMessageBox.critical(
+                iface.mainWindow(),
+                QApplication.translate(
+                    "STRDBHandler",
+                    "Duplicate Relationship Error"
+                ),
+                errMsg
+            )
+            self.progress.hide()
+            isValid = False
+            STDMDb.instance().session.rollback()
+
+        except exc.InternalError:
+
+            QMessageBox.critical(
+                iface.mainWindow(),
+                QApplication.translate(
+                    'STRDBHandler',
+                    'InternalError Error'
+                ),
+                QApplication.translate(
+                    'STRDBHandler',
+                    'Sorry, there is an internal error. \n'
+                    'Restart QGIS to fix the issue.'
+                )
+            )
+            self.progress.hide()
+            isValid = False
+            STDMDb.instance().session.rollback()
+        except Exception as e:
+            errMsg = unicode(e)
+            QMessageBox.critical(
+                iface.mainWindow(),
+                QApplication.translate(
+                    'STRDBHandler', 'Unexpected Error'
+                ),
+                errMsg
+            )
+
+            isValid = False
+            STDMDb.instance().session.rollback()
+            self.progress.hide()
+        finally:
+
+            STDMDb.instance().session.rollback()
+            self.progress.hide()
+
+        return isValid
