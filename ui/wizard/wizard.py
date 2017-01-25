@@ -93,6 +93,8 @@ CHECK_STATE = {True:Qt.Checked, False:Qt.Unchecked}
 ORIG_CONFIG_FILE = QDir.home().path()+ '/.stdm/orig_configuration.stc'
 CONFIG_FILE = QDir.home().path()+ '/.stdm/configuration.stc'
 CONFIG_BACKUP_FILE = QDir.home().path()+ '/.stdm/configuration_bak.stc'
+DRAFT_CONFIG_FILE = QDir.home().path()+ '/.stdm/configuration_draft.stc'
+
 
 EXCL_ENTITIES = ['SUPPORTING_DOCUMENT', 'SOCIAL_TENURE',
                  'ADMINISTRATIVE_SPATIAL_UNIT', 'ENTITY_SUPPORTING_DOCUMENT',
@@ -169,6 +171,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         self.setStartId(1)
 
+        self.draft_config = False
         self.stdm_config = None
         self.new_profiles = []
         self.orig_assets_count = 0  # count of items in StdmConfiguration instance
@@ -187,6 +190,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.set_current_profile()
 
         self._init_str_ctrls()
+
+        self.save_draft_action = None
+        self.discard_draft_action = None
+        self.tmp_title = self.windowTitle()
+        self.configure_custom_button1()
+        self.set_window_title()
+
+    def set_window_title(self):
+        if self.draft_config:
+            self.setWindowTitle(self.tr(self.windowTitle()+' - [ DRAFT ]'))
+        else:
+            self.setWindowTitle(self.tr(self.tmp_title))
+
 
     def _init_str_ctrls(self):
         # Collapse STR date range group boxes
@@ -255,6 +271,17 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self._notif_bar_str.clear()
             self._notif_bar_str.insertWarningNotification(msg)
 
+    def configuration_is_dirty(self):
+        '''
+        checks if anything has been added to the configuration
+        :rtype:boolean
+        '''
+        config_is_dirty = False
+        cnt = len(self.stdm_config)
+        if cnt <> self.orig_assets_count:
+            config_is_dirty = True
+        return config_is_dirty
+
     def reject(self):
         """
         Event handler for the cancel button.
@@ -262,11 +289,18 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         cnt = len(self.stdm_config)
         if cnt <> self.orig_assets_count:
-            msg0 = self.tr("All changes you've made on the configuration will be lost.\n")
-            msg1 = self.tr("Are you sure you want to cancel?")
-            if self.query_box(msg0+msg1) == QMessageBox.Cancel:
-                return
+            if self.draft_config:
+                self.save_current_configuration(DRAFT_CONFIG_FILE)
+            else:
+                msg0 = self.tr("You have made some changes to your current "
+                        "configuration file, but you have not saved them in the "
+                        "database permenently.\n Would you like to store your "
+                        "changes as draft and continue next time? ")
+                if self.query_box_yesno(msg0) == QMessageBox.Yes:
+                    self.save_current_configuration(DRAFT_CONFIG_FILE)
+
         self.done(0)
+
 
     def load_stdm_config(self):
         """
@@ -292,31 +326,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         main_config_file = self.healthy_file(CONFIG_FILE)
         bak_config_file  = self.healthy_file(CONFIG_BACKUP_FILE)
+        draft_config_file = self.healthy_file(DRAFT_CONFIG_FILE)
         orig_config_file = self.healthy_file(ORIG_CONFIG_FILE)
 
-        if main_config_file and not bak_config_file:
+        if main_config_file and not bak_config_file and \
+                draft_config_file == False:
             return CONFIG_FILE
 
-        if main_config_file and bak_config_file:
+        if bak_config_file:
             return self.user_choose_config()
 
-        # this scenario is taken care of when you attempt to
-        # run the wizard, we can safely remove it
-        #====>START_REMOVE
-        if not main_config_file and bak_config_file:
-            return self.system_choose_backup_config()
-
-        if not main_config_file and not bak_config_file:
-            if orig_config_file:
-                config_file = self.system_choose_orig_config()
-            else:
-                config_file = ''
-        #<======END_REMOVE
-
-        if config_file == '':
-            raise IOError('No configuration file to load')
-
-        return config_file
+        if draft_config_file:
+            self.draft_config = True
+            return DRAFT_CONFIG_FILE
 
     def healthy_file(self, config_file):
         is_healthy = False
@@ -1164,6 +1186,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
                 # delete config backup file
                 self.delete_config_backup_file()
+        
+                # delete draft config file
+                self.delete_draft_config_file()
 
             except(ConfigurationException, IOError) as e:
                 self.show_message(self.tr(unicode(e) ))
@@ -1189,14 +1214,62 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         except(ConfigurationException, IOError) as e:
             self.show_message(self.tr(unicode(e) ))
 
+    def save_current_configuration(self, filename):
+        """
+        Write current configuration to a file
+        :param filename: file to write too
+        :type filename: str
+        """
+        cfs = ConfigurationFileSerializer(filename)
+        
+        try:
+            cfs.save()
+        except(ConfigurationException, IOError) as e:
+            self.show_message(self.tr(unicode(e) ))
+
     def delete_config_backup_file(self):
         QFile.remove(CONFIG_BACKUP_FILE)
+
+    def delete_draft_config_file(self):
+        QFile.remove(DRAFT_CONFIG_FILE)
 
     def register_fields(self):
         self.setOption(self.HaveHelpButton, True)  
         page_count = self.page(1)
         page_count.registerField(self.tr("Accept"), self.rbAccpt)
         page_count.registerField(self.tr("Reject"), self.rbReject)
+
+    def configure_custom_button1(self):
+        self.setButtonText(QWizard.CustomButton1, self.tr('Options'))
+        menu = QMenu()
+        self.save_draft_action = menu.addAction('Save draft', self.save_draft)
+        self.discard_draft_action = menu.addAction('Discard draft', self.discard_draft)
+        self.button(QWizard.CustomButton1).setMenu(menu)
+
+        self.button(QWizard.CustomButton1).pressed.connect(self.custom_button_clicked)
+
+    def custom_button_clicked(self):
+        self.save_draft_action.setEnabled(self.configuration_is_dirty())
+        self.discard_draft_action.setEnabled(self.draft_config)
+
+    def save_draft(self):
+        '''
+        Save a draft configuration
+        '''
+        self.save_current_configuration(DRAFT_CONFIG_FILE)
+        self.load_stdm_config()
+        self.set_window_title()
+
+    def discard_draft(self):
+        '''
+        Delete draft configuration 
+        '''
+        msg = self.tr('Are you sure you want to discard the draft profile?')
+        if self.query_box_yesno(msg) == QMessageBox.Yes:
+            self.delete_draft_config_file()
+            self.draft_config = False
+            self.load_stdm_config()
+            self.set_window_title()
 
     def set_support_doc_path(self):
         """
