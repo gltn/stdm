@@ -739,7 +739,7 @@ class EntityBrowserWithEditor(EntityBrowser):
                                             add, self)
 
             self.connect(self._newEntityAction,SIGNAL("triggered()"),self.onNewEntity)
-            
+
             self._editEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/edit.png"),
                                              edit,self)
             self._editEntityAction.setObjectName(
@@ -784,6 +784,9 @@ class EntityBrowserWithEditor(EntityBrowser):
 
                 self.add_spatial_unit_layer()
                 self.tbEntity.clicked.connect(
+                    self.on_select_attribute
+                )
+                self.tbEntity.entered.connect(
                     self.on_select_attribute
                 )
 
@@ -1032,18 +1035,15 @@ class EntityBrowserWithEditor(EntityBrowser):
             dialog_height
         )
 
-    def on_select_attribute(self, sel_model_index):
+    def on_select_attribute(self):
         """
         Slot raised when selecting a spatial entity row.
-         :param sel_model_index: Selected row index
-        :type sel_model_index: QModelIndex
-        :return:
-        :rtype:
         """
-        selRowIndices = self.tbEntity.\
+        sel_row_indices = self.tbEntity.\
             selectionModel().selectedRows(0)
         record_ids = []
-        for sel_row_index in selRowIndices:
+
+        for sel_row_index in sel_row_indices:
             rowIndex = self._proxyModel.mapToSource(
                 sel_row_index
             )

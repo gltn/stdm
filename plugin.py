@@ -1555,7 +1555,10 @@ class STDMQGISLoader(object):
                         sel_entity,
                         self.iface.mainWindow()
                     )
-                    et_browser.exec_()
+                    if sel_entity.has_geometry_column():
+                        et_browser.show()
+                    else:
+                        et_browser.exec_()
 
                 else:
                     return
