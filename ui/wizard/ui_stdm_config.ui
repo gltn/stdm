@@ -40,6 +40,9 @@
   <property name="wizardStyle">
    <enum>QWizard::ModernStyle</enum>
   </property>
+  <property name="options">
+   <set>QWizard::HaveCustomButton1|QWizard::HelpButtonOnRight</set>
+  </property>
   <widget class="QWizardPage" name="wpLicense">
    <property name="font">
     <font>

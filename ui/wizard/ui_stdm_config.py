@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_stdm_config.ui'
 #
-# Created: Mon Jan 09 13:54:53 2017
-#      by: PyQt4 UI code generator 4.9.4
+# Created: Tue Jan 24 15:34:04 2017
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_STDMWizard(object):
     def setupUi(self, STDMWizard):
@@ -28,6 +37,7 @@ class Ui_STDMWizard(object):
         STDMWizard.setBaseSize(QtCore.QSize(0, 460))
         STDMWizard.setModal(True)
         STDMWizard.setWizardStyle(QtGui.QWizard.ModernStyle)
+        STDMWizard.setOptions(QtGui.QWizard.HaveCustomButton1|QtGui.QWizard.HelpButtonOnRight)
         self.wpLicense = QtGui.QWizardPage()
         font = QtGui.QFont()
         font.setBold(True)
@@ -599,54 +609,54 @@ class Ui_STDMWizard(object):
         STDMWizard.setTabOrder(self.btnEditLkupValue, self.txtLicense)
 
     def retranslateUi(self, STDMWizard):
-        STDMWizard.setWindowTitle(QtGui.QApplication.translate("STDMWizard", "Configuration Wizard", None, QtGui.QApplication.UnicodeUTF8))
-        self.wpLicense.setTitle(QtGui.QApplication.translate("STDMWizard", "End User License Agreement", None, QtGui.QApplication.UnicodeUTF8))
-        self.wpLicense.setSubTitle(QtGui.QApplication.translate("STDMWizard", "Read carefully before you proceed", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_16.setTitle(QtGui.QApplication.translate("STDMWizard", "Terms and Conditions", None, QtGui.QApplication.UnicodeUTF8))
-        self.rbAccpt.setText(QtGui.QApplication.translate("STDMWizard", "I Agree", None, QtGui.QApplication.UnicodeUTF8))
-        self.rbReject.setText(QtGui.QApplication.translate("STDMWizard", "Decline", None, QtGui.QApplication.UnicodeUTF8))
-        self.wpPathSetting.setTitle(QtGui.QApplication.translate("STDMWizard", "Directory Settings", None, QtGui.QApplication.UnicodeUTF8))
-        self.wpPathSetting.setSubTitle(QtGui.QApplication.translate("STDMWizard", "Specify configuration and documents directory path", None, QtGui.QApplication.UnicodeUTF8))
-        self.btnTemplates.setText(QtGui.QApplication.translate("STDMWizard", "Change", None, QtGui.QApplication.UnicodeUTF8))
-        self.btnDocOutput.setText(QtGui.QApplication.translate("STDMWizard", "Change", None, QtGui.QApplication.UnicodeUTF8))
-        self.edtTemplatePath.setPlaceholderText(QtGui.QApplication.translate("STDMWizard", "Specify path to save document templates", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_37.setText(QtGui.QApplication.translate("STDMWizard", "<html><head/><body><p>Supporting documents path</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_4.setText(QtGui.QApplication.translate("STDMWizard", "Documents template path", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_31.setText(QtGui.QApplication.translate("STDMWizard", "Documents output path", None, QtGui.QApplication.UnicodeUTF8))
-        self.edtOutputPath.setPlaceholderText(QtGui.QApplication.translate("STDMWizard", "Specify path to save generated documents", None, QtGui.QApplication.UnicodeUTF8))
-        self.btnDocPath.setText(QtGui.QApplication.translate("STDMWizard", "Change", None, QtGui.QApplication.UnicodeUTF8))
-        self.edtDocPath.setPlaceholderText(QtGui.QApplication.translate("STDMWizard", "Specify path to save entity supporting documents", None, QtGui.QApplication.UnicodeUTF8))
-        self.wpProfile.setTitle(QtGui.QApplication.translate("STDMWizard", "Profile", None, QtGui.QApplication.UnicodeUTF8))
-        self.wpProfile.setSubTitle(QtGui.QApplication.translate("STDMWizard", "Manage profile and related entities.  A profile represents a collection of logically related entities, some of which represent the party and spatial unit. Examples of profiles include individual, household, neighbourhood or even city-wide profiles.   ", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_17.setTitle(QtGui.QApplication.translate("STDMWizard", "Profile", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("STDMWizard", "Select", None, QtGui.QApplication.UnicodeUTF8))
-        self.btnNewP.setText(QtGui.QApplication.translate("STDMWizard", "New profile", None, QtGui.QApplication.UnicodeUTF8))
-        self.btnPDelete.setText(QtGui.QApplication.translate("STDMWizard", "Delete profile", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_3.setText(QtGui.QApplication.translate("STDMWizard", "Description:", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblDesc.setText(QtGui.QApplication.translate("STDMWizard", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_18.setTitle(QtGui.QApplication.translate("STDMWizard", "Profile entities ", None, QtGui.QApplication.UnicodeUTF8))
-        self.wpEntityCustom.setTitle(QtGui.QApplication.translate("STDMWizard", "Entity Customization", None, QtGui.QApplication.UnicodeUTF8))
-        self.wpEntityCustom.setSubTitle(QtGui.QApplication.translate("STDMWizard", "Add or edit entity columns, lookups and lookup values", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox.setTitle(QtGui.QApplication.translate("STDMWizard", "Entities", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_2.setTitle(QtGui.QApplication.translate("STDMWizard", "Columns", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_5.setTitle(QtGui.QApplication.translate("STDMWizard", "Lookups", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_6.setTitle(QtGui.QApplication.translate("STDMWizard", "Values", None, QtGui.QApplication.UnicodeUTF8))
-        self.wpSTR.setTitle(QtGui.QApplication.translate("STDMWizard", "Define Social Tenure Entities", None, QtGui.QApplication.UnicodeUTF8))
-        self.wpSTR.setSubTitle(QtGui.QApplication.translate("STDMWizard", "Set entities to participate in the profile\'s social tenure relationship", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_5.setText(QtGui.QApplication.translate("STDMWizard", "1. Select the party entities", None, QtGui.QApplication.UnicodeUTF8))
-        self.cbMultiParty.setText(QtGui.QApplication.translate("STDMWizard", "Allow multiple parties to be \n"
-"linked to a single spatial unit", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_6.setText(QtGui.QApplication.translate("STDMWizard", "2. Set the spatial unit entity", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_7.setText(QtGui.QApplication.translate("STDMWizard", "3. Specify validity ranges (optional)", None, QtGui.QApplication.UnicodeUTF8))
-        self.gb_start_dates.setTitle(QtGui.QApplication.translate("STDMWizard", "\'Start\' date range", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_8.setText(QtGui.QApplication.translate("STDMWizard", "Minimum", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_9.setText(QtGui.QApplication.translate("STDMWizard", "Maximum", None, QtGui.QApplication.UnicodeUTF8))
-        self.gb_end_dates.setTitle(QtGui.QApplication.translate("STDMWizard", "\'End\' date range", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_10.setText(QtGui.QApplication.translate("STDMWizard", "Minimum", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_11.setText(QtGui.QApplication.translate("STDMWizard", "Maximum", None, QtGui.QApplication.UnicodeUTF8))
-        self.wpSaveProfile.setTitle(QtGui.QApplication.translate("STDMWizard", "Save configuration", None, QtGui.QApplication.UnicodeUTF8))
-        self.wpSaveProfile.setSubTitle(QtGui.QApplication.translate("STDMWizard", "Click finish to save changes in your configuration to the database.  ", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("STDMWizard", "Save status will be displayed in the window below.", None, QtGui.QApplication.UnicodeUTF8))
+        STDMWizard.setWindowTitle(_translate("STDMWizard", "Configuration Wizard", None))
+        self.wpLicense.setTitle(_translate("STDMWizard", "End User License Agreement", None))
+        self.wpLicense.setSubTitle(_translate("STDMWizard", "Read carefully before you proceed", None))
+        self.groupBox_16.setTitle(_translate("STDMWizard", "Terms and Conditions", None))
+        self.rbAccpt.setText(_translate("STDMWizard", "I Agree", None))
+        self.rbReject.setText(_translate("STDMWizard", "Decline", None))
+        self.wpPathSetting.setTitle(_translate("STDMWizard", "Directory Settings", None))
+        self.wpPathSetting.setSubTitle(_translate("STDMWizard", "Specify configuration and documents directory path", None))
+        self.btnTemplates.setText(_translate("STDMWizard", "Change", None))
+        self.btnDocOutput.setText(_translate("STDMWizard", "Change", None))
+        self.edtTemplatePath.setPlaceholderText(_translate("STDMWizard", "Specify path to save document templates", None))
+        self.label_37.setText(_translate("STDMWizard", "<html><head/><body><p>Supporting documents path</p></body></html>", None))
+        self.label_4.setText(_translate("STDMWizard", "Documents template path", None))
+        self.label_31.setText(_translate("STDMWizard", "Documents output path", None))
+        self.edtOutputPath.setPlaceholderText(_translate("STDMWizard", "Specify path to save generated documents", None))
+        self.btnDocPath.setText(_translate("STDMWizard", "Change", None))
+        self.edtDocPath.setPlaceholderText(_translate("STDMWizard", "Specify path to save entity supporting documents", None))
+        self.wpProfile.setTitle(_translate("STDMWizard", "Profile", None))
+        self.wpProfile.setSubTitle(_translate("STDMWizard", "Manage profile and related entities.  A profile represents a collection of logically related entities, some of which represent the party and spatial unit. Examples of profiles include individual, household, neighbourhood or even city-wide profiles.   ", None))
+        self.groupBox_17.setTitle(_translate("STDMWizard", "Profile", None))
+        self.label.setText(_translate("STDMWizard", "Select", None))
+        self.btnNewP.setText(_translate("STDMWizard", "New profile", None))
+        self.btnPDelete.setText(_translate("STDMWizard", "Delete profile", None))
+        self.label_3.setText(_translate("STDMWizard", "Description:", None))
+        self.lblDesc.setText(_translate("STDMWizard", "TextLabel", None))
+        self.groupBox_18.setTitle(_translate("STDMWizard", "Profile entities ", None))
+        self.wpEntityCustom.setTitle(_translate("STDMWizard", "Entity Customization", None))
+        self.wpEntityCustom.setSubTitle(_translate("STDMWizard", "Add or edit entity columns, lookups and lookup values", None))
+        self.groupBox.setTitle(_translate("STDMWizard", "Entities", None))
+        self.groupBox_2.setTitle(_translate("STDMWizard", "Columns", None))
+        self.groupBox_5.setTitle(_translate("STDMWizard", "Lookups", None))
+        self.groupBox_6.setTitle(_translate("STDMWizard", "Values", None))
+        self.wpSTR.setTitle(_translate("STDMWizard", "Define Social Tenure Entities", None))
+        self.wpSTR.setSubTitle(_translate("STDMWizard", "Set entities to participate in the profile\'s social tenure relationship", None))
+        self.label_5.setText(_translate("STDMWizard", "1. Select the party entities", None))
+        self.cbMultiParty.setText(_translate("STDMWizard", "Allow multiple parties to be \n"
+"linked to a single spatial unit", None))
+        self.label_6.setText(_translate("STDMWizard", "2. Set the spatial unit entity", None))
+        self.label_7.setText(_translate("STDMWizard", "3. Specify validity ranges (optional)", None))
+        self.gb_start_dates.setTitle(_translate("STDMWizard", "\'Start\' date range", None))
+        self.label_8.setText(_translate("STDMWizard", "Minimum", None))
+        self.label_9.setText(_translate("STDMWizard", "Maximum", None))
+        self.gb_end_dates.setTitle(_translate("STDMWizard", "\'End\' date range", None))
+        self.label_10.setText(_translate("STDMWizard", "Minimum", None))
+        self.label_11.setText(_translate("STDMWizard", "Maximum", None))
+        self.wpSaveProfile.setTitle(_translate("STDMWizard", "Save configuration", None))
+        self.wpSaveProfile.setSubTitle(_translate("STDMWizard", "Click finish to save changes in your configuration to the database.  ", None))
+        self.label_2.setText(_translate("STDMWizard", "Save status will be displayed in the window below.", None))
 
 from stdm.ui.wizard.party_list_view import STRPartyListView
 from qgis.gui import QgsCollapsibleGroupBox
