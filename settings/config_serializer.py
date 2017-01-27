@@ -672,8 +672,14 @@ class SocialTenureSerializer(object):
 
         social_tenure_element.setAttribute(SocialTenureSerializer.PARTY,
                                            cs_party_names)
+
+        sp_unit_name =''
+        if not social_tenure.spatial_unit is None:
+            sp_unit_name = social_tenure.spatial_unit.short_name
+
         social_tenure_element.setAttribute(SocialTenureSerializer.SPATIAL_UNIT,
-                                        social_tenure.spatial_unit.short_name)
+                sp_unit_name)
+
         social_tenure_element.setAttribute(SocialTenureSerializer.TENURE_TYPE,
                                     social_tenure.tenure_type_collection.short_name)
         social_tenure_element.setAttribute(SocialTenureSerializer.LAYER_DISPLAY,
@@ -1992,9 +1998,6 @@ def _str_to_bool(bool_str):
     if len(bool_str) > 1:
         bool_str = bool_str[0]
     return unicode(bool_str).upper() == 'T'
-
-
-
 
 
 
