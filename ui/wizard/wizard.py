@@ -199,7 +199,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def set_window_title(self):
         if self.draft_config:
-            self.setWindowTitle(self.tr(self.windowTitle()+' - [ DRAFT ]'))
+            self.setWindowTitle('')
+            self.setWindowTitle(self.tr(self.tmp_title+' - [ DRAFT ]'))
         else:
             self.setWindowTitle(self.tr(self.tmp_title))
 
