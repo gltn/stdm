@@ -937,17 +937,17 @@ class ValidityPeriod():
         :param increment: The new value of year spinbox.
         :type increment: Integer
         """
-        current_year = self.to_date.date().currentDate().year()
-
         if self.str_editor.in_years.isChecked():
+            current_year = self.from_date.date().toPyDate().year
             after_date = date(
                 current_year + increment,
                 self.to_date.date().month(),
                 self.to_date.date().day()
             )
         else:
+            current_date = self.from_date.date()
             after_date = self.add_months(
-                self.to_date.date().currentDate(), increment
+                current_date, increment
             )
 
         self.to_date.setDate(after_date)

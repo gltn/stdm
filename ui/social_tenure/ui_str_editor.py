@@ -178,7 +178,7 @@ class Ui_STREditor(object):
         self.scrollArea_3.setObjectName(_fromUtf8("scrollArea_3"))
         self.str_type_widget = QtGui.QWidget()
         self.str_type_widget.setEnabled(True)
-        self.str_type_widget.setGeometry(QtCore.QRect(0, 0, 682, 417))
+        self.str_type_widget.setGeometry(QtCore.QRect(0, 0, 100, 30))
         self.str_type_widget.setObjectName(_fromUtf8("str_type_widget"))
         self.verticalLayout_12 = QtGui.QVBoxLayout(self.str_type_widget)
         self.verticalLayout_12.setMargin(0)
@@ -295,7 +295,7 @@ class Ui_STREditor(object):
         QtCore.QMetaObject.connectSlotsByName(STREditor)
 
     def retranslateUi(self, STREditor):
-        STREditor.setWindowTitle(_translate("STREditor", "Create Social Tenure Relationship", None))
+        STREditor.setWindowTitle(_translate("STREditor", "New Social Tenure Relationship", None))
         self.description_lbl.setText(_translate("STREditor", "The Social Tenure Relationship", None))
         self.add_str_btn.setToolTip(_translate("STREditor", "Add Social Tenure Relationship", None))
         self.remove_str_btn.setToolTip(_translate("STREditor", "Remove Social Tenure Relationship", None))

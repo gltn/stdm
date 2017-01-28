@@ -1292,7 +1292,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
 
         elif item.text() == format_name(self.spatial_unit.short_name) and \
             id not in self.feature_str_model.keys():
-            db_model = self.feature_models[id]
+            db_model = self.feature_model(self._entity, id)
 
         # if spatial unit is linked to STR, don't allow delete
         elif item.text() == format_name(self.spatial_unit.short_name) and \
@@ -1315,27 +1315,51 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             return
         else:
             return
-        delete_warning = QApplication.translate(
-            'DetailsTreeView',
-            'Are you sure you want to delete '
-            'the selected record(s)?\n'
-            'This action cannot be undone.'
-        )
+        if str_edit:
+            del_msg = QApplication.translate(
+                'DetailsTreeView',
+                 "This action will remove the social tenure relationship "
+                 "and dependent supporting documents from the database and "
+                 "the documents folder. This action cannot be undone and "
+                 "once removed, it can only be recreated through"
+                 " the 'New Social Tenure Relationship' wizard."
+                 "Would you like to proceed?"
+                 "\nClick Yes to proceed or No to cancel."
+            )
+            delete_question = QMessageBox.critical(
+                self.parentWidget(),
+                QApplication.translate(
+                    'DetailsTreeView',
+                    'Delete Social Tenure Relationship'
+                ),
+                del_msg,
+                QMessageBox.Yes | QMessageBox.No
+            )
 
-        delete_question = QMessageBox.warning(
-            self.iface.mainWindow(),
-            QApplication.translate('DetailsTreeView', 'Delete Warning'),
-            delete_warning,
-            QMessageBox.Yes | QMessageBox.No
-        )
+        else:
+            delete_warning = QApplication.translate(
+                'DetailsTreeView',
+                'Are you sure you want to delete '
+                'the selected record(s)?\n'
+                'This action cannot be undone.'
+            )
+
+            delete_question = QMessageBox.warning(
+                self.iface.mainWindow(),
+                QApplication.translate('DetailsTreeView', 'Delete Warning'),
+                delete_warning,
+                QMessageBox.Yes | QMessageBox.No
+            )
         if delete_question == QMessageBox.Yes:
             db_model.delete()
 
             if str_edit:
                 del self.str_models[id]
+                del self.feature_str_model[id]
             else:
                 self.removed_feature = id
                 del self.feature_models[id]
+
 
             remaining_str = len(self.str_models)
 
