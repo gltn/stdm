@@ -98,6 +98,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.has_mandatory = False
         self.reload_form = False
         self._entity = entity
+        self.edit_model = model
         self._fk_browsers = OrderedDict()
         self.entity_tab_widget = None
         self.entity_scroll_area = None
@@ -179,13 +180,14 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.buttonBox.setStandardButtons(
             QDialogButtonBox.Cancel|QDialogButtonBox.Save
         )
-        if not self.collect_model:
-            self.save_new_button = QPushButton(QApplication.translate(
-                'EntityEditorDialog', 'Save and New')
-            )
-            self.buttonBox.addButton(
-                self.save_new_button, QDialogButtonBox.ActionRole
-            )
+        if self.edit_model is None:
+            if not self.collect_model:
+                self.save_new_button = QPushButton(QApplication.translate(
+                    'EntityEditorDialog', 'Save and New')
+                )
+                self.buttonBox.addButton(
+                    self.save_new_button, QDialogButtonBox.ActionRole
+                )
 
         self.buttonBox.setObjectName('buttonBox')
         self.gridLayout.addWidget(
@@ -204,13 +206,15 @@ class EntityEditorDialog(QDialog, MapperMixin):
             self.buttonBox.accepted.connect(
                 self.submit
             )
-            if not self.collect_model:
-                self.save_new_button.clicked.connect(
-                    self.save_and_new
-                )
+            if self.edit_model is None:
+                if not self.collect_model:
+                    self.save_new_button.clicked.connect(
+                        self.save_and_new
+                    )
             self.buttonBox.rejected.connect(
                 self.cancel
             )
+
     def save_and_new(self):
         """
         A slot raised when Save and New button is click. It saves the form
@@ -219,7 +223,6 @@ class EntityEditorDialog(QDialog, MapperMixin):
         """
         self.submit(False, True)
         self.reload_form = True
-
 
     def on_model_added(self):
         """
