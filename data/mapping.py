@@ -334,13 +334,16 @@ class MapperMixin(object):
         '''
         pass
     
-    def submit(self, collect_model=False):
+    def submit(self, collect_model=False, save_and_new=False):
         """
         Slot for saving or updating the model.
         This will close the dialog on successful submission.
         :param collect_model: If set to True only returns
         the model without saving it to the database.
         :type collect_model: Boolean
+        :param save_and_new: A Boolean indicating it is
+        triggered by save and new button.
+        :type save_and_new: Boolean
         :return: If collect_model, returns SQLAlchemy Model
         if collect model is false returns None
         :rtype: Class or NoneType
@@ -372,20 +375,38 @@ class MapperMixin(object):
         if collect_model:
             return self.model()
         else:
-            self._persistModel()
+            self._persistModel(save_and_new)
 
-    def _persistModel(self):
+    def _persistModel(self, save_and_new):
+        """
+        Saves the model to the database and shows a success message.
+        :param save_and_new: A Boolean indicating it is
+        triggered by save and new button.
+        :type save_and_new: Boolean
+        """
         try:
             #Persist the model to its corresponding store.
             if self._mode == SAVE:
                 self._model.save()
-                QMessageBox.information(self, QApplication.translate("MappedDialog","Record Saved"), \
-                                        QApplication.translate("MappedDialog","New record has been successfully saved."))
+                if not save_and_new:
+                    QMessageBox.information(
+                        self, QApplication.translate(
+                            "MappedDialog","Record Saved"
+                        ),
+                        QApplication.translate(
+                            "MappedDialog",
+                            "New record has been successfully saved.")
+                    )
 
             else:
                 self._model.update()
-                QMessageBox.information(self, QApplication.translate("MappedDialog","Record Updated"), \
-                                        QApplication.translate("MappedDialog","Record has been successfully updated."))
+                QMessageBox.information(
+                    self,
+                    QApplication.translate("MappedDialog","Record Updated"),
+                    QApplication.translate(
+                        "MappedDialog",
+                        "Record has been successfully updated.")
+                )
         except Exception as ex:
             QMessageBox.critical(
                 self,
@@ -405,12 +426,14 @@ class MapperMixin(object):
 
 class _QgsFeatureAttributeMapper(_AttributeMapper):
     '''
-    Manages a single instance of the mapping between a QgsFeature attribute and the corresponding UI widget.
+    Manages a single instance of the mapping between a QgsFeature
+    attribute and the corresponding UI widget.
     For use in the editor widget when digitizing new features.
     '''
     def bindControl(self):
         '''
-        Base class override that sets the value of the control based on the value of the QgsField
+        Base class override that sets the value of the control
+        based on the value of the QgsField
         with the given attribute index instead of the name.
         '''
         try:
@@ -493,24 +516,3 @@ class QgsFeatureMapperMixin(MapperMixin):
         Slot raised when a new feature has been added to the layer
         '''
         pass
-
-
-
-        
-    
-                
-    
-    
-    
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        

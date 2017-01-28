@@ -22,6 +22,7 @@ from PyQt4.QtCore import (
     Qt,
     pyqtSignal
 )
+from PyQt4.QtGui import QApplication
 from PyQt4.QtGui import (
     QDialog,
     QDialogButtonBox,
@@ -34,6 +35,7 @@ from PyQt4.QtGui import (
     QVBoxLayout,
     QWidget
 )
+from PyQt4.QtGui import QPushButton
 
 from stdm.data.configuration import entity_model
 from stdm.data.configuration.entity import Entity
@@ -94,7 +96,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         #Flag for mandatory columns
         self.has_mandatory = False
-
+        self.reload_form = False
         self._entity = entity
         self._fk_browsers = OrderedDict()
         self.entity_tab_widget = None
@@ -172,10 +174,19 @@ class EntityEditorDialog(QDialog, MapperMixin):
             next_row += 1
 
         self.buttonBox = QDialogButtonBox(self)
+
         self.buttonBox.setOrientation(Qt.Horizontal)
         self.buttonBox.setStandardButtons(
             QDialogButtonBox.Cancel|QDialogButtonBox.Save
         )
+        if not self.collect_model:
+            self.save_new_button = QPushButton(QApplication.translate(
+                'EntityEditorDialog', 'Save and New')
+            )
+            self.buttonBox.addButton(
+                self.save_new_button, QDialogButtonBox.ActionRole
+            )
+
         self.buttonBox.setObjectName('buttonBox')
         self.gridLayout.addWidget(
             self.buttonBox, next_row, 0, 1, 1
@@ -193,11 +204,29 @@ class EntityEditorDialog(QDialog, MapperMixin):
             self.buttonBox.accepted.connect(
                 self.submit
             )
+            if not self.collect_model:
+                self.save_new_button.clicked.connect(
+                    self.save_and_new
+                )
             self.buttonBox.rejected.connect(
                 self.cancel
             )
+    def save_and_new(self):
+        """
+        A slot raised when Save and New button is click. It saves the form
+        without showing a success message. Then it sets reload_form property
+        to True so that entity_browser can re-load the form.
+        """
+        self.submit(False, True)
+        self.reload_form = True
+
 
     def on_model_added(self):
+        """
+        A slot raised when a form is submitted with collect model set to True.
+        This leads to the returning on the model. There will be no success
+        message and the form does not close.
+        """
         model = self.submit(True)
         self.addedModel.emit(model)
 
