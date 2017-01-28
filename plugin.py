@@ -155,7 +155,7 @@ class STDMQGISLoader(object):
         # Profile status label showing the current profile
         self.profile_status_label = None
         LOGGER.debug('STDM plugin has been initialized.')
-
+        self.entity_browser = None
         # Load configuration file
         self.config_path = QDesktopServices.storageLocation(
             QDesktopServices.HomeLocation) \
@@ -1275,11 +1275,13 @@ class STDMQGISLoader(object):
         on the configuration wizard.
         :type: string
         """
-        if self.toolbarLoader is not None:
+        if not self.toolbarLoader is None:
             self.toolbarLoader.unloadContent()
-        if self.menubarLoader is not None:
+        if not self.menubarLoader is None:
             self.menubarLoader.unloadContent()
             self.stdmMenu.clear()
+        if not self.entity_browser is None:
+            self.entity_browser.close()
         self.logoutCleanUp(True)
 
         # Set current profile based on the selected
@@ -1551,14 +1553,14 @@ class STDMQGISLoader(object):
                     cnt_idx = getIndex(
                         self._reportModules.keys(), dispName
                     )
-                    et_browser = EntityBrowserWithEditor(
+                    self.entity_browser = EntityBrowserWithEditor(
                         sel_entity,
                         self.iface.mainWindow()
                     )
                     if sel_entity.has_geometry_column():
-                        et_browser.show()
+                        self.entity_browser.show()
                     else:
-                        et_browser.exec_()
+                        self.entity_browser.exec_()
 
                 else:
                     return

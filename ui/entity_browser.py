@@ -853,8 +853,8 @@ class EntityBrowserWithEditor(EntityBrowser):
         
         if len(selRowIndices) == 0:
             msg = QApplication.translate("EntityBrowserWithEditor", 
-                                         "Please select a record in the table "
-                                         "below for editing.")
+                                         "Please select a record in the table"
+                                         " below for editing.")
             self._notifBar.insertWarningNotification(msg)
 
             return
@@ -1115,9 +1115,12 @@ class EntityBrowserWithEditor(EntityBrowser):
         :return: None
         """
         if self._entity.has_geometry_column():
-            if not self.selection_layer is None:
-                self.selection_layer.removeSelection()
-            self.sp_unit_manager.zoom_to_layer()
+            try:
+                if not self.selection_layer is None:
+                    self.selection_layer.removeSelection()
+                self.sp_unit_manager.zoom_to_layer()
+            except RuntimeError:
+                pass
 
     def hideEvent(self, hideEvent):
         """

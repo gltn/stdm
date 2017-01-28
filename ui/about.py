@@ -53,9 +53,15 @@ class AboutSTDMDialog(QDialog,Ui_frmAbout):
 
             if not aboutFile.open(QIODevice.ReadOnly):
 
-                QMessageBox.critical(self,
-                                     QApplication.translate("AboutSTDMDialog","Open Operation Error"),
-                                     QApplication.translate("AboutSTDMDialog","Cannot read 'About STDM' source file."))
+                QMessageBox.critical(
+                    self,
+                    QApplication.translate(
+                        "AboutSTDMDialog","Open Operation Error"),
+                    QApplication.translate(
+                        "AboutSTDMDialog",
+                        "Cannot read 'About STDM' source file."
+                    )
+                )
                 self.reject()
 
             reader = QTextStream(aboutFile)
@@ -65,17 +71,32 @@ class AboutSTDMDialog(QDialog,Ui_frmAbout):
             self._insert_metadata_info()
 
         else:
-            QMessageBox.critical(self,
-                                 QApplication.translate("AboutSTDMDialog","File Does Not Exist"),
-                                 QApplication.translate("AboutSTDMDialog","'About STDM' source file does not exist."))
+            QMessageBox.critical(
+                self,
+                QApplication.translate(
+                    "AboutSTDMDialog","File Does Not Exist"),
+                QApplication.translate(
+                    "AboutSTDMDialog",
+                    "'About STDM' source file does not exist.")
+            )
             self.reject()
+
+    def version_from_metadata(self):
+        with open('{}/metadata.txt'.format(PLUGIN_DIR)) as meta:
+            lines = meta.readlines()
+            for line in lines:
+                if 'version' in line:
+                    version_line = line.split('=')
+                    version = version_line[1]
+                    return version
 
     def _insert_metadata_info(self):
         #Insert version and build numbers respectively.
-        if self._metadata is None:
-            return
+        if not self._metadata is None:
+            installed_version = self._metadata.get('version_installed', None)
+        else:
+            installed_version = self.version_from_metadata()
 
-        installed_version = self._metadata.get('version_installed', None)
         if installed_version is None:
             return
 
