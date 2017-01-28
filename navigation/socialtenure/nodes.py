@@ -626,17 +626,20 @@ class STRNode(EntityNode):
         """
         Delete STR information.
         """
-        del_msg = QApplication.translate("STRNode",
-                                     "This action will remove the social tenure relationship and dependent "
-                                     "supporting documents from the database and the documents folder. "
-                                     "This action cannot be undone and once removed, it can"
-                                     " only be recreated through"
-                                     " the 'New Social Tenure Relationship' wizard."
-                                     "Would you like to proceed?"
-                                     "\nClick Yes to proceed or No to cancel.")
-        del_result = QMessageBox.critical(self.parentWidget(),
-                                        QApplication.translate("STRNode",
-                                            "Delete Social Tenure Relationship"),
+        del_msg = QApplication.translate(
+            "STRNode",
+            "This action will remove the social tenure relationship "
+            "and dependent supporting documents from the database and "
+            "the documents folder. This action cannot be undone and "
+            "once removed, it can only be recreated through"
+            " the 'New Social Tenure Relationship' wizard."
+            "Would you like to proceed?"
+            "\nClick Yes to proceed or No to cancel."
+        )
+        del_result = QMessageBox.critical(
+            self.parentWidget(),
+            QApplication.translate("STRNode",
+                                   "Delete Social Tenure Relationship"),
                                         del_msg,
                                         QMessageBox.Yes|QMessageBox.No)
 

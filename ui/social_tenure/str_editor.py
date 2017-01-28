@@ -202,7 +202,6 @@ class InitSTREditor(QDialog, Ui_STREditor):
         :type row_numbers: List
         """
         current_store = self.current_data_store()
-
         for row_number in row_numbers:
             party_keys = current_store.party.keys()
 
@@ -219,7 +218,8 @@ class InitSTREditor(QDialog, Ui_STREditor):
         )
 
         self.reset_share_spinboxes(current_store)
-   
+        self.validate_str_type_length(current_store, self.current_item())
+
     def top_description_visibility(self, set_visible):
         """
         Sets the visibility of top description.
@@ -847,7 +847,16 @@ class BindSTREditor(InitSTREditor):
             'Upload one or more supporting documents under '
             'each document types.'
         )
-        self.description_lbl.setText(header)
+        if len(self.data_store[str_number].party) > 1:
+            explanation = QApplication.translate(
+                'BindSTREditor',
+                'The uploaded document will be copied '
+                'for each party record selected.'
+
+            )
+            self.description_lbl.setText('{} {}'.format(header, explanation))
+        else:
+            self.description_lbl.setText(header)
 
     def bind_validity_period(self):
         """
@@ -1134,9 +1143,9 @@ class ValidateSTREditor(SyncSTREditorData):
     def enable_next(self, selected_item, child_row, enable=True):
         """
         Enables or disables the next treeview item.
-        :param selected_item: The currely selected item.
+        :param selected_item: The currently selected item.
         :type selected_item: QStandardItem
-        :param child_row: The row number of the selected item.
+        :param child_row: The row number of an item to be enabled or disabled.
         :type child_row: Integer
         :param enable: A boolean to enable and disable the next treeview item.
         :type enable: Boolean
@@ -1193,7 +1202,8 @@ class ValidateSTREditor(SyncSTREditorData):
             self.enable_next(item, 1)
             if len(store.spatial_unit) > 0:
                 self.enable_next(item, 2)
-            self.enable_next(item, 3, False)
+            else:
+                self.enable_next(item, 3, False)
             self.enable_save_button()
 
     def validate_spatial_unit_length(self, store, item):
@@ -1218,13 +1228,14 @@ class ValidateSTREditor(SyncSTREditorData):
         :param item: The current item
         :type item: QStandardItem
         """
+        print store.str_type
         if 0 in store.str_type.values() or \
                 None in store.str_type.values():
             self.enable_next(selected_item, 3, False)
         else:
 
-            self.enable_next(selected_item, 3, True)
-            self.enable_next(selected_item, 4, True)
+            self.enable_next(selected_item, 3)
+            self.enable_next(selected_item, 4)
             self.enable_save_button()
 
     def validation_error(self, index):

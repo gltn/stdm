@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Create Social Tenure Relationship</string>
+   <string>New Social Tenure Relationship</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_9">
    <item>
@@ -317,8 +317,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>682</width>
-             <height>417</height>
+             <width>100</width>
+             <height>30</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
