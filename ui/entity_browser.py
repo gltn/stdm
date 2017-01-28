@@ -814,11 +814,13 @@ class EntityBrowserWithEditor(EntityBrowser):
         addEntityDlg = self._editor_dlg(self._entity, parent=self)
 
         result = addEntityDlg.exec_()
-        
+
         if result == QDialog.Accepted:
             model_obj = addEntityDlg.model()
             self.addModelToView(model_obj)
             self.recomputeRecordCount()
+            if addEntityDlg.reload_form:
+                self.onNewEntity()
 
     def _can_add_edit(self):
         """
