@@ -251,9 +251,7 @@ class ReferencedTableEditor(QWidget):
         if (TABLES & source) == TABLES:
             ref_tables.extend(pg_tables(exclude_lookups=True))
 
-        #View source
-        if (VIEWS & source) == VIEWS:
-            ref_tables.extend(pg_views())
+
 
         source_tables = []
         for t in ref_tables:
@@ -270,7 +268,17 @@ class ReferencedTableEditor(QWidget):
                     source_tables.append(t)
             else:
                 source_tables.append(t)
-        source_tables = source_tables + pg_views()
+
+        # View source
+        if (VIEWS & source) == VIEWS:
+            for value in pg_views():
+                if 'vw' in value:
+                    if self._current_profile.entity_by_name(
+                            value.split('_vw')[0]
+                    ) is not None:
+                        source_tables.append(value)
+                else:
+                    source_tables.append(value)
         self.cbo_ref_table.addItems(source_tables)
 
     def _load_source_table_fields(self, sel):
