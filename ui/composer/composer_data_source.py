@@ -192,4 +192,10 @@ class ComposerDataSourceSelector(QWidget,Ui_frmComposerDataSource):
             self.cboDataSource.addItem('')
 
             for value in pg_views():
-                self.cboDataSource.addItem(value, value)
+                if 'vw' in value:
+                    if self.curr_profile.entity_by_name(
+                            value.split('_vw')[0]
+                    ) is not None:
+                        self.cboDataSource.addItem(value, value)
+                else:
+                    self.cboDataSource.addItem(value, value)
