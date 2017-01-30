@@ -75,17 +75,12 @@ class STRDBHandler():
         with a supporting document record, if uploaded.
         :param str_store: The data store of str components
         :type str_store: STRDataStore
-        :return: None
-        :rtype: NoneType
         """
-
         _str_obj = self.str_model()
         str_objs = []
 
         party_name = str_store.party.values()[0].__table__.name
-
         index = 4
-
         # Social tenure and supporting document insertion
         # The code below is have a workaround to enable
         # batch supporting documents without affecting single
@@ -104,13 +99,17 @@ class STRDBHandler():
             party_entity_id = '{}_id'.format(party_name[3:])
             start_date = str_store.validity_period['from_date']
             end_date = str_store.validity_period['to_date']
+            if isinstance(start_date, QDate):
+                start_date = start_date.toPyDate()
+            if isinstance(end_date, QDate):
+                end_date = end_date.toPyDate()
 
             str_args = {
                 party_entity_id: party_id,
                 'spatial_unit_id': str_store.spatial_unit.keys()[0],
                 'tenure_type': str_type_id,
-                'validity_start': start_date.toPyDate(),
-                'validity_end': end_date.toPyDate(),
+                'validity_start': start_date,
+                'validity_end': end_date,
                 'tenure_share': str_store.share[party_id]
             }
             str_obj = self.str_model(**str_args)
@@ -132,39 +131,12 @@ class STRDBHandler():
             index = index + 1
         _str_obj.saveMany(str_objs)
 
-    def save_str(self):
-        """
-        Calls the create and update methods based on the presence and
-        absence of the STR edit model object.
-        :return: The updated STR model object or None. The updated STR model
-        object is used by Spatial Entity Details or the View STR to
-        update the respective QTreeView.
-        :rtype:
-        """
-        if self.str_edit_obj is None:
-            for str_store in self.data_store.values():
-                self.on_add_str(str_store)
-            return None
-
-        else:
-            if len(self.data_store) == 1:
-
-                updated_str_obj = self.on_edit_str(
-                    self.data_store[1]
-                )
-
-                return updated_str_obj
-            else:
-                return None
-
     def on_edit_str(self, str_store):
         """
          Updates an STR data with new data.
          :param str_store: The store of edited data
          with existing data.
          :type str_store: STRDataStore
-         :return: None
-         :rtype: NoneType
          """
         _str_obj = self.str_model()
 
@@ -215,8 +187,6 @@ class STRDBHandler():
         """
         Slot raised when the user clicks on Finish
         button in order to create a new STR entry.
-        :return: None
-        :rtype: NoneType
         """
         isValid = True
         # Create a progress dialog
@@ -224,6 +194,7 @@ class STRDBHandler():
 
             self.progress.show()
             if self.str_edit_obj is None:
+                QApplication.processEvents()
                 self.progress.setRange(0, len(self.data_store) - 1)
                 self.progress.overall_progress(
                     'Creating a STR...',
@@ -240,11 +211,13 @@ class STRDBHandler():
                     self.on_add_str(str_store)
 
             else:
+                QApplication.processEvents()
                 self.progress.setRange(0, 1)
                 self.progress.setValue(0)
                 self.progress.overall_progress(
                     'Editing a STR...',
                 )
+
                 self.progress.progress_message('Updating STR', '')
                 updated_str_obj = self.on_edit_str(
                     self.data_store[1]

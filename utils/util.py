@@ -54,7 +54,8 @@ from stdm.data.configuration import (
 from qgis.gui import QgsEncodingFileDialog
 
 
-PLUGIN_DIR = os.path.abspath(os.path.join(os.path.dirname( __file__ ), os.path.pardir)).replace("\\", "/")
+PLUGIN_DIR = os.path.abspath(os.path.join(
+    os.path.dirname( __file__ ), os.path.pardir)).replace("\\", "/")
 CURRENCY_CODE = "" #TODO: Put in the registry
 DOUBLE_FILE_EXTENSIONS = ['tar.gz','tar.bz2']
 
@@ -370,7 +371,8 @@ def entity_display_columns(entity):
             'BOOL',
             'LOOKUP',
             'ADMIN_SPATIAL_UNIT',
-            'MULTIPLE_SELECT'
+            'MULTIPLE_SELECT',
+            'PERCENT'
         ]
     ]
 
@@ -660,18 +662,14 @@ def entity_id_to_attr(entity, attr, id):
 
 
 def entity_id_to_model(entity, id):
-    #TODO update comment
     """
-    Converts an entity column id to another
-    column value of the same record.
+    Gets the model of an entity based on an id and the entity.
     :param entity: Entity
-    :type entity: Class
-    :param attr: Column name
-    :type attr: String
-    :param id: Id of the entity
+    :type entity: Object
+    :param id: Id of the record
     :type id: Integer
-    :return: a column value if a match found
-    :rtype: Integer or String
+    :return: SQLAlchemy result proxy
+    :rtype: Object
     """
     model = entity_model(entity)
     model_obj = model()
@@ -754,6 +752,7 @@ def profile_entities(profile):
         if e.TYPE_INFO == 'ENTITY'
     ]
     return entities
+
 
 def enable_drag_sort(mv_widget):
     """
