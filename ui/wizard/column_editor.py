@@ -131,7 +131,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         """
         self.popuplate_data_type_cbo()
 
-        name_regex = QtCore.QRegExp('^[a-z][a-z0-9_]*$')
+        name_regex = QtCore.QRegExp('^(?=.{0,40}$)[a-z][a-z0-9_]*$')
         name_validator = QtGui.QRegExpValidator(name_regex)
         self.edtColName.setValidator(name_validator)
 
