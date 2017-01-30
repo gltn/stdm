@@ -35,6 +35,7 @@ def translate_in_file(file_path):
     or False if it doesn't exist.
     :rtype: Boolean
     """
+
     with open(file_path, "r") as file_inst:
         array = []
         for line in file_inst:

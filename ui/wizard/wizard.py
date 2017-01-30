@@ -112,6 +112,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.setupUi(self)
         self.register_fields()
 
+        #Add maximize buttons
+        self.setWindowFlags(
+            self.windowFlags() |
+            Qt.WindowSystemMenuHint |
+            Qt.WindowMaximizeButtonHint
+        )
         # Initialize notification bars
         self._notif_bar_str = NotificationBar(self.vl_notification_str)
 

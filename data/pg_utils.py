@@ -726,7 +726,7 @@ def remove_constraint(child, child_col):
     # Validate that the referenced columns exist in the respective tables.
     # Parent table
     constraint = '{}_{}_fkey'.format(child, child_col)
-    sql = 'ALTER TABLE IF EXISTS {} DROP CONSTRAINT {};'.format(
+    sql = 'ALTER TABLE {} DROP CONSTRAINT IF EXISTS {};'.format(
         child, constraint
     )
     t = text(sql)
@@ -754,6 +754,7 @@ def add_constraint(child_table, child_column, parent_table):
     )
     t = text(sql)
     _execute(t)
+
 
 def drop_column(table, column):
     """

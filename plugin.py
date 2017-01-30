@@ -155,7 +155,7 @@ class STDMQGISLoader(object):
         # Profile status label showing the current profile
         self.profile_status_label = None
         LOGGER.debug('STDM plugin has been initialized.')
-
+        self.entity_browser = None
         # Load configuration file
         self.config_path = QDesktopServices.storageLocation(
             QDesktopServices.HomeLocation) \
@@ -533,22 +533,10 @@ class STDMQGISLoader(object):
         :return:
         :rtype:
         """
-        config_updater = ConfigurationSchemaUpdater()
-        config_updater.exec_()
-        print 'complete STDMQGISLoaoder'
+        # TODO remove this line below when schema updater is refactored
+        self.config_serializer.on_version_updated(document)
         self.progress.hide()
         self.progress.cancel()
-        # QMessageBox.information(
-        #     self.iface.mainWindow(),
-        #     'Update Complete',
-        #     'The configuration is successfully upgraded!'
-        # )
-
-    def on_start_database_update(self, document):
-
-        db_updater = DatabaseUpdater(document)
-        db_updater.upgrade_database()
-
 
     def load_configuration_to_serializer(self):
         try:
@@ -556,6 +544,9 @@ class STDMQGISLoader(object):
                 self.on_update_complete
             )
             self.config_serializer.update_progress.connect(
+                self.on_update_progress
+            )
+            self.config_serializer.db_update_progress.connect(
                 self.on_update_progress
             )
             self.config_serializer.load()
@@ -1284,11 +1275,13 @@ class STDMQGISLoader(object):
         on the configuration wizard.
         :type: string
         """
-        if self.toolbarLoader is not None:
+        if not self.toolbarLoader is None:
             self.toolbarLoader.unloadContent()
-        if self.menubarLoader is not None:
+        if not self.menubarLoader is None:
             self.menubarLoader.unloadContent()
             self.stdmMenu.clear()
+        if not self.entity_browser is None:
+            self.entity_browser.close()
         self.logoutCleanUp(True)
 
         # Set current profile based on the selected
@@ -1560,11 +1553,14 @@ class STDMQGISLoader(object):
                     cnt_idx = getIndex(
                         self._reportModules.keys(), dispName
                     )
-                    et_browser = EntityBrowserWithEditor(
+                    self.entity_browser = EntityBrowserWithEditor(
                         sel_entity,
                         self.iface.mainWindow()
                     )
-                    et_browser.exec_()
+                    if sel_entity.has_geometry_column():
+                        self.entity_browser.show()
+                    else:
+                        self.entity_browser.exec_()
 
                 else:
                     return

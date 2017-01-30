@@ -166,7 +166,11 @@ class EntityNodeFormatter(STRNodeFormatter):
         for c in display_cols.keys():
             if c != "id" and c in filter_cols:
                 if hasattr(model, c):
-                    k = c, format_name(c)
+                    if c == 'tenure_share':
+                        k = c, '{} (%)'.format(format_name(c))
+                    else:
+                        k = c, format_name(c)
+
                     disp_mapping[k] = lookup_id_to_value(
                         self.curr_profile, c, getattr(model, c)
                     )

@@ -66,6 +66,8 @@ from stdm.utils.util import (
     entity_attr_to_id,
     lookup_parent_entity
 )
+
+from stdm.ui.progress_dialog import STDMProgressDialog
 from .notification import (
     NotificationBar
 )
@@ -92,6 +94,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self.setupUi(self)
 
         self._plugin = plugin
+
         QTimer.singleShot(
             300,
             lambda :self.tbPropertyPreview.set_iface(self._plugin.iface)
@@ -170,7 +173,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         self._source_doc_manager.setEditPermissions(False)
 
-
         self.initGui()
     
     def add_tool_buttons(self):
@@ -211,9 +213,11 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         """
         Initialize widget
         """
+        self.init_progress_dialog()
+
         self.tb_actions.setVisible(False)
         QTimer.singleShot(30, self._load_entity_configurations)
-        #self._load_entity_configurations()
+
         self.add_tool_buttons()
 
         #Connect signals
@@ -249,6 +253,22 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         #Load async for the current widget
         self.entityTabIndexChanged(0)
 
+    def init_progress_dialog(self):
+        """
+        Initializes the progress dialog.
+        """
+        self.progress = STDMProgressDialog(self)
+        title = QApplication.translate(
+            'DocumentGeneratorDialog', 'View Social Tenure Relationship'
+        )
+        message = QApplication.translate(
+            'DocumentGeneratorDialog', 'Loading entities, please wait'
+        )
+        self.progress.overall_progress(title)
+        self.progress.progress_message(message)
+        self.progress.setFixedWidth(380)
+
+        self.progress.show()
 
     def add_spatial_unit_layer(self):
         """
@@ -289,14 +309,17 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Specify the entity configurations.
         """
         try:
-            spatial_unit = [
 
+            spatial_unit = [
                 self.curr_profile.social_tenure.spatial_unit
             ]
+
             self.parties = self.curr_profile.social_tenure.parties
             tb_str_entities = self.parties + spatial_unit
-            for t in tb_str_entities:
+            self.progress.setRange(0, len(tb_str_entities) - 1)
 
+            for i, t in enumerate(tb_str_entities):
+                QApplication.processEvents()
                 entity_cfg = self._entity_config_from_profile(
                     str(t.name), t.short_name
                 )
@@ -309,6 +332,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                             entity_cfg, self.tvSTRResults, self
                         )
                     )
+                self.progress.setValue(i)
 
         except Exception as pe:
             self._notif_search_config.clear()

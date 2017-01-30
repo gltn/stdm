@@ -41,7 +41,7 @@ from PyQt4.QtCore import (
 from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
 from stdm.composer.document_generator import DocumentGenerator
-
+from stdm.ui.progress_dialog import STDMProgressDialog
 from stdm.utils.util import (
     getIndex,
     format_name,
@@ -153,7 +153,6 @@ class DocumentGeneratorDialogWrapper(object):
         self.curr_profile = current_profile()
         #Load entity configurations
         QTimer.singleShot(22, self._load_entity_configurations)
-        #self._load_entity_configurations()
 
     def _load_entity_configurations(self):
         """
@@ -161,13 +160,17 @@ class DocumentGeneratorDialogWrapper(object):
         corresponding EntityConfig objects.
         """
         try:
-            for t in profile_entities(self.curr_profile):
+            entities = profile_entities(self.curr_profile)
+            self._doc_gen_dlg.progress.setRange(0, len(entities) - 1)
+
+            for i, t in enumerate(entities):
+                QApplication.processEvents()
                 entity_cfg = self._entity_config_from_profile(
                     str(t.name), t.short_name
                 )
 
                 if entity_cfg is not None:
-                    self._doc_gen_dlg.add_entity_config(entity_cfg)
+                    self._doc_gen_dlg.add_entity_config(entity_cfg, i)
 
         except Exception as pe:
             self._notif_bar.clear()
@@ -247,7 +250,8 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         for imageType in supportedImageTypes:
             imageTypeStr = imageType.data()
             self.cboImageType.addItem(imageTypeStr)
-        
+
+        self._init_progress_dialog()
         #Connect signals
         self.btnSelectTemplate.clicked.connect(self.onSelectTemplate)
         self.buttonBox.accepted.connect(self.onGenerate)
@@ -256,17 +260,31 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         self.tabWidget.currentChanged.connect(self.on_tab_index_changed)
         self.chk_template_datasource.stateChanged.connect(self.on_use_template_datasource)
 
+    def _init_progress_dialog(self):
+        """
+        Initializes the progress dialog.
+        """
+        self.progress = STDMProgressDialog(self)
+        title = QApplication.translate(
+            'DocumentGeneratorDialog', 'Loading Document Generator'
+        )
+        message = QApplication.translate(
+            'DocumentGeneratorDialog', 'Loading entities, please wait'
+        )
+        self.progress.overall_progress(title)
+        self.progress.progress_message(message)
+        self.progress.setFixedWidth(380)
+        self.progress.show()
+
     def add_entity_configuration(self, **kwargs):
         ent_config = EntityConfig(**kwargs)
         self.add_entity_config(ent_config)
 
-    def add_entity_config(self, ent_config):
-
+    def add_entity_config(self, ent_config, progress_value=0):
+        QApplication.processEvents()
         if not self._config_mapping.get(ent_config.title(), ""):
             fk_mapper = self._create_fk_mapper(ent_config)
-
             self.tabWidget.addTab(fk_mapper, ent_config.title())
-
             self._config_mapping[ent_config.title()] = ent_config
 
             #Force list of column names to be loaded
@@ -275,6 +293,8 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
 
             else:
                 self.on_tab_index_changed(0)
+
+        self.progress.setValue(progress_value)
 
     def on_tab_index_changed(self, index):
         if index == -1:
@@ -571,83 +591,83 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         progressDlg = QProgressDialog(self)
         progressDlg.setMaximum(len(records))
 
-        # try:
-        QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+        try:
+            QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
 
-        for i, record in enumerate(records):
-            progressDlg.setValue(i)
+            for i, record in enumerate(records):
+                progressDlg.setValue(i)
 
-            if progressDlg.wasCanceled():
-                success_status = False
-                break
-
-            #User-defined location
-            if self.chkUseOutputFolder.checkState() == Qt.Unchecked:
-                status,msg = self._doc_generator.run(self._docTemplatePath, entity_field_name,
-                                              record.id, outputMode,
-                                              filePath = self._outputFilePath)
-                self._doc_generator.clear_temporary_layers()
-            #Output folder location using custom naming
-            else:
-
-                status, msg = self._doc_generator.run(self._docTemplatePath, entity_field_name,
-                                                record.id, outputMode,
-                                                dataFields = documentNamingAttrs,
-                                                fileExtension = fileExtension,
-                                                data_source = self.ds_entity.name)
-                self._doc_generator.clear_temporary_layers()
-
-            if not status:
-                result = QMessageBox.warning(self,
-                                             QApplication.translate("DocumentGeneratorDialog",
-                                                                    "Document Generate Error"),
-                                             msg, QMessageBox.Ignore | QMessageBox.Abort)
-
-                if result == QMessageBox.Abort:
-                    progressDlg.close()
+                if progressDlg.wasCanceled():
                     success_status = False
+                    break
 
-                    #Restore cursor
-                    QApplication.restoreOverrideCursor()
+                #User-defined location
+                if self.chkUseOutputFolder.checkState() == Qt.Unchecked:
+                    status,msg = self._doc_generator.run(self._docTemplatePath, entity_field_name,
+                                                  record.id, outputMode,
+                                                  filePath = self._outputFilePath)
+                    self._doc_generator.clear_temporary_layers()
+                #Output folder location using custom naming
+                else:
 
-                    return
+                    status, msg = self._doc_generator.run(self._docTemplatePath, entity_field_name,
+                                                    record.id, outputMode,
+                                                    dataFields = documentNamingAttrs,
+                                                    fileExtension = fileExtension,
+                                                    data_source = self.ds_entity.name)
+                    self._doc_generator.clear_temporary_layers()
 
-                #If its the last record and user has selected to ignore
-                if i+1 == len(records):
-                    progressDlg.close()
-                    success_status = False
+                if not status:
+                    result = QMessageBox.warning(self,
+                                                 QApplication.translate("DocumentGeneratorDialog",
+                                                                        "Document Generate Error"),
+                                                 msg, QMessageBox.Ignore | QMessageBox.Abort)
 
-                    #Restore cursor
-                    QApplication.restoreOverrideCursor()
+                    if result == QMessageBox.Abort:
+                        progressDlg.close()
+                        success_status = False
 
-                    return
+                        #Restore cursor
+                        QApplication.restoreOverrideCursor()
 
-            else:
-                progressDlg.setValue(len(records))
+                        return
 
-        QApplication.restoreOverrideCursor()
+                    #If its the last record and user has selected to ignore
+                    if i+1 == len(records):
+                        progressDlg.close()
+                        success_status = False
 
-        QMessageBox.information(self,
-            QApplication.translate("DocumentGeneratorDialog",
-                                   "Document Generation Complete"),
-            QApplication.translate("DocumentGeneratorDialog",
-                                "Document generation has successfully completed.")
-                                )
+                        #Restore cursor
+                        QApplication.restoreOverrideCursor()
 
-        # except Exception as ex:
-        #     LOGGER.debug(str(ex))
-        #     err_msg = sys.exc_info()[1]
-        #     QApplication.restoreOverrideCursor()
-        #
-        #     QMessageBox.critical(
-        #         self,
-        #         "STDM",
-        #         QApplication.translate(
-        #             "DocumentGeneratorDialog",
-        #             "Error Generating documents - %s"%(err_msg)
-        #         )
-        #     )
-        #     success_status = False
+                        return
+
+                else:
+                    progressDlg.setValue(len(records))
+
+            QApplication.restoreOverrideCursor()
+
+            QMessageBox.information(self,
+                QApplication.translate("DocumentGeneratorDialog",
+                                       "Document Generation Complete"),
+                QApplication.translate("DocumentGeneratorDialog",
+                                    "Document generation has successfully completed.")
+                                    )
+
+        except Exception as ex:
+            LOGGER.debug(str(ex))
+            err_msg = sys.exc_info()[1]
+            QApplication.restoreOverrideCursor()
+
+            QMessageBox.critical(
+                self,
+                "STDM",
+                QApplication.translate(
+                    "DocumentGeneratorDialog",
+                    "Error Generating documents - %s"%(err_msg)
+                )
+            )
+            success_status = False
 
         #Reset UI
         self.reset(success_status)

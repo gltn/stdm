@@ -53,6 +53,7 @@ from stdm.data.configuration.columns import (
 )
 
 from stdm.settings.config_updaters import ConfigurationUpdater
+from stdm.settings.database_updaters import DatabaseUpdater
 from stdm.utils.util import (
     date_from_string,
     datetime_from_string
@@ -71,6 +72,7 @@ class ConfigurationFileSerializer(QObject):
     """
     update_progress = pyqtSignal(str)
     update_complete = pyqtSignal(QDomDocument)
+    db_update_progress = pyqtSignal(str)
 
     def __init__(self, path, parent=None):
         """
@@ -168,23 +170,23 @@ class ConfigurationFileSerializer(QObject):
         :rtype: tuple(bool, QDomDocument)
         """
         self.append_log('Started the update process.')
-        config_updater = ConfigurationUpdater(document)
-        # Thread to handle update progress
-        # self.updater_thread = QThread(self)
-        # #config_updater.moveToThread(self.updater_thread)
-        # self.updater_thread.start()
-        # # self.updater_thread.started.connect(
-        # #     self.on_update_progress
-        # # )
-        config_updater.update_progress.connect(
+        self.config_updater = ConfigurationUpdater(document)
+        self.config_updater.update_progress.connect(
             self.on_update_progress
         )
-        status, dom_document, db_updater = config_updater.exec_()
-        self.on_update_complete(db_updater, dom_document)
+        # TODO the on_version_updated should listen to version_updated ...
+        # .... signal when schema update is refactored.
+        # self.config_updater.version_updated.connect(
+        #     self.on_version_updated
+        # )
+        self.config_updater.update_complete.connect(
+            self.on_update_complete
+        )
 
+        status, dom_document = self.config_updater.exec_()
         return status, dom_document
 
-    def on_update_complete(self, db_updater, updated_document):
+    def on_update_complete(self, updated_document):
         """
         Loads the updated dom document into configuration instance.
         It then saves it to configuration.stc using save() method.
@@ -198,24 +200,37 @@ class ConfigurationFileSerializer(QObject):
         self._load_config_items(doc_element)
         self.append_log(
             'Loaded the updated configuration to '
-            'STDM configuration instance.'
+            'STDM configuration.'
         )
         self.update_progress.emit(
             'Loaded the updated configuration to '
-            'STDM configuration instance.'
+            'STDM configuration.'
         )
         self.save()
         self.append_log(
-            'Successfully created configuration.stc '
-            'with the latest config version.'
+            'Successfully created an updated configuration.stc.'
         )
-        config_updater = ConfigurationSchemaUpdater()
-        config_updater.exec_()
-
-        db_updater.upgrade_database()
 
         self.update_complete.emit(updated_document)
 
+    def on_version_updated(self, document):
+        """
+        A slot raised on a specific config version is
+        updated to backup database. But currently it is raised when
+        update_complete signal is emitted.
+        """
+        db_updater = DatabaseUpdater(document)
+        db_updater.db_update_progress.connect(self.on_db_update_progress)
+        # TODO the schema updater must be refactored to update db using dom_document
+        schema_updater = ConfigurationSchemaUpdater()
+
+        schema_updater.exec_()
+
+        db_updater.upgrade_database()
+        # Restore lost views that may have been lost during drop cascade.
+        #TODO second time exec_ needs to be removed when schema updater is refactored
+        schema_updater.exec_()
+        # TODO emit update_complete here when the schema updater is refactored
 
     def on_update_progress(self, message):
         """
@@ -227,6 +242,14 @@ class ConfigurationFileSerializer(QObject):
         :rtype:
         """
         self.update_progress.emit(message)
+
+    def on_db_update_progress(self, message):
+        """
+        A slot raised when the database update progress signal is emitted.
+        :param message: The progress message
+        :type message: String
+        """
+        self.db_update_progress.emit(message)
 
     def read_xml(self, document):
         """

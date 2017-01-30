@@ -739,7 +739,7 @@ class EntityBrowserWithEditor(EntityBrowser):
                                             add, self)
 
             self.connect(self._newEntityAction,SIGNAL("triggered()"),self.onNewEntity)
-            
+
             self._editEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/edit.png"),
                                              edit,self)
             self._editEntityAction.setObjectName(
@@ -786,6 +786,9 @@ class EntityBrowserWithEditor(EntityBrowser):
                 self.tbEntity.clicked.connect(
                     self.on_select_attribute
                 )
+                self.tbEntity.entered.connect(
+                    self.on_select_attribute
+                )
 
                 self.shift_spatial_entity_browser()
                 # Hide the add button from spatial tables
@@ -811,11 +814,13 @@ class EntityBrowserWithEditor(EntityBrowser):
         addEntityDlg = self._editor_dlg(self._entity, parent=self)
 
         result = addEntityDlg.exec_()
-        
+
         if result == QDialog.Accepted:
             model_obj = addEntityDlg.model()
             self.addModelToView(model_obj)
             self.recomputeRecordCount()
+            if addEntityDlg.reload_form:
+                self.onNewEntity()
 
     def _can_add_edit(self):
         """
@@ -850,8 +855,8 @@ class EntityBrowserWithEditor(EntityBrowser):
         
         if len(selRowIndices) == 0:
             msg = QApplication.translate("EntityBrowserWithEditor", 
-                                         "Please select a record in the table "
-                                         "below for editing.")
+                                         "Please select a record in the table"
+                                         " below for editing.")
             self._notifBar.insertWarningNotification(msg)
 
             return
@@ -1032,18 +1037,15 @@ class EntityBrowserWithEditor(EntityBrowser):
             dialog_height
         )
 
-    def on_select_attribute(self, sel_model_index):
+    def on_select_attribute(self):
         """
         Slot raised when selecting a spatial entity row.
-         :param sel_model_index: Selected row index
-        :type sel_model_index: QModelIndex
-        :return:
-        :rtype:
         """
-        selRowIndices = self.tbEntity.\
+        sel_row_indices = self.tbEntity.\
             selectionModel().selectedRows(0)
         record_ids = []
-        for sel_row_index in selRowIndices:
+
+        for sel_row_index in sel_row_indices:
             rowIndex = self._proxyModel.mapToSource(
                 sel_row_index
             )
@@ -1115,9 +1117,12 @@ class EntityBrowserWithEditor(EntityBrowser):
         :return: None
         """
         if self._entity.has_geometry_column():
-            if not self.selection_layer is None:
-                self.selection_layer.removeSelection()
-            self.sp_unit_manager.zoom_to_layer()
+            try:
+                if not self.selection_layer is None:
+                    self.selection_layer.removeSelection()
+                self.sp_unit_manager.zoom_to_layer()
+            except RuntimeError:
+                pass
 
     def hideEvent(self, hideEvent):
         """
