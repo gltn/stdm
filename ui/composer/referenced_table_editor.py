@@ -45,7 +45,10 @@ from stdm.data.pg_utils import (
 from stdm.settings import (
     current_profile
 )
-from stdm.utils.util import setComboCurrentIndexWithText
+from stdm.utils.util import (
+    setComboCurrentIndexWithText,
+    profile_and_user_views
+)
 
 __all__ = ["LinkedTableProps", "ReferencedTableEditor"]
 
@@ -160,6 +163,7 @@ class ReferencedTableEditor(QWidget):
                                                     "Referencing"))
 
         self._current_profile = current_profile()
+        self.stdm_config = StdmConfiguration.instance()
         self._current_profile_tables = []
         if not self._current_profile is None:
             self._current_profile_tables = self._current_profile.table_names()
@@ -271,14 +275,9 @@ class ReferencedTableEditor(QWidget):
 
         # View source
         if (VIEWS & source) == VIEWS:
-            for value in pg_views():
-                if 'vw' in value:
-                    if self._current_profile.entity_by_name(
-                            value.split('_vw')[0]
-                    ) is not None:
-                        source_tables.append(value)
-                else:
-                    source_tables.append(value)
+            profile_user_views = profile_and_user_views(self._current_profile)
+            source_tables = source_tables + profile_user_views
+
         self.cbo_ref_table.addItems(source_tables)
 
     def _load_source_table_fields(self, sel):
