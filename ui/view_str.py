@@ -521,34 +521,34 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         if index.column() == 0:
             if isinstance(node, SupportsDocumentsNode):
 
-                edit_str = EditSTREditor(node)
+                self.edit_str = EditSTREditor(node)
 
-                status = edit_str.exec_()
+                status = self.edit_str.exec_()
 
                 if status == 1:
-
-                    if node._parent.typeInfo() == 'ENTITY_NODE':
-                        node_party_id = self.str_party_column_obj(
-                            node._model
-                        )
-                        edit_str_party_id = self.str_party_column_obj(
-                            edit_str.updated_str_obj
-                        )
-                        if node_party_id is None or \
-                                        edit_str_party_id is None:
-                            return
-                        if node_party_id == \
-                                edit_str_party_id:
-                            self.btnSearch.click()
-                            index = node.treeView().model().index(0, 0)
-                            node._on_expand(index)
-
-                    if node._parent.typeInfo() == 'SPATIAL_UNIT_NODE':
-                        if node._model.spatial_unit_id == \
-                                edit_str.updated_str_obj.spatial_unit_id:
-                            self.btnSearch.click()
-                            index = node.treeView().model().index(0, 0)
-                            node._on_expand(index)
+                    self.btnSearch.click()
+                    # if node._parent.typeInfo() == 'ENTITY_NODE':
+                    #     node_party_id = self.str_party_column_obj(
+                    #         node._model
+                    #     )
+                    #     edit_str_party_id = self.str_party_column_obj(
+                    #         self.edit_str.updated_str_obj
+                    #     )
+                    #     if node_party_id is None or \
+                    #                     edit_str_party_id is None:
+                    #         return
+                    #     if node_party_id == \
+                    #             edit_str_party_id:
+                    #         self.btnSearch.click()
+                    #         index = node.treeView().model().index(0, 0)
+                    #         node._on_expand(index)
+                    #
+                    # if node._parent.typeInfo() == 'SPATIAL_UNIT_NODE':
+                    #     if node._model.spatial_unit_id == \
+                    #             self.edit_str.updated_str_obj.spatial_unit_id:
+                    #         self.btnSearch.click()
+                    #         index = node.treeView().model().index(0, 0)
+                    #         node._on_expand(index)
 
     def load_new_str_editor(self):
         try:

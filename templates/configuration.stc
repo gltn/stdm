@@ -575,9 +575,9 @@
    <EntityRelation displayColumns="name,code" child="Witness" parent="check_gender" name="fk_ru_check_gender_id_ru_witness_gender" parentColumn="id" childColumn="gender"/>
    <EntityRelation displayColumns="name,code" child="Witness" parent="admin_spatial_unit_set" name="fk_admin_spatial_unit_set_id_ru_witness_residence_area" parentColumn="id" childColumn="residence_area"/>
    <EntityRelation displayColumns="name,code" child="Witness" parent="check_witness_relationship" name="fk_ru_check_witness_relationship_id_ru_witness_relationship" parentColumn="id" childColumn="relationship"/>
-   <EntityRelation displayColumns="national_id" child="Survey" parent="Enumerator" name="fk_ru_enumerator_id_ru_survey_enumerator" parentColumn="id" childColumn="enumerator"/>
-   <EntityRelation displayColumns="national_id" child="Survey" parent="Respondent" name="fk_ru_respondent_id_ru_survey_respondent" parentColumn="id" childColumn="respondent"/>
-   <EntityRelation displayColumns="national_id" child="Survey" parent="Respondent" name="fk_ru_respondent_id_ru_survey_witness" parentColumn="id" childColumn="witness"/>
+   <EntityRelation displayColumns="first_name, last_name" child="Survey" parent="Enumerator" name="fk_ru_enumerator_id_ru_survey_enumerator" parentColumn="id" childColumn="enumerator"/>
+   <EntityRelation displayColumns="first_name, last_name" child="Survey" parent="Respondent" name="fk_ru_respondent_id_ru_survey_respondent" parentColumn="id" childColumn="respondent"/>
+   <EntityRelation displayColumns="first_name, last_name" child="Survey" parent="Witness" name="fk_ru_witness_id_ru_survey_witness" parentColumn="id" childColumn="witness"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Farmer" name="fk_ru_farmer_id_ru_social_tenure_relationship_party_id" parentColumn="id" childColumn="party_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Garden" name="fk_ru_garden_id_ru_social_tenure_relationship_spatial_unit_id" parentColumn="id" childColumn="spatial_unit_id"/>
   </Relations>
