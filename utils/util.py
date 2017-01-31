@@ -918,3 +918,50 @@ def file_text(path):
     except IOError as ex:
         raise ex
 
+
+def profile_and_user_views(profile):
+    """
+    Gets current profile and user views. If views has a valid profile prefix
+    and not valid current profile entity, it will be excluded.
+    :param profile: The profile object
+    :type profile: Object
+    :return: List of profile and user views
+    :rtype: List
+    """
+    from stdm.data.pg_utils import (
+        pg_views
+    )
+    from stdm.data.configuration.stdm_configuration import (
+        StdmConfiguration
+    )
+    source_tables = []
+    stdm_config = StdmConfiguration.instance()
+
+    for value in pg_views():
+        if 'vw_social_tenure_relationship' in value:
+            # if a value exist on the left side of vw, assess further
+            if len(value.split('_vw')) > 0:
+                entity = value.split('_vw')[0]
+                # we are more sure this could be entity
+                if '_' in entity and len(entity.split('_')) > 0:
+                    # if the prefix exist in the configuration
+                    if entity.split('_')[0] in \
+                            stdm_config.prefixes():
+                        # Check if the entity is in the current profile
+                        if profile.entity_by_name(
+                                entity
+                        ) is not None:
+                            source_tables.append(value)
+                    # it means this is not a valid entity so add it
+                    else:
+                        source_tables.append(value)
+                # it is a user view; add it to the combo list.
+                else:
+                    source_tables.append(value)
+            # it is a user view; add it to the combo list.
+            else:
+                source_tables.append(value)
+        else:
+            source_tables.append(value)
+
+    return source_tables
