@@ -193,7 +193,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.splitter_3.isCollapsible(False)
         self.splitter_3.setSizes([330, 150])
 
-        self.set_current_profile()
+        cp = current_profile()
+        if not cp is None:
+            self.set_current_profile(cp.name)
+        else:
+            self.set_current_profile('')
 
         self._init_str_ctrls()
 
@@ -576,6 +580,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Read and load profiles from StdmConfiguration instance
         """
         profiles = []
+        self.cboProfile.clear()
         for profile in self.stdm_config.profiles.values():
             for entity in profile.entities.values():
                 self.connect_column_signals(entity)
@@ -1264,7 +1269,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Save a draft configuration
         '''
         self.save_current_configuration(DRAFT_CONFIG_FILE)
+        current_profile = self.cboProfile.currentText()
         self.load_stdm_config()
+        self.switch_profile(current_profile)
+        self.set_current_profile(current_profile)
         self.set_window_title()
 
     def discard_draft(self):
@@ -1397,11 +1405,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self.cboProfile.insertItems(0, profiles)
 
-    def set_current_profile(self):
+    def set_current_profile(self, name):
         # Set current profile on the profile combobox.
-        cp = current_profile()
-        if not cp is None:
-            index = self.cboProfile.findText(cp.name, Qt.MatchFixedString)
+        #cp = current_profile()
+        if name <> '':
+            index = self.cboProfile.findText(name, Qt.MatchFixedString)
             if index >= 0:
                 self.cboProfile.setCurrentIndex(index)
         else:
