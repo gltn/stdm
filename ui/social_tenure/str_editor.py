@@ -1518,9 +1518,7 @@ class STREditor(ValidateSTREditor):
         current_store.spatial_unit.clear()
         current_store.spatial_unit[model.id] = model
 
-    def set_str_type_data(
-            self, str_type_id, party_id, row_number
-    ):
+    def set_str_type_data(self, str_type_id, party_id, row_number):
         """
         Adds STR type rows using party records selected.
         :param str_type_id: The STR type id
@@ -1745,9 +1743,13 @@ class EditSTREditor(STREditor):
 
         self.updated_str_obj = None
         self.str_edit_dict = self.str_edit_obj.__dict__
-        self.party, self.party_column = self.current_party(
+        current_party_detail = self.current_party(
             self.str_edit_dict
         )
+        if current_party_detail is not None:
+            self.party, self.party_column = self.current_party(
+                self.str_edit_dict
+            )
         title = QApplication.translate(
             'EditSTREditor',
             'Edit Social Tenure Relationship'
@@ -1778,10 +1780,13 @@ class EditSTREditor(STREditor):
         :rtype: String
         """
         parties = self.social_tenure.parties
-
+        if record is None:
+            return
         for party in parties:
             party_name = party.short_name.lower()
             party_id = '{}_id'.format(party_name)
+            if party_id not in record.keys():
+                return
             if record[party_id] != None:
                 return party, party_id
 
@@ -1819,11 +1824,7 @@ class EditSTREditor(STREditor):
         self.init_str_type_component()
         party_id = self.str_edit_dict[self.party_column]
         # populate str type column
-        self.set_str_type_data(
-            str_type_id,
-            party_id,
-            0
-        )
+        self.set_str_type_data(str_type_id, party_id, 0)
         self.str_type_component.add_str_type_data(
             self.copied_party_row[party_id],
             str_type_id,
@@ -1835,7 +1836,7 @@ class EditSTREditor(STREditor):
 
         tenure_share = self.str_edit_obj.tenure_share
 
-        self.data_store[1].share[party_id] = float(tenure_share)
+        self.data_store[1].share[party_id] = tenure_share
 
         doc_item = self.str_item(
             self.tenure_type_text, self.str_number
@@ -1897,7 +1898,6 @@ class EditSTREditor(STREditor):
     def populate_supporting_doc_store(self):
         """
         Initializes the supporting document page.
-
         """
         doc_item = self.str_item(
             self.supporting_doc_text, self.str_number
@@ -1909,26 +1909,18 @@ class EditSTREditor(STREditor):
 
         for doc_id, doc_objs in self.str_doc_edit_obj.iteritems():
 
-            index = self.doc_type_cbo.findData(
-                doc_id
-            )
+            index = self.doc_type_cbo.findData(doc_id)
             doc_text = self.doc_type_cbo.itemText(index)
 
             layout = self.supporting_doc_component.docs_tab.findChild(
-                QVBoxLayout, 'layout_{}_{}'.format(
-                    doc_text, self.str_number
-                )
+                QVBoxLayout, 'layout_{}_{}'.format(doc_text, self.str_number)
             )
 
             self.supporting_doc_component.supporting_doc_manager.\
-                registerContainer(
-                layout, doc_id
-            )
+                registerContainer(layout, doc_id)
             for doc_obj in doc_objs:
                 self.supporting_doc_component.supporting_doc_manager.\
-                    insertDocFromModel(
-                    doc_obj, doc_id
-                )
+                    insertDocFromModel(doc_obj, doc_id)
 
         doc_item.setEnabled(True)
 
@@ -1942,24 +1934,22 @@ class EditSTREditor(STREditor):
         store.party.clear()
         store.party[model.id] = model
 
-    def set_str_type_data(
-            self, str_type_id, party_id, row_number
-    ):
+    def set_str_type_data(self, str_type_id, party_id, row_number):
         """
         Sets the STR type data to the STR type data store dictionary.
-        :param str_type_id:
-        :type str_type_id:
-        :param party_id:
-        :type party_id:
-        :param row_number:
-        :type row_number:
+        :param str_type_id: The STR type id
+        :type str_type_id: Integer
+        :param party_id: The party id
+        :type party_id: Integer
+        :param row_number: The STR row number
+        :type row_number: Integer
         """
         store = self.current_data_store()
         store.str_type.clear()
         store.share.clear()
 
         store.str_type[party_id] = str_type_id
-        # store.share[party_id] =
+
         row_data = self.str_type_component.copy_party_table(
             self.party_component.party_fk_mapper._tbFKEntity,
             row_number
