@@ -2362,13 +2362,14 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             if open_file:
                 orig_dom_elem = orig_dom_doc.find_dom_element('Profile', orig_profile_name)
-                copy_dom_elem = copy_dom_doc.find_dom_element('Profile', orig_profile_name)
+                if orig_dom_elem:
+                    copy_dom_elem = copy_dom_doc.find_dom_element('Profile', orig_profile_name)
 
-                copy_dom_doc.rename_element(copy_dom_elem, copy_profile_name)
-                orig_dom_doc.documentElement().insertBefore(copy_dom_elem, orig_dom_elem)
+                    copy_dom_doc.rename_element(copy_dom_elem, copy_profile_name)
+                    orig_dom_doc.documentElement().insertBefore(copy_dom_elem, orig_dom_elem)
 
-                stream = QTextStream(config_file)
-                stream << orig_dom_doc.toString()
+                    stream = QTextStream(config_file)
+                    stream << orig_dom_doc.toString()
                 config_file.close()
 
 class ConfigurationDomDocument(QDomDocument):
