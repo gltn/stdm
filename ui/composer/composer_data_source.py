@@ -192,4 +192,5 @@ class ComposerDataSourceSelector(QWidget,Ui_frmComposerDataSource):
             self.cboDataSource.clear()
             self.cboDataSource.addItem('')
             profile_user_views = profile_and_user_views(self.curr_profile)
-            self.cboDataSource.addItems(profile_user_views)
+            for view in profile_user_views:
+                self.cboDataSource.addItem(view, view)

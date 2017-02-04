@@ -476,7 +476,8 @@ def profile_user_tables(profile, include_views=True, admin=False):
                 'ENTITY_SUPPORTING_DOCUMENT',
                 'SOCIAL_TENURE',
                 'SUPPORTING_DOCUMENT',
-                'VALUE_LIST'
+                'VALUE_LIST',
+                'ASSOCIATION_ENTITY'
             ]
         ]
     else:

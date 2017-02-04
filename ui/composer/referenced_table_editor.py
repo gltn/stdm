@@ -163,7 +163,6 @@ class ReferencedTableEditor(QWidget):
                                                     "Referencing"))
 
         self._current_profile = current_profile()
-        self.stdm_config = StdmConfiguration.instance()
         self._current_profile_tables = []
         if not self._current_profile is None:
             self._current_profile_tables = self._current_profile.table_names()
@@ -250,28 +249,25 @@ class ReferencedTableEditor(QWidget):
         self.cbo_ref_table.addItem("")
 
         ref_tables = []
-
+        source_tables = []
         #Table source
         if (TABLES & source) == TABLES:
             ref_tables.extend(pg_tables(exclude_lookups=True))
 
+            for t in ref_tables:
+                #Ensure we are dealing with tables in the current profile
+                if not t in self._current_profile_tables:
+                    continue
 
+                #Assert if the table is in the list of omitted tables
+                if t in self._omit_ref_tables:
+                    continue
 
-        source_tables = []
-        for t in ref_tables:
-            #Ensure we are dealing with tables in the current profile
-            if not t in self._current_profile_tables:
-                continue
-
-            #Assert if the table is in the list of omitted tables
-            if t in self._omit_ref_tables:
-                continue
-
-            if not reg_exp is None:
-                if reg_exp.indexIn(t) >= 0:
+                if not reg_exp is None:
+                    if reg_exp.indexIn(t) >= 0:
+                        source_tables.append(t)
+                else:
                     source_tables.append(t)
-            else:
-                source_tables.append(t)
 
         # View source
         if (VIEWS & source) == VIEWS:
@@ -282,6 +278,10 @@ class ReferencedTableEditor(QWidget):
 
     def _load_source_table_fields(self, sel):
         self.cbo_referencing_col.clear()
+        data_source_index = self.cbo_source_field.currentIndex()
+        self.on_data_source_changed(
+            self.cbo_source_field.itemData(data_source_index)
+        )
 
         if not sel:
             return
