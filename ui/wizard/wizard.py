@@ -858,7 +858,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.lst_parties.profile = c_profile
             self.lst_parties.social_tenure = c_profile.social_tenure
             self.dg_tenure.profile = c_profile
+            # check if social tenure relationship has been setup
+            str_table = '{}_social_tenure_relationship'.format(c_profile.prefix)
 
+            self.set_str_controls(str_table)
             # Update spatial unit as well
             sp_unit_idx = self.cboSPUnit.currentIndex()
             self.on_str_spatial_unit_changed(sp_unit_idx)
@@ -1001,10 +1004,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             # verify that lookup entities have values
             validPage = self.check_empty_lookups()
-
-            # check if social tenure relationship has been setup
-            str_table = curr_profile.prefix +"_social_tenure_relationship"
-            self.set_str_controls(str_table)
 
         if self.currentId() == 4:
             validPage, msg = self.validate_STR()

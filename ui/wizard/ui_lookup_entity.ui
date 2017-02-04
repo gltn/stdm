@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>363</width>
-    <height>107</height>
+    <width>389</width>
+    <height>113</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -19,15 +19,15 @@
   <property name="windowTitle">
    <string>Lookup entity</string>
   </property>
-  <layout class="QFormLayout" name="formLayout">
-   <property name="fieldGrowthPolicy">
-    <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-   </property>
-   <item row="0" column="1">
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <layout class="QVBoxLayout" name="notif_bar"/>
+   </item>
+   <item>
     <widget class="QLabel" name="label_2">
      <property name="maximumSize">
       <size>
-       <width>300</width>
+       <width>777</width>
        <height>16777215</height>
       </size>
      </property>
@@ -36,27 +36,31 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label">
-     <property name="minimumSize">
-      <size>
-       <width>60</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Lookup Name</string>
-     </property>
-    </widget>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="minimumSize">
+        <size>
+         <width>60</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Lookup Name</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="edtName">
+       <property name="placeholderText">
+        <string>Enter lookup name</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="edtName">
-     <property name="placeholderText">
-      <string>Enter lookup name</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
+   <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -66,26 +70,7 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
   </layout>
-  <zorder>label_2</zorder>
-  <zorder>label</zorder>
-  <zorder>buttonBox</zorder>
-  <zorder>edtName</zorder>
-  <zorder>buttonBox</zorder>
-  <zorder>verticalSpacer</zorder>
  </widget>
  <resources/>
  <connections>

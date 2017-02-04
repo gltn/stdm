@@ -461,6 +461,8 @@ def profile_user_tables(profile, include_views=True, admin=False):
     :type include_views: Boolean
     :return: Dictionary of user tables with name and
     short name as a key and value.
+    :param admin: A Boolean that enables administrative unit table if True.
+    :type admin: Boolean
     :rtype: Dictionary
     """
     from stdm.data.pg_utils import (
@@ -491,6 +493,7 @@ def profile_user_tables(profile, include_views=True, admin=False):
                 'ADMINISTRATIVE_SPATIAL_UNIT',
                 'SOCIAL_TENURE',
                 'SUPPORTING_DOCUMENT',
+                'ASSOCIATION_ENTITY',
                 'VALUE_LIST'
             ]
         ]

@@ -114,27 +114,26 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.cboDataType.currentIndexChanged.connect(self.change_data_type)
         self.btnColProp.clicked.connect(self.data_type_property)
-
-        self.init_controls()
+        self.edtColName.textChanged.connect(self.validate_text)
 
         self.notice_bar = NotificationBar(self.notif_bar)
-        self.show_notification()
+        self.init_controls()
 
-    def show_notification(self):
-        msg = self.tr('Column names should be in lower case with no spaces.')
+    def show_notification(self, message):
+        """
+        Shows a warning notification bar message.
+        :param message: The message of the notification.
+        :type message: String
+        """
+        msg = self.tr(message)
         self.notice_bar.clear()
-        self.notice_bar.insertNotification(msg, INFORMATION)
+        self.notice_bar.insertErrorNotification(msg)
 
     def init_controls(self):
         """
         Initialize GUI controls default state when the dialog window is opened.
         """
         self.popuplate_data_type_cbo()
-
-        name_regex = QtCore.QRegExp('^(?=.{0,40}$)[a-z][a-z0-9_]*$')
-        name_validator = QtGui.QRegExpValidator(name_regex)
-        self.edtColName.setValidator(name_validator)
-
         #if self.column:
         if not self.column is None:
             self.column_to_form(self.column)
@@ -147,6 +146,41 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.buttonBox.button(QtGui.QDialogButtonBox.Ok).clicked.connect(self.accept)
         self.buttonBox.button(QtGui.QDialogButtonBox.Cancel).clicked.connect(self.cancel)
+
+    def validate_text(self, text):
+        """
+        Validates and updates the entered text if necessary.
+        Spaces are replaced by _ and capital letters are replaced by small.
+        :param text: The text entered
+        :type text: String
+        """
+        text_edit = self.sender()
+        text_edit.setValidator(None)
+        if len(text) == 0:
+            return
+
+        name_regex = QtCore.QRegExp('^(?=.{0,40}$)[a-zA-Z][a-zA-Z0-9_ ]*$')
+        name_validator = QtGui.QRegExpValidator(name_regex)
+        text_edit.setValidator(name_validator)
+        QApplication.processEvents()
+        last_character = text[-1:]
+        state = name_validator.validate(text, text.index(last_character))[0]
+        if state != QValidator.Acceptable:
+            self.show_notification('{} is not allowed at this position.'.
+                format(last_character)
+            )
+            text = text[:-1]
+        else:
+
+            if last_character.isupper():
+                text = text.lower()
+            if last_character == ' ':
+                text = text.replace(' ', '_')
+
+        self.blockSignals(True)
+        text_edit.setText(text)
+        self.blockSignals(False)
+        text_edit.setValidator(None)
 
     def column_to_form(self, column):
         """

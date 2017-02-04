@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from PyQt4.QtGui import QValidator
 
 from ui_lookup_value import Ui_LookupValue
 from PyQt4 import QtGui
@@ -35,6 +36,7 @@ from stdm.data.configuration.value_list import (
         CodeValue, 
         value_list_factory
         )
+from stdm.ui.notification import NotificationBar
 
 class ValueEditor(QDialog, Ui_LookupValue):
     """
@@ -54,19 +56,16 @@ class ValueEditor(QDialog, Ui_LookupValue):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
-	self.lookup = lookup
-	self.code_value = code_value
-
+        self.lookup = lookup
+        self.code_value = code_value
+        self.notice_bar = NotificationBar(self.notif_bar)
         self.init_gui()
 
     def init_gui(self):
         """
         initializes the form widgets
         """
-	code_regex = QtCore.QRegExp('[A-Z0-9]{1,5}$')
-	code_validator = QtGui.QRegExpValidator(code_regex)
-	self.edtCode.setValidator(code_validator)
-	if self.code_value:
+        if self.code_value:
             if self.code_value.updated_value == '':
                 self.edtValue.setText(self.code_value.value)
                 self.edtCode.setText(self.code_value.code)
@@ -74,12 +73,45 @@ class ValueEditor(QDialog, Ui_LookupValue):
                 self.edtValue.setText(self.code_value.updated_value)
                 self.edtCode.setText(self.code_value.updated_code)
 
+        self.edtCode.textChanged.connect(self.validate_text)
+        self.edtValue.textChanged.connect(self.validate_text)
 
-        val_regex = QtCore.QRegExp('[A-Za-z0-9\s]{1,50}$')
-        code_validator = QtGui.QRegExpValidator(val_regex)
-        self.edtValue.setValidator(code_validator)
-	self.edtValue.setFocus()
-	
+        self.edtValue.setFocus()
+
+    def show_notification(self, message):
+        msg = self.tr(message)
+        self.notice_bar.clear()
+        self.notice_bar.insertErrorNotification(msg)
+
+    def validate_text(self, text):
+        """
+        Validates and updates the entered text if necessary.
+        :param text: The text entered
+        :type text: String
+        """
+        text_edit = self.sender()
+        text_edit.setValidator(None)
+        if len(text) == 0:
+            return
+
+        name_regex = QtCore.QRegExp('^[0-9a-zA-Z][a-zA-Z0-9_/\\-()|:,; ]*$')
+        name_validator = QtGui.QRegExpValidator(name_regex)
+        text_edit.setValidator(name_validator)
+        QApplication.processEvents()
+        last_character = text[-1:]
+        state = name_validator.validate(text, text.index(last_character))[
+            0]
+        if state != QValidator.Acceptable:
+            self.show_notification('{} is not allowed at this position.'.
+                                   format(last_character)
+                                   )
+            text = text[:-1]
+
+        self.blockSignals(True)
+        text_edit.setText(text)
+        self.blockSignals(False)
+        text_edit.setValidator(None)
+
     def add_value(self):
         """
         Adds a code value to a lookup object. Checks first if a previous value
@@ -96,7 +128,9 @@ class ValueEditor(QDialog, Ui_LookupValue):
 	    
     def accept(self):
         if self.edtValue.text()=='':
-                self.error_message(QApplication.translate("ValueEditor", "Please provide a Lookup value."))
+                self.error_message(QApplication.translate(
+                    "ValueEditor", "Please provide a Lookup value.")
+                )
                 return
 
         self.add_value()

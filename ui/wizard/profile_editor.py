@@ -25,8 +25,10 @@ from PyQt4.QtGui import (
     QMessageBox,
     QRegExpValidator
 )
+from PyQt4.QtGui import QValidator
 
 from ui_profile import Ui_Profile
+from stdm.ui.notification import NotificationBar
 
 class ProfileEditor(QDialog, Ui_Profile):
     def __init__(self, parent):
@@ -37,15 +39,14 @@ class ProfileEditor(QDialog, Ui_Profile):
         
         self.setupUi(self)
         self.init_controls()
+        self.notice_bar = NotificationBar(self.notif_bar)
         
     def init_controls(self):
         self.edtProfile.clear()
         self.edtDesc.clear()
         self.edtProfile.setFocus()
-        name_regex = QRegExp('^[A-Za-z0-9_\s]*$')
-        name_validator = QRegExpValidator(name_regex)
-        self.edtProfile.setValidator(name_validator)
-        
+        self.edtProfile.textChanged.connect(self.validate_text)
+
     def format_name(self, txt):
         ''''remove any trailing spaces in the name and replace them underscore'''
         formatted_name = txt.strip().replace(' ', "_")
@@ -54,6 +55,46 @@ class ProfileEditor(QDialog, Ui_Profile):
     def add_profile(self):
         self.profile_name = self.format_name(unicode(self.edtProfile.text()))
         self.desc = unicode(self.edtDesc.text())
+
+    def show_notification(self, message):
+        """
+        Shows a warning notification bar message.
+        :param message: The message of the notification.
+        :type message: String
+        """
+        msg = self.tr(message)
+        self.notice_bar.clear()
+        self.notice_bar.insertErrorNotification(msg)
+
+    def validate_text(self, text):
+        """
+        Validates and updates the entered text if necessary.
+        Spaces are replaced by _ and capital letters are replaced by small.
+        :param text: The text entered
+        :type text: String
+        """
+        text_edit = self.sender()
+        text_edit.setValidator(None)
+        if len(text) == 0:
+            return
+
+        name_regex = QRegExp('^(?=.{0,40}$)[a-zA-Z][a-zA-Z0-9_ ]*$')
+        name_validator = QRegExpValidator(name_regex)
+        text_edit.setValidator(name_validator)
+        QApplication.processEvents()
+        last_character = text[-1:]
+        state = name_validator.validate(text, text.index(last_character))[
+            0]
+        if state != QValidator.Acceptable:
+            self.show_notification('{} is not allowed at this position.'.
+                                   format(last_character)
+                                   )
+            text = text[:-1]
+
+        self.blockSignals(True)
+        text_edit.setText(text)
+        self.blockSignals(False)
+        text_edit.setValidator(None)
 
     def accept(self):
         '''listen to user action on the dialog'''
