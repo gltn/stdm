@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_lookup_entity.ui'
 #
-# Created: Thu Aug 25 17:30:53 2016
-#      by: PyQt4 UI code generator 4.11.3
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,29 +25,32 @@ except AttributeError:
 class Ui_dlgLookup(object):
     def setupUi(self, dlgLookup):
         dlgLookup.setObjectName(_fromUtf8("dlgLookup"))
-        dlgLookup.resize(363, 107)
+        dlgLookup.resize(389, 164)
         dlgLookup.setMinimumSize(QtCore.QSize(0, 0))
-        self.formLayout = QtGui.QFormLayout(dlgLookup)
-        self.formLayout.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
-        self.formLayout.setObjectName(_fromUtf8("formLayout"))
+        self.verticalLayout_2 = QtGui.QVBoxLayout(dlgLookup)
+        self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
+        self.notif_bar = QtGui.QVBoxLayout()
+        self.notif_bar.setObjectName(_fromUtf8("notif_bar"))
+        self.verticalLayout_2.addLayout(self.notif_bar)
         self.label_2 = QtGui.QLabel(dlgLookup)
-        self.label_2.setMaximumSize(QtCore.QSize(300, 16777215))
+        self.label_2.setMaximumSize(QtCore.QSize(777, 16777215))
         self.label_2.setObjectName(_fromUtf8("label_2"))
-        self.formLayout.setWidget(0, QtGui.QFormLayout.FieldRole, self.label_2)
+        self.verticalLayout_2.addWidget(self.label_2)
+        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.label = QtGui.QLabel(dlgLookup)
         self.label.setMinimumSize(QtCore.QSize(60, 0))
         self.label.setObjectName(_fromUtf8("label"))
-        self.formLayout.setWidget(1, QtGui.QFormLayout.LabelRole, self.label)
+        self.horizontalLayout.addWidget(self.label)
         self.edtName = QtGui.QLineEdit(dlgLookup)
         self.edtName.setObjectName(_fromUtf8("edtName"))
-        self.formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self.edtName)
+        self.horizontalLayout.addWidget(self.edtName)
+        self.verticalLayout_2.addLayout(self.horizontalLayout)
         self.buttonBox = QtGui.QDialogButtonBox(dlgLookup)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.formLayout.setWidget(3, QtGui.QFormLayout.FieldRole, self.buttonBox)
-        spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.formLayout.setItem(2, QtGui.QFormLayout.FieldRole, spacerItem)
+        self.verticalLayout_2.addWidget(self.buttonBox)
 
         self.retranslateUi(dlgLookup)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), dlgLookup.accept)

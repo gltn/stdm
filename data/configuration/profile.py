@@ -573,8 +573,6 @@ class Profile(QObject):
                 if self.social_tenure.party.short_name == original_name \
                 else False
 
-            print str(update_party)
-
         update_spatial_unit = False
         if not self.social_tenure.spatial_unit is None:
             update_spatial_unit = True \

@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from PyQt4.QtGui import QValidator
 
 from ui_lookup_entity import Ui_dlgLookup
 from PyQt4 import QtCore
@@ -28,13 +29,13 @@ from PyQt4.QtGui import (
 		QApplication, 
 		QMessageBox
 		)
-
+from stdm.ui.notification import NotificationBar
 from stdm.data.configuration.entity import *
 from stdm.data.configuration.value_list import (
-        ValueList, 
-        CodeValue, 
-        value_list_factory
-        )
+    ValueList,
+    CodeValue,
+    value_list_factory
+)
 
 class LookupEditor(QDialog, Ui_dlgLookup):
     """
@@ -57,22 +58,66 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
-	self.profile = profile
-	self.lookup  = lookup
-
+        self.profile = profile
+        self.lookup = lookup
+        self.notice_bar = NotificationBar(self.notif_bar)
         self.init_gui()
 
     def init_gui(self):
         """
         Initializes form widgets
         """
-        name_regex = QtCore.QRegExp('^[a-z][a-z0-9_]*$')
-        validator = QtGui.QRegExpValidator(name_regex)
-        self.edtName.setValidator(validator)
-	self.edtName.setFocus()
+        self.edtName.setFocus()
         if self.lookup:
             self.edtName.setText(self.lookup.short_name)
-	
+        self.edtName.textChanged.connect(self.validate_text)
+
+    def show_notification(self, message):
+        """
+        Shows a warning notification bar message.
+        :param message: The message of the notification.
+        :type message: String
+        """
+        msg = self.tr(message)
+        self.notice_bar.clear()
+        self.notice_bar.insertErrorNotification(msg)
+
+    def validate_text(self, text):
+        """
+        Validates and updates the entered text if necessary.
+        Spaces are replaced by _ and capital letters are replaced by small.
+        :param text: The text entered
+        :type text: String
+        """
+        text_edit = self.sender()
+        text_edit.setValidator(None)
+        if len(text) == 0:
+            return
+
+        name_regex = QtCore.QRegExp('^(?=.{0,40}$)[a-zA-Z][a-zA-Z0-9_ ]*$')
+        name_validator = QtGui.QRegExpValidator(name_regex)
+        text_edit.setValidator(name_validator)
+        QApplication.processEvents()
+        last_character = text[-1:]
+        state = name_validator.validate(text, text.index(last_character))[
+            0]
+        if state != QValidator.Acceptable:
+            self.show_notification('{} is not allowed at this position.'.
+                                   format(last_character)
+                                   )
+            text = text[:-1]
+        else:
+
+            if last_character.isupper():
+                text = text.lower()
+            if last_character == ' ':
+                text = text.replace(' ', '_')
+
+        self.blockSignals(True)
+        text_edit.setText(text)
+        self.blockSignals(False)
+        text_edit.setValidator(None)
+
     def format_lookup_name(self, name):
         """
         Replace spaces with underscore in a name string
