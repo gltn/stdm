@@ -153,7 +153,7 @@
          <string>Change</string>
         </property>
         <property name="icon">
-         <iconset>
+         <iconset resource="../../resources.qrc">
           <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
         </property>
        </widget>
@@ -170,7 +170,7 @@
          <string>Change</string>
         </property>
         <property name="icon">
-         <iconset>
+         <iconset resource="../../resources.qrc">
           <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
         </property>
        </widget>
@@ -246,7 +246,7 @@
          <string>Change</string>
         </property>
         <property name="icon">
-         <iconset>
+         <iconset resource="../../resources.qrc">
           <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
         </property>
        </widget>
@@ -335,7 +335,7 @@
           <widget class="QComboBox" name="cboProfile">
            <property name="minimumSize">
             <size>
-             <width>180</width>
+             <width>300</width>
              <height>30</height>
             </size>
            </property>
@@ -364,8 +364,25 @@
             <string>New profile</string>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="../../resources.qrc">
              <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnCopy">
+           <property name="minimumSize">
+            <size>
+             <width>25</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Copy profile</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../../resources.qrc">
+             <normaloff>:/plugins/stdm/images/icons/composer_table.png</normaloff>:/plugins/stdm/images/icons/composer_table.png</iconset>
            </property>
           </widget>
          </item>
@@ -387,7 +404,7 @@
             <string>Delete profile</string>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="../../resources.qrc">
              <normaloff>:/plugins/stdm/images/icons/remove.png</normaloff>:/plugins/stdm/images/icons/remove.png</iconset>
            </property>
           </widget>
@@ -490,7 +507,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="../../resources.qrc">
              <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
            </property>
           </widget>
@@ -513,7 +530,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="../../resources.qrc">
              <normaloff>:/plugins/stdm/images/icons/edit.png</normaloff>:/plugins/stdm/images/icons/edit.png</iconset>
            </property>
           </widget>
@@ -536,7 +553,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="../../resources.qrc">
              <normaloff>:/plugins/stdm/images/icons/delete.png</normaloff>:/plugins/stdm/images/icons/delete.png</iconset>
            </property>
           </widget>
@@ -680,7 +697,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset>
+              <iconset resource="../../resources.qrc">
                <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
              </property>
              <property name="iconSize">
@@ -709,7 +726,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset>
+              <iconset resource="../../resources.qrc">
                <normaloff>:/plugins/stdm/images/icons/edit.png</normaloff>:/plugins/stdm/images/icons/edit.png</iconset>
              </property>
              <property name="iconSize">
@@ -744,7 +761,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset>
+              <iconset resource="../../resources.qrc">
                <normaloff>:/plugins/stdm/images/icons/delete.png</normaloff>:/plugins/stdm/images/icons/delete.png</iconset>
              </property>
             </widget>
@@ -884,7 +901,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset>
+              <iconset resource="../../resources.qrc">
                <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
              </property>
             </widget>
@@ -907,7 +924,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset>
+              <iconset resource="../../resources.qrc">
                <normaloff>:/plugins/stdm/images/icons/edit.png</normaloff>:/plugins/stdm/images/icons/edit.png</iconset>
              </property>
             </widget>
@@ -930,7 +947,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset>
+              <iconset resource="../../resources.qrc">
                <normaloff>:/plugins/stdm/images/icons/delete.png</normaloff>:/plugins/stdm/images/icons/delete.png</iconset>
              </property>
             </widget>
@@ -1017,7 +1034,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset>
+              <iconset resource="../../resources.qrc">
                <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
              </property>
             </widget>
@@ -1040,7 +1057,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset>
+              <iconset resource="../../resources.qrc">
                <normaloff>:/plugins/stdm/images/icons/edit.png</normaloff>:/plugins/stdm/images/icons/edit.png</iconset>
              </property>
             </widget>
@@ -1063,7 +1080,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset>
+              <iconset resource="../../resources.qrc">
                <normaloff>:/plugins/stdm/images/icons/delete.png</normaloff>:/plugins/stdm/images/icons/delete.png</iconset>
              </property>
             </widget>
@@ -1173,7 +1190,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>208</width>
+         <width>173</width>
          <height>458</height>
         </rect>
        </property>
@@ -1468,6 +1485,8 @@ linked to a single spatial unit</string>
   <tabstop>btnEditLkupValue</tabstop>
   <tabstop>txtLicense</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="../../resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

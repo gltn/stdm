@@ -29,11 +29,13 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
+from PyQt4.QtXml import QDomDocument
 
 from stdm.data.configuration.stdm_configuration import (
         StdmConfiguration, 
         Profile
 )
+
 from stdm.utils.util import enable_drag_sort
 from stdm.data.configuration.entity import entity_factory, Entity
 from stdm.data.configuration.entity_relation import EntityRelation 
@@ -82,6 +84,7 @@ from create_lookup import LookupEditor
 from create_lookup_value import ValueEditor
 from entity_depend import EntityDepend
 from column_depend import ColumnDepend
+from copy_editor import CopyProfileEditor
 
 # create logger
 LOGGER = logging.getLogger('stdm')
@@ -407,6 +410,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.cboProfile.currentIndexChanged.connect(self.profile_changed)
         self.btnNewP.clicked.connect(self.new_profile)
         self.btnPDelete.clicked.connect(self.delete_profile)
+        self.btnCopy.clicked.connect(self.copy_profile)
 
     def init_entity_item_model(self):
         """
@@ -1269,10 +1273,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Save a draft configuration
         '''
         self.save_current_configuration(DRAFT_CONFIG_FILE)
-        current_profile = self.cboProfile.currentText()
+        current_profile_name = self.cboProfile.currentText()
+        self.refresh_config(current_profile_name)
+
+    def refresh_config(self, profile_name):
         self.load_stdm_config()
-        self.switch_profile(current_profile)
-        self.set_current_profile(current_profile)
+        self.switch_profile(profile_name)
+        self.set_current_profile(profile_name)
         self.set_window_title()
 
     def discard_draft(self):
@@ -1483,10 +1490,39 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         self.load_profile_cbo()
 
+    def copy_profile(self):
+        '''
+        Create a copy of the current profile
+        '''
+        current_profile_name = self.cboProfile.currentText()
+        profile_names = self.profile_names()
+        editor = CopyProfileEditor(self, current_profile_name, profile_names)
+        result = editor.exec_()
+        if result == 1:
+            if not self.draft_config:
+                self.save_current_configuration(DRAFT_CONFIG_FILE)
+            copy_profile_name = editor.copy_name
+
+            self.make_profile_copy(current_profile_name,
+                    copy_profile_name, DRAFT_CONFIG_FILE)
+
+            self.refresh_config(copy_profile_name)
+
+
+    def profile_names(self):
+        '''
+        Returns names of profiles in the profiles combobox
+        :rtype: list - of string
+        '''
+        names = []
+        for index in range(self.cboProfile.count()):
+            names.append(self.cboProfile.itemText(index))
+        return names
+
     def get_profiles(self):
         """
         Returns a list of profiles from the StdmConfiguration instance.
-        :rtype: list
+        :rtype: list - of Profile
         """
         profiles = []
         for profile in self.stdm_config.profiles.items():
@@ -2296,4 +2332,70 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         msgbox.setDefaultButton(QMessageBox.Yes);
         result = msgbox.exec_()
         return result
+
+    def make_profile_copy( self, orig_profile_name, copy_profile_name,
+            config_file_name):
+        '''
+        Makes a copy of a profile Dom Element and appends it to the
+        draft configuration file.
+        :param profile_name: Name of the profile dom element to copy.
+        :type profile_name: str
+        :param copy_profile_name: Name of the copied profile dom element.
+        :type copy_profile_name: str
+        :param config_file_name: Name of the configuration.stc file to insert
+        the new dom element.
+        :type config_file_name: str
+        '''
+        is_file_healthy = self.healthy_file(config_file_name)
+
+        if is_file_healthy:
+            orig_dom_doc = ConfigurationDomDocument(config_file_name)
+            copy_dom_doc = ConfigurationDomDocument(config_file_name)
+        
+            config_file = QFile(config_file_name)
+
+            open_file = config_file.open(
+                QIODevice.ReadWrite |
+                QIODevice.Truncate |
+                QIODevice.Text
+            )
+
+            if open_file:
+                orig_dom_elem = orig_dom_doc.find_dom_element('Profile', orig_profile_name)
+                copy_dom_elem = copy_dom_doc.find_dom_element('Profile', orig_profile_name)
+
+                copy_dom_doc.rename_element(copy_dom_elem, copy_profile_name)
+                orig_dom_doc.documentElement().insertBefore(copy_dom_elem, orig_dom_elem)
+
+                stream = QTextStream(config_file)
+                stream << orig_dom_doc.toString()
+                config_file.close()
+
+class ConfigurationDomDocument(QDomDocument):
+    def __init__(self, dom_file_name):
+        super(ConfigurationDomDocument, self).__init__()
+        self.dom_file_name = dom_file_name
+        self.set_content()
+
+    def set_content(self):
+        file_handle = QFile(self.dom_file_name)
+        status, msg, line, col = self.setContent(file_handle)
+        if not status:
+            error_message = u'Configuration file cannot be loaded: {0}'.\
+                format(msg)
+            raise ConfigurationException(error_message)
+
+    def find_dom_element(self, elem_name, attr_value):
+        found_elem = None
+        child_nodes = self.documentElement().childNodes()
+        for i in range(child_nodes.count()):
+            child_elem = child_nodes.item(i).toElement()
+            if child_elem.tagName() == elem_name:
+                if child_elem.attribute('name') == attr_value:
+                    found_elem = child_nodes.item(i).toElement()
+                    break
+        return found_elem
+
+    def rename_element(self, dom_elem, new_name):
+        dom_elem.setAttribute('name', new_name)
 

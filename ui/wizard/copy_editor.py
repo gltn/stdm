@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
-Name                 : profile_editor
-Description          : STDM profile editor
+Name                 : copy_editor
+Description          : STDM copy editor
 Date                 : 20/January/2016
 copyright            : (C) 2015 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
@@ -26,25 +26,26 @@ from PyQt4.QtGui import (
     QRegExpValidator
 )
 
-from ui_profile import Ui_Profile
+from ui_copy_profile import Ui_dlgCopyProfile 
 
-class ProfileEditor(QDialog, Ui_Profile):
-    def __init__(self, parent):
+class CopyProfileEditor(QDialog, Ui_dlgCopyProfile):
+    def __init__(self, parent, orig_name, profile_names):
         QDialog.__init__(self, parent)
 
-        self.profile_name = ''
-        self.desc = ''
+        self.orig_name = orig_name
+        self.copy_name = orig_name+'_copy'
+        self.profile_names = profile_names
         
         self.setupUi(self)
         self.init_controls()
         
     def init_controls(self):
-        self.edtProfile.clear()
-        self.edtDesc.clear()
-        self.edtProfile.setFocus()
+        self.edtFromProfile.setText(self.orig_name)
+        self.edtName.setText(self.copy_name)
+        self.edtName.setFocus()
         name_regex = QRegExp('^[A-Za-z0-9_\s]*$')
         name_validator = QRegExpValidator(name_regex)
-        self.edtProfile.setValidator(name_validator)
+        self.edtName.setValidator(name_validator)
         
     def format_name(self, txt):
         ''''remove any trailing spaces in the name and replace them underscore'''
@@ -52,13 +53,19 @@ class ProfileEditor(QDialog, Ui_Profile):
         return formatted_name
     
     def add_profile(self):
-        self.profile_name = self.format_name(unicode(self.edtProfile.text()))
-        self.desc = unicode(self.edtDesc.text())
+        self.copy_name = self.format_name(unicode(self.edtName.text()))
 
     def accept(self):
-        '''listen to user action on the dialog'''
-        if self.edtProfile.text() == '':
-            self.error_info_message(QApplication.translate("ProfileEditor", "Profile name is not given"))
+        '''
+        listen to user OK action
+        '''
+        if self.edtName.text() == '':
+            self.error_info_message(QApplication.translate("CopyEditor", "Please enter a profile name."))
+            return
+
+        # avoid existing profile names
+        if self.edtName.text() in self.profile_names:
+            self.error_info_message(QApplication.translate("CopyEditor", "Entered name is already in use. Please enter another profile name."))
             return
 
         self.add_profile()
