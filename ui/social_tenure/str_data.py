@@ -178,10 +178,10 @@ class STRDBHandler():
                 str_edit_obj.documents.append(
                     doc_obj
                 )
-
+        updated_str_edit_obj = str_edit_obj
         str_edit_obj.update()
 
-        return str_edit_obj
+        return updated_str_edit_obj
 
     def commit_str(self):
         """
@@ -210,6 +210,17 @@ class STRDBHandler():
 
                     self.on_add_str(str_store)
 
+                strMsg = QApplication.translate(
+                    "STRDBHandler",
+                    "The social tenure relationship has "
+                    "been successfully created!"
+                )
+                QMessageBox.information(
+                    iface.mainWindow(), QApplication.translate(
+                        "STRDBHandler", "Social Tenure Relationship"
+                    ),
+                    strMsg
+                )
             else:
                 QApplication.processEvents()
                 self.progress.setRange(0, 1)
@@ -224,22 +235,21 @@ class STRDBHandler():
                 )
 
                 self.progress.setValue(1)
+
+                self.progress.hide()
+
+                strMsg = QApplication.translate(
+                    "STRDBHandler",
+                    "The social tenure relationship has "
+                    "been successfully updated!"
+                )
+                QMessageBox.information(
+                    iface.mainWindow(), QApplication.translate(
+                        "STRDBHandler", "Social Tenure Relationship"
+                    ),
+                    strMsg
+                )
                 return updated_str_obj
-            self.progress.hide()
-            mode = 'created'
-            if self.str_edit_obj is not None:
-                mode = 'updated'
-            strMsg = QApplication.translate(
-                "STRDBHandler",
-                "The social tenure relationship has "
-                "been successfully {}!".format(mode)
-            )
-            QMessageBox.information(
-                iface.mainWindow(), QApplication.translate(
-                    "STRDBHandler", "Social Tenure Relationship"
-                ),
-                strMsg
-            )
 
         except exc.OperationalError as oe:
             errMsg = oe.message
