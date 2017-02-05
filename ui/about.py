@@ -32,7 +32,7 @@ from PyQt4.QtCore import (
     QIODevice,
     QUrl
 )
-from stdm.utils.util import PLUGIN_DIR
+from stdm.utils.util import PLUGIN_DIR, version_from_metadata
 from ui_about_stdm import Ui_frmAbout
 
 class AboutSTDMDialog(QDialog,Ui_frmAbout):
@@ -81,21 +81,12 @@ class AboutSTDMDialog(QDialog,Ui_frmAbout):
             )
             self.reject()
 
-    def version_from_metadata(self):
-        with open('{}/metadata.txt'.format(PLUGIN_DIR)) as meta:
-            lines = meta.readlines()
-            for line in lines:
-                if 'version' in line:
-                    version_line = line.split('=')
-                    version = version_line[1]
-                    return version
-
     def _insert_metadata_info(self):
         #Insert version and build numbers respectively.
         if not self._metadata is None:
             installed_version = self._metadata.get('version_installed', None)
         else:
-            installed_version = self.version_from_metadata()
+            installed_version = version_from_metadata()
 
         if installed_version is None:
             return
