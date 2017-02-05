@@ -88,14 +88,16 @@ from navigation import (
 from mapping import (
     StdmMapToolCreateFeature
 )
-
+from stdm.utils.util import simple_dialog
+from stdm.ui.change_log import ChangeLog
 from stdm.settings.template_updater import TemplateFileUpdater
 
 from stdm.utils.util import (
     getIndex,
     db_user_tables,
     format_name,
-    setComboCurrentIndexWithText
+    setComboCurrentIndexWithText,
+    version_from_metadata
 )
 from mapping.utils import pg_layerNamesIDMapping
 
@@ -574,6 +576,30 @@ class STDMQGISLoader(object):
 
             return False
 
+    def show_change_log(self):
+        """
+        Shows the change log the new version of STDM.
+        """
+        version = version_from_metadata()
+        title = QApplication.translate(
+            'ConfigurationFileUpdater',
+            'Upgrade Information'
+        )
+
+        message = QApplication.translate(
+            'ConfigurationFileUpdater',
+            'Would you like to view the '
+            'new features and changes of STDM {}?'.format(version)
+        )
+
+        result, checkbox_result = simple_dialog(
+            self.iface.mainWindow(),
+            title,
+            message
+        )
+        if result:
+            change_log = ChangeLog(self.iface.mainWindow())
+            change_log.show_change_log(self.plugin_dir)
 
     def load_configuration_from_file(self, parent, manual=False):
         """
@@ -596,7 +622,7 @@ class STDMQGISLoader(object):
         if manual:
             parent.upgradeButton.setEnabled(False)
             upgrade_status = self.configuration_file_updater.load(
-                self.plugin_dir, self.progress, True
+                self.progress, True
             )
 
         else:
@@ -606,7 +632,6 @@ class STDMQGISLoader(object):
 
         if upgrade_status:
             # Append configuration_upgraded.stc profiles
-
             if os.path.isfile(config_path):
                 self.progress.progress_message(
                     'Appending the upgraded profile', ''
@@ -656,6 +681,7 @@ class STDMQGISLoader(object):
                     self.reload_plugin(first_profile)
                 else:
                     save_current_profile(first_profile)
+                    self.show_change_log()
 
                 self.configuration_file_updater.reg_config.write(
                     {CONFIG_UPDATED: '1'}
