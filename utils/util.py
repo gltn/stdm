@@ -969,3 +969,13 @@ def profile_and_user_views(profile):
             source_tables.append(value)
 
     return source_tables
+
+
+def version_from_metadata():
+    with open('{}/metadata.txt'.format(PLUGIN_DIR)) as meta:
+        lines = meta.readlines()
+        for line in lines:
+            if 'version' in line:
+                version_line = line.split('=')
+                version = version_line[1]
+                return version

@@ -52,8 +52,7 @@ from ..settings.registryconfig import (
 )
 
 from stdm.ui.notification import NotificationBar, ERROR, INFORMATION
-from stdm.utils.util import simple_dialog
-from stdm.ui.change_log import ChangeLog
+
 from stdm.ui.ui_upgrade_paths import Ui_UpgradePaths
 
 COLUMN_TYPE_DICT = {'character varying': 'VARCHAR', 'date': 'DATE',
@@ -1181,7 +1180,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
         self.config_file.close()
         self.doc_old.clear()
 
-    def load(self, plugin_path, progress, manual=False):
+    def load(self, progress, manual=False):
 
         """
         Executes the updater and creates configuration_upgraded.stc.
@@ -1232,25 +1231,6 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                 if config_updated_val == '0':
                     self._copy_config_file_from_template()
                     self.create_log_file(self.log_file_path)
-
-                    if not manual:
-                        title = QApplication.translate(
-                            'ConfigurationFileUpdater',
-                            'Upgrade Information'
-                        )
-                        message = QApplication.translate(
-                            'ConfigurationFileUpdater',
-                            'Would you like to view the '
-                            'new features and changes of STDM 1.4?'
-                        )
-                        result, checkbox_result = simple_dialog(
-                            self.iface.mainWindow(),
-                            title,
-                            message
-                        )
-                        if result:
-                            change_log = ChangeLog(self.iface.mainWindow())
-                            change_log.show_change_log(plugin_path)
 
                     self.progress.show()
                     self.progress.setValue(0)
