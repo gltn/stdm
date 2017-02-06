@@ -1502,10 +1502,20 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 self.save_current_configuration(DRAFT_CONFIG_FILE)
             copy_profile_name = editor.copy_name
 
+            pre_fixes = self.stdm_config.prefixes()
+
             self.make_profile_copy(current_profile_name,
                     copy_profile_name, DRAFT_CONFIG_FILE)
 
             self.refresh_config(copy_profile_name)
+
+            post_fixes = self.stdm_config.prefixes()
+
+            new_prefix = list(set(post_fixes)-set(pre_fixes))
+
+            current_profile = self.current_profile()
+
+            current_profile.set_prefix(new_prefix[0])
 
 
     def profile_names(self):
