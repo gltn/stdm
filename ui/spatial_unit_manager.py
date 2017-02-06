@@ -161,7 +161,7 @@ class SpatialUnitManagerDockWidget(
                     )
                     #Append view to the list of spatial layers
                     self._profile_spatial_layers.append(
-                        view_layer_name
+                        str_view
                     )
 
     def control_digitize_toolbar(self, curr_layer):
