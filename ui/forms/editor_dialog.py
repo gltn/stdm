@@ -107,31 +107,28 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.vlNotification = QVBoxLayout()
         self.vlNotification.setObjectName('vlNotification')
         self._notifBar = NotificationBar(self.vlNotification)
-
+        self.models_list = []
         # Set manage documents only if the entity supports documents
         if self._entity.supports_documents:
             self._manage_documents = manage_documents
-
         else:
             self._manage_documents = False
 
-        #Setup entity model
+        # Setup entity model
         self._ent_document_model = None
         if self._entity.supports_documents:
-                ent_model, self._ent_document_model = entity_model(
-                    self._entity,
-                    with_supporting_document=True
-                )
+            self.ent_model, self._ent_document_model = entity_model(
+                self._entity,
+                with_supporting_document=True
+            )
         else:
-            ent_model = entity_model(self._entity)
-
+            self.ent_model = entity_model(self._entity)
         if not model is None:
-            ent_model = model
-
-        MapperMixin.__init__(self, ent_model)
+            self.ent_model = model
+        MapperMixin.__init__(self, self.ent_model)
 
         self.collect_model = collect_model
-        #Initialize UI setup
+        # Initialize UI setup
         self._init_gui()
         self._get_entity_editor_widgets()
 
@@ -143,22 +140,21 @@ class EntityEditorDialog(QDialog, MapperMixin):
         )
         self.setWindowTitle(title)
 
-
     def _init_gui(self):
-        #Setup base elements
+        # Setup base elements
         self.gridLayout = QGridLayout(self)
         self.gridLayout.setObjectName('glMain')
         self.gridLayout.addLayout(
             self.vlNotification, 0, 0, 1, 1
         )
 
-        #Set column widget area
+        # Set column widget area
         column_widget_area = self._setup_columns_content_area()
         self.gridLayout.addWidget(
             column_widget_area, 1, 0, 1, 1
         )
 
-        #Add notification for mandatory columns if applicable
+        # Add notification for mandatory columns if applicable
         next_row = 2
         if self.has_mandatory:
             self.required_fields_lbl = QLabel(self)
@@ -171,7 +167,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 self.required_fields_lbl, next_row, 0, 1, 2
             )
 
-            #Bump up row reference
+            # Bump up row reference
             next_row += 1
 
         self.buttonBox = QDialogButtonBox(self)
@@ -196,7 +192,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         if self.collect_model:
             self.buttonBox.accepted.connect(
-                self.on_model_added
+                lambda: self.submit(True)
             )
             self.buttonBox.rejected.connect(
                 self.cancel
@@ -222,19 +218,12 @@ class EntityEditorDialog(QDialog, MapperMixin):
         to True so that entity_browser can re-load the form.
         """
         self.submit(False, True)
-        self.reload_form = True
-
-    def on_model_added(self):
-        """
-        A slot raised when a form is submitted with collect model set to True.
-        This leads to the returning on the model. There will be no success
-        message and the form does not close.
-        """
-        model = self.submit(True)
-        self.addedModel.emit(model)
+        self.addedModel.emit(self.model())
+        self.setModel(self.ent_model())
+        self.clear()
 
     def _setup_columns_content_area(self):
-        #Only use this if entity supports documents
+        # Only use this if entity supports documents
         # self.entity_tab_widget = None
         self.doc_widget = None
 
@@ -247,11 +236,11 @@ class EntityEditorDialog(QDialog, MapperMixin):
             'scrollAreaWidgetContents'
         )
     
-        #Grid layout for controls
+        # Grid layout for controls
         self.gl = QGridLayout(self.scroll_widget_contents)
         self.gl.setObjectName('gl_widget_contents')
     
-        #Append column labels and widgets
+        # Append column labels and widgets
         table_name = self._entity.name
         columns = table_column_names(table_name)
         #Iterate entity column and assert if they exist
@@ -265,7 +254,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 c,
                 self.scroll_widget_contents
             )
-            if not column_widget is None:
+            if column_widget is not None:
                 header = c.header()
                 self.c_label = QLabel(self.scroll_widget_contents)
 

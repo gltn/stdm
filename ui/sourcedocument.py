@@ -129,8 +129,20 @@ class SourceDocumentManager(QObject):
         """
         Removes all ids and corresponding containers.
         """
+        containers = self.containers
         self.containers.clear()
         del self._docRefs[:]
+        return containers
+
+    def clear(self):
+        """
+        Clears all document widgets from all containers.
+        """
+        for cont_id, container in self.containers.iteritems():
+            doc_widgets = container.parentWidget().findChildren(DocumentWidget)
+            for doc_widget in doc_widgets:
+                doc_widget.deleteLater()
+                doc_widget = None
 
     def parent_widget(self):
         """
@@ -396,10 +408,10 @@ class SourceDocumentManager(QObject):
 
     def clean_up(self):
         """
-        s all unsaved files that had initially
+        Clears all unsaved files that had initially
         been uploaded in the corresponding containers.
         :return: Document widgets whose referenced
-        files could not be d.
+        files could not be deleted.
         :rtype: list
         """
         delete_error_docs = []
@@ -652,9 +664,8 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
                     self.removed_doc.append(docs)
                     docs.delete()
 
-            except sqlalchemy.exc.SQLAlchemyError, exc:
+            except sqlalchemy.exc.SQLAlchemyError as exc:
                 LOGGER.debug(str(exc))
-
 
         #Emit signal to indicate the widget is ready to be removed
         self.referencesRemoved.emit(self._doc_type_id)
