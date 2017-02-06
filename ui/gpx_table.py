@@ -24,6 +24,8 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
         self.sp_table = sp_table
         self.curr_profile = current_profile()
         self.entity = self.curr_profile.entity_by_name(sp_table)
+        self.sp_col = sp_col
+        self.srid = self.entity.columns[self.sp_col].srid
         if self.entity is None:
             QMessageBox.critical(
                 self, QApplication.translate(
@@ -34,7 +36,6 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
             )
             return
 
-        self.sp_col = sp_col
         self.table_widget = self.tableWidget
         self.map_canvas = self.iface.mapCanvas()
         self.layer_gpx = gpx_file
@@ -69,10 +70,9 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
         self.table_widget.setColumnCount(4)
         self.table_widget.setHorizontalHeaderLabels(["",
                                                      "Point Name",
-                                                     "Latitude",
-                                                     "Longitude"
+                                                     "Longitude",
+                                                     "Latitude"
                                                      ])
-
 
         row_counter = 0
         layer_list = []
@@ -85,7 +85,8 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
             self.temp_layer_type = "Polygon"
 
         # create memory layer
-        self.vl = QgsVectorLayer("{0}?crs=epsg:4326&field=id:integer&index=yes".format(self.temp_layer_type),
+        self.vl = QgsVectorLayer("{0}?crs=epsg:{1}&field=id:integer&index=yes".
+                                 format(self.temp_layer_type, self.srid),
                             "tmp_layer",
                             "memory")
         pr = self.vl.dataProvider()
@@ -94,12 +95,12 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
 
         for i, row in enumerate(self.layer_gpx):
             # Get point lon lat from GPX file
-            lat, lon, ele = row.GetGeometryRef().GetPoint()
+            lon, lat, ele = row.GetGeometryRef().GetPoint()
             item_lat = QTableWidgetItem(str(lat))
             item_lon = QTableWidgetItem(str(lon))
             self.label = QTableWidgetItem(row.GetFieldAsString(4))
 
-            gpx_layer_point = QgsPoint(lat, lon)
+            gpx_layer_point = QgsPoint(lon, lat)
 
             layer_list.append(gpx_layer_point)
 
@@ -116,13 +117,13 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
             # self.gpx_table.tableWidget.setCellWidget(i, 0, chk_bx_widget)  # Column 1
             self.table_widget.setItem(i, 0, chk_bx_tb_widget_item)  # Column 1
             self.table_widget.setItem(i, 1, self.label)
-            self.table_widget.setItem(i, 2, item_lat)  # Column 2
-            self.table_widget.setItem(i, 3, item_lon)  # Column 3
+            self.table_widget.setItem(i, 2, item_lon)  # Column 2
+            self.table_widget.setItem(i, 3, item_lat)  # Column 3
 
             self.table_widget.setRowHeight(i, 35)
             # QgsVertex
             vertex_marker = QgsVertexMarker(self.map_canvas)
-            vertex_marker.setCenter(QgsPoint(lat, lon))
+            vertex_marker.setCenter(QgsPoint(lon, lat))
             vertex_marker.setIconType(4) # 'ICON_CIRCLE'
             vertex_marker.setPenWidth(5)
             if check_box_state is Qt.Checked:
@@ -283,7 +284,7 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
         Run when reset button is clicked
             """
         for key, vertex in self.reset_vertex_dict.iteritems():
-            vertex[0].setColor(vertex[1])
+            vertex[0].setColor(self.green)
             vertex[0].setIconType(4)
             vertex[0].setPenWidth(5)
             vertex[2].setCheckState(vertex[3])
@@ -323,13 +324,12 @@ class GpxTableWidgetDialog(QDialog, Ui_Dialog):
 
         self.iface.mapCanvas().refresh()
 
-        srid = self.entity.columns[self.sp_col].srid
         #init form
         editor = EntityEditorDialog(self.entity, None, self.iface.mainWindow())
 
         model = editor.model()
         # add geometry into the model
-        setattr(model, self.sp_col, 'SRID={};{}'.format(srid, geom_wkb))
+        setattr(model, self.sp_col, 'SRID={};{}'.format(self.srid, geom_wkb))
 
         editor.exec_()
 
