@@ -1299,7 +1299,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             profile.remove_entity(entity.short_name)
 
             self.init_entity_item_model()
-            self.trigger_entity_change()
+            self.entity_item_model.selectionChanged.connect(self.entity_changed)
+            #self.trigger_entity_change()
 
             self.clear_view_model(self.STR_spunit_model)
             self.populate_spunit_model(profile)
