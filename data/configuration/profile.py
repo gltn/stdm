@@ -100,7 +100,7 @@ class Profile(QObject):
         prefix = self.name
 
         for i in range(2, len(self.name)):
-            curr_prefix = self.name[0:i]
+            curr_prefix = self.name[0:i].lower()
 
             if not curr_prefix in prefixes:
                 prefix = curr_prefix
@@ -111,6 +111,9 @@ class Profile(QObject):
                 break
 
         return prefix.lower()
+
+    def set_prefix(self, prefix):
+        self.prefix = prefix
 
     def _create_social_tenure(self):
         """
