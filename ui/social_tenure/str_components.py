@@ -544,6 +544,7 @@ class STRType(ComponentUtility):
 
 class SupportingDocuments(ComponentUtility):
     onUploadDocument = pyqtSignal(list)
+
     def __init__(self, box, combobox, add_documents_btn, notification_bar):
         """
         Handles the supporting documents component loading.

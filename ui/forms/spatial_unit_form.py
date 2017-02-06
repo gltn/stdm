@@ -470,8 +470,9 @@ class STDMFieldWidget():
             True
         )
 
-        self.editor.addedModel.connect(self.on_form_saved)
         self.model = self.editor.model()
+        self.on_form_saved(self.model)
+
 
         # get srid with EPSG text
         full_srid = self.layer.crs().authid().split(':')

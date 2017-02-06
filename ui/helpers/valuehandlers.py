@@ -30,7 +30,8 @@ from PyQt4.QtGui import (
     QSpinBox,
     QDoubleSpinBox
 )
-
+from PyQt4.QtCore import QDate, QDateTime
+from PyQt4.QtGui import QWidget
 from stdm.ui.sourcedocument import SourceDocumentManager
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.customcontrols import CoordinatesWidget
@@ -87,7 +88,13 @@ class ControlValueHandler(object):
         states can be used to support mandatory values.
         '''
         raise NotImplementedError
-    
+
+    def clear(self):
+        """
+        Clears the value.
+        """
+        raise NotImplementedError
+
     def default(self):
         '''
         Returns the default value of the control. This complements 'supportsMandatory' method 
@@ -112,6 +119,8 @@ class LineEditValueHandler(ControlValueHandler):
     
     def default(self):
         return ''
+    def clear(self):
+        self.control.clear()
     
 LineEditValueHandler.register()
 
@@ -137,6 +146,9 @@ class AdministrativeUnitLineEditValueHandler(LineEditValueHandler):
 
     def default(self):
         return None
+
+    def clear(self):
+        self.control.clear()
 
 AdministrativeUnitLineEditValueHandler.register()
 
@@ -169,6 +181,10 @@ class MultipleSelectTreeViewValueHandler(ControlValueHandler):
     def default(self):
         return []
 
+    def clear(self):
+        self.control.clear_selection()
+
+
 MultipleSelectTreeViewValueHandler.register()
 
     
@@ -196,7 +212,10 @@ class CheckBoxValueHandler(ControlValueHandler):
 
     def supportsMandatory(self):
         return False
-    
+
+    def clear(self):
+        self.control.setChecked(False)
+
 CheckBoxValueHandler.register()
     
 class TextEditValueHandler(LineEditValueHandler):
@@ -210,7 +229,10 @@ class TextEditValueHandler(LineEditValueHandler):
     
     def setValue(self,value):
         self.control.setText(value)
-    
+
+    def clear(self):
+        self.control.clear()
+
 TextEditValueHandler.register()
     
 class ComboBoxValueHandler(LineEditValueHandler):
@@ -233,6 +255,9 @@ class ComboBoxValueHandler(LineEditValueHandler):
     
     def default(self):
         return None
+
+    def clear(self):
+        self.control.setCurrentIndex(0)
     
 ComboBoxValueHandler.register()
     
@@ -264,7 +289,10 @@ class DateEditValueHandler(ControlValueHandler):
 
     def supportsMandatory(self):
         return False
-    
+
+    def clear(self):
+        self.control.setDate(QDate.currentDate())
+
 DateEditValueHandler.register()
 
 
@@ -298,6 +326,9 @@ class DateTimeEditValueHandler(ControlValueHandler):
     def supportsMandatory(self):
         return False
 
+    def clear(self):
+        self.control.setDateTime(QDateTime.currentDateTime())
+
 DateTimeEditValueHandler.register()
 
     
@@ -308,6 +339,9 @@ class SourceDocManagerValueHandler(ControlValueHandler):
     controlType = SourceDocumentManager
 
     def value(self):
+        if len(self.control.model_objects()) > 0:
+            print vars(self.control.model_objects()[0])
+
         #Get source document objects
         return self.control.model_objects()
     
@@ -320,6 +354,9 @@ class SourceDocManagerValueHandler(ControlValueHandler):
     
     def default(self):
         return []
+
+    def clear(self):
+        self.control.clear()
     
 SourceDocManagerValueHandler.register()
 
@@ -341,6 +378,9 @@ class ForeignKeyMapperValueHandler(ControlValueHandler):
 
     def supportsMandatory(self):
         return True
+
+    def clear(self):
+        self.control.remove_rows()
 
 ForeignKeyMapperValueHandler.register()
 
@@ -364,6 +404,9 @@ class SpinBoxValueHandler(ControlValueHandler):
     
     def default(self):
         return None
+
+    def clear(self):
+        self.control.clear()
     
 SpinBoxValueHandler.register()
 
@@ -372,7 +415,7 @@ class DoubleSpinBoxValueHandler(SpinBoxValueHandler):
     QDoubleSpinBox value handler.
     '''
     controlType = QDoubleSpinBox
-    
+
 DoubleSpinBoxValueHandler.register()
 
 class CoordinatesWidgetValueHandler(ControlValueHandler):
