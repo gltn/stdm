@@ -235,6 +235,7 @@ class Model(object):
         db.session.add(self)
         try:
             db.session.commit()
+            db.session.flush()
         except exc.SQLAlchemyError:
             db.session.rollback()
             

@@ -1033,7 +1033,6 @@ class SyncSTREditorData(BindSTREditor):
         self.validity_from_date.setDate(from_date)
         self.validity_to_date.setDate(to_date)
 
-
 class ValidateSTREditor(SyncSTREditorData):
     """
     Validates the STR editor. Validates user inputs and the

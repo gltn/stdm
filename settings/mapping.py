@@ -274,25 +274,3 @@ class SettingsWidgetMapper(object):
         msg = SUCCESS, QApplication.translate("SettingsWidgetMapper",
                     "%s settings successfully updated." % (self._capitalize_first_char(self._context),))
         self.notified.emit([msg])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

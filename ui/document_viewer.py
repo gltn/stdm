@@ -300,7 +300,7 @@ class DocumentViewer(QMdiSubWindow):
         #Reset size hint of the document viewer.
         return QSize(400, 300)
 
-    def load_document(self,doc_path):
+    def load_document(self, doc_path):
         """
         Displays the document content using the specified document path.
         :param doc_path: Path to the document resource.
