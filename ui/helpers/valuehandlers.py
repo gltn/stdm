@@ -435,6 +435,9 @@ class CoordinatesWidgetValueHandler(ControlValueHandler):
     
     def default(self):
         return None
+
+    def clear(self):
+        self.control.clear()
     
 CoordinatesWidgetValueHandler.register()
 
@@ -450,6 +453,9 @@ class MultipleChoiceComboBox(ControlValueHandler):
     def setValue(self,value):
         if value:
             self.control.set_values(value)
+
+    def clear(self):
+        self.control.clear()
 
 MultipleChoiceComboBox.register()
 

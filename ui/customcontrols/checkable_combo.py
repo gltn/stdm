@@ -92,6 +92,14 @@ class MultipleChoiceCombo(QComboBox):
                 item.setCheckState(Qt.Unchecked)
                 self.model().appendRow(item)
 
+    def clear(self):
+        """
+        Removes the check from the combobox items.
+        """
+        for i in range(self.count()):
+            item = self.model().itemFromIndex(i)
+            item.setCheckState(Qt.Unchecked)
+
 class Dialog(QDialog):
     def __init__(self):
         super(Dialog,self).__init__()
