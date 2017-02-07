@@ -356,9 +356,6 @@ class MapperMixin(object):
         :param save_and_new: A Boolean indicating it is
         triggered by save and new button.
         :type save_and_new: Boolean
-        :return: If collect_model, returns SQLAlchemy Model
-        if collect model is false returns None
-        :rtype: Class or NoneType
         """
         if not self.preSaveUpdate():
             return
@@ -385,7 +382,7 @@ class MapperMixin(object):
 
         # Bind model once all attributes are valid
         for attrMapper in self._attrMappers:
-            attrMapper.set_model(self._model)
+            attrMapper.set_model(self.model())
             attrMapper.bindModel()
 
         if not collect_model:

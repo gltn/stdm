@@ -106,6 +106,13 @@ class CoordinatesWidget(QWidget):
         Returns the coordinate representation as a QgsPoint.
         """
         return self._geomPoint
+
+    def clear(self):
+        """
+        Clears the value from x and y coordinate spinbox.
+        """
+        self._sbXCoord.clear()
+        self._sbYCoord.clear()
     
     def setSRID(self,geoModel):
         """
