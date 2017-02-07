@@ -1651,7 +1651,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             profile.remove_entity(entity.short_name)
 
             self.init_entity_item_model()
-            self.trigger_entity_change()
+            self.entity_item_model.selectionChanged.connect(self.entity_changed)
+            #self.trigger_entity_change()
 
             self.clear_view_model(self.STR_spunit_model)
             self.populate_spunit_model(profile)
@@ -2375,7 +2376,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     copy_dom_elem = copy_dom_doc.find_dom_element('Profile', orig_profile_name)
 
                     copy_dom_doc.rename_element(copy_dom_elem, copy_profile_name)
-                    orig_dom_doc.documentElement().insertBefore(copy_dom_elem, orig_dom_elem)
+                    orig_dom_doc.documentElement().insertAfter(copy_dom_elem, orig_dom_elem)
 
                     stream = QTextStream(config_file)
                     stream << orig_dom_doc.toString()
