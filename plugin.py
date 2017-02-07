@@ -1262,11 +1262,9 @@ class STDMQGISLoader(object):
 
         opt_dlg.exec_()
 
-
     def profile_status_message(self):
         """
-        Shows the name of the loaded profile in QGIS
-        status bar.
+        Shows the name of the loaded profile in QGIS status bar.
         :return: None
         :rtype: NoneType
         """
@@ -1301,13 +1299,18 @@ class STDMQGISLoader(object):
         on the configuration wizard.
         :type: string
         """
-        if not self.toolbarLoader is None:
+        if self.toolbarLoader is not None:
             self.toolbarLoader.unloadContent()
-        if not self.menubarLoader is None:
+            # Clear current profile combobox
+            self.profiles_combobox.deleteLater()
+            self.profiles_combobox = None
+
+        if self.menubarLoader is not None:
             self.menubarLoader.unloadContent()
             self.stdmMenu.clear()
-        if not self.entity_browser is None:
+        if self.entity_browser is not None:
             self.entity_browser.close()
+
         self.logoutCleanUp(True)
 
         # Set current profile based on the selected
@@ -1468,7 +1471,6 @@ class STDMQGISLoader(object):
         """
         Show import data wizard.
         """
-
         if self.current_profile is None:
             self.default_profile()
             return
@@ -1677,28 +1679,32 @@ class STDMQGISLoader(object):
 
         self.stdmTables = []
 
-    def logoutCleanUp(self, reload=False):
-        '''
-        Clear database connection references and content items
-        '''
+    def logoutCleanUp(self, reload_plugin=False):
+        """
+        Clear database connection references and content items.
+        :param reload_plugin: A boolean determining if the cleanup is
+        called from reload_plugin method or not.
+        :type reload_plugin: Boolean
+        """
         try:
             if not self._user_logged_in:
                 return
+
             #Remove STDM layers
             self.removeSTDMLayers()
             # Remove Spatial Unit Manager
             self.remove_spatial_unit_mgr()
-            # Clear current profile status text
-            self.profiles_combobox.deleteLater()
-            self.profiles_combobox = None
 
             self.details_tree_view.close_dock(
                 self.feature_details_act
             )
-            if not reload:
+            if not reload_plugin:
+
                 self.profile_status_label.deleteLater()
                 self.profile_status_label = None
-
+                # Clear current profile combobox
+                self.profiles_combobox.deleteLater()
+                self.profiles_combobox = None
                 #Clear singleton ref for SQLAlchemy connections
                 if not data.app_dbconn is None:
                     STDMDb.cleanUp()

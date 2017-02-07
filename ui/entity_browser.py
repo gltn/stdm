@@ -811,16 +811,26 @@ class EntityBrowserWithEditor(EntityBrowser):
 
             return
 
-        addEntityDlg = self._editor_dlg(self._entity, parent=self)
+        self.addEntityDlg = self._editor_dlg(self._entity, parent=self)
 
-        result = addEntityDlg.exec_()
+        self.addEntityDlg.addedModel.connect(self.on_save_and_new)
+        result = self.addEntityDlg.exec_()
 
         if result == QDialog.Accepted:
-            model_obj = addEntityDlg.model()
+            model_obj = self.addEntityDlg.model()
             self.addModelToView(model_obj)
             self.recomputeRecordCount()
-            if addEntityDlg.reload_form:
-                self.onNewEntity()
+
+    def on_save_and_new(self, model):
+        """
+        A slot raised when save and new button is clicked. It updates
+        the entity browser with the new model added.
+        :param model: The model saved.
+        :type model: SQL Alchemy Model
+        """
+        if model is not None:
+            self.addModelToView(model)
+            self.recomputeRecordCount()
 
     def _can_add_edit(self):
         """
@@ -1107,7 +1117,6 @@ class EntityBrowserWithEditor(EntityBrowser):
                 self.sp_unit_manager.\
                     add_layer_by_name(layer_name_item)
 
-
     def closeEvent(self, event):
         """
         The event handler that is triggered
@@ -1118,7 +1127,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         """
         if self._entity.has_geometry_column():
             try:
-                if not self.selection_layer is None:
+                if self.selection_layer is not None:
                     self.selection_layer.removeSelection()
                 self.sp_unit_manager.zoom_to_layer()
             except RuntimeError:

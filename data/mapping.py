@@ -88,7 +88,23 @@ class _AttributeMapper(object):
         Referenced Qt input widget.
         '''
         return self._control
-    
+
+    def set_model(self, model):
+        """
+        Sets model to the attributeMapper.
+        :param model: The model to be set
+        :type model: SQLAlchemy Model object
+        """
+        self._model = model
+
+    def model(self):
+        """
+        Returns the model.
+        :return: The model object.
+        :rtype: SQLAlchemy Model object
+        """
+        return self._model
+
     def valueHandler(self):
         '''
         Return value handler associated with this control.
@@ -117,8 +133,8 @@ class _AttributeMapper(object):
         '''
         Sets the value of the control using the model's attribute value.
         '''
-        if hasattr(self._model,self._attrName):
-            attrValue = getattr(self._model,self._attrName)
+        if hasattr(self.model(), self._attrName):
+            attrValue = getattr(self.model(), self._attrName)
             self._valueHandler.setValue(attrValue)
             
     def bindModel(self):
@@ -127,31 +143,31 @@ class _AttributeMapper(object):
         The handler is responsible for adapting Qt and Python types as expected
         and defined by the model.
         '''
-
-        if hasattr(self._model, self._attrName):
-
+        if hasattr(self.model(), self._attrName):
             controlValue = self._valueHandler.value()
             # The to conditions below fix the issue of
             # saving data for QGIS forms and other forms.
-            # QGIS only recognizes QDate so we have
+            # QGIS only recognizes QDate so we have to
             # keep the control value as QData and
             # convert it to python date before
-            # saving to the database here.
+            # saving it to the database here.
             if isinstance(controlValue, QDate):
                 controlValue = controlValue.toPyDate()
 
             if isinstance(controlValue, QDateTime):
                 controlValue = controlValue.toPyDateTime()
 
-            setattr(self._model, self._attrName, controlValue)
-    
+            setattr(self.model(), self._attrName, controlValue)
+
+
 class MapperMixin(object):
     '''
     Mixin class for use in a dialog or widget, and manages attribute mapping.
     '''
-    def __init__(self,model):
+    def __init__(self, model):
         '''
-        :param model: Callable (new instances) or instance (existing instance for updating) of STDM model.
+        :param model: Callable (new instances) or instance (existing instance
+        for updating) of STDM model.
         '''
         if callable(model):
             self._model = model()
@@ -159,7 +175,6 @@ class MapperMixin(object):
         else:
             self._model = model
             self._mode = UPDATE
-        
         self._attrMappers = []
         self._attr_mapper_collection={}
         self._dirtyTracker = ControlDirtyTrackerCollection()
@@ -216,27 +231,13 @@ class MapperMixin(object):
         """
         return self._attr_mapper_collection.get(attribute_name, None)
 
-    def attribute_exists(self, attribute_name):
-        """
-        :param attribute_name: Attribute name
-        :type attribute_name: str
-        :return: True if the attribute exists in the collection. Otherwise,
-        False.
-        :rtype: bool
-        """
-        attr_mapper = self.attribute_exists(attribute_name)
-        if attr_mapper is None:
-            return False
-        else:
-            return True
-    
     def setSaveMode(self,mode):
         '''
         Set the mapper's save mode.
         '''
         self._mode = mode
         
-    def setModel(self,stdmModel):
+    def setModel(self, stdmModel):
         '''
         Set the model to be used by the mapper.
         '''
@@ -250,7 +251,8 @@ class MapperMixin(object):
         
     def setNotificationLayout(self,layout):
         '''
-        Set the vertical layout instance that will be used to display notification messages.
+        Set the vertical layout instance that will be used to display
+        notification messages.
         '''
         self._notifBar = NotificationBar(layout)
         
@@ -278,22 +280,32 @@ class MapperMixin(object):
         
         if self._dirtyTracker.isDirty():
             isDirty = True
-            msg = QApplication.translate("MappedDialog","Would you like to save changes before closing?")
-            msgResponse = QMessageBox.information(self, QApplication.translate("MappedDialog","Save Changes"), msg, 
-                                             QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel)
+            msg = QApplication.translate(
+                "MappedDialog",
+                "Would you like to save changes before closing?"
+            )
+            msgResponse = QMessageBox.information(
+                self, QApplication.translate(
+                    "MappedDialog","Save Changes"
+                ),
+                msg,
+                QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel
+            )
             
         return isDirty,msgResponse
     
     def closeEvent(self,event):
         '''
         Raised when a request to close the window is received.
-        Check the dirty state of input controls and prompt user to save if dirty.
+        Check the dirty state of input controls and prompt user to
+        save if dirty.
         ''' 
         isDirty,userResponse = self.checkDirty()
         
         if isDirty:
             if userResponse == QMessageBox.Yes:
-                #We need to ignore the event so that validation and saving operations can be executed
+                # We need to ignore the event so that validation and
+                # saving operations can be executed
                 event.ignore()
                 self.submit()
             elif userResponse == QMessageBox.No:
@@ -322,13 +334,13 @@ class MapperMixin(object):
     
     def preSaveUpdate(self):
         '''
-        Mixin classes can override this method to specify any operations that need to be executed
-        prior to saving or updating the model's values.
+        Mixin classes can override this method to specify any operations that
+        need to be executed prior to saving or updating the model's values.
         It should return True prior to saving.
         '''
         return True
     
-    def postSaveUpdate(self,dbmodel):
+    def postSaveUpdate(self, dbmodel):
         '''
         Executed once a record has been saved or updated. 
         '''
@@ -354,10 +366,13 @@ class MapperMixin(object):
         self.clearNotifications()
         isValid= True
 
-        #Validate mandatory fields have been entered by the user.
+        # Validate mandatory fields have been entered by the user.
         for attrMapper in self._attrMappers:
-            if attrMapper.isMandatory() and attrMapper.valueHandler().supportsMandatory():
-                if attrMapper.valueHandler().value() == attrMapper.valueHandler().default():
+
+            if attrMapper.isMandatory() and \
+                    attrMapper.valueHandler().supportsMandatory():
+                if attrMapper.valueHandler().value() == \
+                        attrMapper.valueHandler().default():
                     #Notify user
                     msg = QApplication.translate("MappedDialog",
                                                  "'%s' is a required field.")\
@@ -368,24 +383,23 @@ class MapperMixin(object):
         if not isValid:
             return
 
-        #Bind model once all attributes are valid
+        # Bind model once all attributes are valid
         for attrMapper in self._attrMappers:
+            attrMapper.set_model(self._model)
             attrMapper.bindModel()
 
-        if collect_model:
-            return self.model()
-        else:
+        if not collect_model:
             self._persistModel(save_and_new)
 
     def _persistModel(self, save_and_new):
         """
         Saves the model to the database and shows a success message.
-        :param save_and_new: A Boolean indicating it is
-        triggered by save and new button.
+        :param save_and_new: A Boolean indicating it is triggered by save and
+        new button.
         :type save_and_new: Boolean
         """
         try:
-            #Persist the model to its corresponding store.
+            # Persist the model to its corresponding store.
             if self._mode == SAVE:
                 self._model.save()
                 if not save_and_new:
@@ -395,7 +409,8 @@ class MapperMixin(object):
                         ),
                         QApplication.translate(
                             "MappedDialog",
-                            "New record has been successfully saved.")
+                            "New record has been successfully saved."
+                        )
                     )
 
             else:
@@ -407,6 +422,7 @@ class MapperMixin(object):
                         "MappedDialog",
                         "Record has been successfully updated.")
                 )
+
         except Exception as ex:
             QMessageBox.critical(
                 self,
@@ -415,14 +431,23 @@ class MapperMixin(object):
                 ),
                 QApplication.translate(
                     "MappedDialog",
-                    u'The data could not be saved due to the error: \n{}'
-                        .format(ex.args[0])
+                    u'The data could not be saved due to '
+                    u'the error: \n{}'.format(ex.args[0])
                 )
             )
-        #Close the dialog
+
+        # Close the dialog
         if isinstance(self, QDialog):
             self.postSaveUpdate(self._model)
-            self.accept()
+            if not save_and_new:
+                self.accept()
+
+    def clear(self):
+        """
+        Clears the form values.
+        """
+        for attrMapper in self._attrMappers:
+            attrMapper.valueHandler().clear()
 
 class _QgsFeatureAttributeMapper(_AttributeMapper):
     '''
@@ -441,9 +466,11 @@ class _QgsFeatureAttributeMapper(_AttributeMapper):
             self._valueHandler.setValue(attrVal)
         except KeyError:
             #If the field is not found then log the message into the console.
-            QgsMessageLog.logMessage(QApplication.translate("QgsFeatureAttributeMapper", \
-                                                            "Attribute name '%s' not found.")%str(self._attrName), \
-                                     QgsMessageLog.CRITICAL)
+            QgsMessageLog.logMessage(QApplication.translate(
+                "QgsFeatureAttributeMapper",
+                "Attribute name '%s' not found.")%str(self._attrName),
+                                     QgsMessageLog.CRITICAL
+            )
 
     def bindModel(self):
         '''
@@ -454,16 +481,19 @@ class _QgsFeatureAttributeMapper(_AttributeMapper):
             self._model.setAttribute(self._attrName,ctlValue)
         except KeyError:
             #If the field is not found then log the message into the console.
-            QgsMessageLog.logMessage(QApplication.translate("QgsFeatureAttributeMapper", \
-                                                            "Attribute index '%s' not found.")
-                                     %str(self._attrName),level = QgsMessageLog.CRITICAL)
+            QgsMessageLog.logMessage(QApplication.translate(
+                "QgsFeatureAttributeMapper",
+                "Attribute index '%s' not found."
+            )%str(self._attrName),level = QgsMessageLog.CRITICAL)
             
 class QgsFeatureMapperMixin(MapperMixin):
     '''
-    Mixin class for mapping QgsFeature attributes. For use in a spatial editor widget.
+    Mixin class for mapping QgsFeature attributes. For use in a
+    spatial editor widget.
     '''
     def __init__(self,layer,feature,mode = SAVE):
-        #In this case, the feature will have to be instantiated rather than checking whether it is a callable.
+        # In this case, the feature will have to be instantiated rather
+        # than checking whether it is a callable.
         MapperMixin.__init__(self,feature)
         self._mode = mode
         self._layer = layer 
@@ -482,15 +512,19 @@ class QgsFeatureMapperMixin(MapperMixin):
         '''
         return self._layer
 
-    def addMapping(self, attributeName, control, isMandatory=False, pseudoname="", valueHandler=None, preloadfunc=None):
+    def addMapping(
+            self, attributeName, control, isMandatory=False,
+            pseudoname="", valueHandler=None, preloadfunc=None):
         '''
         Now create mapping using QgsFeatureAttributeMapper.
-        We use the positional index of the field instead of the name since the feature cannot locate it 
-        when you search the field by name. 
+        We use the positional index of the field instead of the name since
+        the feature cannot locate it when you search the field by name.
         '''
         attrIndex = self._layer.pendingFields().indexFromName(attributeName)
         if attrIndex != -1:
-            attrMapper = _QgsFeatureAttributeMapper(attrIndex,control,self._model,pseudoname,isMandatory,valueHandler)
+            attrMapper = _QgsFeatureAttributeMapper(
+                attrIndex, control, self._model, pseudoname,
+                isMandatory, valueHandler)
             self.addMapper(attrMapper,preloadfunc)
 
     def _persistModel(self):
@@ -508,8 +542,12 @@ class QgsFeatureMapperMixin(MapperMixin):
                 self.accept()
                 
         else:
-            QMessageBox.critical(self, QApplication.translate("MappedDialog","Error"), \
-                                    QApplication.translate("MappedDialog","The feature could not be added."))
+            QMessageBox.critical(
+                self, QApplication.translate(
+                    "MappedDialog","Error"),
+                QApplication.translate(
+                    "MappedDialog","The feature could not be added.")
+            )
             
     def onFeatureAdded(self,fid):
         '''
