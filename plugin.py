@@ -71,7 +71,9 @@ from stdm.data.database import (
 )
 from stdm.data.pg_utils import (
     pg_table_exists,
-    spatial_tables
+    spatial_tables,
+    postgis_exists,
+    create_postgis
 )
 from stdm.settings.registryconfig import (
     RegistryConfig,
@@ -277,25 +279,31 @@ class STDMQGISLoader(object):
             data.app_dbconn = frmLogin.dbConn
 
             #Initialize the whole STDM database
-            try:
-                db = STDMDb.instance()
 
-            except NoPostGISError:
+            db = STDMDb.instance()
 
-                err_msg = QApplication.translate(
-                    "STDM",
-                    "STDM cannot be loaded because the system has "
-                    "detected that the PostGIS extension is missing "
-                    "in '{0}' database.\nCheck that PostGIS has been "
-                    "installed and that the extension has been enabled "
-                    "in the STDM database. Please contact the system "
-                    "administrator for more information."
-                                        .format(frmLogin.dbConn.Database))
-                QMessageBox.critical(self.iface.mainWindow(),
-                    QApplication.translate("STDM","Spatial Extension Error"),
-                    err_msg)
+            if not db.postgis_state:
+                if postgis_exists():
+                    create_postgis()
+                else:
+                    err_msg = QApplication.translate(
+                        "STDM",
+                        "STDM cannot be loaded because the system has "
+                        "detected that the PostGIS extension is missing "
+                        "in '{0}' database.\nCheck that PostGIS has been "
+                        "installed. Please contact the system "
+                        "administrator for more information.".format(
+                            frmLogin.dbConn.Database)
+                    )
+                    QMessageBox.critical(
+                        self.iface.mainWindow(),
+                        QApplication.translate(
+                            "STDM","Spatial Extension Error"
+                        ),
+                        err_msg
+                    )
 
-                return
+                    return
 
             # Checks if the license is accepted and stops loading
             # modules if the terms and conditions are never accepted.

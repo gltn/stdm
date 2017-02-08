@@ -124,10 +124,7 @@ class STDMDb(object):
         self.engine = create_engine(stdm.data.app_dbconn.toAlchemyConnection(), echo=False)
 
         #Check for PostGIS extension
-        state = self._check_spatial_extension()
-
-        if not state:
-            raise NoPostGISError
+        self.postgis_state = self._check_spatial_extension()
 
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
