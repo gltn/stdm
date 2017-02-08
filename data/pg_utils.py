@@ -763,11 +763,25 @@ def drop_column(table, column):
     :type table: String
     :param column: The column name to be deleted.
     :type column: String
-    :return:
-    :rtype:
     """
     sql = 'ALTER TABLE {} DROP COLUMN {} CASCADE;'.format(
         table, column
     )
+    t = text(sql)
+    _execute(t)
+
+
+def postgis_exists():
+    sql = "SELECT * FROM pg_available_extensions WHERE name='postgis';"
+    t = text(sql)
+    results = _execute(t)
+    for result in results:
+        if result['name'] == 'postgis':
+            return True
+    return False
+
+
+def create_postgis():
+    sql = 'CREATE EXTENSION postgis;'
     t = text(sql)
     _execute(t)
