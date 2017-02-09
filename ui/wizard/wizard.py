@@ -1841,12 +1841,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def trigger_entity_change(self):
         row_id = self.entity_item_model.currentIndex().row()
+        view_model = self.entity_item_model.currentIndex().model()
+        self.col_view_model.clear()
+        self.col_view_model = ColumnEntitiesModel()
 
         if row_id > -1:
-            view_model = self.entity_item_model.currentIndex().model()
-            self.col_view_model.clear()
-            self.col_view_model = ColumnEntitiesModel()
-
             columns = view_model.entity_byId(row_id).columns.values()
             self.addColumns(self.col_view_model, columns)
 
