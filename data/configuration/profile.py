@@ -112,6 +112,7 @@ class Profile(QObject):
 
         return prefix.lower()
 
+    # Added in v1.5
     def set_prefix(self, prefix):
         self.prefix = prefix
 
