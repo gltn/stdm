@@ -1652,7 +1652,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             self.init_entity_item_model()
             self.entity_item_model.selectionChanged.connect(self.entity_changed)
-            #self.trigger_entity_change()
+            self.trigger_entity_change()
 
             self.clear_view_model(self.STR_spunit_model)
             self.populate_spunit_model(profile)
@@ -1841,12 +1841,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def trigger_entity_change(self):
         row_id = self.entity_item_model.currentIndex().row()
+        view_model = self.entity_item_model.currentIndex().model()
+        self.col_view_model.clear()
+        self.col_view_model = ColumnEntitiesModel()
 
         if row_id > -1:
-            view_model = self.entity_item_model.currentIndex().model()
-            self.col_view_model.clear()
-            self.col_view_model = ColumnEntitiesModel()
-
             columns = view_model.entity_byId(row_id).columns.values()
             self.addColumns(self.col_view_model, columns)
 
