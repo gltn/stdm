@@ -220,6 +220,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.submit(False, True)
         self.addedModel.emit(self.model())
         self.setModel(self.ent_model())
+
         self.clear()
 
     def _setup_columns_content_area(self):
@@ -258,7 +259,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 header = c.header()
                 self.c_label = QLabel(self.scroll_widget_contents)
 
-                #Format label text if it is a mandatory field
+                # Format label text if it is a mandatory field
                 if c.mandatory:
                     header = '{0} *'.format(c.header())
                     #Highlight asterisk
