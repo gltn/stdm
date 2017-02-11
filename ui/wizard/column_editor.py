@@ -44,6 +44,7 @@ from geometry_property import GeometryProperty
 from fk_property import FKProperty
 from lookup_property import LookupProperty
 from multi_select_property import MultiSelectProperty
+from code_property import CodeProperty
 
 from stdm.ui.notification import NotificationBar, INFORMATION
 
@@ -82,7 +83,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.EX_TYPE_INFO =  ['SUPPORTING_DOCUMENT', 'SOCIAL_TENURE', 
                 'ADMINISTRATIVE_SPATIAL_UNIT', 'ENTITY_SUPPORTING_DOCUMENT',
-                'VALUE_LIST', 'ASSOCIATION_ENTITY']
+                'VALUE_LIST', 'ASSOCIATION_ENTITY', 'AUTO_GENERATED']
 
         self.setupUi(self)
         self.dtypes = {}
@@ -133,7 +134,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         """
         Initialize GUI controls default state when the dialog window is opened.
         """
-        self.popuplate_data_type_cbo()
+        self.populate_data_type_cbo()
         #if self.column:
         if not self.column is None:
             self.column_to_form(self.column)
@@ -243,6 +244,11 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 self.form_fields['max_use_current_datetime'] = \
                         column.max_use_current_datetime
 
+            if hasattr(column, 'prefix_source'):
+                self.form_fields['prefix_source'] = column.prefix_source
+                self.form_fields['leading_zero'] = column.leading_zero
+                self.form_fields['separator'] = column.separator
+
     def bool_to_check(self, state):
         """
         Converts a boolean to a Qt checkstate.
@@ -260,6 +266,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         Initializes work area 'form_fields' dictionary with default values.
         Used when creating a new column.
         """
+        none = QApplication.translate('CodeProperty', 'None')
         self.form_fields['colname'] = ''
         self.form_fields['value']  = None
         self.form_fields['mandt']  = False
@@ -270,7 +277,16 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.form_fields['maximum'] = self.type_attribs.get('maximum', 0)
         self.form_fields['srid'] = self.type_attribs.get('srid', "")
         self.form_fields['geom_type'] = self.type_attribs.get('geom_type', 0)
-        self.form_fields['in_db']  = self.in_db
+        self.form_fields['in_db'] = self.in_db
+        self.form_fields['prefix_source'] = self.type_attribs.get(
+            'prefix_source', none
+        )
+        self.form_fields['leading_zero'] = self.type_attribs.get(
+            'leading_zero', ''
+        )
+        self.form_fields['separator'] = self.type_attribs.get(
+            'separator', ''
+        )
 
         self.form_fields['entity_relation'] = \
                 self.type_attribs['FOREIGN_KEY'].get('entity_relation', None)
@@ -375,7 +391,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 'entity_relation':{},
                 'property':self.lookup_property, 'prop_set':False }
 
-        self.type_attribs['GEOMETRY'] ={
+        self.type_attribs['GEOMETRY'] = {
                 'mandt':{'check_state':False, 'enabled_state':False},
                 'search':{'check_state':False, 'enabled_state':False},
                 'unique':{'check_state':True, 'enabled_state':False},
@@ -383,7 +399,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 'srid':"", 'geom_type':0,
                 'property':self.geometry_property, 'prop_set':False }
 
-        self.type_attribs['BOOL'] ={
+        self.type_attribs['BOOL'] = {
                 'mandt':{'check_state':False, 'enabled_state':False},
                 'search':{'check_state':False, 'enabled_state':False},
                 'unique':{'check_state':False, 'enabled_state':False},
@@ -396,21 +412,29 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             'index': {'check_state': False, 'enabled_state': False}
         }
 
-        self.type_attribs['ADMIN_SPATIAL_UNIT'] ={
+        self.type_attribs['ADMIN_SPATIAL_UNIT'] = {
                 'mandt':{'check_state':False, 'enabled_state':True},
                 'search':{'check_state':True, 'enabled_state':True},
                 'unique':{'check_state':False, 'enabled_state':False},
                 'index':{'check_state':False, 'enabled_state':False},
                 'entity_relation':None}
 
-        self.type_attribs['MULTIPLE_SELECT'] ={
+        self.type_attribs['MULTIPLE_SELECT'] = {
                 'mandt':{'check_state':False, 'enabled_state':True},
                 'search':{'check_state':False, 'enabled_state':True},
                 'unique':{'check_state':False, 'enabled_state':False},
                 'index':{'check_state':False, 'enabled_state':False},
                 'first_parent':None, 'second_parent':self.entity,
                 'property':self.multi_select_property, 'prop_set':False }
-	
+
+        self.type_attribs['AUTO_GENERATED'] = {
+            'mandt': {'check_state': False, 'enabled_state': True},
+            'search': {'check_state': True, 'enabled_state': True},
+            'unique': {'check_state': False, 'enabled_state': True},
+            'index': {'check_state': True, 'enabled_state': False},
+            'prefix_source': '', 'leading_zero': '', 'separator':'',
+            'property': self.code_property, 'prop_set': True}
+
     def data_type_property(self):
         """
         Executes the function assigned to the property attribute of 
@@ -421,7 +445,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
     def varchar_property(self):
         """
         Opens the property editor for the Varchar data type.
-        If successfull, set a minimum column in work area 'form fields'
+        If successful, set a minimum column in work area 'form fields'
         """
 
         editor = VarcharProperty(self, self.form_fields)
@@ -480,7 +504,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
     def geometry_property(self):
         """
         Opens a property editor for the Geometry data type.
-        If successfull, set the srid(projection), geom_type (LINE, POLYGON...)
+        If successful, set the srid(projection), geom_type (LINE, POLYGON...)
         and prop_set which is boolean flag to verify that all the geometry
         properties are set. 
         Constraint - If 'prop_set' is False column cannot be saved.
@@ -559,6 +583,18 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.form_fields['second_parent'] = self.entity
             self.property_set()
 
+    def code_property(self):
+        """
+        Opens the code data type property editor
+        """
+        editor = CodeProperty(self, self.form_fields, profile=self.profile)
+        result = editor.exec_()
+        if result == 1:
+            self.form_fields['prefix_source'] = editor.prefix_source()
+            self.form_fields['leading_zero'] = editor.leading_zero()
+            self.form_fields['separator'] = editor.separator()
+            self.property_set()
+
     def create_column(self):
         """
         Creates a new BaseColumn.
@@ -605,7 +641,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         except:
             return None
 
-    def popuplate_data_type_cbo(self):
+    def populate_data_type_cbo(self):
         """
         Fills the data type combobox widget with BaseColumn type names
         """
@@ -621,7 +657,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         ti = BaseColumn.types_by_display_name()[text].TYPE_INFO
 
         if ti not in self.type_attribs:
-            msg = self.tr('Column type attributes not be found.')
+            msg = self.tr('Column type attributes could not be found.')
             self.notice_bar.clear()
             self.notice_bar.insertErrorNotification(msg)
 
@@ -678,13 +714,13 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         """
         Sets work area 'form_fields' with form control values
         """
-        self.form_fields['colname']    = unicode(self.edtColName.text())
-        self.form_fields['description']= unicode(self.edtColDesc.text())
-        self.form_fields['index']      = self.cbIndex.isChecked()
-        self.form_fields['mandatory']  = self.cbMandt.isChecked()
+        self.form_fields['colname'] = unicode(self.edtColName.text())
+        self.form_fields['description'] = unicode(self.edtColDesc.text())
+        self.form_fields['index'] = self.cbIndex.isChecked()
+        self.form_fields['mandatory'] = self.cbMandt.isChecked()
         self.form_fields['searchable'] = self.cbSearch.isChecked()
-        self.form_fields['unique']     = self.cbUnique.isChecked()
-        self.form_fields['user_tip']   = unicode(self.edtUserTip.text())
+        self.form_fields['unique'] = self.cbUnique.isChecked()
+        self.form_fields['user_tip'] = unicode(self.edtUserTip.text())
 
     def show_message(self, message):
         msg = QMessageBox()
@@ -702,7 +738,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         # check for STDM reserved keywords
         if col_name in RESERVED_KEYWORDS:
-            self.show_message(self.tr(u"'{0}' is a reserved keyword used internally by STDM.\n"\
+            self.show_message(
+                self.tr(u"'{0}' is a reserved keyword used internally by STDM.\n"\
                 "Please choose another column name.".format(col_name)) )
             return False
 

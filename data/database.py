@@ -352,7 +352,7 @@ class AdminSpatialUnitSet(Model,Base):
         self.Code = code
         self.Parent = parent
         
-    def hierarchyCode(self,separator = "/"):
+    def hierarchyCode(self, separator = "/"):
         '''
         Returns a string constituted of codes aggregated from the class instance, prior to which
         there are codes of the parent administrative units in the hierarchy.

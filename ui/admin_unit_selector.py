@@ -101,22 +101,3 @@ class AdminUnitSelector(QDialog):
         '''
         self.reject()
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
