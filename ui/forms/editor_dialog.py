@@ -192,7 +192,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         if self.collect_model:
             self.buttonBox.accepted.connect(
-                lambda: self.submit(True)
+                self.on_model_added
             )
             self.buttonBox.rejected.connect(
                 self.cancel
@@ -220,8 +220,16 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.submit(False, True)
         self.addedModel.emit(self.model())
         self.setModel(self.ent_model())
-
         self.clear()
+
+    def on_model_added(self):
+        """
+        A slot raised when a form is submitted with collect model set to True.
+        This leads to the returning on the model. There will be no success
+        message and the form does not close.
+        """
+        self.submit(True)
+        self.addedModel.emit(self.model())
 
     def _setup_columns_content_area(self):
         # Only use this if entity supports documents
@@ -284,7 +292,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 if isinstance(c, MultipleSelectColumn):
                     col_name = c.model_attribute_name
     
-                #Add widget to MapperMixin collection
+                # Add widget to MapperMixin collection
                 self.addMapping(
                     col_name,
                     self.column_widget,
