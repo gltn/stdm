@@ -110,11 +110,6 @@ from stdm.ui.feature_details import DetailsTreeView
 
 from stdm.ui.social_tenure.str_editor import STREditor
 
-
-
-from stdm.settings.database_backup import *
-from stdm.settings.database_updaters import DatabaseUpdater
-
 LOGGER = logging.getLogger('stdm')
 
 
@@ -617,13 +612,9 @@ class STDMQGISLoader(object):
         :rtype: bool
         """
         self.progress = STDMProgressDialog(parent)
-        self.progress.overall_progress(
-            'Upgrading STDM Configuration...',
-        )
+        self.progress.overall_progress('Upgrading STDM Configuration...')
 
-        home = QDesktopServices.storageLocation(
-            QDesktopServices.HomeLocation
-        )
+        home = QDesktopServices.storageLocation(QDesktopServices.HomeLocation)
 
         config_path = '{}/.stdm/configuration.stc'.format(home)
 

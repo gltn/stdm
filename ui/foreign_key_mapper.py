@@ -212,7 +212,6 @@ class ForeignKeyMapper(QWidget):
         if self._use_expression_builder:
             self._filter_entity_btn.setVisible(True)
             self._edit_entity_btn.setVisible(False)
-
         self.set_entity(entity)
 
     def set_entity(self, entity):
@@ -256,10 +255,13 @@ class ForeignKeyMapper(QWidget):
                                   'administrator.'
             )
             QMessageBox.critical(
-                self, QApplication.translate('EntityBrowser',
-                                             'Entity Browser'
-                                             ),
-                                 msg)
+                self,
+                QApplication.translate(
+                    'EntityBrowser',
+                    'Entity Browser'
+                ),
+                msg
+            )
 
             return
 
