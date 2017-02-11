@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_stdm_config.ui'
 #
-# Created: Sat Feb 04 11:54:08 2017
+# Created: Thu Feb 09 17:47:17 2017
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -27,7 +27,7 @@ class Ui_STDMWizard(object):
     def setupUi(self, STDMWizard):
         STDMWizard.setObjectName(_fromUtf8("STDMWizard"))
         STDMWizard.setWindowModality(QtCore.Qt.WindowModal)
-        STDMWizard.resize(786, 539)
+        STDMWizard.resize(790, 637)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -175,6 +175,7 @@ class Ui_STDMWizard(object):
         self.horizontalLayout_6.addWidget(self.btnNewP)
         self.btnCopy = QtGui.QPushButton(self.groupBox_17)
         self.btnCopy.setMinimumSize(QtCore.QSize(25, 30))
+        self.btnCopy.setMaximumSize(QtCore.QSize(150, 16777215))
         icon2 = QtGui.QIcon()
         icon2.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/composer_table.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.btnCopy.setIcon(icon2)
@@ -484,7 +485,7 @@ class Ui_STDMWizard(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName(_fromUtf8("scrollArea"))
         self.scrollAreaWidgetContents_2 = QtGui.QWidget()
-        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 173, 458))
+        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 225, 525))
         self.scrollAreaWidgetContents_2.setObjectName(_fromUtf8("scrollAreaWidgetContents_2"))
         self.verticalLayout_5 = QtGui.QVBoxLayout(self.scrollAreaWidgetContents_2)
         self.verticalLayout_5.setSpacing(5)
