@@ -819,10 +819,9 @@ class EntityBrowserWithEditor(EntityBrowser):
 
         if result == QDialog.Accepted:
             model_obj = self.addEntityDlg.model()
-            if model_obj is None:
-                return
-            self.addModelToView(model_obj)
-            self.recomputeRecordCount()
+            if self.addEntityDlg.is_valid:
+                self.addModelToView(model_obj)
+                self.recomputeRecordCount()
 
     def on_save_and_new(self, model):
         """
@@ -969,7 +968,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         
         if result == QDialog.Accepted:
             updated_model_obj = edit_entity_dlg.model()
-            if updated_model_obj is None:
+            if not edit_entity_dlg.is_valid:
                 return
             for i, attr in enumerate(self._entity_attrs):
                 prop_idx = self._tableModel.index(rownumber, i)

@@ -42,7 +42,13 @@ from stdm.ui.progress_dialog import STDMProgressDialog
 LOGGER = logging.getLogger('stdm')
 
 class STRDataStore():
+    """
+    A data container for STR Editor.
+    """
     def __init__(self):
+        """
+        Initializes the container dictionaries and lists.
+        """
         self.party = OrderedDict()
         self.spatial_unit = OrderedDict()
         self.str_type = OrderedDict()
@@ -54,9 +60,22 @@ class STRDataStore():
         self.source_doc_manager = None
 
 class STRDBHandler():
+    """
+    Handles the saving of data in the STR table.
+    """
     def __init__(
             self, data_store, str_model, str_edit_node=None
     ):
+        """
+        Initializes the saving of STRDBHandler.
+        :param data_store: The data store containing STR record.
+        :type data_store: Object
+        :param str_model: The model of STR
+        :type str_model: SQLAlchemy Model
+        :param str_edit_node: The STR Edit node data containing STR model and
+        supporting document models when in edit mode.
+        :type str_edit_node: Tuple or STRNode
+        """
         self.str_model = str_model
         self.data_store = data_store
         self.str_edit_obj = None
