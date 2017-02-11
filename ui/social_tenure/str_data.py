@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+import logging
 from collections import OrderedDict
 
 from PyQt4.QtCore import QDate
@@ -38,6 +39,7 @@ from stdm.data.database import (
 
 from stdm.ui.progress_dialog import STDMProgressDialog
 
+LOGGER = logging.getLogger('stdm')
 
 class STRDataStore():
     def __init__(self):
@@ -263,6 +265,7 @@ class STRDBHandler():
             self.progress.hide()
             isValid = False
             STDMDb.instance().session.rollback()
+            LOGGER.debug(str(oe))
 
         except exc.IntegrityError as ie:
             errMsg = ie.message
@@ -277,8 +280,8 @@ class STRDBHandler():
             self.progress.hide()
             isValid = False
             STDMDb.instance().session.rollback()
-
-        except exc.InternalError:
+            LOGGER.debug(str(ie))
+        except exc.InternalError as ie:
 
             QMessageBox.critical(
                 iface.mainWindow(),
@@ -292,6 +295,7 @@ class STRDBHandler():
                     'Restart QGIS to fix the issue.'
                 )
             )
+            LOGGER.debug(str(ie))
             self.progress.hide()
             isValid = False
             STDMDb.instance().session.rollback()
@@ -304,7 +308,7 @@ class STRDBHandler():
                 ),
                 errMsg
             )
-
+            LOGGER.debug(str(e))
             isValid = False
             STDMDb.instance().session.rollback()
             self.progress.hide()

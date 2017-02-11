@@ -18,6 +18,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+import logging
 from datetime import date
 from collections import (
     defaultdict,
@@ -67,7 +68,7 @@ metadata = MetaData()
 
 #Registry of table names and corresponding mappers
 table_registry = defaultdict(set)
-
+LOGGER = logging.getLogger('stdm')
 def mapper(cls, table=None, *args, **kwargs):
     tb_mapper = _mapper(cls, table, *args, **kwargs)
     table_registry[table.name].add(tb_mapper)
@@ -232,10 +233,11 @@ class Model(object):
         db.session.add(self)
         try:
             db.session.commit()
-            db.session.flush()
-        except exc.SQLAlchemyError:
+        except exc.SQLAlchemyError as db_error:
             db.session.rollback()
-            
+            LOGGER.debug(str(db_error))
+            raise db_error
+
     def saveMany(self,objects = []):
         '''
         Save multiple objects of the same type in one go.
@@ -244,15 +246,19 @@ class Model(object):
         db.session.add_all(objects)
         try:
             db.session.commit()
-        except exc.SQLAlchemyError:
+        except exc.SQLAlchemyError as db_error:
             db.session.rollback()
+            LOGGER.debug(str(db_error))
+            raise db_error
 
     def update(self):
         db = STDMDb.instance()
         try:
             db.session.commit()
-        except exc.SQLAlchemyError:
+        except exc.SQLAlchemyError as db_error:
             db.session.rollback()
+            LOGGER.debug(str(db_error))
+            raise db_error
             
     def delete(self):
         op_result = True
@@ -262,9 +268,11 @@ class Model(object):
 
         try:
             db.session.commit()
-        except exc.SQLAlchemyError:
+        except exc.SQLAlchemyError as db_error:
             op_result = False
             db.session.rollback()
+            LOGGER.debug(str(db_error))
+            raise db_error
 
         return op_result
 
@@ -282,8 +290,10 @@ class Model(object):
 
             else:
                 return db.session.query(*args)
-        except exc.SQLAlchemyError:
+        except exc.SQLAlchemyError as db_error:
             db.session.rollback()
+            LOGGER.debug(str(db_error))
+            raise db_error
     
     @classmethod  
     def tr(cls,propname):

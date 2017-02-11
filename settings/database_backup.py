@@ -42,7 +42,6 @@ def db_to_csv():
         os.makedirs(os.path.dirname(file_path))
 
         statistics = os.stat(file_path)
-        print statistics
         os.chmod(file_path, statistics.st_mode | stat.S_IEXEC)
         os.chmod(file_path, 0777)
 
