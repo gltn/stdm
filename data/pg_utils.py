@@ -444,8 +444,9 @@ def _execute(sql,**kwargs):
         trans.commit()
         conn.close()
         return result
-    except SQLAlchemyError:
+    except SQLAlchemyError as db_error:
         trans.rollback()
+        raise db_error
 
 
 def reset_content_roles():
@@ -647,7 +648,6 @@ def drop_cascade_table(table_name):
 
     #Error if the current user is not the owner.
     except SQLAlchemyError:
-
         return False
 
 

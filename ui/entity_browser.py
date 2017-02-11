@@ -370,9 +370,10 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         numRecords = entity.queryObject().count()
         
         rowStr = "row" if numRecords == 1 else "rows"
-        windowTitle = "{0} - {1} {2}".format(unicode(self.title()), \
-                                                  unicode(QApplication.translate("EntityBrowser",
-                                                                                 str(numRecords))),rowStr)
+        windowTitle = "{0} - {1} {2}".format(
+            unicode(self.title()),
+            unicode(QApplication.translate("EntityBrowser",
+                                           str(numRecords))),rowStr)
         self.setWindowTitle(windowTitle)
         
         return numRecords
@@ -818,6 +819,8 @@ class EntityBrowserWithEditor(EntityBrowser):
 
         if result == QDialog.Accepted:
             model_obj = self.addEntityDlg.model()
+            if model_obj is None:
+                return
             self.addModelToView(model_obj)
             self.recomputeRecordCount()
 
@@ -966,7 +969,8 @@ class EntityBrowserWithEditor(EntityBrowser):
         
         if result == QDialog.Accepted:
             updated_model_obj = edit_entity_dlg.model()
-
+            if updated_model_obj is None:
+                return
             for i, attr in enumerate(self._entity_attrs):
                 prop_idx = self._tableModel.index(rownumber, i)
                 attr_val = getattr(updated_model_obj, attr)

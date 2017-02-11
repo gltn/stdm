@@ -433,6 +433,8 @@ class MapperMixin(object):
                 )
             )
 
+            self._model = None
+
         # Close the dialog
         if isinstance(self, QDialog):
             self.postSaveUpdate(self._model)
@@ -537,7 +539,6 @@ class QgsFeatureMapperMixin(MapperMixin):
             if isinstance(self, QDialog):
                 self.postSaveUpdate(self._model)
                 self.accept()
-                
         else:
             QMessageBox.critical(
                 self, QApplication.translate(

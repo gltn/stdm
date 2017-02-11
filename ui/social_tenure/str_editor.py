@@ -1227,7 +1227,6 @@ class ValidateSTREditor(SyncSTREditorData):
         :param item: The current item
         :type item: QStandardItem
         """
-        print store.str_type
         if 0 in store.str_type.values() or \
                 None in store.str_type.values():
             self.enable_next(selected_item, 3, False)
