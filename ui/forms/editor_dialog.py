@@ -218,9 +218,10 @@ class EntityEditorDialog(QDialog, MapperMixin):
         to True so that entity_browser can re-load the form.
         """
         self.submit(False, True)
-        self.addedModel.emit(self.model())
-        self.setModel(self.ent_model())
-        self.clear()
+        if self.is_valid:
+            self.addedModel.emit(self.model())
+            self.setModel(self.ent_model())
+            self.clear()
 
     def on_model_added(self):
         """
