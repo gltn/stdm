@@ -27,6 +27,7 @@ from PyQt4.QtGui import (
     QDialogButtonBox,
     QApplication,
     QProgressDialog,
+    QProgressBar,
     QMessageBox,
     QImageWriter,
     QFileDialog,
@@ -171,7 +172,7 @@ class DocumentGeneratorDialogWrapper(object):
 
                 if entity_cfg is not None:
                     self._doc_gen_dlg.add_entity_config(entity_cfg, i)
-
+            self._doc_gen_dlg.progress.hide()
         except Exception as pe:
             self._notif_bar.clear()
             self._notif_bar.insertErrorNotification(pe.message)
@@ -264,21 +265,14 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         """
         Initializes the progress dialog.
         """
-        self.progress = STDMProgressDialog(self)
-        title = QApplication.translate(
-            'DocumentGeneratorDialog', 'Loading Document Generator'
-        )
-        message = QApplication.translate(
-            'DocumentGeneratorDialog', 'Loading entities, please wait'
-        )
-        self.progress.overall_progress(title)
-        self.progress.progress_message(message)
-        self.progress.setFixedWidth(380)
-        self.progress.show()
+        self.progress = QProgressBar(self)
+        self.progress.resize(self.width(), 10)
+        self.progress.setTextVisible(False)
 
     def add_entity_configuration(self, **kwargs):
         ent_config = EntityConfig(**kwargs)
         self.add_entity_config(ent_config)
+
 
     def add_entity_config(self, ent_config, progress_value=0):
         QApplication.processEvents()

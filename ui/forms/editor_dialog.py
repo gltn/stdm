@@ -18,11 +18,13 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 from collections import OrderedDict
+
 from PyQt4.QtCore import (
     Qt,
-    pyqtSignal
+    pyqtSignal,
+    QTimer
 )
-from PyQt4.QtGui import QApplication
+
 from PyQt4.QtGui import (
     QDialog,
     QDialogButtonBox,
@@ -33,10 +35,12 @@ from PyQt4.QtGui import (
     QScrollArea,
     QTabWidget,
     QVBoxLayout,
-    QWidget
+    QWidget,
+    QApplication,
+    QProgressBar,
+    QPushButton
 )
-from PyQt4.QtGui import QPushButton
-
+from qgis.utils import iface
 from stdm.data.configuration import entity_model
 from stdm.data.configuration.entity import Entity
 from stdm.data.configuration.columns import (
@@ -128,8 +132,14 @@ class EntityEditorDialog(QDialog, MapperMixin):
         MapperMixin.__init__(self, self.ent_model)
 
         self.collect_model = collect_model
+        self.resize(400, 400)
         # Initialize UI setup
-        self._init_gui()
+        self.progress = QProgressBar(self)
+        self.progress.resize(self.width(), 10)
+        self.progress.setTextVisible(False)
+        self.progress.setValue(50)
+        QTimer.singleShot(5, self._init_gui)
+
         self._get_entity_editor_widgets()
 
         #Set title
@@ -147,13 +157,13 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.gridLayout.addLayout(
             self.vlNotification, 0, 0, 1, 1
         )
-
+        QApplication.processEvents()
         # Set column widget area
         column_widget_area = self._setup_columns_content_area()
         self.gridLayout.addWidget(
             column_widget_area, 1, 0, 1, 1
         )
-
+        QApplication.processEvents()
         # Add notification for mandatory columns if applicable
         next_row = 2
         if self.has_mandatory:
@@ -210,7 +220,9 @@ class EntityEditorDialog(QDialog, MapperMixin):
             self.buttonBox.rejected.connect(
                 self.cancel
             )
-
+        self.progress.setMaximum(100)
+        self.progress.setValue(100)
+        self.progress.hide()
     def save_and_new(self):
         """
         A slot raised when Save and New button is click. It saves the form
@@ -314,7 +326,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
             if self.entity_tab_widget is None:
                 self.entity_tab_widget = QTabWidget(self)
 
-            #Add primary tab if necessary
+            # Add primary tab if necessary
             self._add_primary_attr_widget()
 
             for ch in ch_entities:
@@ -328,7 +340,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 self
             )
 
-            #Map the source document manager object
+            # Map the source document manager object
             self.addMapping(
                 'documents',
                 self.doc_widget.source_document_manager
@@ -337,16 +349,16 @@ class EntityEditorDialog(QDialog, MapperMixin):
             if self.entity_tab_widget is None:
                 self.entity_tab_widget = QTabWidget(self)
 
-            #Add attribute tab
+            # Add attribute tab
             self._add_primary_attr_widget()
 
-            #Add supporting documents tab
+            # Add supporting documents tab
             self.entity_tab_widget.addTab(
                 self.doc_widget,
                 self.tr('Supporting Documents')
             )
 
-        #Return the correct widget
+        # Return the correct widget
         if not self.entity_tab_widget is None:
             return self.entity_tab_widget
     
