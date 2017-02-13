@@ -257,18 +257,9 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         """
         Initializes the progress dialog.
         """
-        self.progress = STDMProgressDialog(self)
-        title = QApplication.translate(
-            'DocumentGeneratorDialog', 'View Social Tenure Relationship'
-        )
-        message = QApplication.translate(
-            'DocumentGeneratorDialog', 'Loading entities, please wait'
-        )
-        self.progress.overall_progress(title)
-        self.progress.progress_message(message)
-        self.progress.setFixedWidth(380)
-
-        self.progress.show()
+        self.progress = QProgressBar(self)
+        self.progress.resize(self.width(), 10)
+        self.progress.setTextVisible(False)
 
     def add_spatial_unit_layer(self):
         """
@@ -333,6 +324,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                         )
                     )
                 self.progress.setValue(i)
+            self.progress.hide()
 
         except Exception as pe:
             self._notif_search_config.clear()

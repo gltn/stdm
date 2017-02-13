@@ -25,7 +25,7 @@ except AttributeError:
 class Ui_CodeProperty(object):
     def setupUi(self, CodeProperty):
         CodeProperty.setObjectName(_fromUtf8("CodeProperty"))
-        CodeProperty.resize(340, 143)
+        CodeProperty.resize(373, 143)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -45,7 +45,7 @@ class Ui_CodeProperty(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.prefix_source_cbo.sizePolicy().hasHeightForWidth())
         self.prefix_source_cbo.setSizePolicy(sizePolicy)
-        self.prefix_source_cbo.setMinimumSize(QtCore.QSize(200, 0))
+        self.prefix_source_cbo.setMinimumSize(QtCore.QSize(249, 0))
         self.prefix_source_cbo.setMaximumSize(QtCore.QSize(16777215, 22))
         self.prefix_source_cbo.setInsertPolicy(QtGui.QComboBox.InsertAtTop)
         self.prefix_source_cbo.setObjectName(_fromUtf8("prefix_source_cbo"))
@@ -88,7 +88,7 @@ class Ui_CodeProperty(object):
         QtCore.QMetaObject.connectSlotsByName(CodeProperty)
 
     def retranslateUi(self, CodeProperty):
-        CodeProperty.setWindowTitle(_translate("CodeProperty", "Unique code property", None))
+        CodeProperty.setWindowTitle(_translate("CodeProperty", "Auto Generated Code Property", None))
         self.label.setText(_translate("CodeProperty", "Prefix source", None))
         self.label_3.setText(_translate("CodeProperty", "Separator", None))
         self.label_2.setText(_translate("CodeProperty", "Leading zero", None))
