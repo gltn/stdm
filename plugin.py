@@ -81,6 +81,7 @@ from stdm.settings.registryconfig import (
     CONFIG_UPDATED
 )
 from stdm.ui.license_agreement import LicenseAgreement
+
 from navigation import (
     STDMAction,
     QtContainerLoader,
@@ -626,7 +627,7 @@ class STDMQGISLoader(object):
 
         else:
             upgrade_status = self.configuration_file_updater.load(
-                self.plugin_dir, self.progress
+                self.progress
             )
 
         if upgrade_status:

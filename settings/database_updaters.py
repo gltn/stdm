@@ -214,13 +214,16 @@ class DatabaseVersionUpdater13(DatabaseVersionUpdater):
         )
         message = QApplication.translate(
             'DatabaseVersionUpdater13',
-            'Successfully backed up the database to version {}.'.format(
+            'Successfully backed up the database version {}.'.format(
                 self.TO_VERSION
             )
         )
         self.db_update_progress.emit(message)
 
     def update_str_table(self):
+        """
+        Updates the database to the next version.
+        """
         for profile in self.config.profiles.values():
 
             social_tenure = profile.social_tenure
@@ -235,14 +238,15 @@ class DatabaseVersionUpdater13(DatabaseVersionUpdater):
             if not old_column in table_column_names(social_tenure.name):
                 return
             new_column = '{}_id'.format(party)
-            copy_from_column_to_another(
-                str(social_tenure.name), old_column, new_column
-            )
+            if old_column != new_column:
+                copy_from_column_to_another(
+                    str(social_tenure.name), old_column, new_column
+                )
 
-            drop_column(social_tenure.name, old_column)
-            add_constraint(
-                str(social_tenure.name), new_column, party_table
-            )
+                drop_column(social_tenure.name, old_column)
+                add_constraint(
+                    str(social_tenure.name), new_column, party_table
+                )
 
     def exec_(self):
         """
@@ -270,9 +274,7 @@ class DatabaseVersionUpdater13(DatabaseVersionUpdater):
             )
             message = QApplication.translate(
                 'DatabaseVersionUpdater13',
-                'Successfully updated the database to version {}'.format(
-                    self.TO_VERSION
-                )
+                'Successfully updated the database to version 1.5'
             )
             self.db_update_progress.emit(message)
 

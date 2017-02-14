@@ -34,13 +34,13 @@ from PyQt4.QtGui import QMessageBox, QProgressBar, QDialog, QVBoxLayout, QLabel,
     QCheckBox, QDialogButtonBox, QFileDialog, QLineEdit
 from PyQt4.QtXml import QDomDocument
 
-from ..data.configuration.config_updater import ConfigurationSchemaUpdater
-from ..data.configuration.exception import ConfigurationException
-from ..data.configfile_paths import FilePaths
-from ..data.configuration.stdm_configuration import StdmConfiguration
-from ..data.pg_utils import export_data, import_data, pg_table_exists, \
+from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
+from stdm.data.configuration.exception import ConfigurationException
+from stdm.data.configfile_paths import FilePaths
+from stdm.data.configuration.stdm_configuration import StdmConfiguration
+from stdm.data.pg_utils import export_data, import_data, pg_table_exists, \
     export_data_from_columns, fix_sequence
-from ..settings.registryconfig import (
+from stdm.settings.registryconfig import (
     RegistryConfig,
     CONFIG_UPDATED,
     source_documents_path,
@@ -50,6 +50,7 @@ from ..settings.registryconfig import (
     COMPOSER_OUTPUT,
     COMPOSER_TEMPLATE
 )
+from stdm.data.pg_utils import delete_table_data
 
 from stdm.ui.notification import NotificationBar, ERROR, INFORMATION
 
@@ -1193,6 +1194,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                 # Get old and new config path from existing registry
                 data_folder_path = source_documents_path()
                 template_path = composer_template_path()
+
                 if data_folder_path is None or template_path is None:
                     self.init_path_dialog()
                     # If the paths are not filled still,
@@ -1250,6 +1252,12 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                     self.append_log(
                         'Created and populated configuration_upgraded.stc'
                     )
+                    # Remove data from content_base and content_roles -
+                    # fix issue #143
+                    delete_table_data('content_roles')
+                    delete_table_data('content_base')
+
+
                     return self.upgrade
 
                 else:
@@ -1867,4 +1875,5 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                 self.append_log('Moved supporting documents from {} to {}'.format(
                     self.old_data_folder_path, self.new_data_folder_path
                 ))
+
             return self.profiles_detail

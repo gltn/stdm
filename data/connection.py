@@ -53,7 +53,11 @@ class DatabaseConnection(object):
         '''
         isValid = False
         errMsg = ""
-        engine = create_engine(self.toAlchemyConnection(), echo=False)
+        engine = create_engine(
+            self.toAlchemyConnection(),
+            echo=False,
+            connect_args={'connect_timeout': 15}
+        )
 
         try:
             conn = engine.connect()

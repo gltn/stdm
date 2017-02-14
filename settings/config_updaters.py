@@ -341,9 +341,7 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
             next_updater = self.NEXT_UPDATER(self.document, self.log_file)
             message = QApplication.translate(
                 'ConfigVersionUpdater13',
-                'Started updating configuration version {}'.format(
-                    self.NEXT_UPDATER.TO_VERSION
-                )
+                'Started updating configuration to version 2.0'
             )
             self.update_progress.emit(message)
             self.append_log('Initializing {}'.format(self.NEXT_UPDATER))
@@ -354,9 +352,7 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
                         self.config.VERSION == self.TO_VERSION:
             self.update_complete.emit(self.document)
             self.append_log(
-                'Successfully updated dom_document to version'.format(
-                    self.TO_VERSION
-                )
+                'Successfully updated dom_document to version 1.5'
             )
 
     def update_current_version(self):
@@ -367,18 +363,15 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
         # Emit start progress
         message = QApplication.translate(
             'ConfigVersionUpdater13',
-            'Starting to update to configuration version {}'.format(
-                self.TO_VERSION
-            )
+            'Starting to update to configuration version 1.5'
         )
         self.update_progress.emit(message)
         self.append_log(
             'Starting to update to configuration version {}'.
                 format(self.TO_VERSION)
         )
-        # sql_min = DateColumn.SQL_MIN
+
         sql_min = '1700-01-01'
-        # sql_max = DateColumn.SQL_MAX
         sql_max = '7999-12-31'
         # Add validity node and elements
         for parent_node, str_element in social_tenure_elements.iteritems():
