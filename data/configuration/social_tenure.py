@@ -457,14 +457,16 @@ class SocialTenure(Entity):
             raise AttributeError(err)
 
         if not spatial_unit_entity.has_geometry_column():
-            err = self.tr('%s does not have a geometry column. This is required'
-                          ' when setting the spatial unit entity in a '
-                          'social tenure relationship definition.'
-                          %(spatial_unit_entity.name))
+            spatial_unit_entity = None
+            return
+            #err = self.tr('%s does not have a geometry column. This is required'
+                           #' when setting the spatial unit entity in a '
+                           #'social tenure relationship definition.'
+                           #%(spatial_unit_entity.name))
 
-            LOGGER.debug(err)
+            #LOGGER.debug(err)
 
-            raise AttributeError(err)
+            #raise AttributeError(err)
 
         self._spatial_unit = spatial_unit_entity
 
