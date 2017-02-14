@@ -41,7 +41,7 @@ class _AttributeMapper(object):
     Manages a single instance of the mapping between a database model's attribute
     and the corresponding UI widget.
     '''
-    def __init__(self, attributeName, qtControl, model,pseudoname="", isMandatory = False, \
+    def __init__(self, attributeName, qtControl, model, pseudoname="", isMandatory = False, \
                  customValueHandler = None,bindControlOnly = False):
         '''
         :param attributeName: Property name of the database model that is to be mapped.
@@ -179,6 +179,7 @@ class MapperMixin(object):
         self._attr_mapper_collection={}
         self._dirtyTracker = ControlDirtyTrackerCollection()
         self._notifBar = None
+        self.is_valid = False
         
         #Initialize notification bar
         if hasattr(self,"vlNotification"):
@@ -361,7 +362,7 @@ class MapperMixin(object):
             return
         
         self.clearNotifications()
-        isValid= True
+        self.is_valid = True
 
         # Validate mandatory fields have been entered by the user.
         for attrMapper in self._attrMappers:
@@ -375,9 +376,9 @@ class MapperMixin(object):
                                                  "'%s' is a required field.")\
                           %unicode(attrMapper.pseudoName())
                     self._notifBar.insertWarningNotification(msg)
-                    isValid = False
+                    self.is_valid = False
 
-        if not isValid:
+        if not self.is_valid:
             return
 
         # Bind model once all attributes are valid
@@ -432,9 +433,10 @@ class MapperMixin(object):
                     u'the error: \n{}'.format(ex.args[0])
                 )
             )
+            self.is_valid = False
 
         # Close the dialog
-        if isinstance(self, QDialog):
+        if isinstance(self, QDialog) and self.is_valid:
             self.postSaveUpdate(self._model)
             if not save_and_new:
                 self.accept()
@@ -537,7 +539,6 @@ class QgsFeatureMapperMixin(MapperMixin):
             if isinstance(self, QDialog):
                 self.postSaveUpdate(self._model)
                 self.accept()
-                
         else:
             QMessageBox.critical(
                 self, QApplication.translate(
