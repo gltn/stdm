@@ -471,7 +471,7 @@ class STDMFieldWidget():
         )
 
         self.model = self.editor.model()
-        self.on_form_saved(self.model)
+        self.editor.addedModel.connect(self.on_form_saved)
 
 
         # get srid with EPSG text

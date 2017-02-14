@@ -40,7 +40,6 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         self.setupUi(self)
 
         # self.in_db = form_fields['in_db']
-
         self._source = form_fields['prefix_source']
         self._leading_zero = form_fields['leading_zero']
         self._separator = form_fields['separator']
