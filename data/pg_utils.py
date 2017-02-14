@@ -199,6 +199,7 @@ def export_data_from_columns(columns, table_name):
 
     return _execute(t)
 
+
 def fix_sequence(table_name):
     """
     Fixes a sequence error that commonly happen
@@ -279,7 +280,7 @@ def non_spatial_table_columns(table):
 
     return [x for x in all_columns if x not in spatial_columns]
 
-def delete_table_data(tableName,cascade = True):
+def delete_table_data(tableName, cascade = True):
     """
     Delete all the rows in the target table.
     """
@@ -744,7 +745,6 @@ def add_constraint(child_table, child_column, parent_table):
     :return:
     :rtype:
     """
-
     remove_constraint(child_table, child_column)
     sql = 'ALTER TABLE {0} ' \
           'ADD CONSTRAINT {0}_{1}_fkey FOREIGN KEY ({1}) ' \
@@ -772,6 +772,9 @@ def drop_column(table, column):
 
 
 def postgis_exists():
+    """
+    Checks if the PostGIS extension exists in the STDM database.
+    """
     sql = "SELECT * FROM pg_available_extensions WHERE name='postgis';"
     t = text(sql)
     results = _execute(t)
@@ -782,6 +785,9 @@ def postgis_exists():
 
 
 def create_postgis():
+    """
+    Creates the postgis extension in the STDM database.
+    """
     sql = 'CREATE EXTENSION postgis;'
     t = text(sql)
     _execute(t)

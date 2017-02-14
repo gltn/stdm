@@ -300,7 +300,6 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
             #Set data source name
             self._data_source = config.data_source()
 
-
     def on_use_template_datasource(self, state):
         if state == Qt.Checked:
             self.tabWidget.setEnabled(False)
