@@ -1381,17 +1381,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     entity.has_geometry_column():
                         self.STR_spunit_model.add_entity(entity)
 
-    def delete_str_spunit_item(self, name):
+    def delete_entity_from_spatial_unit_model(self, entity):
         """
-        Removes an entity from a model
+        Removes an entity with NO geometry column from a
+        spatial unit model.
         param name: Name of entity to delete
         type name: str
         """
-        items = self.STR_spunit_model.findItems(name)
-        if len(items) > 0:
-            self.STR_spunit_model.removeRow(items[0].row())
+        if not entity.has_geometry_column():
+            items = self.STR_spunit_model.findItems(entity.short_name)
+            if len(items) > 0:
+                self.STR_spunit_model.removeRow(items[0].row())
 
-        self.STR_spunit_model.delete_entity_byname(name)
+            self.STR_spunit_model.delete_entity_byname(entity.short_name)
 
 
     def cbo_add_profile(self, profile):
@@ -2022,7 +2024,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def delete_column(self):
         """
-        Delete selected column, show warning dialog if a column has dependencies.
+        Delete selected column:
+        - show warning dialog if a column has dependencies.
+        - If column deleted is a Geometry column, and Entity has no other
+          Geometry column, 
         """
         row_id, column, model_item = self._get_model(self.tbvColumns)
         if not column:
@@ -2033,11 +2038,18 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if self.check_column_dependencies(column):
             ent_id, entity = self._get_entity(self.lvEntities)
 
-            # delete from the entity
+            # delete column from the entity
             entity.remove_column(column.name)
 
-            if not entity.has_geometry_column():
-                self.delete_str_spunit_item(entity.short_name)
+            self.delete_entity_from_spatial_unit_model(entity)
+
+            #if column.TYPE_INFO == 'GEOMETRY':
+                #self.nullify_str_spatial_unit(entity)
+
+    #def nullify_str_spatial_unit(self, entity):
+        #current_profile = self.current_profile()
+        #if entity.name == current_profile.social_tenure.spatial_unit.name:
+            #current_profile.social_tenure.spatial_unit = None
 
     def check_column_dependencies(self, column):
         """
@@ -2408,4 +2420,5 @@ class ConfigurationDomDocument(QDomDocument):
 
     def rename_element(self, dom_elem, new_name):
         dom_elem.setAttribute('name', new_name)
+
 
