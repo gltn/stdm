@@ -1290,7 +1290,7 @@ class STDMQGISLoader(object):
             )
         self.profile_status_label.setText(message)
 
-    def reload_plugin(self, sel_profile):
+    def reload_plugin(self, sel_profile, load_from_stc=False):
         """
         Reloads STDM plugin without logging out.
         This is to allow modules capture changes
@@ -1312,7 +1312,8 @@ class STDMQGISLoader(object):
             self.entity_browser.close()
 
         self.logoutCleanUp(True)
-
+        if load_from_stc:
+            self.config_serializer.load()
         # Set current profile based on the selected
         # profile in the wizard
         if sel_profile is not None:

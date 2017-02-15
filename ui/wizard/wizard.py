@@ -105,11 +105,11 @@ EXCL_ENTITIES = ['SUPPORTING_DOCUMENT', 'SOCIAL_TENURE',
 
 
 class ConfigWizard(QWizard, Ui_STDMWizard):
-    wizardFinished = pyqtSignal(object)
-
     """
     STDM configuration wizard editor
     """
+    wizardFinished = pyqtSignal(object, bool)
+
     def __init__(self, parent):
         QWizard.__init__(self, parent)
         self.setupUi(self)
@@ -1217,7 +1217,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         #Exit thread
         self.updater_thread.quit()
-        self.wizardFinished.emit(self.cboProfile.currentText())
+        if status:
+            self.wizardFinished.emit(self.cboProfile.currentText(), False)
+        else:
+            self.wizardFinished.emit(self.cboProfile.currentText(), True)
+            self.orig_assets_count = len(self.stdm_config)
 
     def backup_config_file(self):
         """
@@ -1227,7 +1231,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         try:
             cfs.save()
         except(ConfigurationException, IOError) as e:
-            self.show_message(self.tr(unicode(e) ))
+            self.show_message(self.tr(unicode(e)))
 
     def save_current_configuration(self, filename):
         """
