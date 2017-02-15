@@ -94,7 +94,7 @@ class ValueEditor(QDialog, Ui_LookupValue):
         if len(text) == 0:
             return
 
-        name_regex = QtCore.QRegExp('^[ _0-9a-zA-Z][a-zA-Z0-9_/\\-()|:,; ]*$')
+        name_regex = QtCore.QRegExp('^[ _0-9a-zA-Z][a-zA-Z0-9_/\\-()|.:,; ]*$')
         name_validator = QtGui.QRegExpValidator(name_regex)
         text_edit.setValidator(name_validator)
         QApplication.processEvents()
@@ -120,8 +120,8 @@ class ValueEditor(QDialog, Ui_LookupValue):
         Adds a code value to a lookup object. Checks first if a previous value
         exist then removes it and then adds the new one.
         """
-        value = unicode(self.edtValue.text())
-        code = unicode(self.edtCode.text())
+        value = unicode(self.edtValue.text().strip())
+        code = unicode(self.edtCode.text().strip())
         
         # if its an edit, first remove the previous value
         if self.code_value:

@@ -103,7 +103,11 @@ class ProfileEditor(QDialog, Ui_Profile):
     def accept(self):
         '''listen to user action on the dialog'''
         if self.edtProfile.text() == '':
-            self.error_info_message(QApplication.translate("ProfileEditor", "Profile name is not given"))
+            self.error_info_message(
+                QApplication.translate(
+                    "ProfileEditor", "Profile name is not given"
+                )
+            )
             return
 
         self.add_profile()

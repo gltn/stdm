@@ -139,7 +139,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
             self.show_message(self.tr("Please enter an entity name"))
             return
 
-        sn = unicode(self.edtTable.text())
+        sn = unicode(self.edtTable.text().strip())
         short_name = sn[0].upper()+sn[1:]
 
         if self.entity is None:  # New entity
