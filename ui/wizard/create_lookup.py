@@ -94,24 +94,27 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         if len(text) == 0:
             return
 
-        name_regex = QtCore.QRegExp('^(?=.{0,40}$)[a-zA-Z][a-zA-Z0-9_ ]*$')
+        name_regex = QtCore.QRegExp('^(?=.{0,40}$)[ _a-zA-Z][a-zA-Z0-9_ ]*$')
         name_validator = QtGui.QRegExpValidator(name_regex)
         text_edit.setValidator(name_validator)
         QApplication.processEvents()
         last_character = text[-1:]
-        state = name_validator.validate(text, text.index(last_character))[
-            0]
+        state = name_validator.validate(text, text.index(last_character))[0]
         if state != QValidator.Acceptable:
-            self.show_notification('{} is not allowed at this position.'.
+            self.show_notification('"{}" is not allowed at this position.'.
                                    format(last_character)
                                    )
             text = text[:-1]
         else:
-
+            # fix caps, underscores, and spaces
             if last_character.isupper():
                 text = text.lower()
             if last_character == ' ':
                 text = text.replace(' ', '_')
+            if len(text) > 1:
+                if text[0] == ' ' or text[0] == '_':
+                    text = text[1:]
+                text = text.replace(' ', '_').lower()
 
         self.blockSignals(True)
         text_edit.setText(text)
