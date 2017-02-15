@@ -78,18 +78,22 @@ class ProfileEditor(QDialog, Ui_Profile):
         if len(text) == 0:
             return
 
-        name_regex = QRegExp('^(?=.{0,40}$)[a-zA-Z][a-zA-Z0-9_ ]*$')
+        name_regex = QRegExp('^(?=.{0,40}$)[ _a-zA-Z][a-zA-Z0-9_ ]*$')
         name_validator = QRegExpValidator(name_regex)
         text_edit.setValidator(name_validator)
         QApplication.processEvents()
         last_character = text[-1:]
-        state = name_validator.validate(text, text.index(last_character))[
-            0]
+        state = name_validator.validate(text, text.index(last_character))[0]
         if state != QValidator.Acceptable:
-            self.show_notification('{} is not allowed at this position.'.
+            self.show_notification('"{}" is not allowed at this position.'.
                                    format(last_character)
                                    )
             text = text[:-1]
+        else:
+            # remove space and underscore at the beginning of the text
+            if len(text) > 1:
+                if text[0] == ' ' or text[0] == '_':
+                    text = text[1:]
 
         self.blockSignals(True)
         text_edit.setText(text)
