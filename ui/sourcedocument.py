@@ -125,6 +125,7 @@ class SourceDocumentManager(QObject):
                     value
                 )
             )
+
     def reset(self):
         """
         Removes all ids and corresponding containers.
@@ -340,8 +341,11 @@ class SourceDocumentManager(QObject):
                 self._docRefs.append(sourcedoc.document_identifier)
 
     def _doc_repository_error(self):
-        msg = QApplication.translate("sourceDocumentManager","Document repository could not be found.\nPlease "
-                                                             "check the path settings.")
+        msg = QApplication.translate(
+            "sourceDocumentManager",
+            "Document repository could not be found.\nPlease "
+            "check the path settings."
+        )
         QMessageBox.critical(None,
                             QApplication.translate("sourceDocumentManager",
                                                    "Document Manager"),msg)
@@ -377,10 +381,14 @@ class SourceDocumentManager(QObject):
                     docWidg = v.itemAt(w).widget()
                     if editing:
                         srcFilePath = unicode(docWidg._displayName)
-                        locTr = QApplication.translate("sourceDocumentManager", "File Name")
+                        locTr = QApplication.translate(
+                            "sourceDocumentManager", "File Name"
+                        )
                     else:
                         srcFilePath = unicode(docWidg.fileInfo.absoluteFilePath())
-                        locTr = QApplication.translate("sourceDocumentManager", "Location")
+                        locTr = QApplication.translate(
+                            "sourceDocumentManager", "Location"
+                        )
                     locTxt = "%s %s"%(locTr, str(w+1))
                     docItems[locTxt] = srcFilePath
 
