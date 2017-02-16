@@ -155,7 +155,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         :param text: The text entered
         :type text: String
         """
-        print text
         text_edit = self.sender()
         text_edit.setValidator(None)
         if len(text) == 0:
@@ -738,8 +737,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
     def accept(self):
         col_name = unicode(self.edtColName.text()).strip()
         # column name is not empty
-        if len(col_name)==0:
-            self.show_message(self.tr('Please enter the column name!'))
+        if len(col_name)==0 or col_name == '_':
+            self.show_message(self.tr('Please enter a valid column name.'))
             return False
 
         # check for STDM reserved keywords
