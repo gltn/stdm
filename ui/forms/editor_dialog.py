@@ -37,7 +37,6 @@ from PyQt4.QtGui import (
     QVBoxLayout,
     QWidget,
     QApplication,
-    QProgressBar,
     QPushButton
 )
 from qgis.utils import iface
@@ -104,6 +103,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self._entity = entity
         self.edit_model = model
         self._fk_browsers = OrderedDict()
+        self.column_widgets = OrderedDict()
         self.entity_tab_widget = None
         self.entity_scroll_area = None
         self.entity_editor_widgets = OrderedDict()
@@ -132,17 +132,14 @@ class EntityEditorDialog(QDialog, MapperMixin):
         MapperMixin.__init__(self, self.ent_model)
 
         self.collect_model = collect_model
-        self.resize(400, 400)
-        # Initialize UI setup
-        self.progress = QProgressBar(self)
-        self.progress.resize(self.width(), 10)
-        self.progress.setTextVisible(False)
-        self.progress.setValue(50)
-        QTimer.singleShot(5, self._init_gui)
 
+        self.register_column_widgets()
+
+        self._init_gui()
+        self.resize(400, 400)
         self._get_entity_editor_widgets()
 
-        #Set title
+        # Set title
         editor_trans = self.tr('Editor')
         title = u'{0} {1}'.format(
             format_name(self._entity.short_name),
@@ -158,7 +155,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
             self.vlNotification, 0, 0, 1, 1
         )
         QApplication.processEvents()
-        # Set column widget area
+
         column_widget_area = self._setup_columns_content_area()
         self.gridLayout.addWidget(
             column_widget_area, 1, 0, 1, 1
@@ -181,6 +178,10 @@ class EntityEditorDialog(QDialog, MapperMixin):
             next_row += 1
 
         self.buttonBox = QDialogButtonBox(self)
+        self.buttonBox.setObjectName('buttonBox')
+        self.gridLayout.addWidget(
+            self.buttonBox, next_row, 0, 1, 1
+        )
 
         self.buttonBox.setOrientation(Qt.Horizontal)
         self.buttonBox.setStandardButtons(
@@ -194,11 +195,6 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 self.buttonBox.addButton(
                     self.save_new_button, QDialogButtonBox.ActionRole
                 )
-
-        self.buttonBox.setObjectName('buttonBox')
-        self.gridLayout.addWidget(
-            self.buttonBox, next_row, 0, 1, 1
-        )
 
         if self.collect_model:
             self.buttonBox.accepted.connect(
@@ -220,9 +216,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
             self.buttonBox.rejected.connect(
                 self.cancel
             )
-        self.progress.setMaximum(100)
-        self.progress.setValue(100)
-        self.progress.hide()
+
     def save_and_new(self):
         """
         A slot raised when Save and New button is click. It saves the form
@@ -244,6 +238,28 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.submit(True)
         self.addedModel.emit(self.model())
 
+    def register_column_widgets(self):
+        """
+        Registers the column widgets.
+        """
+        # Append column labels and widgets
+        table_name = self._entity.name
+        columns = table_column_names(table_name)
+        self.scroll_widget_contents = QWidget()
+        self.scroll_widget_contents.setObjectName(
+            'scrollAreaWidgetContents'
+        )
+        for c in self._entity.columns.values():
+            if not c.name in columns and not isinstance(c, VirtualColumn):
+                continue
+
+            # Get widget factory
+            column_widget = ColumnWidgetRegistry.create(
+                c,
+                self.scroll_widget_contents
+            )
+            self.column_widgets[c] = column_widget
+
     def _setup_columns_content_area(self):
         # Only use this if entity supports documents
         # self.entity_tab_widget = None
@@ -253,11 +269,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.entity_scroll_area.setFrameShape(QFrame.NoFrame)
         self.entity_scroll_area.setWidgetResizable(True)
         self.entity_scroll_area.setObjectName('scrollArea')
-        self.scroll_widget_contents = QWidget()
-        self.scroll_widget_contents.setObjectName(
-            'scrollAreaWidgetContents'
-        )
-    
+
         # Grid layout for controls
         self.gl = QGridLayout(self.scroll_widget_contents)
         self.gl.setObjectName('gl_widget_contents')
@@ -265,17 +277,12 @@ class EntityEditorDialog(QDialog, MapperMixin):
         # Append column labels and widgets
         table_name = self._entity.name
         columns = table_column_names(table_name)
-        #Iterate entity column and assert if they exist
+        # Iterate entity column and assert if they exist
         row_id = 0
-        for c in self._entity.columns.values():
+        for c, column_widget in self.column_widgets.iteritems():
             if not c.name in columns and not isinstance(c, VirtualColumn):
                 continue
-    
-            #Get widget factory
-            column_widget = ColumnWidgetRegistry.create(
-                c,
-                self.scroll_widget_contents
-            )
+
             if column_widget is not None:
                 header = c.header()
                 self.c_label = QLabel(self.scroll_widget_contents)
@@ -379,11 +386,9 @@ class EntityEditorDialog(QDialog, MapperMixin):
     def _add_fk_browser(self, child_entity):
         # Create and add foreign key
         # browser to the collection
-        attr = u'{0}_collection'.format(
-            child_entity.name
-        )
+        attr = u'{0}_collection'.format(child_entity.name)
 
-        #Return if the attribute does not exist
+        # Return if the attribute does not exist
         if not hasattr(self._model, attr):
             return
 
@@ -394,11 +399,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
             can_filter=True
         )
 
-        #Add to mapped collection
-        self.addMapping(
-            attr,
-            fkb
-        )
+        # Add to mapped collection
+        self.addMapping(attr, fkb)
 
         self.entity_tab_widget.addTab(
             fkb,
@@ -408,7 +410,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
             )
         )
 
-        #Add to the collection
+        # Add to the collection
         self._fk_browsers[child_entity.name] = fkb
 
     def children_entities(self):
@@ -468,4 +470,3 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 self.entity_editor_widgets[tab_text] = tab_object
         else:
             self.entity_editor_widgets['no_tab'] = self.entity_scroll_area
-

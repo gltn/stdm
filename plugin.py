@@ -42,6 +42,7 @@ from stdm.ui.doc_generator_dlg import (
     DocumentGeneratorDialogWrapper,
     EntityConfig
 )
+
 from stdm.ui.login_dlg import loginDlg
 from stdm.ui.manage_accounts_dlg import manageAccountsDlg
 from stdm.ui.content_auth_dlg import contentAuthDlg
@@ -73,7 +74,8 @@ from stdm.data.pg_utils import (
     pg_table_exists,
     spatial_tables,
     postgis_exists,
-    create_postgis
+    create_postgis,
+    table_column_names
 )
 from stdm.settings.registryconfig import (
     RegistryConfig,
@@ -703,7 +705,6 @@ class STDMQGISLoader(object):
                 _copy_config_file_from_template()
             result = self.load_configuration_to_serializer()
             return result
-
 
     def loadModules(self):
 

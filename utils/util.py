@@ -372,7 +372,8 @@ def entity_display_columns(entity):
             'LOOKUP',
             'ADMIN_SPATIAL_UNIT',
             'MULTIPLE_SELECT',
-            'PERCENT'
+            'PERCENT',
+            'AUTO_GENERATED'
         ]
     ]
 
