@@ -135,8 +135,8 @@ class EntityEditor(QDialog, Ui_dlgEntity):
             return Qt.Unchecked
 	    
     def accept(self):
-        if self.edtTable.text()=='':
-            self.show_message(self.tr("Please enter an entity name"))
+        if self.edtTable.text() == '' or self.edtTable.text() == ' ':
+            self.show_message(self.tr("Please enter a valid entity name."))
             return
 
         sn = unicode(self.edtTable.text().strip())
@@ -144,7 +144,12 @@ class EntityEditor(QDialog, Ui_dlgEntity):
 
         if self.entity is None:  # New entity
             if self.duplicate_check(short_name):
-                self.show_message(self.tr("Entity with the same name already exist in the current profile!"))
+                self.show_message(
+                    self.tr(
+                        "Entity with the same name already "
+                        "exist in the current profile!"
+                    )
+                )
                 return
             else:
                 self.add_entity(short_name)

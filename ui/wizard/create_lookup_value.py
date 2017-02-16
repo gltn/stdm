@@ -130,9 +130,9 @@ class ValueEditor(QDialog, Ui_LookupValue):
             self.lookup.add_code_value(CodeValue(code, value))
 	    
     def accept(self):
-        if self.edtValue.text()=='':
+        if self.edtValue.text() == '' or self.edtValue.text() == ' ':
                 self.error_message(QApplication.translate(
-                    "ValueEditor", "Please provide a Lookup value.")
+                    "ValueEditor", "Please enter a valid lookup value.")
                 )
                 return
 
