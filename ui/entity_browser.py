@@ -815,6 +815,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         self.addEntityDlg = self._editor_dlg(self._entity, parent=self)
 
         self.addEntityDlg.addedModel.connect(self.on_save_and_new)
+
         result = self.addEntityDlg.exec_()
 
         if result == QDialog.Accepted:
