@@ -180,7 +180,6 @@ def _create_primary_entity_view(
     create_view_sql = u'CREATE VIEW {0} AS SELECT {1} FROM {2} {3}'.format(
         view_name, ','.join(view_columns), social_tenure.name,
         ' '.join(join_statement))
-    print create_view_sql
 
     normalized_create_view_sql = text(create_view_sql)
 
