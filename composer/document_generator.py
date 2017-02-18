@@ -18,6 +18,9 @@ email                : gkahiu@gmail.com
 """
 import uuid
 import logging
+from datetime import date
+from numbers import Number
+
 from PyQt4.QtGui import (
     QApplication,
     QImage,
@@ -86,6 +89,8 @@ from .photo_configuration import PhotoConfigurationCollection
 from .table_configuration import TableConfigurationCollection
 
 LOGGER = logging.getLogger('stdm')
+
+
 class DocumentGenerator(QObject):
     """
     Generates documents from user-defined templates.
@@ -854,12 +859,17 @@ class DocumentGenerator(QObject):
                 composer_item.setText("")
                 return
             
-            if isinstance(value,int) or isinstance(value,float) or isinstance(value,long):
+            if isinstance(value, Number):
                 composer_item.setText("%d"%(value,))
                 return
 
-            if isinstance(value, str) or isinstance(value, unicode):
+            if isinstance(value, basestring):
                 composer_item.setText(value)
+                return
+
+            if isinstance(value, date):
+                composer_item.setText(str(value))
+
                 return
 
         #Composer picture requires the absolute file path
