@@ -42,6 +42,7 @@ from stdm.ui.doc_generator_dlg import (
     DocumentGeneratorDialogWrapper,
     EntityConfig
 )
+
 from stdm.ui.login_dlg import loginDlg
 from stdm.ui.manage_accounts_dlg import manageAccountsDlg
 from stdm.ui.content_auth_dlg import contentAuthDlg
@@ -73,7 +74,8 @@ from stdm.data.pg_utils import (
     pg_table_exists,
     spatial_tables,
     postgis_exists,
-    create_postgis
+    create_postgis,
+    table_column_names
 )
 from stdm.settings.registryconfig import (
     RegistryConfig,
@@ -704,7 +706,6 @@ class STDMQGISLoader(object):
             result = self.load_configuration_to_serializer()
             return result
 
-
     def loadModules(self):
 
         self.details_tree_view = DetailsTreeView(self.iface, self)
@@ -1290,7 +1291,7 @@ class STDMQGISLoader(object):
             )
         self.profile_status_label.setText(message)
 
-    def reload_plugin(self, sel_profile):
+    def reload_plugin(self, sel_profile, load_from_stc=False):
         """
         Reloads STDM plugin without logging out.
         This is to allow modules capture changes
@@ -1312,7 +1313,8 @@ class STDMQGISLoader(object):
             self.entity_browser.close()
 
         self.logoutCleanUp(True)
-
+        if load_from_stc:
+            self.config_serializer.load()
         # Set current profile based on the selected
         # profile in the wizard
         if sel_profile is not None:

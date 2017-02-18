@@ -322,7 +322,8 @@ class DetailsDBHandler:
                 'BOOL',
                 'LOOKUP',
                 'ADMIN_SPATIAL_UNIT',
-                'PERCENT'
+                'PERCENT',
+                'AUTO_GENERATED'
             ]
         ]
 

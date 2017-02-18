@@ -27,7 +27,9 @@ from ..utils import util
 from ..data.pg_utils import vector_layer
 import gps_tool_data_source_utils as gpx_source
 import gps_tool_data_view_utils as gpx_view
-
+from stdm.settings.registryconfig import (
+    selection_color
+)
 
 class GPSToolDialog(qg.QDialog, Ui_Dialog):
     def __init__(self, iface, entity, sp_table, sp_col):
@@ -64,10 +66,22 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         self.file_le.textChanged.connect(self._file_source_change)
         self.feature_type_cb.currentIndexChanged.connect(self._show_data)
         self.table_widget.itemClicked.connect(self._table_widget_checkbox_clicked)
-        self.table_widget.itemSelectionChanged.connect(self._table_widget_row_selection)
-        self.table_widget.connect(self.table_widget, qc.SIGNAL('itemDragEnter'), self._table_widget_drag_enter)
-        self.table_widget.connect(self.table_widget, qc.SIGNAL('itemDropped'), self._table_widget_row_dropped)
-        self.table_widget.itemDoubleClicked.connect(self._table_widget_item_double_clicked)
+        self.table_widget.itemSelectionChanged.connect(
+            self._table_widget_row_selection
+        )
+        self.table_widget.connect(
+            self.table_widget,
+            qc.SIGNAL('itemDragEnter'),
+            self._table_widget_drag_enter
+        )
+        self.table_widget.connect(
+            self.table_widget,
+            qc.SIGNAL('itemDropped'),
+            self._table_widget_row_dropped
+        )
+        self.table_widget.itemDoubleClicked.connect(
+            self._table_widget_item_double_clicked
+        )
         self.table_widget.itemChanged.connect(self._table_widget_item_changed)
         self.select_all_bt.clicked.connect(self._select_all_items)
         self.clear_all_bt.clicked.connect(self._clear_all_items)
@@ -244,10 +258,23 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
                     self.prev_point_row_attr = list(self.point_row_attr)
                     self.init_gpx_file = gpx_file
                 else:
-                    qg.QMessageBox.information(None, 'STDM', 'Current active layer not compatible with GPS data. '
-                                                             'Geometry type "POINT", "LINE" or "POLYGON" required')
+                    qg.QMessageBox.critical(
+                        self,
+                        self.tr('Incompatibility Error'),
+                        self.tr(
+                            'Current active layer not compatible with GPS '
+                            'data.\nGeometry type "POINT", "LINE" or "POLYGON"'
+                            ' is required.'
+                        )
+                    )
             else:
-                qg.QMessageBox.information(None, 'STDM', 'The selected feature type has no features')
+                qg.QMessageBox.warning(
+                    self,
+                    self.tr('Feature Type Error'),
+                    'The selected .gpx file has no {} feature type.'.format(
+                        feature_type
+                    )
+                )
                 if self.table_widget.columnCount() > 0:
                     if self.point_row_attr:
                         self._refresh_map_canvas()
@@ -363,26 +390,33 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :rtype: None
         """
         if item.checkState() == qc.Qt.Unchecked:
-            qgs_point = gpx_view.check_uncheck_item(self.point_row_attr, self.map_canvas, item)
+            qgs_point = gpx_view.check_uncheck_item(
+                self.point_row_attr, self.map_canvas, item
+            )
             self._unchecked_gpx_point(qgs_point)
             self._enable_disable_load_on_checkbox_click()
         else:
-            qgs_point = gpx_view.check_uncheck_item(self.point_row_attr, self.map_canvas, item)
+            qgs_point = gpx_view.check_uncheck_item(
+                self.point_row_attr, self.map_canvas, item
+            )
             self._checked_gpx_point(qgs_point)
             self._enable_disable_load_on_checkbox_click()
+        self._table_widget_row_selection()
 
     def _unchecked_gpx_point(self, qgs_point):
         """
         Removes feature vertex from a list
         :param qgs_point: Feature vertex
-        :return: None
-        :rtype: None
         """
         if qgs_point:
-            qgs_point_list = gpx_view.remove_from_list(self.qgs_point_list, qgs_point)
+            qgs_point_list = gpx_view.remove_from_list(
+                self.qgs_point_list, qgs_point
+            )
             if qgs_point_list:
                 self.qgs_point_list = qgs_point_list
-                point_list, new_point_row_attr = gpx_view.get_qgs_points(self.table_widget)
+                point_list, new_point_row_attr = gpx_view.get_qgs_points(
+                    self.table_widget
+                )
                 self._update_feature(point_list, new_point_row_attr)
 
     def _checked_gpx_point(self, qgs_point):
@@ -396,13 +430,15 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
             qgs_point = gpx_view.add_to_list(self.qgs_point_list, qgs_point)
             if qgs_point:
                 self.qgs_point_list.append(qgs_point)
-                point_list, new_point_row_attr = gpx_view.get_qgs_points(self.table_widget)
+                point_list, new_point_row_attr = gpx_view.get_qgs_points(
+                    self.table_widget
+                )
                 self._update_feature(point_list, new_point_row_attr)
 
     def _enable_disable_load_on_checkbox_click(self):
         """
         Counts clicks if a checkbox is checked or unchecked and
-        enables or disables the load button.
+        enables or disables the save button.
         :return: None
         :rtype: None
         """
@@ -422,12 +458,23 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
     def _table_widget_row_selection(self):
         """
         Set vertex color on row selection change
-        :return: None
-        :rtype: None
         """
-        current_selected_rows = sorted(set([index.row() for index in self.table_widget.selectedIndexes()]))
-        gpx_view.row_selection_change(self.map_canvas, self.point_row_attr, current_selected_rows, '#0000FF')
-        gpx_view.row_selection_change(self.map_canvas, self.point_row_attr, self.prev_selected_rows)
+        # Remove highlighting
+        gpx_view.row_selection_change(
+            self.map_canvas, self.point_row_attr, self.prev_selected_rows
+        )
+
+        current_selected_rows = sorted(
+            set([index.row() for index in self.table_widget.selectedIndexes()])
+        )
+        # Make selection
+        gpx_view.row_selection_change(
+            self.map_canvas,
+            self.point_row_attr,
+            current_selected_rows,
+            selection_color()
+        )
+
         if current_selected_rows:
             self.prev_selected_rows = []
             self.prev_selected_rows.extend(current_selected_rows)
@@ -448,7 +495,9 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :return: None
         :rtype: None
         """
-        point_list, new_point_row_attr = gpx_view.get_qgs_points(self.table_widget)
+        point_list, new_point_row_attr = gpx_view.get_qgs_points(
+            self.table_widget
+        )
         self._update_feature(point_list, new_point_row_attr)
         self.data_changed = True
 
@@ -472,7 +521,9 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         current_item_value = item.text().strip()
         if self.data_changed and item.column() != 0:
             if current_item_value != self.prev_item_value:
-                point_list, new_point_row_attr = gpx_view.get_qgs_points(self.table_widget)
+                point_list, new_point_row_attr = gpx_view.get_qgs_points(
+                    self.table_widget
+                )
                 self._update_feature(point_list, new_point_row_attr)
         self._enable_disable_load_on_checkbox_click()
 
@@ -488,8 +539,12 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
             self.qgs_point_list = list(point_list)
             gpx_view.remove_vertex(self.map_canvas, self.prev_point_row_attr)
             gpx_view.delete_feature(self.map_canvas, self.temp_mem_layer)
-            self.point_row_attr = gpx_view.update_point_row_attr(self.map_canvas, self.point_row_attr, new_point_row_attr)
-            self.point_row_attr = gpx_view.set_feature_vertices_marker(self.map_canvas, self.point_row_attr)
+            self.point_row_attr = gpx_view.update_point_row_attr(
+                self.map_canvas, self.point_row_attr, new_point_row_attr
+            )
+            self.point_row_attr = gpx_view.set_feature_vertices_marker(
+                self.map_canvas, self.point_row_attr
+            )
             new_geometry = gpx_view.create_geometry(self.geom_type, point_list)
             data_provider = self.temp_mem_layer.dataProvider()
             gpx_view.add_feature(data_provider, new_geometry)
@@ -505,11 +560,13 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :return: None
         :rtype: None
         """
-        qgs_point = gpx_view.check_uncheck_item(self.point_row_attr, self.map_canvas, None, 'check')
+        qgs_point = gpx_view.check_uncheck_item(
+            self.point_row_attr, self.map_canvas, None, 'check')
         self._checked_gpx_point(qgs_point)
         self._enable_disable_button_widgets(None, True)
         if self.data_changed or self.drag_drop:
-            point_list, new_point_row_attr = gpx_view.get_qgs_points(self.table_widget)
+            point_list, new_point_row_attr = gpx_view.get_qgs_points(
+                self.table_widget)
             self._update_feature(point_list, new_point_row_attr)
             self.drag_drop = None
 
@@ -519,10 +576,12 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :return: None
         :rtype: None
         """
-        qgs_point = gpx_view.check_uncheck_item(self.point_row_attr, self.map_canvas, None, 'uncheck')
+        qgs_point = gpx_view.check_uncheck_item(
+            self.point_row_attr, self.map_canvas, None, 'uncheck')
         self._unchecked_gpx_point(qgs_point)
         self._enable_disable_button_widgets(None, False)
-        point_list, new_point_row_attr = gpx_view.get_qgs_points(self.table_widget)
+        point_list, new_point_row_attr = gpx_view.get_qgs_points(
+            self.table_widget)
         self._update_feature(point_list, new_point_row_attr)
 
     def _load_feature(self):
@@ -531,7 +590,9 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :return: None
         :rtype: None
         """
-        new_geometry = gpx_view.create_geometry(self.geom_type, self.qgs_point_list)
+        new_geometry = gpx_view.create_geometry(
+            self.geom_type, self.qgs_point_list
+        )
         geometry_wkb = new_geometry.exportToWkt()
         srid = self.entity.columns[self.sp_col].srid
         model = self.entity_editor.model()

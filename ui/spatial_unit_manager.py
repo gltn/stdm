@@ -22,6 +22,8 @@
 """
 import os
 import logging
+import re
+
 from PyQt4 import uic
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
@@ -68,9 +70,15 @@ class SpatialUnitManagerDockWidget(
         self.iface = iface
         self._plugin = plugin
         self.gps_tool_dialog = None
+        # properties of last added layer
         self.curr_lyr_table = None
         self.curr_lyr_sp_col = None
         self.curr_layer = None
+        # properties of the active layer
+        self.active_entity = None
+        self.active_table = None
+        self.active_sp_col = None
+
         self.setMaximumHeight(300)
         self._curr_profile = current_profile()
         self._profile_spatial_layers = []
@@ -631,32 +639,110 @@ class SpatialUnitManagerDockWidget(
                         msg
                     )
 
+    def active_layer_source(self):
+        """
+        Get the layer table name if the source is from the database.
+        :return: The a Boolean True if a valid source is found or False if not.
+        Alternatively, None if there is no active layer.
+        :rtype: Boolean or NoneType
+        """
+        active_layer = self.iface.activeLayer()
+        if active_layer is None:
+            return None
+        source = active_layer.source()
+        if source is None:
+            return False
+        source_value = dict(re.findall('(\S+)="?(.*?)"? ', source))
+        try:
+            table = source_value['table'].split('.')
+
+            table_name = table[1].strip('"')
+            if table_name in pg_views():
+                return False
+
+            entity = self._curr_profile.entity_by_name(table_name)
+            if entity is None:
+                return False
+            else:
+                self.active_entity = entity
+                self.active_table = table_name
+                # get all spatial columns of the entity.
+                spatial_columns = [
+                    c.name
+                    for c in entity.columns.values()
+                    if c.TYPE_INFO == 'GEOMETRY'
+                ]
+                # get all fields excluding the geometry.
+                layer_fields = [
+                    field.name()
+                    for field in active_layer.pendingFields()
+                ]
+                # get the currently being used geometry column
+                active_sp_cols = [
+                    col
+                    for col in spatial_columns
+                    if col not in layer_fields
+                ]
+
+                if len(active_sp_cols) == 1:
+                    self.active_sp_col = active_sp_cols[0]
+
+                return True
+
+        except KeyError:
+            return False
+
+
     @pyqtSignature("")
     def on_import_gpx_file_button_clicked(self):
         """
         Method to load GPS dialog
         """
-        entity_obj = self._valid_entity()
+        source_status = self.active_layer_source()
         layer_map = QgsMapLayerRegistry.instance().mapLayers()
-        if layer_map and entity_obj:
-            self.gps_tool_dialog = GPSToolDialog(
-                self.iface,
-                entity_obj,
-                self.curr_lyr_table,
-                self.curr_lyr_sp_col
-            )
-            self.gps_tool_dialog.show()
-        elif not layer_map:
-            QMessageBox.warning(
-                self,
-                "STDM",
-                "You must add a layer first from Spatial Unit Manager to import GPX to"
-            )
-        elif not entity_obj:
-                QMessageBox.critical(
-                    self, QApplication.translate('GpxTableWidgetDialog', 'GPS File Import Error'),
-                    'The selected layer source is not an entity. View or a non-STDM Layer is not allowed.'
+        error_title = QApplication.translate(
+                    'SpatialUnitManagerDockWidget',
+                    'GPS Feature Import Loading Error'
                 )
+        if len(layer_map) > 0:
+            if source_status is None:
+                QMessageBox.critical(
+                    self,
+                    error_title,
+                    QApplication.translate(
+                        'SpatialUnitManagerDockWidget',
+                        'You have not selected a layer.\n '
+                        'Please select a valid layer to import GPS features.'
+                    )
+                )
+            elif source_status is False:
+                QMessageBox.critical(
+                    self,
+                    error_title,
+                    QApplication.translate(
+                        'SpatialUnitManagerDockWidget',
+                        'You have selected a non-STDM entity layer.\n '
+                        'Please select a valid layer to import GPS features.'
+                    )
+                )
+            elif source_status is True:
+                self.gps_tool_dialog = GPSToolDialog(
+                    self.iface,
+                    self.active_entity,
+                    self.active_table,
+                    self.active_sp_col
+                )
+                self.gps_tool_dialog.show()
+        else:
+            QMessageBox.critical(
+                self,
+                error_title,
+                QApplication.translate(
+                    'SpatialUnitManagerDockWidget',
+                    'You must add an entity layer from Spatial Unit Manager\n'
+                    'and select it to import GPS Features.'
+                )
+            )
 
     def _valid_entity(self):
         """

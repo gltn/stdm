@@ -92,29 +92,39 @@ class PhotoViewer(QScrollArea):
         """
         Create actions for basic image navigation.
         """
-        self._zoom_in_act = QAction(QApplication.translate("PhotoViewer","Zoom &In (25%)"), self)
-        self._zoom_in_act.setShortcut(QApplication.translate("PhotoViewer","Ctrl++"))
+        self._zoom_in_act = QAction(
+            QApplication.translate("PhotoViewer","Zoom &In (25%)"), self)
+        self._zoom_in_act.setShortcut(
+            QApplication.translate("PhotoViewer","Ctrl++"))
         self._zoom_in_act.setEnabled(False)
         self._zoom_in_act.triggered.connect(self.zoom_in)
 
-        self._zoom_out_act = QAction(QApplication.translate("PhotoViewer","Zoom &Out (25%)"), self)
-        self._zoom_out_act.setShortcut(QApplication.translate("PhotoViewer","Ctrl+-"))
+        self._zoom_out_act = QAction(
+            QApplication.translate("PhotoViewer","Zoom &Out (25%)"), self)
+        self._zoom_out_act.setShortcut(
+            QApplication.translate("PhotoViewer","Ctrl+-"))
         self._zoom_out_act.setEnabled(False)
         self._zoom_out_act.triggered.connect(self.zoom_out)
 
-        self._normal_size_act = QAction(QApplication.translate("PhotoViewer","&Normal Size"), self)
-        self._normal_size_act.setShortcut(QApplication.translate("PhotoViewer","Ctrl+S"))
+        self._normal_size_act = QAction(
+            QApplication.translate("PhotoViewer","&Normal Size"), self)
+        self._normal_size_act.setShortcut(
+            QApplication.translate("PhotoViewer","Ctrl+S"))
         self._normal_size_act.setEnabled(False)
         self._normal_size_act.triggered.connect(self.normal_size)
 
-        self._fit_to_window_act = QAction(QApplication.translate("PhotoViewer","&Fit to Window"), self)
-        self._fit_to_window_act.setShortcut(QApplication.translate("PhotoViewer","Ctrl+F"))
+        self._fit_to_window_act = QAction(
+            QApplication.translate("PhotoViewer","&Fit to Window"), self)
+        self._fit_to_window_act.setShortcut(
+            QApplication.translate("PhotoViewer","Ctrl+F"))
         self._fit_to_window_act.setEnabled(False)
         self._fit_to_window_act.setCheckable(True)
         self._fit_to_window_act.triggered.connect(self.fit_to_window)
 
-        self._print_act = QAction(QApplication.translate("PhotoViewer","&Print"), self)
-        self._print_act .setShortcut(QApplication.translate("PhotoViewer","Ctrl+P"))
+        self._print_act = QAction(
+            QApplication.translate("PhotoViewer","&Print"), self)
+        self._print_act .setShortcut(
+            QApplication.translate("PhotoViewer","Ctrl+P"))
         self._print_act .setEnabled(False)
         self._print_act .triggered.connect(self.print_photo)
 
@@ -311,6 +321,7 @@ class DocumentViewer(QMdiSubWindow):
             try:
                 self.doc_width = photo_obj.width()
                 self.doc_height = photo_obj.height()
+
                 self.update_size(self.doc_width, self.doc_height)
             except Exception as message:
                 LOGGER.debug(unicode(message))
@@ -328,7 +339,6 @@ class DocumentViewer(QMdiSubWindow):
         """
         par_height = self.mdi_area.height()
         par_width = self.mdi_area.width()
-
         ratio_list = [par_width / doc_width, par_height / doc_height]
         ratio = min(ratio_list)
         if par_height > doc_height and par_width > doc_width:
@@ -357,8 +367,11 @@ class DocumentViewManager(QMainWindow):
         self._mdi_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self._mdi_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setCentralWidget(self._mdi_area)
-        #self._mdi_area.resize(1280, 673)
-
+        # set the size of mid_area and DocumentViewManager based on the
+        # screen size.
+        screen = QDesktopWidget().availableGeometry()
+        self._mdi_area.resize(screen.width() - 30, screen.height() - 80)
+        self.resize(self._mdi_area.size())
         self._mdi_area.subWindowActivated.connect(self.update_actions)
         self._viewer_mapper = QSignalMapper(self)
         self._viewer_mapper.mapped[QWidget].connect(self.set_active_sub_window)
@@ -383,13 +396,11 @@ class DocumentViewManager(QMainWindow):
     def center(self):
         """
         Move the Document viewer to the center of the screen.
-        :return: None
-        :rtype: NoneType
         """
         # Get the current screens' dimensions...
         screen = QDesktopWidget().availableGeometry()
         # ... and get this windows' dimensions
-        mdi_area_size = self._mdi_area.frameGeometry()
+        mdi_area_size = self.frameGeometry()
         # The horizontal position
         hpos = (screen.width() - mdi_area_size.width()) / 2
         # vertical position
@@ -398,43 +409,70 @@ class DocumentViewManager(QMainWindow):
         self.move(hpos, vpos)
 
     def _create_menu_actions(self):
-        self._window_menu = self.menuBar().addMenu(QApplication.translate("DocumentViewManager","&Windows"))
+        self._window_menu = self.menuBar().addMenu(
+            QApplication.translate(
+                "DocumentViewManager","&Windows"))
 
-        self._close_act = QAction(QApplication.translate("DocumentViewManager",
+        self._close_act = QAction(
+            QApplication.translate("DocumentViewManager",
                                                          "Cl&ose"), self)
-        self._close_act.setStatusTip(QApplication.translate("DocumentViewManager",
-                                                            "Close the active document viewer"))
+        self._close_act.setStatusTip(
+            QApplication.translate("DocumentViewManager",
+                                   "Close the active document viewer"))
         self._close_act.triggered.connect(self._mdi_area.closeActiveSubWindow)
 
-        self._close_all_act = QAction(QApplication.translate("DocumentViewManager",
-                                                         "Close &All"), self)
-        self._close_all_act.setStatusTip(QApplication.translate("DocumentViewManager",
-                                                            "Close all the document viewers"))
-        self._close_all_act.triggered.connect(self._mdi_area.closeAllSubWindows)
+        self._close_all_act = QAction(QApplication.translate(
+            "DocumentViewManager",
+            "Close &All"), self
+        )
+        self._close_all_act.setStatusTip(
+            QApplication.translate("DocumentViewManager",
+                                   "Close all the document viewers")
+        )
+        self._close_all_act.triggered.connect(
+            self._mdi_area.closeAllSubWindows
+        )
 
-        self._tile_act = QAction(QApplication.translate("DocumentViewManager",
-                                                         "&Tile"), self)
-        self._tile_act.setStatusTip(QApplication.translate("DocumentViewManager",
-                                                            "Tile the document viewers"))
+        self._tile_act = QAction(QApplication.translate(
+            "DocumentViewManager",
+            "&Tile"), self
+        )
+        self._tile_act.setStatusTip(
+            QApplication.translate("DocumentViewManager",
+                                   "Tile the document viewers"))
         self._tile_act.triggered.connect(self.tile_windows)
 
-        self._cascade_act = QAction(QApplication.translate("DocumentViewManager",
-                                                         "&Cascade"), self)
-        self._cascade_act.setStatusTip(QApplication.translate("DocumentViewManager",
-                                                            "Cascade the document viewers"))
+        self._cascade_act = QAction(QApplication.translate(
+            "DocumentViewManager",
+            "&Cascade"), self)
+        self._cascade_act.setStatusTip(QApplication.translate(
+            "DocumentViewManager",
+            "Cascade the document viewers"))
         self._cascade_act.triggered.connect(self.cascade_windows)
 
-        self._next_act = QAction(QApplication.translate("DocumentViewManager",
-                                                         "Ne&xt"), self)
-        self._next_act.setStatusTip(QApplication.translate("DocumentViewManager",
-                                                            "Move the focus to the next document viewer"))
+        self._next_act = QAction(QApplication.translate(
+            "DocumentViewManager",
+            "Ne&xt"), self)
+        self._next_act.setStatusTip(
+            QApplication.translate(
+                "DocumentViewManager",
+                "Move the focus to the next document viewer"
+            )
+        )
         self._next_act.triggered.connect(self._mdi_area.activateNextSubWindow)
 
-        self._previous_act = QAction(QApplication.translate("DocumentViewManager",
-                                                         "Pre&vious"), self)
-        self._previous_act.setStatusTip(QApplication.translate("DocumentViewManager",
-                                                            "Move the focus to the previous document viewer"))
-        self._previous_act.triggered.connect(self._mdi_area.activatePreviousSubWindow)
+        self._previous_act = QAction(QApplication.translate(
+            "DocumentViewManager",
+            "Pre&vious"), self)
+        self._previous_act.setStatusTip(
+            QApplication.translate(
+                "DocumentViewManager",
+                "Move the focus to the previous document viewer"
+            )
+        )
+        self._previous_act.triggered.connect(
+            self._mdi_area.activatePreviousSubWindow
+        )
 
         self._separator_act = QAction(self)
         self._separator_act.setSeparator(True)
@@ -518,12 +556,19 @@ class DocumentViewManager(QMainWindow):
             abs_doc_path = self.absolute_document_path(document_widget)
 
             if not QFile.exists(abs_doc_path):
-                msg = QApplication.translate("DocumentViewManager",
-                                             "The selected document does not exist."
-                                             "\nPlease check the supporting documents' "
-                                             "repository setting.")
-                QMessageBox.critical(self, QApplication.translate("DocumentViewManager","Invalid Document"),
-                                     msg)
+                msg = QApplication.translate(
+                    "DocumentViewManager",
+                    "The selected document does not exist."
+                    "\nPlease check the supporting documents' "
+                    "repository setting."
+                )
+                QMessageBox.critical(
+                    self,
+                    QApplication.translate(
+                        "DocumentViewManager","Invalid Document"
+                    ),
+                    msg
+                )
 
                 return False
 

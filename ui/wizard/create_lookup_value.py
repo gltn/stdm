@@ -49,8 +49,8 @@ class ValueEditor(QDialog, Ui_LookupValue):
         :type parent: QWidget
         :param lookup: A value list object to add the value
         :type lookup: ValueList
-        :param code_value: A value object to add to the lookup, if None this is a new
-         value, else its an edit.
+        :param code_value: A value object to add to the lookup,
+        if None this is a new value, else its an edit.
         :type code_value: CodeValue
         """
         QDialog.__init__(self, parent)
@@ -94,18 +94,21 @@ class ValueEditor(QDialog, Ui_LookupValue):
         if len(text) == 0:
             return
 
-        name_regex = QtCore.QRegExp('^[0-9a-zA-Z][a-zA-Z0-9_/\\-()|:,; ]*$')
+        name_regex = QtCore.QRegExp('^[ _0-9a-zA-Z][a-zA-Z0-9_/\\-()|.:,; ]*$')
         name_validator = QtGui.QRegExpValidator(name_regex)
         text_edit.setValidator(name_validator)
         QApplication.processEvents()
         last_character = text[-1:]
-        state = name_validator.validate(text, text.index(last_character))[
-            0]
+        state = name_validator.validate(text, text.index(last_character))[0]
         if state != QValidator.Acceptable:
-            self.show_notification('{} is not allowed at this position.'.
+            self.show_notification('"{}" is not allowed at this position.'.
                                    format(last_character)
                                    )
             text = text[:-1]
+        else:
+            if len(text) > 1:
+                if text[0] == ' ' or text[0] == '_':
+                    text = text[1:]
 
         self.blockSignals(True)
         text_edit.setText(text)
@@ -117,8 +120,8 @@ class ValueEditor(QDialog, Ui_LookupValue):
         Adds a code value to a lookup object. Checks first if a previous value
         exist then removes it and then adds the new one.
         """
-        value = unicode(self.edtValue.text())
-        code = unicode(self.edtCode.text())
+        value = unicode(self.edtValue.text().strip())
+        code = unicode(self.edtCode.text().strip())
         
         # if its an edit, first remove the previous value
         if self.code_value:
@@ -127,9 +130,9 @@ class ValueEditor(QDialog, Ui_LookupValue):
             self.lookup.add_code_value(CodeValue(code, value))
 	    
     def accept(self):
-        if self.edtValue.text()=='':
+        if self.edtValue.text() == '' or self.edtValue.text() == ' ':
                 self.error_message(QApplication.translate(
-                    "ValueEditor", "Please provide a Lookup value.")
+                    "ValueEditor", "Please enter a valid lookup value.")
                 )
                 return
 
