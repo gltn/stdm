@@ -56,7 +56,7 @@ class DatabaseConnection(object):
         engine = create_engine(
             self.toAlchemyConnection(),
             echo=False,
-            connect_args={'connect_timeout': 15}
+            connect_args={'connect_timeout': 0}
         )
 
         try:

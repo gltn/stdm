@@ -94,24 +94,27 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         if len(text) == 0:
             return
 
-        name_regex = QtCore.QRegExp('^(?=.{0,40}$)[a-zA-Z][a-zA-Z0-9_ ]*$')
+        name_regex = QtCore.QRegExp('^(?=.{0,40}$)[ _a-zA-Z][a-zA-Z0-9_ ]*$')
         name_validator = QtGui.QRegExpValidator(name_regex)
         text_edit.setValidator(name_validator)
         QApplication.processEvents()
         last_character = text[-1:]
-        state = name_validator.validate(text, text.index(last_character))[
-            0]
+        state = name_validator.validate(text, text.index(last_character))[0]
         if state != QValidator.Acceptable:
-            self.show_notification('{} is not allowed at this position.'.
+            self.show_notification('"{}" is not allowed at this position.'.
                                    format(last_character)
                                    )
             text = text[:-1]
         else:
-
+            # fix caps, underscores, and spaces
             if last_character.isupper():
                 text = text.lower()
             if last_character == ' ':
                 text = text.replace(' ', '_')
+            if len(text) > 1:
+                if text[0] == ' ' or text[0] == '_':
+                    text = text[1:]
+                text = text.replace(' ', '_').lower()
 
         self.blockSignals(True)
         text_edit.setText(text)
@@ -135,15 +138,19 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         If this is an edit, first the previous lookup is removed before
         adding a new one.
         :param name: Name of the new/edited lookup
-        :type name: str
+        :type name: Unicode
         """
         name = self.format_lookup_name(name)
         new_lookup = self.profile.create_entity(name, value_list_factory)
         return new_lookup
 	    
     def accept(self):
-        if self.edtName.text()=='':
-            self.error_message(QApplication.translate("LookupEditor","Lookup name is not given!"))
+        if self.edtName.text() == '' or self.edtName.text() == '_':
+            self.error_message(
+                QApplication.translate(
+                    "LookupEditor","Please enter a valid lookup name."
+                )
+            )
             return
 
         if self.edtName.text() == 'check':
@@ -156,7 +163,12 @@ class LookupEditor(QDialog, Ui_dlgLookup):
 
         if self.lookup is None:  # new lookup
             if self.duplicate_check(short_name):
-                self.show_message(self.tr("Lookup with the same name already exist in the current profile!"))
+                self.show_message(
+                    self.tr(
+                        "Lookup with the same name already "
+                        "exist in the current profile!"
+                    )
+                )
                 return
             else:
                 new_lookup = self.create_lookup(short_name)
@@ -172,7 +184,7 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         """
         Return True if we have an entity in the current profile with same 'name'
         :param name: entity short_name
-        :type name: str
+        :type name: Unicode
         :rtype:boolean
         """
         return self.profile.entities.has_key(name)

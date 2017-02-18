@@ -106,7 +106,12 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         #Center me
         self.move(QDesktopWidget().availableGeometry().center() -
                   self.frameGeometry().center())
-
+        self.sp_unit_manager = SpatialUnitManagerDockWidget(
+            self._plugin.iface, self._plugin
+        )
+        self.geom_cols = self.sp_unit_manager.geom_columns(
+            self.spatial_unit
+        )
         self.toolBox.setStyleSheet(
             '''
             QToolBox::tab {
@@ -263,20 +268,17 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
     def add_spatial_unit_layer(self):
         """
-        Adds spatial unit layers on the map canvas when
-        View Social Tenure is launched.
-        :return: None
-        :rtype: NoneType
+        Add the spatial unit layer into the map canvas for later use.
         """
-        sp_unit_manager = SpatialUnitManagerDockWidget(
-            self._plugin.iface, self._plugin
-        )
-        spatial_unit_lyr = sp_unit_manager.entity_layer_names(
-            self.spatial_unit
-        )
-
-        for lyr in spatial_unit_lyr:
-            sp_unit_manager.add_layer_by_name(lyr)
+        # Used for startup of view STR, just add the first geom layer.
+        if len(self.geom_cols) > 0:
+            layer_name_item = \
+                self.sp_unit_manager.geom_col_layer_name(
+                    self.spatial_unit.name,
+                    self.geom_cols[0]
+            )
+            self.sp_unit_manager.\
+                add_layer_by_name(layer_name_item)
 
     def _check_permissions(self):
         """

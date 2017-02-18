@@ -1,7 +1,8 @@
 """
 /***************************************************************************
 Name                 : GPS Feature Import Data View Utility Module
-Description          : Utility module that handles GPX file loading and vizualization
+Description          : Utility module that handles GPX file loading and
+                        visualization.
                        in the Qtablewidget and QGIS map canvas
 Date                 : 17/January/2017
 copyright            : (C) 2015 by UN-Habitat and implementing partners.
@@ -24,6 +25,8 @@ import PyQt4.QtGui as qg
 import qgis.core as q_core
 import qgis.gui as q_gui
 from decimal import Decimal, DecimalException
+VERTEX_COLOR = '#008000'
+
 
 def enable_drag_drop(qt_widget):
     """
@@ -42,6 +45,7 @@ def enable_drag_drop(qt_widget):
     qt_widget.setDragDropMode(qg.QAbstractItemView.InternalMove)
     qt_widget.__class__.dropEvent = _drop_event
     qt_widget.__class__.dragEnterEvent = _drag_enter_event
+
 
 def _drop_event(qt_widget, event):
     """
@@ -78,6 +82,8 @@ def _drop_event(qt_widget, event):
         return
     event.ignore()
 
+
+
 def _drag_enter_event(qt_widget, event):
     """
     Drag and drop start event set item drag signal
@@ -91,6 +97,7 @@ def _drag_enter_event(qt_widget, event):
         event.accept()
         return
     event.ignore()
+
 
 def get_feature_attributes(gpx_layer):
     """
@@ -106,7 +113,8 @@ def get_feature_attributes(gpx_layer):
         point_name = feature_geom.GetFieldAsString(4)
         yield [point_name, lon, lat], row
 
-def set_feature_vertex_marker(map_canvas, lon, lat, color='#008000'):
+
+def set_feature_vertex_marker(map_canvas, lon, lat, color=VERTEX_COLOR):
     """
     Sets single feature vertex
     :param map_canvas: Map canvas object
@@ -123,6 +131,7 @@ def set_feature_vertex_marker(map_canvas, lon, lat, color='#008000'):
     marker.setPenWidth(4)
     return marker
 
+
 def set_feature_vertices_marker(map_canvas, point_attr, color=None):
     """
     :param map_canvas: Map canvas object
@@ -135,10 +144,15 @@ def set_feature_vertices_marker(map_canvas, point_attr, color=None):
         if point['qgs_point'] and (point['check_state'] == 2):
             lon, lat = point['qgs_point']
             if color:
-                point['marker'] = set_feature_vertex_marker(map_canvas, lon, lat, color)
+                point['marker'] = set_feature_vertex_marker(
+                    map_canvas, lon, lat, color
+                )
             else:
-                point['marker'] = set_feature_vertex_marker(map_canvas, lon, lat)
+                point['marker'] = set_feature_vertex_marker(
+                    map_canvas, lon, lat
+                )
     return point_attr
+
 
 def create_feature(active_layer, geom_type, point_list, temp_layer_name):
     """
@@ -150,10 +164,13 @@ def create_feature(active_layer, geom_type, point_list, temp_layer_name):
     :return temp_mem_layer: Temporary memory layer
     :rtype: Layer object
     """
-    temp_mem_layer, data_provider = _create_temp_vector_layer(active_layer, geom_type, temp_layer_name)
+    temp_mem_layer, data_provider = _create_temp_vector_layer(
+        active_layer, geom_type, temp_layer_name
+    )
     new_geometry = create_geometry(geom_type, point_list)
     add_feature(data_provider, new_geometry)
     return temp_mem_layer
+
 
 def create_geometry(geom_type, point_list):
     """
@@ -173,6 +190,7 @@ def create_geometry(geom_type, point_list):
         new_geometry = q_core.QgsGeometry.fromPolygon([point_list])
     return new_geometry
 
+
 def _create_temp_vector_layer(active_layer, geom_type, temp_layer_name):
     """
     Creates a temporary vector layer in memory
@@ -191,6 +209,7 @@ def _create_temp_vector_layer(active_layer, geom_type, temp_layer_name):
     temp_mem_layer.startEditing()
     return temp_mem_layer, data_provider,
 
+
 def add_feature(data_provider, geom_container):
     """
     Adds a vector feature based on the geometry and point object
@@ -203,6 +222,7 @@ def add_feature(data_provider, geom_container):
     new_feature.setGeometry(geom_container)
     data_provider.addFeatures([new_feature])
 
+
 def add_map_layer(temp_mem_layer):
     """
     Adds temporary memory layer to map
@@ -213,6 +233,7 @@ def add_map_layer(temp_mem_layer):
     commit_feature_edits(temp_mem_layer)
     q_core.QgsMapLayerRegistry.instance().addMapLayer(temp_mem_layer)
 
+
 def commit_feature_edits(temp_mem_layer):
     """
     Commits features edits and updates extends
@@ -222,6 +243,7 @@ def commit_feature_edits(temp_mem_layer):
     """
     temp_mem_layer.commitChanges()
     temp_mem_layer.updateExtents()
+
 
 def set_layer_extent(map_canvas, gpx_layer):
     """
@@ -237,7 +259,14 @@ def set_layer_extent(map_canvas, gpx_layer):
     map_canvas.setExtent(extent)
     map_canvas.refresh()
 
-def check_uncheck_item(point_row_attr, map_canvas, item=None, check_transform=None, color='#008000'):
+
+def check_uncheck_item(
+        point_row_attr,
+        map_canvas,
+        item=None,
+        check_transform=None,
+        color=VERTEX_COLOR
+):
     """
     Checks or unchecks item and sets vertex color on the layer feature
     :param point_row_attr: Point attribute
@@ -268,7 +297,10 @@ def check_uncheck_item(point_row_attr, map_canvas, item=None, check_transform=No
     map_canvas.refresh()
     return qgs_point
 
-def row_selection_change(map_canvas, point_row_attr, selected_rows, color='#008000'):
+
+def row_selection_change(
+        map_canvas, point_row_attr, selected_rows, color=VERTEX_COLOR
+):
     """
     Set vertex color on row selection change
     :param map_canvas: QGIS map canvas
@@ -285,6 +317,7 @@ def row_selection_change(map_canvas, point_row_attr, selected_rows, color='#0080
                     _change_item_vertex_state(point_attr, color)
         map_canvas.refresh()
 
+
 def _change_item_vertex_state(attr, color, check_state=None):
     """
     Change item checkbox state and vertex color
@@ -299,6 +332,7 @@ def _change_item_vertex_state(attr, color, check_state=None):
     if attr['marker']:
         attr['marker'].setColor(qg.QColor(color))
 
+
 def remove_from_list(item_list, item):
     """
     Removes an element from a list
@@ -310,6 +344,7 @@ def remove_from_list(item_list, item):
     if item in set(item_list):
         item_list = [point for point in item_list if point != item]
         return item_list
+
 
 def add_to_list(item_list, item):
     """
@@ -324,6 +359,7 @@ def add_to_list(item_list, item):
         if item not in set(item_list):
             return item
 
+
 def remove_vertex(map_canvas, point_row_attr):
     """
     Removes vertex from the map scene
@@ -335,6 +371,7 @@ def remove_vertex(map_canvas, point_row_attr):
     for row, point_attr in enumerate(point_row_attr):
         map_canvas.scene().removeItem(point_attr['marker'])
     map_canvas.refresh()
+
 
 def remove_map_layer(map_canvas, temp_mem_layer):
     """
@@ -348,6 +385,7 @@ def remove_map_layer(map_canvas, temp_mem_layer):
     q_core.QgsMapLayerRegistry.instance().removeMapLayer(layer_id)
     map_canvas.refresh()
 
+
 def get_layer_by_name(layer_name):
     """
     Retrieve layer by name
@@ -357,6 +395,7 @@ def get_layer_by_name(layer_name):
     """
     layer_list = q_core.QgsMapLayerRegistry.instance().mapLayersByName(layer_name)
     return layer_list
+
 
 def get_qgs_points(qt_widget, checkbox_col='', lon_col='Longitude', lat_col='Latitude', ):
     """
@@ -403,6 +442,7 @@ def get_qgs_points(qt_widget, checkbox_col='', lon_col='Longitude', lat_col='Lat
         checkbox_state = lon_value = lat_value= None
     return point_list, new_point_row_attr
 
+
 def _valid_number(value):
     """
     Validates if number is a decimal
@@ -415,6 +455,7 @@ def _valid_number(value):
             return Decimal(value)
     except (ValueError, DecimalException):
         return None
+
 
 def update_point_row_attr(map_canvas, point_row_attr, new_point_row_attr):
     """
@@ -447,6 +488,7 @@ def update_point_row_attr(map_canvas, point_row_attr, new_point_row_attr):
     remove_vertex(map_canvas, vertex_markers)
     map_canvas.refresh()
     return point_row_attr
+
 
 def delete_feature(map_canvas, temp_mem_layer):
     """
