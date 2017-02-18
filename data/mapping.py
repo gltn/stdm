@@ -425,7 +425,7 @@ class MapperMixin(object):
             QMessageBox.critical(
                 self,
                 QApplication.translate(
-                    "MappedDialog", "Failed to Save Data"
+                    "MappedDialog", "Data Operation Error"
                 ),
                 QApplication.translate(
                     "MappedDialog",

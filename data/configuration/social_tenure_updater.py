@@ -41,7 +41,7 @@ LOGGER = logging.getLogger('stdm')
 
 BASE_STR_VIEW = 'vw_social_tenure_relationship'
 
-#Columns types which should not be incorporated in the STR view
+# Columns types which should not be incorporated in the STR view
 _exclude_view_column_types = ['MULTIPLE_SELECT']
 
 
@@ -73,7 +73,7 @@ def view_updater(social_tenure, engine):
     view_name = social_tenure.view_name
 
     views = social_tenure.views
-    #Loop thru view name, primary entity items
+    # Loop thru view name, primary entity items
     for v, pe in views.iteritems():
         # Check if there is an existing one and omit delete if it exists
         LOGGER.debug('Checking if %s view exists...', v)
@@ -82,21 +82,28 @@ def view_updater(social_tenure, engine):
         if pg_table_exists(v):
             continue
 
-        #Create view based on the primary entity
+        # Create view based on the primary entity
         _create_primary_entity_view(social_tenure, pe, v)
 
 
-def _create_primary_entity_view(social_tenure, primary_entity, view_name):
+def _create_primary_entity_view(
+        social_tenure,
+        primary_entity,
+        view_name,
+        distinct_column=None
+):
     """
-
+    Creates a basic view for the given primary entity.
     :param social_tenure:
     :param primary_entity:
     :param view_name:
-    :return:
+    :param distinct_column:
     """
     # Collection for foreign key parents so that appropriate pseudo names
     # can be constructed if more than one parent is used for the same entity.
     fk_parent_names = {}
+    omit_view_columns = []
+    omit_join_statement_columns = []
 
     party_col_names = deepcopy(social_tenure.party_columns.keys())
 
@@ -128,18 +135,39 @@ def _create_primary_entity_view(social_tenure, primary_entity, view_name):
     if not pe_is_spatial:
         party_columns, party_join = _entity_select_column(
             primary_entity, True, True, True,
-            foreign_key_parents=fk_parent_names
+            foreign_key_parents=fk_parent_names,
+            omit_view_columns=omit_view_columns,
+            omit_join_statement_columns=omit_join_statement_columns
         )
+
+        # Set removal of all spatial unit columns apart from the id column
+        omit_view_columns = deepcopy(social_tenure.spatial_unit.columns.keys())
+        if 'id' in omit_view_columns:
+            omit_view_columns.remove('id')
+
+    else:
+        # Set id column to be distinct
+        distinct_column = '{0}.id'.format(primary_entity.name)
+
+        # Omit STR columns if primary entity is spatial unit
+        str_columns = []
 
     spatial_unit_columns, spatial_unit_join = _entity_select_column(
         social_tenure.spatial_unit,
         True,
         join_parents=True,
         is_primary=pe_is_spatial,
-        foreign_key_parents=fk_parent_names
+        foreign_key_parents=fk_parent_names,
+        omit_view_columns=omit_view_columns,
+        omit_join_statement_columns=omit_join_statement_columns
     )
 
     view_columns = party_columns + str_columns + spatial_unit_columns
+
+    # Set distinct column if specified
+    if not distinct_column is None:
+        view_columns = _set_distinct_column(distinct_column, view_columns)
+
     join_statement = str_join + party_join + spatial_unit_join
 
     if len(view_columns) == 0:
@@ -152,6 +180,7 @@ def _create_primary_entity_view(social_tenure, primary_entity, view_name):
     create_view_sql = u'CREATE VIEW {0} AS SELECT {1} FROM {2} {3}'.format(
         view_name, ','.join(view_columns), social_tenure.name,
         ' '.join(join_statement))
+    print create_view_sql
 
     normalized_create_view_sql = text(create_view_sql)
 
@@ -278,6 +307,36 @@ def _entity_select_column(
     return column_names, join_statements
 
 
+def _abs_column_name(name):
+    # Returns the absolute column name from the pseudo name
+    if 'AS' in name:
+        names = name.split('AS')
+        name = names[0].strip()
+
+    return name
+
+
+def _insert_distinct_exp(abs_name, pseudo_name):
+    # Insert the DISTINCT ON expression for the given column name
+    return 'DISTINCT ON ({0}) {1}'.format(abs_name, pseudo_name)
+
+
+def _set_distinct_column(column, column_collection):
+    # Re-arrange the list to that the distinct column is inserted at the
+    # top and DISTINCT keyword is included as well.
+    rev = []
+
+    for c in column_collection[:]:
+        norm_c = _abs_column_name(c)
+
+        if norm_c == column:
+            column_collection.remove(c)
+            distinct_exp = _insert_distinct_exp(norm_c, c)
+            rev.append(distinct_exp)
+
+    rev.extend(column_collection)
+
+    return rev
 
 
 
