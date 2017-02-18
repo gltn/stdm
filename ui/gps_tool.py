@@ -66,10 +66,22 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         self.file_le.textChanged.connect(self._file_source_change)
         self.feature_type_cb.currentIndexChanged.connect(self._show_data)
         self.table_widget.itemClicked.connect(self._table_widget_checkbox_clicked)
-        self.table_widget.itemSelectionChanged.connect(self._table_widget_row_selection)
-        self.table_widget.connect(self.table_widget, qc.SIGNAL('itemDragEnter'), self._table_widget_drag_enter)
-        self.table_widget.connect(self.table_widget, qc.SIGNAL('itemDropped'), self._table_widget_row_dropped)
-        self.table_widget.itemDoubleClicked.connect(self._table_widget_item_double_clicked)
+        self.table_widget.itemSelectionChanged.connect(
+            self._table_widget_row_selection
+        )
+        self.table_widget.connect(
+            self.table_widget,
+            qc.SIGNAL('itemDragEnter'),
+            self._table_widget_drag_enter
+        )
+        self.table_widget.connect(
+            self.table_widget,
+            qc.SIGNAL('itemDropped'),
+            self._table_widget_row_dropped
+        )
+        self.table_widget.itemDoubleClicked.connect(
+            self._table_widget_item_double_clicked
+        )
         self.table_widget.itemChanged.connect(self._table_widget_item_changed)
         self.select_all_bt.clicked.connect(self._select_all_items)
         self.clear_all_bt.clicked.connect(self._clear_all_items)
@@ -378,20 +390,23 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :rtype: None
         """
         if item.checkState() == qc.Qt.Unchecked:
-            qgs_point = gpx_view.check_uncheck_item(self.point_row_attr, self.map_canvas, item)
+            qgs_point = gpx_view.check_uncheck_item(
+                self.point_row_attr, self.map_canvas, item
+            )
             self._unchecked_gpx_point(qgs_point)
             self._enable_disable_load_on_checkbox_click()
         else:
-            qgs_point = gpx_view.check_uncheck_item(self.point_row_attr, self.map_canvas, item)
+            qgs_point = gpx_view.check_uncheck_item(
+                self.point_row_attr, self.map_canvas, item
+            )
             self._checked_gpx_point(qgs_point)
             self._enable_disable_load_on_checkbox_click()
+        self._table_widget_row_selection()
 
     def _unchecked_gpx_point(self, qgs_point):
         """
         Removes feature vertex from a list
         :param qgs_point: Feature vertex
-        :return: None
-        :rtype: None
         """
         if qgs_point:
             qgs_point_list = gpx_view.remove_from_list(
@@ -423,7 +438,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
     def _enable_disable_load_on_checkbox_click(self):
         """
         Counts clicks if a checkbox is checked or unchecked and
-        enables or disables the load button.
+        enables or disables the save button.
         :return: None
         :rtype: None
         """
@@ -443,21 +458,23 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
     def _table_widget_row_selection(self):
         """
         Set vertex color on row selection change
-        :return: None
-        :rtype: None
         """
+        # Remove highlighting
+        gpx_view.row_selection_change(
+            self.map_canvas, self.point_row_attr, self.prev_selected_rows
+        )
+
         current_selected_rows = sorted(
             set([index.row() for index in self.table_widget.selectedIndexes()])
         )
+        # Make selection
         gpx_view.row_selection_change(
             self.map_canvas,
             self.point_row_attr,
             current_selected_rows,
             selection_color()
         )
-        gpx_view.row_selection_change(
-            self.map_canvas, self.point_row_attr, self.prev_selected_rows
-        )
+
         if current_selected_rows:
             self.prev_selected_rows = []
             self.prev_selected_rows.extend(current_selected_rows)

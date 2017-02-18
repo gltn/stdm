@@ -76,8 +76,8 @@ class SpatialUnitManagerDockWidget(
         self.curr_layer = None
         # properties of the active layer
         self.active_entity = None
+        self.active_table = None
         self.active_sp_col = None
-        self.active_sp_table = None
 
         self.setMaximumHeight(300)
         self._curr_profile = current_profile()
