@@ -1107,7 +1107,12 @@ class EntityBrowserWithEditor(EntityBrowser):
                     self.selection_layer = layers[0]
 
     def add_spatial_unit_layer(self, layer_name=None):
-        if not layer_name is None:
+        """
+        Add the spatial unit layer into the map canvas for later use.
+        :param layer_name: The name of the layer to be added to the map canvas.
+        :type layer_name: String
+        """
+        if layer_name is not None:
             self.sp_unit_manager.add_layer_by_name(layer_name)
         else:
             # As this is used for startup of
