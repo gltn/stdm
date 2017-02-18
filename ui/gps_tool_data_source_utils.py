@@ -20,7 +20,11 @@ email                : stdm@unhabitat.org
 
 import os.path
 import re
+import logging
 from osgeo import ogr
+
+
+LOGGER = logging.getLogger('stdm')
 
 
 def validate_file_path(gpx_file):
@@ -47,7 +51,7 @@ def _file_readable(file_path):
     try:
         return None if not os.path.isfile(file_path) and not os.access(file_path, os.R_OK) else True
     except IOError as ex:
-        print "I/O error({0}): {1}".format(ex.errno, ex.strerror)
+        LOGGER.debug("I/O error({0}): {1}".format(ex.errno, ex.strerror))
 
 
 def open_gpx_file(gpx_file):
