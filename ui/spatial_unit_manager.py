@@ -84,7 +84,7 @@ class SpatialUnitManagerDockWidget(
         self._profile_spatial_layers = []
         self.stdm_fields = STDMFieldWidget()
         self._populate_layers()
-
+        self._adjust_layer_drop_down_width()
         self.spatial_unit = None
 
         self.iface.currentLayerChanged.connect(
@@ -95,6 +95,22 @@ class SpatialUnitManagerDockWidget(
         )
         self.add_to_canvas_button.clicked.connect(
             self.on_add_to_canvas_button_clicked
+        )
+
+    def _adjust_layer_drop_down_width(self):
+        """
+        Adjusts the layers combobox drop down to expand based on the layer name.
+        """
+        longest_item = max(self._profile_spatial_layers, key=len)
+        font_meter = QFontMetrics(self.fontMetrics())
+        item_width = font_meter.width(longest_item) + 80
+        self.stdm_layers_combo.setStyleSheet(
+            '''*
+                QComboBox QAbstractItemView{
+                    min-width: 60px;
+                    width: %s px;
+                }
+            ''' % item_width
         )
 
     def _populate_layers(self):
@@ -137,8 +153,7 @@ class SpatialUnitManagerDockWidget(
                     table_name
                 )
 
-        # Append the corresponding(profile)
-        # view to the list of entity names
+        # Append the corresponding(profile) view to the list of entity names
         str_views = self._curr_profile.social_tenure.views.keys()
 
         for str_view in str_views:
