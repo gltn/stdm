@@ -1756,9 +1756,22 @@ class STDMQGISLoader(object):
         Load and open documentation manual
         """
         help_manual = self.plugin_dir+'/%s'%"stdm.chm"
-        os.startfile(
-            help_manual,'open'
-        )
+        try:
+            os.startfile(
+                help_manual,'open'
+            )
+        except Exception as ex:
+            QMessageBox.critical(
+                self.iface.mainWindow(),
+                QApplication.translate(
+                    "STDMQGISLoader",
+                    'Open Error'
+                ),
+                QApplication.translate(
+                    "STDMQGISLoader",
+                    ex
+                )
+            )
 
     def reset_content_modules_id(self, title, message_text):
         return QMessageBox.critical(
@@ -1767,7 +1780,10 @@ class STDMQGISLoader(object):
                 "STDMQGISLoader",
                 title
             ),
-            unicode(message_text)
+            QApplication.translate(
+                "STDMQGISLoader",
+                unicode(message_text)
+            )
         )
 
     def _action_separator(self):
