@@ -473,7 +473,6 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
         clearing feature selection, and hiding the dock.
         :param tool: Feature detail tool button
         :type tool: QAction
-        :return: None
         """
         self.iface.actionPan().trigger()
         tool.setChecked(False)
