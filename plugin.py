@@ -543,6 +543,7 @@ class STDMQGISLoader(object):
         """
         # TODO remove this line below when schema updater is refactored
         self.config_serializer.on_version_updated(document)
+        self.show_change_log()
         self.progress.hide()
         self.progress.cancel()
 
@@ -683,7 +684,6 @@ class STDMQGISLoader(object):
                     self.reload_plugin(first_profile)
                 else:
                     save_current_profile(first_profile)
-                    self.show_change_log()
 
                 self.configuration_file_updater.reg_config.write(
                     {CONFIG_UPDATED: '1'}
