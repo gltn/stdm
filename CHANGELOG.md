@@ -1,7 +1,7 @@
 # Change Log
 All notable changes of the Social Tenure Domain Model(STDM) is documented in this file.
 
-## [Unreleased]
+## [1.5.0] - 2017-02-23
 
 ### Added
 - **Database and Configuration**: Draft Configuration that enable users save their
