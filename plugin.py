@@ -543,6 +543,10 @@ class STDMQGISLoader(object):
         """
         # TODO remove this line below when schema updater is refactored
         self.config_serializer.on_version_updated(document)
+        registry_config = RegistryConfig()
+        registry_config.write(
+            {WIZARD_RUN: 1}
+        )
         self.show_change_log()
         self.progress.hide()
         self.progress.cancel()
