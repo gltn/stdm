@@ -1,4 +1,4 @@
-<Configuration version="1.2">
+<Configuration version="1.3">
  <Profile description="The Informal Settlement profile is best suited to unplanned settlements with no planning and building regulations." name="Informal_Settlement">
   <ValueLists>
    <ValueList name="check_social_tenure_relationship_document_type">
@@ -101,7 +101,9 @@
   <Entity editable="True" global="False" associative="False" description="A parcel or plot of land" documentTypeLookup="check_structure_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Structure" name="in_structure">
    <Columns>
     <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="The unique identifier of the structure" minimum="0" maximum="30" description="The unique identifier of the structure" index="False" name="code" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="The unique identifier of the structure" minimum="0" maximum="4000" description="The unique identifier of the structure" index="True" name="code" searchable="True" TYPE_INFO="AUTO_GENERATED" mandatory="False">
+     <Code prefix_source="admin_spatial_unit_set" leading_zero="00" separator="/"/>
+    </Column>
     <Column unique="False" tip="User friendly name of the structure" minimum="0" maximum="30" description="User friendly name of the structure" index="False" name="name" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
     <Column unique="False" tip="The ownership type of the structure" minimum="0" maximum="2147483647" description="The ownership type of the structure" index="False" name="ownership_type" searchable="True" TYPE_INFO="LOOKUP" mandatory="False">
      <Relation name="fk_in_check_ownership_type_id_in_structure_ownership_type"/>
@@ -148,11 +150,16 @@
    <EntityRelation displayColumns="name,code" child="Structure" parent="check_recognition_status" name="fk_in_check_recognition_status_id_in_structure_recognition_status" parentColumn="id" childColumn="recognition_status"/>
    <EntityRelation displayColumns="" child="utilities" parent="check_utilities" name="fk_in_check_utilities_id_in_utilities_in_check_utilities_id" parentColumn="id" childColumn="in_check_utilities_id"/>
    <EntityRelation displayColumns="" child="utilities" parent="Structure" name="fk_in_structure_id_in_utilities_in_structure_id" parentColumn="id" childColumn="in_structure_id"/>
-   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Person" name="fk_in_person_id_in_social_tenure_relationship_party_id" parentColumn="id" childColumn="party_id"/>
-   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Structure" name="fk_in_structure_id_in_social_tenure_relationship_spatial_unit_id" parentColumn="id" childColumn="spatial_unit_id"/>
    <EntityRelation displayColumns="name,code" child="Structure" parent="admin_spatial_unit_set" name="fk_admin_spatial_unit_set_id_in_structure_location" parentColumn="id" childColumn="location"/>
+   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Person" name="fk_in_person_id_in_social_tenure_relationship_person_id" parentColumn="id" childColumn="person_id"/>
+   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Structure" name="fk_in_structure_id_in_social_tenure_relationship_spatial_unit_id" parentColumn="id" childColumn="spatial_unit_id"/>
   </Relations>
-  <SocialTenure layerDisplay="informal_settlement_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Structure" supportsMultipleParties="True" party="Person"/>
+  <SocialTenure layerDisplay="informal_settlement_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Structure" supportsMultipleParties="True" party="Person">
+   <Validity>
+    <Start minimum="1700-01-01" maximum="7999-12-31"/>
+    <End minimum="1700-01-01" maximum="7999-12-31"/>
+   </Validity>
+  </SocialTenure>
  </Profile>
  <Profile description="The Local Government profile is best suited to local government such as districts, zones, counties and so on." name="Local_Government">
   <ValueLists>
@@ -233,7 +240,9 @@
   <Entity editable="True" global="False" associative="False" description="Parcel represents the spatial unit" documentTypeLookup="check_parcel_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Parcel" name="lo_parcel">
    <Columns>
     <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="" minimum="0" maximum="30" description="Unique identifier" index="False" name="code" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="" minimum="0" maximum="4000" description="Unique identifier" index="True" name="code" searchable="True" TYPE_INFO="AUTO_GENERATED" mandatory="False">
+     <Code prefix_source="admin_spatial_unit_set" leading_zero="00" separator="/"/>
+    </Column>
     <Column unique="False" tip="" minimum="0.0" maximum="1.79769313486e+308" description="Area of the parcel in square unit" index="False" name="area" searchable="False" TYPE_INFO="DOUBLE" mandatory="False"/>
     <Column unique="False" tip="" minimum="0.0" maximum="1.79769313486e+308" description="Monetary value of the parcel" index="False" name="value" searchable="False" TYPE_INFO="DOUBLE" mandatory="False"/>
     <Column unique="False" tip="" minimum="0" maximum="2147483647" description="Parcel type" index="False" name="parcel_type_id" searchable="False" TYPE_INFO="LOOKUP" mandatory="False">
@@ -324,6 +333,7 @@
    <EntityRelation displayColumns="name,code" child="Parcel" parent="check_parcel_type" name="fk_lo_check_parcel_type_id_lo_parcel_parcel_type_id" parentColumn="id" childColumn="parcel_type_id"/>
    <EntityRelation displayColumns="name,code" child="Parcel" parent="check_landuse" name="fk_lo_check_landuse_id_lo_parcel_landuse_id" parentColumn="id" childColumn="landuse_id"/>
    <EntityRelation displayColumns="name,code" child="Parcel" parent="check_dispute" name="fk_lo_check_dispute_id_lo_parcel_dispute_id" parentColumn="id" childColumn="dispute_id"/>
+   <EntityRelation displayColumns="name,code" child="Parcel" parent="admin_spatial_unit_set" name="fk_admin_spatial_unit_set_id_lo_parcel_location" parentColumn="id" childColumn="location"/>
    <EntityRelation displayColumns="name,code" child="Surveyor" parent="check_gender" name="fk_lo_check_gender_id_lo_surveyor_gender_id" parentColumn="id" childColumn="gender_id"/>
    <EntityRelation displayColumns="name,code" child="Surveyor" parent="check_officer_rank" name="fk_lo_check_officer_rank_id_lo_surveyor_officer_rank_id" parentColumn="id" childColumn="officer_rank_id"/>
    <EntityRelation displayColumns="name,code" child="Planner" parent="check_gender" name="fk_lo_check_gender_id_lo_planner_gender_id" parentColumn="id" childColumn="gender_id"/>
@@ -331,11 +341,15 @@
    <EntityRelation displayColumns="code" child="Survey" parent="Parcel" name="fk_lo_parcel_id_lo_survey_parcel" parentColumn="id" childColumn="parcel"/>
    <EntityRelation displayColumns="national_id" child="Survey" parent="Surveyor" name="fk_lo_surveyor_id_lo_survey_surveyor" parentColumn="id" childColumn="surveyor"/>
    <EntityRelation displayColumns="national_id" child="Survey" parent="Planner" name="fk_lo_planner_id_lo_survey_planner" parentColumn="id" childColumn="planner"/>
-   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Person" name="fk_lo_person_id_lo_social_tenure_relationship_party_id" parentColumn="id" childColumn="party_id"/>
+   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Person" name="fk_lo_person_id_lo_social_tenure_relationship_person_id" parentColumn="id" childColumn="person_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Parcel" name="fk_lo_parcel_id_lo_social_tenure_relationship_spatial_unit_id" parentColumn="id" childColumn="spatial_unit_id"/>
-   <EntityRelation displayColumns="name,code" child="Parcel" parent="admin_spatial_unit_set" name="fk_admin_spatial_unit_set_id_lo_parcel_location" parentColumn="id" childColumn="location"/>
   </Relations>
-  <SocialTenure layerDisplay="local_government_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Parcel" supportsMultipleParties="True" party="Person"/>
+  <SocialTenure layerDisplay="lo_parcel_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Parcel" supportsMultipleParties="True" party="Person">
+   <Validity>
+    <Start minimum="1752-09-14" maximum="7999-12-31"/>
+    <End minimum="1752-09-14" maximum="7999-12-31"/>
+   </Validity>
+  </SocialTenure>
  </Profile>
  <Profile description="The Rural Agriculture profile is best suited to rural areas with farmers and farm land" name="Rural_Agriculture">
   <ValueLists>
@@ -446,7 +460,9 @@
   <Entity editable="True" global="False" associative="False" description="Refers to the farm land or the spatial unit" documentTypeLookup="check_garden_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Garden" name="ru_garden">
    <Columns>
     <Column unique="False" tip="" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" mandatory="False"/>
-    <Column unique="False" tip="The garden's unique identifier" minimum="0" maximum="30" description="The garden's unique identifier" index="False" name="code" searchable="True" TYPE_INFO="VARCHAR" mandatory="False"/>
+    <Column unique="False" tip="The garden's unique identifier" minimum="0" maximum="4000" description="The garden's unique identifier" index="True" name="code" searchable="True" TYPE_INFO="AUTO_GENERATED" mandatory="False">
+     <Code prefix_source="admin_spatial_unit_set" leading_zero="00" separator="/"/>
+    </Column>
     <Column unique="False" tip="The administrative unit in which the garden is located" minimum="0" maximum="2147483647" description="The administrative unit in which the garden is located" index="False" name="location" searchable="True" TYPE_INFO="ADMIN_SPATIAL_UNIT" mandatory="False">
      <Relation name="fk_admin_spatial_unit_set_id_ru_garden_location"/>
     </Column>
@@ -537,7 +553,7 @@
      <Relation name="fk_ru_respondent_id_ru_survey_respondent"/>
     </Column>
     <Column unique="False" tip="The witness of the respondent" minimum="0" maximum="2147483647" description="The witness of the respondent" index="False" name="witness" searchable="False" TYPE_INFO="FOREIGN_KEY" mandatory="False">
-     <Relation name="fk_ru_respondent_id_ru_survey_witness"/>
+     <Relation name="_ru_survey_witness"/>
     </Column>
    </Columns>
   </Entity>
@@ -577,10 +593,14 @@
    <EntityRelation displayColumns="name,code" child="Witness" parent="check_witness_relationship" name="fk_ru_check_witness_relationship_id_ru_witness_relationship" parentColumn="id" childColumn="relationship"/>
    <EntityRelation displayColumns="first_name, last_name" child="Survey" parent="Enumerator" name="fk_ru_enumerator_id_ru_survey_enumerator" parentColumn="id" childColumn="enumerator"/>
    <EntityRelation displayColumns="first_name, last_name" child="Survey" parent="Respondent" name="fk_ru_respondent_id_ru_survey_respondent" parentColumn="id" childColumn="respondent"/>
-   <EntityRelation displayColumns="first_name, last_name" child="Survey" parent="Witness" name="fk_ru_witness_id_ru_survey_witness" parentColumn="id" childColumn="witness"/>
-   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Farmer" name="fk_ru_farmer_id_ru_social_tenure_relationship_party_id" parentColumn="id" childColumn="party_id"/>
+   <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Farmer" name="fk_ru_farmer_id_ru_social_tenure_relationship_farmer_id" parentColumn="id" childColumn="farmer_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Garden" name="fk_ru_garden_id_ru_social_tenure_relationship_spatial_unit_id" parentColumn="id" childColumn="spatial_unit_id"/>
   </Relations>
-  <SocialTenure layerDisplay="rural_agriculture_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Garden" supportsMultipleParties="True" party="Farmer"/>
+  <SocialTenure layerDisplay="ru_garden_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Garden" supportsMultipleParties="True" party="Farmer">
+   <Validity>
+    <Start minimum="1700-01-01" maximum="7999-12-31"/>
+    <End minimum="1700-01-01" maximum="7999-12-31"/>
+   </Validity>
+  </SocialTenure>
  </Profile>
 </Configuration>
