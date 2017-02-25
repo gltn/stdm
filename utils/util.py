@@ -924,12 +924,16 @@ def file_text(path):
         raise ex
 
 
-def profile_and_user_views(profile):
+def profile_and_user_views(profile, check_party=False):
     """
     Gets current profile and user views. If views has a valid profile prefix
     and not valid current profile entity, it will be excluded.
     :param profile: The profile object
     :type profile: Object
+    :param check_party: A boolean to filter out party views based on multi_party
+    If check party is True and multi_party is True, it excludes party views
+    from the return
+    :type check_party: Boolean
     :return: List of profile and user views
     :rtype: List
     """
@@ -941,7 +945,7 @@ def profile_and_user_views(profile):
     )
     source_tables = []
     stdm_config = StdmConfiguration.instance()
-
+    social_tenure = profile.social_tenure
     for value in pg_views():
         if 'vw_social_tenure_relationship' in value:
             # if a value exist on the left side of vw, assess further
@@ -956,7 +960,11 @@ def profile_and_user_views(profile):
                         if profile.entity_by_name(
                                 entity
                         ) is not None:
-                            source_tables.append(value)
+                            if check_party and entity in social_tenure.parties():
+                                if not social_tenure.multi_party:
+                                    source_tables.append(value)
+                            else:
+                                source_tables.append(value)
                     # it means this is not a valid entity so add it
                     else:
                         source_tables.append(value)

@@ -2082,6 +2082,3 @@ def _str_to_bool(bool_str):
         bool_str = bool_str[0]
     return unicode(bool_str).upper() == 'T'
 
-
-
-
