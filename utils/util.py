@@ -957,10 +957,9 @@ def profile_and_user_views(profile, check_party=False):
                     if entity.split('_')[0] in \
                             stdm_config.prefixes():
                         # Check if the entity is in the current profile
-                        if profile.entity_by_name(
-                                entity
-                        ) is not None:
-                            if check_party and entity in social_tenure.parties():
+                        entity_obj = profile.entity_by_name(entity)
+                        if entity_obj is not None:
+                            if check_party and entity_obj in social_tenure.parties:
                                 if not social_tenure.multi_party:
                                     source_tables.append(value)
                             else:
