@@ -27,6 +27,7 @@ from PyQt4.QtXml import QDomDocument
 from stdm.data.configuration.columns import (
     DateColumn
 )
+from stdm.data.configuration.profile import Profile
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.settings.config_utils import ConfigurationUtils
 
@@ -214,6 +215,7 @@ class ConfigurationVersionUpdater(QObject):
         self.log_file = log_file
         self.config = StdmConfiguration.instance()
         self.config_utils = ConfigurationUtils(document)
+        self.profiles_detail = OrderedDict()
 
 
     @classmethod
@@ -261,6 +263,9 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
     END_TAG = 'End'
     MINIMUM = 'minimum'
     MAXIMUM = 'maximum'
+    LAYER_DISPLAY = 'layerDisplay'
+    SPATIAL_UNIT = 'spatialUnit'
+    PROFILE = 'Profile'
 
     def _add_validity(self, str_element, tag_name, min_max, value):
         """
@@ -334,7 +339,7 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
         self.update_current_version()
         # To be used by the db updater for intermediate updates.
         self.version_updated.emit(self.document)
-        #TODO update the dom_document version in the next version
+        # TODO update the dom_document version in the next version
         # Not the latest version and found updater for the next version
         if not self.NEXT_UPDATER is None and \
                         self.config.VERSION > self.TO_VERSION:
@@ -351,9 +356,42 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
         elif self.NEXT_UPDATER is None and \
                         self.config.VERSION == self.TO_VERSION:
             self.update_complete.emit(self.document)
-            self.append_log(
-                'Successfully updated dom_document to version 1.5'
-            )
+            self.append_log('Successfully updated dom_document to version 1.5')
+
+    def _profiles_detail(self):
+        """
+        Assigns the profile name and creates prefix for profiles in dom_document.
+        """
+        nodes = self.config_utils.find_node(self.PROFILE)
+        for node in nodes:
+            element = node.toElement()
+            profile_name = element.attribute('name', '')
+            if profile_name != '':
+                for i in range(2, len(profile_name)):
+                    curr_prefix = profile_name[0:i].lower()
+                    if curr_prefix not in self.profiles_detail.values():
+                        prefix = curr_prefix
+                        self.profiles_detail[profile_name.lower()] = prefix
+                        break
+
+    def update_layer_display(self, str_element):
+        """
+        Updates the default layer display to the new version.
+        :param str_element: The socialTenure element
+        :type str_element: QDomElement
+        """
+        if len(self.profiles_detail) < 1:
+            return
+        layer_display = unicode(str_element.attribute(self.LAYER_DISPLAY, ''))
+        spatial_unit = unicode(str_element.attribute(self.SPATIAL_UNIT, ''))
+
+        if '_vw' in layer_display:
+            profile_name = layer_display.split('_vw')[0].lower()
+            if profile_name in self.profiles_detail.keys():
+                new_layer_display = '{}_{}_vw_social_tenure_relationship'.format(
+                    self.profiles_detail[profile_name], spatial_unit.lower()
+                )
+                str_element.setAttribute(self.LAYER_DISPLAY, new_layer_display)
 
     def update_current_version(self):
         """
@@ -370,11 +408,14 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
             'Starting to update to configuration version {}'.
                 format(self.TO_VERSION)
         )
+        self._profiles_detail()
 
         sql_min = '1700-01-01'
         sql_max = '7999-12-31'
         # Add validity node and elements
         for parent_node, str_element in social_tenure_elements.iteritems():
+            self.update_layer_display(str_element)
+
             self._add_validity(
                 str_element, self.START_TAG, self.MINIMUM, sql_min
             )
