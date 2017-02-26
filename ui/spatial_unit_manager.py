@@ -49,7 +49,7 @@ from stdm.data.pg_utils import (
 from stdm.ui.forms.spatial_unit_form import (
     STDMFieldWidget
 )
-
+from stdm.utils.util import profile_and_user_views
 from stdm.mapping.utils import pg_layerNamesIDMapping
 
 from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
@@ -185,6 +185,24 @@ class SpatialUnitManagerDockWidget(
                         self._profile_spatial_layers.append(
                             str_view
                         )
+        # add old config views and custom views.
+        for sp_table in self.sp_tables:
+            if sp_table in pg_views() and sp_table not in str_views and \
+                sp_table in profile_and_user_views(self._curr_profile):
+                view_geom_columns = table_column_names(
+                    sp_table, True
+                )
+                for geom_col in view_geom_columns:
+                    view_layer_name = '{}.{}'.format(
+                        sp_table, geom_col
+                    )
+                    self._add_geometry_column_to_combo(
+                        sp_table,
+                        geom_col,
+                        view_layer_name,
+                        geom_col
+                    )
+
 
     def control_digitize_toolbar(self, curr_layer):
         if not curr_layer is None:
@@ -337,8 +355,14 @@ class SpatialUnitManagerDockWidget(
         """
         # Check if the geom has display name, if not,
         # get layer name with default naming.
+        if isinstance(col, str):
+            spatial_layer_item = unicode(
+                '{}.{}'.format(
+                    table, col
+                )
+            )
 
-        if col.layer_display_name == '':
+        elif col.layer_display_name == '':
             spatial_layer_item = unicode(
                 '{}.{}'.format(
                     table, col.name
