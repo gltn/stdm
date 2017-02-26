@@ -258,7 +258,7 @@ def table_column_names(tableName, spatialColumns=False, creation_order=False):
             columnName = "column_name"
 
     t = text(sql)
-    result = _execute(t,tbname = tableName)
+    result = _execute(t, tbname=tableName)
         
     columnNames = []
        
@@ -697,6 +697,7 @@ def drop_view(view_name):
 
         return False
 
+
 def copy_from_column_to_another(table, source, destination):
     """
     Copy data from one column to another column
@@ -721,8 +722,6 @@ def remove_constraint(child, child_col):
     :type child: String
     :param child_col: The child column name
     :type child_col: String
-    :return:
-    :rtype:
     """
     # Validate that the referenced columns exist in the respective tables.
     # Parent table
@@ -732,6 +731,7 @@ def remove_constraint(child, child_col):
     )
     t = text(sql)
     _execute(t)
+
 
 def add_constraint(child_table, child_column, parent_table):
     """
