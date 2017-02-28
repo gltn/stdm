@@ -273,19 +273,15 @@ class BaseColumn(ColumnItem):
         :rtype: str
         """
         if '_id' in self.name:
-            if self.name != 'national_id':
+            # if foreign key or lookup column, hide 'id'
+            if self.TYPE_INFO == 'FOREIGN_KEY' or self.TYPE_INFO == 'LOOKUP':
                 display_name = self.name[:-3]
-                display_name = display_name.replace(
-                    '_', ' '
-                ).title()
-
+                display_name = display_name.replace('_', ' ').title()
             else:
-                display_name = 'National ID'
-
+            # for other columns, capitalize id to be ID
+                display_name = '{} ID'.format(self.name[:-3].title())
         else:
-            display_name = self.name.replace(
-                '_', ' '
-            ).title()
+            display_name = self.name.replace('_', ' ').title()
 
         return display_name
 
