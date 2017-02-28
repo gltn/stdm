@@ -50,6 +50,7 @@ SOURCES = \
           ui\foreign_key_mapper.py \
           ui\geometry.py \
           ui\geometry_editor.py \
+          ui\gps_tool.py \
           ui\image_export_settings.py \
           ui\import_data.py \
           ui\license_agreement.py \
@@ -88,8 +89,10 @@ SOURCES = \
           ui\social_tenure\str_data.py \
           ui\social_tenure\str_editor.py \
           ui\wizard\bigint_property.py \
+          ui\wizard\code_property.py \
           ui\wizard\column_depend.py \
           ui\wizard\column_editor.py \
+          ui\wizard\copy_editor.py \
           ui\wizard\create_entity.py \
           ui\wizard\create_lookup.py \
           ui\wizard\create_lookup_value.py \
@@ -104,7 +107,6 @@ SOURCES = \
 FORMS =	\
         ui\ui_about_stdm.ui \
         ui\ui_adminUnitManager.ui \
-        ui\ui_admin_unit.ui \
         ui\ui_changepwd.ui \
         ui\ui_change_log.ui \
         ui\ui_composer_data_field.ui \
@@ -125,6 +127,7 @@ FORMS =	\
         ui\ui_license_agreement.ui \
         ui\ui_login.ui \
         ui\ui_lookup_source.ui \
+        ui\ui_lookup_value_selector.ui \
         ui\ui_new_role.ui \
         ui\ui_new_str.ui \
         ui\ui_new_user.ui \
@@ -151,8 +154,10 @@ FORMS =	\
         ui\importexport\ui_source_document_dialog.ui \
         ui\social_tenure\ui_str_editor.ui \
         ui\wizard\ui_bigint_property.ui \
+        ui\wizard\ui_code_property.ui \
         ui\wizard\ui_column_depend.ui \
         ui\wizard\ui_column_editor.ui \
+        ui\wizard\ui_copy_profile.ui \
         ui\wizard\ui_date_property.ui \
         ui\wizard\ui_double_property.ui \
         ui\wizard\ui_dtime_property.ui \
