@@ -29,6 +29,7 @@ from datetime import (
 from PyQt4.QtCore import (
     QCoreApplication
 )
+from PyQt4.QtGui import QApplication
 
 from stdm.data.configuration.column_updaters import (
     base_column_updater,
@@ -272,14 +273,17 @@ class BaseColumn(ColumnItem):
         '_id' is removed if it exists.
         :rtype: str
         """
-        if '_id' in self.name:
+        id_text = QApplication.translate('BaseColumn', '_id')
+        if id_text in self.name:
             # if foreign key or lookup column, hide 'id'
             if self.TYPE_INFO == 'FOREIGN_KEY' or self.TYPE_INFO == 'LOOKUP':
                 display_name = self.name[:-3]
                 display_name = display_name.replace('_', ' ').title()
             else:
             # for other columns, capitalize id to be ID
-                display_name = '{} ID'.format(self.name[:-3].title())
+                display_name = '{} {}'.format(
+                    self.name[:-3].title(), self.name[-2:].upper()
+                )
         else:
             display_name = self.name.replace('_', ' ').title()
 
