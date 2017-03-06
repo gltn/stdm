@@ -18,6 +18,8 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from stdm.data.database import STDMDb, Role
+from stdm.data.pg_utils import profile_sequences
+from stdm.settings import current_profile
 from stdm.utils.util import getIndex
 from exception import SecurityException
 
@@ -33,10 +35,12 @@ class RoleProvider(object):
     #Actions
     ADD = "GRANT"
     REMOVE = "REVOKE"
+
     
     def __init__(self):
         #Create internal reference to database engine
         self._engine = STDMDb.instance().engine
+        self._current_profile = current_profile()
                 
     def syncSTDMRoles(self):
         '''
@@ -137,14 +141,19 @@ class RoleProvider(object):
         sql.append("CREATE ROLE %s CREATEROLE;"%(roleName,))
         if description != "":
             sql.append("COMMENT ON ROLE %s is '%s';"%(roleName,description))
-            
-        '''
-        Grant privileges to the new role so that users in this role can be able
-        to access the tables and relations.
-        The specified schema will have all the tables and relations granted with
-        all privileges.                 
-        '''
-        sql.append("GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA %s TO %s;"%(grantSchema,roleName))
+
+        # Grant privileges to the new role so that users in this role can be able
+        # to access the tables and relations.
+        # The specified schema will have all the tables and relations granted with
+        # all privileges.
+
+        sql.append("GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA %s TO %s;" %
+                   (grantSchema,roleName)
+                   )
+        sequences = profile_sequences(self._current_profile.prefix)
+        for profile_sequence in sequences:
+            sql.append('GRANT ALL ON SEQUENCE {}.{} TO GROUP {} WITH GRANT OPTION;'.
+                       format(grantSchema, profile_sequence, roleName))
         sqlStr = ''.join(sql)
         t = text(sqlStr)
         self._execute(t)

@@ -791,3 +791,24 @@ def create_postgis():
     sql = 'CREATE EXTENSION postgis;'
     t = text(sql)
     _execute(t)
+
+def profile_sequences(prefix):
+    """
+    Returns all sequences of a given profile based on the profile prefix.
+    :param prefix: The profile prefix.
+    :type prefix: String
+    :return: The list of prefix names in a profile.
+    :rtype: List
+    """
+    sql = 'SELECT sequence_name FROM information_schema.sequences;'
+    result = _execute(sql)
+    profile_sequences = []
+    column_name = 'sequence_name'
+    for r in result:
+        profile_sequence = r[column_name]
+        splited_sequence = profile_sequence.split('_')
+        if len(splited_sequence) > 1:
+            if splited_sequence[0] == prefix:
+                profile_sequences.append(profile_sequence)
+
+    return profile_sequences

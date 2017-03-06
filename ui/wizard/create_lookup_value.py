@@ -90,6 +90,7 @@ class ValueEditor(QDialog, Ui_LookupValue):
         :type text: String
         """
         text_edit = self.sender()
+        cursor_position = text_edit.cursorPosition()
         text_edit.setValidator(None)
         if len(text) == 0:
             return
@@ -112,6 +113,7 @@ class ValueEditor(QDialog, Ui_LookupValue):
 
         self.blockSignals(True)
         text_edit.setText(text)
+        text_edit.setCursorPosition(cursor_position)
         self.blockSignals(False)
         text_edit.setValidator(None)
 

@@ -416,7 +416,7 @@ class STDMFieldWidget():
         # If the digitizing save button is clicked,
         # the featureAdded signal is called but the
         # feature ids value is over 0. Return to prevent
-        # the dialog from poping up for every feature.
+        # the dialog from popping up for every feature.
         if feature_id > 0:
             return
 
@@ -434,10 +434,8 @@ class STDMFieldWidget():
             self.feature_models[feature_id] = \
                 self.removed_feature_models[feature_id]
             return
-
         # If the feature is not valid, geom_wkt will be None
-        # So don't launch form for invalid feature and
-        # delete feature
+        # So don't launch form for invalid feature and delete feature
         geom_wkt = self.get_wkt(feature_id)
 
         if geom_wkt is None:
@@ -562,6 +560,9 @@ class STDMFieldWidget():
         entity_obj.saveMany(
             self.feature_models.values()
         )
+
+        # Save child models
+        self.editor.save_children()
         # undo each feature created so that qgis
         # don't try to save the same feature again.
         # It will also clear all the models from

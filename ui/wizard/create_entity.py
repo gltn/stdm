@@ -96,6 +96,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         :type text: String
         """
         text_edit = self.sender()
+        cursor_position = text_edit.cursorPosition()
         text_edit.setValidator(None)
         if len(text) == 0:
             return
@@ -120,6 +121,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
 
         self.blockSignals(True)
         text_edit.setText(text)
+        text_edit.setCursorPosition(cursor_position)
         self.blockSignals(False)
         text_edit.setValidator(None)
 

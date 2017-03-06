@@ -348,35 +348,10 @@ class manageAccountsDlg(QDialog, Ui_frmSysManageAccounts):
             
             self.blockSignals(True)
             
-            #Add user to role if the item is selected  or remove if it was checked
+            #Add user to role if the item is selected or remove if it was checked
             if item.checkState() == Qt.Checked:                 
                 self.roleProvider.AddUsersToRoles([username], [self.currentRole])
             elif item.checkState() == Qt.Unchecked:
                 self.roleProvider.RemoveUsersFromRoles([username], [self.currentRole])
 
             self.blockSignals(False)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

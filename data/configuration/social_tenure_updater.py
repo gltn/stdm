@@ -233,8 +233,47 @@ def _entity_select_column(
                                                       pseudo_column_name)
 
             if is_primary and c.name == 'id':
-                select_column_name = col_select_name
+                # add row number id instead of party.id
+                # if multi_party is allowed.
+                if str_entity.multi_party:
+                    if not entity.has_geometry_column():
+                        row_id = 'row_number() OVER () AS id'
+                        column_names.append(row_id)
+                        select_column_name = select_column_name
+                    else:
+                        # add spatial unit id as the id.
+                        select_column_name = col_select_name
+                        # add the social_tenure_relationship_id
+                        str_id = u'{0}.id AS {1}_id'.format(
+                            str_entity.name, str_entity.short_name.lower()
+                        )
+                        column_names.append(str_id)
 
+                else:
+                    # add party_id on spatial unit view to use
+                    # [party]_supporting_document for
+                    # profiles with one party entity and no multi_party.
+                    if len(str_entity.parties) == 1 and not str_entity.multi_party and \
+                        entity.has_geometry_column():
+                        party_id = '{}_id'.format(
+                            str_entity.parties[0].short_name.lower().replace(
+                                ' ', '_'
+                            )
+                        )
+                        str_party_id = u'{0}.{1} AS {1}'.format(
+                            str_entity.name, party_id
+                        )
+                        column_names.append(str_party_id)
+
+                    select_column_name = col_select_name
+                    # if entity has a geometry column, even if not multi_party
+                    # add social_tenure_relationship_id
+                    if entity.has_geometry_column():
+                        # add the social_tenure_relationship_id
+                        str_id = u'{0}.id AS {1}_id'.format(
+                            str_entity.name, str_entity.short_name.lower()
+                        )
+                        column_names.append(str_id)
             # Use custom join flag
             use_custom_join = False
 
@@ -288,6 +327,7 @@ def _entity_select_column(
                         join_type, parent_table, table_pseudo_name,
                         col_select_name, c.entity_relation.parent_column
                     )
+
                 else:
                     join_statement = u'{0} {1} ON {2} = {1}.{3}'.format(
                         join_type, parent_table, col_select_name,
