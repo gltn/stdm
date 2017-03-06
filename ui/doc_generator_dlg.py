@@ -352,12 +352,12 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         """
         Load the columns of a data source for use in the file naming.
         """
-        table_cols = entity_display_columns(entity)
+        table_cols = entity_display_columns(entity, True)
 
         attr_mapping = OrderedDict()
 
-        for c in table_cols:
-            attr_mapping[c] = format_name(c)
+        for c, header in table_cols.iteritems():
+            attr_mapping[c] = header
 
         self.lstDocNaming.load_mapping(attr_mapping)
 

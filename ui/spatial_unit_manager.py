@@ -203,7 +203,6 @@ class SpatialUnitManagerDockWidget(
                         geom_col
                     )
 
-
     def control_digitize_toolbar(self, curr_layer):
         if not curr_layer is None:
             try:
@@ -355,7 +354,7 @@ class SpatialUnitManagerDockWidget(
         """
         # Check if the geom has display name, if not,
         # get layer name with default naming.
-        if isinstance(col, str):
+        if isinstance(col, str) or isinstance(col, unicode):
             spatial_layer_item = unicode(
                 '{}.{}'.format(
                     table, col
@@ -418,10 +417,14 @@ class SpatialUnitManagerDockWidget(
         self.curr_lyr_sp_col = spatial_column
 
         if not layer_item is None:
+            if isinstance(layer_item, str) or isinstance(layer_item, unicode):
+                layer_name = layer_item
+            else:
+                layer_name = layer_item.layer_display()
             curr_layer = vector_layer(
                 table_name,
                 geom_column=spatial_column,
-                layer_name=layer_item.layer_display()
+                layer_name=layer_name
             )
         else:
             curr_layer = vector_layer(
@@ -442,7 +445,7 @@ class SpatialUnitManagerDockWidget(
                 100,
                 lambda: self._set_layer_display_name(
                     curr_layer,
-                    layer_item.layer_display()
+                    layer_name
                 )
             )
             self.zoom_to_layer()

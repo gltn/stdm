@@ -27,10 +27,10 @@ if PostGIS is installed.
 - **Social Tenure Relationship Editor**: Tenure share entry in Tenure Information.
 - **Social Tenure Relationship Editor**: Tenure Validity Period entry.
 - **View Social Tenure Relationship**: search filter based on tenure validity period.
-- **GPS Feature Import**: ability to edit coordinates.
-- **GPS Feature Import**: automatic update of preview feature on modification of coordinates.
-- **GPS Feature Import**: sorting of coordinate through drag and drop.
-- **GPS Feature Import**: highlighting of points when the corresponding row is selected.
+- **GPS Feature Import**: Ability to edit coordinates.
+- **GPS Feature Import**: Automatic update of preview feature on modification of coordinates.
+- **GPS Feature Import**: Sorting of coordinate through drag and drop.
+- **GPS Feature Import**: Highlighting of points when the corresponding row is selected.
 - **GPS Feature Import**: Ability to edit the latitude and longitude values in GPX Data table.
 - **Spatial Entity Details**: A module that displays feature data on them map
 when features are clicked.
@@ -38,23 +38,33 @@ when features are clicked.
 when multiple rows are selected.
 - **Entity Browser**: ability to view STR of a selected spatial unit record
 while Spatial Entity Details is open.
-- **Import Data**: simpler lookup value translation using Lookup Value Translator.
-- **Documents Designer**: upgraded QgsComposerAttributeTableV2 to incorporate
+- **Import Data**: Simpler lookup value translation using Lookup Value Translator.
+- **Documents Designer**: Upgraded QgsComposerAttributeTableV2 to incorporate
 the the appearance options in attribute table Item Properties panel.
 - **Options**: ability to enable and disable debugging mode in STDM.
+- **General**: Added startup.py to go into .qgis python folder to enable STDM if disabled by QGIS.
+The startup.py and startup_handler.py are both located in settings folder of STDM.
 
 ### Changed
 - **Database and Configuration**: Enhanced input validation on Profile, Entity,
 Column, Lookup and Lookup Value Editors.
-- **GPS Feature Import**: re-designed with the integration of GPS file upload,
+- **Database and Configuration**: After adding and editing a column, the column modified
+gets selected after the Column Editor is closed to easily show the changed column instead of
+clearing the selection.
+- **GPS Feature Import**: Re-designed with the integration of GPS file upload,
 GPX Data Editor, and STDM Form in a tab interface.
 - **Social Tenure Relationship Editor**: re-designed with a tree view interface.
+- **Forms**: The Collection tab used to select records from child entities is removed.
+- **Forms**: In parent entity, child entity browsers with editor are added.
+This enables users to add a record for child entities within parent form.
 - **User Manual**: updated with contents of STDM 1.5 with improved readability.
 
 ### Fixed
 - **Database and Configuration**: Fixed Configuration Wizard Entity order mismatch
  error when deleting an Entity.
 - **Database and Configuration**: Fixed issue of showing columns of deleted entity.
+- **Database and Configuration**: Fixed the change of column order when editing columns.
+- **Users and Roles**: When creating roles, permission is automatically give to sequences too.
 - **GPS Feature Import**: Fixed issue of distortion of coordinates in GPS
 Feature Import tool.
 

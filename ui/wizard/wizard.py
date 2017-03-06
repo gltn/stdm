@@ -1904,14 +1904,15 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 # add this entity to STR spatial unit list of selection.
                 if editor.type_info == 'GEOMETRY':
                     self.STR_spunit_model.add_entity(entity)
+                self.tbvColumns.selectRow(self.tbvColumns.model().rowCount()-1)
+                self.tbvColumns.scrollToBottom()
 
     def edit_column(self):
         """
         Event handler for editing a column.
         """
-
         rid, column, model_item = self._get_model(self.tbvColumns)
-        
+
         if column and column.action == DbItem.CREATE:
             row_id, entity = self._get_entity(self.lvEntities)
 
@@ -1925,7 +1926,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             params['is_new'] = False
 
-            tmp_column = column #model_item.entity(column.name)
+            original_column = column #model_item.entity(column.name)
 
             editor = ColumnEditor(**params)
             result = editor.exec_()
@@ -1940,21 +1941,37 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 model_item.setData(model_index_dtype, editor.column.TYPE_INFO.capitalize())
                 model_item.setData(model_index_desc, editor.column.description)
 
-                model_item.edit_entity(tmp_column, editor.column)
+                model_item.edit_entity(original_column, editor.column)
 
-                tmp_column.copy_attrs(editor.column)
-
+                original_column.copy_attrs(editor.column)
+                # save current scroll position
+                scroll_position = self.tbvColumns.verticalScrollBar().value()
                 # Replace the current entity with a new one
-                # Apperently, ordered dict key replacement will cause change in 
+                # Apperently, ordered dict key replacement will cause change in
                 # key positions.
-                entity.columns[tmp_column.name] = editor.column
-                entity.columns[editor.column.name] = \
-                        entity.columns.pop(tmp_column.name)
-                
-                self.refresh_columns_view(entity)
+                entity.columns[original_column.name] = editor.column
+                # This fixes the deletion of a column from the OrderedDict and
+                # its moving to the last row if the column name hasn't changed
+                if original_column.name != editor.column.name:
+                    # this fixes the moving of edited column name to the
+                    # last row.
+                    entity.columns = OrderedDict([
+                                         (editor.column.name, v)
+                                         if k == original_column.name
+                                         else (k, v)
+                                         for k, v in entity.columns.items()
+                                    ])
 
+                # first remove the row to avoid duplication?
+                # model_item.removeRow(rid)
+
+                self.refresh_columns_view(entity)
                 self.clear_view_model(self.STR_spunit_model)
                 self.populate_spunit_model(profile)
+                QApplication.processEvents()
+                self.tbvColumns.selectRow(rid)
+                self.tbvColumns.verticalScrollBar().setValue(scroll_position)
+
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No column selected for edit!"))

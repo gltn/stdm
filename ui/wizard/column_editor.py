@@ -156,6 +156,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         :type text: String
         """
         text_edit = self.sender()
+        cursor_position = text_edit.cursorPosition()
         text_edit.setValidator(None)
         if len(text) == 0:
             return
@@ -185,6 +186,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.blockSignals(True)
         text_edit.setText(text)
+        text_edit.setCursorPosition(cursor_position)
         self.blockSignals(False)
         text_edit.setValidator(None)
 
@@ -435,7 +437,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.type_attribs['AUTO_GENERATED'] = {
             'mandt': {'check_state': False, 'enabled_state': True},
             'search': {'check_state': True, 'enabled_state': True},
-            'unique': {'check_state': False, 'enabled_state': True},
+            'unique': {'check_state': True, 'enabled_state': False},
             'index': {'check_state': True, 'enabled_state': False},
             'prefix_source': '', 'leading_zero': '', 'separator':'',
             'property': self.code_property, 'prop_set': True}

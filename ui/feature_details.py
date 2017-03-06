@@ -560,6 +560,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             '''
         )
         self.current_profile = current_profile()
+        if self.current_profile is None:
+            return
         self.social_tenure = self.current_profile.social_tenure
         self.spatial_unit = self.social_tenure.spatial_unit
 

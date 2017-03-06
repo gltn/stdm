@@ -74,6 +74,7 @@ class ProfileEditor(QDialog, Ui_Profile):
         :type text: String
         """
         text_edit = self.sender()
+        cursor_position = text_edit.cursorPosition()
         text_edit.setValidator(None)
         if len(text) == 0:
             return
@@ -97,6 +98,7 @@ class ProfileEditor(QDialog, Ui_Profile):
 
         self.blockSignals(True)
         text_edit.setText(text)
+        text_edit.setCursorPosition(cursor_position)
         self.blockSignals(False)
         text_edit.setValidator(None)
 

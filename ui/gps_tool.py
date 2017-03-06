@@ -85,7 +85,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         self.table_widget.itemChanged.connect(self._table_widget_item_changed)
         self.select_all_bt.clicked.connect(self._select_all_items)
         self.clear_all_bt.clicked.connect(self._clear_all_items)
-        self.load_bt.clicked.connect(self._load_feature)
+        self.load_bt.clicked.connect(self._save_feature)
         self.cancel_bt.clicked.connect(self.close)
 
     def _init_entity_editor(self):
@@ -584,11 +584,9 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
             self.table_widget)
         self._update_feature(point_list, new_point_row_attr)
 
-    def _load_feature(self):
+    def _save_feature(self):
         """
         Load and save feature to current active layer
-        :return: None
-        :rtype: None
         """
         new_geometry = gpx_view.create_geometry(
             self.geom_type, self.qgs_point_list
@@ -597,8 +595,11 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         srid = self.entity.columns[self.sp_col].srid
         model = self.entity_editor.model()
         setattr(model, self.sp_col, 'SRID={};{}'.format(srid, geometry_wkb))
-        self.entity_editor.submit()
+        # prevents duplicate entry
+        self.load_bt.setDisabled(True)
+        self.entity_editor.save_parent_editor()
         self._reload_entity_editor()
+        self.load_bt.setDisabled(False)
 
     def _reload_entity_editor(self):
         """
@@ -607,18 +608,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :return: None
         :rtype: None
         """
-        tab_count = self.gpx_import_tab.count()
-        if tab_count > 1:
-            for i in reversed(range(tab_count)):
-                if i != 0:
-                    tab_object = self.gpx_import_tab.widget(i)
-                    self.gpx_import_tab.removeTab(i)
-                    tab_object.deleteLater()
-                    del tab_object
-            if self.entity_editor is not None:
-                self.entity_editor.deleteLater()
-                self.entity_editor = None
-            self._init_entity_editor()
+        self.entity_editor.clear()
 
     def closeEvent(self, event):
         """

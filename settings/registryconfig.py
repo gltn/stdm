@@ -34,6 +34,8 @@ WIZARD_RUN = 'wizardRun'
 CONFIG_UPDATED = 'ConfigUpdated'
 SUB_QGIS = '/Qgis'
 DEBUG_LOG = 'Debug'
+HOST = 'Host'
+FIRST_LOGIN = 'FirstLogin'
 
 def registry_value(key_name):
     """

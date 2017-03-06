@@ -348,36 +348,62 @@ def format_name(attr, trim_id=True):
 
     return display_name
 
-def entity_display_columns(entity):
+def entity_display_columns(entity, with_header=False):
     """
     Returns entity display columns.
     :param entity: Entity
     :type entity: Class
-    :return: List of column names.
-    :rtype: List
+    :param with_header: If header is needed or not.
+    :type with_header: Boolean
+    :return: List of column names or dictionary with column header.
+    :rtype: List or Dictionary
     """
-    display_column = [
-        c.name
-        for c in
-        entity.columns.values()
-        if c.TYPE_INFO in [
-            'VARCHAR',
-            'SERIAL',
-            'TEXT',
-            'INT',
-            'DOUBLE',
-            'DATE',
-            'DATETIME',
-            'BOOL',
-            'LOOKUP',
-            'ADMIN_SPATIAL_UNIT',
-            'MULTIPLE_SELECT',
-            'PERCENT',
-            'AUTO_GENERATED'
+    if with_header:
+        display_column = [
+            (c.name, c.header())
+            for c in
+            entity.columns.values()
+            if c.TYPE_INFO in [
+                'VARCHAR',
+                'SERIAL',
+                'TEXT',
+                'INT',
+                'DOUBLE',
+                'DATE',
+                'DATETIME',
+                'BOOL',
+                'LOOKUP',
+                'ADMIN_SPATIAL_UNIT',
+                'MULTIPLE_SELECT',
+                'PERCENT',
+                'AUTO_GENERATED'
+            ]
+            ]
+        display_column = OrderedDict(display_column)
+        return display_column
+    else:
+        display_column = [
+            c.name
+            for c in
+            entity.columns.values()
+            if c.TYPE_INFO in [
+                'VARCHAR',
+                'SERIAL',
+                'TEXT',
+                'INT',
+                'DOUBLE',
+                'DATE',
+                'DATETIME',
+                'BOOL',
+                'LOOKUP',
+                'ADMIN_SPATIAL_UNIT',
+                'MULTIPLE_SELECT',
+                'PERCENT',
+                'AUTO_GENERATED'
+            ]
         ]
-    ]
 
-    return display_column
+        return display_column
 
 
 def entity_searchable_columns(entity):
