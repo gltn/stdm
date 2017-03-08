@@ -25,6 +25,7 @@ from datetime import (
     date,
     datetime
 )
+from decimal import Decimal
 
 from PyQt4.QtCore import (
     QCoreApplication
@@ -476,17 +477,36 @@ class IntegerColumn(BoundsColumn):
 IntegerColumn.register()
 
 
+_ff= Decimal.from_float
+
+
 class DoubleColumn(BoundsColumn):
     """
     Corresponds to double precision data type.
     """
     TYPE_INFO = 'DOUBLE'
-    SQL_MIN = -sys.float_info.min
-    SQL_MAX = sys.float_info.max
+    SQL_MIN = _ff(-sys.float_info.min)
+    SQL_MAX = _ff(sys.float_info.max)
     sql_updater = double_updater
+    DEFAULT_PRECISION = 18
+    DEFAULT_SCALE = 6
+
+    def __init__(self, *args, **kwargs):
+        # Added precision & scale in version 1.5, default is 6 decimal places
+        self.precision = kwargs.pop('precision', self.DEFAULT_PRECISION)
+        self.scale = kwargs.pop('scale', self.DEFAULT_SCALE)
+
+        # Validate the numeric properties
+        if self.precision < 1:
+            self.precision = self.DEFAULT_PRECISION
+
+        if self.scale < 0:
+            self.scale = self.DEFAULT_SCALE
+
+        BoundsColumn.__init__(self, *args, **kwargs)
 
     def _check_type_min_max(self, val):
-        #Skip the checks because there is virtually no 'limit'
+        # Skip the checks because there is virtually no 'limit'
         return val
 
     @classmethod

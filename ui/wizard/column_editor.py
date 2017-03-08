@@ -254,6 +254,11 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 self.form_fields['leading_zero'] = column.leading_zero
                 self.form_fields['separator'] = column.separator
 
+            # Decimal properties
+            if hasattr(column, 'precision'):
+                self.form_fields['precision'] = column.precision
+                self.form_fields['scale'] = column.scale
+
     def bool_to_check(self, state):
         """
         Converts a boolean to a Qt checkstate.
@@ -291,6 +296,13 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         )
         self.form_fields['separator'] = self.type_attribs.get(
             'separator', ''
+        )
+
+        self.form_fields['precision'] = self.type_attribs.get(
+            'precision', 18
+        )
+        self.form_fields['scale'] = self.type_attribs.get(
+            'scale', 6
         )
 
         self.form_fields['entity_relation'] = \
@@ -356,6 +368,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 'unique':{'check_state':False, 'enabled_state':True},
                 'index':{'check_state':False, 'enabled_state':True},
                 'minimum':0.0, 'maximum':0.0,
+                'precision': 18, 'scale': 6,
                 'property':self.double_property }
 
         self.type_attribs['DATE'] =  {

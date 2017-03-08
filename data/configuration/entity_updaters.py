@@ -91,10 +91,10 @@ def drop_entity(entity, table, engine):
     """
     Delete the entity from the database.
     """
-    #Drop dependencies first
+    # Drop dependencies first
     status = drop_dependencies(entity)
 
-    #Only drop table if dropping dependencies succeeded
+    # Only drop table if dropping dependencies succeeded
     if status:
         table.drop(engine, checkfirst=True)
 
@@ -123,6 +123,7 @@ def _table_column_names(table):
     textual_cols = table_column_names(table)
 
     return sp_cols + textual_cols
+
 
 def _remove_dropped_columns(entity, table):
     # Drop removed columns
