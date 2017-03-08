@@ -30,7 +30,7 @@ class EntityModelItem(QStandardItem):
         name_item = self._create_item(self._entity.short_name)
         description = self._create_item(str(self._entity.description))
 
-	self.appendRow([name_item, description])
+        self.appendRow([name_item, description])
 
     def set_entity(self, entity):
         self._entity = entity
@@ -52,7 +52,7 @@ class EntitiesModel(QStandardItemModel):
         return None
 
     def entity_byId(self, id):
-	    return self._entities.values()[id]
+        return self._entities.values()[id]
 
     def entities(self):
         return self._entities
@@ -68,15 +68,15 @@ class EntitiesModel(QStandardItemModel):
                 self._entities.pop(old_entity.name)
     # ++
     def delete_entity(self, entity):
-	    if entity.short_name in self._entities:
-		    name = entity.short_name
-		    del self._entities[name]
-	    	    LOGGER.debug('%s model entity removed.', name)
+        if entity.short_name in self._entities:
+            name = entity.short_name
+            del self._entities[name]
+            LOGGER.debug('%s model entity removed.', name)
 
     def delete_entity_byname(self, short_name):
-	    if short_name in self._entities:
-		    del self._entities[short_name]
-	    	    LOGGER.debug('%s model entity removed.', short_name)
+        if short_name in self._entities:
+            del self._entities[short_name]
+            LOGGER.debug('%s model entity removed.', short_name)
 
     def _add_row(self, entity):
         '''
@@ -199,7 +199,7 @@ class ColumnEntitiesModel(QStandardItemModel):
         return None
 
     def entity_byId(self, id):
-	    return self._entities.values()[id]
+        return self._entities.values()[id]
 
     def entities(self):
         return self._entities
@@ -216,15 +216,15 @@ class ColumnEntitiesModel(QStandardItemModel):
 
     # ++
     def delete_entity(self, entity):
-	    if entity.name in self._entities:
-		    name = entity.name
-		    del self._entities[name]
-	    	    LOGGER.debug('%s model entity removed.', name)
+        if entity.name in self._entities:
+            name = entity.name
+            del self._entities[name]
+            LOGGER.debug('%s model entity removed.', name)
 
     def delete_entity_byname(self, short_name):
-	    if short_name in self._entities:
-		    del self._entities[short_name]
-	    	    LOGGER.debug('%s model entity removed.', short_name)
+        if short_name in self._entities:
+            del self._entities[short_name]
+            LOGGER.debug('%s model entity removed.', short_name)
 
     def _add_row(self, entity):
         '''
@@ -233,9 +233,9 @@ class ColumnEntitiesModel(QStandardItemModel):
         self.appendRow([name_item, mandatory_item])
         '''
         entity_item = ColumnEntityModelItem(entity)
-	name_item = entity_item._create_item(entity.name)
-	col_data_type = entity_item._create_item(entity.display_name())
-	description = entity_item._create_item(entity.description)
+        name_item = entity_item._create_item(entity.name)
+        col_data_type = entity_item._create_item(entity.display_name())
+        description = entity_item._create_item(entity.description)
         self.appendRow([name_item, col_data_type, description])
 
 ######
@@ -287,7 +287,7 @@ class LookupEntitiesModel(QStandardItemModel):
         return None
 
     def entity_byId(self, id):
-	    return self._entities.values()[id]
+        return self._entities.values()[id]
 
     def entities(self):
         return self._entities
@@ -304,15 +304,15 @@ class LookupEntitiesModel(QStandardItemModel):
 
     # ++
     def delete_entity(self, entity):
-	    if entity.short_name in self._entities:
-		    name = entity.short_name
-		    del self._entities[short_name]
-	    	    LOGGER.debug('%s model entity removed.', name)
+        if entity.short_name in self._entities:
+            name = entity.short_name
+            del self._entities[short_name]
+            LOGGER.debug('%s model entity removed.', name)
 
     def delete_entity_byname(self, short_name):
-	    if short_name in self._entities:
-		    del self._entities[short_name]
-	    	    LOGGER.debug('%s model entity removed.', short_name)
+        if short_name in self._entities:
+            del self._entities[short_name]
+            LOGGER.debug('%s model entity removed.', short_name)
 
     def _add_row(self, entity):
         '''
@@ -331,8 +331,8 @@ class STREntityModelItem(QStandardItem):
     
     def __init__(self, entity=None):
         self._entity = None
-	self.name = ""
-        
+        self.name = ""
+
         super(STREntityModelItem, self).__init__(entity.name)
 
         self.setColumnCount(len(self.headers_labels))
@@ -351,7 +351,7 @@ class STREntityModelItem(QStandardItem):
 
     def _set_entity_properties(self):
         name_item = self._create_item(self._entity.name)
-	self.name = name_item
+        self.name = name_item
         description = self._create_item(str(self._entity.description))
 
         self.appendRow([name_item, description])
@@ -374,7 +374,7 @@ class STRColumnEntitiesModel(QStandardItemModel):
         return None
 
     def entity_byId(self, id):
-	    return self._entities.values()[id]
+        return self._entities.values()[id]
 
     def entities(self):
         return self._entities
@@ -386,15 +386,15 @@ class STRColumnEntitiesModel(QStandardItemModel):
 
     # ++
     def delete_entity(self, entity):
-	    if entity.name in self._entities:
-		    name = entity.name
-		    del self._entities[name]
-	    	    LOGGER.debug('%s model entity removed.', name)
-		    
+        if entity.name in self._entities:
+            name = entity.name
+            del self._entities[name]
+            LOGGER.debug('%s model entity removed.', name)
+
     def delete_entity_byname(self, short_name):
-	    if short_name in self._entities:
-		    del self._entities[short_name]
-	    	    LOGGER.debug('%s model entity removed.', short_name)
+        if short_name in self._entities:
+            del self._entities[short_name]
+            LOGGER.debug('%s model entity removed.', short_name)
 
     def _add_row(self, entity):
         '''

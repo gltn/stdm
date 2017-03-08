@@ -25,7 +25,7 @@ except AttributeError:
 class Ui_CodeProperty(object):
     def setupUi(self, CodeProperty):
         CodeProperty.setObjectName(_fromUtf8("CodeProperty"))
-        CodeProperty.resize(373, 143)
+        CodeProperty.resize(354, 143)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -57,7 +57,7 @@ class Ui_CodeProperty(object):
         self.label_3.setObjectName(_fromUtf8("label_3"))
         self.horizontalLayout_3.addWidget(self.label_3)
         self.separator_cbo = QtGui.QComboBox(CodeProperty)
-        self.separator_cbo.setMinimumSize(QtCore.QSize(150, 0))
+        self.separator_cbo.setMinimumSize(QtCore.QSize(249, 0))
         self.separator_cbo.setObjectName(_fromUtf8("separator_cbo"))
         self.horizontalLayout_3.addWidget(self.separator_cbo)
         self.verticalLayout.addLayout(self.horizontalLayout_3)
@@ -72,7 +72,7 @@ class Ui_CodeProperty(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.leading_zero_cbo.sizePolicy().hasHeightForWidth())
         self.leading_zero_cbo.setSizePolicy(sizePolicy)
-        self.leading_zero_cbo.setMinimumSize(QtCore.QSize(150, 0))
+        self.leading_zero_cbo.setMinimumSize(QtCore.QSize(249, 0))
         self.leading_zero_cbo.setObjectName(_fromUtf8("leading_zero_cbo"))
         self.horizontalLayout_2.addWidget(self.leading_zero_cbo)
         self.verticalLayout.addLayout(self.horizontalLayout_2)

@@ -31,6 +31,7 @@ SUCCESS = 2006
 WARNING = 2007
 INFORMATION = 2008
 
+
 class NotificationBar(QObject, object):
     '''
     Used to display notifications in a vertical layout in order for 
@@ -46,7 +47,7 @@ class NotificationBar(QObject, object):
         QObject.__init__(self)
         self.interval = timerinterval
 
-        if isinstance(layout,QVBoxLayout):                        
+        if isinstance(layout, QVBoxLayout):
             self.layout = layout 
             self.layout.setSpacing(2)
             
@@ -76,7 +77,7 @@ class NotificationBar(QObject, object):
         '''
         Insert a message into notification bar/layout
         '''
-        if self.layout != None:    
+        if self.layout != None:
             notificationItem = NotificationItem() 
             QObject.connect(
                 notificationItem,

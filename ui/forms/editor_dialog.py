@@ -18,11 +18,10 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 from collections import OrderedDict
-
+import uuid
 from PyQt4.QtCore import (
     Qt,
-    pyqtSignal,
-    QTimer
+    pyqtSignal
 )
 
 from PyQt4.QtGui import (
@@ -31,7 +30,6 @@ from PyQt4.QtGui import (
     QFrame,
     QGridLayout,
     QLabel,
-    QMessageBox,
     QScrollArea,
     QTabWidget,
     QVBoxLayout,
@@ -39,7 +37,9 @@ from PyQt4.QtGui import (
     QApplication,
     QPushButton
 )
-from qgis.utils import iface
+
+from stdm.ui.admin_unit_manager import VIEW,MANAGE,SELECT
+
 from stdm.data.configuration import entity_model
 from stdm.data.configuration.entity import Entity
 from stdm.data.configuration.columns import (
@@ -53,9 +53,9 @@ from stdm.ui.forms.widgets import (
     ColumnWidgetRegistry,
     UserTipLabel
 )
+
 from stdm.ui.forms.documents import SupportingDocumentsWidget
 from stdm.ui.notification import NotificationBar
-from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 
 class EntityEditorDialog(QDialog, MapperMixin):
     """
@@ -69,7 +69,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
             model=None,
             parent=None,
             manage_documents=True,
-            collect_model=False
+            collect_model=False,
+            parent_entity=None
     ):
         """
         Class constructor.
@@ -102,16 +103,20 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.reload_form = False
         self._entity = entity
         self.edit_model = model
-        self._fk_browsers = OrderedDict()
         self.column_widgets = OrderedDict()
+        self._parent = parent
         self.entity_tab_widget = None
+        self._disable_collections = False
+        self.filter_val = None
+        self.parent_entity = None
+        self.child_models = OrderedDict()
         self.entity_scroll_area = None
         self.entity_editor_widgets = OrderedDict()
         #Set notification layout bar
         self.vlNotification = QVBoxLayout()
         self.vlNotification.setObjectName('vlNotification')
         self._notifBar = NotificationBar(self.vlNotification)
-        self.models_list = []
+
         # Set manage documents only if the entity supports documents
         if self._entity.supports_documents:
             self._manage_documents = manage_documents
@@ -134,9 +139,15 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.collect_model = collect_model
 
         self.register_column_widgets()
+        try:
+            if isinstance(parent._parent, EntityEditorDialog):
+                # hide collections form child editor
+                self._disable_collections = True
 
+        except AttributeError:
+            self._parent._parent = None
         self._init_gui()
-        self.resize(400, 400)
+        self.resize(430, 400)
         self._get_entity_editor_widgets()
 
         # Set title
@@ -146,6 +157,13 @@ class EntityEditorDialog(QDialog, MapperMixin):
             editor_trans
         )
         self.setWindowTitle(title)
+
+        if isinstance(parent._parent, EntityEditorDialog):
+            self.parent_entity = parent.parent_entity
+            self.set_parent_values()
+            # make the size smaller to differentiate from parent and as it
+            # only has few tabs.
+            self.resize(330, 400)
 
     def _init_gui(self):
         # Setup base elements
@@ -173,7 +191,6 @@ class EntityEditorDialog(QDialog, MapperMixin):
             self.gridLayout.addWidget(
                 self.required_fields_lbl, next_row, 0, 1, 2
             )
-
             # Bump up row reference
             next_row += 1
 
@@ -187,35 +204,101 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.buttonBox.setStandardButtons(
             QDialogButtonBox.Cancel|QDialogButtonBox.Save
         )
+
         if self.edit_model is None:
             if not self.collect_model:
-                self.save_new_button = QPushButton(QApplication.translate(
-                    'EntityEditorDialog', 'Save and New')
+                self.save_new_button = QPushButton(
+                    QApplication.translate(
+                        'EntityEditorDialog', 'Save and New'
+                    )
                 )
                 self.buttonBox.addButton(
                     self.save_new_button, QDialogButtonBox.ActionRole
                 )
 
-        if self.collect_model:
-            self.buttonBox.accepted.connect(
-                self.on_model_added
-            )
-            self.buttonBox.rejected.connect(
-                self.cancel
-            )
-        else:
-            #Connect to MapperMixin slots
-            self.buttonBox.accepted.connect(
-                self.submit
-            )
+        # edit model, collect model
+        # adding new record for child
+
+        # Saving in parent editor
+        if not isinstance(self._parent._parent, EntityEditorDialog):
+            # adding a new record
             if self.edit_model is None:
+                # saving when digitizing.
+                if self.collect_model:
+                    self.buttonBox.accepted.connect(self.on_model_added)
+                # saving parent editor
+                else:
+                    self.buttonBox.accepted.connect(self.save_parent_editor)
+                    self.save_new_button.clicked.connect(self.save_and_new)
+            # updating existing record
+            else:
                 if not self.collect_model:
-                    self.save_new_button.clicked.connect(
-                        self.save_and_new
-                    )
-            self.buttonBox.rejected.connect(
-                self.cancel
-            )
+                    # updating existing record of the parent editor
+                    self.buttonBox.accepted.connect(self.save_parent_editor)
+        # Saving in child editor
+        else:
+            # save and new record
+            if self.edit_model is None:
+                self.buttonBox.accepted.connect(self.on_child_saved)
+                self.save_new_button.clicked.connect(
+                    lambda: self.on_child_saved(True)
+                )
+
+            else:
+                # When updating an existing child editor save to the db
+                self.buttonBox.accepted.connect(self.submit)
+
+        self.buttonBox.rejected.connect(self.cancel)
+
+    def save_parent_editor(self):
+        """
+        Saves the parent editor and its children.
+        """
+        self.submit()
+        self.save_children()
+
+    def set_parent_values(self):
+        """
+        Sets the parent display column for the child.
+        """
+        if self.parent_entity is None:
+            return
+        for col in self._entity.columns.values():
+            if col.TYPE_INFO == 'FOREIGN_KEY':
+                parent_entity = col.parent
+                if parent_entity == self.parent_entity:
+                    self.parent_widgets_value_setter(self._parent._parent, col)
+
+    def parent_widgets_value_setter(self, parent, col):
+        """
+        Finds and sets the value from parent widget and set it to the column
+        widget of a child using the child column.
+        :param parent: The parent widget
+        :type parent: QWidget
+        :param col: The child column object
+        :type col: Object
+        """
+        for parent_col, parent_widget in parent.column_widgets.iteritems():
+            if parent_col.name == col.name:
+                self.single_parent_value_setter(col, parent_widget)
+                break
+            if parent_col.name in col.entity_relation.display_cols:
+                self.single_parent_value_setter(col, parent_widget)
+                break
+
+    def single_parent_value_setter(self, col, parent_widget):
+        """
+        Gets value from parent widget and set it to the column widget of a
+        child using the child column.
+        :param parent: The parent widget
+        :type parent: QWidget
+        :param col: The child column object
+        :type col: Object
+        """
+        local_widget = self.column_widgets[col]
+        local_widget.show_clear_button()
+        self.filter_val = parent_widget.text()
+        local_widget.setText(self.filter_val)
 
     def save_and_new(self):
         """
@@ -223,20 +306,76 @@ class EntityEditorDialog(QDialog, MapperMixin):
         without showing a success message. Then it sets reload_form property
         to True so that entity_browser can re-load the form.
         """
+        from stdm.ui.entity_browser import (
+            EntityBrowserWithEditor
+        )
         self.submit(False, True)
+        self.save_children()
+
         if self.is_valid:
             self.addedModel.emit(self.model())
             self.setModel(self.ent_model())
             self.clear()
+            self.child_models.clear()
+            for index in range(0, self.entity_tab_widget.count()-1):
+                if isinstance(
+                        self.entity_tab_widget.widget(index),
+                        EntityBrowserWithEditor
+                ):
+                    child_browser = self.entity_tab_widget.widget(index)
+                    child_browser.remove_rows()
 
     def on_model_added(self):
         """
         A slot raised when a form is submitted with collect model set to True.
-        This leads to the returning on the model. There will be no success
-        message and the form does not close.
+        There will be no success message and the form does not close.
         """
         self.submit(True)
         self.addedModel.emit(self.model())
+
+    def on_child_saved(self, save_and_new=False):
+        """
+        A slot raised when the save or save and new button is clicked. It sets
+        the child_models dictionary of the parent when saved.
+        :param save_and_new: A boolean indicating the save and new button is
+        clicked to trigger the slot.
+        :type save_and_new: Boolean
+        """
+        if self.parent_entity is None:
+            return
+        self.submit(True)
+        unique_id = str(uuid.uuid4())
+        # Save to parent editor so that it is persistent.
+        self._parent._parent.child_models[unique_id] = \
+            (self._entity, self.model())
+        if not save_and_new:
+            self.accept()
+        else:
+            if self.is_valid:
+                self.addedModel.emit(self.model())
+                self.setModel(self.ent_model())
+                self.clear()
+                self.set_parent_values()
+
+    def save_children(self):
+        """
+        Saves children models into the database by assigning the the id of the
+        parent for foreign key column.
+        """
+        if len(self.child_models) < 1:
+            return
+        children_obj = []
+        for uu_id, entity_and_model in self.child_models.iteritems():
+            entity = entity_and_model[0]
+            model = entity_and_model[1]
+            ent_model = entity_model(entity)
+            entity_obj = ent_model()
+            for col in entity.columns.values():
+                if col.TYPE_INFO == 'FOREIGN_KEY':
+                    if col.parent.name == self._entity.name:
+                        setattr(model, col.name, self.model().id)
+                        children_obj.append(model)
+            entity_obj.saveMany(children_obj)
 
     def register_column_widgets(self):
         """
@@ -252,7 +391,6 @@ class EntityEditorDialog(QDialog, MapperMixin):
         for c in self._entity.columns.values():
             if not c.name in columns and not isinstance(c, VirtualColumn):
                 continue
-
             # Get widget factory
             column_widget = ColumnWidgetRegistry.create(
                 c,
@@ -320,24 +458,25 @@ class EntityEditorDialog(QDialog, MapperMixin):
                     pseudoname=c.header()
                 )
 
-                #Bump up row_id
+                # Bump up row_id
                 row_id += 1
     
         self.entity_scroll_area.setWidget(
             self.scroll_widget_contents
         )
 
-        #Check if there are children and add foreign key browsers
-        ch_entities = self.children_entities()
-        if len(ch_entities) > 0:
-            if self.entity_tab_widget is None:
-                self.entity_tab_widget = QTabWidget(self)
+        # Check if there are children and add foreign key browsers
+        if not self._disable_collections:
+            ch_entities = self.children_entities()
+            if len(ch_entities) > 0:
+                if self.entity_tab_widget is None:
+                    self.entity_tab_widget = QTabWidget(self)
 
-            # Add primary tab if necessary
-            self._add_primary_attr_widget()
+                # Add primary tab if necessary
+                self._add_primary_attr_widget()
 
-            for ch in ch_entities:
-                self._add_fk_browser(ch)
+                for ch in ch_entities:
+                    self._add_fk_browser(ch)
 
         #Add tab widget if entity supports documents
         if self._entity.supports_documents:
@@ -386,32 +525,60 @@ class EntityEditorDialog(QDialog, MapperMixin):
     def _add_fk_browser(self, child_entity):
         # Create and add foreign key
         # browser to the collection
+        from stdm.ui.entity_browser import (
+            EntityBrowserWithEditor
+        )
         attr = u'{0}_collection'.format(child_entity.name)
 
         # Return if the attribute does not exist
         if not hasattr(self._model, attr):
             return
-
-        fkb = ForeignKeyMapper(
+        entity_browser = EntityBrowserWithEditor(
             child_entity,
             self,
-            notification_bar=self._notifBar,
-            can_filter=True
+            MANAGE,
+            False
         )
-
-        # Add to mapped collection
-        self.addMapping(attr, fkb)
+        entity_browser.buttonBox.setVisible(False)
+        entity_browser.record_filter = []
 
         self.entity_tab_widget.addTab(
-            fkb,
+            entity_browser,
             u'{0} {1}'.format(
-                child_entity.short_name,
+                child_entity.short_name.replace('_', ' '),
                 self.collection_suffix
             )
         )
+        self.set_filter(child_entity, entity_browser)
 
-        # Add to the collection
-        self._fk_browsers[child_entity.name] = fkb
+    def set_filter(self, entity, browser):
+        col = self.filter_col(entity)
+        child_model = entity_model(entity)
+        child_model_obj = child_model()
+        col_obj = getattr(child_model, col.name)
+        if self.model() is not None:
+            if self.model().id is None:
+                browser.filtered_records = []
+            else:
+                browser.filtered_records = child_model_obj.queryObject().filter(
+                    col_obj == self.model().id
+                ).all()
+
+        if self.edit_model is not None:
+            browser.filtered_records = child_model_obj.queryObject().filter(
+                col_obj == self.edit_model.id
+            ).all()
+
+        if self.edit_model is None and self.model() is None:
+            browser.filtered_records = []
+
+    def filter_col(self, child_entity):
+        for col in child_entity.columns.values():
+            if col.TYPE_INFO == 'FOREIGN_KEY':
+                parent_entity = col.parent
+                if parent_entity == self._entity:
+                    return col
+
 
     def children_entities(self):
         """

@@ -63,10 +63,7 @@ class SocialTenure(Entity):
 
         self._party = None
         self._spatial_unit = None
-        self._view_name = u'{0}_{1}'.format(
-            self.profile.name.replace(' ', '_').lower(),
-            SocialTenure.BASE_STR_VIEW
-        )
+        self._view_name = None
 
         self.party_foreign_key = ForeignKeyColumn('party_id', self)
         self.spatial_unit_foreign_key = ForeignKeyColumn('spatial_unit_id',
@@ -118,7 +115,7 @@ class SocialTenure(Entity):
         if self.layer_display_name:
             return self.layer_display_name
 
-        return self.view_name
+        return self._view_name_from_entity(self.spatial_unit)
 
     @property
     def parties(self):

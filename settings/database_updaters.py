@@ -243,10 +243,7 @@ class DatabaseVersionUpdater13(DatabaseVersionUpdater):
                     str(social_tenure.name), old_column, new_column
                 )
 
-                drop_column(social_tenure.name, old_column)
-                add_constraint(
-                    str(social_tenure.name), new_column, party_table
-                )
+                add_constraint(str(social_tenure.name), new_column, party_table)
 
     def exec_(self):
         """

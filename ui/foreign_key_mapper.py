@@ -768,6 +768,9 @@ class ForeignKeyMapper(QWidget):
         return row_number
 
     def remove_rows(self):
+        """
+        Removes rows from the fk browser.
+        """
         row_count = self._tbFKEntity.model().rowCount()
 
         self._tbFKEntity.model().removeRows(0, row_count)
