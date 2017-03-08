@@ -29,11 +29,13 @@ from PyQt4.QtGui import (
 from ui_copy_profile import Ui_dlgCopyProfile 
 
 class CopyProfileEditor(QDialog, Ui_dlgCopyProfile):
-    def __init__(self, parent, orig_name, profile_names):
+    def __init__(self, parent, orig_name, orig_desc, profile_names):
         QDialog.__init__(self, parent)
 
         self.orig_name = orig_name
+        self.orig_desc = orig_desc
         self.copy_name = orig_name+'_copy'
+        self.copy_desc = ''
         self.profile_names = profile_names
         
         self.setupUi(self)
@@ -41,6 +43,7 @@ class CopyProfileEditor(QDialog, Ui_dlgCopyProfile):
         
     def init_controls(self):
         self.edtFromProfile.setText(self.orig_name)
+        self.edtDesc.setText(self.orig_desc)
         self.edtName.setText(self.copy_name)
         self.edtName.setFocus()
         name_regex = QRegExp('^[A-Za-z0-9_\s]*$')
@@ -54,6 +57,7 @@ class CopyProfileEditor(QDialog, Ui_dlgCopyProfile):
     
     def add_profile(self):
         self.copy_name = self.format_name(unicode(self.edtName.text()))
+        self.copy_desc = self.edtDesc.text()
 
     def accept(self):
         '''

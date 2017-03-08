@@ -9,19 +9,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>790</width>
+    <width>779</width>
     <height>637</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>520</width>
+    <width>720</width>
     <height>100</height>
    </size>
   </property>
@@ -304,8 +304,75 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_6">
-         <item>
+        <layout class="QGridLayout" name="gridLayout_6">
+         <item row="0" column="3">
+          <widget class="QPushButton" name="btnCopy">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>150</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Copy profile</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../../resources.qrc">
+             <normaloff>:/plugins/stdm/images/icons/composer_table.png</normaloff>:/plugins/stdm/images/icons/composer_table.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="4">
+          <widget class="QPushButton" name="btnPDelete">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>150</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Delete profile</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../../resources.qrc">
+             <normaloff>:/plugins/stdm/images/icons/remove.png</normaloff>:/plugins/stdm/images/icons/remove.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="cboProfile">
+           <property name="minimumSize">
+            <size>
+             <width>300</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
           <widget class="QLabel" name="label">
            <property name="minimumSize">
             <size>
@@ -327,26 +394,11 @@
             </font>
            </property>
            <property name="text">
-            <string>Select</string>
+            <string>Name</string>
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QComboBox" name="cboProfile">
-           <property name="minimumSize">
-            <size>
-             <width>300</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="font">
-            <font>
-             <pointsize>9</pointsize>
-            </font>
-           </property>
-          </widget>
-         </item>
-         <item>
+         <item row="0" column="2">
           <widget class="QPushButton" name="btnNewP">
            <property name="minimumSize">
             <size>
@@ -369,67 +421,10 @@
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QPushButton" name="btnCopy">
-           <property name="minimumSize">
-            <size>
-             <width>25</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>150</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Copy profile</string>
-           </property>
-           <property name="icon">
-            <iconset resource="../../resources.qrc">
-             <normaloff>:/plugins/stdm/images/icons/composer_table.png</normaloff>:/plugins/stdm/images/icons/composer_table.png</iconset>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="btnPDelete">
-           <property name="minimumSize">
-            <size>
-             <width>25</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>150</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Delete profile</string>
-           </property>
-           <property name="icon">
-            <iconset resource="../../resources.qrc">
-             <normaloff>:/plugins/stdm/images/icons/remove.png</normaloff>:/plugins/stdm/images/icons/remove.png</iconset>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QWidget" name="widget" native="true">
-         <property name="layoutDirection">
-          <enum>Qt::LeftToRight</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
-         <item>
+         <item row="1" column="0">
           <widget class="QLabel" name="label_3">
            <property name="text">
-            <string>Description:</string>
+            <string>Description</string>
            </property>
            <property name="margin">
             <number>0</number>
@@ -439,20 +434,17 @@
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QLabel" name="lblDesc">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>TextLabel</string>
-           </property>
-          </widget>
+         <item row="1" column="1" colspan="4">
+          <widget class="QLineEdit" name="edtDesc"/>
          </item>
         </layout>
+       </item>
+       <item>
+        <widget class="QWidget" name="widget" native="true">
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -1196,8 +1188,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>225</width>
-         <height>525</height>
+         <width>173</width>
+         <height>458</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_5">

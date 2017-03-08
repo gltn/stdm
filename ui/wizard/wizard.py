@@ -483,7 +483,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self.edtDocPath.setFocus()
         self.rbReject.setChecked(True)
-        self.lblDesc.setText("")
+        #self.lblDesc.setText("")
+        self.edtDesc.setText("")
 
         self.pftableView.setColumnWidth(0, 250)
         
@@ -1042,6 +1043,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         if self.currentId() == 5: # FINAL_PAGE:
             # last page
+            profile = self.current_profile()
+            profile.description = self.edtDesc.text()
 
             # before any updates, backup your current working profile
             self.backup_config_file()
@@ -1500,13 +1503,17 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Create a copy of the current profile
         '''
         current_profile_name = self.cboProfile.currentText()
+        description = self.edtDesc.text()
+
         profile_names = self.profile_names()
-        editor = CopyProfileEditor(self, current_profile_name, profile_names)
+        editor = CopyProfileEditor(self, current_profile_name, description, profile_names)
         result = editor.exec_()
         if result == 1:
             if not self.draft_config:
                 self.save_current_configuration(DRAFT_CONFIG_FILE)
+
             copy_profile_name = editor.copy_name
+            copy_profile_desc = editor.copy_desc
 
             pre_fixes = self.stdm_config.prefixes()
 
@@ -1519,9 +1526,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             new_prefix = list(set(post_fixes)-set(pre_fixes))
 
-            current_profile = self.current_profile()
+            copied_profile = self.current_profile()
+            copied_profile.description = copy_profile_desc
+            self.edtDesc.setText(copy_profile_desc)
 
-            current_profile.set_prefix(new_prefix[0])
+            copied_profile.set_prefix(new_prefix[0])
 
 
     def profile_names(self):
@@ -1730,7 +1739,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         profile = self.stdm_config.profile(unicode(name))
         if profile is not None:
-            self.lblDesc.setText(profile.description)
+            #self.lblDesc.setText(profile.description)
+            self.edtDesc.setText(profile.description)
         else:
             return
         # clear view models
@@ -2127,20 +2137,49 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             result = editor.exec_()
 
             if result == 1:
+                scroll_pos = self.save_scroll_postion(self.lvLookups)
+
                 model_index_name  = model_item.index(row_id, 0)
+                rect = self.lvLookups.rectForIndex(model_index_name)
                 model_item.setData(model_index_name, editor.lookup.short_name)
 
                 model_item.edit_entity(tmp_lookup, editor.lookup)
 
-                profile.entities[tmp_lookup.short_name] = editor.lookup
-                profile.entities[editor.lookup.short_name] = \
-                        profile.entities.pop(tmp_lookup.short_name)
+                profile.entities = OrderedDict([
+                                         (editor.lookup.short_name, v)
+                                         if k == tmp_lookup.short_name
+                                         else (k, v)
+                                         for k, v in profile.entities.items()
+                                    ])
+
+                #profile.entities[tmp_lookup.short_name] = editor.lookup
+                #profile.entities[editor.lookup.short_name] = \
+                        #profile.entities.pop(tmp_lookup.short_name)
 
                 self.refresh_lookup_view()
+
+                self.restore_scroll_position(self.lvLookups, scroll_pos, rect=rect)
 
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "Nothing to edit!"))
+
+
+    def save_scroll_postion(self, table_view):
+        return table_view.verticalScrollBar().value()
+
+    def restore_scroll_position(self, table_view, scroll_pos, row_id=None, rect=None):
+        if row_id is not None:
+            table_view.selectRow(row_id)
+        else:
+            table_view.setSelection(rect, QItemSelectionModel.SelectCurrent)
+            table_view.setFocus()
+
+        table_view.verticalScrollBar().setValue(scroll_pos)
+
+    def scroll_to_bottom(self, table_view):
+        table_view.selectRow(table_view.model().rowCount()-1)
+        table_view.verticalScrollBar().setValue(scroll_position)
 
 
     def show_lookups(self, profile):
@@ -2182,6 +2221,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             profile.entities[lookup.short_name].action = DbItem.DROP
             profile.remove_entity(lookup.short_name)
             self.lookup_view_model.removeRow(row_id)
+            self.refresh_lookup_view()
 
     def all_column_dependencies(self, profile):
         """
