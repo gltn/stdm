@@ -23,6 +23,7 @@ from datetime import (
     date,
     datetime
 )
+from decimal import Decimal
 
 from PyQt4.QtCore import (
     QFile,
@@ -1465,7 +1466,7 @@ class ColumnSerializerCollection(object):
     _registry = {}
     TAG_NAME = 'Column'
 
-    #Attribute names
+    # Attribute names
     DESCRIPTION = 'description'
     NAME = 'name'
     INDEX = 'index'
@@ -1714,10 +1715,51 @@ class DoubleColumnSerializer(ColumnSerializerCollection):
     (De)serializes double column type.
     """
     COLUMN_TYPE_INFO = 'DOUBLE'
+    NUMERIC_TAG = 'Numeric'
+    PRECISION = 'precision'
+    SCALE = 'scale'
+
+    @classmethod
+    def _obj_args(cls, args, kwargs, element, assoc_elements,
+                  entity_relation_elements):
+        # Get numeric properties
+        numeric_el = element.firstChildElement(
+            DoubleColumnSerializer.NUMERIC_TAG
+        )
+        if not numeric_el.isNull():
+            precision = int(
+                numeric_el.attribute(DoubleColumnSerializer.PRECISION, '18')
+            )
+            scale = int(
+                numeric_el.attribute(DoubleColumnSerializer.SCALE, '6')
+            )
+
+            # Append additional information
+            kwargs['precision'] = precision
+            kwargs['scale'] = scale
+
+        return args, kwargs
+
+    @classmethod
+    def _write_xml(cls, column, column_element, document):
+        # Append numeric attributes
+        num_element = document.createElement(
+            DoubleColumnSerializer.NUMERIC_TAG
+        )
+        num_element.setAttribute(
+            DoubleColumnSerializer.PRECISION,
+            str(column.precision)
+        )
+        num_element.setAttribute(
+            DoubleColumnSerializer.SCALE,
+            str(column.scale)
+        )
+
+        column_element.appendChild(num_element)
 
     @classmethod
     def _convert_bounds_type(cls, value):
-        return float(value)
+        return Decimal.from_float(float(value))
 
 DoubleColumnSerializer.register()
 
@@ -1741,7 +1783,7 @@ class DateColumnSerializer(ColumnSerializerCollection):
     @classmethod
     def _obj_args(cls, args, kwargs, element, assoc_elements,
                   entity_relation_elements):
-        #Set current date settings
+        # Set current date settings
         curr_date_el = element.firstChildElement(
             DateColumnSerializer.CURRENT_DATE
         )
@@ -1755,7 +1797,7 @@ class DateColumnSerializer(ColumnSerializerCollection):
                 ''
             ))
 
-            #Append additional information
+            # Append additional information
             kwargs['min_use_current_date'] = current_min
             kwargs['max_use_current_date'] = current_max
 
@@ -1876,7 +1918,7 @@ class GeometryColumnSerializer(ColumnSerializerCollection):
 
     @classmethod
     def _write_xml(cls, column, column_element, document):
-        #Append custom geometry information
+        # Append custom geometry information
         geom_element = \
             document.createElement(GeometryColumnSerializer.GEOM_TAG)
         geom_element.setAttribute(GeometryColumnSerializer.SRID,
