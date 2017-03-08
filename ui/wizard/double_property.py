@@ -18,17 +18,23 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-
-from ui_double_property import Ui_DoubleProperty
+from decimal import (
+    Decimal,
+    InvalidOperation
+)
+import math
 
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import (
-		QDialog, 
-		QApplication, 
-		QMessageBox
-		)
+    QDialog,
+    QApplication,
+    QMessageBox
+)
+
+from ui_double_property import Ui_DoubleProperty
+
 
 class DoubleProperty(QDialog, Ui_DoubleProperty):
     """
@@ -46,7 +52,13 @@ class DoubleProperty(QDialog, Ui_DoubleProperty):
 
         self._min_val = form_fields['minimum']
         self._max_val = form_fields['maximum']
+        self._precision = form_fields['precision']
+        self._scale = form_fields['scale']
         self.in_db = form_fields['in_db']
+
+        # Connect signals
+        self.sbPrecision.valueChanged.connect(self._on_precision_changed)
+        self.sbScale.valueChanged.connect(self._on_scale_changed)
 
         self.init_gui()
 
@@ -60,11 +72,67 @@ class DoubleProperty(QDialog, Ui_DoubleProperty):
 
         self.edtMinVal.setText(str(self._min_val))
         self.edtMaxVal.setText(str(self._max_val))
-
-        self.edtMinVal.setFocus()
 	
         self.edtMinVal.setEnabled(not self.in_db)
         self.edtMaxVal.setEnabled(not self.in_db)
+        self.sbPrecision.setEnabled(not self.in_db)
+        self.sbScale.setEnabled(not self.in_db)
+
+        self.sbPrecision.setValue(self._precision)
+        self.sbScale.setValue(self._scale)
+
+    @property
+    def precision(self):
+        """
+        :return: Returns the user defined precision value.
+         :rtype: int
+        """
+        return self._precision
+
+    @property
+    def scale(self):
+        """
+        :return: Returns the user-defined scale value.
+        :rtype: int
+        """
+        return self._scale
+
+    def _scale_quantize_factor(self, scale):
+        # Returns the quantization factor that will be used to compute the
+        # minimum and maximum value.
+        return round(math.pow(0.1, scale), scale)
+
+    def _generate_quantized_value(self, value, scale):
+        # Returns the quantized value based on the given scale.
+        try:
+            q_value = Decimal(value).quantize(
+                Decimal(
+                    str(self._scale_quantize_factor(scale))
+                )
+            )
+        except InvalidOperation:
+            q_value = value
+
+        return q_value
+
+    def _on_precision_changed(self, value):
+        # Slot raised when the value of the precision in the spinbox changes
+        pass
+
+    def _on_scale_changed(self, value):
+        # Slot raised when the value of the scale in the spinbox changes.
+        # Update minimum and maximum values for illustration purposes.
+        min_val = self.edtMinVal.text()
+        max_val = self.edtMaxVal.text()
+
+        # Update the scale of the specified values
+        if min_val:
+            min_val = str(self._generate_quantized_value(min_val, value))
+            self.edtMinVal.setText(min_val)
+
+        if max_val:
+            max_val = str(self._generate_quantized_value(max_val, value))
+            self.edtMaxVal.setText(max_val)
 
     def add_values(self):
         """
@@ -72,6 +140,8 @@ class DoubleProperty(QDialog, Ui_DoubleProperty):
         """
         self._min_val = float(self.edtMinVal.text())
         self._max_val = float(self.edtMaxVal.text())
+        self._precision = int(self.sbPrecision.value())
+        self._scale = int(self.sbScale.value())
 
     def min_val(self):
         """
