@@ -1953,34 +1953,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
                 model_item.edit_entity(original_column, editor.column)
 
-                original_column.copy_attrs(editor.column)
-                # save current scroll position
-                scroll_position = self.tbvColumns.verticalScrollBar().value()
-                # Replace the current entity with a new one
-                # Apperently, ordered dict key replacement will cause change in
-                # key positions.
-                entity.columns[original_column.name] = editor.column
-                # This fixes the deletion of a column from the OrderedDict and
-                # its moving to the last row if the column name hasn't changed
-                if original_column.name != editor.column.name:
-                    # this fixes the moving of edited column name to the
-                    # last row.
-                    entity.columns = OrderedDict([
-                                         (editor.column.name, v)
-                                         if k == original_column.name
-                                         else (k, v)
-                                         for k, v in entity.columns.items()
-                                    ])
-
-                # first remove the row to avoid duplication?
-                # model_item.removeRow(rid)
-
-                self.refresh_columns_view(entity)
-                self.clear_view_model(self.STR_spunit_model)
                 self.populate_spunit_model(profile)
-                QApplication.processEvents()
-                self.tbvColumns.selectRow(rid)
-                self.tbvColumns.verticalScrollBar().setValue(scroll_position)
+                entity.columns[original_column.name] = editor.column
 
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
@@ -2137,50 +2111,18 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             result = editor.exec_()
 
             if result == 1:
-                scroll_pos = self.save_scroll_postion(self.lvLookups)
-
                 model_index_name  = model_item.index(row_id, 0)
-                rect = self.lvLookups.rectForIndex(model_index_name)
                 model_item.setData(model_index_name, editor.lookup.short_name)
-
                 model_item.edit_entity(tmp_lookup, editor.lookup)
-
-                profile.entities = OrderedDict([
-                                         (editor.lookup.short_name, v)
-                                         if k == tmp_lookup.short_name
-                                         else (k, v)
-                                         for k, v in profile.entities.items()
-                                    ])
-
-                #profile.entities[tmp_lookup.short_name] = editor.lookup
-                #profile.entities[editor.lookup.short_name] = \
-                        #profile.entities.pop(tmp_lookup.short_name)
-
-                self.refresh_lookup_view()
-
-                self.restore_scroll_position(self.lvLookups, scroll_pos, rect=rect)
-
+                profile.entities[tmp_lookup.short_name] = editor.lookup
+                self.lvLookups.setFocus()
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "Nothing to edit!"))
 
-
-    def save_scroll_postion(self, table_view):
-        return table_view.verticalScrollBar().value()
-
-    def restore_scroll_position(self, table_view, scroll_pos, row_id=None, rect=None):
-        if row_id is not None:
-            table_view.selectRow(row_id)
-        else:
-            table_view.setSelection(rect, QItemSelectionModel.SelectCurrent)
-            table_view.setFocus()
-
-        table_view.verticalScrollBar().setValue(scroll_pos)
-
     def scroll_to_bottom(self, table_view):
         table_view.selectRow(table_view.model().rowCount()-1)
         table_view.verticalScrollBar().setValue(scroll_position)
-
 
     def show_lookups(self, profile):
         for vl in profile.value_lists():
