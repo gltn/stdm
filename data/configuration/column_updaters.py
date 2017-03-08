@@ -261,7 +261,12 @@ def double_updater(column, table, columns):
     :param columns: Existing column names in the database for the given table.
     :type columns: list
     """
-    return _update_col(column, table, Numeric, columns)
+    return _update_col(
+        column,
+        table,
+        Numeric(column.precision, column.scale),
+        columns
+    )
 
 
 def date_updater(column, table, columns):
