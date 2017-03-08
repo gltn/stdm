@@ -161,6 +161,7 @@ class CIDEncoding(pdfmetrics.Encoding):
         #print 'parsed CMAP %s in %0.4f seconds' % (self.name, finished - started)
 
     def translate(self, text):
+        # type: (object) -> object
         "Convert a string into a list of CIDs"
         output = []
         cmap = self._cmap

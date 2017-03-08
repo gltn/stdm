@@ -49,7 +49,7 @@ from stdm.data.pg_utils import (
 from stdm.ui.forms.spatial_unit_form import (
     STDMFieldWidget
 )
-
+from stdm.utils.util import profile_and_user_views
 from stdm.mapping.utils import pg_layerNamesIDMapping
 
 from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
@@ -84,7 +84,7 @@ class SpatialUnitManagerDockWidget(
         self._profile_spatial_layers = []
         self.stdm_fields = STDMFieldWidget()
         self._populate_layers()
-
+        self._adjust_layer_drop_down_width()
         self.spatial_unit = None
 
         self.iface.currentLayerChanged.connect(
@@ -95,6 +95,22 @@ class SpatialUnitManagerDockWidget(
         )
         self.add_to_canvas_button.clicked.connect(
             self.on_add_to_canvas_button_clicked
+        )
+
+    def _adjust_layer_drop_down_width(self):
+        """
+        Adjusts the layers combobox drop down to expand based on the layer name.
+        """
+        longest_item = max(self._profile_spatial_layers, key=len)
+        font_meter = QFontMetrics(self.fontMetrics())
+        item_width = font_meter.width(longest_item) + 80
+        self.stdm_layers_combo.setStyleSheet(
+            '''*
+                QComboBox QAbstractItemView{
+                    min-width: 60px;
+                    width: %s px;
+                }
+            ''' % item_width
         )
 
     def _populate_layers(self):
@@ -137,8 +153,7 @@ class SpatialUnitManagerDockWidget(
                     table_name
                 )
 
-        # Append the corresponding(profile)
-        # view to the list of entity names
+        # Append the corresponding(profile) view to the list of entity names
         str_views = self._curr_profile.social_tenure.views.keys()
 
         for str_view in str_views:
@@ -170,6 +185,23 @@ class SpatialUnitManagerDockWidget(
                         self._profile_spatial_layers.append(
                             str_view
                         )
+        # add old config views and custom views.
+        for sp_table in self.sp_tables:
+            if sp_table in pg_views() and sp_table not in str_views and \
+                sp_table in profile_and_user_views(self._curr_profile):
+                view_geom_columns = table_column_names(
+                    sp_table, True
+                )
+                for geom_col in view_geom_columns:
+                    view_layer_name = '{}.{}'.format(
+                        sp_table, geom_col
+                    )
+                    self._add_geometry_column_to_combo(
+                        sp_table,
+                        geom_col,
+                        view_layer_name,
+                        geom_col
+                    )
 
     def control_digitize_toolbar(self, curr_layer):
         if not curr_layer is None:
@@ -322,8 +354,14 @@ class SpatialUnitManagerDockWidget(
         """
         # Check if the geom has display name, if not,
         # get layer name with default naming.
+        if isinstance(col, str) or isinstance(col, unicode):
+            spatial_layer_item = unicode(
+                '{}.{}'.format(
+                    table, col
+                )
+            )
 
-        if col.layer_display_name == '':
+        elif col.layer_display_name == '':
             spatial_layer_item = unicode(
                 '{}.{}'.format(
                     table, col.name
@@ -379,10 +417,14 @@ class SpatialUnitManagerDockWidget(
         self.curr_lyr_sp_col = spatial_column
 
         if not layer_item is None:
+            if isinstance(layer_item, str) or isinstance(layer_item, unicode):
+                layer_name = layer_item
+            else:
+                layer_name = layer_item.layer_display()
             curr_layer = vector_layer(
                 table_name,
                 geom_column=spatial_column,
-                layer_name=layer_item.layer_display()
+                layer_name=layer_name
             )
         else:
             curr_layer = vector_layer(
@@ -403,7 +445,7 @@ class SpatialUnitManagerDockWidget(
                 100,
                 lambda: self._set_layer_display_name(
                     curr_layer,
-                    layer_item.layer_display()
+                    layer_name
                 )
             )
             self.zoom_to_layer()

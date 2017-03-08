@@ -90,6 +90,7 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         :type text: String
         """
         text_edit = self.sender()
+        cursor_position = text_edit.cursorPosition()
         text_edit.setValidator(None)
         if len(text) == 0:
             return
@@ -118,6 +119,7 @@ class LookupEditor(QDialog, Ui_dlgLookup):
 
         self.blockSignals(True)
         text_edit.setText(text)
+        text_edit.setCursorPosition(cursor_position)
         self.blockSignals(False)
         text_edit.setValidator(None)
 

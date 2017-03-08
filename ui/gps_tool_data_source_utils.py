@@ -64,7 +64,8 @@ def open_gpx_file(gpx_file):
     gpx_data_source = ogr.Open(gpx_file)
     if not gpx_data_source:
         raise Exception(
-            "File {0} could not be accessed. It could be in use by another application".format(
+            "File {0} could not be accessed. "
+            "It could be in use by another application".format(
                 os.path.basename(gpx_file)
             )
         )

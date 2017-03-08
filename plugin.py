@@ -42,7 +42,7 @@ from stdm.ui.doc_generator_dlg import (
     DocumentGeneratorDialogWrapper,
     EntityConfig
 )
-
+from stdm.settings.startup_handler import copy_startup
 from stdm.ui.login_dlg import loginDlg
 from stdm.ui.manage_accounts_dlg import manageAccountsDlg
 from stdm.ui.content_auth_dlg import contentAuthDlg
@@ -80,7 +80,8 @@ from stdm.data.pg_utils import (
 from stdm.settings.registryconfig import (
     RegistryConfig,
     WIZARD_RUN,
-    CONFIG_UPDATED
+    CONFIG_UPDATED,
+    HOST
 )
 from stdm.ui.license_agreement import LicenseAgreement
 
@@ -332,29 +333,30 @@ class STDMQGISLoader(object):
             if not config_load_status:
                 return
 
-            try:
+            #try:
 
-                #Set current profile
-                self.current_profile = current_profile()
+            #Set current profile
+            self.current_profile = current_profile()
 
-                if self.current_profile is None:
-                    result = self.default_profile()
-                    if not result:
-                        return
-                self.loadModules()
-                self.default_profile()
-                self.run_wizard()
-                self._user_logged_in = True
+            if self.current_profile is None:
+                result = self.default_profile()
+                if not result:
+                    return
+            self.loadModules()
 
-            except Exception as pe:
-                title = QApplication.translate(
-                    "STDMQGISLoader",
-                    "Error Loading Modules"
-                )
-                self.reset_content_modules_id(
-                    title,
-                    pe
-                )
+            self.default_profile()
+            self.run_wizard()
+            self._user_logged_in = True
+
+            # except Exception as pe:
+            #     title = QApplication.translate(
+            #         "STDMQGISLoader",
+            #         "Error Loading Modules"
+            #     )
+            #     self.reset_content_modules_id(
+            #         title,
+            #         pe
+            #     )
 
     def minimum_table_checker(self):
 
@@ -427,9 +429,18 @@ class STDMQGISLoader(object):
         :rtype:
         """
         reg_config = RegistryConfig()
+
+        host = reg_config.read([HOST])
+        host_val = host[HOST]
+
+        if host_val != u'localhost':
+            if host_val != u'127.0.0.1':
+                return
+
         wizard_key = reg_config.read(
             [WIZARD_RUN]
         )
+
         title = QApplication.translate(
             "STDMQGISLoader",
             'Configuration Wizard Error'
@@ -442,6 +453,7 @@ class STDMQGISLoader(object):
         )
         if len(wizard_key) > 0:
             wizard_value = wizard_key[WIZARD_RUN]
+
             if wizard_value == 0 or wizard_value == '0':
 
                 default_profile = QMessageBox.critical(
@@ -454,6 +466,7 @@ class STDMQGISLoader(object):
 
                 if default_profile == QMessageBox.Yes:
                     self.load_config_wizard()
+
         else:
             default_profile = QMessageBox.critical(
                 self.iface.mainWindow(),
@@ -543,6 +556,11 @@ class STDMQGISLoader(object):
         """
         # TODO remove this line below when schema updater is refactored
         self.config_serializer.on_version_updated(document)
+        registry_config = RegistryConfig()
+        registry_config.write(
+            {WIZARD_RUN: 1}
+        )
+        self.show_change_log()
         self.progress.hide()
         self.progress.cancel()
 
@@ -683,7 +701,6 @@ class STDMQGISLoader(object):
                     self.reload_plugin(first_profile)
                 else:
                     save_current_profile(first_profile)
-                    self.show_change_log()
 
                 self.configuration_file_updater.reg_config.write(
                     {CONFIG_UPDATED: '1'}
@@ -1756,9 +1773,22 @@ class STDMQGISLoader(object):
         Load and open documentation manual
         """
         help_manual = self.plugin_dir+'/%s'%"stdm.chm"
-        os.startfile(
-            help_manual,'open'
-        )
+        try:
+            os.startfile(
+                help_manual,'open'
+            )
+        except Exception as ex:
+            QMessageBox.critical(
+                self.iface.mainWindow(),
+                QApplication.translate(
+                    "STDMQGISLoader",
+                    'Open Error'
+                ),
+                QApplication.translate(
+                    "STDMQGISLoader",
+                    ex
+                )
+            )
 
     def reset_content_modules_id(self, title, message_text):
         return QMessageBox.critical(
@@ -1767,7 +1797,10 @@ class STDMQGISLoader(object):
                 "STDMQGISLoader",
                 title
             ),
-            unicode(message_text)
+            QApplication.translate(
+                "STDMQGISLoader",
+                unicode(message_text)
+            )
         )
 
     def _action_separator(self):

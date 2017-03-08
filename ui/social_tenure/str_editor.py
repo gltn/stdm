@@ -113,7 +113,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
         self.parties = self.social_tenure.parties
 
         self.str_type_component = None
-       
+
         QTimer.singleShot(22, self.init_party_component)
 
         self.copied_party_row = OrderedDict()
@@ -252,7 +252,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
         self.str_model, self.str_doc_model = \
             self.party_component.str_doc_models()
         self._party_signals()
-        self.party_component.party_fk_mapper.entity_combo.\
+        self.party_component.party_fk_mapper.entity_combo. \
             currentIndexChanged.connect(
             self.switch_entity
         )
@@ -333,7 +333,6 @@ class InitSTREditor(QDialog, Ui_STREditor):
         spinboxes = self.str_type_component.ownership_share()
         for spinbox in spinboxes:
             if spinbox not in self.share_spinbox_connected:
-
                 first_name = spinbox.objectName()
                 spinbox.setObjectName(
                     '{}_{}_{}'.format(str_number, party_id, first_name)
@@ -400,7 +399,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
 
                 else:
                     self.blockSignals(True)
-                    spinbox.setValue(100.00/row_count)
+                    spinbox.setValue(100.00 / row_count)
                     self.blockSignals(False)
                     data_store.share[party_id] = 100.00 / row_count
 
@@ -584,15 +583,15 @@ class InitSTREditor(QDialog, Ui_STREditor):
         for name, icon in children.iteritems():
             item = self.child_item(str_root, name, icon)
             self.str_items[
-                '%s%s'%(name, self.str_number)
-            ] = item
+                '%s%s' % (name, self.str_number)
+                ] = item
 
         self.str_items[
-            '%s%s'%(self.str_text, self.str_number)
-        ] = str_root
+            '%s%s' % (self.str_text, self.str_number)
+            ] = str_root
         party_item = self.str_items[
-            '%s%s'%(self.party_text, self.str_number)
-        ]
+            '%s%s' % (self.party_text, self.str_number)
+            ]
         party_item.setEnabled(True)
 
     def child_item(self, str_root, name, icon):
@@ -645,7 +644,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
         :param str_number: The current STR number
         :type str_number: Integer
         """
-        item = self.str_items['%s%s'%(text, str_number)]
+        item = self.str_items['%s%s' % (text, str_number)]
         return item
 
     def current_item(self):
@@ -725,11 +724,13 @@ class InitSTREditor(QDialog, Ui_STREditor):
         data_store_obj = self.data_store[selected_item.data()]
         return data_store_obj
 
+
 class BindSTREditor(InitSTREditor):
     """
     Binds the STR components tree items with the stack widgets
     containing the component widgets.
     """
+
     def __init__(self):
         """
         Initializes the class and the super class. 
@@ -750,7 +751,7 @@ class BindSTREditor(InitSTREditor):
             return
         str_number = selected_item.data()
 
-        if selected_item.text() == '{} {}'\
+        if selected_item.text() == '{} {}' \
                 .format(self.str_text, str_number):
             self.bind_str()
 
@@ -775,8 +776,6 @@ class BindSTREditor(InitSTREditor):
         Binds the STR introduction page to the STR root node item.
         """
         self.component_container.setCurrentIndex(0)
-        # self.entity_combo.setHidden(True)
-        # self.entity_combo_label.setHidden(True)
         header = QApplication.translate(
             'BindSTREditor',
             'The Social Tenure Relationship'
@@ -985,7 +984,6 @@ class SyncSTREditorData(BindSTREditor):
 
         for i, (party_id, str_type_id) in \
                 enumerate(data_store.str_type.iteritems()):
-
             self.str_type_component.add_str_type_data(
                 self.copied_party_row[party_id],
                 str_type_id,
@@ -1033,11 +1031,13 @@ class SyncSTREditorData(BindSTREditor):
         self.validity_from_date.setDate(from_date)
         self.validity_to_date.setDate(to_date)
 
+
 class ValidateSTREditor(SyncSTREditorData):
     """
     Validates the STR editor. Validates user inputs and the
     enabling of buttons and treeview items.
     """
+
     def __init__(self):
         """
         Initializes ValidateSTREditor and SyncSTREditorData. 
@@ -1114,11 +1114,11 @@ class ValidateSTREditor(SyncSTREditorData):
                 data_store, selected_item
             )
         )
-        self.spatial_unit_component.spatial_unit_fk_mapper.\
+        self.spatial_unit_component.spatial_unit_fk_mapper. \
             beforeEntityAdded.connect(
             self.validate_party_count
         )
-        self.spatial_unit_component.spatial_unit_fk_mapper.\
+        self.spatial_unit_component.spatial_unit_fk_mapper. \
             afterEntityAdded.connect(
             self.validate_non_multi_party
         )
@@ -1228,7 +1228,7 @@ class ValidateSTREditor(SyncSTREditorData):
         :type item: QStandardItem
         """
         if 0 in store.str_type.values() or \
-                None in store.str_type.values():
+                        None in store.str_type.values():
             self.enable_next(selected_item, 3, False)
         else:
 
@@ -1250,7 +1250,7 @@ class ValidateSTREditor(SyncSTREditorData):
         if not item.isEnabled():
             warning = 'You should first select a ' \
                       'record in the enabled items to open the ' \
-                      '%s component.'%item.text()
+                      '%s component.' % item.text()
             warning_message = QApplication.translate(
                 'ValidateSTREditor', warning
             )
@@ -1296,7 +1296,7 @@ class ValidateSTREditor(SyncSTREditorData):
                     40, lambda: self.remove_browser_notice(fk_mapper)
                 )
                 QTimer.singleShot(
-                        100, lambda:self.disallow_multi_party_error(
+                    100, lambda: self.disallow_multi_party_error(
                         browser_notif, fk_mapper
                     )
                 )
@@ -1425,7 +1425,6 @@ class ValidateSTREditor(SyncSTREditorData):
         elif spatial_unit_ids.count(current_id) <= 1:
             return 0
 
-
     def spatial_unit_usage_count(self, model_obj):
         """
         Gets the count of spatial unit usage in the database.
@@ -1439,7 +1438,7 @@ class ValidateSTREditor(SyncSTREditorData):
         ).filter(
             self.str_model.spatial_unit_id == model_obj.id
         ).first()
-        #TODO add a session rollback here and show error.
+        # TODO add a session rollback here and show error.
         current = self.spatial_unit_current_usage_count(model_obj.id)
         return current + usage_count.spatial_unit_count
 
@@ -1721,7 +1720,6 @@ class STREditor(ValidateSTREditor):
 
 
 class EditSTREditor(STREditor):
-
     def __init__(self, str_edit_node):
         """
         The Edit user interface of the STR Editor.
@@ -1914,10 +1912,10 @@ class EditSTREditor(STREditor):
                 QVBoxLayout, 'layout_{}_{}'.format(doc_text, self.str_number)
             )
 
-            self.supporting_doc_component.supporting_doc_manager.\
+            self.supporting_doc_component.supporting_doc_manager. \
                 registerContainer(layout, doc_id)
             for doc_obj in doc_objs:
-                self.supporting_doc_component.supporting_doc_manager.\
+                self.supporting_doc_component.supporting_doc_manager. \
                     insertDocFromModel(doc_obj, doc_id)
 
         doc_item.setEnabled(True)

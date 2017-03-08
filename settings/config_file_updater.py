@@ -1102,7 +1102,9 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
 
                 social_tenure = self.doc_old.createElement("SocialTenure")
                 social_tenure.setAttribute(
-                    "layerDisplay", profile.lower() + "_vw_social_tenure_relationship")
+                    "layerDisplay",
+                    "{}_spatial_unit_vw_social_tenure_relationship".format(pref)
+                )
                 social_tenure.setAttribute(
                     "tenureTypeList", "check_tenure_type")
 
