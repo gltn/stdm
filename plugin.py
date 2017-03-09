@@ -42,7 +42,7 @@ from stdm.ui.doc_generator_dlg import (
     DocumentGeneratorDialogWrapper,
     EntityConfig
 )
-from stdm.settings.startup_handler import copy_startup
+
 from stdm.ui.login_dlg import loginDlg
 from stdm.ui.manage_accounts_dlg import manageAccountsDlg
 from stdm.ui.content_auth_dlg import contentAuthDlg
@@ -91,9 +91,7 @@ from navigation import (
     ContentGroup,
     TableContentGroup
 )
-from mapping import (
-    StdmMapToolCreateFeature
-)
+
 from stdm.utils.util import simple_dialog
 from stdm.ui.change_log import ChangeLog
 from stdm.settings.template_updater import TemplateFileUpdater
@@ -109,9 +107,7 @@ from mapping.utils import pg_layerNamesIDMapping
 
 from composer import ComposerWrapper
 from stdm.ui.progress_dialog import STDMProgressDialog
-
 from stdm.ui.feature_details import DetailsTreeView
-
 from stdm.ui.social_tenure.str_editor import STREditor
 
 LOGGER = logging.getLogger('stdm')
@@ -333,30 +329,29 @@ class STDMQGISLoader(object):
             if not config_load_status:
                 return
 
-            #try:
+            try:
 
-            #Set current profile
-            self.current_profile = current_profile()
+                #Set current profile
+                self.current_profile = current_profile()
 
-            if self.current_profile is None:
-                result = self.default_profile()
-                if not result:
-                    return
-            self.loadModules()
+                if self.current_profile is None:
+                    result = self.default_profile()
+                    if not result:
+                        return
+                self.loadModules()
+                self.default_profile()
+                self.run_wizard()
+                self._user_logged_in = True
 
-            self.default_profile()
-            self.run_wizard()
-            self._user_logged_in = True
-
-            # except Exception as pe:
-            #     title = QApplication.translate(
-            #         "STDMQGISLoader",
-            #         "Error Loading Modules"
-            #     )
-            #     self.reset_content_modules_id(
-            #         title,
-            #         pe
-            #     )
+            except Exception as pe:
+                title = QApplication.translate(
+                    "STDMQGISLoader",
+                    "Error Loading Modules"
+                )
+                self.reset_content_modules_id(
+                    title,
+                    pe
+                )
 
     def minimum_table_checker(self):
 

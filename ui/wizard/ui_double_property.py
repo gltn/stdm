@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_double_property.ui'
 #
-# Created: Wed Mar 01 12:08:28 2017
-#      by: PyQt4 UI code generator 4.9.4
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,12 +11,21 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_DoubleProperty(object):
     def setupUi(self, DoubleProperty):
         DoubleProperty.setObjectName(_fromUtf8("DoubleProperty"))
-        DoubleProperty.resize(258, 151)
+        DoubleProperty.resize(258, 166)
         self.gridLayout = QtGui.QGridLayout(DoubleProperty)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.label_3 = QtGui.QLabel(DoubleProperty)
@@ -60,11 +68,11 @@ class Ui_DoubleProperty(object):
         QtCore.QMetaObject.connectSlotsByName(DoubleProperty)
 
     def retranslateUi(self, DoubleProperty):
-        DoubleProperty.setWindowTitle(QtGui.QApplication.translate("DoubleProperty", "Decimal Properties", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_3.setText(QtGui.QApplication.translate("DoubleProperty", "Precision", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_4.setText(QtGui.QApplication.translate("DoubleProperty", "Scale", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("DoubleProperty", "Minimum value", None, QtGui.QApplication.UnicodeUTF8))
-        self.edtMinVal.setPlaceholderText(QtGui.QApplication.translate("DoubleProperty", "Enter minimum value", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("DoubleProperty", "Maximum value", None, QtGui.QApplication.UnicodeUTF8))
-        self.edtMaxVal.setPlaceholderText(QtGui.QApplication.translate("DoubleProperty", "Enter maximum value", None, QtGui.QApplication.UnicodeUTF8))
+        DoubleProperty.setWindowTitle(_translate("DoubleProperty", "Decimal Properties", None))
+        self.label_3.setText(_translate("DoubleProperty", "Precision", None))
+        self.label_4.setText(_translate("DoubleProperty", "Decimal places", None))
+        self.label.setText(_translate("DoubleProperty", "Minimum value", None))
+        self.edtMinVal.setPlaceholderText(_translate("DoubleProperty", "Enter minimum value", None))
+        self.label_2.setText(_translate("DoubleProperty", "Maximum value", None))
+        self.edtMaxVal.setPlaceholderText(_translate("DoubleProperty", "Enter maximum value", None))
 

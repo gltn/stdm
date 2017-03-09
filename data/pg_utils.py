@@ -288,7 +288,7 @@ def delete_table_data(tableName, cascade = True):
     tableIndex = getIndex(tables, tableName)
     
     if tableIndex != -1:
-        sql = "DELETE FROM {0}".format(tableName)
+        sql = "TRUNCATE {0}".format(tableName)
         
         if cascade:
             sql += " CASCADE"
@@ -298,7 +298,8 @@ def delete_table_data(tableName, cascade = True):
 
 def geometryType(tableName, spatialColumnName, schemaName="public"):
     """
-    Returns a tuple of geometry type and EPSG code of the given column name in the table within the given schema.
+    Returns a tuple of geometry type and EPSG code of the given column name in
+    the table within the given schema.
     """
     sql = "select type,srid from geometry_columns where f_table_name = :tbname " \
           "and f_geometry_column = :spcolumn and f_table_schema = :tbschema"

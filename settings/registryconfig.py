@@ -33,9 +33,11 @@ SHOW_LICENSE = 'ShowLicense'
 WIZARD_RUN = 'wizardRun'
 CONFIG_UPDATED = 'ConfigUpdated'
 SUB_QGIS = '/Qgis'
+QGIS_PYTHON_PLUGINS = '/PythonPlugins'
 DEBUG_LOG = 'Debug'
 HOST = 'Host'
 FIRST_LOGIN = 'FirstLogin'
+STDM_PLUGIN = 'stdm'
 
 def registry_value(key_name):
     """
@@ -133,6 +135,15 @@ def set_last_document_path(path):
     """
     set_registry_value(LAST_SUPPORTING_DOC_PATH, path)
 
+
+def enable_stdm():
+    """
+    Enables the STDM plugin if it is disabled.
+    """
+    config_plugins = QGISRegistryConfig(QGIS_PYTHON_PLUGINS)
+    stdm_status = config_plugins.read([STDM_PLUGIN])
+    if stdm_status[STDM_PLUGIN] == 'false':
+        config_plugins.write({STDM_PLUGIN:'true'})
 
 def selection_color():
     """

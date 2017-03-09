@@ -208,10 +208,11 @@ class SocialTenure(Entity):
 
     def _view_name_from_entity(self, entity):
         # Construct view name from entity name
-        return u'{0}_{1}'.format(
-            entity.name,
-            SocialTenure.BASE_STR_VIEW
-        )
+        if entity is not None:
+            return u'{0}_{1}'.format(
+                entity.name,
+                SocialTenure.BASE_STR_VIEW
+            )
 
     @property
     def views(self):

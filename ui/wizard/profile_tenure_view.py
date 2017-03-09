@@ -648,7 +648,7 @@ class BaseTenureItem(QGraphicsItem):
         :return: Returns the font object used to render the header text.
         :rtype: QFont
         """
-        return QFont(self.font_name, 13, 63)
+        return QFont(self.font_name, 10, 63)
 
     @property
     def items_title_font(self):
