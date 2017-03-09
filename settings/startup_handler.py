@@ -40,3 +40,5 @@ def copy_startup():
                        '\n {}'.format(ex)
         print >> file, traceback.print_exc()
         file.close()
+
+copy_startup()

@@ -51,6 +51,8 @@ Column, Lookup and Lookup Value Editors.
 - **Database and Configuration**: After adding and editing a column, the column modified
 gets selected after the Column Editor is closed to easily show the changed column instead of
 clearing the selection.
+- **Database and Configuration**: When adding a new column, the column view scrolls to the new column.
+If the column is edited, the scroll position doesn't changed after closing the Column Editor.
 - **GPS Feature Import**: Re-designed with the integration of GPS file upload,
 GPX Data Editor, and STDM Form in a tab interface.
 - **Social Tenure Relationship Editor**: re-designed with a tree view interface.
