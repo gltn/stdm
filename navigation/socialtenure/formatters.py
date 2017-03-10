@@ -40,8 +40,7 @@ from stdm.utils.util import (
     profile_spatial_tables,
     lookup_id_to_value,
     format_name,
-    profile_lookup_columns,
-    model_display_mapping
+    profile_lookup_columns
 )
 
 from .nodes import (
@@ -126,8 +125,8 @@ class EntityNodeFormatter(STRNodeFormatter):
 
         self._str_model_disp_mapping = {}
         if not self._str_model is None:
-            self._str_model_disp_mapping = model_display_mapping(
-                self._str_model, self.curr_profile.social_tenure
+            self._str_model_disp_mapping = entity_display_columns(
+                self.curr_profile.social_tenure, True
             )
 
         self._fk_references = [
@@ -147,13 +146,10 @@ class EntityNodeFormatter(STRNodeFormatter):
 
         self._current_data_source_fk_ref = self._current_data_source_foreign_key_reference()
         #numeric_char_cols for entities - party and sp_unit
-
         self._numeric_char_cols = entity_display_columns(
             self.curr_profile.entity_by_name(config.data_source_name)
         )
-
         self._spatial_data_sources = profile_spatial_tables(self.curr_profile).keys()
-
 
     def _format_display_mapping(self, model, display_cols, filter_cols):
         """
@@ -163,13 +159,13 @@ class EntityNodeFormatter(STRNodeFormatter):
         """
         disp_mapping = OrderedDict()
 
-        for c in display_cols.keys():
+        for c, header in display_cols.iteritems():
             if c != "id" and c in filter_cols:
                 if hasattr(model, c):
                     if c == 'tenure_share':
-                        k = c, '{} (%)'.format(format_name(c))
+                        k = c, '{} (%)'.format(header)
                     else:
-                        k = c, format_name(c)
+                        k = c, header
 
                     disp_mapping[k] = lookup_id_to_value(
                         self.curr_profile, c, getattr(model, c)
@@ -324,12 +320,13 @@ class EntityNodeFormatter(STRNodeFormatter):
                 r_entities = self._models_from_fk_reference(str_model, str_col,
                                                             mod_table, mod_col)
                 curr_entity = self.curr_profile.entity_by_name(mod_table)
-                entity_display_cols = entity_display_columns(curr_entity)
+
+                col_name_header = entity_display_columns(curr_entity, True)
 
                 for r in r_entities:
                     dm = self._format_display_mapping(r,
-                                                      model_display_mapping(r.__class__, curr_entity),
-                                                      entity_display_cols)
+                                                      col_name_header,
+                                                      col_name_header.keys())
 
                     node = self._spatial_textual_node(mod_table)
                     mod_table = mod_table.replace(self.curr_profile.prefix, '')

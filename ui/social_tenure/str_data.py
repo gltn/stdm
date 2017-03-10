@@ -216,7 +216,7 @@ class STRDBHandler():
             self.progress.show()
             if self.str_edit_obj is None:
                 QApplication.processEvents()
-                self.progress.setRange(0, len(self.data_store) - 1)
+                self.progress.setRange(0, len(self.data_store))
                 self.progress.overall_progress(
                     'Creating a STR...',
                 )
@@ -227,10 +227,11 @@ class STRDBHandler():
                     self.progress.progress_message(
                         'Saving STR {}'.format(i+1), ''
                     )
-                    self.progress.setValue(i)
+                    self.progress.setValue(i+1)
 
                     self.on_add_str(str_store)
 
+                self.progress.hide()
                 strMsg = QApplication.translate(
                     "STRDBHandler",
                     "The social tenure relationship has "

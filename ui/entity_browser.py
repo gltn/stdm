@@ -214,7 +214,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         self.filtered_records = []
         self._searchable_columns = OrderedDict()
         self._show_docs_col = False
-
+        self.child_model = OrderedDict()
         #ID of a record to select once records have been added to the table
         self._select_item = None
 
@@ -715,8 +715,9 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 attr_val = formatter.format_column_value(attr_val)
 
             self._tableModel.setData(prop_idx, attr_val)
+        return insertPosition
 
-    def _model_from_id(self, record_id):
+    def _model_from_id(self, record_id, row_number):
         '''
         Convenience method that returns the model object based on its ID.
         '''
@@ -724,6 +725,8 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         modelObj = dbHandler.queryObject().filter(
             self._dbmodel.id == record_id
         ).first()
+        if modelObj is None:
+            modelObj = self.child_model[row_number, self.entity]
 
         return modelObj if not modelObj is None else None
 
@@ -756,11 +759,6 @@ class EntityBrowserWithEditor(EntityBrowser):
                 QApplication.translate("EntityBrowserWithEditor", "edit_tool")
             )
 
-            if isinstance(parent, EntityEditorDialog):
-                self.parent_entity = parent._entity
-
-            else:
-                self.parent_entity = None
 
             self.connect(self._editEntityAction,SIGNAL("triggered()"),self.onEditEntity)
 
@@ -787,6 +785,14 @@ class EntityBrowserWithEditor(EntityBrowser):
                 self.tbActions.addAction(self._newEntityAction)
                 self.tbActions.addAction(self._editEntityAction)
                 self.tbActions.addAction(self._removeEntityAction)
+
+            if isinstance(parent, EntityEditorDialog):
+                if self.can_view_supporting_documents:
+                    self._view_docs_act.setVisible(False)
+                self.parent_entity = parent._entity
+
+            else:
+                self.parent_entity = None
 
             # hide the add button and add layer preview for spatial entity
             if entity.has_geometry_column():
@@ -838,8 +844,9 @@ class EntityBrowserWithEditor(EntityBrowser):
         if result == QDialog.Accepted:
             model_obj = self.addEntityDlg.model()
             if self.addEntityDlg.is_valid:
-                self.addModelToView(model_obj)
-                self.recomputeRecordCount()
+                if self.parent_entity is None:
+                    self.addModelToView(model_obj)
+                    self.recomputeRecordCount()
 
     def on_save_and_new(self, model):
         """
@@ -849,7 +856,8 @@ class EntityBrowserWithEditor(EntityBrowser):
         :type model: SQL Alchemy Model
         """
         if model is not None:
-            self.addModelToView(model)
+            insert_position = self.addModelToView(model)
+            self.set_child_model(model, insert_position + 1)
             self.recomputeRecordCount()
 
     def _can_add_edit(self):
@@ -906,6 +914,16 @@ class EntityBrowserWithEditor(EntityBrowser):
         recordid = rowIndex.data()
         self._load_editor_dialog(recordid, rowIndex.row())
 
+    def set_child_model(self, model, row_position):
+        """
+        Sets the child model so that it can be used for editing and deleting if
+        needed.
+        :param model: The child model saved
+        :type model: Object
+        """
+        self.child_model[row_position, self.entity] = model
+
+
     def onRemoveEntity(self):
         '''
         Load editor dialog for editing an existing record.
@@ -913,6 +931,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         self._notifBar.clear()
 
         sel_row_indices = self.tbEntity.selectionModel().selectedRows(0)
+
 
         if len(sel_row_indices) == 0:
             msg = QApplication.translate(
@@ -943,9 +962,11 @@ class EntityBrowserWithEditor(EntityBrowser):
             return
 
         while len(sel_row_indices) > 0:
+
             ri = sel_row_indices[0]
             source_row_index = self._proxyModel.mapToSource(ri)
             record_id = source_row_index.data()
+
             row_number = source_row_index.row()
 
             #Delete record
@@ -959,7 +980,7 @@ class EntityBrowserWithEditor(EntityBrowser):
 
                 msg =  QApplication.translate(
                 'EntityBrowserWithEditor',
-                'An error occured while attempting to delete a record, this '
+                'An error occurred while attempting to delete a record, this '
                 'is most likely caused by a dependency issue.\nPlease check '
                 'if the record has dependencies such as social tenure '
                 'relationship or related entities. If it has then delete '
@@ -971,6 +992,7 @@ class EntityBrowserWithEditor(EntityBrowser):
 
             #Refresh list of selected records
             sel_row_indices = self.tbEntity.selectionModel().selectedRows(0)
+
 
     def remove_rows(self):
         """
@@ -984,11 +1006,11 @@ class EntityBrowserWithEditor(EntityBrowser):
         '''
         Load editor dialog based on the selected model instance with the given ID.
         '''
-        model_obj = self._model_from_id(recid)
+        model_obj = self._model_from_id(recid, rownumber)
 
         #Load editor dialog
         edit_entity_dlg = self._editor_dlg(self._entity, model=model_obj,
-                                         parent=self)
+                                         parent=self, parent_entity=self.parent_entity)
 
         result = edit_entity_dlg.exec_()
 
@@ -1016,6 +1038,18 @@ class EntityBrowserWithEditor(EntityBrowser):
         """
         del_result = True
 
+        if self.parent_entity is not None:
+            del self.child_model[row_number + 1, self.entity]
+            del self._parent.child_models[row_number + 1, self.entity]
+
+            self._tableModel.removeRows(row_number, 1)
+            # Update number of records
+            self.recomputeRecordCount()
+
+            #Clear previous notifications
+            self._notifBar.clear()
+
+            return del_result
         #Remove record from the database
         dbHandler = self._dbmodel()
         entity = dbHandler.queryObject().filter(

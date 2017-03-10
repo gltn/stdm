@@ -111,6 +111,22 @@ class LayerSelectionHandler(object):
             for feature in selected_features:
                 if 'id' in field_names:
                     features.append(feature['id'])
+            if len(features) > 40:
+                max_error = QApplication.translate(
+                    'LayerSelectionHandler',
+                    'You have exceeded the maximum number of features that \n'
+                    'can be selected and queried by Spatial Entity Details. \n'
+                    'Please select a maximum of 40 features.'
+                )
+
+                QMessageBox.warning(
+                    self.iface.mainWindow(),
+                    QApplication.translate(
+                        'LayerSelectionHandler', 'Maximum Features Error'
+                    ),
+                    max_error
+                )
+                return None
             return features
         else:
             return None
@@ -120,7 +136,7 @@ class LayerSelectionHandler(object):
         Shows an error if the layer is not an STDM entity layer.
         """
         not_feature_msg = QApplication.translate(
-            'FeatureDetails',
+            'LayerSelectionHandler',
             'You have selected a non-STDM layer. \n'
             'Please select an STDM layer to view \n'
             'the details.'
@@ -129,7 +145,7 @@ class LayerSelectionHandler(object):
         QMessageBox.warning(
             self.iface.mainWindow(),
             QApplication.translate(
-                'DetailsTreeView', 'Invalid Layer Error'
+                'LayerSelectionHandler', 'Invalid Layer Error'
             ),
             not_feature_msg
         )
@@ -156,7 +172,7 @@ class LayerSelectionHandler(object):
                 return table_name
 
             entity_table = self.current_profile.entity_by_name(table_name)
-            if entity_table is None :
+            if entity_table is None:
                 return None
             return table_name
         except KeyError:
@@ -177,7 +193,7 @@ class LayerSelectionHandler(object):
             QMessageBox.critical(
                 self.iface.mainWindow(),
                 QApplication.translate(
-                    'DetailsTreeView', 'Feature Details Error'
+                    'LayerSelectionHandler', 'Feature Details Error'
                 ),
                 no_layer_msg
             )
@@ -698,7 +714,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         """
         self.tree_scrollArea.setWidget(self.view)
 
-    def reset_tree_view(self):
+    def reset_tree_view(self, features=None):
         """
         Resets the treeview by clearing feature highlights,
         disabling edit, delete, and view document buttons,
@@ -715,10 +731,10 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             self.party_items.clear()
         else:
             self.removed_feature = None
-        features = self.selected_features()
+
         # if the selected feature is over 1,
         # activate multi_select_highlight
-        if not features is None:
+        if features is not None:
             self.view.clicked.connect(
                 self.multi_select_highlight
             )
@@ -743,7 +759,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         """
         Shows the treeview.
         """
-        if self.selected_features() is None:
+        selected_features = self.selected_features()
+        if selected_features is None:
             self.reset_tree_view()
 
             not_supported = QApplication.translate(
@@ -752,16 +769,15 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             )
             self.treeview_error(not_supported)
             return
-        selected_features = self.selected_features()
 
         if len(selected_features) < 1:
-            self.reset_tree_view()
+            self.reset_tree_view(selected_features)
             self.disable_buttons(True)
             return
         layer_icon = QIcon(':/plugins/stdm/images/icons/layer.gif')
         ### add non entity layer for views.
         if not self.entity is None:
-            self.reset_tree_view()
+            self.reset_tree_view(selected_features)
             roots = self.add_parent_tree(
                 layer_icon, format_name(self.entity.short_name)
             )
@@ -782,7 +798,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 self.add_root_children(db_model, root, str_records)
 
         else:
-            self.reset_tree_view()
+            self.reset_tree_view(selected_features)
             self.disable_buttons(True)
             self.add_non_entity_parent(layer_icon)
 
