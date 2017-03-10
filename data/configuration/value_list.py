@@ -85,7 +85,7 @@ class ValueList(Entity):
 
     def _append_check(self, name):
         #Appends a 'check_prefix' to the name.
-        idx = name.find(self.PREFIX)
+        idx = name.find(self.PREFIX+'_')
 
         if idx != -1:
             return name

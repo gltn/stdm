@@ -237,8 +237,8 @@ class BaseColumn(ColumnItem):
         r = child_relations + parent_relations
 
         #Get children entities
-        parent_entities = [er.parent for er in child_relations]
-        child_entities = [er.child for er in parent_relations]
+        parent_entities = [er.parent for er in child_relations if er.parent.action != DbItem.DROP]
+        child_entities = [er.child for er in parent_relations if er.child.action != DbItem.DROP]
 
         all_entities = parent_entities + child_entities
 

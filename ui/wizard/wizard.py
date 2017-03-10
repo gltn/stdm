@@ -301,19 +301,31 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Event handler for the cancel button.
         If configuration has been edited, warn user before exiting.
         """
-        cnt = len(self.stdm_config)
-        if cnt <> self.orig_assets_count:
-            if self.draft_config:
-                self.save_current_configuration(DRAFT_CONFIG_FILE)
-            else:
-                msg0 = self.tr("You have made some changes to your current "
-                        "configuration file, but you have not saved them in the "
-                        "database permenently.\n Would you like to store your "
-                        "changes as draft and continue next time? ")
-                if self.query_box_yesno(msg0) == QMessageBox.Yes:
+        if self.draft_config:
+            self.save_current_configuration(DRAFT_CONFIG_FILE)
+        else:
+            if self.config_is_dirty():
+                warn_result = self.dirty_config_warning()
+                if warn_result == QMessageBox.Cancel:
+                    return
+                if warn_result == QMessageBox.Yes:
                     self.save_current_configuration(DRAFT_CONFIG_FILE)
 
         self.done(0)
+
+    def config_is_dirty(self):
+        cnt = len(self.stdm_config)
+        if cnt <> self.orig_assets_count:
+            return True
+        else:
+            return False
+
+    def dirty_config_warning(self):
+        msg0 = self.tr("You have made some changes to your current "
+                "configuration file, but you have not saved them in the "
+                "database permenently.\n Would you like to save your "
+                "changes as draft and continue next time? ")
+        return self.query_box_save_cancel(msg0)
 
 
     def load_stdm_config(self):
@@ -1503,10 +1515,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Create a copy of the current profile
         '''
         current_profile_name = self.cboProfile.currentText()
-        description = self.edtDesc.text()
+        orig_description = self.edtDesc.text()
 
         profile_names = self.profile_names()
-        editor = CopyProfileEditor(self, current_profile_name, description, profile_names)
+        editor = CopyProfileEditor(self, current_profile_name, orig_description, profile_names)
         result = editor.exec_()
         if result == 1:
             if not self.draft_config:
@@ -1682,7 +1694,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         :rtype: boolean
         """
         cols = table_column_names(entity.name) 
-        if column.name in cols:
+        if column.name in cols: 
             return True
         else:
             return False
@@ -1953,8 +1965,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
                 model_item.edit_entity(original_column, editor.column)
 
-                self.populate_spunit_model(profile)
                 entity.columns[original_column.name] = editor.column
+                self.populate_spunit_model(profile)
 
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
@@ -2032,7 +2044,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Delete selected column:
         - show warning dialog if a column has dependencies.
         - If column deleted is a Geometry column, and Entity has no other
-          Geometry column, 
+          Geometry column,?? 
         """
         row_id, column, model_item = self._get_model(self.tbvColumns)
         if not column:
@@ -2048,14 +2060,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             self.delete_entity_from_spatial_unit_model(entity)
 
-            #if column.TYPE_INFO == 'GEOMETRY':
-                #self.nullify_str_spatial_unit(entity)
-
-    #def nullify_str_spatial_unit(self, entity):
-        #current_profile = self.current_profile()
-        #if entity.name == current_profile.social_tenure.spatial_unit.name:
-            #current_profile.social_tenure.spatial_unit = None
-
     def check_column_dependencies(self, column):
         """
         Checks if a columns has dependencies, 
@@ -2069,7 +2073,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             # show dependencies dialog
             column_depend = ColumnDepend(self, column, dependencies)
             result = column_depend.exec_()
-            # 0 - user choose not to delete column
+            # 0 - user chose not to delete column
             if result == 0:
                 ok_delete =  False
 
@@ -2087,6 +2091,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             if result == 1:
                 self.lookup_view_model.add_entity(editor.lookup)
                 self.refresh_lookup_view()
+                qm = self.lvLookups.model().index(
+                        self.lvLookups.model().rowCount()-1, 0)
+                self.lvLookups.setCurrentIndex(qm)
+                self.lvLookups.setFocus()
+
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No profile selected to add lookup!"))
@@ -2115,7 +2124,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 model_item.setData(model_index_name, editor.lookup.short_name)
                 model_item.edit_entity(tmp_lookup, editor.lookup)
                 profile.entities[tmp_lookup.short_name] = editor.lookup
-                self.lvLookups.setFocus()
+            self.lvLookups.setFocus()
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "Nothing to edit!"))
@@ -2356,6 +2365,30 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         msgbox.setDefaultButton(QMessageBox.Yes);
         result = msgbox.exec_()
         return result
+
+    def query_box_save_cancel(self, msg, msg_icon=QMessageBox.Warning):
+        """
+        Show 'Yes/No' query message box
+        :param msg: message to show on the box
+        :type msg: str
+        :rtype: QMessageBox.StandardButton
+        """
+        msgbox = QMessageBox(self)
+        msgbox.setIcon(msg_icon)
+        msgbox.setWindowTitle(self.tr("STDM Configuration Wizard"))
+        msgbox.setText(msg)
+        msgbox.setStandardButtons(
+                QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel);
+        btnY = msgbox.button(QtGui.QMessageBox.Yes)
+        btnY.setText(self.tr('Save'))
+        btnN = msgbox.button(QtGui.QMessageBox.No)
+        btnN.setText(self.tr("Don't Save"))
+        btnC = msgbox.button(QtGui.QMessageBox.Cancel)
+        btnC.setText(self.tr("Cancel"))
+        msgbox.setDefaultButton(QMessageBox.Yes);
+        result = msgbox.exec_()
+        return result
+    
 
     def make_profile_copy( self, orig_profile_name, copy_profile_name,
             config_file_name):
