@@ -1790,6 +1790,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.tbvColumns.setDragEnabled(False)
             self.lvLookupValues.setDragEnabled(False)
 
+
     def refresh_entity_view(self):
         self.clear_view_model(self.entity_model)
         self.entity_model = EntitiesModel()
@@ -1933,7 +1934,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Event handler for editing a column.
         """
-        rid, column, model_item = self._get_model(self.tbvColumns)
+        #rid, column, model_item = self._get_model(self.tbvColumns)
+        rid, column, model_item = self.get_column_data()
 
         if column and column.action == DbItem.CREATE:
             row_id, entity = self._get_entity(self.lvEntities)
@@ -1964,8 +1966,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 model_item.setData(model_index_desc, editor.column.description)
 
                 model_item.edit_entity(original_column, editor.column)
-
                 entity.columns[original_column.name] = editor.column
+
+                entity.columns[editor.column.name] = \
+                    entity.columns.pop(original_column.name)
+
                 self.populate_spunit_model(profile)
 
         else:
@@ -2034,10 +2039,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             column = model_item.entities().values()[row_id]
         return row_id, column, model_item
 
+
     def _get_entity(self, view):
         model_item, entity, row_id = self.get_model_entity(view)
         if entity:
             return row_id, entity
+
+    def get_column_data(self):
+        model_item = self.tbvColumns.model()
+        row_id = self.tbvColumns.selectedIndexes()[0].row()
+        col_name = self.tbvColumns.model().data(
+                self.tbvColumns.model().index(row_id, 0))
+        column = model_item.entities()[str(col_name)]
+        return row_id, column, model_item
 
     def delete_column(self):
         """
@@ -2052,11 +2066,15 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     "No column selected for deletion!"))
             return
 
+
         if self.check_column_dependencies(column):
             ent_id, entity = self._get_entity(self.lvEntities)
 
             # delete column from the entity
             entity.remove_column(column.name)
+
+            model_item.delete_entity(column)
+            #self.refresh_columns_view(entity)
 
             self.delete_entity_from_spatial_unit_model(entity)
 

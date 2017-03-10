@@ -212,6 +212,9 @@ class ColumnEntitiesModel(QStandardItemModel):
     def edit_entity(self, old_entity, new_entity):
         self._entities[old_entity.name] = new_entity
 
+        self._entities = OrderedDict([(new_entity.name, v) 
+            if k == old_entity.name else (k, v) for k, v in self._entities.items()])
+
     # ++
     def delete_entity(self, entity):
         if entity.name in self._entities:
@@ -223,6 +226,8 @@ class ColumnEntitiesModel(QStandardItemModel):
         if short_name in self._entities:
             del self._entities[short_name]
             LOGGER.debug('%s model entity removed.', short_name)
+            self._entities = OrderedDict([(new_entity.name, v) 
+                if k == old_entity.name else (k, v) for k, v in self._entities.items()])
 
     def _add_row(self, entity):
         '''
