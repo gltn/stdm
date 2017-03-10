@@ -348,6 +348,7 @@ def format_name(attr, trim_id=True):
 
     return display_name
 
+
 def entity_display_columns(entity, with_header=False):
     """
     Returns entity display columns.
@@ -456,6 +457,7 @@ def model_display_mapping(model, entity):
     """
     model_display_cols = OrderedDict()
     model_dic = model.__dict__
+
     for col in model_dic:
         if col in entity_display_columns(entity) and col != 'id':
             model_display_cols[col] = format_name(col)
