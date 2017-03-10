@@ -69,7 +69,8 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         """
         self.edtName.setFocus()
         if self.lookup:
-            self.edtName.setText(self.lookup.short_name)
+            self.edtName.setText(
+                    self.lookup.short_name.replace('check_',''))
         self.edtName.textChanged.connect(self.validate_text)
 
     def show_notification(self, message):
@@ -192,7 +193,8 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         return self.profile.entities.has_key(name)
 
     def edit_lookup(self, short_name):
-        self.lookup.short_name = short_name
+        short_name = short_name.replace('check_','')
+        self.lookup.short_name = u'{0}_{1}'.format('check', short_name)
 
     def reject(self):
         self.done(0)

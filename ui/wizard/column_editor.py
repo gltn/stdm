@@ -143,6 +143,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.edtColName.setFocus()
 
         self.edtColName.setEnabled(not self.in_db)
+
         self.cboDataType.setEnabled(not self.in_db)
 
         self.buttonBox.button(QtGui.QDialogButtonBox.Ok).clicked.connect(self.accept)
@@ -467,7 +468,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         Opens the property editor for the Varchar data type.
         If successful, set a minimum column in work area 'form fields'
         """
-
         editor = VarcharProperty(self, self.form_fields)
         result = editor.exec_()
         if result == 1:
