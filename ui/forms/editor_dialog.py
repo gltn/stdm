@@ -163,7 +163,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
             self.set_parent_values()
             # make the size smaller to differentiate from parent and as it
             # only has few tabs.
-            self.resize(330, 400)
+            self.resize(390, 400)
 
     def _init_gui(self):
         # Setup base elements
@@ -246,7 +246,10 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
             else:
                 # When updating an existing child editor save to the db
-                self.buttonBox.accepted.connect(self.submit)
+                self.buttonBox.accepted.connect(
+                    self.on_child_saved
+                )
+                #self.buttonBox.accepted.connect(self.submit)
 
         self.buttonBox.rejected.connect(self.cancel)
 
@@ -344,16 +347,21 @@ class EntityEditorDialog(QDialog, MapperMixin):
         if self.parent_entity is None:
             return
         self.submit(True)
-        unique_id = str(uuid.uuid4())
+
+        insert_pos = self._parent.tbEntity.model().rowCount() + 1
         # Save to parent editor so that it is persistent.
-        self._parent._parent.child_models[unique_id] = \
-            (self._entity, self.model())
+        self._parent._parent.child_models[insert_pos, self._entity] = \
+            self.model()
+        self.addedModel.emit(self.model())
         if not save_and_new:
             self.accept()
+
+
         else:
             if self.is_valid:
-                self.addedModel.emit(self.model())
+                #self.addedModel.emit(self.model())
                 self.setModel(self.ent_model())
+
                 self.clear()
                 self.set_parent_values()
 
@@ -365,9 +373,9 @@ class EntityEditorDialog(QDialog, MapperMixin):
         if len(self.child_models) < 1:
             return
         children_obj = []
-        for uu_id, entity_and_model in self.child_models.iteritems():
-            entity = entity_and_model[0]
-            model = entity_and_model[1]
+        for row_entity, model in self.child_models.iteritems():
+            row_pos = row_entity[0]
+            entity = row_entity[1]
             ent_model = entity_model(entity)
             entity_obj = ent_model()
             for col in entity.columns.values():
