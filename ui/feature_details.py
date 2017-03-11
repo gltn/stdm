@@ -193,7 +193,7 @@ class LayerSelectionHandler(object):
             QMessageBox.critical(
                 self.iface.mainWindow(),
                 QApplication.translate(
-                    'LayerSelectionHandler', 'Feature Details Error'
+                    'LayerSelectionHandler', 'Layer Error'
                 ),
                 no_layer_msg
             )
