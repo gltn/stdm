@@ -3181,7 +3181,7 @@ the details.</source>
     </message>
     <message>
         <location filename="../ui/feature_details.py" line="193"/>
-        <source>Feature Details Error</source>
+        <source>Layer Error</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
