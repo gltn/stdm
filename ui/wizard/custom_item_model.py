@@ -211,9 +211,9 @@ class ColumnEntitiesModel(QStandardItemModel):
 
     def edit_entity(self, old_entity, new_entity):
         self._entities[old_entity.name] = new_entity
-
-        self._entities = OrderedDict([(new_entity.name, v) 
-            if k == old_entity.name else (k, v) for k, v in self._entities.items()])
+        old_key = old_entity.name
+        new_key = new_entity.name
+        self._replace_key(old_key, new_key)
 
     # ++
     def delete_entity(self, entity):
@@ -226,15 +226,20 @@ class ColumnEntitiesModel(QStandardItemModel):
         if short_name in self._entities:
             del self._entities[short_name]
             LOGGER.debug('%s model entity removed.', short_name)
-            self._entities = OrderedDict([(new_entity.name, v) 
-                if k == old_entity.name else (k, v) for k, v in self._entities.items()])
+            self._refresh_entities()
+
+    def _replace_key(self, old_key, new_key):
+        """
+        Relace a dictionary key
+        :param old_key: name of the key to replace
+        :type old_key: str
+        :param new_key: name of new key
+        :type new_key: str
+        """
+        self._entities = OrderedDict([(new_key, v) 
+            if k == old_key else (k, v) for k, v in self._entities.items()])
 
     def _add_row(self, entity):
-        '''
-        name_item = QStandardItem(entity.name())
-        mandatory_item = QStandardItem(unicode(entity.mandatory()))
-        self.appendRow([name_item, mandatory_item])
-        '''
         entity_item = ColumnEntityModelItem(entity)
         name_item = entity_item._create_item(entity.name)
         col_data_type = entity_item._create_item(entity.display_name())
@@ -254,7 +259,6 @@ class LookupEntityModelItem(QStandardItem):
         super(LookupEntityModelItem, self).__init__(entity.short_name)
 
         self.setColumnCount(len(self.headers_labels))
-        #self.setCheckable(True)
 
         if not entity is None:
             self.set_entity(entity)
@@ -302,8 +306,6 @@ class LookupEntitiesModel(QStandardItemModel):
 
     def edit_entity(self, old_entity, new_entity):
         self._entities[old_entity.short_name] = new_entity
-        #self._entities[new_entity.short_name] = \
-                #self._entities.pop(old_entity.short_name)
 
     # ++
     def delete_entity(self, entity):
@@ -318,11 +320,6 @@ class LookupEntitiesModel(QStandardItemModel):
             LOGGER.debug('%s model entity removed.', short_name)
 
     def _add_row(self, entity):
-        '''
-        name_item = QStandardItem(entity.name())
-        mandatory_item = QStandardItem(unicode(entity.mandatory()))
-        self.appendRow([name_item, mandatory_item])
-        '''
         entity_item = LookupEntityModelItem(entity)
         self.appendRow(entity_item)
 
