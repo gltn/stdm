@@ -3,17 +3,17 @@
 <context>
     <name>@default</name>
     <message>
-        <location filename="../data/configuration/columns.py" line="474"/>
+        <location filename="../data/configuration/columns.py" line="475"/>
         <source>Whole Number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data/configuration/columns.py" line="494"/>
+        <location filename="../data/configuration/columns.py" line="514"/>
         <source>Decimal Number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data/configuration/columns.py" line="541"/>
+        <location filename="../data/configuration/columns.py" line="561"/>
         <source>Date</source>
         <translation type="unfinished">Date</translation>
     </message>
@@ -38,37 +38,37 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data/configuration/columns.py" line="637"/>
+        <location filename="../data/configuration/columns.py" line="657"/>
         <source>Geometry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data/configuration/columns.py" line="509"/>
+        <location filename="../data/configuration/columns.py" line="529"/>
         <source>Auto-increment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data/configuration/columns.py" line="574"/>
+        <location filename="../data/configuration/columns.py" line="594"/>
         <source>Date with time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data/configuration/columns.py" line="720"/>
+        <location filename="../data/configuration/columns.py" line="740"/>
         <source>Related Entity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data/configuration/columns.py" line="764"/>
+        <location filename="../data/configuration/columns.py" line="784"/>
         <source>Single Select Lookup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data/configuration/columns.py" line="787"/>
+        <location filename="../data/configuration/columns.py" line="807"/>
         <source>Administrative Spatial Unit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data/configuration/columns.py" line="875"/>
+        <location filename="../data/configuration/columns.py" line="895"/>
         <source>Multiple Select Lookup</source>
         <translation type="unfinished"></translation>
     </message>
@@ -93,27 +93,27 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data/configuration/columns.py" line="650"/>
+        <location filename="../data/configuration/columns.py" line="670"/>
         <source>Yes/No</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data/configuration/columns.py" line="433"/>
+        <location filename="../data/configuration/columns.py" line="434"/>
         <source>Varying-length Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data/configuration/columns.py" line="454"/>
+        <location filename="../data/configuration/columns.py" line="455"/>
         <source>Unlimited-length Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data/configuration/columns.py" line="897"/>
+        <location filename="../data/configuration/columns.py" line="917"/>
         <source>Percent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data/configuration/columns.py" line="817"/>
+        <location filename="../data/configuration/columns.py" line="837"/>
         <source>Auto Generated Code</source>
         <translation type="unfinished"></translation>
     </message>
@@ -149,7 +149,7 @@
 <context>
     <name>AboutToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="179"/>
+        <location filename="../plugin.py" line="176"/>
         <source>About</source>
         <translation type="unfinished">A propos</translation>
     </message>
@@ -295,7 +295,7 @@ Click Yes to delete or No to cancel.</source>
         <translation type="obsolete">Impossible de mettre à jour la colonne des données</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/column_editor.py" line="738"/>
+        <location filename="../ui/wizard/column_editor.py" line="753"/>
         <source>STDM</source>
         <translation type="unfinished">STDM</translation>
     </message>
@@ -348,13 +348,21 @@ S&apos;il vous plait mettez à jour la configuration des tables pour terminer la
 <context>
     <name>AutoGeneratedLineEdit</name>
     <message>
-        <location filename="../ui/customcontrols/relation_line_edit.py" line="443"/>
-        <source>Attribute Table Error</source>
+        <location filename="../ui/customcontrols/relation_line_edit.py" line="519"/>
+        <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customcontrols/relation_line_edit.py" line="519"/>
-        <source>None</source>
+        <location filename="../ui/customcontrols/relation_line_edit.py" line="443"/>
+        <source>Value Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>BaseColumn</name>
+    <message>
+        <location filename="../data/configuration/columns.py" line="277"/>
+        <source>_id</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -430,37 +438,37 @@ S&apos;il vous plait mettez à jour la configuration des tables pour terminer la
 <context>
     <name>BindSTREditor</name>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="780"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="779"/>
         <source>The Social Tenure Relationship</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="793"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="792"/>
         <source>Select the party by searching through the existing record.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="809"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="808"/>
         <source>Select the spatial unit that could be parcel, land or building, structure and so on.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="826"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="825"/>
         <source>Select the type of relationship that the specified party has with the selected spatial unit. Optionally you can specify the tenure share. </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="845"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="844"/>
         <source>Upload one or more supporting documents under each document types.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="869"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="868"/>
         <source>Specify the validity range of dates. The year and month option is used to quickly set the date ranges. </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="851"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="850"/>
         <source>The uploaded document will be copied for each party record selected.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -529,7 +537,7 @@ S&apos;il vous plait mettez à jour la configuration des tables pour terminer la
 <context>
     <name>ChangePasswordToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="188"/>
+        <location filename="../plugin.py" line="185"/>
         <source>Change Password</source>
         <translation type="unfinished">Modifiez mot de passe</translation>
     </message>
@@ -676,7 +684,7 @@ S&apos;il vous plait mettez à jour la configuration des tables pour terminer la
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/column_editor.py" line="275"/>
+        <location filename="../ui/wizard/column_editor.py" line="283"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
@@ -774,33 +782,33 @@ S&apos;il vous plait mettez à jour la configuration des tables pour terminer la
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/column_editor.py" line="626"/>
+        <location filename="../ui/wizard/column_editor.py" line="641"/>
         <source>Please set column properties.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/column_editor.py" line="751"/>
+        <location filename="../ui/wizard/column_editor.py" line="766"/>
         <source>&apos;{0}&apos; is a reserved keyword used internally by STDM.
 Please choose another column name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/column_editor.py" line="765"/>
+        <location filename="../ui/wizard/column_editor.py" line="780"/>
         <source>Column with the same name already exist in this entity!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/column_editor.py" line="629"/>
+        <location filename="../ui/wizard/column_editor.py" line="644"/>
         <source>No type to create.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/column_editor.py" line="669"/>
+        <location filename="../ui/wizard/column_editor.py" line="684"/>
         <source>Column type attributes could not be found.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/column_editor.py" line="746"/>
+        <location filename="../ui/wizard/column_editor.py" line="761"/>
         <source>Please enter a valid column name.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -988,24 +996,24 @@ Please check the geometry type of the spatial column.</source>
 <context>
     <name>ConfigWizard</name>
     <message>
-        <location filename="../plugin.py" line="819"/>
+        <location filename="../plugin.py" line="827"/>
         <source>Configuration Wizard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="366"/>
+        <location filename="../ui/wizard/wizard.py" line="378"/>
         <source>Your main configuration file seems to be corrupt!
 The system will revert to the latest configuration backup file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="373"/>
+        <location filename="../ui/wizard/wizard.py" line="385"/>
         <source>Your configuration files seems to be corrupt!
   The system will revert to the original system configuration file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="385"/>
+        <location filename="../ui/wizard/wizard.py" line="397"/>
         <source>Please note that your previous configuration wizard did not complete successfully!
  However a backup of work done on that session is available.
  Would you like to restore that backup session?
@@ -1014,98 +1022,98 @@ The system will revert to the latest configuration backup file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="572"/>
+        <location filename="../ui/wizard/wizard.py" line="585"/>
         <source>Load Configuration Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="658"/>
+        <location filename="../ui/wizard/wizard.py" line="671"/>
         <source>Ok</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="741"/>
+        <location filename="../ui/wizard/wizard.py" line="754"/>
         <source>Lookup %s has no values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1066"/>
+        <location filename="../ui/wizard/wizard.py" line="1081"/>
         <source>Preparing configuration, please wait...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1093"/>
+        <location filename="../ui/wizard/wizard.py" line="1108"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1213"/>
+        <location filename="../ui/wizard/wizard.py" line="1228"/>
         <source>Failed to update configuration. Check error logs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1259"/>
+        <location filename="../ui/wizard/wizard.py" line="1274"/>
         <source>Accept</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1260"/>
+        <location filename="../ui/wizard/wizard.py" line="1275"/>
         <source>Reject</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1305"/>
+        <location filename="../ui/wizard/wizard.py" line="1320"/>
         <source>Select a directory for supporting documents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1351"/>
+        <location filename="../ui/wizard/wizard.py" line="1366"/>
         <source>Select Folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2103"/>
+        <location filename="../ui/wizard/wizard.py" line="2131"/>
         <source>No lookup selected for edit!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2142"/>
+        <location filename="../ui/wizard/wizard.py" line="2167"/>
         <source>Nothing to delete!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2145"/>
+        <location filename="../ui/wizard/wizard.py" line="2170"/>
         <source>Select a lookup to delete!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2153"/>
+        <location filename="../ui/wizard/wizard.py" line="2178"/>
         <source>Cannot delete &apos;{0}&apos; lookup!
  Lookup is been used by existing columns.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2164"/>
+        <location filename="../ui/wizard/wizard.py" line="2189"/>
         <source>Delete selected lookup?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2160"/>
+        <location filename="../ui/wizard/wizard.py" line="2185"/>
         <source>Cannot delete tenure type lookup table!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2356"/>
+        <location filename="../ui/wizard/wizard.py" line="2398"/>
         <source>STDM Configuration Wizard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="719"/>
+        <location filename="../ui/wizard/wizard.py" line="732"/>
         <source>Entity &apos;%s&apos; has no columns!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="639"/>
+        <location filename="../ui/wizard/wizard.py" line="652"/>
         <source>Minimum start date is greater than maximum start date.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1115,7 +1123,7 @@ The system will revert to the latest configuration backup file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="646"/>
+        <location filename="../ui/wizard/wizard.py" line="659"/>
         <source>Minimum end date is greater than maximum end date.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1125,133 +1133,148 @@ The system will revert to the latest configuration backup file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="508"/>
+        <location filename="../ui/wizard/wizard.py" line="521"/>
         <source>The selected entity has also been set as the profile&apos;s social tenure relationship spatial unit.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="613"/>
+        <location filename="../ui/wizard/wizard.py" line="626"/>
         <source>No entities for creating social tenure relationship.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="619"/>
+        <location filename="../ui/wizard/wizard.py" line="632"/>
         <source>Please select at least one party from the list of applicable party entities.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="628"/>
+        <location filename="../ui/wizard/wizard.py" line="641"/>
         <source>No spatial unit entity found for creating Social Tenure Relationship.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="633"/>
+        <location filename="../ui/wizard/wizard.py" line="646"/>
         <source>%s entity should have a geometry column.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="653"/>
+        <location filename="../ui/wizard/wizard.py" line="666"/>
         <source>Minimum start date should be less than maximum end date.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1478"/>
+        <location filename="../ui/wizard/wizard.py" line="1493"/>
         <source>{0} profile cannot be deleted. At least one profile is required to exist in the STDM configuration. </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1486"/>
+        <location filename="../ui/wizard/wizard.py" line="1501"/>
         <source>You will loose all items related to this profile i.e 
 entities, lookups and Social Tenure Relationships.
 Are you sure you want to delete this profile?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="309"/>
-        <source>You have made some changes to your current configuration file, but you have not saved them in the database permenently.
- Would you like to store your changes as draft and continue next time? </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/wizard/wizard.py" line="1263"/>
+        <location filename="../ui/wizard/wizard.py" line="1278"/>
         <source>Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1293"/>
+        <location filename="../ui/wizard/wizard.py" line="1308"/>
         <source>Are you sure you want to discard the draft profile?</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/wizard/wizard.py" line="324"/>
+        <source>You have made some changes to your current configuration file, but you have not saved them in the database permenently.
+ Would you like to save your changes as draft and continue next time? </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/wizard/wizard.py" line="2403"/>
+        <source>Save</source>
+        <translation type="unfinished">Enregistrer</translation>
+    </message>
+    <message>
+        <location filename="../ui/wizard/wizard.py" line="2405"/>
+        <source>Don&apos;t Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/wizard/wizard.py" line="2407"/>
+        <source>Cancel</source>
+        <translation type="unfinished">Annuler</translation>
     </message>
 </context>
 <context>
     <name>Configuration Wizard</name>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1163"/>
+        <location filename="../ui/wizard/wizard.py" line="1178"/>
         <source>Configuration update started...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1185"/>
+        <location filename="../ui/wizard/wizard.py" line="1200"/>
         <source>The configuration has been successfully updated.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1493"/>
+        <location filename="../ui/wizard/wizard.py" line="1508"/>
         <source>Unable to delete profile!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1590"/>
+        <location filename="../ui/wizard/wizard.py" line="1611"/>
         <source>No profile selected to add entity!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1598"/>
+        <location filename="../ui/wizard/wizard.py" line="1619"/>
         <source>No entity selected for edit!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1640"/>
+        <location filename="../ui/wizard/wizard.py" line="1661"/>
         <source>No entity selected for deletion!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1881"/>
+        <location filename="../ui/wizard/wizard.py" line="1904"/>
         <source>No entity selected to add column!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1960"/>
+        <location filename="../ui/wizard/wizard.py" line="1978"/>
         <source>No column selected for edit!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2039"/>
+        <location filename="../ui/wizard/wizard.py" line="2066"/>
         <source>No column selected for deletion!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2091"/>
+        <location filename="../ui/wizard/wizard.py" line="2119"/>
         <source>No profile selected to add lookup!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2126"/>
+        <location filename="../ui/wizard/wizard.py" line="2148"/>
         <source>Nothing to edit!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2255"/>
+        <location filename="../ui/wizard/wizard.py" line="2281"/>
         <source>No lookup selected to add value!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2272"/>
+        <location filename="../ui/wizard/wizard.py" line="2298"/>
         <source>No value selected for edit!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2306"/>
+        <location filename="../ui/wizard/wizard.py" line="2332"/>
         <source>Select value to delete</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1296,7 +1319,7 @@ Are you sure you want to cancel the migration process?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="596"/>
+        <location filename="../plugin.py" line="604"/>
         <source>Upgrade Information</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1352,7 +1375,7 @@ Are you sure you want to cancel the migration process?</source>
 <context>
     <name>ContentAuthorizationToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="766"/>
+        <location filename="../plugin.py" line="774"/>
         <source>Content Authorization</source>
         <translation type="unfinished">Autorisation du contenu</translation>
     </message>
@@ -1373,12 +1396,12 @@ Are you sure you want to cancel the migration process?</source>
 <context>
     <name>CopyEditor</name>
     <message>
-        <location filename="../ui/wizard/copy_editor.py" line="63"/>
+        <location filename="../ui/wizard/copy_editor.py" line="68"/>
         <source>Please enter a profile name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/copy_editor.py" line="68"/>
+        <location filename="../ui/wizard/copy_editor.py" line="73"/>
         <source>Entered name is already in use. Please enter another profile name.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1493,7 +1516,7 @@ Are you sure you want to cancel the migration process?</source>
     <message>
         <location filename="../navigation/content_group.py" line="164"/>
         <source>Select</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Selectionner</translation>
     </message>
     <message>
         <location filename="../navigation/content_group.py" line="165"/>
@@ -1517,7 +1540,7 @@ Are you sure you want to cancel the migration process?</source>
 <context>
     <name>DateEditValueHandler</name>
     <message>
-        <location filename="../ui/helpers/valuehandlers.py" line="310"/>
+        <location filename="../ui/helpers/valuehandlers.py" line="307"/>
         <source>Attribute Table Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1563,7 +1586,7 @@ Are you sure you want to cancel the migration process?</source>
 <context>
     <name>DateTimeEditValueHandler</name>
     <message>
-        <location filename="../ui/helpers/valuehandlers.py" line="346"/>
+        <location filename="../ui/helpers/valuehandlers.py" line="343"/>
         <source>Attribute Table Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1604,7 +1627,7 @@ Are you sure you want to cancel the migration process?</source>
 <context>
     <name>DetailsDBHandler</name>
     <message>
-        <location filename="../ui/feature_details.py" line="393"/>
+        <location filename="../ui/feature_details.py" line="409"/>
         <source>Tenure Share</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1640,7 +1663,7 @@ Are you sure you want to cancel the migration process?</source>
 <context>
     <name>DetailsDockWidget</name>
     <message>
-        <location filename="../ui/feature_details.py" line="464"/>
+        <location filename="../ui/feature_details.py" line="480"/>
         <source>Spatial Entity Details</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1648,59 +1671,49 @@ Are you sure you want to cancel the migration process?</source>
 <context>
     <name>DetailsTreeView</name>
     <message>
-        <location filename="../ui/feature_details.py" line="129"/>
-        <source>Invalid Layer Error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/feature_details.py" line="177"/>
-        <source>Feature Details Error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/feature_details.py" line="567"/>
+        <location filename="../ui/feature_details.py" line="585"/>
         <source>Document Viewer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/feature_details.py" line="747"/>
+        <location filename="../ui/feature_details.py" line="766"/>
         <source>Spatial Entity Details is not supported for this layer.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/feature_details.py" line="1458"/>
+        <location filename="../ui/feature_details.py" line="1476"/>
         <source>Edit Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/feature_details.py" line="1310"/>
+        <location filename="../ui/feature_details.py" line="1328"/>
         <source>Delete Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/feature_details.py" line="1340"/>
+        <location filename="../ui/feature_details.py" line="1358"/>
         <source>Are you sure you want to delete the selected record(s)?
 This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/feature_details.py" line="1347"/>
+        <location filename="../ui/feature_details.py" line="1365"/>
         <source>Delete Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/feature_details.py" line="551"/>
+        <location filename="../ui/feature_details.py" line="567"/>
         <source>Social Tenure Relationship</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/feature_details.py" line="1319"/>
+        <location filename="../ui/feature_details.py" line="1337"/>
         <source>This action will remove the social tenure relationship and dependent supporting documents from the database and the documents folder. This action cannot be undone and once removed, it can only be recreated through the &apos;New Social Tenure Relationship&apos; wizard.Would you like to proceed?
 Click Yes to proceed or No to cancel.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/feature_details.py" line="1329"/>
+        <location filename="../ui/feature_details.py" line="1347"/>
         <source>Delete Social Tenure Relationship</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1924,7 +1937,7 @@ Click Yes to proceed or No to cancel.</source>
 <context>
     <name>DocumentDesignerAction</name>
     <message>
-        <location filename="../plugin.py" line="798"/>
+        <location filename="../plugin.py" line="806"/>
         <source>Document Designer</source>
         <translation type="unfinished">Concepteur de document</translation>
     </message>
@@ -1985,7 +1998,7 @@ Click Yes to proceed or No to cancel.</source>
 <context>
     <name>DocumentGeneratorAction</name>
     <message>
-        <location filename="../plugin.py" line="801"/>
+        <location filename="../plugin.py" line="809"/>
         <source>Document Generator</source>
         <translation type="unfinished">Générateur de documennt</translation>
     </message>
@@ -2231,40 +2244,50 @@ Click Yes to proceed or No to cancel.</source>
 <context>
     <name>DoubleProperty</name>
     <message>
-        <location filename="../ui/wizard/ui_double_property.ui" line="14"/>
-        <source>Decimal properties</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/wizard/ui_double_property.ui" line="20"/>
+        <location filename="../ui/wizard/ui_double_property.ui" line="54"/>
         <source>Minimum value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_double_property.ui" line="27"/>
+        <location filename="../ui/wizard/ui_double_property.ui" line="61"/>
         <source>Enter minimum value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_double_property.ui" line="34"/>
+        <location filename="../ui/wizard/ui_double_property.ui" line="68"/>
         <source>Maximum value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_double_property.ui" line="41"/>
+        <location filename="../ui/wizard/ui_double_property.ui" line="75"/>
         <source>Enter maximum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/wizard/ui_double_property.ui" line="14"/>
+        <source>Decimal Properties</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/wizard/ui_double_property.ui" line="20"/>
+        <source>Precision</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/wizard/ui_double_property.ui" line="40"/>
+        <source>Decimal places</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DoublePropetyEditor</name>
     <message>
-        <location filename="../ui/wizard/double_property.py" line="92"/>
+        <location filename="../ui/wizard/double_property.py" line="162"/>
         <source>Please set minimum value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/double_property.py" line="97"/>
+        <location filename="../ui/wizard/double_property.py" line="167"/>
         <source>Pleasei set maximum value.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2272,7 +2295,7 @@ Click Yes to proceed or No to cancel.</source>
 <context>
     <name>EditSTREditor</name>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="1751"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="1749"/>
         <source>Edit Social Tenure Relationship</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2300,12 +2323,12 @@ Click Yes to proceed or No to cancel.</source>
         <translation type="unfinished">Filtrez par mots clés</translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="536"/>
+        <location filename="../ui/entity_browser.py" line="543"/>
         <source>Fetching Records...</source>
         <translation type="unfinished">Cherchez enregistrements...</translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="653"/>
+        <location filename="../ui/entity_browser.py" line="661"/>
         <source>Please select a record from the table.</source>
         <translation type="unfinished">s&apos;il vous plait, sélectionnez un enregistrement dans la table</translation>
     </message>
@@ -2325,7 +2348,7 @@ Click Yes to proceed or No to cancel.</source>
         <translation type="obsolete">Ligne mise à jour</translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="306"/>
+        <location filename="../ui/entity_browser.py" line="316"/>
         <source>Records</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2335,12 +2358,7 @@ Click Yes to proceed or No to cancel.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="514"/>
-        <source>The data model for the entity could not be loaded, please contact your database administrator.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/entity_browser.py" line="562"/>
+        <location filename="../ui/entity_browser.py" line="571"/>
         <source>Loading Records</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2355,34 +2373,40 @@ Click Yes to proceed or No to cancel.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="185"/>
+        <location filename="../ui/entity_browser.py" line="184"/>
         <source>Document Viewer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="253"/>
+        <location filename="../ui/entity_browser.py" line="263"/>
         <source>View Documents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/feature_details.py" line="1475"/>
+        <location filename="../ui/feature_details.py" line="1493"/>
         <source>There are no supporting documents for the selected record.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="682"/>
+        <location filename="../ui/entity_browser.py" line="690"/>
         <source>record(s) selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/forms/widgets.py" line="568"/>
+        <location filename="../ui/forms/widgets.py" line="571"/>
         <source>Yes</source>
         <translation type="unfinished">Oui</translation>
     </message>
     <message>
-        <location filename="../ui/forms/widgets.py" line="571"/>
+        <location filename="../ui/forms/widgets.py" line="574"/>
         <source>No</source>
         <translation type="unfinished">Non</translation>
+    </message>
+    <message>
+        <location filename="../ui/entity_browser.py" line="524"/>
+        <source>The data model for the entity could not be loaded, 
+please contact your database administrator.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2393,17 +2417,17 @@ Click Yes to proceed or No to cancel.</source>
         <translation type="obsolete">Nouveau</translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="736"/>
+        <location filename="../ui/entity_browser.py" line="748"/>
         <source>Edit</source>
         <translation type="unfinished">Editer</translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="737"/>
+        <location filename="../ui/entity_browser.py" line="749"/>
         <source>Remove</source>
         <translation type="unfinished">Supprimer</translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="870"/>
+        <location filename="../ui/entity_browser.py" line="895"/>
         <source>Please select a record in the table below for editing.</source>
         <translation type="unfinished">S&apos;il vous plaît sélectionnez un enregistrement dans la tabe ci-dessous pour &apos;édition. </translation>
     </message>
@@ -2424,55 +2448,55 @@ Once deleted it cannot be recovered.</source>
         <translation type="obsolete">Enregistrement supprimé avec succès</translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="735"/>
+        <location filename="../ui/entity_browser.py" line="747"/>
         <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="746"/>
+        <location filename="../ui/entity_browser.py" line="758"/>
         <source>edit_tool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="753"/>
+        <location filename="../ui/entity_browser.py" line="767"/>
         <source>remove_tool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="859"/>
+        <location filename="../ui/entity_browser.py" line="884"/>
         <source>There are no user-defined columns for this entity.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="879"/>
+        <location filename="../ui/entity_browser.py" line="904"/>
         <source>Multiple selection detected, please choose one record only for editing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="901"/>
+        <location filename="../ui/entity_browser.py" line="937"/>
         <source>Please select one or more records in the table below to be deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="910"/>
+        <location filename="../ui/entity_browser.py" line="946"/>
         <source>Are you sure you want to delete the selected record(s)?
 This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="938"/>
+        <location filename="../ui/entity_browser.py" line="976"/>
         <source>Delete Record(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="943"/>
-        <source>An error occured while attempting to delete a record, this is most likely caused by a dependency issue.
-Please check if the record has dependencies such as social tenure relationship or related entities. If it has then delete these dependencies first.</source>
+        <location filename="../ui/entity_browser.py" line="1071"/>
+        <source>Record successfully deleted!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="1012"/>
-        <source>Record successfully deleted!</source>
+        <location filename="../ui/entity_browser.py" line="981"/>
+        <source>An error occurred while attempting to delete a record, this is most likely caused by a dependency issue.
+Please check if the record has dependencies such as social tenure relationship or related entities. If it has then delete these dependencies first.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2492,12 +2516,12 @@ Please check if the record has dependencies such as social tenure relationship o
 <context>
     <name>EntityEditor</name>
     <message>
-        <location filename="../ui/wizard/create_entity.py" line="147"/>
+        <location filename="../ui/wizard/create_entity.py" line="149"/>
         <source>Entity with the same name already exist in the current profile!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/create_entity.py" line="139"/>
+        <location filename="../ui/wizard/create_entity.py" line="141"/>
         <source>Please enter a valid entity name.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2505,32 +2529,32 @@ Please check if the record has dependencies such as social tenure relationship o
 <context>
     <name>EntityEditorDialog</name>
     <message>
-        <location filename="../ui/forms/editor_dialog.py" line="95"/>
+        <location filename="../ui/forms/editor_dialog.py" line="96"/>
         <source>Collection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/forms/editor_dialog.py" line="143"/>
+        <location filename="../ui/forms/editor_dialog.py" line="154"/>
         <source>Editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/forms/editor_dialog.py" line="168"/>
+        <location filename="../ui/forms/editor_dialog.py" line="186"/>
         <source>Please fill out all required (*) fields.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/forms/editor_dialog.py" line="363"/>
+        <location filename="../ui/forms/editor_dialog.py" line="510"/>
         <source>Supporting Documents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/forms/editor_dialog.py" line="377"/>
+        <location filename="../ui/forms/editor_dialog.py" line="524"/>
         <source>Primary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/forms/editor_dialog.py" line="192"/>
+        <location filename="../ui/forms/editor_dialog.py" line="210"/>
         <source>Save and New</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2604,7 +2628,7 @@ Please check if the record has dependencies such as social tenure relationship o
         <translation type="obsolete">Enregistrements partie</translation>
     </message>
     <message>
-        <location filename="../ui/entity_browser.py" line="1228"/>
+        <location filename="../ui/entity_browser.py" line="1287"/>
         <source>%s Entity Records</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2643,14 +2667,7 @@ Please check if the record has dependencies such as social tenure relationship o
 <context>
     <name>FeatureDetails</name>
     <message>
-        <location filename="../ui/feature_details.py" line="122"/>
-        <source>You have selected a non-STDM layer. 
-Please select an STDM layer to view 
-the details.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/feature_details.py" line="643"/>
+        <location filename="../ui/feature_details.py" line="661"/>
         <source>Please select an STDM layer to view 
 the details.</source>
         <translation type="unfinished"></translation>
@@ -2744,17 +2761,17 @@ Do you want to overwrite the existing config?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/foreign_key_mapper.py" line="785"/>
+        <location filename="../ui/foreign_key_mapper.py" line="788"/>
         <source>Primary database model object not defined.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/foreign_key_mapper.py" line="791"/>
+        <location filename="../ui/foreign_key_mapper.py" line="794"/>
         <source>Vector layer could not be constructed from the database table.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/foreign_key_mapper.py" line="797"/>
+        <location filename="../ui/foreign_key_mapper.py" line="800"/>
         <source>The vector layer for &apos;{0}&apos; table is invalid.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2946,9 +2963,6 @@ Geometry type &quot;POINT&quot;, &quot;LINE&quot; or &quot;POLYGON&quot; is requ
     </message>
 </context>
 <context>
-    <name>GpxTableWidgetDialog</name>
-</context>
-<context>
     <name>HouseholdIncomeEditor</name>
     <message>
         <location filename="../ui/foreign_key_editors.py" line="50"/>
@@ -3060,7 +3074,7 @@ Geometry type &quot;POINT&quot;, &quot;LINE&quot; or &quot;POLYGON&quot; is requ
 <context>
     <name>ImportAction</name>
     <message>
-        <location filename="../plugin.py" line="792"/>
+        <location filename="../plugin.py" line="800"/>
         <source>Import Data</source>
         <translation type="unfinished">Importation des données</translation>
     </message>
@@ -3082,36 +3096,41 @@ Geometry type &quot;POINT&quot;, &quot;LINE&quot; or &quot;POLYGON&quot; is requ
         <source>There are no virtual columns for the specified table.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../ui/import_data.py" line="477"/>
+        <source>Overwrite Import Data Warning</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>InitSTREditor</name>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="550"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="549"/>
         <source>Social Tenure Relationship</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="553"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="552"/>
         <source>Party</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="556"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="555"/>
         <source>Spatial Unit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="559"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="558"/>
         <source>Tenure Information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="562"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="561"/>
         <source>Supporting Documents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="566"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="565"/>
         <source>Validity Period</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3132,8 +3151,37 @@ Geometry type &quot;POINT&quot;, &quot;LINE&quot; or &quot;POLYGON&quot; is requ
 <context>
     <name>LayerSelectionHandler</name>
     <message>
-        <location filename="../ui/feature_details.py" line="172"/>
+        <location filename="../ui/feature_details.py" line="188"/>
         <source>Please select a spatial entity layer to view feature details.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/feature_details.py" line="115"/>
+        <source>You have exceeded the maximum number of features that 
+can be selected and queried by Spatial Entity Details. 
+Please select a maximum of 40 features.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/feature_details.py" line="122"/>
+        <source>Maximum Features Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/feature_details.py" line="138"/>
+        <source>You have selected a non-STDM layer. 
+Please select an STDM layer to view 
+the details.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/feature_details.py" line="145"/>
+        <source>Invalid Layer Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/feature_details.py" line="193"/>
+        <source>Feature Details Error</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3256,7 +3304,7 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>LoginToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="172"/>
+        <location filename="../plugin.py" line="169"/>
         <source>Login</source>
         <translation type="unfinished">S&apos;identifier</translation>
     </message>
@@ -3264,7 +3312,7 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>LogoutToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="183"/>
+        <location filename="../plugin.py" line="180"/>
         <source>Logout</source>
         <translation type="unfinished">Déconnexion</translation>
     </message>
@@ -3568,17 +3616,17 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>LookupEditor</name>
     <message>
-        <location filename="../ui/wizard/create_lookup.py" line="157"/>
+        <location filename="../ui/wizard/create_lookup.py" line="160"/>
         <source>&apos;check&apos; is used internally by STDM! Select another name for the lookup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/create_lookup.py" line="166"/>
+        <location filename="../ui/wizard/create_lookup.py" line="169"/>
         <source>Lookup with the same name already exist in the current profile!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/create_lookup.py" line="149"/>
+        <location filename="../ui/wizard/create_lookup.py" line="152"/>
         <source>Please enter a valid lookup name.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3669,7 +3717,7 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>ManageAdminUnitsToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="783"/>
+        <location filename="../plugin.py" line="791"/>
         <source>Manage Administrative Units</source>
         <translation type="unfinished">Gérer les unités administratives</translation>
     </message>
@@ -3685,7 +3733,7 @@ Voulez-vous configurer maintenant?</translation>
 <context>
     <name>ManageUsersToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="775"/>
+        <location filename="../plugin.py" line="783"/>
         <source>Manage Users-Roles</source>
         <translation type="unfinished">Gestion des utilisateurs et des rôles - stdm</translation>
     </message>
@@ -3952,7 +4000,7 @@ Please set it in the Options dialog or Configuration Wizard.</source>
 <context>
     <name>OptionsToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="779"/>
+        <location filename="../plugin.py" line="787"/>
         <source>Options</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4206,7 +4254,7 @@ Please set it in the Options dialog or Configuration Wizard.</source>
         <translation type="obsolete">Le nom du profil n&apos;est pas donné</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/profile_editor.py" line="108"/>
+        <location filename="../ui/wizard/profile_editor.py" line="110"/>
         <source>Please enter a valid Profile name.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4359,7 +4407,7 @@ Please set it in the Options dialog or Configuration Wizard.</source>
 <context>
     <name>RelatedEntityWidgetFactory</name>
     <message>
-        <location filename="../ui/forms/widgets.py" line="592"/>
+        <location filename="../ui/forms/widgets.py" line="595"/>
         <source>The parent entity could not be determined. The input control will not be created.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4732,7 +4780,7 @@ They will not be included in the report</source>
 <context>
     <name>ReportBuilderAction</name>
     <message>
-        <location filename="../plugin.py" line="795"/>
+        <location filename="../plugin.py" line="803"/>
         <source>Export Data</source>
         <translation type="unfinished">Exporter les données</translation>
     </message>
@@ -4758,12 +4806,12 @@ They will not be included in the report</source>
 <context>
     <name>STDM</name>
     <message>
-        <location filename="../plugin.py" line="297"/>
+        <location filename="../plugin.py" line="294"/>
         <source>Spatial Extension Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="580"/>
+        <location filename="../plugin.py" line="588"/>
         <source>Load Configuration Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4771,12 +4819,12 @@ They will not be included in the report</source>
 <context>
     <name>STDM Configuration</name>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1320"/>
+        <location filename="../ui/wizard/wizard.py" line="1335"/>
         <source>Select a directory for outputting generated documents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1335"/>
+        <location filename="../ui/wizard/wizard.py" line="1350"/>
         <source>Select a directory for document templates</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4784,7 +4832,7 @@ They will not be included in the report</source>
 <context>
     <name>STDM Configuration Wizard</name>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2340"/>
+        <location filename="../ui/wizard/wizard.py" line="2366"/>
         <source>STDM</source>
         <translation type="unfinished">STDM</translation>
     </message>
@@ -4813,7 +4861,7 @@ They will not be included in the report</source>
         <translation type="obsolete">Modules</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="762"/>
+        <location filename="../plugin.py" line="770"/>
         <source>Entities</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4826,12 +4874,12 @@ They will not be included in the report</source>
         <translation type="unfinished">STDM</translation>
     </message>
     <message>
-        <location filename="../ui/forms/spatial_unit_form.py" line="444"/>
+        <location filename="../ui/forms/spatial_unit_form.py" line="442"/>
         <source>Spatial Entity Form Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/forms/spatial_unit_form.py" line="448"/>
+        <location filename="../ui/forms/spatial_unit_form.py" line="446"/>
         <source>The feature you have added is invalid. 
 To fix this issue, check if the feature is digitized correctly.  
 Removing and re-adding the layer could also fix the error.</source>
@@ -4914,7 +4962,7 @@ Removing and re-adding the layer could also fix the error.</source>
         <translation type="unfinished">Concepteur de Document STDM</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1605"/>
+        <location filename="../plugin.py" line="1613"/>
         <source>Unable to load the entity in the browser. Check if the entity is configured correctly. Error: %s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4924,12 +4972,12 @@ Removing and re-adding the layer could also fix the error.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1371"/>
+        <location filename="../plugin.py" line="1379"/>
         <source>Error Loading the Configuration Wizard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1605"/>
+        <location filename="../plugin.py" line="1613"/>
         <source>Error Loading Entity Browser</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4950,22 +4998,22 @@ Removing and re-adding the layer could also fix the error.</source>
 <context>
     <name>STDMQGISLoader</name>
     <message>
-        <location filename="../plugin.py" line="351"/>
+        <location filename="../plugin.py" line="348"/>
         <source>Error Loading Modules</source>
         <translation type="unfinished">Erreur chargement des modules</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="208"/>
+        <location filename="../plugin.py" line="205"/>
         <source>STDM</source>
         <translation type="unfinished">STDM</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="223"/>
+        <location filename="../plugin.py" line="220"/>
         <source>STDM plugin menu</source>
         <translation type="unfinished">STDM menu plug-in</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1211"/>
+        <location filename="../plugin.py" line="1219"/>
         <source>Spatial Unit Manager</source>
         <translation type="unfinished">Gérer Unité spatiale</translation>
     </message>
@@ -4975,24 +5023,24 @@ Removing and re-adding the layer could also fix the error.</source>
         <translation type="obsolete">Concepteur de Document STDM</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="122"/>
+        <location filename="../plugin.py" line="119"/>
         <source>New Social Tenure Relationship</source>
         <translation type="unfinished">Nouvelle Relation Sociale Foncière</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="394"/>
+        <location filename="../plugin.py" line="391"/>
         <source>Database Table Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="367"/>
+        <location filename="../plugin.py" line="364"/>
         <source>The system has detected that database tables 
 required in this module are missing.
 Do you want to re-run the Configuration Wizard now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="485"/>
+        <location filename="../plugin.py" line="493"/>
         <source>Default Profile Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5022,69 +5070,69 @@ Do you want to re-run the Configuration Wizard now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1173"/>
+        <location filename="../plugin.py" line="1181"/>
         <source>Spatial Table Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="438"/>
+        <location filename="../plugin.py" line="444"/>
         <source>The system has detected that you did not run 
 the Configuration Wizard so far. 
 Do you want to run it now? </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="673"/>
+        <location filename="../plugin.py" line="681"/>
         <source>Upgrade STDM Configuration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="673"/>
+        <location filename="../plugin.py" line="681"/>
         <source>Your configuration has been successfully upgraded!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1826"/>
+        <location filename="../plugin.py" line="1834"/>
         <source>Config file version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1828"/>
+        <location filename="../plugin.py" line="1836"/>
         <source>Your configuration file is older than the current stdm version, do you want to backupthe configuration and databasedata</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1840"/>
+        <location filename="../plugin.py" line="1848"/>
         <source>Update config file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1842"/>
+        <location filename="../plugin.py" line="1850"/>
         <source>The config version installed is old and outdated STDM will try to apply the required updates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1851"/>
+        <location filename="../plugin.py" line="1859"/>
         <source>STDM has detected that the version of config installed is old and outdated. Delete existing configuration folder or xml file and restart QGIS.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="434"/>
+        <location filename="../plugin.py" line="440"/>
         <source>Configuration Wizard Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="191"/>
+        <location filename="../plugin.py" line="188"/>
         <source>Help Contents</source>
         <translation type="unfinished">Sommaire Aide</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1399"/>
+        <location filename="../plugin.py" line="1407"/>
         <source>Error Loading the STR Editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1770"/>
+        <location filename="../plugin.py" line="1778"/>
         <source>Open Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5204,7 +5252,7 @@ Do you want to run it now? </source>
     <message>
         <location filename="../ui/wizard/ui_stdm_config.ui" line="330"/>
         <source>Select</source>
-        <translation type="unfinished">Selectionner</translation>
+        <translation type="obsolete">Selectionner</translation>
     </message>
     <message>
         <location filename="../ui/ui_configWizard.ui" line="476"/>
@@ -5362,171 +5410,166 @@ Do you want to run it now? </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="484"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="476"/>
         <source>Profile entities </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="449"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="427"/>
         <source>Description</source>
-        <translation type="obsolete">Description</translation>
+        <translation type="unfinished">Description</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="451"/>
-        <source>TextLabel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="410"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="352"/>
         <source>Delete profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="364"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="416"/>
         <source>New profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="601"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="593"/>
         <source>Entity Customization</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="604"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="596"/>
         <source>Add or edit entity columns, lookups and lookup values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="636"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="628"/>
         <source>Entities</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="680"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="672"/>
         <source>Columns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="878"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="870"/>
         <source>Lookups</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="1017"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="1009"/>
         <source>Values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="1426"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="1418"/>
         <source>Save configuration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="1429"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="1421"/>
         <source>Click finish to save changes in your configuration to the database.  </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="1435"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="1427"/>
         <source>Save status will be displayed in the window below.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="432"/>
-        <source>Description:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="1143"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="1135"/>
         <source>Define Social Tenure Entities</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="1146"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="1138"/>
         <source>Set entities to participate in the profile&apos;s social tenure relationship</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="1234"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="1226"/>
         <source>1. Select the party entities</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="1263"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="1255"/>
         <source>Allow multiple parties to be 
 linked to a single spatial unit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="1283"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="1275"/>
         <source>2. Set the spatial unit entity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="1312"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="1304"/>
         <source>3. Specify validity ranges (optional)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="1319"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="1311"/>
         <source>&apos;Start&apos; date range</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="1374"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="1366"/>
         <source>Minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="1388"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="1380"/>
         <source>Maximum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="1362"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="1354"/>
         <source>&apos;End&apos; date range</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_stdm_config.ui" line="387"/>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="329"/>
         <source>Copy profile</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/wizard/ui_stdm_config.ui" line="397"/>
+        <source>Name</source>
+        <translation type="unfinished">Nom</translation>
     </message>
 </context>
 <context>
     <name>STRDBHandler</name>
     <message>
-        <location filename="../ui/social_tenure/str_data.py" line="268"/>
+        <location filename="../ui/social_tenure/str_data.py" line="269"/>
         <source>Social Tenure Relationship</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_data.py" line="235"/>
+        <location filename="../ui/social_tenure/str_data.py" line="236"/>
         <source>The social tenure relationship has been successfully created!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_data.py" line="263"/>
+        <location filename="../ui/social_tenure/str_data.py" line="264"/>
         <source>The social tenure relationship has been successfully updated!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_data.py" line="324"/>
+        <location filename="../ui/social_tenure/str_data.py" line="325"/>
         <source>Unexpected Error</source>
         <translation type="unfinished">erreur inattendue</translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_data.py" line="292"/>
+        <location filename="../ui/social_tenure/str_data.py" line="293"/>
         <source>Duplicate Relationship Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_data.py" line="306"/>
+        <location filename="../ui/social_tenure/str_data.py" line="307"/>
         <source>InternalError Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_data.py" line="306"/>
+        <location filename="../ui/social_tenure/str_data.py" line="307"/>
         <source>Sorry, there is an internal error. 
 Restart QGIS to fix the issue.</source>
         <translation type="unfinished"></translation>
@@ -5626,12 +5669,12 @@ Restart QGIS to fix the issue.</source>
 <context>
     <name>STRFormatterBase</name>
     <message>
-        <location filename="../navigation/socialtenure/formatters.py" line="100"/>
+        <location filename="../navigation/socialtenure/formatters.py" line="99"/>
         <source>Method should be implemented by subclasses</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../navigation/socialtenure/formatters.py" line="115"/>
+        <location filename="../navigation/socialtenure/formatters.py" line="114"/>
         <source>Social Tenure Relationship</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5663,7 +5706,7 @@ Click Yes to proceed or No to cancel.</source>
 <context>
     <name>STRTreeView</name>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="533"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="532"/>
         <source>Social Tenure Relationship</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5700,7 +5743,7 @@ Click Yes to proceed or No to cancel.</source>
 <context>
     <name>SocialTenure</name>
     <message>
-        <location filename="../data/configuration/social_tenure.py" line="448"/>
+        <location filename="../data/configuration/social_tenure.py" line="449"/>
         <source>%s does not have an id column. This is required in order to link it to the social tenure relationship table.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5789,12 +5832,12 @@ Hence, this translator is not applicable.</source>
         <translation type="obsolete">Editeur Couche Post Gis </translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="805"/>
+        <location filename="../plugin.py" line="813"/>
         <source>Spatial Unit Manager</source>
         <translation type="unfinished">Gérer Unité spatiale</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="810"/>
+        <location filename="../plugin.py" line="818"/>
         <source>Spatial Entity Details</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5843,34 +5886,34 @@ Hence, this translator is not applicable.</source>
 <context>
     <name>SpatialUnitManagerDockWidget</name>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="387"/>
+        <location filename="../ui/spatial_unit_manager.py" line="386"/>
         <source>Spatial Unit Manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="391"/>
+        <location filename="../ui/spatial_unit_manager.py" line="390"/>
         <source>Spatial Column Layer Could not be found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="743"/>
+        <location filename="../ui/spatial_unit_manager.py" line="746"/>
         <source>GPS Feature Import Loading Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="749"/>
+        <location filename="../ui/spatial_unit_manager.py" line="752"/>
         <source>You have not selected a layer.
  Please select a valid layer to import GPS features.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="759"/>
+        <location filename="../ui/spatial_unit_manager.py" line="762"/>
         <source>You have selected a non-STDM entity layer.
  Please select a valid layer to import GPS features.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="777"/>
+        <location filename="../ui/spatial_unit_manager.py" line="780"/>
         <source>You must add an entity layer from Spatial Unit Manager
 and select it to import GPS Features.</source>
         <translation type="unfinished"></translation>
@@ -6078,7 +6121,7 @@ and select it to import GPS Features.</source>
     <message>
         <location filename="../ui/forms/documents.py" line="249"/>
         <source>Select</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Selectionner</translation>
     </message>
 </context>
 <context>
@@ -6086,7 +6129,7 @@ and select it to import GPS Features.</source>
     <message>
         <location filename="../ui/helpers/datamanagemixin.py" line="36"/>
         <source>Select</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Selectionner</translation>
     </message>
 </context>
 <context>
@@ -6411,7 +6454,7 @@ Click Yes to proceed or No to cancel.</source>
 <context>
     <name>ToolbarAdminSettings</name>
     <message>
-        <location filename="../plugin.py" line="744"/>
+        <location filename="../plugin.py" line="752"/>
         <source>Admin Settings</source>
         <translation type="unfinished">Paramètres administrateur</translation>
     </message>
@@ -6421,7 +6464,7 @@ Click Yes to proceed or No to cancel.</source>
         <translation type="obsolete">Paramètres du module</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="749"/>
+        <location filename="../plugin.py" line="757"/>
         <source>Entities</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6495,7 +6538,7 @@ Click Yes to proceed or No to cancel.</source>
 <context>
     <name>ValueEditor</name>
     <message>
-        <location filename="../ui/wizard/create_lookup_value.py" line="134"/>
+        <location filename="../ui/wizard/create_lookup_value.py" line="136"/>
         <source>Please enter a valid lookup value.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6628,7 +6671,7 @@ Click Yes to proceed or No to cancel.</source>
 <context>
     <name>ViewSTRToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="815"/>
+        <location filename="../plugin.py" line="823"/>
         <source>View Social Tenure Relationship</source>
         <translation type="unfinished">Apercu Rélation Sociale sur la tenure</translation>
     </message>
@@ -6685,7 +6728,7 @@ Click Yes to proceed or No to cancel.</source>
         <translation type="obsolete">Ajouter une table</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="822"/>
+        <location filename="../plugin.py" line="830"/>
         <source>Entities</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6966,19 +7009,24 @@ Click &apos;Delete column&apos; to proceed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_copy_profile.ui" line="35"/>
+        <location filename="../ui/wizard/ui_copy_profile.ui" line="62"/>
         <source>To Profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_copy_profile.ui" line="42"/>
+        <location filename="../ui/wizard/ui_copy_profile.ui" line="69"/>
         <source>Enter profile name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_copy_profile.ui" line="59"/>
+        <location filename="../ui/wizard/ui_copy_profile.ui" line="29"/>
         <source>From Profile</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/wizard/ui_copy_profile.ui" line="76"/>
+        <source>Description</source>
+        <translation type="unfinished">Description</translation>
     </message>
 </context>
 <context>
@@ -6989,27 +7037,27 @@ Click &apos;Delete column&apos; to proceed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_entity.ui" line="43"/>
+        <location filename="../ui/wizard/ui_entity.ui" line="46"/>
         <source>Entity Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_entity.ui" line="50"/>
+        <location filename="../ui/wizard/ui_entity.ui" line="53"/>
         <source>Table name</source>
         <translation type="unfinished">Nom de la table</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_entity.ui" line="67"/>
+        <location filename="../ui/wizard/ui_entity.ui" line="76"/>
         <source>Description</source>
         <translation type="unfinished">Description</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_entity.ui" line="80"/>
+        <location filename="../ui/wizard/ui_entity.ui" line="89"/>
         <source>Table description</source>
         <translation type="unfinished">Description de la table</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/ui_entity.ui" line="89"/>
+        <location filename="../ui/wizard/ui_entity.ui" line="98"/>
         <source>Allow supporting documents?</source>
         <translation type="unfinished"></translation>
     </message>
