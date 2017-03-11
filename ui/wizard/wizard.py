@@ -1934,7 +1934,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Event handler for editing a column.
         """
-        #rid, column, model_item = self._get_model(self.tbvColumns)
         rid, column, model_item = self.get_column_data()
 
         if column and column.action == DbItem.CREATE:
@@ -2055,17 +2054,14 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def delete_column(self):
         """
-        Delete selected column:
-        - show warning dialog if a column has dependencies.
-        - If column deleted is a Geometry column, and Entity has no other
-          Geometry column,?? 
+        Delete selected column butshow warning dialog if a 
+        column has dependencies.
         """
         row_id, column, model_item = self._get_model(self.tbvColumns)
         if not column:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No column selected for deletion!"))
             return
-
 
         if self.check_column_dependencies(column):
             ent_id, entity = self._get_entity(self.lvEntities)
@@ -2074,7 +2070,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             entity.remove_column(column.name)
 
             model_item.delete_entity(column)
-            #self.refresh_columns_view(entity)
 
             self.delete_entity_from_spatial_unit_model(entity)
 
