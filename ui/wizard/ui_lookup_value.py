@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_lookup_value.ui'
 #
-# Created: Sun Mar 12 17:21:40 2017
-#      by: PyQt4 UI code generator 4.11.3
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,7 +25,7 @@ except AttributeError:
 class Ui_LookupValue(object):
     def setupUi(self, LookupValue):
         LookupValue.setObjectName(_fromUtf8("LookupValue"))
-        LookupValue.resize(282, 144)
+        LookupValue.resize(282, 155)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)

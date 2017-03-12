@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_profile.ui'
 #
-# Created: Sun Mar 12 17:18:14 2017
-#      by: PyQt4 UI code generator 4.11.3
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,7 +25,7 @@ except AttributeError:
 class Ui_Profile(object):
     def setupUi(self, Profile):
         Profile.setObjectName(_fromUtf8("Profile"))
-        Profile.resize(329, 143)
+        Profile.resize(329, 153)
         self.verticalLayout_2 = QtGui.QVBoxLayout(Profile)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         self.notif_bar = QtGui.QVBoxLayout()
