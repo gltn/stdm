@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_lookup_entity.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created: Sun Mar 12 17:35:32 2017
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -25,7 +26,7 @@ except AttributeError:
 class Ui_dlgLookup(object):
     def setupUi(self, dlgLookup):
         dlgLookup.setObjectName(_fromUtf8("dlgLookup"))
-        dlgLookup.resize(368, 141)
+        dlgLookup.resize(368, 139)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -40,21 +41,22 @@ class Ui_dlgLookup(object):
         self.verticalLayout_2.addLayout(self.notif_bar)
         self.verticalLayout = QtGui.QVBoxLayout()
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
-        self.label_2 = QtGui.QLabel(dlgLookup)
-        self.label_2.setMaximumSize(QtCore.QSize(777, 16777215))
-        self.label_2.setObjectName(_fromUtf8("label_2"))
-        self.verticalLayout.addWidget(self.label_2)
-        self.horizontalLayout = QtGui.QHBoxLayout()
-        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
+        self.gridLayout = QtGui.QGridLayout()
+        self.gridLayout.setVerticalSpacing(10)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.label = QtGui.QLabel(dlgLookup)
         self.label.setMinimumSize(QtCore.QSize(60, 0))
         self.label.setObjectName(_fromUtf8("label"))
-        self.horizontalLayout.addWidget(self.label)
+        self.gridLayout.addWidget(self.label, 1, 0, 1, 1)
         self.edtName = QtGui.QLineEdit(dlgLookup)
         self.edtName.setMinimumSize(QtCore.QSize(0, 22))
         self.edtName.setObjectName(_fromUtf8("edtName"))
-        self.horizontalLayout.addWidget(self.edtName)
-        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.gridLayout.addWidget(self.edtName, 1, 1, 1, 1)
+        self.label_2 = QtGui.QLabel(dlgLookup)
+        self.label_2.setMaximumSize(QtCore.QSize(777, 16777215))
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.gridLayout.addWidget(self.label_2, 0, 0, 1, 2)
+        self.verticalLayout.addLayout(self.gridLayout)
         self.verticalLayout_2.addLayout(self.verticalLayout)
         self.buttonBox = QtGui.QDialogButtonBox(dlgLookup)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -69,7 +71,7 @@ class Ui_dlgLookup(object):
 
     def retranslateUi(self, dlgLookup):
         dlgLookup.setWindowTitle(_translate("dlgLookup", "Lookup entity", None))
-        self.label_2.setText(_translate("dlgLookup", "`check_` prefix will be appended on the lookup name", None))
         self.label.setText(_translate("dlgLookup", "Lookup Name", None))
         self.edtName.setPlaceholderText(_translate("dlgLookup", "Enter lookup name", None))
+        self.label_2.setText(_translate("dlgLookup", "`check_` prefix will be appended on the lookup name", None))
 

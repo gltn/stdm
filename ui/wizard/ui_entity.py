@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_entity.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created: Sun Mar 12 17:13:13 2017
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -40,28 +41,25 @@ class Ui_dlgEntity(object):
         self.gridLayout_2 = QtGui.QGridLayout()
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
         self.verticalLayout.addLayout(self.gridLayout_2)
-        self.horizontalLayout = QtGui.QHBoxLayout()
-        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
-        self.label = QtGui.QLabel(dlgEntity)
-        self.label.setMinimumSize(QtCore.QSize(60, 0))
-        self.label.setObjectName(_fromUtf8("label"))
-        self.horizontalLayout.addWidget(self.label)
-        self.edtTable = QtGui.QLineEdit(dlgEntity)
-        self.edtTable.setObjectName(_fromUtf8("edtTable"))
-        self.horizontalLayout.addWidget(self.edtTable)
-        self.verticalLayout.addLayout(self.horizontalLayout)
-        self.horizontalLayout_2 = QtGui.QHBoxLayout()
-        self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
+        self.gridLayout = QtGui.QGridLayout()
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.edtDesc = QtGui.QLineEdit(dlgEntity)
+        self.edtDesc.setMinimumSize(QtCore.QSize(0, 0))
+        self.edtDesc.setObjectName(_fromUtf8("edtDesc"))
+        self.gridLayout.addWidget(self.edtDesc, 1, 1, 1, 1)
         self.label_2 = QtGui.QLabel(dlgEntity)
         self.label_2.setMinimumSize(QtCore.QSize(68, 0))
         self.label_2.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.label_2.setObjectName(_fromUtf8("label_2"))
-        self.horizontalLayout_2.addWidget(self.label_2)
-        self.edtDesc = QtGui.QLineEdit(dlgEntity)
-        self.edtDesc.setMinimumSize(QtCore.QSize(0, 0))
-        self.edtDesc.setObjectName(_fromUtf8("edtDesc"))
-        self.horizontalLayout_2.addWidget(self.edtDesc)
-        self.verticalLayout.addLayout(self.horizontalLayout_2)
+        self.gridLayout.addWidget(self.label_2, 1, 0, 1, 1)
+        self.label = QtGui.QLabel(dlgEntity)
+        self.label.setMinimumSize(QtCore.QSize(60, 0))
+        self.label.setObjectName(_fromUtf8("label"))
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
+        self.edtTable = QtGui.QLineEdit(dlgEntity)
+        self.edtTable.setObjectName(_fromUtf8("edtTable"))
+        self.gridLayout.addWidget(self.edtTable, 0, 1, 1, 1)
+        self.verticalLayout.addLayout(self.gridLayout)
         self.cbSupportDoc = QtGui.QCheckBox(dlgEntity)
         self.cbSupportDoc.setObjectName(_fromUtf8("cbSupportDoc"))
         self.verticalLayout.addWidget(self.cbSupportDoc)
@@ -78,9 +76,9 @@ class Ui_dlgEntity(object):
 
     def retranslateUi(self, dlgEntity):
         dlgEntity.setWindowTitle(_translate("dlgEntity", "Entity editor", None))
+        self.edtDesc.setPlaceholderText(_translate("dlgEntity", "Table description", None))
+        self.label_2.setText(_translate("dlgEntity", "Description", None))
         self.label.setText(_translate("dlgEntity", "Entity Name", None))
         self.edtTable.setPlaceholderText(_translate("dlgEntity", "Table name", None))
-        self.label_2.setText(_translate("dlgEntity", "Description", None))
-        self.edtDesc.setPlaceholderText(_translate("dlgEntity", "Table description", None))
         self.cbSupportDoc.setText(_translate("dlgEntity", "Allow supporting documents?", None))
 
