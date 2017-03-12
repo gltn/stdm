@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_lookup_value.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created: Sun Mar 12 17:21:40 2017
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -25,7 +26,7 @@ except AttributeError:
 class Ui_LookupValue(object):
     def setupUi(self, LookupValue):
         LookupValue.setObjectName(_fromUtf8("LookupValue"))
-        LookupValue.resize(282, 152)
+        LookupValue.resize(282, 144)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -36,28 +37,24 @@ class Ui_LookupValue(object):
         self.notif_bar = QtGui.QVBoxLayout()
         self.notif_bar.setObjectName(_fromUtf8("notif_bar"))
         self.verticalLayout_2.addLayout(self.notif_bar)
-        self.horizontalLayout = QtGui.QHBoxLayout()
-        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
+        self.gridLayout = QtGui.QGridLayout()
+        self.gridLayout.setVerticalSpacing(10)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.label = QtGui.QLabel(LookupValue)
         self.label.setMinimumSize(QtCore.QSize(60, 0))
         self.label.setObjectName(_fromUtf8("label"))
-        self.horizontalLayout.addWidget(self.label)
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
         self.edtValue = QtGui.QLineEdit(LookupValue)
         self.edtValue.setObjectName(_fromUtf8("edtValue"))
-        self.horizontalLayout.addWidget(self.edtValue)
-        self.verticalLayout_2.addLayout(self.horizontalLayout)
-        self.horizontalLayout_2 = QtGui.QHBoxLayout()
-        self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
+        self.gridLayout.addWidget(self.edtValue, 0, 1, 1, 1)
         self.label_2 = QtGui.QLabel(LookupValue)
         self.label_2.setObjectName(_fromUtf8("label_2"))
-        self.horizontalLayout_2.addWidget(self.label_2)
-        spacerItem = QtGui.QSpacerItem(38, 20, QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_2.addItem(spacerItem)
+        self.gridLayout.addWidget(self.label_2, 1, 0, 1, 1)
         self.edtCode = QtGui.QLineEdit(LookupValue)
         self.edtCode.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.edtCode.setObjectName(_fromUtf8("edtCode"))
-        self.horizontalLayout_2.addWidget(self.edtCode)
-        self.verticalLayout_2.addLayout(self.horizontalLayout_2)
+        self.gridLayout.addWidget(self.edtCode, 1, 1, 1, 1)
+        self.verticalLayout_2.addLayout(self.gridLayout)
         self.buttonBox = QtGui.QDialogButtonBox(LookupValue)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
@@ -68,8 +65,7 @@ class Ui_LookupValue(object):
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), LookupValue.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), LookupValue.reject)
         QtCore.QMetaObject.connectSlotsByName(LookupValue)
-        LookupValue.setTabOrder(self.edtValue, self.edtCode)
-        LookupValue.setTabOrder(self.edtCode, self.buttonBox)
+        LookupValue.setTabOrder(self.edtValue, self.buttonBox)
 
     def retranslateUi(self, LookupValue):
         LookupValue.setWindowTitle(_translate("LookupValue", "Lookup value", None))
