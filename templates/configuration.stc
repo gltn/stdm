@@ -154,7 +154,7 @@
    <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Person" name="fk_in_person_id_in_social_tenure_relationship_person_id" parentColumn="id" childColumn="person_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Structure" name="fk_in_structure_id_in_social_tenure_relationship_spatial_unit_id" parentColumn="id" childColumn="spatial_unit_id"/>
   </Relations>
-  <SocialTenure layerDisplay="informal_settlement_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Structure" supportsMultipleParties="True" party="Person">
+  <SocialTenure layerDisplay="in_structure_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Structure" supportsMultipleParties="True" party="Person">
    <Validity>
     <Start minimum="1700-01-01" maximum="7999-12-31"/>
     <End minimum="1700-01-01" maximum="7999-12-31"/>
