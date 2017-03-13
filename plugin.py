@@ -31,6 +31,7 @@ import qgis.utils
 from sqlalchemy.exc import SQLAlchemyError
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings import current_profile, save_current_profile
+from stdm.settings.startup_handler import copy_startup
 
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
@@ -161,6 +162,7 @@ class STDMQGISLoader(object):
                       + '/.stdm/configuration.stc'
         self.config_serializer = ConfigurationFileSerializer(self.config_path)
         self.configuration_file_updater = ConfigurationFileUpdater(self.iface)
+        copy_startup()
 
     def initGui(self):
         # Initial actions on starting up the application
