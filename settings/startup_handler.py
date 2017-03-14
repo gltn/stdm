@@ -17,7 +17,7 @@ def copy_startup():
         if not isfile(source):
             source = source_2
         if not isfile(destination):
-            shutil.copy2(source, destination)
+            shutil.copyfile(source, destination)
             return
         source_file = open(source, 'a+')
         destination_file = open(destination, 'a+')
