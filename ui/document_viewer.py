@@ -55,16 +55,16 @@ from PyQt4.QtCore import (
 )
 
 from stdm.utils.util import (
-    guess_extension,
-    table_to_profile_name
+    guess_extension
 )
+from stdm.settings import current_profile
 LOGGER = logging.getLogger('stdm')
 
 class PhotoViewer(QScrollArea):
     """
     Widget for viewing images by incorporating basic navigation options.
     """
-    def __init__(self, parent = None, photo_path = ""):
+    def __init__(self, parent=None, photo_path=""):
         QScrollArea.__init__(self, parent)
         self.setBackgroundRole(QPalette.Dark)
 
@@ -608,7 +608,7 @@ class DocumentViewManager(QMainWindow):
             network_repository = file_manager.networkPath
             file_id = document_widget.file_identifier()
             source_entity = document_widget.doc_source_entity()
-            profile_name = table_to_profile_name(source_entity)
+            profile_name = current_profile().name
             doc_type = document_widget.doc_type_value().lower().replace(
                 ' ', '_'
             )

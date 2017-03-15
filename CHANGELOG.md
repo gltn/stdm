@@ -1,5 +1,14 @@
 # Change Log
 All notable changes of the Social Tenure Domain Model(STDM) is documented in this file.
+## [1.5.1] - 2017-03-15
+### Fixed
+- **Database and Configuration**: Fixed inability to append profile prefix on entity
+with similar name as the profile.
+- **Supporting Documents**: Fixed the error when saving supporting documents on
+entities with no profile prefix.
+
+### Changed
+- **Change Log**: Updated the change log.
 
 ## [1.5.0] - 2017-02-23
 

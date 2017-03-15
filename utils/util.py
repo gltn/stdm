@@ -53,7 +53,6 @@ from stdm.data.configuration import (
 
 from qgis.gui import QgsEncodingFileDialog
 
-
 PLUGIN_DIR = os.path.abspath(os.path.join(
     os.path.dirname( __file__ ), os.path.pardir)).replace("\\", "/")
 CURRENCY_CODE = "" #TODO: Put in the registry
@@ -748,27 +747,6 @@ def entity_attr_to_id(entity, attr_obj, attr_val, lower=False):
 
     return attr_id
 
-
-def table_to_profile_name(table_name):
-    """
-    Get profile name from prefix.
-    :param table_name: The name of the table.
-    :type prefix: String
-    :return: Profile name.
-    :rtype: String
-    """
-    from stdm.data.configuration.stdm_configuration import (
-        StdmConfiguration
-    )
-    prefix = table_name.split('_', 1)[0]
-
-    config = StdmConfiguration.instance()
-    profile_name =  [p.name for p in
-                     config.profiles.values()
-                     if p.prefix == prefix
-                ]
-
-    return profile_name[0]
 
 def profile_entities(profile):
     """
