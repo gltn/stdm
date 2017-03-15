@@ -142,11 +142,11 @@ class Entity(QObject, TableItem):
         name = name.replace(' ', "_")
         name = name.lower()
 
-        #Ensure prefix is not duplicated in the names
+        # Ensure prefix is not duplicated in the names
         prfx = self.profile.prefix
-        prefix_idx = name.find(prfx, 0, len(prfx))
+        prefix_idx = name.find('{}_'.format(prfx), 0, len(prfx) + 1)
 
-        #If there is no prefix then append
+        # If there is no prefix then append
         if prefix_idx == -1 and not self.is_global:
             name = u'{0}_{1}'.format(self.profile.prefix, name)
 

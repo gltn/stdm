@@ -32,9 +32,9 @@ from PyQt4.QtCore import (
 from qgis.core import *
 
 from stdm.utils.util import (
-    guess_extension,
-    table_to_profile_name
+    guess_extension
 )
+from stdm.settings import current_profile
 
 class NetworkFileManager(QObject):
     """
@@ -47,6 +47,7 @@ class NetworkFileManager(QObject):
         self.fileID = None
         self.sourcePath = None
         self.destinationPath = None
+        self.curr_profile = current_profile()
         self._entity_source = ''
         self._doc_type = ''
         
@@ -58,7 +59,7 @@ class NetworkFileManager(QObject):
         self._doc_type = doc_type
         self.fileID = self.generateFileID()
         self.sourcePath = fileinfo.filePath()
-        profile_name = table_to_profile_name(self._entity_source)
+        profile_name = self.curr_profile.name
         root_dir = QDir(self.networkPath)
         doc_dir = QDir('{}/{}/{}/{}'.format(
                 self.networkPath,
@@ -125,7 +126,7 @@ class NetworkFileManager(QObject):
         if not docmodel is None:
             #Build the path from the model variable values.
             fileName, fileExt = guess_extension(docmodel.filename)
-            profile_name = table_to_profile_name(docmodel.source_entity)
+            profile_name = self.curr_profile.name
             #Qt always expects the file separator be be "/" regardless of platform.
             absPath = '{}/{}/{}/{}/{}{}'.format(
                 self.networkPath,

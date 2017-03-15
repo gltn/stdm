@@ -1,1220 +1,1265 @@
-<!DOCTYPE html>
 <html>
 <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=3, user-scalable=yes"/>
-    <title>STDM 1.4 Change Log | Social Tenure Domain Model (STDM)</title>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type">
-    <style type="text/css">
-        @import url('https://themes.googleusercontent.com/fonts/css?kit=fpjTOVmNbO4Lz34iLyptLTi9jKYd1gJzj5O2gWsEpXol-nTHck7FFkZplK5meosG');
-
-        .lst-kix_list_5-1 > li {
-            counter-increment: lst-ctn-kix_list_5-1
-        }
-
-        ul.lst-kix_list_1-0 {
-            list-style-type: none
-        }
-
-        .lst-kix_list_3-0 > li:before {
-            content: "\0025cf  "
-        }
-
-        .lst-kix_list_3-1 > li:before {
-            content: "o  "
-        }
-
-        .lst-kix_list_3-2 > li:before {
-            content: "\0025aa  "
-        }
-
-        .lst-kix_list_5-0 > li {
-            counter-increment: lst-ctn-kix_list_5-0
-        }
-
-        ul.lst-kix_list_1-3 {
-            list-style-type: none
-        }
-
-        .lst-kix_list_3-5 > li:before {
-            content: "\0025aa  "
-        }
-
-        ul.lst-kix_list_1-4 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_list_1-1 {
-            list-style-type: none
-        }
-
-        .lst-kix_list_3-4 > li:before {
-            content: "o  "
-        }
-
-        ul.lst-kix_list_1-2 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_list_1-7 {
-            list-style-type: none
-        }
-
-        .lst-kix_list_3-3 > li:before {
-            content: "\0025cf  "
-        }
-
-        ul.lst-kix_list_1-8 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_list_1-5 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_list_1-6 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_lfo6n6mhdm75-5 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_lfo6n6mhdm75-4 {
-            list-style-type: none
-        }
-
-        .lst-kix_list_3-8 > li:before {
-            content: "\0025aa  "
-        }
-
-        ul.lst-kix_lfo6n6mhdm75-3 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_lfo6n6mhdm75-2 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_lfo6n6mhdm75-1 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_lfo6n6mhdm75-0 {
-            list-style-type: none
-        }
-
-        ol.lst-kix_list_5-3.start {
-            counter-reset: lst-ctn-kix_list_5-3 0
-        }
-
-        .lst-kix_list_3-6 > li:before {
-            content: "\0025cf  "
-        }
-
-        .lst-kix_list_3-7 > li:before {
-            content: "o  "
-        }
-
-        ol.lst-kix_list_5-0.start {
-            counter-reset: lst-ctn-kix_list_5-0 0
-        }
-
-        .lst-kix_list_5-2 > li {
-            counter-increment: lst-ctn-kix_list_5-2
-        }
-
-        ul.lst-kix_lfo6n6mhdm75-8 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_lfo6n6mhdm75-7 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_lfo6n6mhdm75-6 {
-            list-style-type: none
-        }
-
-        .lst-kix_list_5-0 > li:before {
-            content: "" counter(lst-ctn-kix_list_5-0, lower-latin) ". "
-        }
-
-        .lst-kix_list_5-4 > li {
-            counter-increment: lst-ctn-kix_list_5-4
-        }
-
-        .lst-kix_list_4-8 > li:before {
-            content: "\0025aa  "
-        }
-
-        .lst-kix_list_5-3 > li:before {
-            content: "" counter(lst-ctn-kix_list_5-3, decimal) ". "
-        }
-
-        .lst-kix_list_4-7 > li:before {
-            content: "o  "
-        }
-
-        .lst-kix_list_5-2 > li:before {
-            content: "" counter(lst-ctn-kix_list_5-2, lower-roman) ". "
-        }
-
-        .lst-kix_list_5-1 > li:before {
-            content: "" counter(lst-ctn-kix_list_5-1, lower-latin) ". "
-        }
-
-        ul.lst-kix_list_4-8 {
-            list-style-type: none
-        }
-
-        .lst-kix_list_5-7 > li:before {
-            content: "" counter(lst-ctn-kix_list_5-7, lower-latin) ". "
-        }
-
-        ol.lst-kix_list_5-6.start {
-            counter-reset: lst-ctn-kix_list_5-6 0
-        }
-
-        ul.lst-kix_list_4-6 {
-            list-style-type: none
-        }
-
-        .lst-kix_list_5-6 > li:before {
-            content: "" counter(lst-ctn-kix_list_5-6, decimal) ". "
-        }
-
-        .lst-kix_list_5-8 > li:before {
-            content: "" counter(lst-ctn-kix_list_5-8, lower-roman) ". "
-        }
-
-        ul.lst-kix_list_4-7 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_list_4-0 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_list_4-1 {
-            list-style-type: none
-        }
-
-        .lst-kix_list_5-4 > li:before {
-            content: "" counter(lst-ctn-kix_list_5-4, lower-latin) ". "
-        }
-
-        ul.lst-kix_list_4-4 {
-            list-style-type: none
-        }
-
-        .lst-kix_list_5-5 > li:before {
-            content: "" counter(lst-ctn-kix_list_5-5, lower-roman) ". "
-        }
-
-        ul.lst-kix_list_4-5 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_list_4-2 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_list_4-3 {
-            list-style-type: none
-        }
-
-        ol.lst-kix_list_5-5.start {
-            counter-reset: lst-ctn-kix_list_5-5 0
-        }
-
-        ol.lst-kix_list_5-0 {
-            list-style-type: none
-        }
-
-        .lst-kix_list_2-6 > li:before {
-            content: "\0025cf  "
-        }
-
-        .lst-kix_list_2-7 > li:before {
-            content: "o  "
-        }
-
-        ol.lst-kix_list_5-1 {
-            list-style-type: none
-        }
-
-        ol.lst-kix_list_5-2 {
-            list-style-type: none
-        }
-
-        .lst-kix_list_2-4 > li:before {
-            content: "o  "
-        }
-
-        .lst-kix_list_2-5 > li:before {
-            content: "\0025aa  "
-        }
-
-        .lst-kix_list_2-8 > li:before {
-            content: "\0025aa  "
-        }
-
-        ol.lst-kix_list_5-4.start {
-            counter-reset: lst-ctn-kix_list_5-4 0
-        }
-
-        ul.lst-kix_list_3-7 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_list_3-8 {
-            list-style-type: none
-        }
-
-        ol.lst-kix_list_5-1.start {
-            counter-reset: lst-ctn-kix_list_5-1 0
-        }
-
-        ol.lst-kix_list_5-7 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_list_3-1 {
-            list-style-type: none
-        }
-
-        ol.lst-kix_list_5-8 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_list_3-2 {
-            list-style-type: none
-        }
-
-        .lst-kix_list_5-7 > li {
-            counter-increment: lst-ctn-kix_list_5-7
-        }
-
-        ul.lst-kix_list_3-0 {
-            list-style-type: none
-        }
-
-        ol.lst-kix_list_5-3 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_list_3-5 {
-            list-style-type: none
-        }
-
-        ol.lst-kix_list_5-4 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_list_3-6 {
-            list-style-type: none
-        }
-
-        ol.lst-kix_list_5-5 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_list_3-3 {
-            list-style-type: none
-        }
-
-        ol.lst-kix_list_5-6 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_list_3-4 {
-            list-style-type: none
-        }
-
-        .lst-kix_lfo6n6mhdm75-1 > li:before {
-            content: "\0025cb  "
-        }
-
-        .lst-kix_list_5-8 > li {
-            counter-increment: lst-ctn-kix_list_5-8
-        }
-
-        .lst-kix_lfo6n6mhdm75-0 > li:before {
-            content: "\0025cf  "
-        }
-
-        .lst-kix_list_4-0 > li:before {
-            content: "\0025cf  "
-        }
-
-        .lst-kix_list_4-1 > li:before {
-            content: "o  "
-        }
-
-        .lst-kix_list_4-4 > li:before {
-            content: "o  "
-        }
-
-        .lst-kix_list_4-3 > li:before {
-            content: "\0025cf  "
-        }
-
-        .lst-kix_list_4-5 > li:before {
-            content: "\0025aa  "
-        }
-
-        .lst-kix_list_4-2 > li:before {
-            content: "\0025aa  "
-        }
-
-        .lst-kix_list_4-6 > li:before {
-            content: "\0025cf  "
-        }
-
-        ol.lst-kix_list_5-7.start {
-            counter-reset: lst-ctn-kix_list_5-7 0
-        }
-
-        .lst-kix_list_5-5 > li {
-            counter-increment: lst-ctn-kix_list_5-5
-        }
-
-        .lst-kix_list_5-3 > li {
-            counter-increment: lst-ctn-kix_list_5-3
-        }
-
-        ul.lst-kix_list_2-8 {
-            list-style-type: none
-        }
-
-        .lst-kix_lfo6n6mhdm75-4 > li:before {
-            content: "\0025cb  "
-        }
-
-        ul.lst-kix_list_2-2 {
-            list-style-type: none
-        }
-
-        .lst-kix_list_1-0 > li:before {
-            content: "\0025cf  "
-        }
-
-        ul.lst-kix_list_2-3 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_list_2-0 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_list_2-1 {
-            list-style-type: none
-        }
-
-        .lst-kix_lfo6n6mhdm75-3 > li:before {
-            content: "\0025cf  "
-        }
-
-        ul.lst-kix_list_2-6 {
-            list-style-type: none
-        }
-
-        .lst-kix_list_1-1 > li:before {
-            content: "o  "
-        }
-
-        .lst-kix_list_1-2 > li:before {
-            content: "\0025aa  "
-        }
-
-        ul.lst-kix_list_2-7 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_list_2-4 {
-            list-style-type: none
-        }
-
-        ul.lst-kix_list_2-5 {
-            list-style-type: none
-        }
-
-        .lst-kix_lfo6n6mhdm75-2 > li:before {
-            content: "\0025a0  "
-        }
-
-        .lst-kix_list_1-3 > li:before {
-            content: "\0025cf  "
-        }
-
-        .lst-kix_list_1-4 > li:before {
-            content: "o  "
-        }
-
-        .lst-kix_list_1-7 > li:before {
-            content: "o  "
-        }
-
-        ol.lst-kix_list_5-8.start {
-            counter-reset: lst-ctn-kix_list_5-8 0
-        }
-
-        .lst-kix_lfo6n6mhdm75-5 > li:before {
-            content: "\0025a0  "
-        }
-
-        .lst-kix_list_1-5 > li:before {
-            content: "\0025aa  "
-        }
-
-        .lst-kix_list_1-6 > li:before {
-            content: "\0025cf  "
-        }
-
-        .lst-kix_lfo6n6mhdm75-6 > li:before {
-            content: "\0025cf  "
-        }
-
-        .lst-kix_list_5-6 > li {
-            counter-increment: lst-ctn-kix_list_5-6
-        }
-
-        .lst-kix_lfo6n6mhdm75-7 > li:before {
-            content: "\0025cb  "
-        }
-
-        .lst-kix_list_2-0 > li:before {
-            content: "\0025cf  "
-        }
-
-        .lst-kix_list_2-1 > li:before {
-            content: "o  "
-        }
-
-        .lst-kix_lfo6n6mhdm75-8 > li:before {
-            content: "\0025a0  "
-        }
-
-        .lst-kix_list_1-8 > li:before {
-            content: "\0025aa  "
-        }
-
-        .lst-kix_list_2-2 > li:before {
-            content: "\0025aa  "
-        }
-
-        .lst-kix_list_2-3 > li:before {
-            content: "\0025cf  "
-        }
-
-        ol.lst-kix_list_5-2.start {
-            counter-reset: lst-ctn-kix_list_5-2 0
-        }
-
-        ol {
-            margin: 0;
-            padding: 0
-        }
-
-        table td, table th {
-            padding: 0
-        }
-
-        .c7 {
-            color: #2e75b5;
-            font-weight: 400;
-            text-decoration: none;
-            vertical-align: baseline;
-            font-size: 14pt;
-            font-family: "Calibri";
-            font-style: normal
-        }
-
-        .c11 {
-            color: #2e75b5;
-            font-weight: 700;
-            text-decoration: none;
-            vertical-align: baseline;
-            font-size: 18pt;
-            font-family: "Calibri";
-            font-style: normal
-        }
-
-        .c14 {
-            color: #000000;
-            font-weight: 700;
-            text-decoration: none;
-            vertical-align: baseline;
-            font-size: 14pt;
-            font-family: "Arial";
-            font-style: normal
-        }
-
-        .c4 {
-            color: #000000;
-            font-weight: 400;
-            text-decoration: none;
-            vertical-align: baseline;
-            font-size: 11pt;
-            font-family: "Calibri";
-            font-style: normal
-        }
-
-        .c16 {
-            padding-top: 14pt;
-            padding-bottom: 4pt;
-            line-height: 1.15;
-            page-break-after: avoid;
-            text-align: left
-        }
-
-        .c25 {
-            margin-left: 18pt;
-            padding-top: 3pt;
-            padding-bottom: 4pt;
-            line-height: 1.0;
-            text-align: left
-        }
-
-        .c22 {
-            font-weight: 400;
-            text-decoration: none;
-            vertical-align: baseline;
-            font-family: "Calibri";
-            font-style: italic
-        }
-
-        .c0 {
-            padding-top: 0pt;
-            padding-bottom: 0pt;
-            line-height: 1.0791666666666666;
-            page-break-after: avoid;
-            text-align: left
-        }
-
-        .c17 {
-            margin-left: 36pt;
-            padding-top: 3pt;
-            padding-bottom: 8pt;
-            line-height: 1.0;
-            text-align: left
-        }
-
-        .c30 {
-            padding-top: 36pt;
-            padding-bottom: 0pt;
-            line-height: 1.0;
-            text-align: right;
-            height: 14pt
-        }
-
-        .c6 {
-            font-weight: 400;
-            vertical-align: baseline;
-            font-size: 11pt;
-            font-family: "Calibri";
-            font-style: normal
-        }
-
-        .c2 {
-            margin-left: 18pt;
-            padding-top: 3pt;
-            padding-bottom: 8pt;
-            line-height: 1.0;
-            text-align: left
-        }
-
-        .c23 {
-            padding-top: 0pt;
-            padding-bottom: 0pt;
-            line-height: 1.1500000000000001;
-            page-break-after: avoid;
-            text-align: left
-        }
-
-        .c29 {
-            padding-top: 0pt;
-            padding-bottom: 0pt;
-            line-height: 1.0;
-            text-align: left
-        }
-
-        .c1 {
-            padding-top: 0pt;
-            padding-bottom: 8pt;
-            line-height: 1.0791666666666666;
-            text-align: left
-        }
-
-        .c31 {
-            padding-top: 4pt;
-            padding-bottom: 8pt;
-            line-height: 1.0;
-            text-align: left
-        }
-
-        .c33 {
-            padding-top: 0pt;
-            padding-bottom: 8pt;
-            line-height: 1.0791666666666666;
-            text-align: center
-        }
-
-        .c10 {
-            padding-top: 0pt;
-            padding-bottom: 8pt;
-            line-height: 1.1500000000000001;
-            text-align: left
-        }
-
-        .c15 {
-            padding-top: 0pt;
-            padding-bottom: 0pt;
-            line-height: 1.0791666666666666;
-            text-align: left
-        }
-
-        .c21 {
-            padding-top: 0pt;
-            padding-bottom: 0pt;
-            line-height: 1.0791666666666666;
-            text-align: center
-        }
-
-        .c26 {
-            text-decoration: none;
-            vertical-align: baseline;
-            font-family: "Calibri";
-            font-style: normal
-        }
-
-        .c8 {
-            padding-top: 10pt;
-            padding-bottom: 8pt;
-            line-height: 1.0;
-            text-align: left
-        }
-
-        .c18 {
-            padding-top: 24pt;
-            padding-bottom: 6pt;
-            line-height: 1.0791666666666666;
-            text-align: left
-        }
-
-        .c19 {
-            background-color: #ffffff;
-            max-width: 468pt;
-            padding: 10px;
-        }
-
-        .c5 {
-            color: #1155cc;
-            text-decoration: underline
-        }
-
-        .c24 {
-            margin-left: 36pt;
-            padding-left: 0pt
-        }
-
-        .c9 {
-            color: #000000;
-            font-size: 11pt
-        }
-
-        .c12 {
-            font-weight: 400;
-            font-family: "Cambria"
-        }
-
-        .c28 {
-            color: #000000;
-            font-size: 24pt
-        }
-
-        .c32 {
-            padding: 0;
-            margin: 0
-        }
-
-        .c3 {
-            color: inherit;
-            text-decoration: inherit
-        }
-
-        .c20 {
-            font-weight: 700
-        }
-
-        .c34 {
-            height: 18pt
-        }
-
-        .c27 {
-            page-break-after: avoid
-        }
-
-        .c13 {
-            height: 11pt
-        }
-
-        .title {
-            padding-top: 24pt;
-            color: #000000;
-            font-weight: 700;
-            font-size: 36pt;
-            padding-bottom: 6pt;
-            font-family: "Calibri";
-            line-height: 1.0791666666666666;
-            page-break-after: avoid;
-            text-align: left
-        }
-
-        .subtitle {
-            padding-top: 18pt;
-            color: #666666;
-            font-size: 24pt;
-            padding-bottom: 4pt;
-            font-family: "Georgia";
-            line-height: 1.0791666666666666;
-            page-break-after: avoid;
-            font-style: italic;
-            text-align: left
-        }
-
-        li {
-            color: #000000;
-            font-size: 11pt;
-            font-family: "Calibri"
-        }
-
-        p {
-            margin: 0;
-            color: #000000;
-            font-size: 11pt;
-            font-family: "Calibri"
-        }
-
-        h1 {
-            padding-top: 0pt;
-            color: #2e75b5;
-            font-weight: 700;
-            font-size: 18pt;
-            padding-bottom: 0pt;
-            font-family: "Calibri";
-            line-height: 1.0791666666666666;
-            page-break-after: avoid;
-            text-align: left
-        }
-
-        h2 {
-            padding-top: 0pt;
-            color: #2e75b5;
-            font-size: 14pt;
-            padding-bottom: 0pt;
-            font-family: "Calibri";
-            line-height: 1.0791666666666666;
-            page-break-after: avoid;
-            text-align: left
-        }
-
-        h3 {
-            padding-top: 14pt;
-            color: #000000;
-            font-weight: 700;
-            font-size: 14pt;
-            padding-bottom: 4pt;
-            font-family: "Calibri";
-            line-height: 1.0791666666666666;
-            page-break-after: avoid;
-            text-align: left
-        }
-
-        h4 {
-            padding-top: 12pt;
-            color: #000000;
-            font-weight: 700;
-            font-size: 12pt;
-            padding-bottom: 2pt;
-            font-family: "Calibri";
-            line-height: 1.0791666666666666;
-            page-break-after: avoid;
-            text-align: left
-        }
-
-        h5 {
-            padding-top: 11pt;
-            color: #000000;
-            font-weight: 700;
-            font-size: 11pt;
-            padding-bottom: 2pt;
-            font-family: "Calibri";
-            line-height: 1.0791666666666666;
-            page-break-after: avoid;
-            text-align: left
-        }
-
-        h6 {
-            padding-top: 10pt;
-            color: #000000;
-            font-weight: 700;
-            font-size: 10pt;
-            padding-bottom: 2pt;
-            font-family: "Calibri";
-            line-height: 1.0791666666666666;
-            page-break-after: avoid;
-            text-align: left
-        }</style>
+    <style type="text/css">@import url('https://themes.googleusercontent.com/fonts/css?kit=fpjTOVmNbO4Lz34iLyptLTi9jKYd1gJzj5O2gWsEpXol-nTHck7FFkZplK5meosG');
+
+    .lst-kix_list_5-1 > li {
+        counter-increment: lst-ctn-kix_list_5-1
+    }
+
+    ul.lst-kix_list_1-0 {
+        list-style-type: none
+    }
+
+    .lst-kix_list_3-0 > li:before {
+        content: "\0025cf  "
+    }
+
+    .lst-kix_list_3-1 > li:before {
+        content: "o  "
+    }
+
+    .lst-kix_list_3-2 > li:before {
+        content: "\0025aa  "
+    }
+
+    .lst-kix_list_5-0 > li {
+        counter-increment: lst-ctn-kix_list_5-0
+    }
+
+    ul.lst-kix_list_1-3 {
+        list-style-type: none
+    }
+
+    .lst-kix_list_3-5 > li:before {
+        content: "\0025aa  "
+    }
+
+    ul.lst-kix_list_1-4 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_list_1-1 {
+        list-style-type: none
+    }
+
+    .lst-kix_list_3-4 > li:before {
+        content: "o  "
+    }
+
+    ul.lst-kix_list_1-2 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_list_1-7 {
+        list-style-type: none
+    }
+
+    .lst-kix_list_3-3 > li:before {
+        content: "\0025cf  "
+    }
+
+    ul.lst-kix_list_1-8 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_list_1-5 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_list_1-6 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_lfo6n6mhdm75-5 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_lfo6n6mhdm75-4 {
+        list-style-type: none
+    }
+
+    .lst-kix_list_3-8 > li:before {
+        content: "\0025aa  "
+    }
+
+    ul.lst-kix_lfo6n6mhdm75-3 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_lfo6n6mhdm75-2 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_lfo6n6mhdm75-1 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_lfo6n6mhdm75-0 {
+        list-style-type: none
+    }
+
+    ol.lst-kix_list_5-3.start {
+        counter-reset: lst-ctn-kix_list_5-3 0
+    }
+
+    .lst-kix_list_3-6 > li:before {
+        content: "\0025cf  "
+    }
+
+    .lst-kix_list_3-7 > li:before {
+        content: "o  "
+    }
+
+    ol.lst-kix_list_5-0.start {
+        counter-reset: lst-ctn-kix_list_5-0 0
+    }
+
+    .lst-kix_list_5-2 > li {
+        counter-increment: lst-ctn-kix_list_5-2
+    }
+
+    ul.lst-kix_lfo6n6mhdm75-8 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_lfo6n6mhdm75-7 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_lfo6n6mhdm75-6 {
+        list-style-type: none
+    }
+
+    .lst-kix_list_5-0 > li:before {
+        content: "" counter(lst-ctn-kix_list_5-0, lower-latin) ". "
+    }
+
+    .lst-kix_list_5-4 > li {
+        counter-increment: lst-ctn-kix_list_5-4
+    }
+
+    .lst-kix_list_4-8 > li:before {
+        content: "\0025aa  "
+    }
+
+    .lst-kix_list_5-3 > li:before {
+        content: "" counter(lst-ctn-kix_list_5-3, decimal) ". "
+    }
+
+    .lst-kix_list_4-7 > li:before {
+        content: "o  "
+    }
+
+    .lst-kix_list_5-2 > li:before {
+        content: "" counter(lst-ctn-kix_list_5-2, lower-roman) ". "
+    }
+
+    .lst-kix_list_5-1 > li:before {
+        content: "" counter(lst-ctn-kix_list_5-1, lower-latin) ". "
+    }
+
+    ul.lst-kix_list_4-8 {
+        list-style-type: none
+    }
+
+    .lst-kix_list_5-7 > li:before {
+        content: "" counter(lst-ctn-kix_list_5-7, lower-latin) ". "
+    }
+
+    ol.lst-kix_list_5-6.start {
+        counter-reset: lst-ctn-kix_list_5-6 0
+    }
+
+    ul.lst-kix_list_4-6 {
+        list-style-type: none
+    }
+
+    .lst-kix_list_5-6 > li:before {
+        content: "" counter(lst-ctn-kix_list_5-6, decimal) ". "
+    }
+
+    .lst-kix_list_5-8 > li:before {
+        content: "" counter(lst-ctn-kix_list_5-8, lower-roman) ". "
+    }
+
+    ul.lst-kix_list_4-7 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_list_4-0 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_list_4-1 {
+        list-style-type: none
+    }
+
+    .lst-kix_list_5-4 > li:before {
+        content: "" counter(lst-ctn-kix_list_5-4, lower-latin) ". "
+    }
+
+    ul.lst-kix_list_4-4 {
+        list-style-type: none
+    }
+
+    .lst-kix_list_5-5 > li:before {
+        content: "" counter(lst-ctn-kix_list_5-5, lower-roman) ". "
+    }
+
+    ul.lst-kix_list_4-5 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_list_4-2 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_list_4-3 {
+        list-style-type: none
+    }
+
+    ol.lst-kix_list_5-5.start {
+        counter-reset: lst-ctn-kix_list_5-5 0
+    }
+
+    ol.lst-kix_list_5-0 {
+        list-style-type: none
+    }
+
+    .lst-kix_list_2-6 > li:before {
+        content: "\0025cf  "
+    }
+
+    .lst-kix_list_2-7 > li:before {
+        content: "o  "
+    }
+
+    ol.lst-kix_list_5-1 {
+        list-style-type: none
+    }
+
+    ol.lst-kix_list_5-2 {
+        list-style-type: none
+    }
+
+    .lst-kix_list_2-4 > li:before {
+        content: "o  "
+    }
+
+    .lst-kix_list_2-5 > li:before {
+        content: "\0025aa  "
+    }
+
+    .lst-kix_list_2-8 > li:before {
+        content: "\0025aa  "
+    }
+
+    ol.lst-kix_list_5-4.start {
+        counter-reset: lst-ctn-kix_list_5-4 0
+    }
+
+    ul.lst-kix_list_3-7 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_list_3-8 {
+        list-style-type: none
+    }
+
+    ol.lst-kix_list_5-1.start {
+        counter-reset: lst-ctn-kix_list_5-1 0
+    }
+
+    ol.lst-kix_list_5-7 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_list_3-1 {
+        list-style-type: none
+    }
+
+    ol.lst-kix_list_5-8 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_list_3-2 {
+        list-style-type: none
+    }
+
+    .lst-kix_list_5-7 > li {
+        counter-increment: lst-ctn-kix_list_5-7
+    }
+
+    ul.lst-kix_list_3-0 {
+        list-style-type: none
+    }
+
+    ol.lst-kix_list_5-3 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_list_3-5 {
+        list-style-type: none
+    }
+
+    ol.lst-kix_list_5-4 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_list_3-6 {
+        list-style-type: none
+    }
+
+    ol.lst-kix_list_5-5 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_list_3-3 {
+        list-style-type: none
+    }
+
+    ol.lst-kix_list_5-6 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_list_3-4 {
+        list-style-type: none
+    }
+
+    .lst-kix_lfo6n6mhdm75-1 > li:before {
+        content: "\0025cb  "
+    }
+
+    .lst-kix_list_5-8 > li {
+        counter-increment: lst-ctn-kix_list_5-8
+    }
+
+    .lst-kix_lfo6n6mhdm75-0 > li:before {
+        content: "\0025cf  "
+    }
+
+    .lst-kix_list_4-0 > li:before {
+        content: "\0025cf  "
+    }
+
+    .lst-kix_list_4-1 > li:before {
+        content: "o  "
+    }
+
+    .lst-kix_list_4-4 > li:before {
+        content: "o  "
+    }
+
+    .lst-kix_list_4-3 > li:before {
+        content: "\0025cf  "
+    }
+
+    .lst-kix_list_4-5 > li:before {
+        content: "\0025aa  "
+    }
+
+    .lst-kix_list_4-2 > li:before {
+        content: "\0025aa  "
+    }
+
+    .lst-kix_list_4-6 > li:before {
+        content: "\0025cf  "
+    }
+
+    ol.lst-kix_list_5-7.start {
+        counter-reset: lst-ctn-kix_list_5-7 0
+    }
+
+    .lst-kix_list_5-5 > li {
+        counter-increment: lst-ctn-kix_list_5-5
+    }
+
+    .lst-kix_list_5-3 > li {
+        counter-increment: lst-ctn-kix_list_5-3
+    }
+
+    ul.lst-kix_list_2-8 {
+        list-style-type: none
+    }
+
+    .lst-kix_lfo6n6mhdm75-4 > li:before {
+        content: "\0025cb  "
+    }
+
+    ul.lst-kix_list_2-2 {
+        list-style-type: none
+    }
+
+    .lst-kix_list_1-0 > li:before {
+        content: "\0025cf  "
+    }
+
+    ul.lst-kix_list_2-3 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_list_2-0 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_list_2-1 {
+        list-style-type: none
+    }
+
+    .lst-kix_lfo6n6mhdm75-3 > li:before {
+        content: "\0025cf  "
+    }
+
+    ul.lst-kix_list_2-6 {
+        list-style-type: none
+    }
+
+    .lst-kix_list_1-1 > li:before {
+        content: "o  "
+    }
+
+    .lst-kix_list_1-2 > li:before {
+        content: "\0025aa  "
+    }
+
+    ul.lst-kix_list_2-7 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_list_2-4 {
+        list-style-type: none
+    }
+
+    ul.lst-kix_list_2-5 {
+        list-style-type: none
+    }
+
+    .lst-kix_lfo6n6mhdm75-2 > li:before {
+        content: "\0025a0  "
+    }
+
+    .lst-kix_list_1-3 > li:before {
+        content: "\0025cf  "
+    }
+
+    .lst-kix_list_1-4 > li:before {
+        content: "o  "
+    }
+
+    .lst-kix_list_1-7 > li:before {
+        content: "o  "
+    }
+
+    ol.lst-kix_list_5-8.start {
+        counter-reset: lst-ctn-kix_list_5-8 0
+    }
+
+    .lst-kix_lfo6n6mhdm75-5 > li:before {
+        content: "\0025a0  "
+    }
+
+    .lst-kix_list_1-5 > li:before {
+        content: "\0025aa  "
+    }
+
+    .lst-kix_list_1-6 > li:before {
+        content: "\0025cf  "
+    }
+
+    .lst-kix_lfo6n6mhdm75-6 > li:before {
+        content: "\0025cf  "
+    }
+
+    .lst-kix_list_5-6 > li {
+        counter-increment: lst-ctn-kix_list_5-6
+    }
+
+    .lst-kix_lfo6n6mhdm75-7 > li:before {
+        content: "\0025cb  "
+    }
+
+    .lst-kix_list_2-0 > li:before {
+        content: "\0025cf  "
+    }
+
+    .lst-kix_list_2-1 > li:before {
+        content: "o  "
+    }
+
+    .lst-kix_lfo6n6mhdm75-8 > li:before {
+        content: "\0025a0  "
+    }
+
+    .lst-kix_list_1-8 > li:before {
+        content: "\0025aa  "
+    }
+
+    .lst-kix_list_2-2 > li:before {
+        content: "\0025aa  "
+    }
+
+    .lst-kix_list_2-3 > li:before {
+        content: "\0025cf  "
+    }
+
+    ol.lst-kix_list_5-2.start {
+        counter-reset: lst-ctn-kix_list_5-2 0
+    }
+
+    ol {
+        margin: 0;
+        padding: 0
+    }
+
+    table td, table th {
+        padding: 0
+    }
+
+    .c7 {
+        color: #2e75b5;
+        font-weight: 400;
+        text-decoration: none;
+        vertical-align: baseline;
+        font-size: 14pt;
+        font-family: "Calibri";
+        font-style: normal
+    }
+
+    .c13 {
+        color: #2e75b5;
+        text-decoration: none;
+        vertical-align: baseline;
+        font-size: 18pt;
+        font-family: "Calibri";
+        font-style: normal
+    }
+
+    .c37 {
+        margin-left: 18pt;
+        padding-top: 3pt;
+        padding-bottom: 4pt;
+        line-height: 1.0;
+        text-align: left
+    }
+
+    .c1 {
+        padding-top: 0pt;
+        padding-bottom: 0pt;
+        line-height: 1.1500000000000001;
+        page-break-after: avoid;
+        text-align: left
+    }
+
+    .c3 {
+        font-weight: 400;
+        vertical-align: baseline;
+        font-size: 11pt;
+        font-family: "Calibri";
+        font-style: normal
+    }
+
+    .c8 {
+        padding-top: 0pt;
+        padding-bottom: 0pt;
+        line-height: 1.0791666666666666;
+        page-break-after: avoid;
+        text-align: left
+    }
+
+    .c21 {
+        font-weight: 400;
+        vertical-align: baseline;
+        font-size: 11pt;
+        font-family: "Calibri";
+        font-style: italic
+    }
+
+    .c38 {
+        font-weight: 400;
+        vertical-align: baseline;
+        font-size: 8.5pt;
+        font-family: "Verdana";
+        font-style: normal
+    }
+
+    .c25 {
+        padding-top: 0pt;
+        padding-bottom: 0pt;
+        line-height: 1.0;
+        text-align: left;
+        height: 11pt
+    }
+
+    .c27 {
+        padding-top: 36pt;
+        padding-bottom: 0pt;
+        line-height: 1.0;
+        text-align: right;
+        height: 14pt
+    }
+
+    .c14 {
+        margin-left: 18pt;
+        padding-top: 3pt;
+        padding-bottom: 8pt;
+        line-height: 1.0;
+        text-align: left
+    }
+
+    .c22 {
+        margin-left: 36pt;
+        padding-top: 3pt;
+        padding-bottom: 8pt;
+        line-height: 1.0;
+        text-align: left
+    }
+
+    .c35 {
+        margin-left: 54pt;
+        padding-top: 3pt;
+        padding-bottom: 8pt;
+        line-height: 1.0;
+        text-align: left
+    }
+
+    .c16 {
+        padding-top: 14pt;
+        padding-bottom: 4pt;
+        line-height: 1.15;
+        page-break-after: avoid;
+        text-align: left
+    }
+
+    .c5 {
+        padding-top: 0pt;
+        padding-bottom: 8pt;
+        line-height: 1.1500000000000001;
+        text-align: left
+    }
+
+    .c24 {
+        vertical-align: baseline;
+        font-size: 24pt;
+        font-family: "Calibri";
+        font-style: normal
+    }
+
+    .c6 {
+        padding-top: 0pt;
+        padding-bottom: 8pt;
+        line-height: 1.0791666666666666;
+        text-align: left
+    }
+
+    .c20 {
+        padding-top: 4pt;
+        padding-bottom: 8pt;
+        line-height: 1.0;
+        text-align: left
+    }
+
+    .c17 {
+        padding-top: 0pt;
+        padding-bottom: 0pt;
+        line-height: 1.0791666666666666;
+        text-align: left
+    }
+
+    .c39 {
+        padding-top: 12pt;
+        padding-bottom: 2pt;
+        line-height: 1.15;
+        text-align: left
+    }
+
+    .c33 {
+        padding-top: 0pt;
+        padding-bottom: 8pt;
+        line-height: 1.0791666666666666;
+        text-align: center
+    }
+
+    .c2 {
+        padding-top: 24pt;
+        padding-bottom: 6pt;
+        line-height: 1.0791666666666666;
+        text-align: left
+    }
+
+    .c15 {
+        padding-top: 10pt;
+        padding-bottom: 8pt;
+        line-height: 1.0;
+        text-align: left
+    }
+
+    .c32 {
+        padding-top: 0pt;
+        padding-bottom: 0pt;
+        line-height: 1.0791666666666666;
+        text-align: center
+    }
+
+    .c12 {
+        vertical-align: baseline;
+        font-size: 14pt;
+        font-family: "Arial";
+        font-style: normal
+    }
+
+    .c26 {
+        vertical-align: baseline;
+        font-size: 11pt;
+        font-style: normal
+    }
+
+    .c31 {
+        background-color: #ffffff;
+        max-width: 468pt;
+        padding: 10pt
+    }
+
+    .c19 {
+        color: #2e75b5;
+        font-weight: 400;
+        text-decoration: none
+    }
+
+    .c0 {
+        color: #1155cc;
+        text-decoration: underline
+    }
+
+    .c36 {
+        margin-left: 36pt;
+        padding-left: 0pt
+    }
+
+    .c30 {
+        color: #000000;
+        font-size: 11pt
+    }
+
+    .c9 {
+        color: #000000;
+        text-decoration: none
+    }
+
+    .c23 {
+        font-weight: 400;
+        font-family: "Cambria"
+    }
+
+    .c4 {
+        color: inherit;
+        text-decoration: inherit
+    }
+
+    .c11 {
+        padding: 0;
+        margin: 0
+    }
+
+    .c18 {
+        page-break-after: avoid
+    }
+
+    .c28 {
+        height: 18pt
+    }
+
+    .c10 {
+        font-weight: 700
+    }
+
+    .c29 {
+        height: 11pt
+    }
+
+    .c34 {
+        font-family: "Calibri"
+    }
+
+    .title {
+        padding-top: 24pt;
+        color: #000000;
+        font-weight: 700;
+        font-size: 36pt;
+        padding-bottom: 6pt;
+        font-family: "Calibri";
+        line-height: 1.0791666666666666;
+        page-break-after: avoid;
+        text-align: left
+    }
+
+    .subtitle {
+        padding-top: 18pt;
+        color: #666666;
+        font-size: 24pt;
+        padding-bottom: 4pt;
+        font-family: "Georgia";
+        line-height: 1.0791666666666666;
+        page-break-after: avoid;
+        font-style: italic;
+        text-align: left
+    }
+
+    li {
+        color: #000000;
+        font-size: 11pt;
+        font-family: "Calibri"
+    }
+
+    p {
+        margin: 0;
+        color: #000000;
+        font-size: 11pt;
+        font-family: "Calibri"
+    }
+
+    h1 {
+        padding-top: 0pt;
+        color: #2e75b5;
+        font-weight: 700;
+        font-size: 18pt;
+        padding-bottom: 0pt;
+        font-family: "Calibri";
+        line-height: 1.0791666666666666;
+        page-break-after: avoid;
+        text-align: left
+    }
+
+    h2 {
+        padding-top: 0pt;
+        color: #2e75b5;
+        font-size: 14pt;
+        padding-bottom: 0pt;
+        font-family: "Calibri";
+        line-height: 1.0791666666666666;
+        page-break-after: avoid;
+        text-align: left
+    }
+
+    h3 {
+        padding-top: 14pt;
+        color: #000000;
+        font-weight: 700;
+        font-size: 14pt;
+        padding-bottom: 4pt;
+        font-family: "Calibri";
+        line-height: 1.0791666666666666;
+        page-break-after: avoid;
+        text-align: left
+    }
+
+    h4 {
+        padding-top: 12pt;
+        color: #000000;
+        font-weight: 700;
+        font-size: 12pt;
+        padding-bottom: 2pt;
+        font-family: "Calibri";
+        line-height: 1.0791666666666666;
+        page-break-after: avoid;
+        text-align: left
+    }
+
+    h5 {
+        padding-top: 11pt;
+        color: #000000;
+        font-weight: 700;
+        font-size: 11pt;
+        padding-bottom: 2pt;
+        font-family: "Calibri";
+        line-height: 1.0791666666666666;
+        page-break-after: avoid;
+        text-align: left
+    }
+
+    h6 {
+        padding-top: 10pt;
+        color: #000000;
+        font-weight: 700;
+        font-size: 10pt;
+        padding-bottom: 2pt;
+        font-family: "Calibri";
+        line-height: 1.0791666666666666;
+        page-break-after: avoid;
+        text-align: left
+    }</style>
 </head>
-<body class="c19">
+<body class="c31">
 
-<p class="c21"><span class="c26 c20 c28">What is New in STDM 1.5?</span></p>
-<br>
-<p class="c1"><span
+<p class="c32"><span class="c9 c10 c24">Change Log for STDM 1.5</span></p>
+<p class="c33"><span class="c9 c21"></span></p>
+<p class="c6"><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 600.00px; height: 287.00px;"><img
         alt="Splash-no-qgis-version.png" src="images/image06.png"
         style="width: 600.00px; height: 287.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<p class="c10"><span class="c4">STDM 1.5 is a full release which includes enhanced functionality and stability improvements. The changes include the ability to save configuration as draft; copying an existing data profile; additional customization options pertaining to social tenure relationship; simpler importation of lookup values; direct switching of data profiles; identity tool for accessing the main information pertaining to a spatial unit (such as tenure status and related parties) and user interface enhancements in the GPS import tool.</span>
+<p class="c5"><span class="c3 c9">STDM 1.5 is a full release which includes enhanced functionality and stability improvements. The changes include the ability to save configuration as draft; copying an existing data profile; additional customization options pertaining to social tenure relationship; simpler importation of lookup values; direct switching of data profiles; identity tool for accessing the main information pertaining to a spatial unit (such as tenure status and related parties) and user interface enhancements in the GPS import tool.</span>
 </p>
-<p class="c10"><span class="c4">The following sections summarize the new features in STDM 1.5.</span>
+<p class="c5"><span class="c3 c9">The following sections summarize the new features in STDM 1.5.</span>
 </p>
-<p class="c31"><span class="c5"><a class="c3" href="#h.gfczgxfbla6o">Database Configuration</a></span>
+<p class="c20"><span class="c0"><a class="c4" href="#h.gfczgxfbla6o">Database Configuration</a></span>
 </p>
-<p class="c2"><span class="c5"><a class="c3" href="#h.iid5aae2sh9m">Copy Data Profile from Existing One</a></span>
+<p class="c14"><span class="c0"><a class="c4" href="#h.iid5aae2sh9m">Copy Data Profile from Existing One</a></span>
 </p>
-<p class="c2"><span class="c5"><a class="c3" href="#h.csxlowbtztpj">Save Configuration as Draft</a></span>
+<p class="c14"><span class="c0"><a class="c4" href="#h.csxlowbtztpj">Save Configuration as Draft</a></span>
 </p>
-<p class="c2"><span class="c5"><a class="c3" href="#h.o24yv2cpk1vh">Enhanced Input Validation</a></span>
+<p class="c14"><span class="c0"><a class="c4" href="#h.o24yv2cpk1vh">Enhanced Input Validation</a></span>
 </p>
-<p class="c2"><span class="c5"><a class="c3" href="#h.uo85tgpv5ma3">Percent Column Type</a></span>
+<p class="c14"><span class="c0"><a class="c4" href="#h.uo85tgpv5ma3">Percent Column Type</a></span>
 </p>
-<p class="c2"><span class="c5"><a class="c3" href="#h.ab8t1apkl0fr">Auto Generated Code Column Type</a></span>
+<p class="c14"><span class="c0"><a class="c4" href="#h.ab8t1apkl0fr">Auto Generated Code Column Type</a></span>
 </p>
-<p class="c2"><span class="c5"><a class="c3" href="#h.snpjp7tl6p4s">Multi Party Entity Types in Social Tenure Relationship</a></span>
+<p class="c35"><span class="c0"><a class="c4" href="#h.wh1k6laieyr2">Decimal Number Column Type</a></span>
 </p>
-<p class="c2"><span class="c5"><a class="c3" href="#h.5bs0zaamd780">Date Validity Ranges in Social Tenure Relationship</a></span>
+<p class="c14"><span class="c0"><a class="c4" href="#h.snpjp7tl6p4s">Multi Party Entity Types in Social Tenure Relationship</a></span>
 </p>
-<p class="c2"><span class="c5"><a class="c3" href="#h.c9q5n9hdzogm">Visual Representation of Social Tenure Relationship</a></span>
+<p class="c14"><span class="c0"><a class="c4" href="#h.5bs0zaamd780">Date Validity Ranges in Social Tenure Relationship</a></span>
 </p>
-<p class="c2"><span class="c5"><a class="c3" href="#h.u048um4lsc9">Social Tenure Relationship Views</a></span>
+<p class="c14"><span class="c0"><a class="c4" href="#h.c9q5n9hdzogm">Visual Representation of Social Tenure Relationship</a></span>
 </p>
-<p class="c8"><span class="c5"><a class="c3" href="#h.415u56zg63rs">Current Profile Selection</a></span>
+<p class="c14"><span class="c0"><a class="c4" href="#h.u048um4lsc9">Social Tenure Relationship Views</a></span>
 </p>
-<p class="c8"><span class="c5"><a class="c3" href="#h.qh9gi1ae4wv4">Social Tenure Relationship</a></span>
+<p class="c15"><span class="c0"><a class="c4" href="#h.415u56zg63rs">Current Profile Selection</a></span>
 </p>
-<p class="c2"><span class="c5"><a class="c3" href="#h.5k9cdm3nc956">Social Tenure Relationship (STR) Editor</a></span>
+<p class="c15"><span class="c0"><a class="c4" href="#h.qh9gi1ae4wv4">Social Tenure Relationship</a></span>
 </p>
-<p class="c17"><span class="c5"><a class="c3" href="#h.a8j3c0u2y2kv">Local Spatial Unit Preview</a></span>
+<p class="c14"><span class="c0"><a class="c4" href="#h.5k9cdm3nc956">Social Tenure Relationship (STR) Editor</a></span>
 </p>
-<p class="c17"><span class="c5"><a class="c3" href="#h.92u6b9xnb8hy">Multiple Party Entity</a></span>
+<p class="c22"><span class="c0"><a class="c4" href="#h.a8j3c0u2y2kv">Local Spatial Unit Preview</a></span>
 </p>
-<p class="c17"><span class="c5"><a class="c3" href="#h.zhyc1cwb9onk">Tenure Share</a></span>
+<p class="c22"><span class="c0"><a class="c4" href="#h.92u6b9xnb8hy">Multiple Party Entity</a></span>
 </p>
-<p class="c17"><span class="c5"><a class="c3" href="#h.prg9kc3fwg0i">Tenure Validity Period</a></span>
+<p class="c22"><span class="c0"><a class="c4" href="#h.zhyc1cwb9onk">Tenure Share</a></span>
 </p>
-<p class="c17"><span class="c5"><a class="c3" href="#h.jkmvtie3nr6t">Multiple STR entry</a></span>
+<p class="c22"><span class="c0"><a class="c4" href="#h.prg9kc3fwg0i">Tenure Validity Period</a></span>
 </p>
-<p class="c2"><span class="c5"><a class="c3" href="#h.yuc2syiogv3s">View Social Tenure Relationship</a></span>
+<p class="c22"><span class="c0"><a class="c4" href="#h.jkmvtie3nr6t">Multiple STR entry</a></span>
 </p>
-<p class="c8"><span class="c5"><a class="c3"
-                                  href="#h.kuzw0214p82p">Data Import</a></span>
+<p class="c14"><span class="c0"><a class="c4" href="#h.yuc2syiogv3s">View Social Tenure Relationship</a></span>
 </p>
-<p class="c2"><span class="c5"><a class="c3" href="#h.6koeox46w6hp">Importing Lookup Values</a></span>
+<p class="c15"><span class="c0"><a class="c4" href="#h.w3l7n1ynwfvm">Entity Editor</a></span>
 </p>
-<p class="c8"><span class="c5"><a class="c3" href="#h.4oa3qyesf5ra">Spatial Unit Manager</a></span>
+<p class="c15"><span class="c0"><a class="c4" href="#h.kuzw0214p82p">Data Import</a></span>
 </p>
-<p class="c2"><span class="c5"><a class="c3" href="#h.apf1nscr8p1">GPS Feature Import Tool</a></span>
+<p class="c14"><span class="c0"><a class="c4" href="#h.6koeox46w6hp">Importing Lookup Values</a></span>
 </p>
-<p class="c8"><span class="c5"><a class="c3" href="#h.vo6dl6bp8wwg">Spatial Entity Details</a></span>
+<p class="c15"><span class="c0"><a class="c4" href="#h.4oa3qyesf5ra">Spatial Unit Manager</a></span>
 </p>
-<p class="c8"><span class="c5"><a class="c3" href="#h.9bgqh1qrsgx1">Spatial Entity Browser</a></span>
+<p class="c14"><span class="c0"><a class="c4" href="#h.apf1nscr8p1">GPS Feature Import Tool</a></span>
 </p>
-<p class="c2"><span class="c5"><a class="c3" href="#h.eswciasw1wsm">Multi-Selection of Records and Features</a></span>
+<p class="c15"><span class="c0"><a class="c4" href="#h.vo6dl6bp8wwg">Spatial Entity Details</a></span>
 </p>
-<p class="c2"><span class="c5"><a class="c3" href="#h.nw0x49qf95oj">Ability to Control Map While Browsing Records</a></span>
+<p class="c15"><span class="c0"><a class="c4" href="#h.9bgqh1qrsgx1">Spatial Entity Browser</a></span>
 </p>
-<p class="c2"><span class="c5"><a class="c3" href="#h.y7o82tqumw5m">View Social Tenure Relationship of the Selected Record</a></span>
+<p class="c14"><span class="c0"><a class="c4" href="#h.eswciasw1wsm">Multi-Selection of Records and Features</a></span>
 </p>
-<p class="c8"><span class="c5"><a class="c3" href="#h.yhe3v633swst">Documents Designer</a></span>
+<p class="c14"><span class="c0"><a class="c4" href="#h.nw0x49qf95oj">Ability to Control Map While Browsing Records</a></span>
 </p>
-<p class="c8"><span class="c5"><a class="c3" href="#h.pwq0ztpccpx6">Options</a></span>
+<p class="c14"><span class="c0"><a class="c4" href="#h.y7o82tqumw5m">View Social Tenure Relationship of the Selected Record</a></span>
 </p>
-<p class="c8"><span class="c5"><a class="c3" href="#h.md2cyzhg5wfk">General</a></span>
+<p class="c15"><span class="c0"><a class="c4" href="#h.yhe3v633swst">Documents Designer</a></span>
 </p>
-<p class="c2"><span class="c5"><a class="c3" href="#h.7gji1xmdjfji">Software Packages</a></span>
+<p class="c15"><span class="c0"><a class="c4"
+                                   href="#h.pwq0ztpccpx6">Options</a></span>
 </p>
-<p class="c25"><span class="c5"><a class="c3" href="#h.pxvpmhe7r8gn">Enabling PostGIS Extension</a></span>
+<p class="c15"><span class="c0"><a class="c4"
+                                   href="#h.md2cyzhg5wfk">General</a></span>
 </p>
-<h1 class="c0 c34" id="h.66azym415eig"><span class="c11"></span></h1>
-<h1 class="c0" id="h.gfczgxfbla6o"><span>Database Configuration</span></h1>
-<h2 class="c23" id="h.iid5aae2sh9m"><span class="c7">Copy Data Profile from Existing One</span>
+<p class="c14"><span class="c0"><a class="c4" href="#h.7gji1xmdjfji">Software Packages</a></span>
+</p>
+<p class="c37"><span class="c0"><a class="c4" href="#h.pxvpmhe7r8gn">Enabling PostGIS Extension</a></span>
+</p>
+<h1 class="c8 c28" id="h.66azym415eig"><span class="c13 c10"></span></h1>
+<h1 class="c8" id="h.gfczgxfbla6o"><span>Database Configuration</span></h1>
+<h2 class="c1" id="h.iid5aae2sh9m"><span class="c7">Copy Data Profile from Existing One</span>
 </h2>
-<p class="c1"><span class="c4">This time saving Database Configuration feature allows you to make a copy of an existing profile as shown in the image below. If you identify a profile in your configuration that you would like to use as a template, now you can replicate it, rename it, edit and use it without designing a new configuration from scratch. This feature greatly saves on time and increases productivity.</span>
+<p class="c6"><span class="c3 c9">This time saving Database Configuration feature allows you to make a copy of an existing profile as shown in the image below. If you identify a profile in your configuration that you would like to use as a template, now you can replicate it, rename it, edit and use it without designing a new configuration from scratch. This feature greatly saves on time and increases productivity.</span>
 </p>
-<p class="c1"><span
+<p class="c6"><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 585.50px; height: 259.91px;"><img
-        alt="" src="images/image15.png"
+        alt="" src="images/image16.png"
         style="width: 585.50px; height: 259.91px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<h2 class="c23" id="h.csxlowbtztpj"><span class="c7">Save Configuration as Draft</span>
-</h2>
-<p class="c1"><span class="c4">This feature provides the ability to save the current customization as a draft as shown in the image below. If one is configuring a complex profile that might take hours or days to finish, it is now possible to progressively save the customization as a draft until completion. The draft copy will be loaded automatically next time the Database Configuration Wizard is loaded.</span>
+<h2 class="c1" id="h.csxlowbtztpj"><span
+        class="c7">Save Configuration as Draft</span></h2>
+<p class="c6"><span class="c3 c9">This feature provides the ability to save the current customization as a draft as shown in the image below. If one is configuring a complex profile that might take hours or days to finish, it is now possible to progressively save the customization as a draft until completion. The draft copy will be loaded automatically next time the Database Configuration Wizard is loaded.</span>
 </p>
-<p class="c1"><span
+<p class="c6"><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 376.50px; height: 74.40px;"><img
-        alt="" src="images/image22.png"
+        alt="" src="images/image23.png"
         style="width: 376.50px; height: 74.40px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<h2 class="c0" id="h.o24yv2cpk1vh"><span
+<h2 class="c8" id="h.o24yv2cpk1vh"><span
         class="c7">Enhanced Input Validation</span></h2>
-<p class="c1"><span>The text input boxes for defining the profile name, entity name, column name, lookup name, and lookup Value name attempt to automatically update the entered text such as space and uppercase letters. The validation shows an error message when typing invalid characters as shown in the image below. </span><span
+<p class="c6"><span>The text input boxes for defining the profile name, entity name, column name, lookup name, and lookup Value name attempt to automatically update the entered text such as space and uppercase letters. The validation shows an error message when typing invalid characters as shown in the image below. </span><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 282.00px; height: 304.71px;"><img
-        alt="column_validation.PNG" src="images/image12.png"
+        alt="column_validation.PNG" src="images/image13.png"
         style="width: 282.00px; height: 304.71px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<p class="c1 c13"><span class="c4"></span></p>
-<p class="c1"><span class="c4">Users can also copy paste characters with space and capital letters in the text boxes. </span>
+<p class="c6 c29"><span class="c3 c9"></span></p>
+<p class="c6"><span class="c3 c9">Users can also copy paste characters with space and capital letters in the text boxes. </span>
 </p>
-<h2 class="c0" id="h.uo85tgpv5ma3"><span class="c7">Percent Column Type</span>
+<h2 class="c8" id="h.uo85tgpv5ma3"><span class="c7">Percent Column Type</span>
 </h2>
-<p class="c10" id="h.gjdgxs"><span>This is a decimal data type with a minimum of 0 and maximum of 100. The image below shows the Percent column in Column data type drop down menu</span><span
-        class="c4">. </span></p>
-<p class="c10"><span
+<p class="c5" id="h.gjdgxs"><span>This is a decimal data type with a minimum of 0 and maximum of 100. The image below shows the Percent column in Column data type drop down menu</span><span
+        class="c3 c9">. </span></p>
+<p class="c5"><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #7f7f7f; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 257.55px; height: 266.63px;"><img
-        alt="" src="images/image20.png"
+        alt="" src="images/image21.png"
         style="width: 257.55px; height: 266.63px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<p class="c10" id="h.gjdgxs-1"><span class="c4">The input widget in the entity editor corresponds to a spin box with a &lsquo;%&rsquo;
+<p class="c5" id="h.gjdgxs-1"><span class="c3 c9">The input widget in the entity editor corresponds to a spin box with a &lsquo;%&rsquo;
     suffix appended to the value &nbsp;as shown in the image below.</span></p>
-<p class="c10"><span
+<p class="c5"><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 255.50px; height: 24.00px;"><img
         alt="" src="images/image00.png"
         style="width: 255.50px; height: 24.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<h2 class="c23" id="h.ab8t1apkl0fr"><span class="c7">Auto Generated Code Column Type</span>
+<h2 class="c1" id="h.ab8t1apkl0fr"><span class="c7">Auto Generated Code Column Type</span>
 </h2>
-<p class="c1"><span>This column type can be used to create unique codes such as parcel number, house number, etc. The column type can be found in the &nbsp;Column data type drop down menu as shown below</span><span>. </span><span
+<p class="c6"><span>This column type can be used to create unique codes such as parcel number, house number, etc. The column type can be found in the &nbsp;Column data type drop down menu as shown below</span><span>. </span><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 298.50px; height: 323.06px;"><img
-        alt="auto_generated_code.PNG" src="images/image16.png"
+        alt="auto_generated_code.PNG" src="images/image17.png"
         style="width: 298.50px; height: 323.06px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<p class="c1"><span class="c4">&nbsp;</span></p>
-<p class="c1"><span>One can set the column properties such as the source table of the code prefix, code separator and leading zero as shown in the Column Property below</span><span
-        class="c4">. </span></p>
-<p class="c1"><span
-        style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 273.50px; height: 144.54px;"><img
-        alt="auto_generated_code_properties.PNG" src="images/image10.png"
-        style="width: 273.50px; height: 144.54px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
+<p class="c6"><span class="c3 c9">&nbsp;</span></p>
+<p class="c6"><span>One can set the column properties such as the source table of the code prefix, code separator and leading zero as shown in the Column Property below</span><span
+        class="c3 c9">. </span></p>
+<p class="c6"><span
+        style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 275.50px; height: 148.35px;"><img
+        alt="auto_generate.PNG" src="images/image08.png"
+        style="width: 275.50px; height: 148.35px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<p class="c1"><span class="c4">The column type generates unique codes automatically based on the selected prefix source as shown in the image below. </span>
+<p class="c6"><span class="c3 c9">The column type generates unique codes automatically based on the selected prefix source as shown in the image below. </span>
 </p>
-<p class="c1"><span
+<p class="c6"><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 236.50px; height: 35.68px;"><img
         alt="" src="images/image03.png"
         style="width: 236.50px; height: 35.68px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
+        title=""></span></p><h4 class="c39" id="h.wh1k6laieyr2"><span
+        class="c12 c19">Decimal Number Column Type</span></h4>
+<p class="c6"><span class="c9 c38">The decimal column type is enhanced with the ability to change the number of decimal places and the precision as highlighted in the image below.</span>
+</p>
+<p class="c6"><span
+        style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 228.50px; height: 155.08px;"><img
+        alt="decimal_places_precision.png" src="images/image11.png"
+        style="width: 228.50px; height: 155.08px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<h2 class="c1 c27" id="h.snpjp7tl6p4s"><span class="c7">Multi Party Entity Types in Social Tenure Relationship</span>
+<h2 class="c6 c18" id="h.snpjp7tl6p4s"><span class="c7">Multi Party Entity Types in Social Tenure Relationship</span>
 </h2>
-<p class="c10"><span>A profile&rsquo;s social tenure relationship can now incorporate one or more party entity types; this is applicable in contexts where the tenure relationship of spatial units is shared by different party entity types such as person or community entities.</span><span
-        class="c4">&nbsp;See the red-colored box labelled &lsquo;a&rsquo; in the image below.</span>
+<p class="c5"><span>A profile&rsquo;s social tenure relationship can now incorporate one or more party entity types; this is applicable in contexts where the tenure relationship of spatial units is shared by different party entity types such as person or community entities.</span><span
+        class="c3 c9">&nbsp;See the red-colored box labelled &lsquo;a&rsquo; in the image below.</span>
 </p>
-<h2 class="c1 c27" id="h.5bs0zaamd780"><span class="c7">Date Validity Ranges in Social Tenure Relationship</span>
+<h2 class="c6 c18" id="h.5bs0zaamd780"><span class="c7">Date Validity Ranges in Social Tenure Relationship</span>
 </h2>
-<p class="c10"><span>The respective ranges for start and end dates can optionally be specified when configuring a profile&rsquo;s social tenure relationship. This ensures that the date ranges for new social tenure relationships are validated within these set limits.</span><span
-        class="c4">&nbsp;See the red-colored box labelled &lsquo;b&rsquo; in the image below.</span>
+<p class="c5"><span>The respective ranges for start and end dates can optionally be specified when configuring a profile&rsquo;s social tenure relationship. This ensures that the date ranges for new social tenure relationships are validated within these set limits.</span><span
+        class="c3 c9">&nbsp;See the red-colored box labelled &lsquo;b&rsquo; in the image below.</span>
 </p>
-<h2 class="c1 c27" id="h.c9q5n9hdzogm"><span class="c7">Visual Representation of Social Tenure Relationship</span>
+<h2 class="c6 c18" id="h.c9q5n9hdzogm"><span class="c7">Visual Representation of Social Tenure Relationship</span>
 </h2>
-<p class="c10"><span>The basic data model of a profile&rsquo;s social tenure relationship can now be visualized in the configuration wizard &nbsp;as shown in the image below. The model can be annotated with user-defined text and exported as an image file. This is useful in helping to visualize the linkage between the social tenure relationship entities as well as using the image files in reports, presentations etc. </span><span
-        class="c4">See the red-colored box labelled &lsquo;c&rsquo; in the image below.</span>
+<p class="c5"><span>The basic data model of a profile&rsquo;s social tenure relationship can now be visualized in the configuration wizard &nbsp;as shown in the image below. The model can be annotated with user-defined text and exported as an image file. This is useful in helping to visualize the linkage between the social tenure relationship entities as well as using the image files in reports, presentations etc. </span><span
+        class="c3 c9">See the red-colored box labelled &lsquo;c&rsquo; in the image below.</span>
 </p>
-<p class="c10"><span
+<p class="c5"><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 406.53px;"><img
-        alt="" src="images/image13.png"
+        alt="" src="images/image14.png"
         style="width: 624.00px; height: 406.53px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<h2 class="c23" id="h.u048um4lsc9"><span class="c7">Social Tenure Relationship Views</span>
+<h2 class="c1" id="h.u048um4lsc9"><span class="c7">Social Tenure Relationship Views</span>
 </h2>
-<p class="c1"><span class="c9">An additional Social Tenure Relationship database view is now created upon configuring a new data profile. This view uses the spatial unit id as its id column. This makes it easy to design and generate documents for profiles that may have a party linked to more than one spatial unit. Consequently, two default database views are created:</span><span
-        class="c4">&nbsp;</span></p>
-<ul class="c32 lst-kix_lfo6n6mhdm75-0 start">
-    <li class="c1 c24"><span class="c20">Spatial Unit View</span><span>&nbsp;contains </span><span
-            class="c20">Spatial Unit</span><span>&nbsp;records linked to </span><span
-            class="c20">Party </span><span>records through the </span><span
-            class="c20">Social Tenure Relationship</span><span>. The view and layer name is denoted by [</span><span
-            class="c26 c9 c20">spatial_unit_table_name]_vw_social_tenure_relationship</span>
+<p class="c6"><span class="c30">An additional Social Tenure Relationship database view is now created upon configuring a new data profile. This view uses the spatial unit id as its id column. This makes it easy to design and generate documents for profiles that may have a party linked to more than one spatial unit. Consequently, two default database views are created:</span><span
+        class="c3 c9">&nbsp;</span></p>
+<ul class="c11 lst-kix_lfo6n6mhdm75-0 start">
+    <li class="c6 c36"><span class="c10">Spatial Unit View</span><span>&nbsp;contains </span><span
+            class="c10">Spatial Unit</span><span>&nbsp;records linked to </span><span
+            class="c10">Party </span><span>records through the </span><span
+            class="c10">Social Tenure Relationship</span><span>. The view and layer name is denoted by [</span><span
+            class="c26 c9 c10 c34">spatial_unit_table_name]_vw_social_tenure_relationship</span>
     </li>
-    <li class="c1 c24"><span class="c20">Party Views</span><span>&nbsp;(one or more) contain </span><span
-            class="c20">Party </span><span>records linked to</span><span
-            class="c20">&nbsp;Spatial Unit</span><span>&nbsp;records and social tenure information. The view is denoted by [</span><span
-            class="c9 c20 c26">party_table_name]_vw_social_tenure_relationship</span>
+    <li class="c6 c36"><span class="c10">Party Views</span><span>&nbsp;(one or more) contain </span><span
+            class="c10">Party </span><span>records linked to</span><span
+            class="c10">&nbsp;Spatial Unit</span><span>&nbsp;records and social tenure information. The view is denoted by [</span><span
+            class="c26 c9 c10 c34">party_table_name]_vw_social_tenure_relationship</span>
     </li>
 </ul>
-<h1 class="c0" id="h.415u56zg63rs"><span
-        class="c11">Current Profile Selection</span></h1>
-<p class="c1"><span class="c4">The process of setting the current data profile has been significantly simplified with the addition of a profile selection combobox in the STDM toolbar as shown in the image below. </span>
+<h1 class="c8" id="h.415u56zg63rs"><span class="c13 c10">Current Profile Selection</span>
+</h1>
+<p class="c6"><span class="c3 c9">The process of setting the current data profile has been significantly simplified with the addition of a profile selection combobox in the STDM toolbar as shown in the image below. </span>
 </p>
-<p class="c1"><span
+<p class="c6"><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 530.50px; height: 78.21px;"><img
         alt="" src="images/image01.png"
         style="width: 530.50px; height: 78.21px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<h1 class="c0" id="h.qh9gi1ae4wv4"><span
-        class="c11">Social Tenure Relationship</span></h1>
-<h2 class="c0" id="h.5k9cdm3nc956"><span class="c7">Social Tenure Relationship (STR) Editor</span>
+<h1 class="c8" id="h.qh9gi1ae4wv4"><span class="c13 c10">Social Tenure Relationship</span>
+</h1>
+<h2 class="c8" id="h.5k9cdm3nc956"><span class="c7">Social Tenure Relationship (STR) Editor</span>
 </h2>
-<p class="c10">
+<p class="c5">
     <span>The </span><span>Social Tenure Relationship Editor</span><span
-        class="c4">&nbsp;has been completely revamped by utilizing a tree structure and a single page design that makes creating an STR record very quick and easy thereby reducing time in repetitive STR creation workflows.</span>
+        class="c3 c9">&nbsp;has been completely revamped by utilizing a tree structure and a single page design that makes creating an STR record very quick and easy thereby reducing time in repetitive STR creation workflows.</span>
 </p>
-<h3 class="c16" id="h.a8j3c0u2y2kv"><span class="c14">Local Spatial Unit Preview</span>
+<h3 class="c16" id="h.a8j3c0u2y2kv"><span class="c12 c9 c10">Local Spatial Unit Preview</span>
 </h3>
-<p class="c1"><span class="c4">A local map preview has been added on the existing web preview of spatial units as shown in the image below. </span>
+<p class="c6"><span class="c3 c9">A local map preview has been added on the existing web preview of spatial units as shown in the image below. </span>
 </p>
-<p class="c1"><span
+<p class="c6"><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 396.00px;"><img
-        alt="STR_sp_unit_local_preview.png" src="images/image14.png"
+        alt="STR_sp_unit_local_preview.png" src="images/image15.png"
         style="width: 624.00px; height: 396.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<h3 class="c16" id="h.92u6b9xnb8hy"><span
-        class="c14">Multiple Party Entity</span></h3>
-<p class="c10"><span>Users can choose more than one party entity to be linked to a spatial unit as shown in the image below. The party entities must be selected in the </span><span>Configuration Wizard</span><span
-        class="c4">.</span></p>
-<p class="c10"><span>&nbsp;</span><span
+<h3 class="c16" id="h.92u6b9xnb8hy"><span class="c9 c10 c12">Multiple Party Entity</span>
+</h3>
+<p class="c5"><span>Users can choose more than one party entity to be linked to a spatial unit as shown in the image below. The party entities must be selected in the </span><span>Configuration Wizard</span><span
+        class="c3 c9">.</span></p>
+<p class="c5"><span>&nbsp;</span><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 160.00px;"><img
         alt="" src="images/image07.png"
         style="width: 624.00px; height: 160.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<h3 class="c16" id="h.zhyc1cwb9onk"><span class="c14">Tenure Share</span></h3>
-<p class="c10"><span>The </span><span>Tenure Share</span><span class="c4">&nbsp;option has been added in the Tenure Information section. This feature enables the user to specify the tenure share for the spatial unit as a percentage. The module automatically updates the other party records&rsquo;
+<h3 class="c16" id="h.zhyc1cwb9onk"><span
+        class="c12 c9 c10">Tenure Share</span></h3>
+<p class="c5"><span>The </span><span>Tenure Share</span><span class="c3 c9">&nbsp;option has been added in the Tenure Information section. This feature enables the user to specify the tenure share for the spatial unit as a percentage. The module automatically updates the other party records&rsquo;
     tenure share when the share of one party record is manually changed by the user.</span>
 </p>
-<p class="c10"><span
+<p class="c5"><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 169.33px;"><img
-        alt="" src="images/image23.png"
+        alt="" src="images/image24.png"
         style="width: 624.00px; height: 169.33px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<h3 class="c16" id="h.prg9kc3fwg0i"><span
-        class="c14">Tenure Validity Period</span></h3>
-<p class="c10"><span>Users can specify the tenure validity period by choosing the start and end dates of the tenure agreement as illustrated in the image below. The t</span><span>enure duration</span><span>&nbsp;box enables the user to specify the date ranges by entering number of year or months, this is used to automatically compute the end validity date. </span><span
+<h3 class="c16" id="h.prg9kc3fwg0i"><span class="c12 c9 c10">Tenure Validity Period</span>
+</h3>
+<p class="c5"><span>Users can specify the tenure validity period by choosing the start and end dates of the tenure agreement as illustrated in the image below. The t</span><span>enure duration</span><span>&nbsp;box enables the user to specify the date ranges by entering number of year or months, this is used to automatically compute the end validity date. </span><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 188.00px;"><img
-        alt="" src="images/image19.png"
+        alt="" src="images/image20.png"
         style="width: 624.00px; height: 188.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
 <h3 class="c16" id="h.jkmvtie3nr6t"><span>Multiple STR entry</span></h3>
-<p class="c10"><span class="c4">Users can add multiple social tenure relationship records without re-opening the editor as illustrated in the image below.</span>
+<p class="c5"><span class="c3 c9">Users can add multiple social tenure relationship records without re-opening the editor as illustrated in the image below.</span>
 </p>
-<p class="c10"><span
+<p class="c5"><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 400.00px;"><img
         alt="" src="images/image05.png"
         style="width: 624.00px; height: 400.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<h2 class="c0" id="h.yuc2syiogv3s"><span class="c7">View Social Tenure Relationship</span>
+<h2 class="c8" id="h.yuc2syiogv3s"><span class="c7">View Social Tenure Relationship</span>
 </h2>
-<p class="c10"><span class="c4">Searching of STR records is possible using tenure validity period as shown in the image below. The filter can also be disabled using the checkbox in the Validity Period tab.</span>
+<p class="c5"><span class="c3 c9">Searching of STR records is possible using tenure validity period as shown in the image below. The filter can also be disabled using the checkbox in the Validity Period tab.</span>
 </p>
-<p class="c10"><span
+<p class="c5"><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 233.33px;"><img
         alt="" src="images/image04.png"
         style="width: 624.00px; height: 233.33px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<h1 class="c0" id="h.kuzw0214p82p"><span class="c11">Data Import</span></h1>
-<h2 class="c0" id="h.6koeox46w6hp"><span
-        class="c7">Importing Lookup Values</span></h2>
-<p class="c1"><span class="c4">A lookup value translator has been incorporated to enable easier importation of lookup values &nbsp;as shown in the image below. Previously, one would need to use the related table translator. Using this new option, the only requirement is to specify the matching lookup table in the STDM database and configuration. A user can also specify a default value (from the selected lookup table) which will be used in case the value from the source table is not found.</span>
+<h1 class="c8" id="h.w3l7n1ynwfvm"><span class="c13 c10">Entity Editor</span>
+</h1>
+<p class="c6"><span>A </span><span
+        class="c10">Subform </span><span>inside the </span><span class="c10">Primary </span><span>form of STDM is added to enable the user enter records on a different entity that depends on the </span><span
+        class="c10">Primary Entity</span><span>. It also enables the user to edit and delete records from within the </span><span>Subform</span><span>. For instance, within a </span><span
+        class="c10">Household Entity Editor</span><span>, you can add a record of </span><span
+        class="c10">Household Income Entity</span><span class="c3 c9">&nbsp;as shown in the image below. </span>
 </p>
-<p class="c1"><span
+<p class="c6"><span
+        style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 442.67px;"><img
+        alt="household_subform.PNG" src="images/image25.png"
+        style="width: 624.00px; height: 442.67px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
+        title=""></span></p>
+<h1 class="c8" id="h.kuzw0214p82p"><span class="c13 c10">Data Import</span>
+</h1>
+<h2 class="c8" id="h.6koeox46w6hp"><span
+        class="c7">Importing Lookup Values</span></h2>
+<p class="c6"><span class="c3 c9">A lookup value translator has been incorporated to enable easier importation of lookup values &nbsp;as shown in the image below. Previously, one would need to use the related table translator. Using this new option, the only requirement is to specify the matching lookup table in the STDM database and configuration. A user can also specify a default value (from the selected lookup table) which will be used in case the value from the source table is not found.</span>
+</p>
+<p class="c6"><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #7f7f7f; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 389.50px; height: 272.08px;"><img
-        alt="" src="images/image17.png"
+        alt="" src="images/image18.png"
         style="width: 392.02px; height: 278.25px; margin-left: -2.52px; margin-top: -3.02px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<h1 class="c0" id="h.4oa3qyesf5ra"><span
-        class="c11">Spatial Unit Manager</span></h1>
-<h2 class="c0" id="h.apf1nscr8p1"><span
+<h1 class="c8" id="h.4oa3qyesf5ra"><span
+        class="c13 c10">Spatial Unit Manager</span></h1>
+<h2 class="c8" id="h.apf1nscr8p1"><span
         class="c7">GPS Feature Import Tool</span></h2>
-<p class="c1"><span>The </span><span>GPS Feature Import</span><span>&nbsp;has been completely redesigned into a single window where GPX file source and coordinate points selection is in one tab and attribute-related tabs such as </span><span>Primary, Supporting Documents, and Collections tab are in </span><span
-        class="c4">separate tabs as shown in the image below. </span></p>
-<p class="c1"><span>In addition, the tool enables users to rearrange point positions using drag-and-drop. To make it clear to the user on the impact of the changes</span><span>, the </span><span>selection and removal of a point automatically updates the preview map. Moreover, when selecting a row, a user can view which point they have selected as it is also highlighted in the preview layer. A user can also edit the values of each coordinate pair by double-clicking the </span><span>Longitude and Latitude fields</span><span>.</span><span
+<p class="c6"><span>The </span><span>GPS Feature Import</span><span>&nbsp;has been completely redesigned into a single window where GPX file source and coordinate points selection is in one tab and attribute-related tabs such as </span><span>Primary, Supporting Documents, and Collections tab are in </span><span
+        class="c3 c9">separate tabs as shown in the image below. </span></p>
+<p class="c6"><span>In addition, the tool enables users to rearrange point positions using drag-and-drop. To make it clear to the user on the impact of the changes</span><span>, the </span><span>selection and removal of a point automatically updates the preview map. Moreover, when selecting a row, a user can view which point they have selected as it is also highlighted in the preview layer. A user can also edit the values of each coordinate pair by double-clicking the </span><span>Longitude and Latitude fields</span><span>.</span><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 395.33px; height: 345.69px;"><img
-        alt="gps_import.PNG" src="images/image09.png"
+        alt="gps_import.PNG" src="images/image10.png"
         style="width: 395.33px; height: 345.69px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<h1 class="c18" id="h.vo6dl6bp8wwg"><span
-        class="c11">Spatial Entity Details</span></h1>
-<p class="c1"><span>The Spatial Entity Details</span><span>&nbsp;is a new module that provides a hierarchical view of</span><span
-        class="c20">&nbsp;</span><span>Spatial Entities and Views by selecting one or more features in the map canvas as shown in the image below. If the vector layer is a Spatial Unit, it also displays the social tenure relationship information similar to the View Social Tenure Relationship module. Editing, deleting and the viewing of supporting documents is possible for relevant entities</span><span
-        class="c4">.</span></p>
-<p class="c1"><span
+<h1 class="c2" id="h.vo6dl6bp8wwg"><span
+        class="c13 c10">Spatial Entity Details</span></h1>
+<p class="c6"><span>The Spatial Entity Details</span><span>&nbsp;is a new module that provides a hierarchical view of</span><span
+        class="c10">&nbsp;</span><span>Spatial Entities and Views by selecting one or more features in the map canvas as shown in the image below. If the vector layer is a Spatial Unit, it also displays the social tenure relationship information similar to the View Social Tenure Relationship module. Editing, deleting and the viewing of supporting documents is possible for relevant entities</span><span
+        class="c3 c9">.</span></p>
+<p class="c6"><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 537.33px; height: 279.80px;"><img
-        alt="" src="images/image18.png"
+        alt="" src="images/image19.png"
         style="width: 537.33px; height: 279.80px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<p class="c1 c13"><span class="c4"></span></p>
-<h1 class="c18" id="h.9bgqh1qrsgx1"><span
-        class="c11">Spatial Entity Browser</span></h1>
-<h2 class="c0" id="h.eswciasw1wsm"><span class="c7">Multi-Selection of Records and Features</span>
+<p class="c6 c29"><span class="c3 c9"></span></p>
+<h1 class="c2" id="h.9bgqh1qrsgx1"><span
+        class="c13 c10">Spatial Entity Browser</span></h1>
+<h2 class="c8" id="h.eswciasw1wsm"><span class="c7">Multi-Selection of Records and Features</span>
 </h2>
-<p class="c1">
+<p class="c6">
     <span>The Spatial Entity Browser can now select multiple feature</span><span>s in the map canvas whe</span><span
-        class="c4">n multiple records are selected in the Entity Browser table as shown below.</span>
+        class="c3 c9">n multiple records are selected in the Entity Browser table as shown below.</span>
 </p>
-<p class="c1"><span
+<p class="c6"><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 585.00px; height: 279.00px;"><img
         alt="" src="images/image02.png"
         style="width: 585.00px; height: 301.00px; margin-left: 0.00px; margin-top: -22.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<h2 class="c15" id="h.nw0x49qf95oj"><span class="c7">Ability to Control Map While Browsing Records</span>
+<h2 class="c17" id="h.nw0x49qf95oj"><span class="c7">Ability to Control Map While Browsing Records</span>
 </h2>
-<p class="c1"><span class="c4">The Spatial Entity Browser does not block the clicking of other STDM and QGIS user interface elements. This change enables the user to add a layer, pan the in the map canvas, etc.</span>
+<p class="c6"><span class="c3 c9">The Spatial Entity Browser does not block the clicking of other STDM and QGIS user interface elements. This change enables the user to add a layer, pan the in the map canvas, etc.</span>
 </p>
-<h2 class="c15" id="h.y7o82tqumw5m"><span class="c7">View Social Tenure Relationship of the Selected Record</span>
+<h2 class="c17" id="h.y7o82tqumw5m"><span class="c7">View Social Tenure Relationship of the Selected Record</span>
 </h2>
-<p class="c1"><span class="c4">Users can see the social tenure relationship details (via the Spatial Entity Details) of a selected record in the Spatial Entity Browser as shown in the image below.</span>
+<p class="c6"><span class="c3 c9">Users can see the social tenure relationship details (via the Spatial Entity Details) of a selected record in the Spatial Entity Browser as shown in the image below.</span>
 </p>
-<p class="c1"><span
+<p class="c6"><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 270.67px;"><img
-        alt="" src="images/image11.png"
+        alt="" src="images/image12.png"
         style="width: 624.00px; height: 270.67px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<h1 class="c18" id="h.yhe3v633swst"><span class="c11">Documents Designer</span>
-</h1>
-<p class="c1"><span>The attribute table composer item used by the Documents Designer has been updated to the latest version of QGIS attribute </span><span
-        class="c12">table item</span><span class="c4">. This upgrade has enabled Item properties panel of the STDM attribute table to add useful option under the Appearance options such as adding empty rows, hiding/showing header, wrapping text, and other customization options as shown below.</span>
+<h1 class="c2" id="h.yhe3v633swst"><span
+        class="c13 c10">Documents Designer</span></h1>
+<p class="c6"><span>The attribute table composer item used by the Documents Designer has been updated to the latest version of QGIS attribute </span><span
+        class="c23">table item</span><span class="c3 c9">. This upgrade has enabled Item properties panel of the STDM attribute table to add useful option under the Appearance options such as adding empty rows, hiding/showing header, wrapping text, and other customization options as shown below.</span>
 </p>
-<p class="c1"><span
+<p class="c6"><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 367.88px; height: 289.50px;"><img
-        alt="" src="images/image08.png"
+        alt="" src="images/image09.png"
         style="width: 367.88px; height: 289.50px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<h1 class="c18" id="h.pwq0ztpccpx6"><span class="c11">Options</span></h1>
-<p class="c1"><span>A check box to enable or disable debug mode has been added in t</span><span>he Options mod</span><span
-        class="c4">ule as highlighted in the image below.</span></p>
-<p class="c1"><span
+<h1 class="c2" id="h.pwq0ztpccpx6"><span class="c13 c10">Options</span></h1>
+<p class="c6"><span>A check box to enable or disable debug mode has been added in t</span><span>he Options mod</span><span
+        class="c3 c9">ule as highlighted in the image below.</span></p>
+<p class="c6"><span
         style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 428.50px; height: 423.72px;"><img
-        alt="" src="images/image21.png"
+        alt="" src="images/image22.png"
         style="width: 428.50px; height: 423.72px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"
         title=""></span></p>
-<h1 class="c0" id="h.md2cyzhg5wfk"><span class="c11">General</span></h1>
-<h2 class="c0" id="h.7gji1xmdjfji"><span class="c7">Software Packages</span>
+<h1 class="c8" id="h.md2cyzhg5wfk"><span class="c10 c13">General</span></h1>
+<h2 class="c8" id="h.7gji1xmdjfji"><span class="c7">Software Packages</span>
 </h2>
-<p class="c1"><span class="c4">The all-in-one installer for STDM 1.5 is built upon the following packages: PostgreSQL v9.5, PostGIS 2.2 and QGIS 2.18. STDM is also compatible with QGIS 2.14 and 2.16. See the links below for the full list of feature updates.</span>
+<p class="c6"><span class="c3 c9">The all-in-one installer for STDM 1.5 is built upon the following packages: PostgreSQL v9.5, PostGIS 2.2 and QGIS 2.18. STDM is also compatible with QGIS 2.14 and 2.16. See the links below for the full list of feature updates.</span>
 </p>
-<p class="c1"><span class="c6 c5"><a class="c3"
-                                     href="https://www.google.com/url?q=https://www.qgis.org/en/site/forusers/visualchangelog216/index.html&amp;sa=D&amp;ust=1487855909421000&amp;usg=AFQjCNFVBgH1N-KVQL1DrmbKpeygw53abw">QGIS 2.16</a></span>
+<p class="c6"><span class="c3 c0"><a class="c4"
+                                     href="https://www.qgis.org/en/site/forusers/visualchangelog216/index.html">QGIS 2.16</a></span>
 </p>
-<p class="c1"><span class="c5"><a class="c3"
-                                  href="https://www.google.com/url?q=https://www.qgis.org/en/site/forusers/visualchangelog218/index.html&amp;sa=D&amp;ust=1487855909421000&amp;usg=AFQjCNHs6mkUh5axCnw-w3JufRZMS3SyBQ">QGIS 2.18</a></span>
+<p class="c6"><span class="c0"><a class="c4"
+                                  href="https://www.qgis.org/en/site/forusers/visualchangelog218/index.html">QGIS 2.18</a></span>
 </p>
-<h2 class="c0" id="h.pxvpmhe7r8gn"><span
+<h2 class="c8" id="h.pxvpmhe7r8gn"><span
         class="c7">Enabling PostGIS Extension</span></h2>
-<p class="c1"><span>When users create the </span><span>STDM </span><span>database manually, there is no need of also creating the PostGIS extension as far as the </span><span>PostGIS </span><span
-        class="c4">extension is installed for the current PostgreSQL version. This is because, STDM enables the PostGIS extension automatically, if it is not enabled for the database. This will greatly reduce the error that happens due to missing PostGIS extension in the STDM database.
-</span>
-</p>
-</body>
+<p class="c6"><span>When users create the </span><span>STDM </span><span>database manually, there is no need of also creating the PostGIS extension as far as the </span><span>PostGIS </span><span
+        class="c3 c9">extension is installed for the current PostgreSQL version. This is because, STDM enables the PostGIS extension automatically, if it is not enabled for the database. This will greatly reduce the error that happens due to missing PostGIS extension in the STDM database. </span>
+</p></body>
 </html>
