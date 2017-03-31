@@ -1,5 +1,11 @@
 # Change Log
 All notable changes of the Social Tenure Domain Model(STDM) is documented in this file.
+
+
+## [1.5.2] - 2017-03-31
+### Fixed
+- **Spatial Entity Forms**: Fixed error when submitting unfilled required fields.
+
 ## [1.5.1] - 2017-03-15
 ### Fixed
 - **Database and Configuration**: Fixed inability to append profile prefix on entity
