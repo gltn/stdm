@@ -791,7 +791,7 @@ class SupportingDocuments(ComponentUtility):
         to upload a supporting document.
         '''
         document_str = QApplication.translate(
-            "newSTRWiz",
+            "SupportingDocuments",
             "Specify the Document File Location"
         )
         documents = self.select_file_dialog(document_str)
