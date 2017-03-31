@@ -529,7 +529,8 @@ class STDMFieldWidget():
         """
         if not model is None:
             self.feature_models[self.current_feature] = model
-            self.editor.accept()
+            if self.editor.is_valid:
+                self.editor.accept()
 
     def on_feature_deleted(self, feature_id):
         """
