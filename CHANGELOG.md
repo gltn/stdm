@@ -5,6 +5,8 @@ All notable changes of the Social Tenure Domain Model(STDM) is documented in thi
 ## [1.5.2] - 2017-03-31
 ### Fixed
 - **Spatial Entity Forms**: Fixed error when submitting unfilled required fields.
+- **Export Data**: Fixed argument error when exporting data.
+- **Export Data**: Fixed the absence of coordinate reference system when exporting shapefile.yy
 
 ## [1.5.1] - 2017-03-15
 ### Fixed
