@@ -65,16 +65,18 @@ class OGRWriter():
         self._ds = drv.CreateDataSource(self._targetFile)
         if self._ds is None:
             raise Exception("Creation of output file failed.")
-        
+        dest_crs = None
         #Create layer
         if geom != "":
             pgGeomType,srid = geometryType(table,geom)
             geomType = wkbTypes[pgGeomType]
-            
+            dest_crs = ogr.osr.SpatialReference()
+            dest_crs.ImportFromEPSG(srid)
+
         else:
             geomType=ogr.wkbNone
-            
-        lyr = self._ds.CreateLayer(self.getLayerName(),None,geomType)
+
+        lyr = self._ds.CreateLayer(self.getLayerName(), dest_crs, geomType)
         
         if lyr is None:
             raise Exception("Layer creation failed")
@@ -127,14 +129,16 @@ class OGRWriter():
                     
                 else:
                     fieldValue = r[i]  
-                    if isinstance(fieldValue,unicode):
-                        fieldValue = fieldValue.encode('utf-8')
+
+                    fieldValue = str(fieldValue).encode('utf-8')
                         
                     feat.SetField(i,fieldValue)
                           
             if lyr.CreateFeature(feat) != 0:
                 progress.close()
-                raise Exception("Failed to create feature in %s"%(self._targetFile))
+                raise Exception(
+                    "Failed to create feature in %s"%(self._targetFile)
+                )
             
             if featGeom is not None:                
                 featGeom.Destroy()

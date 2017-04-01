@@ -244,18 +244,18 @@ class ExportData(QWizard,Ui_frmExportWizard):
             self.ErrorInfoMessage("There are no records to export")
             return succeed
         
-        try:                                  
+        try:
             writer.db2Feat(self,self.srcTab,resultSet,self.selectedColumns(),self.geomColumn)
-            self.InfoMessage("Features in '%s' have been successfully exported!"%(self.srcTab))  
-            
+            self.InfoMessage("Features in '%s' have been successfully exported!"%(self.srcTab))
+
             #Update directory info in the registry
             setVectorFileDir(targetFile)
-            
-            succeed=True    
-                  
+
+            succeed=True
+
         except:
-            self.ErrorInfoMessage(str(sys.exc_info()[1]))  
-        
+            self.ErrorInfoMessage(str(sys.exc_info()[1]))
+
         return succeed
             
     def filter_clearQuery(self):        
