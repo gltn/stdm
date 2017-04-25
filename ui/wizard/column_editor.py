@@ -666,7 +666,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         Fills the data type combobox widget with BaseColumn type names
         """
         self.cboDataType.clear()
-        self.cboDataType.insertItems(0, BaseColumn.types_by_display_name().keys())
+        for item in BaseColumn.types_by_display_name().keys():
+
+            self.cboDataType.addItem(QApplication.translate('ColumnEditor', item))
         self.cboDataType.setCurrentIndex(0)
 
     def change_data_type(self, index):

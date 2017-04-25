@@ -173,7 +173,10 @@ FORMS =	\
         ui\wizard\ui_stdm_config.ui \
         ui\wizard\ui_varchar_property.ui
 
-TRANSLATIONS    = i18n/stdm_fr.ts
+TRANSLATIONS    = i18n/stdm_fr.ts \
+                  i18n/stdm_pt.ts \
+                  i18n/stdm_de.ts \
+                  i18n/stdm_es.ts
 
 CODECFORTR      = UTF-8
 

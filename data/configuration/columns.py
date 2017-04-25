@@ -55,7 +55,7 @@ from stdm.data.pg_utils import table_view_dependencies
 LOGGER = logging.getLogger('stdm')
 
 
-def tr(text):
+def tr(text=''):
     """
     Alias for translating column display names so that they can be in the
     same context i.e. 'BaseColumn'.

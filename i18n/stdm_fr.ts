@@ -108,13 +108,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data/configuration/columns.py" line="917"/>
-        <source>Percent</source>
+        <location filename="../data/configuration/columns.py" line="837"/>
+        <source>Auto Generated Code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data/configuration/columns.py" line="837"/>
-        <source>Auto Generated Code</source>
+        <location filename="../data/configuration/columns.py" line="917"/>
+        <source>Percent</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -295,7 +295,7 @@ Click Yes to delete or No to cancel.</source>
         <translation type="obsolete">Impossible de mettre à jour la colonne des données</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/column_editor.py" line="753"/>
+        <location filename="../ui/wizard/column_editor.py" line="755"/>
         <source>STDM</source>
         <translation type="unfinished">STDM</translation>
     </message>
@@ -438,37 +438,37 @@ S&apos;il vous plait mettez à jour la configuration des tables pour terminer la
 <context>
     <name>BindSTREditor</name>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="779"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="782"/>
         <source>The Social Tenure Relationship</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="792"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="795"/>
         <source>Select the party by searching through the existing record.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="808"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="810"/>
         <source>Select the spatial unit that could be parcel, land or building, structure and so on.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="825"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="827"/>
         <source>Select the type of relationship that the specified party has with the selected spatial unit. Optionally you can specify the tenure share. </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="844"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="846"/>
         <source>Upload one or more supporting documents under each document types.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="868"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="870"/>
         <source>Specify the validity range of dates. The year and month option is used to quickly set the date ranges. </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="850"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="852"/>
         <source>The uploaded document will be copied for each party record selected.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -787,13 +787,13 @@ S&apos;il vous plait mettez à jour la configuration des tables pour terminer la
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/column_editor.py" line="766"/>
+        <location filename="../ui/wizard/column_editor.py" line="768"/>
         <source>&apos;{0}&apos; is a reserved keyword used internally by STDM.
 Please choose another column name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/column_editor.py" line="780"/>
+        <location filename="../ui/wizard/column_editor.py" line="782"/>
         <source>Column with the same name already exist in this entity!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -803,12 +803,12 @@ Please choose another column name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/column_editor.py" line="684"/>
+        <location filename="../ui/wizard/column_editor.py" line="686"/>
         <source>Column type attributes could not be found.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/column_editor.py" line="761"/>
+        <location filename="../ui/wizard/column_editor.py" line="763"/>
         <source>Please enter a valid column name.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2295,7 +2295,7 @@ Click Yes to proceed or No to cancel.</source>
 <context>
     <name>EditSTREditor</name>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="1749"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="1752"/>
         <source>Edit Social Tenure Relationship</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3105,32 +3105,32 @@ Geometry type &quot;POINT&quot;, &quot;LINE&quot; or &quot;POLYGON&quot; is requ
 <context>
     <name>InitSTREditor</name>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="549"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="551"/>
         <source>Social Tenure Relationship</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="552"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="554"/>
         <source>Party</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="555"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="557"/>
         <source>Spatial Unit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="558"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="560"/>
         <source>Tenure Information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="561"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="563"/>
         <source>Supporting Documents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="565"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="567"/>
         <source>Validity Period</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5706,7 +5706,7 @@ Click Yes to proceed or No to cancel.</source>
 <context>
     <name>STRTreeView</name>
     <message>
-        <location filename="../ui/social_tenure/str_editor.py" line="532"/>
+        <location filename="../ui/social_tenure/str_editor.py" line="534"/>
         <source>Social Tenure Relationship</source>
         <translation type="unfinished"></translation>
     </message>

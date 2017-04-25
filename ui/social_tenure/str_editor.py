@@ -499,6 +499,8 @@ class InitSTREditor(QDialog, Ui_STREditor):
                 str_number_ext, party_id, current_row = \
                     self._extract_from_object_name(spinbox)
                 data_store.share[party_id] = spinbox.value()
+        print vars(data_store)
+        # print self.data_store
 
     @staticmethod
     def _extract_from_object_name(spinbox):
@@ -712,6 +714,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
         str_type_id = str_combo.itemData(index)
         data_store.str_type[party_id] = str_type_id
         self.str_type_updated.emit()
+        print vars(self.data_store[1])
 
     def current_data_store(self):
         """
@@ -793,7 +796,6 @@ class BindSTREditor(InitSTREditor):
             'BindSTREditor',
             'Select the party by searching through the existing record.'
         )
-
         self.description_lbl.setText(header)
 
     def bind_spatial_unit(self):
@@ -1504,6 +1506,7 @@ class STREditor(ValidateSTREditor):
         item = self.str_item(self.party_text, self.str_number)
         # validate party length to enable the next item
         self.validate_party_length(current_data_store, item)
+        # print self.data_store
 
     def set_spatial_unit_data(self, model):
         """
@@ -1537,6 +1540,7 @@ class STREditor(ValidateSTREditor):
         self.str_type_component.add_str_type_data(
             row_data, str_type_id, row_number
         )
+        print vars(self.data_store[1])
 
     def validity_period_signals(self):
         """
@@ -1586,7 +1590,6 @@ class STREditor(ValidateSTREditor):
         :type model_objs: List
         """
         current_store = self.current_data_store()
-
         current_store.supporting_document = model_objs
 
     def tree_view_signals(self):
