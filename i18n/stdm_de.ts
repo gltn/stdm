@@ -1,76 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS><TS version="2.0" language="de" sourcelanguage="">
 <context>
-    <name>BaseColumn</name>
+    <name>@default</name>
     <message>
         <location filename="../data/configuration/columns.py" line="475"/>
         <source>Whole Number</source>
-        <translation>Ganze Zahl</translation>
+        <translation type="unfinished">Ganze Zahl</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="514"/>
         <source>Decimal Number</source>
-        <translation>Dezimalzahl</translation>
+        <translation type="unfinished">Dezimalzahl</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="561"/>
         <source>Date</source>
-        <translation>Datum</translation>
+        <translation type="unfinished">Datum</translation>
     </message>
     <message>
         <location filename="../data/enums.py" line="38"/>
         <source>Yes/ No</source>
-        <translation>Ja/Nein</translation>
+        <translation type="unfinished">Ja/Nein</translation>
     </message>
     <message>
         <location filename="../data/enums.py" line="39"/>
         <source>Short text</source>
-        <translation>Kurztext</translation>
+        <translation type="unfinished">Kurztext</translation>
     </message>
     <message>
         <location filename="../data/enums.py" line="40"/>
         <source>Long text</source>
-        <translation>Langtext</translation>
+        <translation type="unfinished">Langtext</translation>
     </message>
     <message>
         <location filename="../data/enums.py" line="41"/>
         <source>Auto Increment</source>
-        <translation>Auto-Inkrement</translation>
+        <translation type="unfinished">Auto-Inkrement</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="657"/>
         <source>Geometry</source>
-        <translation>Geometrie-Objekt</translation>
+        <translation type="unfinished">Geometrie-Objekt</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="434"/>
         <source>Varying-length Text</source>
-        <translation>Text mit variabler Länge</translation>
+        <translation type="unfinished">Text mit variabler Länge</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="455"/>
         <source>Unlimited-length Text</source>
-        <translation>Text mit unbegrenzter Länge</translation>
+        <translation type="unfinished">Text mit unbegrenzter Länge</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="529"/>
         <source>Auto-increment</source>
-        <translation>Auto-Inkrement</translation>
+        <translation type="unfinished">Auto-Inkrement</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="594"/>
         <source>Date with time</source>
-        <translation>Datum mit Uhrzeit</translation>
+        <translation type="unfinished">Datum mit Uhrzeit</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="670"/>
         <source>Yes/No</source>
-        <translation>Ja/Nein</translation>
+        <translation type="unfinished">Ja/Nein</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="740"/>
         <source>Related Entity</source>
-        <translation>verwandte Einheit</translation>
+        <translation type="unfinished">verwandte Einheit</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="784"/>
@@ -80,12 +80,12 @@
     <message>
         <location filename="../data/configuration/columns.py" line="807"/>
         <source>Administrative Spatial Unit</source>
-        <translation>Administrative Raumeinheit</translation>
+        <translation type="unfinished">Administrative Raumeinheit</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="837"/>
         <source>Auto Generated Code</source>
-        <translation>Automatisch erzeugter Code</translation>
+        <translation type="unfinished">Automatisch erzeugter Code</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="895"/>
@@ -100,22 +100,22 @@
     <message>
         <location filename="../data/configuration/entity_relation.py" line="120"/>
         <source>The parent entity has not been set.</source>
-        <translation>Die Elterneinheit wurde nicht gesetzt</translation>
+        <translation type="unfinished">Die Elterneinheit wurde nicht gesetzt</translation>
     </message>
     <message>
         <location filename="../data/configuration/entity_relation.py" line="123"/>
         <source>The child entity has not been set.</source>
-        <translation>Die Kindeinheit wurde nicht gesetzt</translation>
+        <translation type="unfinished">Die Kindeinheit wurde nicht gesetzt</translation>
     </message>
     <message>
         <location filename="../data/configuration/entity_relation.py" line="126"/>
         <source>The parent column has not been defined.</source>
-        <translation>Die Elternspalte wurde nicht definiert</translation>
+        <translation type="unfinished">Die Elternspalte wurde nicht definiert</translation>
     </message>
     <message>
         <location filename="../data/configuration/entity_relation.py" line="129"/>
         <source>The child column has not been defined.</source>
-        <translation>Die Kindspalte wurde nicht definiert</translation>
+        <translation type="unfinished">Die Kindspalte wurde nicht definiert</translation>
     </message>
 </context>
 <context>
@@ -289,6 +289,111 @@ Klicken Sie auf Ja, um zu löschen oder Nein, um abzubrechen.</translation>
 </context>
 <context>
     <name>BaseColumn</name>
+    <message>
+        <location filename="../data/configuration/columns.py" line="475"/>
+        <source>Whole Number</source>
+        <translation type="obsolete">Ganze Zahl</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="514"/>
+        <source>Decimal Number</source>
+        <translation type="obsolete">Dezimalzahl</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="561"/>
+        <source>Date</source>
+        <translation type="obsolete">Datum</translation>
+    </message>
+    <message>
+        <location filename="../data/enums.py" line="38"/>
+        <source>Yes/ No</source>
+        <translation type="obsolete">Ja/Nein</translation>
+    </message>
+    <message>
+        <location filename="../data/enums.py" line="39"/>
+        <source>Short text</source>
+        <translation type="obsolete">Kurztext</translation>
+    </message>
+    <message>
+        <location filename="../data/enums.py" line="40"/>
+        <source>Long text</source>
+        <translation type="obsolete">Langtext</translation>
+    </message>
+    <message>
+        <location filename="../data/enums.py" line="41"/>
+        <source>Auto Increment</source>
+        <translation type="obsolete">Auto-Inkrement</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="657"/>
+        <source>Geometry</source>
+        <translation type="obsolete">Geometrie-Objekt</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="434"/>
+        <source>Varying-length Text</source>
+        <translation type="obsolete">Text mit variabler Länge</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="455"/>
+        <source>Unlimited-length Text</source>
+        <translation type="obsolete">Text mit unbegrenzter Länge</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="529"/>
+        <source>Auto-increment</source>
+        <translation type="obsolete">Auto-Inkrement</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="594"/>
+        <source>Date with time</source>
+        <translation type="obsolete">Datum mit Uhrzeit</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="670"/>
+        <source>Yes/No</source>
+        <translation type="obsolete">Ja/Nein</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="740"/>
+        <source>Related Entity</source>
+        <translation type="obsolete">verwandte Einheit</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="807"/>
+        <source>Administrative Spatial Unit</source>
+        <translation type="obsolete">Administrative Raumeinheit</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="837"/>
+        <source>Auto Generated Code</source>
+        <translation type="obsolete">Automatisch erzeugter Code</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="917"/>
+        <source>Percent</source>
+        <translation type="obsolete">Prozent</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/entity_relation.py" line="120"/>
+        <source>The parent entity has not been set.</source>
+        <translation type="obsolete">Die Elterneinheit wurde nicht gesetzt</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/entity_relation.py" line="123"/>
+        <source>The child entity has not been set.</source>
+        <translation type="obsolete">Die Kindeinheit wurde nicht gesetzt</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/entity_relation.py" line="126"/>
+        <source>The parent column has not been defined.</source>
+        <translation type="obsolete">Die Elternspalte wurde nicht definiert</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/entity_relation.py" line="129"/>
+        <source>The child column has not been defined.</source>
+        <translation type="obsolete">Die Kindspalte wurde nicht definiert</translation>
+    </message>
     <message>
         <location filename="../data/configuration/columns.py" line="277"/>
         <source>_id</source>
