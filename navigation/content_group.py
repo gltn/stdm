@@ -43,9 +43,9 @@ class ContentGroup(QObject,HashableMixin):
 
         QObject.__init__(self,parent)
         HashableMixin.__init__(self)
-        self._username = username
+        #self._username = username
         self._contentItems = []
-        self._authorizer = Authorizer(self._username)
+        self._authorizer = Authorizer()
         self._containerItem = containerItem
         
     def hasPermission(self,content):
@@ -53,7 +53,7 @@ class ContentGroup(QObject,HashableMixin):
         Checks whether the currently logged in user has permissions to access
         the given content item.
         """
-        return self._authorizer.CheckAccess(content.code)
+        return True # self._authorizer.CheckAccess(content.code)
     
     @staticmethod
     def contentItemFromQAction(qAction):
@@ -127,32 +127,34 @@ class ContentGroup(QObject,HashableMixin):
         Registers the content items into the database. Registration only works for a 
         postgres user account.
         """
-        pg_account = "postgres"   
-        
-        if self._username == pg_account:
-            for c in self.contentItems():
-                if isinstance(c,Content):
-                    cnt = Content()
-                    qo = cnt.queryObject()
-                    cn = qo.filter(Content.code == c.code).first()
-                    
-                    #If content not found then add
-                    if cn is None:
-                        #Check if the 'postgres' role is defined, if not then create one
-                        rl = Role()
-                        rolequery = rl.queryObject()
-                        role = rolequery.filter(Role.name == pg_account).first()
-                        
-                        if role is None:
-                            rl.name = pg_account
-                            rl.contents = [c]
-                            rl.save()                     
-                        else:
-                            existingContents = role.contents
-                            #Append new content to existing 
-                            existingContents.append(c)
-                            role.contents = existingContents
-                            role.update()
+        # pg_account = "postgres"
+        #
+        # if self._username == pg_account:
+        return
+
+        for c in self.contentItems():
+            if isinstance(c,Content):
+                cnt = Content()
+                qo = cnt.queryObject()
+                cn = qo.filter(Content.code == c.code).first()
+
+                #If content not found then add
+                if cn is None:
+                    #Check if the 'postgres' role is defined, if not then create one
+                    rl = Role()
+                    rolequery = rl.queryObject()
+                    role = rolequery.filter(Role.name == pg_account).first()
+
+                    if role is None:
+                        rl.name = pg_account
+                        rl.contents = [c]
+                        rl.save()
+                    else:
+                        existingContents = role.contents
+                        #Append new content to existing
+                        existingContents.append(c)
+                        role.contents = existingContents
+                        role.update()
 
             
 class TableContentGroup(ContentGroup):

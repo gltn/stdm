@@ -51,8 +51,8 @@ class QtContainerLoader(QObject):
         self._actionReference = actionRef
         self._contentGroups = OrderedDict()
         self._widgets = []
-        self._userName = stdm.data.app_dbconn.User.UserName
-        self._authorizer = Authorizer(stdm.data.app_dbconn.User.UserName)
+        #self._userName = stdm.data.app_dbconn.User.UserName
+        self._authorizer = Authorizer()
         self._iter = 0
         self._separatorAction = None
                 
@@ -82,10 +82,10 @@ class QtContainerLoader(QObject):
 
         userRoles = self._authorizer.userRoles
         
-        if len(userRoles) == 0:
-            msg = QApplication.translate("ModuleLoader","'%s' must be a member of at least one STDM role in order to access the modules.\nPlease contact " \
-                                              "the system administrator for more information."%(self._userName,))
-            raise SecurityException(msg)
+        # if len(userRoles) == 0:
+        #     msg = QApplication.translate("ModuleLoader","'%s' must be a member of at least one STDM role in order to access the modules.\nPlease contact " \
+        #                                       "the system administrator for more information."%(self._userName,))
+        #     raise SecurityException(msg)
         
         for k,v in self._contentGroups.iteritems():
             #Generic content items

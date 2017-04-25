@@ -167,38 +167,39 @@ class STDMQGISLoader(object):
     def initGui(self):
         # Initial actions on starting up the application
         self._menu_items()
-        self.loginAct = STDMAction(QIcon(":/plugins/stdm/images/icons/login.png"),
-                                   QApplication.translate("LoginToolbarAction",
-                                                          "Login"),
-                                   self.iface.mainWindow(),
-                                   "CAA4F0D9-727F-4745-A1FC-C2173101F711")
-        self.loginAct.setShortcut(QKeySequence(Qt.Key_F2))
+        # self.loginAct = STDMAction(QIcon(":/plugins/stdm/images/icons/login.png"),
+        #                            QApplication.translate("LoginToolbarAction",
+        #                                                   "Login"),
+        #                            self.iface.mainWindow(),
+        #                            "CAA4F0D9-727F-4745-A1FC-C2173101F711")
+        # self.loginAct.setShortcut(QKeySequence(Qt.Key_F2))
 
         self.aboutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/info.png"),
         QApplication.translate("AboutToolbarAction","About"), self.iface.mainWindow(),
         "137FFB1B-90CD-4A6D-B49E-0E99CD46F784")
         #Define actions that are available to all logged in users
-        self.logoutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/logout.png"), \
-        QApplication.translate("LogoutToolbarAction","Logout"), self.iface.mainWindow(),
-        "EF3D96AF-F127-4C31-8D9F-381C07E855DD")
-        self.logoutAct.setShortcut(QKeySequence(Qt.Key_Delete))
-
-        self.changePasswordAct = STDMAction(QIcon(":/plugins/stdm/images/icons/change_password.png"), \
-        QApplication.translate("ChangePasswordToolbarAction","Change Password"), self.iface.mainWindow(),
-        "8C425E0E-3761-43F5-B0B2-FB8A9C3C8E4B")
+        # self.logoutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/logout.png"), \
+        # QApplication.translate("LogoutToolbarAction","Logout"), self.iface.mainWindow(),
+        # "EF3D96AF-F127-4C31-8D9F-381C07E855DD")
+        # self.logoutAct.setShortcut(QKeySequence(Qt.Key_Delete))
+        #
+        # self.changePasswordAct = STDMAction(QIcon(":/plugins/stdm/images/icons/change_password.png"), \
+        # QApplication.translate("ChangePasswordToolbarAction","Change Password"), self.iface.mainWindow(),
+        # "8C425E0E-3761-43F5-B0B2-FB8A9C3C8E4B")
         self.helpAct = STDMAction(QIcon(":/plugins/stdm/images/icons/help-content.png"), \
         QApplication.translate("STDMQGISLoader","Help Contents"), self.iface.mainWindow(),
         "7A61CEA9-2A64-45F6-A40F-D83987D416EB")
         self.helpAct.setShortcut(Qt.Key_F10)
 
         # connect the actions to their respective methods
-        self.loginAct.triggered.connect(self.login)
-        self.changePasswordAct.triggered.connect(self.changePassword)
-        self.logoutAct.triggered.connect(self.logout)
+        #self.loginAct.triggered.connect(self.login)
+        #self.changePasswordAct.triggered.connect(self.changePassword)
+        #self.logoutAct.triggered.connect(self.logout)
         self.aboutAct.triggered.connect(self.about)
         self.helpAct.triggered.connect(self.help_contents)
         self.initToolbar()
         self.initMenuItems()
+        self.login()
 
     def _menu_items(self):
         #Create menu and menu items on the menu bar
@@ -245,7 +246,7 @@ class STDMQGISLoader(object):
         self.stdmInitToolbar = self.iface.addToolBar("STDM")
         self.stdmInitToolbar.setObjectName("STDM")
         #Add actions to the toolbar
-        self.stdmInitToolbar.addAction(self.loginAct)
+        #self.stdmInitToolbar.addAction(self.loginAct)
 
         self.stdmInitToolbar.addSeparator()
         self.stdmInitToolbar.addAction(self.helpAct)
@@ -253,7 +254,7 @@ class STDMQGISLoader(object):
 
 
     def initMenuItems(self):
-        self.stdmMenu.addAction(self.loginAct)
+        #self.stdmMenu.addAction(self.loginAct)
         self.stdmMenu.addSeparator()
         self.stdmMenu.addAction(self.helpAct)
         self.stdmMenu.addAction(self.aboutAct)
@@ -268,92 +269,54 @@ class STDMQGISLoader(object):
         '''
         Show login dialog
         '''
-        frmLogin = loginDlg(self.iface.mainWindow())
-        retstatus = frmLogin.exec_()
 
-        if retstatus == QDialog.Accepted:
-            #Assign the connection object
-            data.app_dbconn = frmLogin.dbConn
+        #Assign the connection object
+       # data.app_dbconn = frmLogin.dbConn
 
-            #Initialize the whole STDM database
+        #Initialize the whole STDM database
 
-            db = STDMDb.instance()
+        #db = STDMDb.instance()
 
-            if not db.postgis_state:
-                if postgis_exists():
-                    create_postgis()
-                else:
-                    err_msg = QApplication.translate(
-                        "STDM",
-                        "STDM cannot be loaded because the system has "
-                        "detected that the PostGIS extension is missing "
-                        "in '{0}' database.\nCheck that PostGIS has been "
-                        "installed. Please contact the system "
-                        "administrator for more information.".format(
-                            frmLogin.dbConn.Database)
-                    )
-                    QMessageBox.critical(
-                        self.iface.mainWindow(),
-                        QApplication.translate(
-                            "STDM","Spatial Extension Error"
-                        ),
-                        err_msg
-                    )
+        # Checks if the license is accepted and stops loading
+        # modules if the terms and conditions are never accepted.
+        license_status = self.load_license_agreement()
+        if not license_status:
+            return
 
-                    return
+        #Load logout and change password actions
+        # self.stdmInitToolbar.insertAction(self.loginAct,
+        #                                   self.logoutAct)
+        # self.stdmInitToolbar.insertAction(self.loginAct,
+        #                                   self.changePasswordAct)
 
-            # Checks if the license is accepted and stops loading
-            # modules if the terms and conditions are never accepted.
-            license_status = self.load_license_agreement()
-            if not license_status:
+        # self.stdmMenu.insertAction(self.loginAct,self.logoutAct)
+        # self.stdmMenu.insertAction(self.loginAct,self.changePasswordAct)
+
+        #self.loginAct.setEnabled(False)
+
+        #Fetch STDM tables
+        self.stdmTables = [] # spatial_tables()
+
+        #Load the configuration from file
+        config_load_status = self.load_configuration_from_file(
+            self.iface.mainWindow()
+        )
+
+        #Exit if the load failed
+        if not config_load_status:
+            return
+
+        #Set current profile
+        self.current_profile = current_profile()
+
+        if self.current_profile is None:
+            result = self.default_profile()
+            if not result:
                 return
-
-            #Load logout and change password actions
-            self.stdmInitToolbar.insertAction(self.loginAct,
-                                              self.logoutAct)
-            self.stdmInitToolbar.insertAction(self.loginAct,
-                                              self.changePasswordAct)
-
-            self.stdmMenu.insertAction(self.loginAct,self.logoutAct)
-            self.stdmMenu.insertAction(self.loginAct,self.changePasswordAct)
-
-            self.loginAct.setEnabled(False)
-
-            #Fetch STDM tables
-            self.stdmTables = spatial_tables()
-
-            #Load the configuration from file
-            config_load_status = self.load_configuration_from_file(
-                self.iface.mainWindow()
-            )
-
-            #Exit if the load failed
-            if not config_load_status:
-                return
-
-            try:
-
-                #Set current profile
-                self.current_profile = current_profile()
-
-                if self.current_profile is None:
-                    result = self.default_profile()
-                    if not result:
-                        return
-                self.loadModules()
-                self.default_profile()
-                self.run_wizard()
-                self._user_logged_in = True
-
-            except Exception as pe:
-                title = QApplication.translate(
-                    "STDMQGISLoader",
-                    "Error Loading Modules"
-                )
-                self.reset_content_modules_id(
-                    title,
-                    pe
-                )
+        self.loadModules()
+        #self.default_profile()
+        #self.run_wizard()
+        self._user_logged_in = True
 
     def minimum_table_checker(self):
 
@@ -727,9 +690,9 @@ class STDMQGISLoader(object):
         Define and add modules to the menu and/or toolbar using the module loader
         '''
         self.toolbarLoader = QtContainerLoader(self.iface.mainWindow(),
-                                               self.stdmInitToolbar,self.logoutAct)
+                                               self.stdmInitToolbar,self.helpAct)
         self.menubarLoader = QtContainerLoader(self.iface.mainWindow(),
-                                               self.stdmMenu, self.logoutAct)
+                                               self.stdmMenu, self.helpAct)
         #Connect to the content added signal
         #self.toolbarLoader.contentAdded.connect(self.onContentAdded)
 
@@ -890,7 +853,7 @@ class STDMQGISLoader(object):
         strViewCnt=ContentGroup.contentItemFromQAction(self.viewSTRAct)
         strViewCnt.code="D13B0415-30B4-4497-B471-D98CA98CD841"
 
-        username = data.app_dbconn.User.UserName
+        username = 'postgres'
 
         self.moduleCntGroup = None
         self.moduleContentGroups = []
@@ -921,16 +884,16 @@ class STDMQGISLoader(object):
         tbSeparator = QAction(self.iface.mainWindow())
         tbSeparator.setSeparator(True)
         if not self.current_profile is None:
-            if pg_table_exists(self.current_profile.social_tenure.name):
-                # add separator to menu
-                separator_group = TableContentGroup(username, 'separator', tbSeparator)
-                separator_group.register()
-                self.moduleContentGroups.append(separator_group)
+            # if pg_table_exists(self.current_profile.social_tenure.name):
+            # add separator to menu
+            separator_group = TableContentGroup(username, 'separator', tbSeparator)
+            separator_group.register()
+            self.moduleContentGroups.append(separator_group)
 
-                moduleCntGroup = self._create_table_content_group(
-                    self.STR_DISPLAY, username, 'new_str.png'
-                )
-                self.moduleContentGroups.append(moduleCntGroup)
+            moduleCntGroup = self._create_table_content_group(
+                self.STR_DISPLAY, username, 'new_str.png'
+            )
+            self.moduleContentGroups.append(moduleCntGroup)
 
         # Create content groups and add items
         self.contentAuthCntGroup = ContentGroup(username)
@@ -1049,7 +1012,7 @@ class STDMQGISLoader(object):
             self.wzdAct, self.profiles_combobox
         )
 
-        self.create_spatial_unit_manager()
+        #self.create_spatial_unit_manager()
 
         self.profile_status_message()
 
