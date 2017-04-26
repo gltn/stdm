@@ -18,6 +18,7 @@ def read():
     col_objs =cols.values()
     for obj in col_objs:
         entity_prop[obj.name] = obj.TYPE_INFO
+        read_lookup_for_column(obj, col_objs)
     return entity_prop
 
 def read_lookup_for_column(col, obj):
@@ -25,11 +26,14 @@ def read_lookup_for_column(col, obj):
     Check if the column has a lookup and get the associated lookup definition
     :return:
     """
-    if isinstance(col, obj):
-        if col.TYPE_INFO == "LOOKUP":
-            value_list = obj.value_list
-            for val in value_list.values.values():
-                print obj.name, value_list.name, val.value, val.code
+    look_table=[]
+    lookup_keys={}
+    if col.TYPE_INFO == "LOOKUP":
+        value_list = col.value_list
+        for val in value_list.values.values():
+            lookup_keys[val.value] = val.code
+        look_table.append(value_list.name)
+    print look_table, lookup_keys
 
 
 
