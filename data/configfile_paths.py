@@ -162,7 +162,7 @@ class FilePaths(object):
                     except:
                         pass
             else:
-                QMessageBox.information(None, QApplication.translate("FilePaths","Configuration Exist"),
+                QMessageBox.information(None, QApplication.translate("FilePaths","Existing Configuration"),
                                         QApplication.translate("FilePaths","Previous configuration retained"))
         else:
             shutil.copy(base_file, user_file)

@@ -181,7 +181,7 @@ class STDMQGISLoader(object):
         self.logoutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/logout.png"), \
         QApplication.translate("LogoutToolbarAction","Logout"), self.iface.mainWindow(),
         "EF3D96AF-F127-4C31-8D9F-381C07E855DD")
-        self.logoutAct.setShortcut(QKeySequence(Qt.Key_Delete))
+        self.logoutAct.setShortcut(QKeySequence(Qt.Key_Backspace))
 
         self.changePasswordAct = STDMAction(QIcon(":/plugins/stdm/images/icons/change_password.png"), \
         QApplication.translate("ChangePasswordToolbarAction","Change Password"), self.iface.mainWindow(),
