@@ -314,8 +314,8 @@ class STDMQGISLoader(object):
             if not result:
                 return
         self.loadModules()
-        #self.default_profile()
-        #self.run_wizard()
+        self.default_profile()
+        self.run_wizard()
         self._user_logged_in = True
 
     def minimum_table_checker(self):
@@ -357,14 +357,37 @@ class STDMQGISLoader(object):
             'Database Table Error'
         )
 
-        if not pg_table_exists(entity.name):
+        # if not pg_table_exists(entity.name):
+        #     message = QApplication.translate(
+        #         "STDMQGISLoader",
+        #         'The system has detected that '
+        #         'a required database table - \n'
+        #         '{} is missing. \n'
+        #         'Do you want to re-run the '
+        #         'Configuration Wizard now?'.format(
+        #             entity.short_name
+        #         )
+        #     )
+        #     database_check = QMessageBox.critical(
+        #         self.iface.mainWindow(),
+        #         title,
+        #         message,
+        #         QMessageBox.Yes,
+        #         QMessageBox.No
+        #     )
+        #     if database_check == QMessageBox.Yes:
+        #         self.load_config_wizard()
+        #     else:
+        #         return False
+        # else:
+        #     return True
+        if not self._table_exists(entity.name):
             message = QApplication.translate(
                 "STDMQGISLoader",
                 'The system has detected that '
                 'a required database table - \n'
                 '{} is missing. \n'
-                'Do you want to re-run the '
-                'Configuration Wizard now?'.format(
+                'Do you want to create it?'.format(
                     entity.short_name
                 )
             )
@@ -376,11 +399,31 @@ class STDMQGISLoader(object):
                 QMessageBox.No
             )
             if database_check == QMessageBox.Yes:
-                self.load_config_wizard()
+                status = self._create_table(entity.name)
+                if not status:
+                    QMessageBox.critical(
+                        self.iface.mainWindow(),
+                        'Create GeoPackage Layer',
+                        'Could not create Geopackage table.'
+                    )
+
+                return status
             else:
                 return False
         else:
             return True
+
+    def _create_table(self, name):
+        # Create table using GeoPackage library
+        pass
+
+    def _table_exists(self, name):
+        # Checks if the table exists using the GPKG library
+        tables = []
+        if name in tables:
+            return True
+
+        return False
 
     def run_wizard(self):
         """
@@ -684,7 +727,6 @@ class STDMQGISLoader(object):
             return result
 
     def loadModules(self):
-
         self.details_tree_view = DetailsTreeView(self.iface, self)
         '''
         Define and add modules to the menu and/or toolbar using the module loader
@@ -1583,8 +1625,6 @@ class STDMQGISLoader(object):
                         "Unable to load the entity in the browser. "
                         "Check if the entity is configured correctly. "
                         "Error: %s")%unicode(ex.message))
-            finally:
-                STDMDb.instance().session.rollback()
 
     def about(self):
         """

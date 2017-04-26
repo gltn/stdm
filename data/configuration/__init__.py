@@ -46,6 +46,92 @@ def _gen_relationship(base, direction, return_fn,
                                  attrname, local_cls, referred_cls, **kw)
 
 
+# def entity_model(entity, entity_only=False, with_supporting_document=False):
+#     """
+#     Creates a mapped class and corresponding relationships from an entity
+#     object. Entities of 'EntitySupportingDocument' type are not supported
+#     since they are already mapped from their parent classes, a TypeError will
+#     be raised.
+#     :param entity: Entity
+#     :type entity: Entity
+#     :param entity_only: True to only reflect the table corresponding to the
+#     specified entity. Remote entities and corresponding relationships will
+#     not be reflected.
+#     :type entity_only: bool
+#     :return: An SQLAlchemy model reflected from the table in the database
+#     corresponding to the specified entity object.
+#     """
+#     if entity.TYPE_INFO == 'ENTITY_SUPPORTING_DOCUMENT':
+#         raise TypeError('<EntitySupportingDocument> type not supported. '
+#                         'Please use the parent entity.')
+#
+#     rf_entities = [entity.name]
+#
+#     if not entity_only:
+#         parents = [p.name for p in entity.parents()]
+#         children = [c.name for c in entity.children()]
+#         associations = [a.name for a in entity.associations()]
+#
+#         rf_entities.extend(parents)
+#         rf_entities.extend(children)
+#         rf_entities.extend(associations)
+#
+#     _bind_metadata(metadata)
+#
+#     #We will use a different metadata object just for reflecting 'rf_entities'
+#     rf_metadata = MetaData(metadata.bind)
+#     rf_metadata.reflect(only=rf_entities)
+#
+#     '''
+#     Remove supporting document tables if entity supports them. The supporting
+#     document models will be setup manually.
+#     '''
+#     ent_supporting_docs_table = None
+#     profile_supporting_docs_table = None
+#
+#     if entity.supports_documents and not entity_only:
+#         ent_supporting_doc = entity.supporting_doc.name
+#         profile_supporting_doc = entity.profile.supporting_document.name
+#
+#         ent_supporting_docs_table = rf_metadata.tables.get(ent_supporting_doc,
+#                                                            None
+#         )
+#         profile_supporting_docs_table = rf_metadata.tables.get(
+#             profile_supporting_doc, None
+#         )
+#
+#         #Remove the supporting doc tables from the metadata
+#         if not ent_supporting_docs_table is None:
+#             rf_metadata.remove(ent_supporting_docs_table)
+#         if not profile_supporting_docs_table is None:
+#             rf_metadata.remove(profile_supporting_docs_table)
+#
+#     Base = automap_base(metadata=rf_metadata, cls=Model)
+#
+#     '''
+#     Return the supporting document model that corresponds to the
+#     primary entity.
+#     '''
+#     supporting_doc_model = None
+#
+#     #Setup supporting document models
+#     if entity.supports_documents and not entity_only:
+#         supporting_doc_model = configure_supporting_documents_inheritance(
+#             ent_supporting_docs_table, profile_supporting_docs_table, Base,
+#             entity.name
+#         )
+#
+#     #Set up mapped classes and relationships
+#     Base.prepare(
+#         name_for_collection_relationship=_rename_supporting_doc_collection,
+#         generate_relationship=_gen_relationship
+#     )
+#
+#     if with_supporting_document and not entity_only:
+#         return getattr(Base.classes, entity.name, None), supporting_doc_model
+#
+#     return getattr(Base.classes, entity.name, None)
+
 def entity_model(entity, entity_only=False, with_supporting_document=False):
     """
     Creates a mapped class and corresponding relationships from an entity
@@ -65,72 +151,8 @@ def entity_model(entity, entity_only=False, with_supporting_document=False):
         raise TypeError('<EntitySupportingDocument> type not supported. '
                         'Please use the parent entity.')
 
-    rf_entities = [entity.name]
+    return type(entity.short_name, (Model,), dict(entity=entity))
 
-    if not entity_only:
-        parents = [p.name for p in entity.parents()]
-        children = [c.name for c in entity.children()]
-        associations = [a.name for a in entity.associations()]
-
-        rf_entities.extend(parents)
-        rf_entities.extend(children)
-        rf_entities.extend(associations)
-
-    _bind_metadata(metadata)
-
-    #We will use a different metadata object just for reflecting 'rf_entities'
-    rf_metadata = MetaData(metadata.bind)
-    rf_metadata.reflect(only=rf_entities)
-
-    '''
-    Remove supporting document tables if entity supports them. The supporting
-    document models will be setup manually.
-    '''
-    ent_supporting_docs_table = None
-    profile_supporting_docs_table = None
-
-    if entity.supports_documents and not entity_only:
-        ent_supporting_doc = entity.supporting_doc.name
-        profile_supporting_doc = entity.profile.supporting_document.name
-
-        ent_supporting_docs_table = rf_metadata.tables.get(ent_supporting_doc,
-                                                           None
-        )
-        profile_supporting_docs_table = rf_metadata.tables.get(
-            profile_supporting_doc, None
-        )
-
-        #Remove the supporting doc tables from the metadata
-        if not ent_supporting_docs_table is None:
-            rf_metadata.remove(ent_supporting_docs_table)
-        if not profile_supporting_docs_table is None:
-            rf_metadata.remove(profile_supporting_docs_table)
-
-    Base = automap_base(metadata=rf_metadata, cls=Model)
-
-    '''
-    Return the supporting document model that corresponds to the
-    primary entity.
-    '''
-    supporting_doc_model = None
-
-    #Setup supporting document models
-    if entity.supports_documents and not entity_only:
-        supporting_doc_model = configure_supporting_documents_inheritance(
-            ent_supporting_docs_table, profile_supporting_docs_table, Base,
-            entity.name
-        )
-
-    #Set up mapped classes and relationships
-    Base.prepare(
-        name_for_collection_relationship=_rename_supporting_doc_collection,
-        generate_relationship=_gen_relationship
-    )
-
-    if with_supporting_document and not entity_only:
-        return getattr(Base.classes, entity.name, None), supporting_doc_model
-
-    return getattr(Base.classes, entity.name, None)
 
 def configure_supporting_documents_inheritance(entity_supporting_docs_t,
                                                profile_supporting_docs_t,

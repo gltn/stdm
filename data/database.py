@@ -27,6 +27,8 @@ from collections import (
 
 from PyQt4.QtGui import QApplication
 
+from qgis.core import QgsFeature
+
 from sqlalchemy import (
     create_engine,
     ForeignKey,
@@ -220,70 +222,213 @@ def alchemy_table_relationships(table_name):
 
     return relationship_names
         
-class Model(object):
-    '''
-    Base class that handles all basic database operations.
-    All STDM entities that need to be persisted in the database
-    will inherit from this class.
-    '''
-    attrTranslations = OrderedDict()
-    
-    def save(self):            
-        db = STDMDb.instance()
-        db.session.add(self)
-        try:
-            db.session.commit()
-        except exc.SQLAlchemyError as db_error:
-            db.session.rollback()
-            LOGGER.debug(str(db_error))
-            raise db_error
+# class Model(object):
+#     '''
+#     Base class that handles all basic database operations.
+#     All STDM entities that need to be persisted in the database
+#     will inherit from this class.
+#     '''
+#     attrTranslations = OrderedDict()
+#
+#     def save(self):
+#         db = STDMDb.instance()
+#         db.session.add(self)
+#         try:
+#             db.session.commit()
+#         except exc.SQLAlchemyError as db_error:
+#             db.session.rollback()
+#             LOGGER.debug(str(db_error))
+#             raise db_error
+#
+#     def saveMany(self,objects = []):
+#         '''
+#         Save multiple objects of the same type in one go.
+#         '''
+#         db = STDMDb.instance()
+#         db.session.add_all(objects)
+#         try:
+#             db.session.commit()
+#         except exc.SQLAlchemyError as db_error:
+#             db.session.rollback()
+#             LOGGER.debug(str(db_error))
+#             raise db_error
+#
+#     def update(self):
+#         db = STDMDb.instance()
+#         try:
+#             db.session.commit()
+#         except exc.SQLAlchemyError as db_error:
+#             db.session.rollback()
+#             LOGGER.debug(str(db_error))
+#             raise db_error
+#
+#     def delete(self):
+#         op_result = True
+#
+#         db = STDMDb.instance()
+#         db.session.delete(self)
+#
+#         try:
+#             db.session.commit()
+#         except exc.SQLAlchemyError as db_error:
+#             op_result = False
+#             db.session.rollback()
+#             LOGGER.debug(str(db_error))
+#             raise db_error
+#
+#         return op_result
+#
+#     def queryObject(self,args=[]):
+#         '''
+#         The 'args' specifies the attributes/columns
+#         that will be returned in the query in a tuple;
+#         Else, the full model object will be returned.
+#         '''
+#         db = STDMDb.instance()
+#         #raise NameError(str(self.__class__))
+#         try:
+#             if len(args) == 0:
+#                 return db.session.query(self.__class__)
+#
+#             else:
+#                 return db.session.query(*args)
+#         except exc.SQLAlchemyError as db_error:
+#             db.session.rollback()
+#             LOGGER.debug(str(db_error))
+#             raise db_error
+#
+#     @classmethod
+#     def tr(cls,propname):
+#         '''
+#         Returns a user-friendly name for the given property name.
+#         :param propname: Property name.
+#         '''
+#         if propname in cls.attrTranslations:
+#             return cls.attrTranslations[propname]
+#         else:
+#             return None
+#
+#     @staticmethod
+#     def displayMapping():
+#         '''
+#         Returns the dictionary containing the translation mapping for the attributes.
+#         Base classes need to implement this method.
+#
+#         if len(Model.attrTranslations) == 0:
+#             raise NotImplementedError
+#         else:
+#         '''
+#         return Model.attrTranslations
 
-    def saveMany(self,objects = []):
-        '''
+
+class Model(object):
+    """
+    Base class that handles all basic database operations.
+    Modified to use QGIS API instead of SQLAlchemy.
+    """
+    attrTranslations = OrderedDict()
+    _entity_cls_attr_name = 'entity'
+
+    def __init__(self):
+        # Shortcut
+        self._vl = self._vector_layer(self)
+
+    def _entity(self, model_obj):
+        # Returns the entity object specified in the subclass.
+        if not hasattr(model_obj, self._entity_cls_attr_name):
+            raise AttributeError(
+                '{0} object is missing the entity class attribute '
+                'name.'.format(model_obj.__class__.__name__)
+            )
+
+        return getattr(model_obj, self._entity_cls_attr_name, None)
+
+    def _vector_layer(self, model_obj):
+        # Return the GPKG vector layer corresponding to the entity name.
+        ent_obj = self._entity(model_obj)
+        if ent_obj is None:
+            raise AttributeError('Value of entity attribute is missing')
+
+        # Check if the vector layer already exists. Use GeoPackage library.
+        layers = []
+        if ent_obj.name not in layers:
+            raise ''
+
+        return ''
+
+    def _map_to_qgsfeature(self, model_obj):
+        # Map a model subclass to a QGIS feature for generic CRUD operations
+        # via the vector layer.
+        # Check if the entity class attribute has been specified.
+        ent_obj = self._entity(model_obj)
+        if ent_obj is None:
+            raise AttributeError('Value of entity attribute is missing')
+
+        feat = QgsFeature(self._vl.pendingFields())
+
+        columns = ent_obj.columns.keys()
+        for c in columns:
+            c_value = getattr(model_obj, c)
+            field_idx = feat.fieldNameIndex(c)
+
+            # Ensure that the field exists prior to setting the value
+            if field_idx != -1:
+                feat.setAttribute(field_idx, c_value)
+
+        return feat
+
+    def _vector_layer_provider(self):
+        # Returns the QgsVectorDataProvider for the current vector layer.
+        return self._vl.dataProvider()
+
+    def save(self):
+        # Returns True if the features was successfully saved, otherwise false
+        feat = self._map_to_qgsfeature(self)
+
+        return self._vector_layer_provider().addFeatures([feat])
+
+    def saveMany(self, models):
+        """
         Save multiple objects of the same type in one go.
-        '''
-        db = STDMDb.instance()
-        db.session.add_all(objects)
-        try:
-            db.session.commit()
-        except exc.SQLAlchemyError as db_error:
-            db.session.rollback()
-            LOGGER.debug(str(db_error))
-            raise db_error
+        """
+        feats = [self._map_to_qgsfeature(m) for m in models]
+
+        return self._vector_layer_provider().addFeatures(feats)
 
     def update(self):
-        db = STDMDb.instance()
-        try:
-            db.session.commit()
-        except exc.SQLAlchemyError as db_error:
-            db.session.rollback()
-            LOGGER.debug(str(db_error))
-            raise db_error
-            
+        ent_obj = self._entity(self)
+        if ent_obj is None:
+            raise AttributeError('Value of entity attribute is missing')
+
+        provider = self._vector_layer_provider()
+
+        changed_attr_vals = {}
+        columns = ent_obj.columns.keys()
+        # Create dict of field indices and corresponding changed values
+        for c in columns:
+            c_value = getattr(self, c)
+            field_idx = provider.fieldNameIndex(c)
+
+            # Ensure that the field exists prior to setting the value
+            if field_idx != -1:
+                changed_attr_vals[field_idx] = c_value
+
+        return self._vector_layer_provider().changeAttributeValues(
+            {self.id: changed_attr_vals}
+        )
+
     def delete(self):
-        op_result = True
+        # Get value of ID
+        return self._vector_layer_provider().deleteFeatures([self.id])
 
-        db = STDMDb.instance()
-        db.session.delete(self)
-
-        try:
-            db.session.commit()
-        except exc.SQLAlchemyError as db_error:
-            op_result = False
-            db.session.rollback()
-            LOGGER.debug(str(db_error))
-            raise db_error
-
-        return op_result
-
-    def queryObject(self,args=[]):
+    def queryObject(self, args=[]):
         '''
         The 'args' specifies the attributes/columns
         that will be returned in the query in a tuple;
         Else, the full model object will be returned.
         '''
         db = STDMDb.instance()
-        #raise NameError(str(self.__class__))
+        # raise NameError(str(self.__class__))
         try:
             if len(args) == 0:
                 return db.session.query(self.__class__)
@@ -294,9 +439,9 @@ class Model(object):
             db.session.rollback()
             LOGGER.debug(str(db_error))
             raise db_error
-    
-    @classmethod  
-    def tr(cls,propname):
+
+    @classmethod
+    def tr(cls, propname):
         '''
         Returns a user-friendly name for the given property name.
         :param propname: Property name.
@@ -305,20 +450,20 @@ class Model(object):
             return cls.attrTranslations[propname]
         else:
             return None
-    
+
     @staticmethod
     def displayMapping():
         '''
         Returns the dictionary containing the translation mapping for the attributes.
         Base classes need to implement this method.
-        
+
         if len(Model.attrTranslations) == 0:
             raise NotImplementedError
         else:
         '''
         return Model.attrTranslations
                         
-class Content(Model,Base):
+class Content(Base):
     '''
     Abstract class which is implemented by contents items that need to be registered based
     on the scope of the particular instance of STDM customization.    
