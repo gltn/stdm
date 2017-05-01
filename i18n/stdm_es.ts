@@ -3,46 +3,6 @@
 <context>
     <name>BaseColumn</name>
     <message>
-        <location filename="../data/configuration/columns.py" line="475"/>
-        <source>Whole Number</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data/configuration/columns.py" line="514"/>
-        <source>Decimal Number</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data/configuration/columns.py" line="561"/>
-        <source>Date</source>
-        <translation type="unfinished">Fecha</translation>
-    </message>
-    <message>
-        <location filename="../data/enums.py" line="38"/>
-        <source>Yes/ No</source>
-        <translation type="unfinished">Si/No</translation>
-    </message>
-    <message>
-        <location filename="../data/enums.py" line="39"/>
-        <source>Short text</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data/enums.py" line="40"/>
-        <source>Long text</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data/enums.py" line="41"/>
-        <source>Auto Increment</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data/configuration/columns.py" line="657"/>
-        <source>Geometry</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../data/configuration/columns.py" line="434"/>
         <source>Varying-length Text</source>
         <translation type="unfinished"></translation>
@@ -53,13 +13,33 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../data/configuration/columns.py" line="475"/>
+        <source>Whole Number</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="514"/>
+        <source>Decimal Number</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../data/configuration/columns.py" line="529"/>
         <source>Auto-increment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../data/configuration/columns.py" line="561"/>
+        <source>Date</source>
+        <translation>Fecha</translation>
+    </message>
+    <message>
         <location filename="../data/configuration/columns.py" line="594"/>
         <source>Date with time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="657"/>
+        <source>Geometry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -121,7 +101,7 @@
 <context>
     <name>AboutSTDMDialog</name>
     <message>
-        <location filename="../ui/about.py" line="100"/>
+        <location filename="../ui/about.py" line="67"/>
         <source>STDM version</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2461,24 +2441,24 @@ the details.</source>
 <context>
     <name>FilePaths</name>
     <message>
-        <location filename="../data/configfile_paths.py" line="153"/>
+        <location filename="../data/configfile_paths.py" line="155"/>
         <source>Previous user configuration found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data/configfile_paths.py" line="153"/>
+        <location filename="../data/configfile_paths.py" line="155"/>
         <source>Wizard detected previous configuration exists in the current directory.
 Do you want to overwrite the existing config?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data/configfile_paths.py" line="167"/>
+        <location filename="../data/configfile_paths.py" line="170"/>
         <source>Previous configuration retained</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data/configfile_paths.py" line="167"/>
-        <source>Existing Configuration</source>
+        <location filename="../data/configfile_paths.py" line="170"/>
+        <source>Configuration Exist</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2665,26 +2645,6 @@ Geometry type &quot;POINT&quot;, &quot;LINE&quot; or &quot;POLYGON&quot; is requ
     <message>
         <location filename="../ui/wizard/ui_geom_property.ui" line="70"/>
         <source>Select ...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data/enums.py" line="27"/>
-        <source>Point</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data/enums.py" line="28"/>
-        <source>Line</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data/enums.py" line="29"/>
-        <source>Polygon</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data/enums.py" line="30"/>
-        <source>Multipolygon</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2997,31 +2957,6 @@ the details.</source>
 </context>
 <context>
     <name>Lookup</name>
-    <message>
-        <location filename="../ui/ui_lookup_source.ui" line="14"/>
-        <source>Lookup Source</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_lookup_source.ui" line="20"/>
-        <source>Select Lookup Table</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_lookup_source.ui" line="30"/>
-        <source>New</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_lookup_source.ui" line="47"/>
-        <source>Lookup Table Choices</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_lookup_source.ui" line="53"/>
-        <source>Add New Choice</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>LookupDialog</name>
@@ -3123,7 +3058,7 @@ the details.</source>
     <message>
         <location filename="../ui/wizard/ui_lookup_value.ui" line="54"/>
         <source>Code</source>
-        <translation type="unfinished">Código</translation>
+        <translation>Código</translation>
     </message>
 </context>
 <context>
@@ -4135,7 +4070,7 @@ Do you want to run it now? </source>
     <message>
         <location filename="../ui/wizard/ui_stdm_config.ui" line="397"/>
         <source>Name</source>
-        <translation type="unfinished">Nombre</translation>
+        <translation>Nombre</translation>
     </message>
     <message>
         <location filename="../ui/wizard/ui_stdm_config.ui" line="416"/>
@@ -4853,36 +4788,6 @@ and select it to import GPS Features.</source>
 </context>
 <context>
     <name>TableProperty</name>
-    <message>
-        <location filename="../data/enums.py" line="46"/>
-        <source>CASCADE</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data/enums.py" line="47"/>
-        <source>SET NULL</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data/enums.py" line="51"/>
-        <source>Unique</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data/enums.py" line="52"/>
-        <source>Check</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data/enums.py" line="56"/>
-        <source>Yes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data/enums.py" line="57"/>
-        <source>No</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>TemplateContentReader</name>
@@ -5226,16 +5131,6 @@ it is being used by another process</source>
 </context>
 <context>
     <name>WorkspaceLoader</name>
-    <message>
-        <location filename="../data/usermodels.py" line="66"/>
-        <source>STDM Entities</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data/usermodels.py" line="68"/>
-        <source>Entities</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>dlgColumnDepend</name>
@@ -5438,7 +5333,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../ui/ui_adminUnitManager.ui" line="89"/>
         <source>Code</source>
-        <translation type="unfinished">Código</translation>
+        <translation>Código</translation>
     </message>
 </context>
 <context>
@@ -6040,7 +5935,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../ui/ui_new_role.ui" line="32"/>
         <source>Name</source>
-        <translation type="unfinished">Nombre</translation>
+        <translation>Nombre</translation>
     </message>
     <message>
         <location filename="../ui/ui_new_role.ui" line="52"/>

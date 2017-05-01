@@ -3,119 +3,99 @@
 <context>
     <name>BaseColumn</name>
     <message>
-        <location filename="../data/configuration/columns.py" line="475"/>
-        <source>Whole Number</source>
-        <translation type="unfinished">Ganze Zahl</translation>
-    </message>
-    <message>
-        <location filename="../data/configuration/columns.py" line="514"/>
-        <source>Decimal Number</source>
-        <translation type="unfinished">Dezimalzahl</translation>
-    </message>
-    <message>
-        <location filename="../data/configuration/columns.py" line="561"/>
-        <source>Date</source>
-        <translation type="unfinished">Datum</translation>
-    </message>
-    <message>
-        <location filename="../data/enums.py" line="38"/>
-        <source>Yes/ No</source>
-        <translation type="unfinished">Ja/Nein</translation>
-    </message>
-    <message>
-        <location filename="../data/enums.py" line="39"/>
-        <source>Short text</source>
-        <translation type="unfinished">Kurztext</translation>
-    </message>
-    <message>
-        <location filename="../data/enums.py" line="40"/>
-        <source>Long text</source>
-        <translation type="unfinished">Langtext</translation>
-    </message>
-    <message>
-        <location filename="../data/enums.py" line="41"/>
-        <source>Auto Increment</source>
-        <translation type="unfinished">Auto-Inkrement</translation>
-    </message>
-    <message>
-        <location filename="../data/configuration/columns.py" line="657"/>
-        <source>Geometry</source>
-        <translation type="unfinished">Geometrie-Objekt</translation>
-    </message>
-    <message>
         <location filename="../data/configuration/columns.py" line="434"/>
         <source>Varying-length Text</source>
-        <translation type="unfinished">Text mit variabler Länge</translation>
+        <translation>Text mit variabler Länge</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="455"/>
         <source>Unlimited-length Text</source>
-        <translation type="unfinished">Text mit unbegrenzter Länge</translation>
+        <translation>Text mit unbegrenzter Länge</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="475"/>
+        <source>Whole Number</source>
+        <translation>Ganze Zahl</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="514"/>
+        <source>Decimal Number</source>
+        <translation>Dezimalzahl</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="529"/>
         <source>Auto-increment</source>
-        <translation type="unfinished">Auto-Inkrement</translation>
+        <translation>Auto-Inkrement</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="561"/>
+        <source>Date</source>
+        <translation>Datum</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="594"/>
         <source>Date with time</source>
-        <translation type="unfinished">Datum mit Uhrzeit</translation>
+        <translation>Datum mit Uhrzeit</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="657"/>
+        <source>Geometry</source>
+        <translation>Geometrie-Objekt</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="670"/>
         <source>Yes/No</source>
-        <translation type="unfinished">Ja/Nein</translation>
+        <translation>Ja/Nein</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="740"/>
         <source>Related Entity</source>
-        <translation type="unfinished">verwandte Einheit</translation>
+        <translation>verwandte Einheit</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="784"/>
         <source>Single Select Lookup</source>
-        <translation type="unfinished">Einzelauswahl</translation>
+        <translation>Einzelauswahl</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="807"/>
         <source>Administrative Spatial Unit</source>
-        <translation type="unfinished">Administrative Raumeinheit</translation>
+        <translation>Administrative Raumeinheit</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="837"/>
         <source>Auto Generated Code</source>
-        <translation type="unfinished">Automatisch erzeugter Code</translation>
+        <translation>Automatisch erzeugter Code</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="895"/>
         <source>Multiple Select Lookup</source>
-        <translation type="unfinished">Mehrfachauswahl</translation>
+        <translation>Mehrfachauswahl</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="917"/>
         <source>Percent</source>
-        <translation type="unfinished">Prozent</translation>
+        <translation>Prozent</translation>
     </message>
     <message>
         <location filename="../data/configuration/entity_relation.py" line="120"/>
         <source>The parent entity has not been set.</source>
-        <translation type="unfinished">Die übergeordnete Einheit wurde nicht gesetzt</translation>
+        <translation>Die übergeordnete Einheit wurde nicht gesetzt</translation>
     </message>
     <message>
         <location filename="../data/configuration/entity_relation.py" line="123"/>
         <source>The child entity has not been set.</source>
-        <translation type="unfinished">Die untergeordnete Einheit wurde nicht gesetzt</translation>
+        <translation>Die untergeordnete Einheit wurde nicht gesetzt</translation>
     </message>
     <message>
         <location filename="../data/configuration/entity_relation.py" line="126"/>
         <source>The parent column has not been defined.</source>
-        <translation type="unfinished">Die übergeordnete Spalte wurde nicht definiert.</translation>
+        <translation>Die übergeordnete Spalte wurde nicht definiert.</translation>
     </message>
     <message>
         <location filename="../data/configuration/entity_relation.py" line="129"/>
         <source>The child column has not been defined.</source>
-        <translation type="unfinished">Die untergeordnete Spalte wurde nicht definiert</translation>
+        <translation>Die untergeordnete Spalte wurde nicht definiert</translation>
     </message>
 </context>
 <context>
@@ -141,7 +121,7 @@
         <translation type="obsolete">&quot;Über STDM&quot; Quelldatei existiert nicht</translation>
     </message>
     <message>
-        <location filename="../ui/about.py" line="100"/>
+        <location filename="../ui/about.py" line="67"/>
         <source>STDM version</source>
         <translation>STDM Version</translation>
     </message>
@@ -2611,31 +2591,26 @@ the details.</source>
 <context>
     <name>FilePaths</name>
     <message>
-        <location filename="../data/configfile_paths.py" line="153"/>
+        <location filename="../data/configfile_paths.py" line="155"/>
         <source>Previous user configuration found</source>
         <translation>Vorhergehende Benutzerkonfiguration</translation>
     </message>
     <message>
-        <location filename="../data/configfile_paths.py" line="153"/>
+        <location filename="../data/configfile_paths.py" line="155"/>
         <source>Wizard detected previous configuration exists in the current directory.
 Do you want to overwrite the existing config?</source>
         <translation>Der Konfigurations-Assistent hat eine frühere Benutzerkonfiguration gefunden. 
 Soll die bestehende Konfiguration überschrieben werden?</translation>
     </message>
     <message>
-        <location filename="../data/configfile_paths.py" line="167"/>
+        <location filename="../data/configfile_paths.py" line="170"/>
         <source>Configuration Exist</source>
-        <translation type="obsolete">Konfigurationsdatei existiert</translation>
+        <translation>Konfigurationsdatei existiert</translation>
     </message>
     <message>
-        <location filename="../data/configfile_paths.py" line="167"/>
+        <location filename="../data/configfile_paths.py" line="170"/>
         <source>Previous configuration retained</source>
         <translation>Vorhergehende Konfiguration beibehalten</translation>
-    </message>
-    <message>
-        <location filename="../data/configfile_paths.py" line="167"/>
-        <source>Existing Configuration</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2828,22 +2803,22 @@ Geometrietyp &quot;POINT&quot;, &quot;LINE&quot; oder &quot;POLYGON&quot; erford
     <message>
         <location filename="../data/enums.py" line="27"/>
         <source>Point</source>
-        <translation>Punkt</translation>
+        <translation type="obsolete">Punkt</translation>
     </message>
     <message>
         <location filename="../data/enums.py" line="28"/>
         <source>Line</source>
-        <translation>Linie</translation>
+        <translation type="obsolete">Linie</translation>
     </message>
     <message>
         <location filename="../data/enums.py" line="29"/>
         <source>Polygon</source>
-        <translation>Fläche</translation>
+        <translation type="obsolete">Fläche</translation>
     </message>
     <message>
         <location filename="../data/enums.py" line="30"/>
         <source>Multipolygon</source>
-        <translation>Komplexe Fläche</translation>
+        <translation type="obsolete">Komplexe Fläche</translation>
     </message>
     <message>
         <location filename="../ui/geometry.py" line="43"/>
@@ -3162,27 +3137,27 @@ um die Details zu sehen.</translation>
     <message>
         <location filename="../ui/ui_lookup_source.ui" line="14"/>
         <source>Lookup Source</source>
-        <translation>Nachschlagen</translation>
+        <translation type="obsolete">Nachschlagen</translation>
     </message>
     <message>
         <location filename="../ui/ui_lookup_source.ui" line="20"/>
         <source>Select Lookup Table</source>
-        <translation>Wählen Sie die Tabelle zum Nachschlagen</translation>
+        <translation type="obsolete">Wählen Sie die Tabelle zum Nachschlagen</translation>
     </message>
     <message>
         <location filename="../ui/ui_lookup_source.ui" line="30"/>
         <source>New</source>
-        <translation>Neu</translation>
+        <translation type="obsolete">Neu</translation>
     </message>
     <message>
         <location filename="../ui/ui_lookup_source.ui" line="47"/>
         <source>Lookup Table Choices</source>
-        <translation>Nachschlagetabelle Auswahl</translation>
+        <translation type="obsolete">Nachschlagetabelle Auswahl</translation>
     </message>
     <message>
         <location filename="../ui/ui_lookup_source.ui" line="53"/>
         <source>Add New Choice</source>
-        <translation>Neue Auswahl hinzufügen</translation>
+        <translation type="obsolete">Neue Auswahl hinzufügen</translation>
     </message>
     <message>
         <location filename="../data/lookups.py" line="40"/>
@@ -3315,7 +3290,7 @@ um die Details zu sehen.</translation>
     <message>
         <location filename="../ui/wizard/ui_lookup_value.ui" line="54"/>
         <source>Code</source>
-        <translation type="unfinished">Code</translation>
+        <translation>Code</translation>
     </message>
 </context>
 <context>
@@ -5065,32 +5040,32 @@ um GPS-Elemente hinzuzufügen.</translation>
     <message>
         <location filename="../data/enums.py" line="46"/>
         <source>CASCADE</source>
-        <translation>CASCADE</translation>
+        <translation type="obsolete">CASCADE</translation>
     </message>
     <message>
         <location filename="../data/enums.py" line="47"/>
         <source>SET NULL</source>
-        <translation>SET NULL</translation>
+        <translation type="obsolete">SET NULL</translation>
     </message>
     <message>
         <location filename="../data/enums.py" line="51"/>
         <source>Unique</source>
-        <translation>Eindeutig</translation>
+        <translation type="obsolete">Eindeutig</translation>
     </message>
     <message>
         <location filename="../data/enums.py" line="52"/>
         <source>Check</source>
-        <translation>Überprüfen</translation>
+        <translation type="obsolete">Überprüfen</translation>
     </message>
     <message>
         <location filename="../data/enums.py" line="56"/>
         <source>Yes</source>
-        <translation>Ja</translation>
+        <translation type="obsolete">Ja</translation>
     </message>
     <message>
         <location filename="../data/enums.py" line="57"/>
         <source>No</source>
-        <translation>Nein</translation>
+        <translation type="obsolete">Nein</translation>
     </message>
 </context>
 <context>
@@ -5370,7 +5345,7 @@ sie wird von einem anderen Prozess verwendet</translation>
     <message>
         <location filename="../ui/view_str.py" line="651"/>
         <source>No basemap layers are loaded in the current project. Basemap layers enhance the visualization of spatial units.</source>
-        <translation type="unfinished">Das aktuelle Projekt enthält keine Basiskarte. Basiskarten verbessern die Visualisierung von Raumeinheiten.</translation>
+        <translation>Das aktuelle Projekt enthält keine Basiskarte. Basiskarten verbessern die Visualisierung von Raumeinheiten.</translation>
     </message>
     <message>
         <location filename="../ui/view_str.py" line="734"/>
@@ -5398,7 +5373,7 @@ sie wird von einem anderen Prozess verwendet</translation>
     <message>
         <location filename="../plugin.py" line="820"/>
         <source>View Social Tenure Relationship</source>
-        <translation type="unfinished">STDM-Beziehung anzeigen</translation>
+        <translation>STDM-Beziehung anzeigen</translation>
     </message>
 </context>
 <context>
@@ -5440,12 +5415,12 @@ sie wird von einem anderen Prozess verwendet</translation>
     <message>
         <location filename="../data/usermodels.py" line="66"/>
         <source>STDM Entities</source>
-        <translation>STDM-Einheiten</translation>
+        <translation type="obsolete">STDM-Einheiten</translation>
     </message>
     <message>
         <location filename="../data/usermodels.py" line="68"/>
         <source>Entities</source>
-        <translation>EInheiten</translation>
+        <translation type="obsolete">EInheiten</translation>
     </message>
 </context>
 <context>
@@ -6246,7 +6221,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../ui/ui_view_str.ui" line="73"/>
         <source>Search by:</source>
-        <translation type="unfinished">Suche nach:</translation>
+        <translation>Suche nach:</translation>
     </message>
 </context>
 <context>

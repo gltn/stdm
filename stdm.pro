@@ -6,10 +6,7 @@ SOURCES = \
           composer\document_generator.py \
           composer\item_formatter.py \
           data\configfile_paths.py \
-          data\config_utils.py \
-          data\enums.py \
           data\mapping.py \
-          data\usermodels.py \
           data\configuration\association_entity.py \
           data\configuration\columns.py \
           data\configuration\config_updater.py \
@@ -126,7 +123,6 @@ FORMS =	\
         ui\ui_import_data.ui \
         ui\ui_license_agreement.ui \
         ui\ui_login.ui \
-        ui\ui_lookup_source.ui \
         ui\ui_lookup_value_selector.ui \
         ui\ui_new_role.ui \
         ui\ui_new_user.ui \
