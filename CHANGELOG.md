@@ -1,6 +1,13 @@
 # Change Log
 All notable changes of the Social Tenure Domain Model(STDM) is documented in this file.
+## [1.6.0] - 2017-05-01
+### Fixed
+- **Language**: Added full translation of the plugin in French, German and Portuguese.
+- **Language**: Fixed translation issues in different modules of the plugin.
+- **Spatial Entity Details**: Fixed save children error when there are no child entities.
 
+### Changed
+- **Social Tenure Relationship**: Removed deep inheritances.
 
 ## [1.5.2] - 2017-03-31
 ### Fixed

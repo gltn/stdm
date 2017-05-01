@@ -933,24 +933,6 @@ class STREditor(QDialog, Ui_STREditor):
         )
         self.view_selection = self.tree_view.selectionModel()
 
-    def _party_signals(self):
-        """
-        Connects party and str_type
-        related slots and signals.
-        """
-        QApplication.processEvents()
-        self.party_component.party_fk_mapper.beforeEntityAdded.connect(
-            lambda model: self.set_party_data(model)
-        )
-        self.party_component.party_fk_mapper.afterEntityAdded.connect(
-            lambda model, row_number: self.set_str_type_data(
-                0, model.id, row_number
-            )
-        )
-        self.party_component.party_fk_mapper.deletedRows.connect(
-            self.remove_party_str_row_model
-        )
-
     def remove_party_str_row_model(self, row_numbers):
         """
         Removes party and str_type row from the data store.
@@ -1112,6 +1094,24 @@ class STREditor(QDialog, Ui_STREditor):
                     )
                 )
                 self.str_type_combo_connected.append(str_type_combo)
+
+    def _party_signals(self):
+        """
+        Connects party and str_type
+        related slots and signals.
+        """
+        QApplication.processEvents()
+        self.party_component.party_fk_mapper.beforeEntityAdded.connect(
+            lambda model: self.set_party_data(model)
+        )
+        self.party_component.party_fk_mapper.afterEntityAdded.connect(
+            lambda model, row_number: self.set_str_type_data(
+                0, model.id, row_number
+            )
+        )
+        self.party_component.party_fk_mapper.deletedRows.connect(
+            self.remove_party_str_row_model
+        )
 
     def reset_share_spinboxes(self, data_store):
         """
