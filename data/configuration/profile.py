@@ -476,6 +476,8 @@ class Profile(QObject):
         e.g. ENTITY, VALUE_LIST etc.
         :rtype: list(Entity)
         """
+        # print [entity.short_name for entity in self.entities.values()
+        #         if entity.TYPE_INFO == type_info]
         return [entity for entity in self.entities.values()
                 if entity.TYPE_INFO == type_info]
 

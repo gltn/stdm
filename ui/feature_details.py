@@ -594,6 +594,14 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         self.view_selection.currentChanged.connect(
             self.on_tree_view_item_clicked
         )
+        # show tree message if dock is open and button clicked
+        not_feature_msg = QApplication.translate(
+            'FeatureDetails',
+            'Please select an STDM layer to view \n'
+            'the details.'
+        )
+        # self.model.clear()
+        self.treeview_error(not_feature_msg)
 
     def on_tree_view_item_clicked(self, current, previous):
         """
@@ -656,15 +664,15 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 # show popup message if dock is hidden and button clicked
                 self.non_stdm_layer_error()
                 self.plugin.feature_details_act.setChecked(False)
-            elif not button_clicked and not self.isHidden():
-                # show tree message if dock is open and button clicked
-                not_feature_msg = QApplication.translate(
-                    'FeatureDetails',
-                    'Please select an STDM layer to view \n'
-                    'the details.'
-                )
-                self.model.clear()
-                self.treeview_error(not_feature_msg)
+            # elif not button_clicked and not self.isHidden():
+                # # show tree message if dock is open and button clicked
+                # not_feature_msg = QApplication.translate(
+                #     'FeatureDetails',
+                #     'Please select an STDM layer to view \n'
+                #     'the details.'
+                # )
+                # self.model.clear()
+                # self.treeview_error(not_feature_msg)
         # If the selected layer is feature layer, get data and
         # display treeview in a dock widget
         else:
@@ -674,12 +682,12 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         """
         Prepares the dock widget for data loading.
         """
-        select_feature = 'Please select a feature ' \
-                         'to view their details.'
+        # select_feature = 'Please select a feature ' \
+        #                  'to view their details.'
         self.init_dock()
         self.add_tree_view()
-        self.model.clear()
-        self.treeview_error(select_feature)
+        # self.model.clear()
+        # self.treeview_error(select_feature)
         # enable the select tool
         self.activate_select_tool()
         self.update_tree_source(self.layer)

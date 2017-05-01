@@ -107,7 +107,7 @@ class ValueList(Entity):
             check_short_name
         )
 
-        #Re-insert the entity
+        # Re-insert the entity
         self.profile.add_entity(self, True)
 
     def add_value(self, value, code=''):

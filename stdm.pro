@@ -8,7 +8,6 @@ SOURCES = \
           data\configfile_paths.py \
           data\config_utils.py \
           data\enums.py \
-          data\lookups.py \
           data\mapping.py \
           data\usermodels.py \
           data\configuration\association_entity.py \
@@ -45,6 +44,7 @@ SOURCES = \
           ui\document_viewer.py \
           ui\doc_generator_dlg.py \
           ui\entity_browser.py \
+          ui\export_data.py \
           ui\feature_details.py \
           ui\fkbase_form.py \
           ui\foreign_key_mapper.py \
@@ -129,7 +129,6 @@ FORMS =	\
         ui\ui_lookup_source.ui \
         ui\ui_lookup_value_selector.ui \
         ui\ui_new_role.ui \
-        ui\ui_new_str.ui \
         ui\ui_new_user.ui \
         ui\ui_notif_item.ui \
         ui\ui_options.ui \
@@ -176,6 +175,7 @@ FORMS =	\
 TRANSLATIONS    = i18n/stdm_fr.ts \
                   i18n/stdm_pt.ts \
                   i18n/stdm_de.ts \
+                  i18n/stdm_sw.ts \
                   i18n/stdm_es.ts
 
 CODECFORTR      = UTF-8
