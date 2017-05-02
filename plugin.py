@@ -37,6 +37,8 @@ from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.settings.config_file_updater import ConfigurationFileUpdater
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
+from stdm.geoodk.geoodk_reader import GeoodkReader
+from stdm.geoodk.geoodk_writer import GeoodkWriter
 
 from stdm.ui.change_pwd_dlg import changePwdDlg
 from stdm.ui.doc_generator_dlg import (
@@ -162,6 +164,8 @@ class STDMQGISLoader(object):
                       + '/.stdm/configuration.stc'
         self.config_serializer = ConfigurationFileSerializer(self.config_path)
         self.configuration_file_updater = ConfigurationFileUpdater(self.iface)
+        self.geoodk_reader = GeoodkReader()
+        self.geoodk_writer = GeoodkWriter(self.iface)
         copy_startup()
 
     def initGui(self):
@@ -354,6 +358,10 @@ class STDMQGISLoader(object):
                     title,
                     pe
                 )
+
+        # QMessageBox.information(None, "Geo odk", self.geoodk_reader.read)
+        configuration = {"entity": ["column1", "column2", "column3"]}
+        self.geoodk_writer._create_xform_template(configuration)
 
     def minimum_table_checker(self):
 
