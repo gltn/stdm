@@ -1,7 +1,8 @@
 """
 
 """
-from gdal import gdal_translate
+from osgeo import osr,gdal
+
 
 def convert_to_mbtiles(input_file, outputfile):
     """
@@ -9,5 +10,5 @@ def convert_to_mbtiles(input_file, outputfile):
     :param self:
     :return:file
     """
-    return gdal_translate(input_file, outputfile)
+    return gdal.Translate(input_file, outputfile)
 
