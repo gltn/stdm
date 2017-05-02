@@ -1981,7 +1981,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def find_updated_value(self, lookup, text):
         cv = None
+        print lookup.values.values()
         for code_value in lookup.values.values():
+            print 'find ', code_value, code_value.updated_value, text
             if code_value.updated_value == text:
                 cv = code_value
                 break
@@ -2145,7 +2147,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "Nothing to edit!"))
 
-    def scroll_to_bottom(self, table_view):
+    def scroll_to_bottom(self, table_view, scroll_position):
         table_view.selectRow(table_view.model().rowCount()-1)
         table_view.verticalScrollBar().setValue(scroll_position)
 
@@ -2234,7 +2236,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 txt = cv.value
             else:
                 txt = cv.updated_value
-
             val = QStandardItem(txt)
             self.lookup_value_view_model.appendRow(val)
 
@@ -2290,7 +2291,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         On click event handler for the lookup values `Edit` button
         """
-        if len(self.lvLookupValues.selectedIndexes() ) == 0:
+        if len(self.lvLookupValues.selectedIndexes()) == 0:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No value selected for edit!"))
             return
@@ -2306,10 +2307,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         # Hack to rename a lookup value
         vt = unicode(value_text)
+        # As the lookup value dictionary is converted to d5, convert this value
+        hashed_vt = lookup.value_hash(vt)
         try:
-            code_value = lookup.values[vt]
+            code_value = lookup.values[hashed_vt]
         except:
             code_value = self.find_updated_value(lookup, vt)
+
         ####
 
         value_editor = ValueEditor(self, lookup, code_value)
@@ -2317,7 +2321,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if result == 1:
             model_item_name = self.lookup_value_view_model.index(model_index.row(), 0)
             self.lookup_value_view_model.setData(
-                    model_item_name, value_editor.edtValue.text())
+                model_item_name, value_editor.edtValue.text()
+            )
             #self.add_values(value_editor.lookup.values.values(), test=True)
 
     def delete_lookup_value(self):

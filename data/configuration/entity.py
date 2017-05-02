@@ -520,6 +520,7 @@ class EntitySupportingDocument(Entity):
         vl_name = self._doc_type_name(normalize_name)
 
         self._doc_types_value_list = self._doc_type_vl(vl_name)
+
         if self._doc_types_value_list is None:
 
             self._doc_types_value_list = self.profile.create_value_list(

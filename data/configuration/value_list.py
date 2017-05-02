@@ -17,6 +17,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+import hashlib
 import logging
 from collections import OrderedDict
 
@@ -54,6 +55,7 @@ class CodeValue(object):
         self.updated_code = ''
 
 
+
 class ValueList(Entity):
     """
     Corresponds to a database table object which contains a list of
@@ -76,6 +78,7 @@ class ValueList(Entity):
         self.code_column = VarCharColumn('code', self, minimum=0, maximum=5)
         self.value_column = VarCharColumn('value', self, minimum=2, maximum=50)
         self.values = OrderedDict()
+        self._hash = hashlib
 
         #Attach columns
         self.add_column(self.code_column)
@@ -99,7 +102,7 @@ class ValueList(Entity):
         :type short_name: str
         """
         #Remove the object then re-insert so as to update index
-        vl_entity = self.profile.entities.pop(self.short_name)
+        self.profile.entities.pop(self.short_name)
 
         check_short_name = self._append_check(short_name)
 
@@ -118,17 +121,29 @@ class ValueList(Entity):
         """
         self.add_code_value(CodeValue(value=value, code=code))
 
+    def value_hash(self, value):
+        """
+        Converts a value to md5 format.
+        :param value: Lookup value
+        :type value: String
+        :return: md5 format of a string
+        :rtype: Unicode
+        """
+        lookup_value = self._hash.md5(value)
+        return lookup_value.hexdigest()
+
     def add_code_value(self, code_value):
         """
         Add a CodeValue object to the collection.
         :param code_value: CodeValue object.
         :type code_value: CodeValue
         """
-        self.values[code_value.value] = code_value
+        digest = self.value_hash(code_value.value)
+        self.values[digest] = code_value
 
     def is_empty(self):
         """
-        return: Returns True if the ValueList contains items else 
+        return: Returns True if the ValueList contains items else
         False.
         :rtype: bool
         """
@@ -168,13 +183,14 @@ class ValueList(Entity):
         False.
         :rtype: bool
         """
-        if not old_value in self.values:
+        old_value_digest = self.value_hash(old_value)
+        if not old_value_digest in self.values:
             LOGGER.debug('%s lookup value could not be found in the %s value '
                          'list.', old_value, self.name)
 
             return False
 
-        code_value = self.values[old_value]
+        code_value = self.values[old_value_digest]
         code_value.updated_value = new_value
         code_value.updated_code = new_code
 
@@ -193,7 +209,8 @@ class ValueList(Entity):
             return
 
         code_value = self.values.pop(lookup_value)
-        self.values[code_value.updated_value] = code_value
+        digest = self.value_hash(code_value.updated_value)
+        self.values[digest] = code_value
 
     def code_value(self, value):
         """
@@ -207,15 +224,13 @@ class ValueList(Entity):
         """
         cv = None
 
-        if value in self.values:
+        if value in self.values.keys():
             cv = self.values[value]
-
         else:
             remapped_code_values = self._values_by_updates()
 
             if value in remapped_code_values:
                 cv = remapped_code_values[value]
-
         return cv
 
     def _values_by_updates(self):
@@ -237,15 +252,17 @@ class ValueList(Entity):
         :returns: True if the value was successfully removed, else False.
         :rtype: bool
         """
-        cv = self.code_value(value)
+        digest = self.value_hash(value.value)
+        cv = self.code_value(digest)
 
         if cv is None:
             LOGGER.debug('%s lookup value could not be found in the %s value '
                          'list.', value, self.name)
 
             return False
+        val = self.value_hash(cv.value)
 
-        del self.values[cv.value]
+        del self.values[val]
 
         LOGGER.debug('%s lookup value removed from the %s value list.',
                      value, self.name)
