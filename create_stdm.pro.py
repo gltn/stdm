@@ -139,6 +139,7 @@ def create_pro_file(dir):
     print >> file, '                  i18n/stdm_pt.ts \\'
     print >> file, '                  i18n/stdm_de.ts \\'
     print >> file, '                  i18n/stdm_sw.ts \\'
+    print >> file, '                  i18n/stdm_fi.ts \\'
     print >> file, '                  i18n/stdm_es.ts'
     print >> file, ''
     print >> file, 'CODECFORTR      = UTF-8'

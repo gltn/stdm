@@ -172,6 +172,7 @@ TRANSLATIONS    = i18n/stdm_fr.ts \
                   i18n/stdm_pt.ts \
                   i18n/stdm_de.ts \
                   i18n/stdm_sw.ts \
+                  i18n/stdm_fi.ts \
                   i18n/stdm_es.ts
 
 CODECFORTR      = UTF-8
