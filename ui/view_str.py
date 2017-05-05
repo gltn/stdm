@@ -453,8 +453,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         """
         index = self.tvSTRResults.currentIndex()
 
-        #Check type of node and perform corresponding action
-        #for mi in selIndexes:
+        # Check type of node and perform corresponding action
+        # for mi in selIndexes:
         if index.isValid():
             node = index.internalPointer()
             self.editSTR.setDisabled(True)

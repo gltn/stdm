@@ -1025,7 +1025,6 @@ class STREditor(QDialog, Ui_STREditor):
             return
         self.spatial_unit_component = SpatialUnit(
             self.spatial_unit_box,
-            self.mirror_map,
             self.notice
         )
         self.spatial_unit_signals()
@@ -1510,14 +1509,19 @@ class STREditor(QDialog, Ui_STREditor):
             return
         self.spatial_unit_component.spatial_unit_fk_mapper. \
             beforeEntityAdded.connect(
-            lambda model: self.set_spatial_unit_data(
-                model
-            )
+                lambda model: self.set_spatial_unit_data(
+                    model
+                )
         )
         self.spatial_unit_component.spatial_unit_fk_mapper. \
             deletedRows.connect(
-            self.remove_spatial_unit_model
-        )
+                self.remove_spatial_unit_model
+            )
+
+        self.spatial_unit_component.spatial_unit_fk_mapper. \
+            afterEntityAdded.connect(
+                self.mirror_map.draw_spatial_unit
+            )
 
     def set_str_doc_models(self):
         """

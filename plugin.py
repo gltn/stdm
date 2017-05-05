@@ -1594,7 +1594,7 @@ class STDMQGISLoader(object):
             database_status = self.entity_table_checker(
                 sel_entity
             )
-
+            QApplication.processEvents()
             try:
                 if table_name in tbList and database_status:
                     cnt_idx = getIndex(
