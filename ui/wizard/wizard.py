@@ -1619,7 +1619,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         if len(self.pftableView.selectedIndexes())==0:
             self.show_message(QApplication.translate("Configuration Wizard", \
-                    "No entity selected for edit!"))
+                    "Please select an entity to edit!"))
             return
 
         model_item, entity, row_id = self.get_model_entity(self.pftableView)
@@ -1937,6 +1937,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Event handler for editing a column.
         """
+        if len(self.tbvColumns.selectedIndexes()) == 0:
+            self.show_message("Please select a column to edit")
+            return
+
         rid, column, model_item = self.get_column_data()
 
         if column and column.action == DbItem.CREATE:
@@ -2127,7 +2131,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         if profile:
             if len(self.lvLookups.selectedIndexes()) == 0:
-                self.show_message(self.tr("No lookup selected for edit!"))
+                self.show_message(self.tr("Please select a lookup to edit!"))
                 return
 
             row_id, lookup, model_item = self._get_model(self.lvLookups)
@@ -2293,7 +2297,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         if len(self.lvLookupValues.selectedIndexes()) == 0:
             self.show_message(QApplication.translate("Configuration Wizard", \
-                    "No value selected for edit!"))
+                    "Please select a lookup value to edit!"))
             return
 
         self.lookup_item_model.currentIndex()
