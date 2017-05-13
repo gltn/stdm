@@ -1938,7 +1938,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Event handler for editing a column.
         """
         if len(self.tbvColumns.selectedIndexes()) == 0:
-            self.show_message("Please select a column to edit")
+            self.show_message(self.tr("Please select a column to edit"))
             return
 
         rid, column, model_item = self.get_column_data()
