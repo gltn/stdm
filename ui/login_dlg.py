@@ -130,15 +130,20 @@ class loginDlg(QDialog, Ui_frmLogin):
         '''
         setting_data = self.reg_setting()
         dbDlg = dbconnDlg(self)
-        dbDlg.txtDatabase.setText(unicode(setting_data['Database']))
-        dbDlg.txtHost.setText(unicode(setting_data['Host']))
-        dbDlg.txtPort.setText(unicode(setting_data['Port']))
+
+        if 'Database' in setting_data.keys():
+            dbDlg.txtDatabase.setText(unicode(setting_data['Database']))
+        if 'Host' in setting_data.keys():
+            dbDlg.txtHost.setText(unicode(setting_data['Host']))
+        if 'Port' in setting_data.keys():
+            dbDlg.txtPort.setText(unicode(setting_data['Port']))
         dbDlg.exec_()
 
     def reg_setting(self):
         connSettings = ['Host', 'Database', 'Port']
         set_conn = RegistryConfig()
         settings = set_conn.read(connSettings)
+
         return settings
 
     def acceptdlg(self):
