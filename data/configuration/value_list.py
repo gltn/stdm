@@ -252,7 +252,10 @@ class ValueList(Entity):
         :returns: True if the value was successfully removed, else False.
         :rtype: bool
         """
-        digest = self.value_hash(value.value)
+        if isinstance(value, unicode):
+            digest = self.value_hash(value)
+        else:
+            digest = self.value_hash(value.value)
         cv = self.code_value(digest)
 
         if cv is None:

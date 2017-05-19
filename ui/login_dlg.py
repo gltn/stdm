@@ -126,7 +126,7 @@ class loginDlg(QDialog, Ui_frmLogin):
 
     def settingsDialog(self):
         '''
-        Incase the user clicks reset button to change the settings
+        In case the user clicks reset button to change the settings
         '''
         setting_data = self.reg_setting()
         dbDlg = dbconnDlg(self)
