@@ -1213,6 +1213,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             try:
                 cfs.save()
+
                 #Save current profile to the registry
                 profile_name = unicode(self.cboProfile.currentText())
                 save_current_profile(profile_name)
@@ -1222,6 +1223,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         
                 # delete draft config file
                 self.delete_draft_config_file()
+
+                self.draft_config = False
 
             except(ConfigurationException, IOError) as e:
                 self.show_message(self.tr(unicode(e) ))
