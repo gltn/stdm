@@ -1,5 +1,11 @@
-# Change Log
+    # Change Log
 All notable changes of the Social Tenure Domain Model(STDM) is documented in this file.
+## [1.6.1] - 2017-05-21
+### Fixed
+- **Database and Configuration**: Fixed the draft configuration not deleting automatically issue.
+- **Database and Configuration**: Fixed inability to delete lookup values.
+- **Database and Configuration**: Fixed inability to save lookup values to the database.
+
 ## [1.6.0] - 2017-05-01
 ### Fixed
 - **Language**: Added full translation of the plugin in French, German and Portuguese.

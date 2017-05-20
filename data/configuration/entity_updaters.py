@@ -247,5 +247,3 @@ def value_list_updater(value_list, engine, metadata):
             ).one()
             if not lookup_obj is None:
                 lookup_obj.delete()
-
-
