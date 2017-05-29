@@ -1,5 +1,10 @@
     # Change Log
 All notable changes of the Social Tenure Domain Model(STDM) is documented in this file.
+## [1.6.2] - 2017-05-29
+### Fixed
+- **Social Tenure Relationship**: Fixed Edit STR issue of Party, STR Type and supporting document not working.
+- **Import Data**: Fixed lookup values and virtual not showing issue.
+
 ## [1.6.1] - 2017-05-21
 ### Fixed
 - **Database and Configuration**: Fixed the draft configuration not deleting automatically issue.
