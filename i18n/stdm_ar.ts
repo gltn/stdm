@@ -1,101 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="sw" sourcelanguage="en">
+<!DOCTYPE TS><TS version="2.0" language="ar" sourcelanguage="en">
 <context>
     <name>BaseColumn</name>
     <message>
         <location filename="../data/configuration/columns.py" line="434"/>
         <source>Varying-length Text</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">نص بطول متغاير</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="455"/>
         <source>Unlimited-length Text</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">نص بطول غير محدد</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="475"/>
         <source>Whole Number</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">رقم كامل</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="514"/>
         <source>Decimal Number</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">رقم عشري</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="529"/>
         <source>Auto-increment</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">زيادة تلقائية</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="561"/>
         <source>Date</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">التاريخ</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="594"/>
         <source>Date with time</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">التاريخ والوقت</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="657"/>
         <source>Geometry</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">علم الهندسة</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="670"/>
         <source>Yes/No</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">نعم / لا</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="740"/>
         <source>Related Entity</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">كيان ذو صله</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="784"/>
         <source>Single Select Lookup</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">بحث بإختيار واحد</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="807"/>
         <source>Administrative Spatial Unit</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">وحدة إدارية مكانية</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="837"/>
         <source>Auto Generated Code</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">شفرة مولدة تلقائيا</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="895"/>
         <source>Multiple Select Lookup</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">بحث بلختيار متعدد</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="917"/>
         <source>Percent</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">نسبة مئوية</translation>
     </message>
     <message>
         <location filename="../data/configuration/entity_relation.py" line="120"/>
         <source>The parent entity has not been set.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">الكيان الأم لم يحدد</translation>
     </message>
     <message>
         <location filename="../data/configuration/entity_relation.py" line="123"/>
         <source>The child entity has not been set.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">الكيان الطفل لم يحدد</translation>
     </message>
     <message>
         <location filename="../data/configuration/entity_relation.py" line="126"/>
         <source>The parent column has not been defined.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">العمود الأم لم يحدد</translation>
     </message>
     <message>
         <location filename="../data/configuration/entity_relation.py" line="129"/>
         <source>The child column has not been defined.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">العمود الطفل لم يحدد</translation>
     </message>
 </context>
 <context>
@@ -103,7 +103,7 @@
     <message>
         <location filename="../ui/about.py" line="67"/>
         <source>STDM version</source>
-        <translation type="unfinished"></translation>
+        <translation>نسخة البرنامج</translation>
     </message>
 </context>
 <context>
@@ -111,7 +111,7 @@
     <message>
         <location filename="../plugin.py" line="173"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>حول</translation>
     </message>
 </context>
 <context>
@@ -119,17 +119,17 @@
     <message>
         <location filename="../ui/admin_unit_manager.py" line="56"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>الأسم</translation>
     </message>
     <message>
         <location filename="../ui/admin_unit_manager.py" line="59"/>
         <source>Code</source>
-        <translation type="unfinished"></translation>
+        <translation>الشيفرة</translation>
     </message>
     <message>
         <location filename="../ui/admin_unit_manager.py" line="62"/>
         <source>ID</source>
-        <translation type="unfinished"></translation>
+        <translation>الهوية</translation>
     </message>
 </context>
 <context>
@@ -247,6 +247,101 @@ Click Yes to delete or No to cancel.</source>
 </context>
 <context>
     <name>BaseColumn</name>
+    <message>
+        <location filename="../data/configuration/columns.py" line="434"/>
+        <source>Varying-length Text</source>
+        <translation type="obsolete">نص بطول متغاير</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="455"/>
+        <source>Unlimited-length Text</source>
+        <translation type="obsolete">نص بطول غير محدد</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="475"/>
+        <source>Whole Number</source>
+        <translation type="obsolete">رقم كامل</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="514"/>
+        <source>Decimal Number</source>
+        <translation type="obsolete">رقم عشري</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="529"/>
+        <source>Auto-increment</source>
+        <translation type="obsolete">زيادة تلقائية</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="561"/>
+        <source>Date</source>
+        <translation type="obsolete">التاريخ</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="594"/>
+        <source>Date with time</source>
+        <translation type="obsolete">التاريخ والوقت</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="657"/>
+        <source>Geometry</source>
+        <translation type="obsolete">علم الهندسة</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="670"/>
+        <source>Yes/No</source>
+        <translation type="obsolete">نعم / لا</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="740"/>
+        <source>Related Entity</source>
+        <translation type="obsolete">كيان ذو صله</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="784"/>
+        <source>Single Select Lookup</source>
+        <translation type="obsolete">بحث بإختيار واحد</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="807"/>
+        <source>Administrative Spatial Unit</source>
+        <translation type="obsolete">وحدة إدارية مكانية</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="837"/>
+        <source>Auto Generated Code</source>
+        <translation type="obsolete">شفرة مولدة تلقائيا</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="895"/>
+        <source>Multiple Select Lookup</source>
+        <translation type="obsolete">بحث بلختيار متعدد</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="917"/>
+        <source>Percent</source>
+        <translation type="obsolete">نسبة مئوية</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/entity_relation.py" line="120"/>
+        <source>The parent entity has not been set.</source>
+        <translation type="obsolete">الكيان الأم لم يحدد</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/entity_relation.py" line="123"/>
+        <source>The child entity has not been set.</source>
+        <translation type="obsolete">الكيان الطفل لم يحدد</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/entity_relation.py" line="126"/>
+        <source>The parent column has not been defined.</source>
+        <translation type="obsolete">العمود الأم لم يحدد</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/entity_relation.py" line="129"/>
+        <source>The child column has not been defined.</source>
+        <translation type="obsolete">العمود الطفل لم يحدد</translation>
+    </message>
     <message>
         <location filename="../data/configuration/columns.py" line="277"/>
         <source>_id</source>
@@ -383,7 +478,7 @@ Click Yes to delete or No to cancel.</source>
     <message>
         <location filename="../ui/change_pwd_dlg.py" line="58"/>
         <source>Required field</source>
-        <translation>inahitjika</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/change_pwd_dlg.py" line="54"/>
@@ -398,12 +493,12 @@ Click Yes to delete or No to cancel.</source>
     <message>
         <location filename="../ui/change_pwd_dlg.py" line="62"/>
         <source>Password Compare</source>
-        <translation>linganisha nenosiri</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/change_pwd_dlg.py" line="62"/>
         <source>Passwords do not match</source>
-        <translation>nenosiri hailingani</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/change_pwd_dlg.py" line="81"/>
@@ -1444,7 +1539,7 @@ Are you sure you want to cancel the migration process?</source>
     <message>
         <location filename="../ui/db_conn_dlg.py" line="70"/>
         <source>Required field</source>
-        <translation>inahitjika</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/db_conn_dlg.py" line="62"/>
@@ -3049,7 +3144,7 @@ the details.</source>
     <message>
         <location filename="../ui/wizard/ui_lookup_value.ui" line="54"/>
         <source>Code</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">الشيفرة</translation>
     </message>
 </context>
 <context>
@@ -3943,7 +4038,7 @@ Do you want to run it now? </source>
     <message>
         <location filename="../settings/module_settings.py" line="31"/>
         <source>Supporting Document</source>
-        <translation>nyaraka</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../settings/module_settings.py" line="32"/>
@@ -4061,7 +4156,7 @@ Do you want to run it now? </source>
     <message>
         <location filename="../ui/wizard/ui_stdm_config.ui" line="397"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">الأسم</translation>
     </message>
     <message>
         <location filename="../ui/wizard/ui_stdm_config.ui" line="416"/>
@@ -5318,7 +5413,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../ui/ui_adminUnitManager.ui" line="89"/>
         <source>Code</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">الشيفرة</translation>
     </message>
 </context>
 <context>
@@ -5920,7 +6015,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../ui/ui_new_role.ui" line="32"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">الأسم</translation>
     </message>
     <message>
         <location filename="../ui/ui_new_role.ui" line="52"/>
@@ -6210,7 +6305,7 @@ Would you like to configure it now?</source>
     <message>
         <location filename="../ui/new_role_dlg.py" line="66"/>
         <source>Required field</source>
-        <translation>inahitjika</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/new_role_dlg.py" line="66"/>
@@ -6233,47 +6328,47 @@ Would you like to configure it now?</source>
     <message>
         <location filename="../ui/new_user_dlg.py" line="66"/>
         <source>Update User</source>
-        <translation>Kusahihisha mutumiaji</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/new_user_dlg.py" line="68"/>
         <source>Update User Account</source>
-        <translation>kusahihisha akaunti ya mtumiaji</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/new_user_dlg.py" line="70"/>
         <source>User Account Information</source>
-        <translation>taarifa za akaunti ya mtumiaji</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/new_user_dlg.py" line="112"/>
         <source>Required field</source>
-        <translation>inahitjika</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/new_user_dlg.py" line="106"/>
         <source>Password cannot be empty</source>
-        <translation>Nenosiri haiwezi kuwa wazi</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/new_user_dlg.py" line="112"/>
         <source>Confirm Password cannot be empty</source>
-        <translation>kuthibitisha nenosiri haiwezi kuwa wazi</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/new_user_dlg.py" line="118"/>
         <source>Password Compare</source>
-        <translation>linganisha nenosiri</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/new_user_dlg.py" line="118"/>
         <source>Passwords do not match</source>
-        <translation>nenosiri hailingani</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/new_user_dlg.py" line="168"/>
         <source>Create User Error</source>
-        <translation>Kujenga Kosa La Mutumiaji</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6281,7 +6376,7 @@ Would you like to configure it now?</source>
     <message>
         <location filename="../ui/sourcedocument.py" line="76"/>
         <source>Supporting Document</source>
-        <translation>nyaraka</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6295,7 +6390,7 @@ Please check the path settings.</source>
     <message>
         <location filename="../ui/sourcedocument.py" line="349"/>
         <source>Document Manager</source>
-        <translation>Faili Maneja</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/sourcedocument.py" line="344"/>
@@ -6306,12 +6401,12 @@ Please check the path settings.</source>
     <message>
         <location filename="../ui/sourcedocument.py" line="384"/>
         <source>File Name</source>
-        <translation>Jina la faili</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/sourcedocument.py" line="389"/>
         <source>Location</source>
-        <translation>Eneo</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

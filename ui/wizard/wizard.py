@@ -2314,7 +2314,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         # Hack to rename a lookup value
         vt = unicode(value_text)
-        # As the lookup value dictionary is converted to d5, convert this value
+        # As the lookup value dictionary is converted to md5, convert this value
         hashed_vt = lookup.value_hash(vt)
         try:
             code_value = lookup.values[hashed_vt]

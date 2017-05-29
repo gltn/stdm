@@ -276,13 +276,16 @@ class Party(ComponentUtility):
         """
         Initialize the party page
         """
-
+        QApplication.processEvents()
         if self.selected_party is None:
             entity_config = self._load_entity_config(self.party_1)
         else:
             entity_config = self._load_entity_config(self.selected_party)
+
+        QApplication.processEvents()
         if entity_config is None:
             return
+
         self.party_fk_mapper = self._create_fk_mapper(
             entity_config,
             self.container_box,

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS><TS version="2.0" language="es" sourcelanguage="en">
 <context>
-    <name>@default</name>
+    <name>BaseColumn</name>
     <message>
         <location filename="../data/configuration/columns.py" line="434"/>
         <source>Varying-length Text</source>
@@ -998,105 +998,105 @@ The system will revert to the latest configuration backup file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1231"/>
+        <location filename="../ui/wizard/wizard.py" line="1234"/>
         <source>Failed to update configuration. Check error logs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1277"/>
+        <location filename="../ui/wizard/wizard.py" line="1280"/>
         <source>Accept</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1278"/>
+        <location filename="../ui/wizard/wizard.py" line="1281"/>
         <source>Reject</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1281"/>
+        <location filename="../ui/wizard/wizard.py" line="1284"/>
         <source>Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1311"/>
+        <location filename="../ui/wizard/wizard.py" line="1314"/>
         <source>Are you sure you want to discard the draft profile?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1323"/>
+        <location filename="../ui/wizard/wizard.py" line="1326"/>
         <source>Select a directory for supporting documents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1369"/>
+        <location filename="../ui/wizard/wizard.py" line="1372"/>
         <source>Select Folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1496"/>
+        <location filename="../ui/wizard/wizard.py" line="1499"/>
         <source>{0} profile cannot be deleted. At least one profile is required to exist in the STDM configuration. </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1504"/>
+        <location filename="../ui/wizard/wizard.py" line="1507"/>
         <source>You will loose all items related to this profile i.e 
 entities, lookups and Social Tenure Relationships.
 Are you sure you want to delete this profile?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2171"/>
+        <location filename="../ui/wizard/wizard.py" line="2174"/>
         <source>Nothing to delete!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2174"/>
+        <location filename="../ui/wizard/wizard.py" line="2177"/>
         <source>Select a lookup to delete!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2182"/>
+        <location filename="../ui/wizard/wizard.py" line="2185"/>
         <source>Cannot delete &apos;{0}&apos; lookup!
  Lookup is been used by existing columns.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2189"/>
+        <location filename="../ui/wizard/wizard.py" line="2192"/>
         <source>Cannot delete tenure type lookup table!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2193"/>
+        <location filename="../ui/wizard/wizard.py" line="2196"/>
         <source>Delete selected lookup?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2405"/>
+        <location filename="../ui/wizard/wizard.py" line="2408"/>
         <source>STDM Configuration Wizard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2410"/>
+        <location filename="../ui/wizard/wizard.py" line="2413"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2412"/>
+        <location filename="../ui/wizard/wizard.py" line="2415"/>
         <source>Don&apos;t Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2414"/>
+        <location filename="../ui/wizard/wizard.py" line="2417"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2135"/>
+        <location filename="../ui/wizard/wizard.py" line="2138"/>
         <source>Please select a lookup to edit!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1942"/>
+        <location filename="../ui/wizard/wizard.py" line="1945"/>
         <source>Please select a column to edit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1114,62 +1114,62 @@ Are you sure you want to delete this profile?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1511"/>
+        <location filename="../ui/wizard/wizard.py" line="1514"/>
         <source>Unable to delete profile!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1614"/>
+        <location filename="../ui/wizard/wizard.py" line="1617"/>
         <source>No profile selected to add entity!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1664"/>
+        <location filename="../ui/wizard/wizard.py" line="1667"/>
         <source>No entity selected for deletion!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1907"/>
+        <location filename="../ui/wizard/wizard.py" line="1910"/>
         <source>No entity selected to add column!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1984"/>
+        <location filename="../ui/wizard/wizard.py" line="1987"/>
         <source>No column selected for edit!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2072"/>
+        <location filename="../ui/wizard/wizard.py" line="2075"/>
         <source>No column selected for deletion!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2123"/>
+        <location filename="../ui/wizard/wizard.py" line="2126"/>
         <source>No profile selected to add lookup!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2152"/>
+        <location filename="../ui/wizard/wizard.py" line="2155"/>
         <source>Nothing to edit!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2284"/>
+        <location filename="../ui/wizard/wizard.py" line="2287"/>
         <source>No lookup selected to add value!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2339"/>
+        <location filename="../ui/wizard/wizard.py" line="2342"/>
         <source>Select value to delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1622"/>
+        <location filename="../ui/wizard/wizard.py" line="1625"/>
         <source>Please select an entity to edit!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2301"/>
+        <location filename="../ui/wizard/wizard.py" line="2304"/>
         <source>Please select a lookup value to edit!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2929,12 +2929,12 @@ the details.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/login_dlg.py" line="166"/>
+        <location filename="../ui/login_dlg.py" line="171"/>
         <source>Database Connection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/login_dlg.py" line="196"/>
+        <location filename="../ui/login_dlg.py" line="201"/>
         <source>Authentication Failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3737,12 +3737,12 @@ Please set it in the Options dialog or Configuration Wizard.</source>
 <context>
     <name>STDM Configuration</name>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1338"/>
+        <location filename="../ui/wizard/wizard.py" line="1341"/>
         <source>Select a directory for outputting generated documents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1353"/>
+        <location filename="../ui/wizard/wizard.py" line="1356"/>
         <source>Select a directory for document templates</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3750,7 +3750,7 @@ Please set it in the Options dialog or Configuration Wizard.</source>
 <context>
     <name>STDM Configuration Wizard</name>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2373"/>
+        <location filename="../ui/wizard/wizard.py" line="2376"/>
         <source>STDM</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6142,7 +6142,7 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/login_dlg.py" line="160"/>
+        <location filename="../ui/login_dlg.py" line="165"/>
         <source>The STDM database connection has not been configured in your system.
 Would you like to configure it now?</source>
         <translation type="unfinished"></translation>

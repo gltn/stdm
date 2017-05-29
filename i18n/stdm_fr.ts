@@ -1,100 +1,101 @@
-<?xml version="1.0" ?><!DOCTYPE TS><TS language="fr" sourcelanguage="en" version="2.0">
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS><TS version="2.0" language="fr" sourcelanguage="en">
 <context>
     <name>BaseColumn</name>
     <message>
         <location filename="../data/configuration/columns.py" line="434"/>
         <source>Varying-length Text</source>
-        <translation>Texte de longueur variable</translation>
+        <translation type="unfinished">Texte de longueur variable</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="455"/>
         <source>Unlimited-length Text</source>
-        <translation>Texte à longueur illimitée</translation>
+        <translation type="unfinished">Texte à longueur illimitée</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="475"/>
         <source>Whole Number</source>
-        <translation>Nombre entier</translation>
+        <translation type="unfinished">Nombre entier</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="514"/>
         <source>Decimal Number</source>
-        <translation>Nombre décimal</translation>
+        <translation type="unfinished">Nombre décimal</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="529"/>
         <source>Auto-increment</source>
-        <translation>Incrémentation automatique</translation>
+        <translation type="unfinished">Incrémentation automatique</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="561"/>
         <source>Date</source>
-        <translation>Date</translation>
+        <translation type="unfinished">Date</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="594"/>
         <source>Date with time</source>
-        <translation>Date et heure</translation>
+        <translation type="unfinished">Date et heure</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="657"/>
         <source>Geometry</source>
-        <translation>Géométrie</translation>
+        <translation type="unfinished">Géométrie</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="670"/>
         <source>Yes/No</source>
-        <translation>Oui/Non</translation>
+        <translation type="unfinished">Oui/Non</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="740"/>
         <source>Related Entity</source>
-        <translation>Entité liée</translation>
+        <translation type="unfinished">Entité liée</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="784"/>
         <source>Single Select Lookup</source>
-        <translation>Liste à sélection unique</translation>
+        <translation type="unfinished">Liste à sélection unique</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="807"/>
         <source>Administrative Spatial Unit</source>
-        <translation>Unité spatiale administrattive </translation>
+        <translation type="unfinished">Unité spatiale administrattive </translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="837"/>
         <source>Auto Generated Code</source>
-        <translation>Code autogénéré</translation>
+        <translation type="unfinished">Code autogénéré</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="895"/>
         <source>Multiple Select Lookup</source>
-        <translation>Liste à sélection multiple</translation>
+        <translation type="unfinished">Liste à sélection multiple</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="917"/>
         <source>Percent</source>
-        <translation>Pourcentage</translation>
+        <translation type="unfinished">Pourcentage</translation>
     </message>
     <message>
         <location filename="../data/configuration/entity_relation.py" line="120"/>
         <source>The parent entity has not been set.</source>
-        <translation>L&apos;entité parent n&apos;a pas encore été définie.</translation>
+        <translation type="unfinished">L&apos;entité parent n&apos;a pas encore été définie.</translation>
     </message>
     <message>
         <location filename="../data/configuration/entity_relation.py" line="123"/>
         <source>The child entity has not been set.</source>
-        <translation>L&apos;entité enfant n&apos;a pas encore été définie.</translation>
+        <translation type="unfinished">L&apos;entité enfant n&apos;a pas encore été définie.</translation>
     </message>
     <message>
         <location filename="../data/configuration/entity_relation.py" line="126"/>
         <source>The parent column has not been defined.</source>
-        <translation>La colonne parent n&apos;a pas encore été définie.</translation>
+        <translation type="unfinished">La colonne parent n&apos;a pas encore été définie.</translation>
     </message>
     <message>
         <location filename="../data/configuration/entity_relation.py" line="129"/>
         <source>The child column has not been defined.</source>
-        <translation>La colonne enfant n&apos;a pas encore été définie.</translation>
+        <translation type="unfinished">La colonne enfant n&apos;a pas encore été définie.</translation>
     </message>
 </context>
 <context>
@@ -248,6 +249,101 @@ Cliquer sur Oui pour valider ou Non pour annuler.</translation>
 </context>
 <context>
     <name>BaseColumn</name>
+    <message>
+        <location filename="../data/configuration/columns.py" line="434"/>
+        <source>Varying-length Text</source>
+        <translation type="obsolete">Texte de longueur variable</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="455"/>
+        <source>Unlimited-length Text</source>
+        <translation type="obsolete">Texte à longueur illimitée</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="475"/>
+        <source>Whole Number</source>
+        <translation type="obsolete">Nombre entier</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="514"/>
+        <source>Decimal Number</source>
+        <translation type="obsolete">Nombre décimal</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="529"/>
+        <source>Auto-increment</source>
+        <translation type="obsolete">Incrémentation automatique</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="561"/>
+        <source>Date</source>
+        <translation type="obsolete">Date</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="594"/>
+        <source>Date with time</source>
+        <translation type="obsolete">Date et heure</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="657"/>
+        <source>Geometry</source>
+        <translation type="obsolete">Géométrie</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="670"/>
+        <source>Yes/No</source>
+        <translation type="obsolete">Oui/Non</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="740"/>
+        <source>Related Entity</source>
+        <translation type="obsolete">Entité liée</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="784"/>
+        <source>Single Select Lookup</source>
+        <translation type="obsolete">Liste à sélection unique</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="807"/>
+        <source>Administrative Spatial Unit</source>
+        <translation type="obsolete">Unité spatiale administrattive </translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="837"/>
+        <source>Auto Generated Code</source>
+        <translation type="obsolete">Code autogénéré</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="895"/>
+        <source>Multiple Select Lookup</source>
+        <translation type="obsolete">Liste à sélection multiple</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/columns.py" line="917"/>
+        <source>Percent</source>
+        <translation type="obsolete">Pourcentage</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/entity_relation.py" line="120"/>
+        <source>The parent entity has not been set.</source>
+        <translation type="obsolete">L&apos;entité parent n&apos;a pas encore été définie.</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/entity_relation.py" line="123"/>
+        <source>The child entity has not been set.</source>
+        <translation type="obsolete">L&apos;entité enfant n&apos;a pas encore été définie.</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/entity_relation.py" line="126"/>
+        <source>The parent column has not been defined.</source>
+        <translation type="obsolete">La colonne parent n&apos;a pas encore été définie.</translation>
+    </message>
+    <message>
+        <location filename="../data/configuration/entity_relation.py" line="129"/>
+        <source>The child column has not been defined.</source>
+        <translation type="obsolete">La colonne enfant n&apos;a pas encore été définie.</translation>
+    </message>
     <message>
         <location filename="../data/configuration/columns.py" line="277"/>
         <source>_id</source>
@@ -691,7 +787,7 @@ Cliquer sur Oui pour valider ou Non pour annuler.</translation>
     </message>
     <message>
         <location filename="../ui/wizard/column_editor.py" line="768"/>
-        <source>'{0}' is a reserved keyword used internally by STDM.
+        <source>&apos;{0}&apos; is a reserved keyword used internally by STDM.
 Please choose another column name.</source>
         <translation>&quot;{0}&quot; est un mot clé interne réservé à STDM.
 Veuillez choisir un autre nom de la colonne.</translation>
@@ -998,47 +1094,47 @@ Et il pourrait y avoir un décalage entre la base de données et la configuratio
         <translation>Fermer</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1231"/>
+        <location filename="../ui/wizard/wizard.py" line="1234"/>
         <source>Failed to update configuration. Check error logs.</source>
         <translation>Echec de mis à jour de la configuration. Verifier le journal d&apos;erreurs</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1277"/>
+        <location filename="../ui/wizard/wizard.py" line="1280"/>
         <source>Accept</source>
         <translation>Accepter</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1278"/>
+        <location filename="../ui/wizard/wizard.py" line="1281"/>
         <source>Reject</source>
         <translation>Rejeter</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1281"/>
+        <location filename="../ui/wizard/wizard.py" line="1284"/>
         <source>Options</source>
         <translation>Options</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1311"/>
+        <location filename="../ui/wizard/wizard.py" line="1314"/>
         <source>Are you sure you want to discard the draft profile?</source>
         <translation>Etes-vous sûr de vouloir annuler le brouillon du profile?</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1323"/>
+        <location filename="../ui/wizard/wizard.py" line="1326"/>
         <source>Select a directory for supporting documents</source>
         <translation>Sélectionner le répertoire des documents justificatifs</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1369"/>
+        <location filename="../ui/wizard/wizard.py" line="1372"/>
         <source>Select Folder</source>
         <translation>Sélectionner le dossier</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1496"/>
+        <location filename="../ui/wizard/wizard.py" line="1499"/>
         <source>{0} profile cannot be deleted. At least one profile is required to exist in the STDM configuration. </source>
         <translation>{0} le profile ne peut pas etre supprimer. Au minimum un profile est requis pour exister dans la configuration de STDM.</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1504"/>
+        <location filename="../ui/wizard/wizard.py" line="1507"/>
         <source>You will loose all items related to this profile i.e 
 entities, lookups and Social Tenure Relationships.
 Are you sure you want to delete this profile?</source>
@@ -1046,59 +1142,59 @@ Are you sure you want to delete this profile?</source>
 Voulez-vous supprimer ce profile§</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2171"/>
+        <location filename="../ui/wizard/wizard.py" line="2174"/>
         <source>Nothing to delete!</source>
         <translation>Rien à supprimer!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2174"/>
+        <location filename="../ui/wizard/wizard.py" line="2177"/>
         <source>Select a lookup to delete!</source>
         <translation>Selectionner une liste à supprimer!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2182"/>
-        <source>Cannot delete '{0}' lookup!
+        <location filename="../ui/wizard/wizard.py" line="2185"/>
+        <source>Cannot delete &apos;{0}&apos; lookup!
  Lookup is been used by existing columns.</source>
         <translation>Impossible de supprimer la liste &apos;{0}&apos;!
 Cette liste est utilisée par une colonne existante.</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2189"/>
+        <location filename="../ui/wizard/wizard.py" line="2192"/>
         <source>Cannot delete tenure type lookup table!</source>
         <translation>Impossible de supprimer la table &quot;Liste des types des tenures&quot;</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2193"/>
+        <location filename="../ui/wizard/wizard.py" line="2196"/>
         <source>Delete selected lookup?</source>
         <translation>Supprimer la liste selectionnée</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2405"/>
+        <location filename="../ui/wizard/wizard.py" line="2408"/>
         <source>STDM Configuration Wizard</source>
         <translation>Assistant de configuration de STDM</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2410"/>
+        <location filename="../ui/wizard/wizard.py" line="2413"/>
         <source>Save</source>
         <translation>Enregistrer</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2412"/>
+        <location filename="../ui/wizard/wizard.py" line="2415"/>
         <source>Don&apos;t Save</source>
         <translation>Ne pas enregistrer</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2414"/>
+        <location filename="../ui/wizard/wizard.py" line="2417"/>
         <source>Cancel</source>
         <translation>Annuler</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2135"/>
+        <location filename="../ui/wizard/wizard.py" line="2138"/>
         <source>Please select a lookup to edit!</source>
         <translation>Sélectionner un liste à modifier </translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1942"/>
+        <location filename="../ui/wizard/wizard.py" line="1945"/>
         <source>Please select a column to edit</source>
         <translation>Sélectionner un colonne à modifier </translation>
     </message>
@@ -1116,62 +1212,62 @@ Cette liste est utilisée par une colonne existante.</translation>
         <translation>La configuration a été effectuée avec succès.</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1511"/>
+        <location filename="../ui/wizard/wizard.py" line="1514"/>
         <source>Unable to delete profile!</source>
         <translation>Impossible de supprimer le profile!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1614"/>
+        <location filename="../ui/wizard/wizard.py" line="1617"/>
         <source>No profile selected to add entity!</source>
         <translation>Aucun profil selectionné pour l&apos;ajout d&apos;une entité!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1664"/>
+        <location filename="../ui/wizard/wizard.py" line="1667"/>
         <source>No entity selected for deletion!</source>
         <translation>Aucune entité sélectionnée pour la suppression!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1907"/>
+        <location filename="../ui/wizard/wizard.py" line="1910"/>
         <source>No entity selected to add column!</source>
         <translation>Aucune entité sélectionnée pour ajouter une colonne!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1984"/>
+        <location filename="../ui/wizard/wizard.py" line="1987"/>
         <source>No column selected for edit!</source>
         <translation>Aucune colonne sélectionnée pour la modification!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2072"/>
+        <location filename="../ui/wizard/wizard.py" line="2075"/>
         <source>No column selected for deletion!</source>
         <translation>Aucune colonne sélectionnée pour la suppression!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2123"/>
+        <location filename="../ui/wizard/wizard.py" line="2126"/>
         <source>No profile selected to add lookup!</source>
         <translation>Aucun profil sélectionné pour ajouter une liste!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2152"/>
+        <location filename="../ui/wizard/wizard.py" line="2155"/>
         <source>Nothing to edit!</source>
         <translation>Rien à éditer!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2284"/>
+        <location filename="../ui/wizard/wizard.py" line="2287"/>
         <source>No lookup selected to add value!</source>
         <translation>Aucune liste sélectionnée pour ajouter une valeur!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2339"/>
+        <location filename="../ui/wizard/wizard.py" line="2342"/>
         <source>Select value to delete</source>
         <translation>Sélectionnez la valeur à supprimer</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1622"/>
+        <location filename="../ui/wizard/wizard.py" line="1625"/>
         <source>Please select an entity to edit!</source>
         <translation>Sélectionner un entité à modifier </translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2301"/>
+        <location filename="../ui/wizard/wizard.py" line="2304"/>
         <source>Please select a lookup value to edit!</source>
         <translation>Sélectionner un liste valeur à modifier </translation>
     </message>
@@ -1555,7 +1651,7 @@ Et la perte temporaire d&apos;accès à votre profil, données et modèles exist
     </message>
     <message>
         <location filename="../ui/feature_details.py" line="1345"/>
-        <source>This action will remove the social tenure relationship and dependent supporting documents from the database and the documents folder. This action cannot be undone and once removed, it can only be recreated through the 'New Social Tenure Relationship' wizard.Would you like to proceed?
+        <source>This action will remove the social tenure relationship and dependent supporting documents from the database and the documents folder. This action cannot be undone and once removed, it can only be recreated through the &apos;New Social Tenure Relationship&apos; wizard.Would you like to proceed?
 Click Yes to proceed or No to cancel.</source>
         <translation>Cette action supprimera la relation de tenure sociale et les documents justificatifs de la base de données et du dossier de documents. Cette action ne peut pas être annulée et une fois supprimée, elle ne peut être recréée qu&apos;en utilisant l&apos;assistant «Nouvelle relation de tenure sociale».
 Souhaitez-vous procéder?
@@ -2950,12 +3046,12 @@ Sélectionnez une couche STDM pour afficher les détails.</translation>
         <translation>Connexion</translation>
     </message>
     <message>
-        <location filename="../ui/login_dlg.py" line="166"/>
+        <location filename="../ui/login_dlg.py" line="171"/>
         <source>Database Connection</source>
         <translation>Connexion à la base des données</translation>
     </message>
     <message>
-        <location filename="../ui/login_dlg.py" line="196"/>
+        <location filename="../ui/login_dlg.py" line="201"/>
         <source>Authentication Failed</source>
         <translation>Authentification échouée</translation>
     </message>
@@ -3759,12 +3855,12 @@ Configurez-le dans la boîte de dialogue Options ou l&apos;assistant de configur
 <context>
     <name>STDM Configuration</name>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1338"/>
+        <location filename="../ui/wizard/wizard.py" line="1341"/>
         <source>Select a directory for outputting generated documents</source>
         <translation>Sélectionner le répertoire pour la sortie des documents générés</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1353"/>
+        <location filename="../ui/wizard/wizard.py" line="1356"/>
         <source>Select a directory for document templates</source>
         <translation>Sélectionner le répertoire des modèles de document</translation>
     </message>
@@ -3772,7 +3868,7 @@ Configurez-le dans la boîte de dialogue Options ou l&apos;assistant de configur
 <context>
     <name>STDM Configuration Wizard</name>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2373"/>
+        <location filename="../ui/wizard/wizard.py" line="2376"/>
         <source>STDM</source>
         <translation>STDM</translation>
     </message>
@@ -4355,7 +4451,7 @@ Les deux entités sont liées par un droit de tenure. &lt;/ p&gt; &lt;p&gt; Ce m
     </message>
     <message>
         <location filename="../navigation/socialtenure/nodes.py" line="630"/>
-        <source>This action will remove the social tenure relationship and dependent supporting documents from the database and the documents folder. This action cannot be undone and once removed, it can only be recreated through the 'New Social Tenure Relationship' wizard.Would you like to proceed?
+        <source>This action will remove the social tenure relationship and dependent supporting documents from the database and the documents folder. This action cannot be undone and once removed, it can only be recreated through the &apos;New Social Tenure Relationship&apos; wizard.Would you like to proceed?
 Click Yes to proceed or No to cancel.</source>
         <translation>Cette action supprimera la relation de tenure sociale et les documents justificatifs de la base de données et du dossier de documents. Cette action ne peut pas être annulée et une fois supprimée, elle ne peut être recréée qu&apos;en utilisant l&apos;assistant «Nouvelle relation de tenure sociale».
 Souhaitez-vous procéder?
@@ -5175,7 +5271,7 @@ il est utilisé par un autre processus</translation>
     </message>
     <message>
         <location filename="../ui/wizard/ui_column_depend.ui" line="57"/>
-        <source>The following items depend on the '%s' column;
+        <source>The following items depend on the &apos;%s&apos; column;
  deleting it might affect the data stored in these dependent
  objects and in some cases, might also lead to their deletion.
 Click &apos;Delete column&apos; to proceed.</source>
@@ -5264,7 +5360,7 @@ Click &apos;Delete column&apos; to proceed.</source>
     </message>
     <message>
         <location filename="../ui/wizard/ui_entity_depend.ui" line="60"/>
-        <source>The following items depend on the '%s' entity;
+        <source>The following items depend on the &apos;%s&apos; entity;
  deleting it might affect the data stored in these dependent
  objects and in some cases, might also lead to their deletion.
 Click &apos;Delete entity&apos; to proceed.</source>
@@ -5318,15 +5414,15 @@ Click &apos;Delete entity&apos; to proceed.</source>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;title&gt;About STDM&lt;/title&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:7.5pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:36px; margin-right:36px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Arial,Helvetica,sans-serif'; font-size:5pt; font-weight:200;&quot;&gt;    &lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:36px; margin-right:36px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;img src=&quot;:/plugins/stdm/images/icons/stdm_2.png&quot; /&gt;&lt;span style=&quot; font-family:'Arial,Helvetica,sans-serif'; font-size:14pt; font-weight:600;&quot;&gt;    &lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:5px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Arial,Helvetica,sans-serif'; font-size:9pt;&quot;&gt;The Social Tenure Domain Model (STDM) is a pro poor, gender responsive and participatory land rights recordation developed by the Global Land Tool Network (GLTN) for the promotion of secure land and property rights for all. It broadens the scope of land administration by incorporating all person/s to land relationships beyond formal/legal land rights, cognisant of the continuum of land rights. &lt;br /&gt;&lt;br /&gt;STDM has four inter-related components:&lt;/span&gt;&lt;/p&gt;
-&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; font-family:'Arial,Helvetica,sans-serif'; font-size:9pt;&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;A new way of thinking about land records    &lt;/li&gt;
-&lt;li style=&quot; font-family:'Arial,Helvetica,sans-serif'; font-size:9pt;&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;A free and open-source software package to record information about land    &lt;/li&gt;
-&lt;li style=&quot; font-family:'Arial,Helvetica,sans-serif'; font-size:9pt;&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;An approach of collecting data about land    &lt;/li&gt;
-&lt;li style=&quot; font-family:'Arial,Helvetica,sans-serif'; font-size:9pt;&quot; style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;A way of using and disseminating information about land&lt;/li&gt;&lt;/ul&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Arial,Helvetica,sans-serif'; font-size:9pt; font-weight:600;&quot;&gt;Core Values&lt;/span&gt;&lt;span style=&quot; font-family:'Arial,Helvetica,sans-serif'; font-size:9pt;&quot;&gt;&lt;br /&gt;STDM's core values and principles are pro-poor, good governance, equity, subsidiarity, sustainability, affordability, systematic large scale, and gender responsiveness.&lt;/span&gt;&lt;/p&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;MS Shell Dlg 2&apos;; font-size:7.5pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:36px; margin-right:36px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:&apos;Arial,Helvetica,sans-serif&apos;; font-size:5pt; font-weight:200;&quot;&gt;    &lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:36px; margin-right:36px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;img src=&quot;:/plugins/stdm/images/icons/stdm_2.png&quot; /&gt;&lt;span style=&quot; font-family:&apos;Arial,Helvetica,sans-serif&apos;; font-size:14pt; font-weight:600;&quot;&gt;    &lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:5px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:&apos;Arial,Helvetica,sans-serif&apos;; font-size:9pt;&quot;&gt;The Social Tenure Domain Model (STDM) is a pro poor, gender responsive and participatory land rights recordation developed by the Global Land Tool Network (GLTN) for the promotion of secure land and property rights for all. It broadens the scope of land administration by incorporating all person/s to land relationships beyond formal/legal land rights, cognisant of the continuum of land rights. &lt;br /&gt;&lt;br /&gt;STDM has four inter-related components:&lt;/span&gt;&lt;/p&gt;
+&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; font-family:&apos;Arial,Helvetica,sans-serif&apos;; font-size:9pt;&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;A new way of thinking about land records    &lt;/li&gt;
+&lt;li style=&quot; font-family:&apos;Arial,Helvetica,sans-serif&apos;; font-size:9pt;&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;A free and open-source software package to record information about land    &lt;/li&gt;
+&lt;li style=&quot; font-family:&apos;Arial,Helvetica,sans-serif&apos;; font-size:9pt;&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;An approach of collecting data about land    &lt;/li&gt;
+&lt;li style=&quot; font-family:&apos;Arial,Helvetica,sans-serif&apos;; font-size:9pt;&quot; style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;A way of using and disseminating information about land&lt;/li&gt;&lt;/ul&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:&apos;Arial,Helvetica,sans-serif&apos;; font-size:9pt; font-weight:600;&quot;&gt;Core Values&lt;/span&gt;&lt;span style=&quot; font-family:&apos;Arial,Helvetica,sans-serif&apos;; font-size:9pt;&quot;&gt;&lt;br /&gt;STDM&apos;s core values and principles are pro-poor, good governance, equity, subsidiarity, sustainability, affordability, systematic large scale, and gender responsiveness.&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:&apos;Arial,Helvetica,sans-serif&apos;; font-size:9pt;&quot;&gt;&lt;br /&gt;&lt;br /&gt;Copyright © 2017 UN Habitat and its implementing partners. All rights reserved.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;title&gt;A propos de STDM&lt;/title&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -6196,7 +6292,7 @@ p, li { white-space: pre-wrap; }
         <translation>Le champ du mot de passe ne peut pas être vide </translation>
     </message>
     <message>
-        <location filename="../ui/login_dlg.py" line="160"/>
+        <location filename="../ui/login_dlg.py" line="165"/>
         <source>The STDM database connection has not been configured in your system.
 Would you like to configure it now?</source>
         <translation>La connexion à la base de données STDM n&apos;a pas été configurée dans votre système.
@@ -6354,7 +6450,7 @@ Voulez-vous le configurer maintenant?</translation>
     <name>sourceDocumentManager</name>
     <message>
         <location filename="../ui/sourcedocument.py" line="233"/>
-        <source>The root document repository '{0}' does not exist.
+        <source>The root document repository &apos;{0}&apos; does not exist.
 Please check the path settings.</source>
         <translation>Le répertoire de document racine &apos;{0}&apos; n&apos;existe pas.
 Vérifiez les paramètres du chemin.</translation>

@@ -63,22 +63,6 @@ from stdm.utils.util import (
 )
 from str_data import STRDataStore, STRDBHandler
 
-
-# class InitSTREditor():
-#     """
-#     Initializes the STR Editor by inheriting the UI of the STREditor.
-#     """
-#     party_init = pyqtSignal()
-#     spatial_unit_init = pyqtSignal()
-#     validity_init = pyqtSignal()
-#     docs_init = pyqtSignal()
-#     str_type_updated = pyqtSignal()
-#     shareUpdated = pyqtSignal(list, QDoubleSpinBox)
-#     shareUpdatedOnZero = pyqtSignal(float)
-#     #
-#     # def __init__(self, ui):
-#     #
-
 class BindSTREditor():
     """
     Binds the STR components tree items with the stack widgets
@@ -89,7 +73,6 @@ class BindSTREditor():
         """
         Initializes the class and the super class. 
         """
-        # InitSTREditor.__init__(self)
         self.editor = editor
         editor.view_selection.currentChanged.connect(
             self.bind_component_to_tree_view
@@ -860,7 +843,7 @@ class STREditor(QDialog, Ui_STREditor):
         self.str_type_component = None
         self._init_str_editor()
         self.init_party_component()
-        # QTimer.singleShot(22, self.init_party_component)
+        QTimer.singleShot(33, self._party_signals)
 
         self.copied_party_row = OrderedDict()
 
@@ -868,11 +851,6 @@ class STREditor(QDialog, Ui_STREditor):
         self.bind = BindSTREditor(self)
         self.sync = SyncSTREditorData(self)
         self.validate = ValidateSTREditor(self)
-
-
-        # self.tree_view_signals()
-
-
 
     def _init_str_editor(self):
         """
@@ -979,6 +957,9 @@ class STREditor(QDialog, Ui_STREditor):
         If party is none, the default party loads.
         :type party: Object
         """
+        if party is not None:
+            print 'emited party init'
+            self.party_init.emit()
 
         if self.party_component is not None:
             return
@@ -992,13 +973,6 @@ class STREditor(QDialog, Ui_STREditor):
 
         self.str_model, self.str_doc_model = \
             self.party_component.str_doc_models()
-        self._party_signals()
-        self.party_component.party_fk_mapper.entity_combo. \
-            currentIndexChanged.connect(
-            self.switch_entity
-        )
-
-        self.party_init.emit()
 
     def init_str_type_component(self, party=None):
         """
@@ -1110,6 +1084,10 @@ class STREditor(QDialog, Ui_STREditor):
         )
         self.party_component.party_fk_mapper.deletedRows.connect(
             self.remove_party_str_row_model
+        )
+        self.party_component.party_fk_mapper.entity_combo. \
+            currentIndexChanged.connect(
+            self.switch_entity
         )
 
     def reset_share_spinboxes(self, data_store):
@@ -1742,6 +1720,7 @@ class STREditor(QDialog, Ui_STREditor):
 
 
 class EditSTREditor(STREditor):
+
     def __init__(self, str_edit_node):
         """
         The Edit user interface of the STR Editor.
@@ -1768,6 +1747,7 @@ class EditSTREditor(STREditor):
             self.party, self.party_column = self.current_party(
                 self.str_edit_dict
             )
+
         title = QApplication.translate(
             'EditSTREditor',
             'Edit Social Tenure Relationship'
@@ -1776,13 +1756,18 @@ class EditSTREditor(STREditor):
 
         self.add_str_btn.setDisabled(True)
         self.remove_str_btn.setDisabled(True)
+        self.party_init.connect(self.populate_party_str_type_store)
+
+        self.init_party_component(self.party)
+
+        QTimer.singleShot(33, self._party_signals)
 
         QTimer.singleShot(33, self.init_str_type_component)
         QTimer.singleShot(55, self.init_spatial_unit_component)
         QTimer.singleShot(77, self.init_supporting_documents)
         QTimer.singleShot(80, self.init_validity_period_component)
 
-        self.party_init.connect(self.populate_party_str_type_store)
+
         self.spatial_unit_init.connect(self.populate_spatial_unit_store)
         self.docs_init.connect(self.populate_supporting_doc_store)
         self.validity_init.connect(self.populate_validity_store)
@@ -1848,6 +1833,7 @@ class EditSTREditor(STREditor):
             str_type_id,
             0
         )
+
         self.init_str_type_signal(
             self.data_store[1], party_id, 1
         )
