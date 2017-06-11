@@ -7,10 +7,11 @@ from PyQt4.QtGui import (
 
 )
 from PyQt4.QtCore import *
+from PyQt4.Qt import QApplication
 from PyQt4.QtCore import (
     QFile,
     QDir,
-    pyqtSignal
+    pyqtSignal,
 
 )
 from stdm.data.configuration.stdm_configuration import (
@@ -22,16 +23,15 @@ from stdm.settings import current_profile
 from stdm.utils.util import setComboCurrentIndexWithText
 from stdm.data.configuration.db_items import DbItem
 from stdm.ui.wizard.custom_item_model import EntitiesModel
-from stdm.geoodk import GeoODKReader
 from stdm.geoodk.geoodk_writer import GeoodkWriter
 
-
-from stdm.ui.ui_geoodk_converter import Ui_Dialog
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_geoodk_converter.ui'))
 
-CONFIG_FILE = QDir.home().path()+ '/.stdm/configuration.stc'
+HOME = QDir.home().path()
+
+CONFIG_FILE = HOME + '/.stdm/configuration.stc'
 
 class GeoODKConverter(QDialog, FORM_CLASS):
     def __init__(self, parent=None):
@@ -89,6 +89,11 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         self.entity_model = EntitiesModel()
         self.set_entity_model_view(self.entity_model)
         text = self.cboProf.currentText()
+        if text != current_profile().name:
+            QMessageBox.information(self, QApplication.translate("MobileForms",
+                                                          "Error"), QApplication.translate("MobileForms",
+                                                        "Generate Forms works with current profile only"))
+            return
         self.populate_view_models(self.load_config().get(text))
 
     def profiles(self):
@@ -172,10 +177,14 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         user_entities = self.selected_entities_from_Model()
         if len(user_entities)< 1:
             QMessageBox.critical(
-                self, "Error reading entity",
-                             "No Entity selected by user")
+                self, QApplication.translate("MobileForms","Entity Error"), \
+                             QApplication.translate("MobileForms","No Entity selected by user"))
             return
         else:
             geoodk_writer = GeoodkWriter(user_entities)
             geoodk_writer.write_data_to_xform()
+            QMessageBox.information(
+                self, QApplication.translate("MobileForms", " Forms Generation"), \
+                QApplication.translate("MobileForms", "Successfully generated geoODK Form in the"
+                                             " following location: {}/.stdm".format(HOME)))
             self.accept()
