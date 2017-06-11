@@ -40,7 +40,6 @@ class XFORMDocument:
         self.form = None
         self.fname = fname
 
-
     def form_name(self):
         """
         Format the name for a new file to be created. We need to ensure it is
@@ -51,7 +50,6 @@ class XFORMDocument:
             return self.fname
         else:
             return self.fname+"{}".format(DOCEXTENSION)
-
 
     def set_form_name(self, local_name):
         """
@@ -136,6 +134,8 @@ class XFORMDocument:
         """
         pass
 
+
+
 class GeoodkWriter(EntityFormatter, XFORMDocument):
     """
     """
@@ -202,7 +202,6 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         root.setAttribute("xmlns:jr", "http://openrosa.org/javarosa")
         return root
 
-
     def header_fragment_data(self):
         """
         Create and add data to the header node in Xform document
@@ -214,10 +213,9 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         doc_header.appendChild(self._header_model())
         return doc_header
 
-
     def _header_model(self):
         """
-
+        Create a header model that GeoODK writer requires to create form
         :return:
         """
         doc_model = self.create_node("model")
@@ -228,10 +226,9 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         doc_model.appendChild(self.model_unique_id_generator())
         return doc_model
 
-
     def _header_title(self):
         """
-
+        Create header title in the document that is required by GeoODK
         :return:
         """
         title = self.create_node("h:title")
@@ -241,11 +238,10 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
 
     def intro_node(self):
         """
-
+        Create header introduction label
         :return:
         """
-        intro_node = self.create_node("intro")
-        return intro_node
+        return self.create_node("intro")
 
     def create_header_intro(self, parent_node):
         """
@@ -306,7 +302,6 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             for entity in self.entities:
                 self.initialize_entity_reader(entity)
                 entity_values = self.entity_read.read_attributes()
-
                 self.bind_model_attributes(base_node, entity_values)
 
     def bind_model_attributes(self, base_node, entity_values):
@@ -324,7 +319,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             bind_node.setAttribute("nodeset",
                     self.set_model_xpath(key, self.entity_read.default_entity()))
             if self.entity_read.col_is_mandatory(key):
-                bind_node.setAttribute("required", "True()")
+                bind_node.setAttribute("required", "true()")
             bind_node.setAttribute("type", self.set_model_data_type(val))
 
             base_node.appendChild(bind_node)
@@ -403,7 +398,6 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         group_node.appendChild(group_label)
         return group_node
 
-
     def _body_section_data(self,entity_values, parent_node):
         """
         Add entity attribute to the body section as labels to the Xform file
@@ -418,7 +412,6 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 body_node = self.create_node("input")
                 label_node = self.create_node("label")
                 body_node.setAttribute("ref",self.model_category_group(parent_path, key))
-
                 #label = "jr:itext('{0}:label')".format(self.set_model_xpath(key))
                 label_txt= self.create_text_node(key.replace("_", " ").title())
                 #label_node.setAttribute("ref", label)
@@ -435,14 +428,9 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         :param parent_node:
         :return:
         """
-        # if isinstance(self.entities, list):
-        # for entity in self.entities:
-        # self.initialize_entity_reader(entity)
         self.entity_read.read_attributes()
         child_node = self.lookup_formatter(self.entity_read.default_entity(),col)
         parent_node.appendChild(child_node)
-
-
 
     def lookup_formatter(self, entity, col):
         """
@@ -451,10 +439,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         :param attributes:
         :return:
         """
-        # self.initialize_entity_reader(entity)
-        # self.entity_read.read_attributes()
         self.entity_read.column_lookup_mapping()
-
         select_opt = "select1"
         if self.entity_read.column_info_multiselect(col):
             select_opt = "select"
@@ -489,8 +474,6 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 lk_node.appendChild(lk_item)
         return lk_node
 
-
-
     def write_data_to_xform(self):
         """
         Method to create configuration file
@@ -503,4 +486,3 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         root_node.appendChild(self._body_section())
         self.doc.appendChild(root_node)
         self.write_to_form()
-
