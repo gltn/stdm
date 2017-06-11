@@ -37,8 +37,7 @@ from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.settings.config_file_updater import ConfigurationFileUpdater
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
-from stdm.geoodk.geoodk_reader import GeoodkReader
-from stdm.geoodk.geoodk_writer import GeoodkWriter
+
 
 from stdm.ui.change_pwd_dlg import changePwdDlg
 from stdm.ui.doc_generator_dlg import (
@@ -113,6 +112,8 @@ from stdm.ui.progress_dialog import STDMProgressDialog
 from stdm.ui.feature_details import DetailsTreeView
 from stdm.ui.social_tenure.str_editor import STREditor
 
+from stdm.ui.geoodk_converter_dialog import GeoODKConverter
+
 LOGGER = logging.getLogger('stdm')
 
 
@@ -164,9 +165,8 @@ class STDMQGISLoader(object):
                       + '/.stdm/configuration.stc'
         self.config_serializer = ConfigurationFileSerializer(self.config_path)
         self.configuration_file_updater = ConfigurationFileUpdater(self.iface)
-        self.geoodk_reader = GeoodkReader()
-        self.geoodk_writer = GeoodkWriter(self.iface)
         copy_startup()
+
 
     def initGui(self):
         # Initial actions on starting up the application
@@ -349,6 +349,7 @@ class STDMQGISLoader(object):
                 self.run_wizard()
                 self._user_logged_in = True
 
+
             except Exception as pe:
                 title = QApplication.translate(
                     "STDMQGISLoader",
@@ -358,10 +359,6 @@ class STDMQGISLoader(object):
                     title,
                     pe
                 )
-
-        # QMessageBox.information(None, "Geo odk", self.geoodk_reader.read)
-        configuration = {"entity": ["column1", "column2", "column3"]}
-        self.geoodk_writer._create_xform_template(configuration)
 
     def minimum_table_checker(self):
 
@@ -838,6 +835,9 @@ class STDMQGISLoader(object):
         self.ModuleAct = QAction(QIcon(":/plugins/stdm/images/icons/table_designer.png"),\
                     QApplication.translate("WorkspaceConfig","Entities"), self.iface.mainWindow())
 
+        self.mobile_form_act = QAction(QIcon(":/plugins/stdm/images/icons/web.png"), \
+                    QApplication.translate("MobileFormGenerator", "Mobile Form"), self.iface.mainWindow())
+
         # Add current profiles to profiles combobox
         self.load_profiles_combobox()
 
@@ -852,6 +852,7 @@ class STDMQGISLoader(object):
         self.docGeneratorAct.triggered.connect(self.onDocumentGenerator)
         self.spatialLayerManager.triggered.connect(self.spatialLayerMangerActivate)
         self.feature_details_act.triggered.connect(self.details_tree_view.activate_feature_details)
+        self.mobile_form_act.triggered.connect(self.mobile_form_generator)
 
         self.iface.mapCanvas().currentLayerChanged.connect(
             lambda :self.details_tree_view.activate_feature_details(False)
@@ -897,6 +898,9 @@ class STDMQGISLoader(object):
 
         strViewCnt=ContentGroup.contentItemFromQAction(self.viewSTRAct)
         strViewCnt.code="D13B0415-30B4-4497-B471-D98CA98CD841"
+
+        mobileFormgeneratorCnt = ContentGroup.contentItemFromQAction(self.mobile_form_act)
+        mobileFormgeneratorCnt.code = "d93981ef-dec4-4597-8495-2941ec2e9a52"
 
         username = data.app_dbconn.User.UserName
 
@@ -1004,6 +1008,10 @@ class STDMQGISLoader(object):
         self.exportCntGroup.addContentItem(exportCnt)
         self.exportCntGroup.register()
 
+        self.mobileXformgenCntGroup = ContentGroup(username, self.mobile_form_act)
+        self.mobileXformgenCntGroup.addContentItem(mobileFormgeneratorCnt)
+        self.mobileXformgenCntGroup.register()
+
         # Add Design Forms menu and tool bar actions
         self.toolbarLoader.addContent(self.wzdConfigCntGroup)
         self.menubarLoader.addContent(self.wzdConfigCntGroup)
@@ -1047,6 +1055,9 @@ class STDMQGISLoader(object):
 
         self.toolbarLoader.addContent(self.docGeneratorCntGroup)
         self.menubarLoader.addContent(self.docGeneratorCntGroup)
+
+        self.toolbarLoader.addContent(self.mobileXformgenCntGroup)
+        self.menubarLoader.addContent(self.mobileXformgenCntGroup)
 
         #Load all the content in the container
         self.toolbarLoader.loadContent()
@@ -1807,6 +1818,14 @@ class STDMQGISLoader(object):
                 unicode(message_text)
             )
         )
+
+    def mobile_form_generator(self):
+        """
+        Load the dialog to generate form for mobile data collection
+        :return:
+        """
+        converter_dlg = GeoODKConverter(self)
+        converter_dlg.exec_()
 
     def _action_separator(self):
         """
