@@ -326,30 +326,30 @@ class STDMQGISLoader(object):
             if not config_load_status:
                 return
 
-            # try:
+            try:
 
-            #Set current profile
-            self.current_profile = current_profile()
+                #Set current profile
+                self.current_profile = current_profile()
 
-            if self.current_profile is None:
-                result = self.default_profile()
-                if not result:
-                    return
-            self.loadModules()
-            self.default_profile()
-            self.run_wizard()
-            self._user_logged_in = True
+                if self.current_profile is None:
+                    result = self.default_profile()
+                    if not result:
+                        return
+                self.loadModules()
+                self.default_profile()
+                self.run_wizard()
+                self._user_logged_in = True
 
-            # except Exception as pe:
-            #     title = QApplication.translate(
-            #         "STDMQGISLoader",
-            #         "Error Loading Modules"
-            #     )
-            #     print pe
-            #     self.reset_content_modules_id(
-            #         title,
-            #         pe
-            #     )
+            except Exception as pe:
+                title = QApplication.translate(
+                    "STDMQGISLoader",
+                    "Error Loading Modules"
+                )
+
+                self.reset_content_modules_id(
+                    title,
+                    pe
+                )
 
     def minimum_table_checker(self):
 
@@ -1793,11 +1793,7 @@ class STDMQGISLoader(object):
 
     def reset_content_modules_id(self, title, message_text):
         return QMessageBox.critical(
-            self.iface.mainWindow(),
-            QApplication.translate(
-                "STDMQGISLoader",
-                title
-            ),
+            self.iface.mainWindow(), title,
             QApplication.translate(
                 "STDMQGISLoader",
                 unicode(message_text)

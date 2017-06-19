@@ -386,7 +386,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         windowTitle = u"{0} - {1} {2}".format(
             self.title(), numRecords, rowStr
         )
-        print windowTitle
+
         self.setWindowTitle(windowTitle)
 
         return numRecords
