@@ -96,8 +96,7 @@ class ImportData(QWizard, Ui_frmImport):
         self._trans_signal_mapper = QSignalMapper(self)
 
         for trans_name, config in ValueTranslatorConfig.translators.iteritems():
-            trans_action = QAction(
-                QApplication.translate('ImportData', trans_name) + "...",
+            trans_action = QAction( u'{}...'.format(trans_name),
                 translator_menu
             )
 

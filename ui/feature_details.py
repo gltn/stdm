@@ -1084,7 +1084,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         font.setBold(True)
         standard_item.setFont(font)
 
-    def treeview_error(self, message, icon=None):
+    def treeview_error(self, not_feature_ft_msg, icon=None):
         """
         Displays error message in feature details treeview.
         :param title: the title of the treeview.
@@ -1092,13 +1092,9 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :param message: The message to be displayed.
         :type: String
         :param icon: The icon of the item.
-        :type: Resource string
-        :return: None
+
         """
-        not_feature_ft_msg = QApplication.translate(
-            'FeatureDetails', message
-        )
-        if icon == None:
+        if icon is None:
             root = QStandardItem(not_feature_ft_msg)
         else:
             root = QStandardItem(icon, not_feature_ft_msg)

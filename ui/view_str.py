@@ -625,7 +625,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         :type event: QShowEvent
         """
         self.setEnabled(True)
-        QTimer.singleShot(200, self.init_mirror_map)
+        if QTimer is not None:
+            QTimer.singleShot(200, self.init_mirror_map)
         #self.init_mirror_map()
 
         return QMainWindow.showEvent(self, event)

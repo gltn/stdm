@@ -668,7 +668,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.cboDataType.clear()
         for item in BaseColumn.types_by_display_name().keys():
 
-            self.cboDataType.addItem(QApplication.translate('ColumnEditor', item))
+            self.cboDataType.addItem(item)
         self.cboDataType.setCurrentIndex(0)
 
     def change_data_type(self, index):

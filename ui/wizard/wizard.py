@@ -213,9 +213,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def set_window_title(self):
         if self.draft_config:
             self.setWindowTitle('')
-            self.setWindowTitle(self.tr(self.tmp_title+' - [ DRAFT ]'))
+            draft = self.tr(' - [ DRAFT ]')
+            self.setWindowTitle('{}{}'.format(self.tmp_title, draft))
         else:
-            self.setWindowTitle(self.tr(self.tmp_title))
+            self.setWindowTitle(self.tmp_title)
 
 
     def _init_str_ctrls(self):
