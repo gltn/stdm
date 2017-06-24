@@ -64,12 +64,21 @@ class CopyProfileEditor(QDialog, Ui_dlgCopyProfile):
         listen to user OK action
         '''
         if self.edtName.text() == '':
-            self.error_info_message(QApplication.translate("CopyEditor", "Please enter a profile name."))
+            self.error_info_message(
+                QApplication.translate(
+                    "CopyEditor", "Please enter a profile name.")
+            )
             return
 
         # avoid existing profile names
         if self.edtName.text() in self.profile_names:
-            self.error_info_message(QApplication.translate("CopyEditor", "Entered name is already in use. Please enter another profile name."))
+            self.error_info_message(
+                QApplication.translate(
+                    "CopyEditor",
+                    "Entered name is already in use. "
+                    "Please enter another profile name."
+                )
+            )
             return
 
         self.add_profile()
