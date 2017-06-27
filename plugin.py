@@ -899,10 +899,7 @@ class STDMQGISLoader(object):
         if self.user_entities() is not None:
             user_entities = dict(self.user_entities())
             for i, (name, short_name) in enumerate(user_entities.iteritems()):
-                display_name = QApplication.translate(
-                    "Entities",
-                    unicode(short_name).replace("_", " ").title()
-                )
+                display_name = unicode(short_name).replace("_", " ").title()
                 self._moduleItems[display_name] = name
 
         for k, v in self._moduleItems.iteritems():
