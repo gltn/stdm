@@ -101,29 +101,12 @@ class GeoODKReader():
         del self.entity_attributes['id']
         return self.entity_attributes
 
-    def create_unique_col_name(self, col):
-        """
-        Prepend entity name to column name for uniqueness in the Xform
-        :param col:
-        :return:
-        """
-        column = ""
-        if isinstance(col, unicode):
-            column = self.user_entity.lower() + "." + col
-        elif isinstance(col, str):
-            column = self.user_entity.lower() + "." + col
-        elif isinstance(col, object):
-            column = self.user_entity.lower() + "." + col.name
-        else:
-            column = col
-        return column
-
     def entity_columns(self):
         """
         
         :return: 
         """
-        if hasattr(self.entity_attributes, 'id'):
+        if self.entity_attributes.has_key('id'):
             del self.entity_attributes['id']
         return self.entity_attributes
 
