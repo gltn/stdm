@@ -67,7 +67,7 @@ class EntityFormatter():
         :param bool: 
         :return: 
         """
-        return "/"+profile+"/{}".format(item)
+        return '/'+profile+'/{}'.format(item)
 
     def process_lookup(self):
         """
@@ -88,7 +88,7 @@ class EntityFormatter():
         :param attrib:
         :return:
         """
-        typle_name = attrib.partition(".")
+        typle_name = attrib.partition('.')
         return unicode(typle_name[2])
 
     def set_model_data_type(self, val):
@@ -123,9 +123,9 @@ class EntityFormatter():
         :return: string
         """
         if entity:
-            return "/"+self._profile+"/"+entity+"/{}".format(item)
+            return '/'+self._profile+'/'+entity+'/{}'.format(item)
         else:
-            return "/"+self._profile+"/{}".format(item)
+            return '/'+self._profile+'/{}'.format(item)
 
 
     def model_xpaths(self, items):
@@ -139,7 +139,7 @@ class EntityFormatter():
         """
         path_lst = []
         for key in items.keys():
-            xpath = "/"+self._entity+"/"+key
+            xpath = '/'+self._entity+'/'+key
             path_lst.append(xpath)
         return path_lst
 
@@ -159,15 +159,16 @@ class EntityFormatter():
         :return: 
         """
         xform_type = {
-            "VARCHAR": "string",
-            "DOUBLE": "integer",
-            "GEOMETRY": "geoshape",
-            "LOOKUP": "select1",
-            "MULTIPLE_SELECT": "select",
-            "ADMIN_SPATIAL_UNIT": "string",
-            "FOREIGN_KEY": "string",
-            "DATE": "date",
-            "DATETIME": "datetime"
+            'VARCHAR': 'string',
+            'DOUBLE': 'integer',
+            'GEOMETRY': 'geoshape',
+            'LOOKUP': 'select1',
+            'MULTIPLE_SELECT': 'select',
+            'BOOl': 'select',
+            'ADMIN_SPATIAL_UNIT': 'string',
+            'FOREIGN_KEY': 'string',
+            'DATE': 'date',
+            'DATETIME': 'datetime'
         }
 
         return xform_type.get(val)
@@ -180,10 +181,10 @@ class EntityFormatter():
         :return:
         """
         param_type = {
-            "start": "dateTime",
-            "end": "dateTime",
-            "today": "date",
-            "deviceid": "string"
+            'start': 'dateTime',
+            'end': 'dateTime',
+            'today': 'date',
+            'deviceid': 'string'
         }
 
         return param_type.get(val)

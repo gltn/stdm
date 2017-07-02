@@ -113,6 +113,7 @@ from stdm.ui.feature_details import DetailsTreeView
 from stdm.ui.social_tenure.str_editor import STREditor
 
 from stdm.ui.geoodk_converter_dialog import GeoODKConverter
+from stdm.ui.geoodk_profile_importer import ProfileInstanceRecords
 
 LOGGER = logging.getLogger('stdm')
 
@@ -835,8 +836,11 @@ class STDMQGISLoader(object):
         self.ModuleAct = QAction(QIcon(":/plugins/stdm/images/icons/table_designer.png"),\
                     QApplication.translate("WorkspaceConfig","Entities"), self.iface.mainWindow())
 
-        self.mobile_form_act = QAction(QIcon(":/plugins/stdm/images/icons/web.png"), \
-                    QApplication.translate("MobileFormGenerator", "Mobile Form"), self.iface.mainWindow())
+        self.mobile_form_act = QAction(QIcon(":/plugins/stdm/images/icons/mobile_collect.png"), \
+                    QApplication.translate("MobileFormGenerator", "Generate Mobile Form"), self.iface.mainWindow())
+        self.mobile_form_import = QAction(QIcon(":/plugins/stdm/images/icons/mobile_import.png"), \
+                                       QApplication.translate("MobileFormGenerator", "Mobile Data Importer"),
+                                       self.iface.mainWindow())
 
         # Add current profiles to profiles combobox
         self.load_profiles_combobox()
@@ -853,6 +857,7 @@ class STDMQGISLoader(object):
         self.spatialLayerManager.triggered.connect(self.spatialLayerMangerActivate)
         self.feature_details_act.triggered.connect(self.details_tree_view.activate_feature_details)
         self.mobile_form_act.triggered.connect(self.mobile_form_generator)
+        self.mobile_form_import.triggered.connect(self.mobile_form_importer)
 
         self.iface.mapCanvas().currentLayerChanged.connect(
             lambda :self.details_tree_view.activate_feature_details(False)
@@ -901,6 +906,9 @@ class STDMQGISLoader(object):
 
         mobileFormgeneratorCnt = ContentGroup.contentItemFromQAction(self.mobile_form_act)
         mobileFormgeneratorCnt.code = "d93981ef-dec4-4597-8495-2941ec2e9a52"
+
+        mobileFormImportCnt = ContentGroup.contentItemFromQAction(self.mobile_form_import)
+        mobileFormImportCnt.code = "1394547d-fb6c-4f6e-80d2-53407cf7b7d4"
 
         username = data.app_dbconn.User.UserName
 
@@ -1012,6 +1020,10 @@ class STDMQGISLoader(object):
         self.mobileXformgenCntGroup.addContentItem(mobileFormgeneratorCnt)
         self.mobileXformgenCntGroup.register()
 
+        self.ProfileInstanceCntGroup = ContentGroup(username, self.mobile_form_import)
+        self.ProfileInstanceCntGroup.addContentItem(mobileFormImportCnt)
+        self.ProfileInstanceCntGroup.register()
+
         # Add Design Forms menu and tool bar actions
         self.toolbarLoader.addContent(self.wzdConfigCntGroup)
         self.menubarLoader.addContent(self.wzdConfigCntGroup)
@@ -1058,6 +1070,9 @@ class STDMQGISLoader(object):
 
         self.toolbarLoader.addContent(self.mobileXformgenCntGroup)
         self.menubarLoader.addContent(self.mobileXformgenCntGroup)
+
+        self.toolbarLoader.addContent(self.ProfileInstanceCntGroup)
+        self.menubarLoader.addContent(self.ProfileInstanceCntGroup)
 
         #Load all the content in the container
         self.toolbarLoader.loadContent()
@@ -1824,8 +1839,16 @@ class STDMQGISLoader(object):
         Load the dialog to generate form for mobile data collection
         :return:
         """
-        converter_dlg = GeoODKConverter(self)
+        converter_dlg = GeoODKConverter(self.iface.mainWindow())
         converter_dlg.exec_()
+
+    def mobile_form_importer(self):
+        """
+        Load the dialog to generate form for mobile data collection
+        :return:
+        """
+        importer_dialog = ProfileInstanceRecords(self.iface.mainWindow())
+        importer_dialog.exec_()
 
     def _action_separator(self):
         """

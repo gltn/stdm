@@ -1,6 +1,8 @@
 <RCC>
   <qresource prefix="/plugins/stdm">
     <file>images/icons/warning_large.png</file>
+    <file>images/icons/mobile_collect.png</file>
+    <file>images/icons/mobile_import.png</file>
     <file>images/icons/edit_settings.png</file>
     <file>images/icons/help-content.png</file>
     <file>images/icons/info.png</file>

@@ -213,6 +213,16 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         doc_header.appendChild(self._header_model())
         return doc_header
 
+    def _header_title(self):
+        """
+        Create header title in the document that is required by GeoODK
+        :return:
+        """
+        title = self.create_node("h:title")
+        title_text = self.create_text_node(self.entity_read.profile_name())
+        title.appendChild(title_text)
+        return title
+
     def _header_model(self):
         """
         Create a header model that GeoODK writer requires to create form
@@ -225,16 +235,6 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         self.create_model_bind_attributes(doc_model)
         doc_model.appendChild(self.model_unique_id_generator())
         return doc_model
-
-    def _header_title(self):
-        """
-        Create header title in the document that is required by GeoODK
-        :return:
-        """
-        title = self.create_node("h:title")
-        title_text = self.create_text_node(self.entity_read.profile_name())
-        title.appendChild(title_text)
-        return title
 
     def intro_node(self):
         """

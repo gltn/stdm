@@ -14,6 +14,7 @@ from PyQt4.QtCore import (
     pyqtSignal,
 
 )
+from stdm.ui.notification import NotificationBar
 from stdm.data.configuration.stdm_configuration import (
         StdmConfiguration,
         Profile
@@ -36,7 +37,7 @@ CONFIG_FILE = HOME + '/.stdm/configuration.stc'
 class GeoODKConverter(QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         """Class Constructor."""
-        super(GeoODKConverter, self).__init__(parent=None)
+        super(GeoODKConverter, self).__init__(parent)
 
         # Set up the user interface from Designer.
         # After setupUI you can access any designer object by doing
@@ -54,7 +55,9 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         self.load_profiles()
 
         self.cboProf.currentIndexChanged.connect(self.cbo_text_changed)
-        self.buttonBox.accepted.connect(self.acceptDlg)
+        self.buttonBox.clicked.connect(self.acceptDlg)
+
+        self._notif_bar_str = NotificationBar(self.vlnotification)
 
 
     def load_config(self):
@@ -86,13 +89,15 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         Set Combo item data based on user selection
         :return:
         """
+        self._notif_bar_str.clear()
         self.entity_model = EntitiesModel()
         self.set_entity_model_view(self.entity_model)
         text = self.cboProf.currentText()
         if text != current_profile().name:
-            QMessageBox.information(self, QApplication.translate("MobileForms",
-                                                          "Error"), QApplication.translate("MobileForms",
-                                                        "Generate Forms works with current profile only"))
+            self._notif_bar_str.insertErrorNotification(
+                'Generate Forms works with current profile only'
+            )
+
             return
         self.populate_view_models(self.load_config().get(text))
 
@@ -120,7 +125,6 @@ class GeoODKConverter(QDialog, FORM_CLASS):
 
     def populate_view_models(self, profile):
         for entity in profile.entities.values():
-            # if item is "deleted", don't show it
             if entity.action == DbItem.DROP:
                 continue
 
@@ -145,8 +149,7 @@ class GeoODKConverter(QDialog, FORM_CLASS):
 
     def set_model_items_selectable(self):
         """
-        QMessageBox.critical(
-                self, "Error dia",str(self.entity_model.rowCount()))
+        Ensure that the entities  are checkable
         :return:
         """
         if self.entity_model.rowCount() >0:
@@ -157,7 +160,8 @@ class GeoODKConverter(QDialog, FORM_CLASS):
 
     def selected_entities_from_Model(self):
         """
-        Get selected entities for conversion to Xform from the user selection
+        Get selected entities for conversion
+        to Xform from the user selection
         :return:
         """
         entity_list =[]
@@ -173,18 +177,19 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         Generate Xform based on user selected entities
         :return:
         """
-
+        self._notif_bar_str.clear()
         user_entities = self.selected_entities_from_Model()
-        if len(user_entities)< 1:
-            QMessageBox.critical(
-                self, QApplication.translate("MobileForms","Entity Error"), \
-                             QApplication.translate("MobileForms","No Entity selected by user"))
+        if len(user_entities) == 0:
+            self._notif_bar_str.insertErrorNotification(
+                'No entity selected by user'
+            )
             return
-        else:
+
+        if len(user_entities) > 0:
             geoodk_writer = GeoodkWriter(user_entities)
             geoodk_writer.write_data_to_xform()
-            QMessageBox.information(
-                self, QApplication.translate("MobileForms", " Forms Generation"), \
-                QApplication.translate("MobileForms", "Successfully generated geoODK Form in the"
-                                             " following location: {}/.stdm".format(HOME)))
-            self.accept()
+            msg = 'File saved ' \
+                  'in the following location: {}/.stdm'
+            self._notif_bar_str.insertInformationNotification(
+                msg.format(HOME))
+            #self.accept()
