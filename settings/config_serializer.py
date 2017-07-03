@@ -558,6 +558,8 @@ class SocialTenureSerializer(object):
     END_TAG = 'End'
     MINIMUM = 'minimum'
     MAXIMUM = 'maximum'
+    SP_TENURE_MAPPINGS = 'SpatialUnitTenureMappings'
+    SP_TENURE_MAPPING = 'Mapping'
 
     @staticmethod
     def read_xml(child_element, profile, association_elements,
@@ -575,7 +577,7 @@ class SocialTenureSerializer(object):
         ).strip()
         spatial_unit = unicode(child_element.attribute(
             SocialTenureSerializer.SPATIAL_UNIT, '')
-        )
+        ).strip()
         layer_display = unicode(child_element.attribute(
             SocialTenureSerializer.LAYER_DISPLAY, '')
         )
@@ -591,8 +593,13 @@ class SocialTenureSerializer(object):
             profile.set_social_tenure_attr(SocialTenure.PARTY, parties)
 
         if spatial_unit:
-            profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT,
-                                       spatial_unit)
+            # Get list of spatial unit names
+            sp_units = spatial_unit.split(',')
+            sp_units = [sp.strip() for sp in sp_units]
+            profile.set_social_tenure_attr(
+                SocialTenure.SPATIAL_UNIT,
+                sp_units
+            )
 
         if layer_display:
             profile.social_tenure.layer_display_name = layer_display
@@ -633,6 +640,30 @@ class SocialTenureSerializer(object):
                 SocialTenure.END_DATE,
                 (end_min_dt, end_max_dt)
             )
+
+        # Set spatial unit tenure mapping
+        sp_tenure_mapping_els = child_element.elementsByTagName(
+            SocialTenureSerializer.SP_TENURE_MAPPINGS
+        )
+        if sp_tenure_mapping_els.count() > 0:
+            sp_tenure_mapping_node = sp_tenure_mapping_els.item(0)
+            sp_tenure_mapping_el = sp_tenure_mapping_node.toElement()
+
+            sp_t_mapping_nodes = sp_tenure_mapping_el.childNodes()
+            for i in range(sp_t_mapping_nodes.count()):
+                t_mapping_el = sp_t_mapping_nodes.item(i).toElement()
+                sp_unit = t_mapping_el.attribute(
+                    SocialTenureSerializer.SPATIAL_UNIT,
+                    ''
+                )
+                tenure_list = t_mapping_el.attribute(
+                    SocialTenureSerializer.TENURE_TYPE,
+                    ''
+                )
+                profile.social_tenure.add_spatial_tenure_mapping(
+                    sp_unit,
+                    tenure_list
+                )
 
     @staticmethod
     def _read_validity_date(str_element, tag_name, min_max):
@@ -694,15 +725,19 @@ class SocialTenureSerializer(object):
 
         social_tenure_element = document.createElement('SocialTenure')
 
-        social_tenure_element.setAttribute(SocialTenureSerializer.PARTY,
-                                           cs_party_names)
+        social_tenure_element.setAttribute(
+            SocialTenureSerializer.PARTY,
+            cs_party_names
+        )
 
-        sp_unit_name =''
-        if not social_tenure.spatial_unit is None:
-            sp_unit_name = social_tenure.spatial_unit.short_name
+        # Add spatial unit names
+        sp_unit_names = [sp.short_name for sp in social_tenure.spatial_units]
+        cs_sp_unit_names = ','.join(sp_unit_names)
 
-        social_tenure_element.setAttribute(SocialTenureSerializer.SPATIAL_UNIT,
-                sp_unit_name)
+        social_tenure_element.setAttribute(
+            SocialTenureSerializer.SPATIAL_UNIT,
+            cs_sp_unit_names
+        )
 
         social_tenure_element.setAttribute(SocialTenureSerializer.TENURE_TYPE,
                                     social_tenure.tenure_type_collection.short_name)
@@ -751,6 +786,26 @@ class SocialTenureSerializer(object):
                 SocialTenureSerializer.MAXIMUM,
                 social_tenure.validity_end_column.maximum
             )
+
+        # Set spatial unit mapping (v1.7)
+        sp_unit_tenure_mapping_root_el = document.createElement(
+            SocialTenureSerializer.SP_TENURE_MAPPINGS
+        )
+        for sp, tvl in social_tenure.spatial_units_tenure.iteritems():
+            t_mapping_el = document.createElement(
+                SocialTenureSerializer.SP_TENURE_MAPPING
+            )
+            t_mapping_el.setAttribute(
+                SocialTenureSerializer.SPATIAL_UNIT,
+                sp
+            )
+            t_mapping_el.setAttribute(
+                SocialTenureSerializer.TENURE_TYPE,
+                tvl.short_name
+            )
+            sp_unit_tenure_mapping_root_el.appendChild(t_mapping_el)
+
+        social_tenure_element.appendChild(sp_unit_tenure_mapping_root_el)
 
         parent_node.appendChild(social_tenure_element)
 

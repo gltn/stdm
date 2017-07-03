@@ -28,7 +28,6 @@ class TestConfigurationSerializer(TestCase):
 
         update_result = True
 
-        #Hardwire result
         self.assertTrue(update_result)
 
     def test_load(self):
@@ -36,7 +35,6 @@ class TestConfigurationSerializer(TestCase):
 
         read_result = True
 
-        #Hardwire result
         self.assertTrue(read_result)
 
 

@@ -23,6 +23,9 @@ import os
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
+# Import qgis.core so that the correct SIP versions are loaded in tests
+from qgis.core import *
+
 from PyQt4.QtGui import (
     QDesktopServices
 )
