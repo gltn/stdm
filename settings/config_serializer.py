@@ -1328,6 +1328,7 @@ class ValueListSerializer(EntitySerializerCollection):
                     tenure_doc_type_t_name = profile.social_tenure.supporting_doc. \
                         document_type_entity.short_name
                     vl_doc_type = profile.entity(tenure_doc_type_t_name)
+
                     if not vl_doc_type is None:
                         vl_doc_type.copy_from(value_list, True)
 

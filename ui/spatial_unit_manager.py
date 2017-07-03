@@ -330,8 +330,7 @@ class SpatialUnitManagerDockWidget(
         Add a layer when a name is supplied.
         :param layer_name: The stdm layer name
         :type layer_name: String
-        :return: None
-        :rtype: NoneType
+
         """
         index = self.stdm_layers_combo.findText(
             layer_name, Qt.MatchFixedString

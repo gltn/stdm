@@ -121,11 +121,6 @@ LOGGER = logging.getLogger('stdm')
 class STDMQGISLoader(object):
 
     viewSTRWin = None
-    STR_DISPLAY = QApplication.translate(
-        'STDMQGISLoader',
-        'New Social Tenure Relationship'
-    )
-
     def __init__(self, iface):
         self.iface = iface
 
@@ -186,7 +181,7 @@ class STDMQGISLoader(object):
         self.logoutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/logout.png"), \
         QApplication.translate("LogoutToolbarAction","Logout"), self.iface.mainWindow(),
         "EF3D96AF-F127-4C31-8D9F-381C07E855DD")
-        self.logoutAct.setShortcut(QKeySequence(Qt.Key_Delete))
+        self.logoutAct.setShortcut(QKeySequence(Qt.Key_Backspace))
 
         self.changePasswordAct = STDMAction(QIcon(":/plugins/stdm/images/icons/change_password.png"), \
         QApplication.translate("ChangePasswordToolbarAction","Change Password"), self.iface.mainWindow(),
@@ -356,6 +351,7 @@ class STDMQGISLoader(object):
                     "STDMQGISLoader",
                     "Error Loading Modules"
                 )
+
                 self.reset_content_modules_id(
                     title,
                     pe
@@ -923,10 +919,7 @@ class STDMQGISLoader(object):
         if self.user_entities() is not None:
             user_entities = dict(self.user_entities())
             for i, (name, short_name) in enumerate(user_entities.iteritems()):
-                display_name = QApplication.translate(
-                    "Entities",
-                    unicode(short_name).replace("_", " ").title()
-                )
+                display_name = unicode(short_name).replace("_", " ").title()
                 self._moduleItems[display_name] = name
 
         for k, v in self._moduleItems.iteritems():
@@ -948,7 +941,12 @@ class STDMQGISLoader(object):
                 self.moduleContentGroups.append(separator_group)
 
                 moduleCntGroup = self._create_table_content_group(
-                    self.STR_DISPLAY, username, 'new_str.png'
+                    QApplication.translate(
+                        'STDMQGISLoader',
+                        'New Social Tenure Relationship'
+                    ),
+                    username,
+                    'new_str.png'
                 )
                 self.moduleContentGroups.append(moduleCntGroup)
 
@@ -1432,20 +1430,20 @@ class STDMQGISLoader(object):
         defining a new social
         tenure relationship
         '''
-        try:
+        # try:
 
-            str_editor = STREditor()
-            str_editor.open()
+        str_editor = STREditor()
+        str_editor.open()
 
-        except Exception as ex:
-            QMessageBox.critical(
-                self.iface.mainWindow(),
-                QApplication.translate(
-                    'STDMQGISLoader',
-                    'Error Loading the STR Editor'
-                ),
-                str(ex)
-            )
+        # except Exception as ex:
+        #     QMessageBox.critical(
+        #         self.iface.mainWindow(),
+        #         QApplication.translate(
+        #             'STDMQGISLoader',
+        #             'Error Loading the STR Editor'
+        #         ),
+        #         str(ex)
+        #     )
 
     def onManageAdminUnits(self):
         '''
@@ -1598,9 +1596,12 @@ class STDMQGISLoader(object):
         #Method to load custom forms
         tbList = self._moduleItems.values()
 
-        dispName=QAction.text()
+        dispName = QAction.text()
 
-        if dispName == self.STR_DISPLAY:
+        if dispName == QApplication.translate(
+                'STDMQGISLoader',
+                'New Social Tenure Relationship'
+        ):
 
             if self.current_profile is None:
                 self.default_profile()
@@ -1615,7 +1616,7 @@ class STDMQGISLoader(object):
 
 
         else:
-            table_name = self._moduleItems.get(dispName)
+            table_name = self._moduleItems[dispName]
             if self.current_profile is None:
                 self.default_profile()
                 return
@@ -1625,7 +1626,7 @@ class STDMQGISLoader(object):
             database_status = self.entity_table_checker(
                 sel_entity
             )
-
+            QApplication.processEvents()
             try:
                 if table_name in tbList and database_status:
                     cnt_idx = getIndex(
@@ -1823,11 +1824,7 @@ class STDMQGISLoader(object):
 
     def reset_content_modules_id(self, title, message_text):
         return QMessageBox.critical(
-            self.iface.mainWindow(),
-            QApplication.translate(
-                "STDMQGISLoader",
-                title
-            ),
+            self.iface.mainWindow(), title,
             QApplication.translate(
                 "STDMQGISLoader",
                 unicode(message_text)

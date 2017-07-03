@@ -1,6 +1,25 @@
-# Change Log
+    # Change Log
 All notable changes of the Social Tenure Domain Model(STDM) is documented in this file.
+## [1.6.2] - 2017-05-29
+### Fixed
+- **Social Tenure Relationship**: Fixed Edit STR issue of Party, STR Type and supporting document not working.
+- **Import Data**: Fixed lookup values and virtual not showing issue.
 
+## [1.6.1] - 2017-05-21
+### Fixed
+- **Database and Configuration**: Fixed the draft configuration not deleting automatically issue.
+- **Database and Configuration**: Fixed inability to delete lookup values.
+- **Database and Configuration**: Fixed inability to save lookup values to the database.
+
+## [1.6.0] - 2017-05-01
+### Fixed
+- **Language**: Added full translation of the plugin in French, German and Portuguese.
+- **Language**: Fixed translation issues in different modules of the plugin.
+- **Spatial Entity Details**: Fixed save children error when there are no child entities.
+- **Login**: Fixed key error changing database setting before first time login.
+
+### Changed
+- **Social Tenure Relationship**: Removed deep inheritances.
 
 ## [1.5.2] - 2017-03-31
 ### Fixed

@@ -129,7 +129,7 @@ class ConfigurationUpdater(QObject):
         version = self.version()
         updater = self.version_updater(version)
 
-        if not updater is None:
+        if updater is not None:
             self.append_log(
                 'Found updater - {}.'.format(updater)
             )
@@ -150,7 +150,6 @@ class ConfigurationUpdater(QObject):
             return True, self.document
 
         else:
-
             self.append_log(
                 'No updater found for this configuration '
                 'with version number {}.'.format(version)
@@ -216,7 +215,6 @@ class ConfigurationVersionUpdater(QObject):
         self.config = StdmConfiguration.instance()
         self.config_utils = ConfigurationUtils(document)
         self.profiles_detail = OrderedDict()
-
 
     @classmethod
     def register(cls):
@@ -341,7 +339,7 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
         self.version_updated.emit(self.document)
         # TODO update the dom_document version in the next version
         # Not the latest version and found updater for the next version
-        if not self.NEXT_UPDATER is None and \
+        if self.NEXT_UPDATER is not None and \
                         self.config.VERSION > self.TO_VERSION:
             next_updater = self.NEXT_UPDATER(self.document, self.log_file)
             message = QApplication.translate(

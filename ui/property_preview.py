@@ -234,8 +234,10 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         )
 
         sp_unit_manager.add_layer_by_name(lyr)
+        QApplication.processEvents()
 
         if geom is not None:
+
             self.highlight_spatial_unit(
                 geom, self.local_map.canvas
             )

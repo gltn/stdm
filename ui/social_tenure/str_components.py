@@ -276,13 +276,16 @@ class Party(ComponentUtility):
         """
         Initialize the party page
         """
-
+        QApplication.processEvents()
         if self.selected_party is None:
             entity_config = self._load_entity_config(self.party_1)
         else:
             entity_config = self._load_entity_config(self.selected_party)
+
+        QApplication.processEvents()
         if entity_config is None:
             return
+
         self.party_fk_mapper = self._create_fk_mapper(
             entity_config,
             self.container_box,
@@ -297,13 +300,11 @@ class Party(ComponentUtility):
 
 class SpatialUnit(ComponentUtility):
 
-    def __init__(self, box, mirror_map, notification_bar):
+    def __init__(self, box, notification_bar):
         """
         Handles the loading of spatial ForeignKeyMapper and the preview map.
         :param box: The container widget of the component.
         :type box: QWidget
-        :param mirror_map: The preview map object.
-        :type mirror_map: Object
         :param notification_bar: The NotificationBar object that
         displays notification.
         :type notification_bar: Object
@@ -311,12 +312,11 @@ class SpatialUnit(ComponentUtility):
         ComponentUtility.__init__(self)
         self.container_box = box
         self.notification_bar = notification_bar
-        self.mirror_map = mirror_map
         self.init_spatial_unit()
-        if self.spatial_unit_fk_mapper is not None:
-            self.spatial_unit_fk_mapper.afterEntityAdded.connect(
-                self.draw_spatial_unit
-            )
+        # if self.spatial_unit_fk_mapper is not None:
+            # self.spatial_unit_fk_mapper.afterEntityAdded.connect(
+            #     self.draw_spatial_unit
+            # )
 
     def init_spatial_unit(self):
         """
@@ -329,17 +329,18 @@ class SpatialUnit(ComponentUtility):
         vertical_layout = QVBoxLayout()
         vertical_layout.addWidget(self.spatial_unit_fk_mapper)
         self.container_box.setLayout(vertical_layout)
+    #
+    # def draw_spatial_unit(self, model):
+    #     """
+    #     Render the geometry of the given spatial unit in the spatial view.
+    #     :param model:SQLAlchemy object representing a feature.
+    #     :type model: SQLAlchemy model object
+    #     """
+    #     self.notify_no_base_layers()
+    #     QApplication.processEvents()
+    #     self.mirror_map.draw_spatial_unit(model)
 
-    def draw_spatial_unit(self, model):
-        """
-        Render the geometry of the given spatial unit in the spatial view.
-        :param model:SQLAlchemy object representing a feature.
-        :type model: SQLAlchemy model object
-        """
-        self._notify_no_base_layers()
-        self.mirror_map.draw_spatial_unit(model)
-
-    def _notify_no_base_layers(self):
+    def notify_no_base_layers(self):
         """
         Checks if there are any base layers that will be used when
         visualizing the spatial units. If there are no base layers

@@ -24,16 +24,17 @@ from PyQt4.QtGui import *
 
 from stdm.data.configfile_paths import FilePaths
 
+
 class LicenseDocument(object):
     def __init__(self):
         self.file = None
         self.filehandler = FilePaths()
-        
+
     def open_license_file(self):
         '''get the path to the license file'''
         self.file = self.filehandler.STDMLicenseDoc()
-        #self.file=docFile
-    
+        # self.file=docFile
+
     def read_license_info(self):
         '''read license information for user '''
         try:
@@ -43,9 +44,9 @@ class LicenseDocument(object):
             return lic_data
         except IOError as ex:
             raise ex
-        
+
     def text_font(self):
         '''set document font'''
-        doc_font=QFont('Helvetica [Cronyx]',10,QFont.Bold)
-        #docFont.setBold(True)
+        doc_font = QFont('Helvetica [Cronyx]', 10, QFont.Bold)
+        # docFont.setBold(True)
         return doc_font

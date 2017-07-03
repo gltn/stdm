@@ -186,7 +186,7 @@
        <item row="0" column="1">
         <widget class="QRadioButton" name="rbOSM">
          <property name="text">
-          <string>Open Street Maps</string>
+          <string>OpenStreetMaps</string>
          </property>
         </widget>
        </item>

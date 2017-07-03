@@ -63,11 +63,734 @@ from stdm.utils.util import (
 )
 from str_data import STRDataStore, STRDBHandler
 
+class BindSTREditor():
+    """
+    Binds the STR components tree items with the stack widgets
+    containing the component widgets.
+    """
 
-class InitSTREditor(QDialog, Ui_STREditor):
+    def __init__(self, editor):
+        """
+        Initializes the class and the super class. 
+        """
+        self.editor = editor
+        editor.view_selection.currentChanged.connect(
+            self.bind_component_to_tree_view
+        )
+
+    def bind_component_to_tree_view(self, current, previous):
+        """
+        Bind all components to the tree view component items.
+        :param current: The current item index.
+        :type current: QModelIndex
+        :param previous: The previous  item index.
+        :type previous: QModelIndex
+        """
+        selected_item = self.editor.tree_view_model.itemFromIndex(current)
+
+        if selected_item is None:
+            return
+        str_number = selected_item.data()
+
+        if selected_item.text() == '{} {}' \
+                .format(self.editor.str_text, str_number):
+            self.bind_str()
+
+        if selected_item.text() == self.editor.party_text:
+            self.bind_party()
+
+        if selected_item.text() == self.editor.spatial_unit_text:
+            self.bind_spatial_unit()
+
+        if selected_item.text() == self.editor.tenure_type_text:
+            self.bind_tenure_type()
+
+        if selected_item.text() == self.editor.supporting_doc_text:
+            self.bind_supporting_documents(
+                str_number
+            )
+        if selected_item.text() == self.editor.validity_period_text:
+            self.bind_validity_period()
+
+    def bind_str(self):
+        """
+        Binds the STR introduction page to the STR root node item.
+        """
+        self.editor.component_container.setCurrentIndex(0)
+        header = QApplication.translate(
+            'BindSTREditor',
+            'The Social Tenure Relationship'
+        )
+        self.editor.description_lbl.setText(header)
+
+    def bind_party(self):
+        """
+        Binds the party item to the party component widget and description.
+        """
+        QTimer.singleShot(50, self.editor.init_str_type_component)
+        QTimer.singleShot(50, self.editor.init_spatial_unit_component)
+        self.editor.component_container.setCurrentIndex(1)
+        header = QApplication.translate(
+            'BindSTREditor',
+            'Select the party by searching through the existing record.'
+        )
+        self.editor.description_lbl.setText(header)
+
+    def bind_spatial_unit(self):
+        """
+        Binds the party item to the party component widget and description.
+        """
+        self.editor.notice.clear()
+        self.editor.component_container.setCurrentIndex(2)
+        self.editor.mirror_map.set_iface(self.editor.iface)
+        self.editor.mirror_map.refresh_canvas_layers()
+        self.editor.mirror_map.load_web_map()
+        header = QApplication.translate(
+            'BindSTREditor',
+            'Select the spatial unit that could be parcel, '
+            'land or building, structure and so on.'
+        )
+        self.editor.description_lbl.setText(header)
+
+    def bind_tenure_type(self):
+        """
+        Binds the tenure type item to the party component widget
+        and description.
+        """
+        self.editor.notice.clear()
+        self.editor.component_container.setCurrentIndex(3)
+        QTimer.singleShot(50, self.editor.init_supporting_documents)
+        QTimer.singleShot(50, self.editor.init_validity_period_component)
+
+        header = QApplication.translate(
+            'BindSTREditor',
+            'Select the type of relationship that the specified party '
+            'has with the selected spatial unit. Optionally you can '
+            'specify the tenure share. '
+        )
+        self.editor.description_lbl.setText(header)
+
+    def bind_supporting_documents(self, str_number):
+        """
+        Binds the supporting document item to the party component
+        widget and description.
+        :param str_number: The current STR record number
+        :type str_number: Integer
+        """
+        self.editor.notice.clear()
+        self.editor.component_container.setCurrentIndex(4)
+
+        self.editor.supporting_doc_signals(str_number)
+        header = QApplication.translate(
+            'BindSTREditor',
+            'Upload one or more supporting documents under '
+            'each document types.'
+        )
+        if len(self.editor.data_store[str_number].party) > 1:
+            explanation = QApplication.translate(
+                'BindSTREditor',
+                'The uploaded document will be copied '
+                'for each party record selected.'
+
+            )
+            self.editor.description_lbl.setText('{} {}'.format(
+                header, explanation
+            ))
+        else:
+            self.editor.description_lbl.setText(header)
+
+    def bind_validity_period(self):
+        """
+        Binds the validity period item to the party component widget
+        and description.
+        """
+        self.editor.notice.clear()
+        self.editor.component_container.setCurrentIndex(5)
+
+        header = QApplication.translate(
+            'BindSTREditor',
+            'Specify the validity range of dates. The year and month option '
+            'is used to quickly set the date ranges. '
+        )
+        self.editor.description_lbl.setText(header)
+
+
+class SyncSTREditorData():
     """
-    Initializes the STR Editor by inheriting the UI of the STREditor. 
+    Synchronizes data in the data store to each components
+    when the tree items are clicked.
     """
+
+    def __init__(self, editor):
+        """
+        Initializes SyncSTREditorData and BindSTREditor. 
+        """
+        self.editor = editor
+        editor.view_selection.currentChanged.connect(
+            self.sync_data
+        )
+
+    def sync_data(self, current, previous):
+        """
+        Synchronizes all components data store to the tree
+        view component items.
+        :param current: The current item index.
+        :type current: QModelIndex
+        :param previous: The previous  item index.
+        :type previous: QModelIndex
+        """
+        selected_item = self.editor.tree_view_model.itemFromIndex(current)
+        if selected_item is None:
+            return
+        str_number = selected_item.data()
+
+        data_store = self.editor.data_store[str_number]
+
+        if selected_item.text() == self.editor.party_text:
+            self.toggle_party_models(
+                self.editor.party_component.party_fk_mapper, data_store
+            )
+        if selected_item.text() == self.editor.spatial_unit_text:
+            self.toggle_spatial_unit_models(
+                self.editor.spatial_unit_component.spatial_unit_fk_mapper,
+                data_store
+            )
+        if selected_item.text() == self.editor.tenure_type_text:
+            self.toggle_str_type_models(data_store, str_number)
+
+        if selected_item.text() == self.editor.supporting_doc_text:
+            self.toggle_supporting_doc(
+                data_store, str_number
+            )
+        if selected_item.text() == self.editor.validity_period_text:
+            self.toggle_validity_period(data_store, str_number)
+
+    def toggle_party_models(self, fk_mapper, data_store):
+        """
+        Toggles party data store and insert it to foreign key mapper
+        of party entity.
+        :param fk_mapper: The foreign key mapper object
+        :type fk_mapper: Object
+        :param data_store: The current STR data store
+        :type data_store: Object
+        """
+        fk_mapper.remove_rows()
+        for i, model_obj in enumerate(data_store.party.values()):
+            fk_mapper.insert_model_to_table(
+                model_obj
+            )
+
+    def toggle_spatial_unit_models(self, fk_mapper, data_store):
+        """
+        Toggles spatial  data store and insert it to foreign key mapper
+        of party entity.
+        :param fk_mapper: The foreign key mapper object
+        :type fk_mapper: Object
+        :param data_store: The current STR data store
+        :type data_store: Object
+        """
+        if fk_mapper is None:
+            return
+        fk_mapper.remove_rows()
+
+        for i, model_obj in enumerate(
+                data_store.spatial_unit.values()
+        ):
+            fk_mapper.insert_model_to_table(
+                model_obj
+            )
+
+    def toggle_str_type_models(self, data_store, str_number):
+        """
+        Toggles the STR type component data store when the tenure information
+        treeview item is clicked.
+        :param data_store: The current data store.
+        :type data_store: Object
+        :param str_number: The current STR root number.
+        :type str_number: Integer
+        """
+        party_count = len(data_store.party)
+        # If new party row is added after spinboxes values are set,
+        # reset spinbox values into equal values based on the new count
+        if str_number in self.editor.party_count.keys():
+
+            if len(self.editor.party_count) > 0 and \
+                            party_count > \
+                            self.editor.party_count[str_number]:
+                self.editor.reset_share_spinboxes(data_store)
+
+        self.editor.party_count[str_number] = party_count
+        self.editor.str_type_component.remove_table_data(
+            self.editor.str_type_component.str_type_table,
+            party_count
+        )
+        # ## select the first column (STR Type)
+        self.editor.str_type_component.str_type_table.selectColumn(0)
+
+        for i, (party_id, str_type_id) in \
+                enumerate(data_store.str_type.iteritems()):
+            self.editor.str_type_component.add_str_type_data(
+                self.editor.copied_party_row[party_id],
+                str_type_id,
+                i
+            )
+            self.editor.init_str_type_signal(
+                data_store, party_id, str_number
+            )
+
+        self.editor.init_share_spinboxes(data_store)
+
+    def toggle_supporting_doc(self, data_store, str_number):
+        """
+        Toggles the supporting document component data store
+        when the supporting documents treeview item is clicked.
+        :param data_store: The current data store.
+        :type data_store: Object
+        :param str_number: The current STR root number.
+        :type str_number: Integer
+        """
+        party_count = len(data_store.party)
+        # update party count
+        self.editor.supporting_doc_component.party_count(party_count)
+        # update the current widget container to be used.
+        self.editor.supporting_doc_component.update_container(str_number)
+
+    def toggle_validity_period(self, data_store, str_number):
+        """
+        Toggles the validity period component data store
+        when the validity period treeview item is clicked.
+        :param data_store: The current data store
+        :type data_store: STRDataStore
+        :param str_number: The current STR root number.
+        :type str_number: Integer
+        """
+        from_date = data_store.validity_period['from_date']
+        to_date = data_store.validity_period['to_date']
+
+        if from_date is None or to_date is None:
+            from_date = data_store.validity_period['from_date'] = \
+                self.editor.validity_from_date.date()
+            to_date = data_store.validity_period['to_date'] = \
+                self.editor.validity_to_date.date()
+
+        self.editor.validity_from_date.setDate(from_date)
+        self.editor.validity_to_date.setDate(to_date)
+
+
+class ValidateSTREditor():
+    """
+    Validates the STR editor. Validates user inputs and the
+    enabling of buttons and treeview items.
+    """
+
+    def __init__(self, editor):
+        """
+        Initializes ValidateSTREditor and SyncSTREditorData. 
+        """
+        self.editor = editor
+        editor.view_selection.currentChanged.connect(
+            self.validate_page
+        )
+        editor.tree_view.clicked.connect(
+            self.validation_error
+        )
+        self._warning_message = QApplication.translate(
+            'ValidateSTREditor', 'You should first select a '
+                                 'record in the enabled items to open the '
+                                 'this component.'
+        )
+
+    def validate_page(self, current, previous):
+        """
+        Validates str components pages when tree item is clicked.
+        :param current: The newly clicked item index
+        :type current: QModelIndex
+        :param previous: The previous item index
+        :type previous: QModelIndex
+        """
+        selected_item = self.editor.tree_view_model.itemFromIndex(current)
+        if selected_item is None:
+            return
+        str_number = selected_item.data()
+        data_store = self.editor.data_store[str_number]
+
+        if selected_item.text() == self.editor.party_text:
+            self.validate_party(data_store, selected_item)
+
+        if selected_item.text() == self.editor.spatial_unit_text:
+            self.validate_spatial_unit(data_store, selected_item)
+
+        if selected_item.text() == self.editor.tenure_type_text:
+            self.validate_str_type(data_store, selected_item)
+
+        if selected_item.text() == self.editor.supporting_doc_text:
+            self.enable_save_button()
+
+    def validate_party(self, data_store, selected_item):
+        """
+        Validates the party length and enables and disables buttons and
+        the next treeview items.
+        :param data_store: The current data store object.
+        :type data_store: Object
+        :param selected_item: The currently selected treeview item/ party item.
+        :type selected_item: QStandardItem
+        """
+        self.editor.party_component.party_fk_mapper.afterEntityAdded.connect(
+            lambda: self.validate_party_length(data_store, selected_item)
+        )
+        self.editor.party_component.party_fk_mapper.deletedRows.connect(
+            lambda: self.validate_party_length(data_store, selected_item)
+        )
+
+    def validate_spatial_unit(self, data_store, selected_item):
+        """
+        Validates the spatial unit length and enables and disables buttons and
+        the next treeview items.
+        :param data_store: The current data store object.
+        :type data_store: Object
+        :param selected_item: The currently selected treeview item/ spatial
+        unit item.
+        :type selected_item: QStandardItem
+        """
+        if self.editor.spatial_unit_component.spatial_unit_fk_mapper is None:
+            return
+        self.editor.spatial_unit_component.spatial_unit_fk_mapper. \
+            afterEntityAdded.connect(
+            lambda: self.enable_next(selected_item, 2)
+        )
+        self.editor.spatial_unit_component.spatial_unit_fk_mapper. \
+            deletedRows.connect(
+            lambda: self.validate_spatial_unit_length(
+                data_store, selected_item
+            )
+        )
+        self.editor.spatial_unit_component.spatial_unit_fk_mapper. \
+            beforeEntityAdded.connect(
+            self.validate_party_count
+        )
+        self.editor.spatial_unit_component.spatial_unit_fk_mapper. \
+            afterEntityAdded.connect(
+            self.validate_non_multi_party
+        )
+
+    def validate_str_type(self, data_store, selected_item):
+        """
+        Validates the STR type entry and enables and disables buttons and
+        the next treeview items.
+        :param data_store: The current data store object.
+        :type data_store: Object
+        :param selected_item: The currently selected treeview item/ STR type
+        item.
+        :type selected_item: QStandardItem
+        """
+        self.editor.str_type_updated.connect(
+            lambda: self.validate_str_type_length(
+                data_store, selected_item
+            )
+        )
+
+    def enable_next(self, selected_item, child_row, enable=True):
+        """
+        Enables or disables the next treeview item.
+        :param selected_item: The currently selected item.
+        :type selected_item: QStandardItem
+        :param child_row: The row number of an item to be enabled or disabled.
+        :type child_row: Integer
+        :param enable: A boolean to enable and disable the next treeview item.
+        :type enable: Boolean
+        """
+        try:
+            str_root = selected_item.parent()
+
+            if str_root is None:
+                return
+            next_item = str_root.child(child_row, 0)
+            next_item.setEnabled(enable)
+
+            self.enable_save_button()
+        except Exception:
+            pass
+
+    def enable_save_button(self):
+        """
+        Enables or disables the Save button of the STR editor based on the
+        validity status of the editor.
+        """
+        result = self.str_validity_status()
+
+        self.editor.buttonBox.button(QDialogButtonBox.Save).setEnabled(result)
+
+    def str_validity_status(self):
+        """
+        Determines the validity status of the editor by checking the whether
+        the treeview items are enabled or not.
+        """
+        for row in range(self.editor.tree_view_model.rowCount()):
+            root = self.editor.tree_view_model.item(row)
+            for child_row in range(root.rowCount()):
+                child = root.child(child_row, 0)
+                if not child.isEnabled():
+                    return False
+        return True
+
+    def validate_party_length(self, store, item):
+        """
+        Validates the length of party component data.
+        :param store: The current data store.
+        :type store: Object
+        :param item: The current item
+        :type item: QStandardItem
+        """
+        if len(store.party) < 1:
+            self.enable_next(item, 1, False)
+            self.enable_next(item, 2, False)
+            self.enable_next(item, 3, False)
+        else:
+            self.enable_next(item, 1)
+            if len(store.spatial_unit) > 0:
+                self.enable_next(item, 2)
+            else:
+                self.enable_next(item, 3, False)
+            self.enable_save_button()
+
+    def validate_spatial_unit_length(self, store, item):
+        """
+        Validates the length of party component data.
+        :param store: The current data store.
+        :type store: Object
+        :param item: The current item
+        :type item: QStandardItem
+        """
+        if len(store.spatial_unit) < 1:
+            self.enable_next(item, 2, False)
+        else:
+            self.enable_next(item, 2)
+            self.enable_save_button()
+
+    def validate_str_type_length(self, store, selected_item):
+        """
+        Validates the length of party component data.
+        :param store: The current data store.
+        :type store: Object
+        :param item: The current item
+        :type item: QStandardItem
+        """
+        if 0 in store.str_type.values() or \
+                        None in store.str_type.values():
+            self.enable_next(selected_item, 3, False)
+        else:
+
+            self.enable_next(selected_item, 3)
+            self.enable_next(selected_item, 4)
+            self.enable_save_button()
+
+    def validation_error(self, index):
+        """
+        Validates the length of party component data.
+        :param store: The current data store.
+        :type store: Object
+        :param item: The current item
+        :type item: QStandardItem
+        """
+        item = self.editor.tree_view_model.itemFromIndex(index)
+        if item is None:
+            return
+        if not item.isEnabled():
+            # warning = 'You should first select a ' \
+            #           'record in the enabled items to open the ' \
+            #           '%s component.' % item.text()
+
+            self.editor.notice.clear()
+            self.editor.notice.insertWarningNotification(
+                self._warning_message
+            )
+
+    def validate_party_count(self, spatial_unit_obj):
+        """
+        Validates the number of party assigned to a spatial unt.
+        :param spatial_unit_obj: Spatial unit model object
+        :type spatial_unit_obj: SQL Alchemy Model Object
+        :return: True if the count is ok and false if not.
+        :rtype: Boolean
+        """
+        # Get entity browser notification bar
+        fk_mapper = self.editor.sender()
+        browser_notif = None
+        if isinstance(fk_mapper, ForeignKeyMapper):
+            # Insert error in entity browser too
+            browser_notif = NotificationBar(
+                fk_mapper._entitySelector.vlNotification
+            )
+            self.remove_browser_notice(fk_mapper)
+
+        usage_count = self.spatial_unit_usage_count(
+            spatial_unit_obj
+        )
+        # If entry is found, show info or error
+        if usage_count > 0:
+            self.editor.notice.clear()
+            if self.editor.social_tenure.multi_party:
+                QTimer.singleShot(
+                    10100, lambda: self.remove_browser_notice(fk_mapper)
+                )
+                self.allow_multi_party_info(
+                    browser_notif, usage_count
+                )
+                return True
+            else:
+                QTimer.singleShot(
+                    40, lambda: self.remove_browser_notice(fk_mapper)
+                )
+                QTimer.singleShot(
+                    100, lambda: self.disallow_multi_party_error(
+                        browser_notif, fk_mapper
+                    )
+                )
+                return False
+        else:
+            return True
+
+    def disallow_multi_party_error(self, browser_notif, fk_mapper):
+        """
+        Prevents user from proceeding if multi-party is disabled and a
+        spatial unit is used more than once.
+        :param browser_notif: Foreign key mapper entity browser
+        notification bar.
+        :type browser_notif: NotificationBar
+        :param fk_mapper: The ForeignKeyMapper object of spatial unit entity.
+        :type fk_mapper: Object
+        """
+        QTimer.singleShot(
+            10100, lambda: self.remove_browser_notice(fk_mapper)
+        )
+        spatial_unit = format_name(
+            self.editor.spatial_unit.short_name
+        )
+        if not self.editor.party is None:
+            party = format_name(
+                self.editor.party.short_name
+            )
+        else:
+            party = 'party'
+
+        msg = QApplication.translate(
+            'ValidateSTREditor',
+            'Unfortunately, this {} has already been '
+            'assigned to a {}.'.format(spatial_unit, party)
+        )
+        self.editor.notice.insertErrorNotification(msg)
+        if isinstance(fk_mapper, ForeignKeyMapper):
+            if browser_notif is not None:
+                browser_notif.insertErrorNotification(msg)
+
+    def allow_multi_party_info(self, browser_notif, usage_count):
+        """
+        When multi-party is allowed shows only information notification when
+        a spatial unit is used by more than one party.
+        :param browser_notif: Foreign key mapper entity browser
+        notification bar.
+        :type browser_notif: NotificationBar
+        :param usage_count: The number of parties that are already assigned to
+        a spatial unit.
+        :type usage_count: Integer
+        """
+        if not self.editor.party is None:
+            party = format_name(self.editor.party.short_name)
+        else:
+            party = 'party'
+        occupant = '%s(s)' % format_name(party)
+        msg = QApplication.translate(
+            'ValidateSTREditor',
+            'This {} has already been assigned to {} {}.'.format(
+                format_name(self.editor.spatial_unit.short_name),
+                str(usage_count),
+                occupant
+            )
+        )
+        self.editor.notice.insertInformationNotification(msg)
+        browser_notif.insertInformationNotification(msg)
+
+    def remove_browser_notice(self, fk_mapper):
+        """
+        Removes the foreign key mapper entity browser notification bar.
+        :param fk_mapper: ForeignKeyMapper object of spatial unit entity.
+        :type fk_mapper: Object
+        """
+        layout = fk_mapper._entitySelector.vlNotification
+
+        for i in reversed(range(layout.count())):
+            notif = layout.itemAt(i).widget()
+            for lbl in notif.findChildren(QWidget):
+                layout.removeWidget(lbl)
+                lbl.setVisible(False)
+                lbl.deleteLater()
+
+            notif.setParent(None)
+
+    def validate_non_multi_party(self, spatial_unit_obj):
+        """
+        Removes added row of spatial unit if the record
+        is already linked to another party.
+        :param spatial_unit_obj:The spatial unit model object
+        :type spatial_unit_obj: SQLAlchemy model Object
+        """
+        if not self.editor.social_tenure.multi_party:
+            usage_count = self.spatial_unit_usage_count(
+                spatial_unit_obj
+            )
+
+            if usage_count > 0:
+                fk_mapper = self.editor.sender()
+                self.editor.spatial_unit_component.remove_table_data(
+                    fk_mapper._tbFKEntity, 1
+                )
+                store = self.editor.current_data_store()
+                store.spatial_unit.clear()
+
+                item = self.editor.current_item()
+                self.enable_next(item, 2, False)
+                self.validate_spatial_unit_length(
+                    store, item
+                )
+
+    def spatial_unit_current_usage_count(self, current_id):
+        """
+        Gets the current usage count in this DataStore objects
+        by looping through self.data_store.
+
+        :return: usage count of spatial unit
+        :rtype: Integer
+        """
+        spatial_unit_ids = []
+        for data_store in self.editor.data_store.values():
+            for spatial_unit_obj in data_store.spatial_unit.values():
+                spatial_unit_ids.append(spatial_unit_obj.id)
+
+        if spatial_unit_ids.count(current_id) > 1:
+            return spatial_unit_ids.count(current_id)
+        elif spatial_unit_ids.count(current_id) <= 1:
+            return 0
+
+    def spatial_unit_usage_count(self, model_obj):
+        """
+        Gets the count of spatial unit usage in the database.
+        :param model_obj: Spatial unit model object
+        :type model_obj: SQLAlchemy model Object
+        """
+        # returns the number of entries for a specific parcel.
+        str_obj = self.editor.str_model()
+        usage_count = str_obj.queryObject(
+            [func.count().label('spatial_unit_count')]
+        ).filter(
+            self.editor.str_model.spatial_unit_id == model_obj.id
+        ).first()
+        # TODO add a session rollback here and show error.
+        current = self.spatial_unit_current_usage_count(model_obj.id)
+        return current + usage_count.spatial_unit_count
+
+
+class STREditor(QDialog, Ui_STREditor):
+
     party_init = pyqtSignal()
     spatial_unit_init = pyqtSignal()
     validity_init = pyqtSignal()
@@ -78,15 +801,20 @@ class InitSTREditor(QDialog, Ui_STREditor):
 
     def __init__(self):
         """
-        Initializes the STR editor.
+        Wrapper class for STR Editor for new STR record editor user interface.
         """
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
+        """
+         Initializes the STR editor.
+         """
+        self._init_tree_view()
+
         self.iface = iface
         self.str_number = 0
         self.data_store = OrderedDict()
         self.party_item_index = None
-        self._init_tree_view()
+
         self.supporting_doc_component = None
         self.str_items = {}
         self.add_str_tree_node()
@@ -113,11 +841,16 @@ class InitSTREditor(QDialog, Ui_STREditor):
         self.parties = self.social_tenure.parties
 
         self.str_type_component = None
-
-        QTimer.singleShot(22, self.init_party_component)
+        self._init_str_editor()
+        self.init_party_component()
+        QTimer.singleShot(33, self._party_signals)
 
         self.copied_party_row = OrderedDict()
-        self._init_str_editor()
+
+        self.str_editor_signals()
+        self.bind = BindSTREditor(self)
+        self.sync = SyncSTREditorData(self)
+        self.validate = ValidateSTREditor(self)
 
     def _init_str_editor(self):
         """
@@ -178,23 +911,6 @@ class InitSTREditor(QDialog, Ui_STREditor):
         )
         self.view_selection = self.tree_view.selectionModel()
 
-    def _party_signals(self):
-        """
-        Connects party and str_type
-        related slots and signals.
-        """
-        self.party_component.party_fk_mapper.beforeEntityAdded.connect(
-            lambda model: self.set_party_data(model)
-        )
-        self.party_component.party_fk_mapper.afterEntityAdded.connect(
-            lambda model, row_number: self.set_str_type_data(
-                0, model.id, row_number
-            )
-        )
-        self.party_component.party_fk_mapper.deletedRows.connect(
-            self.remove_party_str_row_model
-        )
-
     def remove_party_str_row_model(self, row_numbers):
         """
         Removes party and str_type row from the data store.
@@ -218,7 +934,9 @@ class InitSTREditor(QDialog, Ui_STREditor):
         )
 
         self.reset_share_spinboxes(current_store)
-        self.validate_str_type_length(current_store, self.current_item())
+        self.validate.validate_str_type_length(
+            current_store, self.current_item()
+        )
 
     def top_description_visibility(self, set_visible):
         """
@@ -239,6 +957,10 @@ class InitSTREditor(QDialog, Ui_STREditor):
         If party is none, the default party loads.
         :type party: Object
         """
+        if party is not None:
+            print 'emited party init'
+            self.party_init.emit()
+
         if self.party_component is not None:
             return
 
@@ -251,13 +973,6 @@ class InitSTREditor(QDialog, Ui_STREditor):
 
         self.str_model, self.str_doc_model = \
             self.party_component.str_doc_models()
-        self._party_signals()
-        self.party_component.party_fk_mapper.entity_combo. \
-            currentIndexChanged.connect(
-            self.switch_entity
-        )
-
-        self.party_init.emit()
 
     def init_str_type_component(self, party=None):
         """
@@ -284,7 +999,6 @@ class InitSTREditor(QDialog, Ui_STREditor):
             return
         self.spatial_unit_component = SpatialUnit(
             self.spatial_unit_box,
-            self.mirror_map,
             self.notice
         )
         self.spatial_unit_signals()
@@ -353,6 +1067,28 @@ class InitSTREditor(QDialog, Ui_STREditor):
                     )
                 )
                 self.str_type_combo_connected.append(str_type_combo)
+
+    def _party_signals(self):
+        """
+        Connects party and str_type
+        related slots and signals.
+        """
+        QApplication.processEvents()
+        self.party_component.party_fk_mapper.beforeEntityAdded.connect(
+            lambda model: self.set_party_data(model)
+        )
+        self.party_component.party_fk_mapper.afterEntityAdded.connect(
+            lambda model, row_number: self.set_str_type_data(
+                0, model.id, row_number
+            )
+        )
+        self.party_component.party_fk_mapper.deletedRows.connect(
+            self.remove_party_str_row_model
+        )
+        self.party_component.party_fk_mapper.entity_combo. \
+            currentIndexChanged.connect(
+            self.switch_entity
+        )
 
     def reset_share_spinboxes(self, data_store):
         """
@@ -499,6 +1235,8 @@ class InitSTREditor(QDialog, Ui_STREditor):
                 str_number_ext, party_id, current_row = \
                     self._extract_from_object_name(spinbox)
                 data_store.share[party_id] = spinbox.value()
+        # print vars(data_store)
+        # print self.data_store
 
     @staticmethod
     def _extract_from_object_name(spinbox):
@@ -712,6 +1450,7 @@ class InitSTREditor(QDialog, Ui_STREditor):
         str_type_id = str_combo.itemData(index)
         data_store.str_type[party_id] = str_type_id
         self.str_type_updated.emit()
+        # /print vars(self.data_store[1])
 
     def current_data_store(self):
         """
@@ -725,734 +1464,6 @@ class InitSTREditor(QDialog, Ui_STREditor):
         return data_store_obj
 
 
-class BindSTREditor(InitSTREditor):
-    """
-    Binds the STR components tree items with the stack widgets
-    containing the component widgets.
-    """
-
-    def __init__(self):
-        """
-        Initializes the class and the super class. 
-        """
-        InitSTREditor.__init__(self)
-
-    def bind_component_to_tree_view(self, current, previous):
-        """
-        Bind all components to the tree view component items.
-        :param current: The current item index.
-        :type current: QModelIndex
-        :param previous: The previous  item index.
-        :type previous: QModelIndex
-        """
-        selected_item = self.tree_view_model.itemFromIndex(current)
-
-        if selected_item is None:
-            return
-        str_number = selected_item.data()
-
-        if selected_item.text() == '{} {}' \
-                .format(self.str_text, str_number):
-            self.bind_str()
-
-        if selected_item.text() == self.party_text:
-            self.bind_party()
-
-        if selected_item.text() == self.spatial_unit_text:
-            self.bind_spatial_unit()
-
-        if selected_item.text() == self.tenure_type_text:
-            self.bind_tenure_type()
-
-        if selected_item.text() == self.supporting_doc_text:
-            self.bind_supporting_documents(
-                str_number
-            )
-        if selected_item.text() == self.validity_period_text:
-            self.bind_validity_period()
-
-    def bind_str(self):
-        """
-        Binds the STR introduction page to the STR root node item.
-        """
-        self.component_container.setCurrentIndex(0)
-        header = QApplication.translate(
-            'BindSTREditor',
-            'The Social Tenure Relationship'
-        )
-        self.description_lbl.setText(header)
-
-    def bind_party(self):
-        """
-        Binds the party item to the party component widget and description.
-        """
-        QTimer.singleShot(50, self.init_str_type_component)
-        QTimer.singleShot(50, self.init_spatial_unit_component)
-        self.component_container.setCurrentIndex(1)
-        header = QApplication.translate(
-            'BindSTREditor',
-            'Select the party by searching through the existing record.'
-        )
-
-        self.description_lbl.setText(header)
-
-    def bind_spatial_unit(self):
-        """
-        Binds the party item to the party component widget and description.
-        """
-        self.notice.clear()
-        self.component_container.setCurrentIndex(2)
-        self.mirror_map.set_iface(self.iface)
-        self.mirror_map.refresh_canvas_layers()
-        self.mirror_map.load_web_map()
-        header = QApplication.translate(
-            'BindSTREditor',
-            'Select the spatial unit that could be parcel, '
-            'land or building, structure and so on.'
-        )
-        self.description_lbl.setText(header)
-
-    def bind_tenure_type(self):
-        """
-        Binds the tenure type item to the party component widget
-        and description.
-        """
-        self.notice.clear()
-        self.component_container.setCurrentIndex(3)
-        QTimer.singleShot(50, self.init_supporting_documents)
-        QTimer.singleShot(50, self.init_validity_period_component)
-
-        header = QApplication.translate(
-            'BindSTREditor',
-            'Select the type of relationship that the specified party '
-            'has with the selected spatial unit. Optionally you can '
-            'specify the tenure share. '
-        )
-        self.description_lbl.setText(header)
-
-    def bind_supporting_documents(self, str_number):
-        """
-        Binds the supporting document item to the party component
-        widget and description.
-        :param str_number: The current STR record number
-        :type str_number: Integer
-        """
-        self.notice.clear()
-        self.component_container.setCurrentIndex(4)
-
-        self.supporting_doc_signals(str_number)
-        header = QApplication.translate(
-            'BindSTREditor',
-            'Upload one or more supporting documents under '
-            'each document types.'
-        )
-        if len(self.data_store[str_number].party) > 1:
-            explanation = QApplication.translate(
-                'BindSTREditor',
-                'The uploaded document will be copied '
-                'for each party record selected.'
-
-            )
-            self.description_lbl.setText('{} {}'.format(header, explanation))
-        else:
-            self.description_lbl.setText(header)
-
-    def bind_validity_period(self):
-        """
-        Binds the validity period item to the party component widget
-        and description.
-        """
-        self.notice.clear()
-        self.component_container.setCurrentIndex(5)
-
-        header = QApplication.translate(
-            'BindSTREditor',
-            'Specify the validity range of dates. The year and month option '
-            'is used to quickly set the date ranges. '
-        )
-        self.description_lbl.setText(header)
-
-
-class SyncSTREditorData(BindSTREditor):
-    """
-    Synchronizes data in the data store to each components
-    when the tree items are clicked.
-    """
-
-    def __init__(self):
-        """
-        Initializes SyncSTREditorData and BindSTREditor. 
-        """
-        BindSTREditor.__init__(self)
-
-    def sync_data(self, current, previous):
-        """
-        Synchronizes all components data store to the tree
-        view component items.
-        :param current: The current item index.
-        :type current: QModelIndex
-        :param previous: The previous  item index.
-        :type previous: QModelIndex
-        """
-        selected_item = self.tree_view_model.itemFromIndex(current)
-        if selected_item is None:
-            return
-        str_number = selected_item.data()
-
-        data_store = self.data_store[str_number]
-
-        if selected_item.text() == self.party_text:
-            self.toggle_party_models(
-                self.party_component.party_fk_mapper, data_store
-            )
-        if selected_item.text() == self.spatial_unit_text:
-            self.toggle_spatial_unit_models(
-                self.spatial_unit_component.spatial_unit_fk_mapper,
-                data_store
-            )
-        if selected_item.text() == self.tenure_type_text:
-            self.toggle_str_type_models(data_store, str_number)
-
-        if selected_item.text() == self.supporting_doc_text:
-            self.toggle_supporting_doc(
-                data_store, str_number
-            )
-        if selected_item.text() == self.validity_period_text:
-            self.toggle_validity_period(data_store, str_number)
-
-    def toggle_party_models(self, fk_mapper, data_store):
-        """
-        Toggles party data store and insert it to foreign key mapper
-        of party entity.
-        :param fk_mapper: The foreign key mapper object
-        :type fk_mapper: Object
-        :param data_store: The current STR data store
-        :type data_store: Object
-        """
-        fk_mapper.remove_rows()
-        for i, model_obj in enumerate(data_store.party.values()):
-            fk_mapper.insert_model_to_table(
-                model_obj
-            )
-
-    def toggle_spatial_unit_models(self, fk_mapper, data_store):
-        """
-        Toggles spatial  data store and insert it to foreign key mapper
-        of party entity.
-        :param fk_mapper: The foreign key mapper object
-        :type fk_mapper: Object
-        :param data_store: The current STR data store
-        :type data_store: Object
-        """
-        if fk_mapper is None:
-            return
-        fk_mapper.remove_rows()
-
-        for i, model_obj in enumerate(
-                data_store.spatial_unit.values()
-        ):
-            fk_mapper.insert_model_to_table(
-                model_obj
-            )
-
-    def toggle_str_type_models(self, data_store, str_number):
-        """
-        Toggles the STR type component data store when the tenure information
-        treeview item is clicked.
-        :param data_store: The current data store.
-        :type data_store: Object
-        :param str_number: The current STR root number.
-        :type str_number: Integer
-        """
-        party_count = len(data_store.party)
-        # If new party row is added after spinboxes values are set,
-        # reset spinbox values into equal values based on the new count
-        if str_number in self.party_count.keys():
-
-            if len(self.party_count) > 0 and \
-                            party_count > \
-                            self.party_count[str_number]:
-                self.reset_share_spinboxes(data_store)
-
-        self.party_count[str_number] = party_count
-        self.str_type_component.remove_table_data(
-            self.str_type_component.str_type_table,
-            party_count
-        )
-        # ## select the first column (STR Type)
-        self.str_type_component.str_type_table.selectColumn(0)
-
-        for i, (party_id, str_type_id) in \
-                enumerate(data_store.str_type.iteritems()):
-            self.str_type_component.add_str_type_data(
-                self.copied_party_row[party_id],
-                str_type_id,
-                i
-            )
-            self.init_str_type_signal(
-                data_store, party_id, str_number
-            )
-
-        self.init_share_spinboxes(data_store)
-
-    def toggle_supporting_doc(self, data_store, str_number):
-        """
-        Toggles the supporting document component data store
-        when the supporting documents treeview item is clicked.
-        :param data_store: The current data store.
-        :type data_store: Object
-        :param str_number: The current STR root number.
-        :type str_number: Integer
-        """
-        party_count = len(data_store.party)
-        # update party count
-        self.supporting_doc_component.party_count(party_count)
-        # update the current widget container to be used.
-        self.supporting_doc_component.update_container(str_number)
-
-    def toggle_validity_period(self, data_store, str_number):
-        """
-        Toggles the validity period component data store
-        when the validity period treeview item is clicked.
-        :param data_store: The current data store
-        :type data_store: STRDataStore
-        :param str_number: The current STR root number.
-        :type str_number: Integer
-        """
-        from_date = data_store.validity_period['from_date']
-        to_date = data_store.validity_period['to_date']
-
-        if from_date is None or to_date is None:
-            from_date = data_store.validity_period['from_date'] = \
-                self.validity_from_date.date()
-            to_date = data_store.validity_period['to_date'] = \
-                self.validity_to_date.date()
-
-        self.validity_from_date.setDate(from_date)
-        self.validity_to_date.setDate(to_date)
-
-
-class ValidateSTREditor(SyncSTREditorData):
-    """
-    Validates the STR editor. Validates user inputs and the
-    enabling of buttons and treeview items.
-    """
-
-    def __init__(self):
-        """
-        Initializes ValidateSTREditor and SyncSTREditorData. 
-        """
-        SyncSTREditorData.__init__(self)
-
-    def validate_page(self, current, previous):
-        """
-        Validates str components pages when tree item is clicked.
-        :param current: The newly clicked item index
-        :type current: QModelIndex
-        :param previous: The previous item index
-        :type previous: QModelIndex
-        """
-        selected_item = self.tree_view_model.itemFromIndex(current)
-        if selected_item is None:
-            return
-        str_number = selected_item.data()
-        data_store = self.data_store[str_number]
-
-        if selected_item.text() == self.party_text:
-            self.validate_party(data_store, selected_item)
-
-        if selected_item.text() == self.spatial_unit_text:
-            self.validate_spatial_unit(data_store, selected_item)
-
-        if selected_item.text() == self.tenure_type_text:
-            self.validate_str_type(data_store, selected_item)
-
-        if selected_item.text() == self.supporting_doc_text:
-            self.enable_save_button()
-
-    def validate_party(self, data_store, selected_item):
-        """
-        Validates the party length and enables and disables buttons and
-        the next treeview items.
-        :param data_store: The current data store object.
-        :type data_store: Object
-        :param selected_item: The currently selected treeview item/ party item.
-        :type selected_item: QStandardItem
-        """
-        self.party_component.party_fk_mapper. \
-            afterEntityAdded.connect(
-            lambda: self.validate_party_length(
-                data_store, selected_item
-            )
-        )
-        self.party_component.party_fk_mapper. \
-            deletedRows.connect(
-            lambda: self.validate_party_length(
-                data_store, selected_item
-            )
-        )
-
-    def validate_spatial_unit(self, data_store, selected_item):
-        """
-        Validates the spatial unit length and enables and disables buttons and
-        the next treeview items.
-        :param data_store: The current data store object.
-        :type data_store: Object
-        :param selected_item: The currently selected treeview item/ spatial
-        unit item.
-        :type selected_item: QStandardItem
-        """
-        if self.spatial_unit_component.spatial_unit_fk_mapper is None:
-            return
-        self.spatial_unit_component.spatial_unit_fk_mapper. \
-            afterEntityAdded.connect(
-            lambda: self.enable_next(selected_item, 2)
-        )
-        self.spatial_unit_component.spatial_unit_fk_mapper. \
-            deletedRows.connect(
-            lambda: self.validate_spatial_unit_length(
-                data_store, selected_item
-            )
-        )
-        self.spatial_unit_component.spatial_unit_fk_mapper. \
-            beforeEntityAdded.connect(
-            self.validate_party_count
-        )
-        self.spatial_unit_component.spatial_unit_fk_mapper. \
-            afterEntityAdded.connect(
-            self.validate_non_multi_party
-        )
-
-    def validate_str_type(self, data_store, selected_item):
-        """
-        Validates the STR type entry and enables and disables buttons and
-        the next treeview items.
-        :param data_store: The current data store object.
-        :type data_store: Object
-        :param selected_item: The currently selected treeview item/ STR type
-        item.
-        :type selected_item: QStandardItem
-        """
-        self.str_type_updated.connect(
-            lambda: self.validate_str_type_length(
-                data_store, selected_item
-            )
-        )
-
-    def enable_next(self, selected_item, child_row, enable=True):
-        """
-        Enables or disables the next treeview item.
-        :param selected_item: The currently selected item.
-        :type selected_item: QStandardItem
-        :param child_row: The row number of an item to be enabled or disabled.
-        :type child_row: Integer
-        :param enable: A boolean to enable and disable the next treeview item.
-        :type enable: Boolean
-        """
-        try:
-            str_root = selected_item.parent()
-
-            if str_root is None:
-                return
-            next_item = str_root.child(child_row, 0)
-            next_item.setEnabled(enable)
-
-            self.enable_save_button()
-        except Exception:
-            pass
-
-    def enable_save_button(self):
-        """
-        Enables or disables the Save button of the STR editor based on the
-        validity status of the editor.
-        """
-        result = self.str_validity_status()
-
-        self.buttonBox.button(
-            QDialogButtonBox.Save
-        ).setEnabled(result)
-
-    def str_validity_status(self):
-        """
-        Determines the validity status of the editor by checking the whether
-        the treeview items are enabled or not.
-        """
-        for row in range(self.tree_view_model.rowCount()):
-            root = self.tree_view_model.item(row)
-            for child_row in range(root.rowCount()):
-                child = root.child(child_row, 0)
-                if not child.isEnabled():
-                    return False
-        return True
-
-    def validate_party_length(self, store, item):
-        """
-        Validates the length of party component data.
-        :param store: The current data store.
-        :type store: Object
-        :param item: The current item
-        :type item: QStandardItem
-        """
-        if len(store.party) < 1:
-            self.enable_next(item, 1, False)
-            self.enable_next(item, 2, False)
-            self.enable_next(item, 3, False)
-        else:
-            self.enable_next(item, 1)
-            if len(store.spatial_unit) > 0:
-                self.enable_next(item, 2)
-            else:
-                self.enable_next(item, 3, False)
-            self.enable_save_button()
-
-    def validate_spatial_unit_length(self, store, item):
-        """
-        Validates the length of party component data.
-        :param store: The current data store.
-        :type store: Object
-        :param item: The current item
-        :type item: QStandardItem
-        """
-        if len(store.spatial_unit) < 1:
-            self.enable_next(item, 2, False)
-        else:
-            self.enable_next(item, 2)
-            self.enable_save_button()
-
-    def validate_str_type_length(self, store, selected_item):
-        """
-        Validates the length of party component data.
-        :param store: The current data store.
-        :type store: Object
-        :param item: The current item
-        :type item: QStandardItem
-        """
-        if 0 in store.str_type.values() or \
-                        None in store.str_type.values():
-            self.enable_next(selected_item, 3, False)
-        else:
-
-            self.enable_next(selected_item, 3)
-            self.enable_next(selected_item, 4)
-            self.enable_save_button()
-
-    def validation_error(self, index):
-        """
-        Validates the length of party component data.
-        :param store: The current data store.
-        :type store: Object
-        :param item: The current item
-        :type item: QStandardItem
-        """
-        item = self.tree_view_model.itemFromIndex(index)
-        if item is None:
-            return
-        if not item.isEnabled():
-            warning = 'You should first select a ' \
-                      'record in the enabled items to open the ' \
-                      '%s component.' % item.text()
-            warning_message = QApplication.translate(
-                'ValidateSTREditor', warning
-            )
-            self.notice.clear()
-            self.notice.insertWarningNotification(
-                warning_message
-            )
-
-    def validate_party_count(self, spatial_unit_obj):
-        """
-        Validates the number of party assigned to a spatial unt.
-        :param spatial_unit_obj: Spatial unit model object
-        :type spatial_unit_obj: SQL Alchemy Model Object
-        :return: True if the count is ok and false if not.
-        :rtype: Boolean
-        """
-        # Get entity browser notification bar
-        fk_mapper = self.sender()
-        browser_notif = None
-        if isinstance(fk_mapper, ForeignKeyMapper):
-            # Insert error in entity browser too
-            browser_notif = NotificationBar(
-                fk_mapper._entitySelector.vlNotification
-            )
-            self.remove_browser_notice(fk_mapper)
-
-        usage_count = self.spatial_unit_usage_count(
-            spatial_unit_obj
-        )
-        # If entry is found, show info or error
-        if usage_count > 0:
-            self.notice.clear()
-            if self.social_tenure.multi_party:
-                QTimer.singleShot(
-                    10100, lambda: self.remove_browser_notice(fk_mapper)
-                )
-                self.allow_multi_party_info(
-                    browser_notif, usage_count
-                )
-                return True
-            else:
-                QTimer.singleShot(
-                    40, lambda: self.remove_browser_notice(fk_mapper)
-                )
-                QTimer.singleShot(
-                    100, lambda: self.disallow_multi_party_error(
-                        browser_notif, fk_mapper
-                    )
-                )
-                return False
-        else:
-            return True
-
-    def disallow_multi_party_error(self, browser_notif, fk_mapper):
-        """
-        Prevents user from proceeding if multi-party is disabled and a
-        spatial unit is used more than once.
-        :param browser_notif: Foreign key mapper entity browser
-        notification bar.
-        :type browser_notif: NotificationBar
-        :param fk_mapper: The ForeignKeyMapper object of spatial unit entity.
-        :type fk_mapper: Object
-        """
-        QTimer.singleShot(
-            10100, lambda: self.remove_browser_notice(fk_mapper)
-        )
-        spatial_unit = format_name(
-            self.spatial_unit.short_name
-        )
-        if not self.party is None:
-            party = format_name(
-                self.party.short_name
-            )
-        else:
-            party = 'party'
-
-        msg = QApplication.translate(
-            'ValidateSTREditor',
-            'Unfortunately, this {} has already been '
-            'assigned to a {}.'.format(spatial_unit, party)
-        )
-        self.notice.insertErrorNotification(msg)
-        if isinstance(fk_mapper, ForeignKeyMapper):
-            if browser_notif is not None:
-                browser_notif.insertErrorNotification(msg)
-
-    def allow_multi_party_info(self, browser_notif, usage_count):
-        """
-        When multi-party is allowed shows only information notification when
-        a spatial unit is used by more than one party.
-        :param browser_notif: Foreign key mapper entity browser
-        notification bar.
-        :type browser_notif: NotificationBar
-        :param usage_count: The number of parties that are already assigned to
-        a spatial unit.
-        :type usage_count: Integer
-        """
-        if not self.party is None:
-            party = format_name(self.party.short_name)
-        else:
-            party = 'party'
-        occupant = '%s(s)' % format_name(party)
-        msg = QApplication.translate(
-            'ValidateSTREditor',
-            'This {} has already been assigned to {} {}.'.format(
-                format_name(self.spatial_unit.short_name),
-                str(usage_count),
-                occupant
-            )
-        )
-        self.notice.insertInformationNotification(msg)
-        browser_notif.insertInformationNotification(msg)
-
-    def remove_browser_notice(self, fk_mapper):
-        """
-        Removes the foreign key mapper entity browser notification bar.
-        :param fk_mapper: ForeignKeyMapper object of spatial unit entity.
-        :type fk_mapper: Object
-        """
-        layout = fk_mapper._entitySelector.vlNotification
-
-        for i in reversed(range(layout.count())):
-            notif = layout.itemAt(i).widget()
-            for lbl in notif.findChildren(QWidget):
-                layout.removeWidget(lbl)
-                lbl.setVisible(False)
-                lbl.deleteLater()
-
-            notif.setParent(None)
-
-    def validate_non_multi_party(self, spatial_unit_obj):
-        """
-        Removes added row of spatial unit if the record
-        is already linked to another party.
-        :param spatial_unit_obj:The spatial unit model object
-        :type spatial_unit_obj: SQLAlchemy model Object
-        """
-        if not self.social_tenure.multi_party:
-            usage_count = self.spatial_unit_usage_count(
-                spatial_unit_obj
-            )
-
-            if usage_count > 0:
-                fk_mapper = self.sender()
-                self.spatial_unit_component.remove_table_data(
-                    fk_mapper._tbFKEntity, 1
-                )
-                store = self.current_data_store()
-                store.spatial_unit.clear()
-
-                item = self.current_item()
-                self.enable_next(item, 2, False)
-                self.validate_spatial_unit_length(
-                    store, item
-                )
-
-    def spatial_unit_current_usage_count(self, current_id):
-        """
-        Gets the current usage count in this DataStore objects
-        by looping through self.data_store.
-
-        :return: usage count of spatial unit
-        :rtype: Integer
-        """
-        spatial_unit_ids = []
-        for data_store in self.data_store.values():
-            for spatial_unit_obj in data_store.spatial_unit.values():
-                spatial_unit_ids.append(spatial_unit_obj.id)
-
-        if spatial_unit_ids.count(current_id) > 1:
-            return spatial_unit_ids.count(current_id)
-        elif spatial_unit_ids.count(current_id) <= 1:
-            return 0
-
-    def spatial_unit_usage_count(self, model_obj):
-        """
-        Gets the count of spatial unit usage in the database.
-        :param model_obj: Spatial unit model object
-        :type model_obj: SQLAlchemy model Object
-        """
-        # returns the number of entries for a specific parcel.
-        str_obj = self.str_model()
-        usage_count = str_obj.queryObject(
-            [func.count().label('spatial_unit_count')]
-        ).filter(
-            self.str_model.spatial_unit_id == model_obj.id
-        ).first()
-        # TODO add a session rollback here and show error.
-        current = self.spatial_unit_current_usage_count(model_obj.id)
-        return current + usage_count.spatial_unit_count
-
-
-class STREditor(ValidateSTREditor):
-    def __init__(self):
-        """
-        Wrapper class for STR Editor for new STR record editor user interface.
-        """
-        InitSTREditor.__init__(self)
-
-        self.str_editor_signals()
-
-        self.tree_view_signals()
 
     def str_editor_signals(self):
         """
@@ -1476,14 +1487,19 @@ class STREditor(ValidateSTREditor):
             return
         self.spatial_unit_component.spatial_unit_fk_mapper. \
             beforeEntityAdded.connect(
-            lambda model: self.set_spatial_unit_data(
-                model
-            )
+                lambda model: self.set_spatial_unit_data(
+                    model
+                )
         )
         self.spatial_unit_component.spatial_unit_fk_mapper. \
             deletedRows.connect(
-            self.remove_spatial_unit_model
-        )
+                self.remove_spatial_unit_model
+            )
+
+        self.spatial_unit_component.spatial_unit_fk_mapper. \
+            afterEntityAdded.connect(
+                self.mirror_map.draw_spatial_unit
+            )
 
     def set_str_doc_models(self):
         """
@@ -1503,7 +1519,8 @@ class STREditor(ValidateSTREditor):
         current_data_store.party[model.id] = model
         item = self.str_item(self.party_text, self.str_number)
         # validate party length to enable the next item
-        self.validate_party_length(current_data_store, item)
+        self.validate.validate_party_length(current_data_store, item)
+        # print self.data_store
 
     def set_spatial_unit_data(self, model):
         """
@@ -1537,6 +1554,7 @@ class STREditor(ValidateSTREditor):
         self.str_type_component.add_str_type_data(
             row_data, str_type_id, row_number
         )
+        # print vars(self.data_store[1])
 
     def validity_period_signals(self):
         """
@@ -1586,25 +1604,7 @@ class STREditor(ValidateSTREditor):
         :type model_objs: List
         """
         current_store = self.current_data_store()
-
         current_store.supporting_document = model_objs
-
-    def tree_view_signals(self):
-        """
-        Treeview signals that listens to three items.
-        """
-        self.view_selection.currentChanged.connect(
-            self.validate_page
-        )
-        self.view_selection.currentChanged.connect(
-            self.bind_component_to_tree_view
-        )
-        self.view_selection.currentChanged.connect(
-            self.sync_data
-        )
-        self.tree_view.clicked.connect(
-            self.validation_error
-        )
 
     def validate_str_delete(self, selected_str):
         """
@@ -1656,7 +1656,7 @@ class STREditor(ValidateSTREditor):
         str_number = selected_item.data()
         self.tree_view_model.removeRows(index.row(), 1)
         self.remove_str_node_models(str_number)
-        self.enable_save_button()
+        self.validate.enable_save_button()
 
     def remove_str_node_models(self, str_number):
         """
@@ -1720,6 +1720,7 @@ class STREditor(ValidateSTREditor):
 
 
 class EditSTREditor(STREditor):
+
     def __init__(self, str_edit_node):
         """
         The Edit user interface of the STR Editor.
@@ -1746,6 +1747,7 @@ class EditSTREditor(STREditor):
             self.party, self.party_column = self.current_party(
                 self.str_edit_dict
             )
+
         title = QApplication.translate(
             'EditSTREditor',
             'Edit Social Tenure Relationship'
@@ -1754,13 +1756,18 @@ class EditSTREditor(STREditor):
 
         self.add_str_btn.setDisabled(True)
         self.remove_str_btn.setDisabled(True)
+        self.party_init.connect(self.populate_party_str_type_store)
+
+        self.init_party_component(self.party)
+
+        QTimer.singleShot(33, self._party_signals)
 
         QTimer.singleShot(33, self.init_str_type_component)
         QTimer.singleShot(55, self.init_spatial_unit_component)
         QTimer.singleShot(77, self.init_supporting_documents)
         QTimer.singleShot(80, self.init_validity_period_component)
 
-        self.party_init.connect(self.populate_party_str_type_store)
+
         self.spatial_unit_init.connect(self.populate_spatial_unit_store)
         self.docs_init.connect(self.populate_supporting_doc_store)
         self.validity_init.connect(self.populate_validity_store)
@@ -1826,6 +1833,7 @@ class EditSTREditor(STREditor):
             str_type_id,
             0
         )
+
         self.init_str_type_signal(
             self.data_store[1], party_id, 1
         )
@@ -1853,7 +1861,7 @@ class EditSTREditor(STREditor):
         # Click on party item
         self.tree_view.clicked.emit(self.party_item_index)
 
-        self.enable_save_button()
+        self.validate.enable_save_button()
 
     def populate_spatial_unit_store(self):
         """

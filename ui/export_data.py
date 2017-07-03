@@ -246,7 +246,7 @@ class ExportData(QWizard,Ui_frmExportWizard):
         
         try:
             writer.db2Feat(self,self.srcTab,resultSet,self.selectedColumns(),self.geomColumn)
-            self.InfoMessage("Features in '%s' have been successfully exported!"%(self.srcTab))
+            self.InfoMessage(QApplication.translate("Features in '%s' have been successfully exported!"%(self.srcTab)))
 
             #Update directory info in the registry
             setVectorFileDir(targetFile)
