@@ -17,14 +17,14 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.core import *
+
 from PyQt4.QtCore import (
     QFile,
     QIODevice,
     QRegExp,
     QTextStream
 )
-
-from qgis.core import *
 
 from sqlalchemy.sql.expression import text
 from sqlalchemy.exc import SQLAlchemyError
