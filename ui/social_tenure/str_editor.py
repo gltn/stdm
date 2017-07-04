@@ -25,8 +25,8 @@ from qgis.utils import (
 )
 from PyQt4.QtCore import (
     pyqtSignal,
-    QTimer
-)
+    QTimer,
+    Qt)
 
 from PyQt4.QtGui import (
     QIcon,
@@ -62,6 +62,7 @@ from stdm.utils.util import (
     format_name
 )
 from str_data import STRDataStore, STRDBHandler
+
 
 class BindSTREditor():
     """
@@ -329,32 +330,27 @@ class SyncSTREditorData():
         # If new party row is added after spinboxes values are set,
         # reset spinbox values into equal values based on the new count
         if str_number in self.editor.party_count.keys():
-
             if len(self.editor.party_count) > 0 and \
                             party_count > \
                             self.editor.party_count[str_number]:
                 self.editor.reset_share_spinboxes(data_store)
 
         self.editor.party_count[str_number] = party_count
+        # Remove previous item data
         self.editor.str_type_component.remove_table_data(
-            self.editor.str_type_component.str_type_table,
-            party_count
+            self.editor.str_type_component.str_type_table, party_count
         )
-        # ## select the first column (STR Type)
+        # Select the first column (STR Type)
         self.editor.str_type_component.str_type_table.selectColumn(0)
 
         for i, (party_id, str_type_id) in \
                 enumerate(data_store.str_type.iteritems()):
             self.editor.str_type_component.add_str_type_data(
-                self.editor.copied_party_row[party_id],
-                str_type_id,
-                i
+                self.editor.copied_party_row[party_id], i
             )
-            self.editor.init_str_type_signal(
-                data_store, party_id, str_number
+            self.editor.init_tenure_data(
+                data_store, party_id, str_type_id, str_number
             )
-
-        self.editor.init_share_spinboxes(data_store)
 
     def toggle_supporting_doc(self, data_store, str_number):
         """
@@ -398,6 +394,7 @@ class ValidateSTREditor():
     Validates the STR editor. Validates user inputs and the
     enabling of buttons and treeview items.
     """
+
     def __init__(self, editor):
         """
         Initializes ValidateSTREditor and SyncSTREditorData. 
@@ -714,9 +711,10 @@ class ValidateSTREditor():
         else:
             party = 'party'
         occupant = '%s(s)' % format_name(party)
+
         msg = QApplication.translate(
             'ValidateSTREditor',
-            'This {} has already been assigned to {} {}.'.format(
+            u'This {} has already been assigned to {} {}.'.format(
                 format_name(self.editor.spatial_unit.short_name),
                 str(usage_count),
                 occupant
@@ -838,13 +836,16 @@ class STREditor(QDialog, Ui_STREditor):
         self.social_tenure = self.current_profile.social_tenure
 
         self.parties = self.social_tenure.parties
-
+        self.spatial_units = self.social_tenure.spatial_units
         if len(self.parties) > 0:
             self.party = self.parties[0]
         else:
             self.party = None
+        if len(self.spatial_units) > 0:
+            self.spatial_unit = self.spatial_units[0]
+        else:
+            self.spatial_unit = None
 
-        self.spatial_unit = self.social_tenure.spatial_unit
         self.party_component = None
         self.str_model = None
         self.str_doc_model = None
@@ -1018,22 +1019,23 @@ class STREditor(QDialog, Ui_STREditor):
             self.cont_box, self, self.notice
         )
 
-    def init_spatial_unit_component(self):
+    def init_spatial_unit_component(self, spatial_unit=None):
         """
         Initializes the spatial unit component.
         """
         if self.spatial_unit_component is not None:
             return
         self.spatial_unit_component = SpatialUnit(
+            spatial_unit,
             self.spatial_unit_box,
             self.notice
         )
         self.spatial_unit_signals()
         self.spatial_unit_init.emit()
-        # self.spatial_unit_component.spatial_unit_fk_mapper.entity_combo. \
-        #     currentIndexChanged.connect(
-        #     self.switch_spatial_unit_entity
-        # )
+        self.spatial_unit_component.spatial_unit_fk_mapper.entity_combo. \
+            currentIndexChanged.connect(
+            self.switch_spatial_unit_entity
+        )
 
     def init_supporting_documents(self):
         """
@@ -1063,41 +1065,113 @@ class STREditor(QDialog, Ui_STREditor):
         self.validity_period_signals()
         self.validity_init.emit()
 
-    def init_str_type_signal(self, data_store, party_id, str_number):
+    def init_tenure_data(self, data_store, party_id, str_type_id, str_number):
         """
         Connects str type combobox signals to a slot.
         :param data_store: Current data store
         :type data_store: Dictionary
         :param party_id: The added party model id.
         :type party_id: String
+        :param str_type_id: Tenure type id
+        :type str_type_id: Integer
+        :param str_number: The str entry number.
+        :type str_number: Integer
         """
         if self.str_type_component is None:
             return
-        # gets all the comboboxes including the ones in other pages.
-        str_type_combos = self.str_type_component.str_type_combobox()
+        self.init_tenure_share_data(data_store, party_id, str_number)
+        self.init_str_type_data(data_store, party_id, str_type_id, str_number)
+
+    def init_tenure_share_data(self, data_store, party_id, str_number):
+        """
+        Initialize tenure share data by setting existing already set data.
+        :param data_store: Current data store
+        :type data_store: Dictionary
+        :param party_id: The added party model id.
+        :type party_id: String
+        :param str_number: The str entry number.
+        :type str_number: Integer
+        """
         spinboxes = self.str_type_component.ownership_share()
         for spinbox in spinboxes:
             if spinbox not in self.share_spinbox_connected:
-                first_name = spinbox.objectName()
+                row_number = spinbox.objectName()
                 spinbox.setObjectName(
-                    '{}_{}_{}'.format(str_number, party_id, first_name)
+                    '{}_{}_{}'.format(str_number, party_id, row_number)
                 )
 
                 spinbox.valueChanged.connect(self.update_spinbox)
                 self.share_spinbox_connected.append(spinbox)
-
         self.shareUpdated.connect(self.update_ownership_share_data)
         self.shareUpdated.connect(self.update_spinbox_when_zero)
         self.shareUpdatedOnZero.connect(self.update_ownership_share_data)
+        self.init_share_spinboxes(data_store, str_number)
+
+    def init_str_type_data(self, data_store, party_id, str_type_id, str_number):
+        """
+        Initialize str type data by setting existing already set data.
+        :param data_store: Current data store
+        :type data_store: Dictionary
+        :param party_id: The added party model id.
+        :type party_id: String
+        :param str_type_id: Tenure type id
+        :type str_type_id: Integer
+        :param str_number: The str entry number.
+        :type str_number: Integer
+        """
+        # gets all the comboboxes including the ones in other pages.
+        str_type_combos = self.str_type_component.str_type_combobox()
         for str_type_combo in str_type_combos:
             # connect comboboxes that are only newly added
             if str_type_combo not in self.str_type_combo_connected:
+                row_number = str_type_combo.objectName()
+                str_type_combo.setObjectName(
+                    '{}_{}_{}'.format(str_number, party_id, row_number)
+                )
+
                 str_type_combo.currentIndexChanged.connect(
                     lambda index: self.update_str_type_data(
                         index, data_store, party_id
-                    )
-                )
+                    ))
                 self.str_type_combo_connected.append(str_type_combo)
+        self.init_tenure_type_combo(data_store, str_number)
+
+    def init_tenure_type_combo(self, data_store, str_no):
+        """
+        Initialize the tenure type data by setting equal
+        value to all spinboxes or by picking values
+        from the data store.
+        :param data_store: The current data store.
+        :type data_store: Object
+        """
+        # gets all the comboboxes including the ones in other pages.
+        str_type_combos = self.str_type_component.str_type_combobox()
+        for str_type_combo in str_type_combos:
+            if str_type_combo in self.str_type_combo_connected:
+                str_number, party_id, current_row = \
+                    self._extract_from_object_name(str_type_combo)
+                # Exclude other str_type from another str entry
+                if str_number != str_no:
+                    continue
+
+                if party_id in data_store.str_type.keys():
+                    self.blockSignals(True)
+                    if data_store.str_type[party_id] is None:
+                        str_type_combo.setCurrentIndex(0)
+                        data_store.str_type[party_id] = 0
+                    else:
+                        sel_index = str_type_combo.findData(
+                            data_store.str_type[party_id],
+                            Qt.UserRole, Qt.MatchExactly
+                        )
+                        str_type_combo.setCurrentIndex(sel_index)
+
+                    self.blockSignals(False)
+
+                else:
+                    self.blockSignals(True)
+                    str_type_combo.setCurrentIndex(0)
+                    data_store.str_type[party_id] = 0
 
     def _party_signals(self):
         """
@@ -1141,7 +1215,7 @@ class STREditor(QDialog, Ui_STREditor):
                 self.blockSignals(False)
                 data_store.share[party_id] = 100.00 / row_count
 
-    def init_share_spinboxes(self, data_store):
+    def init_share_spinboxes(self, data_store, str_no):
         """
         Initialize the share spinboxes by setting equal
         value to all spinboxes or by picking values
@@ -1152,10 +1226,13 @@ class STREditor(QDialog, Ui_STREditor):
         row_count = len(data_store.party)
         spinboxes = self.str_type_component.ownership_share()
         for spinbox in spinboxes:
+
             if spinbox in self.share_spinbox_connected:
                 str_number, party_id, current_row = \
                     self._extract_from_object_name(spinbox)
-
+                # Exclude other spinboxes from another str entry
+                if str_number != str_no:
+                    continue
                 if party_id in data_store.share.keys():
                     self.blockSignals(True)
                     if data_store.share[party_id] is None:
@@ -1266,8 +1343,6 @@ class STREditor(QDialog, Ui_STREditor):
                 str_number_ext, party_id, current_row = \
                     self._extract_from_object_name(spinbox)
                 data_store.share[party_id] = spinbox.value()
-        # print vars(data_store)
-        # print self.data_store
 
     @staticmethod
     def _extract_from_object_name(spinbox):
@@ -1350,7 +1425,6 @@ class STREditor(QDialog, Ui_STREditor):
         children[self.party_text] = 'user.png'
         children[self.spatial_unit_text] = 'property.png'
         children[self.tenure_type_text] = 'social_tenure.png'
-
         children[self.supporting_doc_text] = 'document.png'
         children[self.validity_period_text] = 'period.png'
         children[self.related_tenure_text] = 'hierarchy.png'
@@ -1360,7 +1434,8 @@ class STREditor(QDialog, Ui_STREditor):
 
         self.str_items['%s%s' % (self.str_text, self.str_number)] = str_root
 
-        party_item = self.str_items['%s%s' % (self.party_text, self.str_number)]
+        party_item = self.str_items[
+            '%s%s' % (self.party_text, self.str_number)]
         party_item.setEnabled(True)
 
     def child_item(self, str_root, name, icon):
@@ -1466,11 +1541,12 @@ class STREditor(QDialog, Ui_STREditor):
         :param index: The Combobox current index.
         :type index: QModelIndex
         """
-        self.entity_combo = self.sender()
-        table = self.entity_combo.itemData(index)
+        self.spatial_entity_combo = self.sender()
+        table = self.spatial_entity_combo.itemData(index)
         new_entity = self.current_profile.entity_by_name(table)
         self.spatial_unit = new_entity
-        self.party_component.spatial_unit_fk_mapper.set_entity(self.spatial_unit)
+        self.party_component.spatial_unit_fk_mapper.set_entity(
+            self.spatial_unit)
 
         self.current_data_store().spatial_unit.clear()
 
@@ -1503,7 +1579,6 @@ class STREditor(QDialog, Ui_STREditor):
         str_type_id = str_combo.itemData(index)
         data_store.str_type[party_id] = str_type_id
         self.str_type_updated.emit()
-        # print vars(self.data_store[1])
 
     def current_data_store(self):
         """
@@ -1533,19 +1608,21 @@ class STREditor(QDialog, Ui_STREditor):
             return
         self.spatial_unit_component.spatial_unit_fk_mapper. \
             beforeEntityAdded.connect(
-                lambda model: self.set_spatial_unit_data(
-                    model
-                )
+            lambda model: self.set_spatial_unit_data(
+                model
+            )
         )
         self.spatial_unit_component.spatial_unit_fk_mapper. \
             deletedRows.connect(
-                self.remove_spatial_unit_model
-            )
+            self.remove_spatial_unit_model
+        )
 
         self.spatial_unit_component.spatial_unit_fk_mapper. \
             afterEntityAdded.connect(
-                self.mirror_map.draw_spatial_unit
+            lambda model: self.mirror_map.draw_spatial_unit(
+                self.spatial_unit, model
             )
+        )
 
     def set_str_doc_models(self):
         """
@@ -1592,12 +1669,9 @@ class STREditor(QDialog, Ui_STREditor):
         row_data = self.str_type_component.copy_party_table(
             self.party_component.party_fk_mapper._tbFKEntity, row_number
         )
-
         self.copied_party_row[party_id] = row_data
 
-        self.str_type_component.add_str_type_data(
-            row_data, str_type_id, row_number
-        )
+        self.str_type_component.add_str_type_data(row_data, row_number)
 
     def validity_period_signals(self):
         """
@@ -1763,7 +1837,6 @@ class STREditor(QDialog, Ui_STREditor):
 
 
 class EditSTREditor(STREditor):
-
     def __init__(self, str_edit_node):
         """
         The Edit user interface of the STR Editor.
@@ -1809,7 +1882,6 @@ class EditSTREditor(STREditor):
         QTimer.singleShot(55, self.init_spatial_unit_component)
         QTimer.singleShot(77, self.init_supporting_documents)
         QTimer.singleShot(80, self.init_validity_period_component)
-
 
         self.spatial_unit_init.connect(self.populate_spatial_unit_store)
         self.docs_init.connect(self.populate_supporting_doc_store)
@@ -1872,13 +1944,11 @@ class EditSTREditor(STREditor):
         # populate str type column
         self.set_str_type_data(str_type_id, party_id, 0)
         self.str_type_component.add_str_type_data(
-            self.copied_party_row[party_id],
-            str_type_id,
-            0
+            self.copied_party_row[party_id], 0
         )
 
-        self.init_str_type_signal(
-            self.data_store[1], party_id, 1
+        self.init_tenure_data(
+            self.data_store[1], party_id, str_type_id, 1
         )
 
         tenure_share = self.str_edit_obj.tenure_share

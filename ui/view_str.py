@@ -83,7 +83,7 @@ from stdm.ui.social_tenure.str_components import (
 )
 
 LOGGER = logging.getLogger('stdm')
-
+#TODO add current_spatial_unit on draw_spatial_unit method
 class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
     """
     Search and browse the social tenure relationship
