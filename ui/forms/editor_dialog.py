@@ -469,9 +469,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 # Bump up row_id
                 row_id += 1
     
-        self.entity_scroll_area.setWidget(
-            self.scroll_widget_contents
-        )
+        self.entity_scroll_area.setWidget(self.scroll_widget_contents)
 
         # Check if there are children and add foreign key browsers
         if not self._disable_collections:
@@ -479,7 +477,6 @@ class EntityEditorDialog(QDialog, MapperMixin):
             if len(ch_entities) > 0:
                 if self.entity_tab_widget is None:
                     self.entity_tab_widget = QTabWidget(self)
-
                 # Add primary tab if necessary
                 self._add_primary_attr_widget()
 

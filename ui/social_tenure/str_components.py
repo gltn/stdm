@@ -70,6 +70,9 @@ from stdm.ui.social_tenure.str_helpers import (
     EntityConfig, FreezeTableWidget
 )
 
+from stdm.ui.forms.editor_dialog import EntityEditorDialog
+
+
 class ComponentUtility(QObject):
     """
     A utility class for STR components.
@@ -94,10 +97,7 @@ class ComponentUtility(QObject):
         except Exception as ex:
             QMessageBox.critical(
                 iface.mainWindow(),
-                QApplication.translate(
-                    'ComponentUtility',
-                    'Database Error'
-                ),
+                QApplication.translate('ComponentUtility', 'Database Error'),
                 str(ex)
             )
 
@@ -111,7 +111,8 @@ class ComponentUtility(QObject):
         return self.str_model, self.str_doc_model
 
     def _create_fk_mapper(
-            self, config, parent, notif_bar, multi_row=True, is_party=False
+            self, config, parent, notif_bar, multi_row=True,
+            is_party=False, is_spatial_unit=False
     ):
         """
         Creates the foreign key mapper object.
@@ -128,6 +129,8 @@ class ComponentUtility(QObject):
         fk_mapper_cls = ForeignKeyMapper
         if is_party:
             fk_mapper_cls = PartyForeignKeyMapper
+        if is_spatial_unit:
+            fk_mapper_cls = SpatialUnitForeignKeyMapper
         if config is None:
             return None
         fk_mapper = fk_mapper_cls(
@@ -250,6 +253,56 @@ class PartyForeignKeyMapper(ForeignKeyMapper):
             )
 
 
+class SpatialUnitForeignKeyMapper(ForeignKeyMapper):
+    """
+    ForeignKeyMapper wrapper class for party entity.
+    """
+    def __init__(self, *args, **kwargs):
+        """
+        Initializes SpatialUnitForeignKeyMapper.
+        :param args:
+        :type args:
+        :param kwargs:
+        :type kwargs:
+        """
+        super(SpatialUnitForeignKeyMapper, self).__init__(*args, **kwargs)
+        self.init_spatial_unit_entity_combo()
+
+    def init_spatial_unit_entity_combo(self):
+        """
+        Creates the party entity combobox.
+        """
+        self.entity_combo_label = QLabel()
+        combo_text = QApplication.translate(
+            'SpatialUnitForeignKeyMapper', 'Select a spatial unit entity'
+        )
+        self.entity_combo_label.setText(combo_text)
+
+        self.entity_combo = QComboBox()
+        self.spacer_item = QSpacerItem(
+            288, 20, QSizePolicy.Expanding, QSizePolicy.Minimum
+        )
+        self.grid_layout.addItem(self.spacer_item, 0, 4, 1, 1)
+
+        self.grid_layout.addWidget(self.entity_combo_label, 0, 5, 1, 1)
+        self.grid_layout.addWidget(self.entity_combo, 0, 6, 1, 1)
+
+        self.populate_spatial_units()
+
+    def populate_spatial_units(self):
+        """
+        Populates the party entities in the entities combobox.
+        """
+        # self.spatial_units = current_profile().social_tenure.spatial_units
+        sp = current_profile().social_tenure.spatial_unit
+        self.entity_combo.addItem(sp.short_name, sp.name)
+
+        # for entity in self.spatial_units:
+        #     self.entity_combo.addItem(
+        #         entity.short_name, entity.name
+        #     )
+
+
 class Party(ComponentUtility):
     def __init__(self, selected_party, box, party_layout, notification_bar):
         """
@@ -313,10 +366,6 @@ class SpatialUnit(ComponentUtility):
         self.container_box = box
         self.notification_bar = notification_bar
         self.init_spatial_unit()
-        # if self.spatial_unit_fk_mapper is not None:
-            # self.spatial_unit_fk_mapper.afterEntityAdded.connect(
-            #     self.draw_spatial_unit
-            # )
 
     def init_spatial_unit(self):
         """
@@ -324,21 +373,12 @@ class SpatialUnit(ComponentUtility):
         """
         entity_config = self._load_entity_config(self.spatial_unit)
         self.spatial_unit_fk_mapper = self._create_fk_mapper(
-            entity_config, self.container_box, self.notification_bar, False
+            entity_config, self.container_box, self.notification_bar,
+            False, False, True
         )
         vertical_layout = QVBoxLayout()
         vertical_layout.addWidget(self.spatial_unit_fk_mapper)
         self.container_box.setLayout(vertical_layout)
-    #
-    # def draw_spatial_unit(self, model):
-    #     """
-    #     Render the geometry of the given spatial unit in the spatial view.
-    #     :param model:SQLAlchemy object representing a feature.
-    #     :type model: SQLAlchemy model object
-    #     """
-    #     self.notify_no_base_layers()
-    #     QApplication.processEvents()
-    #     self.mirror_map.draw_spatial_unit(model)
 
     def notify_no_base_layers(self):
         """
@@ -542,6 +582,30 @@ class STRType(ComponentUtility):
         """
         for row in rows:
             self.str_type_table.model().removeRow(row)
+
+
+class RelatedTenureInfo:
+
+    def __init__(self, container, parent, notification_bar):
+
+        self.notification = notification_bar
+        self.container = container
+        self.parties = current_profile().social_tenure.parties
+        self.parent = parent
+        self._init_entity_editor()
+
+    def _init_entity_editor(self):
+        """
+        Instantiates entity editor and add its widgets to
+        the GPX import tool as tabs
+        :return: None
+        :rtype:None
+        """
+        spatial_unit = current_profile().social_tenure.spatial_unit
+        # print self.parties
+        self.entity_editor = EntityEditorDialog(spatial_unit, None, self.parent)
+        self.container.addWidget(self.entity_editor.entity_tab_widget)
+
 
 class SupportingDocuments(ComponentUtility):
     onUploadDocument = pyqtSignal(list)

@@ -56,8 +56,8 @@ from str_components import (
     SpatialUnit,
     STRType,
     SupportingDocuments,
-    ValidityPeriod
-)
+    ValidityPeriod,
+    RelatedTenureInfo)
 from stdm.utils.util import (
     format_name
 )
@@ -92,8 +92,8 @@ class BindSTREditor():
             return
         str_number = selected_item.data()
 
-        if selected_item.text() == '{} {}' \
-                .format(self.editor.str_text, str_number):
+        if selected_item.text() == '{} {}'.format(
+                self.editor.str_text, str_number):
             self.bind_str()
 
         if selected_item.text() == self.editor.party_text:
@@ -104,6 +104,9 @@ class BindSTREditor():
 
         if selected_item.text() == self.editor.tenure_type_text:
             self.bind_tenure_type()
+
+        if selected_item.text() == self.editor.related_tenure_text:
+            self.bind_related_tenure_info()
 
         if selected_item.text() == self.editor.supporting_doc_text:
             self.bind_supporting_documents(
@@ -154,7 +157,7 @@ class BindSTREditor():
 
     def bind_tenure_type(self):
         """
-        Binds the tenure type item to the party component widget
+        Binds the tenure type item to the tenure type component widget
         and description.
         """
         self.editor.notice.clear()
@@ -170,6 +173,21 @@ class BindSTREditor():
         )
         self.editor.description_lbl.setText(header)
 
+    def bind_related_tenure_info(self):
+        """
+        Binds related tenure info item to the related tenure info component
+        widget and description.
+        """
+        self.editor.notice.clear()
+        self.editor.component_container.setCurrentIndex(4)
+
+        header = QApplication.translate(
+            'BindSTREditor',
+            'Provide related tenure information. This requires creating extra '
+            'columns for the related tenure information entity in the configuration'
+        )
+        self.editor.description_lbl.setText(header)
+
     def bind_supporting_documents(self, str_number):
         """
         Binds the supporting document item to the party component
@@ -178,7 +196,7 @@ class BindSTREditor():
         :type str_number: Integer
         """
         self.editor.notice.clear()
-        self.editor.component_container.setCurrentIndex(4)
+        self.editor.component_container.setCurrentIndex(5)
 
         self.editor.supporting_doc_signals(str_number)
         header = QApplication.translate(
@@ -205,7 +223,7 @@ class BindSTREditor():
         and description.
         """
         self.editor.notice.clear()
-        self.editor.component_container.setCurrentIndex(5)
+        self.editor.component_container.setCurrentIndex(6)
 
         header = QApplication.translate(
             'BindSTREditor',
@@ -293,9 +311,7 @@ class SyncSTREditorData():
             return
         fk_mapper.remove_rows()
 
-        for i, model_obj in enumerate(
-                data_store.spatial_unit.values()
-        ):
+        for i, model_obj in enumerate(data_store.spatial_unit.values()):
             fk_mapper.insert_model_to_table(
                 model_obj
             )
@@ -382,7 +398,6 @@ class ValidateSTREditor():
     Validates the STR editor. Validates user inputs and the
     enabling of buttons and treeview items.
     """
-
     def __init__(self, editor):
         """
         Initializes ValidateSTREditor and SyncSTREditorData. 
@@ -790,7 +805,9 @@ class ValidateSTREditor():
 
 
 class STREditor(QDialog, Ui_STREditor):
-
+    """
+    Wrapper class for STR Editor for new STR record editor user interface.
+    """
     party_init = pyqtSignal()
     spatial_unit_init = pyqtSignal()
     validity_init = pyqtSignal()
@@ -801,13 +818,11 @@ class STREditor(QDialog, Ui_STREditor):
 
     def __init__(self):
         """
-        Wrapper class for STR Editor for new STR record editor user interface.
+        Initializes the STR editor.
         """
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
-        """
-         Initializes the STR editor.
-         """
+
         self._init_tree_view()
 
         self.iface = iface
@@ -835,7 +850,7 @@ class STREditor(QDialog, Ui_STREditor):
         self.str_doc_model = None
         self.spatial_unit_component = None
         self.validity_period_component = None
-
+        self.related_tenure_info_component = None
         self.str_type_combo_connected = []
         self.share_spinbox_connected = []
         self.parties = self.social_tenure.parties
@@ -843,8 +858,9 @@ class STREditor(QDialog, Ui_STREditor):
         self.str_type_component = None
         self._init_str_editor()
         self.init_party_component()
-        QTimer.singleShot(33, self._party_signals)
-
+        self.init_related_tenure_info_component()
+        # QTimer.singleShot(33, self._party_signals)
+        self._party_signals()
         self.copied_party_row = OrderedDict()
 
         self.str_editor_signals()
@@ -861,9 +877,7 @@ class STREditor(QDialog, Ui_STREditor):
         self.splitter.setSizes([220, 550])
         self.splitter.setChildrenCollapsible(False)
 
-        self.buttonBox.button(
-            QDialogButtonBox.Save
-        ).setEnabled(False)
+        self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)
 
     def _init_notification(self):
         """
@@ -958,7 +972,6 @@ class STREditor(QDialog, Ui_STREditor):
         :type party: Object
         """
         if party is not None:
-            print 'emited party init'
             self.party_init.emit()
 
         if self.party_component is not None:
@@ -991,6 +1004,20 @@ class STREditor(QDialog, Ui_STREditor):
             party
         )
 
+    def init_related_tenure_info_component(self, party=None):
+        """
+        Initializes the str type component.
+        :param party: Party entity object.
+        If party is none, the default party loads.
+        :param party: The party entity
+        :type party: Entity
+        """
+        if self.related_tenure_info_component is not None:
+            return
+        self.related_tenure_info_component = RelatedTenureInfo(
+            self.cont_box, self, self.notice
+        )
+
     def init_spatial_unit_component(self):
         """
         Initializes the spatial unit component.
@@ -1003,6 +1030,10 @@ class STREditor(QDialog, Ui_STREditor):
         )
         self.spatial_unit_signals()
         self.spatial_unit_init.emit()
+        # self.spatial_unit_component.spatial_unit_fk_mapper.entity_combo. \
+        #     currentIndexChanged.connect(
+        #     self.switch_spatial_unit_entity
+        # )
 
     def init_supporting_documents(self):
         """
@@ -1087,7 +1118,7 @@ class STREditor(QDialog, Ui_STREditor):
         )
         self.party_component.party_fk_mapper.entity_combo. \
             currentIndexChanged.connect(
-            self.switch_entity
+            self.switch_party_entity
         )
 
     def reset_share_spinboxes(self, data_store):
@@ -1296,6 +1327,9 @@ class STREditor(QDialog, Ui_STREditor):
         self.tenure_type_text = QApplication.translate(
             'InitSTREditor', 'Tenure Information'
         )
+        self.related_tenure_text = QApplication.translate(
+            'InitSTREditor', 'Related Tenure Information'
+        )
         self.supporting_doc_text = QApplication.translate(
             'InitSTREditor', 'Supporting Documents'
         )
@@ -1316,20 +1350,17 @@ class STREditor(QDialog, Ui_STREditor):
         children[self.party_text] = 'user.png'
         children[self.spatial_unit_text] = 'property.png'
         children[self.tenure_type_text] = 'social_tenure.png'
+
         children[self.supporting_doc_text] = 'document.png'
         children[self.validity_period_text] = 'period.png'
+        children[self.related_tenure_text] = 'hierarchy.png'
         for name, icon in children.iteritems():
             item = self.child_item(str_root, name, icon)
-            self.str_items[
-                '%s%s' % (name, self.str_number)
-                ] = item
+            self.str_items['%s%s' % (name, self.str_number)] = item
 
-        self.str_items[
-            '%s%s' % (self.str_text, self.str_number)
-            ] = str_root
-        party_item = self.str_items[
-            '%s%s' % (self.party_text, self.str_number)
-            ]
+        self.str_items['%s%s' % (self.str_text, self.str_number)] = str_root
+
+        party_item = self.str_items['%s%s' % (self.party_text, self.str_number)]
         party_item.setEnabled(True)
 
     def child_item(self, str_root, name, icon):
@@ -1347,17 +1378,21 @@ class STREditor(QDialog, Ui_STREditor):
         q_icon = QIcon(
             ':/plugins/stdm/images/icons/{}'.format(icon)
         )
-        name_text = QApplication.translate(
-            'InitSTREditor', name
-        )
-        item = QStandardItem(
-            q_icon, name_text
-        )
+
+        item = QStandardItem(q_icon, name)
 
         item.setData(self.str_number)
-        item.setEnabled(False)
 
-        str_root.appendRow([item])
+        # Add related tenure info under tenure information
+        if name == self.related_tenure_text:
+            tenure_type_item = self.str_item(
+                self.tenure_type_text, self.str_number)
+
+            tenure_type_item.appendRow([item])
+
+        else:
+            item.setEnabled(False)
+            str_root.appendRow([item])
 
         if name == self.party_text:
             self.party_item_index = item.index()
@@ -1405,7 +1440,7 @@ class STREditor(QDialog, Ui_STREditor):
         str_number = item.data()
         return str_number
 
-    def switch_entity(self, index):
+    def switch_party_entity(self, index):
         """
         Switches the ForeignKeyMapper of a selected party entity.
         :param index: The Combobox current index.
@@ -1424,6 +1459,24 @@ class STREditor(QDialog, Ui_STREditor):
         self.init_str_type_component(new_entity)
 
         self._party_signals()
+
+    def switch_spatial_unit_entity(self, index):
+        """
+        Switches the ForeignKeyMapper of a selected spatial unit entity.
+        :param index: The Combobox current index.
+        :type index: QModelIndex
+        """
+        self.entity_combo = self.sender()
+        table = self.entity_combo.itemData(index)
+        new_entity = self.current_profile.entity_by_name(table)
+        self.spatial_unit = new_entity
+        self.party_component.spatial_unit_fk_mapper.set_entity(self.spatial_unit)
+
+        self.current_data_store().spatial_unit.clear()
+
+        self.str_type_components = None
+
+        self.spatial_unit_signals()
 
     def clear_store_on_switch(self):
         """
@@ -1450,7 +1503,7 @@ class STREditor(QDialog, Ui_STREditor):
         str_type_id = str_combo.itemData(index)
         data_store.str_type[party_id] = str_type_id
         self.str_type_updated.emit()
-        # /print vars(self.data_store[1])
+        # print vars(self.data_store[1])
 
     def current_data_store(self):
         """
@@ -1463,20 +1516,13 @@ class STREditor(QDialog, Ui_STREditor):
         data_store_obj = self.data_store[selected_item.data()]
         return data_store_obj
 
-
-
     def str_editor_signals(self):
         """
         The STR editor signals used to add new STR entry node and
         save the data.
         """
-        self.add_str_btn.clicked.connect(
-            self.add_str_tree_node
-        )
-        self.remove_str_btn.clicked.connect(
-            self.remove_str_tree_node
-        )
-
+        self.add_str_btn.clicked.connect(self.add_str_tree_node)
+        self.remove_str_btn.clicked.connect(self.remove_str_tree_node)
         self.buttonBox.accepted.connect(self.save_str)
 
     def spatial_unit_signals(self):
@@ -1520,7 +1566,6 @@ class STREditor(QDialog, Ui_STREditor):
         item = self.str_item(self.party_text, self.str_number)
         # validate party length to enable the next item
         self.validate.validate_party_length(current_data_store, item)
-        # print self.data_store
 
     def set_spatial_unit_data(self, model):
         """
@@ -1545,8 +1590,7 @@ class STREditor(QDialog, Ui_STREditor):
         current_store = self.current_data_store()
         current_store.str_type[party_id] = str_type_id
         row_data = self.str_type_component.copy_party_table(
-            self.party_component.party_fk_mapper._tbFKEntity,
-            row_number
+            self.party_component.party_fk_mapper._tbFKEntity, row_number
         )
 
         self.copied_party_row[party_id] = row_data
@@ -1554,7 +1598,6 @@ class STREditor(QDialog, Ui_STREditor):
         self.str_type_component.add_str_type_data(
             row_data, str_type_id, row_number
         )
-        # print vars(self.data_store[1])
 
     def validity_period_signals(self):
         """
