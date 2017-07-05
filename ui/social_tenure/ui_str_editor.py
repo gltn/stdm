@@ -179,7 +179,7 @@ class Ui_STREditor(object):
         self.scrollArea_3.setObjectName(_fromUtf8("scrollArea_3"))
         self.str_type_widget = QtGui.QWidget()
         self.str_type_widget.setEnabled(True)
-        self.str_type_widget.setGeometry(QtCore.QRect(0, 0, 659, 417))
+        self.str_type_widget.setGeometry(QtCore.QRect(0, 0, 100, 30))
         self.str_type_widget.setObjectName(_fromUtf8("str_type_widget"))
         self.verticalLayout_12 = QtGui.QVBoxLayout(self.str_type_widget)
         self.verticalLayout_12.setMargin(0)
@@ -307,7 +307,7 @@ class Ui_STREditor(object):
 
         self.retranslateUi(STREditor)
         self.component_container.setCurrentIndex(0)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
         self.mirror_map.setCurrentIndex(-1)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), STREditor.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), STREditor.reject)

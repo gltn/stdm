@@ -376,8 +376,28 @@ class DetailsDBHandler:
             self.current_profile.social_tenure
         )
         model_obj = str_model()
+        # TODO Check if str_model.spatial_unit_id is correct
         result = model_obj.queryObject().filter(
             str_model.spatial_unit_id == feature_id
+        ).all()
+
+        return result
+
+    def party_str_link(self, party_id):
+        """
+        Gets all STR records linked to a party, if the record is party record.
+        :param party_id: The party id/id of the spatial unit
+        :type feature_id: Integer
+        :return: The list of social tenure records
+        :rtype: List
+        """
+        str_model = entity_model(
+            self.current_profile.social_tenure
+        )
+        model_obj = str_model()
+        #TODO replace spatial_unit_id with the concerned id
+        result = model_obj.queryObject().filter(
+            str_model.spatial_unit_id == party_id
         ).all()
 
         return result
