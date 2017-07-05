@@ -579,7 +579,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         if self.current_profile is None:
             return
         self.social_tenure = self.current_profile.social_tenure
-        self.spatial_unit = self.social_tenure.spatial_unit
+        self.spatial_units = self.social_tenure.spatial_units
 
         self.view.setMinimumWidth(250)
         self.doc_viewer_title = QApplication.translate(
@@ -951,14 +951,15 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :param parent: The root node.
         :type parent: QStandardItem
         """
-        if self.entity.name == self.spatial_unit.name:
-            no_str_icon = QIcon(
-                ':/plugins/stdm/images/icons/remove.png'
-            )
-            title = 'No STR Defined'
-            no_str_root = QStandardItem(no_str_icon, title)
-            self.set_bold(no_str_root)
-            parent.appendRow([no_str_root])
+        for spatial_unit in self.spatial_units:
+            if self.entity.name == spatial_unit.name:
+                no_str_icon = QIcon(
+                    ':/plugins/stdm/images/icons/remove.png'
+                )
+                title = 'No STR Defined'
+                no_str_root = QStandardItem(no_str_icon, title)
+                self.set_bold(no_str_root)
+                parent.appendRow([no_str_root])
 
     def current_party(self, record):
         """
@@ -992,8 +993,9 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         """
         if self.layer_table is None:
             return
+        spatial_unit_names = [sp.name for sp in self.spatial_units]
         # If the layer table is not spatial unit table, don't show STR node.
-        if self.layer_table != self.spatial_unit.name:
+        if self.layer_table not in spatial_unit_names:
             return
         if str_records is None:
             return
@@ -1137,7 +1139,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
 
             selected_value = selected_item.data()
             # If the first word is feature, expand & highlight.
-            if selected_item_text == format_name(self.spatial_unit.short_name):
+            if selected_item_text == format_name(self.entity.short_name):
                 self.view.expand(index)  # expand the item
                 # Clear any existing highlight
                 self.clear_sel_highlight()
@@ -1312,12 +1314,12 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             str_edit = True
             db_model = self.str_models[id]
 
-        elif item.text() == format_name(self.spatial_unit.short_name) and \
+        elif item.text() == format_name(self.entity.short_name) and \
             id not in self.feature_str_model.keys():
             db_model = self.feature_model(self._entity, id)
 
         # if spatial unit is linked to STR, don't allow delete
-        elif item.text() == format_name(self.spatial_unit.short_name) and \
+        elif item.text() == format_name(self.entity.short_name) and \
                         id in self.feature_str_model.keys():
 
 
