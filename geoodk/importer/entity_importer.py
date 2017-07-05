@@ -96,8 +96,8 @@ class Save2DB:
 
         :return:
         """
-        entity = current_profile().entity_by_name(entity)
-        return entity
+        user_entity = current_profile().entity_by_name(entity)
+        return user_entity
 
     def dbmodel_from_entity(self):
         """
@@ -161,8 +161,18 @@ class Save2DB:
         elif col_type == 'GEOMETRY':
             geom_provider = GeomPolgyon(var)
             return geom_provider.polygon_to_Wkt()
+        elif col_type == 'FOREIGN_KEY':
+            if var != '':
+                return
         else:
             return var
+
+    def foreign_key_formatter(self):
+        """
+        Format the foreign key column to receive the attribute id
+        of the parenat column.
+        :return:
+        """
 
     def cleanup(self):
         """
@@ -175,7 +185,60 @@ class Save2DB:
 
 
 
+class ForeignKeyFormatter():
+    """
+    Class constructor
+    """
+    def __init__(self, fkval):
+        """
+        Initialize class variables
+        :param fkval: string, key that is foreign key column
+        """
+        self.fk_val = fkval
+        self.unique_key = None
 
+    def parent(self):
+        """
+        Get the parent table to the child
+        :return:
+        """
+        return self.fk_val
+
+    def set_parent(self, parent):
+        """
+
+        :param parent:
+        :return:
+        """
+        self.fk_val = parent
+
+    def parent_name(self):
+        """
+        Get the name of the parent table
+        :return:
+        """
+        return self.fk_val.name
+
+    def check_parent_in_list(self, parent):
+        """
+        Check if the table is part of the list and get the attributes
+        :param parent:
+        :return:
+        """
+        pass
+
+    def set_object(self):
+        """
+        Ensure the object is set to db first
+        :return:
+        """
+        pass
+
+    def parent_data_first(self):
+        """
+
+        :return:
+        """
 
 
 

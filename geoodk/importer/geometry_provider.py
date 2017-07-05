@@ -20,9 +20,11 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
-from osgeo import (
-    ogr,
-    osr
+from qgis.core import (
+    QgsGeometry,
+    QgsPoint,
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform
 )
 
 class GeometryProvider:
@@ -51,7 +53,6 @@ class GeometryProvider:
         self._local_list = self.point_list.split(";")
         return self._local_list
 
-
     def points(self):
         """
 
@@ -74,14 +75,14 @@ class GeometryProvider:
         else:
             return self._local_list[0]
 
-    def X(self):
+    def x(self):
         """
 
         :return:
         """
         return self.point().split()[0]
 
-    def Y(self):
+    def y(self):
         """
 
         :return:
@@ -102,74 +103,65 @@ class GeometryProvider:
         returns a projection
         :return:Projection
         """
-        spRef = osr.SpatialReference()
-        return spRef.ImportFromEPSG(4326)
+        spRef = QgsCoordinateReferenceSystem()
+        return spRef.createFromId(4326)
 
     def destination_coordinate_system(self):
         """
 
         :return:
         """
-        spsRef = osr.SpatialReference()
-        return spsRef.ImportFromEPSG(32737)
+        spRef = QgsCoordinateReferenceSystem()
+        return spRef.createFromId(22033)
 
-    def create_linear_rings(self):
+    def create_linear_line(self):
         """
 
         :return:
         """
         self.point_to_list()
-        polyring = ogr.Geometry(ogr.wkbLinearRing)
+        line_array = []
         for point in self._local_list:
             if point != '':
                 var = point.replace('0.0 0.0', '').strip().split(' ')
-                polyring.AddPoint(self.set_point(var[1]), self.set_point(var[0]))
-        return polyring
+                line_array.append(QgsPoint(self.set_point(var[1]),
+                                           self.set_point(var[0])))
+        return QgsGeometry.fromPolyline([line_array])
 
     def create_point(self):
         """
 
         :return:
         """
-        point = ogr.Geometry(ogr.wkbPoint)
-        point.AddPoint(self.set_point(self.X()), self.set_point(self.Y()))
-        return point.ExportToWkt()
-
-
-    def create_line(self):
-        """
-
-        :return:
-        """
-        return self.create_linear_rings().ExportToIsoWkt()
-
-
+        qPoint = QgsGeometry.fromPoint(QgsPoint(self.set_point(self.X()),
+                                                self.set_point(self.Y())))
+        return qPoint
 
     def create_polygon(self):
         """
 
         :return:
         """
-        polyring = self.create_linear_rings()
-        geompoly = ogr.Geometry(ogr.wkbPolygon)
-        geompoly.AddGeometry(polyring)
-        return geompoly
+        self.point_to_list()
 
-    def create_geometry_collection(self):
-        """
+        line_array = []
+        for point in self._local_list:
+            if point != '':
+                var = point.replace('0.0 0.0', '').strip().split(' ')
+                line_array.append(QgsPoint(self.set_point(var[1]),
+                                           self.set_point(var[0])))
 
-        :return:
-        """
-        return ogr.Geometry(ogr.wkbGeometryCollection)
+        geom_poly = QgsGeometry.fromPolygon([line_array])
+
+        return geom_poly
 
     def geometry_from_wkt(self, wkt):
         """
 
         :return:
         """
-        geom = ogr.CreateGeometryFromWkt(wkt)
+        geom = QgsGeometry.fromWkt(wkt)
         return geom
-
 
 class GeomPolgyon(GeometryProvider):
     """
@@ -188,10 +180,14 @@ class GeomPolgyon(GeometryProvider):
         """
         poly = self.create_polygon()
 
-        transform = osr.CoordinateTransformation(self.default_coordinate_system(),
-                                                 self.destination_coordinate_system())
-        poly.Transform(transform)
-        return poly.ExportToWkt()
+        poly_as_text = poly.exportToWkt()
+        #raise NameError(str(poly_as_text))
+        # crsTransform = QgsCoordinateTransform(
+        #     self.default_coordinate_system(),
+        #     self.destination_coordinate_system())
+        # poly_as_text.transform(crsTransform)
+
+        return 'SRID={};{}'.format(4326, poly_as_text)
 
 
 

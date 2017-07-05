@@ -25,6 +25,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import (
     QDialog,
     QMessageBox,
+    QFileDialog,
     QListWidgetItem
 
 )
@@ -80,15 +81,13 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.uuid_extractor = InstanceUUIDExtractor(self.path)
 
         self.cbo_profile.currentIndexChanged.connect(self.current_profile_changed)
-        self.btn_chang_dir.clicked.connect(self.entity_attribute_to_database)
+        self.btn_chang_dir.clicked.connect(self.change_dir)
         self.lst_widget.itemClicked.connect(self.user_selected_entities)
-
 
         self.load_profiles()
         self.instance_dir()
 
         self._notif_bar_str = NotificationBar(self.vlnotification)
-
 
     def load_config(self):
         """
@@ -117,7 +116,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         except TypeError as ex:
             self._notif_bar_str.insertErrorNotification(ex.message)
             return
-
 
     def cbo_add_profiles(self, profiles):
         """
@@ -192,8 +190,11 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         Access the file directory by constructing the full path
         :return: string
         """
-        self.path = HOME + "/.stdm/Downloads"
-        self.txt_directory.setText(self.path)
+        if self.txt_directory.text() !='':
+            self.path = self.txt_directory.text()
+        else:
+            self.path = HOME + "/.stdm/Downloads"
+            self.txt_directory.setText(self.path)
         return self.path
 
     def xform_xpaths(self):
@@ -232,11 +233,10 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
     def extract_guuid_and_rename_file(self,path):
         """
-        Extract teh unique Guuid and rename the file
+        Extract the unique Guuid and rename the file
         so that we can uniquely identify each file
         :return:
         """
-
         for f in os.listdir(path):
             if os.path.isfile(os.path.join(path, f)):
                 file_instance = os.path.join(path, f)
@@ -263,7 +263,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                shutil.move(os.path.dirname(file), instance_path)
             else:
                 pass
-
         except Exception as ex:
             return ex
 
@@ -313,7 +312,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             if len(entity_list)>0:
                 entity_list.pop(0)
                 entity_list.pop(len(entity_list) - 1)
-
                 return entity_list
 
 
@@ -400,6 +398,23 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         msgbox.show()
         return msgbox
 
+    def change_dir(self):
+        """
+
+        :return:
+        """
+        dir_path = QFileDialog.getExistingDirectory(self, "Open Directory",
+                                                "/home",
+                                                QFileDialog.ShowDirsOnly)
+        if dir_path != '':
+            self.path = dir_path
+            self.txt_directory.setText(dir_path)
+            self.active_profile()
+            #self.on_filepath()
+            self.available_records()
+            self.on_dir_path()
+            self.profile_instance_entities()
+
     def accept(self):
         """
 
@@ -430,9 +445,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 self._notif_bar_str.insertInformationNotification(msg.format(len(entities)))
                 self.entity_attribute_to_database(entities)
             self._notif_bar_str.clear()
-        else:
-            msg = "Unable to read records in the current profile"
-            self._notif_bar_str.insertInformationNotification(msg)
+        # else:
+        #     msg = "Unable to read records in the current profile"
+        #     self._notif_bar_str.insertInformationNotification(msg)
         # except TypeError as ty:
         #     self._notif_bar_str.insertErrorNotification(ty.message)
         #     return
