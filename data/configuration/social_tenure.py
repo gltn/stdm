@@ -397,10 +397,10 @@ class SocialTenure(Entity):
         self._sp_units_tenure[sp_unit.short_name] = tenure_vl
 
         # Add tenure type lookup column to the collection
-        if tenure_lookup == self.tenure_type_collection:
+        if tenure_vl == self.tenure_type_collection:
             tenure_lk_col = self.tenure_type_lookup
         else:
-            tenure_lk_col = self._create_tenure_type_lookup_column(tenure_lookup)
+            tenure_lk_col = self._create_tenure_type_lookup_column(tenure_vl)
             self.add_column(tenure_lk_col)
 
         self._tenure_type_sec_lk_columns[tenure_vl.short_name] = tenure_lk_col

@@ -120,8 +120,7 @@ class SpatialUnitManagerDockWidget(
 
             return
 
-        self.spatial_unit = self._curr_profile.\
-            social_tenure.spatial_unit
+        self.spatial_units = self._curr_profile.social_tenure.spatial_units
 
         # Get entities containing geometry
         # columns based on the config info
@@ -261,22 +260,22 @@ class SpatialUnitManagerDockWidget(
             'column_name': column_name,
             'item': item}
         )
+        for spatial_unit in self.spatial_units:
+            table = spatial_unit.name
+            spatial_column = [
+                c.name
+                for c in spatial_unit.columns.values()
+                if c.TYPE_INFO == 'GEOMETRY'
+            ]
 
-        table = self.spatial_unit.name
-        spatial_column = [
-            c.name
-            for c in self.spatial_unit.columns.values()
-            if c.TYPE_INFO == 'GEOMETRY'
-        ]
-
-        spatial_unit_item = unicode(
-            table + '.' + spatial_column[0]
-        )
-        index = self.stdm_layers_combo.findText(
-            spatial_unit_item, Qt.MatchFixedString
-        )
-        if index >= 0:
-             self.stdm_layers_combo.setCurrentIndex(index)
+            spatial_unit_item = unicode(
+                table + '.' + spatial_column[0]
+            )
+            index = self.stdm_layers_combo.findText(
+                spatial_unit_item, Qt.MatchFixedString
+            )
+            if index >= 0:
+                 self.stdm_layers_combo.setCurrentIndex(index)
 
 
     def _layer_info_from_table_column(

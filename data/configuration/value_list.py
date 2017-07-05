@@ -129,7 +129,7 @@ class ValueList(Entity):
         :return: md5 format of a string
         :rtype: Unicode
         """
-        lookup_value = self._hash.md5(value)
+        lookup_value = self._hash.md5(unicode(value))
         return lookup_value.hexdigest()
 
     def add_code_value(self, code_value):
