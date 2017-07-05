@@ -448,7 +448,7 @@ class STRType(ComponentUtility):
         self.selected_party = party
         self.create_str_type_table()
 
-    def add_str_type_data(self, row_data, insert_row):
+    def add_str_type_data(self, spatial_unit, row_data, insert_row):
         """
         Adds str type date into STR Type table view.
         :param row_data: The table data
@@ -458,7 +458,7 @@ class STRType(ComponentUtility):
         """
         data = [None, None] + row_data
         self.str_type_data.append(data)
-        self.str_type_table.add_widgets(insert_row)
+        self.str_type_table.add_widgets(spatial_unit, insert_row)
 
         self.update_table_view(self.str_type_table, True)
 
@@ -612,7 +612,9 @@ class RelatedTenureInfo:
 
         self.notification = notification_bar
         self.container = container
+        self.social_tenure = current_profile().social_tenure
         self.parties = current_profile().social_tenure.parties
+
         self.parent = parent
         self._init_entity_editor()
 
@@ -623,8 +625,17 @@ class RelatedTenureInfo:
         :return: None
         :rtype:None
         """
-        custom_entity = current_profile().social_tenure.parties[0]
-        self.entity_editor = EntityEditorDialog(custom_entity, None, self.parent)
+        # Get the custom attribute entity
+        custom_attr_entity = self.social_tenure.custom_attributes_entity
+
+        # If None then create
+        if custom_attr_entity is None:
+            self.social_tenure.initialize_custom_attributes_entity()
+            custom_attr_entity = self.social_tenure.custom_attributes_entity
+        print vars(custom_attr_entity)
+        # custom_entity = current_profile().social_tenure.parties[0]
+        self.entity_editor = EntityEditorDialog(
+            custom_attr_entity, None, self.parent)
         self.container.addWidget(self.entity_editor.entity_tab_widget)
 
 
