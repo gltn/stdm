@@ -448,8 +448,7 @@ class STDMFieldWidget():
                 'The feature you have added is invalid. \n'
                 'To fix this issue, check if the feature '
                 'is digitized correctly.  \n'
-                'Removing and re-adding the layer could '
-                'also fix the error.'
+                'Make sure you have added a base layer to digitize on.'
             )
             # Message: Spatial column information
             # could not be found

@@ -345,7 +345,9 @@ class SyncSTREditorData():
 
         for i, (party_id, str_type_id) in \
                 enumerate(data_store.str_type.iteritems()):
+
             self.editor.str_type_component.add_str_type_data(
+                self.editor.spatial_unit,
                 self.editor.copied_party_row[party_id], i
             )
             self.editor.init_tenure_data(
@@ -1545,7 +1547,7 @@ class STREditor(QDialog, Ui_STREditor):
         table = self.spatial_entity_combo.itemData(index)
         new_entity = self.current_profile.entity_by_name(table)
         self.spatial_unit = new_entity
-        self.party_component.spatial_unit_fk_mapper.set_entity(
+        self.spatial_unit_component.spatial_unit_fk_mapper.set_entity(
             self.spatial_unit)
 
         self.current_data_store().spatial_unit.clear()
@@ -1671,7 +1673,7 @@ class STREditor(QDialog, Ui_STREditor):
         )
         self.copied_party_row[party_id] = row_data
 
-        self.str_type_component.add_str_type_data(row_data, row_number)
+        self.str_type_component.add_str_type_data(self.spatial_unit, row_data, row_number)
 
     def validity_period_signals(self):
         """
@@ -1944,7 +1946,7 @@ class EditSTREditor(STREditor):
         # populate str type column
         self.set_str_type_data(str_type_id, party_id, 0)
         self.str_type_component.add_str_type_data(
-            self.copied_party_row[party_id], 0
+            self.spatial_unit, self.copied_party_row[party_id], 0
         )
 
         self.init_tenure_data(
