@@ -19,6 +19,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import os
+import re
 import shutil
 from PyQt4 import uic
 from PyQt4.QtCore import *
@@ -205,7 +206,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         dirs = []
         return [os.path.join(self.path, name) for name in os.listdir(self.path)
                 if os.path.isdir(os.path.join(self.path, name))
-                if name.startswith(self.profile_formater())]
+                if name.startswith(self.profile)]
 
     def extract_file(self):
         """
@@ -346,7 +347,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         else:
             self._notif_bar_str.insertErrorNotification("No user selected entities to import")
             self.pgbar.setValue(0)
-        #
+
         # except AttributeError as ex:
         #     self._notif_bar_str.insertErrorNotification(ex.message)
         #
@@ -376,14 +377,20 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         return len([name for name in os.listdir(self.path)
                     if os.path.isdir(os.path.join(self.path, name))
-                    if name.startswith(self.profile_formater())])
+                    if name.startswith(self.profile)])
 
-    def profile_formater(self):
+    def profile_formater(self, name):
         """
         Format the profile name by removing underscore character
         :return:
         """
-        return self.profile.replace("_", " ")
+
+        dirname = os.path.basename(name)
+        profile = re.search(
+            '\d', dirname
+        )
+
+        return dirname[:profile.start()]
 
     def feedback_message(self, msg):
         """

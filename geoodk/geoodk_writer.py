@@ -15,6 +15,7 @@ from xform_model import EntityFormatter
 from stdm.geoodk import (
     GeoODKReader
 )
+from stdm.data.configuration.columns import BooleanColumn
 
 DOCSUFFIX = 'h'
 DOCEXTENSION = '.xml'
@@ -376,7 +377,8 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 self.initialize_entity_reader(entity)
                 self.entity_read.get_user_selected_entity()
                 entity_values = self.entity_read.read_attributes()
-                group_node = self.body_section_categories(self.entity_read.default_entity())
+                group_node = self.body_section_categories(
+                    self.entity_read.default_entity())
                 self._body_section_data(entity_values,group_node)
                 parent_node.appendChild(group_node)
             return parent_node
@@ -393,7 +395,8 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         group_node.setAttribute("appearance", "field-list")
         group_node.setAttribute("ref",cate_name)
         group_label = self.create_node("label")
-        label_txt = self.create_text_node(self.profile_entity + ": "+entity.replace("_", " ").title())
+        label_txt = self.create_text_node(
+            self.profile_entity + ": "+entity.replace("_", " ").title())
         group_label.appendChild(label_txt)
         group_node.appendChild(group_label)
         return group_node
@@ -425,18 +428,19 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         """
         Loop through the columns and if the column is a lookup
         Format it to the right format in Xform
-        :param parent_node:
+        :param parent_node: the group holding the children
         :return:
         """
         self.entity_read.read_attributes()
-        child_node = self.lookup_formatter(self.entity_read.default_entity(),col)
+        child_node = self.lookup_formatter(
+            self.entity_read.default_entity(),col)
         parent_node.appendChild(child_node)
 
     def lookup_formatter(self, entity, col):
         """
         Format lookup to the Xform type
-        :param lookup:
-        :param attributes:
+        :param lookup: entity name
+        :param col: Lookup column
         :return:
         """
         self.entity_read.column_lookup_mapping()
@@ -449,12 +453,22 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         lk_node.setAttribute("ref", self.set_model_xpath(col, entity))
         lk_node_label = self.create_node("label")
         lk_node_label_txt = self.create_text_node(
-            self.entity_read.default_entity() + " " + col.replace("_"," ").title().replace("Id", ""))
+            self.entity_read.default_entity() + " " +
+            col.replace("_"," ").title().replace("Id", ""))
         lk_node_label.appendChild(lk_node_label_txt)
         lk_node.appendChild(lk_node_label)
 
-        """ create lookup items"""
-        lk_name_values = self.entity_read.format_lookup_items(col)
+        # create lookup element on the form
+        self.entity_read.get_user_selected_entity()
+        col_obj = self.entity_read.entity_object().columns[col]
+
+        lk_name_values = None
+        if isinstance(col_obj, BooleanColumn):
+            #Lookup values for yes no have been hardcoded
+            lk_name_values = self.yes_no_list()
+        else:
+            #Read lookup from configuration
+            lk_name_values = self.entity_read.format_lookup_items(col)
         if lk_name_values:
             for key, val in lk_name_values.iteritems():
 

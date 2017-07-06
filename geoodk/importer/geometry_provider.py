@@ -187,7 +187,7 @@ class GeomPolgyon(GeometryProvider):
         #     self.destination_coordinate_system())
         # poly_as_text.transform(crsTransform)
 
-        return 'SRID={};{}'.format(4326, poly_as_text)
+        return 'SRID={};{}'.format(32733, poly_as_text)
 
 
 

@@ -54,6 +54,12 @@ class GeoODKReader():
         self.entity_name = self.profile().entity(self.user_entity).name
         return self.entity_name
 
+    def entity_object(self):
+        """
+        Get the entity object from the table name
+        :return:
+        """
+        return self.profile().entity(self.user_entity)
 
     def profile_entity_attribute(self):
         """
@@ -134,7 +140,7 @@ class GeoODKReader():
         """
         is_lookup = False
         lk_val = self.entity_attributes.get(item_col)
-        if lk_val == "MULTIPLE_SELECT" or lk_val == "LOOKUP":
+        if lk_val == "MULTIPLE_SELECT" or lk_val == "LOOKUP" or lk_val == "BOOL":
             is_lookup = True
         return is_lookup
 

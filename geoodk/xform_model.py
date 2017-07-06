@@ -164,7 +164,7 @@ class EntityFormatter():
             'GEOMETRY': 'geoshape',
             'LOOKUP': 'select1',
             'MULTIPLE_SELECT': 'select',
-            'BOOl': 'select',
+            'BOOL': 'select',
             'ADMIN_SPATIAL_UNIT': 'string',
             'FOREIGN_KEY': 'string',
             'DATE': 'date',
@@ -188,3 +188,17 @@ class EntityFormatter():
         }
 
         return param_type.get(val)
+
+    def yes_no_list(self):
+        """
+        Create a yes no list
+        This lst is not provided in teh configuration but
+        for typeInfo of type BOOL, ODK expect a list.
+        Better approach could be implemented later
+        :return:
+        """
+        yesno = {
+            'Yes': 'Yes',
+            'No': 'No'
+        }
+        return yesno

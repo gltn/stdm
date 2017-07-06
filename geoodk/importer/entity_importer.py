@@ -25,7 +25,11 @@ from stdm.settings import current_profile
 from stdm.utils.util import entity_attr_to_id, lookup_id_from_value
 from stdm.data.configuration import entity_model
 from stdm.geoodk.importer.geometry_provider import GeomPolgyon
-
+from stdm.data.configuration.entity import (
+    Entity
+)
+from stdm.geoodk import GeoODKReader
+DOCUMENT = None
 
 class EntityImporter():
     """
@@ -47,6 +51,14 @@ class EntityImporter():
         file_path = QFile(file_p)
         if file_path.open(QIODevice.ReadOnly):
             self.instance_doc.setContent(file_path)
+
+    def set_global_document(self):
+        """
+        Set the current Qdomdocument available globally
+        :return:
+        """
+        DOCUMENT = self.instance_doc
+        return DOCUMENT
 
     def entity_attributes_from_instance(self, entity):
         """
@@ -72,6 +84,7 @@ class EntityImporter():
         :return:
         """
         if self.instance_doc is not None:
+            self.set_global_document()
             attributes = self.entity_attributes_from_instance(entity)
             entity_add = Save2DB(entity, attributes)
             entity_add.save_to_db()
@@ -88,7 +101,8 @@ class Save2DB:
         Initialize class and class variable
         """
         self.attributes = attributes
-        self.entity = self.object_from_entity_name(entity)
+        self.form_entity = entity
+        self.entity = self.object_from_entity_name(self.form_entity)
         self.model = self.dbmodel_from_entity()
 
     def object_from_entity_name(self, entity):
@@ -119,7 +133,9 @@ class Save2DB:
         """
         for k, v in self.attributes.iteritems():
             if hasattr(self.model, k):
-                var = self.attribute_formatter(k, v)
+                col_type = self.column_info().get(k)
+                col_prop = self.entity.columns[k]
+                var = attribute_formatter(col_type, col_prop, v)
                 setattr(self.model, k, var)
         self.model.save()
         self.cleanup()
@@ -135,45 +151,6 @@ class Save2DB:
             type_mapping[c.name] = c.TYPE_INFO
         return type_mapping
 
-    def attribute_formatter(self, key, var):
-        """
-
-        :return:
-        """
-        col_type = self.column_info().get(key)
-        col_prop = self.entity.columns[key]
-        if col_type == 'LOOKUP':
-            if not len(var) > 3:
-                return entity_attr_to_id(col_prop.parent, "code", var)
-            else:
-                return lookup_id_from_value(col_prop.parent, var)
-        elif col_type == 'ADMIN_SPATIAL_UNIT':
-            if not len(var) > 3:
-                return entity_attr_to_id(col_prop.parent, "code", var)
-            else:
-                return entity_attr_to_id(col_prop.parent, "name", var)
-
-        elif col_type == 'MULTIPLE_SELECT':
-            if not len(var) > 3:
-                return entity_attr_to_id(col_prop.association.first_parent, "code", var)
-            else:
-                return lookup_id_from_value(col_prop.association.first_parent, var)
-        elif col_type == 'GEOMETRY':
-            geom_provider = GeomPolgyon(var)
-            return geom_provider.polygon_to_Wkt()
-        elif col_type == 'FOREIGN_KEY':
-            if var != '':
-                return
-        else:
-            return var
-
-    def foreign_key_formatter(self):
-        """
-        Format the foreign key column to receive the attribute id
-        of the parenat column.
-        :return:
-        """
-
     def cleanup(self):
         """
 
@@ -184,65 +161,121 @@ class Save2DB:
         self.attributes = None
 
 
+def attribute_formatter(col_type, col_prop, var):
+    """
 
-class ForeignKeyFormatter():
+    :return:
+    """
+    if col_type == 'LOOKUP':
+        if not len(var) > 3:
+            return entity_attr_to_id(col_prop.parent, "code", var)
+        else:
+            return lookup_id_from_value(col_prop.parent, var)
+    elif col_type == 'ADMIN_SPATIAL_UNIT':
+        if not len(var) > 3:
+            return entity_attr_to_id(col_prop.parent, "code", var)
+        else:
+            return entity_attr_to_id(col_prop.parent, "name", var)
+
+    elif col_type == 'MULTIPLE_SELECT':
+        if not len(var) > 3:
+            return entity_attr_to_id(col_prop.association.first_parent, "code", var)
+        else:
+            return lookup_id_from_value(col_prop.association.first_parent, var)
+    elif col_type == 'GEOMETRY':
+        geom_provider = GeomPolgyon(var)
+        return geom_provider.polygon_to_Wkt()
+    elif col_type == 'FOREIGN_KEY':
+        if var != '':
+            fk_formatter = ForeignKeyFormatter(col_prop.parent)
+            return fk_formatter.foreign_key_formatter()
+    else:
+        return var
+
+
+class ForeignKeyFormatter:
     """
     Class constructor
     """
     def __init__(self, fkval):
         """
         Initialize class variables
-        :param fkval: string, key that is foreign key column
+        :param fkval: Entity
+        :rtype: Object
         """
+
         self.fk_val = fkval
         self.unique_key = None
+        #raise NameError(DOCUMENT.elementsByTagName(self.fk_val.name))
 
-    def parent(self):
+    def foreign_key_formatter(self):
         """
-        Get the parent table to the child
+        Format the foreign key column to receive the attribute id
+        of the parenat column.
         :return:
         """
-        return self.fk_val
+        Key_term = None
+        name = self.fk_val.name
+        model = self.set_db_model_from_entity(self.fk_val)
+        attributes = self.foreign_entity_attributes_from_instance(name)
+        if attributes is not None:
+            return self.save_parent_to_db(self.fk_val, model, attributes)
 
-    def set_parent(self, parent):
+    def set_db_model_from_entity(self, name):
         """
+        Format entity object form table name
+        :return: db model
+        """
+        ent_object = entity_model(name)
+        parent_model = ent_object()
 
-        :param parent:
+        return parent_model
+
+    def foreign_entity_attributes_from_instance(self,parent_name):
+        """
+        Get particular entity attributes from the
+        instance document
+        param: table short_name
+        type: string
+        return: table column name and column data
+        :rtype: dictionary
+        """
+        attributes = {}
+        nodes = DOCUMENT.elementsByTagName(parent_name)
+        if nodes is not None:
+            entity_nodes = nodes.item(0).childNodes()
+            if entity_nodes:
+                for j in range(entity_nodes.count()):
+                    node_val = entity_nodes.item(j).toElement()
+                    attributes[node_val.nodeName()] = node_val.text()
+            return attributes
+            raise NameError(attributes)
+        else:
+            raise TypeError('Parent entity is not found in the form')
+
+    def save_parent_to_db(self, entity, model, attributes):
+        """
+        Format object attribute data from entity
+        attribute
         :return:
         """
-        self.fk_val = parent
+        for k, v in attributes.iteritems():
+            if hasattr(model, k):
+                col_type = self.column_infomation().get(k)
+                col_prop = entity.columns[k]
+                var = attribute_formatter(col_type, col_prop, v)
+                setattr(model, k, var)
+        model.save()
 
-    def parent_name(self):
-        """
-        Get the name of the parent table
-        :return:
-        """
-        return self.fk_val.name
+        return model.id
 
-    def check_parent_in_list(self, parent):
-        """
-        Check if the table is part of the list and get the attributes
-        :param parent:
-        :return:
-        """
-        pass
-
-    def set_object(self):
-        """
-        Ensure the object is set to db first
-        :return:
-        """
-        pass
-
-    def parent_data_first(self):
+    def column_infomation(self):
         """
 
         :return:
         """
-
-
-
-
-
-
-
+        type_mapping ={}
+        cols = self.fk_val.columns.values()
+        for c in cols:
+            type_mapping[c.name] = c.TYPE_INFO
+        return type_mapping
