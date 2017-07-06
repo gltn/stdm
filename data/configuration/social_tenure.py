@@ -50,7 +50,6 @@ class SocialTenure(Entity):
         0, 5
     )
     BASE_STR_VIEW = 'vw_social_tenure_relationship'
-    CUSTOM_ATTRS_ENTITY = 'custom_attrs'
     tenure_type_list = 'tenure_type'
     view_creator = view_updater
     view_remover = view_deleter
@@ -67,10 +66,8 @@ class SocialTenure(Entity):
         self._view_name = None
 
         self.party_foreign_key = ForeignKeyColumn('party_id', self)
-        self.spatial_unit_foreign_key = ForeignKeyColumn(
-            'spatial_unit_id',
-            self
-        )
+        self.spatial_unit_foreign_key = ForeignKeyColumn('spatial_unit_id',
+                                                         self)
         self.tenure_type_lookup = LookupColumn('tenure_type', self)
 
         # Added in v1.5
@@ -93,6 +90,7 @@ class SocialTenure(Entity):
         self.profile.add_entity(self._value_list)
 
         # Add columns to the collection
+        self.add_column(self.spatial_unit_foreign_key)
         self.add_column(self.tenure_type_lookup)
         self.add_column(self.validity_start_column)
         self.add_column(self.validity_end_column)
@@ -100,21 +98,8 @@ class SocialTenure(Entity):
 
         # Added in v1.5
         self._party_fk_columns = OrderedDict()
-        # Names of party entities that have been removed
+        #Names of party entities that have been removed
         self.removed_parties = []
-
-        # Added in v1.7
-        self._spatial_unit_fk_columns = OrderedDict()
-
-        self._custom_attributes_entity = self.profile.entity(
-            self.custom_attributes_entity_name
-        )
-
-        # Mapping of spatial units and corresponding tenure types
-        self._sp_units_tenure = {}
-
-        # Mapping of tenure type lookup columns
-        self._tenure_type_sec_lk_columns = {}
 
         # Specify if a spatial unit should only be linked to one party
         self.multi_party = True
@@ -122,57 +107,9 @@ class SocialTenure(Entity):
         LOGGER.debug('Social Tenure Relationship initialized for %s profile.',
                      self.profile.name)
 
-    @property
-    def custom_attributes_entity(self):
-        """
-        :return: Returns the entity containing user-defined attributes or 
-        None if it does not exist.
-        .. versionadded:: 1.7
-        :rtype: Entity
-        """
-        return self._custom_attributes_entity
-
-    @property
-    def custom_attributes_entity_name(self):
-        """
-        :return: Returns the short name of the custom attributes entity.
-        :rtype: str
-        """
-        return u'{0}_{1}'.format(self.short_name, self.CUSTOM_ATTRS_ENTITY)
-
-    def initialize_custom_attributes_entity(self):
-        """
-        Creates a custom user attributes entity and adds a foreign key 
-        column for linking the two entities. 
-        """
-        # Created only if it does not exist
-        if self._custom_attributes_entity is None:
-            attr_ent = Entity(
-                self.custom_attributes_entity_name,
-                self.profile,
-                supports_documents=False
-            )
-            attr_ent.user_editable = False
-            self._custom_attributes_entity = attr_ent
-            self.profile.add_entity(self._custom_attributes_entity)
-
-    def custom_attributes(self):
-        """
-        :return: Returns a collection containing custom attributes names and 
-        corresponding column objects. An empty dictionary will still be 
-        returned even if the custom attributes antity does not exist hence 
-        it is important to check if it is None first.
-        :rtype: OrderedDict(name, BaseColumn)
-        """
-        if self._custom_attributes_entity is None:
-            return OrderedDict()
-
-        return self._custom_attributes_entity.columns
-
     def layer_display(self):
         """
         :return: Name to show in the Layers TOC.
-        .. deprecated:: 1.5
         :rtype: str
         """
         if self.layer_display_name:
@@ -201,28 +138,6 @@ class SocialTenure(Entity):
         """
         for p in parties:
             self.add_party(p)
-
-    @property
-    def spatial_units(self):
-        """
-        :return: Returns a collection of spatial unit entities.
-        .. versionadded:: 1.7
-        :rtype: list
-        """
-        return [sp.parent for sp in self._spatial_unit_fk_columns.values()
-                if not sp.parent is None]
-
-    @spatial_units.setter
-    def spatial_units(self, sp_units):
-        """
-        Adds the collection of spatial units to the STR definition. Result 
-        will be suppressed.
-        .. versionadded:: 1.7
-        :param sp_units: Collection of spatial unit entities.
-        :type sp_units: list
-        """
-        for sp in sp_units:
-            self.add_spatial_unit(sp)
 
     @property
     def start_date(self):
@@ -314,182 +229,12 @@ class SocialTenure(Entity):
             view_name = self._view_name_from_entity(p)
             v[view_name] = p
 
-        # Include spatial units
-        for sp in self.spatial_units:
-            sp_view = self._view_name_from_entity(sp)
+        #Include spatial unit
+        if not self.spatial_unit is None:
+            sp_view = self._view_name_from_entity(self.spatial_unit)
             v[sp_view] = self.spatial_unit
 
         return v
-
-    @property
-    def spatial_unit_columns(self):
-        """
-        :return: Returns a collection of STR spatial unit columns.
-        .. versionadded: 1.7
-        :rtype: OrderedDict(column_name, ForeignKeyColumn)
-        """
-        return self._spatial_unit_fk_columns
-
-    def add_spatial_unit(self, spatial_unit):
-        """
-        Add a spatial unit entity to the collection of STR parties.
-        .. versionadded:: 1.7
-        :param spatial_unit: Spatial unit entity in STR relationship.
-        :type spatial_unit: str or Entity
-        :return: Returns True if the spatial unit was successfully added, 
-        otherwise False. If there is an existing spatial unit in the STR 
-        definition with the same name or no geometry column then the 
-        function returns False.
-        :rtype: bool
-        """
-        sp_unit_entity = self._obj_from_str(spatial_unit)
-
-        if self._sp_unit_in_sp_units(sp_unit_entity):
-            return False
-
-        if not sp_unit_entity.has_geometry_column():
-            return False
-
-        fk_col_name = self._foreign_key_column_name(sp_unit_entity)
-
-        sp_unit_fk = ForeignKeyColumn(fk_col_name, self)
-        sp_unit_fk.set_entity_relation_attr('parent', sp_unit_entity)
-        sp_unit_fk.set_entity_relation_attr('parent_column', 'id')
-
-        self._spatial_unit_fk_columns[fk_col_name] = sp_unit_fk
-        self.add_column(sp_unit_fk)
-
-        # Link spatial unit to the default tenure type lookup
-        self.add_spatial_tenure_mapping(
-            sp_unit_entity,
-            self.tenure_type_collection
-        )
-
-        LOGGER.debug('%s entity has been successfully added as a spatial '
-                     'unit in the %s profile social tenure relationship.',
-                     sp_unit_entity.name, self.profile.name)
-
-        return True
-
-    @property
-    def spatial_units_tenure(self):
-        """
-        :return: Returns a collection of spatial unit names and the 
-        corresponding lookup tables containing the valid tenure types.
-        :rtype: dict
-        """
-        return self._sp_units_tenure
-
-    def add_spatial_tenure_mapping(self, spatial_unit, tenure_lookup):
-        """
-        Sets the tenure type lookup for the specified spatial unit. Any 
-        previous mapping for the spatial unit is overridden.
-        .. versionadded:: 1.7
-        :param spatial_unit: Spatial unit entity
-        :type spatial_unit: str or Entity
-        :param tenure_lookup: Tenure type lookup
-        :type tenure_lookup: str or ValueList
-        """
-        sp_unit = self._obj_from_str(spatial_unit)
-        tenure_vl = self._obj_from_str(tenure_lookup)
-
-        # Use short name as key in the collection
-        self._sp_units_tenure[sp_unit.short_name] = tenure_vl
-
-        # Add tenure type lookup column to the collection
-        if tenure_vl == self.tenure_type_collection:
-            tenure_lk_col = self.tenure_type_lookup
-        else:
-            tenure_lk_col = self._create_tenure_type_lookup_column(tenure_vl)
-            self.add_column(tenure_lk_col)
-
-        self._tenure_type_sec_lk_columns[tenure_vl.short_name] = tenure_lk_col
-
-    def _create_tenure_type_lookup_column(self, tenure_vl):
-        # Returns a lookup column whose parent is the given tenure value list.
-        col_name = tenure_vl.short_name.replace('check_', '').replace(
-            ' ',
-            '_'
-        ).lower()
-        tenure_lookup_col = LookupColumn(col_name, self)
-        tenure_lookup_col.value_list = tenure_vl
-
-        return tenure_lookup_col
-
-    def spatial_unit_tenure_lookup(self, spatial_unit):
-        """
-        Retrieves the tenure lookup for the given spatial unit.
-        :param spatial_unit: Spatial unit whose corresponding tenure lookup 
-        is to be retrieved.
-        :type spatial_unit: str or Entity
-        :return: Returns the tenure lookup for the given spatial unit, 
-        otherwise None.
-        :rtype: ValueList
-        """
-        sp_unit = self._obj_from_str(spatial_unit)
-
-        return self._sp_units_tenure.get(sp_unit.short_name, None)
-
-    def remove_spatial_unit_tenure_mapping(self, spatial_unit):
-        """
-        Removes the tenure lookup linkage for the given spatial unit.
-        .. versionadded:: 1.7
-        :param spatial_unit: Spatial unit whose corresponding tenure lookup 
-        reference is to be removed.
-        :type spatial_unit: str or Entity
-        :return: Returns True is the delinking was successful, otherwise 
-        False. False if there was no existing link to be removed.
-        :rtype: False
-        """
-        sp_unit = self._obj_from_str(spatial_unit)
-
-        if sp_unit.short_name in self._sp_units_tenure:
-            tenure_vl = self._sp_units_tenure[sp_unit.short_name]
-
-            del self._sp_units_tenure[sp_unit.short_name]
-
-            # Check if the tenure value list is defined for other spatial
-            # units.
-            remove_column = True
-            for tvl in self._sp_units_tenure.values():
-                if tvl.name == tenure_vl.name:
-                    remove_column = False
-
-            # Remove tenure lookup column
-            if remove_column:
-                vl_short_name = tenure_vl.short_name
-                if vl_short_name in self._tenure_type_sec_lk_columns:
-                    rm_lk_col = self._tenure_type_sec_lk_columns[vl_short_name]
-
-                    # Delink column
-                    del self._tenure_type_sec_lk_columns[vl_short_name]
-
-                    self.remove_column(rm_lk_col)
-
-            return True
-
-        return False
-
-    def spatial_unit_tenure_column(self, spatial_unit):
-        """
-        Search and retrieve the lookup column corresponding to the given 
-        spatial unit.
-        .. versionadded:: 1.7
-        :param spatial_unit: Spatial unit entity
-        :type spatial_unit: str or Entity
-        :return: Returns the tenure lookup column corresponding to the 
-        given spatial unit, otherwise None if there is no existing mapping.
-        :rtype: LookupColumn
-        """
-        tenure_vl = self.spatial_unit_tenure_lookup(spatial_unit)
-
-        if tenure_vl is None:
-            return None
-
-        return self._tenure_type_sec_lk_columns.get(
-            tenure_vl.short_name,
-            None
-        )
 
     @property
     def party_columns(self):
@@ -529,13 +274,9 @@ class SocialTenure(Entity):
                      'the %s profile social tenure relationship.',
                      party_entity.name, self.profile.name)
 
-        return True
-
-    def _foreign_key_column_name(self, entity):
-        # Appends 'id' suffix to the entity's short name.
-        fk_col_name = u'{0}_id'.format(entity.short_name.lower()).replace(
-            ' ', '_'
-        )
+    def _foreign_key_column_name(self, party_entity):
+        #Appends 'id' suffix to the entity's short name.
+        fk_col_name = u'{0}_id'.format(party_entity.short_name.lower())
 
         return fk_col_name
 
@@ -578,19 +319,10 @@ class SocialTenure(Entity):
         return True
 
     def _party_in_parties(self, party):
-        # Check if a party is in the STR collection.
+        #Check if a party is in the STR collection.
         party_names = [p.name for p in self.parties]
 
         if party.name in party_names:
-            return True
-
-        return False
-
-    def _sp_unit_in_sp_units(self, spatial_unit):
-        # Check if a party is in the STR collection.
-        sp_unit_names = [s.name for s in self.spatial_units]
-
-        if spatial_unit.name in sp_unit_names:
             return True
 
         return False
@@ -609,20 +341,6 @@ class SocialTenure(Entity):
         """
         return self._party_in_parties(entity)
 
-    def is_str_spatial_unit_entity(self, entity):
-        """
-        Checks if the specified entity is a spatial unit entity in the 
-        social tenure relationship definition.
-        .. versionadded:: 1.7
-        :param entity: Entity to assert if its part of the STR spatial unit 
-        definition.
-        :type entity: Entity
-        :return:  Returns True if the entity is part of the spatial unit 
-        collection in the STR definition, otherwise False.
-        :rtype: bool
-        """
-        return self._sp_unit_in_sp_units(entity)
-
     def is_str_entity(self, entity):
         """
         Checks if the entity is a spatial or party entity in the STR
@@ -636,7 +354,7 @@ class SocialTenure(Entity):
         if self.is_str_party_entity(entity):
             return True
 
-        if self.is_str_spatial_unit_entity(entity):
+        if entity == self.spatial_unit:
             return True
 
         return False
@@ -659,11 +377,6 @@ class SocialTenure(Entity):
 
     @property
     def spatial_unit(self):
-        """
-        .. deprecated:: 1.7
-        Use :func:`spatial_units` instead to get a list of spatial unit 
-        entities. 
-        """
         return self._spatial_unit
 
     @property
@@ -672,7 +385,7 @@ class SocialTenure(Entity):
 
     @tenure_type_collection.setter
     def tenure_type_collection(self, value_list):
-        # Copy the look up values from the given value list
+        #Copy the look up values from the given value list
         value_list_entity = self._obj_from_str(value_list)
         self._value_list.copy_from(value_list_entity)
 
@@ -805,7 +518,7 @@ class SocialTenure(Entity):
         if len(self._party_fk_columns) == 0:
             return False
 
-        if len(self._spatial_unit_fk_columns) == 0:
+        if self._spatial_unit is None:
             return False
 
         return True
@@ -826,5 +539,5 @@ class SocialTenure(Entity):
         :param engine: SQLAlchemy connectable object.
         :type engine: Engine
         """
-        pass #self.view_creator(engine)
+        self.view_creator(engine)
 

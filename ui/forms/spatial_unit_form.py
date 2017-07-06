@@ -448,7 +448,8 @@ class STDMFieldWidget():
                 'The feature you have added is invalid. \n'
                 'To fix this issue, check if the feature '
                 'is digitized correctly.  \n'
-                'Make sure you have added a base layer to digitize on.'
+                'Removing and re-adding the layer could '
+                'also fix the error.'
             )
             # Message: Spatial column information
             # could not be found
@@ -562,8 +563,7 @@ class STDMFieldWidget():
         )
 
         # Save child models
-        if self.editor is not None:
-            self.editor.save_children()
+        self.editor.save_children()
         # undo each feature created so that qgis
         # don't try to save the same feature again.
         # It will also clear all the models from

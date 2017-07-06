@@ -98,6 +98,8 @@ class DatabaseUpdater(QObject):
         info_file.write('\n')
         info_file.close()
 
+
+
     def upgrade_database(self):
         """
         Updates database to the configuration version one step newer.

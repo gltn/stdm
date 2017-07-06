@@ -185,9 +185,9 @@ class GeomPolgyon(GeometryProvider):
         # crsTransform = QgsCoordinateTransform(
         #     self.default_coordinate_system(),
         #     self.destination_coordinate_system())
-        # poly_as_text.transform(crsTransform)
+        # 'SRID={};{}'.format(22033, poly_as_text)poly_as_text.transform(crsTransform)
 
-        return 'SRID={};{}'.format(32733, poly_as_text)
+        return 'SRID={};{}'.format(4326, poly_as_text)
 
 
 

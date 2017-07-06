@@ -83,7 +83,7 @@ from stdm.ui.social_tenure.str_components import (
 )
 
 LOGGER = logging.getLogger('stdm')
-#TODO add current_spatial_unit on draw_spatial_unit method
+
 class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
     """
     Search and browse the social tenure relationship
@@ -102,18 +102,16 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         #self.tbPropertyPreview.set_iface(self._plugin.iface)
         self.curr_profile = current_profile()
 
-        self.spatial_units = self.curr_profile.social_tenure.spatial_units
+        self.spatial_unit = self.curr_profile.social_tenure.spatial_unit
         #Center me
         self.move(QDesktopWidget().availableGeometry().center() -
                   self.frameGeometry().center())
         self.sp_unit_manager = SpatialUnitManagerDockWidget(
             self._plugin.iface, self._plugin
         )
-        self.geom_cols = []
-        for spatial_unit in self.spatial_units:
-            each_geom_col = self.sp_unit_manager.geom_columns(spatial_unit)
-            self.geom_cols.extend(each_geom_col)
-
+        self.geom_cols = self.sp_unit_manager.geom_columns(
+            self.spatial_unit
+        )
         self.toolBox.setStyleSheet(
             '''
             QToolBox::tab {
@@ -274,12 +272,13 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         """
         # Used for startup of view STR, just add the first geom layer.
         if len(self.geom_cols) > 0:
-            for spatial_unit in self.spatial_units:
-                layer_name_item = self.sp_unit_manager.geom_col_layer_name(
-                    spatial_unit.name,
+            layer_name_item = \
+                self.sp_unit_manager.geom_col_layer_name(
+                    self.spatial_unit.name,
                     self.geom_cols[0]
-                )
-                self.sp_unit_manager.add_layer_by_name(layer_name_item)
+            )
+            self.sp_unit_manager.\
+                add_layer_by_name(layer_name_item)
 
     def _check_permissions(self):
         """
@@ -303,12 +302,16 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Specify the entity configurations.
         """
         try:
+
+            spatial_unit = [
+                self.curr_profile.social_tenure.spatial_unit
+            ]
+
             self.parties = self.curr_profile.social_tenure.parties
-            tb_str_entities = self.parties + self.spatial_units
+            tb_str_entities = self.parties + spatial_unit
             self.progress.setRange(0, len(tb_str_entities) - 1)
 
             for i, t in enumerate(tb_str_entities):
-
                 QApplication.processEvents()
                 entity_cfg = self._entity_config_from_profile(
                     str(t.name), t.short_name
@@ -384,7 +387,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         #Get the current widget in the tab container
         entityWidget = self.tbSTREntity.currentWidget()
 
-        if isinstance(entityWidget, EntitySearchItem):
+        if isinstance(entityWidget,EntitySearchItem):
             entityWidget.loadAsync()
 
     def searchEntityRelations(self):
@@ -392,13 +395,9 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Slot that searches for matching items for
         the specified entity and corresponding STR entities.
         """
-
+        self._reset_controls()
 
         entityWidget = self.tbSTREntity.currentWidget()
-
-        entity_name = entityWidget.config.data_source_name
-        self._reset_controls(entity_name)
-
         if isinstance(entityWidget,EntitySearchItem):
             valid, msg = entityWidget.validate()
 
@@ -424,7 +423,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                 return
 
             if formattedNode is not None:
-                self._load_root_node(entity_name, formattedNode)
+                self._load_root_node(formattedNode)
 
     def clearSearch(self):
         """
@@ -433,12 +432,12 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         entityWidget = self.tbSTREntity.currentWidget()
         if isinstance(entityWidget, EntitySearchItem):
             entityWidget.reset()
-        entity_name = entityWidget.config.data_source_name
-        self._reset_controls(entity_name)
 
-    def _reset_controls(self, entity_name):
+        self._reset_controls()
+
+    def _reset_controls(self):
         #Clear tree view
-        self._resetTreeView(entity_name)
+        self._resetTreeView()
 
         #Clear document listings
         self._deleteSourceDocTabs()
@@ -446,7 +445,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         #Remove spatial unit memory layer
         self.tbPropertyPreview.remove_layer()
 
-    def on_select_results(self, entity_name):
+    def on_select_results(self):
         """
         Slot which is raised when the selection
         is changed in the tree view
@@ -454,8 +453,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         """
         index = self.tvSTRResults.currentIndex()
 
-        # Check type of node and perform corresponding action
-        # for mi in selIndexes:
+        #Check type of node and perform corresponding action
+        #for mi in selIndexes:
         if index.isValid():
             node = index.internalPointer()
             self.editSTR.setDisabled(True)
@@ -483,7 +482,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                 if isinstance(node, SpatialUnitNode):
                     # Expand the Spatial Unit preview
                     self.toolBox.setCurrentIndex(0)
-                    self.draw_spatial_unit(entity_name, node.model())
+                    self.draw_spatial_unit(node.model())
                     self.editSTR.setDisabled(True)
                     self.deleteSTR.setDisabled(True)
 
@@ -586,13 +585,12 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                 doc.deleteLater()
         self.removed_docs = removed_doc
 
-    def draw_spatial_unit(self, entity_name, model):
+    def draw_spatial_unit(self, model):
         """
         Render the geometry of the given spatial unit in the spatial view.
         :param row_id: Sqlalchemy object representing a feature.
         """
-        entity = self.curr_profile.entity_by_name(entity_name)
-        self.tbPropertyPreview.draw_spatial_unit(entity, model)
+        self.tbPropertyPreview.draw_spatial_unit(model)
 
     def onTreeViewItemExpanded(self,modelindex):
         """
@@ -627,8 +625,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         :type event: QShowEvent
         """
         self.setEnabled(True)
-        if QTimer is not None:
-            QTimer.singleShot(200, self.init_mirror_map)
+        QTimer.singleShot(200, self.init_mirror_map)
         #self.init_mirror_map()
 
         return QMainWindow.showEvent(self, event)
@@ -673,7 +670,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self._strID = None
         self._source_doc_manager.reset()
 
-    def _resetTreeView(self, entity_name):
+    def _resetTreeView(self):
         """
         Clears the results tree view.
         """
@@ -685,16 +682,13 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             strModel.clear()
 
         if resultsSelModel:
-            # self.disconnect(
-            #     resultsSelModel,
-            #     SIGNAL("selectionChanged(const QItemSelection&,const QItemSelection&)"),
-            #     self.on_select_results
-            # )
-            resultsSelModel.selectionChanged.connect(
-                lambda: self.on_select_results(entity_name)
+            self.disconnect(
+                resultsSelModel,
+                SIGNAL("selectionChanged(const QItemSelection&,const QItemSelection&)"),
+                self.on_select_results
             )
 
-    def _load_root_node(self, entity_name, root):
+    def _load_root_node(self, root):
         """
         Load the search results (formatted into
         an object of type 'stdm.navigaion.STR') into
@@ -703,7 +697,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         strTreeViewModel = STRTreeViewModel(
             root, view=self.tvSTRResults
         )
-
         self.tvSTRResults.setModel(strTreeViewModel)
 
         # Resize tree columns to fit contents
@@ -713,7 +706,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         # results are returned in the tree view
         resultsSelModel = self.tvSTRResults.selectionModel()
         resultsSelModel.currentChanged.connect(
-            lambda: self.on_select_results(entity_name)
+            self.on_select_results
         )
 
     def _resize_columns(self):
@@ -1089,9 +1082,7 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
 
         modelInstance = self.config.STRModel()
 
-
         modelQueryObj = modelInstance.queryObject()
-
         # if self.validity.isEnabled():
         #     from_date = self.validity_from_date.date().toPyDate()
         #     to_date = self.validity_to_date.date().toPyDate()
@@ -1111,10 +1102,11 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
         try:
             if not isinstance(propType, String):
                 entity_name = modelQueryObj._primary_entity._label_name
-
                 entity = self.curr_profile.entity_by_name(entity_name)
                 col_name = self.currentFieldName()
-                col = entity.columns[self.currentFieldName()]
+                col = entity.columns[
+                    self.currentFieldName()
+                ]
 
                 if col.TYPE_INFO == 'LOOKUP':
                     lookup_entity = lookup_parent_entity(
@@ -1156,12 +1148,10 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
             return model_root_node, [], search_term
 
         if self.formatter is not None:
-
             self.formatter.setData(results)
             model_root_node = self.formatter.root(valid_str_ids)
             prog_dialog.setValue(10)
             prog_dialog.hide()
-
         return model_root_node, results, search_term
 
     def str_validity_period_filter(self, results):

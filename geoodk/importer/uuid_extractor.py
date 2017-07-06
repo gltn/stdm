@@ -25,6 +25,7 @@ from PyQt4.QtXml import (
     QDomDocument,
     QDomNode
 )
+from stdm.geoodk import GeoODKReader
 UUID = "uuid"
 
 class InstanceUUIDExtractor():

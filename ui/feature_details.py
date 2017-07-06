@@ -376,28 +376,8 @@ class DetailsDBHandler:
             self.current_profile.social_tenure
         )
         model_obj = str_model()
-        # TODO Check if str_model.spatial_unit_id is correct
         result = model_obj.queryObject().filter(
             str_model.spatial_unit_id == feature_id
-        ).all()
-
-        return result
-
-    def party_str_link(self, party_id):
-        """
-        Gets all STR records linked to a party, if the record is party record.
-        :param party_id: The party id/id of the spatial unit
-        :type feature_id: Integer
-        :return: The list of social tenure records
-        :rtype: List
-        """
-        str_model = entity_model(
-            self.current_profile.social_tenure
-        )
-        model_obj = str_model()
-        #TODO replace spatial_unit_id with the concerned id
-        result = model_obj.queryObject().filter(
-            str_model.spatial_unit_id == party_id
         ).all()
 
         return result
@@ -599,7 +579,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         if self.current_profile is None:
             return
         self.social_tenure = self.current_profile.social_tenure
-        self.spatial_units = self.social_tenure.spatial_units
+        self.spatial_unit = self.social_tenure.spatial_unit
 
         self.view.setMinimumWidth(250)
         self.doc_viewer_title = QApplication.translate(
@@ -614,14 +594,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         self.view_selection.currentChanged.connect(
             self.on_tree_view_item_clicked
         )
-        # show tree message if dock is open and button clicked
-        not_feature_msg = QApplication.translate(
-            'FeatureDetails',
-            'Please select an STDM layer to view \n'
-            'the details.'
-        )
-        # self.model.clear()
-        self.treeview_error(not_feature_msg)
 
     def on_tree_view_item_clicked(self, current, previous):
         """
@@ -684,15 +656,15 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 # show popup message if dock is hidden and button clicked
                 self.non_stdm_layer_error()
                 self.plugin.feature_details_act.setChecked(False)
-            # elif not button_clicked and not self.isHidden():
-                # # show tree message if dock is open and button clicked
-                # not_feature_msg = QApplication.translate(
-                #     'FeatureDetails',
-                #     'Please select an STDM layer to view \n'
-                #     'the details.'
-                # )
-                # self.model.clear()
-                # self.treeview_error(not_feature_msg)
+            elif not button_clicked and not self.isHidden():
+                # show tree message if dock is open and button clicked
+                not_feature_msg = QApplication.translate(
+                    'FeatureDetails',
+                    'Please select an STDM layer to view \n'
+                    'the details.'
+                )
+                self.model.clear()
+                self.treeview_error(not_feature_msg)
         # If the selected layer is feature layer, get data and
         # display treeview in a dock widget
         else:
@@ -702,12 +674,12 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         """
         Prepares the dock widget for data loading.
         """
-        # select_feature = 'Please select a feature ' \
-        #                  'to view their details.'
+        select_feature = 'Please select a feature ' \
+                         'to view their details.'
         self.init_dock()
         self.add_tree_view()
-        # self.model.clear()
-        # self.treeview_error(select_feature)
+        self.model.clear()
+        self.treeview_error(select_feature)
         # enable the select tool
         self.activate_select_tool()
         self.update_tree_source(self.layer)
@@ -971,15 +943,14 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :param parent: The root node.
         :type parent: QStandardItem
         """
-        for spatial_unit in self.spatial_units:
-            if self.entity.name == spatial_unit.name:
-                no_str_icon = QIcon(
-                    ':/plugins/stdm/images/icons/remove.png'
-                )
-                title = 'No STR Defined'
-                no_str_root = QStandardItem(no_str_icon, title)
-                self.set_bold(no_str_root)
-                parent.appendRow([no_str_root])
+        if self.entity.name == self.spatial_unit.name:
+            no_str_icon = QIcon(
+                ':/plugins/stdm/images/icons/remove.png'
+            )
+            title = 'No STR Defined'
+            no_str_root = QStandardItem(no_str_icon, title)
+            self.set_bold(no_str_root)
+            parent.appendRow([no_str_root])
 
     def current_party(self, record):
         """
@@ -1013,9 +984,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         """
         if self.layer_table is None:
             return
-        spatial_unit_names = [sp.name for sp in self.spatial_units]
         # If the layer table is not spatial unit table, don't show STR node.
-        if self.layer_table not in spatial_unit_names:
+        if self.layer_table != self.spatial_unit.name:
             return
         if str_records is None:
             return
@@ -1106,7 +1076,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         font.setBold(True)
         standard_item.setFont(font)
 
-    def treeview_error(self, not_feature_ft_msg, icon=None):
+    def treeview_error(self, message, icon=None):
         """
         Displays error message in feature details treeview.
         :param title: the title of the treeview.
@@ -1114,9 +1084,13 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :param message: The message to be displayed.
         :type: String
         :param icon: The icon of the item.
-
+        :type: Resource string
+        :return: None
         """
-        if icon is None:
+        not_feature_ft_msg = QApplication.translate(
+            'FeatureDetails', message
+        )
+        if icon == None:
             root = QStandardItem(not_feature_ft_msg)
         else:
             root = QStandardItem(icon, not_feature_ft_msg)
@@ -1159,7 +1133,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
 
             selected_value = selected_item.data()
             # If the first word is feature, expand & highlight.
-            if selected_item_text == format_name(self.entity.short_name):
+            if selected_item_text == format_name(self.spatial_unit.short_name):
                 self.view.expand(index)  # expand the item
                 # Clear any existing highlight
                 self.clear_sel_highlight()
@@ -1334,12 +1308,12 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             str_edit = True
             db_model = self.str_models[id]
 
-        elif item.text() == format_name(self.entity.short_name) and \
+        elif item.text() == format_name(self.spatial_unit.short_name) and \
             id not in self.feature_str_model.keys():
             db_model = self.feature_model(self._entity, id)
 
         # if spatial unit is linked to STR, don't allow delete
-        elif item.text() == format_name(self.entity.short_name) and \
+        elif item.text() == format_name(self.spatial_unit.short_name) and \
                         id in self.feature_str_model.keys():
 
 

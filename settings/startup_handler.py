@@ -30,9 +30,6 @@ def copy_startup():
                              if i in original_dest_lines]
 
             if matched_lines != original_source_lines:
-                print >> destination_file, ''
-                print >> destination_file, ''
-                print >> destination_file, ''
                 for line in source_lines:
                     print >> destination_file, line
 

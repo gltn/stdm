@@ -19,14 +19,12 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import os
-import re
 import shutil
 from PyQt4 import uic
 from PyQt4.QtCore import *
 from PyQt4.QtGui import (
     QDialog,
     QMessageBox,
-    QFileDialog,
     QListWidgetItem
 
 )
@@ -82,13 +80,15 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.uuid_extractor = InstanceUUIDExtractor(self.path)
 
         self.cbo_profile.currentIndexChanged.connect(self.current_profile_changed)
-        self.btn_chang_dir.clicked.connect(self.change_dir)
+        self.btn_chang_dir.clicked.connect(self.entity_attribute_to_database)
         self.lst_widget.itemClicked.connect(self.user_selected_entities)
+
 
         self.load_profiles()
         self.instance_dir()
 
         self._notif_bar_str = NotificationBar(self.vlnotification)
+
 
     def load_config(self):
         """
@@ -117,6 +117,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         except TypeError as ex:
             self._notif_bar_str.insertErrorNotification(ex.message)
             return
+
 
     def cbo_add_profiles(self, profiles):
         """
@@ -191,11 +192,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         Access the file directory by constructing the full path
         :return: string
         """
-        if self.txt_directory.text() !='':
-            self.path = self.txt_directory.text()
-        else:
-            self.path = HOME + "/.stdm/Downloads"
-            self.txt_directory.setText(self.path)
+        self.path = HOME + "/.stdm/Downloads"
+        self.txt_directory.setText(self.path)
         return self.path
 
     def xform_xpaths(self):
@@ -206,7 +204,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         dirs = []
         return [os.path.join(self.path, name) for name in os.listdir(self.path)
                 if os.path.isdir(os.path.join(self.path, name))
-                if name.startswith(self.profile)]
+                if name.startswith(self.profile_formater())]
 
     def extract_file(self):
         """
@@ -234,10 +232,11 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
     def extract_guuid_and_rename_file(self,path):
         """
-        Extract the unique Guuid and rename the file
+        Extract teh unique Guuid and rename the file
         so that we can uniquely identify each file
         :return:
         """
+
         for f in os.listdir(path):
             if os.path.isfile(os.path.join(path, f)):
                 file_instance = os.path.join(path, f)
@@ -264,6 +263,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                shutil.move(os.path.dirname(file), instance_path)
             else:
                 pass
+
         except Exception as ex:
             return ex
 
@@ -313,6 +313,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             if len(entity_list)>0:
                 entity_list.pop(0)
                 entity_list.pop(len(entity_list) - 1)
+
                 return entity_list
 
 
@@ -336,6 +337,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     counter = counter + 1
                     entity_importer = EntityImporter(instance)
                     for entity in values:
+                        ischild, parent_name = self.foreign_key_first(entity)
+                        if ischild:
+                            self.feedback_message(parent_name)
                         entity_importer.process_import_to_db(entity)
 
                     self.txt_feedback.append('saving record "{0}"'
@@ -347,12 +351,30 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         else:
             self._notif_bar_str.insertErrorNotification("No user selected entities to import")
             self.pgbar.setValue(0)
-
+        #
         # except AttributeError as ex:
         #     self._notif_bar_str.insertErrorNotification(ex.message)
         #
         # except TypeError as te:
         #     self._notif_bar_str.insertErrorNotification(te.message)
+    def foreign_key_first(self, table):
+        """
+        Ensure we check that the table is not parent else
+        import parent table first
+        :return:
+        """
+        ischild = False
+        parent_object = None
+        table_object = current_profile().entity_by_name(table)
+        cols = table_object.columns.values()
+        for col in cols:
+            if col.TYPE_INFO == 'FOREING KEY':
+                ischild = True
+                parent_object = table_object.columns[col]
+                return ischild, parent_object.parent.name
+        else:
+            return ischild, None
+
 
     def delete_imported_file(self):
         """
@@ -377,20 +399,14 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         return len([name for name in os.listdir(self.path)
                     if os.path.isdir(os.path.join(self.path, name))
-                    if name.startswith(self.profile)])
+                    if name.startswith(self.profile_formater())])
 
-    def profile_formater(self, name):
+    def profile_formater(self):
         """
         Format the profile name by removing underscore character
         :return:
         """
-
-        dirname = os.path.basename(name)
-        profile = re.search(
-            '\d', dirname
-        )
-
-        return dirname[:profile.start()]
+        return self.profile.replace("_", " ")
 
     def feedback_message(self, msg):
         """
@@ -404,23 +420,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         msgbox.exec_()
         msgbox.show()
         return msgbox
-
-    def change_dir(self):
-        """
-
-        :return:
-        """
-        dir_path = QFileDialog.getExistingDirectory(self, "Open Directory",
-                                                "/home",
-                                                QFileDialog.ShowDirsOnly)
-        if dir_path != '':
-            self.path = dir_path
-            self.txt_directory.setText(dir_path)
-            self.active_profile()
-            #self.on_filepath()
-            self.available_records()
-            self.on_dir_path()
-            self.profile_instance_entities()
 
     def accept(self):
         """
@@ -452,9 +451,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 self._notif_bar_str.insertInformationNotification(msg.format(len(entities)))
                 self.entity_attribute_to_database(entities)
             self._notif_bar_str.clear()
-        # else:
-        #     msg = "Unable to read records in the current profile"
-        #     self._notif_bar_str.insertInformationNotification(msg)
+        else:
+            msg = "Unable to read records in the current profile"
+            self._notif_bar_str.insertInformationNotification(msg)
         # except TypeError as ty:
         #     self._notif_bar_str.insertErrorNotification(ty.message)
         #     return

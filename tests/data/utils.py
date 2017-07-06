@@ -20,7 +20,6 @@ from stdm.security.user import User
 BASIC_PROFILE = 'Basic'
 PERSON_ENTITY = 'person'
 SPATIAL_UNIT_ENTITY = 'spatial_unit'
-SPATIAL_UNIT_ENTITY_2 = 'spatial_unit2'
 HOUSEHOLD_ENTITY = 'household'
 SURVEYOR_ENTITY = 'suveyor'
 COMMUNITY_ENTITY = 'community'
@@ -67,12 +66,6 @@ def create_spatial_unit_entity(profile):
 
     return entity
 
-def create_spatial_unit_entity2(profile):
-    entity = create_entity(profile, SPATIAL_UNIT_ENTITY_2, **full_entity_opt_args)
-    add_geometry_column('geom_poly_2', entity)
-
-    return entity
-
 def create_surveyor_entity(profile):
     return create_entity(profile, SURVEYOR_ENTITY, **full_entity_opt_args)
 
@@ -103,12 +96,6 @@ def add_spatial_unit_entity(profile):
 
     return entity
 
-def add_spatial_unit_entity_2(profile):
-    entity = create_spatial_unit_entity2(profile)
-    profile.add_entity(entity)
-
-    return entity
-
 def add_geometry_column(name, entity):
     geom_col = GeometryColumn(name, entity, GeometryColumn.POLYGON)
     entity.add_column(geom_col)
@@ -119,8 +106,8 @@ def set_profile_social_tenure(profile):
     party = add_person_entity(profile)
     spatial_unit = add_spatial_unit_entity(profile)
 
-    profile.set_social_tenure_attr(SocialTenure.PARTY, [party])
-    profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT, [spatial_unit])
+    profile.set_social_tenure_attr(SocialTenure.PARTY, party)
+    profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT, spatial_unit)
 
 def create_relation(profile, **kwargs):
     return profile.create_entity_relation(**kwargs)
@@ -142,20 +129,6 @@ def create_gender_lookup(entity):
     gender_value_list.add_value('Female')
 
     return gender_value_list
-
-def create_secondary_tenure_lookup(profile):
-    sec_tenure_value_list = create_value_list(profile, 'secondary_tenure')
-    sec_tenure_value_list.add_value('Grazing')
-    sec_tenure_value_list.add_value('Farming')
-    sec_tenure_value_list.add_value('Fishing')
-
-    return sec_tenure_value_list
-
-def add_secondary_tenure_value_list(profile):
-    tenure_vl = create_secondary_tenure_lookup(profile)
-    profile.add_entity(tenure_vl)
-
-    return tenure_vl
 
 def append_person_columns(entity):
     household_id = IntegerColumn('household_id', entity)
@@ -218,7 +191,6 @@ def populate_configuration(config):
     append_surveyor_columns(surveyor)
 
     spatial_unit = add_spatial_unit_entity(profile)
-    spatial_unit_2 = add_spatial_unit_entity_2(profile)
 
     #Add foreign key linking spatial unit to surveyor
     surveyor_id_col = ForeignKeyColumn('surveyor_id', spatial_unit)
@@ -228,16 +200,8 @@ def populate_configuration(config):
 
     #Set STR entities
     profile.set_social_tenure_attr(SocialTenure.PARTY, [person_entity, community])
-    profile.set_social_tenure_attr(
-        SocialTenure.SPATIAL_UNIT,
-        [spatial_unit, spatial_unit_2]
-    )
+    profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT, spatial_unit)
 
-    # Create and add secondary tenure lookup
-    sec_tenure_vl = add_secondary_tenure_value_list(profile)
-
-    # Map secondary tenure to spatial unit 2
-    profile.social_tenure.add_spatial_tenure_mapping(spatial_unit_2, sec_tenure_vl)
 
 def create_db_connection():
     db_conn = DatabaseConnection(DB_SERVER, DB_PORT, DB_NAME)

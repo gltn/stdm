@@ -213,10 +213,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def set_window_title(self):
         if self.draft_config:
             self.setWindowTitle('')
-            draft = self.tr(' - [ DRAFT ]')
-            self.setWindowTitle('{}{}'.format(self.tmp_title, draft))
+            self.setWindowTitle(self.tr(self.tmp_title+' - [ DRAFT ]'))
         else:
-            self.setWindowTitle(self.tmp_title)
+            self.setWindowTitle(self.tr(self.tmp_title))
 
 
     def _init_str_ctrls(self):
@@ -1214,7 +1213,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             try:
                 cfs.save()
-
                 #Save current profile to the registry
                 profile_name = unicode(self.cboProfile.currentText())
                 save_current_profile(profile_name)
@@ -1224,8 +1222,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         
                 # delete draft config file
                 self.delete_draft_config_file()
-
-                self.draft_config = False
 
             except(ConfigurationException, IOError) as e:
                 self.show_message(self.tr(unicode(e) ))
@@ -1623,7 +1619,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         if len(self.pftableView.selectedIndexes())==0:
             self.show_message(QApplication.translate("Configuration Wizard", \
-                    "Please select an entity to edit!"))
+                    "No entity selected for edit!"))
             return
 
         model_item, entity, row_id = self.get_model_entity(self.pftableView)
@@ -1941,10 +1937,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Event handler for editing a column.
         """
-        if len(self.tbvColumns.selectedIndexes()) == 0:
-            self.show_message(self.tr("Please select a column to edit"))
-            return
-
         rid, column, model_item = self.get_column_data()
 
         if column and column.action == DbItem.CREATE:
@@ -1989,9 +1981,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def find_updated_value(self, lookup, text):
         cv = None
-        print lookup.values.values()
         for code_value in lookup.values.values():
-            print 'find ', code_value, code_value.updated_value, text
             if code_value.updated_value == text:
                 cv = code_value
                 break
@@ -2135,7 +2125,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         if profile:
             if len(self.lvLookups.selectedIndexes()) == 0:
-                self.show_message(self.tr("Please select a lookup to edit!"))
+                self.show_message(self.tr("No lookup selected for edit!"))
                 return
 
             row_id, lookup, model_item = self._get_model(self.lvLookups)
@@ -2155,7 +2145,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "Nothing to edit!"))
 
-    def scroll_to_bottom(self, table_view, scroll_position):
+    def scroll_to_bottom(self, table_view):
         table_view.selectRow(table_view.model().rowCount()-1)
         table_view.verticalScrollBar().setValue(scroll_position)
 
@@ -2244,6 +2234,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 txt = cv.value
             else:
                 txt = cv.updated_value
+
             val = QStandardItem(txt)
             self.lookup_value_view_model.appendRow(val)
 
@@ -2299,9 +2290,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         On click event handler for the lookup values `Edit` button
         """
-        if len(self.lvLookupValues.selectedIndexes()) == 0:
+        if len(self.lvLookupValues.selectedIndexes() ) == 0:
             self.show_message(QApplication.translate("Configuration Wizard", \
-                    "Please select a lookup value to edit!"))
+                    "No value selected for edit!"))
             return
 
         self.lookup_item_model.currentIndex()
@@ -2315,13 +2306,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         # Hack to rename a lookup value
         vt = unicode(value_text)
-        # As the lookup value dictionary is converted to md5, convert this value
-        hashed_vt = lookup.value_hash(vt)
         try:
-            code_value = lookup.values[hashed_vt]
+            code_value = lookup.values[vt]
         except:
             code_value = self.find_updated_value(lookup, vt)
-
         ####
 
         value_editor = ValueEditor(self, lookup, code_value)
@@ -2329,8 +2317,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if result == 1:
             model_item_name = self.lookup_value_view_model.index(model_index.row(), 0)
             self.lookup_value_view_model.setData(
-                model_item_name, value_editor.edtValue.text()
-            )
+                    model_item_name, value_editor.edtValue.text())
             #self.add_values(value_editor.lookup.values.values(), test=True)
 
     def delete_lookup_value(self):

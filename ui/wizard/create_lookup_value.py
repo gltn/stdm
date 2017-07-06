@@ -90,29 +90,26 @@ class ValueEditor(QDialog, Ui_LookupValue):
         :type text: String
         """
         text_edit = self.sender()
-
         cursor_position = text_edit.cursorPosition()
         text_edit.setValidator(None)
         if len(text) == 0:
             return
-        locale = QSettings().value("locale/userLocale")[0:2]
 
-        if locale == 'en':
-            name_regex = QtCore.QRegExp('^[ _0-9a-zA-Z][a-zA-Z0-9_/\\-()|.:,; ]*$')
-            name_validator = QtGui.QRegExpValidator(name_regex)
-            text_edit.setValidator(name_validator)
-            QApplication.processEvents()
-            last_character = text[-1:]
-            state = name_validator.validate(text, text.index(last_character))[0]
-            if state != QValidator.Acceptable:
-                self.show_notification('"{}" is not allowed at this position.'.
-                                       format(last_character)
-                                       )
-                text = text[:-1]
-
-        if len(text) > 1:
-            if text[0] == ' ' or text[0] == '_':
-                text = text[1:]
+        name_regex = QtCore.QRegExp('^[ _0-9a-zA-Z][a-zA-Z0-9_/\\-()|.:,; ]*$')
+        name_validator = QtGui.QRegExpValidator(name_regex)
+        text_edit.setValidator(name_validator)
+        QApplication.processEvents()
+        last_character = text[-1:]
+        state = name_validator.validate(text, text.index(last_character))[0]
+        if state != QValidator.Acceptable:
+            self.show_notification('"{}" is not allowed at this position.'.
+                                   format(last_character)
+                                   )
+            text = text[:-1]
+        else:
+            if len(text) > 1:
+                if text[0] == ' ' or text[0] == '_':
+                    text = text[1:]
 
         self.blockSignals(True)
         text_edit.setText(text)

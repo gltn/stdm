@@ -155,7 +155,7 @@ class Profile(QObject):
             attr = 'parties'
 
         elif entity_type == SocialTenure.SPATIAL_UNIT:
-            attr = 'spatial_units'
+            attr = 'spatial_unit'
 
         elif entity_type == SocialTenure.SOCIAL_TENURE_TYPE:
             attr = 'tenure_type_collection'

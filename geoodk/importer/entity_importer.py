@@ -118,12 +118,12 @@ class Save2DB:
         Format model attributes from pass entity attributes
         :return:
         """
-        entity_object = entity_model(
-            self.entity
-        )
+        entity_object = entity_model(self.entity)
         entity_object_model = entity_object()
-
-        return entity_object_model
+        if entity_object_model is not None:
+            return entity_object_model
+        else:
+           raise TypeError('Retry again, object was not well mapped')
 
     def save_to_db(self):
         """
@@ -185,97 +185,6 @@ def attribute_formatter(col_type, col_prop, var):
     elif col_type == 'GEOMETRY':
         geom_provider = GeomPolgyon(var)
         return geom_provider.polygon_to_Wkt()
-    elif col_type == 'FOREIGN_KEY':
-        if var != '':
-            fk_formatter = ForeignKeyFormatter(col_prop.parent)
-            return fk_formatter.foreign_key_formatter()
     else:
         return var
 
-
-class ForeignKeyFormatter:
-    """
-    Class constructor
-    """
-    def __init__(self, fkval):
-        """
-        Initialize class variables
-        :param fkval: Entity
-        :rtype: Object
-        """
-
-        self.fk_val = fkval
-        self.unique_key = None
-        #raise NameError(DOCUMENT.elementsByTagName(self.fk_val.name))
-
-    def foreign_key_formatter(self):
-        """
-        Format the foreign key column to receive the attribute id
-        of the parenat column.
-        :return:
-        """
-        Key_term = None
-        name = self.fk_val.name
-        model = self.set_db_model_from_entity(self.fk_val)
-        attributes = self.foreign_entity_attributes_from_instance(name)
-        if attributes is not None:
-            return self.save_parent_to_db(self.fk_val, model, attributes)
-
-    def set_db_model_from_entity(self, name):
-        """
-        Format entity object form table name
-        :return: db model
-        """
-        ent_object = entity_model(name)
-        parent_model = ent_object()
-
-        return parent_model
-
-    def foreign_entity_attributes_from_instance(self,parent_name):
-        """
-        Get particular entity attributes from the
-        instance document
-        param: table short_name
-        type: string
-        return: table column name and column data
-        :rtype: dictionary
-        """
-        attributes = {}
-        nodes = DOCUMENT.elementsByTagName(parent_name)
-        if nodes is not None:
-            entity_nodes = nodes.item(0).childNodes()
-            if entity_nodes:
-                for j in range(entity_nodes.count()):
-                    node_val = entity_nodes.item(j).toElement()
-                    attributes[node_val.nodeName()] = node_val.text()
-            return attributes
-            raise NameError(attributes)
-        else:
-            raise TypeError('Parent entity is not found in the form')
-
-    def save_parent_to_db(self, entity, model, attributes):
-        """
-        Format object attribute data from entity
-        attribute
-        :return:
-        """
-        for k, v in attributes.iteritems():
-            if hasattr(model, k):
-                col_type = self.column_infomation().get(k)
-                col_prop = entity.columns[k]
-                var = attribute_formatter(col_type, col_prop, v)
-                setattr(model, k, var)
-        model.save()
-
-        return model.id
-
-    def column_infomation(self):
-        """
-
-        :return:
-        """
-        type_mapping ={}
-        cols = self.fk_val.columns.values()
-        for c in cols:
-            type_mapping[c.name] = c.TYPE_INFO
-        return type_mapping

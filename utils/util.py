@@ -585,12 +585,9 @@ def lookup_parent_entity(profile, col):
     :param profile:  Object
     :param col: The lookup's child column name
     :type col: String
-    :return: Parent lookup entity
-    :rtype: Object
+    :return: List of parent lookup entity
+    :rtype: List
     """
-    # for r in profile.relations.values():
-    #     if r.child_column == col and 'check_' in r.parent.name:
-    #         print vars(r.parent)
     parent_entity = [
         r.parent for r in profile.relations.values()
         if r.child_column == col and 'check_' in r.parent.name

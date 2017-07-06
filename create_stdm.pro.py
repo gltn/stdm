@@ -135,15 +135,9 @@ def create_pro_file(dir):
                 file_path[len(dir) + 1:]
             )
     print >> file, ''
-    print >> file, 'TRANSLATIONS    = i18n/stdm_fr.ts \\'
-    print >> file, '                  i18n/stdm_pt.ts \\'
-    print >> file, '                  i18n/stdm_de.ts \\'
-    print >> file, '                  i18n/stdm_sw.ts \\'
-    print >> file, '                  i18n/stdm_fi.ts \\'
-    print >> file, '                  i18n/stdm_ar.ts \\'
-    print >> file, '                  i18n/stdm_es.ts'
+    print >> file, 'TRANSLATIONS    = i18n/stdm_fr.ts'
     print >> file, ''
-    print >> file, 'CODECFORTR      = UTF-8'
+    print >> file,'CODECFORTR      = UTF-8'
     print >> file, ''
     print >> file, 'CODECFORSRC     = UTF-8'
 

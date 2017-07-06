@@ -101,7 +101,6 @@ class STRDBHandler():
         str_objs = []
 
         party_name = str_store.party.values()[0].__table__.name
-        spatial_unit_name = str_store.spatial_unit.values()[0].__table__.name
         index = 4
         # Social tenure and supporting document insertion
         # The code below is have a workaround to enable
@@ -117,11 +116,8 @@ class STRDBHandler():
             doc_objs = str_store.supporting_document
             # get the number of unique documents.
             number_of_docs = len(doc_objs) / no_of_party
-            party_short_name = party_name.split('_', 1)[1]
-            party_entity_id = '{}_id'.format(party_short_name)
-            spatial_unit_short_name = spatial_unit_name.split('_', 1)[1]
-            spatial_unit_entity_id = '{}_id'.format(spatial_unit_short_name)
 
+            party_entity_id = '{}_id'.format(party_name[3:])
             start_date = str_store.validity_period['from_date']
             end_date = str_store.validity_period['to_date']
             if isinstance(start_date, QDate):
@@ -131,7 +127,7 @@ class STRDBHandler():
 
             str_args = {
                 party_entity_id: party_id,
-                spatial_unit_entity_id: str_store.spatial_unit.keys()[0],
+                'spatial_unit_id': str_store.spatial_unit.keys()[0],
                 'tenure_type': str_type_id,
                 'validity_start': start_date,
                 'validity_end': end_date,

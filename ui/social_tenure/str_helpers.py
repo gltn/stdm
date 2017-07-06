@@ -41,8 +41,7 @@ from stdm.data.qtmodels import BaseSTDMTableModel
 from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
 from stdm.utils.util import (
-    entity_display_columns,
-    lookup_parent_entity
+    entity_display_columns
 )
 
 LOGGER = logging.getLogger('stdm')
@@ -50,20 +49,19 @@ class STRTypeDelegate(QItemDelegate):
     """
     It is a combobox delegate embedded in STR Type column.
     """
-    def __init__(self, spatial_unit, parent=None):
+    def __init__(self, str_type_id=0, parent=None):
         """
         Initializes STRTypeDelegate and QItemDelegate.
-        :param spatial_unit: The current spatial unit.
-        :param type: Object
+        :param str_type_id: The tenure type id.
+        :type str_type_id: Integer
         :param parent: The parent of the item delegate.
         :type parent: QWidget
         """
         QItemDelegate.__init__(self, parent)
-
+        self.str_type_id = str_type_id
         self.curr_profile = current_profile()
 
         self.social_tenure = self.curr_profile.social_tenure
-        self.spatial_unit = spatial_unit
 
     def str_type_set_data(self):
         """
@@ -71,17 +69,14 @@ class STRTypeDelegate(QItemDelegate):
         :return: STR type id and value.
         :rtype: OrderedDict
         """
-        lookup_column_name = self.social_tenure.spatial_unit_tenure_column(
-            self.spatial_unit).name
-
-        str_lookup_obj = lookup_parent_entity(
-            self.curr_profile, lookup_column_name
-        )
-
+        str_lookup_obj = self.social_tenure.tenure_type_collection
         str_types = entity_model(str_lookup_obj, True)
         str_type_obj = str_types()
         self.str_type_data = str_type_obj.queryObject().all()
-        str_type = [(lookup.id, lookup.value) for lookup in self.str_type_data]
+        str_type = [
+            (lookup.id, lookup.value)
+            for lookup in self.str_type_data
+        ]
 
         return OrderedDict(str_type)
 
@@ -102,7 +97,13 @@ class STRTypeDelegate(QItemDelegate):
 
         if index.column() == 0:
             str_combo = QComboBox(parent)
-            str_combo.setObjectName(unicode(index.row()))
+            str_combo.insertItem(0, " ")
+            for id, type in self.str_type_set_data().iteritems():
+                str_combo.addItem(type, id)
+            if self.str_type_id is not None:
+                str_combo.setCurrentIndex(
+                    self.str_type_id
+                )
             return str_combo
         elif index.column() == 1:
 
@@ -122,22 +123,17 @@ class STRTypeDelegate(QItemDelegate):
         :type index: QModelIndex
         """
         if index.column() == 0:
-
-            widget.insertItem(0, " ")
-            for id, type in self.str_type_set_data().iteritems():
-                widget.addItem(type, id)
-
             list_item_index = None
             if not index.model() is None:
-                list_item_index = index.model().data(index, Qt.DisplayRole)
+                list_item_index = index.model().data(
+                    index, Qt.DisplayRole
+                )
             if list_item_index is not None and \
                     not isinstance(list_item_index, (unicode, str)):
-
                 value = list_item_index.toInt()
                 widget.blockSignals(True)
                 widget.setCurrentIndex(value[0])
                 widget.blockSignals(False)
-
 
     def setModelData(self, editor, model, index):
         """
@@ -369,15 +365,15 @@ class FreezeTableWidget(QTableView):
         self.shadow.setYOffset(0)
         self.frozen_table_view.setGraphicsEffect(self.shadow)
 
-    def add_widgets(self, spatial_unit, insert_row):
+    def add_widgets(self, str_type_id, insert_row):
         """
-        Adds widget into the frozen table.
+        Adds widget delete into the frozen table.
         :param str_type_id: The STR type id of the tenure type combobox
         :type str_type_id: Integer
         :param insert_row: The row number the widgets to be added.
         :type insert_row: Integer
         """
-        delegate = STRTypeDelegate(spatial_unit)
+        delegate = STRTypeDelegate(str_type_id)
         # Set delegate to add combobox under
         # social tenure type column
         self.frozen_table_view.setItemDelegate(

@@ -167,25 +167,23 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         text_edit.setValidator(name_validator)
         QApplication.processEvents()
         last_character = text[-1:]
-        locale = QSettings().value("locale/userLocale")[0:2]
 
-        if locale == 'en':
-            state = name_validator.validate(text, text.index(last_character))[0]
-            if state != QValidator.Acceptable:
-                self.show_notification('"{}" is not allowed at this position.'.
-                    format(last_character)
-                )
-                text = text[:-1]
-
-        # fix caps, _, and spaces
-        if last_character.isupper():
-            text = text.lower()
-        if last_character == ' ':
-            text = text.replace(' ', '_')
-        if len(text) > 1:
-            if text[0] == ' ' or text[0] == '_':
-                text = text[1:]
-            text = text.replace(' ', '_').lower()
+        state = name_validator.validate(text, text.index(last_character))[0]
+        if state != QValidator.Acceptable:
+            self.show_notification('"{}" is not allowed at this position.'.
+                format(last_character)
+            )
+            text = text[:-1]
+        else:
+            # fix caps, _, and spaces
+            if last_character.isupper():
+                text = text.lower()
+            if last_character == ' ':
+                text = text.replace(' ', '_')
+            if len(text) > 1:
+                if text[0] == ' ' or text[0] == '_':
+                    text = text[1:]
+                text = text.replace(' ', '_').lower()
 
         self.blockSignals(True)
         text_edit.setText(text)
@@ -668,9 +666,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         Fills the data type combobox widget with BaseColumn type names
         """
         self.cboDataType.clear()
-        for item in BaseColumn.types_by_display_name().keys():
-
-            self.cboDataType.addItem(item)
+        self.cboDataType.insertItems(0, BaseColumn.types_by_display_name().keys())
         self.cboDataType.setCurrentIndex(0)
 
     def change_data_type(self, index):
