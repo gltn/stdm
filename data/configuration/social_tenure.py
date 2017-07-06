@@ -153,9 +153,16 @@ class SocialTenure(Entity):
                 supports_documents=False
             )
             attr_ent.user_editable = False
+            # Column for linking with primary tenure table
+            str_col = ForeignKeyColumn('social_tenure_relationship_id', attr_ent)
+            str_col.set_entity_relation_attr('parent', self)
+            str_col.set_entity_relation_attr('parent_column', 'id')
+            attr_ent.add_column(str_col)
+            
             self._custom_attributes_entity = attr_ent
             self.profile.add_entity(self._custom_attributes_entity)
 
+    @property
     def custom_attributes(self):
         """
         :return: Returns a collection containing custom attributes names and 
@@ -371,6 +378,38 @@ class SocialTenure(Entity):
 
         return True
 
+    def remove_spatial_unit(self, spatial_unit):
+        """
+        Remove a spatial unit entity from the STR collection.
+        .. versionadded:: 1.7
+        :param spatial_unit: Spatial unit entity in STR relationship
+        :type spatial_unit: str or Entity
+        :return: Returns True if the spatial unit was successfully removed, 
+        otherwise False. If there is no corresponding spatial unit in the 
+        collection then the function returns False.
+        :rtype: bool
+        """
+        sp_unit_entity = self._obj_from_str(spatial_unit)
+
+        if not self._sp_unit_in_sp_units(sp_unit_entity):
+            return False
+
+        fk_col_name = self._foreign_key_column_name(sp_unit_entity)
+
+        # Remove tenure mapping associated with the spatial unit
+        self.remove_spatial_unit_tenure_mapping(sp_unit_entity)
+
+        # Remove column from the collection
+        status = self.remove_column(fk_col_name)
+        if not status:
+            return False
+
+        # Remove from internal collection
+        if fk_col_name in self._spatial_unit_fk_columns:
+            del self._spatial_unit_fk_columns[fk_col_name]
+
+        return True
+
     @property
     def spatial_units_tenure(self):
         """
@@ -419,6 +458,7 @@ class SocialTenure(Entity):
     def spatial_unit_tenure_lookup(self, spatial_unit):
         """
         Retrieves the tenure lookup for the given spatial unit.
+        .. versionadded:: 1.7
         :param spatial_unit: Spatial unit whose corresponding tenure lookup 
         is to be retrieved.
         :type spatial_unit: str or Entity
