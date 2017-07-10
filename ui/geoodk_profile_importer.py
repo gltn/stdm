@@ -25,8 +25,8 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import (
     QDialog,
     QMessageBox,
-    QListWidgetItem
-
+    QListWidgetItem,
+    QFileDialog
 )
 from PyQt4.Qt import QDirIterator
 from PyQt4.QtCore import (
@@ -49,6 +49,8 @@ from stdm.geoodk.importer.uuid_extractor import InstanceUUIDExtractor
 from stdm.ui.wizard.custom_item_model import EntitiesModel
 from stdm.data.usermodels import listEntityViewer
 from stdm.geoodk.importer import EntityImporter
+from stdm.settings.projectionSelector import ProjectionSelector
+
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_geoodk_import.ui'))
@@ -75,20 +77,22 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
         self.path = None
         self.instance_list = []
+        self.relations = {}
+        self.parent_ids = {}
+
+        self._notif_bar_str = NotificationBar(self.vlnotification)
 
         self.entity_model = EntitiesModel()
         self.uuid_extractor = InstanceUUIDExtractor(self.path)
 
-        self.cbo_profile.currentIndexChanged.connect(self.current_profile_changed)
-        self.btn_chang_dir.clicked.connect(self.entity_attribute_to_database)
-        self.lst_widget.itemClicked.connect(self.user_selected_entities)
 
+        self.cbo_profile.currentIndexChanged.connect(self.current_profile_changed)
+        self.btn_chang_dir.clicked.connect(self.on_directory_search)
+        self.lst_widget.itemClicked.connect(self.user_selected_entities)
+        self.btn_srid.clicked.connect(self.projection_settings)
 
         self.load_profiles()
         self.instance_dir()
-
-        self._notif_bar_str = NotificationBar(self.vlnotification)
-
 
     def load_config(self):
         """
@@ -150,6 +154,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.on_filepath()
         self.available_records()
         self.on_dir_path()
+        self.check_previous_import()
         self.profile_instance_entities()
 
 
@@ -192,8 +197,11 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         Access the file directory by constructing the full path
         :return: string
         """
-        self.path = HOME + "/.stdm/Downloads"
-        self.txt_directory.setText(self.path)
+        if self.txt_directory.text() != '':
+            self.path = self.txt_directory.text()
+        else:
+            self.path = HOME + "/.stdm/Downloads"
+            self.txt_directory.setText(self.path)
         return self.path
 
     def xform_xpaths(self):
@@ -221,7 +229,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
     def on_dir_path(self):
         """
-        Extract the specific folder information
+        Extract the specific folder information and rename the file
         :return:
         """
         self.uuid_extractor.new_list = []
@@ -236,7 +244,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         so that we can uniquely identify each file
         :return:
         """
-
         for f in os.listdir(path):
             if os.path.isfile(os.path.join(path, f)):
                 file_instance = os.path.join(path, f)
@@ -277,7 +284,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         entity_list = self.instance_entities()
         if entity_list is not None and len(entity_list) > 0:
             for entity in entity_list:
-                list_widget = QListWidgetItem(entity, self.lst_widget)
+                list_widget = QListWidgetItem(
+                    current_profile().entity_by_name(entity).short_name, self.lst_widget)
                 list_widget.setCheckState(Qt.Unchecked)
         else:
             return
@@ -293,7 +301,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             for i in range(count):
                 item = self.lst_widget.item(i)
                 if item.checkState() == Qt.Checked:
-                    user_list.append(item.text())
+                    user_list.append(current_profile().entity(item.text()).name)
             return user_list
         else:
             return None
@@ -304,18 +312,17 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         :return:
         """
         dirs = self.xform_xpaths()
-
+        current_etities = []
         if len(dirs) > 0:
             dir_f = dirs[0]
             instance_file = [f for f in os.listdir(dir_f)]
             self.uuid_extractor.set_file_path(os.path.join(dir_f, instance_file[0]))
             entity_list = self.uuid_extractor.document_entities(self.profile)
-            if len(entity_list)>0:
-                entity_list.pop(0)
-                entity_list.pop(len(entity_list) - 1)
-
-                return entity_list
-
+            for entity_name in entity_list:
+                if current_profile().entity_by_name(entity_name) is not None:
+                    current_etities.append(entity_name)
+            if len(current_etities) > 0:
+                return current_etities
 
     def entity_attribute_to_database(self, values):
         """
@@ -325,64 +332,98 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         :return:Object
         :type: dbObject
         """
+        self.relations = {}
         self.txt_feedback.clear()
-        #self._notif_bar_str.clear()
-        #try:
-        if len(self.instance_list)>0:
-            self.pgbar.setRange(0, len(self.instance_list))
+        self._notif_bar_str.clear()
+        try:
+            userlist = []
+            parents_info = []
             counter = 0
             if len(self.instance_list) > 0:
+                self.pgbar.setRange(0, len(self.instance_list))
                 self.pgbar.setValue(0)
                 for instance in self.instance_list:
                     counter = counter + 1
                     entity_importer = EntityImporter(instance)
-                    for entity in values:
-                        ischild, parent_name = self.foreign_key_first(entity)
-                        if ischild:
-                            self.feedback_message(parent_name)
-                        entity_importer.process_import_to_db(entity)
-
+                    #set the geometry coodinate system
+                    entity_importer.geomsetter(self.on_projection_select())
+                    has_relations = self.has_foreign_keys_parent(values)
+                    if has_relations:
+                        #Import parents table first
+                        for parent_table in self.relations.values():
+                            if parent_table[1] in self.instance_entities():
+                                ref_id = entity_importer.process_parent_entity_import(parent_table[1])
+                                self.parent_ids[parent_table[1]] = [ref_id, parent_table[1]]
+                                parents_info.append(parent_table[1])
+                                if parent_table[1] in values:
+                                    values.remove(parent_table[1])
+                    for table in values:
+                        if table not in parents_info:
+                            entity_importer.process_import_to_db(table, self.parent_ids)
                     self.txt_feedback.append('saving record "{0}"'
-                                             ' to database'.format(counter))
+                                          ' to database'.format(counter))
                     self.pgbar.setValue(counter)
-                    self.move_imported_file(instance)
                 self.txt_feedback.append('Number of record successfully imported:  {}'
-                                             .format(counter))
-        else:
-            self._notif_bar_str.insertErrorNotification("No user selected entities to import")
-            self.pgbar.setValue(0)
-        #
-        # except AttributeError as ex:
-        #     self._notif_bar_str.insertErrorNotification(ex.message)
-        #
-        # except TypeError as te:
-        #     self._notif_bar_str.insertErrorNotification(te.message)
-    def foreign_key_first(self, table):
+                                                  .format(counter))
+                self.move_imported_file()
+            else:
+                 self._notif_bar_str.insertErrorNotification("No user selected entities to import")
+                 self.pgbar.setValue(0)
+        except AttributeError as ex:
+             self._notif_bar_str.insertErrorNotification(ex.message)
+
+        except TypeError as te:
+             self._notif_bar_str.insertErrorNotification(te.message)
+
+    def has_foreign_keys_parent(self, select_entities):
         """
         Ensure we check that the table is not parent else
         import parent table first
         :return:
         """
-        ischild = False
-        parent_object = None
-        table_object = current_profile().entity_by_name(table)
-        cols = table_object.columns.values()
-        for col in cols:
-            if col.TYPE_INFO == 'FOREING KEY':
-                ischild = True
-                parent_object = table_object.columns[col]
-                return ischild, parent_object.parent.name
-        else:
-            return ischild, None
+        has_relations = False
+        for table in select_entities:
+            table_object = current_profile().entity_by_name(table)
+            cols = table_object.columns.values()
+            for col in cols:
+                if col.TYPE_INFO == 'FOREIGN_KEY':
+                    parent_object = table_object.columns[col.name]
+                    if parent_object:
+                        self.relations[col.name] = [table, parent_object.parent.name]
+                        has_relations = True
+                    else:
+                        self.feedback_message('unable to read foreign key properties')
+                        return
+        return has_relations
 
-
-    def delete_imported_file(self):
+    def move_imported_file(self):
         """
         Ensure that only import are done once
         :return:
         """
-        for file in self.instance_list:
-            os.removedirs(os.path.dirname(file))
+        for files in self.instance_list:
+            head, tail = os.path.split(files)
+            if os.access(head, os.F_OK):
+                shutil.copy(head, self.instance_path())
+
+    def check_previous_import(self):
+        """
+        Ensure we are importing files once
+        :return:
+        """
+        for files in self.instance_list:
+
+            head, tail = os.path.split(files)
+            base_dir = os.path.basename(head)
+            instance_dir = self.instance_path()+'/'+base_dir
+            if os.path.exists(os.path.join(instance_dir, tail)):
+                self.instance_list.remove(files)
+                self.txt_count.setText(str(len(self.instance_list)))
+        if self.record_count() != len(self.instance_list):
+            msg = 'Some files have been already imported and therefore' \
+                  'not enumerated'
+            #self._notif_bar_str.insertErrorNotification(msg)
+
 
     def available_records(self):
         """
@@ -406,7 +447,36 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         Format the profile name by removing underscore character
         :return:
         """
-        return self.profile.replace("_", " ")
+        return self.profile
+
+    def projection_settings(self):
+        """
+        let user select the projections for the data
+        :return:
+        """
+        project_select = ProjectionSelector(self)
+        projection = project_select.loadAvailableSystems()
+        self.txt_srid.setText(str(projection))
+
+    def on_projection_select(self):
+        """
+        Get the selected projection and set it during data import
+        :return:
+        """
+        vals = self.txt_srid.text().split(":")
+        return vals[1]
+
+    def on_directory_search(self):
+        """
+        Let the user choose the directory with instances
+        :return:
+        """
+        dir_name = QFileDialog.getExistingDirectory(
+                self, 'Open Directory', "/home", QFileDialog.ShowDirsOnly
+                )
+        if dir_name:
+            self.txt_directory.setText(str(dir_name))
+            self.current_profile_changed()
 
     def feedback_message(self, msg):
         """
@@ -415,7 +485,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         msgbox = QMessageBox()
         msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.No)
-        msgbox.setWindowTitle("Information box")
+        msgbox.setWindowTitle("Data Import")
         msgbox.setText(msg)
         msgbox.exec_()
         msgbox.show()
@@ -426,37 +496,28 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
         :return:
         """
-        self._notif_bar_str.clear()
-        #try:
-        msg = 'Saving {0} records into db.....'
-        if len(self.instance_list) > 1:
+        try:
             if self.lst_widget.count() < 1:
-                msg = 'No entities found to import'
+                msg = 'Current profile matched no records for import'
                 self._notif_bar_str.insertErrorNotification(msg)
                 return
-            if len(self.user_selected_entities())<1:
+            entities = self.user_selected_entities()
+            if len(entities) < 1:
                 if QMessageBox.information(self,
-                                        QApplication.translate('MobileForms', 'Import Error'),
-                                        QApplication.translate('MobileForms',
-                                                    'The user has not '
-                                                    'selected any entity. All entities '
-                                                    'will be imported'),QMessageBox.Ok |
-                                                   QMessageBox.No) == QMessageBox.Ok:
+                        QApplication.translate('MobileForms', 'Import Error'),
+                        QApplication.translate('MobileForms',
+                        'The user has not '
+                        'selected any entity. All entities '
+                        'will be imported'), QMessageBox.Ok |
+                                            QMessageBox.No) == QMessageBox.Ok:
                     entities = self.instance_entities()
-                    self._notif_bar_str.insertInformationNotification(msg.format(len(entities)))
-                    self.entity_attribute_to_database(entities)
-            else:
 
-                entities = self.user_selected_entities()
-                self._notif_bar_str.insertInformationNotification(msg.format(len(entities)))
-                self.entity_attribute_to_database(entities)
-            self._notif_bar_str.clear()
-        else:
-            msg = "Unable to read records in the current profile"
-            self._notif_bar_str.insertInformationNotification(msg)
-        # except TypeError as ty:
-        #     self._notif_bar_str.insertErrorNotification(ty.message)
-        #     return
+                else:
+                    return
+            self.entity_attribute_to_database(entities)
+        except Exception as ex:
+            self._notif_bar_str.insertErrorNotification(ex.message)
+            self.feedback_message(str(ex.message))
 
 
 

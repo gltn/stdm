@@ -232,6 +232,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         doc_model = self.create_node("model")
         doc_model.appendChild(self._create_model_props())
         self.create_header_intro(doc_model)
+        self.create_form_identifier_field(doc_model)
         self.bind_default_parameters(doc_model)
         self.create_model_bind_attributes(doc_model)
         doc_model.appendChild(self.model_unique_id_generator())
@@ -244,6 +245,14 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         """
         return self.create_node("intro")
 
+    def parent_child_code_identifier(self):
+        """
+        Create a node that will hold a field for grouping entities
+        User will input this code to enable idetification of related entities
+        :return:
+        """
+        return self.create_node('identity')
+
     def create_header_intro(self, parent_node):
         """
         Create an introduction text available to user indicating which profile is on
@@ -255,6 +264,18 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         intro_node.setAttribute("type", "string")
         parent_node.appendChild(intro_node)
         return intro_node
+
+    def create_form_identifier_field(self, parent_node):
+        """
+        Create an introduction text available to user indicating which profile is on
+        :return:
+        """
+        identifier_node = self.create_node("bind")
+        #identifier_node.setAttribute("readonly", "true()")
+        identifier_node.setAttribute("nodeset", self.set_model_xpath("identity"))
+        identifier_node.setAttribute("type", "string")
+        parent_node.appendChild(identifier_node)
+        return identifier_node
 
     def _create_model_props(self):
         """
@@ -279,7 +300,9 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         has not been considered
         """
         intro = self.intro_node()
+        identity = self.parent_child_code_identifier()
         instance_id.appendChild(intro)
+        instance_id.appendChild(identity)
         if isinstance(self.entities, list):
             for entity in self.entities:
                 self.initialize_entity_reader(entity)
@@ -364,8 +387,27 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         """
         body_section_node = self.create_node("h:body")
         #body_section_node.appendChild(self.create_nested_entity_data
+        self.create_form_identifier(body_section_node)
         self.create_nested_entity_data(body_section_node)
         return body_section_node
+
+    def create_form_identifier(self, parent):
+        """
+        Create a field for form Identifier for related field
+        This will help in determining which parents entity and child entities
+        are related.
+        The user will input a unique code to identified relationship
+        :return:
+        """
+        identifier_node = self.create_node("input")
+        identifier_node.setAttribute("ref", self.set_model_xpath('identity'))
+
+        group_label = self.create_node("label")
+        label_txt = self.create_text_node('Enter Group Identifier')
+        group_label.appendChild(label_txt)
+        identifier_node.appendChild(group_label)
+        parent.appendChild(identifier_node)
+
 
     def create_nested_entity_data(self, parent_node):
         """
@@ -395,8 +437,10 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         group_node.setAttribute("appearance", "field-list")
         group_node.setAttribute("ref",cate_name)
         group_label = self.create_node("label")
+        # label_txt = self.create_text_node(
+        #     self.profile_entity + ": "+entity.replace("_", " ").title())
         label_txt = self.create_text_node(
-            self.profile_entity + ": "+entity.replace("_", " ").title())
+            self.profile_entity + ": " + self.entity_read.user_entity_name())
         group_label.appendChild(label_txt)
         group_node.appendChild(group_label)
         return group_node

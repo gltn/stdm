@@ -33,7 +33,7 @@
           <string>Import GeoODK instances to STDM database</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_4">
-          <item row="4" column="0">
+          <item row="5" column="0">
            <widget class="QDialogButtonBox" name="buttonBox">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -45,6 +45,32 @@
           </item>
           <item row="0" column="0">
            <layout class="QVBoxLayout" name="vlnotification"/>
+          </item>
+          <item row="3" column="0">
+           <widget class="QGroupBox" name="groupBox_2">
+            <property name="title">
+             <string>Click Save to start import process ( import report will appear in the text below)</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_5">
+             <item row="0" column="0">
+              <widget class="QTextEdit" name="txt_feedback"/>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="lbl_feedback">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QProgressBar" name="pgbar">
+               <property name="value">
+                <number>0</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
           </item>
           <item row="1" column="0">
            <widget class="QFrame" name="frame">
@@ -102,6 +128,12 @@
                      <width>0</width>
                      <height>30</height>
                     </size>
+                   </property>
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                   <property name="placeholderText">
+                    <string>Path to the collected data</string>
                    </property>
                   </widget>
                  </item>
@@ -166,30 +198,47 @@
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QGroupBox" name="groupBox_2">
-            <property name="title">
-             <string>Click save to start import process ( import report will appear in the text below)</string>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_5">
-             <item row="0" column="0">
-              <widget class="QTextEdit" name="txt_feedback"/>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="lbl_feedback">
-               <property name="text">
-                <string/>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0">
-              <widget class="QProgressBar" name="pgbar">
-               <property name="value">
-                <number>0</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
+           <layout class="QGridLayout" name="gridLayout_12">
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="txt_srid">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>EPSG:4326</string>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+              <property name="placeholderText">
+               <string>Coordinate System</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_13">
+              <property name="text">
+               <string>Select Coordinate System (for map data)</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QPushButton" name="btn_srid">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Select</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>

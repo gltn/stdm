@@ -85,7 +85,7 @@ class InstanceUUIDExtractor():
 
     def document_entities(self, profile):
         """
-        Get enities in the document
+        Get entities in the document
         :return:
         """
         self.set_document()

@@ -171,7 +171,16 @@ class GeomPolgyon(GeometryProvider):
         """
         Initialize variables
         """
+        self.srid = 4326
         GeometryProvider.__init__(self, geomlist)
+
+    def user_srid(self, srid):
+        """
+        Set the srid to the one selected by the user
+        :param srid:
+        :return:
+        """
+        self.srid = srid
 
     def polygon_to_Wkt(self):
         """
@@ -187,7 +196,7 @@ class GeomPolgyon(GeometryProvider):
         #     self.destination_coordinate_system())
         # 'SRID={};{}'.format(22033, poly_as_text)poly_as_text.transform(crsTransform)
 
-        return 'SRID={};{}'.format(4326, poly_as_text)
+        return 'SRID={};{}'.format(self.srid, poly_as_text)
 
 
 

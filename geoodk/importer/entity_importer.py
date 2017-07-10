@@ -42,6 +42,8 @@ class EntityImporter():
         self.instance = instance
         self.instance_doc = QDomDocument()
         self.set_instance_document(self.instance)
+        self.key_watch = 0
+        self.geomval = 4326
 
     def set_instance_document(self, file_p):
         """
@@ -60,6 +62,14 @@ class EntityImporter():
         DOCUMENT = self.instance_doc
         return DOCUMENT
 
+    def geomsetter(self, val):
+        """
+        Get user input on geometry
+        :param val:
+        :return:
+        """
+        self.geomval = val
+
     def entity_attributes_from_instance(self, entity):
         """
         Get particular entity attributes from the
@@ -75,28 +85,46 @@ class EntityImporter():
         if entity_nodes:
             for j in range(entity_nodes.count()):
                 node_val = entity_nodes.item(j).toElement()
-                attributes[node_val.nodeName()] = node_val.text()
+                attributes[node_val.nodeName()] = node_val.text().rstrip()
         return attributes
 
-    def process_import_to_db(self, entity):
+    def process_import_to_db(self, entity,ids):
         """
         Save the object data to the database
+        :return:
+        """
+        success = False
+        if self.instance_doc is not None:
+            self.set_global_document()
+            attributes = self.entity_attributes_from_instance(entity)
+            entity_add = Save2DB(entity, attributes,ids)
+            entity_add.save_to_db()
+            entity_add.get_srid(self.geomval)
+            self.key_watch = entity_add.key
+            success = True
+        return success
+
+    def process_parent_entity_import(self, entity):
+        """
+
+        :param entity:
         :return:
         """
         if self.instance_doc is not None:
             self.set_global_document()
             attributes = self.entity_attributes_from_instance(entity)
             entity_add = Save2DB(entity, attributes)
-            entity_add.save_to_db()
-        else:
-            return
+            entity_add.get_srid(self.geomval)
+            ref_id = entity_add.save_parent_to_db()
+        return ref_id
+
 
 
 class Save2DB:
     """
     Class to insert entity data into db
     """
-    def __init__(self, entity, attributes):
+    def __init__(self, entity, attributes, ids=None):
         """
         Initialize class and class variable
         """
@@ -104,6 +132,9 @@ class Save2DB:
         self.form_entity = entity
         self.entity = self.object_from_entity_name(self.form_entity)
         self.model = self.dbmodel_from_entity()
+        self.key = 0
+        self.parents_ids = ids
+        self.geom = 4326
 
     def object_from_entity_name(self, entity):
         """
@@ -120,10 +151,7 @@ class Save2DB:
         """
         entity_object = entity_model(self.entity)
         entity_object_model = entity_object()
-        if entity_object_model is not None:
-            return entity_object_model
-        else:
-           raise TypeError('Retry again, object was not well mapped')
+        return entity_object_model
 
     def save_to_db(self):
         """
@@ -135,10 +163,27 @@ class Save2DB:
             if hasattr(self.model, k):
                 col_type = self.column_info().get(k)
                 col_prop = self.entity.columns[k]
-                var = attribute_formatter(col_type, col_prop, v)
+                var = self.attribute_formatter(col_type, col_prop, v)
                 setattr(self.model, k, var)
         self.model.save()
         self.cleanup()
+
+
+    def save_parent_to_db(self):
+        """
+        Format object attribute data from entity
+        attribute
+        :return:
+        """
+        for k, v in self.attributes.iteritems():
+            if hasattr(self.model, k):
+                col_type = self.column_info().get(k)
+                col_prop = self.entity.columns[k]
+                var = self.attribute_formatter(col_type, col_prop, v)
+                setattr(self.model, k, var)
+        self.model.save()
+        self.key = self.model.id
+        return self.key
 
     def column_info(self):
         """
@@ -160,31 +205,48 @@ class Save2DB:
         self.entity = None
         self.attributes = None
 
+    def get_srid(self, srid):
+        """
+        Let the user specify the coordinate system during data import
+        :param srid:
+        :return:
+        """
+        self.geom = srid
+        return self.geom
 
-def attribute_formatter(col_type, col_prop, var):
-    """
 
-    :return:
-    """
-    if col_type == 'LOOKUP':
-        if not len(var) > 3:
-            return entity_attr_to_id(col_prop.parent, "code", var)
-        else:
-            return lookup_id_from_value(col_prop.parent, var)
-    elif col_type == 'ADMIN_SPATIAL_UNIT':
-        if not len(var) > 3:
-            return entity_attr_to_id(col_prop.parent, "code", var)
-        else:
-            return entity_attr_to_id(col_prop.parent, "name", var)
+    def attribute_formatter(self, col_type, col_prop, var):
+        """
 
-    elif col_type == 'MULTIPLE_SELECT':
-        if not len(var) > 3:
-            return entity_attr_to_id(col_prop.association.first_parent, "code", var)
+        :return:
+        """
+        if col_type == 'LOOKUP':
+            if not len(var) > 3 and var != 'Yes' and var != 'No':
+                return entity_attr_to_id(col_prop.parent, "code", var)
+            else:
+                return lookup_id_from_value(col_prop.parent, var)
+        elif col_type == 'ADMIN_SPATIAL_UNIT':
+            if not len(var) > 3:
+                return entity_attr_to_id(col_prop.parent, "code", var)
+            else:
+                return entity_attr_to_id(col_prop.parent, "name", var)
+
+        elif col_type == 'MULTIPLE_SELECT':
+            if not len(var) > 3:
+                return entity_attr_to_id(col_prop.association.first_parent, "code", var)
+            else:
+                return lookup_id_from_value(col_prop.association.first_parent, var)
+        elif col_type == 'GEOMETRY':
+            geom_provider = GeomPolgyon(var)
+            geom_provider.user_srid(self.geom)
+            return geom_provider.polygon_to_Wkt()
+        elif col_type == 'FOREIGN_KEY':
+            if len(self.parents_ids) < 0:
+                return
+            else:
+                for key, values in self.parents_ids.iteritems():
+                    if col_prop.parent.name == values[1]:
+                        return values[0]
         else:
-            return lookup_id_from_value(col_prop.association.first_parent, var)
-    elif col_type == 'GEOMETRY':
-        geom_provider = GeomPolgyon(var)
-        return geom_provider.polygon_to_Wkt()
-    else:
-        return var
+            return var
 
