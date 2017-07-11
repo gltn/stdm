@@ -25,7 +25,7 @@ from PyQt4.QtCore import QDir
 
 HOME = QDir.home().path()
 
-CONFIG_FILE = HOME + '/.stdm/Downloads'
+CONFIG_FILE = HOME + '/.stdm/downloads'
 
 
 class ImportLogger:
@@ -36,6 +36,7 @@ class ImportLogger:
         """
         Initialize vairables
         """
+        self.config_logger = ConfigParser.RawConfigParser()
 
     def logger_path(self):
         """
@@ -53,18 +54,62 @@ class ImportLogger:
         Create the log file document
         :return:
         """
-        config_logger = ConfigParser.ConfigParser()
-        config_location  = self.logger_path()
+
+        config_location = self.logger_path()
         if os.path.isfile(config_location + '/history.ini'):
-            with open(config_location + '/history.ini', 'w+') as logger:
-                config_logger.read(logger)
-            return config_logger
+            return config_location + '/history.ini'
         else:
-            return None
+           return open(config_location + '/history.ini', 'r')
+
+    def read_logger(self,):
+        """
+        """
+        logger = self.create_logger_doc()
+        return logger
+
+    def logger_document(self):
+        """
+
+        :return:
+        """
+        return self.create_logger_doc()
 
     def logger_sections(self):
         """
         Create sections in the logger document
         :return:
         """
+        logger = self.read_logger()
+        with open(logger, 'r') as f:
+            self.config_logger.read(f)
+            if self.config_logger.has_section('imports'):
+                return
+            else:
+                self.config_logger.add_section('imports')
+            f.close()
+
+    def check_file_exist(self, instance):
+        """
+
+        :return:
+        """
+        logger = self.read_logger()
+        with open(logger, 'r') as f:
+            self.config_logger.read(f)
+            if self.config_logger.has_section('imports'):
+                return self.config_logger.get('imports', instance)
+            f.close()
+
+    def write_section_data(self, path, file_name):
+        """
+
+        :return:
+        """
+        logger = self.read_logger()
+        with open(logger, 'w') as f:
+            self.config_logger.set('imports',path, file_name)
+            self.config_logger.write(f)
+            f.close()
+
+
 

@@ -32,7 +32,7 @@ from PyQt4.Qt import QDirIterator
 from PyQt4.QtCore import (
     QDir,
     QFile,
-
+    QDateTime
 )
 from PyQt4.Qt import QApplication
 
@@ -50,6 +50,7 @@ from stdm.ui.wizard.custom_item_model import EntitiesModel
 from stdm.data.usermodels import listEntityViewer
 from stdm.geoodk.importer import EntityImporter
 from stdm.settings.projectionSelector import ProjectionSelector
+from stdm.geoodk.importer import ImportLogger
 
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -57,7 +58,7 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 HOME = QDir.home().path()
 
-CONFIG_FILE = HOME + '/.stdm/Downloads'
+CONFIG_FILE = HOME + '/.stdm/downloads'
 
 class ProfileInstanceRecords(QDialog, FORM_CLASS):
     """
@@ -79,7 +80,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.instance_list = []
         self.relations = {}
         self.parent_ids = {}
-
+        self.importlogger = ImportLogger()
         self._notif_bar_str = NotificationBar(self.vlnotification)
 
         self.entity_model = EntitiesModel()
@@ -200,7 +201,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         if self.txt_directory.text() != '':
             self.path = self.txt_directory.text()
         else:
-            self.path = HOME + "/.stdm/Downloads"
+            self.path = HOME + "/.stdm/downloads"
             self.txt_directory.setText(self.path)
         return self.path
 
@@ -363,9 +364,10 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     self.txt_feedback.append('saving record "{0}"'
                                           ' to database'.format(counter))
                     self.pgbar.setValue(counter)
+                    self.archive_imported_file(instance)
                 self.txt_feedback.append('Number of record successfully imported:  {}'
                                                   .format(counter))
-                self.move_imported_file()
+
             else:
                  self._notif_bar_str.insertErrorNotification("No user selected entities to import")
                  self.pgbar.setValue(0)
@@ -396,15 +398,17 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         return
         return has_relations
 
-    def move_imported_file(self):
+    def archive_imported_file(self, instance):
         """
         Ensure that only import are done once
         :return:
         """
-        for files in self.instance_list:
-            head, tail = os.path.split(files)
-            if os.access(head, os.F_OK):
-                shutil.copy(head, self.instance_path())
+        current_time = QDateTime()
+        import_time = current_time.currentDateTime()
+        head, tail= os.path.split(instance)
+        self.importlogger.logger_sections()
+        self.importlogger.write_section_data(tail,
+                                             head +"##"+ str(import_time.toPyDateTime()))
 
     def check_previous_import(self):
         """
@@ -412,17 +416,15 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         :return:
         """
         for files in self.instance_list:
-
-            head, tail = os.path.split(files)
-            base_dir = os.path.basename(head)
-            instance_dir = self.instance_path()+'/'+base_dir
-            if os.path.exists(os.path.join(instance_dir, tail)):
+            current_dir = os.path.basename(files)
+            exist = self.importlogger.check_file_exist(current_dir)
+            if exist:
                 self.instance_list.remove(files)
-                self.txt_count.setText(str(len(self.instance_list)))
+        self.txt_count.setText(str(len(self.instance_list)))
         if self.record_count() != len(self.instance_list):
             msg = 'Some files have been already imported and therefore' \
                   'not enumerated'
-            #self._notif_bar_str.insertErrorNotification(msg)
+            self._notif_bar_str.insertErrorNotification(msg)
 
 
     def available_records(self):
@@ -447,7 +449,11 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         Format the profile name by removing underscore character
         :return:
         """
-        return self.profile
+        if self.txt_filter.text() != '':
+            filter_text = self.txt_filter.text()
+            return filter_text
+        else:
+            return self.profile
 
     def projection_settings(self):
         """

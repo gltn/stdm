@@ -349,6 +349,16 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             base_node.appendChild(bind_node)
         return base_node
 
+    def special_data_constraint(self, var):
+        """
+        Get data type like geometry and format to the type
+        required
+        :return:
+        """
+        #if var =='GEOMETRY':
+        raise NotImplementedError
+
+
     def model_unique_id_generator(self):
         """
         Create static fields that  needed by XForm to hold instance GUUID
