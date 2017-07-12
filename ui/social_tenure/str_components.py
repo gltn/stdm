@@ -629,13 +629,13 @@ class RelatedTenureInfo:
         custom_attr_entity = self.social_tenure.custom_attributes_entity
 
         # If None then create
-        if custom_attr_entity is None:
-            self.social_tenure.initialize_custom_attributes_entity()
-            custom_attr_entity = self.social_tenure.custom_attributes_entity
-        print vars(custom_attr_entity)
+        # if custom_attr_entity is not None:
+        # #     self.social_tenure.initialize_custom_attributes_entity()
+        # #     custom_attr_entity = self.social_tenure.custom_attributes_entity
+        #     print vars(custom_attr_entity)
         # custom_entity = current_profile().social_tenure.parties[0]
         self.entity_editor = EntityEditorDialog(
-            custom_attr_entity, None, self.parent)
+            custom_attr_entity, None, self.parent, False)
         self.container.addWidget(self.entity_editor.entity_tab_widget)
 
 

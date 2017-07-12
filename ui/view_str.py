@@ -95,11 +95,11 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         self._plugin = plugin
 
+
+        # self.tbPropertyPreview.set_iface(self._plugin.iface)
         QTimer.singleShot(
-            300,
-            lambda :self.tbPropertyPreview.set_iface(self._plugin.iface)
-        )
-        #self.tbPropertyPreview.set_iface(self._plugin.iface)
+            100, lambda: self.tbPropertyPreview.set_iface(self._plugin.iface))
+
         self.curr_profile = current_profile()
 
         self.spatial_units = self.curr_profile.social_tenure.spatial_units
@@ -220,10 +220,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         """
         Initialize widget
         """
-        self.init_progress_dialog()
-
         self.tb_actions.setVisible(False)
-        QTimer.singleShot(30, self._load_entity_configurations)
+        self._load_entity_configurations()
 
         self.add_tool_buttons()
 
@@ -305,10 +303,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         try:
             self.parties = self.curr_profile.social_tenure.parties
             tb_str_entities = self.parties + self.spatial_units
-            self.progress.setRange(0, len(tb_str_entities) - 1)
 
             for i, t in enumerate(tb_str_entities):
-
                 QApplication.processEvents()
                 entity_cfg = self._entity_config_from_profile(
                     str(t.name), t.short_name
@@ -322,8 +318,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                             entity_cfg, self.tvSTRResults, self
                         )
                     )
-                self.progress.setValue(i)
-            self.progress.hide()
 
         except Exception as pe:
             self._notif_search_config.clear()
@@ -483,7 +477,12 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                 if isinstance(node, SpatialUnitNode):
                     # Expand the Spatial Unit preview
                     self.toolBox.setCurrentIndex(0)
-                    self.draw_spatial_unit(entity_name, node.model())
+                    table_name = '{}{}'.format(
+                        self.curr_profile.prefix,
+                        node.current_data()[0].replace(' ', '_').lower()
+                    )
+
+                    self.draw_spatial_unit(table_name, node.model())
                     self.editSTR.setDisabled(True)
                     self.deleteSTR.setDisabled(True)
 
@@ -592,6 +591,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         :param row_id: Sqlalchemy object representing a feature.
         """
         entity = self.curr_profile.entity_by_name(entity_name)
+
         self.tbPropertyPreview.draw_spatial_unit(entity, model)
 
     def onTreeViewItemExpanded(self,modelindex):

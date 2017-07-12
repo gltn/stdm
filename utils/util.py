@@ -949,42 +949,32 @@ def profile_and_user_views(profile, check_party=False):
     from stdm.data.pg_utils import (
         pg_views
     )
-    from stdm.data.configuration.stdm_configuration import (
-        StdmConfiguration
-    )
-    source_tables = []
-    stdm_config = StdmConfiguration.instance()
-    social_tenure = profile.social_tenure
-    for value in pg_views():
-        if 'vw_social_tenure_relationship' in value:
-            # if a value exist on the left side of vw, assess further
-            if len(value.split('_vw')) > 0:
-                entity = value.split('_vw')[0]
-                # we are more sure this could be entity
-                if '_' in entity and len(entity.split('_')) > 0:
-                    # if the prefix exist in the configuration
-                    if entity.split('_')[0] in \
-                            stdm_config.prefixes():
-                        # Check if the entity is in the current profile
-                        entity_obj = profile.entity_by_name(entity)
-                        if entity_obj is not None:
-                            if check_party and entity_obj in social_tenure.parties:
-                                if not social_tenure.multi_party:
-                                    source_tables.append(value)
-                            else:
-                                source_tables.append(value)
-                    # it means this is not a valid entity so add it
-                    else:
-                        source_tables.append(value)
-                # it is a user view; add it to the combo list.
-                else:
-                    source_tables.append(value)
-            # it is a user view; add it to the combo list.
-            else:
-                source_tables.append(value)
-        else:
-            source_tables.append(value)
 
+    source_tables = []
+
+    social_tenure = profile.social_tenure
+
+    for view, entity in social_tenure.views.iteritems():
+        ### Not necessary when spatial unit none issue fixed
+        # TODO remove this
+        if entity is None:
+            source_tables.append(view)
+            continue
+        # For party views, if check party is true, add party views.
+        # If multi-party is false. Otherwise, add all party views - this is not
+        # recommended for composer data source.
+        if entity in social_tenure.parties:
+            if check_party:
+                if not social_tenure.multi_party:
+                    source_tables.append(view)
+            else:
+                source_tables.append(view)
+
+        else:
+            source_tables.append(view)
+    for value in pg_views():
+        if value not in social_tenure.views.keys():
+            source_tables.append(value)
     return source_tables
 
 

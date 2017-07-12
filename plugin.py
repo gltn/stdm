@@ -895,10 +895,12 @@ class STDMQGISLoader(object):
 
         # add the tables to the stdm toolbar
         # Format the table names to friendly format before adding them
-
+        social_tenure = self.current_profile.social_tenure
+        #custom_attr_entity = social_tenure.custom_attributes_entity
         if self.user_entities() is not None:
             user_entities = dict(self.user_entities())
             for i, (name, short_name) in enumerate(user_entities.iteritems()):
+                # if custom_attr_entity.name != name:
                 display_name = unicode(short_name).replace("_", " ").title()
                 self._moduleItems[display_name] = name
 

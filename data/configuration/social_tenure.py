@@ -866,5 +866,5 @@ class SocialTenure(Entity):
         :param engine: SQLAlchemy connectable object.
         :type engine: Engine
         """
-        pass #self.view_creator(engine)
+        self.view_creator(engine)
 
