@@ -106,10 +106,6 @@ class SocialTenure(Entity):
         # Added in v1.7
         self._spatial_unit_fk_columns = OrderedDict()
 
-        self._custom_attributes_entity = self.profile.entity(
-            self.custom_attributes_entity_name
-        )
-
         # Mapping of spatial units and corresponding tenure types
         self._sp_units_tenure = {}
 
@@ -130,7 +126,19 @@ class SocialTenure(Entity):
         .. versionadded:: 1.7
         :rtype: Entity
         """
-        return self._custom_attributes_entity
+        return self.profile.entity(self.custom_attributes_entity_name)
+
+    def has_custom_attributes_entity(self):
+        """
+        :return: Returns True if there exists a custom tenure attributes 
+        entity, otherwise False.
+        .. versionadded:: 1.7
+        :rtype: bool
+        """
+        if self.custom_attributes_entity is None:
+            return False
+
+        return True
 
     @property
     def custom_attributes_entity_name(self):
@@ -146,7 +154,7 @@ class SocialTenure(Entity):
         column for linking the two entities. 
         """
         # Created only if it does not exist
-        if self._custom_attributes_entity is None:
+        if self.custom_attributes_entity is None:
             attr_ent = Entity(
                 self.custom_attributes_entity_name,
                 self.profile,
@@ -158,23 +166,23 @@ class SocialTenure(Entity):
             str_col.set_entity_relation_attr('parent', self)
             str_col.set_entity_relation_attr('parent_column', 'id')
             attr_ent.add_column(str_col)
-            
-            self._custom_attributes_entity = attr_ent
-            self.profile.add_entity(self._custom_attributes_entity)
+
+            self.profile.add_entity(attr_ent)
 
     @property
     def custom_attributes(self):
         """
         :return: Returns a collection containing custom attributes names and 
         corresponding column objects. An empty dictionary will still be 
-        returned even if the custom attributes antity does not exist hence 
+        returned even if the custom attributes entity does not exist hence 
         it is important to check if it is None first.
+        .. versionadded:: 1.7
         :rtype: OrderedDict(name, BaseColumn)
         """
-        if self._custom_attributes_entity is None:
+        if self.custom_attributes_entity is None:
             return OrderedDict()
 
-        return self._custom_attributes_entity.columns
+        return self.custom_attributes_entity.columns
 
     def layer_display(self):
         """
@@ -708,6 +716,10 @@ class SocialTenure(Entity):
 
     @property
     def tenure_type_collection(self):
+        """
+        :return: Returns the primary tenure lookup.
+        :rtype: ValueList
+        """
         return self._value_list
 
     @tenure_type_collection.setter
@@ -866,5 +878,5 @@ class SocialTenure(Entity):
         :param engine: SQLAlchemy connectable object.
         :type engine: Engine
         """
-        pass #self.view_creator(engine)
+        self.view_creator(engine)
 

@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>802</width>
-    <height>637</height>
+    <width>840</width>
+    <height>638</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -1206,8 +1206,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>259</width>
-         <height>504</height>
+         <width>244</width>
+         <height>624</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -1215,13 +1215,13 @@
          <number>5</number>
         </property>
         <property name="leftMargin">
-         <number>2</number>
+         <number>3</number>
         </property>
         <property name="topMargin">
          <number>0</number>
         </property>
         <property name="rightMargin">
-         <number>1</number>
+         <number>2</number>
         </property>
         <property name="bottomMargin">
          <number>1</number>
@@ -1296,29 +1296,28 @@ linked to a single spatial unit</string>
            </size>
           </property>
           <property name="text">
-           <string>2. Set the spatial unit entity</string>
+           <string>2. Select the spatial unit entities</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="cboSPUnit">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-            <horstretch>1</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>30</height>
-           </size>
-          </property>
+         <widget class="STRSpatialUnitListView" name="lst_spatial_units">
           <property name="maximumSize">
            <size>
             <width>16777215</width>
-            <height>16777215</height>
+            <height>120</height>
            </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btn_sp_units_tenure">
+          <property name="text">
+           <string>Spatial Unit Tenure Types...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../../resources.qrc">
+            <normaloff>:/plugins/stdm/images/icons/social_tenure.png</normaloff>:/plugins/stdm/images/icons/social_tenure.png</iconset>
           </property>
          </widget>
         </item>
@@ -1422,6 +1421,24 @@ linked to a single spatial unit</string>
          </widget>
         </item>
         <item>
+         <widget class="QLabel" name="label_12">
+          <property name="text">
+           <string>4. Specify custom tenure attributes (optional)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btn_custom_attrs">
+          <property name="text">
+           <string>Custom Attributes...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../../resources.qrc">
+            <normaloff>:/plugins/stdm/images/icons/column.png</normaloff>:/plugins/stdm/images/icons/column.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
          <spacer name="verticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -1491,6 +1508,11 @@ linked to a single spatial unit</string>
    <extends>QGroupBox</extends>
    <header>qgis.gui</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>STRSpatialUnitListView</class>
+   <extends>QListView</extends>
+   <header>spatial_unit_list_view</header>
   </customwidget>
  </customwidgets>
  <tabstops>
