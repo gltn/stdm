@@ -37,9 +37,11 @@ class PairComboBoxDelegate(QStyledItemDelegate):
     """
     Provides a combobox for editing table view data.
     """
-    def __init__(self, parent=None, items_pair=[[],[]]):
+    def __init__(self, parent=None, items_pair=None):
         QStyledItemDelegate.__init__(self, parent)
         self._items_pair = items_pair
+        if self._items_pair is None:
+            self._items_pair = [[],[]]
 
     def _insert_empty_item(self, items_lst):
         if len(items_lst) > 0:
@@ -102,18 +104,67 @@ class PairComboBoxDelegate(QStyledItemDelegate):
     def updateEditorGeometry(self, editor, option, index):
         editor.setGeometry(option.rect)
 
+
+class _EditableStandardItemModel(QStandardItemModel):
+    """
+    Supports enabling/disabling columns for the list pair table view.
+    """
+    def __init__(self, parent=None, disable_column=-1):
+        super(_EditableStandardItemModel, self).__init__(1, 2, parent)
+
+        # Index of column to disable editing. -1 if not applicable.
+        self._disable_col_idx = disable_column
+
+    @property
+    def disable_column_index(self):
+        """
+        :return: Returns the index of the column which is disabled for 
+        editing. -1 if not applicable.
+        :rtype: int
+        """
+        return self._disable_col_idx
+
+    @disable_column_index.setter
+    def disable_column_index(self, value):
+        """
+        Set the index of the column which should not be editable.
+        :param value: Column index.
+        :type value: int
+        """
+        if value > 1:
+            raise IndexError(
+                self.tr(
+                    'Column index should be either -1, 0 or 1.'
+                )
+            )
+
+        self._disable_col_idx = value
+
+    def flags(self, idx):
+        if idx.column() == self._disable_col_idx:
+            return Qt.ItemIsSelectable | Qt.ItemIsEnabled
+
+        return Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsEnabled
+
+
 class ListPairTableView(QTableView):
     """
     2-column table view that enables pairing of list data through combo boxes.
     """
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, disable_editing=-1):
+        """
+        Class constructor.
+        :param parent: Parent
+        :param disable_editing: Index of the column to be disabled for 
+        editing, should be either 0 or 1.
+        """
         QTableView.__init__(self, parent)
 
         self.setEditTriggers(QAbstractItemView.DoubleClicked |
             QAbstractItemView.SelectedClicked)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
 
-        self._pair_model = QStandardItemModel(1, 2, self)
+        self._pair_model = _EditableStandardItemModel(self, disable_editing)
         self._pair_model.dataChanged.connect(self._on_pair_data_changed)
 
         self.setModel(self._pair_model)
@@ -121,6 +172,43 @@ class ListPairTableView(QTableView):
 
         self._combo_delegate = PairComboBoxDelegate(self)
         self.setItemDelegate(self._combo_delegate)
+
+        self._add_empty_last_row = True
+
+    @property
+    def disable_editing_column(self):
+        """
+        :return: Returns the index of the column whose editing is disabled.
+        :rtype: int
+        """
+        return self._pair_model.disable_column_index
+
+    @disable_editing_column.setter
+    def disable_editing_column(self, value):
+        """
+        Set the index of the column whose editing is to be disabled.
+        :param value: Index of the column.
+        :type value: int
+        """
+        self._pair_model.disable_column_index = value
+
+    @property
+    def add_empty_row(self):
+        """
+        :return: Returns True if an empty last row is to be added when a new 
+        record is added, otherwise False.
+        :rtype: bool
+        """
+        return self._add_empty_last_row
+
+    @add_empty_row.setter
+    def add_empty_row(self, value):
+        """
+        Set the value for specifying if a empty row will be added at the end when a new record is added.
+        :param value: True if nn empty last row is to be added.
+        :type value: bool
+        """
+        self._add_empty_last_row = value
 
     def set_header_labels(self, labels):
         """
@@ -144,8 +232,9 @@ class ListPairTableView(QTableView):
         rows = self._pair_model.rowCount()
         self._pair_model.removeRows(0, rows)
 
-        #Insert blank row
-        self.append_row()
+        # Insert blank row
+        if self._add_empty_last_row:
+            self.append_row()
 
     def append_row(self):
         """
@@ -154,6 +243,17 @@ class ListPairTableView(QTableView):
         items = [QStandardItem(), QStandardItem()]
 
         self._pair_model.appendRow(items)
+
+    def append_data_row(self, column1, column2):
+        """
+        Adds a new row with data for the two respective columns. Both values 
+        for column1 and column2 need to exist.
+        :param column1: Value for the first column.
+        :param column2: Value for the second column.
+        """
+        dr = [QStandardItem(column1), QStandardItem(column2)]
+
+        self._pair_model.appendRow(dr)
 
     def set_combo_selection(self, selection, empty_item=True):
         """
@@ -188,11 +288,13 @@ class ListPairTableView(QTableView):
             self._pair_model.removeRows(new_index.row(), 1)
 
             if self._pair_model.rowCount() == 0:
-                self.append_row()
+                if self._add_empty_last_row:
+                    self.append_row()
 
         elif row_state == 2:
             if not self.is_last_row_empty():
-                self.append_row()
+                if self._add_empty_last_row:
+                    self.append_row()
 
     def is_last_row_empty(self):
         """

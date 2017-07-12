@@ -250,7 +250,7 @@ class Profile(QObject):
         of the specified argument.
         :rtype: EntityRelation
         """
-        #Get corresponding entity
+        # Get corresponding entity
         if not isinstance(item, Entity):
             raise TypeError(self.tr('Entity object type expected.'))
 
@@ -348,7 +348,7 @@ class Profile(QObject):
         from being emitted. Default behavior is to emit the signal.
         :type suppress_signal: bool
         """
-        #If there is an existing item with the same name,
+        # If there is an existing item with the same name,
         # and that item action is not DROP, then do not add this.
         if item.short_name in self.entities:
             old_item = self.entities[item.short_name]
@@ -359,7 +359,7 @@ class Profile(QObject):
 
         LOGGER.debug('%s entity added to %s profile', item.short_name, self.name)
 
-        #Raise entity added signal if enabled
+        # Raise entity added signal if enabled
         if not suppress_signal:
             self.entity_added.emit(item)
 
