@@ -348,7 +348,7 @@ def format_name(attr, trim_id=True):
     return display_name
 
 
-def entity_display_columns(entity, with_header=False):
+def entity_display_columns(entity, with_header=False, exclude=[]):
     """
     Returns entity display columns.
     :param entity: Entity
@@ -378,7 +378,8 @@ def entity_display_columns(entity, with_header=False):
                 'PERCENT',
                 'AUTO_GENERATED'
             ]
-            ]
+            if c.TYPE_INFO not in exclude
+        ]
         display_column = OrderedDict(display_column)
         return display_column
     else:
@@ -401,6 +402,7 @@ def entity_display_columns(entity, with_header=False):
                 'PERCENT',
                 'AUTO_GENERATED'
             ]
+            if c.TYPE_INFO not in exclude
         ]
 
         return display_column
@@ -775,8 +777,6 @@ def enable_drag_sort(mv_widget):
     :param mv_widget: The model/view widget for which
     drag and drop sort is enabled
     :type mv_widget: QTableView, QListView
-    :return: None
-    :rtype: NoneType
     """
     mv_widget.setDragEnabled(True)
     mv_widget.setAcceptDrops(True)

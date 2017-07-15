@@ -78,7 +78,7 @@
       </property>
       <property name="maximumSize">
        <size>
-        <width>250</width>
+        <width>350</width>
         <height>500000</height>
        </size>
       </property>
@@ -323,8 +323,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>100</width>
-             <height>30</height>
+             <width>659</width>
+             <height>417</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -350,7 +350,11 @@
       <widget class="QWidget" name="componentPage41">
        <layout class="QVBoxLayout" name="verticalLayout_11">
         <item>
-         <layout class="QVBoxLayout" name="cont_box"/>
+         <layout class="QVBoxLayout" name="cont_box">
+          <item>
+           <widget class="QTabWidget" name="custom_tenure_tab"/>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>

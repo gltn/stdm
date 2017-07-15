@@ -57,7 +57,8 @@ from str_components import (
     STRType,
     SupportingDocuments,
     ValidityPeriod,
-    RelatedTenureInfo)
+    CustomTenureInfo
+)
 from stdm.utils.util import (
     format_name
 )
@@ -106,8 +107,8 @@ class BindSTREditor():
         if selected_item.text() == self.editor.tenure_type_text:
             self.bind_tenure_type()
 
-        if selected_item.text() == self.editor.related_tenure_text:
-            self.bind_related_tenure_info()
+        if selected_item.text() == self.editor.custom_tenure_info_text:
+            self.bind_custom_tenure_info()
 
         if selected_item.text() == self.editor.supporting_doc_text:
             self.bind_supporting_documents(
@@ -174,7 +175,7 @@ class BindSTREditor():
         )
         self.editor.description_lbl.setText(header)
 
-    def bind_related_tenure_info(self):
+    def bind_custom_tenure_info(self):
         """
         Binds related tenure info item to the related tenure info component
         widget and description.
@@ -259,6 +260,8 @@ class SyncSTREditorData():
         :type previous: QModelIndex
         """
         selected_item = self.editor.tree_view_model.itemFromIndex(current)
+        previous_item = self.editor.tree_view_model.itemFromIndex(previous)
+
         if selected_item is None:
             return
         str_number = selected_item.data()
@@ -283,6 +286,52 @@ class SyncSTREditorData():
             )
         if selected_item.text() == self.editor.validity_period_text:
             self.toggle_validity_period(data_store, str_number)
+
+        # save the tab forms of custom tenure info when a user unselects the node.
+        if previous_item is not None:
+            prev_str_number = previous_item.data()
+            prev_data_store = self.editor.data_store[prev_str_number]
+
+            if previous_item.text() == self.editor.custom_tenure_info_text:
+                self.save_custom_tenure_info(prev_data_store, prev_str_number)
+        # Load current custom tenure info tabs with data.
+        if selected_item.text() == self.editor.custom_tenure_info_text:
+            self.load_custom_tenure_data(data_store, str_number)
+
+
+    def load_custom_tenure_data(self, data_store, str_number):
+        """
+        Loads custom tenure data by adding tabs and associated editor with model.
+        :param data_store: The current data store object
+        :type data_store: Object
+        :param str_number: The STR number
+        :type str_number: Integer
+        """
+        self.editor.custom_tenure_tab.clear()
+        if len(data_store.custom_tenure) > 0:
+            for i, model in enumerate(data_store.custom_tenure.values()):
+                self.editor.add_custom_tenure_info_data(
+                    data_store.party.values()[i], i, model
+                )
+
+    def save_custom_tenure_info(self, prev_data_store, prev_str_number):
+        """
+        When a custom tenure node is unselected, saves the changes in the tab
+        forms.
+        :param prev_data_store: The data store object of the unselected custom
+        tenure nodes.
+        :type prev_data_store: Object
+        :param prev_str_number: The STR number of the unselected custom tenure
+        node.
+        :type prev_str_number: Integer
+        """
+        for i, party_id in enumerate(prev_data_store.custom_tenure.keys()):
+            self.editor.custom_tenure_info_component.entity_editors[
+                (prev_str_number, i)].on_model_added()
+            custom_model = self.editor.custom_tenure_info_component.entity_editors[
+                (prev_str_number, i)
+            ].model()
+            prev_data_store.custom_tenure[party_id] = custom_model
 
     def toggle_party_models(self, fk_mapper, data_store):
         """
@@ -815,6 +864,7 @@ class STREditor(QDialog, Ui_STREditor):
     str_type_updated = pyqtSignal()
     shareUpdated = pyqtSignal(list, QDoubleSpinBox)
     shareUpdatedOnZero = pyqtSignal(float)
+    customTenureSaved = pyqtSignal(object, object)
 
     def __init__(self):
         """
@@ -832,10 +882,12 @@ class STREditor(QDialog, Ui_STREditor):
 
         self.supporting_doc_component = None
         self.str_items = {}
+        self.current_profile = current_profile()
+
+        self.social_tenure = self.current_profile.social_tenure
+
         self.add_str_tree_node()
         self.party_count = OrderedDict()
-        self.current_profile = current_profile()
-        self.social_tenure = self.current_profile.social_tenure
 
         self.parties = self.social_tenure.parties
         self.spatial_units = self.social_tenure.spatial_units
@@ -853,7 +905,7 @@ class STREditor(QDialog, Ui_STREditor):
         self.str_doc_model = None
         self.spatial_unit_component = None
         self.validity_period_component = None
-        self.related_tenure_info_component = None
+        self.custom_tenure_info_component = None
         self.str_type_combo_connected = []
         self.share_spinbox_connected = []
         self.parties = self.social_tenure.parties
@@ -861,7 +913,7 @@ class STREditor(QDialog, Ui_STREditor):
         self.str_type_component = None
         self._init_str_editor()
         self.init_party_component()
-        self.init_related_tenure_info_component()
+        self.init_custom_tenure_info_component()
         # QTimer.singleShot(33, self._party_signals)
         self._party_signals()
         self.copied_party_row = OrderedDict()
@@ -942,11 +994,15 @@ class STREditor(QDialog, Ui_STREditor):
                 removed_key = party_keys[row_number]
                 del current_store.party[removed_key]
                 del current_store.str_type[removed_key]
+                del current_store.custom_tenure[removed_key]
 
             except IndexError:
                 pass
 
         self.str_type_component.remove_str_type_row(
+            row_numbers
+        )
+        self.custom_tenure_info_component.remove_entity_editor(
             row_numbers
         )
 
@@ -1007,7 +1063,7 @@ class STREditor(QDialog, Ui_STREditor):
             party
         )
 
-    def init_related_tenure_info_component(self, party=None):
+    def init_custom_tenure_info_component(self, party=None):
         """
         Initializes the str type component.
         :param party: Party entity object.
@@ -1015,11 +1071,12 @@ class STREditor(QDialog, Ui_STREditor):
         :param party: The party entity
         :type party: Entity
         """
-        if self.related_tenure_info_component is not None:
+        if self.custom_tenure_info_component is not None:
+            #self.str_item(self.custom_tenure_info_text)
             return
-        self.related_tenure_info_component = RelatedTenureInfo(
-            self.cont_box, self, self.notice
-        )
+
+        self.custom_tenure_info_component = CustomTenureInfo(self, self.notice)
+
 
     def init_spatial_unit_component(self, spatial_unit=None):
         """
@@ -1189,13 +1246,40 @@ class STREditor(QDialog, Ui_STREditor):
                 0, model.id, row_number
             )
         )
+        self.party_component.party_fk_mapper.afterEntityAdded.connect(
+            lambda model, row_number: self.add_custom_tenure_info_data(
+                model, row_number
+            )
+        )
+
         self.party_component.party_fk_mapper.deletedRows.connect(
             self.remove_party_str_row_model
         )
+
         self.party_component.party_fk_mapper.entity_combo. \
             currentIndexChanged.connect(
             self.switch_party_entity
         )
+
+    def add_custom_tenure_info_data(self, party_model, row_number,
+                                    custom_model=None):
+        """
+        Adds custom tenure info tab with editor form. It could load data if
+        the custom_model is not none.
+        :param party_model: The party model associated with custom tenure info
+        record.
+        :type party_model: Object
+        :param row_number: The row number of the party entry
+        :type row_number: Integer
+        :param custom_model: The custom tenure model that populates the tab
+        forms.
+        :type custom_model: Integer
+        """
+        self.custom_tenure_info_component.add_entity_editor(
+            self.party, party_model, self.str_number, row_number, custom_model
+        )
+        store = self.current_data_store()
+        store.custom_tenure[party_model.id] = custom_model
 
     def reset_share_spinboxes(self, data_store):
         """
@@ -1404,8 +1488,8 @@ class STREditor(QDialog, Ui_STREditor):
         self.tenure_type_text = QApplication.translate(
             'InitSTREditor', 'Tenure Information'
         )
-        self.related_tenure_text = QApplication.translate(
-            'InitSTREditor', 'Related Tenure Information'
+        self.custom_tenure_info_text = QApplication.translate(
+            'InitSTREditor', 'Custom Tenure Information'
         )
         self.supporting_doc_text = QApplication.translate(
             'InitSTREditor', 'Supporting Documents'
@@ -1429,7 +1513,7 @@ class STREditor(QDialog, Ui_STREditor):
         children[self.tenure_type_text] = 'social_tenure.png'
         children[self.supporting_doc_text] = 'document.png'
         children[self.validity_period_text] = 'period.png'
-        children[self.related_tenure_text] = 'hierarchy.png'
+        children[self.custom_tenure_info_text] = 'hierarchy.png'
         for name, icon in children.iteritems():
             item = self.child_item(str_root, name, icon)
             self.str_items['%s%s' % (name, self.str_number)] = item
@@ -1461,11 +1545,12 @@ class STREditor(QDialog, Ui_STREditor):
         item.setData(self.str_number)
 
         # Add related tenure info under tenure information
-        if name == self.related_tenure_text:
-            tenure_type_item = self.str_item(
-                self.tenure_type_text, self.str_number)
+        if name == self.custom_tenure_info_text:
+            if self.social_tenure.custom_attributes_entity is not None:
+                tenure_type_item = self.str_item(
+                    self.tenure_type_text, self.str_number)
 
-            tenure_type_item.appendRow([item])
+                tenure_type_item.appendRow([item])
 
         else:
             item.setEnabled(False)
@@ -1796,6 +1881,10 @@ class STREditor(QDialog, Ui_STREditor):
         """
         Saves the data into the database.
         """
+        if self.current_item().text() == self.custom_tenure_info_text:
+            self.sync.toggle_custom_tenure_info(
+                self.current_data_store(), self.str_number
+            )
         db_handler = STRDBHandler(self.data_store, self.str_model)
         db_handler.commit_str()
 

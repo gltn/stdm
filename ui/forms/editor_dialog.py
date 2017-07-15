@@ -108,7 +108,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.entity_tab_widget = None
         self._disable_collections = False
         self.filter_val = None
-        self.parent_entity = None
+        self.parent_entity = parent_entity
         self.child_models = OrderedDict()
         self.entity_scroll_area = None
         self.entity_editor_widgets = OrderedDict()
@@ -404,6 +404,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 c,
                 self.scroll_widget_contents
             )
+
             self.column_widgets[c] = column_widget
 
     def _setup_columns_content_area(self):
@@ -470,18 +471,17 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 row_id += 1
     
         self.entity_scroll_area.setWidget(self.scroll_widget_contents)
-
+        if self.entity_tab_widget is None:
+            self.entity_tab_widget = QTabWidget(self)
         # Check if there are children and add foreign key browsers
         if not self._disable_collections:
             ch_entities = self.children_entities()
-            if len(ch_entities) > 0:
-                if self.entity_tab_widget is None:
-                    self.entity_tab_widget = QTabWidget(self)
-                # Add primary tab if necessary
-                self._add_primary_attr_widget()
 
-                for ch in ch_entities:
-                    self._add_fk_browser(ch)
+            # Add primary tab if necessary
+            self._add_primary_attr_widget()
+
+            for ch in ch_entities:
+                self._add_fk_browser(ch)
 
         #Add tab widget if entity supports documents
         if self._entity.supports_documents:
@@ -497,8 +497,6 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 self.doc_widget.source_document_manager
             )
 
-            if self.entity_tab_widget is None:
-                self.entity_tab_widget = QTabWidget(self)
 
             # Add attribute tab
             self._add_primary_attr_widget()
@@ -631,8 +629,6 @@ class EntityEditorDialog(QDialog, MapperMixin):
     def _get_entity_editor_widgets(self):
         """
         Gets entity editor widgets and appends them to a dictionary
-        :return: None
-        :rtype: None
         """
         if self.entity_tab_widget:
             tab_count = self.entity_tab_widget.count()

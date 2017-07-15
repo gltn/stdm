@@ -49,7 +49,8 @@ from PyQt4.QtGui import (
     QMessageBox,
     QSizePolicy,
     QSpacerItem,
-    QDoubleSpinBox
+    QDoubleSpinBox,
+    QTabBar
 )
 
 from qgis.utils import iface
@@ -60,6 +61,9 @@ from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
 from stdm.utils.util import (
     format_name,
+    entity_display_columns
+)
+from stdm.utils.util import (
     entity_display_columns
 )
 from stdm.settings.registryconfig import (
@@ -77,6 +81,7 @@ class ComponentUtility(QObject):
     """
     A utility class for STR components.
     """
+
     def __init__(self):
         """
         Initialize the STR component class.
@@ -208,6 +213,7 @@ class PartyForeignKeyMapper(ForeignKeyMapper):
     """
     ForeignKeyMapper wrapper class for party entity.
     """
+
     def __init__(self, *args, **kwargs):
         """
         Initializes PartyForeignKeyMapper.
@@ -259,6 +265,7 @@ class SpatialUnitForeignKeyMapper(ForeignKeyMapper):
     """
     ForeignKeyMapper wrapper class for party entity.
     """
+
     def __init__(self, *args, **kwargs):
         """
         Initializes SpatialUnitForeignKeyMapper.
@@ -351,8 +358,8 @@ class Party(ComponentUtility):
 
         self.party_layout.addWidget(self.party_fk_mapper)
 
-class SpatialUnit(ComponentUtility):
 
+class SpatialUnit(ComponentUtility):
     def __init__(self, selected_spatial_unit, box, notification_bar):
         """
         Handles the loading of spatial ForeignKeyMapper and the preview map.
@@ -376,7 +383,8 @@ class SpatialUnit(ComponentUtility):
         if self.selected_spatial_unit is None:
             entity_config = self._load_entity_config(self.spatial_unit_1)
         else:
-            entity_config = self._load_entity_config(self.selected_spatial_unit)
+            entity_config = self._load_entity_config(
+                self.selected_spatial_unit)
 
         QApplication.processEvents()
         if entity_config is None:
@@ -423,6 +431,7 @@ class SpatialUnit(ComponentUtility):
                 'enhance the visualization of spatial units.'
             )
             self.notification_bar.insertWarningNotification(msg)
+
 
 class STRType(ComponentUtility):
     def __init__(self, container_widget, box, notification_bar, party=None):
@@ -500,7 +509,7 @@ class STRType(ComponentUtility):
             self.party_1 = self.selected_party
         db_model = entity_model(self.party_1, True)
         headers = []
-        #Load headers
+        # Load headers
         if db_model is not None:
             entity_display_columns(self.party_1)
             # Append str type if the method
@@ -511,7 +520,7 @@ class STRType(ComponentUtility):
             share_header = QApplication.translate(
                 'STRType', 'Share         '
             )
-            #First (ID) column will always be hidden
+            # First (ID) column will always be hidden
             headers.append(str_type_header)
             headers.append(share_header)
 
@@ -606,37 +615,112 @@ class STRType(ComponentUtility):
             self.str_type_table.model().removeRow(row)
 
 
-class RelatedTenureInfo:
-
-    def __init__(self, container, parent, notification_bar):
+class CustomTenureInfo(object):
+    def __init__(self, parent, notification_bar):
 
         self.notification = notification_bar
-        self.container = container
         self.social_tenure = current_profile().social_tenure
         self.parties = current_profile().social_tenure.parties
-
         self.parent = parent
-        self._init_entity_editor()
+        self.entity_editors = OrderedDict()
+        #
+        # self.parent.custom_tenure_toolbox.setStyleSheet(
+        #     '''
+        #     QToolBox::tab {
+        #         background: qlineargradient(
+        #             x1: 0, y1: 0, x2: 0, y2: 1,
+        #             stop: 0 #EDEDED, stop: 0.4 #EDEDED,
+        #             stop: 0.5 #EDEDED, stop: 1.0 #D3D3D3
+        #         );
+        #         border-radius: 2px;
+        #         border-style: outset;
+        #         border-width: 2px;
+        #         height: 100px;
+        #         border-color: #C3C3C3;
+        #     }
+        #
+        #     QToolBox::tab:selected {
+        #         font: italic;
+        #     }
+        #     '''
+        # )
 
-    def _init_entity_editor(self):
+    def display_columns(self, party_entity):
+        return entity_display_columns(party_entity, False, [
+            'SERIAL',
+            'INT',
+            'DOUBLE',
+            'DATE',
+            'DATETIME',
+            'BOOL',
+            'LOOKUP',
+            'ADMIN_SPATIAL_UNIT',
+            'MULTIPLE_SELECT',
+            'PERCENT'
+        ])
+
+    def add_entity_editor(
+            self, party_entity, party_model, str_number, row_number,
+            custom_model=None):
+        """
+        Adds custom tenure info tab with editor form. It could load data if
+        the custom_model is not none.
+        :param party_entity: The associated party entity
+        :type party_entity: Object
+        :param party_model: The party model associated with custom tenure info
+        record.
+        :type party_model: Object
+        :param row_number: The row number of the party entry
+        :type row_number: Integer
+        :param custom_model: The custom tenure model that populates the tab
+        forms.
+        :type custom_model: Integer
+        """
+
+        # Get the custom attribute entity
+        custom_attr_entity = self.social_tenure.custom_attributes_entity
+        # if (str_number, row_number) in self.entity_editors.keys():
+        #     print self.entity_editors[(str_number, row_number)]
+        # If None then create
+        if custom_model is None:
+            self.entity_editors[(str_number, row_number)] = EntityEditorDialog(
+                custom_attr_entity, parent=self.parent.custom_tenure_tab,
+                manage_documents=False, parent_entity=self.social_tenure
+            )
+        else:
+            self.entity_editors[(str_number, row_number)] = EntityEditorDialog(
+                custom_attr_entity, parent=self.parent.custom_tenure_tab,
+                manage_documents=False, model=custom_model,
+                parent_entity=self.social_tenure
+            )
+            # party_data = []
+            # for col in self.display_columns(party_entity):
+            #     party_data.append(getattr(model, col, None))
+            #
+            # party_title = ', '.join(party_data)
+        display_columns = self.display_columns(party_entity)
+        if len(display_columns) > 0:
+            party_title = getattr(party_model, display_columns[0], None)
+        else:
+            party_title = str(row_number)
+        self.parent.custom_tenure_tab.insertTab(
+            row_number,
+            self.entity_editors[(str_number, row_number)].
+                entity_tab_widget.widget(0),
+            party_title
+        )
+
+    def remove_entity_editor(self, row_numbers):
         """
         Instantiates entity editor and add its widgets to
         the GPX import tool as tabs
-        :return: None
-        :rtype:None
         """
         # Get the custom attribute entity
         custom_attr_entity = self.social_tenure.custom_attributes_entity
-
         # If None then create
-        # if custom_attr_entity is not None:
-        # #     self.social_tenure.initialize_custom_attributes_entity()
-        # #     custom_attr_entity = self.social_tenure.custom_attributes_entity
-        #     print vars(custom_attr_entity)
-        # custom_entity = current_profile().social_tenure.parties[0]
-        self.entity_editor = EntityEditorDialog(
-            custom_attr_entity, None, self.parent, False)
-        self.container.addWidget(self.entity_editor.entity_tab_widget)
+        if custom_attr_entity is not None:
+            for row_number in row_numbers:
+                self.parent.custom_tenure_tab.removeTab(row_number)
 
 
 class SupportingDocuments(ComponentUtility):
@@ -831,7 +915,7 @@ class SupportingDocuments(ComponentUtility):
             # doc_widget_layout is created for each document type.
             # But all doc_widgets for each STR instance and
             # document types will be added here.
-            doc_widget_layout =  scroll_area.findChild(
+            doc_widget_layout = scroll_area.findChild(
                 QVBoxLayout, 'doc_widget_layout_{}'.format(doc_text)
             )
 
@@ -845,8 +929,8 @@ class SupportingDocuments(ComponentUtility):
             # which uploaded document widgets are added.
             layout = QVBoxLayout(doc_widget)
             layout.setObjectName('layout_{}_{}'.format(
-                    doc_text, str_number
-                )
+                doc_text, str_number
+            )
             )
         # If the doc widget exists, get the lowest
         # layout so that it is registered.
@@ -920,7 +1004,7 @@ class SupportingDocuments(ComponentUtility):
         :param title: The title of the file dialog
         :type title: String
         """
-        #Get last path for supporting documents
+        # Get last path for supporting documents
         last_path = last_document_path()
         if last_path is None:
             last_path = '/home'
@@ -933,6 +1017,7 @@ class SupportingDocuments(ComponentUtility):
         )
         return files
 
+
 class ValidityPeriod():
     def __init__(self, str_editor):
         """
@@ -941,7 +1026,7 @@ class ValidityPeriod():
         :type str_editor: Object
         """
         self.str_editor = str_editor
-        self.from_date =  self.str_editor.validity_from_date
+        self.from_date = self.str_editor.validity_from_date
         self.to_date = self.str_editor.validity_to_date
         self.current_profile = current_profile()
         self.social_tenure = self.current_profile.social_tenure
@@ -1068,7 +1153,6 @@ class ValidityPeriod():
         # Fixes the value freeze when editing STR
         # period = period + 1
         self.str_editor.tenure_duration.setValue(period)
-
 
     def set_minimum_to_date(self):
         """
