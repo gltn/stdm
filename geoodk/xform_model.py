@@ -160,7 +160,11 @@ class EntityFormatter():
         """
         xform_type = {
             'VARCHAR': 'string',
-            'DOUBLE': 'integer',
+            'DOUBLE': 'decimal',
+            'INT': 'integer',
+            'FLOAT': 'decimal',
+            'PERCENT': 'integer',
+            'TEXT': 'string',
             'GEOMETRY': 'geoshape',
             'LOOKUP': 'select1',
             'MULTIPLE_SELECT': 'select',

@@ -470,7 +470,8 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 label_node = self.create_node("label")
                 body_node.setAttribute("ref",self.model_category_group(parent_path, key))
                 #label = "jr:itext('{0}:label')".format(self.set_model_xpath(key))
-                label_txt= self.create_text_node(key.replace("_", " ").title())
+                label_text_info = self.entity_read.user_entity_name() + ' ' +key.replace("_", " ").title()
+                label_txt= self.create_text_node(label_text_info)
                 #label_node.setAttribute("ref", label)
                 label_node.appendChild(label_txt)
                 body_node.appendChild(label_node)
@@ -507,7 +508,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         lk_node.setAttribute("ref", self.set_model_xpath(col, entity))
         lk_node_label = self.create_node("label")
         lk_node_label_txt = self.create_text_node(
-            self.entity_read.default_entity() + " " +
+            self.entity_read.user_entity_name() + " " +
             col.replace("_"," ").title().replace("Id", ""))
         lk_node_label.appendChild(lk_node_label_txt)
         lk_node.appendChild(lk_node_label)

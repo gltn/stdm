@@ -26,7 +26,7 @@ from PyQt4.QtCore import QDir
 HOME = QDir.home().path()
 
 CONFIG_FILE = HOME + '/.stdm/downloads'
-
+IMPORT_SECTION = 'imports'
 
 class ImportLogger:
     """
@@ -82,10 +82,10 @@ class ImportLogger:
         logger = self.read_logger()
         with open(logger, 'r') as f:
             self.config_logger.read(f)
-            if self.config_logger.has_section('imports'):
+            if self.config_logger.has_section(IMPORT_SECTION):
                 return
             else:
-                self.config_logger.add_section('imports')
+                self.config_logger.add_section(IMPORT_SECTION)
             f.close()
 
     def check_file_exist(self, instance):
@@ -96,8 +96,8 @@ class ImportLogger:
         logger = self.read_logger()
         with open(logger, 'r') as f:
             self.config_logger.read(f)
-            if self.config_logger.has_section('imports'):
-                return self.config_logger.get('imports', instance)
+            if self.config_logger.has_section(IMPORT_SECTION):
+                return self.config_logger.get(IMPORT_SECTION, instance)
             f.close()
 
     def write_section_data(self, path, file_name):
@@ -107,7 +107,7 @@ class ImportLogger:
         """
         logger = self.read_logger()
         with open(logger, 'w') as f:
-            self.config_logger.set('imports',path, file_name)
+            self.config_logger.set(IMPORT_SECTION,path, file_name)
             self.config_logger.write(f)
             f.close()
 
