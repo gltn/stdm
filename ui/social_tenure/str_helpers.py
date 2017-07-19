@@ -153,6 +153,7 @@ class STRTypeDelegate(QItemDelegate):
         """
         if index.column() == 0:
             value = editor.currentIndex()
+
             model.setData(
                 index,
                 editor.itemData(
@@ -303,8 +304,7 @@ class FreezeTableWidget(QTableView):
         self.verticalHeader().sectionResized.connect(
             self.update_section_height
         )
-        self.frozen_table_view.verticalScrollBar(). \
-            valueChanged.connect(
+        self.frozen_table_view.verticalScrollBar().valueChanged.connect(
             self.verticalScrollBar().setValue
         )
         self.verticalScrollBar().valueChanged.connect(

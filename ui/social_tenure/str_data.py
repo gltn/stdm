@@ -64,6 +64,8 @@ class STRDataStore():
         self.validity_period['to_date'] = None
         self.supporting_document = []
         self.source_doc_manager = None
+        self.current_spatial_unit = None
+        self.current_party = None
 
 class STRDBHandler():
     """
@@ -109,8 +111,8 @@ class STRDBHandler():
 
         str_objs = []
 
-        party_name = str_store.party.values()[0].__table__.name
-        spatial_unit_name = str_store.spatial_unit.values()[0].__table__.name
+        party = str_store.current_party
+        spatial_unit = str_store.current_spatial_unit
         _custom_atr_obj = getattr(self.str_model, self.custom_attr_entity.name, None)
         # custom_atr_objs = []
         index = 4
@@ -128,12 +130,13 @@ class STRDBHandler():
             doc_objs = str_store.supporting_document
             # get the number of unique documents.
             number_of_docs = len(doc_objs) / no_of_party
-            party_short_name = party_name.split('_', 1)[1]
-            party_entity_id = '{}_id'.format(party_short_name)
-            spatial_unit_short_name = spatial_unit_name.split('_', 1)[1]
-            spatial_unit_entity_id = '{}_id'.format(spatial_unit_short_name)
+            party_short_name = party.short_name
+            party_entity_id = '{}_id'.format(
+                party_short_name.replace(' ', '_').lower())
+            spatial_unit_short_name = spatial_unit.short_name
+            spatial_unit_entity_id = '{}_id'.format(
+                spatial_unit_short_name.replace(' ', '_').lower())
 
-            #print spatial_unit_short_name
             tenure_type_col = self.social_tenure.spatial_unit_tenure_column(
                 spatial_unit_short_name
             )
@@ -182,6 +185,7 @@ class STRDBHandler():
 
         custom_attr_model = entity_model(self.custom_attr_entity)
         custom_attr_obj = custom_attr_model()
+
         custom_attr_objs = []
         for i, custom_attr_model in enumerate(str_store.custom_tenure.values()):
             # save custom tenure
@@ -192,9 +196,7 @@ class STRDBHandler():
                         setattr(custom_attr_model, col.name, str_objs[i].id)
                         custom_attr_objs.append(custom_attr_model)
                         break
-                        # custom_attr_model.save()
-        # print custom_attr_objs
-        # print custom_attr_objs
+
         custom_attr_obj.saveMany(custom_attr_objs)
 
 
@@ -211,10 +213,11 @@ class STRDBHandler():
             self.str_model.id == self.str_edit_obj.id
         ).first()
 
-        party_name = str_store.party.values()[0].__table__.name
-        party_short_name = party_name.split('_', 1)[1]
-        spatial_unit_name = str_store.spatial_unit.values()[0].__table__.name
-        spatial_unit_short_name = spatial_unit_name.split('_', 1)[1]
+
+        party = str_store.current_party
+        spatial_unit = str_store.current_spatial_unit
+        party_short_name = party.short_name
+        spatial_unit_short_name = spatial_unit.short_name
         tenure_type_col = self.social_tenure.spatial_unit_tenure_column(
             spatial_unit_short_name
         )
@@ -225,20 +228,18 @@ class STRDBHandler():
             start_date = start_date.toPyDate()
         if isinstance(end_date, QDate):
             end_date = end_date.toPyDate()
-        party_short_name = party_name.split('_', 1)[1]
-        party_entity_id = '{}_id'.format(party_short_name)
-        spatial_unit_short_name = spatial_unit_name.split('_', 1)[1]
-        spatial_unit_entity_id = '{}_id'.format(spatial_unit_short_name)
+
+        party_entity_id = '{}_id'.format(party_short_name.lower())
+        spatial_unit_entity_id = '{}_id'.format(spatial_unit_short_name.lower())
         tenure_type = tenure_type_col.name
 
-        str_edit_obj.c[party_entity_id] = str_store.party.keys()[0],
-        str_edit_obj.c[spatial_unit_entity_id] = str_store.spatial_unit.keys()[0],
-        str_edit_obj.c[tenure_type] = str_store.str_type.values()[0],
-        str_edit_obj.validity_start = start_date,
-        str_edit_obj.validity_end = end_date,
-        str_edit_obj.tenure_share = str_store.share[
-            str_store.party.keys()[0]
-        ]
+        setattr(str_edit_obj, party_entity_id, str_store.party.keys()[0])
+        setattr(str_edit_obj, spatial_unit_entity_id, str_store.spatial_unit.keys()[0])
+        setattr(str_edit_obj, tenure_type, str_store.str_type.values()[0])
+
+        str_edit_obj.validity_start = start_date
+        str_edit_obj.validity_end = end_date
+        str_edit_obj.tenure_share = str_store.share[str_store.party.keys()[0]]
 
         # get all doc model objects
         added_doc_objs = str_store.supporting_document
@@ -246,8 +247,7 @@ class STRDBHandler():
         self.str_doc_edit_obj = \
             [obj for obj in sum(self.str_doc_edit_obj.values(), [])]
 
-        new_doc_objs = list(set(added_doc_objs) -
-                            set(self.str_doc_edit_obj))
+        new_doc_objs = list(set(added_doc_objs) - set(self.str_doc_edit_obj))
 
         # Insert supporting document if a new
         # supporting document is uploaded.
@@ -256,11 +256,28 @@ class STRDBHandler():
             # looping though newly added objects list
             for doc_obj in new_doc_objs:
                 # append into the str edit obj
-                str_edit_obj.documents.append(
-                    doc_obj
-                )
+                str_edit_obj.documents.append(doc_obj)
+
         updated_str_edit_obj = str_edit_obj
         str_edit_obj.update()
+
+        str_store.custom_tenure.values()[0].update()
+
+        # custom_attr_model = entity_model(self.custom_attr_entity)
+        # custom_attr_obj = custom_attr_model()
+        #
+        # custom_attr_objs = []
+        #
+        # # save custom tenure
+        # for col in self.custom_attr_entity.columns.values():
+        #     if col.TYPE_INFO == 'FOREIGN_KEY':
+        #         if col.parent.name == self.social_tenure.name:
+        #
+        #             setattr(custom_attr_model, col.name, str_objs[i].id)
+        #             custom_attr_objs.append(custom_attr_model)
+        #             break
+        #
+        # custom_attr_obj = self.custom_attr_entity.values()[0]
 
         return updated_str_edit_obj
 

@@ -70,7 +70,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
             parent=None,
             manage_documents=True,
             collect_model=False,
-            parent_entity=None
+            parent_entity=None,
+            exclude_columns=[]
     ):
         """
         Class constructor.
@@ -89,6 +90,10 @@ class EntityEditorDialog(QDialog, MapperMixin):
         :param collect_model: If set to True only returns
         the filled form model without saving it to the database.
         :type collect_model: Boolean
+        :param parent_entity: The parent entity of the editor
+        :type parent_entity: Object
+        :param exclude_columns: List of columns to be excluded if in a list.
+        :type exclude_columns: List
         :return: If collect_model, returns SQLAlchemy Model
         """
         QDialog.__init__(self, parent)
@@ -105,6 +110,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.edit_model = model
         self.column_widgets = OrderedDict()
         self._parent = parent
+        self.exclude_columns = exclude_columns
         self.entity_tab_widget = None
         self._disable_collections = False
         self.filter_val = None
@@ -356,7 +362,6 @@ class EntityEditorDialog(QDialog, MapperMixin):
         if not save_and_new:
             self.accept()
 
-
         else:
             if self.is_valid:
                 #self.addedModel.emit(self.model())
@@ -397,6 +402,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
             'scrollAreaWidgetContents'
         )
         for c in self._entity.columns.values():
+            if c.name in self.exclude_columns:
+                continue
             if not c.name in columns and not isinstance(c, VirtualColumn):
                 continue
             # Get widget factory
@@ -404,7 +411,6 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 c,
                 self.scroll_widget_contents
             )
-
             self.column_widgets[c] = column_widget
 
     def _setup_columns_content_area(self):
@@ -427,6 +433,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
         # Iterate entity column and assert if they exist
         row_id = 0
         for c, column_widget in self.column_widgets.iteritems():
+            if c.name in self.exclude_columns:
+                continue
             if not c.name in columns and not isinstance(c, VirtualColumn):
                 continue
 

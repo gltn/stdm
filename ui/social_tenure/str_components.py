@@ -384,7 +384,8 @@ class SpatialUnit(ComponentUtility):
             entity_config = self._load_entity_config(self.spatial_unit_1)
         else:
             entity_config = self._load_entity_config(
-                self.selected_spatial_unit)
+                self.selected_spatial_unit
+            )
 
         QApplication.processEvents()
         if entity_config is None:
@@ -399,6 +400,7 @@ class SpatialUnit(ComponentUtility):
         if self.spatial_unit_fk_mapper is None:
             return
         vertical_layout = QVBoxLayout()
+
         vertical_layout.addWidget(self.spatial_unit_fk_mapper)
         self.container_box.setLayout(vertical_layout)
 
@@ -489,10 +491,7 @@ class STRType(ComponentUtility):
         model = table_view.model()
         for col in range(model.columnCount()):
             party_id_idx = model.index(row, col)
-
-            party_row_data.append(model.data(
-                party_id_idx, Qt.DisplayRole
-            ))
+            party_row_data.append(model.data(party_id_idx, Qt.DisplayRole))
 
         return party_row_data
 
@@ -623,27 +622,6 @@ class CustomTenureInfo(object):
         self.parties = current_profile().social_tenure.parties
         self.parent = parent
         self.entity_editors = OrderedDict()
-        #
-        # self.parent.custom_tenure_toolbox.setStyleSheet(
-        #     '''
-        #     QToolBox::tab {
-        #         background: qlineargradient(
-        #             x1: 0, y1: 0, x2: 0, y2: 1,
-        #             stop: 0 #EDEDED, stop: 0.4 #EDEDED,
-        #             stop: 0.5 #EDEDED, stop: 1.0 #D3D3D3
-        #         );
-        #         border-radius: 2px;
-        #         border-style: outset;
-        #         border-width: 2px;
-        #         height: 100px;
-        #         border-color: #C3C3C3;
-        #     }
-        #
-        #     QToolBox::tab:selected {
-        #         font: italic;
-        #     }
-        #     '''
-        # )
 
     def display_columns(self, party_entity):
         return entity_display_columns(party_entity, False, [
@@ -670,34 +648,31 @@ class CustomTenureInfo(object):
         :param party_model: The party model associated with custom tenure info
         record.
         :type party_model: Object
+        :param str_number: The STR record number
+        :type str_number: Integer
         :param row_number: The row number of the party entry
         :type row_number: Integer
         :param custom_model: The custom tenure model that populates the tab
         forms.
         :type custom_model: Integer
         """
-
         # Get the custom attribute entity
         custom_attr_entity = self.social_tenure.custom_attributes_entity
-        # if (str_number, row_number) in self.entity_editors.keys():
-        #     print self.entity_editors[(str_number, row_number)]
         # If None then create
         if custom_model is None:
             self.entity_editors[(str_number, row_number)] = EntityEditorDialog(
                 custom_attr_entity, parent=self.parent.custom_tenure_tab,
-                manage_documents=False, parent_entity=self.social_tenure
+                manage_documents=False, parent_entity=self.social_tenure,
+                exclude_columns=['social_tenure_relationship_id']
             )
         else:
             self.entity_editors[(str_number, row_number)] = EntityEditorDialog(
                 custom_attr_entity, parent=self.parent.custom_tenure_tab,
                 manage_documents=False, model=custom_model,
-                parent_entity=self.social_tenure
+                parent_entity=self.social_tenure,
+                exclude_columns=['social_tenure_relationship_id']
             )
-            # party_data = []
-            # for col in self.display_columns(party_entity):
-            #     party_data.append(getattr(model, col, None))
-            #
-            # party_title = ', '.join(party_data)
+
         display_columns = self.display_columns(party_entity)
         if len(display_columns) > 0:
             party_title = getattr(party_model, display_columns[0], None)
@@ -794,13 +769,13 @@ class SupportingDocuments(ComponentUtility):
             # The layout of the tab widget
             cont_layout = QVBoxLayout(tab_widget)
             cont_layout.setObjectName(
-                'widget_layout_{}'.format(doc)
+                u'widget_layout_{}'.format(doc)
             )
             # the scroll area widget inside the tab widget.
             scroll_area = QScrollArea(tab_widget)
             scroll_area.setFrameShape(QFrame.NoFrame)
             scroll_area.setObjectName(
-                'tab_scroll_area_{}'.format(doc)
+                u'tab_scroll_area_{}'.format(doc)
             )
 
             layout_widget = QWidget()
@@ -808,18 +783,18 @@ class SupportingDocuments(ComponentUtility):
             # the widget containing the document widget layout
             # This widget is hidden and shown based on the STR number
             layout_widget.setObjectName(
-                'widget_{}'.format(doc)
+                u'widget_{}'.format(doc)
             )
 
             doc_widget_layout = QVBoxLayout(layout_widget)
             doc_widget_layout.setObjectName(
-                'doc_widget_layout_{}'.format(
+                u'doc_widget_layout_{}'.format(
                     doc
                 )
             )
             doc_widget = QWidget()
             doc_widget.setObjectName(
-                'doc_widget_{}_{}'.format(doc, self.str_number)
+                u'doc_widget_{}_{}'.format(doc, self.str_number)
             )
 
             doc_widget_layout.addWidget(doc_widget)
@@ -829,7 +804,7 @@ class SupportingDocuments(ComponentUtility):
             # supporting documents widgets into.
             tab_layout = QVBoxLayout(doc_widget)
             tab_layout.setObjectName(
-                'layout_{}_{}'.format(doc, self.str_number)
+                u'layout_{}_{}'.format(doc, self.str_number)
             )
 
             scroll_area.setWidgetResizable(True)
@@ -899,12 +874,12 @@ class SupportingDocuments(ComponentUtility):
         cbo_index = self.doc_type_cbo.currentIndex()
         doc_id = self.doc_type_cbo.itemData(cbo_index)
         scroll_area = self.docs_tab.findChild(
-            QScrollArea, 'tab_scroll_area_{}'.format(
+            QScrollArea, u'tab_scroll_area_{}'.format(
                 doc_text, str_number
             )
         )
         doc_widget = scroll_area.findChild(
-            QWidget, 'doc_widget_{}_{}'.format(
+            QWidget, u'doc_widget_{}_{}'.format(
                 doc_text, str_number
             )
         )
@@ -916,19 +891,19 @@ class SupportingDocuments(ComponentUtility):
             # But all doc_widgets for each STR instance and
             # document types will be added here.
             doc_widget_layout = scroll_area.findChild(
-                QVBoxLayout, 'doc_widget_layout_{}'.format(doc_text)
+                QVBoxLayout, u'doc_widget_layout_{}'.format(doc_text)
             )
 
             doc_widget = QWidget()
             doc_widget.setObjectName(
-                'doc_widget_{}_{}'.format(doc_text, str_number)
+                u'doc_widget_{}_{}'.format(doc_text, str_number)
             )
             self.hide_all_other_widget(doc_text, str_number)
             doc_widget_layout.addWidget(doc_widget)
             # Create the layout so that layouts are registered in
             # which uploaded document widgets are added.
             layout = QVBoxLayout(doc_widget)
-            layout.setObjectName('layout_{}_{}'.format(
+            layout.setObjectName(u'layout_{}_{}'.format(
                 doc_text, str_number
             )
             )
@@ -941,7 +916,7 @@ class SupportingDocuments(ComponentUtility):
             # the document widgets for the current tab.
             self.hide_doc_widgets(doc_widget, False)
             layout = doc_widget.findChild(
-                QVBoxLayout, 'layout_{}_{}'.format(
+                QVBoxLayout, u'layout_{}_{}'.format(
                     doc_text, str_number
                 )
             )
@@ -959,10 +934,10 @@ class SupportingDocuments(ComponentUtility):
         :param str_number: The STR node number
         :type str_number: Integer
         """
-        expression = QRegExp('doc_widget*')
+        expression = QRegExp(u'doc_widget*')
         # hide all existing widgets in all layouts
         for widget in self.docs_tab.findChildren(QWidget, expression):
-            if widget.objectName() != 'doc_widget_{}_{}'.format(
+            if widget.objectName() != u'doc_widget_{}_{}'.format(
                     doc_text, str_number):
                 self.hide_doc_widgets(widget, True)
 

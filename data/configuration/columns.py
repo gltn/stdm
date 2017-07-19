@@ -275,20 +275,15 @@ class BaseColumn(ColumnItem):
         :rtype: str
         """
         id_text = QApplication.translate('BaseColumn', '_id')
-        if id_text in self.name:
-            # if foreign key or lookup column, hide 'id'
-            if self.TYPE_INFO == 'FOREIGN_KEY' or self.TYPE_INFO == 'LOOKUP':
-                display_name = self.name[:-3]
-                display_name = display_name.replace('_', ' ').title()
-            else:
-            # for other columns, capitalize id to be ID
-                display_name = '{} {}'.format(
-                    self.name[:-3].title(), self.name[-2:].upper()
-                )
-        else:
-            display_name = self.name.replace('_', ' ').title()
 
-        return display_name
+        if id_text in self.name:
+            display_name = self.name.title()
+            display_name = display_name.replace('Id', 'ID')
+
+        else:
+            display_name = self.name.title()
+
+        return display_name.replace('_', ' ')
 
     def copy_attrs(self, column):
         """

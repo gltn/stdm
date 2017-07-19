@@ -715,6 +715,26 @@ def entity_id_to_model(entity, id):
     ).first()
     return result
 
+def entity_attr_to_model(entity, attr, value):
+    """
+    Gets the first model of an entity based on an attribute and the entity.
+    Important- the value needs to be unique.
+    :param entity: Entity
+    :type entity: Object
+    :param attr: Attribute of the record
+    :type attr: Any
+    :return: SQLAlchemy result proxy
+    :rtype: Object
+    """
+    model = entity_model(entity)
+    model_obj = model()
+    attr_col_obj = getattr(model, attr)
+
+    result = model_obj.queryObject().filter(
+        attr_col_obj == value
+    ).first()
+    return result
+
 def entity_attr_to_id(entity, attr_obj, attr_val, lower=False):
     """
     Coverts other column values to id value

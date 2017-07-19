@@ -1064,7 +1064,8 @@ class STDMQGISLoader(object):
         profile_names = self.stdm_config.profiles.keys()
 
         self.profiles_combobox.clear()
-        self.profiles_combobox.addItems(profile_names)
+        for profile in profile_names:
+            self.profiles_combobox.addItem(profile.replace('_', ' '))
 
         self.profiles_combobox.setStyleSheet(
             """
@@ -1765,7 +1766,7 @@ class STDMQGISLoader(object):
                 (e.name, e.short_name)
                 for e in
                 self.current_profile.entities.values()
-                if (e.TYPE_INFO == 'ENTITY')
+                if (e.TYPE_INFO == 'ENTITY') and (e.user_editable)
             ]
 
     def help_contents(self):

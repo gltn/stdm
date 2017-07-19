@@ -74,13 +74,15 @@ def view_updater(social_tenure, engine):
     view_name = social_tenure.view_name
 
     views = social_tenure.views
+
     curr_p = current_profile()
-    # Loop thru view name, primary entity items
+    # Loop through view name, primary entity items
     for v, pe in views.iteritems():
         # Check if there is an existing one and omit delete if it exists
         LOGGER.debug('Checking if %s view exists...', v)
         ## +++ exclude after Johns commit
-        # TODO remvoe this
+        # # TODO remvoe this
+        # print v, pe
         if pe is None:
             sp_name = v.split('_vw_social_tenure_relationship')[0]
             pe = curr_p.entity_by_name(sp_name)
