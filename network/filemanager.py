@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 /***************************************************************************
 Name                 : Source Document File Manager
@@ -63,9 +64,9 @@ class NetworkFileManager(QObject):
         root_dir = QDir(self.networkPath)
         doc_dir = QDir(u'{}/{}/{}/{}'.format(
                 self.networkPath,
-                unicode(profile_name).lower(),
+                profile_name.lower(),
                 self._entity_source,
-                unicode(self._doc_type).lower().replace(' ', '_')
+                self._doc_type.lower().replace(' ', '_')
             )
         )
         doc_path_str = u'{}/{}/{}/{}'.format(
