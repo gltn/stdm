@@ -729,7 +729,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             self._dbmodel.id == record_id
         ).first()
         if modelObj is None:
-            modelObj = self.child_model[row_number, self.entity]
+            modelObj = self.child_model[row_number+1, self.entity]
 
         return modelObj if not modelObj is None else None
 
@@ -883,6 +883,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         '''
         self._notifBar.clear()
 
+
         if not self._can_add_edit():
             msg = QApplication.translate(
                 'EntityBrowserWithEditor',
@@ -915,6 +916,7 @@ class EntityBrowserWithEditor(EntityBrowser):
 
         rowIndex = self._proxyModel.mapToSource(selRowIndices[0])
         recordid = rowIndex.data()
+
         self._load_editor_dialog(recordid, rowIndex.row())
 
     def set_child_model(self, model, row_position):
