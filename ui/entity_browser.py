@@ -726,7 +726,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             self._dbmodel.id == record_id
         ).first()
         if modelObj is None:
-            modelObj = self.child_model[row_number, self.entity]
+            modelObj = self.child_model[row_number + 1, self.entity]
 
         return modelObj if not modelObj is None else None
 
