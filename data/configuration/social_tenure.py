@@ -332,7 +332,7 @@ class SocialTenure(Entity):
         # Include spatial units
         for sp in self.spatial_units:
             sp_view = self._view_name_from_entity(sp)
-            v[sp_view] = self.spatial_unit
+            v[sp_view] = sp
 
         return v
 
