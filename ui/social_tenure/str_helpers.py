@@ -122,8 +122,11 @@ class STRTypeDelegate(QItemDelegate):
         :type index: QModelIndex
         """
         if index.column() == 0:
-
+            if widget.count() > 0:
+                return
             widget.insertItem(0, " ")
+
+                #, len(self.str_type_set_data())
             for id, type in self.str_type_set_data().iteritems():
                 widget.addItem(type, id)
 

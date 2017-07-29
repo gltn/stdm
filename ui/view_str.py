@@ -477,10 +477,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                 if isinstance(node, SpatialUnitNode):
                     # Expand the Spatial Unit preview
                     self.toolBox.setCurrentIndex(0)
-                    table_name = '{}{}'.format(
-                        self.curr_profile.prefix,
-                        node.current_data()[0].replace(' ', '_').lower()
-                    )
+                    table_name = node.model().__table__.name
 
                     self.draw_spatial_unit(table_name, node.model())
                     self.editSTR.setDisabled(True)

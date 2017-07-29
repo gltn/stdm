@@ -375,32 +375,38 @@ class DetailsDBHandler:
         str_model = entity_model(
             self.current_profile.social_tenure
         )
+        spatial_unit_entity_id = '{}_id'.format(
+            self._entity.short_name.replace(' ', '_').lower())
+
+
+        spatial_unit_col_obj = getattr(str_model, spatial_unit_entity_id)
         model_obj = str_model()
         # TODO Check if str_model.spatial_unit_id is correct
         result = model_obj.queryObject().filter(
-            str_model.spatial_unit_id == feature_id
+            spatial_unit_col_obj == feature_id
         ).all()
 
         return result
-
-    def party_str_link(self, party_id):
-        """
-        Gets all STR records linked to a party, if the record is party record.
-        :param party_id: The party id/id of the spatial unit
-        :type feature_id: Integer
-        :return: The list of social tenure records
-        :rtype: List
-        """
-        str_model = entity_model(
-            self.current_profile.social_tenure
-        )
-        model_obj = str_model()
-        #TODO replace spatial_unit_id with the concerned id
-        result = model_obj.queryObject().filter(
-            str_model.spatial_unit_id == party_id
-        ).all()
-
-        return result
+    #
+    # def party_str_link(self, party_id):
+    #     """
+    #     Gets all STR records linked to a party, if the record is party record.
+    #     :param party_id: The party id/id of the spatial unit
+    #     :type feature_id: Integer
+    #     :return: The list of social tenure records
+    #     :rtype: List
+    #     """
+    #     str_model = entity_model(
+    #         self.current_profile.social_tenure
+    #     )
+    #     model_obj = str_model()
+    #
+    #     #TODO replace spatial_unit_id with the concerned id
+    #     result = model_obj.queryObject().filter(
+    #         str_model.spatial_unit_id == party_id
+    #     ).all()
+    #
+    #     return result
 
     def column_widget_registry(self, model, entity):
         """
@@ -839,7 +845,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         for feature_map in self.features_data():
             parent = QStandardItem(
                 layer_icon,
-                format_name(self.layer.name())
+                format_name(unicode(self.layer.name()))
             )
             for k, v, in feature_map.iteritems():
                 if isinstance(v, QDate):
@@ -847,7 +853,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 if isinstance(v, QDateTime):
                     v = v.toPyDateTime()
                 if k != 'id':
-                    child = QStandardItem('{}: {}'.format(
+                    child = QStandardItem(u'{}: {}'.format(
                         format_name(k, False), v)
                     )
                     child.setSelectable(False)
@@ -899,7 +905,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             if selected_features is None:
                 return None
             for feature_id in selected_features:
-                root = QStandardItem(icon, title)
+                root = QStandardItem(icon, unicode(title))
                 root.setData(feature_id)
                 self.set_bold(root)
                 self.model.appendRow(root)
@@ -916,7 +922,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :param str_records: STR record models linked to the spatial unit.
         :type str_records: List
         """
-
         if model is None:
             return
         if isinstance(model, OrderedDict):
@@ -927,7 +932,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
 
         self.column_widget_registry(model, self.entity)
         for i, (col, row) in enumerate(self._formatted_record.iteritems()):
-            child = QStandardItem('{}: {}'.format(col, row))
+            child = QStandardItem(u'{}: {}'.format(col, row))
             child.setSelectable(False)
             try:
                 parent.appendRow([child])
@@ -977,7 +982,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                     ':/plugins/stdm/images/icons/remove.png'
                 )
                 title = 'No STR Defined'
-                no_str_root = QStandardItem(no_str_icon, title)
+                no_str_root = QStandardItem(no_str_icon, unicode(title))
                 self.set_bold(no_str_root)
                 parent.appendRow([no_str_root])
 
@@ -1027,7 +1032,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
 
             for i, (col, row) in enumerate(self._formatted_record.iteritems()):
                 str_child = QStandardItem(
-                    '{}: {}'.format(col, row)
+                    u'{}: {}'.format(col, row)
                 )
                 str_child.setSelectable(False)
                 try:
@@ -1062,7 +1067,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             ':/plugins/stdm/images/icons/table.png'
         )
         title = format_name(party_entity.short_name)
-        party_root = QStandardItem(party_icon, title)
+        party_root = QStandardItem(party_icon, unicode(title))
         party_root.setData(party_id)
         self.set_bold(party_root)
 
@@ -1090,7 +1095,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         # add STR children
         self.column_widget_registry(party_model, party_entity)
         for col, row in self._formatted_record.iteritems():
-            party_child = QStandardItem('{}: {}'.format(col, row))
+            party_child = QStandardItem(u'{}: {}'.format(col, row))
             party_child.setSelectable(False)
             party_root.appendRow([party_child])
         return party_root
