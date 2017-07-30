@@ -20,14 +20,13 @@ email                : stdm@unhabitat.org
 """
 import logging
 from collections import OrderedDict
-from copy import deepcopy
 
 from PyQt4.QtCore import (
     pyqtSignal,
     QObject
 )
 
-from stdm.data.configuration.columns import BaseColumn
+from stdm.utils.renameable_dict import RenameableKeyDict
 from stdm.data.configuration.columns import (
     BaseColumn,
     ForeignKeyColumn,
@@ -106,7 +105,7 @@ class Entity(QObject, TableItem):
         self.description = ''
         self.is_associative = False
         self.user_editable = True
-        self.columns = OrderedDict()
+        self.columns = RenameableKeyDict()
         self.updated_columns = OrderedDict()
 
         '''
@@ -116,7 +115,7 @@ class Entity(QObject, TableItem):
         '''
         self.create_id_column = True
 
-        #Create PK if flag is specified
+        # Create primary key
         if self.create_id_column:
             LOGGER.debug('Creating primary key for %s entity.', self.name)
 
@@ -166,7 +165,7 @@ class Entity(QObject, TableItem):
         self.short_name = shortname
         self.name = self._shortname_to_name(shortname)
 
-        #Rename supporting documents if enabled
+        # Rename supporting documents if enabled
         if self.supports_documents:
             self.supporting_doc.rename(shortname)
 
@@ -176,7 +175,7 @@ class Entity(QObject, TableItem):
 
     @supports_documents.setter
     def supports_documents(self, value):
-        #Enable the attachment of supporting documents if flag is specified
+        # Enable the attachment of supporting documents if flag is specified
         self._supports_documents = value
         if value:
             self.supporting_doc = EntitySupportingDocument(self.profile, self)
@@ -213,6 +212,31 @@ class Entity(QObject, TableItem):
         """
         return self.columns.get(name, None)
 
+    def rename_column(self, old_name, new_name):
+        """
+        Renames the column with the given old_name to the new_name. This is 
+        applicable only if the column has not yet been created in the 
+        database.
+        :param old_name: Existing column name to be renamed.
+        :type old_name: str
+        :param new_name: New column name.
+        :type new_name: str
+        :return: Returns True if the column was successfully renamed, else 
+        False.
+        :rtype: bool
+        """
+        if not old_name in self.columns:
+            LOGGER.debug('%s column not found, item does '
+                         'not exist in the collection.', old_name)
+
+            return False
+
+        col = self.column(old_name)
+        col.rename(new_name)
+
+        # Update column collection
+        self.columns.rename(old_name, new_name)
+
     def remove_column(self, name):
         """
         Removes a column with the given name from the collection.
@@ -233,7 +257,7 @@ class Entity(QObject, TableItem):
 
         col.action = DbItem.DROP
 
-        #Add column to the collection of updated columns
+        # Add column to the collection of updated columns
         self.append_updated_column(col)
 
         self.column_removed.emit(name)

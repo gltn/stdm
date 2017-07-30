@@ -50,7 +50,7 @@ class SocialTenure(Entity):
         0, 5
     )
     BASE_STR_VIEW = 'vw_social_tenure_relationship'
-    CUSTOM_ATTRS_ENTITY = 'custom_attrs'
+    CUSTOM_ATTRS_ENTITY = 'attrs'
     tenure_type_list = 'tenure_type'
     view_creator = view_updater
     view_remover = view_deleter
@@ -112,6 +112,11 @@ class SocialTenure(Entity):
         # Mapping of tenure type lookup columns
         self._tenure_type_sec_lk_columns = {}
 
+        # Tenure type custom attribute entities
+        # key: tenure lookup short name
+        # value: custom attributes entity
+        self._custom_attr_entities = {}
+
         # Specify if a spatial unit should only be linked to one party
         self.multi_party = True
 
@@ -119,44 +124,51 @@ class SocialTenure(Entity):
                      self.profile.name)
 
     @property
-    def custom_attributes_entity(self):
+    def custom_attribute_entities(self):
         """
-        :return: Returns the entity containing user-defined attributes or 
-        None if it does not exist.
+        :return: Returns the collection of custom attribute entities.
         .. versionadded:: 1.7
-        :rtype: Entity
+        :rtype: dict(str, Entity)
         """
-        return self.profile.entity(self.custom_attributes_entity_name)
+        return self._custom_attr_entities
 
-    def has_custom_attributes_entity(self):
+    def has_custom_attribute_entities(self):
         """
         :return: Returns True if there exists a custom tenure attributes 
         entity, otherwise False.
         .. versionadded:: 1.7
         :rtype: bool
         """
-        if self.custom_attributes_entity is None:
+        if len(self.custom_attributes_entities) == 0:
             return False
 
         return True
 
-    @property
-    def custom_attributes_entity_name(self):
-        """
-        :return: Returns the short name of the custom attributes entity.
-        :rtype: str
-        """
-        return u'{0}_{1}'.format(self.short_name, self.CUSTOM_ATTRS_ENTITY)
+    def _custom_attributes_entity_name(self, t_type_s_name):
+        # Build entity name using tenure type short name
+        return u'{0}_{1}_{2}'.format(
+            t_type_s_name,
+            'str',
+            self.CUSTOM_ATTRS_ENTITY
+        )
 
-    def initialize_custom_attributes_entity(self):
+    def initialize_custom_attributes_entity(self, tenure_lookup):
         """
         Creates a custom user attributes entity and adds a foreign key 
-        column for linking the two entities. 
+        column for linking the two entities.
+        .. versionadded:: 1.7
+        :param tenure_lookup: Valuelist containing tenure types.
+        :type tenure_lookup: ValueList
         """
+        custom_ent_name = self._custom_attributes_entity_name(
+            tenure_lookup.short_name
+        )
+        custom_ent = self.profile.entity(custom_ent_name)
+
         # Created only if it does not exist
-        if self.custom_attributes_entity is None:
+        if custom_ent is None:
             attr_ent = Entity(
-                self.custom_attributes_entity_name,
+                custom_ent_name,
                 self.profile,
                 supports_documents=False
             )
@@ -169,20 +181,85 @@ class SocialTenure(Entity):
 
             self.profile.add_entity(attr_ent)
 
-    @property
-    def custom_attributes(self):
-        """
-        :return: Returns a collection containing custom attributes names and 
-        corresponding column objects. An empty dictionary will still be 
-        returned even if the custom attributes entity does not exist hence 
-        it is important to check if it is None first.
-        .. versionadded:: 1.7
-        :rtype: OrderedDict(name, BaseColumn)
-        """
-        if self.custom_attributes_entity is None:
-            return OrderedDict()
+            # Update registry
+            self.add_tenure_attr_custom_entity(tenure_lookup, attr_ent)
 
-        return self.custom_attributes_entity.columns
+    def add_tenure_attr_custom_entity(self, tenure_lookup, entity):
+        """
+        Adds a mapping that links the tenure lookup to the custom attributes 
+        entity.
+        :param tenure_lookup: Valuelist containing tenure types.
+        :type tenure_lookup: str or ValueList
+        :param entity: Custom attributes entity.
+        :type entity: str or Entity
+        """
+        tenure_lookup = self._obj_from_str(tenure_lookup)
+        entity = self._obj_from_str(entity)
+
+        self._custom_attr_entities[tenure_lookup.short_name] = entity
+
+    def custom_attribute_entity(self, tenure_lookup):
+        """
+        Get the custom attribute entity.
+        .. versionadded:: 1.7
+        :param tenure_lookup: Tenure type valuelist.
+        :type tenure_lookup: str or ValueList
+        :return: Returns the custom attributes entity corresponding to the 
+        given tenure type. None if not found.
+        :rtype: Entity
+        """
+        t_type = self._obj_from_str(tenure_lookup)
+
+        return self._custom_attr_entities.get(t_type.short_name, None)
+
+    def spu_custom_attribute_entity(self, spu):
+        """
+        Retrieves the custom attributes entity for the given spatial unit.
+        .. versionadded:: 1.7
+        :param spu: Spatial unit entity.
+        :type spu: str or Entity
+        :return: Returns the custom attributes entity for the given spatial 
+        unit, None if not found.
+        :rtype: Entity
+        """
+        t_type = self.spatial_unit_tenure_lookup(spu)
+
+        if t_type is None:
+            return None
+
+        return self.custom_attribute_entity(t_type)
+
+    def remove_custom_attributes_entity(self, tenure_lookup):
+        """
+        Removes the custom attributes entity that corresponds to the given 
+        tenure lookup.
+        .. versionadded:: 1.7
+        :param tenure_lookup: Tenure type valuelist.
+        :type tenure_lookup: ValueList
+        :returns: True if the entity was successfully removed, otherwise False.
+        :rtype: bool
+        """
+        custom_ent_name = self._custom_attributes_entity_name(
+            tenure_lookup.short_name
+        )
+
+        return self.profile.remove_entity(custom_ent_name)
+
+    def remove_custom_attributes_entity_by_spu(self, spu):
+        """
+        Removes the custom attributes entity that corresponds to the given 
+        spatial unit.
+        .. versionadded:: 1.7
+        :param tenure_lookup: Spatial unit entity.
+        :type tenure_lookup: Entity
+        :returns: True if the entity was successfully removed, otherwise False.
+        :rtype: bool
+        """
+        t_type = self.spatial_unit_tenure_lookup(spu)
+        if t_type is None:
+            return False
+
+        return self.remove_custom_attributes_entity(t_type)
 
     def layer_display(self):
         """
@@ -332,7 +409,7 @@ class SocialTenure(Entity):
         # Include spatial units
         for sp in self.spatial_units:
             sp_view = self._view_name_from_entity(sp)
-            v[sp_view] = self.spatial_unit
+            v[sp_view] = sp
 
         return v
 
@@ -496,6 +573,9 @@ class SocialTenure(Entity):
 
             del self._sp_units_tenure[sp_unit.short_name]
 
+            # Remove custom attributes entity associated with the tenure type
+            self.remove_custom_attributes_entity_by_spu(sp_unit)
+
             # Check if the tenure value list is defined for other spatial
             # units.
             remove_column = True
@@ -627,6 +707,7 @@ class SocialTenure(Entity):
 
     def _party_in_parties(self, party):
         # Check if a party is in the STR collection.
+        party = self._obj_from_str(party)
         party_names = [p.name for p in self.parties]
 
         if party.name in party_names:
@@ -636,6 +717,7 @@ class SocialTenure(Entity):
 
     def _sp_unit_in_sp_units(self, spatial_unit):
         # Check if a party is in the STR collection.
+        spatial_unit = self._obj_from_str(spatial_unit)
         sp_unit_names = [s.name for s in self.spatial_units]
 
         if spatial_unit.name in sp_unit_names:
@@ -769,6 +851,7 @@ class SocialTenure(Entity):
         """
         Sets the corresponding spatial unit entity in the social tenure
         relationship.
+        .. deprecated:: 1.7
         :param spatial_unit: Spatial unit entity.
         .. note:: The spatial unit entity must contain a geometry column
         else it will not be set.

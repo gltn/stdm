@@ -76,6 +76,9 @@ from stdm.settings.registryconfig import (
 from stdm.ui.wizard.spatial_tenure_types_dialog import (
     SpatialUnitTenureTypeDialog
 )
+from stdm.ui.wizard.entity_attributes_editor import (
+    EntityAttributesEditor
+)
 
 from custom_item_model import *
 
@@ -186,6 +189,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.draft_config = False
         self.stdm_config = None
         self.new_profiles = []
+        self._sp_t_mapping = {}
+        self._custom_attr_ent = None
         self.orig_assets_count = 0  # count of items in StdmConfiguration instance
         self.load_stdm_config()
 
@@ -468,6 +473,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         # Connect button for showing mapping of tenure types
         self.btn_sp_units_tenure.clicked.connect(self.on_show_sp_units_tenure)
 
+        # Connect button for showing dialog for editing tenure attributes
+        self.btn_custom_attrs.clicked.connect(
+            self.on_show_custom_attributes_editor
+        )
+
     def init_entity_ctrls_event_handlers(self):
         """
         Attach OnClick event handlers for the entity toolbar buttons
@@ -664,20 +674,51 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         # Get corresponding tenure types and assign default if not set
         for sp in sel_sp_units:
-            t_type = social_tenure.spatial_unit_tenure_lookup(sp)
+            # Check from the initialized collection if the tenure had been set
+            t_type = self._sp_t_mapping.get(sp, None)
 
             # Assign default tenure lookup if None
             if t_type is None:
-                t_type = social_tenure.tenure_type_collection
+                t_type = social_tenure.tenure_type_collection.short_name
 
             # Set spatial unit tenure type
             sp_unit_tenure_dlg.set_spatial_unit_tenure_type(
                 sp,
-                t_type.short_name
+                t_type
             )
 
         if sp_unit_tenure_dlg.exec_() == QDialog.Accepted:
-            pass
+            self._sp_t_mapping = sp_unit_tenure_dlg.tenure_mapping()
+
+    def on_show_custom_attributes_editor(self):
+        """
+        Slot raised to show the dialog for editing custom tenure attributes.
+        """
+        p = self.current_profile()
+
+        if not p.social_tenure.has_custom_attributes_entity():
+            p.social_tenure.initialize_custom_attributes_entity()
+
+        # Initialize entity attribute editor
+        custom_attr_editor = EntityAttributesEditor(
+            p,
+            p.social_tenure.custom_attributes_entity_name,
+            self,
+            exclude_columns=['id', 'social_tenure_relationship_id']
+        )
+        custom_attr_editor.setWindowTitle(
+            self.tr('Custom Tenure Attributes Editor')
+        )
+        custom_attr_editor.load_attributes_from_entity(
+            p.social_tenure.custom_attributes_entity
+        )
+
+        if custom_attr_editor.exec_() == QDialog.Accepted:
+            attrs = custom_attr_editor.attributes
+            for a in attrs.values():
+                p.social_tenure.custom_attributes_entity.add_column(a)
+
+            print attrs
 
     def validate_STR(self):
         """
@@ -932,6 +973,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.lst_spatial_units.profile = c_profile
             self.lst_spatial_units.social_tenure = c_profile.social_tenure
             self.dg_tenure.profile = c_profile
+
+            # Set spatial unit tenure mapping
+            for sp, t in c_profile.social_tenure.spatial_units_tenure.iteritems():
+                self._sp_t_mapping[sp] = t.short_name
 
             # check if social tenure relationship has been setup
             str_table = '{}_social_tenure_relationship'.format(c_profile.prefix)

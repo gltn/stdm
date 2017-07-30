@@ -29,14 +29,14 @@ class TestConfigurationSerializer(TestCase):
         update_result = True
 
         self.assertTrue(update_result)
-    '''
+
     def test_load(self):
         self.serializer.load()
 
         read_result = True
 
         self.assertTrue(read_result)
-    '''
+
 
 def suite():
     suite = makeSuite(TestConfigurationSerializer, 'test')

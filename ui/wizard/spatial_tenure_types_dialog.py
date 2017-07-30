@@ -27,6 +27,7 @@ from PyQt4.QtGui import (
 from stdm.ui.notification import NotificationBar
 from stdm.ui.wizard.ui_spatial_unit_tenure_dialog import Ui_SpatialUnitTenureDialog
 
+
 class SpatialUnitTenureTypeDialog(QDialog, Ui_SpatialUnitTenureDialog):
     """
     Dialog for defining configuration settings for the

@@ -570,45 +570,50 @@ class Profile(QObject):
 
             return False
 
-        #Check if the entity participates in either of the STR definitions
+        # Check if the entity participates in either of the STR definitions
         update_party = False
-        if not self.social_tenure.party is None:
-            update_party = True \
-                if self.social_tenure.party.short_name == original_name \
-                else False
+        if len(self.social_tenure.parties) > 0:
+            if self.social_tenure.is_str_party_entity(original_name):
+                update_party = True
 
         update_spatial_unit = False
-        if not self.social_tenure.spatial_unit is None:
-            update_spatial_unit = True \
-                if self.social_tenure.spatial_unit.short_name == original_name \
-                else False
+        if len(self.social_tenure.spatial_units) > 0:
+            if self.social_tenure.is_str_spatial_unit_entity(original_name):
+                update_spatial_unit = True
 
         ent = self.entities[original_name]
 
-        #Get entity relations and update entity references
+        # Get entity relations and update entity references
         parent_relations = self.parent_relations(ent)
         child_relations = self.child_relations(ent)
 
-        #Remove entity from the collection
+        # Remove from STR definition
+        if update_party:
+            self.social_tenure.remove_party(ent)
+
+        if update_spatial_unit:
+            self.social_tenure.remove_spatial_unit(ent)
+
+        # Remove entity from the collection
         rn_entity = self.entities.pop(original_name)
 
         rn_entity.rename(new_name)
 
-        #Re-insert the entity
+        # Re-insert the entity
         self.add_entity(rn_entity, True)
 
-        #Update relations
+        # Update relations
         for pr in parent_relations:
             pr.parent = rn_entity
 
         for cr in child_relations:
             cr.child = rn_entity
 
-        #Update entities in the STR definition
+        # Update entities in the STR definition
         if update_party:
-            self.social_tenure.party = rn_entity
+            self.social_tenure.add_party(rn_entity)
 
         if update_spatial_unit:
-            self.social_tenure.spatial_unit = rn_entity
+            self.social_tenure.add_spatial_unit(rn_entity)
 
         return True

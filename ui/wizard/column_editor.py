@@ -51,8 +51,11 @@ from stdm.ui.notification import NotificationBar, INFORMATION
 LOGGER = logging.getLogger('stdm')
 LOGGER.setLevel(logging.DEBUG)
 
-RESERVED_KEYWORDS = ['id', 'documents', 'spatial_unit', 'supporting_document',
-        'social_tenure', 'social_tenure_relationship','geometry']
+RESERVED_KEYWORDS = [
+    'id', 'documents', 'spatial_unit', 'supporting_document',
+    'social_tenure', 'social_tenure_relationship','geometry',
+    'social_tenure_relationship_id'
+]
 
 class ColumnEditor(QDialog, Ui_ColumnEditor):
     """
@@ -98,8 +101,11 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.form_fields = {}
         self.init_form_fields()
 
-        self.fk_entities     = []
+        self.fk_entities = []
         self.lookup_entities = []
+
+        # Exclude column type info in the list
+        self._exclude_col_type_info = []
 
         if self.is_new:
             self.prop_set = None
@@ -120,6 +126,28 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.notice_bar = NotificationBar(self.notif_bar)
         self.init_controls()
 
+    def exclude_column_types(self, type_info):
+        """
+        Exclude the column types with the given type_info.
+        :param type_info: List of TYPE_INFO of columns to exclude.
+        :type type_info: list
+        """
+        self._exclude_col_type_info = type_info
+
+        # Block index change signal of combobox
+        self.cboDataType.blockSignals(True)
+
+        # Reload column data types
+        self.populate_data_type_cbo()
+
+        # Select column type if it had been specified
+        if not self.column is None:
+            text = self.column.display_name()
+            self.cboDataType.setCurrentIndex(self.cboDataType.findText(text))
+
+        # Re-enable signals
+        self.cboDataType.blockSignals(False)
+
     def show_notification(self, message):
         """
         Shows a warning notification bar message.
@@ -135,7 +163,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         Initialize GUI controls default state when the dialog window is opened.
         """
         self.populate_data_type_cbo()
-        #if self.column:
+
         if not self.column is None:
             self.column_to_form(self.column)
             self.column_to_wa(self.column)
@@ -665,21 +693,28 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
     def populate_data_type_cbo(self):
         """
-        Fills the data type combobox widget with BaseColumn type names
+        Fills the data type combobox widget with BaseColumn type names.
         """
         self.cboDataType.clear()
-        for item in BaseColumn.types_by_display_name().keys():
 
-            self.cboDataType.addItem(item)
-        self.cboDataType.setCurrentIndex(0)
+        for name, col in BaseColumn.types_by_display_name().iteritems():
+            # Specify columns to exclude
+            if col.TYPE_INFO not in self._exclude_col_type_info:
+                self.cboDataType.addItem(name)
+
+        if self.cboDataType.count() > 0:
+            self.cboDataType.setCurrentIndex(0)
 
     def change_data_type(self, index):
         """
         Called by type combobox when you select a different data type.
         """
         text = self.cboDataType.itemText(index)
-        ti = BaseColumn.types_by_display_name()[text].TYPE_INFO
+        col_cls = BaseColumn.types_by_display_name().get(text, None)
+        if col_cls is None:
+            return
 
+        ti = col_cls.TYPE_INFO
         if ti not in self.type_attribs:
             msg = self.tr('Column type attributes could not be found.')
             self.notice_bar.clear()
@@ -772,7 +807,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         if new_column is None:
             LOGGER.debug("Error creating column!")
             self.show_message('Unable to create column!')
-            return False;
+            return False
 
         if self.column is None:  # new column
             if self.duplicate_check(col_name):

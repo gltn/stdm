@@ -27,8 +27,7 @@ class TestConfigurationSchemaUpdater(TestCase):
         config_updater.exec_()
 
     def _on_complete(self, result):
-        #
-        self.assertTrue(False)
+        self.assertTrue(result)
 
 def suite():
     suite = makeSuite(TestConfigurationSchemaUpdater, 'test')

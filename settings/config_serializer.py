@@ -560,6 +560,9 @@ class SocialTenureSerializer(object):
     MAXIMUM = 'maximum'
     SP_TENURE_MAPPINGS = 'SpatialUnitTenureMappings'
     SP_TENURE_MAPPING = 'Mapping'
+    T_TYPE_ATTRS = 'CustomAttributes'
+    T_ATTRS_ENTITY = 'TenureEntity'
+    ENTITY = 'entity'
 
     @staticmethod
     def read_xml(child_element, profile, association_elements,
@@ -663,6 +666,30 @@ class SocialTenureSerializer(object):
                 profile.social_tenure.add_spatial_tenure_mapping(
                     sp_unit,
                     tenure_list
+                )
+
+        # Set tenure type custom attributes
+        custom_attrs_ent_els = child_element.elementsByTagName(
+            SocialTenureSerializer.T_TYPE_ATTRS
+        )
+        if custom_attrs_ent_els.count() > 0:
+            attrs_ent_node = custom_attrs_ent_els.item(0)
+            attrs_ent_el = attrs_ent_node.toElement()
+
+            attrs_nodes = attrs_ent_el.childNodes()
+            for i in range(attrs_nodes.count()):
+                custom_ent_el = attrs_nodes.item(i).toElement()
+                t_type = custom_ent_el.attribute(
+                    SocialTenureSerializer.TENURE_TYPE,
+                    ''
+                )
+                custom_ent = custom_ent_el.attribute(
+                    SocialTenureSerializer.ENTITY,
+                    ''
+                )
+                profile.social_tenure.add_tenure_attr_custom_entity(
+                    t_type,
+                    custom_ent
                 )
 
     @staticmethod
@@ -806,6 +833,26 @@ class SocialTenureSerializer(object):
             sp_unit_tenure_mapping_root_el.appendChild(t_mapping_el)
 
         social_tenure_element.appendChild(sp_unit_tenure_mapping_root_el)
+
+        # Set tenure type - custom attribute mapping
+        custom_attrs_root_el = document.createElement(
+            SocialTenureSerializer.T_TYPE_ATTRS
+        )
+        for t, ent in social_tenure.custom_attribute_entities.iteritems():
+            t_ent_el = document.createElement(
+                SocialTenureSerializer.T_ATTRS_ENTITY
+            )
+            t_ent_el.setAttribute(
+                SocialTenureSerializer.TENURE_TYPE,
+                t
+            )
+            t_ent_el.setAttribute(
+                SocialTenureSerializer.ENTITY,
+                ent.short_name
+            )
+            custom_attrs_root_el.appendChild(t_ent_el)
+
+        social_tenure_element.appendChild(custom_attrs_root_el)
 
         parent_node.appendChild(social_tenure_element)
 
