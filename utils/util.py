@@ -348,7 +348,7 @@ def format_name(attr, trim_id=True):
     return display_name
 
 
-def entity_display_columns(entity, with_header=False):
+def entity_display_columns(entity, with_header=False, exclude=[]):
     """
     Returns entity display columns.
     :param entity: Entity
@@ -378,7 +378,8 @@ def entity_display_columns(entity, with_header=False):
                 'PERCENT',
                 'AUTO_GENERATED'
             ]
-            ]
+            if c.TYPE_INFO not in exclude
+        ]
         display_column = OrderedDict(display_column)
         return display_column
     else:
@@ -401,6 +402,7 @@ def entity_display_columns(entity, with_header=False):
                 'PERCENT',
                 'AUTO_GENERATED'
             ]
+            if c.TYPE_INFO not in exclude
         ]
 
         return display_column
@@ -713,6 +715,26 @@ def entity_id_to_model(entity, id):
     ).first()
     return result
 
+def entity_attr_to_model(entity, attr, value):
+    """
+    Gets the first model of an entity based on an attribute and the entity.
+    Important- the value needs to be unique.
+    :param entity: Entity
+    :type entity: Object
+    :param attr: Attribute of the record
+    :type attr: Any
+    :return: SQLAlchemy result proxy
+    :rtype: Object
+    """
+    model = entity_model(entity)
+    model_obj = model()
+    attr_col_obj = getattr(model, attr)
+
+    result = model_obj.queryObject().filter(
+        attr_col_obj == value
+    ).first()
+    return result
+
 def entity_attr_to_id(entity, attr_obj, attr_val, lower=False):
     """
     Coverts other column values to id value
@@ -775,8 +797,6 @@ def enable_drag_sort(mv_widget):
     :param mv_widget: The model/view widget for which
     drag and drop sort is enabled
     :type mv_widget: QTableView, QListView
-    :return: None
-    :rtype: NoneType
     """
     mv_widget.setDragEnabled(True)
     mv_widget.setAcceptDrops(True)
@@ -949,42 +969,32 @@ def profile_and_user_views(profile, check_party=False):
     from stdm.data.pg_utils import (
         pg_views
     )
-    from stdm.data.configuration.stdm_configuration import (
-        StdmConfiguration
-    )
-    source_tables = []
-    stdm_config = StdmConfiguration.instance()
-    social_tenure = profile.social_tenure
-    for value in pg_views():
-        if 'vw_social_tenure_relationship' in value:
-            # if a value exist on the left side of vw, assess further
-            if len(value.split('_vw')) > 0:
-                entity = value.split('_vw')[0]
-                # we are more sure this could be entity
-                if '_' in entity and len(entity.split('_')) > 0:
-                    # if the prefix exist in the configuration
-                    if entity.split('_')[0] in \
-                            stdm_config.prefixes():
-                        # Check if the entity is in the current profile
-                        entity_obj = profile.entity_by_name(entity)
-                        if entity_obj is not None:
-                            if check_party and entity_obj in social_tenure.parties:
-                                if not social_tenure.multi_party:
-                                    source_tables.append(value)
-                            else:
-                                source_tables.append(value)
-                    # it means this is not a valid entity so add it
-                    else:
-                        source_tables.append(value)
-                # it is a user view; add it to the combo list.
-                else:
-                    source_tables.append(value)
-            # it is a user view; add it to the combo list.
-            else:
-                source_tables.append(value)
-        else:
-            source_tables.append(value)
 
+    source_tables = []
+
+    social_tenure = profile.social_tenure
+
+    for view, entity in social_tenure.views.iteritems():
+        ### Not necessary when spatial unit none issue fixed
+        # TODO remove this
+        if entity is None:
+            source_tables.append(view)
+            continue
+        # For party views, if check party is true, add party views.
+        # If multi-party is false. Otherwise, add all party views - this is not
+        # recommended for composer data source.
+        if entity in social_tenure.parties:
+            if check_party:
+                if not social_tenure.multi_party:
+                    source_tables.append(view)
+            else:
+                source_tables.append(view)
+
+        else:
+            source_tables.append(view)
+    for value in pg_views():
+        if value not in social_tenure.views.keys():
+            source_tables.append(value)
     return source_tables
 
 

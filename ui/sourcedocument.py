@@ -118,13 +118,9 @@ class SourceDocumentManager(QObject):
         self._doc_view_manager = DocumentViewManager(self.parent_widget())
 
         self.doc_type_mapping = OrderedDict()
+
         for id, value in self.doc_types.iteritems():
-            self.doc_type_mapping[id] = unicode(
-                QApplication.translate(
-                    "sourceDocument",
-                    value
-                )
-            )
+            self.doc_type_mapping[id] = value
 
     def reset(self):
         """

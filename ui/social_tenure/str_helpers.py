@@ -122,8 +122,11 @@ class STRTypeDelegate(QItemDelegate):
         :type index: QModelIndex
         """
         if index.column() == 0:
-
+            if widget.count() > 0:
+                return
             widget.insertItem(0, " ")
+
+                #, len(self.str_type_set_data())
             for id, type in self.str_type_set_data().iteritems():
                 widget.addItem(type, id)
 
@@ -153,6 +156,7 @@ class STRTypeDelegate(QItemDelegate):
         """
         if index.column() == 0:
             value = editor.currentIndex()
+
             model.setData(
                 index,
                 editor.itemData(
@@ -303,8 +307,7 @@ class FreezeTableWidget(QTableView):
         self.verticalHeader().sectionResized.connect(
             self.update_section_height
         )
-        self.frozen_table_view.verticalScrollBar(). \
-            valueChanged.connect(
+        self.frozen_table_view.verticalScrollBar().valueChanged.connect(
             self.verticalScrollBar().setValue
         )
         self.verticalScrollBar().valueChanged.connect(

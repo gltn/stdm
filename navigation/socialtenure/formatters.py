@@ -324,6 +324,7 @@ class EntityNodeFormatter(STRNodeFormatter):
                 col_name_header = entity_display_columns(curr_entity, True)
 
                 for r in r_entities:
+
                     dm = self._format_display_mapping(r,
                                                       col_name_header,
                                                       col_name_header.keys())
