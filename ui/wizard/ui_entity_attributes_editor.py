@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_entity_attributes_editor.ui'
 #
-# Created: Sat Jul 29 10:33:35 2017
+# Created: Sun Jul 30 18:47:38 2017
 #      by: PyQt4 UI code generator 4.9.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,13 +17,15 @@ except AttributeError:
 class Ui_EntityAttributesEditor(object):
     def setupUi(self, EntityAttributesEditor):
         EntityAttributesEditor.setObjectName(_fromUtf8("EntityAttributesEditor"))
-        EntityAttributesEditor.resize(302, 359)
+        EntityAttributesEditor.resize(361, 359)
         self.gridLayout_2 = QtGui.QGridLayout(EntityAttributesEditor)
+        self.gridLayout_2.setContentsMargins(9, -1, -1, -1)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
         self.vlNotification = QtGui.QVBoxLayout()
         self.vlNotification.setObjectName(_fromUtf8("vlNotification"))
         self.gridLayout_2.addLayout(self.vlNotification, 0, 0, 1, 2)
         self.label = QtGui.QLabel(EntityAttributesEditor)
+        self.label.setMaximumSize(QtCore.QSize(100, 16777215))
         self.label.setObjectName(_fromUtf8("label"))
         self.gridLayout_2.addWidget(self.label, 1, 0, 1, 1)
         self.cbo_tenure_type = QtGui.QComboBox(EntityAttributesEditor)
@@ -89,7 +91,7 @@ class Ui_EntityAttributesEditor(object):
 
     def retranslateUi(self, EntityAttributesEditor):
         EntityAttributesEditor.setWindowTitle(QtGui.QApplication.translate("EntityAttributesEditor", "Custom Attributes Editor", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("EntityAttributesEditor", "Tenure type", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("EntityAttributesEditor", "Tenure type:", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox.setTitle(QtGui.QApplication.translate("EntityAttributesEditor", "Attributes:", None, QtGui.QApplication.UnicodeUTF8))
 
 from stdm.ui.wizard.attributes_table_view import AttributesTableView

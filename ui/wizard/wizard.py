@@ -77,7 +77,7 @@ from stdm.ui.wizard.spatial_tenure_types_dialog import (
     SpatialUnitTenureTypeDialog
 )
 from stdm.ui.wizard.entity_attributes_editor import (
-    EntityAttributesEditor
+    TenureCustomAttributesEditor
 )
 
 from custom_item_model import *
@@ -696,29 +696,26 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         p = self.current_profile()
 
-        if not p.social_tenure.has_custom_attributes_entity():
-            p.social_tenure.initialize_custom_attributes_entity()
-
         # Initialize entity attribute editor
-        custom_attr_editor = EntityAttributesEditor(
+        custom_attr_editor = TenureCustomAttributesEditor(
             p,
-            p.social_tenure.custom_attributes_entity_name,
             self,
+            spu_tenure_mapping = self._sp_t_mapping,
             exclude_columns=['id', 'social_tenure_relationship_id']
         )
         custom_attr_editor.setWindowTitle(
             self.tr('Custom Tenure Attributes Editor')
         )
-        custom_attr_editor.load_attributes_from_entity(
-            p.social_tenure.custom_attributes_entity
-        )
 
         if custom_attr_editor.exec_() == QDialog.Accepted:
+            pass
+            '''
             attrs = custom_attr_editor.attributes
             for a in attrs.values():
                 p.social_tenure.custom_attributes_entity.add_column(a)
 
             print attrs
+            '''
 
     def validate_STR(self):
         """

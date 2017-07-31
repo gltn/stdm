@@ -158,8 +158,9 @@ class SocialTenure(Entity):
         column for linking the two entities.
         .. versionadded:: 1.7
         :param tenure_lookup: Valuelist containing tenure types.
-        :type tenure_lookup: ValueList
+        :type tenure_lookup: str or ValueList
         """
+        tenure_lookup = self._obj_from_str(tenure_lookup)
         custom_ent_name = self._custom_attributes_entity_name(
             tenure_lookup.short_name
         )
