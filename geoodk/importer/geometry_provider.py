@@ -133,8 +133,8 @@ class GeometryProvider:
 
         :return:
         """
-        qPoint = QgsGeometry.fromPoint(QgsPoint(self.set_point(self.X()),
-                                                self.set_point(self.Y())))
+        qPoint = QgsGeometry.fromPoint(
+            QgsPoint(self.set_point(self.X()), self.set_point(self.Y())))
         return qPoint
 
     def create_polygon(self):
@@ -143,7 +143,6 @@ class GeometryProvider:
         :return:
         """
         self.point_to_list()
-
         line_array = []
         for point in self._local_list:
             if point != '':
@@ -162,6 +161,7 @@ class GeometryProvider:
         """
         geom = QgsGeometry.fromWkt(wkt)
         return geom
+
 
 class GeomPolgyon(GeometryProvider):
     """
@@ -194,7 +194,8 @@ class GeomPolgyon(GeometryProvider):
         # crsTransform = QgsCoordinateTransform(
         #     self.default_coordinate_system(),
         #     self.destination_coordinate_system())
-        # 'SRID={};{}'.format(22033, poly_as_text)poly_as_text.transform(crsTransform)
+        # 'SRID={};{}'.format(22033, poly_as_text)
+        # poly_as_text.transform(crsTransform)
 
         return 'SRID={};{}'.format(self.srid, poly_as_text)
 

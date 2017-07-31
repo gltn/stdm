@@ -25,7 +25,7 @@ from PyQt4.QtCore import QDir
 
 HOME = QDir.home().path()
 
-CONFIG_FILE = HOME + '/.stdm/downloads'
+LOGGER_HOME = HOME + '/.stdm/geoodk'
 IMPORT_SECTION = 'imports'
 
 class ImportLogger:
@@ -37,29 +37,50 @@ class ImportLogger:
         Initialize vairables
         """
         self.config_logger = ConfigParser.RawConfigParser()
+        self.logger_path()
 
     def logger_path(self):
         """
         Manage the path to the logger document
         :return:
         """
-        logger_path = CONFIG_FILE + '/instance'
-        if not os.access(logger_path, os.F_OK):
-            os.makedirs(unicode(logger_path))
-        else:
-            return logger_path
+        if not os.access(LOGGER_HOME, os.F_OK):
+            os.makedirs(unicode(LOGGER_HOME))
 
     def create_logger_doc(self):
         """
         Create the log file document
         :return:
         """
+        try:
+            config_location = LOGGER_HOME
+            if os.path.isfile(config_location + '/history.ini'):
+                return config_location + '/history.ini'
+            else:
+                return open(config_location + '/history.ini', 'w+')
+        except:
+            pass
 
-        config_location = self.logger_path()
-        if os.path.isfile(config_location + '/history.ini'):
-            return config_location + '/history.ini'
-        else:
-           return open(config_location + '/history.ini', 'r')
+    def add_log_info(self):
+        """
+        Create the log file document
+        :return:
+        """
+        try:
+            config_location = LOGGER_HOME
+            if os.path.isfile(config_location + '/history.txt'):
+                return config_location + '/history.txt'
+            else:
+                return open(config_location + '/history.txt', 'w+')
+        except:
+            pass
+
+    def open_logger(self):
+        """
+        Open the logger text file so that we can write data
+        :return:
+        """
+        return self.add_log_info()
 
     def read_logger(self,):
         """
@@ -93,12 +114,15 @@ class ImportLogger:
 
         :return:
         """
-        logger = self.read_logger()
-        with open(logger, 'r') as f:
-            self.config_logger.read(f)
-            if self.config_logger.has_section(IMPORT_SECTION):
-                return self.config_logger.get(IMPORT_SECTION, instance)
-            f.close()
+        try:
+            logger = self.read_logger()
+            with open(logger, 'r') as f:
+                self.config_logger.read(f)
+                if self.config_logger.has_section(IMPORT_SECTION):
+                    return self.config_logger.get(IMPORT_SECTION, instance)
+                f.close()
+        except:
+            pass
 
     def write_section_data(self, path, file_name):
         """
@@ -110,6 +134,18 @@ class ImportLogger:
             self.config_logger.set(IMPORT_SECTION,path, file_name)
             self.config_logger.write(f)
             f.close()
+
+    def onlogger_action(self, log_entry):
+        """"
+        Ensure the logger information is written to the file
+        """
+        log_info = self.open_logger()
+        with open(log_info, 'a') as f:
+            f.write('\n')
+            f.write(log_entry)
+            f.close()
+
+
 
 
 

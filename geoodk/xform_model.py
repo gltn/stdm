@@ -17,15 +17,6 @@ class EntityFormatter():
 
         self._child_entity = None
 
-
-
-    def xform__model_name(self):
-        """
-
-        :return: 
-        """
-        return self._entity
-
     def set_xform_model_name(self, entity):
         """
 

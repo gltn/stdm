@@ -32,7 +32,8 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 HOME = QDir.home().path()
 
-CONFIG_FILE = HOME + '/.stdm/configuration.stc'
+FORM_HOME = HOME + '/.stdm/geoodk/forms'
+
 
 class GeoODKConverter(QDialog, FORM_CLASS):
     def __init__(self, parent=None):
@@ -47,59 +48,39 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         self.connect_action = pyqtSignal(str)
         self.setupUi(self)
 
+        self.chk_all.setCheckState(Qt.Checked)
         self.entity_model = EntitiesModel()
         self.set_entity_model_view(self.entity_model)
         self.stdm_config = None
         self.parent = parent
-        self.load_config()
         self.load_profiles()
+        self.check_state_on()
 
-        self.cboProf.currentIndexChanged.connect(self.cbo_text_changed)
+        self.check_geoODK_path_exist()
+
+        self.chk_all.stateChanged.connect(self.check_state_on)
         self.buttonBox.clicked.connect(self.acceptDlg)
 
         self._notif_bar_str = NotificationBar(self.vlnotification)
 
-
-    def load_config(self):
+    def check_state_on(self):
         """
-        Load STDM configuration
+        Ensure all the items in the list are checked
         :return:
         """
-        stdm_config = None
-        if QFile.exists(CONFIG_FILE):
-            stdm_config = QFile(CONFIG_FILE)
-        ConfigurationFileSerializer(stdm_config)
-        profiles = StdmConfiguration.instance().profiles
-        return profiles
+        if self.entity_model.rowCount() > 0:
+            for row in range(self.entity_model.rowCount()):
+                item = self.entity_model.item(row)
+                if self.chk_all.isChecked():
+                    item.setCheckState(Qt.Checked)
+                else:
+                    item.setCheckState(Qt.Unchecked)
 
     def load_profiles(self):
         """
         Read and load profiles from StdmConfiguration instance
         """
-        profiles = []
-        self.cboProf.clear()
-        for profile in self.profiles():
-            profiles.append(profile.name)
-        self.cbo_add_profiles(profiles)
-        self.current_profile_highlighted()
         self.populate_view_models(current_profile())
-
-    def cbo_text_changed(self):
-        """
-        Set Combo item data based on user selection
-        :return:
-        """
-        self._notif_bar_str.clear()
-        self.entity_model = EntitiesModel()
-        self.set_entity_model_view(self.entity_model)
-        text = self.cboProf.currentText()
-        if text != current_profile().name:
-            self._notif_bar_str.insertErrorNotification(
-                'Generate Forms works with current profile only'
-            )
-
-            return
-        self.populate_view_models(self.load_config().get(text))
 
     def profiles(self):
         """
@@ -107,21 +88,6 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         :return:
         """
         return self.load_config().values()
-
-
-    def cbo_add_profiles(self, profiles):
-        """
-        param profiles: list of profiles to add in the profile combobox
-        type profiles: list
-        """
-        self.cboProf.insertItems(0, profiles)
-
-    def current_profile_highlighted(self):
-        """
-        Get the current profile so that it is the one selected at the combo box
-        :return:
-        """
-        return setComboCurrentIndexWithText(self.cboProf,current_profile().name)
 
     def populate_view_models(self, profile):
         for entity in profile.entities.values():
@@ -171,6 +137,15 @@ class GeoODKConverter(QDialog, FORM_CLASS):
                 if item.isCheckable() and item.checkState() == Qt.Checked:
                     entity_list.append(item.text())
         return entity_list
+
+    def check_geoODK_path_exist(self):
+        """
+        Check if the geoodk paths are there in the directory
+        Otherwise create them
+        :return:
+        """
+        if not os.access(FORM_HOME, os.F_OK):
+            os.makedirs(unicode(FORM_HOME))
 
     def acceptDlg(self):
         """

@@ -59,6 +59,7 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 HOME = QDir.home().path()
 
 CONFIG_FILE = HOME + '/.stdm/downloads'
+MSG = 'Error creating log'
 
 class ProfileInstanceRecords(QDialog, FORM_CLASS):
     """
@@ -83,16 +84,20 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.importlogger = ImportLogger()
         self._notif_bar_str = NotificationBar(self.vlnotification)
 
+        self.chk_all.setCheckState(Qt.Checked)
         self.entity_model = EntitiesModel()
         self.uuid_extractor = InstanceUUIDExtractor(self.path)
 
-
-        self.cbo_profile.currentIndexChanged.connect(self.current_profile_changed)
+        self.chk_all.stateChanged.connect(self.check_state_on)
+        #self.cbo_profile.currentIndexChanged.connect(self.current_profile_changed)
         self.btn_chang_dir.clicked.connect(self.on_directory_search)
         self.lst_widget.itemClicked.connect(self.user_selected_entities)
         self.btn_srid.clicked.connect(self.projection_settings)
 
-        self.load_profiles()
+
+        self.load_config()
+        self.current_profile_changed()
+        self.check_state_on()
         self.instance_dir()
 
     def load_config(self):
@@ -107,29 +112,19 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         profiles = StdmConfiguration.instance().profiles
         return profiles
 
-    def load_profiles(self):
+    def check_state_on(self):
         """
-        Read and load profiles from StdmConfiguration instance
+        Ensure all the items in the list are checked
+        :return:
         """
-        try:
-            profiles = []
-            self.cbo_profile.clear()
-            for profile in self.profiles():
-                profiles.append(profile.name)
-            self.cbo_add_profiles(profiles)
-            self.current_profile_highlighted()
-            self.current_profile_changed()
-        except TypeError as ex:
-            self._notif_bar_str.insertErrorNotification(ex.message)
-            return
-
-
-    def cbo_add_profiles(self, profiles):
-        """
-        param profiles: list of profiles to add in the profile combobox
-        type profiles: list
-        """
-        self.cbo_profile.insertItems(0, profiles)
+        count = self.lst_widget.count()
+        if count > 0:
+            for i in range(count):
+                item = self.lst_widget.item(i)
+                if self.chk_all.isChecked():
+                    item.setCheckState(Qt.Checked)
+                else:
+                    item.setCheckState(Qt.Unchecked)
 
     def profiles(self):
         """
@@ -137,13 +132,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         :return:
         """
         return self.load_config().values()
-
-    def current_profile_highlighted(self):
-        """
-        Get the current profile so that it is the one selected at the combo box
-        :return:
-        """
-        return setComboCurrentIndexWithText(self.cbo_profile, current_profile().name)
 
     def current_profile_changed(self):
         """
@@ -159,20 +147,12 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.profile_instance_entities()
 
 
-    def set_profile_model_view(self, entity_model):
-        """
-        Set profile view model
-        :return:
-        """
-        self.lst_profiles.setModel(entity_model)
-
-
     def active_profile(self):
         """
         get the user selected profile
         :return:p
         """
-        self.profile = self.load_config().get(self.cbo_profile.currentText()).name
+        self.profile = current_profile().name
         return self.profile
 
     def instance_dir(self):
@@ -180,7 +160,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
         :return:
         """
-        self.inst_path = self.path+"/instance"
+        self.inst_path = self.path+"/imported_instance"
         if not os.access(self.inst_path, os.F_OK):
             os.makedirs(unicode(self.inst_path))
         else:
@@ -201,7 +181,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         if self.txt_directory.text() != '':
             self.path = self.txt_directory.text()
         else:
-            self.path = HOME + "/.stdm/downloads"
+            self.path = HOME + "/.stdm/geoodk/instances"
             self.txt_directory.setText(self.path)
         return self.path
 
@@ -349,22 +329,30 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     #set the geometry coodinate system
                     entity_importer.geomsetter(self.on_projection_select())
                     has_relations = self.has_foreign_keys_parent(values)
+                    self.archive_imported_file(counter, instance)
                     if has_relations:
                         #Import parents table first
                         for parent_table in self.relations.values():
                             if parent_table[1] in self.instance_entities():
                                 ref_id = entity_importer.process_parent_entity_import(parent_table[1])
                                 self.parent_ids[parent_table[1]] = [ref_id, parent_table[1]]
+                                log_timestamp = 'Importing {0}.{1} ' \
+                                                'as parent table in instance file {2}'.format(
+                                    self.profile, parent_table[1], counter)
+                                self.log_table_entry(log_timestamp)
                                 parents_info.append(parent_table[1])
                                 if parent_table[1] in values:
                                     values.remove(parent_table[1])
                     for table in values:
                         if table not in parents_info:
+                            log_timestamp1 = 'Importing {0}.{1}  table in instance file {2}'.format(
+                                self.profile, table, counter)
                             entity_importer.process_import_to_db(table, self.parent_ids)
+                            self.log_table_entry(log_timestamp1)
                     self.txt_feedback.append('saving record "{0}"'
                                           ' to database'.format(counter))
                     self.pgbar.setValue(counter)
-                    self.archive_imported_file(instance)
+
                 self.txt_feedback.append('Number of record successfully imported:  {}'
                                                   .format(counter))
 
@@ -398,33 +386,58 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         return
         return has_relations
 
-    def archive_imported_file(self, instance):
+    def archive_imported_file(self, counter, instance):
         """
         Ensure that only import are done once
         :return:
         """
-        current_time = QDateTime()
-        import_time = current_time.currentDateTime()
-        head, tail= os.path.split(instance)
-        self.importlogger.logger_sections()
-        self.importlogger.write_section_data(tail,
-                                             head +"##"+ str(import_time.toPyDateTime()))
+        try:
+            current_time = QDateTime()
+            import_time = current_time.currentDateTime()
+            head, tail= os.path.split(instance)
+            self.importlogger.logger_sections()
+            file_info = 'File instance ' + str(counter)+ ' : \n' + instance
+            self.importlogger.onlogger_action(file_info)
+            #self.importlogger.write_section_data(tail,
+            #                                   head +"##"+ str(import_time.toPyDateTime()))
+        except IOError as io:
+            self._notif_bar_str.insertErrorNotification(MSG + ": "+io.message)
+            pass
+
+    def log_table_entry(self, instance):
+        """
+        Ensure that only import are done once
+        :return:
+        """
+        try:
+            current_time = QDateTime()
+            import_time = current_time.currentDateTime()
+            log_entry = instance + ' '+ str(import_time.toPyDateTime())
+            self.importlogger.onlogger_action(log_entry)
+        except IOError as io:
+            self._notif_bar_str.insertErrorNotification(MSG + ": "+io.message)
+            pass
 
     def check_previous_import(self):
         """
         Ensure we are importing files once
         :return:
         """
-        for files in self.instance_list:
-            current_dir = os.path.basename(files)
-            exist = self.importlogger.check_file_exist(current_dir)
-            if exist:
-                self.instance_list.remove(files)
-        self.txt_count.setText(str(len(self.instance_list)))
-        if self.record_count() != len(self.instance_list):
-            msg = 'Some files have been already imported and therefore' \
-                  'not enumerated'
-            self._notif_bar_str.insertErrorNotification(msg)
+        try:
+            self.importlogger.add_log_info()
+            for files in self.instance_list:
+                current_dir = os.path.basename(files)
+                exist = self.importlogger.check_file_exist(current_dir)
+                if exist:
+                    self.instance_list.remove(files)
+            self.txt_count.setText(str(len(self.instance_list)))
+            if self.record_count() != len(self.instance_list):
+                msg = 'Some files have been already imported and therefore' \
+                      'not enumerated'
+                self._notif_bar_str.insertErrorNotification(msg)
+        except IOError as io:
+            self._notif_bar_str.insertErrorNotification(MSG + ": "+io.message)
+            pass
 
 
     def available_records(self):

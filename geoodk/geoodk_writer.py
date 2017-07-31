@@ -7,7 +7,14 @@ from PyQt4.QtXml import (
     QDomDocumentFragment,
     QXmlNamespaceSupport
 )
-from PyQt4.QtCore import QFile, QIODevice, QTextStream, QDate, QFileInfo
+from PyQt4.QtCore import (
+    QFile,
+    QIODevice,
+    QTextStream,
+    QDate,
+    QFileInfo,
+    QDir
+)
 from PyQt4.QtGui import QApplication, QMessageBox
 
 from stdm.data.configfile_paths import FilePaths
@@ -23,6 +30,9 @@ XFOFMDEFAULTS = ['start', 'end', 'deviceid', 'today']
 BINDPARAMS = "jr:preloadParams"
 CUSTOMBINDPARAMS = "jr:preload"
 
+HOME = QDir.home().path()
+
+FORM_HOME = HOME + '/.stdm/geoodk/forms'
 
 class XFORMDocument:
     """
@@ -72,7 +82,7 @@ class XFORMDocument:
         type: file
         :return: file
         """
-        self.form = QFile(os.path.join(self.file_handler.localPath(),
+        self.form = QFile(os.path.join(FORM_HOME,
                                              self.form_name()))
         if not QFileInfo(self.form).suffix() == DOCEXTENSION:
             self.form_name()

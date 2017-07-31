@@ -29,7 +29,6 @@ from stdm.data.configuration.entity import (
     Entity
 )
 from stdm.geoodk import GeoODKReader
-DOCUMENT = None
 
 class EntityImporter():
     """
@@ -53,14 +52,6 @@ class EntityImporter():
         file_path = QFile(file_p)
         if file_path.open(QIODevice.ReadOnly):
             self.instance_doc.setContent(file_path)
-
-    def set_global_document(self):
-        """
-        Set the current Qdomdocument available globally
-        :return:
-        """
-        DOCUMENT = self.instance_doc
-        return DOCUMENT
 
     def geomsetter(self, val):
         """
@@ -95,7 +86,6 @@ class EntityImporter():
         """
         success = False
         if self.instance_doc is not None:
-            self.set_global_document()
             attributes = self.entity_attributes_from_instance(entity)
             entity_add = Save2DB(entity, attributes,ids)
             entity_add.save_to_db()
@@ -111,13 +101,11 @@ class EntityImporter():
         :return:
         """
         if self.instance_doc is not None:
-            self.set_global_document()
             attributes = self.entity_attributes_from_instance(entity)
             entity_add = Save2DB(entity, attributes)
             entity_add.get_srid(self.geomval)
             ref_id = entity_add.save_parent_to_db()
         return ref_id
-
 
 
 class Save2DB:
@@ -200,7 +188,7 @@ class Save2DB:
         """
 
         :return:
-        """
+        z"""
         self.model = None
         self.entity = None
         self.attributes = None
