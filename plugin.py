@@ -775,6 +775,23 @@ class STDMQGISLoader(object):
         stdmEntityMenu.setIcon(QIcon(":/plugins/stdm/images/icons/entity_management.png"))
         stdmEntityMenu.setTitle(QApplication.translate("STDMEntityMenu","Entities"))
 
+        #Mobile content menu container
+        geoodk_mobile_dataMenu = QMenu(self.stdmMenu)
+        geoodk_mobile_dataMenu.setObjectName("GEOODKEntityMenu")
+        geoodk_mobile_dataMenu.setIcon(QIcon(":/plugins/stdm/images/icons/mobile-data-management.png"))
+        geoodk_mobile_dataMenu.setTitle(QApplication.translate("GeoODKMobileSettings", "GeoODK Settings"))
+
+        geoodkBtn = QToolButton()
+        adminObjName = QApplication.translate("GeoODKMobileSettings", "GeoODK Settings")
+        # Required by module loader for those widgets that need to be inserted into the container
+        geoodkBtn.setObjectName(adminObjName)
+        geoodkBtn.setToolTip(adminObjName)
+        geoodkBtn.setIcon(QIcon(":/plugins/stdm/images/icons/mobile-data-management.png"))
+        geoodkBtn.setPopupMode(QToolButton.InstantPopup)
+
+        geoodkMenu = QMenu(geoodkBtn)
+        geoodkBtn.setMenu(geoodkMenu)
+
         #Define actions
 
         self.contentAuthAct = QAction(
@@ -837,9 +854,9 @@ class STDMQGISLoader(object):
                     QApplication.translate("WorkspaceConfig","Entities"), self.iface.mainWindow())
 
         self.mobile_form_act = QAction(QIcon(":/plugins/stdm/images/icons/mobile_collect.png"), \
-                    QApplication.translate("MobileFormGenerator", "Generate Mobile Form"), self.iface.mainWindow())
+                    QApplication.translate("MobileFormGenerator", "Generate Geoodk Forms"), self.iface.mainWindow())
         self.mobile_form_import = QAction(QIcon(":/plugins/stdm/images/icons/mobile_import.png"), \
-                                       QApplication.translate("MobileFormGenerator", "Mobile Data Importer"),
+                                       QApplication.translate("MobileFormGenerator", "Import Geoodk Data"),
                                        self.iface.mainWindow())
 
         # Add current profiles to profiles combobox
@@ -1020,9 +1037,14 @@ class STDMQGISLoader(object):
         self.mobileXformgenCntGroup.addContentItem(mobileFormgeneratorCnt)
         self.mobileXformgenCntGroup.register()
 
-        self.ProfileInstanceCntGroup = ContentGroup(username, self.mobile_form_import)
-        self.ProfileInstanceCntGroup.addContentItem(mobileFormImportCnt)
-        self.ProfileInstanceCntGroup.register()
+        self.mobileXFormImportCntGroup = ContentGroup(username, self.mobile_form_import)
+        self.mobileXFormImportCntGroup.addContentItem(mobileFormImportCnt)
+        self.mobileXFormImportCntGroup.register()
+
+        # Group geoodk actions to one menu
+        geoodkSettingsCntGroup = []
+        geoodkSettingsCntGroup.append(self.mobileXformgenCntGroup)
+        geoodkSettingsCntGroup.append(self.mobileXFormImportCntGroup)
 
         # Add Design Forms menu and tool bar actions
         self.toolbarLoader.addContent(self.wzdConfigCntGroup)
@@ -1059,6 +1081,9 @@ class STDMQGISLoader(object):
         self.toolbarLoader.addContent(self.exportCntGroup)
         self.menubarLoader.addContent(self.exportCntGroup)
 
+        self.menubarLoader.addContents(geoodkSettingsCntGroup, [geoodk_mobile_dataMenu, geoodk_mobile_dataMenu])
+        self.toolbarLoader.addContents(geoodkSettingsCntGroup, [geoodkMenu, geoodkBtn])
+
         self.menubarLoader.addContent(self._action_separator())
         self.toolbarLoader.addContent(self._action_separator())
 
@@ -1067,12 +1092,6 @@ class STDMQGISLoader(object):
 
         self.toolbarLoader.addContent(self.docGeneratorCntGroup)
         self.menubarLoader.addContent(self.docGeneratorCntGroup)
-
-        self.toolbarLoader.addContent(self.mobileXformgenCntGroup)
-        self.menubarLoader.addContent(self.mobileXformgenCntGroup)
-
-        self.toolbarLoader.addContent(self.ProfileInstanceCntGroup)
-        self.menubarLoader.addContent(self.ProfileInstanceCntGroup)
 
         #Load all the content in the container
         self.toolbarLoader.loadContent()

@@ -316,8 +316,17 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.relations = {}
         self.txt_feedback.clear()
         self._notif_bar_str.clear()
+        has_relations = self.has_foreign_keys_parent(values)
+        if len(self.parent_table_isselected()) > 0:
+            if QMessageBox.information(self, QApplication.translate('GeoODKMobileSettings', "Warning"),
+                                       QApplication.translate('GeoODKMobileSettings',
+                                                              'Some of dependent tables (entities) will be imported '
+                                                              'which may not be part of the selected tables '
+                                                              'I.e: {} will be imported'
+                                                                      .format(self.parent_table_isselected())),
+                                       QMessageBox.Ok | QMessageBox.No) == QMessageBox.No:
+                return
         try:
-            userlist = []
             parents_info = []
             counter = 0
             if len(self.instance_list) > 0:
@@ -328,8 +337,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     entity_importer = EntityImporter(instance)
                     #set the geometry coodinate system
                     entity_importer.geomsetter(self.on_projection_select())
-
-                    has_relations = self.has_foreign_keys_parent(values)
                     self.archive_imported_file(counter, instance)
                     if has_relations:
                         #Import parents table first
@@ -386,6 +393,23 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         self.feedback_message('unable to read foreign key properties')
                         return
         return has_relations
+
+    def parent_table_isselected(self):
+        """
+        Ensure that the user selected tables may or maynot be imported
+        based on parent child table relationship
+        :return:
+        """
+        try:
+            silent_list = []
+            if self.user_selected_entities() > 0:
+                for table in self.relations.values():
+                    if table[1] not in self.user_selected_entities():
+                        silent_list.append(table[1])
+            return silent_list
+        except Exception as ex:
+            self._notif_bar_str.insertErrorNotification(ex.message)
+
 
     def archive_imported_file(self, counter, instance):
         """
