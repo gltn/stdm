@@ -243,18 +243,24 @@ class ExportData(QWizard,Ui_frmExportWizard):
         if resultSet.rowcount == 0:
             self.ErrorInfoMessage("There are no records to export")
             return succeed
-        
-        try:
-            writer.db2Feat(self,self.srcTab,resultSet,self.selectedColumns(),self.geomColumn)
-            self.InfoMessage(QApplication.translate("Features in '%s' have been successfully exported!"%(self.srcTab)))
 
-            #Update directory info in the registry
+        try:
+            writer.db2Feat(
+                self, self.srcTab, resultSet, self.selectedColumns(),
+                self.geomColumn
+            )
+            ft = QApplication.translate('ExportData', 'Features in')
+            succ = QApplication.translate(
+                'ExportData', 'have been successfully exported!')
+            self.InfoMessage(u'{}{}{}'.format(ft, self.srcTab, succ))
+
+            # Update directory info in the registry
             setVectorFileDir(targetFile)
 
-            succeed=True
+            succeed = True
 
-        except:
-            self.ErrorInfoMessage(str(sys.exc_info()[1]))
+        except Exception as ex:
+            self.ErrorInfoMessage(ex)
 
         return succeed
             
