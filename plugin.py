@@ -895,7 +895,7 @@ class STDMQGISLoader(object):
 
         # add the tables to the stdm toolbar
         # Format the table names to friendly format before adding them
-        social_tenure = self.current_profile.social_tenure
+        # social_tenure = self.current_profile.social_tenure
         #custom_attr_entity = social_tenure.custom_attributes_entity
         if self.user_entities() is not None:
             user_entities = dict(self.user_entities())
@@ -1064,8 +1064,8 @@ class STDMQGISLoader(object):
         profile_names = self.stdm_config.profiles.keys()
 
         self.profiles_combobox.clear()
-        for profile in profile_names:
-            self.profiles_combobox.addItem(profile.replace('_', ' '))
+
+        self.profiles_combobox.addItems(profile_names)
 
         self.profiles_combobox.setStyleSheet(
             """
