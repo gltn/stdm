@@ -1,3 +1,4 @@
+import os
 from os.path import expanduser, isfile
 import shutil
 import traceback
@@ -11,6 +12,9 @@ def copy_startup():
     source = '{}/.qgis2/python/plugins/stdm/settings/startup.py'.format(home)
     source_2 = '{}/python/plugins/stdm/settings/startup.py'.format(qgs_path)
     destination = '{}/.qgis2/python/startup.py'.format(home)
+    # Don't copy startup.py if the file exist. To fix file merging issue.
+    if os.path.exists(destination):
+        return
 
     try:
 
