@@ -328,6 +328,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     entity_importer = EntityImporter(instance)
                     #set the geometry coodinate system
                     entity_importer.geomsetter(self.on_projection_select())
+
                     has_relations = self.has_foreign_keys_parent(values)
                     self.archive_imported_file(counter, instance)
                     if has_relations:
@@ -425,20 +426,19 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         try:
             self.importlogger.add_log_info()
-            # for files in self.instance_list:
-            #     current_dir = os.path.basename(files)
-            #     exist = self.importlogger.check_file_exist(current_dir)
-            #     if exist:
-            #         self.instance_list.remove(files)
-            # self.txt_count.setText(str(len(self.instance_list)))
-            # if self.record_count() != len(self.instance_list):
-            #     msg = 'Some files have been already imported and therefore ' \
-            #           'not enumerated'
-            #     self._notif_bar_str.insertErrorNotification(msg)
+            for files in self.instance_list:
+                current_dir = os.path.basename(files)
+                exist = self.importlogger.check_file_exist(current_dir)
+                if exist:
+                    self.instance_list.remove(files)
+            self.txt_count.setText(str(len(self.instance_list)))
+            if self.record_count() != len(self.instance_list):
+                msg = 'Some files have been already imported and therefore ' \
+                   'not enumerated'
+                self._notif_bar_str.insertErrorNotification(msg)
         except IOError as io:
             self._notif_bar_str.insertErrorNotification(MSG + ": "+io.message)
             pass
-
 
     def available_records(self):
         """

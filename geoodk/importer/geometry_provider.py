@@ -42,6 +42,7 @@ class GeometryProvider:
         self._local_list = []
         self._X = 0
         self._Y = 0
+        self.srid = 4326
         area = float
         perimeter = float
 
@@ -106,13 +107,13 @@ class GeometryProvider:
         spRef = QgsCoordinateReferenceSystem()
         return spRef.createFromId(4326)
 
-    def destination_coordinate_system(self):
+    def set_destination_coordinate_system(self, srid_val):
         """
 
         :return:
         """
         spRef = QgsCoordinateReferenceSystem()
-        return spRef.createFromId(22033)
+        return spRef.createFromId(srid_val)
 
     def create_linear_line(self):
         """
@@ -162,6 +163,15 @@ class GeometryProvider:
         geom = QgsGeometry.fromWkt(wkt)
         return geom
 
+    def set_user_srid(self, srid_val):
+        """
+        Allow the user to define their own srid for import data
+        :param srid_val:
+        :return:
+        """
+        self.srid = srid_val
+        return self.srid
+
 
 class GeomPolgyon(GeometryProvider):
     """
@@ -171,33 +181,37 @@ class GeomPolgyon(GeometryProvider):
         """
         Initialize variables
         """
-        self.srid = 4326
         GeometryProvider.__init__(self, geomlist)
 
-    def user_srid(self, srid):
+    def user_srid(self):
         """
         Set the srid to the one selected by the user
         :param srid:
         :return:
         """
-        self.srid = srid
+        return self.srid
 
     def polygon_to_Wkt(self):
         """
-
+        Format the string coordinate to a polygon geometry
+        Ensure if the selected SRS do not match the db,
+        it transforms to the user selected one
         :return:
         """
         poly = self.create_polygon()
-
-        poly_as_text = poly.exportToWkt()
-        #raise NameError(str(poly_as_text))
-        # crsTransform = QgsCoordinateTransform(
-        #     self.default_coordinate_system(),
-        #     self.destination_coordinate_system())
-        # 'SRID={};{}'.format(22033, poly_as_text)
-        # poly_as_text.transform(crsTransform)
-
-        return 'SRID={};{}'.format(self.srid, poly_as_text)
+        if int(self.user_srid()) == 4326:
+            poly_as_text = poly.exportToWkt()
+            return 'SRID={};{}'.format(self.srid, poly_as_text)
+        else:
+            try:
+                crsTransform = QgsCoordinateTransform(
+                    self.default_coordinate_system(),
+                    self.set_destination_coordinate_system(int(self.user_srid())))
+                poly.transform(crsTransform)
+                poly_as_text = poly.exportToWkt()
+                return 'SRID={};{}'.format(self.srid, poly_as_text)
+            except Exception as ex:
+                return ex.message
 
 
 

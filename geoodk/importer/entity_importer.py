@@ -25,10 +25,11 @@ from stdm.settings import current_profile
 from stdm.utils.util import entity_attr_to_id, lookup_id_from_value
 from stdm.data.configuration import entity_model
 from stdm.geoodk.importer.geometry_provider import GeomPolgyon
+from stdm.data.configuration.columns import GeometryColumn
 from stdm.data.configuration.entity import (
     Entity
 )
-from stdm.geoodk import GeoODKReader
+GEOMPARAM = 0
 
 class EntityImporter():
     """
@@ -42,7 +43,6 @@ class EntityImporter():
         self.instance_doc = QDomDocument()
         self.set_instance_document(self.instance)
         self.key_watch = 0
-        self.geomval = 4326
 
     def set_instance_document(self, file_p):
         """
@@ -59,7 +59,16 @@ class EntityImporter():
         :param val:
         :return:
         """
-        self.geomval = val
+        global GEOMPARAM
+        GEOMPARAM = val
+        return GEOMPARAM
+
+    def geom(self):
+        """
+        Return the geometry value
+        :return:
+        """
+        return GEOMPARAM
 
     def entity_attributes_from_instance(self, entity):
         """
@@ -89,7 +98,7 @@ class EntityImporter():
             attributes = self.entity_attributes_from_instance(entity)
             entity_add = Save2DB(entity, attributes,ids)
             entity_add.save_to_db()
-            entity_add.get_srid(self.geomval)
+            entity_add.get_srid(GEOMPARAM)
             self.key_watch = entity_add.key
             success = True
         return success
@@ -103,7 +112,7 @@ class EntityImporter():
         if self.instance_doc is not None:
             attributes = self.entity_attributes_from_instance(entity)
             entity_add = Save2DB(entity, attributes)
-            entity_add.get_srid(self.geomval)
+            entity_add.get_srid(GEOMPARAM)
             ref_id = entity_add.save_parent_to_db()
         return ref_id
 
@@ -225,8 +234,14 @@ class Save2DB:
             else:
                 return lookup_id_from_value(col_prop.association.first_parent, var)
         elif col_type == 'GEOMETRY':
+            defualt_srid = 0
             geom_provider = GeomPolgyon(var)
-            geom_provider.user_srid(self.geom)
+            if isinstance(col_prop, GeometryColumn):
+               defualt_srid = col_prop.srid
+            if defualt_srid != 0:
+                geom_provider.set_user_srid(defualt_srid)
+            else:
+                geom_provider.set_user_srid(GEOMPARAM)
             return geom_provider.polygon_to_Wkt()
         elif col_type == 'FOREIGN_KEY':
             if len(self.parents_ids) < 0:

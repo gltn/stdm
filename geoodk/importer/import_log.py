@@ -120,6 +120,8 @@ class ImportLogger:
                 self.config_logger.read(f)
                 if self.config_logger.has_section(IMPORT_SECTION):
                     return self.config_logger.get(IMPORT_SECTION, instance)
+                else:
+                    return self.config_logger.add_section(IMPORT_SECTION)
                 f.close()
         except:
             pass
