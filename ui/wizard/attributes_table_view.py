@@ -168,6 +168,13 @@ class AttributesTableView(QTableView):
 
         return row_idx
 
+    def clear_view(self):
+        """
+        Removes all the items in the view.
+        """
+        rows = self.model().rowCount()
+        self.model().removeRows(0, rows)
+
     def attributes(self):
         """
        :return: Returns a collection of attributes specified in the view.

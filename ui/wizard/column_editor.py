@@ -71,6 +71,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
          profile - Current profile
          in_db   - Boolean flag to indicate if a column has been created in 
                    the database
+         auto_add- True to automatically add a new column to the entity, 
+                   default is False.
         """
         
         self.form_parent = kwargs.get('parent', self)
@@ -79,6 +81,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.profile = kwargs.get('profile', None)
         self.in_db = kwargs.get('in_db', False)
         self.is_new = kwargs.get('is_new', True)
+        self.auto_entity_add = kwargs.get('auto_add', False)
 
         QDialog.__init__(self, self.form_parent)
 
@@ -813,9 +816,12 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             if self.duplicate_check(col_name):
                 self.show_message(self.tr("Column with the same name already "
                 "exist in this entity!"))
-                return False
 
-            self.entity.add_column(new_column)
+                return False
+            if self.auto_entity_add:
+                self.entity.add_column(new_column)
+
+            self.column = new_column
             self.done(1)
         else:  # editing a column 
             self.column = new_column
@@ -841,7 +847,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         :type col_name: str
         """
         # check if another column with the same name exist in the current entity
-        if self.entity.columns.has_key(name):
+        if name in self.entity.columns:
             return True
         else:
             return False

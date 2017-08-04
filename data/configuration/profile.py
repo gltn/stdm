@@ -199,6 +199,24 @@ class Profile(QObject):
         """
         return self.entities.get(name, None)
 
+    def has_entity(self, entity):
+        """
+        Check if the entity exsts in the profile.
+        :param entity: Short name of an entity or entity object.
+        :type entity: str or Entity
+        :return: Return True if the entity exists in the profile, otherwise 
+        False.
+        :rtype: bool
+        """
+        if isinstance(entity, Entity):
+            entity = entity.short_name
+
+        ent = self.entity(entity)
+        if ent is None:
+            return False
+
+        return True
+
     def entity_by_name(self, name):
         """
         :param name: Name of the entity i.e. table name in the database.

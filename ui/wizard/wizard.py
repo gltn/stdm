@@ -190,7 +190,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.stdm_config = None
         self.new_profiles = []
         self._sp_t_mapping = {}
-        self._custom_attr_ent = None
+        self._custom_attr_entities = {}
         self.orig_assets_count = 0  # count of items in StdmConfiguration instance
         self.load_stdm_config()
 
@@ -415,7 +415,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         else:
             return CONFIG_FILE
 
-
     def init_path_ctrls_event_handlers(self):
         """
         Attach OnClick event handlers for the document path buttons
@@ -582,11 +581,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             sp_unit_entity = p.entity(sp_unit_name)
             self.dg_tenure.add_spatial_unit_entity(sp_unit_entity)
 
+            # Set primary tenure type for the selected spatial unit
+            p_tenure_vl = p.social_tenure.tenure_type_collection
+            self._sp_t_mapping[sp_unit_name] = p_tenure_vl.short_name
+
     def _on_spatial_unit_deselected(self, item):
         # Handle deselection of a spatial unit entity
         # Remove spatial unit graphic item from the view
         sp_unit_name = item.text()
         self.dg_tenure.remove_spatial_unit(sp_unit_name)
+
+        # Remove spatial unit from tenure mapping collection
+        if sp_unit_name in self._sp_t_mapping:
+            del self._sp_t_mapping[sp_unit_name]
 
     def load_configuration_from_file(self, file_name):
         """
@@ -655,6 +662,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         # If there are no spatial units specified then inform user
         c = len(sel_sp_units)
         if c == 0:
+            self._notif_bar_str.clear()
             msg = self.tr(
                 "Please select at least one spatial unit in order to "
                 "be able to specify the tenure type."
@@ -690,17 +698,48 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if sp_unit_tenure_dlg.exec_() == QDialog.Accepted:
             self._sp_t_mapping = sp_unit_tenure_dlg.tenure_mapping()
 
+    def _sync_custom_tenure_entities(self):
+        # Synchronize list of custom attribute entities with selected
+        # tenure types.
+        p = self.current_profile()
+
+        for tt in self._sp_t_mapping.values():
+            if not tt in self._custom_attr_entities:
+                c_ent = p.social_tenure.initialize_custom_attributes_entity(
+                    tt
+                )
+                self._custom_attr_entities[tt] = c_ent
+
+        # Remove tenure types not applicable in the list
+        tt_names = self._sp_t_mapping.values()
+        for tt_name in self._custom_attr_entities.keys():
+            if tt_name not in tt_names:
+                del self._custom_attr_entities[tt_name]
+
     def on_show_custom_attributes_editor(self):
         """
         Slot raised to show the dialog for editing custom tenure attributes.
         """
+        # Sync tenure types
+        self._sync_custom_tenure_entities()
+
+        if len(self._custom_attr_entities) == 0:
+            self._notif_bar_str.clear()
+            msg = self.tr(
+                'No tenure types have been specified in the profile\'s social '
+                'tenure relationship.'
+            )
+            self._notif_bar_str.insertWarningNotification(msg)
+
+            return
+
         p = self.current_profile()
 
         # Initialize entity attribute editor
         custom_attr_editor = TenureCustomAttributesEditor(
             p,
+            self._custom_attr_entities,
             self,
-            spu_tenure_mapping = self._sp_t_mapping,
             exclude_columns=['id', 'social_tenure_relationship_id']
         )
         custom_attr_editor.setWindowTitle(
@@ -708,14 +747,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         )
 
         if custom_attr_editor.exec_() == QDialog.Accepted:
-            pass
-            '''
-            attrs = custom_attr_editor.attributes
-            for a in attrs.values():
-                p.social_tenure.custom_attributes_entity.add_column(a)
-
-            print attrs
-            '''
+            # Append columns to the custom attribute entities
+            t_attrs = custom_attr_editor.custom_tenure_attributes
+            for tt, attrs in t_attrs.iteritems():
+                ent = self._custom_attr_entities[tt]
+                for attr in attrs:
+                    ent.add_column(attr)
 
     def validate_STR(self):
         """
@@ -975,6 +1012,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             for sp, t in c_profile.social_tenure.spatial_units_tenure.iteritems():
                 self._sp_t_mapping[sp] = t.short_name
 
+            # Set tenure custom attribute entities
+            for tt, ent in c_profile.social_tenure.custom_attribute_entities.iteritems():
+                self._custom_attr_entities[tt] = ent
+
             # check if social tenure relationship has been setup
             str_table = '{}_social_tenure_relationship'.format(c_profile.prefix)
             self.set_str_controls(str_table)
@@ -1119,6 +1160,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             if validPage:
                 profile = self.current_profile()
+                st = profile.social_tenure
 
                 # Set STR entities
                 parties = self.lst_parties.parties()
@@ -1145,6 +1187,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                         SocialTenure.END_DATE,
                         (min_end_date, max_end_date)
                     )
+
+                # Set spatial units' tenure types
+                for spu, tt in self._sp_t_mapping.iteritems():
+                    st.add_spatial_tenure_mapping(spu, tt)
+
+                # Set custom attributes entity
+                for tt, ent in self._custom_attr_entities.iteritems():
+                    # Check if the attributes entity exists in the profile
+                    status = profile.has_entity(ent)
+                    if not status:
+                        profile.add_entity(ent, True)
+
+                    st.add_tenure_attr_custom_entity(tt, ent)
 
             else:
                 self.show_message(self.tr(msg))
@@ -2080,9 +2135,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def find_updated_value(self, lookup, text):
         cv = None
-        print lookup.values.values()
         for code_value in lookup.values.values():
-            print 'find ', code_value, code_value.updated_value, text
             if code_value.updated_value == text:
                 cv = code_value
                 break

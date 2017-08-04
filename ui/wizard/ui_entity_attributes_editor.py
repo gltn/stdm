@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_entity_attributes_editor.ui'
 #
-# Created: Sun Jul 30 18:47:38 2017
+# Created: Tue Aug 01 12:55:27 2017
 #      by: PyQt4 UI code generator 4.9.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,7 +17,7 @@ except AttributeError:
 class Ui_EntityAttributesEditor(object):
     def setupUi(self, EntityAttributesEditor):
         EntityAttributesEditor.setObjectName(_fromUtf8("EntityAttributesEditor"))
-        EntityAttributesEditor.resize(361, 359)
+        EntityAttributesEditor.resize(377, 359)
         self.gridLayout_2 = QtGui.QGridLayout(EntityAttributesEditor)
         self.gridLayout_2.setContentsMargins(9, -1, -1, -1)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))

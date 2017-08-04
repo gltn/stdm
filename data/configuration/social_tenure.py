@@ -159,6 +159,10 @@ class SocialTenure(Entity):
         .. versionadded:: 1.7
         :param tenure_lookup: Valuelist containing tenure types.
         :type tenure_lookup: str or ValueList
+        :return: Returns the custom attributes entity. A new one is created 
+        if did not exist otherwise the an existing one is returned. The 
+        entity needs to be added manually to the registry.
+        :rtype: Entity
         """
         tenure_lookup = self._obj_from_str(tenure_lookup)
         custom_ent_name = self._custom_attributes_entity_name(
@@ -168,22 +172,19 @@ class SocialTenure(Entity):
 
         # Created only if it does not exist
         if custom_ent is None:
-            attr_ent = Entity(
+            custom_ent = Entity(
                 custom_ent_name,
                 self.profile,
                 supports_documents=False
             )
-            attr_ent.user_editable = False
+            custom_ent.user_editable = False
             # Column for linking with primary tenure table
-            str_col = ForeignKeyColumn('social_tenure_relationship_id', attr_ent)
+            str_col = ForeignKeyColumn('social_tenure_relationship_id', custom_ent)
             str_col.set_entity_relation_attr('parent', self)
             str_col.set_entity_relation_attr('parent_column', 'id')
-            attr_ent.add_column(str_col)
+            custom_ent.add_column(str_col)
 
-            self.profile.add_entity(attr_ent)
-
-            # Update registry
-            self.add_tenure_attr_custom_entity(tenure_lookup, attr_ent)
+        return custom_ent
 
     def add_tenure_attr_custom_entity(self, tenure_lookup, entity):
         """

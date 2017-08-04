@@ -37,15 +37,18 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
     def __init__(
             self,
             profile,
+            tenure_custom_entities,
             parent=None,
             editable=True,
-            spu_tenure_mapping=None,
             exclude_columns=None
     ):
         """
         Class constructor.
         :param profile: Profile object.
         :type profile: Profile
+        :param tenure_custom_entities: Collection of tenure types and 
+        corresponding custom attribute entities.
+        :type tenure_custom_entities: OrderedDict
         :param proxy_name: Name of the entity which will be used to create 
         a proxy table.The attributes of the entity can then be copied to the 
         target entity which shares the same name as the proxy entity.
@@ -55,9 +58,6 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
         :param editable: True if the attributes can be edited, otherwise 
         False.
         :type editable: bool
-        :param spu_tenure_mapping: Collection of spatial units and 
-        corresponding tenure type.
-        :type spu_tenure_mapping: OrderedDict
         :param exclude_columns: List of column names to exclude.
         :type exclude_columns: list
         """
@@ -71,9 +71,17 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
         if self._exclude_names is None:
             self._exclude_names = []
 
-        self._spu_tenures = spu_tenure_mapping
-        if self._spu_tenures is None:
-            self._spu_tenures = OrderedDict()
+        # Attributes for each tenure type
+        # Tenure type: list of attributes
+        self._tenure_custom_entities = tenure_custom_entities
+
+        # Populate attributes minus excluded columns
+        self._tenure_custom_attrs = {}
+        for tt, custom_ent in self._tenure_custom_entities.iteritems():
+            attrs = custom_ent.columns.values()
+            self._tenure_custom_attrs[tt] = [
+                a for a in attrs if a.name not in self._exclude_names
+            ]
 
         # Column types to omit
         self._exc_cols = [
@@ -85,10 +93,6 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
         self.btnAddColumn.clicked.connect(self.on_new_column)
         self.btnEditColumn.clicked.connect(self.on_edit_column)
         self.btnDeleteColumn.clicked.connect(self.on_delete_column)
-
-        # Attributes for each tenure type
-        # Tenure type: list of attributes
-        self._attrs = {}
 
         if not editable:
             self._disable_editing()
@@ -109,6 +113,16 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
             c_tenure_type = self.cbo_tenure_type.currentText()
             self._tenure_custom_attrs_entity(c_tenure_type)
 
+    @property
+    def custom_tenure_attributes(self):
+        """
+        :return: Returns a collection containing the attributes for each 
+        entity corresponding to the tenure types. Key is tenure type lookup 
+        name, value is a list of tenure attributes.
+        :rtype: dict(str, list)
+        """
+        return self._tenure_custom_attrs
+
     def exclude_column_names(self, names):
         """
         Set the list of columns to be excluded from the view only, not from 
@@ -123,7 +137,7 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
 
     def _load_tenure_types(self):
         # Load tenure types
-        t_types = self._spu_tenures.values()
+        t_types = self._tenure_custom_attrs.keys()
 
         if len(t_types) > 0:
             self.cbo_tenure_type.clear()
@@ -142,30 +156,34 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
 
     def _tenure_custom_attrs_entity(self, tenure_type):
         # Loads the custom attributes entity. Creates if it does not exist.
-        c_attrs_ent = self._profile.social_tenure.custom_attribute_entity(
-            tenure_type
-        )
-        if c_attrs_ent is None:
-            self._profile.social_tenure.initialize_custom_attributes_entity(
-                tenure_type
+        c_ent_attrs = self._tenure_custom_attrs.get(tenure_type, None)
+        if c_ent_attrs is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Custom Tenure Attributes'),
+                self.tr('Attributes entity is not available.')
             )
 
-            c_attrs_ent = self._profile.social_tenure.custom_attribute_entity(
-                tenure_type
-            )
+            return
 
-        # Load list of attributes
-        self.load_attributes_from_entity(c_attrs_ent)
+        self.load_attributes(c_ent_attrs)
 
     def _update_excluded_columns(self):
         # Remove excluded columns.
         for n in self._exclude_names:
             self.tb_view.remove_item(n)
 
+    def _get_current_entity(self):
+        # Returns the custom attributes entity corresponding to the
+        # currently selected tenure type.
+        tenure_type = self.cbo_tenure_type.currentText()
+
+        return self._tenure_custom_entities.get(tenure_type, None)
+
     def _get_attribute(self, tenure_type, name):
         # Get attribute by name and index otherwise None.
         attr, idx = None, -1
-        attrs = self._attrs.get(tenure_type, None)
+        attrs = self._tenure_custom_attrs.get(tenure_type, None)
         if attrs is None:
             return attr, idx
 
@@ -192,7 +210,7 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
         # Constructor params for column editor
         params = {}
         params['parent'] = self
-        params['entity'] = self._entity
+        params['entity'] = self._get_current_entity()
         params['profile'] = self._profile
 
         return params
@@ -205,10 +223,10 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
     def _get_tenure_type_attrs(self, tenure_type):
         # Returns a list of attributes matching to the given tenure type.
         # Creates an empty list if None is found.
-        if not tenure_type in self._attrs:
-            self._attrs[tenure_type] = []
+        if not tenure_type in self._tenure_custom_attrs:
+            self._tenure_custom_attrs[tenure_type] = []
 
-        return self._attrs[tenure_type]
+        return self._tenure_custom_attrs[tenure_type]
 
     def add_column(self, column):
         """
@@ -221,7 +239,12 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
         tenure_type = self.cbo_tenure_type.currentText()
 
         attrs = self._get_tenure_type_attrs(tenure_type)
-        attrs.append(column)
+
+        # Check if the column is already in the list
+        attr, idx = self._get_attribute(tenure_type, column.name)
+        if idx == -1:
+            attrs.append(column)
+
         self.tb_view.add_item(column)
 
     def edit_column(self, original_name, column):
@@ -241,8 +264,9 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
         if idx == -1:
             return False
 
-        col = self._attrs.pop(idx)
-        self._attrs.insert(idx, column)
+        attrs = self._get_tenure_type_attrs(tenure_type)
+        col = attrs.pop(idx)
+        attrs.insert(idx, column)
 
         self.tb_view.update_item(original_name, column)
 
@@ -260,7 +284,7 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
 
         if editor.exec_() == QDialog.Accepted:
             # Do nothing since we are connecting to the signal
-            pass
+            self.add_column(editor.column)
 
     def selected_column(self):
         """
@@ -284,9 +308,10 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
         """
         Slot for showing a dialog for editing the selected column.
         """
+        self._notifBar.clear()
+
         sel_col = self.selected_column()
         if sel_col is None:
-            self._notifBar.clear()
             msg = self.tr('Please select a column to edit.')
             self._notifBar.insertWarningNotification(msg)
 
@@ -353,16 +378,17 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
         :type name: str
         :return: Return True if the column was successfully deleted, 
         otherwise False if the column does not exist.
-        :rtype: False
+        :rtype: bool
         """
         tenure_type = self.cbo_tenure_type.currentText()
-        name, idx = self._get_attribute(tenure_type, name)
+        attr, idx = self._get_attribute(tenure_type, name)
         if idx == -1:
             return False
 
-        col = self._attrs.pop(idx)
+        attrs = self._get_tenure_type_attrs(tenure_type)
+        col = attrs.pop(idx)
 
-        return self.tb_view.remove_item(name)
+        return self.tb_view.remove_item(attr.name)
 
     def load_attributes_from_entity(self, entity):
         """
@@ -373,19 +399,6 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
         """
         self.load_attributes(entity.columns)
 
-    def clear(self):
-        """
-        Removes all columns from the view.
-        """
-        tenure_type = self.cbo_tenure_type.currentText()
-
-        attrs = self._attrs.get(tenure_type, None)
-        if attrs is None:
-            return
-
-        for a in attrs:
-            self.delete_column(a.name)
-
     def load_attributes(self, attributes):
         """
         Loads the collection of attibutes to the view. Any previous 
@@ -393,11 +406,11 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
         :param attributes: Collection of attributes to be loaded to te view.
         :type attributes: OrderedDict
         """
-        if len(attributes) > 0:
-            # Clear view
-            self.clear()
+        # Clear view
+        self.tb_view.clear_view()
 
-            for a in attributes.values():
+        if len(attributes) > 0:
+            for a in attributes:
                 self.add_column(a)
 
             # Refresh excluded columns
