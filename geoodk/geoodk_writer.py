@@ -185,7 +185,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
 
     def _doc_meta_instance(self):
         """
-        Create a meta section that will hold the key details of the form
+        Create a meta section that will hold the GUUID of the form
         :return:
         """
         meta_node = self.create_node("meta")

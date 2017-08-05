@@ -88,6 +88,13 @@ class EntityImporter():
                 attributes[node_val.nodeName()] = node_val.text().rstrip()
         return attributes
 
+    def instance_group_identity(self):
+        """
+        Get the unique identifier for the current instance
+        :return:
+        """
+        pass
+
     def process_import_to_db(self, entity,ids):
         """
         Save the object data to the database
@@ -211,7 +218,6 @@ class Save2DB:
         self.geom = srid
         return self.geom
 
-
     def attribute_formatter(self, col_type, col_prop, var):
         """
 
@@ -247,9 +253,9 @@ class Save2DB:
             if len(self.parents_ids) < 0:
                 return
             else:
-                for key, values in self.parents_ids.iteritems():
-                    if col_prop.parent.name == values[1]:
-                        return values[0]
+                for val in self.parents_ids.values():
+                    if col_prop.parent.name == val[1]:
+                        return val[0]
         else:
             return var
 
