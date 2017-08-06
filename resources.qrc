@@ -101,5 +101,6 @@
     <file>images/icons/period_blue.png</file>
     <file>images/icons/code.png</file>
     <file>images/icons/clear.png</file>
+        <file>images/icons/custom_tenure.png</file>
   </qresource>
 </RCC>

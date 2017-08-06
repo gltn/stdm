@@ -537,9 +537,7 @@ class STRType(ComponentUtility):
         self.str_type_table = FreezeTableWidget(
             self.str_type_data, headers, self.container_widget
         )
-        self.str_type_table.setEditTriggers(
-            QAbstractItemView.NoEditTriggers
-        )
+        self.str_type_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.container_box.setSpacing(4)
         self.container_box.setMargin(5)
@@ -638,13 +636,15 @@ class CustomTenureInfo(object):
         ])
 
     def add_entity_editor(
-            self, party_entity, party_model, str_number, row_number,
+            self, party_entity, spatial_unit_entity, party_model, str_number, row_number,
             custom_model=None):
         """
         Adds custom tenure info tab with editor form. It could load data if
         the custom_model is not none.
         :param party_entity: The associated party entity
         :type party_entity: Object
+        :param spatial_unit_entity: The associated spatial unit entity
+        :type spatial_unit_entity: Object
         :param party_model: The party model associated with custom tenure info
         record.
         :type party_model: Object
@@ -657,7 +657,10 @@ class CustomTenureInfo(object):
         :type custom_model: Integer
         """
         # Get the custom attribute entity
-        custom_attr_entity = self.social_tenure.custom_attributes_entity
+        custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
+            spatial_unit_entity
+        )
+
         # If None then create
         if custom_model is None:
             self.entity_editors[(str_number, row_number)] = EntityEditorDialog(
@@ -685,13 +688,14 @@ class CustomTenureInfo(object):
             party_title
         )
 
-    def remove_entity_editor(self, row_numbers):
+    def remove_entity_editor(self, spatial_unit, row_numbers):
         """
-        Instantiates entity editor and add its widgets to
-        the GPX import tool as tabs
+        Instantiates entity editor and remove its widgets as tabs
         """
         # Get the custom attribute entity
-        custom_attr_entity = self.social_tenure.custom_attributes_entity
+        custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
+            spatial_unit
+        )
         # If None then create
         if custom_attr_entity is not None:
             for row_number in row_numbers:
