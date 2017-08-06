@@ -471,6 +471,7 @@ class EntityNode(SupportsDocumentsNode):
     """
     def __init__(self, *args, **kwargs):
         self._colname_display_value = args[0]
+
         is_child = kwargs.get("isChild", False)
         self._parent_header = kwargs.pop("header", "")
         self._value_formatters = kwargs.pop("value_formatters", {})

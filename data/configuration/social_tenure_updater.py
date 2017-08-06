@@ -70,22 +70,13 @@ def view_updater(social_tenure, engine):
     :param engine: SQLAlchemy connectable object.
     :type engine: Engine
     """
-    from stdm.settings import current_profile
-    view_name = social_tenure.view_name
 
     views = social_tenure.views
 
-    curr_p = current_profile()
     # Loop through view name, primary entity items
     for v, pe in views.iteritems():
         # Check if there is an existing one and omit delete if it exists
         LOGGER.debug('Checking if %s view exists...', v)
-        ## +++ exclude after Johns commit
-        # # TODO remvoe this
-        # print v, pe
-        if pe is None:
-            sp_name = v.split('_vw_social_tenure_relationship')[0]
-            pe = curr_p.entity_by_name(sp_name)
 
         # Do not create if it already exists
         if pg_table_exists(v):
@@ -199,7 +190,6 @@ def _create_primary_entity_view(
             omit_view_columns=omit_view_columns,
             omit_join_statement_columns=omit_join_statement_columns
         )
-        #print spatial_unit_columns, spatial_unit_join
 
         view_columns = str_columns + spatial_unit_columns
 
@@ -221,7 +211,6 @@ def _create_primary_entity_view(
             ' '.join(join_statement))
 
         normalized_create_view_sql = text(create_view_sql)
-       # print create_view_sql
 
         _execute(normalized_create_view_sql)
 

@@ -89,7 +89,8 @@ class STRDBHandler():
         self.str_edit_obj = None
         self.progress = STDMProgressDialog(iface.mainWindow())
         self.social_tenure = current_profile().social_tenure
-        self.custom_attr_entity = self.social_tenure.custom_attributes_entity
+
+
 
         self.str_edit_node = str_edit_node
         if str_edit_node is not None:
@@ -113,8 +114,12 @@ class STRDBHandler():
 
         party = str_store.current_party
         spatial_unit = str_store.current_spatial_unit
-        _custom_atr_obj = getattr(self.str_model, self.custom_attr_entity.name, None)
-        # custom_atr_objs = []
+        custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
+            spatial_unit
+        )
+
+        # _custom_atr_obj = getattr(self.str_model, custom_attr_entity.name, None)
+        # # custom_atr_objs = []
         index = 4
         # Social tenure and supporting document insertion
         # The code below is have a workaround to enable
@@ -132,10 +137,12 @@ class STRDBHandler():
             number_of_docs = len(doc_objs) / no_of_party
             party_short_name = party.short_name
             party_entity_id = '{}_id'.format(
-                party_short_name.replace(' ', '_').lower())
+                party_short_name.replace(' ', '_').lower()
+            )
             spatial_unit_short_name = spatial_unit.short_name
             spatial_unit_entity_id = '{}_id'.format(
-                spatial_unit_short_name.replace(' ', '_').lower())
+                spatial_unit_short_name.replace(' ', '_').lower()
+            )
 
             tenure_type_col = self.social_tenure.spatial_unit_tenure_column(
                 spatial_unit_short_name
@@ -183,18 +190,22 @@ class STRDBHandler():
 
         _str_obj.saveMany(str_objs)
 
-        custom_attr_model = entity_model(self.custom_attr_entity)
+        custom_attr_model = entity_model(custom_attr_entity)
         custom_attr_obj = custom_attr_model()
 
         custom_attr_objs = []
+
         for i, custom_attr_model in enumerate(str_store.custom_tenure.values()):
+
             # save custom tenure
-            for col in self.custom_attr_entity.columns.values():
+            for col in custom_attr_entity.columns.values():
                 if col.TYPE_INFO == 'FOREIGN_KEY':
+
                     if col.parent.name == self.social_tenure.name:
                         # print col.name, str_objs[i].id
                         setattr(custom_attr_model, col.name, str_objs[i].id)
                         custom_attr_objs.append(custom_attr_model)
+
                         break
 
         custom_attr_obj.saveMany(custom_attr_objs)
@@ -216,6 +227,9 @@ class STRDBHandler():
 
         party = str_store.current_party
         spatial_unit = str_store.current_spatial_unit
+        # custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
+        #     spatial_unit
+        # )
         party_short_name = party.short_name
         spatial_unit_short_name = spatial_unit.short_name
         tenure_type_col = self.social_tenure.spatial_unit_tenure_column(

@@ -154,7 +154,7 @@ class SpatialUnitManagerDockWidget(
 
         # Append the corresponding(profile) view to the list of entity names
         str_views = self._curr_profile.social_tenure.views.keys()
-        print str_views
+
         for str_view in str_views:
             if str_view in self.sp_tables:
                 self.str_view_geom_columns = table_column_names(
@@ -164,7 +164,7 @@ class SpatialUnitManagerDockWidget(
                 if len(self.str_view_geom_columns) > 0:
                     # Pick the first column
                     for i, geom_col in enumerate(self.str_view_geom_columns):
-                        print geom_col
+
                         if i > 0:
                             view_layer_name = self._curr_profile. \
                                 social_tenure.layer_display()

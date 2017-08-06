@@ -710,9 +710,7 @@ def entity_id_to_model(entity, id):
     """
     model = entity_model(entity)
     model_obj = model()
-    result = model_obj.queryObject().filter(
-        model.id == id
-    ).first()
+    result = model_obj.queryObject().filter(model.id == id).first()
     return result
 
 def entity_attr_to_model(entity, attr, value):
@@ -730,9 +728,12 @@ def entity_attr_to_model(entity, attr, value):
     model_obj = model()
     attr_col_obj = getattr(model, attr)
 
+    result_2 = model_obj.queryObject().first()
+
     result = model_obj.queryObject().filter(
         attr_col_obj == value
     ).first()
+
     return result
 
 def entity_attr_to_id(entity, attr_obj, attr_val, lower=False):
