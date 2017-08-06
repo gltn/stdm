@@ -439,12 +439,12 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 continue
 
             if column_widget is not None:
-                header = c.header()
+                header = c.ui_display()
                 self.c_label = QLabel(self.scroll_widget_contents)
 
                 # Format label text if it is a mandatory field
                 if c.mandatory:
-                    header = '{0} *'.format(c.header())
+                    header = '{0} *'.format(c.ui_display())
                     #Highlight asterisk
                     header = self._highlight_asterisk(header)
 
@@ -472,7 +472,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
                     col_name,
                     self.column_widget,
                     c.mandatory,
-                    pseudoname=c.header()
+                    pseudoname=c.ui_display()
                 )
 
                 # Bump up row_id

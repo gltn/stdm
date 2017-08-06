@@ -235,6 +235,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.edtColName.setText(column.name)
         self.edtColDesc.setText(column.description)
+        self.txt_form_label.setText(column.label)
         self.edtUserTip.setText(column.user_tip)
         self.cbMandt.setChecked(column.mandatory)
         self.cbSearch.setCheckState(self.bool_to_check(column.searchable))
@@ -778,6 +779,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         """
         self.form_fields['colname'] = unicode(self.edtColName.text())
         self.form_fields['description'] = unicode(self.edtColDesc.text())
+        self.form_fields['label'] = unicode(self.txt_form_label.text())
         self.form_fields['index'] = self.cbIndex.isChecked()
         self.form_fields['mandatory'] = self.cbMandt.isChecked()
         self.form_fields['searchable'] = self.cbSearch.isChecked()

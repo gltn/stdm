@@ -189,6 +189,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.draft_config = False
         self.stdm_config = None
         self.new_profiles = []
+        self._str_table_exists = False
         self._sp_t_mapping = {}
         self._custom_attr_entities = {}
         self.orig_assets_count = 0  # count of items in StdmConfiguration instance
@@ -654,7 +655,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Shows dialog for specifying spatial unit tenure types.
         """
         self._notif_bar_str.clear()
-        sp_unit_tenure_dlg = SpatialUnitTenureTypeDialog(self)
+
+        can_edit = not self._str_table_exists
+        sp_unit_tenure_dlg = SpatialUnitTenureTypeDialog(
+            self,
+            editable=can_edit
+        )
 
         # Get the currently selected spatial units
         sel_sp_units = self.lst_spatial_units.spatial_units()
@@ -735,11 +741,14 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         p = self.current_profile()
 
+        can_edit = not self._str_table_exists
+
         # Initialize entity attribute editor
         custom_attr_editor = TenureCustomAttributesEditor(
             p,
             self._custom_attr_entities,
             self,
+            editable=can_edit,
             exclude_columns=['id', 'social_tenure_relationship_id']
         )
         custom_attr_editor.setWindowTitle(
@@ -867,7 +876,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 is_empty = False 
 
         return is_empty
-
 
     def check_empty_lookups(self):
         """
@@ -1110,6 +1118,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self.enable_str_setup()
         if pg_table_exists(str_table):
+            self._str_table_exists = True
             self.disable_str_setup()
             
     def enable_str_setup(self):

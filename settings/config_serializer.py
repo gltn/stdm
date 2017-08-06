@@ -1579,6 +1579,7 @@ class ColumnSerializerCollection(object):
     USER_TIP = 'tip'
     MINIMUM = 'minimum'
     MAXIMUM = 'maximum'
+    LABEL = 'label'
 
     @classmethod
     def register(cls):
@@ -1661,6 +1662,12 @@ class ColumnSerializerCollection(object):
         )
         kwargs['user_tip'] = user_tip
 
+        # Label
+        label = unicode(
+            element.attribute(ColumnSerializerCollection.LABEL, '')
+        )
+        kwargs['label'] = label
+
         #Minimum
         if element.hasAttribute(ColumnSerializerCollection.MINIMUM):
             minimum = element.attribute(ColumnSerializerCollection.MINIMUM)
@@ -1673,7 +1680,7 @@ class ColumnSerializerCollection(object):
             except ValueError:
                 pass
 
-        #Maximum
+        # Maximum
         if element.hasAttribute(ColumnSerializerCollection.MAXIMUM):
             maximum = element.attribute(ColumnSerializerCollection.MAXIMUM)
 
@@ -1738,6 +1745,8 @@ class ColumnSerializerCollection(object):
                                  str(column.unique))
         col_element.setAttribute(ColumnSerializerCollection.USER_TIP,
                                  column.user_tip)
+        col_element.setAttribute(ColumnSerializerCollection.LABEL,
+                                 column.label)
 
         if hasattr(column, 'minimum'):
             col_element.setAttribute(ColumnSerializerCollection.MINIMUM,

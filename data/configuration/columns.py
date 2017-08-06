@@ -96,7 +96,7 @@ class BaseColumn(ColumnItem):
         - *user_tip:* Hint that will appear in the form editor as a tooltip
         for this column.
          - *index:* True to indicate that the column should be indexed.
-         - *ui_display:* Text to appear as the column label.
+         - *label:* Text to appear as the column label in the form editor.
         """
         if len(args) < 2:
             raise Exception('Constructor requires name and entity arguments.')
@@ -122,7 +122,7 @@ class BaseColumn(ColumnItem):
         self.searchable = kwargs.get('searchable', True)
         self.unique = kwargs.get('unique', False)
         self.user_tip = kwargs.get('user_tip', '')
-        self.ui_display = kwargs.get('ui_display', '')
+        self.label = kwargs.get('label', '')
 
         self.reset_updated_attrs()
 
@@ -268,6 +268,15 @@ class BaseColumn(ColumnItem):
         :rtype: list
         """
         return self.entity.column_parent_relations(self.name)
+
+    def ui_display(self):
+        """
+        :return: Returns the display name to be shown for the column in the 
+        form editor. The 'label' attribute is given preference, otherwise 
+        the 'header' function is called.
+        :rtype: str
+        """
+        return self.label or self.header()
 
     def header(self):
         """
