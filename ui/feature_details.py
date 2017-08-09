@@ -1158,6 +1158,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                     custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
                         self.entity
                     )
+                    if custom_attr_entity is None:
+                        continue
                    
                     custom_attr_model = entity_attr_to_model(
                         custom_attr_entity,

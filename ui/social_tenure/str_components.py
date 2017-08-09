@@ -660,6 +660,8 @@ class CustomTenureInfo(object):
         custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
             spatial_unit_entity
         )
+        if custom_attr_entity is None:
+            return
 
         # If None then create
         if custom_model is None:
