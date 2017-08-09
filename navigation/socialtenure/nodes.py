@@ -247,6 +247,9 @@ class BaseSTRNode(object):
 
         return self._data[column]
 
+    def current_data(self):
+        return self._data
+
     def setData(self, column, value):
         '''
         Set the value of the node data at the given column index.
@@ -468,6 +471,7 @@ class EntityNode(SupportsDocumentsNode):
     """
     def __init__(self, *args, **kwargs):
         self._colname_display_value = args[0]
+
         is_child = kwargs.get("isChild", False)
         self._parent_header = kwargs.pop("header", "")
         self._value_formatters = kwargs.pop("value_formatters", {})
@@ -495,6 +499,7 @@ class EntityNode(SupportsDocumentsNode):
         """
         prop_val_mapping = self._concat_names_values(self._colname_display_value,
                                                      self._value_formatters)
+
         for p_val in prop_val_mapping:
 
             ch_ent_node = BaseSTRNode([p_val], self)

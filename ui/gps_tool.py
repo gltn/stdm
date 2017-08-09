@@ -60,6 +60,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         self.data_changed = None
         self.drag_drop = None
         self.item_changed = None
+        self.enable_save = False
 
         # Source and slot signal connections
         self.file_select_bt.clicked.connect(self._set_file_path)
@@ -87,6 +88,11 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         self.clear_all_bt.clicked.connect(self._clear_all_items)
         self.load_bt.clicked.connect(self._save_feature)
         self.cancel_bt.clicked.connect(self.close)
+        self.gpx_import_tab.currentChanged.connect(self.enable_save_button)
+
+    def enable_save_button(self):
+        self.enable_save = True
+        self.load_bt.setEnabled(self.enable_save)
 
     def _init_entity_editor(self):
         """
@@ -218,9 +224,11 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         if state is not None:
             self.select_all_bt.setEnabled(state)
             self.clear_all_bt.setEnabled(state)
-            self.load_bt.setEnabled(state)
+            if self.enable_save:
+                self.load_bt.setEnabled(state)
         else:
-            self.load_bt.setEnabled(load_state)
+            if self.enable_save:
+                self.load_bt.setEnabled(load_state)
 
     def _refresh_map_canvas(self):
         """

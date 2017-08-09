@@ -199,6 +199,24 @@ class Profile(QObject):
         """
         return self.entities.get(name, None)
 
+    def has_entity(self, entity):
+        """
+        Check if the entity exsts in the profile.
+        :param entity: Short name of an entity or entity object.
+        :type entity: str or Entity
+        :return: Return True if the entity exists in the profile, otherwise 
+        False.
+        :rtype: bool
+        """
+        if isinstance(entity, Entity):
+            entity = entity.short_name
+
+        ent = self.entity(entity)
+        if ent is None:
+            return False
+
+        return True
+
     def entity_by_name(self, name):
         """
         :param name: Name of the entity i.e. table name in the database.
@@ -250,7 +268,7 @@ class Profile(QObject):
         of the specified argument.
         :rtype: EntityRelation
         """
-        #Get corresponding entity
+        # Get corresponding entity
         if not isinstance(item, Entity):
             raise TypeError(self.tr('Entity object type expected.'))
 
@@ -348,7 +366,7 @@ class Profile(QObject):
         from being emitted. Default behavior is to emit the signal.
         :type suppress_signal: bool
         """
-        #If there is an existing item with the same name,
+        # If there is an existing item with the same name,
         # and that item action is not DROP, then do not add this.
         if item.short_name in self.entities:
             old_item = self.entities[item.short_name]
@@ -359,7 +377,7 @@ class Profile(QObject):
 
         LOGGER.debug('%s entity added to %s profile', item.short_name, self.name)
 
-        #Raise entity added signal if enabled
+        # Raise entity added signal if enabled
         if not suppress_signal:
             self.entity_added.emit(item)
 
@@ -570,45 +588,50 @@ class Profile(QObject):
 
             return False
 
-        #Check if the entity participates in either of the STR definitions
+        # Check if the entity participates in either of the STR definitions
         update_party = False
-        if not self.social_tenure.party is None:
-            update_party = True \
-                if self.social_tenure.party.short_name == original_name \
-                else False
+        if len(self.social_tenure.parties) > 0:
+            if self.social_tenure.is_str_party_entity(original_name):
+                update_party = True
 
         update_spatial_unit = False
-        if not self.social_tenure.spatial_unit is None:
-            update_spatial_unit = True \
-                if self.social_tenure.spatial_unit.short_name == original_name \
-                else False
+        if len(self.social_tenure.spatial_units) > 0:
+            if self.social_tenure.is_str_spatial_unit_entity(original_name):
+                update_spatial_unit = True
 
         ent = self.entities[original_name]
 
-        #Get entity relations and update entity references
+        # Get entity relations and update entity references
         parent_relations = self.parent_relations(ent)
         child_relations = self.child_relations(ent)
 
-        #Remove entity from the collection
+        # Remove from STR definition
+        if update_party:
+            self.social_tenure.remove_party(ent)
+
+        if update_spatial_unit:
+            self.social_tenure.remove_spatial_unit(ent)
+
+        # Remove entity from the collection
         rn_entity = self.entities.pop(original_name)
 
         rn_entity.rename(new_name)
 
-        #Re-insert the entity
+        # Re-insert the entity
         self.add_entity(rn_entity, True)
 
-        #Update relations
+        # Update relations
         for pr in parent_relations:
             pr.parent = rn_entity
 
         for cr in child_relations:
             cr.child = rn_entity
 
-        #Update entities in the STR definition
+        # Update entities in the STR definition
         if update_party:
-            self.social_tenure.party = rn_entity
+            self.social_tenure.add_party(rn_entity)
 
         if update_spatial_unit:
-            self.social_tenure.spatial_unit = rn_entity
+            self.social_tenure.add_spatial_unit(rn_entity)
 
         return True

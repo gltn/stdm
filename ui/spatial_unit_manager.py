@@ -165,15 +165,16 @@ class SpatialUnitManagerDockWidget(
                 if len(self.str_view_geom_columns) > 0:
                     # Pick the first column
                     for i, geom_col in enumerate(self.str_view_geom_columns):
+                        view_layer_name = str_view
                         if i > 0:
-                            view_layer_name = self._curr_profile. \
-                                social_tenure.layer_display()
+                            # view_layer_name = self._curr_profile. \
+                            #     social_tenure.layer_display()
                             view_layer_name = '{}.{}'.format(
                                 view_layer_name, geom_col
                             )
-                        else:
-                            view_layer_name = self._curr_profile. \
-                                social_tenure.layer_display()
+                        # else:
+                            # view_layer_name = self._curr_profile. \
+                            #     social_tenure.layer_display()
 
                         self._add_geometry_column_to_combo(
                             str_view,
@@ -256,10 +257,12 @@ class SpatialUnitManagerDockWidget(
             self, table_name, column_name, display, item
     ):
         icon = self._geom_icon(table_name, column_name)
+
         self.stdm_layers_combo.addItem(icon, display, {
-            'table_name': table_name,
-            'column_name': column_name,
-            'item': item}
+                'table_name': table_name,
+                'column_name': column_name,
+                'item': item
+            }
         )
 
         table = self.spatial_unit.name

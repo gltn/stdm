@@ -59,9 +59,16 @@ class ComposerFieldSelector(QWidget, Ui_frmComposerFieldEditor):
             self._label.setText("[STDM Data Field]")
             
         else:
-            self._label.setText("[" + self._composerWrapper.selectedDataSource() + "." + \
-                                self.fieldName() + "]")
-            
+            label_text = self._label.text()
+            data_text = label_text[
+                        label_text.find('[') + 1:label_text.find(']')]
+            data_source = self._composerWrapper.selectedDataSource() + "." + \
+                                self.fieldName()
+
+            self._label.setText(
+                self._label.text().replace(data_text, data_source)
+            )
+
         self._composerWrapper.composition().update()
         
     def fieldName(self):

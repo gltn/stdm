@@ -502,7 +502,6 @@ class QgsFeatureMapperMixin(MapperMixin):
             fields = self._layer.pendingFields()
             self._model.initAttributes(fields.count())
             
-        #Connect signals
         self._layer.featureAdded.connect(self.onFeatureAdded)
         
     def layer(self):

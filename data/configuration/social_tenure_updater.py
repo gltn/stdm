@@ -70,10 +70,10 @@ def view_updater(social_tenure, engine):
     :param engine: SQLAlchemy connectable object.
     :type engine: Engine
     """
-    view_name = social_tenure.view_name
 
     views = social_tenure.views
-    # Loop thru view name, primary entity items
+
+    # Loop through view name, primary entity items
     for v, pe in views.iteritems():
         # Check if there is an existing one and omit delete if it exists
         LOGGER.debug('Checking if %s view exists...', v)
@@ -132,6 +132,7 @@ def _create_primary_entity_view(
     party_columns, party_join = [], []
 
     # Omit party entities in the spatial unit join
+    #### Create party views
     if not pe_is_spatial:
         party_columns, party_join = _entity_select_column(
             primary_entity, True, True, True,
@@ -141,9 +142,33 @@ def _create_primary_entity_view(
         )
 
         # Set removal of all spatial unit columns apart from the id column
-        omit_view_columns = deepcopy(social_tenure.spatial_unit.columns.keys())
-        if 'id' in omit_view_columns:
-            omit_view_columns.remove('id')
+        for spatial_unit in social_tenure.spatial_units:
+            omit_view_columns = deepcopy(spatial_unit.columns.keys())
+            if 'id' in omit_view_columns:
+                omit_view_columns.remove('id')
+
+        view_columns = party_columns + str_columns #+ spatial_unit_columns
+
+        # Set distinct column if specified
+        if not distinct_column is None:
+            view_columns = _set_distinct_column(distinct_column, view_columns)
+
+        join_statement = str_join + party_join #+ spatial_unit_join
+
+        if len(view_columns) == 0:
+            LOGGER.debug('There are no columns for creating the social tenure '
+                         'relationship view.')
+
+            return
+
+            # Create SQL statement
+        create_view_sql = u'CREATE VIEW {0} AS SELECT {1} FROM {2} {3}'.format(
+            view_name, ','.join(view_columns), social_tenure.name,
+            ' '.join(join_statement))
+
+        normalized_create_view_sql = text(create_view_sql)
+
+        _execute(normalized_create_view_sql)
 
     else:
         # Set id column to be distinct
@@ -152,38 +177,42 @@ def _create_primary_entity_view(
         # Omit STR columns if primary entity is spatial unit
         str_columns = []
 
-    spatial_unit_columns, spatial_unit_join = _entity_select_column(
-        social_tenure.spatial_unit,
-        True,
-        join_parents=True,
-        is_primary=pe_is_spatial,
-        foreign_key_parents=fk_parent_names,
-        omit_view_columns=omit_view_columns,
-        omit_join_statement_columns=omit_join_statement_columns
-    )
+    #for spatial_unit in social_tenure.spatial_units:
+    ### Create spatial_unit views
+    if pe_is_spatial:
 
-    view_columns = party_columns + str_columns + spatial_unit_columns
+        spatial_unit_columns, spatial_unit_join = _entity_select_column(
+            primary_entity,
+            True,
+            join_parents=True,
+            is_primary=pe_is_spatial,
+            foreign_key_parents=fk_parent_names,
+            omit_view_columns=omit_view_columns,
+            omit_join_statement_columns=omit_join_statement_columns
+        )
 
-    # Set distinct column if specified
-    if not distinct_column is None:
-        view_columns = _set_distinct_column(distinct_column, view_columns)
+        view_columns = str_columns + spatial_unit_columns
 
-    join_statement = str_join + party_join + spatial_unit_join
+        # Set distinct column if specified
+        if not distinct_column is None:
+            view_columns = _set_distinct_column(distinct_column, view_columns)
 
-    if len(view_columns) == 0:
-        LOGGER.debug('There are no columns for creating the social tenure '
-                     'relationship view.')
+        join_statement = str_join + spatial_unit_join
 
-        return
+        if len(view_columns) == 0:
+            LOGGER.debug('There are no columns for creating the social tenure '
+                         'relationship view.')
 
-    # Create SQL statement
-    create_view_sql = u'CREATE VIEW {0} AS SELECT {1} FROM {2} {3}'.format(
-        view_name, ','.join(view_columns), social_tenure.name,
-        ' '.join(join_statement))
+            return
 
-    normalized_create_view_sql = text(create_view_sql)
+        # Create SQL statement
+        create_view_sql = u'CREATE VIEW {0} AS SELECT {1} FROM {2} {3}'.format(
+            view_name, ','.join(view_columns), social_tenure.name,
+            ' '.join(join_statement))
 
-    result = _execute(normalized_create_view_sql)
+        normalized_create_view_sql = text(create_view_sql)
+
+        _execute(normalized_create_view_sql)
 
 
 def _entity_select_column(

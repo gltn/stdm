@@ -51,8 +51,11 @@ from stdm.ui.notification import NotificationBar, INFORMATION
 LOGGER = logging.getLogger('stdm')
 LOGGER.setLevel(logging.DEBUG)
 
-RESERVED_KEYWORDS = ['id', 'documents', 'spatial_unit', 'supporting_document',
-        'social_tenure', 'social_tenure_relationship','geometry']
+RESERVED_KEYWORDS = [
+    'id', 'documents', 'spatial_unit', 'supporting_document',
+    'social_tenure', 'social_tenure_relationship','geometry',
+    'social_tenure_relationship_id'
+]
 
 class ColumnEditor(QDialog, Ui_ColumnEditor):
     """
@@ -68,6 +71,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
          profile - Current profile
          in_db   - Boolean flag to indicate if a column has been created in 
                    the database
+         auto_add- True to automatically add a new column to the entity, 
+                   default is False.
         """
         
         self.form_parent = kwargs.get('parent', self)
@@ -76,6 +81,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.profile = kwargs.get('profile', None)
         self.in_db = kwargs.get('in_db', False)
         self.is_new = kwargs.get('is_new', True)
+        self.auto_entity_add = kwargs.get('auto_add', False)
 
         QDialog.__init__(self, self.form_parent)
 
@@ -98,8 +104,11 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.form_fields = {}
         self.init_form_fields()
 
-        self.fk_entities     = []
+        self.fk_entities = []
         self.lookup_entities = []
+
+        # Exclude column type info in the list
+        self._exclude_col_type_info = []
 
         if self.is_new:
             self.prop_set = None
@@ -120,6 +129,28 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.notice_bar = NotificationBar(self.notif_bar)
         self.init_controls()
 
+    def exclude_column_types(self, type_info):
+        """
+        Exclude the column types with the given type_info.
+        :param type_info: List of TYPE_INFO of columns to exclude.
+        :type type_info: list
+        """
+        self._exclude_col_type_info = type_info
+
+        # Block index change signal of combobox
+        self.cboDataType.blockSignals(True)
+
+        # Reload column data types
+        self.populate_data_type_cbo()
+
+        # Select column type if it had been specified
+        if not self.column is None:
+            text = self.column.display_name()
+            self.cboDataType.setCurrentIndex(self.cboDataType.findText(text))
+
+        # Re-enable signals
+        self.cboDataType.blockSignals(False)
+
     def show_notification(self, message):
         """
         Shows a warning notification bar message.
@@ -135,7 +166,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         Initialize GUI controls default state when the dialog window is opened.
         """
         self.populate_data_type_cbo()
-        #if self.column:
+
         if not self.column is None:
             self.column_to_form(self.column)
             self.column_to_wa(self.column)
@@ -167,23 +198,25 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         text_edit.setValidator(name_validator)
         QApplication.processEvents()
         last_character = text[-1:]
+        locale = QSettings().value("locale/userLocale")[0:2]
 
-        state = name_validator.validate(text, text.index(last_character))[0]
-        if state != QValidator.Acceptable:
-            self.show_notification('"{}" is not allowed at this position.'.
-                format(last_character)
-            )
-            text = text[:-1]
-        else:
-            # fix caps, _, and spaces
-            if last_character.isupper():
-                text = text.lower()
-            if last_character == ' ':
-                text = text.replace(' ', '_')
-            if len(text) > 1:
-                if text[0] == ' ' or text[0] == '_':
-                    text = text[1:]
-                text = text.replace(' ', '_').lower()
+        if locale == 'en':
+            state = name_validator.validate(text, text.index(last_character))[0]
+            if state != QValidator.Acceptable:
+                self.show_notification('"{}" is not allowed at this position.'.
+                    format(last_character)
+                )
+                text = text[:-1]
+
+        # fix caps, _, and spaces
+        if last_character.isupper():
+            text = text.lower()
+        if last_character == ' ':
+            text = text.replace(' ', '_')
+        if len(text) > 1:
+            if text[0] == ' ' or text[0] == '_':
+                text = text[1:]
+            text = text.replace(' ', '_').lower()
 
         self.blockSignals(True)
         text_edit.setText(text)
@@ -202,6 +235,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.edtColName.setText(column.name)
         self.edtColDesc.setText(column.description)
+        self.txt_form_label.setText(column.label)
         self.edtUserTip.setText(column.user_tip)
         self.cbMandt.setChecked(column.mandatory)
         self.cbSearch.setCheckState(self.bool_to_check(column.searchable))
@@ -663,19 +697,28 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
     def populate_data_type_cbo(self):
         """
-        Fills the data type combobox widget with BaseColumn type names
+        Fills the data type combobox widget with BaseColumn type names.
         """
         self.cboDataType.clear()
-        self.cboDataType.insertItems(0, BaseColumn.types_by_display_name().keys())
-        self.cboDataType.setCurrentIndex(0)
+
+        for name, col in BaseColumn.types_by_display_name().iteritems():
+            # Specify columns to exclude
+            if col.TYPE_INFO not in self._exclude_col_type_info:
+                self.cboDataType.addItem(name)
+
+        if self.cboDataType.count() > 0:
+            self.cboDataType.setCurrentIndex(0)
 
     def change_data_type(self, index):
         """
         Called by type combobox when you select a different data type.
         """
         text = self.cboDataType.itemText(index)
-        ti = BaseColumn.types_by_display_name()[text].TYPE_INFO
+        col_cls = BaseColumn.types_by_display_name().get(text, None)
+        if col_cls is None:
+            return
 
+        ti = col_cls.TYPE_INFO
         if ti not in self.type_attribs:
             msg = self.tr('Column type attributes could not be found.')
             self.notice_bar.clear()
@@ -736,6 +779,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         """
         self.form_fields['colname'] = unicode(self.edtColName.text())
         self.form_fields['description'] = unicode(self.edtColDesc.text())
+        self.form_fields['label'] = unicode(self.txt_form_label.text())
         self.form_fields['index'] = self.cbIndex.isChecked()
         self.form_fields['mandatory'] = self.cbMandt.isChecked()
         self.form_fields['searchable'] = self.cbSearch.isChecked()
@@ -768,15 +812,18 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         if new_column is None:
             LOGGER.debug("Error creating column!")
             self.show_message('Unable to create column!')
-            return False;
+            return False
 
         if self.column is None:  # new column
             if self.duplicate_check(col_name):
                 self.show_message(self.tr("Column with the same name already "
                 "exist in this entity!"))
-                return False
 
-            self.entity.add_column(new_column)
+                return False
+            if self.auto_entity_add:
+                self.entity.add_column(new_column)
+
+            self.column = new_column
             self.done(1)
         else:  # editing a column 
             self.column = new_column
@@ -802,7 +849,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         :type col_name: str
         """
         # check if another column with the same name exist in the current entity
-        if self.entity.columns.has_key(name):
+        if name in self.entity.columns:
             return True
         else:
             return False

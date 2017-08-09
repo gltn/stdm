@@ -171,6 +171,7 @@ class EntityNodeFormatter(STRNodeFormatter):
                         self.curr_profile, c, getattr(model, c)
                     )
 
+
         return disp_mapping
 
     def _foreign_key_reference_by_tablename(self, table_name):
@@ -324,11 +325,13 @@ class EntityNodeFormatter(STRNodeFormatter):
                 col_name_header = entity_display_columns(curr_entity, True)
 
                 for r in r_entities:
+
                     dm = self._format_display_mapping(r,
                                                       col_name_header,
                                                       col_name_header.keys())
 
                     node = self._spatial_textual_node(mod_table)
+
                     mod_table = mod_table.replace(self.curr_profile.prefix, '')
                     entity_node = node(dm, parent=str_node,
                                              header=mod_table.replace('_',

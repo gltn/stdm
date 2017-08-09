@@ -83,7 +83,7 @@ class _EntityDocumentViewerHandler(object):
         self._title = title
         self._parent = parent
 
-        #Set default manager for document viewing
+        # Set default manager for document viewing
         self._doc_view_manager = DocumentViewManager(self._parent)
         self._doc_view_manager.setWindowTitle(self._title)
         self._network_doc_path = network_document_path()
@@ -96,14 +96,14 @@ class _EntityDocumentViewerHandler(object):
             view_manager=self._doc_view_manager
         )
         doc_widget_proxy.setModel(d)
-        #Load proxies to the document view manager
+        # Load proxies to the document view manager
         return self._doc_view_manager.load_viewer(doc_widget_proxy, False)
 
     def load(self, documents):
-        #Reset viewer
+        # Reset viewer
         self._doc_view_manager.reset()
 
-        #Assert if the root document directory exists
+        # Assert if the root document directory exists
         if not self.root_directory_exists():
             base_msg = QApplication.translate(
                 'EntityBrowser',
@@ -114,7 +114,7 @@ class _EntityDocumentViewerHandler(object):
 
             return
 
-        #Configure progress bar
+        # Configure progress bar
         num_docs = len(documents)
         prog_dlg = QProgressDialog('', None, 0, num_docs, self._parent)
         prog_dlg.setWindowModality(Qt.WindowModal)
@@ -143,7 +143,7 @@ class _EntityDocumentViewerHandler(object):
 
         prog_dlg.setValue(num_docs)
 
-        #Restore pointer cursor
+        #cRestore pointer cursor
         QApplication.restoreOverrideCursor()
 
         self._doc_view_manager.setVisible(True)
@@ -171,7 +171,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         QDialog.__init__(self,parent)
         self.setupUi(self)
 
-        #Add maximize buttons
+        # Add maximize buttons
         self.setWindowFlags(
             self.windowFlags() |
             Qt.WindowSystemMenuHint |
@@ -179,7 +179,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         )
 
         SupportsManageMixin.__init__(self, state)
-        #Init document viewer setup
+        # Init document viewer setup
         self._view_docs_act = None
         viewer_title = QApplication.translate(
             'EntityBrowser',
@@ -411,7 +411,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 missing_columns.append(c.name)
 
             else:
-                header = c.header()
+                header = c.ui_display()
                 self._headers.append(header)
 
                 col_name = c.name
@@ -726,7 +726,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             self._dbmodel.id == record_id
         ).first()
         if modelObj is None:
-            modelObj = self.child_model[row_number, self.entity]
+            modelObj = self.child_model[row_number+1, self.entity]
 
         return modelObj if not modelObj is None else None
 
@@ -880,6 +880,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         '''
         self._notifBar.clear()
 
+
         if not self._can_add_edit():
             msg = QApplication.translate(
                 'EntityBrowserWithEditor',
@@ -912,6 +913,7 @@ class EntityBrowserWithEditor(EntityBrowser):
 
         rowIndex = self._proxyModel.mapToSource(selRowIndices[0])
         recordid = rowIndex.data()
+
         self._load_editor_dialog(recordid, rowIndex.row())
 
     def set_child_model(self, model, row_position):

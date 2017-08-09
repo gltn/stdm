@@ -314,9 +314,10 @@ class BaseIconRender(object):
     tenure item. This is an abstract class and needs to be sub-classed for
     custom renderers."""
     def __init__(self):
-        #Icon area is 16px by 16px
-        self.upper_left = QPointF(142.5, 16.5)
-        self.bottom_right = QPointF(158.5, 32.5)
+        # Icon area is 16px by 16px
+        # TODO: Set location based on screen resolution
+        self.upper_left = QPointF(142.5, 14.0)
+        self.bottom_right = QPointF(158.5, 30.0)
 
     def bounding_rect(self):
         """
@@ -1082,7 +1083,7 @@ class EntityItem(BaseTenureItem):
 def _updated_code_values(value_list):
     vl = []
 
-    #Use updated values in the value list
+    # Use updated values in the value list
     for cd in value_list.values.values():
         lk_value = cd.value
         if cd.updated_value:
@@ -1274,20 +1275,23 @@ class ProfileTenureView(QGraphicsView):
     MIN_DPI = 72
     MAX_DPI = 600
 
-    #Enums for add party policy
+    # Enums for add party policy
     ADD_TO_EXISTING, REMOVE_PREVIOUS = range(2)
 
     def __init__(self, parent=None, profile=None):
         super(ProfileTenureView, self).__init__(parent)
 
-        # Add party policy
+        # Specify STR graphic items adding policy
         self.add_party_policy = ProfileTenureView.ADD_TO_EXISTING
+        self.add_spatial_unit_policy = ProfileTenureView.ADD_TO_EXISTING
+
 
         # Init items
         # Container for party entities and corresponding items
         self._default_party_item = EntityItem()
         self._party_items = {}
-        self._sp_item = EntityItem()
+        self._sp_unit_items = {}
+        self._default_sp_item = EntityItem()
         self._str_item = TenureRelationshipItem()
         self._supporting_doc_item = TenureDocumentItem()
 
@@ -1311,13 +1315,13 @@ class ProfileTenureView(QGraphicsView):
         # Add items to view
         self.scene().addItem(self._default_party_item)
         self.scene().addItem(self._str_item)
-        self.scene().addItem(self._sp_item)
+        self.scene().addItem(self._default_sp_item)
         self.scene().addItem(self._supporting_doc_item)
 
         # Position items
         self._default_party_item.setPos(210, 20)
         self._str_item.setPos(400, 20)
-        self._sp_item.setPos(590, 20)
+        self._default_sp_item.setPos(590, 20)
         self._supporting_doc_item.setPos(400, 220)
 
         # Ensure vertical scroll is at the top
@@ -1351,9 +1355,12 @@ class ProfileTenureView(QGraphicsView):
         for p in self._party_items.keys():
             self.remove_party(p)
 
+        # Remove spatial unit items
+        for sp in self._sp_unit_items.keys():
+            self.remove_spatial_unit(sp)
+
         str_ent = self._profile.social_tenure
         # Set renderer entities
-        self.set_spatial_unit(str_ent.spatial_unit)
         self._str_item.entity = str_ent
         self._supporting_doc_item.entity = str_ent
 
@@ -1364,6 +1371,13 @@ class ProfileTenureView(QGraphicsView):
         else:
             self.add_parties(parties)
 
+        # Add spatial unit entities
+        sp_units = str_ent.spatial_units
+        if len(sp_units) == 0:
+            self._default_sp_item.show()
+        else:
+            self.add_spatial_units(sp_units)
+
     def add_parties(self, parties):
         """
         Add party items to the view.
@@ -1372,6 +1386,15 @@ class ProfileTenureView(QGraphicsView):
         """
         for p in parties:
             self.add_party_entity(p)
+
+    def add_spatial_units(self, spatial_units):
+        """
+        Add spatial unit items to the view.
+        :param spatial_units: List of spatial unit entities.
+        :type spatial_units: list
+        """
+        for sp in spatial_units:
+            self.add_spatial_unit_entity(sp)
 
     @profile.setter
     def profile(self, profile):
@@ -1386,10 +1409,18 @@ class ProfileTenureView(QGraphicsView):
 
     def _highest_party_z_order(self):
         # Returns the highest z-order of party graphic items.
+        return self._highest_item_z_order(self._party_items.values())
+
+    def _highest_sp_unit_z_order(self):
+        # Returns the highest z-order of spatial unit graphic items.
+        return self._highest_item_z_order(self._sp_unit_items.values())
+
+    def _highest_item_z_order(self, items):
+        # Get the highest z-order of the graphic items in the list.
         z = 0
-        for p in self._party_items.values():
-            if p.zValue() > z:
-                z = p.zValue()
+        for gi in items:
+            if gi.zValue() > z:
+                z = gi.zValue()
 
         return z
 
@@ -1435,6 +1466,50 @@ class ProfileTenureView(QGraphicsView):
         # Add connection arrow to social tenure item
         self.add_arrow(p_item, self._str_item)
 
+    def add_spatial_unit_entity(self, spatial_unit):
+        """
+        Adds a spatial unit entity to the view. If there is a existing one 
+        with the same name then it will be removed before adding this spatial 
+        unit.
+        .. versionadded:: 1.7
+        :param spatial_unit: Spatial unit entity.
+        :type spatial_unit: Entity
+        """
+        if spatial_unit.short_name in self._sp_unit_items:
+            self.remove_spatial_unit(spatial_unit.short_name)
+
+        # Remove previous if specified in the policy
+        if self.add_spatial_unit_policy == ProfileTenureView.REMOVE_PREVIOUS:
+            for sp in self._sp_unit_items.keys():
+                self.remove_spatial_unit(sp)
+
+        # Hide default spatial unit placeholder
+        self._default_sp_item.hide()
+
+        sp_item = EntityItem()
+        sp_item.entity = spatial_unit
+
+        # Set z-order
+        z = self._highest_sp_unit_z_order()
+        if z == 0:
+            z = 1.0
+        else:
+            z = z + 1.1
+        sp_item.setZValue(z)
+
+        self.scene().addItem(sp_item)
+
+        if len(self._sp_unit_items) == 0:
+            sp_item.setPos(590, 20)
+        else:
+            self.auto_position_spatial_unit(sp_item)
+
+        # Add to collection
+        self._sp_unit_items[spatial_unit.short_name] = sp_item
+
+        # Add connection arrow to social tenure item
+        self.add_arrow(self._str_item, sp_item)
+
     def auto_position(self, item):
         """
         Automatically positions the party item to prevent it from overlapping
@@ -1452,6 +1527,26 @@ class ProfileTenureView(QGraphicsView):
         dx, dy = 5 * factor, 10 * factor
 
         pos_x, pos_y = 205 + dx, 10 + dy
+        item.setPos(pos_x, pos_y)
+
+    def auto_position_spatial_unit(self, item):
+        """
+        Automatically positions the spatial unit item to prevent it from 
+        overlapping the others.
+        .. versionadded:: 1.7
+        :param item: Spatial unit entity item.
+        :type item: EntityItem
+        """
+        item_count = len(self._sp_unit_items)
+
+        # Just in case it is called externally
+        if item_count == 0:
+            return
+
+        factor = item_count + 1
+        dx, dy = 5 * factor, 10 * factor
+
+        pos_x, pos_y = 585 + dx, 10 + dy
         item.setPos(pos_x, pos_y)
 
     def remove_party(self, name):
@@ -1478,28 +1573,49 @@ class ProfileTenureView(QGraphicsView):
 
         return True
 
+    def remove_spatial_unit(self, name):
+        """
+        Removes the spatial unit graphics item with the specified name from 
+        the collection.
+        .. versionadded:: 1.7
+        :param name: Spatial unit name
+        :type name: str
+        :return: Returns True if the operation succeeded, otherwise False if
+        the spatial unit item with the specified name does not exist in the 
+        collection.
+        :rtype: bool
+        """
+        if not name in self._sp_unit_items:
+            return False
+
+        sp_item = self._sp_unit_items.pop(name)
+        sp_item.remove_arrows()
+        self.scene().removeItem(sp_item)
+
+        del sp_item
+
+        # Show default spatial unit item
+        if len(self._sp_unit_items) == 0:
+            self._default_sp_item.show()
+
+        return True
+
     def invalidate_spatial_unit(self):
         """
         Clears the spatial unit entity.
+        .. deprecated:: 1.7
         """
-        self._sp_item.invalidate()
-        self._sp_item.remove_arrows()
+        pass
 
     def set_spatial_unit(self, spatial_unit):
         """
         Set the spatial unit entity.
+        .. deprecated:: 1.7
         :param spatial_unit: Entity corresponding to a spatial unit in a
         profile's STR relationship.
         :type spatial_unit: Entity
         """
-        if spatial_unit is None:
-            self.invalidate_spatial_unit()
-
-        self._sp_item.entity = spatial_unit
-
-        if not spatial_unit is None:
-            # Add arrow linking social tenure to spatial unit item
-            self.add_arrow(self._str_item, self._sp_item)
+        pass
 
     def add_arrow(self, start_item, end_item, **kwargs):
         """
@@ -1543,7 +1659,7 @@ class ProfileTenureView(QGraphicsView):
             item.setSelected(False)
 
     def _delete_selected_annotation_items(self):
-        #Deletes selected annotation items in the scene
+        # Deletes selected annotation items in the scene
         for item in self.scene().selectedItems():
             if isinstance(item, Annotation):
                 #Only remove if item is not on interactive text edit mode
@@ -1607,7 +1723,7 @@ class ProfileTenureView(QGraphicsView):
         """
         res = resolution / 25.4
 
-        #A4 landscape size
+        # A4 landscape size
         width = 297 * res
         height = 210 * res
 
@@ -1625,13 +1741,13 @@ class ProfileTenureView(QGraphicsView):
         view.
         :rtype: QImage
         """
-        #Ensure resolution is within limits
+        # Ensure resolution is within limits
         if resolution < ProfileTenureView.MIN_DPI:
             resolution = ProfileTenureView.MIN_DPI
         if resolution > ProfileTenureView.MAX_DPI:
             resolution = ProfileTenureView.MAX_DPI
 
-        #In metres
+        # In metres
         dpm = self._resolution_in_m(resolution)
 
         image_size = self.image_size(resolution)
@@ -1665,7 +1781,7 @@ class ProfileTenureView(QGraphicsView):
         if len(self._party_items) == 0:
             return False
 
-        if self._sp_unit_renderer.entity is None:
+        if len(self._sp_unit_items) == 0:
             return False
 
         return True
@@ -1939,6 +2055,7 @@ class ProfileTenureDiagram(QWidget):
     def set_spatial_unit(self, spatial_unit):
         """
         Set the spatial unit entity.
+        .. deprecated:: 1.7
         :param spatial_unit: Entity corresponding to a spatial unit in a
         profile's STR relationship.
         :type spatial_unit: Entity
@@ -1948,6 +2065,7 @@ class ProfileTenureDiagram(QWidget):
     def invalidate_spatial_unit(self):
         """
         Clears the spatial unit entity.
+        .. deprecated:: 1.7
         """
         self._profile_view.invalidate_spatial_unit()
 
@@ -1969,6 +2087,27 @@ class ProfileTenureDiagram(QWidget):
         """
         self._profile_view.add_party_entity(party)
 
+    def add_spatial_units(self, spatial_units):
+        """
+        Add spatial unit items to the view.
+        .. versionadded:: 1.7
+        :param spatial_units: List of spatial unit entities.
+        :type spatial_units: list
+        """
+        for sp in spatial_units:
+            self.add_spatial_unit_entity(sp)
+
+    def add_spatial_unit_entity(self, spatial_unit):
+        """
+        Adds a spatial unit entity to the view. If there is a existing one 
+        with the same name then it will be removed before adding this 
+        spatial unit.
+        .. versionadded:: 1.7
+        :param spatial_unit: Spatial unit entity.
+        :type spatial_unit: Entity
+        """
+        self._profile_view.add_spatial_unit_entity(spatial_unit)
+
     def remove_party(self, name):
         """
         Removes the party with the specified name from the collection.
@@ -1978,6 +2117,18 @@ class ProfileTenureDiagram(QWidget):
         :rtype: bool
         """
         return self._profile_view.remove_party(name)
+
+    def remove_spatial_unit(self, name):
+        """
+        Removes the spatial unit with the specified name from the collection.
+        .. versionadded:: 1.7
+        :param name: Spatial unit name.
+        :return: Returns True if the operation succeeded, otherwise False if
+        the spatial unit with the specified name does not exist in the 
+        collection.
+        :rtype: bool
+        """
+        return self._profile_view.remove_spatial_unit(name)
 
     @property
     def profile(self):

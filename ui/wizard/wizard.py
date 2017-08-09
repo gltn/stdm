@@ -24,6 +24,7 @@ import logging
 from datetime import date
 from datetime import datetime 
 import calendar
+from collections import OrderedDict
 
 from PyQt4 import QtGui
 from PyQt4 import QtCore
@@ -54,7 +55,7 @@ from stdm.data.pg_utils import (
         pg_table_exists, 
         pg_table_count,
         table_column_names
-       )
+)
 from stdm.settings.config_serializer import ConfigurationFileSerializer 
 from stdm.settings.registryconfig import RegistryConfig 
 from stdm.data.configuration.exception import ConfigurationException
@@ -66,11 +67,17 @@ from stdm.settings import (
 from stdm.ui.notification import NotificationBar
 
 from stdm.settings.registryconfig import (
-        RegistryConfig,
-        LOCAL_SOURCE_DOC,
-        COMPOSER_OUTPUT,
-        COMPOSER_TEMPLATE,
-        SHOW_LICENSE
+    RegistryConfig,
+    LOCAL_SOURCE_DOC,
+    COMPOSER_OUTPUT,
+    COMPOSER_TEMPLATE,
+    SHOW_LICENSE
+)
+from stdm.ui.wizard.spatial_tenure_types_dialog import (
+    SpatialUnitTenureTypeDialog
+)
+from stdm.ui.wizard.entity_attributes_editor import (
+    TenureCustomAttributesEditor
 )
 
 from custom_item_model import *
@@ -139,7 +146,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.set_views_entity_model(self.entity_model)
 
         self.STR_spunit_model = EntitiesModel()
-        self.cboSPUnit.setModel(self.STR_spunit_model)
 
         self.init_entity_item_model()
 
@@ -183,6 +189,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.draft_config = False
         self.stdm_config = None
         self.new_profiles = []
+        self._str_table_exists = False
+        self._sp_t_mapping = {}
+        self._custom_attr_entities = {}
         self.orig_assets_count = 0  # count of items in StdmConfiguration instance
         self.load_stdm_config()
 
@@ -406,7 +415,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         else:
             return CONFIG_FILE
 
-
     def init_path_ctrls_event_handlers(self):
         """
         Attach OnClick event handlers for the document path buttons
@@ -453,8 +461,20 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self._on_party_deselected
         )
 
-        self.cboSPUnit.currentIndexChanged.connect(
-            self.on_str_spatial_unit_changed
+        # Connect spatial unit view signals
+        self.lst_spatial_units.spatial_unit_selected.connect(
+            self._on_spatial_unit_selected
+        )
+        self.lst_spatial_units.spatial_unit_deselected.connect(
+            self._on_spatial_unit_deselected
+        )
+
+        # Connect button for showing mapping of tenure types
+        self.btn_sp_units_tenure.clicked.connect(self.on_show_sp_units_tenure)
+
+        # Connect button for showing dialog for editing tenure attributes
+        self.btn_custom_attrs.clicked.connect(
+            self.on_show_custom_attributes_editor
         )
 
     def init_entity_ctrls_event_handlers(self):
@@ -516,11 +536,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         # Handle selection of a party entity.
         # Check if the party has also been set as the spatial unit.
         party_name = item.text()
-        if party_name == self.cboSPUnit.currentText():
+        sp_units = self.lst_spatial_units.spatial_units()
+        if party_name in sp_units:
             self._notif_bar_str.clear()
             msg = self.tr(
-                "The selected entity has also been set as the profile's "
-                "social tenure relationship spatial unit."
+                "The selected entity has already been specified as a spatial "
+                "unit in the profile's social tenure relationship."
             )
             self._notif_bar_str.insertWarningNotification(msg)
             item.setCheckState(Qt.Unchecked)
@@ -539,27 +560,40 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         party_name = item.text()
         self.dg_tenure.remove_party(party_name)
 
-    def on_str_spatial_unit_changed(self, idx):
-        """
-        Slot raised when the index of the spatial unit combobox changes.
-        :param idx: Current item index.
-        :type idx: int
-        """
-        if idx == -1:
+    def _on_spatial_unit_selected(self, item):
+        # Check if the spatial unit has also been selected as a party
+        sp_unit_name = item.text()
+        parties = self.lst_parties.parties()
+        if sp_unit_name in parties:
+            self._notif_bar_str.clear()
+            msg = self.tr(
+                "The selected entity has already been specified as a party "
+                "in the profile's social tenure relationship."
+            )
+            self._notif_bar_str.insertWarningNotification(msg)
+            item.setCheckState(Qt.Unchecked)
+
             return
 
-        # Update tenure view based on the selected spatial unit
-        if self.currentId() == 4:
-            profile = self.current_profile()
-            sp_unit = self.cboSPUnit.currentText()
-            if not sp_unit:
-                return
+        # Add spatial unit item to view
+        p = self.current_profile()
+        if not p is None:
+            sp_unit_entity = p.entity(sp_unit_name)
+            self.dg_tenure.add_spatial_unit_entity(sp_unit_entity)
 
-            spatial_unit = profile.entity(sp_unit)
-            self.dg_tenure.set_spatial_unit(spatial_unit)
+            # Set primary tenure type for the selected spatial unit
+            p_tenure_vl = p.social_tenure.tenure_type_collection
+            self._sp_t_mapping[sp_unit_name] = p_tenure_vl.short_name
 
-            # Uncheck the entity in the list of parties
-            self.lst_parties.deselect_party(sp_unit)
+    def _on_spatial_unit_deselected(self, item):
+        # Handle deselection of a spatial unit entity
+        # Remove spatial unit graphic item from the view
+        sp_unit_name = item.text()
+        self.dg_tenure.remove_spatial_unit(sp_unit_name)
+
+        # Remove spatial unit from tenure mapping collection
+        if sp_unit_name in self._sp_t_mapping:
+            del self._sp_t_mapping[sp_unit_name]
 
     def load_configuration_from_file(self, file_name):
         """
@@ -614,7 +648,120 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         entity.column_added.connect(self.add_column_item)
         entity.column_removed.connect(self.delete_column_item)
-        
+
+    def on_show_sp_units_tenure(self):
+        """
+        Shows dialog for specifying spatial unit tenure types.
+        """
+        self._notif_bar_str.clear()
+
+        can_edit = not self._str_table_exists
+        sp_unit_tenure_dlg = SpatialUnitTenureTypeDialog(
+            self,
+            editable=can_edit
+        )
+
+        # Get the currently selected spatial units
+        sel_sp_units = self.lst_spatial_units.spatial_units()
+
+        # If there are no spatial units specified then inform user
+        c = len(sel_sp_units)
+        if c == 0:
+            self._notif_bar_str.clear()
+            msg = self.tr(
+                "Please select at least one spatial unit in order to "
+                "be able to specify the tenure type."
+            )
+            self._notif_bar_str.insertWarningNotification(msg)
+
+            return
+
+        p = self.current_profile()
+
+        vl_names = [vl.short_name for vl in p.value_lists()]
+
+        # Set applicable spatial units and tenure types in the dialog
+        sp_unit_tenure_dlg.init([sel_sp_units, vl_names])
+
+        social_tenure = self.current_profile().social_tenure
+
+        # Get corresponding tenure types and assign default if not set
+        for sp in sel_sp_units:
+            # Check from the initialized collection if the tenure had been set
+            t_type = self._sp_t_mapping.get(sp, None)
+
+            # Assign default tenure lookup if None
+            if t_type is None:
+                t_type = social_tenure.tenure_type_collection.short_name
+
+            # Set spatial unit tenure type
+            sp_unit_tenure_dlg.set_spatial_unit_tenure_type(
+                sp,
+                t_type
+            )
+
+        if sp_unit_tenure_dlg.exec_() == QDialog.Accepted:
+            self._sp_t_mapping = sp_unit_tenure_dlg.tenure_mapping()
+
+    def _sync_custom_tenure_entities(self):
+        # Synchronize list of custom attribute entities with selected
+        # tenure types.
+        p = self.current_profile()
+
+        for tt in self._sp_t_mapping.values():
+            if not tt in self._custom_attr_entities:
+                c_ent = p.social_tenure.initialize_custom_attributes_entity(
+                    tt
+                )
+                self._custom_attr_entities[tt] = c_ent
+
+        # Remove tenure types not applicable in the list
+        tt_names = self._sp_t_mapping.values()
+        for tt_name in self._custom_attr_entities.keys():
+            if tt_name not in tt_names:
+                del self._custom_attr_entities[tt_name]
+
+    def on_show_custom_attributes_editor(self):
+        """
+        Slot raised to show the dialog for editing custom tenure attributes.
+        """
+        # Sync tenure types
+        self._sync_custom_tenure_entities()
+
+        if len(self._custom_attr_entities) == 0:
+            self._notif_bar_str.clear()
+            msg = self.tr(
+                'No tenure types have been specified in the profile\'s social '
+                'tenure relationship.'
+            )
+            self._notif_bar_str.insertWarningNotification(msg)
+
+            return
+
+        p = self.current_profile()
+
+        can_edit = not self._str_table_exists
+
+        # Initialize entity attribute editor
+        custom_attr_editor = TenureCustomAttributesEditor(
+            p,
+            self._custom_attr_entities,
+            self,
+            editable=can_edit,
+            exclude_columns=['id', 'social_tenure_relationship_id']
+        )
+        custom_attr_editor.setWindowTitle(
+            self.tr('Custom Tenure Attributes Editor')
+        )
+
+        if custom_attr_editor.exec_() == QDialog.Accepted:
+            # Append columns to the custom attribute entities
+            t_attrs = custom_attr_editor.custom_tenure_attributes
+            for tt, attrs in t_attrs.iteritems():
+                ent = self._custom_attr_entities[tt]
+                for attr in attrs:
+                    ent.add_column(attr)
+
     def validate_STR(self):
         """
         Validate both Party & Spatial Unit entities for STR are properly set. 
@@ -634,17 +781,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 'party entities.'
             )
 
-        profile = self.current_profile()
-        spatial_unit = profile.entity(unicode(self.cboSPUnit.currentText()))
-
-        if spatial_unit is None:
-            return False, self.tr('No spatial unit entity found for '
-            'creating Social Tenure Relationship.')
-
-        # check if the spatial unit entity has a geometry column
-        if not spatial_unit.has_geometry_column():
-            return False, self.tr("%s entity should have a geometry column.")\
-                    % spatial_unit.short_name
+        # Validate spatial units
+        if len(self.lst_spatial_units.spatial_units()) == 0:
+            return False, self.tr(
+                'Please select at least one spatial unit from the list of '
+                'applicable spatial unit entities.'
+            )
 
         # Validate date ranges
         if self.gb_start_dates.isChecked():
@@ -733,7 +875,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 is_empty = False 
 
         return is_empty
-
 
     def check_empty_lookups(self):
         """
@@ -870,14 +1011,21 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             # Set profile in the corresponding controls in the STR page
             self.lst_parties.profile = c_profile
             self.lst_parties.social_tenure = c_profile.social_tenure
+            self.lst_spatial_units.profile = c_profile
+            self.lst_spatial_units.social_tenure = c_profile.social_tenure
             self.dg_tenure.profile = c_profile
+
+            # Set spatial unit tenure mapping
+            for sp, t in c_profile.social_tenure.spatial_units_tenure.iteritems():
+                self._sp_t_mapping[sp] = t.short_name
+
+            # Set tenure custom attribute entities
+            for tt, ent in c_profile.social_tenure.custom_attribute_entities.iteritems():
+                self._custom_attr_entities[tt] = ent
+
             # check if social tenure relationship has been setup
             str_table = '{}_social_tenure_relationship'.format(c_profile.prefix)
-
             self.set_str_controls(str_table)
-            # Update spatial unit as well
-            sp_unit_idx = self.cboSPUnit.currentIndex()
-            self.on_str_spatial_unit_changed(sp_unit_idx)
 
             # Set validity date ranges
             self._set_str_validity_ranges()
@@ -969,6 +1117,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self.enable_str_setup()
         if pg_table_exists(str_table):
+            self._str_table_exists = True
             self.disable_str_setup()
             
     def enable_str_setup(self):
@@ -987,7 +1136,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def _enable_disable_str_ctrls(self, state):
         self.lst_parties.setEnabled(state)
-        self.cboSPUnit.setEnabled(state)
+        self.lst_spatial_units.setEnabled(state)
         self.gb_start_dates.setEnabled(state)
         self.gb_end_dates.setEnabled(state)
         self.dt_start_minimum.setEnabled(state)
@@ -1009,10 +1158,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             idx1 = self.index_party_table(curr_profile, self.entity_model)
 
-            idx = self.index_spatial_unit_table(
-                    curr_profile, self.STR_spunit_model)
-            self.cboSPUnit.setCurrentIndex(idx)
-
             self.set_multi_party_checkbox(curr_profile)
 
             # verify that lookup entities have values
@@ -1023,13 +1168,14 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             if validPage:
                 profile = self.current_profile()
+                st = profile.social_tenure
 
                 # Set STR entities
                 parties = self.lst_parties.parties()
-                spatial_unit = profile.entity(unicode(self.cboSPUnit.currentText()))
+                spatial_units = self.lst_spatial_units.spatial_units()
 
                 profile.set_social_tenure_attr(SocialTenure.PARTY, parties)
-                profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT, spatial_unit)
+                profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT, spatial_units)
 
                 # Date ranges
                 if self.gb_start_dates.isChecked():
@@ -1049,6 +1195,19 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                         SocialTenure.END_DATE,
                         (min_end_date, max_end_date)
                     )
+
+                # Set spatial units' tenure types
+                for spu, tt in self._sp_t_mapping.iteritems():
+                    st.add_spatial_tenure_mapping(spu, tt)
+
+                # Set custom attributes entity
+                for tt, ent in self._custom_attr_entities.iteritems():
+                    # Check if the attributes entity exists in the profile
+                    status = profile.has_entity(ent)
+                    if not status:
+                        profile.add_entity(ent, True)
+
+                    st.add_tenure_attr_custom_entity(tt, ent)
 
             else:
                 self.show_message(self.tr(msg))
@@ -1739,9 +1898,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.lookup_item_model = self.lvLookups.selectionModel()
         self.lookup_item_model.selectionChanged.connect(self.lookup_changed)
 
-        #self.cboParty.currentIndexChanged.emit(self.cboParty.currentIndex())
-        self.cboSPUnit.currentIndexChanged.emit(self.cboSPUnit.currentIndex())
-
     def switch_profile(self, name):
         """
         Used to refresh all QStandardItemModel's attached to various
@@ -1769,7 +1925,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         self.entity_model = EntitiesModel()
         self.set_view_model(self.entity_model)
-        self.cboSPUnit.setModel(self.STR_spunit_model)
 
         self.col_view_model = ColumnEntitiesModel()
         self.tbvColumns.setModel(self.col_view_model)

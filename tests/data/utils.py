@@ -205,19 +205,41 @@ def populate_configuration(config):
     profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT, spatial_unit)
 
 
-    # Add custom attributes to the social tenure object
-    custom_attr_entity = profile.social_tenure.custom_attributes_entity
-    if custom_attr_entity is None:
-        profile.social_tenure.initialize_custom_attributes_entity()
+    # Create custom attr entity for primary tenure lookup
+    primary_tenure_vl = profile.social_tenure.tenure_type_collection
+    p_custom_ent = profile.social_tenure.custom_attribute_entity(
+        primary_tenure_vl
+    )
+    if p_custom_ent is None:
+        profile.social_tenure.initialize_custom_attributes_entity(
+            primary_tenure_vl
+        )
 
-    custom_attr_entity = profile.social_tenure.custom_attributes_entity
+        # Set entity
+        p_custom_ent = profile.social_tenure.custom_attribute_entity(
+            primary_tenure_vl
+        )
 
     # Add custom attributes
-    constitution_ref_col = TextColumn('constitution_ref', custom_attr_entity)
-    custom_attr_entity.add_column(constitution_ref_col)
+    constitution_ref_col = TextColumn('constitution_ref', p_custom_ent)
+    p_custom_ent.add_column(constitution_ref_col)
 
-    application_date_col = DateColumn('application_date', custom_attr_entity)
-    custom_attr_entity.add_column(application_date_col)
+    # Create secondary tenure custom attributes entity
+    s_custom_ent = profile.social_tenure.custom_attribute_entity(
+        sec_tenure_vl
+    )
+    if s_custom_ent is None:
+        profile.social_tenure.initialize_custom_attributes_entity(
+            sec_tenure_vl
+        )
+
+        # Set entity
+        s_custom_ent = profile.social_tenure.custom_attribute_entity(
+            sec_tenure_vl
+        )
+
+    application_date_col = DateColumn('application_date', s_custom_ent)
+    s_custom_ent.add_column(application_date_col)
 
 def create_db_connection():
     db_conn = DatabaseConnection(DB_SERVER, DB_PORT, DB_NAME)

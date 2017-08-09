@@ -30,7 +30,7 @@ class TestConfigurationSerializer(TestCase):
 
         #Hardwire result
         self.assertTrue(update_result)
-    '''
+
     def test_load(self):
         self.serializer.load()
 
@@ -38,7 +38,7 @@ class TestConfigurationSerializer(TestCase):
 
         #Hardwire result
         self.assertTrue(read_result)
-    '''
+
 
 def suite():
     suite = makeSuite(TestConfigurationSerializer, 'test')

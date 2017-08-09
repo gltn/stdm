@@ -94,7 +94,7 @@ class ComposerDataSource(object):
         if composerItemId in self._dataFieldmappings.reverse:
             return self._dataFieldmappings.reverse[composerItemId]
         else:
-            None
+            return None
             
     def composerItemId(self,dataField):
         """
@@ -119,9 +119,9 @@ class ComposerDataSource(object):
 
             for spfEntry in spatialFieldsCollection:
                 spFields = [spm.spatialField() for spm in spfEntry]
-                print spFields
+
                 labelFields = [spm.labelField() for spm in spfEntry]
-                print labelFields
+
                 dataFields.extend(spFields)
                 dataFields.extend(labelFields)
         

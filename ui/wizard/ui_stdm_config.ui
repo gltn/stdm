@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>779</width>
-    <height>637</height>
+    <width>840</width>
+    <height>638</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -359,9 +359,15 @@
          </item>
          <item row="0" column="1">
           <widget class="QComboBox" name="cboProfile">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="minimumSize">
             <size>
-             <width>300</width>
+             <width>10</width>
              <height>30</height>
             </size>
            </property>
@@ -382,7 +388,7 @@
            </property>
            <property name="maximumSize">
             <size>
-             <width>30</width>
+             <width>16777215</width>
              <height>16777215</height>
             </size>
            </property>
@@ -1155,9 +1161,15 @@
     </property>
     <item row="1" column="1">
      <widget class="ProfileTenureDiagram" name="dg_tenure" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="minimumSize">
        <size>
-        <width>500</width>
+        <width>100</width>
         <height>320</height>
        </size>
       </property>
@@ -1165,15 +1177,21 @@
     </item>
     <item row="1" column="0">
      <widget class="QScrollArea" name="scrollArea">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="minimumSize">
        <size>
-        <width>175</width>
+        <width>50</width>
         <height>0</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>225</width>
+        <width>16777215</width>
         <height>16777215</height>
        </size>
       </property>
@@ -1188,8 +1206,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>173</width>
-         <height>458</height>
+         <width>244</width>
+         <height>624</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -1197,13 +1215,13 @@
          <number>5</number>
         </property>
         <property name="leftMargin">
-         <number>2</number>
+         <number>3</number>
         </property>
         <property name="topMargin">
          <number>0</number>
         </property>
         <property name="rightMargin">
-         <number>1</number>
+         <number>2</number>
         </property>
         <property name="bottomMargin">
          <number>1</number>
@@ -1246,7 +1264,7 @@
         <item>
          <widget class="QCheckBox" name="cbMultiParty">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
             <horstretch>1</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -1259,6 +1277,12 @@ linked to a single spatial unit</string>
         </item>
         <item>
          <widget class="QLabel" name="label_6">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="minimumSize">
            <size>
             <width>0</width>
@@ -1272,29 +1296,28 @@ linked to a single spatial unit</string>
            </size>
           </property>
           <property name="text">
-           <string>2. Set the spatial unit entity</string>
+           <string>2. Select the spatial unit entities</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="cboSPUnit">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-            <horstretch>1</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>30</height>
-           </size>
-          </property>
+         <widget class="STRSpatialUnitListView" name="lst_spatial_units">
           <property name="maximumSize">
            <size>
-            <width>300</width>
-            <height>16777215</height>
+            <width>16777215</width>
+            <height>120</height>
            </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btn_sp_units_tenure">
+          <property name="text">
+           <string>Spatial Unit Tenure Types...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../../resources.qrc">
+            <normaloff>:/plugins/stdm/images/icons/social_tenure.png</normaloff>:/plugins/stdm/images/icons/social_tenure.png</iconset>
           </property>
          </widget>
         </item>
@@ -1307,6 +1330,12 @@ linked to a single spatial unit</string>
         </item>
         <item>
          <widget class="QgsCollapsibleGroupBox" name="gb_start_dates">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="title">
            <string>'Start' date range</string>
           </property>
@@ -1392,6 +1421,24 @@ linked to a single spatial unit</string>
          </widget>
         </item>
         <item>
+         <widget class="QLabel" name="label_12">
+          <property name="text">
+           <string>4. Specify custom tenure attributes (optional)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btn_custom_attrs">
+          <property name="text">
+           <string>Custom Attributes...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../../resources.qrc">
+            <normaloff>:/plugins/stdm/images/icons/column.png</normaloff>:/plugins/stdm/images/icons/column.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
          <spacer name="verticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -1461,6 +1508,11 @@ linked to a single spatial unit</string>
    <extends>QGroupBox</extends>
    <header>qgis.gui</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>STRSpatialUnitListView</class>
+   <extends>QListView</extends>
+   <header>spatial_unit_list_view</header>
   </customwidget>
  </customwidgets>
  <tabstops>

@@ -70,7 +70,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
             parent=None,
             manage_documents=True,
             collect_model=False,
-            parent_entity=None
+            parent_entity=None,
+            exclude_columns=[]
     ):
         """
         Class constructor.
@@ -89,6 +90,10 @@ class EntityEditorDialog(QDialog, MapperMixin):
         :param collect_model: If set to True only returns
         the filled form model without saving it to the database.
         :type collect_model: Boolean
+        :param parent_entity: The parent entity of the editor
+        :type parent_entity: Object
+        :param exclude_columns: List of columns to be excluded if in a list.
+        :type exclude_columns: List
         :return: If collect_model, returns SQLAlchemy Model
         """
         QDialog.__init__(self, parent)
@@ -105,10 +110,11 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.edit_model = model
         self.column_widgets = OrderedDict()
         self._parent = parent
+        self.exclude_columns = exclude_columns
         self.entity_tab_widget = None
         self._disable_collections = False
         self.filter_val = None
-        self.parent_entity = None
+        self.parent_entity = parent_entity
         self.child_models = OrderedDict()
         self.entity_scroll_area = None
         self.entity_editor_widgets = OrderedDict()
@@ -356,7 +362,6 @@ class EntityEditorDialog(QDialog, MapperMixin):
         if not save_and_new:
             self.accept()
 
-
         else:
             if self.is_valid:
                 #self.addedModel.emit(self.model())
@@ -397,6 +402,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
             'scrollAreaWidgetContents'
         )
         for c in self._entity.columns.values():
+            if c.name in self.exclude_columns:
+                continue
             if not c.name in columns and not isinstance(c, VirtualColumn):
                 continue
             # Get widget factory
@@ -426,16 +433,18 @@ class EntityEditorDialog(QDialog, MapperMixin):
         # Iterate entity column and assert if they exist
         row_id = 0
         for c, column_widget in self.column_widgets.iteritems():
+            if c.name in self.exclude_columns:
+                continue
             if not c.name in columns and not isinstance(c, VirtualColumn):
                 continue
 
             if column_widget is not None:
-                header = c.header()
+                header = c.ui_display()
                 self.c_label = QLabel(self.scroll_widget_contents)
 
                 # Format label text if it is a mandatory field
                 if c.mandatory:
-                    header = '{0} *'.format(c.header())
+                    header = '{0} *'.format(c.ui_display())
                     #Highlight asterisk
                     header = self._highlight_asterisk(header)
 
@@ -463,28 +472,24 @@ class EntityEditorDialog(QDialog, MapperMixin):
                     col_name,
                     self.column_widget,
                     c.mandatory,
-                    pseudoname=c.header()
+                    pseudoname=c.ui_display()
                 )
 
                 # Bump up row_id
                 row_id += 1
     
-        self.entity_scroll_area.setWidget(
-            self.scroll_widget_contents
-        )
-
+        self.entity_scroll_area.setWidget(self.scroll_widget_contents)
+        if self.entity_tab_widget is None:
+            self.entity_tab_widget = QTabWidget(self)
         # Check if there are children and add foreign key browsers
         if not self._disable_collections:
             ch_entities = self.children_entities()
-            if len(ch_entities) > 0:
-                if self.entity_tab_widget is None:
-                    self.entity_tab_widget = QTabWidget(self)
 
-                # Add primary tab if necessary
-                self._add_primary_attr_widget()
+            # Add primary tab if necessary
+            self._add_primary_attr_widget()
 
-                for ch in ch_entities:
-                    self._add_fk_browser(ch)
+            for ch in ch_entities:
+                self._add_fk_browser(ch)
 
         #Add tab widget if entity supports documents
         if self._entity.supports_documents:
@@ -500,8 +505,6 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 self.doc_widget.source_document_manager
             )
 
-            if self.entity_tab_widget is None:
-                self.entity_tab_widget = QTabWidget(self)
 
             # Add attribute tab
             self._add_primary_attr_widget()
@@ -634,8 +637,6 @@ class EntityEditorDialog(QDialog, MapperMixin):
     def _get_entity_editor_widgets(self):
         """
         Gets entity editor widgets and appends them to a dictionary
-        :return: None
-        :rtype: None
         """
         if self.entity_tab_widget:
             tab_count = self.entity_tab_widget.count()

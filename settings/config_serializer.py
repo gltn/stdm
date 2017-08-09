@@ -558,6 +558,11 @@ class SocialTenureSerializer(object):
     END_TAG = 'End'
     MINIMUM = 'minimum'
     MAXIMUM = 'maximum'
+    SP_TENURE_MAPPINGS = 'SpatialUnitTenureMappings'
+    SP_TENURE_MAPPING = 'Mapping'
+    T_TYPE_ATTRS = 'CustomAttributes'
+    T_ATTRS_ENTITY = 'TenureEntity'
+    ENTITY = 'entity'
 
     @staticmethod
     def read_xml(child_element, profile, association_elements,
@@ -575,7 +580,7 @@ class SocialTenureSerializer(object):
         ).strip()
         spatial_unit = unicode(child_element.attribute(
             SocialTenureSerializer.SPATIAL_UNIT, '')
-        )
+        ).strip()
         layer_display = unicode(child_element.attribute(
             SocialTenureSerializer.LAYER_DISPLAY, '')
         )
@@ -591,8 +596,13 @@ class SocialTenureSerializer(object):
             profile.set_social_tenure_attr(SocialTenure.PARTY, parties)
 
         if spatial_unit:
-            profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT,
-                                       spatial_unit)
+            # Get list of spatial unit names
+            sp_units = spatial_unit.split(',')
+            sp_units = [sp.strip() for sp in sp_units]
+            profile.set_social_tenure_attr(
+                SocialTenure.SPATIAL_UNIT,
+                sp_units
+            )
 
         if layer_display:
             profile.social_tenure.layer_display_name = layer_display
@@ -633,6 +643,54 @@ class SocialTenureSerializer(object):
                 SocialTenure.END_DATE,
                 (end_min_dt, end_max_dt)
             )
+
+        # Set spatial unit tenure mapping
+        sp_tenure_mapping_els = child_element.elementsByTagName(
+            SocialTenureSerializer.SP_TENURE_MAPPINGS
+        )
+        if sp_tenure_mapping_els.count() > 0:
+            sp_tenure_mapping_node = sp_tenure_mapping_els.item(0)
+            sp_tenure_mapping_el = sp_tenure_mapping_node.toElement()
+
+            sp_t_mapping_nodes = sp_tenure_mapping_el.childNodes()
+            for i in range(sp_t_mapping_nodes.count()):
+                t_mapping_el = sp_t_mapping_nodes.item(i).toElement()
+                sp_unit = t_mapping_el.attribute(
+                    SocialTenureSerializer.SPATIAL_UNIT,
+                    ''
+                )
+                tenure_list = t_mapping_el.attribute(
+                    SocialTenureSerializer.TENURE_TYPE,
+                    ''
+                )
+                profile.social_tenure.add_spatial_tenure_mapping(
+                    sp_unit,
+                    tenure_list
+                )
+
+        # Set tenure type custom attributes
+        custom_attrs_ent_els = child_element.elementsByTagName(
+            SocialTenureSerializer.T_TYPE_ATTRS
+        )
+        if custom_attrs_ent_els.count() > 0:
+            attrs_ent_node = custom_attrs_ent_els.item(0)
+            attrs_ent_el = attrs_ent_node.toElement()
+
+            attrs_nodes = attrs_ent_el.childNodes()
+            for i in range(attrs_nodes.count()):
+                custom_ent_el = attrs_nodes.item(i).toElement()
+                t_type = custom_ent_el.attribute(
+                    SocialTenureSerializer.TENURE_TYPE,
+                    ''
+                )
+                custom_ent = custom_ent_el.attribute(
+                    SocialTenureSerializer.ENTITY,
+                    ''
+                )
+                profile.social_tenure.add_tenure_attr_custom_entity(
+                    t_type,
+                    custom_ent
+                )
 
     @staticmethod
     def _read_validity_date(str_element, tag_name, min_max):
@@ -694,15 +752,19 @@ class SocialTenureSerializer(object):
 
         social_tenure_element = document.createElement('SocialTenure')
 
-        social_tenure_element.setAttribute(SocialTenureSerializer.PARTY,
-                                           cs_party_names)
+        social_tenure_element.setAttribute(
+            SocialTenureSerializer.PARTY,
+            cs_party_names
+        )
 
-        sp_unit_name =''
-        if not social_tenure.spatial_unit is None:
-            sp_unit_name = social_tenure.spatial_unit.short_name
+        # Add spatial unit names
+        sp_unit_names = [sp.short_name for sp in social_tenure.spatial_units]
+        cs_sp_unit_names = ','.join(sp_unit_names)
 
-        social_tenure_element.setAttribute(SocialTenureSerializer.SPATIAL_UNIT,
-                sp_unit_name)
+        social_tenure_element.setAttribute(
+            SocialTenureSerializer.SPATIAL_UNIT,
+            cs_sp_unit_names
+        )
 
         social_tenure_element.setAttribute(SocialTenureSerializer.TENURE_TYPE,
                                     social_tenure.tenure_type_collection.short_name)
@@ -751,6 +813,46 @@ class SocialTenureSerializer(object):
                 SocialTenureSerializer.MAXIMUM,
                 social_tenure.validity_end_column.maximum
             )
+
+        # Set spatial unit mapping (v1.7)
+        sp_unit_tenure_mapping_root_el = document.createElement(
+            SocialTenureSerializer.SP_TENURE_MAPPINGS
+        )
+        for sp, tvl in social_tenure.spatial_units_tenure.iteritems():
+            t_mapping_el = document.createElement(
+                SocialTenureSerializer.SP_TENURE_MAPPING
+            )
+            t_mapping_el.setAttribute(
+                SocialTenureSerializer.SPATIAL_UNIT,
+                sp
+            )
+            t_mapping_el.setAttribute(
+                SocialTenureSerializer.TENURE_TYPE,
+                tvl.short_name
+            )
+            sp_unit_tenure_mapping_root_el.appendChild(t_mapping_el)
+
+        social_tenure_element.appendChild(sp_unit_tenure_mapping_root_el)
+
+        # Set tenure type - custom attribute mapping
+        custom_attrs_root_el = document.createElement(
+            SocialTenureSerializer.T_TYPE_ATTRS
+        )
+        for t, ent in social_tenure.custom_attribute_entities.iteritems():
+            t_ent_el = document.createElement(
+                SocialTenureSerializer.T_ATTRS_ENTITY
+            )
+            t_ent_el.setAttribute(
+                SocialTenureSerializer.TENURE_TYPE,
+                t
+            )
+            t_ent_el.setAttribute(
+                SocialTenureSerializer.ENTITY,
+                ent.short_name
+            )
+            custom_attrs_root_el.appendChild(t_ent_el)
+
+        social_tenure_element.appendChild(custom_attrs_root_el)
 
         parent_node.appendChild(social_tenure_element)
 
@@ -1328,6 +1430,7 @@ class ValueListSerializer(EntitySerializerCollection):
                     tenure_doc_type_t_name = profile.social_tenure.supporting_doc. \
                         document_type_entity.short_name
                     vl_doc_type = profile.entity(tenure_doc_type_t_name)
+
                     if not vl_doc_type is None:
                         vl_doc_type.copy_from(value_list, True)
 
@@ -1476,6 +1579,7 @@ class ColumnSerializerCollection(object):
     USER_TIP = 'tip'
     MINIMUM = 'minimum'
     MAXIMUM = 'maximum'
+    LABEL = 'label'
 
     @classmethod
     def register(cls):
@@ -1558,6 +1662,12 @@ class ColumnSerializerCollection(object):
         )
         kwargs['user_tip'] = user_tip
 
+        # Label
+        label = unicode(
+            element.attribute(ColumnSerializerCollection.LABEL, '')
+        )
+        kwargs['label'] = label
+
         #Minimum
         if element.hasAttribute(ColumnSerializerCollection.MINIMUM):
             minimum = element.attribute(ColumnSerializerCollection.MINIMUM)
@@ -1570,7 +1680,7 @@ class ColumnSerializerCollection(object):
             except ValueError:
                 pass
 
-        #Maximum
+        # Maximum
         if element.hasAttribute(ColumnSerializerCollection.MAXIMUM):
             maximum = element.attribute(ColumnSerializerCollection.MAXIMUM)
 
@@ -1635,6 +1745,8 @@ class ColumnSerializerCollection(object):
                                  str(column.unique))
         col_element.setAttribute(ColumnSerializerCollection.USER_TIP,
                                  column.user_tip)
+        col_element.setAttribute(ColumnSerializerCollection.LABEL,
+                                 column.label)
 
         if hasattr(column, 'minimum'):
             col_element.setAttribute(ColumnSerializerCollection.MINIMUM,
