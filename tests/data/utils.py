@@ -3,11 +3,13 @@ from stdm import data
 from sqlalchemy import create_engine
 
 from stdm.data.configuration.columns import (
+    DateColumn,
     ForeignKeyColumn,
     GeometryColumn,
     IntegerColumn,
     LookupColumn,
     MultipleSelectColumn,
+    TextColumn,
     VarCharColumn
 )
 from stdm.data.configuration.entity import entity_factory
@@ -186,22 +188,36 @@ def populate_configuration(config):
     community = add_community_entity(profile)
     append_community_columns(community)
 
-    #Append surveyor columns
+    # Append surveyor columns
     surveyor = add_surveyor_entity(profile)
     append_surveyor_columns(surveyor)
 
     spatial_unit = add_spatial_unit_entity(profile)
 
-    #Add foreign key linking spatial unit to surveyor
+    # Add foreign key linking spatial unit to surveyor
     surveyor_id_col = ForeignKeyColumn('surveyor_id', spatial_unit)
     surveyor_id_col.set_entity_relation_attr('parent', surveyor)
     surveyor_id_col.set_entity_relation_attr('parent_column', 'id')
     spatial_unit.add_column(surveyor_id_col)
 
-    #Set STR entities
+    # Set STR entities
     profile.set_social_tenure_attr(SocialTenure.PARTY, [person_entity, community])
     profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT, spatial_unit)
 
+
+    # Add custom attributes to the social tenure object
+    custom_attr_entity = profile.social_tenure.custom_attributes_entity
+    if custom_attr_entity is None:
+        profile.social_tenure.initialize_custom_attributes_entity()
+
+    custom_attr_entity = profile.social_tenure.custom_attributes_entity
+
+    # Add custom attributes
+    constitution_ref_col = TextColumn('constitution_ref', custom_attr_entity)
+    custom_attr_entity.add_column(constitution_ref_col)
+
+    application_date_col = DateColumn('application_date', custom_attr_entity)
+    custom_attr_entity.add_column(application_date_col)
 
 def create_db_connection():
     db_conn = DatabaseConnection(DB_SERVER, DB_PORT, DB_NAME)
