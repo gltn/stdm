@@ -201,7 +201,6 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
         self.btnAddColumn.setEnabled(False)
         self.btnEditColumn.setEnabled(False)
         self.btnDeleteColumn.setEnabled(False)
-        # self.cbo_tenure_type.setEnabled(False)
         self.tb_view.setEnabled(False)
         ok_btn = self.buttonBox.button(QDialogButtonBox.Ok)
         ok_btn.setEnabled(False)
