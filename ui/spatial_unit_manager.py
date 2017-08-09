@@ -256,7 +256,7 @@ class SpatialUnitManagerDockWidget(
             self, table_name, column_name, display, item
     ):
         icon = self._geom_icon(table_name, column_name)
-       
+
         self.stdm_layers_combo.addItem(icon, display, {
                 'table_name': table_name,
                 'column_name': column_name,

@@ -135,18 +135,13 @@ class DataLabelFormatter(BaseComposerItemFormatter):
         
         #Remove some of the editing controls
         if labelEditor != None:
-            textEdit = labelEditor.findChild(QPlainTextEdit,"mTextEdit")
-            if textEdit != None:
-                textEdit.setVisible(False)
-                
-            renderHtmlCheck = labelEditor.findChild(QCheckBox,"mHtmlCheckBox")
-            if renderHtmlCheck != None:
-                renderHtmlCheck.setVisible(False)
-                
-            expressionBtn = labelEditor.findChild(QPushButton,"mInsertExpressionButton")
+
+            expressionBtn = labelEditor.findChild(
+                QPushButton,"mInsertExpressionButton"
+            )
             if expressionBtn != None:
                 expressionBtn.setVisible(False)
-                
+
 class MapFormatter(BaseComposerItemFormatter):
     """
     Add widget for formatting spatial data sources.

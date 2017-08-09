@@ -855,21 +855,37 @@ class DocumentGenerator(QObject):
         Factory for setting values based on the composer item type and value.
         """
         if isinstance(composer_item,QgsComposerLabel):
+            # if value is None:
+            #     composer_item.setText("")
+            #     return
+            #
+            # if isinstance(value, Number):
+            #     composer_item.setText("%d"%(value,))
+            #     return
+            #
+            # if isinstance(value, basestring):
+            #     composer_item.setText(value)
+            #     return
+            #
+            # if isinstance(value, date):
+            #     composer_item.setText(str(value))
+            #
+            #     return
+
+            label_text =composer_item.text()
+
             if value is None:
-                composer_item.setText("")
-                return
-            
-            if isinstance(value, Number):
-                composer_item.setText("%d"%(value,))
+                data_text = label_text[label_text.find('[')+1:label_text.find(']')]
+                composer_item.setText(label_text.replace(u'[{}]'.format(data_text), ''))
                 return
 
-            if isinstance(value, basestring):
-                composer_item.setText(value)
-                return
+            else:
+                data_text = label_text[
+                            label_text.find('[') + 1:label_text.find(']')]
 
-            if isinstance(value, date):
-                composer_item.setText(str(value))
-
+                composer_item.setText(
+                    label_text.replace(u'[{}]'.format(data_text), value)
+                )
                 return
 
         #Composer picture requires the absolute file path

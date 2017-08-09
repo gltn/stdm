@@ -189,7 +189,8 @@ class STRDBHandler():
             index = index + 1
 
         _str_obj.saveMany(str_objs)
-
+        if custom_attr_entity is None:
+            return
         custom_attr_model = entity_model(custom_attr_entity)
         custom_attr_obj = custom_attr_model()
 
