@@ -305,7 +305,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             if len(current_etities) > 0:
                 return current_etities
 
-    def entity_attribute_to_database(self, values):
+    def entity_attribute_to_database(self, entity_info):
         """
         Get the user selected entities and insert tehm into database
         params: selected entities
@@ -316,7 +316,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.relations = {}
         self.txt_feedback.clear()
         self._notif_bar_str.clear()
-        has_relations = self.has_foreign_keys_parent(values)
+        has_relations = self.has_foreign_keys_parent(entity_info)
         if len(self.parent_table_isselected()) > 0:
             if QMessageBox.information(self, QApplication.translate('GeoODKMobileSettings', "Warning"),
                                        QApplication.translate('GeoODKMobileSettings',
@@ -349,9 +349,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                                     self.profile, parent_table[1], counter)
                                 self.log_table_entry(log_timestamp)
                                 parents_info.append(parent_table[1])
-                                if parent_table[1] in values:
-                                    values.remove(parent_table[1])
-                    for table in values:
+                                if parent_table[1] in entity_info:
+                                    entity_info.remove(parent_table[1])
+                    for table in entity_info:
                         if table not in parents_info:
                             log_timestamp1 = 'Importing {0}.{1}  table in instance file {2}'.format(
                                 self.profile, table, counter)
