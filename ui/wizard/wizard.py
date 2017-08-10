@@ -2122,9 +2122,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             if result == 1: # after successfully editing
 
-                model_index_name  = model_item.index(rid, 0)
+                model_index_name = model_item.index(rid, 0)
                 model_index_dtype = model_item.index(rid, 1)
-                model_index_desc  = model_item.index(rid, 2)
+                model_index_desc = model_item.index(rid, 2)
 
                 model_item.setData(model_index_name, editor.column.name)
                 model_item.setData(model_index_dtype, editor.column.TYPE_INFO.capitalize())
@@ -2133,8 +2133,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 model_item.edit_entity(original_column, editor.column)
                 entity.columns[original_column.name] = editor.column
 
-                entity.columns[editor.column.name] = \
-                    entity.columns.pop(original_column.name)
+                on = original_column.name
+                p_col = entity.columns.pop(on)
+                entity.columns[editor.column.name] = p_col
 
                 self.populate_spunit_model(profile)
 
