@@ -55,7 +55,7 @@ from stdm.settings.registryconfig import (
     CONFIG_UPDATED,
     WIZARD_RUN
 )
-from stdm.utils.util import setComboCurrentIndexWithText
+from stdm.utils.util import setComboCurrentIndexWithText, version_from_metadata
 from stdm.ui.login_dlg import loginDlg
 from stdm.ui.notification import NotificationBar
 from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
@@ -90,6 +90,10 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self._apply_btn = self.buttonBox.button(QDialogButtonBox.Apply)
         self._reg_config = RegistryConfig()
         self._db_config = DatabaseConfig()
+
+        version = version_from_metadata()
+        upgrade_label_text = self.label_9.text().replace('1.4', version)
+        self.label_9.setText(upgrade_label_text)
 
         #Connect signals
         self._apply_btn.clicked.connect(self.apply_settings)
