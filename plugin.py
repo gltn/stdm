@@ -854,9 +854,9 @@ class STDMQGISLoader(object):
                     QApplication.translate("WorkspaceConfig","Entities"), self.iface.mainWindow())
 
         self.mobile_form_act = QAction(QIcon(":/plugins/stdm/images/icons/mobile_collect.png"), \
-                    QApplication.translate("MobileFormGenerator", "Generate Forms"), self.iface.mainWindow())
+                    QApplication.translate("MobileFormGenerator", "Generate Mobile Forms"), self.iface.mainWindow())
         self.mobile_form_import = QAction(QIcon(":/plugins/stdm/images/icons/mobile_import.png"), \
-                                       QApplication.translate("MobileFormGenerator", "Import Data"),
+                                       QApplication.translate("MobileFormGenerator", "Import Mobile Data"),
                                        self.iface.mainWindow())
 
         # Add current profiles to profiles combobox

@@ -58,7 +58,7 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 HOME = QDir.home().path()
 
-CONFIG_FILE = HOME + '/.stdm/downloads'
+CONFIG_FILE = HOME + '/.stdm/geoodk/'
 MSG = 'Error creating log'
 
 class ProfileInstanceRecords(QDialog, FORM_CLASS):
@@ -95,7 +95,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.btn_srid.clicked.connect(self.projection_settings)
 
 
-        self.load_config()
+        #self.load_config()
+        self.on_filepath()
         self.current_profile_changed()
         self.check_state_on()
         self.instance_dir()
@@ -181,7 +182,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         if self.txt_directory.text() != '':
             self.path = self.txt_directory.text()
         else:
-            self.path = HOME + "/.stdm/geoodk/instances"
+            self.path = CONFIG_FILE+'/instances'
+            if not os.access(self.path, os.F_OK):
+                os.makedirs(unicode(self.path))
             self.txt_directory.setText(self.path)
         return self.path
 

@@ -22,7 +22,17 @@
         <string/>
        </property>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="4" column="0">
+        <item row="3" column="0" colspan="2">
+         <widget class="QTreeView" name="trentities"/>
+        </item>
+        <item row="1" column="0" colspan="2">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Select Entity/ Entities and click ok button</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
          <widget class="QDialogButtonBox" name="buttonBox">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -35,24 +45,7 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
-         <widget class="QTreeView" name="trentities"/>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Select Entity/ Entities and click ok button</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QCheckBox" name="chk_all">
-          <property name="text">
-           <string>Check All</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
+        <item row="0" column="0" colspan="2">
          <widget class="QLabel" name="label">
           <property name="minimumSize">
            <size>
@@ -77,6 +70,13 @@
           </property>
          </widget>
         </item>
+        <item row="2" column="0" colspan="2">
+         <widget class="QCheckBox" name="chk_all">
+          <property name="text">
+           <string>Check All</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>
@@ -91,7 +91,7 @@
  <connections>
   <connection>
    <sender>buttonBox</sender>
-   <signal>accepted()</signal>
+   <signal>clicked(QAbstractButton*)</signal>
    <receiver>Dialog</receiver>
    <slot>accept()</slot>
    <hints>

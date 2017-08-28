@@ -11,6 +11,7 @@ from PyQt4.Qt import QApplication
 from PyQt4.QtCore import (
     QFile,
     QDir,
+    QEvent,
     pyqtSignal,
 
 )
@@ -59,7 +60,7 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         self.check_geoODK_path_exist()
 
         self.chk_all.stateChanged.connect(self.check_state_on)
-        self.buttonBox.clicked.connect(self.acceptDlg)
+        self.buttonBox.clicked.connect(self.accept)
 
         self._notif_bar_str = NotificationBar(self.vlnotification)
 
@@ -147,7 +148,13 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         if not os.access(FORM_HOME, os.F_OK):
             os.makedirs(unicode(FORM_HOME))
 
-    def acceptDlg(self):
+    def eventFilter(self, source, event):
+        if (event.type() == QEvent.KeyPress and
+                    source is self):
+            self._notif_bar_str.insertInformationNotification(event.text())
+            return True
+
+    def accept(self):
         """
         Generate Xform based on user selected entities
         :return:
@@ -164,7 +171,7 @@ class GeoODKConverter(QDialog, FORM_CLASS):
             geoodk_writer = GeoodkWriter(user_entities)
             geoodk_writer.write_data_to_xform()
             msg = 'File saved ' \
-                  'in the following location: {}/.stdm'
+                  'in: {}'
             self._notif_bar_str.insertInformationNotification(
-                msg.format(HOME))
+                msg.format(FORM_HOME))
             #self.accept()
