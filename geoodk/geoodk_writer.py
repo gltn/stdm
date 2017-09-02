@@ -153,9 +153,10 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
 
     def __init__(self, entities):
         """
-        It reads current
-        :return:
-        :rtype:
+        It reads current profile entities and attributes and writes
+        the data into an Xml file supported in GeoODK application
+        :return:file
+        :rtype:QFile
         """
         self.entities = entities
         self.entity_read = None
@@ -165,7 +166,8 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
 
     def initialize_entity_reader(self, entity):
         """
-
+        Initialize the reader class after each entity to avoid
+        redundant data
         :return:
         """
         self.entity_read = GeoODKReader(entity)
@@ -176,7 +178,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         Initialiaze base classes
         :return:
         """
-        self.initialize_entity_reader(self.initialize_entity_reader(self.entities[0]))
+        self.initialize_entity_reader(self.entities[0])
         self.profile_entity = self.entity_read.profile_name()
         XFORMDocument.__init__(self, self.profile_entity)
         EntityFormatter.__init__(self, self.profile_entity)
@@ -467,7 +469,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
 
     def _body_section_data(self,entity_values, parent_node):
         """
-        Add entity attribute to the body section as labels to the Xform file
+        Add entity attributes to the body section as labels to the Xform file
         Create label fields to the input fields
         :return:
         """

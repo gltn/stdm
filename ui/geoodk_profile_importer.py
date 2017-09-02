@@ -26,7 +26,8 @@ from PyQt4.QtGui import (
     QDialog,
     QMessageBox,
     QListWidgetItem,
-    QFileDialog
+    QFileDialog,
+    QDialogButtonBox
 )
 from PyQt4.Qt import QDirIterator
 from PyQt4.QtCore import (
@@ -316,14 +317,14 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         :return:Object
         :type: dbObject
         """
-        self.relations = {}
+        import_status = False
         self.txt_feedback.clear()
         self._notif_bar_str.clear()
         has_relations = self.has_foreign_keys_parent(entity_info)
         if len(self.parent_table_isselected()) > 0:
-            if QMessageBox.information(self, QApplication.translate('GeoODKMobileSettings', "Warning"),
+            if QMessageBox.information(self, QApplication.translate('GeoODKMobileSettings', " Import Warning"),
                                        QApplication.translate('GeoODKMobileSettings',
-                                                              'Some of dependent tables (entities) will be imported '
+                                                              'Some of dependent tables (entities)'
                                                               'which may not be part of the selected tables '
                                                               'I.e: {} will be imported'
                                                                       .format(self.parent_table_isselected())),
@@ -333,33 +334,34 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             parents_info = []
             counter = 0
             if len(self.instance_list) > 0:
-                self.pgbar.setRange(0, len(self.instance_list))
+                self.pgbar.setRange(counter, len(self.instance_list))
                 self.pgbar.setValue(0)
                 for instance in self.instance_list:
                     counter = counter + 1
                     entity_importer = EntityImporter(instance)
-                    #set the geometry coodinate system
+                    group_identifier = entity_importer.instance_group_id()
+                    #set the geometry coordinate system
                     entity_importer.geomsetter(self.on_projection_select())
-                    self.archive_imported_file(counter, instance)
+                    self.archive_this_import_file(counter, instance)
                     if has_relations:
                         #Import parents table first
-                        for parent_table in self.relations.values():
-                            if parent_table[1] in self.instance_entities():
-                                ref_id = entity_importer.process_parent_entity_import(parent_table[1])
-                                self.parent_ids[parent_table[1]] = [ref_id, parent_table[1]]
-                                log_timestamp = 'Importing {0}.{1} ' \
-                                                'as parent table in instance file {2}'.format(
-                                    self.profile, parent_table[1], counter)
+                        for parent_table in self.relations.keys():
+                            if parent_table in self.instance_entities():
+                                ref_id, import_status = entity_importer.process_parent_entity_import(parent_table)
+                                if group_identifier:
+                                    self.parent_ids[parent_table] = [ref_id, group_identifier]
+                                else:
+                                    self.parent_ids[parent_table] = [ref_id, parent_table]
+                                log_timestamp = '{0} -- parent table import succeeded: {1}'\
+                                    .format(parent_table, str(import_status))
                                 self.log_table_entry(log_timestamp)
-                                parents_info.append(parent_table[1])
+                                parents_info.append(parent_table)
                                 if parent_table[1] in entity_info:
-                                    entity_info.remove(parent_table[1])
+                                    entity_info.remove(parent_table)
                     for table in entity_info:
                         if table not in parents_info:
-                            log_timestamp1 = 'Importing {0}.{1}  table in instance file {2}'.format(
-                                self.profile, table, counter)
-                            entity_importer.process_import_to_db(table, self.parent_ids)
-                            self.log_table_entry(log_timestamp1)
+                            status = entity_importer.process_import_to_db(table, self.parent_ids)
+                            self.log_table_entry(table+" -- import succeeded: " + str(status))
                     self.txt_feedback.append('saving record "{0}"'
                                           ' to database'.format(counter))
                     self.pgbar.setValue(counter)
@@ -370,11 +372,13 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             else:
                  self._notif_bar_str.insertErrorNotification("No user selected entities to import")
                  self.pgbar.setValue(0)
-        except AttributeError as ex:
-             self._notif_bar_str.insertErrorNotification(ex.message)
+                 return
 
-        except TypeError as te:
-             self._notif_bar_str.insertErrorNotification(te.message)
+        except Exception as ex:
+            self.log_table_entry(unicode(ex.message)+'-- import succeeded: '+unicode(import_status))
+            #self._notif_bar_str.insertErrorNotification(ex.message)
+            self.feedback_message(unicode(ex.message))
+            return
 
     def has_foreign_keys_parent(self, select_entities):
         """
@@ -382,6 +386,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         import parent table first
         :return:
         """
+        self.relations = {}
         has_relations = False
         for table in select_entities:
             table_object = current_profile().entity_by_name(table)
@@ -390,7 +395,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 if col.TYPE_INFO == 'FOREIGN_KEY':
                     parent_object = table_object.columns[col.name]
                     if parent_object:
-                        self.relations[col.name] = [table, parent_object.parent.name]
+                        self.relations[parent_object.parent.name] = [table,col.name]
                         has_relations = True
                     else:
                         self.feedback_message('unable to read foreign key properties')
@@ -399,22 +404,21 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
     def parent_table_isselected(self):
         """
-        Ensure that the user selected tables may or maynot be imported
+        Take note that the user selected tables may or may not be imported
         based on parent child table relationship
         :return:
         """
         try:
             silent_list = []
             if self.user_selected_entities() > 0:
-                for table in self.relations.values():
-                    if table[1] not in self.user_selected_entities():
+                for table in self.relations.keys():
+                    if table not in self.user_selected_entities():
                         silent_list.append(table[1])
             return silent_list
         except Exception as ex:
             self._notif_bar_str.insertErrorNotification(ex.message)
 
-
-    def archive_imported_file(self, counter, instance):
+    def archive_this_import_file(self, counter, instance):
         """
         Ensure that only import are done once
         :return:
@@ -474,6 +478,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         :return:
         """
         self.txt_count.setText(unicode(self.record_count()))
+        self.default_import_records()
 
     def record_count(self):
         """
@@ -483,6 +488,14 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         return len([name for name in os.listdir(self.path)
                     if os.path.isdir(os.path.join(self.path, name))
                     if name.startswith(self.profile_formater())])
+
+    def default_import_records(self):
+        """
+        Set the record to be imported by the user
+        :return:
+        """
+        self.txt_lwr_limit.setText('0')
+        self.txt_up_limit.setText(str(self.record_count()))
 
     def profile_formater(self):
         """
@@ -542,6 +555,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
         :return:
         """
+        self.buttonBox.setEnabled(False)
         try:
             if self.lst_widget.count() < 1:
                 msg = 'Current profile matched no records for import'
@@ -550,7 +564,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             entities = self.user_selected_entities()
             if len(entities) < 1:
                 if QMessageBox.information(self,
-                        QApplication.translate('MobileForms', 'Import Error'),
+                        QApplication.translate('MobileForms', 'Import Warning'),
                         QApplication.translate('MobileForms',
                         'The user has not '
                         'selected any entity. All entities '
@@ -560,10 +574,13 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
                 else:
                     return
+
             self.entity_attribute_to_database(entities)
+            self.buttonBox.setEnabled(True)
         except Exception as ex:
             self._notif_bar_str.insertErrorNotification(ex.message)
             self.feedback_message(str(ex.message))
+            self.buttonBox.setEnabled(True)
 
 
 

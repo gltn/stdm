@@ -30,6 +30,7 @@ from stdm.data.configuration.entity import (
     Entity
 )
 GEOMPARAM = 0
+GROUPCODE = 0
 
 class EntityImporter():
     """
@@ -88,12 +89,24 @@ class EntityImporter():
                 attributes[node_val.nodeName()] = node_val.text().rstrip()
         return attributes
 
-    def instance_group_identity(self):
+    def instance_group_id(self):
         """
-        Get the unique identifier for the current instance
-        :return:
+        Get the unique identifier in the the current instance
+        for group identification of related instance
+        :param: node name
+        :type: String
+        :return: identifier code
+        :rtype: string
         """
-        pass
+        global GROUPCODE
+        gp_code = self.instance_doc.elementsByTagName('identity')
+        if gp_code:
+            user_code = gp_code.at(0).toElement().text()
+            if user_code != '' or user_code is not None:
+                GROUPCODE = user_code
+                return user_code
+            else:
+                return None
 
     def process_import_to_db(self, entity,ids):
         """
@@ -116,12 +129,14 @@ class EntityImporter():
         :param entity:
         :return:
         """
+        success = False
         if self.instance_doc is not None:
             attributes = self.entity_attributes_from_instance(entity)
             entity_add = Save2DB(entity, attributes)
             entity_add.get_srid(GEOMPARAM)
             ref_id = entity_add.save_parent_to_db()
-        return ref_id
+            success = True
+        return ref_id, success
 
 
 class Save2DB:
@@ -224,6 +239,8 @@ class Save2DB:
         :return:
         """
         if col_type == 'LOOKUP':
+            if var == '' or var is None:
+                return None
             if not len(var) > 3 and var != 'Yes' and var != 'No':
                 return entity_attr_to_id(col_prop.parent, "code", var)
             else:
@@ -235,6 +252,8 @@ class Save2DB:
                 return entity_attr_to_id(col_prop.parent, "name", var)
 
         elif col_type == 'MULTIPLE_SELECT':
+            if var == '' or var is None:
+                return None
             if not len(var) > 3:
                 return entity_attr_to_id(col_prop.association.first_parent, "code", var)
             else:
@@ -253,9 +272,13 @@ class Save2DB:
             if len(self.parents_ids) < 0:
                 return
             else:
-                for val in self.parents_ids.values():
-                    if col_prop.parent.name == val[1]:
-                        return val[0]
+                for code, val in self.parents_ids.iteritems():
+                    if code is not None:
+                        if code == GROUPCODE and col_prop.parent.name == val[1]:
+                            return val[0]
+                    else:
+                        if col_prop.parent.name == val[1]:
+                            return val[0]
         else:
             return var
 

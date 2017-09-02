@@ -4,7 +4,7 @@
 		<h:title/>
 		<model>
 			<instance>
-			<pl_inventoryv2 id="pl_inventoryv2">
+			<profile id="profile name">
 				<start/>
 					<end/>
 					<today/>
@@ -14,13 +14,13 @@
 					<meta>
 						<instanceID/>
 					</meta>
-					</pl_inventoryv2>
+					</profile>
 				</instance>
-					<bind jr:preload="timestamp" jr:preloadParams="start" nodeset="/pl_inventoryv2/start" type="dateTime"/>
-					<bind jr:preload="timestamp" jr:preloadParams="end" nodeset="/pl_inventoryv2/end" type="dateTime"/>
-					<bind jr:preload="date" jr:preloadParams="today" nodeset="/pl_inventoryv2/today" type="date"/>
-					<bind jr:preload="property" jr:preloadParams="deviceid" nodeset="/pl_inventoryv2/deviceid" type="string"/>
-					<bind nodeset="/pl_inventoryv2/title" readonly="true()" type="string"/>
+					<bind jr:preload="timestamp" jr:preloadParams="start" nodeset="/profile name/start" type="dateTime"/>
+					<bind jr:preload="timestamp" jr:preloadParams="end" nodeset="/profile name/end" type="dateTime"/>
+					<bind jr:preload="date" jr:preloadParams="today" nodeset="/profile name/today" type="date"/>
+					<bind jr:preload="property" jr:preloadParams="deviceid" nodeset="/profile name/deviceid" type="string"/>
+					<bind nodeset="/profile name/title" readonly="true()" type="string"/>
 				</model>
 			</h:head>
 			<h:body>
