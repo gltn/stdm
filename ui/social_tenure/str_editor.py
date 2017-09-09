@@ -670,9 +670,9 @@ class ValidateSTREditor(object):
         else:
             self.enable_next(selected_item, 3)
             # Enable custom tenure information item
-            print store.custom_tenure.values()[0]
-            if store.custom_tenure.values()[0] is not None:
-                selected_item.child(0, 0).setEnabled(True)
+
+            #if store.custom_tenure.values()[0] is not None:
+            selected_item.child(0, 0).setEnabled(True)
             self.enable_next(selected_item, 4)
             self.enable_next(selected_item, 5)
             self.enable_save_button()

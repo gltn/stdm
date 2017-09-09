@@ -391,6 +391,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         entityWidget = self.tbSTREntity.currentWidget()
 
         entity_name = entityWidget.config.data_source_name
+
         self._reset_controls(entity_name)
 
         if isinstance(entityWidget,EntitySearchItem):
@@ -477,7 +478,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                 if isinstance(node, SpatialUnitNode):
                     # Expand the Spatial Unit preview
                     self.toolBox.setCurrentIndex(0)
-                    table_name = node.model().__table__.name
+                    header = node._parent_header.strip().lower()
+                    table_name = '{}_{}'.format(self.curr_profile.prefix, header)
 
                     self.draw_spatial_unit(table_name, node.model())
                     self.editSTR.setDisabled(True)
