@@ -2081,6 +2081,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             result = editor.exec_()
 
             if result == 1:
+                entity.add_column(editor.column)
                 if editor.type_info == 'LOOKUP':
                     self.clear_lookup_view()
                     self.populate_lookup_view(profile)

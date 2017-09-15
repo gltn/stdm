@@ -303,10 +303,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         :type state: boolean
         :rtype: Qt.CheckState
         """
-        if state:
-            return Qt.Checked
-        else:
-            return Qt.Unchecked
+        return Qt.Checked if state else Qt.Unchecked
 
     def init_form_fields(self):
         """

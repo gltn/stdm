@@ -130,13 +130,13 @@ class ComposerWrapper(QObject):
         self._widgetMappings = {}
 
         #Hide default dock widgets
-        if not self.itemDock() is None:
+        if self.itemDock() is not None:
             self.itemDock().hide()
 
-        if not self.atlasDock() is None:
+        if self.atlasDock() is not None:
             self.atlasDock().hide()
 
-        if not self.generalDock() is None:
+        if self.generalDock() is not None:
             self.generalDock().hide()
 
         # Remove default toolbars
@@ -159,10 +159,10 @@ class ComposerWrapper(QObject):
         self._stdmDataSourceDock.show()
 
         #Re-insert dock widgets
-        if not self.generalDock() is None:
+        if self.generalDock() is not None:
             self.generalDock().show()
 
-        if not self.itemDock() is None:
+        if self.itemDock() is not None:
             self.itemDock().show()
 
         #Create dock widget for configuring STDM item properties
@@ -177,24 +177,24 @@ class ComposerWrapper(QObject):
         self._stdmItemPropDock.show()
 
         #Re-arrange dock widgets and push up STDM data source dock widget
-        if not self.generalDock() is None:
+        if self.generalDock() is not None:
             self.mainWindow().splitDockWidget(self._stdmDataSourceDock,
                                               self.generalDock(),Qt.Vertical)
 
-        if not self.itemDock() is None:
+        if self.itemDock() is not None:
             self.mainWindow().splitDockWidget(self._stdmDataSourceDock,
                                              self.itemDock(),Qt.Vertical)
-            if not self.generalDock() is None:
+            if self.generalDock() is not None:
                 self.mainWindow().tabifyDockWidget(self.generalDock(),
                                               self.itemDock())
 
-        if not self.itemDock() is None:
+        if self.itemDock() is not None:
             self.mainWindow().splitDockWidget(self.itemDock(),
                                               self._stdmItemPropDock,
                                               Qt.Vertical)
 
         #Set focus on composition properties window
-        if not self.generalDock() is None:
+        if self.generalDock() is not None:
             self.generalDock().activateWindow()
             self.generalDock().raise_()
 
@@ -207,6 +207,17 @@ class ComposerWrapper(QObject):
 
         #Current template document file
         self._currDocFile = None
+
+        #Copy of template document file
+        self._copy_template_file = None
+
+    @property
+    def copy_template_file(self):
+        return self._copy_template_file
+
+    @copy_template_file.setter
+    def copy_template_file(self, value):
+        self._copy_template_file = value
 
     def _remove_composer_toolbar(self, object_name):
         """
@@ -244,7 +255,7 @@ class ComposerWrapper(QObject):
     def configure(self):
         #Create instances of custom STDM composer item configurations
         for ciConfig in ComposerItemConfig.itemConfigurations:
-            ciConfigObj = ciConfig(self)
+            ciConfig(self)
 
     def addWidgetMapping(self,uniqueIdentifier,widget):
         """
@@ -359,11 +370,11 @@ class ComposerWrapper(QObject):
         """
         return self._currDocFile
 
-    def setDocumentFile(self,docFile):
+    def setDocumentFile(self, docFile):
         """
         Sets the document file.
         """
-        if not isinstance(docFile,QFile):
+        if not isinstance(docFile, QFile):
             return
 
         self._currDocFile = docFile
@@ -436,6 +447,9 @@ class ComposerWrapper(QObject):
         :param file_path: Path to document template
         :type file_path: str
         """
+        if len(self.composerView().items()) == 3:
+            self.composerView().composerWindow().close()
+        
         document_designer = self._iface.createNewComposer("STDM Document Designer")
 
         #Embed STDM customizations
@@ -457,7 +471,26 @@ class ComposerWrapper(QObject):
                                                            "The specified template does not exist."))
                 return
 
-        templateFile = QFile(filePath)
+        copy_file = filePath.replace('sdt', 'cpy')
+
+        # remove existing copy file
+        if QFile.exists(copy_file):
+            copy_template = QFile(copy_file)
+            copy_template.remove()
+
+        orig_template_file = QFile(filePath)
+
+        self.setDocumentFile(orig_template_file)
+
+        # make a copy of the original
+        orig_template_file.copy(copy_file)
+
+        #templateFile = QFile(filePath)
+
+        # work with copy
+        templateFile = QFile(copy_file)
+
+        self.copy_template_file = templateFile
 
         if not templateFile.open(QIODevice.ReadOnly):
             QMessageBox.critical(self.composerView(),
@@ -527,22 +560,24 @@ class ComposerWrapper(QObject):
         Creates and saves a new document template.
         """
         #Validate if the user has specified the data source
-        if not self.selectedDataSource():
-            QMessageBox.critical(self.composerView(),
-                                 QApplication.translate("ComposerWrapper","Error"),
-                                QApplication.translate("ComposerWrapper","Please specify the "
-                                            "data source name for the document composition."))
-            return
+        #if not self.selectedDataSource():
+            #QMessageBox.critical(self.composerView(),
+                                 #QApplication.translate("ComposerWrapper","Error"),
+                                #QApplication.translate("ComposerWrapper","Please specify the "
+                                            #"data source name for the document composition."))
+            #return
 
         #Assert if the referenced table name has been set
-        if not self.selected_referenced_table():
-            QMessageBox.critical(self.composerView(),
-                                 QApplication.translate("ComposerWrapper","Error"),
-                                QApplication.translate("ComposerWrapper","Please specify the "
-                                            "referenced table name for the selected data source."))
-            return
+        #if not self.selected_referenced_table():
+            #QMessageBox.critical(self.composerView(),
+                                 #QApplication.translate("ComposerWrapper","Error"),
+                                #QApplication.translate("ComposerWrapper","Please specify the "
+                                            #"referenced table name for the selected data source."))
+            #return
 
         #If it is a new unsaved document template then prompt for the document name.
+        import pydevd; pydevd.settrace()
+
         docFile = self.documentFile()
 
         if docFile is None:
@@ -550,6 +585,16 @@ class ComposerWrapper(QObject):
                             QApplication.translate("ComposerWrapper","Template Name"),
                             QApplication.translate("ComposerWrapper","Please enter the template name below"),
                             )
+
+            if not ok:
+                return
+
+            if ok and not docName:
+                QMessageBox.critical(self.composerView(),
+                        QApplication.translate("ComposerWrapper", "Error"),
+                        QApplication.translate("ComposerWrapper",
+                            "Please enter a template name!") )
+                self.saveTemplate()
 
             if ok and docName:
                 templateDir = self._composerTemplatesPath()

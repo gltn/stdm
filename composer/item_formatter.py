@@ -135,7 +135,7 @@ class DataLabelFormatter(BaseComposerItemFormatter):
         
         #Remove some of the editing controls
         if labelEditor != None:
-
+            
             expressionBtn = labelEditor.findChild(
                 QPushButton,"mInsertExpressionButton"
             )
