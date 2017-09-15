@@ -576,8 +576,6 @@ class ComposerWrapper(QObject):
             #return
 
         #If it is a new unsaved document template then prompt for the document name.
-        import pydevd; pydevd.settrace()
-
         docFile = self.documentFile()
 
         if docFile is None:
