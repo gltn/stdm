@@ -352,7 +352,7 @@ class STREntityModelItem(QStandardItem):
     def _set_entity_properties(self):
         name_item = self._create_item(self._entity.name)
         self.name = name_item
-        description = self._create_item(str(self._entity.description))
+        description = self._create_item(unicode(self._entity.description))
 
         self.appendRow([name_item, description])
 

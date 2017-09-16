@@ -22,7 +22,7 @@ email                : stdm@unhabitat.org
 import logging
 
 from copy import deepcopy
-
+from PyQt4.QtGui import QApplication
 from sqlalchemy.sql.expression import text
 from migrate.changeset import *
 
@@ -154,7 +154,7 @@ def _create_primary_entity_view(
             view_columns = _set_distinct_column(distinct_column, view_columns)
 
         join_statement = str_join + party_join #+ spatial_unit_join
-
+        print join_statement
         if len(view_columns) == 0:
             LOGGER.debug('There are no columns for creating the social tenure '
                          'relationship view.')
@@ -309,6 +309,7 @@ def _entity_select_column(
             if isinstance(c, ForeignKeyColumn) and join_parents:
                 LOGGER.debug('Creating STR: Getting parent for %s column', c.name)
                 fk_parent_entity = c.entity_relation.parent
+
                 parent_table = c.entity_relation.parent.name
                 LOGGER.debug('Parent found')
                 select_column_name = ''
@@ -349,6 +350,8 @@ def _entity_select_column(
                 # Use inner join only if parent entity is an STR entity
                 if use_inner_join and \
                         str_entity.is_str_entity(fk_parent_entity):
+                    # QApplication.processEvents()
+                    print fk_parent_entity.name
                     join_type = 'INNER JOIN'
 
                 if use_custom_join:
@@ -371,6 +374,8 @@ def _entity_select_column(
             if c.name not in omit_view_columns:
                 if select_column_name:
                     column_names.append(select_column_name)
+    print column_names
+    print join_statements
 
     return column_names, join_statements
 

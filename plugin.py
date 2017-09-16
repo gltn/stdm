@@ -898,7 +898,7 @@ class STDMQGISLoader(object):
         # social_tenure = self.current_profile.social_tenure
         #custom_attr_entity = social_tenure.custom_attributes_entity
         if self.user_entities() is not None:
-            user_entities = dict(self.user_entities())
+            user_entities = OrderedDict(self.user_entities())
             for i, (name, short_name) in enumerate(user_entities.iteritems()):
                 # if custom_attr_entity.name != name:
                 display_name = unicode(short_name).replace("_", " ").title()

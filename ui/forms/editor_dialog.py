@@ -482,11 +482,12 @@ class EntityEditorDialog(QDialog, MapperMixin):
         if self.entity_tab_widget is None:
             self.entity_tab_widget = QTabWidget(self)
         # Check if there are children and add foreign key browsers
+
+        # Add primary tab if necessary
+        self._add_primary_attr_widget()
+
         if not self._disable_collections:
             ch_entities = self.children_entities()
-
-            # Add primary tab if necessary
-            self._add_primary_attr_widget()
 
             for ch in ch_entities:
                 self._add_fk_browser(ch)
@@ -505,15 +506,16 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 self.doc_widget.source_document_manager
             )
 
-
-            # Add attribute tab
-            self._add_primary_attr_widget()
+            #
+            # # Add attribute tab
+            # self._add_primary_attr_widget()
 
             # Add supporting documents tab
             self.entity_tab_widget.addTab(
                 self.doc_widget,
                 self.tr('Supporting Documents')
             )
+
 
         # Return the correct widget
         if not self.entity_tab_widget is None:

@@ -101,17 +101,18 @@ class SpatialUnitManagerDockWidget(
         """
         Adjusts the layers combobox drop down to expand based on the layer name.
         """
-        longest_item = max(self._profile_spatial_layers, key=len)
-        font_meter = QFontMetrics(self.fontMetrics())
-        item_width = font_meter.width(longest_item) + 80
-        self.stdm_layers_combo.setStyleSheet(
-            '''*
-                QComboBox QAbstractItemView{
-                    min-width: 60px;
-                    width: %s px;
-                }
-            ''' % item_width
-        )
+        if len(self._profile_spatial_layers) > 0:
+            longest_item = max(self._profile_spatial_layers, key=len)
+            font_meter = QFontMetrics(self.fontMetrics())
+            item_width = font_meter.width(longest_item) + 80
+            self.stdm_layers_combo.setStyleSheet(
+                '''*
+                    QComboBox QAbstractItemView{
+                        min-width: 60px;
+                        width: %s px;
+                    }
+                ''' % item_width
+            )
 
     def _populate_layers(self):
         self.stdm_layers_combo.clear()

@@ -111,7 +111,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
             state = name_validator.validate(text, text.index(last_character))[0]
 
             if state != QValidator.Acceptable:
-                self.show_notification('"{}" is not allowed at this position.'.
+                self.show_notification(u'"{}" is not allowed at this position.'.
                                        format(last_character)
                 )
                 text = text[:-1]

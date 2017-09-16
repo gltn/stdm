@@ -157,9 +157,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         :param message: The message of the notification.
         :type message: String
         """
-        msg = self.tr(message)
         self.notice_bar.clear()
-        self.notice_bar.insertErrorNotification(msg)
+        self.notice_bar.insertErrorNotification(message)
 
     def init_controls(self):
         """
@@ -203,7 +202,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         if locale == 'en':
             state = name_validator.validate(text, text.index(last_character))[0]
             if state != QValidator.Acceptable:
-                self.show_notification('"{}" is not allowed at this position.'.
+                self.show_notification(u'"{}" is not allowed at this position.'.
                     format(last_character)
                 )
                 text = text[:-1]
