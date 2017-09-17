@@ -29,6 +29,7 @@ DOCEXTENSION = '.xml'
 XFOFMDEFAULTS = ['start', 'end', 'deviceid', 'today']
 BINDPARAMS = "jr:preloadParams"
 CUSTOMBINDPARAMS = "jr:preload"
+DOCUMENT = 'supporting_document'
 
 HOME = QDir.home().path()
 
@@ -50,6 +51,16 @@ class XFORMDocument:
         self.doc = QDomDocument()
         self.form = None
         self.fname = fname
+        self.doc_with_entities = []
+        self.supports_doc = self.document()
+
+    def document(self):
+        """
+        use the globally defined Document name for supporting document
+        :return:
+        """
+        global DOCUMENT
+        return DOCUMENT
 
     def form_name(self):
         """
@@ -320,13 +331,53 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 self.initialize_entity_reader(entity)
                 entity_values = self.entity_read.read_attributes()
                 field_group = self.create_node(self.entity_read.default_entity())
-                for key_field in entity_values.keys():
-                    col_node = self.create_node(key_field)
-                    field_group.appendChild(col_node)
-                instance_id.appendChild(field_group)
+                entity_group = self.entity_supports_documents(field_group, entity_values)
+                instance_id.appendChild(entity_group)
                 instance.appendChild(instance_id)
             instance_id.appendChild(self._doc_meta_instance())
             return instance
+
+    def entity_supports_documents(self, field_group, entity_values):
+        """
+        Allow for document capturing in the form if it has been provided for
+        in the entity creation.
+        :param1: node
+        :type: QDom node
+        :param2: entity_values
+        :type:dict
+        :return: node
+        """
+        self.doc_with_entities = []
+        if self.entity_read.entity_has_supporting_documents():
+            doc_list = self.entity_read.entity_supported_document_types()
+            ''' we need to create a node for adding documents'''
+            self.doc_with_entities.append(self.entity_read.user_entity_name())
+            for key_field in entity_values.keys():
+                col_node = self.create_node(key_field)
+                field_group.appendChild(col_node)
+            if len(doc_list)<2:
+                document_node = self.create_node(self.supports_doc)
+                field_group.appendChild(document_node)
+            else:
+                for doc in doc_list:
+                    if doc == 'General':
+                        continue
+                    document_node = self.create_node(doc.replace(' ','') + '_' + self.supports_doc)
+                    field_group.appendChild(document_node)
+        else:
+            for key_field in entity_values.keys():
+                col_node = self.create_node(key_field)
+                field_group.appendChild(col_node)
+        return field_group
+
+
+
+    def entity_with_supporting_documents(self):
+        """
+        return a list of entity with supporting documents
+        :return: list
+        """
+        return self.doc_with_entities
 
     def create_model_bind_attributes(self, base_node):
         """
@@ -357,9 +408,40 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             if self.entity_read.col_is_mandatory(key):
                 bind_node.setAttribute("required", "true()")
             bind_node.setAttribute("type", self.set_model_data_type(val))
-
             base_node.appendChild(bind_node)
+        if self.entity_read.entity_has_supporting_documents():
+            self.add_supporting_docs_to_bind_node(base_node)
         return base_node
+
+    def add_supporting_docs_to_bind_node(self, parent_node):
+        """
+        Add all supporting document type to bind node so that they are
+        available in the form
+        :param: parent_node
+        :type: string
+        :return: node
+        :rtype:QDomNode
+        """
+        doc_list = self.entity_read.entity_supported_document_types()
+        if len(doc_list)<2:
+            doc_bind_node = self.create_node("bind")
+            doc_bind_node.setAttribute("nodeset",
+                                    self.set_model_xpath(self.supports_doc,
+                                                         self.entity_read.default_entity()))
+            doc_bind_node.setAttribute("type", 'binary')
+            parent_node.appendChild(doc_bind_node)
+        else:
+            for doc in doc_list:
+                if doc == 'General':
+                    continue
+                doc_bind_node = self.create_node("bind")
+                doc_bind_node.setAttribute("nodeset",
+                                           self.set_model_xpath(doc.replace(' ', '') + '_' + self.supports_doc,
+                                                                self.entity_read.default_entity()))
+                doc_bind_node.setAttribute("type", 'binary')
+                parent_node.appendChild(doc_bind_node)
+
+        return parent_node
 
     def special_data_constraint(self, var):
         """
@@ -369,7 +451,6 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         """
         #if var =='GEOMETRY':
         raise NotImplementedError
-
 
     def model_unique_id_generator(self):
         """
@@ -488,8 +569,45 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 label_node.appendChild(label_txt)
                 body_node.appendChild(label_node)
                 parent_node.appendChild(body_node)
-
+        '''Check if the entity has supporting document
+        Document considered at this point, image type'''
+        if self.entity_read.entity_has_supporting_documents():
+            self._supporting_documents_field_labels(parent_node)
         return parent_node
+
+    def _supporting_documents_field_labels(self, parent_node):
+        """
+        Create labels for document capture field so that the user
+        Knows what document is capturing
+        :param parent_node
+        :type string
+        :return: node
+        :rtype: QDomNode
+        """
+        doc_list = self.entity_read.entity_supported_document_types()
+        if len(doc_list)<2:
+            doc_node = self.create_node('upload')
+            doc_node.setAttribute('mediatype', 'image/*')
+            doc_node.setAttribute('ref', self.set_model_xpath(self.supports_doc,
+                                                              self.entity_read.default_entity()))
+            label_doc_node = self.create_node('label')
+            label_doc_node_text = self.create_text_node(self.supports_doc)
+            label_doc_node.appendChild(label_doc_node_text)
+            doc_node.appendChild(label_doc_node)
+            parent_node.appendChild(doc_node)
+        else:
+            for doc in doc_list:
+                if doc == 'General':
+                    continue
+                doc_node = self.create_node('upload')
+                doc_node.setAttribute('mediatype', 'image/*')
+                doc_node.setAttribute('ref', self.set_model_xpath(doc.replace(' ', '') + '_' + self.supports_doc,
+                                                                  self.entity_read.default_entity()))
+                label_doc_node = self.create_node('label')
+                label_doc_node_text = self.create_text_node(doc + '_' + self.supports_doc)
+                label_doc_node.appendChild(label_doc_node_text)
+                doc_node.appendChild(label_doc_node)
+                parent_node.appendChild(doc_node)
 
     def format_lookup_data(self, col, parent_node):
         """

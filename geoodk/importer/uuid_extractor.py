@@ -105,7 +105,6 @@ class InstanceUUIDExtractor():
         """
         pass
 
-
     def uuid_element(self):
         """
         Format the guuid from the file

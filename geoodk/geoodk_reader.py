@@ -61,6 +61,23 @@ class GeoODKReader():
         """
         return self.profile().entity(self.user_entity)
 
+    def entity_has_supporting_documents(self):
+        """
+        Check if supporting documents are enabled for this entity and
+        include them in the form
+        :return: bool
+        """
+        entity = self.entity_object()
+        return entity.supports_documents
+
+    def entity_supported_document_types(self):
+        """
+        Get supported document types for particular entity
+        :return: list
+        :rtype: lookup values of the supported document type
+        """
+        return self.entity_object().document_types()
+
     def profile_entity_attribute(self):
         """
         :param entity:
@@ -136,7 +153,7 @@ class GeoODKReader():
         """
         get lookup associated with the column
         :param item_col:
-        :return:
+        :return:bool
         """
         is_lookup = False
         lk_val = self.entity_attributes.get(item_col)

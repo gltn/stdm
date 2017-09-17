@@ -22,15 +22,15 @@
         <string/>
        </property>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="3" column="0" colspan="2">
-         <widget class="QTreeView" name="trentities"/>
-        </item>
         <item row="1" column="0" colspan="2">
          <widget class="QLabel" name="label_3">
           <property name="text">
            <string>Select Entity/ Entities and click ok button</string>
           </property>
          </widget>
+        </item>
+        <item row="3" column="0" colspan="2">
+         <widget class="QTreeView" name="trentities"/>
         </item>
         <item row="5" column="1">
          <widget class="QDialogButtonBox" name="buttonBox">
@@ -45,6 +45,27 @@
           </property>
          </widget>
         </item>
+        <item row="2" column="0" colspan="2">
+         <widget class="QCheckBox" name="chk_all">
+          <property name="text">
+           <string>Check All</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QCheckBox" name="checkBox">
+            <property name="text">
+             <string>Include Social Tenure Relationship tables</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
         <item row="0" column="0" colspan="2">
          <widget class="QLabel" name="label">
           <property name="minimumSize">
@@ -54,7 +75,7 @@
            </size>
           </property>
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
           <property name="text">
            <string>The generated form will be based on the current profile set by the user</string>
@@ -67,13 +88,6 @@
           </property>
           <property name="wordWrap">
            <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0" colspan="2">
-         <widget class="QCheckBox" name="chk_all">
-          <property name="text">
-           <string>Check All</string>
           </property>
          </widget>
         </item>

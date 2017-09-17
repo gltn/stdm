@@ -100,8 +100,6 @@ class GeoODKConverter(QDialog, FORM_CLASS):
                     'ENTITY_SUPPORTING_DOCUMENT', 'ASSOCIATION_ENTITY']:
 
                 if entity.TYPE_INFO == 'VALUE_LIST':
-                    #self.lookup_view_model.add_entity(entity)
-                    #self.addValues_byEntity(entity)
                     pass
                 else:
                     self.entity_model.add_entity(entity)
@@ -151,7 +149,6 @@ class GeoODKConverter(QDialog, FORM_CLASS):
     def eventFilter(self, source, event):
         if (event.type() == QEvent.KeyPress and
                     source is self):
-            self._notif_bar_str.insertInformationNotification(event.text())
             return True
 
     def accept(self):

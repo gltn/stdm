@@ -32,6 +32,28 @@ class EntityFormatter():
         """
         pass
 
+    def profile_has_social_tenure(self):
+        """
+        Check if the profile has social tenure tables
+        :return:
+        """
+        return self._profile.social_tenure
+
+    def model_spatial_units(self):
+        """
+        Check if the current profile has social tenure tables
+        :return: list
+        """
+        return self.profile_has_social_tenure().spatial_units
+
+    def model_party_tables(self):
+        """
+        Get the defined party tables part of the social tenure
+        :return:
+        """
+        return self.profile_has_social_tenure().parties
+
+
     def format_photo_blob(self):
         """
         Format image upload column to Xform format

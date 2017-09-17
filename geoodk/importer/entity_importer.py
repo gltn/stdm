@@ -26,11 +26,21 @@ from stdm.utils.util import entity_attr_to_id, lookup_id_from_value
 from stdm.data.configuration import entity_model
 from stdm.geoodk.importer.geometry_provider import GeomPolgyon
 from stdm.data.configuration.columns import GeometryColumn
-from stdm.data.configuration.entity import (
-    Entity
+from stdm.ui.sourcedocument import SourceDocumentManager
+from PyQt4.QtCore import \
+    (
+    QUuid,
+    QDateTime,
+    QDir
 )
+
+from PyQt4.QtGui import QVBoxLayout
+
 GEOMPARAM = 0
 GROUPCODE = 0
+HOME = QDir.home().path()
+
+CONFIG_FILE = HOME + '/.stdm/geoodk/instances'
 
 class EntityImporter():
     """
@@ -56,9 +66,9 @@ class EntityImporter():
 
     def geomsetter(self, val):
         """
-        Get user input on geometry
+        Get user preferred geometry
         :param val:
-        :return:
+        :return:int
         """
         global GEOMPARAM
         GEOMPARAM = val
@@ -117,6 +127,7 @@ class EntityImporter():
         if self.instance_doc is not None:
             attributes = self.entity_attributes_from_instance(entity)
             entity_add = Save2DB(entity, attributes,ids)
+            entity_add.objects_from_supporting_doc(self.instance)
             entity_add.save_to_db()
             entity_add.get_srid(GEOMPARAM)
             self.key_watch = entity_add.key
@@ -133,6 +144,7 @@ class EntityImporter():
         if self.instance_doc is not None:
             attributes = self.entity_attributes_from_instance(entity)
             entity_add = Save2DB(entity, attributes)
+            entity_add.objects_from_supporting_doc(self.instance)
             entity_add.get_srid(GEOMPARAM)
             ref_id = entity_add.save_parent_to_db()
             success = True
@@ -149,6 +161,8 @@ class Save2DB:
         """
         self.attributes = attributes
         self.form_entity = entity
+        self.doc_model = None
+        self._doc_manager =None
         self.entity = self.object_from_entity_name(self.form_entity)
         self.model = self.dbmodel_from_entity()
         self.key = 0
@@ -163,14 +177,94 @@ class Save2DB:
         user_entity = current_profile().entity_by_name(entity)
         return user_entity
 
+    def entity_has_supporting_docs(self):
+        """
+        Check if the entity has supporting document before importing
+        :return: Bool
+        """
+        return self.entity.supports_documents
+
+    def entity_supported_document_types(self):
+        """
+        Get the supported document types before importing so that they are captured
+        during import process
+        :return: List
+        """
+        return self.entity.document_types()
+
     def dbmodel_from_entity(self):
         """
-        Format model attributes from pass entity attributes
+        Format model attributes from passed entity attributes
         :return:
         """
-        entity_object = entity_model(self.entity)
-        entity_object_model = entity_object()
+        if self.entity_has_supporting_docs():
+            entity_object, self.doc_model = entity_model(self.entity, with_supporting_document=True)
+            entity_object_model = entity_object()
+            if hasattr(entity_object_model, 'documents'):
+                self._doc_manager = SourceDocumentManager(
+                    self.entity.supporting_doc, self.doc_model
+                )
+        else:
+            entity_object = entity_model(self.entity)
+            entity_object_model = entity_object()
         return entity_object_model
+
+    def objects_from_supporting_doc(self, instance_file = None):
+        """
+        Create supporting doc path  instances based on the collected documents
+        :return:paths
+        :rtype: document object instance
+        """
+        if instance_file:
+            f_dir, file_name = os.path.split(instance_file)
+            for document, val in self.attributes.iteritems():
+                if str(document).endswith('supporting_document'):
+                    if val != '':
+                        doc = self.format_document_name_from_attribute(document)
+                        doc_path = os.path.normpath(f_dir+'/'+val)
+                        abs_path = doc_path.replace('\\','/').strip()
+                        if QFile.exists(abs_path):
+                            self.supporting_document_model(abs_path, doc)
+
+    def supporting_document_model(self,doc_path,doc):
+        """
+        Construct supporting document model instance to add into the db
+        :return:
+        """
+        # Create document container
+        doc_container = QVBoxLayout()
+        supporting_doc_entity = self.entity.supporting_doc.document_type_entity
+        document_type_id = entity_attr_to_id(supporting_doc_entity, 'value', doc)
+        # Register container
+        self._doc_manager.registerContainer(
+            doc_container,
+            document_type_id
+        )
+        #Copy the document to STDM working directory
+        self._doc_manager.insertDocumentFromFile(
+                doc_path,
+                document_type_id,
+                self.entity
+        )
+
+    def format_document_name_from_attribute(self, key_name):
+        """
+        Get the type of document from attribute name
+        So that supporting document class instance can save it right way
+        :return:
+        """
+        doc_list = self.entity_supported_document_types()
+        default = 'General'
+        doc_type = str(key_name).split('_')
+        if len(doc_type)>2:
+            if doc_type[0] in doc_list:
+                return doc_type[0]
+            else:
+                for doc in doc_list:
+                    if doc.startswith(doc_type[0]):
+                        return doc
+        else:
+            return default
 
     def save_to_db(self):
         """
@@ -184,9 +278,10 @@ class Save2DB:
                 col_prop = self.entity.columns[k]
                 var = self.attribute_formatter(col_type, col_prop, v)
                 setattr(self.model, k, var)
+        if self.entity_has_supporting_docs():
+            self.model.documents = self._doc_manager.model_objects()
         self.model.save()
         self.cleanup()
-
 
     def save_parent_to_db(self):
         """
@@ -200,6 +295,8 @@ class Save2DB:
                 col_prop = self.entity.columns[k]
                 var = self.attribute_formatter(col_type, col_prop, v)
                 setattr(self.model, k, var)
+        if self.entity_has_supporting_docs():
+            self.model.documents = self._doc_manager.model_objects()
         self.model.save()
         self.key = self.model.id
         return self.key
@@ -223,6 +320,7 @@ class Save2DB:
         self.model = None
         self.entity = None
         self.attributes = None
+        self._doc_manager = None
 
     def get_srid(self, srid):
         """
@@ -281,4 +379,3 @@ class Save2DB:
                             return val[0]
         else:
             return var
-
