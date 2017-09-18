@@ -154,7 +154,7 @@ def _create_primary_entity_view(
             view_columns = _set_distinct_column(distinct_column, view_columns)
 
         join_statement = str_join + party_join #+ spatial_unit_join
-        print join_statement
+
         if len(view_columns) == 0:
             LOGGER.debug('There are no columns for creating the social tenure '
                          'relationship view.')
@@ -350,8 +350,7 @@ def _entity_select_column(
                 # Use inner join only if parent entity is an STR entity
                 if use_inner_join and \
                         str_entity.is_str_entity(fk_parent_entity):
-                    # QApplication.processEvents()
-                    print fk_parent_entity.name
+
                     join_type = 'INNER JOIN'
 
                 if use_custom_join:
@@ -365,17 +364,14 @@ def _entity_select_column(
                         join_type, parent_table, col_select_name,
                         c.entity_relation.parent_column
                     )
-
                 # Assert if the column is in the list of omitted join columns
-                if c.name not in omit_join_statement_columns:
-                    join_statements.append(join_statement)
+                # if c.name not in omit_join_statement_columns:
+                join_statements.append(join_statement)
 
             # Assert if the column is in the list of omitted view columns
             if c.name not in omit_view_columns:
                 if select_column_name:
                     column_names.append(select_column_name)
-    print column_names
-    print join_statements
 
     return column_names, join_statements
 

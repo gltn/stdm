@@ -242,6 +242,7 @@ class SpatialUnitManagerDockWidget(
         :rtype: NoneType
         """
         table, column = self._layer_table_column(curr_layer)
+
         if table not in pg_views() and not curr_layer is None:
             try:
                 self.stdm_fields.init_form(
@@ -412,6 +413,8 @@ class SpatialUnitManagerDockWidget(
         )
 
         if layer_name in self._map_registry_layer_names():
+            layer = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)[0]
+            self.iface.setActiveLayer(layer)
             return
 
         # Used in gpx_table.py

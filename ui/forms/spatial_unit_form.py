@@ -25,6 +25,8 @@ import re
 import logging
 from decimal import Decimal
 from collections import OrderedDict
+
+from PyQt4.QtCore import QCoreApplication
 from qgis.core import (
     NULL,
     QgsFeatureRequest,
@@ -221,7 +223,7 @@ class QGISFieldWidgetFactory(QgsEditorWidgetFactory):
             if not widget_wrapper is None:
                 return widget_wrapper
 
-        except Exception as ex:
+        except Exception:
             pass
 
     def configWidget(self, layer, idx, parent):
@@ -256,7 +258,7 @@ class STDMFieldWidget():
         :rtype: NoneTYpe
         """
         try:
-            # init form
+        # init form
             self.set_entity(table)
             self.set_widget_mapping()
             self.register_factory()
@@ -264,6 +266,7 @@ class STDMFieldWidget():
 
             curr_layer.editFormConfig().setSuppress(1)
             try:
+
                 curr_layer.featureAdded.connect(
                     lambda feature_id:self.load_stdm_form(
                         feature_id, spatial_column
@@ -280,7 +283,7 @@ class STDMFieldWidget():
             )
 
         except Exception as ex:
-            LOGGER.debug(unicode(ex))
+            LOGGER.debug(ex)
 
     def set_entity(self, source):
         """
@@ -343,13 +346,13 @@ class STDMFieldWidget():
                 self.widget_mapping[c] = ['TextEdit', None]
             else:
                 stdm = QApplication.translate(
-                    'STDMFieldWidget', 'STDM'
+                    'STDMFieldWidget', u'STDM'
                 )
                 self.widget_mapping[c] = [
-                    'stdm_{}'.format(
+                    u'stdm_{}'.format(
                         c.TYPE_INFO.lower()
                     ),
-                    '{} {}'.format(
+                    u'{} {}'.format(
                         stdm, c.display_name()
                     )
                 ]
@@ -367,9 +370,8 @@ class STDMFieldWidget():
         for widget_id_name in self.widget_mapping.values():
             # add and register stdm widget type only
             if not widget_id_name[1] is None:
-                widget_name = QApplication.translate(
-                    'STDMFieldWidget', widget_id_name[1]
-                )
+                widget_name = widget_id_name[1]
+
                 if widget_id_name[0] not in \
                         self.widgetRegistry.factories().keys():
 
@@ -441,14 +443,18 @@ class STDMFieldWidget():
         if geom_wkt is None:
             title = QApplication.translate(
                 'STDMFieldWidget',
-                'Spatial Entity Form Error'
+                u'Spatial Entity Form Error',
+                None,
+                QCoreApplication.UnicodeUTF8
             )
             msg = QApplication.translate(
                 'STDMFieldWidget',
-                'The feature you have added is invalid. \n'
+                u'The feature you have added is invalid. \n'
                 'To fix this issue, check if the feature '
                 'is digitized correctly.  \n'
-                'Make sure you have added a base layer to digitize on.'
+                'Make sure you have added a base layer to digitize on.',
+                None,
+                QCoreApplication.UnicodeUTF8
             )
             # Message: Spatial column information
             # could not be found

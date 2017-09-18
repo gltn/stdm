@@ -393,13 +393,15 @@ class STDMQGISLoader(object):
         if not pg_table_exists(entity.name):
             message = QApplication.translate(
                 "STDMQGISLoader",
-                'The system has detected that '
+                u'The system has detected that '
                 'a required database table - \n'
                 '{} is missing. \n'
                 'Do you want to re-run the '
                 'Configuration Wizard now?'.format(
                     entity.short_name
-                )
+                ),
+                None,
+                QCoreApplication.UnicodeUTF8
             )
             database_check = QMessageBox.critical(
                 self.iface.mainWindow(),
@@ -1592,6 +1594,7 @@ class STDMQGISLoader(object):
             sel_entity = self.current_profile.entity_by_name(
                 table_name
             )
+
             database_status = self.entity_table_checker(
                 sel_entity
             )

@@ -2232,6 +2232,9 @@ class EditSTREditor(STREditor):
         custom_entity = self.social_tenure.spu_custom_attribute_entity(
             self.spatial_unit
         )
+        if custom_entity is None:
+            return
+
         custom_model = entity_attr_to_model(
             custom_entity, 'social_tenure_relationship_id', self.str_edit_obj.id
         )
