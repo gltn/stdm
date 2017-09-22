@@ -129,11 +129,11 @@ class EntityImporter():
             attributes = self.entity_attributes_from_instance(entity)
             entity_add = Save2DB(entity, attributes,ids)
             entity_add.objects_from_supporting_doc(self.instance)
-            entity_add.save_to_db()
+            child_id = entity_add.save_to_db()
             entity_add.get_srid(GEOMPARAM)
             self.key_watch = entity_add.key
             success = True
-        return success
+        return child_id, success
 
     def process_parent_entity_import(self, entity):
         """
@@ -296,15 +296,13 @@ class Save2DB:
         attribute
         :return:
         """
-
+        print self.parents_ids
         if self.parents_ids is not None and self.entity.short_name == 'social_tenure_relationship':
             str_tables = current_profile().social_tenure
             party_tbl = str_tables.parties[0].name
             sp_tbl = str_tables.spatial_units[0].name
-            print self.parents_ids.get(str_tables.parties[0].name)[0]
             setattr(self.model, str_tables.parties[0].short_name.lower() + '_id',
                     self.parents_ids.get(str_tables.parties[0].name)[0])
-            print self.parents_ids.get(str_tables.spatial_units[0].name)[0]
             setattr(self.model, str_tables.spatial_units[0].short_name.lower() + '_id',
                     self.parents_ids.get(str_tables.spatial_units[0].name)[0])
         for k, v in self.attributes.iteritems():
@@ -316,7 +314,8 @@ class Save2DB:
         if self.entity_has_supporting_docs():
             self.model.documents = self._doc_manager.model_objects()
         self.model.save()
-        self.cleanup()
+        return self.model.id
+        #self.cleanup()
 
     def save_parent_to_db(self):
         """

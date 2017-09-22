@@ -354,7 +354,11 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                                 entity_info.remove(parent_table)
                 for table in entity_info:
                     if table not in parents_info:
-                        status = entity_importer.process_import_to_db(table, self.parent_ids)
+                        table_id, status = entity_importer.process_import_to_db(table, self.parent_ids)
+                        if table in self.parent_ids:
+                            continue
+                        else:
+                            self.parent_ids[table] = [table_id, group_identifier]
                         self.log_table_entry(table+" -- import succeeded: " + str(status))
                 self.txt_feedback.append('saving record "{0}"'
                                       ' to database'.format(counter))
