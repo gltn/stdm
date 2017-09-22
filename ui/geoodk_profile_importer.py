@@ -145,7 +145,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.on_filepath()
         self.available_records()
         self.on_dir_path()
-        #self.check_previous_import()
         self.profile_instance_entities()
 
     def active_profile(self):
@@ -158,7 +157,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
     def instance_dir(self):
         """
-
+        Create a path where imported instance will be kept
         :return:
         """
         self.inst_path = self.path+"/imported_instance"
@@ -176,8 +175,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
     def on_filepath(self):
         """
-        Access the file directory by constructing the full path
-        :return: string
+        Access the file directory with geoodk files by constructing the full path
+        :return: path
+        :rtype: string
         """
         if self.txt_directory.text() != '':
             self.path = self.txt_directory.text()
@@ -190,26 +190,16 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
     def xform_xpaths(self):
         """
-        Return the full path to the default config path
-        :return:
+        Return the full path to the default config path and filter geoodk
+        instance that matches the current profile path
+        :return: directories
+        :rtype: list
         """
         dirs = []
         return [os.path.join(self.path, name) for name in os.listdir(self.path)
                 if os.path.isdir(os.path.join(self.path, name))
                 if name.startswith(self.profile_formater())]
 
-    def extract_file(self):
-        """
-
-        :return:
-        """
-        path = self.instance_path()
-        for dir in os.listdir(path):
-            new_path = os.path.join(path, dir)
-            for f in os.listdir(new_path):
-                if os.path.isfile(os.path.join(new_path, f)):
-                    file_instance = os.path.join(new_path, f)
-                    self.rename_file_toUUID(file_instance)
 
     def on_dir_path(self):
         """
@@ -222,18 +212,19 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             for directory in directories:
                 self.extract_guuid_and_rename_file(directory)
 
-    def extract_guuid_and_rename_file(self,path):
+    def extract_guuid_and_rename_file(self, path):
         """
         Extract teh unique Guuid and rename the file
         so that we can uniquely identify each file
         :return:
         """
         for f in os.listdir(path):
-            if os.path.isfile(os.path.join(path, f)):
+            if os.path.isfile(os.path.join(path, f)) and f.endswith('.xml'):
                 file_instance = os.path.join(path, f)
-                self.rename_file_toUUID(file_instance)
+                print file_instance
+                self.rename_file_to_UUID(file_instance)
 
-    def rename_file_toUUID(self, file):
+    def rename_file_to_UUID(self, file):
         """
         Extract the UUID from each folder and file
         :return:
@@ -281,7 +272,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         user_list= []
         count = self.lst_widget.count()
-        if count >0:
+        if count > 0:
             for i in range(count):
                 item = self.lst_widget.item(i)
                 if item.checkState() == Qt.Checked:
@@ -300,7 +291,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         current_etities = []
         if len(dirs) > 0:
             dir_f = dirs[0]
-            instance_file = [f for f in os.listdir(dir_f)]
+            instance_file = [f for f in os.listdir(dir_f) if f.endswith('.xml')]
             self.uuid_extractor.set_file_path(os.path.join(dir_f, instance_file[0]))
             entity_list = self.uuid_extractor.document_entities(self.profile)
             for entity_name in entity_list:
@@ -317,10 +308,12 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         :return:Object
         :type: dbObject
         """
+
         import_status = False
         self.txt_feedback.clear()
         self._notif_bar_str.clear()
         has_relations = self.has_foreign_keys_parent(entity_info)
+        self.feedback_message(str(self.relations))
         if len(self.parent_table_isselected()) > 0:
             if QMessageBox.information(self, QApplication.translate('GeoODKMobileSettings', " Import Warning"),
                                        QApplication.translate('GeoODKMobileSettings',
@@ -365,10 +358,15 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         self.log_table_entry(table+" -- import succeeded: " + str(status))
                 self.txt_feedback.append('saving record "{0}"'
                                       ' to database'.format(counter))
+                #print self.parent_ids
+                if self.parent_ids is not None:
+                    entity_importer.process_social_tenure(self.parent_ids)
                 self.pgbar.setValue(counter)
 
             self.txt_feedback.append('Number of record successfully imported:  {}'
                                               .format(counter))
+
+
 
         else:
              self._notif_bar_str.insertErrorNotification("No user selected entities to import")
@@ -388,6 +386,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         :return:
         """
         self.relations = {}
+        str_tables = current_profile().social_tenure
+        party_tbl = str_tables.parties[0].name
+        sp_tbl = str_tables.spatial_units[0].name
         has_relations = False
         for table in select_entities:
             table_object = current_profile().entity_by_name(table)
@@ -401,7 +402,14 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     else:
                         self.feedback_message('unable to read foreign key properties')
                         return
+        if party_tbl not in self.relations.keys():
+            self.relations[party_tbl] = ['social_tenure_relationship',
+                                         str_tables.parties[0].short_name.lower()+'_id']
+        if sp_tbl not in self.relations.keys():
+            self.relations[sp_tbl] = ['social_tenure_relationship',
+                                      str_tables.spatial_units[0].short_name.lower() + '_id']
         return has_relations
+
 
     def parent_table_isselected(self):
         """
@@ -569,7 +577,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
             else:
                 return
-
         self.entity_attribute_to_database(entities)
         self.buttonBox.setEnabled(True)
         # except Exception as ex:

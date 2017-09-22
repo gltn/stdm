@@ -219,3 +219,16 @@ class EntityFormatter():
             'No': 'No'
         }
         return yesno
+
+    def str_entities(self):
+        """
+        create a handcoded section of STR entities to be captured in the form
+        :return:
+        """
+        str_entities = {
+            'start_date': 'DATE',
+            'tenure_type': 'LOOKUP',
+            'share': 'INT',
+            'end_date': 'DATE'
+        }
+        return str_entities

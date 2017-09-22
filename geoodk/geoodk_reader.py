@@ -216,4 +216,56 @@ class GeoODKReader():
         """
         return self.lookup
 
+    def social_tenure(self):
+        """
+        Get the social tenure entity in the current profile
+        :return: social tenure entity
+        """
+        return self.profile().social_tenure
+
+    def social_tenure_attributes(self):
+        """
+        Get social tenure attributes
+        :return: column obj
+        :rtype dict
+        """
+        str_attributes = {}
+        for obj in self.social_tenure().columns.values():
+            if str(obj.name).endswith('id'):
+                continue
+            str_attributes[obj.name] = obj.TYPE_INFO
+        #del str_attributes['id']
+        return str_attributes
+
+    def social_tenure_lookup(self, cur_col):
+        """
+        Check if the social tenure column is a lookup
+        :return:bool
+        """
+        is_lookup = False
+        for key, col in self.social_tenure_attributes().iteritems():
+            if key == cur_col and col == 'LOOKUP':
+                is_lookup = True
+        return is_lookup
+
+    def social_tenure_lkup_from_col(self, col):
+        """
+        Get lookup values from the column name passed if it is a lookup
+        :param col:
+        :return: valuelist
+        :rtype: dict
+        """
+        str_lk_values = {}
+        cols_obj = self.social_tenure().columns
+
+        column_isnt = cols_obj[col]
+        print column_isnt.parent.name
+        value_list = column_isnt.value_list
+        for val in value_list.values.values():
+            str_lk_values[val.value] = val.code
+        return str_lk_values
+
+
+
+
 

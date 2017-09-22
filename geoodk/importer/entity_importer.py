@@ -120,7 +120,8 @@ class EntityImporter():
 
     def process_import_to_db(self, entity,ids):
         """
-        Save the object data to the database
+        Save the object data to the database, object saved here
+        does not form parent to any other entity
         :return:
         """
         success = False
@@ -136,9 +137,11 @@ class EntityImporter():
 
     def process_parent_entity_import(self, entity):
         """
-
+        Save entities that are parent to child tables first returning their iDS
         :param entity:
-        :return:
+        :return:boool
+        :return: gid
+        :rtype: string
         """
         success = False
         if self.instance_doc is not None:
@@ -150,6 +153,21 @@ class EntityImporter():
             success = True
         return ref_id, success
 
+    def process_social_tenure(self, ids):
+        """
+        Save socail tenure entity. It has to be saved separately
+        because its need to be saved last and its handled differently
+        :return:
+        """
+        attributes = self.entity_attributes_from_instance('social_tenure')
+        if attributes:
+            print 'done print passed id' + str(attributes)
+            entity_add = Save2DB('social_tenure', attributes, ids)
+            try:
+                entity_add.objects_from_supporting_doc(self.instance)
+            except:
+                pass
+            entity_add.save_to_db()
 
 class Save2DB:
     """
@@ -174,8 +192,11 @@ class Save2DB:
 
         :return:
         """
-        user_entity = current_profile().entity_by_name(entity)
-        return user_entity
+        if entity == 'social_tenure':
+            return current_profile().social_tenure
+        else:
+            user_entity = current_profile().entity_by_name(entity)
+            return user_entity
 
     def entity_has_supporting_docs(self):
         """
@@ -201,9 +222,12 @@ class Save2DB:
             entity_object, self.doc_model = entity_model(self.entity, with_supporting_document=True)
             entity_object_model = entity_object()
             if hasattr(entity_object_model, 'documents'):
-                self._doc_manager = SourceDocumentManager(
-                    self.entity.supporting_doc, self.doc_model
-                )
+                try:
+                    self._doc_manager = SourceDocumentManager(
+                        self.entity.supporting_doc, self.doc_model
+                    )
+                except:
+                    pass
         else:
             entity_object = entity_model(self.entity)
             entity_object_model = entity_object()
@@ -256,7 +280,7 @@ class Save2DB:
         doc_list = self.entity_supported_document_types()
         default = 'General'
         doc_type = str(key_name).split('_')
-        if len(doc_type)>2:
+        if len(doc_type) > 2:
             if doc_type[0] in doc_list:
                 return doc_type[0]
             else:
@@ -268,10 +292,21 @@ class Save2DB:
 
     def save_to_db(self):
         """
-        Format object attribute data from entity
+        Format object attribute data from entity and save them into database
         attribute
         :return:
         """
+
+        if self.parents_ids is not None and self.entity.short_name == 'social_tenure_relationship':
+            str_tables = current_profile().social_tenure
+            party_tbl = str_tables.parties[0].name
+            sp_tbl = str_tables.spatial_units[0].name
+            print self.parents_ids.get(str_tables.parties[0].name)[0]
+            setattr(self.model, str_tables.parties[0].short_name.lower() + '_id',
+                    self.parents_ids.get(str_tables.parties[0].name)[0])
+            print self.parents_ids.get(str_tables.spatial_units[0].name)[0]
+            setattr(self.model, str_tables.spatial_units[0].short_name.lower() + '_id',
+                    self.parents_ids.get(str_tables.spatial_units[0].name)[0])
         for k, v in self.attributes.iteritems():
             if hasattr(self.model, k):
                 col_type = self.column_info().get(k)
@@ -285,7 +320,7 @@ class Save2DB:
 
     def save_parent_to_db(self):
         """
-        Format object attribute data from entity
+        Format object attribute data from entity and save them into database
         attribute
         :return:
         """
@@ -306,21 +341,11 @@ class Save2DB:
 
         :return:
         """
-        type_mapping ={}
+        type_mapping = {}
         cols = self.entity.columns.values()
         for c in cols:
             type_mapping[c.name] = c.TYPE_INFO
         return type_mapping
-
-    def cleanup(self):
-        """
-
-        :return:
-        z"""
-        self.model = None
-        self.entity = None
-        self.attributes = None
-        self._doc_manager = None
 
     def get_srid(self, srid):
         """
@@ -379,3 +404,16 @@ class Save2DB:
                             return val[0]
         else:
             return var
+
+    def cleanup(self):
+        """
+        Reset all the model and entity data before we process
+        the next entity data
+        :return: None
+        z"""
+        self.model = None
+        self.entity = None
+        self.attributes = None
+        self._doc_manager = None
+
+

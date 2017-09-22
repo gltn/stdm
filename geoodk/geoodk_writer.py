@@ -31,6 +31,7 @@ BINDPARAMS = "jr:preloadParams"
 CUSTOMBINDPARAMS = "jr:preload"
 DOCUMENT = 'supporting_document'
 
+
 HOME = QDir.home().path()
 
 FORM_HOME = HOME + '/.stdm/geoodk/forms'
@@ -173,7 +174,6 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         self.entity_read = None
         self.profile_entity = None
         self.prep_document_generators()
-
 
     def initialize_entity_reader(self, entity):
         """
@@ -333,7 +333,9 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 field_group = self.create_node(self.entity_read.default_entity())
                 entity_group = self.entity_supports_documents(field_group, entity_values)
                 instance_id.appendChild(entity_group)
+
                 instance.appendChild(instance_id)
+            self.include_social_tenure(instance_id)
             instance_id.appendChild(self._doc_meta_instance())
             return instance
 
@@ -368,9 +370,23 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             for key_field in entity_values.keys():
                 col_node = self.create_node(key_field)
                 field_group.appendChild(col_node)
+
         return field_group
 
-
+    def include_social_tenure(self, parent):
+        """
+        Add social tenure details on the form if the user has
+        selected them to be included in the final mobile form
+        :param: parent
+        :type: String representing the parent Qnode to attach the columns
+        :return: QDomnode
+        """
+        group_node = self.create_node('social_tenure')
+        for entity in self.entity_read.social_tenure_attributes().keys():
+            entity = self.create_node(entity)
+            group_node.appendChild(entity)
+        parent.appendChild(group_node)
+        return parent
 
     def entity_with_supporting_documents(self):
         """
@@ -390,6 +406,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 self.initialize_entity_reader(entity)
                 entity_values = self.entity_read.read_attributes()
                 self.bind_model_attributes(base_node, entity_values)
+            self.social_tenure_bind_to_node(base_node)
 
     def bind_model_attributes(self, base_node, entity_values):
         """
@@ -412,6 +429,19 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         if self.entity_read.entity_has_supporting_documents():
             self.add_supporting_docs_to_bind_node(base_node)
         return base_node
+
+    def social_tenure_bind_to_node(self, base_node):
+        """
+        Add social tenure parameters to the bind section
+        :param base_node: string
+        :return: QDomnode
+        """
+        for str_node, str_data_type in self.entity_read.social_tenure_attributes().iteritems():
+            str_bind_node = self.create_node('bind')
+            str_bind_node.setAttribute('nodeset', self.set_model_xpath(str_node,
+                                                                       'social_tenure'))
+            str_bind_node.setAttribute("type", self.set_model_data_type(str_data_type))
+            base_node.appendChild(str_bind_node)
 
     def add_supporting_docs_to_bind_node(self, parent_node):
         """
@@ -492,6 +522,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         #body_section_node.appendChild(self.create_nested_entity_data
         self.create_form_identifier(body_section_node)
         self.create_nested_entity_data(body_section_node)
+        self.social_tenure_label(body_section_node)
         return body_section_node
 
     def create_form_identifier(self, parent):
@@ -510,7 +541,6 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         group_label.appendChild(label_txt)
         identifier_node.appendChild(group_label)
         parent.appendChild(identifier_node)
-
 
     def create_nested_entity_data(self, parent_node):
         """
@@ -534,6 +564,12 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         :param item:
         :return:
         """
+        if entity != 'social_tenure':
+            label_txt = self.create_text_node(
+                self.profile_entity + ": " + self.entity_read.user_entity_name())
+        else:
+            label_txt = self.create_text_node(self.profile_entity + ": " + 'social_tenure')
+
         cate_name = self.model_category_group(self.profile_entity,
                                               entity)
         group_node = self.create_node("group")
@@ -542,8 +578,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         group_label = self.create_node("label")
         # label_txt = self.create_text_node(
         #     self.profile_entity + ": "+entity.replace("_", " ").title())
-        label_txt = self.create_text_node(
-            self.profile_entity + ": " + self.entity_read.user_entity_name())
+
         group_label.appendChild(label_txt)
         group_node.appendChild(group_label)
         return group_node
@@ -609,6 +644,30 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 doc_node.appendChild(label_doc_node)
                 parent_node.appendChild(doc_node)
 
+    def social_tenure_label(self, parent_node):
+        """
+        Add social tenure labels on the form
+        :return:
+        """
+        parent_path = self.profile_entity + "/" + 'social_tenure'
+        entity_values = self.entity_read.social_tenure_attributes()
+        group_node = self.body_section_categories('social_tenure')
+        for key in entity_values.keys():
+            if self.entity_read.social_tenure_lookup(key):
+                self.lookup_for_social_tenure(key, group_node)
+            else:
+                body_node = self.create_node("input")
+                label_node = self.create_node("label")
+                body_node.setAttribute("ref", self.model_category_group(parent_path, key))
+                label_text_info = 'social_tenure' + ' ' + key.replace("_", " ").title()
+                label_txt = self.create_text_node(label_text_info)
+                # label_node.setAttribute("ref", label)
+                label_node.appendChild(label_txt)
+                body_node.appendChild(label_node)
+                group_node.appendChild(body_node)
+        parent_node.appendChild(group_node)
+        return parent_node
+
     def format_lookup_data(self, col, parent_node):
         """
         Loop through the columns and if the column is a lookup
@@ -617,8 +676,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         :return:
         """
         self.entity_read.read_attributes()
-        child_node = self.lookup_formatter(
-            self.entity_read.default_entity(),col)
+        child_node = self.lookup_formatter(self.entity_read.default_entity(),col)
         parent_node.appendChild(child_node)
 
     def lookup_formatter(self, entity, col):
@@ -655,22 +713,52 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             #Read lookup from configuration
             lk_name_values = self.entity_read.format_lookup_items(col)
         if lk_name_values:
-            for key, val in lk_name_values.iteritems():
+            self.lookup_value_list(lk_node, lk_name_values)
+        return lk_node
 
-                lk_item = self.create_node("item")
-                lk_item_label = self.create_node("label")
-                lk_item_label_txt = self.create_text_node(key)
-                lk_item_label_txt_val = self.create_node("value")
-                if val == "":
-                    val = key
-                lk_item_label_txt_val_txt = self.create_text_node(val)
+    def lookup_value_list(self, lookupnode, value_list):
+        """
+        Add lookup value list in the form as choices in teh form field
+        :param lookupnode:string
+        :param value_list:dict
+        :return: node
+        """
+        for key, val in value_list.iteritems():
 
-                lk_item_label.appendChild(lk_item_label_txt)
-                lk_item_label_txt_val.appendChild(lk_item_label_txt_val_txt)
+            lk_item = self.create_node("item")
+            lk_item_label = self.create_node("label")
+            lk_item_label_txt = self.create_text_node(key)
+            lk_item_label_txt_val = self.create_node("value")
+            if val == "":
+                val = key
+            lk_item_label_txt_val_txt = self.create_text_node(val)
 
-                lk_item.appendChild(lk_item_label)
-                lk_item.appendChild(lk_item_label_txt_val)
-                lk_node.appendChild(lk_item)
+            lk_item_label.appendChild(lk_item_label_txt)
+            lk_item_label_txt_val.appendChild(lk_item_label_txt_val_txt)
+
+            lk_item.appendChild(lk_item_label)
+            lk_item.appendChild(lk_item_label_txt_val)
+            lookupnode.appendChild(lk_item)
+        return lookupnode
+
+    def lookup_for_social_tenure(self, key, parent):
+        """
+        GEt social tenure lookup values for the given column
+        Since social tenure is not treated as an entity, we have to call it values separately
+        :return:
+        """
+        lk_node = self.create_node('select1')
+        lk_node.setAttribute("ref", self.set_model_xpath(key, 'social_tenure'))
+        lk_node_label = self.create_node("label")
+        lk_node_label_txt = self.create_text_node(
+            'social_tenure' + " " +
+            key.replace("_", " ").title().replace("Id", ""))
+        lk_node_label.appendChild(lk_node_label_txt)
+        lk_node.appendChild(lk_node_label)
+
+        str_lookup_attributes = self.entity_read.social_tenure_lkup_from_col(key)
+        self.lookup_value_list(lk_node, str_lookup_attributes)
+        parent.appendChild(lk_node)
         return lk_node
 
     def write_data_to_xform(self):

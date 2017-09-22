@@ -129,5 +129,6 @@ class InstanceUUIDExtractor():
                 return isrenamed
             else:
                 self.new_list.append(self.file.fileName())
+            #print str(self.new_list)
         else:
             return
