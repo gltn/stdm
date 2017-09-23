@@ -357,7 +357,9 @@ class SpatialUnitManagerDockWidget(
         """
         # Check if the geom has display name, if not,
         # get layer name with default naming.
+
         if isinstance(col, str) or isinstance(col, unicode):
+
             spatial_layer_item = unicode(
                 '{}.{}'.format(
                     table, col
@@ -365,6 +367,7 @@ class SpatialUnitManagerDockWidget(
             )
 
         elif col.layer_display_name == '':
+
             spatial_layer_item = unicode(
                 '{}.{}'.format(
                     table, col.name
