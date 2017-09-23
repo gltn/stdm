@@ -394,10 +394,10 @@ class Save2DB:
             else:
                 for code, val in self.parents_ids.iteritems():
                     if code is not None:
-                        if code == GROUPCODE and col_prop.parent.name == val[1]:
+                        if val[1] == GROUPCODE and col_prop.parent.name ==code:
                             return val[0]
                     else:
-                        if col_prop.parent.name == val[1]:
+                        if col_prop.parent.name == code:
                             return val[0]
         else:
             return var
