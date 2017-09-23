@@ -386,6 +386,17 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             entity = self.create_node(entity)
             group_node.appendChild(entity)
         parent.appendChild(group_node)
+        doc_list = self.entity_read.profile().social_tenure.document_types()
+        if len(doc_list) < 2:
+            document_node = self.create_node(self.supports_doc)
+            group_node.appendChild(document_node)
+        else:
+            for doc in doc_list:
+                if doc == 'General':
+                    continue
+                document_node = self.create_node(doc.replace(' ', '') + '_' + self.supports_doc)
+                group_node.appendChild(document_node)
+        parent.appendChild(group_node)
         return parent
 
     def entity_with_supporting_documents(self):
@@ -442,6 +453,24 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                                                                        'social_tenure'))
             str_bind_node.setAttribute("type", self.set_model_data_type(str_data_type))
             base_node.appendChild(str_bind_node)
+        doc_list = self.entity_read.profile().social_tenure.document_types()
+        if len(doc_list) < 2:
+            doc_bind_node = self.create_node("bind")
+            doc_bind_node.setAttribute("nodeset",
+                                       self.set_model_xpath(self.supports_doc,
+                                                            'social_tenure'))
+            doc_bind_node.setAttribute("type", 'binary')
+            base_node.appendChild(doc_bind_node)
+        else:
+            for doc in doc_list:
+                if doc == 'General':
+                    continue
+                doc_bind_node = self.create_node("bind")
+                doc_bind_node.setAttribute("nodeset",
+                                           self.set_model_xpath(doc.replace(' ', '') + '_' + self.supports_doc,
+                                                                'social_tenure'))
+                doc_bind_node.setAttribute("type", 'binary')
+                base_node.appendChild(doc_bind_node)
 
     def add_supporting_docs_to_bind_node(self, parent_node):
         """
@@ -607,10 +636,11 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         '''Check if the entity has supporting document
         Document considered at this point, image type'''
         if self.entity_read.entity_has_supporting_documents():
-            self._supporting_documents_field_labels(parent_node)
+            doc_list = self.entity_read.entity_supported_document_types()
+            self._supporting_documents_field_labels(doc_list, parent_node, entity = None)
         return parent_node
 
-    def _supporting_documents_field_labels(self, parent_node):
+    def _supporting_documents_field_labels(self, doc_list, parent_node, entity =None):
         """
         Create labels for document capture field so that the user
         Knows what document is capturing
@@ -619,12 +649,16 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         :return: node
         :rtype: QDomNode
         """
+        if entity == 'social_tenure':
+            entity_name = 'social_tenure'
+        if not entity:
+            entity_name = self.entity_read.default_entity()
         doc_list = self.entity_read.entity_supported_document_types()
         if len(doc_list)<2:
             doc_node = self.create_node('upload')
             doc_node.setAttribute('mediatype', 'image/*')
             doc_node.setAttribute('ref', self.set_model_xpath(self.supports_doc,
-                                                              self.entity_read.default_entity()))
+                                                              entity_name))
             label_doc_node = self.create_node('label')
             label_doc_node_text = self.create_text_node(self.supports_doc)
             label_doc_node.appendChild(label_doc_node_text)
@@ -637,7 +671,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 doc_node = self.create_node('upload')
                 doc_node.setAttribute('mediatype', 'image/*')
                 doc_node.setAttribute('ref', self.set_model_xpath(doc.replace(' ', '') + '_' + self.supports_doc,
-                                                                  self.entity_read.default_entity()))
+                                                                  entity_name))
                 label_doc_node = self.create_node('label')
                 label_doc_node_text = self.create_text_node(doc + '_' + self.supports_doc)
                 label_doc_node.appendChild(label_doc_node_text)
@@ -666,6 +700,8 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 body_node.appendChild(label_node)
                 group_node.appendChild(body_node)
         parent_node.appendChild(group_node)
+        doc_list = self.entity_read.profile().social_tenure.document_types()
+        self._supporting_documents_field_labels(doc_list, group_node, 'social_tenure')
         return parent_node
 
     def format_lookup_data(self, col, parent_node):

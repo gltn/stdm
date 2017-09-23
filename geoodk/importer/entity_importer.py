@@ -161,12 +161,8 @@ class EntityImporter():
         """
         attributes = self.entity_attributes_from_instance('social_tenure')
         if attributes:
-            print 'done print passed id' + str(attributes)
             entity_add = Save2DB('social_tenure', attributes, ids)
-            try:
-                entity_add.objects_from_supporting_doc(self.instance)
-            except:
-                pass
+            entity_add.objects_from_supporting_doc(self.instance)
             entity_add.save_to_db()
 
 class Save2DB:
@@ -222,12 +218,14 @@ class Save2DB:
             entity_object, self.doc_model = entity_model(self.entity, with_supporting_document=True)
             entity_object_model = entity_object()
             if hasattr(entity_object_model, 'documents'):
-                try:
-                    self._doc_manager = SourceDocumentManager(
-                        self.entity.supporting_doc, self.doc_model
+                if self.entity.TYPE_INFO == 'SOCIAL_TENURE':
+                    obj_doc_col = current_profile().social_tenure.supporting_doc
+                else:
+                    obj_doc_col = self.entity.supporting_doc
+
+                self._doc_manager = SourceDocumentManager(
+                        obj_doc_col, self.doc_model
                     )
-                except:
-                    pass
         else:
             entity_object = entity_model(self.entity)
             entity_object_model = entity_object()

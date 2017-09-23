@@ -259,7 +259,6 @@ class GeoODKReader():
         cols_obj = self.social_tenure().columns
 
         column_isnt = cols_obj[col]
-        print column_isnt.parent.name
         value_list = column_isnt.value_list
         for val in value_list.values.values():
             str_lk_values[val.value] = val.code
