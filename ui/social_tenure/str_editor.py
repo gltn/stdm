@@ -96,7 +96,7 @@ class BindSTREditor(object):
             return
         str_number = selected_item.data()
 
-        if selected_item.text() == '{} {}'.format(
+        if selected_item.text() == u'{} {}'.format(
                 self.editor.str_text, str_number):
             self.bind_str()
 
@@ -215,7 +215,7 @@ class BindSTREditor(object):
                 'for each party record selected.'
 
             )
-            self.editor.description_lbl.setText('{} {}'.format(
+            self.editor.description_lbl.setText(u'{} {}'.format(
                 header, explanation
             ))
         else:
@@ -769,7 +769,7 @@ class ValidateSTREditor(object):
 
         msg = QApplication.translate(
             'ValidateSTREditor',
-            'Unfortunately, this {} has already been '
+            u'Unfortunately, this {} has already been '
             'assigned to a {}.'.format(spatial_unit, party)
         )
         self.editor.notice.insertErrorNotification(msg)
@@ -875,7 +875,9 @@ class ValidateSTREditor(object):
         # returns the number of entries for a specific parcel.
         str_obj = self.editor.str_model()
         spatial_unit_id = getattr(self.editor.str_model, '{}_id'.format(
-                self.editor.spatial_unit.short_name.lower()))
+                self.editor.spatial_unit.name.split(
+                    self.editor.current_profile.prefix + '_'
+                )[1]))
         usage_count = str_obj.queryObject(
             [func.count().label('spatial_unit_count')]
         ).filter(spatial_unit_id == model_obj.id).first()
@@ -1053,7 +1055,7 @@ class STREditor(QDialog, Ui_STREditor):
             'STRTreeView', 'Social Tenure Relationship'
         )
         str_root = QStandardItem(
-            str_icon, '{} {}'.format(str_label, self.str_number)
+            str_icon, u'{} {}'.format(str_label, self.str_number)
         )
         str_root.setData(self.str_number)
         self.tree_view_model.appendRow(str_root)
@@ -1098,7 +1100,7 @@ class STREditor(QDialog, Ui_STREditor):
         :return: The child item
         :rtype: QStandardItem
         """
-        q_icon = QIcon(':/plugins/stdm/images/icons/{}'.format(icon))
+        q_icon = QIcon(u':/plugins/stdm/images/icons/{}'.format(icon))
 
         item = QStandardItem(q_icon, name)
 
@@ -1312,7 +1314,7 @@ class STREditor(QDialog, Ui_STREditor):
             if spinbox not in self.share_spinbox_connected:
                 row_number = spinbox.objectName()
                 spinbox.setObjectName(
-                    '{}_{}_{}'.format(str_number, party_id, row_number)
+                    u'{}_{}_{}'.format(str_number, party_id, row_number)
                 )
 
                 spinbox.valueChanged.connect(self.update_spinbox)
@@ -1342,7 +1344,7 @@ class STREditor(QDialog, Ui_STREditor):
             if str_type_combo not in self.str_type_combo_connected:
                 row_number = str_type_combo.objectName()
                 str_type_combo.setObjectName(
-                    '{}_{}_{}'.format(str_number, party_id, row_number)
+                    u'{}_{}_{}'.format(str_number, party_id, row_number)
                 )
 
                 str_type_combo.currentIndexChanged.connect(
@@ -1513,7 +1515,7 @@ class STREditor(QDialog, Ui_STREditor):
         next_spinbox = self.find_next_spinbox(current_row, spinboxes)
         spinbox_value_sum = 0
         for spinbox in spinboxes:
-            if spinbox.objectName().startswith('{}_'.format(str_number)):
+            if spinbox.objectName().startswith(u'{}_'.format(str_number)):
                 spinbox_value_sum = spinbox_value_sum + spinbox.value()
         value_change = spinbox_value_sum - 100
         next_value = next_spinbox.value() - value_change
@@ -1568,7 +1570,7 @@ class STREditor(QDialog, Ui_STREditor):
         next_row = current_row + 1
         next_spinboxes = [spinbox for spinbox in spinboxes
                           if spinbox.objectName().
-                              endswith('_{}'.format(next_row))]
+                              endswith(u'_{}'.format(next_row))]
         if len(next_spinboxes) > 0:
             next_spinbox = next_spinboxes[0]
         else:
@@ -2115,7 +2117,7 @@ class EditSTREditor(STREditor):
             return
         for party in parties:
             party_name = party.short_name.lower()
-            party_id = '{}_id'.format(party_name)
+            party_id = u'{}_id'.format(party_name)
             if party_id not in record.keys():
                 return
             if record[party_id] is not None:
@@ -2135,7 +2137,7 @@ class EditSTREditor(STREditor):
             return
         for spatial_unit in spatial_units:
             spatial_unit_name = spatial_unit.short_name.lower()
-            spatial_units_id = '{}_id'.format(spatial_unit_name)
+            spatial_units_id = u'{}_id'.format(spatial_unit_name)
             if spatial_units_id not in record.keys():
                 return
             if record[spatial_units_id] is not None:
@@ -2277,7 +2279,7 @@ class EditSTREditor(STREditor):
             doc_text = self.doc_type_cbo.itemText(index)
 
             layout = self.supporting_doc_component.docs_tab.findChild(
-                QVBoxLayout, 'layout_{}_{}'.format(doc_text, self.str_number)
+                QVBoxLayout, u'layout_{}_{}'.format(doc_text, self.str_number)
             )
 
             self.supporting_doc_component.supporting_doc_manager. \
