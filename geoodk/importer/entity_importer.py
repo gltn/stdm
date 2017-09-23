@@ -294,7 +294,6 @@ class Save2DB:
         attribute
         :return:
         """
-        print self.parents_ids
         if self.parents_ids is not None and self.entity.short_name == 'social_tenure_relationship':
             str_tables = current_profile().social_tenure
             party_tbl = str_tables.parties[0].name
