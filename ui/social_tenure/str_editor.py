@@ -605,6 +605,8 @@ class ValidateSTREditor(object):
         Determines the validity status of the editor by checking the whether
         the treeview items are enabled or not.
         """
+        if self.editor.tree_view_model.rowCount() < 1:
+            return False
         for row in range(self.editor.tree_view_model.rowCount()):
             root = self.editor.tree_view_model.item(row)
             for child_row in range(root.rowCount()):
@@ -1904,6 +1906,7 @@ class STREditor(QDialog, Ui_STREditor):
         selected_item = self.tree_view_model.itemFromIndex(index)
         str_number = selected_item.data()
         self.tree_view_model.removeRows(index.row(), 1)
+
         self.remove_str_node_models(str_number)
         self.validate.enable_save_button()
 

@@ -275,8 +275,8 @@ class STRDBHandler():
 
         updated_str_edit_obj = str_edit_obj
         str_edit_obj.update()
-
-        str_store.custom_tenure.values()[0].update()
+        if len(str_store.custom_tenure.values()) > 0:
+            str_store.custom_tenure.values()[0].update()
 
         # custom_attr_model = entity_model(self.custom_attr_entity)
         # custom_attr_obj = custom_attr_model()
