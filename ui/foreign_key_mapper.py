@@ -303,7 +303,9 @@ class ForeignKeyMapper(QWidget):
                             'ForeignKeyMapper',
                             'Error in creating column:'
                         )
-                        msg = '{0} {1}\n{2}'.format(msg, c.name, unicode(we))
+                        msg = '{0} {1}:{2}\n{3}'.format(
+                            msg, self._entity.name, c.name, unicode(we)
+                        )
                         QMessageBox.critical(
                             self,
                             QApplication.translate(
