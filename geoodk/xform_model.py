@@ -1,23 +1,7 @@
 """
-/***************************************************************************
-Name                 : GeoODK Model
-Description          : class formats and return geoodk model parameters in the correct format
-Date                 : 6/June/2017
-copyright            : (C) 2017 by UN-Habitat and implementing partners.
-                       See the accompanying file CONTRIBUTORS.txt in the root
-email                : stdm@unhabitat.org
- ***************************************************************************/
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
 """
-from stdm.data.configuration.columns import GeometryColumn
+
 class EntityFormatter():
     """
     class handles entity as a string and processes the XForm model
@@ -41,6 +25,13 @@ class EntityFormatter():
         self._profile = entity
         return self._profile
 
+    def format_foreign_key(self):
+        """
+        Format foreign key column to Xform representation
+        :return:
+        """
+        pass
+
     def profile_has_social_tenure(self):
         """
         Check if the profile has social tenure tables
@@ -62,33 +53,47 @@ class EntityFormatter():
         """
         return self.profile_has_social_tenure().parties
 
+
     def format_photo_blob(self):
         """
         Format image upload column to Xform format
         :return:
         """
-        raise NotImplementedError
+        pass
+
+    def format_document_upload(self):
+        """
+        Format the column for data upload to Xform document upload url
+        :return:
+        """
 
     def model_has_lookup(self):
         """
-        Check if the model of the XFORM from teh configuration
-        has a look
-        :return: bool
+
+        :return: 
         """
         return self._haslookup
 
     def model_category_group(self, profile, item):
         """
-        Format model group categories so that each attributes
-        will be enclosed within an entity group
-        :param: profile name
-        :type str
-        item  Entity name, or custom name
-        :type: str
-        :return: formatted string
-        :rtype: str
+
+        :param bool: 
+        :return: 
         """
         return '/'+profile+'/{}'.format(item)
+
+    def process_lookup(self):
+        """
+
+        :return: 
+        """
+        pass
+
+    def process_group_categories(self):
+        """
+
+        :return: 
+        """
 
     def format_model_attribute(self, attrib):
         """
@@ -102,8 +107,7 @@ class EntityFormatter():
     def set_model_data_type(self, val):
         """
         Method to return the datatype of the selected entity in XForm types
-        :param val:
-        :type: string
+        :param val: 
         :return: string
         """
         data_type = self.model_type_from_columntype(val)
@@ -114,12 +118,11 @@ class EntityFormatter():
 
     def model_data_types(self, vals):
         """
-        Return valuelist associated with a given lookup column
         """
         value_list = []
         for val in vals.values():
             r_type = self.model_type_from_columntype(val)
-            if r_type is None:
+            if r_type == None:
                 continue
             value_list.append(r_type)
         return value_list
@@ -203,50 +206,12 @@ class EntityFormatter():
 
         return param_type.get(val)
 
-    def geometry_types(self, entity, k):
-        """
-        Check what geometry type has the column passed
-        :param val:
-        :type str
-        param entity
-        :type Entity
-        :return: Geometry type
-        :rtype str
-        """
-        capture_geom = 'geoshape'
-        geom = entity.columns[k]
-        if isinstance(geom, GeometryColumn):
-            capture_geom = geom.geometry_type()
-        return capture_geom
-
-    def geom_selector(self, capture_geom):
-        """
-        Select the required geometry from passed value
-        :param var:
-        :type str
-        :return: GeoODK goemtype
-        :rtype Str
-        """
-        if capture_geom == 'POLYGON':
-            return 'geoshape'
-        elif capture_geom == 'POINT':
-            return 'geopoint'
-        elif capture_geom == 'MULTIPOLYGON':
-            return 'geotrace'
-        elif capture_geom == 'MULTIPOINT':
-            return 'geopoint'
-        elif capture_geom == 'MULTILINE':
-            return 'geotrace'
-        elif capture_geom == 'LINE':
-            return 'geotrace'
-        return capture_geom
-
     def yes_no_list(self):
         """
         Create a yes no list
-        This lst is not provided in the configuration but
-        for datatype of type BOOL, ODK expect a list.
-        Better approach could be implemented later in the configuration
+        This lst is not provided in teh configuration but
+        for typeInfo of type BOOL, ODK expect a list.
+        Better approach could be implemented later
         :return:
         """
         yesno = {
