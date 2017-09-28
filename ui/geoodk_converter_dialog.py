@@ -1,3 +1,24 @@
+"""
+/***************************************************************************
+Name                 : GeoODK Converter
+Description          : anchor class that provides interface for user input
+                        when generating the XFORM document.
+Date                 : 26/May/2017
+copyright            : (C) 2017 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+"""
+
 import os
 
 from PyQt4 import uic
@@ -146,29 +167,33 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         if not os.access(FORM_HOME, os.F_OK):
             os.makedirs(unicode(FORM_HOME))
 
-    def eventFilter(self, source, event):
-        if (event.type() == QEvent.KeyPress and
-                    source is self):
-            return True
+    # def eventFilter(self, source, event):
+    #     if (event.type() == QEvent.KeyPress and
+    #                 source is self):
+    #         return True
 
     def accept(self):
         """
         Generate Xform based on user selected entities
         :return:
         """
-        self._notif_bar_str.clear()
-        user_entities = self.selected_entities_from_Model()
-        if len(user_entities) == 0:
-            self._notif_bar_str.insertErrorNotification(
-                'No entity selected by user'
-            )
-            return
+        try:
 
-        if len(user_entities) > 0:
-            geoodk_writer = GeoodkWriter(user_entities)
-            geoodk_writer.write_data_to_xform()
-            msg = 'File saved ' \
-                  'in: {}'
-            self._notif_bar_str.insertInformationNotification(
-                msg.format(FORM_HOME))
+            self._notif_bar_str.clear()
+            user_entities = self.selected_entities_from_Model()
+            if len(user_entities) == 0:
+                self._notif_bar_str.insertErrorNotification(
+                    'No entity selected by user'
+                )
+                return
+            if len(user_entities) > 0:
+                geoodk_writer = GeoodkWriter(user_entities)
+                geoodk_writer.write_data_to_xform()
+                msg = 'File saved ' \
+                      'in: {}'
+                self._notif_bar_str.insertInformationNotification(
+                    msg.format(FORM_HOME))
+        except Exception as ex:
+            self._notif_bar_str.insertErrorNotification(ex.message + ': Unable to generate Mobile Form')
+            return
             #self.accept()

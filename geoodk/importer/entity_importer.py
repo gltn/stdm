@@ -362,8 +362,10 @@ class Save2DB:
                 return None
             if not len(var) > 3 and var != 'Yes' and var != 'No':
                 return entity_attr_to_id(col_prop.parent, "code", var)
-            else:
+            if len(var) < 4:
                 return lookup_id_from_value(col_prop.parent, var)
+            else:
+                return None
         elif col_type == 'ADMIN_SPATIAL_UNIT':
             if not len(var) > 3:
                 return entity_attr_to_id(col_prop.parent, "code", var)

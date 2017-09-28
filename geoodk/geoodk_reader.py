@@ -1,5 +1,21 @@
 """
+/***************************************************************************
+Name                 : GeoODK Reader
+Description          : class to read profile and entity details.
+Date                 : 26/May/2017
+copyright            : (C) 2017 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+ ***************************************************************************/
 
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
 """
 from PyQt4.QtCore import QObject
 from stdm.settings import current_profile
@@ -76,7 +92,8 @@ class GeoODKReader():
         :return: list
         :rtype: lookup values of the supported document type
         """
-        return self.entity_object().document_types()
+        if self.entity_object().supports_documents:
+            return self.entity_object().document_types()
 
     def profile_entity_attribute(self):
         """
@@ -91,23 +108,22 @@ class GeoODKReader():
         Use to select an entity that will be treated as default
         :return: str
         """
-
         return self.entity_name
 
     def entity_fullname(self):
         """
         Return the full name of the table as defined in the configuration
-        :return:
+        :return: Entity name
+        :rtype str
         """
         self.user_entity
 
     def profile_name(self):
        """
-
-       :return:
+        Return the profile name
+       :return:str
        """
        return current_profile().name
-
 
     def read_attributes(self):
         """
@@ -126,8 +142,8 @@ class GeoODKReader():
 
     def entity_columns(self):
         """
-        
-        :return: 
+        Entity attributes
+        :return: dict
         """
         if self.entity_attributes.has_key('id'):
             del self.entity_attributes['id']
@@ -135,7 +151,7 @@ class GeoODKReader():
 
     def format_lookup_items(self, col):
         """
-
+        Get column lookup for the given lookup column type
         :param col:
         :return:
         """
