@@ -1,3 +1,23 @@
+"""
+/***************************************************************************
+Name                 : GeoODK Writer class write Xform sections into the XFORMDocument creator class
+Description          : XFORMDocument provides the form and the writer will
+                        write all the data in the form.
+Date                 : 30/May/2017
+copyright            : (C) 2017 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+"""
 import os
 
 from PyQt4.QtXml import (
@@ -387,16 +407,17 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             group_node.appendChild(entity)
         parent.appendChild(group_node)
         doc_list = self.entity_read.profile().social_tenure.document_types()
-        if len(doc_list) < 2:
-            document_node = self.create_node(self.supports_doc)
-            group_node.appendChild(document_node)
-        else:
-            for doc in doc_list:
-                if doc == 'General':
-                    continue
-                document_node = self.create_node(doc.replace(' ', '') + '_' + self.supports_doc)
+        if doc_list is not None:
+            if len(doc_list) < 2:
+                document_node = self.create_node(self.supports_doc)
                 group_node.appendChild(document_node)
-        parent.appendChild(group_node)
+            else:
+                for doc in doc_list:
+                    if doc == 'General':
+                        continue
+                    document_node = self.create_node(doc.replace(' ', '') + '_' + self.supports_doc)
+                    group_node.appendChild(document_node)
+            parent.appendChild(group_node)
         return parent
 
     def entity_with_supporting_documents(self):
@@ -435,7 +456,11 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                     self.set_model_xpath(key, self.entity_read.default_entity()))
             if self.entity_read.col_is_mandatory(key):
                 bind_node.setAttribute("required", "true()")
-            bind_node.setAttribute("type", self.set_model_data_type(val))
+            if val == 'GEOMETRY':
+                geoshape_type = self.geometry_types(self.entity_read.entity_object(), key)
+                bind_node.setAttribute("type", self.geom_selector(geoshape_type))
+            else:
+                bind_node.setAttribute("type", self.set_model_data_type(val))
             base_node.appendChild(bind_node)
         if self.entity_read.entity_has_supporting_documents():
             self.add_supporting_docs_to_bind_node(base_node)
@@ -454,23 +479,24 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             str_bind_node.setAttribute("type", self.set_model_data_type(str_data_type))
             base_node.appendChild(str_bind_node)
         doc_list = self.entity_read.profile().social_tenure.document_types()
-        if len(doc_list) < 2:
-            doc_bind_node = self.create_node("bind")
-            doc_bind_node.setAttribute("nodeset",
-                                       self.set_model_xpath(self.supports_doc,
-                                                            'social_tenure'))
-            doc_bind_node.setAttribute("type", 'binary')
-            base_node.appendChild(doc_bind_node)
-        else:
-            for doc in doc_list:
-                if doc == 'General':
-                    continue
+        if doc_list is not None:
+            if len(doc_list) < 2:
                 doc_bind_node = self.create_node("bind")
                 doc_bind_node.setAttribute("nodeset",
-                                           self.set_model_xpath(doc.replace(' ', '') + '_' + self.supports_doc,
+                                           self.set_model_xpath(self.supports_doc,
                                                                 'social_tenure'))
                 doc_bind_node.setAttribute("type", 'binary')
                 base_node.appendChild(doc_bind_node)
+            else:
+                for doc in doc_list:
+                    if doc == 'General':
+                        continue
+                    doc_bind_node = self.create_node("bind")
+                    doc_bind_node.setAttribute("nodeset",
+                                               self.set_model_xpath(doc.replace(' ', '') + '_' + self.supports_doc,
+                                                                    'social_tenure'))
+                    doc_bind_node.setAttribute("type", 'binary')
+                    base_node.appendChild(doc_bind_node)
 
     def add_supporting_docs_to_bind_node(self, parent_node):
         """
@@ -509,6 +535,8 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         :return:
         """
         #if var =='GEOMETRY':
+        #if isinstance(col_prop, GeometryColumn):
+           # defualt_srid = col_prop.srid
         raise NotImplementedError
 
     def model_unique_id_generator(self):
@@ -653,7 +681,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             entity_name = 'social_tenure'
         if not entity:
             entity_name = self.entity_read.default_entity()
-        doc_list = self.entity_read.entity_supported_document_types()
+            doc_list = self.entity_read.entity_supported_document_types()
         if len(doc_list)<2:
             doc_node = self.create_node('upload')
             doc_node.setAttribute('mediatype', 'image/*')

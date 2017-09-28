@@ -307,7 +307,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         :return:Object
         :type: dbObject
         """
-
+        cu_obj = ''
         import_status = False
         self.txt_feedback.clear()
         self._notif_bar_str.clear()
@@ -330,6 +330,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 for instance in self.instance_list:
                     import_status = False
                     counter = counter + 1
+                    self.parent_ids = {}
                     entity_importer = EntityImporter(instance)
                     group_identifier = entity_importer.instance_group_id()
                     #set the geometry coordinate system
@@ -338,6 +339,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     if has_relations:
                         #Import parents table first
                         for parent_table in self.relations.keys():
+                            cu_obj = parent_table
                             if parent_table in self.instance_entities():
                                 ref_id, import_status = entity_importer.process_parent_entity_import(parent_table)
                                 if group_identifier:
@@ -351,31 +353,32 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                                 if parent_table[1] in entity_info:
                                     entity_info.remove(parent_table)
                     for table in entity_info:
+                        cu_obj = table
                         if table not in parents_info:
                             table_id, status = entity_importer.process_import_to_db(table, self.parent_ids)
                             if table in self.parent_ids:
                                 continue
                             else:
                                 self.parent_ids[table] = [table_id, group_identifier]
-                            self.log_table_entry(table+" -- import succeeded: " + str(status))
-                    self.txt_feedback.append('saving record "{0}"'
-                                          ' to database'.format(counter))
-                    #print self.parent_ids
+                            self.log_table_entry(" -- {0} import succeeded: ".format(cu_obj)+str(status))
+                    self.txt_feedback.append(
+                        'saving record "{0}" to database'.format(counter))
                     if self.parent_ids is not None:
+                        print self.parent_ids
                         entity_importer.process_social_tenure(self.parent_ids)
-                        self.log_table_entry(table + " -- saving social tenure relationship")
+                        self.log_table_entry(" -- saving social tenure relationship")
                     self.pgbar.setValue(counter)
 
                 self.txt_feedback.append('Number of record successfully imported:  {}'
                                                   .format(counter))
             else:
-                 self._notif_bar_str.insertErrorNotification("No user selected entities to import")
-                 self.pgbar.setValue(0)
-                 return
+                self._notif_bar_str.insertErrorNotification("No user selected entities to import")
+                self.pgbar.setValue(0)
+                return
 
         except Exception as ex:
-            self.log_table_entry(unicode(ex.message)+'-- import succeeded: '+unicode(import_status))
-            #self._notif_bar_str.insertErrorNotification(ex.message)
+            self.log_table_entry(
+                unicode(ex.message)+'-- {0} import succeeded: '.format(cu_obj)+unicode(import_status))
             self.feedback_message(unicode(ex.message))
             return
 
@@ -396,11 +399,12 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             for col in cols:
                 if col.TYPE_INFO == 'FOREIGN_KEY':
                     parent_object = table_object.columns[col.name]
-                    if parent_object:
+                    if parent_object.parent:
                         self.relations[parent_object.parent.name] = [table,col.name]
                         has_relations = True
                     else:
-                        self.feedback_message('unable to read foreign key properties')
+                        self.feedback_message('unable to read foreign key properties for "{0}"'
+                                              .format(parent_object.name))
                         return
         if party_tbl not in self.relations.keys():
             self.relations[party_tbl] = ['social_tenure_relationship',
@@ -409,7 +413,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             self.relations[sp_tbl] = ['social_tenure_relationship',
                                       str_tables.spatial_units[0].short_name.lower() + '_id']
         return has_relations
-
 
     def parent_table_isselected(self):
         """

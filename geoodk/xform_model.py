@@ -1,7 +1,23 @@
 """
+/***************************************************************************
+Name                 : GeoODK Model
+Description          : class format and return geoodk model parameters in the correct format
+Date                 : 6/June/2017
+copyright            : (C) 2017 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+ ***************************************************************************/
 
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
 """
-
+from stdm.data.configuration.columns import GeometryColumn
 class EntityFormatter():
     """
     class handles entity as a string and processes the XForm model
@@ -205,6 +221,44 @@ class EntityFormatter():
         }
 
         return param_type.get(val)
+
+    def geometry_types(self, entity, k):
+        """
+        Check what geometry type has the column passed
+        :param val:
+        :type str
+        param entity
+        :type Entity
+        :return: Geometry type
+        :rtype str
+        """
+        capture_geom = 'geoshape'
+        geom = entity.columns[k]
+        if isinstance(geom, GeometryColumn):
+            capture_geom = geom.geometry_type()
+        return capture_geom
+
+    def geom_selector(self, capture_geom):
+        """
+        Select the required geometry from passed value
+        :param var:
+        :type str
+        :return: GeoODK goemtype
+        :rtype Str
+        """
+        if capture_geom == 'POLYGON':
+            return 'geoshape'
+        elif capture_geom == 'POINT':
+            return 'geopoint'
+        elif capture_geom == 'MULTIPOLYGON':
+            return 'geotrace'
+        elif capture_geom == 'MULTIPOINT':
+            return 'geopoint'
+        elif capture_geom == 'MULTILINE':
+            return 'geotrace'
+        elif capture_geom == 'LINE':
+            return 'geotrace'
+        return capture_geom
 
     def yes_no_list(self):
         """
