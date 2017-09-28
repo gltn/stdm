@@ -1,7 +1,7 @@
 """
 /***************************************************************************
 Name                 : GeoODK Model
-Description          : class format and return geoodk model parameters in the correct format
+Description          : class formats and return geoodk model parameters in the correct format
 Date                 : 6/June/2017
 copyright            : (C) 2017 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
@@ -41,13 +41,6 @@ class EntityFormatter():
         self._profile = entity
         return self._profile
 
-    def format_foreign_key(self):
-        """
-        Format foreign key column to Xform representation
-        :return:
-        """
-        pass
-
     def profile_has_social_tenure(self):
         """
         Check if the profile has social tenure tables
@@ -69,47 +62,33 @@ class EntityFormatter():
         """
         return self.profile_has_social_tenure().parties
 
-
     def format_photo_blob(self):
         """
         Format image upload column to Xform format
         :return:
         """
-        pass
-
-    def format_document_upload(self):
-        """
-        Format the column for data upload to Xform document upload url
-        :return:
-        """
+        raise NotImplementedError
 
     def model_has_lookup(self):
         """
-
-        :return: 
+        Check if the model of the XFORM from teh configuration
+        has a look
+        :return: bool
         """
         return self._haslookup
 
     def model_category_group(self, profile, item):
         """
-
-        :param bool: 
-        :return: 
+        Format model group categories so that each attributes
+        will be enclosed within an entity group
+        :param: profile name
+        :type str
+        item  Entity name, or custom name
+        :type: str
+        :return: formatted string
+        :rtype: str
         """
         return '/'+profile+'/{}'.format(item)
-
-    def process_lookup(self):
-        """
-
-        :return: 
-        """
-        pass
-
-    def process_group_categories(self):
-        """
-
-        :return: 
-        """
 
     def format_model_attribute(self, attrib):
         """
@@ -123,7 +102,8 @@ class EntityFormatter():
     def set_model_data_type(self, val):
         """
         Method to return the datatype of the selected entity in XForm types
-        :param val: 
+        :param val:
+        :type: string
         :return: string
         """
         data_type = self.model_type_from_columntype(val)
@@ -134,11 +114,12 @@ class EntityFormatter():
 
     def model_data_types(self, vals):
         """
+        Return valuelist associated with a given lookup column
         """
         value_list = []
         for val in vals.values():
             r_type = self.model_type_from_columntype(val)
-            if r_type == None:
+            if r_type is None:
                 continue
             value_list.append(r_type)
         return value_list
@@ -263,9 +244,9 @@ class EntityFormatter():
     def yes_no_list(self):
         """
         Create a yes no list
-        This lst is not provided in teh configuration but
-        for typeInfo of type BOOL, ODK expect a list.
-        Better approach could be implemented later
+        This lst is not provided in the configuration but
+        for datatype of type BOOL, ODK expect a list.
+        Better approach could be implemented later in the configuration
         :return:
         """
         yesno = {

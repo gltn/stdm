@@ -2,7 +2,7 @@
 /***************************************************************************
 Name                 : ImportLogger
 Description          : A class to read and enumerate imported data to avoid
-                    duplications and manage related entities data
+                    duplications and checking errors when importing entities data
 
 Date                 : 03/07/2017
 copyright            : (C) 2017 by UN-Habitat and implementing partners.
@@ -47,7 +47,7 @@ class ImportLogger:
         if not os.access(LOGGER_HOME, os.F_OK):
             os.makedirs(unicode(LOGGER_HOME))
 
-    def create_logger_doc(self):
+    def enable_ini_log_file(self):
         """
         Create the log file document
         :return:
@@ -61,7 +61,7 @@ class ImportLogger:
         except:
             pass
 
-    def add_log_info(self):
+    def enable_logger_document(self):
         """
         Create the log file document
         :return:
@@ -80,12 +80,12 @@ class ImportLogger:
         Open the logger text file so that we can write data
         :return:
         """
-        return self.add_log_info()
+        return self.enable_logger_document()
 
     def read_logger(self,):
         """
         """
-        logger = self.create_logger_doc()
+        logger = self.enable_ini_log_file()
         return logger
 
     def logger_document(self):
@@ -93,7 +93,7 @@ class ImportLogger:
 
         :return:
         """
-        return self.create_logger_doc()
+        return self.enable_ini_log_file()
 
     def logger_sections(self):
         """
@@ -111,7 +111,7 @@ class ImportLogger:
 
     def check_file_exist(self, instance):
         """
-
+        Check if the logger file exist and the import section
         :return:
         """
         try:
@@ -128,7 +128,7 @@ class ImportLogger:
 
     def write_section_data(self, path, file_name):
         """
-
+        Method to write to an ini file
         :return:
         """
         logger = self.read_logger()
@@ -141,8 +141,8 @@ class ImportLogger:
         """"
         Ensure the logger information is written to the file
         """
-        log_info = self.open_logger()
-        with open(log_info, 'a') as f:
+        log_file = self.open_logger()
+        with open(log_file, 'a') as f:
             f.write('\n')
             f.write(log_entry)
             f.close()
