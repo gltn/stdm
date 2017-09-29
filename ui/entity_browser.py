@@ -795,7 +795,7 @@ class EntityBrowserWithEditor(EntityBrowser):
                 self.parent_entity = None
 
             # hide the add button and add layer preview for spatial entity
-            if entity.has_geometry_column():
+            if entity.has_geometry_column() and self.parent_entity is None:
                 self.sp_unit_manager = SpatialUnitManagerDockWidget(
                     iface
                 )
@@ -888,6 +888,8 @@ class EntityBrowserWithEditor(EntityBrowser):
             )
             self._notifBar.insertErrorNotification(msg)
 
+            return
+        if self.tbEntity.selectionModel() is None:
             return
 
         selRowIndices = self.tbEntity.selectionModel().selectedRows(0)

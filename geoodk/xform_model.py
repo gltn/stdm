@@ -1,8 +1,10 @@
 """
 
 """
+from stdm.data.configuration.columns import GeometryColumn
 
-class EntityFormatter():
+
+class EntityFormatter:
     """
     class handles entity as a string and processes the XForm model
     and various XForm attributes. 
@@ -219,6 +221,44 @@ class EntityFormatter():
             'No': 'No'
         }
         return yesno
+
+    def geometry_types(self, entity, col):
+        """
+        Check the column geometry type
+        :param entity:
+        :type Entity
+        :param col:
+        :type string
+        :return: geom
+        :rtype string
+        """
+        col_obj = entity.columns[col]
+        if isinstance(col_obj, GeometryColumn):
+            geometry_type = col_obj.geometry_type()
+            return geometry_type
+
+    def geom_selector(self, geom_type):
+        """
+        Get the geometry type supported by Geoodk based on column geomtype
+        :param geom_type:
+        :type string
+        :return: geoodk geom type
+        :rtype string
+        """
+        if geom_type == 'POLYGON':
+            return 'geoshape'
+        elif geom_type == 'POINT':
+            return 'geopoint'
+        elif geom_type == 'LINE':
+            return 'geotrace'
+        elif geom_type == 'MULTIPOLYGON':
+            return 'geotrace'
+        elif geom_type == 'MULTIPOINT':
+            return 'geotrace'
+        elif geom_type == 'MULTILINE':
+            return 'geotrace'
+        else:
+            return 'geoshape'
 
     def str_entities(self):
         """

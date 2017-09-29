@@ -100,24 +100,26 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         text_edit.setValidator(None)
         if len(text) == 0:
             return
+        locale = QSettings().value("locale/userLocale")[0:2]
 
-        name_regex = QRegExp('^(?=.{0,40}$)[ _a-zA-Z][a-zA-Z0-9_ ]*$')
-        name_validator = QRegExpValidator(name_regex)
-        text_edit.setValidator(name_validator)
-        QApplication.processEvents()
-        last_character = text[-1:]
-        state = name_validator.validate(text, text.index(last_character))[0]
+        if locale == 'en':
+            name_regex = QRegExp('^(?=.{0,40}$)[ _a-zA-Z][a-zA-Z0-9_ ]*$')
+            name_validator = QRegExpValidator(name_regex)
+            text_edit.setValidator(name_validator)
+            QApplication.processEvents()
+            last_character = text[-1:]
+            state = name_validator.validate(text, text.index(last_character))[0]
 
-        if state != QValidator.Acceptable:
-            self.show_notification('"{}" is not allowed at this position.'.
-                                   format(last_character)
-            )
-            text = text[:-1]
-        else:
-            # remove space and underscore at the beginning of the text
-            if len(text) > 1:
-                if text[0] == ' ' or text[0] == '_':
-                    text = text[1:]
+            if state != QValidator.Acceptable:
+                self.show_notification('"{}" is not allowed at this position.'.
+                                       format(last_character)
+                )
+                text = text[:-1]
+
+        # remove space and underscore at the beginning of the text
+        if len(text) > 1:
+            if text[0] == ' ' or text[0] == '_':
+                text = text[1:]
 
         self.blockSignals(True)
         text_edit.setText(text)

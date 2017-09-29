@@ -129,7 +129,7 @@ class CodeGenerator(object):
         column_obj = getattr(current_model, self.column.name)
         matches = current_model_obj.queryObject([column_obj]
                                                 ).filter(
-            column_obj.op('~')('^{}{}[0-9]'.format(prefix, separator))
+            column_obj.op('~')(u'^{}{}[0-9]'.format(prefix, separator))
             ).order_by(column_obj.desc()).all()
 
         return matches

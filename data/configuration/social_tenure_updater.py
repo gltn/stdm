@@ -22,7 +22,7 @@ email                : stdm@unhabitat.org
 import logging
 
 from copy import deepcopy
-
+from PyQt4.QtGui import QApplication
 from sqlalchemy.sql.expression import text
 from migrate.changeset import *
 
@@ -180,7 +180,6 @@ def _create_primary_entity_view(
     #for spatial_unit in social_tenure.spatial_units:
     ### Create spatial_unit views
     if pe_is_spatial:
-
         spatial_unit_columns, spatial_unit_join = _entity_select_column(
             primary_entity,
             True,
@@ -269,14 +268,16 @@ def _entity_select_column(
                         row_id = 'row_number() OVER () AS id'
                         column_names.append(row_id)
                         select_column_name = select_column_name
+
                     else:
                         # add spatial unit id as the id.
                         select_column_name = col_select_name
-                        # add the social_tenure_relationship_id
-                        str_id = u'{0}.id AS {1}_id'.format(
-                            str_entity.name, str_entity.short_name.lower()
-                        )
-                        column_names.append(str_id)
+                        #
+                        #  # add the social_tenure_relationship_id
+                        # str_id = u'{0}.id AS {1}_id'.format(
+                        #     str_entity.name, str_entity.short_name.lower()
+                        # )
+                        # column_names.append(str_id)
 
                 else:
                     # add party_id on spatial unit view to use
@@ -309,7 +310,10 @@ def _entity_select_column(
             if isinstance(c, ForeignKeyColumn) and join_parents:
                 LOGGER.debug('Creating STR: Getting parent for %s column', c.name)
                 fk_parent_entity = c.entity_relation.parent
+
                 parent_table = c.entity_relation.parent.name
+
+
                 LOGGER.debug('Parent found')
                 select_column_name = ''
 
@@ -323,6 +327,7 @@ def _entity_select_column(
                 table_pseudo_name = u'{0}_{1}'.format(
                     parent_table, (len(pseudo_names) + 1)
                 )
+
                 pseudo_names.append(table_pseudo_name)
 
                 # Map lookup and admin unit values by default
@@ -349,6 +354,7 @@ def _entity_select_column(
                 # Use inner join only if parent entity is an STR entity
                 if use_inner_join and \
                         str_entity.is_str_entity(fk_parent_entity):
+
                     join_type = 'INNER JOIN'
 
                 if use_custom_join:
@@ -362,10 +368,14 @@ def _entity_select_column(
                         join_type, parent_table, col_select_name,
                         c.entity_relation.parent_column
                     )
-
                 # Assert if the column is in the list of omitted join columns
-                if c.name not in omit_join_statement_columns:
+
+                if c.name in omit_join_statement_columns:
+                    if 'INNER JOIN' in join_statement:
+                        join_statements.append(join_statement)
+                else:
                     join_statements.append(join_statement)
+
 
             # Assert if the column is in the list of omitted view columns
             if c.name not in omit_view_columns:

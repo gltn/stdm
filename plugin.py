@@ -38,7 +38,6 @@ from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.settings.config_file_updater import ConfigurationFileUpdater
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 
-
 from stdm.ui.change_pwd_dlg import changePwdDlg
 from stdm.ui.doc_generator_dlg import (
     DocumentGeneratorDialogWrapper,
@@ -121,11 +120,6 @@ LOGGER = logging.getLogger('stdm')
 class STDMQGISLoader(object):
 
     viewSTRWin = None
-    STR_DISPLAY = QApplication.translate(
-        'STDMQGISLoader',
-        'New Social Tenure Relationship'
-    )
-
     def __init__(self, iface):
         self.iface = iface
 
@@ -168,7 +162,6 @@ class STDMQGISLoader(object):
         self.configuration_file_updater = ConfigurationFileUpdater(self.iface)
         copy_startup()
 
-
     def initGui(self):
         # Initial actions on starting up the application
         self._menu_items()
@@ -186,7 +179,7 @@ class STDMQGISLoader(object):
         self.logoutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/logout.png"), \
         QApplication.translate("LogoutToolbarAction","Logout"), self.iface.mainWindow(),
         "EF3D96AF-F127-4C31-8D9F-381C07E855DD")
-        self.logoutAct.setShortcut(QKeySequence(Qt.Key_Delete))
+        self.logoutAct.setShortcut(QKeySequence(Qt.Key_Backspace))
 
         self.changePasswordAct = STDMAction(QIcon(":/plugins/stdm/images/icons/change_password.png"), \
         QApplication.translate("ChangePasswordToolbarAction","Change Password"), self.iface.mainWindow(),
@@ -350,12 +343,12 @@ class STDMQGISLoader(object):
                 self.run_wizard()
                 self._user_logged_in = True
 
-
             except Exception as pe:
                 title = QApplication.translate(
                     "STDMQGISLoader",
                     "Error Loading Modules"
                 )
+
                 self.reset_content_modules_id(
                     title,
                     pe
@@ -775,7 +768,7 @@ class STDMQGISLoader(object):
         stdmEntityMenu.setIcon(QIcon(":/plugins/stdm/images/icons/entity_management.png"))
         stdmEntityMenu.setTitle(QApplication.translate("STDMEntityMenu","Entities"))
 
-        #Mobile content menu container
+        # Mobile content menu container
         geoodk_mobile_dataMenu = QMenu(self.stdmMenu)
         geoodk_mobile_dataMenu.setObjectName("GEOODKEntityMenu")
         geoodk_mobile_dataMenu.setIcon(QIcon(":/plugins/stdm/images/icons/mobile-data-management.png"))
@@ -854,10 +847,11 @@ class STDMQGISLoader(object):
                     QApplication.translate("WorkspaceConfig","Entities"), self.iface.mainWindow())
 
         self.mobile_form_act = QAction(QIcon(":/plugins/stdm/images/icons/mobile_collect.png"), \
-                    QApplication.translate("MobileFormGenerator", "Generate Mobile Forms"), self.iface.mainWindow())
-        self.mobile_form_import = QAction(QIcon(":/plugins/stdm/images/icons/mobile_import.png"), \
-                                       QApplication.translate("MobileFormGenerator", "Import Mobile Data"),
+                                       QApplication.translate("MobileFormGenerator", "Generate Mobile Forms"),
                                        self.iface.mainWindow())
+        self.mobile_form_import = QAction(QIcon(":/plugins/stdm/images/icons/mobile_import.png"), \
+                                          QApplication.translate("MobileFormGenerator", "Import Mobile Data"),
+                                          self.iface.mainWindow())
 
         # Add current profiles to profiles combobox
         self.load_profiles_combobox()
@@ -936,14 +930,13 @@ class STDMQGISLoader(object):
 
         # add the tables to the stdm toolbar
         # Format the table names to friendly format before adding them
-
+        # social_tenure = self.current_profile.social_tenure
+        #custom_attr_entity = social_tenure.custom_attributes_entity
         if self.user_entities() is not None:
             user_entities = dict(self.user_entities())
             for i, (name, short_name) in enumerate(user_entities.iteritems()):
-                display_name = QApplication.translate(
-                    "Entities",
-                    unicode(short_name).replace("_", " ").title()
-                )
+                # if custom_attr_entity.name != name:
+                display_name = unicode(short_name).replace("_", " ").title()
                 self._moduleItems[display_name] = name
 
         for k, v in self._moduleItems.iteritems():
@@ -965,7 +958,12 @@ class STDMQGISLoader(object):
                 self.moduleContentGroups.append(separator_group)
 
                 moduleCntGroup = self._create_table_content_group(
-                    self.STR_DISPLAY, username, 'new_str.png'
+                    QApplication.translate(
+                        'STDMQGISLoader',
+                        'New Social Tenure Relationship'
+                    ),
+                    username,
+                    'new_str.png'
                 )
                 self.moduleContentGroups.append(moduleCntGroup)
 
@@ -1117,6 +1115,7 @@ class STDMQGISLoader(object):
         profile_names = self.stdm_config.profiles.keys()
 
         self.profiles_combobox.clear()
+
         self.profiles_combobox.addItems(profile_names)
 
         self.profiles_combobox.setStyleSheet(
@@ -1451,20 +1450,20 @@ class STDMQGISLoader(object):
         defining a new social
         tenure relationship
         '''
-        try:
+        # try:
 
-            str_editor = STREditor()
-            str_editor.open()
+        str_editor = STREditor()
+        str_editor.open()
 
-        except Exception as ex:
-            QMessageBox.critical(
-                self.iface.mainWindow(),
-                QApplication.translate(
-                    'STDMQGISLoader',
-                    'Error Loading the STR Editor'
-                ),
-                str(ex)
-            )
+        # except Exception as ex:
+        #     QMessageBox.critical(
+        #         self.iface.mainWindow(),
+        #         QApplication.translate(
+        #             'STDMQGISLoader',
+        #             'Error Loading the STR Editor'
+        #         ),
+        #         str(ex)
+        #     )
 
     def onManageAdminUnits(self):
         '''
@@ -1617,9 +1616,12 @@ class STDMQGISLoader(object):
         #Method to load custom forms
         tbList = self._moduleItems.values()
 
-        dispName=QAction.text()
+        dispName = QAction.text()
 
-        if dispName == self.STR_DISPLAY:
+        if dispName == QApplication.translate(
+                'STDMQGISLoader',
+                'New Social Tenure Relationship'
+        ):
 
             if self.current_profile is None:
                 self.default_profile()
@@ -1634,7 +1636,7 @@ class STDMQGISLoader(object):
 
 
         else:
-            table_name = self._moduleItems.get(dispName)
+            table_name = self._moduleItems[dispName]
             if self.current_profile is None:
                 self.default_profile()
                 return
@@ -1644,7 +1646,7 @@ class STDMQGISLoader(object):
             database_status = self.entity_table_checker(
                 sel_entity
             )
-
+            QApplication.processEvents()
             try:
                 if table_name in tbList and database_status:
                     cnt_idx = getIndex(
@@ -1815,7 +1817,7 @@ class STDMQGISLoader(object):
                 (e.name, e.short_name)
                 for e in
                 self.current_profile.entities.values()
-                if (e.TYPE_INFO == 'ENTITY')
+                if (e.TYPE_INFO == 'ENTITY') and (e.user_editable)
             ]
 
     def help_contents(self):
@@ -1842,32 +1844,12 @@ class STDMQGISLoader(object):
 
     def reset_content_modules_id(self, title, message_text):
         return QMessageBox.critical(
-            self.iface.mainWindow(),
-            QApplication.translate(
-                "STDMQGISLoader",
-                title
-            ),
+            self.iface.mainWindow(), title,
             QApplication.translate(
                 "STDMQGISLoader",
                 unicode(message_text)
             )
         )
-
-    def mobile_form_generator(self):
-        """
-        Load the dialog to generate form for mobile data collection
-        :return:
-        """
-        converter_dlg = GeoODKConverter(self.iface.mainWindow())
-        converter_dlg.exec_()
-
-    def mobile_form_importer(self):
-        """
-        Load the dialog to generate form for mobile data collection
-        :return:
-        """
-        importer_dialog = ProfileInstanceRecords(self.iface.mainWindow())
-        importer_dialog.exec_()
 
     def _action_separator(self):
         """
@@ -1895,6 +1877,22 @@ class STDMQGISLoader(object):
         """
         handler = ConfigTableReader()
         return handler
+
+    def mobile_form_generator(self):
+        """
+        Load the dialog to generate form for mobile data collection
+        :return:
+        """
+        converter_dlg = GeoODKConverter(self.iface.mainWindow())
+        converter_dlg.exec_()
+
+    def mobile_form_importer(self):
+        """
+        Load the dialog to generate form for mobile data collection
+        :return:
+        """
+        importer_dialog = ProfileInstanceRecords(self.iface.mainWindow())
+        importer_dialog.exec_()
 
     def default_config_version(self):
         handler = self.config_loader()

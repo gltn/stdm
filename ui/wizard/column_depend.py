@@ -42,7 +42,7 @@ class ColumnDepend(QDialog, Ui_dlgColumnDepend):
     def init_gui(self):
         self.btnCancel.clicked.connect(self.cancel_dlg)
         self.btnDelete.clicked.connect(self.delete_entity)
-        self.qryLabel.setText(self.qryLabel.text() % self.column.name)
+        self.qryLabel.setText(self.qryLabel.text().format(self.column.name))
         self.btnDelete.setStyleSheet('QPushButton {font-weight: bold; color: red;}')
         self.show_dependencies()
 

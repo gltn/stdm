@@ -101,17 +101,18 @@ class SpatialUnitManagerDockWidget(
         """
         Adjusts the layers combobox drop down to expand based on the layer name.
         """
-        longest_item = max(self._profile_spatial_layers, key=len)
-        font_meter = QFontMetrics(self.fontMetrics())
-        item_width = font_meter.width(longest_item) + 80
-        self.stdm_layers_combo.setStyleSheet(
-            '''*
-                QComboBox QAbstractItemView{
-                    min-width: 60px;
-                    width: %s px;
-                }
-            ''' % item_width
-        )
+        if len(self._profile_spatial_layers) > 0:
+            longest_item = max(self._profile_spatial_layers, key=len)
+            font_meter = QFontMetrics(self.fontMetrics())
+            item_width = font_meter.width(longest_item) + 80
+            self.stdm_layers_combo.setStyleSheet(
+                '''*
+                    QComboBox QAbstractItemView{
+                        min-width: 60px;
+                        width: %s px;
+                    }
+                ''' % item_width
+            )
 
     def _populate_layers(self):
         self.stdm_layers_combo.clear()
@@ -242,6 +243,7 @@ class SpatialUnitManagerDockWidget(
         :rtype: NoneType
         """
         table, column = self._layer_table_column(curr_layer)
+
         if table not in pg_views() and not curr_layer is None:
             try:
                 self.stdm_fields.init_form(
@@ -357,7 +359,9 @@ class SpatialUnitManagerDockWidget(
         """
         # Check if the geom has display name, if not,
         # get layer name with default naming.
+
         if isinstance(col, str) or isinstance(col, unicode):
+
             spatial_layer_item = unicode(
                 '{}.{}'.format(
                     table, col
@@ -365,6 +369,7 @@ class SpatialUnitManagerDockWidget(
             )
 
         elif col.layer_display_name == '':
+
             spatial_layer_item = unicode(
                 '{}.{}'.format(
                     table, col.name
@@ -413,6 +418,8 @@ class SpatialUnitManagerDockWidget(
         )
 
         if layer_name in self._map_registry_layer_names():
+            layer = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)[0]
+            self.iface.setActiveLayer(layer)
             return
 
         # Used in gpx_table.py
