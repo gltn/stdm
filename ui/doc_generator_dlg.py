@@ -19,7 +19,9 @@ email                : gkahiu@gmail.com
 """
 import logging
 from collections import OrderedDict
+import os
 import sys
+import subprocess
 
 from PyQt4.QtGui import (
     QCursor,
@@ -49,6 +51,11 @@ from stdm.utils.util import (
     entity_display_columns,
     enable_drag_sort,
     profile_entities
+)
+
+from stdm.settings.registryconfig import (
+    RegistryConfig,
+    COMPOSER_OUTPUT
 )
 
 from .entity_browser import ForeignKeyBrowser
@@ -261,6 +268,9 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         self.tabWidget.currentChanged.connect(self.on_tab_index_changed)
         self.chk_template_datasource.stateChanged.connect(self.on_use_template_datasource)
 
+        self.btnShowOutputFolder.clicked.connect(self.onShowOutputFolder)
+
+
     def _init_progress_dialog(self):
         """
         Initializes the progress dialog.
@@ -312,6 +322,24 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
             self.chkUseOutputFolder.setEnabled(True)
             self.chkUseOutputFolder.setChecked(False)
             self.on_tab_index_changed(self.tabWidget.currentIndex())
+
+    def onShowOutputFolder(self):
+        reg_config = RegistryConfig()
+        path = reg_config.read([COMPOSER_OUTPUT])
+        output_path = path.get(COMPOSER_OUTPUT,'')
+
+        # windows
+        if sys.platform.startswith('win32'):
+            os.startfile(output_path)
+
+        # *nix systems
+        if sys.platform.startswith('linux'):
+            subprocess.Popen(['xdg-open', output_path])
+        
+        # macOS
+        if sys.platform.startswith('darwin'):
+            subprocess.Popen(['open', output_path])
+
 
     def notification_bar(self):
         """

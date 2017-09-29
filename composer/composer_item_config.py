@@ -253,7 +253,6 @@ class TableConfig(ComposerItemConfig):
     def on_action_toggled(self, checked):
         if checked:
             self.composerView().selectedItemChanged.connect(self.onSelectItemChanged)
-
         else:
             self.composerView().selectedItemChanged.disconnect(self.onSelectItemChanged)
 
@@ -268,6 +267,7 @@ class TableConfig(ComposerItemConfig):
 
         table_item = sel_items[0]
         self._itemFormatter.apply(table_item, self.composerWrapper())
+
 
 TableConfig.register()
 
