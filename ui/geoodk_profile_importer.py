@@ -364,7 +364,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     self.txt_feedback.append(
                         'saving record "{0}" to database'.format(counter))
                     if self.parent_ids is not None:
-                        print self.parent_ids
                         entity_importer.process_social_tenure(self.parent_ids)
                         self.log_table_entry(" -- saving social tenure relationship")
                     self.pgbar.setValue(counter)
