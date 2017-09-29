@@ -817,19 +817,12 @@ class ComposerWrapper(QObject):
 
         for item_id, table_config in table_config_collection.mapping().iteritems():
             table_item = self.composition().getComposerItemById(item_id)
-            #import pydevd; pydevd.settrace() 
             if table_item is not None:
                 table_editor = ComposerTableDataSourceEditor(self, table_item, self.composerView())
                 table_editor.set_configuration(table_config)
 
                 table_editor.ref_table.cbo_ref_table.currentIndexChanged[str].connect(
                         table_editor.set_table_vector_layer)
-
-                #ref_table_name = table_config.linked_table()
-                #v_layer = vector_layer(ref_table_name)
-                #table_editor._composer_table_item.setVectorLayer(v_layer)
-                #self.current_ref_table_index = table_editor.ref_table.cbo_ref_table.findText(ref_table_name)
-                #table_editor.ref_table.cbo_ref_table.setCurrentIndex(self.current_ref_table_index)
 
                 self.addWidgetMapping(table_item.uuid(), table_editor)
 
