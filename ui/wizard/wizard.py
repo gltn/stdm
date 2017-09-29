@@ -222,8 +222,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def set_window_title(self):
         if self.draft_config:
             self.setWindowTitle('')
-            draft = self.tr(' - [ DRAFT ]')
-            self.setWindowTitle('{}{}'.format(self.tmp_title, draft))
+            draft = self.tr(u' - [ DRAFT ]')
+            self.setWindowTitle(u'{}{}'.format(self.tmp_title, draft))
         else:
             self.setWindowTitle(self.tmp_title)
 
@@ -1303,7 +1303,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         logs_folder = self.get_folder(QDir.home().path()+'/.stdm/logs')
         file_name = logs_folder+'/configuration_update_'+fmt_date+'.log'
         info_file = open(file_name, "w")
-        info_file.write(info)
+        info_file.write(info.encode('utf8'))
         info_file.close()
 
     def get_folder(self, folder):
@@ -2081,6 +2081,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             result = editor.exec_()
 
             if result == 1:
+                entity.add_column(editor.column)
                 if editor.type_info == 'LOOKUP':
                     self.clear_lookup_view()
                     self.populate_lookup_view(profile)

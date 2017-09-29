@@ -79,9 +79,8 @@ class ValueEditor(QDialog, Ui_LookupValue):
         self.edtValue.setFocus()
 
     def show_notification(self, message):
-        msg = self.tr(message)
         self.notice_bar.clear()
-        self.notice_bar.insertErrorNotification(msg)
+        self.notice_bar.insertErrorNotification(message)
 
     def validate_text(self, text):
         """
@@ -105,7 +104,7 @@ class ValueEditor(QDialog, Ui_LookupValue):
             last_character = text[-1:]
             state = name_validator.validate(text, text.index(last_character))[0]
             if state != QValidator.Acceptable:
-                self.show_notification('"{}" is not allowed at this position.'.
+                self.show_notification(u'"{}" is not allowed at this position.'.
                                        format(last_character)
                                        )
                 text = text[:-1]
