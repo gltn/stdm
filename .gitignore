@@ -20,3 +20,6 @@ docs/_build
 
 # My scripts
 ui.make.bat
+
+# Help File
+*.chm
