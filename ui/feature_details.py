@@ -1170,9 +1170,11 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             return
 
         for record in str_records:
-            spatial_unit, spatial_unit_id = self.current_spatial_unit(
-                record.__dict__
-            )
+            result = self.current_spatial_unit(record.__dict__)
+            if result is not None:
+                spatial_unit, spatial_unit_id = result
+            else:
+                continue
             self.str_models[record.id] = record
             str_root = self.add_str_steam(parent, record.id)
             # add STR children
