@@ -95,7 +95,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.lst_widget.itemClicked.connect(self.user_selected_entities)
         self.btn_srid.clicked.connect(self.projection_settings)
 
-
         #self.load_config()
         self.on_filepath()
         self.current_profile_changed()

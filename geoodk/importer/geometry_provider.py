@@ -135,7 +135,7 @@ class GeometryProvider:
         :return:
         """
         qPoint = QgsGeometry.fromPoint(
-            QgsPoint(self.set_point(self.X()), self.set_point(self.Y())))
+            QgsPoint(self.set_point(self.x()), self.set_point(self.y())))
         return qPoint
 
     def create_polygon(self):
@@ -173,7 +173,7 @@ class GeometryProvider:
         return self.srid
 
 
-class GeomPolgyon(GeometryProvider):
+class STDMGeometry(GeometryProvider):
     """
     Class constructor
     """
@@ -212,6 +212,16 @@ class GeomPolgyon(GeometryProvider):
                 return 'SRID={};{}'.format(self.srid, poly_as_text)
             except Exception as ex:
                 return ex.message
+
+    def point_to_wkt(self):
+        """
+        Format point data into geometry ready to import into DB
+        :return:
+        """
+        point = self.create_point()
+        point_wkt = point.exportToWkt()
+        return 'SRID={};{}'.format(self.srid, point_wkt)
+
 
 
 

@@ -24,7 +24,7 @@ from PyQt4.QtCore import QFile, QIODevice
 from stdm.settings import current_profile
 from stdm.utils.util import entity_attr_to_id, lookup_id_from_value
 from stdm.data.configuration import entity_model
-from stdm.geoodk.importer.geometry_provider import GeomPolgyon
+from stdm.geoodk.importer.geometry_provider import STDMGeometry
 from stdm.data.configuration.columns import GeometryColumn
 from stdm.ui.sourcedocument import SourceDocumentManager
 from PyQt4.QtCore import \
@@ -294,14 +294,17 @@ class Save2DB:
         attribute
         :return:
         """
-        if self.parents_ids is not None and self.entity.short_name == 'social_tenure_relationship':
-            str_tables = current_profile().social_tenure
-            party_tbl = str_tables.parties[0].name
-            sp_tbl = str_tables.spatial_units[0].name
-            setattr(self.model, str_tables.parties[0].short_name.lower() + '_id',
-                    self.parents_ids.get(str_tables.parties[0].name)[0])
-            setattr(self.model, str_tables.spatial_units[0].short_name.lower() + '_id',
-                    self.parents_ids.get(str_tables.spatial_units[0].name)[0])
+        try:
+            if self.parents_ids is not None and self.entity.short_name == 'social_tenure_relationship':
+                str_tables = current_profile().social_tenure
+                party_tbl = str_tables.parties[0].name
+                sp_tbl = str_tables.spatial_units[0].name
+                setattr(self.model, str_tables.parties[0].short_name.lower() + '_id',
+                        self.parents_ids.get(str_tables.parties[0].name)[0])
+                setattr(self.model, str_tables.spatial_units[0].short_name.lower() + '_id',
+                        self.parents_ids.get(str_tables.spatial_units[0].name)[0])
+        except:
+            pass
         for k, v in self.attributes.iteritems():
             if hasattr(self.model, k):
                 col_type = self.column_info().get(k)
@@ -381,16 +384,22 @@ class Save2DB:
                 return lookup_id_from_value(col_prop.association.first_parent, var)
         elif col_type == 'GEOMETRY':
             defualt_srid = 0
-            geom_provider = GeomPolgyon(var)
+            geom_provider = STDMGeometry(var)
+            feature_geometry = None
             if isinstance(col_prop, GeometryColumn):
                defualt_srid = col_prop.srid
+
             if defualt_srid != 0:
                 geom_provider.set_user_srid(defualt_srid)
             else:
                 geom_provider.set_user_srid(GEOMPARAM)
-            return geom_provider.polygon_to_Wkt()
+            if col_prop.geometry_type() == 'POINT':
+                return geom_provider.point_to_wkt()
+            if col_prop.geometry_type() == 'POLYGON':
+                return geom_provider.polygon_to_Wkt()
+
         elif col_type == 'FOREIGN_KEY':
-            if len(self.parents_ids) < 0:
+            if self.parents_ids is None or len(self.parents_ids) < 0:
                 return
             else:
                 for code, val in self.parents_ids.iteritems():
