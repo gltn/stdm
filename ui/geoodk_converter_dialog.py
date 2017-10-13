@@ -81,7 +81,6 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         self.check_geoODK_path_exist()
 
         self.chk_all.stateChanged.connect(self.check_state_on)
-        self.buttonBox.clicked.connect(self.accept)
 
         self._notif_bar_str = NotificationBar(self.vlnotification)
 
@@ -177,23 +176,25 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         Generate Xform based on user selected entities
         :return:
         """
+        self.str_supported = False
+        if self.ck_social_tenure.isChecked():
+            self.str_supported = True
         try:
-
             self._notif_bar_str.clear()
             user_entities = self.selected_entities_from_Model()
             if len(user_entities) == 0:
                 self._notif_bar_str.insertErrorNotification(
-                    'No entity selected by user'
+                    'No entity selected. Please select at least one entity...'
                 )
                 return
             if len(user_entities) > 0:
-                geoodk_writer = GeoodkWriter(user_entities)
+                geoodk_writer = GeoodkWriter(user_entities, self.str_supported)
                 geoodk_writer.write_data_to_xform()
                 msg = 'File saved ' \
                       'in: {}'
                 self._notif_bar_str.insertInformationNotification(
                     msg.format(FORM_HOME))
         except Exception as ex:
-            self._notif_bar_str.insertErrorNotification(ex.message + ': Unable to generate Mobile Form')
+            self._notif_bar_str.insertErrorNotification(ex.message +
+                                                        ': Unable to generate Mobile Form')
             return
-            #self.accept()

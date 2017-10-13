@@ -153,17 +153,37 @@ class EntityImporter():
             success = True
         return ref_id, success
 
+    def social_tenure_definition_captured(self):
+        """
+        Let find find out if str is defined for the particular data collection
+        file instance. if exist, bool the result
+        :return:
+        """
+        has_str_defined = False
+        try:
+            attributes = self.entity_attributes_from_instance('social_tenure')
+            if attributes is not None or len(attributes) > 0:
+                has_str_defined = True
+        except:
+            pass
+        return has_str_defined
+
+
+
     def process_social_tenure(self, ids):
         """
         Save socail tenure entity. It has to be saved separately
         because its need to be saved last and its handled differently
         :return:
         """
-        attributes = self.entity_attributes_from_instance('social_tenure')
-        if attributes:
-            entity_add = Save2DB('social_tenure', attributes, ids)
-            entity_add.objects_from_supporting_doc(self.instance)
-            entity_add.save_to_db()
+        if self.social_tenure_definition_captured():
+            attributes = self.entity_attributes_from_instance('social_tenure')
+            if attributes:
+                entity_add = Save2DB('social_tenure', attributes, ids)
+                entity_add.objects_from_supporting_doc(self.instance)
+                entity_add.save_to_db()
+        else:
+            return None
 
 class Save2DB:
     """
@@ -272,7 +292,7 @@ class Save2DB:
     def format_document_name_from_attribute(self, key_name):
         """
         Get the type of document from attribute name
-        So that supporting document class instance can save it right way
+        So that supporting document class instance can save it in the right format
         :return:
         """
         doc_list = self.entity_supported_document_types()
@@ -291,14 +311,11 @@ class Save2DB:
     def save_to_db(self):
         """
         Format object attribute data from entity and save them into database
-        attribute
         :return:
         """
         try:
             if self.parents_ids is not None and self.entity.short_name == 'social_tenure_relationship':
                 str_tables = current_profile().social_tenure
-                party_tbl = str_tables.parties[0].name
-                sp_tbl = str_tables.spatial_units[0].name
                 setattr(self.model, str_tables.parties[0].short_name.lower() + '_id',
                         self.parents_ids.get(str_tables.parties[0].name)[0])
                 setattr(self.model, str_tables.spatial_units[0].short_name.lower() + '_id',
@@ -385,19 +402,16 @@ class Save2DB:
         elif col_type == 'GEOMETRY':
             defualt_srid = 0
             geom_provider = STDMGeometry(var)
-            feature_geometry = None
             if isinstance(col_prop, GeometryColumn):
                defualt_srid = col_prop.srid
-
             if defualt_srid != 0:
                 geom_provider.set_user_srid(defualt_srid)
             else:
                 geom_provider.set_user_srid(GEOMPARAM)
             if col_prop.geometry_type() == 'POINT':
-                return geom_provider.point_to_wkt()
+                return geom_provider.point_to_Wkt()
             if col_prop.geometry_type() == 'POLYGON':
                 return geom_provider.polygon_to_Wkt()
-
         elif col_type == 'FOREIGN_KEY':
             if self.parents_ids is None or len(self.parents_ids) < 0:
                 return

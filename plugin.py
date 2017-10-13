@@ -849,7 +849,7 @@ class STDMQGISLoader(object):
                     QApplication.translate("WorkspaceConfig","Entities"), self.iface.mainWindow())
 
         self.mobile_form_act = QAction(QIcon(":/plugins/stdm/images/icons/mobile_collect.png"), \
-                                       QApplication.translate("MobileFormGenerator", "Generate Mobile Forms"),
+                                       QApplication.translate("MobileFormGenerator", "Generate Mobile Form"),
                                        self.iface.mainWindow())
         self.mobile_form_import = QAction(QIcon(":/plugins/stdm/images/icons/mobile_import.png"), \
                                           QApplication.translate("MobileFormGenerator", "Import Mobile Data"),

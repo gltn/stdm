@@ -362,9 +362,10 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                             self.log_table_entry(" -- {0} import succeeded: ".format(cu_obj)+str(status))
                     self.txt_feedback.append(
                         'saving record "{0}" to database'.format(counter))
-                    if self.parent_ids is not None:
-                        entity_importer.process_social_tenure(self.parent_ids)
-                        self.log_table_entry(" -- saving social tenure relationship")
+                    if self.uuid_extractor.has_str_captured_in_instance():
+                         if self.parent_ids is not None:
+                            entity_importer.process_social_tenure(self.parent_ids)
+                            self.log_table_entry(" -- saving social tenure relationship")
                     self.pgbar.setValue(counter)
 
                 self.txt_feedback.append('Number of record successfully imported:  {}'
@@ -404,12 +405,14 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         self.feedback_message('unable to read foreign key properties for "{0}"'
                                               .format(parent_object.name))
                         return
-        if party_tbl not in self.relations.keys():
-            self.relations[party_tbl] = ['social_tenure_relationship',
-                                         str_tables.parties[0].short_name.lower()+'_id']
-        if sp_tbl not in self.relations.keys():
-            self.relations[sp_tbl] = ['social_tenure_relationship',
-                                      str_tables.spatial_units[0].short_name.lower() + '_id']
+
+        if self.uuid_extractor.has_str_captured_in_instance():
+            if party_tbl not in self.relations.keys():
+                self.relations[party_tbl] = ['social_tenure_relationship',
+                                             str_tables.parties[0].short_name.lower()+'_id']
+            if sp_tbl not in self.relations.keys():
+                self.relations[sp_tbl] = ['social_tenure_relationship',
+                                          str_tables.spatial_units[0].short_name.lower() + '_id']
         return has_relations
 
     def parent_table_isselected(self):
@@ -562,8 +565,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.buttonBox.setEnabled(False)
         try:
             if self.lst_widget.count() < 1:
-                msg = 'Current profile matched no records for import'
+                msg = 'No mobile records could be found for the current profile'
                 self._notif_bar_str.insertErrorNotification(msg)
+                self.buttonBox.setEnabled(True)
                 return
             entities = self.user_selected_entities()
             if len(entities) < 1:

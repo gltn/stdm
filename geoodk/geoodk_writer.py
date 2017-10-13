@@ -178,12 +178,11 @@ class XFORMDocument:
         pass
 
 
-
 class GeoodkWriter(EntityFormatter, XFORMDocument):
     """
     """
 
-    def __init__(self, entities):
+    def __init__(self, entities, str_supported):
         """
         It reads current profile entities and attributes and writes
         the data into an Xml file supported in GeoODK application
@@ -193,6 +192,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         self.entities = entities
         self.entity_read = None
         self.profile_entity = None
+        self.supports_str = str_supported
         self.prep_document_generators()
 
     def initialize_entity_reader(self, entity):
@@ -355,7 +355,8 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 instance_id.appendChild(entity_group)
 
                 instance.appendChild(instance_id)
-            self.include_social_tenure(instance_id)
+            if self.supports_str:
+                self.include_social_tenure(instance_id)
             instance_id.appendChild(self._doc_meta_instance())
             return instance
 
@@ -438,7 +439,8 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 self.initialize_entity_reader(entity)
                 entity_values = self.entity_read.read_attributes()
                 self.bind_model_attributes(base_node, entity_values)
-            self.social_tenure_bind_to_node(base_node)
+            if self.supports_str:
+                self.social_tenure_bind_to_node(base_node)
 
     def bind_model_attributes(self, base_node, entity_values):
         """
@@ -528,17 +530,6 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
 
         return parent_node
 
-    def special_data_constraint(self, var):
-        """
-        Get data type like geometry and format to the type
-        required
-        :return:
-        """
-        #if var =='GEOMETRY':
-        #if isinstance(col_prop, GeometryColumn):
-           # defualt_srid = col_prop.srid
-        raise NotImplementedError
-
     def model_unique_id_generator(self):
         """
         Create static fields that  needed by XForm to hold instance GUUID
@@ -553,7 +544,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
 
     def bind_default_parameters(self,parent_node):
         """
-        Ensure that the default parameters fo Xform are included
+        Ensure that the default parameters for Xform are included
         :return:
         """
         cast_param = ""
@@ -579,7 +570,8 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         #body_section_node.appendChild(self.create_nested_entity_data
         self.create_form_identifier(body_section_node)
         self.create_nested_entity_data(body_section_node)
-        self.social_tenure_label(body_section_node)
+        if self.supports_str:
+            self.social_tenure_label(body_section_node)
         return body_section_node
 
     def create_form_identifier(self, parent):
@@ -655,7 +647,8 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 label_node = self.create_node("label")
                 body_node.setAttribute("ref",self.model_category_group(parent_path, key))
                 #label = "jr:itext('{0}:label')".format(self.set_model_xpath(key))
-                label_text_info = self.entity_read.user_entity_name() + ' ' +key.replace("_", " ").title()
+                #label_text_info = self.entity_read.user_entity_name() + ' ' +key.replace("_", " ").title()
+                label_text_info = key.replace("_", " ").title()
                 label_txt= self.create_text_node(label_text_info)
                 #label_node.setAttribute("ref", label)
                 label_node.appendChild(label_txt)
@@ -759,9 +752,11 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         lk_node = self.create_node(select_opt)
         lk_node.setAttribute("ref", self.set_model_xpath(col, entity))
         lk_node_label = self.create_node("label")
+        # lk_node_label_txt = self.create_text_node(
+        #     self.entity_read.user_entity_name() + " " +
+        #     col.replace("_"," ").title().replace("Id", ""))
         lk_node_label_txt = self.create_text_node(
-            self.entity_read.user_entity_name() + " " +
-            col.replace("_"," ").title().replace("Id", ""))
+            col.replace("_", " ").title().replace("Id", ""))
         lk_node_label.appendChild(lk_node_label_txt)
         lk_node.appendChild(lk_node_label)
 

@@ -81,14 +81,14 @@ class GeometryProvider:
 
         :return:
         """
-        return self.point().split()[0]
+        return self.point().split()[1]
 
     def y(self):
         """
 
         :return:
         """
-        return self.point().split()[1]
+        return self.point().split()[0]
 
     def set_point(self,x):
         """
@@ -213,7 +213,7 @@ class STDMGeometry(GeometryProvider):
             except Exception as ex:
                 return ex.message
 
-    def point_to_wkt(self):
+    def point_to_Wkt(self):
         """
         Format point data into geometry ready to import into DB
         :return:

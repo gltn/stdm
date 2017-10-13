@@ -98,6 +98,34 @@ class InstanceUUIDExtractor():
                 node_list.append(node_val.nodeName())
         return node_list
 
+
+    def str_definition(self):
+        """
+        Check if the instance file has entry social tenure
+        :return:
+        """
+        attributes = {}
+        nodes = self.doc.elementsByTagName('social_tenure')
+        entity_nodes = nodes.item(0).childNodes()
+        if entity_nodes:
+            for j in range(entity_nodes.count()):
+                node_val = entity_nodes.item(j).toElement()
+                attributes[node_val.nodeName()] = node_val.text().rstrip()
+        return attributes
+
+    def has_str_captured_in_instance(self):
+        """
+        Bool if the str inclusion is required based on whether is captured or not
+        :return:
+        """
+        str_defined = False
+        try:
+            if self.str_definition() is not None or len(self.str_definition())>0:
+                str_defined = True
+        except:
+            pass
+        return str_defined
+
     def entity_atrributes(self):
         """
         Get collected data from the entity in the document
