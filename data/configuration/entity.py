@@ -490,13 +490,7 @@ class Entity(QObject, TableItem):
 
         if self.supports_documents:
             doc_types = self.document_types()
-            for doc_type in doc_types:
-                u_doc_type = unicode(doc_type)
-                text_value = self.supporting_doc._doc_types_value_list.values[
-                    u_doc_type
-                ]
-
-                virtual_cols.append(text_value.value)
+            virtual_cols.extend(doc_types)
 
         multi_select_cols = self.columns_by_type_info(
             MultipleSelectColumn.TYPE_INFO
@@ -542,17 +536,14 @@ class EntitySupportingDocument(Entity):
             '_'
         ).lower()
 
-        # Entity reference column
+        #Entity reference column
         entity_ref_name = u'{0}_{1}'.format(normalize_name, 'id')
         self.entity_reference = ForeignKeyColumn(entity_ref_name, self)
 
-        # Document types
+        #Document types
         vl_name = self._doc_type_name(normalize_name)
-
         self._doc_types_value_list = self._doc_type_vl(vl_name)
-
         if self._doc_types_value_list is None:
-
             self._doc_types_value_list = self.profile.create_value_list(
                 vl_name
             )
@@ -591,10 +582,9 @@ class EntitySupportingDocument(Entity):
     def _doc_type_vl(self, name):
         #Search for the document type value list based on the given name
         value_lists = self.profile.value_lists()
-        # print [v.short_name for v in value_lists]
         doc_type_vl = [v for v in value_lists if v.short_name == name]
+
         #Return first item
-        # print name, doc_type_vl
         if len(doc_type_vl) > 0:
             return doc_type_vl[0]
 

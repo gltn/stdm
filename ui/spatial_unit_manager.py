@@ -121,7 +121,8 @@ class SpatialUnitManagerDockWidget(
 
             return
 
-        self.spatial_units = self._curr_profile.social_tenure.spatial_units
+        self.spatial_unit = self._curr_profile.\
+            social_tenure.spatial_units
 
         # Get entities containing geometry
         # columns based on the config info
@@ -265,11 +266,11 @@ class SpatialUnitManagerDockWidget(
                 'item': item
             }
         )
-        for spatial_unit in self.spatial_units:
-            table = spatial_unit.name
+        for spatial_unit_obj in self.spatial_unit:
+            table = spatial_unit_obj.name
             spatial_column = [
                 c.name
-                for c in spatial_unit.columns.values()
+                for c in spatial_unit_obj.columns.values()
                 if c.TYPE_INFO == 'GEOMETRY'
             ]
 
@@ -334,7 +335,8 @@ class SpatialUnitManagerDockWidget(
         Add a layer when a name is supplied.
         :param layer_name: The stdm layer name
         :type layer_name: String
-
+        :return: None
+        :rtype: NoneType
         """
         index = self.stdm_layers_combo.findText(
             layer_name, Qt.MatchFixedString

@@ -6,7 +6,11 @@ SOURCES = \
           composer\document_generator.py \
           composer\item_formatter.py \
           data\configfile_paths.py \
+          data\config_utils.py \
+          data\enums.py \
+          data\lookups.py \
           data\mapping.py \
+          data\usermodels.py \
           data\configuration\association_entity.py \
           data\configuration\columns.py \
           data\configuration\config_updater.py \
@@ -41,7 +45,6 @@ SOURCES = \
           ui\document_viewer.py \
           ui\doc_generator_dlg.py \
           ui\entity_browser.py \
-          ui\export_data.py \
           ui\feature_details.py \
           ui\fkbase_form.py \
           ui\foreign_key_mapper.py \
@@ -123,8 +126,10 @@ FORMS =	\
         ui\ui_import_data.ui \
         ui\ui_license_agreement.ui \
         ui\ui_login.ui \
+        ui\ui_lookup_source.ui \
         ui\ui_lookup_value_selector.ui \
         ui\ui_new_role.ui \
+        ui\ui_new_str.ui \
         ui\ui_new_user.ui \
         ui\ui_notif_item.ui \
         ui\ui_options.ui \
@@ -168,13 +173,7 @@ FORMS =	\
         ui\wizard\ui_stdm_config.ui \
         ui\wizard\ui_varchar_property.ui
 
-TRANSLATIONS    = i18n/stdm_fr.ts \
-                  i18n/stdm_pt.ts \
-                  i18n/stdm_de.ts \
-                  i18n/stdm_sw.ts \
-                  i18n/stdm_fi.ts \
-                  i18n/stdm_ar.ts \
-                  i18n/stdm_es.ts
+TRANSLATIONS    = i18n/stdm_fr.ts
 
 CODECFORTR      = UTF-8
 

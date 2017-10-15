@@ -47,7 +47,7 @@ from stdm.navigation import (
     GMAP_SATELLITE,
     OSM
 )
-
+from stdm.settings import current_profile
 from stdm.data.pg_utils import(
     geometryType,
     pg_table_exists,
@@ -83,6 +83,8 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         self.memory_layer = None
         self._db_session = STDMDb.instance().session
 
+        self.curr_profile = current_profile()
+        self.spatial_unit = self.curr_profile.social_tenure.spatial_unit
         self.set_iface(iface)
 
         #Web config
@@ -171,7 +173,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
             "view_str_spatial_unit",
             "memory")
 
-    def draw_spatial_unit(self, spatial_unit, model):
+    def draw_spatial_unit(self, model):
         """
         Draw geometry of the given model in the respective local and web views.
         :param model: Source model whose geometry will be drawn.
@@ -180,6 +182,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         new features.
         :type clear_existing: bool
         """
+
         if model is None:
             msg = QApplication.translate("SpatialPreview",
                                          "Data model is empty, the spatial "
@@ -192,7 +195,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
 
             return
 
-        table_name = spatial_unit.name
+        table_name = self.spatial_unit.name
         if not pg_table_exists(table_name):
             msg = QApplication.translate("SpatialPreview",
                                          "The spatial unit data source could "
@@ -208,8 +211,12 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
 
             return
 
-        sp_unit_manager = SpatialUnitManagerDockWidget(self.iface())
-        spatial_cols = sp_unit_manager.geom_columns(spatial_unit)
+        sp_unit_manager = SpatialUnitManagerDockWidget(
+            self.iface()
+        )
+        spatial_cols = sp_unit_manager.geom_columns(
+            self.spatial_unit
+        )
 
         geom, geom_col = None, ""
         sc_obj = None
@@ -227,12 +234,10 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         )
 
         sp_unit_manager.add_layer_by_name(lyr)
-        QApplication.processEvents()
 
         if geom is not None:
-
             self.highlight_spatial_unit(
-                spatial_unit, geom, self.local_map.canvas
+                geom, self.local_map.canvas
             )
             self._web_spatial_loader.add_overlay(
                 model, geom_col
@@ -262,7 +267,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         except KeyError:
             return None
 
-    def spatial_unit_layer(self, spatial_unit, active_layer):
+    def spatial_unit_layer(self, active_layer):
         """
         Check whether the layer is parcel layer or not.
         :param active_layer: The layer to be checked
@@ -274,7 +279,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
 
             for layer in layers:
                 layer_source = self.get_layer_source(layer)
-                if layer_source == spatial_unit.name:
+                if layer_source == self.spatial_unit.name:
                     self.iface().setActiveLayer(layer)
                     return True
 
@@ -332,13 +337,13 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         return qgis_geom.boundingBox()
 
     def highlight_spatial_unit(
-            self, spatial_unit, geom, map_canvas
+            self, geom, map_canvas
     ):
         layer = self._iface.activeLayer()
         map_canvas.setExtent(layer.extent())
         map_canvas.refresh()
 
-        if self.spatial_unit_layer(spatial_unit, layer):
+        if self.spatial_unit_layer(layer):
 
             self.clear_sel_highlight()
 

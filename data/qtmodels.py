@@ -698,11 +698,13 @@ class STRTreeViewModel(QAbstractItemModel):
         success = True
 
         self.beginInsertRows(parent,position,position + count -1)
+
         '''
         We do not insert any children in this case since the internal methods of the
         BaseSTRNode have already inserted the children nodes that contain the
         information.
         '''
+
         self.endInsertRows()
 
         return success
@@ -724,6 +726,7 @@ class STRTreeViewModel(QAbstractItemModel):
         Removes all items (rows and columns) in the model.
         """
         rootChildrenNum = self._rootNode.childCount()
+
         self.beginResetModel()
 
         #Delete each child individually then clear the root node or else there will be indexing issues
