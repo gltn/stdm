@@ -27,7 +27,6 @@ from stdm.data.pg_utils import (
    spatial_tables
 )
 from stdm.utils.util import (
-
     profile_user_tables
 )
 from stdm.settings import current_profile
@@ -102,7 +101,8 @@ class TranslatorDialogBase(object):
 
         tables = profile_user_tables(
             self._current_profile,
-            False
+            False,
+            True
         ).keys()
 
         return tables

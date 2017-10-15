@@ -16,6 +16,8 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+import copy
+
 from PyQt4.QtGui import (
     QToolBar,
     QAction,
@@ -211,6 +213,10 @@ class ComposerWrapper(QObject):
         #Copy of template document file
         self._copy_template_file = None
 
+        self._selected_item_uuid = unicode()
+
+        self._current_ref_table_index = -1
+
     @property
     def copy_template_file(self):
         return self._copy_template_file
@@ -218,6 +224,22 @@ class ComposerWrapper(QObject):
     @copy_template_file.setter
     def copy_template_file(self, value):
         self._copy_template_file = value
+
+    @property
+    def selected_item_uuid(self):
+        return self._selected_item_uuid
+
+    @selected_item_uuid.setter
+    def selected_item_uuid(self, uuid):
+        self._selected_item_uuid = uuid
+
+    @property
+    def current_ref_table_index(self):
+        return self._current_ref_table_index
+
+    @current_ref_table_index.setter
+    def current_ref_table_index(self, value):
+        self._current_ref_table_index = value
 
     def _remove_composer_toolbar(self, object_name):
         """
@@ -513,10 +535,10 @@ class ComposerWrapper(QObject):
             '''
             load_table_layers(table_config_collection)
 
+            self.clearWidgetMappings()
+
             #Load items into the composition and configure STDM data controls
             self.composition().loadFromTemplate(templateDoc)
-
-            self.clearWidgetMappings()
 
             #Load data controls
             composerDS = ComposerDataSource.create(templateDoc)
@@ -546,9 +568,12 @@ class ComposerWrapper(QObject):
             photo_config_collection = PhotoConfigurationCollection.create(templateDoc)
             self._configure_photo_editors(photo_config_collection)
 
-            #Load table editors
+            # Load table editors
             self._configure_table_editors(table_config_collection)
 
+            items = self.composerView().items()
+            items = []
+            
             #Load chart property editors
             chart_config_collection = ChartConfigurationCollection.create(templateDoc)
             self._configure_chart_editors(chart_config_collection)
@@ -792,10 +817,12 @@ class ComposerWrapper(QObject):
 
         for item_id, table_config in table_config_collection.mapping().iteritems():
             table_item = self.composition().getComposerItemById(item_id)
-
-            if not table_item is None:
+            if table_item is not None:
                 table_editor = ComposerTableDataSourceEditor(self, table_item, self.composerView())
                 table_editor.set_configuration(table_config)
+
+                table_editor.ref_table.cbo_ref_table.currentIndexChanged[str].connect(
+                        table_editor.set_table_vector_layer)
 
                 self.addWidgetMapping(table_item.uuid(), table_editor)
 
@@ -856,9 +883,10 @@ class ComposerWrapper(QObject):
             if composer_item.uuid() in self._widgetMappings:
                 stdmWidget = self._widgetMappings[composer_item.uuid()]
 
+                self.selected_item_uuid = composer_item.uuid()
+
                 if stdmWidget == self._stdmItemPropDock.widget():
                     return
-
                 else:
                     self._stdmItemPropDock.setWidget(stdmWidget)
 

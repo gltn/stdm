@@ -46,7 +46,6 @@ class ComposerTableDataSourceEditor(QWidget, Ui_TableDataSourceEditor):
         self._composer_wrapper = composer_wrapper
         if isinstance(frame_item, QgsComposerFrame):
             self._composer_table_item = frame_item.multiFrame()
-
         else:
             self._composer_table_item = frame_item
 
@@ -61,7 +60,7 @@ class ComposerTableDataSourceEditor(QWidget, Ui_TableDataSourceEditor):
 
         #Connect signals
         self._composer_wrapper.dataSourceSelected.connect(self.ref_table.on_data_source_changed)
-        self.ref_table.cbo_ref_table.currentIndexChanged[str].connect(self.set_table_vector_layer)
+        #self.ref_table.cbo_ref_table.currentIndexChanged[str].connect(self.set_table_vector_layer)
 
     def composer_item(self):
         return self._composer_table_item
@@ -95,7 +94,7 @@ class ComposerTableDataSourceEditor(QWidget, Ui_TableDataSourceEditor):
 
         #No need to add the layer in the legend
         QgsMapLayerRegistry.instance().addMapLayer(v_layer, False)
-        self._composer_table_item.setVectorLayer(v_layer)
+        self._composer_table_item.setVectorLayer(v_layer)  # _composer_table_item is QgsComposerAttributeTable
         self._composer_table_item.update()
 
     def configuration(self):

@@ -164,7 +164,8 @@ class ReferencedTableEditor(QWidget):
 
         self._current_profile = current_profile()
         self._current_profile_tables = []
-        if not self._current_profile is None:
+
+        if self._current_profile is not None:
             self._current_profile_tables = self._current_profile.table_names()
 
         #Connect signals
@@ -208,8 +209,8 @@ class ReferencedTableEditor(QWidget):
         :type table_props: LinkedTableProps
         """
         setComboCurrentIndexWithText(self.cbo_ref_table, table_props.linked_table)
-        setComboCurrentIndexWithText(self.cbo_referencing_col, table_props.linked_field)
         setComboCurrentIndexWithText(self.cbo_source_field, table_props.source_field)
+        setComboCurrentIndexWithText(self.cbo_referencing_col, table_props.linked_field)
 
     def load_data_source_fields(self, data_source_name):
         """

@@ -257,7 +257,7 @@ class TableFormatter(BaseComposerItemFormatter):
         #Get the table editor widget and configure widgets
         table_editor = composerWrapper.itemDock().widget()
 
-        if not table_editor is None:
+        if table_editor is not None:
             self._configure_table_editor_properties(table_editor)
 
         if not fromTemplate:
@@ -271,6 +271,18 @@ class TableFormatter(BaseComposerItemFormatter):
 
             #Create data properties editor and it to the dock widget
             table_data_source_editor = ComposerTableDataSourceEditor(composerWrapper, table_item)
+
+            ############################################################################################
+            table_data_source_editor.ref_table.cbo_ref_table.currentIndexChanged[str].connect(
+                        table_data_source_editor.set_table_vector_layer)
+
+            if composerWrapper.current_ref_table_index == -1:
+                layer_name = self._current_layer_name(table_editor)
+                idx = table_data_source_editor.ref_table.cbo_ref_table.findText(layer_name)
+                table_data_source_editor.ref_table.cbo_ref_table.setCurrentIndex(idx)
+
+            ############################################################################################
+
             stdmDock = composerWrapper.stdmItemDock()
             stdmDock.setWidget(table_data_source_editor)
 
@@ -306,6 +318,21 @@ class TableFormatter(BaseComposerItemFormatter):
                     self._hide_filter_controls(feature_filter_groupbox)
             appearance_groupbox = contents_widget.findChild(QGroupBox, "groupBox_6")
             appearance_groupbox.setVisible(True)
+
+    def _current_layer_name(self, base_table_editor):
+        curr_text = ''
+        scroll_area = base_table_editor.findChild(QScrollArea,"scrollArea")
+        if not scroll_area is None:
+            contents_widget = scroll_area.widget()
+            object_names = ['^mLayerComboBox$']
+            for object_name in object_names:
+                name_regex = QRegExp(object_name)
+                for widget in contents_widget.findChildren(QWidget, name_regex):
+                    if isinstance(widget, QComboBox):
+                        curr_text = widget.currentText()
+                        break
+        return curr_text
+
 
 
     def _hide_filter_controls(self, groupbox):
