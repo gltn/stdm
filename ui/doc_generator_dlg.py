@@ -173,6 +173,9 @@ class DocumentGeneratorDialogWrapper(object):
 
             for i, t in enumerate(entities):
                 QApplication.processEvents()
+                # Exclude custom tenure entities
+                if 'check' in t.name:
+                    continue
                 entity_cfg = self._entity_config_from_profile(
                     str(t.name), t.short_name
                 )

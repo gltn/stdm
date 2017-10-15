@@ -745,6 +745,8 @@ class EntityBrowserWithEditor(EntityBrowser):
 
         self.highlight = None
         self.load_records = load_records
+        self.selection_layer = None
+
         #Add action toolbar if the state contains Manage flag
         if (state & MANAGE) != 0:
             add = QApplication.translate("EntityBrowserWithEditor", "Add")
@@ -805,7 +807,6 @@ class EntityBrowserWithEditor(EntityBrowser):
                 self.geom_cols = self.sp_unit_manager.geom_columns(
                     self._entity
                 )
-                self.selection_layer = None
 
                 self.add_spatial_unit_layer()
                 self.tbEntity.clicked.connect(
@@ -1217,9 +1218,9 @@ class EntityBrowserWithEditor(EntityBrowser):
         :return: None
         """
         if self._entity.has_geometry_column():
-            if not self.selection_layer is None:
+            if self.selection_layer is not None:
                 self.selection_layer.removeSelection()
-            self.sp_unit_manager.zoom_to_layer()
+                self.sp_unit_manager.zoom_to_layer()
 
 
 class ContentGroupEntityBrowser(EntityBrowserWithEditor):

@@ -277,15 +277,16 @@ def documentTemplates():
     keyName = "ComposerTemplates"
         
     pathConfig = regConfig.read([keyName])
-        
+
     if len(pathConfig) > 0:
         templateDir = pathConfig[keyName]
         
         pathDir = QDir(templateDir)
         pathDir.setNameFilters(["*.sdt"])
-        docFileInfos = pathDir.entryInfoList(QDir.Files,QDir.Name)
-        
+        docFileInfos = pathDir.entryInfoList(QDir.Files, QDir.Name)
+
         for df in docFileInfos:
+
             docTemplates[df.completeBaseName()] = df.absoluteFilePath()
         
     return docTemplates
@@ -995,6 +996,16 @@ def profile_and_user_views(profile, check_party=False):
             source_tables.append(view)
     for value in pg_views():
         if value not in social_tenure.views.keys():
+            source_tables.append(value)
+    return source_tables
+
+def user_non_profile_views(profile):
+    from stdm.data.pg_utils import (
+        pg_views
+    )
+    source_tables = []
+    for value in pg_views():
+        if value not in profile.social_tenure.views.keys():
             source_tables.append(value)
     return source_tables
 

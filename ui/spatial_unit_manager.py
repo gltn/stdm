@@ -67,6 +67,7 @@ class SpatialUnitManagerDockWidget(
         QDockWidget.__init__(self, iface.mainWindow())
         # Set up the user interface from Designer.
         self.setupUi(self)
+
         self.iface = iface
         self._plugin = plugin
         self.gps_tool_dialog = None
@@ -440,7 +441,8 @@ class SpatialUnitManagerDockWidget(
             )
 
         if curr_layer.isValid():
-
+            if curr_layer.name() in self._map_registry_layer_names():
+                return
             QgsMapLayerRegistry.instance().addMapLayer(
                 curr_layer
             )
@@ -449,15 +451,17 @@ class SpatialUnitManagerDockWidget(
 
             self.set_canvas_crs(curr_layer)
             # Required in order for the layer name to be set
-            QTimer.singleShot(
-                100,
-                lambda: self._set_layer_display_name(
-                    curr_layer,
-                    layer_name
+            if layer_name is not None:
+                QTimer.singleShot(
+                    100,
+                    lambda: self._set_layer_display_name(
+                        curr_layer,
+                        layer_name
+                    )
                 )
-            )
             self.zoom_to_layer()
             self.onLayerAdded.emit(spatial_column, curr_layer)
+
         else:
             msg = QApplication.translate(
                 "Spatial Unit Manager",

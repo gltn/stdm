@@ -227,7 +227,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         else:
             self.setWindowTitle(self.tmp_title)
 
-
     def _init_str_ctrls(self):
         # Collapse STR date range group boxes
         self.gb_start_dates.setCollapsed(False)
