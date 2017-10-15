@@ -37,16 +37,10 @@ from PyQt4.QtCore import (
 
 )
 from stdm.ui.notification import NotificationBar
-from stdm.data.configuration.stdm_configuration import (
-        StdmConfiguration,
-        Profile
-)
-from stdm.settings.config_serializer import ConfigurationFileSerializer
-from stdm.settings import current_profile
-from stdm.utils.util import setComboCurrentIndexWithText
 from stdm.data.configuration.db_items import DbItem
 from stdm.ui.wizard.custom_item_model import EntitiesModel
 from stdm.geoodk.geoodk_writer import GeoodkWriter
+from stdm.settings import current_profile
 
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -171,24 +165,21 @@ class GeoODKConverter(QDialog, FORM_CLASS):
     #                 source is self):
     #         return True
 
-    def accept(self):
+    def generate_mobile_form(self, selected_entities):
         """
-        Generate Xform based on user selected entities
+        Generate mobile form based on the selected entities.
         :return:
         """
-        self.str_supported = False
-        if self.ck_social_tenure.isChecked():
-            self.str_supported = True
         try:
             self._notif_bar_str.clear()
-            user_entities = self.selected_entities_from_Model()
-            if len(user_entities) == 0:
+
+            if len(selected_entities) == 0:
                 self._notif_bar_str.insertErrorNotification(
                     'No entity selected. Please select at least one entity...'
                 )
                 return
-            if len(user_entities) > 0:
-                geoodk_writer = GeoodkWriter(user_entities, self.str_supported)
+            if len(selected_entities) > 0:
+                geoodk_writer = GeoodkWriter(selected_entities, self.str_supported)
                 geoodk_writer.write_data_to_xform()
                 msg = 'File saved ' \
                       'in: {}'
@@ -198,3 +189,27 @@ class GeoODKConverter(QDialog, FORM_CLASS):
             self._notif_bar_str.insertErrorNotification(ex.message +
                                                         ': Unable to generate Mobile Form')
             return
+
+    def accept(self):
+        """
+        Generate mobile forms based on user selected entities.
+        Check if str is enabled, then ensure str tables are enabled.
+        :return:
+        """
+        user_entities = self.selected_entities_from_Model()
+        self.str_supported = False
+        if self.ck_social_tenure.isChecked():
+            self.str_supported = True
+            str_definition = current_profile().social_tenure
+            str_definition_party = str_definition.parties[0].short_name
+            str_definition_spatial = str_definition.spatial_units[0].short_name
+            if str_definition_party not in user_entities or str_definition_spatial not in user_entities:
+                self._notif_bar_str.insertErrorNotification(
+                    'One of the entities required to define str is not selected. Form not saved'
+                )
+                return
+            else:
+                self.generate_mobile_form(user_entities)
+        else:
+            self.generate_mobile_form(user_entities)
+

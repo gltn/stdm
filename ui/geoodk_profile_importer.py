@@ -61,6 +61,7 @@ HOME = QDir.home().path()
 
 CONFIG_FILE = HOME + '/.stdm/geoodk/'
 MSG = 'Error creating log'
+GEOODK_FORM_HOME = CONFIG_FILE+'instances'
 
 class ProfileInstanceRecords(QDialog, FORM_CLASS):
     """
@@ -159,7 +160,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         Create a path where imported instance will be kept
         :return:
         """
-        self.inst_path = self.path+"/imported_instance"
+        self.inst_path = self.path+"imported_instance"
         if not os.access(self.inst_path, os.F_OK):
             os.makedirs(unicode(self.inst_path))
         else:
@@ -181,7 +182,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         if self.txt_directory.text() != '':
             self.path = self.txt_directory.text()
         else:
-            self.path = CONFIG_FILE+'/instances'
+            self.path = GEOODK_FORM_HOME
             if not os.access(self.path, os.F_OK):
                 os.makedirs(unicode(self.path))
             self.txt_directory.setText(self.path)
@@ -574,12 +575,11 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 if QMessageBox.information(self,
                         QApplication.translate('MobileForms', 'Import Warning'),
                         QApplication.translate('MobileForms',
-                        'The user has not '
-                        'selected any entity. All entities '
+                        'You have not '
+                        'selected any entity for import. All entities '
                         'will be imported'), QMessageBox.Ok |
                                             QMessageBox.No) == QMessageBox.Ok:
                     entities = self.instance_entities()
-
                 else:
                     return
             self.entity_attribute_to_database(entities)
