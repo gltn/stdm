@@ -62,6 +62,8 @@ from stdm.ui.spatial_unit_manager import (
 )
 
 from stdm.ui.document_viewer import DocumentViewManager
+
+from stdm.ui.gps_tool import GPSToolDialog
 from .admin_unit_manager import VIEW,MANAGE,SELECT
 from .ui_entity_browser import Ui_EntityBrowser
 from .helpers import SupportsManageMixin
@@ -1015,14 +1017,32 @@ class EntityBrowserWithEditor(EntityBrowser):
         Load editor dialog based on the selected model instance with the given ID.
         '''
         model_obj = self._model_from_id(recid, rownumber)
+        # show GPS editor if geometry
+        if self._entity.has_geometry_column():
+            self.sp_unit_manager.active_layer_source()
 
-        #Load editor dialog
-        edit_entity_dlg = self._editor_dlg(self._entity, model=model_obj,
-                                         parent=self, parent_entity=self.parent_entity)
+            gps_tool = GPSToolDialog(
+                iface,
+                self._entity,
+                self._entity.name,
+                self.sp_unit_manager.active_sp_col,
+                model=model_obj,
+                reload=True,
+                row_number=rownumber,
+                entity_browser=self
+            )
+            result = gps_tool.exec_()
+        else:
+            #Load editor dialog
+            edit_entity_dlg = self._editor_dlg(self._entity, model=model_obj,
+                                             parent=self, parent_entity=self.parent_entity)
 
-        result = edit_entity_dlg.exec_()
+            result = edit_entity_dlg.exec_()
 
         if result == QDialog.Accepted:
+            if self._entity.has_geometry_column():
+                edit_entity_dlg = gps_tool.entity_editor
+
             updated_model_obj = edit_entity_dlg.model()
             if not edit_entity_dlg.is_valid:
                 return
@@ -1098,6 +1118,7 @@ class EntityBrowserWithEditor(EntityBrowser):
     
         recordId = recordIdIndex.data()
         self._load_editor_dialog(recordId,recordIdIndex.row())
+
 
     def shift_spatial_entity_browser(self):
         """

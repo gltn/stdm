@@ -351,11 +351,13 @@ def _entity_select_column(
                 # These are outer joins
                 join_type = 'LEFT JOIN'
 
-                # Use inner join only if parent entity is an STR entity
+                # Use inner join only if parent entity is an STR entity and it is the current entity.
+                # Other str entities should use left join.
                 if use_inner_join and \
-                        str_entity.is_str_entity(fk_parent_entity):
+                        str_entity.is_str_entity(fk_parent_entity) and fk_parent_entity == entity:
 
                     join_type = 'INNER JOIN'
+
 
                 if use_custom_join:
                     join_statement = u'{0} {1} {2} ON {3} = {2}.{4}'.format(

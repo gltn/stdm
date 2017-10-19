@@ -32,13 +32,18 @@ from stdm.settings.registryconfig import (
 )
 
 class GPSToolDialog(qg.QDialog, Ui_Dialog):
-    def __init__(self, iface, entity, sp_table, sp_col):
+    def __init__(self, iface, entity, sp_table, sp_col,
+                 model=None, reload=False, row_number=None, entity_browser=None):
         qg.QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
         self.iface = iface
         self.entity = entity
         self.sp_table = sp_table
         self.sp_col = sp_col
+        self.model = model
+        self.reload = reload
+        self.entity_browser = entity_browser
+        self.row_number = row_number
         self.entity_editor = None
         gpx_view.enable_drag_drop(self.table_widget)
         self._init_entity_editor()
@@ -101,7 +106,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :return: None
         :rtype:None
         """
-        self.entity_editor = EntityEditorDialog(self.entity, None, self)
+        self.entity_editor = EntityEditorDialog(self.entity, self.model, self)
         self.entity_editor.buttonBox.hide()  # Hide entity editor buttons
         for tab_text, tab_object in self.entity_editor.entity_editor_widgets.items():
             if tab_text != 'no_tab':
@@ -398,16 +403,18 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :rtype: None
         """
         if item.checkState() == qc.Qt.Unchecked:
-            qgs_point = gpx_view.check_uncheck_item(
+            qgs_points = gpx_view.check_uncheck_item(
                 self.point_row_attr, self.map_canvas, item
             )
-            self._unchecked_gpx_point(qgs_point)
+            for qgs_point in qgs_points:
+                self._unchecked_gpx_point(qgs_point)
             self._enable_disable_load_on_checkbox_click()
         else:
-            qgs_point = gpx_view.check_uncheck_item(
+            qgs_points = gpx_view.check_uncheck_item(
                 self.point_row_attr, self.map_canvas, item
             )
-            self._checked_gpx_point(qgs_point)
+            for qgs_point in qgs_points:
+                self._checked_gpx_point(qgs_point)
             self._enable_disable_load_on_checkbox_click()
         self._table_widget_row_selection()
 
@@ -438,6 +445,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
             qgs_point = gpx_view.add_to_list(self.qgs_point_list, qgs_point)
             if qgs_point:
                 self.qgs_point_list.append(qgs_point)
+
                 point_list, new_point_row_attr = gpx_view.get_qgs_points(
                     self.table_widget
                 )
@@ -568,9 +576,10 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :return: None
         :rtype: None
         """
-        qgs_point = gpx_view.check_uncheck_item(
+        qgs_points = gpx_view.check_uncheck_item(
             self.point_row_attr, self.map_canvas, None, 'check')
-        self._checked_gpx_point(qgs_point)
+        for qgs_point in qgs_points:
+            self._checked_gpx_point(qgs_point)
         self._enable_disable_button_widgets(None, True)
         if self.data_changed or self.drag_drop:
             point_list, new_point_row_attr = gpx_view.get_qgs_points(
@@ -584,9 +593,10 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :return: None
         :rtype: None
         """
-        qgs_point = gpx_view.check_uncheck_item(
+        qgs_points = gpx_view.check_uncheck_item(
             self.point_row_attr, self.map_canvas, None, 'uncheck')
-        self._unchecked_gpx_point(qgs_point)
+        for qgs_point in qgs_points:
+            self._unchecked_gpx_point(qgs_point)
         self._enable_disable_button_widgets(None, False)
         point_list, new_point_row_attr = gpx_view.get_qgs_points(
             self.table_widget)
@@ -596,18 +606,27 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         """
         Load and save feature to current active layer
         """
-        new_geometry = gpx_view.create_geometry(
-            self.geom_type, self.qgs_point_list
-        )
-        geometry_wkb = new_geometry.exportToWkt()
-        srid = self.entity.columns[self.sp_col].srid
-        model = self.entity_editor.model()
-        setattr(model, self.sp_col, 'SRID={};{}'.format(srid, geometry_wkb))
+        # If qgs_point_list length is 0, then it is in edit mode so allow attribute edit too.
+
+        if self.qgs_point_list is not None:
+
+            new_geometry = gpx_view.create_geometry(
+                self.geom_type, self.qgs_point_list
+            )
+
+            geometry_wkb = new_geometry.exportToWkt()
+
+            srid = self.entity.columns[self.sp_col].srid
+            model = self.entity_editor.model()
+            setattr(model, self.sp_col, 'SRID={};{}'.format(srid, geometry_wkb))
         # prevents duplicate entry
         self.load_bt.setDisabled(True)
         self.entity_editor.save_parent_editor()
-        self._reload_entity_editor()
-        self.load_bt.setDisabled(False)
+        if not self.reload:
+            self._reload_entity_editor()
+            self.load_bt.setDisabled(False)
+        else:
+            self.close()
 
     def _reload_entity_editor(self):
         """
@@ -625,9 +644,28 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :return: None
         :rtype: None
         """
+        model_inserted = False
         if len(gpx_view.get_layer_by_name(self.temp_layer_name)) != 0:
             gpx_view.remove_vertex(self.map_canvas, self.point_row_attr)
             gpx_view.remove_map_layer(self.map_canvas, self.temp_mem_layer)
         if self.point_row_attr:
             self._refresh_map_canvas()
+
+        if self.model is not None:
+            if not model_inserted:
+                updated_model_obj = self.entity_editor.model()
+                for i, attr in enumerate(self.entity_browser._entity_attrs):
+                    prop_idx = self.entity_browser._tableModel.index(self.row_number, i)
+                    attr_val = getattr(updated_model_obj, attr)
+
+                    '''
+                    Check if there are display formatters and apply if
+                    one exists for the given attribute.
+                    '''
+                    if attr in self.entity_browser._cell_formatters:
+                        formatter = self.entity_browser._cell_formatters[attr]
+                        attr_val = formatter.format_column_value(attr_val)
+
+                    self.entity_browser._tableModel.setData(prop_idx, attr_val)
+
         event.accept()

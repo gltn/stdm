@@ -176,7 +176,7 @@ def process_report_filter(tableName, columns, whereStr="", sortStmnt=""):
     sql = "SELECT {0} FROM {1}".format(columns,tableName)
     
     if whereStr != "":
-        sql += " WHERE {0} ".format(whereStr)
+        sql += u" WHERE {0} ".format(unicode(whereStr))
         
     if sortStmnt !="":
         sql += sortStmnt
@@ -186,14 +186,14 @@ def process_report_filter(tableName, columns, whereStr="", sortStmnt=""):
     return _execute(t)
 
 def export_data(table_name):
-    sql = "SELECT * FROM {0}".format(table_name, )
+    sql = "SELECT * FROM {0}".format(unicode(table_name), )
 
     t = text(sql)
 
     return _execute(t)
 
 def export_data_from_columns(columns, table_name):
-    sql = "SELECT {0} FROM {1}".format(columns, table_name)
+    sql = "SELECT {0} FROM {1}".format(unicode(columns), unicode(table_name))
 
     t = text(sql)
 
@@ -209,7 +209,7 @@ def fix_sequence(table_name):
     :type table_name: String
     """
     sql_sequence_fix = text(
-        "SELECT setval('{0}_id_seq', (SELECT MAX(id) FROM {0}));".format(
+        "SELECT setval(u'{0}_id_seq', (SELECT MAX(id) FROM {0}));".format(
             table_name
         )
     )
@@ -220,7 +220,7 @@ def fix_sequence(table_name):
 def import_data(table_name, columns_names, data, **kwargs):
 
     sql = "INSERT INTO {0} ({1}) VALUES {2}".format(table_name,
-                                                    columns_names, data)
+                                                    columns_names, unicode(data))
 
     t = text(sql)
     conn = STDMDb.instance().engine.connect()
@@ -334,15 +334,15 @@ def unique_column_values(tableName, columnName, quoteDataTypes=["character varyi
     for r in result:
         if r[columnName] == None:
             if quoteRequired == -1:
-                uniqueVals.append("NULL")
+                uniqueVals.append(u"NULL")
             else:
-                uniqueVals.append("''")
+                uniqueVals.append(u"''")
                 
         else:
             if quoteRequired == -1:
                 uniqueVals.append(str(r[columnName]))
             else:
-                uniqueVals.append("'{0}'".format(str(r[columnName])))
+                uniqueVals.append(u"'{0}'".format(unicode(r[columnName])))
                 
     return uniqueVals
 

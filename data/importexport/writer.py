@@ -59,7 +59,7 @@ class OGRWriter():
         #Create driver
         drv = ogr.GetDriverByName(self.getDriverName())        
         if drv is None:
-            raise Exception("{0} driver not available.".format(self.getDriverName()))
+            raise Exception(u"{0} driver not available.".format(self.getDriverName()))
         
         #Create data source
         self._ds = drv.CreateDataSource(self._targetFile)
@@ -130,7 +130,7 @@ class OGRWriter():
                 else:
                     fieldValue = r[i]  
 
-                    fieldValue = str(fieldValue).encode('utf-8')
+                    fieldValue = unicode(fieldValue)#.encode('utf-8')
                         
                     feat.SetField(i,fieldValue)
                           

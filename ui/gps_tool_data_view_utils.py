@@ -184,10 +184,12 @@ def create_geometry(geom_type, point_list):
     if geom_type == 'Point':
         for point in point_list:
             new_geometry = q_core.QgsGeometry.fromPoint(point)
+
     elif geom_type == 'LineString':
         new_geometry = q_core.QgsGeometry.fromPolyline(point_list)
     else:
         new_geometry = q_core.QgsGeometry.fromPolygon([point_list])
+
     return new_geometry
 
 
@@ -279,23 +281,23 @@ def check_uncheck_item(
     :return qgs_point: A list of spatial points
     :rtype qgs_point: List object
     """
-    qgs_point = None
+    qgs_points = []
     for row, point_attr in enumerate(point_row_attr):
         if item:
             # On individual checkbox click
             if row == item.row() and item.column() == 0:
                 _change_item_vertex_state(point_attr, color)
-                qgs_point = point_attr['qgs_point']
+                qgs_points.append(point_attr['qgs_point'])
         else:
             # On select all or clear all button click
             if point_attr['checkbox'].checkState() == qc.Qt.Unchecked and check_transform == 'check':
                 _change_item_vertex_state(point_attr, color, qc.Qt.Checked)
-                qgs_point = point_attr['qgs_point']
+                qgs_points.append(point_attr['qgs_point'])
             elif point_attr['checkbox'].checkState() == qc.Qt.Checked and check_transform == 'uncheck':
                 _change_item_vertex_state(point_attr, color, qc.Qt.Unchecked)
-                qgs_point = point_attr['qgs_point']
+                qgs_points.append(point_attr['qgs_point'])
     map_canvas.refresh()
-    return qgs_point
+    return qgs_points
 
 
 def row_selection_change(
