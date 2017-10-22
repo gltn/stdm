@@ -236,7 +236,7 @@ class ExportData(QWizard,Ui_frmExportWizard):
         targetFile = str(self.field("destFile"))
         writer = OGRWriter(targetFile)
         resultSet = self.filter_buildQuery()
-        
+
         if resultSet is None:
             return succeed
         
@@ -245,6 +245,7 @@ class ExportData(QWizard,Ui_frmExportWizard):
             return succeed
 
         try:
+
             writer.db2Feat(
                 self, self.srcTab, resultSet, self.selectedColumns(),
                 self.geomColumn
@@ -286,10 +287,11 @@ class ExportData(QWizard,Ui_frmExportWizard):
         queryCols = self.selectedColumns() 
         
         if self.geomColumn != "":
-            queryCols.append("ST_AsText(%s)"%(self.geomColumn)) 
+            queryCols.append(u"ST_AsText(%s)"%(self.geomColumn))
             
-                 
-        columnList = ",".join(queryCols)
+
+        columnList = u",".join(queryCols)
+
         whereStmnt = self.txtWhereQuery.toPlainText()         
         sortStmnt=''        
         results=None 

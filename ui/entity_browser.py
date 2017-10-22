@@ -708,6 +708,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         self._tableModel.insertRows(insertPosition, 1)
 
         for i, attr in enumerate(self._entity_attrs):
+            print attr
             prop_idx = self._tableModel.index(insertPosition, i)
             attr_val = getattr(model_obj, attr)
 
@@ -820,7 +821,7 @@ class EntityBrowserWithEditor(EntityBrowser):
 
                 self.shift_spatial_entity_browser()
                 # Hide the add button from spatial tables
-                self._newEntityAction.setVisible(False)
+                # self._newEntityAction.setVisible(False)
 
             self._editor_dlg = EntityEditorDialog
 
@@ -838,14 +839,26 @@ class EntityBrowserWithEditor(EntityBrowser):
             self._notifBar.insertErrorNotification(msg)
 
             return
+        if self._entity.has_geometry_column():
+            self.sp_unit_manager.active_layer_source()
 
-        self.addEntityDlg = self._editor_dlg(
-            self._entity, parent=self, parent_entity=self.parent_entity
-        )
+            gps_tool = GPSToolDialog(
+                iface,
+                self._entity,
+                self._entity.name,
+                self.sp_unit_manager.active_sp_col,
+                reload=False,
+                entity_browser=self
+            )
+            result = gps_tool.exec_()
+        else:
+            self.addEntityDlg = self._editor_dlg(
+                self._entity, parent=self, parent_entity=self.parent_entity
+            )
 
-        self.addEntityDlg.addedModel.connect(self.on_save_and_new)
+            self.addEntityDlg.addedModel.connect(self.on_save_and_new)
 
-        result = self.addEntityDlg.exec_()
+            result = self.addEntityDlg.exec_()
 
         if result == QDialog.Accepted:
             model_obj = self.addEntityDlg.model()
@@ -1027,7 +1040,7 @@ class EntityBrowserWithEditor(EntityBrowser):
                 self._entity.name,
                 self.sp_unit_manager.active_sp_col,
                 model=model_obj,
-                reload=True,
+                reload=False,
                 row_number=rownumber,
                 entity_browser=self
             )

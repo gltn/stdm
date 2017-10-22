@@ -33,7 +33,7 @@ from stdm.settings.registryconfig import (
 
 class GPSToolDialog(qg.QDialog, Ui_Dialog):
     def __init__(self, iface, entity, sp_table, sp_col,
-                 model=None, reload=False, row_number=None, entity_browser=None):
+                 model=None, reload=True, row_number=None, entity_browser=None):
         qg.QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
         self.iface = iface
@@ -622,7 +622,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         # prevents duplicate entry
         self.load_bt.setDisabled(True)
         self.entity_editor.save_parent_editor()
-        if not self.reload:
+        if self.reload:
             self._reload_entity_editor()
             self.load_bt.setDisabled(False)
         else:
@@ -644,28 +644,32 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :return: None
         :rtype: None
         """
-        model_inserted = False
         if len(gpx_view.get_layer_by_name(self.temp_layer_name)) != 0:
             gpx_view.remove_vertex(self.map_canvas, self.point_row_attr)
             gpx_view.remove_map_layer(self.map_canvas, self.temp_mem_layer)
         if self.point_row_attr:
             self._refresh_map_canvas()
+        current_model_obj = self.entity_editor.model()
 
-        if self.model is not None:
-            if not model_inserted:
-                updated_model_obj = self.entity_editor.model()
+        # Edit mode
+        if self.entity_browser is not None and self.row_number is not None:
+
+            if self.model is not None:
+
                 for i, attr in enumerate(self.entity_browser._entity_attrs):
                     prop_idx = self.entity_browser._tableModel.index(self.row_number, i)
-                    attr_val = getattr(updated_model_obj, attr)
+                    attr_val = getattr(current_model_obj, attr)
+                    # Check if there are display formatters and apply if
+                    # one exists for the given attribute.
 
-                    '''
-                    Check if there are display formatters and apply if
-                    one exists for the given attribute.
-                    '''
                     if attr in self.entity_browser._cell_formatters:
                         formatter = self.entity_browser._cell_formatters[attr]
                         attr_val = formatter.format_column_value(attr_val)
 
                     self.entity_browser._tableModel.setData(prop_idx, attr_val)
-
+        # New record mode
+        # if self.entity_browser is not None and self.row_number is None:
+        #
+        #     self.entity_browser.addModelToView(current_model_obj)
+        #     self.entity_browser.recomputeRecordCount()
         event.accept()

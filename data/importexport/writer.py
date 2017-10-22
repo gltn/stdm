@@ -84,8 +84,10 @@ class OGRWriter():
         #Create fields
         for c in columns:
             #SQLAlchemy string values are in unicode so decoding is required in order to use in OGR
+
             encodedFieldName = c.encode('utf-8')
-            field_defn = self.createField(table,encodedFieldName)
+
+            field_defn = self.createField(table, encodedFieldName)
             if lyr.CreateField(field_defn) != 0:
                 raise Exception("Creating %s field failed"%(c))
             
@@ -104,6 +106,7 @@ class OGRWriter():
          
         #Iterate the result set        
         for r in results:
+
             #Progress dialog 
             progress.setValue(initVal) 
             progressMsg = lblMsgTemp.format(str(initVal+1),str(numFeat))
@@ -128,12 +131,9 @@ class OGRWriter():
                     feat.SetGeometry(featGeom)
                     
                 else:
-                    fieldValue = r[i]  
+                    field_value = unicode(r[i])
+                    feat.SetField(i, field_value.encode('utf-8'))
 
-                    fieldValue = unicode(fieldValue)#.encode('utf-8')
-                        
-                    feat.SetField(i,fieldValue)
-                          
             if lyr.CreateFeature(feat) != 0:
                 progress.close()
                 raise Exception(
