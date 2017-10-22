@@ -180,6 +180,7 @@ class MapperMixin(object):
         self._dirtyTracker = ControlDirtyTrackerCollection()
         self._notifBar = None
         self.is_valid = False
+        self.saved_model = None
         
         #Initialize notification bar
         if hasattr(self,"vlNotification"):
@@ -345,7 +346,7 @@ class MapperMixin(object):
         '''
         Executed once a record has been saved or updated. 
         '''
-        pass
+        self.saved_model = dbmodel
     
     def submit(self, collect_model=False, save_and_new=False):
         """

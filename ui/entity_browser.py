@@ -708,7 +708,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         self._tableModel.insertRows(insertPosition, 1)
 
         for i, attr in enumerate(self._entity_attrs):
-            print attr
+
             prop_idx = self._tableModel.index(insertPosition, i)
             attr_val = getattr(model_obj, attr)
 
@@ -851,6 +851,8 @@ class EntityBrowserWithEditor(EntityBrowser):
                 entity_browser=self
             )
             result = gps_tool.exec_()
+            result = False # a workaround to avoid duplicate model insert
+            self.addEntityDlg = gps_tool.entity_editor
         else:
             self.addEntityDlg = self._editor_dlg(
                 self._entity, parent=self, parent_entity=self.parent_entity

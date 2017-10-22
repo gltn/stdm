@@ -343,9 +343,13 @@ def remove_from_list(item_list, item):
     :return: Element list
     :rtype: List object
     """
+
     if item in set(item_list):
         item_list = [point for point in item_list if point != item]
         return item_list
+
+    return []
+
 
 
 def add_to_list(item_list, item):

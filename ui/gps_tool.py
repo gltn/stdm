@@ -54,7 +54,8 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         self.prev_point_row_attr = None
         self.prev_selected_rows = None
         self.gpx_layer = None
-        self.qgs_point_list = None
+        self.qgs_point_list = []
+        self.saved = False
         self.geom_type = None
         self.uncheck_counter = 0
         self.temp_layer_name = None
@@ -63,6 +64,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         self.prev_item_position = None
         self.prev_item_value = None
         self.data_changed = None
+        self.geometry_added = False
         self.drag_drop = None
         self.item_changed = None
         self.enable_save = False
@@ -406,8 +408,10 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
             qgs_points = gpx_view.check_uncheck_item(
                 self.point_row_attr, self.map_canvas, item
             )
+
             for qgs_point in qgs_points:
                 self._unchecked_gpx_point(qgs_point)
+
             self._enable_disable_load_on_checkbox_click()
         else:
             qgs_points = gpx_view.check_uncheck_item(
@@ -424,15 +428,14 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :param qgs_point: Feature vertex
         """
         if qgs_point:
-            qgs_point_list = gpx_view.remove_from_list(
-                self.qgs_point_list, qgs_point
+
+            self.qgs_point_list.remove(qgs_point)
+
+            point_list, new_point_row_attr = gpx_view.get_qgs_points(
+                self.table_widget
             )
-            if qgs_point_list:
-                self.qgs_point_list = qgs_point_list
-                point_list, new_point_row_attr = gpx_view.get_qgs_points(
-                    self.table_widget
-                )
-                self._update_feature(point_list, new_point_row_attr)
+
+            self._update_feature(point_list, new_point_row_attr)
 
     def _checked_gpx_point(self, qgs_point):
         """
@@ -608,7 +611,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         """
         # If qgs_point_list length is 0, then it is in edit mode so allow attribute edit too.
 
-        if self.qgs_point_list is not None:
+        if len(self.qgs_point_list) > 0:
 
             new_geometry = gpx_view.create_geometry(
                 self.geom_type, self.qgs_point_list
@@ -619,6 +622,20 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
             srid = self.entity.columns[self.sp_col].srid
             model = self.entity_editor.model()
             setattr(model, self.sp_col, 'SRID={};{}'.format(srid, geometry_wkb))
+            self.geometry_added = True
+        # validate empty GPS field
+        if not self.geometry_added:
+            qg.QMessageBox.critical(
+                self,
+                self.tr('Missing GPS Feature Error'),
+                self.tr(
+                    'You have not added a GPS Feature. \n'
+                    'Please, add a GPS feature in the Feature Import tab or\n'
+                    'digitize a feature to add a record.'
+
+                )
+            )
+            return
         # prevents duplicate entry
         self.load_bt.setDisabled(True)
         self.entity_editor.save_parent_editor()
@@ -649,7 +666,14 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
             gpx_view.remove_map_layer(self.map_canvas, self.temp_mem_layer)
         if self.point_row_attr:
             self._refresh_map_canvas()
+
+        self.save_handler()
+
+    def save_handler(self):
+
         current_model_obj = self.entity_editor.model()
+        if self.entity_editor.saved_model is None:
+            return
 
         # Edit mode
         if self.entity_browser is not None and self.row_number is not None:
@@ -657,7 +681,8 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
             if self.model is not None:
 
                 for i, attr in enumerate(self.entity_browser._entity_attrs):
-                    prop_idx = self.entity_browser._tableModel.index(self.row_number, i)
+                    prop_idx = self.entity_browser._tableModel.index(
+                        self.row_number, i)
                     attr_val = getattr(current_model_obj, attr)
                     # Check if there are display formatters and apply if
                     # one exists for the given attribute.
@@ -668,8 +693,6 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
 
                     self.entity_browser._tableModel.setData(prop_idx, attr_val)
         # New record mode
-        # if self.entity_browser is not None and self.row_number is None:
-        #
-        #     self.entity_browser.addModelToView(current_model_obj)
-        #     self.entity_browser.recomputeRecordCount()
-        event.accept()
+        if self.entity_browser is not None and self.row_number is None:
+            self.entity_browser.addModelToView(current_model_obj)
+            self.entity_browser.recomputeRecordCount()
