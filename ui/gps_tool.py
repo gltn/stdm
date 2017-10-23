@@ -428,8 +428,8 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :param qgs_point: Feature vertex
         """
         if qgs_point:
-
-            self.qgs_point_list.remove(qgs_point)
+            if qgs_point in self.qgs_point_list:
+                self.qgs_point_list.remove(qgs_point)
 
             point_list, new_point_row_attr = gpx_view.get_qgs_points(
                 self.table_widget
