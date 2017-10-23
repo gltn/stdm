@@ -170,7 +170,7 @@ class EntityFormatter:
     def model_type_from_columntype(val):
         """
         Method to convert the entity column type to XForm type
-        need to implement dynamic variation of types.. now handcoded
+        need to implement dynamic variation of types.. for now it is handcoded
         :return: 
         """
         xform_type = {
