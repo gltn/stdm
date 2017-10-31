@@ -71,7 +71,8 @@ class ExportData(QWizard,Ui_frmExportWizard):
         self.btnOpOr.clicked.connect(self.filter_insertOR)
         self.btnClearQuery.clicked.connect(self.filter_clearQuery)
         self.btnQueryVerify.clicked.connect(self.filter_verifyQuery)
-        
+        self.select_all.clicked.connect(self.select_all_columns)
+        self.select_none.clicked.connect(self.select_none_columns)
         #Init controls
         self.initControls()
         
@@ -143,10 +144,21 @@ class ExportData(QWizard,Ui_frmExportWizard):
             srcCol=self.lstSrcCols_2.item(c)
             
             if srcCol.checkState() == Qt.Checked:                              
-                tabCols.append(srcCol.text())    
-                          
+                tabCols.append(srcCol.text())
         return tabCols
-            
+
+    def select_all_columns(self):
+        # Get the selected columns to be imported
+        for c in range(self.lstSrcCols_2.count()):
+            column = self.lstSrcCols_2.item(c)
+            column.setCheckState(Qt.Checked)
+
+    def select_none_columns(self):
+        # Get the selected columns to be imported
+        for c in range(self.lstSrcCols_2.count()):
+            column = self.lstSrcCols_2.item(c)
+            column.setCheckState(Qt.Unchecked)
+
     def loadSourceTables(self):
         #Load all STDM tables
         self.lstSrcTab.clear()

@@ -1,5 +1,24 @@
-    # Change Log
+# Change Log
 All notable changes of the Social Tenure Domain Model(STDM) is documented in this file.
+## [1.7.0] - 2017-10-25
+
+### Added
+- **Database and Configuration**: Multiple spatial units are now possible to be used in social tenure relationship.
+- **Database and Configuration**: Custom Tenure entity is added to attach additional attribute to each Social Tenure Relationship.
+- **Social Tenure Relationship Editor**: Added ability to choose more than one Spatial Unit.
+- **Social Tenure Relationship Editor**: Added additional node for Custom Tenure Information entity.
+- **Spatial Entity Browser**: Added the GPS Feature Import to be used for editing and adding a new record.
+
+### Fixed
+- **Export Data**: Fixed encoding issues when exporting data.
+
+### Changed
+- **View Social Tenure Relationship**: Refactored the tree view to use the Spatial Entity Details to speed up performance.
+
+## [1.6.4] - 2017-07-29
+### Fixed
+- **Export Data**: Fixed export error.
+
 ## [1.6.2] - 2017-05-29
 ### Fixed
 - **Social Tenure Relationship**: Fixed Edit STR issue of Party, STR Type and supporting document not working.
@@ -34,8 +53,6 @@ with similar name as the profile.
 - **Supporting Documents**: Fixed the error when saving supporting documents on
 entities with no profile prefix.
 
-### Changed
-- **Change Log**: Updated the change log.
 
 ## [1.5.0] - 2017-02-23
 
