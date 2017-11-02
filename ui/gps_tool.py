@@ -609,8 +609,8 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         """
         Load and save feature to current active layer
         """
-        # If qgs_point_list length is 0, then it is in edit mode so allow attribute edit too.
-
+        # If qgs_point_list length is 0, then it is in edit mode so
+        # allow attribute edit too.
         if len(self.qgs_point_list) > 0:
 
             new_geometry = gpx_view.create_geometry(
@@ -624,7 +624,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
             setattr(model, self.sp_col, 'SRID={};{}'.format(srid, geometry_wkb))
             self.geometry_added = True
         # validate empty GPS field
-        if not self.geometry_added:
+        if not self.geometry_added and self.model is None:
             qg.QMessageBox.critical(
                 self,
                 self.tr('Missing GPS Feature Error'),
@@ -632,7 +632,6 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
                     'You have not added a GPS Feature. \n'
                     'Please, add a GPS feature in the Feature Import tab or\n'
                     'digitize a feature to add a record.'
-
                 )
             )
             return

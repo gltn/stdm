@@ -20,15 +20,25 @@
  *                                                                         *
  ***************************************************************************/
 """
+
 import os
 import logging
 import re
+from collections import OrderedDict
 
-from PyQt4 import uic
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from qgis.core import *
+from qgis.core import (
+    QgsGeometry,
+    QgsFeature,
+    QgsMapLayerRegistry,
+    QgsField
+)
+from stdm.data.configuration import entity_model
 
+from stdm.data.configuration.columns import GeometryColumn, VirtualColumn, \
+    MultipleSelectColumn
 from gps_tool import GPSToolDialog
 from stdm.settings import (
     current_profile,
@@ -52,6 +62,7 @@ from stdm.ui.forms.spatial_unit_form import (
 from stdm.utils.util import profile_and_user_views
 from stdm.mapping.utils import pg_layerNamesIDMapping
 
+from stdm.ui.forms.widgets import ColumnWidgetRegistry
 from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
 
 
@@ -91,6 +102,9 @@ class SpatialUnitManagerDockWidget(
         self.iface.currentLayerChanged.connect(
             self.control_digitize_toolbar
         )
+        # self.iface.currentLayerChanged.connect(
+        #     self.init_layer_data
+        # )
         self.onLayerAdded.connect(
             self.init_spatial_form
         )
@@ -139,9 +153,12 @@ class SpatialUnitManagerDockWidget(
         for e in self.geom_entities:
             table_name = e.name
             if table_name in self.sp_tables:
-                for gc in e.geometry_columns():
+                for i, gc in enumerate(e.geometry_columns()):
                     column_name = gc.name
+
                     display_name = gc.layer_display()
+                    if i > 0:
+                        display_name = u'{}.{}'.format(display_name, gc.name)
                     self._add_geometry_column_to_combo(
                         table_name,
                         column_name,
@@ -168,14 +185,10 @@ class SpatialUnitManagerDockWidget(
                     for i, geom_col in enumerate(self.str_view_geom_columns):
                         view_layer_name = str_view
                         if i > 0:
-                            # view_layer_name = self._curr_profile. \
-                            #     social_tenure.layer_display()
+
                             view_layer_name = '{}.{}'.format(
                                 view_layer_name, geom_col
                             )
-                        # else:
-                            # view_layer_name = self._curr_profile. \
-                            #     social_tenure.layer_display()
 
                         self._add_geometry_column_to_combo(
                             str_view,
@@ -219,6 +232,116 @@ class SpatialUnitManagerDockWidget(
                     self.iface.digitizeToolBar().setEnabled(False)
             except Exception:
                 pass
+
+    def _init_entity_columns(self, entity):
+        """
+        Asserts if the entity columns actually do exist in the database. The
+        method also initializes the table headers, entity column and cell
+        formatters.
+        """
+
+        columns = table_column_names(entity.name)
+        missing_columns = []
+
+        header_idx = 0
+        headers = []
+        entity_attrs = OrderedDict()
+        cell_formatters = OrderedDict()
+
+        # Iterate entity column and assert if they exist
+        for c in entity.columns.values():
+            # Exclude geometry columns
+            if isinstance(c, GeometryColumn):
+                continue
+
+            # Do not include virtual columns in list of missing columns
+            if not c.name in columns and not isinstance(c, VirtualColumn):
+                missing_columns.append(c.name)
+
+            else:
+
+                header = c.ui_display()
+                headers.append(header)
+
+                col_name = c.name
+
+                '''
+                If it is a virtual column then use column name as the header
+                but fully qualified column name (created by SQLAlchemy
+                relationship) as the entity attribute name.
+                '''
+
+                if isinstance(c, MultipleSelectColumn):
+                    col_name = c.model_attribute_name
+
+                entity_attrs[col_name] = c.TYPE_INFO
+
+                # Get widget factory so that we can use the value formatter
+                w_factory = ColumnWidgetRegistry.factory(c.TYPE_INFO)
+                if not w_factory is None:
+                    formatter = w_factory(c)
+                    cell_formatters[col_name] = formatter
+
+        return entity_attrs, cell_formatters
+
+    def init_layer_data(self, layer):
+        '''
+        Set table model and load data into it.
+        '''
+        if layer is None:
+            return
+        provider = layer.dataProvider()
+
+        layer.startEditing()
+        feat_ids = [feat.id() for feat in layer.getFeatures()]
+        provider.deleteFeatures(feat_ids)
+        source_status = self.active_layer_source()
+        QApplication.processEvents()
+        entity = self._curr_profile.entity_by_name(self.active_table)
+        model = entity_model(entity)
+        entity_attrs, cell_formatters = self._init_entity_columns(entity)
+        # Load entity data. There might be a better way in future in order
+        # to ensure that there is a balance between user data discovery
+        # experience and performance.
+
+        entity_cls = model()
+
+        entity_records = entity_cls.queryObject().filter().all()
+        # Add records to nested list for enumeration in table model
+
+        feature_list = []
+        for i, er in enumerate(entity_records):
+            entity_row_info = []
+
+            try:
+                for attr in entity_attrs.keys():
+                    attr_val = getattr(er, attr)
+                    # Check if there are display formatters and apply if
+                    # one exists for the given attribute.
+                    if attr in cell_formatters:
+
+                        formatter = cell_formatters[attr]
+                        attr_val = formatter.format_column_value(attr_val)
+                    entity_row_info.append(attr_val)
+
+                feature = QgsFeature()
+                # feature.setGeometry(gpx_geom)
+                #print entity_row_info
+                feature.setAttributes(
+                    entity_row_info
+                )
+                feature_list.append(feature)
+
+            except Exception as ex:
+                return
+        layer_fields = []
+        for col, type_ in entity_attrs.iteritems():
+            layer_fields.append(QgsField(col, QVariant.String))
+
+        provider.addAttributes(layer_fields)
+        layer.updateFields()
+        provider.addFeatures(feature_list)
+        layer.commitChanges()
 
     def set_canvas_crs(self, layer):
         # Sets canvas CRS

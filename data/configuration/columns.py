@@ -642,7 +642,7 @@ class GeometryColumn(BaseColumn):
         if self.layer_display_name:
             return self.layer_display_name
 
-        return u'{0}.{1}'.format(self.entity.name, self.name)
+        return u'{0}'.format(self.entity.short_name)
 
     def geometry_type(self):
         """
