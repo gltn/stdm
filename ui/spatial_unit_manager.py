@@ -30,15 +30,21 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from qgis.core import *
 from qgis.core import (
+    NULL,
     QgsGeometry,
+QgsStyleV2,
     QgsFeature,
     QgsMapLayerRegistry,
-    QgsField
+    QgsField,
+    QgsSymbolV2,
+    QgsRendererCategoryV2,
+    QgsCategorizedSymbolRendererV2
+)
+from qgis.gui import (
+    QgsCategorizedSymbolRendererV2Widget
 )
 from stdm.data.configuration import entity_model
 
-from stdm.data.configuration.columns import GeometryColumn, VirtualColumn, \
-    MultipleSelectColumn
 from gps_tool import GPSToolDialog
 from stdm.settings import (
     current_profile,
@@ -59,14 +65,13 @@ from stdm.data.pg_utils import (
 from stdm.ui.forms.spatial_unit_form import (
     STDMFieldWidget
 )
-from stdm.utils.util import profile_and_user_views
+from stdm.utils.util import profile_and_user_views, lookup_id_to_value, entity_id_to_display_col
 from stdm.mapping.utils import pg_layerNamesIDMapping
 
-from stdm.ui.forms.widgets import ColumnWidgetRegistry
 from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
 
-
 LOGGER = logging.getLogger('stdm')
+
 
 class SpatialUnitManagerDockWidget(
     QDockWidget, Ui_SpatialUnitManagerWidget
@@ -90,7 +95,7 @@ class SpatialUnitManagerDockWidget(
         self.active_entity = None
         self.active_table = None
         self.active_sp_col = None
-
+        self.style_updated = None
         self.setMaximumHeight(300)
         self._curr_profile = current_profile()
         self._profile_spatial_layers = []
@@ -102,15 +107,50 @@ class SpatialUnitManagerDockWidget(
         self.iface.currentLayerChanged.connect(
             self.control_digitize_toolbar
         )
-        # self.iface.currentLayerChanged.connect(
-        #     self.init_layer_data
-        # )
+
+        # QgsSymbolV2SelectorDialog.symbolModified.connect(self.sym_mod)
         self.onLayerAdded.connect(
             self.init_spatial_form
         )
         self.add_to_canvas_button.clicked.connect(
             self.on_add_to_canvas_button_clicked
         )
+
+    def connect_beautify_legend(self):
+
+        layer = self.iface.activeLayer()
+        feature_renderer = layer.rendererV2()
+        renderer_widget = QgsCategorizedSymbolRendererV2Widget(
+        layer, QgsStyleV2().defaultStyle(), feature_renderer)
+        # renderer_widget.layerVariablesChanged.connect(self.beautify_legend)
+        self.beautify_legend()
+        # renderer_widget.refreshSymbolView()
+
+    def beautify_legend(self):
+        layer = self.iface.activeLayer()
+
+        feature_renderer = layer.rendererV2()
+        if feature_renderer.type() == 'categorizedSymbol':
+
+            for category in feature_renderer.categories():
+
+                if category.value() == NULL:
+                    continue
+                if category.value() == '':
+                    continue
+                entity = self._curr_profile.entity_by_name(self.curr_lyr_table)
+
+                column = feature_renderer.classAttribute()
+
+                if entity.columns[column].TYPE_INFO == 'LOOKUP':
+                    label = lookup_id_to_value(
+                        self._curr_profile, column, category.value()
+                    )
+                else:# for 'FOREIGN_KEY'
+                    label = entity_id_to_display_col(entity, column, category.value())
+
+                idx = feature_renderer.categoryIndexForValue(category.value())
+                feature_renderer.updateCategoryLabel(idx, label)
 
     def _adjust_layer_drop_down_width(self):
         """
@@ -133,7 +173,6 @@ class SpatialUnitManagerDockWidget(
         self.stdm_layers_combo.clear()
 
         if self._curr_profile is None:
-
             return
 
         self.spatial_units = self._curr_profile.social_tenure.spatial_units
@@ -144,7 +183,7 @@ class SpatialUnitManagerDockWidget(
         self.geom_entities = [
             ge for ge in config_entities.values()
             if ge.TYPE_INFO == 'ENTITY' and
-            ge.has_geometry_column()
+               ge.has_geometry_column()
         ]
 
         self._profile_spatial_layers = []
@@ -185,7 +224,6 @@ class SpatialUnitManagerDockWidget(
                     for i, geom_col in enumerate(self.str_view_geom_columns):
                         view_layer_name = str_view
                         if i > 0:
-
                             view_layer_name = '{}.{}'.format(
                                 view_layer_name, geom_col
                             )
@@ -203,7 +241,8 @@ class SpatialUnitManagerDockWidget(
         # add old config views and custom views.
         for sp_table in self.sp_tables:
             if sp_table in pg_views() and sp_table not in str_views and \
-                sp_table in profile_and_user_views(self._curr_profile):
+                            sp_table in profile_and_user_views(
+                        self._curr_profile):
                 view_geom_columns = table_column_names(
                     sp_table, True
                 )
@@ -232,116 +271,6 @@ class SpatialUnitManagerDockWidget(
                     self.iface.digitizeToolBar().setEnabled(False)
             except Exception:
                 pass
-
-    def _init_entity_columns(self, entity):
-        """
-        Asserts if the entity columns actually do exist in the database. The
-        method also initializes the table headers, entity column and cell
-        formatters.
-        """
-
-        columns = table_column_names(entity.name)
-        missing_columns = []
-
-        header_idx = 0
-        headers = []
-        entity_attrs = OrderedDict()
-        cell_formatters = OrderedDict()
-
-        # Iterate entity column and assert if they exist
-        for c in entity.columns.values():
-            # Exclude geometry columns
-            if isinstance(c, GeometryColumn):
-                continue
-
-            # Do not include virtual columns in list of missing columns
-            if not c.name in columns and not isinstance(c, VirtualColumn):
-                missing_columns.append(c.name)
-
-            else:
-
-                header = c.ui_display()
-                headers.append(header)
-
-                col_name = c.name
-
-                '''
-                If it is a virtual column then use column name as the header
-                but fully qualified column name (created by SQLAlchemy
-                relationship) as the entity attribute name.
-                '''
-
-                if isinstance(c, MultipleSelectColumn):
-                    col_name = c.model_attribute_name
-
-                entity_attrs[col_name] = c.TYPE_INFO
-
-                # Get widget factory so that we can use the value formatter
-                w_factory = ColumnWidgetRegistry.factory(c.TYPE_INFO)
-                if not w_factory is None:
-                    formatter = w_factory(c)
-                    cell_formatters[col_name] = formatter
-
-        return entity_attrs, cell_formatters
-
-    def init_layer_data(self, layer):
-        '''
-        Set table model and load data into it.
-        '''
-        if layer is None:
-            return
-        provider = layer.dataProvider()
-
-        layer.startEditing()
-        feat_ids = [feat.id() for feat in layer.getFeatures()]
-        provider.deleteFeatures(feat_ids)
-        source_status = self.active_layer_source()
-        QApplication.processEvents()
-        entity = self._curr_profile.entity_by_name(self.active_table)
-        model = entity_model(entity)
-        entity_attrs, cell_formatters = self._init_entity_columns(entity)
-        # Load entity data. There might be a better way in future in order
-        # to ensure that there is a balance between user data discovery
-        # experience and performance.
-
-        entity_cls = model()
-
-        entity_records = entity_cls.queryObject().filter().all()
-        # Add records to nested list for enumeration in table model
-
-        feature_list = []
-        for i, er in enumerate(entity_records):
-            entity_row_info = []
-
-            try:
-                for attr in entity_attrs.keys():
-                    attr_val = getattr(er, attr)
-                    # Check if there are display formatters and apply if
-                    # one exists for the given attribute.
-                    if attr in cell_formatters:
-
-                        formatter = cell_formatters[attr]
-                        attr_val = formatter.format_column_value(attr_val)
-                    entity_row_info.append(attr_val)
-
-                feature = QgsFeature()
-                # feature.setGeometry(gpx_geom)
-                #print entity_row_info
-                feature.setAttributes(
-                    entity_row_info
-                )
-                feature_list.append(feature)
-
-            except Exception as ex:
-                return
-        layer_fields = []
-        for col, type_ in entity_attrs.iteritems():
-            layer_fields.append(QgsField(col, QVariant.String))
-
-        provider.addAttributes(layer_fields)
-        layer.updateFields()
-        provider.addFeatures(feature_list)
-        layer.commitChanges()
 
     def set_canvas_crs(self, layer):
         # Sets canvas CRS
@@ -384,11 +313,11 @@ class SpatialUnitManagerDockWidget(
         icon = self._geom_icon(table_name, column_name)
 
         self.stdm_layers_combo.addItem(icon, display, {
-                'table_name': table_name,
-                'column_name': column_name,
-                'item': item
-            }
-        )
+            'table_name': table_name,
+            'column_name': column_name,
+            'item': item
+        }
+                                       )
         for spatial_unit in self.spatial_units:
             table = spatial_unit.name
             spatial_column = [
@@ -404,8 +333,7 @@ class SpatialUnitManagerDockWidget(
                 spatial_unit_item, Qt.MatchFixedString
             )
             if index >= 0:
-                 self.stdm_layers_combo.setCurrentIndex(index)
-
+                self.stdm_layers_combo.setCurrentIndex(index)
 
     def _layer_info_from_table_column(
             self, table, column
@@ -464,7 +392,6 @@ class SpatialUnitManagerDockWidget(
             layer_name, Qt.MatchFixedString
         )
         if index >= 0:
-
             self.stdm_layers_combo.setCurrentIndex(index)
             # add spatial unit layer.
             self.on_add_to_canvas_button_clicked()
@@ -540,7 +467,8 @@ class SpatialUnitManagerDockWidget(
         )
 
         if layer_name in self._map_registry_layer_names():
-            layer = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)[0]
+            layer = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)[
+                0]
             self.iface.setActiveLayer(layer)
             return
 
@@ -584,7 +512,8 @@ class SpatialUnitManagerDockWidget(
                 )
             self.zoom_to_layer()
             self.onLayerAdded.emit(spatial_column, curr_layer)
-
+            curr_layer.rendererChanged.connect(self.beautify_legend)
+            # curr_layer.rendererChanged.connect(self.beautify_legend)
         else:
             msg = QApplication.translate(
                 "Spatial Unit Manager",
@@ -666,11 +595,9 @@ class SpatialUnitManagerDockWidget(
             if sel_lyr_name in layer_list
         ]
 
-
         str_view = self._curr_profile.social_tenure.view_name
 
         if len(layer_lists) < 1:
-
             geom_columns = table_column_names(
                 str_view, True
             )
@@ -704,13 +631,13 @@ class SpatialUnitManagerDockWidget(
             # of the same entity
             if layer_name != sel_lyr_name:
 
-                layer_objects = QgsMapLayerRegistry.\
+                layer_objects = QgsMapLayerRegistry. \
                     instance().mapLayersByName(layer_name)
 
                 if len(layer_objects) > 0:
                     for layer in layer_objects:
                         layer_id = layer.id()
-                        QgsMapLayerRegistry.\
+                        QgsMapLayerRegistry. \
                             instance().removeMapLayer(layer_id)
             # Change the crs of the canvas based on the new layer
 
@@ -869,7 +796,6 @@ class SpatialUnitManagerDockWidget(
         except KeyError:
             return False
 
-
     @pyqtSignature("")
     def on_import_gpx_file_button_clicked(self):
         """
@@ -878,9 +804,9 @@ class SpatialUnitManagerDockWidget(
         source_status = self.active_layer_source()
         layer_map = QgsMapLayerRegistry.instance().mapLayers()
         error_title = QApplication.translate(
-                    'SpatialUnitManagerDockWidget',
-                    'GPS Feature Import Loading Error'
-                )
+            'SpatialUnitManagerDockWidget',
+            'GPS Feature Import Loading Error'
+        )
         if len(layer_map) > 0:
             if source_status is None:
                 QMessageBox.critical(

@@ -619,18 +619,21 @@ def lookup_id_to_value(profile, col, id):
     """
     if col in profile_lookup_columns(profile):
         parent_entity = lookup_parent_entity(profile, col)
-        if not parent_entity is None:
+
+        if parent_entity is not None:
             db_model = entity_model(parent_entity)
             db_obj = db_model()
             query = db_obj.queryObject().filter(
                 db_model.id == id
             ).first()
+
             if query is not None:
                 value = getattr(
                     query,
                     'value',
                     None
                 )
+
                 return value
             else:
                 return id
@@ -697,6 +700,46 @@ def entity_id_to_attr(entity, attr, id):
         attr_val = id
 
     return attr_val
+
+
+def entity_id_to_display_col(entity, column, id):
+    """
+    Converts an entity column id to another
+    column value of the same record.
+    :param entity: Entity
+    :type entity: Class
+    :param column: Column name
+    :type column: String
+    :param id: Id of the entity
+    :type id: Integer
+    :return: a column value if a match found
+    :rtype: Integer or String
+    """
+
+    display_cols = entity.columns[column].entity_relation.display_cols
+    parent_entity = entity.columns[column].entity_relation.parent
+    model = entity_model(parent_entity)
+    model_obj = model()
+    result = model_obj.queryObject().filter(
+        model.id == id
+    ).first()
+    attr_vals = []
+
+    if result is not None:
+        for col in display_cols:
+
+            attr_val = getattr(
+                result,
+                col,
+                None
+            )
+            if attr_val is not None:
+                attr_vals.append(attr_val)
+
+    else:
+        attr_vals = [id]
+
+    return ', '.join(attr_vals)
 
 
 def entity_id_to_model(entity, id):
