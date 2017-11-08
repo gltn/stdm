@@ -2131,11 +2131,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 model_item.setData(model_index_desc, editor.column.description)
 
                 model_item.edit_entity(original_column, editor.column)
-                entity.columns[original_column.name] = editor.column
 
-                on = original_column.name
-                p_col = entity.columns.pop(on)
-                entity.columns[editor.column.name] = p_col
+                entity.columns[original_column.name] = editor.column
+                entity.rename_column(original_column.name, editor.column.name)
 
                 self.populate_spunit_model(profile)
 
