@@ -1692,8 +1692,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             copy_profile_name = editor.copy_name
             copy_profile_desc = editor.copy_desc
 
-            # pre_fixes = self.stdm_config.prefixes()
-
             self.make_profile_copy(current_profile_name,
                     copy_profile_name, DRAFT_CONFIG_FILE)
 
@@ -1703,7 +1701,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             copied_profile.description = copy_profile_desc
             self.edtDesc.setText(copy_profile_desc)
             new_prefix = self.stdm_config.prefix_from_profile_name(current_profile_name)
-          
+
             copied_profile.set_prefix(new_prefix)
 
 
