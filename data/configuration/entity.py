@@ -129,6 +129,9 @@ class Entity(QObject, TableItem):
 
         self.is_proxy = is_proxy
 
+        # Sync this with row index of the viewer 
+        self.row_index = -1  
+
         LOGGER.debug('%s entity created.', self.name)
 
     def _shortname_to_name(self, name):
@@ -517,6 +520,13 @@ class Entity(QObject, TableItem):
             return False
 
         return True
+    
+    # Added in 1.7
+    def update_column_row_index(self, name, index):
+        self.columns[name].row_index = index
+
+    def sort_columns(self):
+        self.columns = OrderedDict(sorted(self.columns.iteritems(), key=lambda e : e[1].row_index))
 
 
 class EntitySupportingDocument(Entity):
@@ -705,3 +715,4 @@ class EntitySupportingDocument(Entity):
         Check if the entity has an ID column and return it, else returns None.
         """
         return entity.column('id')
+

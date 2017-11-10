@@ -124,7 +124,10 @@ class BaseColumn(ColumnItem):
         self.user_tip = kwargs.get('user_tip', '')
         self.label = kwargs.get('label', '')
 
+        self.row_index = kwargs.get('row_index',-1)
+
         self.reset_updated_attrs()
+
 
         LOGGER.debug('%s column initialized in %s entity.',self.name, self.entity.name)
 

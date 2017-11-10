@@ -32,6 +32,8 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from PyQt4.QtXml import QDomDocument
 
+from qgis.core import QgsMessageLog
+
 from stdm.data.configuration.stdm_configuration import (
         StdmConfiguration, 
         Profile
@@ -219,6 +221,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.configure_custom_button1()
         self.set_window_title()
 
+        self.pftableView.installEventFilter(self)
+        self.tbvColumns.installEventFilter(self)
+
     def set_window_title(self):
         if self.draft_config:
             self.setWindowTitle('')
@@ -310,6 +315,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Event handler for the cancel button.
         If configuration has been edited, warn user before exiting.
         """
+        self.pftableView.removeEventFilter(self)
+        self.tbvColumns.removeEventFilter(self)
+
         if self.draft_config:
             self.save_current_configuration(DRAFT_CONFIG_FILE)
         else:
@@ -1901,6 +1909,43 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.lookup_item_model = self.lvLookups.selectionModel()
         self.lookup_item_model.selectionChanged.connect(self.lookup_changed)
 
+    def drop_entity_event(self, event):
+        tv = self.pftableView
+        profile = self.current_profile()
+        for i in range(tv.model().rowCount()):
+            midx = tv.model().index(i, 0)
+            name = tv.model().data(midx)
+            row = midx.row()
+            profile.update_entity_row_index(name, row)
+        profile.sort_entities()
+        return True
+
+    def drop_column_event(self, event):
+        ev = self.lvEntities
+        cv = self.tbvColumns
+        model_item, entity, row_id = self.get_model_entity(ev)
+        for i in range(cv.model().rowCount()):
+            midx = cv.model().index(i, 0)
+            col_name = cv.model().data(midx)
+            row = midx.row()
+            entity.update_column_row_index(col_name, row)
+        entity.sort_columns()
+        return True
+
+    def eventFilter(self, object, event):
+        if object is self.pftableView:
+            if event.type() == QEvent.ChildRemoved:
+                self.drop_entity_event(event)
+                event.accept()
+                return True
+
+        if object is self.tbvColumns:
+            if event.type() == QEvent.ChildRemoved:
+                self.drop_column_event(event)
+                event.accept()
+                return True
+        return False
+
     def switch_profile(self, name):
         """
         Used to refresh all QStandardItemModel's attached to various
@@ -1912,11 +1957,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             return
 
         profile = self.stdm_config.profile(unicode(name))
-        if profile is not None:
-            #self.lblDesc.setText(profile.description)
-            self.edtDesc.setText(profile.description)
-        else:
+        if profile is None:
             return
+        self.edtDesc.setText(profile.description)
         # clear view models
         self.clear_view_model(self.entity_model)
         self.clear_view_model(self.col_view_model)
@@ -1943,13 +1986,25 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.connect_signals()
         self.lvLookups.setCurrentIndex(self.lookup_view_model.index(0,0))
 
+        enable_drag_sort(self.tbvColumns)
+        enable_drag_sort(self.lvLookupValues)
+        enable_drag_sort(self.pftableView)
+
+        self.pftableView.setDropIndicatorShown(True)
+        self.pftableView.setDragEnabled(True)
+        self.pftableView.setAcceptDrops(True)
+        self.pftableView.setDragDropMode(QTableView.DragDrop)
+        self.pftableView.setDefaultDropAction(Qt.MoveAction)
+
+
         # Enable drag and drop for new profiles only
-        if name in self.new_profiles:
-            enable_drag_sort(self.tbvColumns)
-            enable_drag_sort(self.lvLookupValues)
-        else:
-            self.tbvColumns.setDragEnabled(False)
-            self.lvLookupValues.setDragEnabled(False)
+        #if name in self.new_profiles:
+            #enable_drag_sort(self.tbvColumns)
+            #enable_drag_sort(self.lvLookupValues)
+        #else:
+            #self.tbvColumns.setDragEnabled(False)
+            #self.lvLookupValues.setDragEnabled(False)
+
 
 
     def refresh_entity_view(self):
@@ -2036,7 +2091,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.col_view_model = ColumnEntitiesModel()
 
         if row_id > -1:
-            columns = view_model.entity_byId(row_id).columns.values()
+            #columns = view_model.entity_byId(row_id).columns.values()
+            ent_name = view_model.data(view_model.index(row_id,0))
+            columns = view_model.entity(ent_name).columns.values()
             self.addColumns(self.col_view_model, columns)
 
             self.tbvColumns.setModel(self.col_view_model)

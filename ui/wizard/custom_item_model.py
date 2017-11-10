@@ -2,6 +2,7 @@ import  logging
 
 from collections import OrderedDict
 from PyQt4.QtGui import *
+from PyQt4.QtCore import Qt
 
 LOGGER = logging.getLogger('stdm')
 
@@ -44,6 +45,8 @@ class EntitiesModel(QStandardItemModel):
         self._entities = OrderedDict()
         
         self.setHorizontalHeaderLabels(EntityModelItem.headers_labels)
+
+        self.setSupportedDragActions(Qt.MoveAction)
 
     def entity(self, name):
         if name in self._entities:
@@ -191,6 +194,8 @@ class ColumnEntitiesModel(QStandardItemModel):
         self._entities = OrderedDict()
         
         self.setHorizontalHeaderLabels(ColumnEntityModelItem.headers_labels)
+
+        self.setSupportedDragActions(Qt.MoveAction)
 
     def entity(self, name):
         if name in self._entities:

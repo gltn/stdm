@@ -635,3 +635,10 @@ class Profile(QObject):
             self.social_tenure.add_spatial_unit(rn_entity)
 
         return True
+
+    # Added in 1.7
+    def update_entity_row_index(self, name, index):
+        self.entities[name].row_index = index
+
+    def sort_entities(self):
+        self.entities = OrderedDict(sorted(self.entities.iteritems(), key=lambda e : e[1].row_index))
