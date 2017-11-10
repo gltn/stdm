@@ -1401,20 +1401,20 @@ class STDMQGISLoader(object):
         defining a new social
         tenure relationship
         '''
-        # try:
+        try:
 
-        str_editor = STREditor()
-        str_editor.open()
+            str_editor = STREditor()
+            str_editor.open()
 
-        # except Exception as ex:
-        #     QMessageBox.critical(
-        #         self.iface.mainWindow(),
-        #         QApplication.translate(
-        #             'STDMQGISLoader',
-        #             'Error Loading the STR Editor'
-        #         ),
-        #         str(ex)
-        #     )
+        except Exception as ex:
+            QMessageBox.critical(
+                self.iface.mainWindow(),
+                QApplication.translate(
+                    'STDMQGISLoader',
+                    'Error Loading the STR Editor'
+                ),
+                str(ex)
+            )
 
     def onManageAdminUnits(self):
         '''
@@ -1677,6 +1677,7 @@ class STDMQGISLoader(object):
             self.stdmInitToolbar.removeAction(self.docDesignerAct)
             self.stdmInitToolbar.removeAction(self.docGeneratorAct)
             self.stdmInitToolbar.removeAction(self.viewSTRAct)
+
             if self.toolbarLoader is not None:
                 self.toolbarLoader.unloadContent()
             if self.menubarLoader is not None:

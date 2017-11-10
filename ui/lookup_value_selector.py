@@ -49,7 +49,7 @@ class LookupValueSelector(QDialog, Ui_LookupValueSelector):
         :param profile: The current profile object
         :type profile: Object
         """
-        QDialog.__init__(self, parent, Qt.WindowTitleHint|
+        QDialog.__init__(self, parent, Qt.WindowTitleHint |
                          Qt.WindowCloseButtonHint)
         self.setupUi(self)
         self.value_and_code = None
@@ -74,18 +74,19 @@ class LookupValueSelector(QDialog, Ui_LookupValueSelector):
 
         self.value_list_box.clicked.connect(self.validate_selected_code)
 
-
     def populate_value_list_view(self):
         """
         Populates the lookup values and codes.
         """
         self.value_and_code = self.lookup_entity.values
+
         for value, code in self.value_and_code.iteritems():
             u_value = unicode(value)
             code_value = self.lookup_entity.values[u_value]
 
             value_code = QStandardItem('{} ({})'.format(
-                code_value.value, code.code)
+                    code_value.value, code.code
+                )
             )
             value_code.setData(code.code)
             self._view_model.appendRow(value_code)

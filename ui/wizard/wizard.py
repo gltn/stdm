@@ -340,7 +340,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def dirty_config_warning(self):
         msg0 = self.tr("You have made some changes to your current "
                 "configuration file, but you have not saved them in the "
-                "database permenently.\n Would you like to save your "
+                "database permanently.\n Would you like to save your "
                 "changes as draft and continue next time? ")
         return self.query_box_save_cancel(msg0)
 
@@ -1700,22 +1700,17 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             copy_profile_name = editor.copy_name
             copy_profile_desc = editor.copy_desc
 
-            pre_fixes = self.stdm_config.prefixes()
-
             self.make_profile_copy(current_profile_name,
                     copy_profile_name, DRAFT_CONFIG_FILE)
 
             self.refresh_config(copy_profile_name)
 
-            post_fixes = self.stdm_config.prefixes()
-
-            new_prefix = list(set(post_fixes)-set(pre_fixes))
-
             copied_profile = self.current_profile()
             copied_profile.description = copy_profile_desc
             self.edtDesc.setText(copy_profile_desc)
+            new_prefix = self.stdm_config.prefix_from_profile_name(current_profile_name)
 
-            copied_profile.set_prefix(new_prefix[0])
+            copied_profile.set_prefix(new_prefix)
 
 
     def profile_names(self):
@@ -2583,8 +2578,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         msgbox.setIcon(QMessageBox.Warning)
         msgbox.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
         msgbox.setText(msg)
-        msgbox.setStandardButtons(QMessageBox.Cancel | QMessageBox.Ok);
-        msgbox.setDefaultButton(QMessageBox.Cancel);
+        msgbox.setStandardButtons(QMessageBox.Cancel | QMessageBox.Ok)
+        msgbox.setDefaultButton(QMessageBox.Cancel)
         result = msgbox.exec_()
         return result
 
@@ -2599,8 +2594,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         msgbox.setIcon(msg_icon)
         msgbox.setWindowTitle(self.tr("STDM Configuration Wizard"))
         msgbox.setText(msg)
-        msgbox.setStandardButtons(QMessageBox.Yes | QMessageBox.No);
-        msgbox.setDefaultButton(QMessageBox.Yes);
+        msgbox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        msgbox.setDefaultButton(QMessageBox.Yes)
         result = msgbox.exec_()
         return result
 
@@ -2616,14 +2611,14 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         msgbox.setWindowTitle(self.tr("STDM Configuration Wizard"))
         msgbox.setText(msg)
         msgbox.setStandardButtons(
-                QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel);
+                QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
         btnY = msgbox.button(QtGui.QMessageBox.Yes)
         btnY.setText(self.tr('Save'))
         btnN = msgbox.button(QtGui.QMessageBox.No)
         btnN.setText(self.tr("Don't Save"))
         btnC = msgbox.button(QtGui.QMessageBox.Cancel)
         btnC.setText(self.tr("Cancel"))
-        msgbox.setDefaultButton(QMessageBox.Yes);
+        msgbox.setDefaultButton(QMessageBox.Yes)
         result = msgbox.exec_()
         return result
     
@@ -2649,11 +2644,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         
             config_file = QFile(config_file_name)
 
-            open_file = config_file.open(
-                QIODevice.ReadWrite |
-                QIODevice.Truncate |
-                QIODevice.Text
-            )
+            open_file = config_file.open(QIODevice.ReadWrite|QIODevice.Truncate)
 
             if open_file:
                 orig_dom_elem = orig_dom_doc.find_dom_element('Profile', orig_profile_name)
@@ -2662,9 +2653,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
                     copy_dom_doc.rename_element(copy_dom_elem, copy_profile_name)
                     orig_dom_doc.documentElement().insertAfter(copy_dom_elem, orig_dom_elem)
+                    config_file.write(orig_dom_doc.toByteArray())
 
-                    stream = QTextStream(config_file)
-                    stream << orig_dom_doc.toString()
                 config_file.close()
 
 class ConfigurationDomDocument(QDomDocument):

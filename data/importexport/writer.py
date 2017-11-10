@@ -123,7 +123,7 @@ class OGRWriter():
                              
                 #Check if its the geometry column in the iteration
                 if colName==geom: 
-                    if r[i] is not None:                                                                               
+                    if r[i] is not None:
                         featGeom=ogr.CreateGeometryFromWkt(r[i])
                     else:
                         featGeom=ogr.CreateGeometryFromWkt("")
@@ -132,7 +132,8 @@ class OGRWriter():
                     
                 else:
                     field_value = unicode(r[i])
-                    feat.SetField(i, field_value.encode('utf-8'))
+                    
+                    feat.SetField(i, field_value)
 
             if lyr.CreateFeature(feat) != 0:
                 progress.close()
