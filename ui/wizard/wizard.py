@@ -32,8 +32,6 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from PyQt4.QtXml import QDomDocument
 
-from qgis.core import QgsMessageLog
-
 from stdm.data.configuration.stdm_configuration import (
         StdmConfiguration, 
         Profile
@@ -1591,7 +1589,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def cbo_add_profile(self, profile):
         """
         param profile: List of profile to add in a combobox
-        type profile: list
         """
         profiles = []
         profiles.append(profile.name)
@@ -1622,6 +1619,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         Event handler for creating a new profiled
         """
+        #self.pftableView.removeEventFilter(self)
+        #self.tbvColumns.removeEventFilter(self)
+
         editor = ProfileEditor(self)
         result = editor.exec_()
         if result == 1:
@@ -1631,6 +1631,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             profile.description = editor.desc
             self.connect_entity_signals(profile)
             self.stdm_config.add_profile(profile)
+
+        #self.pftableView.installEventFilter(self)
+        #self.tbvColumns.installEventFilter(self)
             #self.switch_profile(self.cboProfile.currentText())
 
     def connect_entity_signals(self, profile):
@@ -1907,6 +1910,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def drop_entity_event(self, event):
         tv = self.pftableView
         profile = self.current_profile()
+        if profile is None:
+            return False
         for i in range(tv.model().rowCount()):
             midx = tv.model().index(i, 0)
             name = tv.model().data(midx)
@@ -1918,7 +1923,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def drop_column_event(self, event):
         ev = self.lvEntities
         cv = self.tbvColumns
+
         model_item, entity, row_id = self.get_model_entity(ev)
+
+        if entity is None:
+            return False
+
         for i in range(cv.model().rowCount()):
             midx = cv.model().index(i, 0)
             col_name = cv.model().data(midx)
@@ -1991,7 +2001,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.pftableView.setDragDropMode(QTableView.DragDrop)
         self.pftableView.setDefaultDropAction(Qt.MoveAction)
 
-
         # Enable drag and drop for new profiles only
         #if name in self.new_profiles:
             #enable_drag_sort(self.tbvColumns)
@@ -2052,11 +2061,16 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         sel_id = -1
         entity = None
-        model_item = view.currentIndex().model()
-        if model_item:
-            sel_id = view.currentIndex().row()
-            entity = model_item.entities().items()[sel_id][1]
-        return (model_item, entity, sel_id)
+        model_indexes = view.selectedIndexes()
+        if len(model_indexes) == 0:
+            return (None, None, None)
+        model_index = model_indexes[0]
+        model_item = model_index.model()
+        name = model_item.data(model_index)
+        entity = model_item.entity(name)
+        row = model_index.row()
+
+        return (model_item, entity, row)
 		
     def addColumns(self, v_model, columns):
         """
@@ -2087,7 +2101,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         if row_id > -1:
             #columns = view_model.entity_byId(row_id).columns.values()
-            ent_name = view_model.data(view_model.index(row_id,0))
+            ent_name = view_model.data(view_model.index(row_id, 0))
+
+            entity = view_model.entity(ent_name)
+            if entity is None:
+                return
             columns = view_model.entity(ent_name).columns.values()
             self.addColumns(self.col_view_model, columns)
 

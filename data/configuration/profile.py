@@ -638,7 +638,8 @@ class Profile(QObject):
 
     # Added in 1.7
     def update_entity_row_index(self, name, index):
-        self.entities[name].row_index = index
+        if self.entities.has_key(name):
+            self.entities[name].row_index = index
 
     def sort_entities(self):
         self.entities = OrderedDict(sorted(self.entities.iteritems(), key=lambda e : e[1].row_index))
