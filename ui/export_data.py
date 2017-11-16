@@ -270,10 +270,10 @@ class ExportData(QWizard,Ui_frmExportWizard):
                 self, self.srcTab, resultSet, self.selectedColumns(),
                 self.geomColumn
             )
-            ft = QApplication.translate('ExportData', 'Features in')
+            ft = QApplication.translate('ExportData', 'Features in ')
             succ = QApplication.translate(
                 'ExportData', 'have been successfully exported!')
-            self.InfoMessage(u'{}{}{}'.format(ft, self.srcTab, succ))
+            self.InfoMessage(u'{}{} {}'.format(ft, self.srcTab, succ))
 
             # Update directory info in the registry
             setVectorFileDir(targetFile)
