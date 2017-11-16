@@ -1891,6 +1891,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             if entity.action == DbItem.DROP:
                 continue
 
+            if hasattr(entity, 'user_editable'):
+                if entity.user_editable == False:
+                    continue
+
             if entity.TYPE_INFO not in ['SUPPORTING_DOCUMENT',
                     'SOCIAL_TENURE', 'ADMINISTRATIVE_SPATIAL_UNIT',
                     'ENTITY_SUPPORTING_DOCUMENT', 'ASSOCIATION_ENTITY']:
