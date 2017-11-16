@@ -482,7 +482,7 @@ def profile_spatial_tables(profile):
     spatial_tables = dict(spatial_tables)
     return spatial_tables
 
-def profile_user_tables(profile, include_views=True, admin=False):
+def profile_user_tables(profile, include_views=True, admin=False, sort=False):
     """
     Returns user accessible tables from current profile and pg_views
     .
@@ -528,11 +528,17 @@ def profile_user_tables(profile, include_views=True, admin=False):
                 'VALUE_LIST'
             ]
         ]
-    tables = dict(tables)
+    tables = OrderedDict(tables)
     if include_views:
         for view in pg_views():
             tables[view] = view
-
+    if sort:
+        names = tables.keys()
+        names = sorted(names)
+        sorted_table = OrderedDict()
+        for name in names:
+            sorted_table[name] = tables[name]
+        return sorted_table
     return tables
 
 def db_user_tables(profile):
@@ -771,8 +777,6 @@ def entity_attr_to_model(entity, attr, value):
     model = entity_model(entity)
     model_obj = model()
     attr_col_obj = getattr(model, attr)
-
-    result_2 = model_obj.queryObject().first()
 
     result = model_obj.queryObject().filter(
         attr_col_obj == value
@@ -1020,11 +1024,7 @@ def profile_and_user_views(profile, check_party=False):
     social_tenure = profile.social_tenure
 
     for view, entity in social_tenure.views.iteritems():
-        ### Not necessary when spatial unit none issue fixed
-        # TODO remove this
-        if entity is None:
-            source_tables.append(view)
-            continue
+
         # For party views, if check party is true, add party views.
         # If multi-party is false. Otherwise, add all party views - this is not
         # recommended for composer data source.

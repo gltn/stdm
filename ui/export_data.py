@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 /***************************************************************************
 Name                 : Export Data from STDM
@@ -111,7 +112,8 @@ class ExportData(QWizard,Ui_frmExportWizard):
             selTableIndex = self.field("srcTabIndex")
             self.srcTab = str(self.lstSrcTab.item(selTableIndex).text())
             self.lstQueryCols.clear()
-            self.lstQueryCols.addItems(self.allCols) 
+
+            self.lstQueryCols.addItems(self.allCols)
             
     def validateCurrentPage(self):
         #Validate the current page before proceeding to the next one
@@ -164,7 +166,7 @@ class ExportData(QWizard,Ui_frmExportWizard):
         self.lstSrcTab.clear()
         # tables = pg_tables()
         tables = profile_user_tables(
-            self.curr_profile, True, True
+            self.curr_profile, True, True, sort=True
         )
         for t in tables.keys():
             tabItem = QListWidgetItem(t,self.lstSrcTab)
@@ -207,21 +209,25 @@ class ExportData(QWizard,Ui_frmExportWizard):
     def loadColumns(self,table):
         #Load textual and spatial (if available) columns
         #Get spatial columns first        
-        spColumns = table_column_names(table,True)
+        spColumns = table_column_names(table,True, creation_order=True)
         self.cboSpatialCols_2.clear()
         self.cboSpatialCols_2.addItems(spColumns)
         
         #Textual Columns
         self.lstSrcCols_2.clear()
-        self.allCols = table_column_names(table)
-        
+        self.allCols = table_column_names(table, creation_order=True)
+
         for sc in spColumns:            
             colIndex = getIndex(self.allCols,sc)
             if colIndex != -1:
-                self.allCols.remove(sc)    
-                                        
-        for col in self.allCols:            
-            tabItem = QListWidgetItem(col,self.lstSrcCols_2)
+                self.allCols.remove(sc)
+
+        for col in self.allCols:
+            if ' ' in col:
+
+                col = u'"{}"'.format(col)
+
+            tabItem = QListWidgetItem(col, self.lstSrcCols_2)
             tabItem.setCheckState(Qt.Unchecked)
             tabItem.setIcon(QIcon(":/plugins/stdm/images/icons/column.png"))
             self.lstSrcCols_2.addItem(tabItem)   
@@ -236,8 +242,10 @@ class ExportData(QWizard,Ui_frmExportWizard):
         
         if len(selCols) > 0:
             selCol = selCols[0]
-            colName = selCol.text()
-            uniqVals = unique_column_values(self.srcTab,colName) 
+            colName = unicode(selCol.text())
+            print self.srcTab, colName
+            uniqVals = unique_column_values(self.srcTab,colName)
+            print uniqVals
             self.lstUniqueVals.addItems(uniqVals)
             self.lstUniqueVals.sortItems() 
             
@@ -291,7 +299,8 @@ class ExportData(QWizard,Ui_frmExportWizard):
             
             if results != None:            
                 rLen = results.rowcount
-                msg = "The SQL statement was successfully verified.\n" + str(rLen) + " record(s) returned."
+                msg = "The SQL statement was successfully verified.\n" + str(rLen) + \
+                      " record(s) returned."
                 self.InfoMessage(msg)
         
     def filter_buildQuery(self):
@@ -300,25 +309,26 @@ class ExportData(QWizard,Ui_frmExportWizard):
         
         if self.geomColumn != "":
             queryCols.append(u"ST_AsText(%s)"%(self.geomColumn))
-            
+        # remove quote from each column
 
         columnList = u",".join(queryCols)
+        # print columnList
+        whereStmnt = self.txtWhereQuery.toPlainText()
 
-        whereStmnt = self.txtWhereQuery.toPlainText()         
-        sortStmnt=''        
+        sortStmnt = ''
         results=None 
             
-        try:        
-            results = process_report_filter(self.srcTab,columnList,whereStmnt,sortStmnt)      
+        try:
+            results = process_report_filter(self.srcTab,columnList,whereStmnt,sortStmnt)
               
         except sqlalchemy.exc.DataError,e:
             if e is None:
-                errMessage = "Database Error Message - NOT AVAILABLE"
+                errMessage = u"Database Error Message - NOT AVAILABLE"
             else:
                 errMessage = e.message
-                
-            self.ErrorInfoMessage("The SQL statement is invalid!\n" + errMessage)  
-            
+
+            self.ErrorInfoMessage(u"The SQL statement is invalid! \n{}".format(errMessage))
+
         return results    
         
     def filter_insertField(self,lstItem):
@@ -326,7 +336,11 @@ class ExportData(QWizard,Ui_frmExportWizard):
         Inserts the text of the clicked field item into the
         SQL parser text editor.
         '''
-        self.txtWhereQuery.insertPlainText(lstItem.text())    
+        field = lstItem.text()
+        if "'" in field and '"' not in field:
+            field = u'"{}"'.format(field)
+        self.txtWhereQuery.insertPlainText(field)
+
     
     def filter_insertEq(self):
         #Insert Equal operator

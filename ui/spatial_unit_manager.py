@@ -32,13 +32,14 @@ from qgis.core import *
 from qgis.core import (
     NULL,
     QgsGeometry,
-QgsStyleV2,
+    QgsStyleV2,
     QgsFeature,
     QgsMapLayerRegistry,
     QgsField,
     QgsSymbolV2,
     QgsRendererCategoryV2,
-    QgsCategorizedSymbolRendererV2
+    QgsCategorizedSymbolRendererV2,
+   QgsVectorJoinInfo
 )
 from qgis.gui import (
     QgsCategorizedSymbolRendererV2Widget
@@ -122,9 +123,36 @@ class SpatialUnitManagerDockWidget(
         feature_renderer = layer.rendererV2()
         renderer_widget = QgsCategorizedSymbolRendererV2Widget(
         layer, QgsStyleV2().defaultStyle(), feature_renderer)
-        # renderer_widget.layerVariablesChanged.connect(self.beautify_legend)
-        self.beautify_legend()
-        # renderer_widget.refreshSymbolView()
+        renderer_widget.showPanel.connect(self.beautify_legend)
+        # self.beautify_legend()
+        renderer_widget.refreshSymbolView()
+
+    def add_classes(self):
+        layer = self.iface.activeLayer()
+        idx = layer.fieldNameIndex('fieldName')
+        values = layer.uniqueValues(idx)
+
+    @staticmethod
+    def replace_lookup_columns(layer, column_name):
+        config = layer.attributeTableConfig()
+        columns = config.columns()
+        for column in columns:
+            if column.name == column_name:
+                column.hidden = False
+                break
+        config.setColumns(columns)
+        layer.setAttributeTableConfig(config)
+
+    @staticmethod
+    def sort_layer_columns_by_entity(entity, layer):
+        config = layer.attributeTableConfig()
+        columns = config.columns()
+
+        for column in columns:
+            print column.name
+            print column.hidden
+
+
 
     def beautify_legend(self):
         layer = self.iface.activeLayer()
@@ -151,6 +179,89 @@ class SpatialUnitManagerDockWidget(
 
                 idx = feature_renderer.categoryIndexForValue(category.value())
                 feature_renderer.updateCategoryLabel(idx, label)
+
+    def get_column_config(self, config, name):
+
+        configs = [c for c in config.columns() if c.name == name]
+        return configs[0]
+
+    def join_fk_layer(self, layer):
+
+        entity = self._curr_profile.entity_by_name(self.curr_lyr_table)
+
+        for column in entity.columns.values():
+
+            if column.TYPE_INFO == 'LOOKUP':
+                lookup_entity = column.entity_relation.parent
+                lookup_layer = vector_layer(
+                    lookup_entity.name,
+                    layer_name=lookup_entity.name
+                )
+                QgsMapLayerRegistry.instance().addMapLayer(
+                    lookup_layer, False
+                )
+                # hide the lookup id column
+                column.hidden = True
+                header = column.header()
+                self.join_layers(layer, column.name, header, 'value', lookup_layer)
+
+            #TODO add method for fk columns
+
+    def sort_joined_columns(self, layer):
+        """
+        Sort joined columns using the order in the configuration
+        :param layer: The layer containing joined layers
+        :type layer: QgsVectorLayer
+        :return:
+        :rtype:
+        """
+        entity = self._curr_profile.entity_by_name(self.curr_lyr_table)
+        config = layer.attributeTableConfig()
+        columns = config.columns()
+        updated_columns = []
+        for column in columns:
+            if column.name not in entity.columns.keys():
+                continue
+            if entity.columns[column.name].TYPE_INFO == 'LOOKUP':
+                # hide the lookup id column
+                column.hidden = True
+                header = entity.columns[column.name].header()
+                joined_column_name = u'{} {}'.format(header, 'value')
+                joined_column = self.get_column_config(config,
+                                                       joined_column_name)
+
+                updated_columns.append(joined_column)
+                updated_columns.append(column)
+            # TODO add method for fk columns
+            else:
+                updated_columns.append(column)
+
+        config.setColumns(updated_columns)
+        layer.setAttributeTableConfig(config)
+
+    def join_layers(self, layer, layer_field, column_header, fk_field, fk_layer):
+        """
+        Joins two layers with specified field.
+        :param layer: The destination layer of the merge
+        :type layer: QgsVectorLayer
+        :param layer_field: The source layer of the merge
+        :type layer_field:
+        :param fk_field:
+        :type fk_field:
+        :param fk_layer:
+        :type fk_layer:
+        :return:
+        :rtype:
+        """
+        join = QgsVectorJoinInfo()
+        join.joinLayerId = fk_layer.id()
+        join.joinFieldName = 'id'
+
+        join.setJoinFieldNamesSubset([fk_field])
+        join.targetFieldName = layer_field
+        join.memoryCache = True
+        join.prefix = u'{} '.format(column_header)
+        layer.addJoin(join)
 
     def _adjust_layer_drop_down_width(self):
         """
@@ -512,8 +623,9 @@ class SpatialUnitManagerDockWidget(
                 )
             self.zoom_to_layer()
             self.onLayerAdded.emit(spatial_column, curr_layer)
-            curr_layer.rendererChanged.connect(self.beautify_legend)
-            # curr_layer.rendererChanged.connect(self.beautify_legend)
+            self.join_fk_layer(curr_layer)
+            self.sort_joined_columns(curr_layer)
+
         else:
             msg = QApplication.translate(
                 "Spatial Unit Manager",

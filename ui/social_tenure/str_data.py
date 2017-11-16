@@ -197,7 +197,8 @@ class STRDBHandler():
         custom_attr_objs = []
 
         for i, custom_attr_model in enumerate(str_store.custom_tenure.values()):
-
+            if custom_attr_model is None:
+                continue
             # save custom tenure
             for col in custom_attr_entity.columns.values():
                 if col.TYPE_INFO == 'FOREIGN_KEY':
@@ -208,8 +209,8 @@ class STRDBHandler():
                         custom_attr_objs.append(custom_attr_model)
 
                         break
-
-        custom_attr_obj.saveMany(custom_attr_objs)
+        if len(custom_attr_objs) > 0:
+            custom_attr_obj.saveMany(custom_attr_objs)
 
 
     def on_edit_str(self, str_store):

@@ -2,9 +2,10 @@
 #copyright:        (c) 2012 by John Gitau
 #email:            gkahiu@gmail.com
 #about:            Wrapper class for writing PostgreSQL/PostGIS tables to user-defined OGR formats
+import decimal
 
 import sys, logging
-
+import datetime
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
@@ -17,7 +18,16 @@ except:
 
 from stdm.data.pg_utils import (
     columnType,
-    geometryType
+    geometryType,
+    pg_views
+)
+from stdm.utils.util import (
+    date_from_string,
+    datetime_from_string
+)
+from stdm.settings import (
+    current_profile,
+    save_configuration
 )
 from enums import *
 
@@ -46,12 +56,13 @@ class OGRWriter():
     
     def createField(self,table,field):
         #Creates an OGR field
-        colType = columnType(table,field)
-        
+
+        colType = columnType(table, field)
         #Get OGR type
         ogrType = ogrTypes[colType]
-        field_defn = ogr.FieldDefn(field,ogrType)
-        
+
+        field_defn = ogr.FieldDefn(field.encode('utf-8'), ogrType)
+
         return field_defn
         
     def db2Feat(self,parent,table,results,columns,geom=""):
@@ -75,19 +86,18 @@ class OGRWriter():
 
         else:
             geomType=ogr.wkbNone
+        layer_name = self.getLayerName()
 
-        lyr = self._ds.CreateLayer(self.getLayerName(), dest_crs, geomType)
+        lyr = self._ds.CreateLayer(layer_name, dest_crs, geomType)
         
         if lyr is None:
             raise Exception("Layer creation failed")
-        
+
         #Create fields
         for c in columns:
-            #SQLAlchemy string values are in unicode so decoding is required in order to use in OGR
 
-            encodedFieldName = c.encode('utf-8')
+            field_defn = self.createField(table, c)
 
-            field_defn = self.createField(table, encodedFieldName)
             if lyr.CreateField(field_defn) != 0:
                 raise Exception("Creating %s field failed"%(c))
             
@@ -102,38 +112,46 @@ class OGRWriter():
         numFeat = results.rowcount
         progress = QProgressDialog("","&Cancel",initVal,numFeat,parent)        
         progress.setWindowModality(Qt.WindowModal)    
-        lblMsgTemp = "Writing {0} of {1} to file..." 
-         
-        #Iterate the result set        
-        for r in results:
+        lblMsgTemp = "Writing {0} of {1} to file..."
 
+        entity = current_profile().entity_by_name(table)
+        #Iterate the result set
+        for r in results:
             #Progress dialog 
             progress.setValue(initVal) 
-            progressMsg = lblMsgTemp.format(str(initVal+1),str(numFeat))
+            progressMsg = lblMsgTemp.format(str(initVal+1), str(numFeat))
             progress.setLabelText(progressMsg)
             
             if progress.wasCanceled():
                 break  
             
             #Create OGR Feature
-            feat = ogr.Feature(lyr.GetLayerDefn())    
-                    
+            feat = ogr.Feature(lyr.GetLayerDefn())
+
             for i in range(len(columns)):
-                colName = columns[i]   
-                             
+                colName = columns[i]
+
                 #Check if its the geometry column in the iteration
-                if colName==geom: 
+                if colName == geom:
                     if r[i] is not None:
-                        featGeom=ogr.CreateGeometryFromWkt(r[i])
+                        featGeom = ogr.CreateGeometryFromWkt(r[i])
                     else:
-                        featGeom=ogr.CreateGeometryFromWkt("")
+                        featGeom = ogr.CreateGeometryFromWkt("")
                         
                     feat.SetGeometry(featGeom)
                     
                 else:
-                    field_value = unicode(r[i])
-                    
-                    feat.SetField(i, field_value)
+
+                    if isinstance(r[i], decimal.Decimal):
+
+                        value = int(r[i])
+                        feat.setField(i, value)
+
+                    elif self.is_date(r[i]):
+                        date = datetime.datetime.strptime(r[i], "%Y-%m-%d").date()
+                        feat.setField(i, date)
+                    else:
+                        feat.SetField(i, r[i])
 
             if lyr.CreateFeature(feat) != 0:
                 progress.close()
@@ -148,10 +166,22 @@ class OGRWriter():
             initVal+=1
             
         progress.setValue(numFeat)
-                
-  
-        
-            
 
-        
+    @staticmethod
+    def is_date(string):
+        try:
+            date = datetime.datetime.strptime(string, "%Y-%m-%d").date()
+
+            return True
+        except Exception:
+            return False
+
+    def is_decimal(self, number):
+        try:
+            n = round(number)
+
+            return True
+        except Exception:
+            return False
+
         

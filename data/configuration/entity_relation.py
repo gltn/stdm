@@ -70,7 +70,7 @@ class EntityRelation(object):
 
     @parent.setter
     def parent(self, entity):
-        self._parent =  self._obj_from_str(entity)
+        self._parent = self._obj_from_str(entity)
 
     @property
     def child(self):
