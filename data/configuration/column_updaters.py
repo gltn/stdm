@@ -33,7 +33,7 @@ from sqlalchemy import (
     Index
 )
 from sqlalchemy.exc import ProgrammingError
-
+import uuid
 from migrate.changeset import *
 from migrate.changeset.constraint import CheckConstraint
 
@@ -129,10 +129,13 @@ def _update_col(column, table, data_type, columns):
     idx_name = None
     if column.index:
         idx_name = u'idx_{0}_{1}'.format(column.entity.name, column.name)
-
+        if len(idx_name) > 63:
+            idx_name = ''.format(idx_name[:30], uuid.uuid4().hex)
     unique_name = None
     if column.unique:
         unique_name = u'unq_{0}_{1}'.format(column.entity.name, column.name)
+        if len(unique_name) > 63:
+            unique_name = ''.format(unique_name[:30], uuid.uuid4().hex)
 
     if column.action == DbItem.CREATE:
         # Ensure the column does not exist otherwise an exception will be thrown

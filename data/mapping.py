@@ -353,6 +353,16 @@ class MapperMixin(object):
         '''
         self.saved_model = dbmodel
 
+    def validate_all(self):
+        errors = []
+        for attrMapper in self._attrMappers:
+            error = self.validate(attrMapper)
+
+            if error is not None:
+                self._notifBar.insertWarningNotification(error)
+                errors.append(error)
+        return errors
+
     def validate(self, attrMapper):
         """
         Validate attribute.
@@ -365,7 +375,10 @@ class MapperMixin(object):
 
         field = attrMapper.pseudoName()
         column_name = attrMapper.attributeName()
-        column = self.entity.columns[column_name]
+        if column_name in self.entity.columns.keys():
+            column = self.entity.columns[column_name]
+        else:
+            return
 
         if column.unique:
             column_obj = getattr(self.entity_model, column_name, None)

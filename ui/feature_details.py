@@ -865,6 +865,9 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             if roots is None:
                 return
             for id, root in roots.iteritems():
+
+                if not isinstance(id, long):
+                    continue
                 str_records = self.feature_str_link(id)
                 self.spatial_unit_items[root] = self.entity
                 if len(str_records) > 0:
@@ -895,6 +898,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         # self.reset_tree_view(selected_features)
 
         for spu_id in spatial_unit_ids:
+
             root = QStandardItem(layer_icon, unicode(entity.short_name))
             self.spatial_unit_items[root] = entity
             root.setData(spu_id)
