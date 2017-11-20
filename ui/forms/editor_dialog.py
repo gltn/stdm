@@ -140,7 +140,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
             self.ent_model = entity_model(self._entity)
         if not model is None:
             self.ent_model = model
-        MapperMixin.__init__(self, self.ent_model)
+        MapperMixin.__init__(self, self.ent_model, entity)
 
         self.collect_model = collect_model
 

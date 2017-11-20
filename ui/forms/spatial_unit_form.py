@@ -309,7 +309,7 @@ class STDMFieldWidget():
         :type column: Object
         :param widget_type_id: The widget type id which could be
          the default QGIS or the custom STDM widget id which is
-          based on column.TYPE_INFO.
+         based on column.TYPE_INFO.
         :type widget_type_id: String
         :return: None
         :rtype:NoneType
@@ -468,9 +468,9 @@ class STDMFieldWidget():
         self.editor = EntityEditorDialog(
             self.entity,
             None,
-            iface.mainWindow(),
-            True,
-            True
+            parent=iface.mainWindow(),
+            manage_documents=True,
+            collect_model=True
         )
 
         self.model = self.editor.model()
