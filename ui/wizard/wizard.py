@@ -405,9 +405,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def user_choose_config(self):
         """
-        Function assumes both configuration file and backup configuration
-        file exist. Returns either the configuration file or the backup 
-        configuration file depending on what the users selects to use.
+        The function assumes both configuration (configuration.stc) and 
+        backup configuration (configuration_bak.stc) files exist.
+        If a user chooses 'YES', the backup file is returned else the main configuration.
         :rtype: str
         """
         msg = self.tr("Please note that your previous configuration wizard did "
@@ -1699,6 +1699,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         profile_names = self.profile_names()
         editor = CopyProfileEditor(self, current_profile_name, orig_description, profile_names)
         result = editor.exec_()
+
+
         if result == 1:
             if not self.draft_config:
                 self.save_current_configuration(DRAFT_CONFIG_FILE)
@@ -2008,16 +2010,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.pftableView.setAcceptDrops(True)
         self.pftableView.setDragDropMode(QTableView.DragDrop)
         self.pftableView.setDefaultDropAction(Qt.MoveAction)
-
-        # Enable drag and drop for new profiles only
-        #if name in self.new_profiles:
-            #enable_drag_sort(self.tbvColumns)
-            #enable_drag_sort(self.lvLookupValues)
-        #else:
-            #self.tbvColumns.setDragEnabled(False)
-            #self.lvLookupValues.setDragEnabled(False)
-
-
 
     def refresh_entity_view(self):
         self.clear_view_model(self.entity_model)
