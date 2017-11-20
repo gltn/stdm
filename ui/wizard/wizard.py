@@ -190,7 +190,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.draft_config = False
         self.stdm_config = None
         self.new_profiles = []
-        self._str_table_exists = False
+        #self._str_table_exists = False
         self._sp_t_mapping = {}
         self._custom_attr_entities = {}
         self.orig_assets_count = 0  # count of items in StdmConfiguration instance
@@ -662,7 +662,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self._notif_bar_str.clear()
 
-        can_edit = not self._str_table_exists
+        p = self.current_profile()
+        can_edit = not p.str_table_exists
         sp_unit_tenure_dlg = SpatialUnitTenureTypeDialog(
             self,
             editable=can_edit
@@ -747,7 +748,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         p = self.current_profile()
 
-        can_edit = not self._str_table_exists
+        can_edit = not p.str_table_exists
 
         # Initialize entity attribute editor
         custom_attr_editor = TenureCustomAttributesEditor(
@@ -1124,7 +1125,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self.enable_str_setup()
         if pg_table_exists(str_table):
-            self._str_table_exists = True
+            curr_profile = self.current_profile()
+            curr_profile.str_table_exists = True
             self.disable_str_setup()
             
     def enable_str_setup(self):
@@ -1715,6 +1717,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             new_prefix = self.stdm_config.prefix_from_profile_name(current_profile_name)
 
             copied_profile.set_prefix(new_prefix)
+            copied_profile.str_table_exists = False
 
 
     def profile_names(self):
