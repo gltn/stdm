@@ -523,7 +523,7 @@ class Entity(QObject, TableItem):
     
     # Added in 1.7
     def update_column_row_index(self, name, index):
-        if self.columns.has_key(name):
+        if name in self.columns:
             self.columns[name].row_index = index
 
     def sort_columns(self):
