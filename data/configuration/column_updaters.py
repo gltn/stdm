@@ -136,11 +136,20 @@ def _update_col(column, table, data_type, columns):
     if column.action == DbItem.CREATE:
         # Ensure the column does not exist otherwise an exception will be thrown
         if not column.name in columns:
-            alchemy_column.create(
-                table=table,
-                index_name=idx_name,
-                unique_name=unique_name
-            )
+            if column.TYPE_INFO == 'GEOMETRY':
+
+                alchemy_column.create(
+                    table=table,
+                    index_name=idx_name,
+                    unique_name=unique_name,
+                    index='gist'
+                )
+            else:
+                alchemy_column.create(
+                    table=table,
+                    index_name=idx_name,
+                    unique_name=unique_name
+                )
 
             # Create check constraints accordingly
             if isinstance(column, BoundsColumn) and \

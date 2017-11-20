@@ -501,7 +501,7 @@ class ValidateSTREditor(object):
             self.validate_str_type(data_store, selected_item)
 
         if selected_item.text() == self.editor.custom_tenure_info_text:
-            print selected_item.text()
+            pass
 
         if selected_item.text() == self.editor.supporting_doc_text:
             self.enable_save_button()
@@ -2155,14 +2155,18 @@ class EditSTREditor(STREditor):
         self.data_store[1].party[
             self.str_edit_dict[self.party_column]
         ] = party_model_obj
+        tenure_type_col = self.social_tenure.spatial_unit_tenure_column(
+            self.spatial_unit.short_name
+        )
+        tenure_type_name = tenure_type_col.name
+        tenure_type = getattr(self.str_edit_obj, tenure_type_name, None)
 
-        str_type_id = self.str_edit_obj.tenure_type
         self.data_store[1].str_type[
             self.str_edit_dict[self.party_column]
-        ] = str_type_id
+        ] = tenure_type
 
         QTimer.singleShot(
-            40, lambda: self.populate_str_type(str_type_id)
+            40, lambda: self.populate_str_type(tenure_type)
         )
         self.party_component.party_fk_mapper.setSupportsList(False)
 
@@ -2186,6 +2190,7 @@ class EditSTREditor(STREditor):
         self.init_tenure_data(
             self.data_store[1], party_id, str_type_id, 1
         )
+
 
         tenure_share = self.str_edit_obj.tenure_share
 

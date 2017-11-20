@@ -274,10 +274,10 @@ def _entity_select_column(
                         select_column_name = col_select_name
                         #
                         #  # add the social_tenure_relationship_id
-                        # str_id = u'{0}.id AS {1}_id'.format(
-                        #     str_entity.name, str_entity.short_name.lower()
-                        # )
-                        # column_names.append(str_id)
+                        str_id = u'{0}.id AS {1}_id'.format(
+                            str_entity.name, str_entity.short_name.lower()
+                        )
+                        column_names.append(str_id)
 
                 else:
                     # add party_id on spatial unit view to use
@@ -371,13 +371,12 @@ def _entity_select_column(
                         c.entity_relation.parent_column
                     )
                 # Assert if the column is in the list of omitted join columns
-
-                if c.name in omit_join_statement_columns:
-                    if 'INNER JOIN' in join_statement:
-                        join_statements.append(join_statement)
-                else:
-                    join_statements.append(join_statement)
-
+                #
+                # if c.name in omit_join_statement_columns:
+                #     if 'INNER JOIN' in join_statement:
+                #         join_statements.append(join_statement)
+                # else:
+                join_statements.append(join_statement)
 
             # Assert if the column is in the list of omitted view columns
             if c.name not in omit_view_columns:

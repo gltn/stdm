@@ -128,6 +128,59 @@ def pg_views(schema="public"):
             
     return pgViews
 
+
+def view_details(self, view):
+    """
+    Gets the view definition/query
+    used to create it.
+    :param view: The name of the view.
+    :type view: String
+    :return: The definition/query.
+    :rtype: String
+    """
+    if view in pg_views():
+        t = text('SELECT definition '
+            'FROM pg_views '
+            'WHERE viewname=:view_name;'
+        )
+
+        result = _execute(t, view_name=view)
+
+        definition = []
+        for row in result:
+            definition.append(row[0])
+        return definition[0]
+
+def get_referenced_table(self, view):
+    """
+    Returns the referenced table name
+    from an old view definition.
+    :param view: The view name
+    :type view: String
+    :return: Referenced table name
+    :rtype: String
+    """
+    definition = self.view_details(view)
+    if definition is None:
+        return None
+    lo_def = definition.lower().strip().lstrip('select')
+    query_lines = lo_def.splitlines()
+    ref_table = None
+    for q in query_lines:
+        if ' id ' in q:
+            q = q.split('.')
+            ref_table = q[0].strip()
+            break
+        if '.id' in q and 'as' not in q.lower():
+            q = q.split('.')
+            q = q[0].split(' ')
+            ref_table = q[-1].strip()
+
+            break
+
+    return ref_table
+
+
 def pg_table_exists(table_name, include_views=True, schema="public"):
     """
     Checks whether the given table name exists in the current database
@@ -172,28 +225,38 @@ def pg_table_count(table_name):
     return cnt
 
 def process_report_filter(tableName, columns, whereStr="", sortStmnt=""):
-    #Process the report builder filter    
-    sql = "SELECT {0} FROM {1}".format(columns,tableName)
-    
+    #Process the report builder filter
+    if "'" in columns and '"' not in columns:
+        cols = []
+        spited_cols = columns.split(',')
+        for col in spited_cols:
+
+            col = u'"{}"'.format(col)
+            cols.append(col)
+        columns = ','.join(cols)
+
+    sql = u"SELECT {0} FROM {1}".format(columns, tableName)
+
     if whereStr != "":
-        sql += u" WHERE {0} ".format(unicode(whereStr))
-        
+        sql += u" WHERE {0} ".format(whereStr)
+
+
     if sortStmnt !="":
         sql += sortStmnt
-        
+    print sql
     t = text(sql)
     
     return _execute(t)
 
 def export_data(table_name):
-    sql = "SELECT * FROM {0}".format(unicode(table_name), )
+    sql = u"SELECT * FROM {0}".format(unicode(table_name))
 
     t = text(sql)
 
     return _execute(t)
 
 def export_data_from_columns(columns, table_name):
-    sql = "SELECT {0} FROM {1}".format(unicode(columns), unicode(table_name))
+    sql = u"SELECT {0} FROM {1}".format(unicode(columns), unicode(table_name))
 
     t = text(sql)
 
@@ -209,7 +272,7 @@ def fix_sequence(table_name):
     :type table_name: String
     """
     sql_sequence_fix = text(
-        "SELECT setval(u'{0}_id_seq', (SELECT MAX(id) FROM {0}));".format(
+        u"SELECT setval(u'{0}_id_seq', (SELECT MAX(id) FROM {0}));".format(
             table_name
         )
     )
@@ -219,7 +282,7 @@ def fix_sequence(table_name):
 
 def import_data(table_name, columns_names, data, **kwargs):
 
-    sql = "INSERT INTO {0} ({1}) VALUES {2}".format(table_name,
+    sql = u"INSERT INTO {0} ({1}) VALUES {2}".format(table_name,
                                                     columns_names, unicode(data))
 
     t = text(sql)
@@ -247,14 +310,14 @@ def table_column_names(tableName, spatialColumns=False, creation_order=False):
     table or view.
     """
     if spatialColumns:
-        sql = "select f_geometry_column from geometry_columns where f_table_name = :tbname ORDER BY f_geometry_column ASC"
+        sql = u"select f_geometry_column from geometry_columns where f_table_name = :tbname ORDER BY f_geometry_column ASC"
         columnName = "f_geometry_column"
     else:
         if not creation_order:
-            sql = "select column_name from information_schema.columns where table_name = :tbname ORDER BY column_name ASC"
+            sql = u"select column_name from information_schema.columns where table_name = :tbname ORDER BY column_name ASC"
             columnName = "column_name"
         else:
-            sql = "select column_name from information_schema.columns where table_name = :tbname"
+            sql = u"select column_name from information_schema.columns where table_name = :tbname"
             columnName = "column_name"
 
     t = text(sql)
@@ -301,7 +364,7 @@ def geometryType(tableName, spatialColumnName, schemaName="public"):
     Returns a tuple of geometry type and EPSG code of the given column name in
     the table within the given schema.
     """
-    sql = "select type,srid from geometry_columns where f_table_name = :tbname " \
+    sql = u"select type,srid from geometry_columns where f_table_name = :tbname " \
           "and f_geometry_column = :spcolumn and f_table_schema = :tbschema"
     t = text(sql)
     
@@ -322,17 +385,24 @@ def unique_column_values(tableName, columnName, quoteDataTypes=["character varyi
     Select unique row values in the specified column.
     Specify the data types of row values which need to be quoted. Default is varchar.
     """
+    # tableName = unicode(tableName)
+    # columnName = unicode(columnName)
     dataType = columnType(tableName,columnName)
     quoteRequired = getIndex(quoteDataTypes, dataType)
-    
-    sql = "SELECT DISTINCT {0} FROM {1}".format(columnName, tableName)
+    if "'" in columnName and '"' not in columnName:
+        sql = u'SELECT DISTINCT "{0}" FROM {1}'.format(unicode(columnName),
+                                                     tableName)
+    else:
+
+        sql = u"SELECT DISTINCT {0} FROM {1}".format(unicode(columnName), tableName)
     t = text(sql)
     result = _execute(t)
     
     uniqueVals = []
-    
+
     for r in result:
-        if r[columnName] == None:
+
+        if r[unicode(columnName)] == None:
             if quoteRequired == -1:
                 uniqueVals.append(u"NULL")
             else:
@@ -340,25 +410,44 @@ def unique_column_values(tableName, columnName, quoteDataTypes=["character varyi
                 
         else:
             if quoteRequired == -1:
-                uniqueVals.append(str(r[columnName]))
+                uniqueVals.append(unicode(r[columnName]))
             else:
-                uniqueVals.append(u"'{0}'".format(unicode(r[columnName])))
-                
+                uniqueVals.append(u"'{0}'".format(r[columnName]))
+
     return uniqueVals
 
 def columnType(tableName, columnName):
     """
     Returns the PostgreSQL data type of the specified column.
     """
-    sql = "SELECT data_type FROM information_schema.columns where table_name=:tbName AND column_name=:colName"
+    view = tableName in pg_views()
+    if not view:
+        sql = u"SELECT data_type FROM information_schema.columns where table_name={} AND column_name={}".\
+            format(tableName, columnName)
+    else:
+        # if ' ' in columnName:
+        #     columnName = u'"{}"'.format(columnName)
+        if '"' in columnName:
+            sql = u'SELECT pg_typeof({}) from {} limit 1;'.format(
+                columnName, tableName
+            )
+        else:
+            sql = u'SELECT pg_typeof("{}") from {} limit 1;'.format(
+                columnName, tableName
+            )
+
     t = text(sql)
-    
-    result = _execute(t, tbName=tableName, colName=columnName)
+
+    result = _execute(t)
 
     dataType = ""
     for r in result:
-        dataType = r["data_type"]
-        
+        if view:
+            if len(r) > 0:
+                dataType = r[0]
+        else:
+            dataType = r["data_type"]
+
         break
     return dataType
 
@@ -462,9 +551,9 @@ def delete_table_keys(table):
     capabilities = ["Create", "Select", "Update", "Delete"]
     for action in capabilities:
         init_key = action +" "+ str(table).title()
-        sql = "DELETE FROM content_roles WHERE content_base_id IN" \
+        sql = u"DELETE FROM content_roles WHERE content_base_id IN" \
               " (SELECT id FROM content_base WHERE name = '{0}');".format(init_key)
-        sql2 = "DELETE FROM content_base WHERE content_base.id IN" \
+        sql2 = u"DELETE FROM content_base WHERE content_base.id IN" \
                " (SELECT id FROM content_base WHERE name = '{0}');".format(init_key)
         r = text(sql)
         r2 = text(sql2)
