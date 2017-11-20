@@ -25,6 +25,7 @@ from datetime import date
 from datetime import datetime 
 import calendar
 from collections import OrderedDict
+import copy
 
 from PyQt4 import QtGui
 from PyQt4 import QtCore
@@ -1796,7 +1797,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             profile = self.current_profile()
             in_db = pg_table_exists(entity.name)
 
-            tmp_short_name = entity.short_name
+            tmp_short_name = copy.deepcopy(entity.short_name)
 
             tmp_entity = entity;
 
@@ -2201,7 +2202,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 model_index_desc = model_item.index(rid, 2)
 
                 model_item.setData(model_index_name, editor.column.name)
-                model_item.setData(model_index_dtype, editor.column.TYPE_INFO.capitalize())
+                model_item.setData(model_index_dtype, editor.column.display_name())
                 model_item.setData(model_index_desc, editor.column.description)
 
                 model_item.edit_entity(original_column, editor.column)
