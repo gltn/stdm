@@ -51,6 +51,8 @@ from sqlalchemy import (
 from stdm.settings import current_profile
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.notification import NotificationBar
+
+from stdm.data.configuration import entity_model
 from ui_str_editor import Ui_STREditor
 from str_components import (
     Party,
@@ -315,12 +317,13 @@ class SyncSTREditorData(object):
             for i, (party_id, model) in \
                     enumerate(data_store.custom_tenure.iteritems()):
                 if party_id in data_store.party.keys():
+
                     self.editor.add_custom_tenure_info_data(
                         data_store.party[party_id], i, model
                     )
         else:
-            for i, (party_id, model) in \
-                    enumerate(data_store.party.iteritems()):
+
+            for i, (party_id, model) in enumerate(data_store.party.iteritems()):
                 # if party_id in data_store.party.keys():
                 self.editor.add_custom_tenure_info_data(
                     data_store.party[party_id], i
@@ -887,6 +890,46 @@ class ValidateSTREditor(object):
         current = self.spatial_unit_current_usage_count(model_obj.id)
         return current + usage_count.spatial_unit_count
 
+    def validate_custom_tenure_form(self):
+        """
+        Validates custom tenure form validity.
+        :return:
+        :rtype:
+        """
+        stores = self.editor.data_store
+        errors = []
+        for str_number, store in stores.iteritems():
+            spatial_unit = store.current_spatial_unit
+            custom_attr_entity = self.editor.social_tenure.spu_custom_attribute_entity(
+                spatial_unit
+            )
+            for i, (party_id, custom_model) in enumerate(store.custom_tenure.iteritems()):
+                if custom_model is not None:
+                    editor = self.editor.custom_tenure_info_component.entity_editors[
+                        (str_number, i)]
+
+                    errors = editor.validate_all()
+
+                else:
+                    for col in custom_attr_entity.columns.values():
+                        if col.mandatory:
+                            msg = QApplication.translate("ValidateSTREditor",
+                                                         "is a required field.")
+                            error = '{} {}'.format(col.name, msg)
+                            errors.append('{}:{} {}'.format(str_number, i, error))
+
+        if len(errors) > 0:
+            self.editor.notice.clear()
+            for error in errors:
+
+                self.editor.notice.insertWarningNotification(
+                    error
+                )
+            return False
+        return True
+
+
+
 
 class STREditor(QDialog, Ui_STREditor):
     """
@@ -1063,8 +1106,10 @@ class STREditor(QDialog, Ui_STREditor):
         self.tree_view_model.appendRow(str_root)
         self.str_children(str_root)
         self.tree_view.expandAll()
-
-        self.data_store[self.str_number] = STRDataStore()
+        store = STRDataStore()
+        self.data_store[self.str_number] = store
+        store.current_spatial_unit = self.spatial_unit
+        store.current_party = self.party
 
     def str_children(self, str_root):
         """
@@ -1436,10 +1481,13 @@ class STREditor(QDialog, Ui_STREditor):
         forms.
         :type custom_model: Integer
         """
-        self.custom_tenure_info_component.add_entity_editor(
-            self.party, self.spatial_unit, party_model, self.str_number, row_number, custom_model
-        )
         store = self.current_data_store()
+        QApplication.processEvents()
+        self.custom_tenure_info_component.add_entity_editor(
+            self.party, self.spatial_unit, party_model,
+            self.str_number, row_number, custom_model
+        )
+
         store.custom_tenure[party_model.id] = custom_model
 
     def reset_share_spinboxes(self, data_store):
@@ -1724,7 +1772,7 @@ class STREditor(QDialog, Ui_STREditor):
         """
         self.add_str_btn.clicked.connect(self.add_str_tree_node)
         self.remove_str_btn.clicked.connect(self.remove_str_tree_node)
-        self.buttonBox.accepted.connect(self.save_str)
+        # self.buttonBox.accepted.connect(self.save_str)
 
     def spatial_unit_signals(self):
         """
@@ -1758,11 +1806,6 @@ class STREditor(QDialog, Ui_STREditor):
         self.str_model = models[0]
         self.str_doc_model = models[1]
 
-    def set_current_entities(self):
-        store = self.current_data_store()
-        store.current_party = self.party
-        store.current_spatial_unit = self.spatial_unit
-
     def set_party_data(self, model):
         """
         Sets party date to the data store party dictionary.
@@ -1774,7 +1817,7 @@ class STREditor(QDialog, Ui_STREditor):
         item = self.str_item(self.party_text, self.str_number)
         # validate party length to enable the next item
         self.validate.validate_party_length(current_data_store, item)
-        self.set_current_entities()
+        current_data_store.current_party = self.party
 
     def set_spatial_unit_data(self, model):
         """
@@ -1785,6 +1828,7 @@ class STREditor(QDialog, Ui_STREditor):
         current_store = self.current_data_store()
         current_store.spatial_unit.clear()
         current_store.spatial_unit[model.id] = model
+        current_store.current_spatial_unit = self.spatial_unit
 
     def set_str_type_data(self, str_type_id, party_id, row_number):
         """
@@ -1957,13 +2001,14 @@ class STREditor(QDialog, Ui_STREditor):
         current_store = self.current_data_store()
         current_store.spatial_unit.clear()
 
-    def save_str(self):
+    def accept(self):
         """
         Saves the data into the database.
         """
         current_store = self.current_data_store()
-        current_store.current_spatial_unit = self.spatial_unit
-        current_store.current_party = self.party
+        result = self.validate.validate_custom_tenure_form()
+        if not result:
+            return
         if self.current_item().text() == self.custom_tenure_info_text:
             self.sync.save_custom_tenure_info(
                 current_store, self.str_number
@@ -1971,6 +2016,7 @@ class STREditor(QDialog, Ui_STREditor):
 
         db_handler = STRDBHandler(self.data_store, self.str_model)
         db_handler.commit_str()
+        self.done(1)
 
     def message(self, title, message, type='information', yes_no=False):
         """
@@ -2105,46 +2151,6 @@ class EditSTREditor(STREditor):
             currentIndexChanged.connect(
             self.switch_spatial_unit_entity
         )
-
-    def current_party(self, record):
-        """
-        Gets the current party column name in STR
-        table by finding party column with value other than None.
-        :param record: The STR record or result.
-        :type record: Dictionary
-        :return: The party column name with value.
-        :rtype: String
-        """
-        parties = self.social_tenure.parties
-        if record is None:
-            return
-        for party in parties:
-            party_name = party.short_name.lower()
-            party_id = u'{}_id'.format(party_name)
-            if party_id not in record.keys():
-                return
-            if record[party_id] is not None:
-                return party, party_id
-
-    def current_spatial_unit(self, record):
-        """
-        Gets the current spatial_units column name in STR
-        table by finding spatial_unit column with value other than None.
-        :param record: The STR record or result.
-        :type record: Dictionary
-        :return: The spatial_unit column name with value.
-        :rtype: String
-        """
-        spatial_units = self.social_tenure.spatial_units
-        if record is None:
-            return
-        for spatial_unit in spatial_units:
-            spatial_unit_name = spatial_unit.short_name.lower()
-            spatial_units_id = u'{}_id'.format(spatial_unit_name)
-            if spatial_units_id not in record.keys():
-                return
-            if record[spatial_units_id] is not None:
-                return spatial_unit, spatial_units_id
 
     def populate_party_str_type_store(self):
         """
@@ -2298,6 +2304,48 @@ class EditSTREditor(STREditor):
 
         doc_item.setEnabled(True)
 
+    def current_party(self, record):
+        """
+        Gets the current party column name in STR
+        table by finding party column with value other than None.
+        :param record: The STR record or result.
+        :type record: Dictionary
+        :return: The party column name with value.
+        :rtype: String
+        """
+        parties = self.social_tenure.parties
+        if record is None:
+            return
+        for party in parties:
+            party_name = party.short_name.lower()
+            party_name = party_name.replace(' ', '_')
+            party_id = u'{}_id'.format(party_name)
+            if party_id not in record.keys():
+                return
+            if record[party_id] is not None:
+                return party, party_id
+
+    def current_spatial_unit(self, record):
+        """
+        Gets the current spatial_units column name in STR
+        table by finding spatial_unit column with value other than None.
+        :param record: The STR record or result.
+        :type record: Dictionary
+        :return: The spatial_unit column name with value.
+        :rtype: String
+        """
+        spatial_units = self.social_tenure.spatial_units
+        if record is None:
+            return
+        for spatial_unit in spatial_units:
+            spatial_unit_name = spatial_unit.short_name.lower()
+            spatial_unit_name = spatial_unit_name.replace(' ', '_')
+            spatial_units_id = u'{}_id'.format(spatial_unit_name)
+            if spatial_units_id not in record.keys():
+                return
+            if record[spatial_units_id] is not None:
+                return spatial_unit, spatial_units_id
+
     def set_party_data(self, model):
         """
         Sets the party data from the ForeignKeyMapper model to the data store.
@@ -2331,13 +2379,15 @@ class EditSTREditor(STREditor):
         self.copied_party_row.clear()
         self.copied_party_row[party_id] = row_data
 
-    def save_str(self):
+    def accept(self):
         """
         Saves the edited data into the database.
         """
         current_store = self.current_data_store()
-        current_store.current_spatial_unit = self.spatial_unit
-        current_store.current_party = self.party
+
+        result = self.validate.validate_custom_tenure_form()
+        if not result:
+            return
         if self.current_item().text() == self.custom_tenure_info_text:
             self.sync.save_custom_tenure_info(
                 current_store, self.str_number
@@ -2347,3 +2397,4 @@ class EditSTREditor(STREditor):
             self.data_store, self.str_model, self.str_edit_node
         )
         self.updated_str_obj = db_handler.commit_str()
+        self.done(1)

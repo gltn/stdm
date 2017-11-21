@@ -27,6 +27,8 @@ from qgis.core import *
 from stdm.ui.helpers import valueHandler, ControlDirtyTrackerCollection
 from stdm.ui.notification import NotificationBar,ERROR,WARNING, SUCCESS
 
+from stdm.data.configuration import entity_model
+
 __all__ = ["SAVE","UPDATE","MapperMixin","QgsFeatureMappperMixin"]
 
 '''
@@ -122,7 +124,7 @@ class _AttributeMapper(object):
         Returns whether the field is mandatory.
         '''
         return self._isMandatory
-    
+
     def setMandatory(self,mandatory):
         '''
         Set field should be mandatory
@@ -164,7 +166,7 @@ class MapperMixin(object):
     '''
     Mixin class for use in a dialog or widget, and manages attribute mapping.
     '''
-    def __init__(self, model):
+    def __init__(self, model, entity):
         '''
         :param model: Callable (new instances) or instance (existing instance
         for updating) of STDM model.
@@ -175,13 +177,16 @@ class MapperMixin(object):
         else:
             self._model = model
             self._mode = UPDATE
+        self.entity = entity
         self._attrMappers = []
         self._attr_mapper_collection={}
         self._dirtyTracker = ControlDirtyTrackerCollection()
         self._notifBar = None
         self.is_valid = False
         self.saved_model = None
-        
+        # Get document objects
+        self.entity_model = entity_model(entity)
+        self.entity_model_obj = self.entity_model()
         #Initialize notification bar
         if hasattr(self,"vlNotification"):
             self._notifBar = NotificationBar(self.vlNotification)
@@ -347,6 +352,52 @@ class MapperMixin(object):
         Executed once a record has been saved or updated. 
         '''
         self.saved_model = dbmodel
+
+    def validate_all(self):
+        errors = []
+        for attrMapper in self._attrMappers:
+            error = self.validate(attrMapper)
+
+            if error is not None:
+                self._notifBar.insertWarningNotification(error)
+                errors.append(error)
+        return errors
+
+    def validate(self, attrMapper):
+        """
+        Validate attribute.
+        :param attrMapper: The attribute
+        :type attrMapper: _AttributeMapper
+        :return: List of error messages or None
+        :rtype: list or NoneType
+        """
+        error = None
+
+        field = attrMapper.pseudoName()
+        column_name = attrMapper.attributeName()
+        if column_name in self.entity.columns.keys():
+            column = self.entity.columns[column_name]
+        else:
+            return
+
+        if column.unique:
+            column_obj = getattr(self.entity_model, column_name, None)
+            result = self.entity_model_obj.queryObject().filter(
+                column_obj == attrMapper.valueHandler().value()).first()
+            if result is not None:
+                msg = QApplication.translate("MappedDialog",
+                                             "field value should be unique.")
+                error = '{} {}'.format(field, msg)
+
+        if column.mandatory:
+            if attrMapper.valueHandler().value() == \
+                    attrMapper.valueHandler().default():
+                # Notify user
+                msg = QApplication.translate("MappedDialog",
+                                             "is a required field.")
+                error = '{} {}'.format(field, msg)
+
+        return error
     
     def submit(self, collect_model=False, save_and_new=False):
         """
@@ -366,18 +417,16 @@ class MapperMixin(object):
         self.is_valid = True
 
         # Validate mandatory fields have been entered by the user.
+        errors = []
         for attrMapper in self._attrMappers:
+            error = self.validate(attrMapper)
 
-            if attrMapper.isMandatory() and \
-                    attrMapper.valueHandler().supportsMandatory():
-                if attrMapper.valueHandler().value() == \
-                        attrMapper.valueHandler().default():
-                    #Notify user
-                    msg = QApplication.translate("MappedDialog",
-                                                 "'%s' is a required field.")\
-                          %unicode(attrMapper.pseudoName())
-                    self._notifBar.insertWarningNotification(msg)
-                    self.is_valid = False
+            if error is not None:
+                self._notifBar.insertWarningNotification(error)
+                errors.append(error)
+
+        if len(errors) > 0:
+            self.is_valid = False
 
         if not self.is_valid:
             return
@@ -449,106 +498,3 @@ class MapperMixin(object):
         for attrMapper in self._attrMappers:
             attrMapper.valueHandler().clear()
 
-class _QgsFeatureAttributeMapper(_AttributeMapper):
-    '''
-    Manages a single instance of the mapping between a QgsFeature
-    attribute and the corresponding UI widget.
-    For use in the editor widget when digitizing new features.
-    '''
-    def bindControl(self):
-        '''
-        Base class override that sets the value of the control
-        based on the value of the QgsField
-        with the given attribute index instead of the name.
-        '''
-        try:
-            attrVal = self._model.attribute(self._attrName)
-            self._valueHandler.setValue(attrVal)
-        except KeyError:
-            #If the field is not found then log the message into the console.
-            QgsMessageLog.logMessage(QApplication.translate(
-                "QgsFeatureAttributeMapper",
-                "Attribute name '%s' not found.")%str(self._attrName),
-                                     QgsMessageLog.CRITICAL
-            )
-
-    def bindModel(self):
-        '''
-        Base class override that sets the value of the feature attribute.
-        '''
-        try:
-            ctlValue = self._valueHandler.value()
-            self._model.setAttribute(self._attrName,ctlValue)
-        except KeyError:
-            #If the field is not found then log the message into the console.
-            QgsMessageLog.logMessage(QApplication.translate(
-                "QgsFeatureAttributeMapper",
-                "Attribute index '%s' not found."
-            )%str(self._attrName),level = QgsMessageLog.CRITICAL)
-            
-class QgsFeatureMapperMixin(MapperMixin):
-    '''
-    Mixin class for mapping QgsFeature attributes. For use in a
-    spatial editor widget.
-    '''
-    def __init__(self,layer,feature,mode = SAVE):
-        # In this case, the feature will have to be instantiated rather
-        # than checking whether it is a callable.
-        MapperMixin.__init__(self,feature)
-        self._mode = mode
-        self._layer = layer 
-        
-        #Initialize fields if its a new feature being created
-        if self._mode == SAVE:
-            fields = self._layer.pendingFields()
-            self._model.initAttributes(fields.count())
-            
-        self._layer.featureAdded.connect(self.onFeatureAdded)
-        
-    def layer(self):
-        '''
-        Returns the layer being used by the mapper.
-        '''
-        return self._layer
-
-    def addMapping(
-            self, attributeName, control, isMandatory=False,
-            pseudoname="", valueHandler=None, preloadfunc=None):
-        '''
-        Now create mapping using QgsFeatureAttributeMapper.
-        We use the positional index of the field instead of the name since
-        the feature cannot locate it when you search the field by name.
-        '''
-        attrIndex = self._layer.pendingFields().indexFromName(attributeName)
-        if attrIndex != -1:
-            attrMapper = _QgsFeatureAttributeMapper(
-                attrIndex, control, self._model, pseudoname,
-                isMandatory, valueHandler)
-            self.addMapper(attrMapper,preloadfunc)
-
-    def _persistModel(self):
-        '''
-        Persist feature to the vector layer.
-        '''
-        if not isinstance(self._layer,QgsVectorLayer):
-            return
-        
-        ret = self._layer.addFeature(self._model)
-        
-        if ret:
-            if isinstance(self, QDialog):
-                self.postSaveUpdate(self._model)
-                self.accept()
-        else:
-            QMessageBox.critical(
-                self, QApplication.translate(
-                    "MappedDialog","Error"),
-                QApplication.translate(
-                    "MappedDialog","The feature could not be added.")
-            )
-            
-    def onFeatureAdded(self,fid):
-        '''
-        Slot raised when a new feature has been added to the layer
-        '''
-        pass

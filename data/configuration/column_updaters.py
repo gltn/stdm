@@ -29,10 +29,11 @@ from sqlalchemy import (
     Numeric,
     String,
     Table,
-    Text
+    Text,
+    Index
 )
 from sqlalchemy.exc import ProgrammingError
-
+import uuid
 from migrate.changeset import *
 from migrate.changeset.constraint import CheckConstraint
 
@@ -128,28 +129,21 @@ def _update_col(column, table, data_type, columns):
     idx_name = None
     if column.index:
         idx_name = u'idx_{0}_{1}'.format(column.entity.name, column.name)
-
+        if len(idx_name) > 63:
+            idx_name = ''.format(idx_name[:30], uuid.uuid4().hex)
     unique_name = None
     if column.unique:
         unique_name = u'unq_{0}_{1}'.format(column.entity.name, column.name)
+        if len(unique_name) > 63:
+            unique_name = ''.format(unique_name[:30], uuid.uuid4().hex)
 
     if column.action == DbItem.CREATE:
         # Ensure the column does not exist otherwise an exception will be thrown
         if not column.name in columns:
-            if column.TYPE_INFO == 'GEOMETRY':
-
-                alchemy_column.create(
-                    table=table,
-                    index_name=idx_name,
-                    unique_name=unique_name,
-                    index='gist'
-                )
-            else:
-                alchemy_column.create(
-                    table=table,
-                    index_name=idx_name,
-                    unique_name=unique_name
-                )
+            alchemy_column.create(
+                table=table,
+                unique_name=unique_name
+            )
 
             # Create check constraints accordingly
             if isinstance(column, BoundsColumn) and \
@@ -174,11 +168,24 @@ def _update_col(column, table, data_type, columns):
             _clear_ref_in_entity_relations(column)
             # Use drop cascade command
             drop_cascade_column(column.entity.name, column.name)
-            #alchemy_column.drop(table=table)
 
     # Ensure column is added to the table
     if alchemy_column.table is None:
         alchemy_column._set_parent(table)
+    # add different type of index for columns with index
+    if column.index:
+        if column.TYPE_INFO == 'GEOMETRY':
+            try:
+                idx = Index(idx_name, alchemy_column, postgresql_using='gist')
+                idx.create()
+            except Exception:
+                pass
+        else:
+            try:
+                idx = Index(idx_name, alchemy_column, postgresql_using='btree')
+                idx.create()
+            except Exception:
+                pass
 
     return alchemy_column
 
@@ -313,7 +320,6 @@ def geometry_updater(column, table, columns):
     return _update_col(column, table, Geometry(geometry_type=geom_type,
                                                srid=column.srid),
                        columns)
-
 
 def yes_no_updater(column, table, columns):
     """

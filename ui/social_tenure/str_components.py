@@ -621,6 +621,7 @@ class CustomTenureInfo(object):
         self.parent = parent
         self.entity_editors = OrderedDict()
 
+
     def display_columns(self, party_entity):
         return entity_display_columns(party_entity, False, [
             'SERIAL',

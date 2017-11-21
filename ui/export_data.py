@@ -99,7 +99,8 @@ class ExportData(QWizard,Ui_frmExportWizard):
         #Export table options page
         pgExportTab = self.page(1)
         pgExportTab.registerField("srcTabIndex*",self.lstSrcTab)
-        pgExportTab.registerField("geomCol",self.cboSpatialCols_2,"currentText",SIGNAL("currentIndexChanged(int)"))
+        pgExportTab.registerField("geomCol",self.cboSpatialCols_2,
+                                  "currentText",SIGNAL("currentIndexChanged(int)"))
         
     def initializePage(self,int):
         #Re-implementation of wizard page initialization
@@ -121,12 +122,21 @@ class ExportData(QWizard,Ui_frmExportWizard):
         
         if self.currentId() == 1:
             if len(self.lstSrcTab.selectedItems()) == 0:
-                self.ErrorInfoMessage("Please select a table whose contents are to be exported.")
+                msg = QApplication.translate(
+                    'ExportData',
+                    u"Please select a table whose contents are to be exported.")
+
+                self.ErrorInfoMessage(msg)
                 validPage=False
                 
             else:                
-                if len(self.selectedColumns())==0:                                                                
-                    self.ErrorInfoMessage("Please select at least one textual column whose values are to be exported.")
+                if len(self.selectedColumns())==0:
+                    msg = QApplication.translate(
+                        'ExportData',
+                        u"Please select at least one textual column "
+                        u"whose values are to be exported.")
+
+                    self.ErrorInfoMessage(msg)
                     validPage=False
                     
             #Set Geometry column
@@ -243,9 +253,9 @@ class ExportData(QWizard,Ui_frmExportWizard):
         if len(selCols) > 0:
             selCol = selCols[0]
             colName = unicode(selCol.text())
-            print self.srcTab, colName
+
             uniqVals = unique_column_values(self.srcTab,colName)
-            print uniqVals
+
             self.lstUniqueVals.addItems(uniqVals)
             self.lstUniqueVals.sortItems() 
             
@@ -261,7 +271,10 @@ class ExportData(QWizard,Ui_frmExportWizard):
             return succeed
         
         if resultSet.rowcount == 0:
-            self.ErrorInfoMessage("There are no records to export")
+            msg = QApplication.translate(
+                'ExportData', u"There are no records to export.")
+
+            self.ErrorInfoMessage(msg)
             return succeed
 
         try:
@@ -292,15 +305,21 @@ class ExportData(QWizard,Ui_frmExportWizard):
     def filter_verifyQuery(self):
         #Verify the query expression    
         if len(self.txtWhereQuery.toPlainText()) == 0:
-            self.ErrorInfoMessage("No filter has been defined.")
+            msg = QApplication.translate(
+                'ExportData', u"No filter has been defined.")
+
+            self.ErrorInfoMessage(msg)
             
         else:
             results = self.filter_buildQuery()
             
             if results != None:            
                 rLen = results.rowcount
-                msg = "The SQL statement was successfully verified.\n" + str(rLen) + \
-                      " record(s) returned."
+                msg1 = QApplication.translate(
+                    'ExportData', u"The SQL statement was successfully verified.\n")
+                msg2 = QApplication.translate('ExportData', u"record(s) returned.")
+
+                msg = '{} {} {}'.format(msg1, rLen, msg2)
                 self.InfoMessage(msg)
         
     def filter_buildQuery(self):
@@ -312,7 +331,7 @@ class ExportData(QWizard,Ui_frmExportWizard):
         # remove quote from each column
 
         columnList = u",".join(queryCols)
-        # print columnList
+       
         whereStmnt = self.txtWhereQuery.toPlainText()
 
         sortStmnt = ''
@@ -321,13 +340,11 @@ class ExportData(QWizard,Ui_frmExportWizard):
         try:
             results = process_report_filter(self.srcTab,columnList,whereStmnt,sortStmnt)
               
-        except sqlalchemy.exc.DataError,e:
-            if e is None:
-                errMessage = u"Database Error Message - NOT AVAILABLE"
-            else:
-                errMessage = e.message
+        except sqlalchemy.exc.DataError:
+            msg = QApplication.translate(
+                'ExportData', u"The SQL statement is invalid!")
 
-            self.ErrorInfoMessage(u"The SQL statement is invalid! \n{}".format(errMessage))
+            self.ErrorInfoMessage(msg)
 
         return results    
         

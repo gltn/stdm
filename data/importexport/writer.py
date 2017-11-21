@@ -112,7 +112,8 @@ class OGRWriter():
         numFeat = results.rowcount
         progress = QProgressDialog("","&Cancel",initVal,numFeat,parent)        
         progress.setWindowModality(Qt.WindowModal)    
-        lblMsgTemp = "Writing {0} of {1} to file..."
+        lblMsgTemp = QApplication.translate(
+            'OGRWriter', 'Writing {0} of {1} to file...')
 
         entity = current_profile().entity_by_name(table)
         #Iterate the result set
