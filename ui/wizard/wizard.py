@@ -1921,7 +1921,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             if entity.action == DbItem.DROP:
                 continue
 
-            if hasattr(entity, 'user_editable'):
+            if hasattr(entity, 'user_editable') and entity.TYPE_INFO <> 'VALUE_LIST':
                 if entity.user_editable == False:
                     continue
 
