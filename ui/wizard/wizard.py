@@ -194,7 +194,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self._sp_t_mapping = {}
         self._custom_attr_entities = {}
         self.orig_assets_count = 0  # count of items in StdmConfiguration instance
-        self.load_stdm_config()
+        config_file = self.get_config_file()
+        self.load_stdm_config(config_file)
 
         self.splitter.setStretchFactor(0, 0)
         self.splitter.setStretchFactor(1, 1)
@@ -344,14 +345,20 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         return self.query_box_save_cancel(msg0)
 
 
-    def load_stdm_config(self):
-        """
-        Read and load configuration from file 
-        """
+    def get_config_file(self):
+        config_file = None
         try:
             config_file = self.healthy_config_file()
         except(ConfigurationException, IOError) as e:
             self.show_message(self.tr(unicode(e) ))
+        return config_file
+
+    def load_stdm_config(self, config_file):
+        """
+        Read and load configuration from file 
+        """
+        if config_file is None:
+            return
 
         self.load_configuration_from_file(config_file)  
 
@@ -420,7 +427,18 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if self.query_box_yesno(msg, QMessageBox.Critical) == QMessageBox.Yes:
             return CONFIG_BACKUP_FILE
         else:
+            self.rename_config_backup_file(CONFIG_BACKUP_FILE)
             return CONFIG_FILE
+
+    def rename_config_backup_file(self, config_backup_file):
+        h = datetime.now().hour
+        m = datetime.now().minute
+        s = datetime.now().second
+        patch = str(h)+str(m)+str(s)
+        new_name = config_backup_file.replace('_bak', '_bak'+patch)
+        old_backup_config_file = QFile(config_backup_file)
+        old_backup_config_file.rename(new_name)
+        
 
     def init_path_ctrls_event_handlers(self):
         """
@@ -1466,10 +1484,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         '''
         self.save_current_configuration(DRAFT_CONFIG_FILE)
         current_profile_name = self.cboProfile.currentText()
+        #config_file = self.get_config_file()
+        self.load_stdm_config(DRAFT_CONFIG_FILE)
         self.refresh_config(current_profile_name)
 
     def refresh_config(self, profile_name):
-        self.load_stdm_config()
+        #config_file = self.get_config_file()
+        #self.load_stdm_config(config_file)
         self.switch_profile(profile_name)
         self.set_current_profile(profile_name)
         self.set_window_title()
@@ -1482,7 +1503,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if self.query_box_yesno(msg) == QMessageBox.Yes:
             self.delete_draft_config_file()
             self.draft_config = False
-            self.load_stdm_config()
+            config_file = self.get_config_file()
+            self.load_stdm_config(config_file)
             self.set_window_title()
 
     def set_support_doc_path(self):
@@ -1704,6 +1726,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if result == 1:
             if not self.draft_config:
                 self.save_current_configuration(DRAFT_CONFIG_FILE)
+                self.draft_config = True
 
             copy_profile_name = editor.copy_name
             copy_profile_desc = editor.copy_desc
@@ -1711,6 +1734,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.make_profile_copy(current_profile_name,
                     copy_profile_name, DRAFT_CONFIG_FILE)
 
+            self.load_stdm_config(DRAFT_CONFIG_FILE)
             self.refresh_config(copy_profile_name)
 
             copied_profile = self.current_profile()
