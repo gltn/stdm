@@ -867,6 +867,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             for id, root in roots.iteritems():
 
                 if not isinstance(id, long):
+
                     continue
                 str_records = self.feature_str_link(id)
                 self.spatial_unit_items[root] = self.entity
