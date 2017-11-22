@@ -175,7 +175,7 @@ def _create_primary_entity_view(
         distinct_column = '{0}.id'.format(primary_entity.name)
 
         # Omit STR columns if primary entity is spatial unit
-        str_columns = []
+        # str_columns = []
 
     #for spatial_unit in social_tenure.spatial_units:
     ### Create spatial_unit views
@@ -190,8 +190,8 @@ def _create_primary_entity_view(
             omit_join_statement_columns=omit_join_statement_columns
         )
 
-        view_columns = str_columns + spatial_unit_columns
-
+        view_columns = spatial_unit_columns + str_columns
+        # print view_columns
         # Set distinct column if specified
         if not distinct_column is None:
             view_columns = _set_distinct_column(distinct_column, view_columns)
@@ -250,9 +250,8 @@ def _entity_select_column(
 
     for c in columns:
         if c.TYPE_INFO not in _exclude_view_column_types:
-            normalized_entity_sname = entity.short_name.replace(
-                ' ', '_'
-            ).lower()
+            normalized_entity_sname = entity.short_name.replace(' ', '_').lower()
+
             pseudo_column_name = u'{0}_{1}'.format(normalized_entity_sname,
                     c.name)
             col_select_name = u'{0}.{1}'.format(entity.name, c.name)
@@ -269,15 +268,15 @@ def _entity_select_column(
                         column_names.append(row_id)
                         select_column_name = select_column_name
 
-                    else:
-                        # add spatial unit id as the id.
-                        select_column_name = col_select_name
-                        #
-                        #  # add the social_tenure_relationship_id
-                        str_id = u'{0}.id AS {1}_id'.format(
-                            str_entity.name, str_entity.short_name.lower()
-                        )
-                        column_names.append(str_id)
+                    # else:
+                    #     # add spatial unit id as the id.
+                    #     select_column_name = col_select_name
+                    #     #  # add the social_tenure_relationship_id
+                    #     str_id = u'{0}.id AS {1}_id'.format(
+                    #         str_entity.name, str_entity.short_name.lower()
+                    #     )
+                    #     if str_id not in column_names:
+                    #         column_names.append(str_id)
 
                 else:
                     # add party_id on spatial unit view to use
@@ -303,7 +302,8 @@ def _entity_select_column(
                         str_id = u'{0}.id AS {1}_id'.format(
                             str_entity.name, str_entity.short_name.lower()
                         )
-                        column_names.append(str_id)
+                        if str_id not in column_names:
+                            column_names.append(str_id)
             # Use custom join flag
             use_custom_join = False
 

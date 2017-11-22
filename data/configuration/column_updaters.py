@@ -33,12 +33,16 @@ from sqlalchemy import (
     Index
 )
 from sqlalchemy.exc import ProgrammingError
-import uuid
+from sqlalchemy.engine import reflection
+
 from migrate.changeset import *
 from migrate.changeset.constraint import CheckConstraint
 
 from geoalchemy2 import Geometry
-
+from stdm.data.database import (
+    metadata
+)
+from . import _bind_metadata
 from stdm.data.configuration.db_items import DbItem
 from stdm.data.pg_utils import (
     drop_cascade_column
@@ -129,13 +133,9 @@ def _update_col(column, table, data_type, columns):
     idx_name = None
     if column.index:
         idx_name = u'idx_{0}_{1}'.format(column.entity.name, column.name)
-        if len(idx_name) > 63:
-            idx_name = ''.format(idx_name[:30], uuid.uuid4().hex)
     unique_name = None
     if column.unique:
         unique_name = u'unq_{0}_{1}'.format(column.entity.name, column.name)
-        if len(unique_name) > 63:
-            unique_name = ''.format(unique_name[:30], uuid.uuid4().hex)
 
     if column.action == DbItem.CREATE:
         # Ensure the column does not exist otherwise an exception will be thrown
@@ -174,18 +174,23 @@ def _update_col(column, table, data_type, columns):
         alchemy_column._set_parent(table)
     # add different type of index for columns with index
     if column.index:
-        if column.TYPE_INFO == 'GEOMETRY':
-            try:
-                idx = Index(idx_name, alchemy_column, postgresql_using='gist')
-                idx.create()
-            except Exception:
-                pass
-        else:
-            try:
-                idx = Index(idx_name, alchemy_column, postgresql_using='btree')
-                idx.create()
-            except Exception:
-                pass
+        _bind_metadata(metadata)
+        inspector = reflection.Inspector.from_engine(metadata.bind)
+        indexes_list = inspector.get_indexes(column.entity.name)
+        indexes = [i['name'] for i in indexes_list if not i['unique']]
+        # get_indexes do not get gist indexes so try/ except needs to be used.
+        try:
+            if idx_name not in indexes:
+
+                if column.TYPE_INFO == 'GEOMETRY':
+                    idx = Index(idx_name, alchemy_column, postgresql_using='gist')
+                    idx.create()
+
+                else:
+                    idx = Index(idx_name, alchemy_column, postgresql_using='btree')
+                    idx.create()
+        except Exception:
+            pass
 
     return alchemy_column
 
