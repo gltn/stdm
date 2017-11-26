@@ -732,11 +732,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def _sync_custom_tenure_entities(self):
         # Synchronize list of custom attribute entities with selected
         # tenure types.
-        if len(self._custom_attr_entities) == 0:
-            return
 
         p = self.current_profile()
-
+       
         for tt in self._sp_t_mapping.values():
             if not tt in self._custom_attr_entities:
                 c_ent = p.social_tenure.initialize_custom_attributes_entity(
@@ -756,24 +754,36 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         # Sync tenure types
         self._sync_custom_tenure_entities()
-
-        if len(self._custom_attr_entities) == 0:
+        profile = self.current_profile()
+        social_tenure = profile.social_tenure
+        spatial_units_tenure = profile.social_tenure.spatial_units_tenure
+        custom_tenure_valid = True
+        if len(social_tenure.spatial_units) < 1:
             self._notif_bar_str.clear()
             msg = self.tr(
-                'No tenure types have been specified in the profile\'s social '
-                'tenure relationship.'
+                 "You have to first select a spatial unit and link it to "
+                 "tenure type to create custom tenure attributes."
             )
             self._notif_bar_str.insertWarningNotification(msg)
+            return
+        for spatial_unit in social_tenure.spatial_units:
+            if spatial_unit.short_name not in spatial_units_tenure.keys():
+                self._notif_bar_str.clear()
+                msg = self.tr(
+                    'No tenure types have been specified in the profile\'s social '
+                    'tenure relationship.'
+                )
+                self._notif_bar_str.insertWarningNotification(msg)
+                custom_tenure_valid = False
 
+        if not custom_tenure_valid:
             return
 
-        p = self.current_profile()
-
-        can_edit = not p.str_table_exists
+        can_edit = not profile.str_table_exists
 
         # Initialize entity attribute editor
         custom_attr_editor = TenureCustomAttributesEditor(
-            p,
+            profile,
             self._custom_attr_entities,
             self,
             editable=can_edit,

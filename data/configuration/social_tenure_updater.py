@@ -191,7 +191,7 @@ def _create_primary_entity_view(
         )
 
         view_columns = spatial_unit_columns + str_columns
-        # print view_columns
+
         # Set distinct column if specified
         if not distinct_column is None:
             view_columns = _set_distinct_column(distinct_column, view_columns)
