@@ -734,7 +734,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         # tenure types.
 
         p = self.current_profile()
-       
+
         for tt in self._sp_t_mapping.values():
             if not tt in self._custom_attr_entities:
                 c_ent = p.social_tenure.initialize_custom_attributes_entity(
