@@ -431,10 +431,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             return CONFIG_FILE
 
     def rename_config_backup_file(self, config_backup_file):
-        h = datetime.now().hour
-        m = datetime.now().minute
-        s = datetime.now().second
-        patch = str(h)+str(m)+str(s)
+        h = str(datetime.now().hour)
+        m = str(datetime.now().minute)
+        s = str(datetime.now().second)
+        patch = h+m+s
         new_name = config_backup_file.replace('_bak', '_bak'+patch)
         old_backup_config_file = QFile(config_backup_file)
         old_backup_config_file.rename(new_name)
@@ -732,6 +732,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def _sync_custom_tenure_entities(self):
         # Synchronize list of custom attribute entities with selected
         # tenure types.
+        if len(self._custom_attr_entities) == 0:
+            return
+
         p = self.current_profile()
 
         for tt in self._sp_t_mapping.values():
@@ -2034,6 +2037,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.pftableView.setAcceptDrops(True)
         self.pftableView.setDragDropMode(QTableView.DragDrop)
         self.pftableView.setDefaultDropAction(Qt.MoveAction)
+
+        self._custom_attr_entities = {}
 
     def refresh_entity_view(self):
         self.clear_view_model(self.entity_model)
