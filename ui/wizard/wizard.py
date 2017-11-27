@@ -1481,7 +1481,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.button(QWizard.CustomButton1).pressed.connect(self.custom_button_clicked)
 
     def custom_button_clicked(self):
-        self.save_draft_action.setEnabled(self.configuration_is_dirty())
+        #self.save_draft_action.setEnabled(self.configuration_is_dirty())
         self.discard_draft_action.setEnabled(self.draft_config)
 
     def save_draft(self):
