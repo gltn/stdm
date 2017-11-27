@@ -517,10 +517,15 @@ class SocialTenure(Entity):
         :type tenure_lookup: str or ValueList
         """
         sp_unit = self._obj_from_str(spatial_unit)
+
+        if sp_unit is None:
+            sp_unit_name = spatial_unit
+        else:
+            sp_unit_name = sp_unit.short_name
         tenure_vl = self._obj_from_str(tenure_lookup)
 
         # Use short name as key in the collection
-        self._sp_units_tenure[sp_unit.short_name] = tenure_vl
+        self._sp_units_tenure[sp_unit_name] = tenure_vl
 
         # Add tenure type lookup column to the collection
         if tenure_vl == self.tenure_type_collection:

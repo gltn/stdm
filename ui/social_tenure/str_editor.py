@@ -1159,11 +1159,13 @@ class STREditor(QDialog, Ui_STREditor):
             custom_attr = self.social_tenure.spu_custom_attribute_entity(
                 self.spatial_unit
             )
+
             if custom_attr is not None:
-                tenure_type_item = self.str_item(
-                    self.tenure_type_text, self.str_number)
-                item.setEnabled(False)
-                tenure_type_item.appendRow([item])
+                if len(custom_attr.columns) > 2: # check if user columns are added
+                    tenure_type_item = self.str_item(
+                        self.tenure_type_text, self.str_number)
+                    item.setEnabled(False)
+                    tenure_type_item.appendRow([item])
 
         else:
             item.setEnabled(False)

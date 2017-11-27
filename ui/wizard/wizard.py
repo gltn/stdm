@@ -753,24 +753,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Slot raised to show the dialog for editing custom tenure attributes.
         """
         # Sync tenure types
-        self._sync_custom_tenure_entities()
+        custom_tenure_valid = self.check_spatial_unit_tenure_mapping()
         profile = self.current_profile()
-        social_tenure = profile.social_tenure
-        spatial_units_tenure = profile.social_tenure.spatial_units_tenure
-        custom_tenure_valid = True
-
-        for spatial_unit in social_tenure.spatial_units:
-            if spatial_unit.short_name not in spatial_units_tenure.keys():
-                self._notif_bar_str.clear()
-                msg = self.tr(
-                    'No tenure types have been specified in the profile\'s social '
-                    'tenure relationship.'
-                )
-                self._notif_bar_str.insertWarningNotification(msg)
-                custom_tenure_valid = False
-
         if not custom_tenure_valid:
-            return
+            return False
 
         can_edit = not profile.str_table_exists
 
@@ -927,6 +913,28 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 self.show_message(self.tr("Lookup %s has no values") % vl.short_name)
                 break
         return valid
+
+    def check_spatial_unit_tenure_mapping(self):
+        """
+        Checks if spatial unit is linked to tenure lookup.
+        :return: The status of validity
+        :rtype: Boolean
+        """
+        self._sync_custom_tenure_entities()
+        profile = self.current_profile()
+        social_tenure = profile.social_tenure
+        spatial_units_tenure = profile.social_tenure.spatial_units_tenure
+        custom_tenure_valid = True
+        for spatial_unit in social_tenure.spatial_units:
+            if spatial_unit.short_name not in spatial_units_tenure.keys():
+                self._notif_bar_str.clear()
+                msg = self.tr(
+                    'No tenure types have been specified in the profile\'s social '
+                    'tenure relationship.'
+                )
+                self._notif_bar_str.insertWarningNotification(msg)
+                custom_tenure_valid = False
+        return custom_tenure_valid
 
     def fmt_path_str(self, path):
         """
@@ -1200,6 +1208,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             validPage, msg = self.validate_STR()
 
             if validPage:
+                sp_tenure_status = self.check_spatial_unit_tenure_mapping()
+
+                if not sp_tenure_status:
+                    return
                 profile = self.current_profile()
                 st = profile.social_tenure
 
