@@ -758,14 +758,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         social_tenure = profile.social_tenure
         spatial_units_tenure = profile.social_tenure.spatial_units_tenure
         custom_tenure_valid = True
-        if len(social_tenure.spatial_units) < 1:
-            self._notif_bar_str.clear()
-            msg = self.tr(
-                 "You have to first select a spatial unit and link it to "
-                 "tenure type to create custom tenure attributes."
-            )
-            self._notif_bar_str.insertWarningNotification(msg)
-            return
+
         for spatial_unit in social_tenure.spatial_units:
             if spatial_unit.short_name not in spatial_units_tenure.keys():
                 self._notif_bar_str.clear()
