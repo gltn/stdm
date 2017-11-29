@@ -2399,27 +2399,32 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         profile = self.current_profile()
 
-        if profile:
-            if len(self.lvLookups.selectedIndexes()) == 0:
-                self.show_message(self.tr("Please select a lookup to edit!"))
-                return
-
-            row_id, lookup, model_item = self._get_model(self.lvLookups)
-
-            tmp_lookup = lookup # model_item.entity(lookup.short_name)
-
-            editor = LookupEditor(self, profile, lookup)
-            result = editor.exec_()
-
-            if result == 1:
-                model_index_name  = model_item.index(row_id, 0)
-                model_item.setData(model_index_name, editor.lookup.short_name)
-                model_item.edit_entity(tmp_lookup, editor.lookup)
-                profile.entities[tmp_lookup.short_name] = editor.lookup
-            self.lvLookups.setFocus()
-        else:
+        if profile is None:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "Nothing to edit!"))
+            return
+
+        if len(self.lvLookups.selectedIndexes()) == 0:
+            self.show_message(self.tr("Please select a lookup to edit!"))
+            return
+
+        row_id, lookup, model_item = self._get_model(self.lvLookups)
+
+        tmp_short_name = copy.deepcopy(lookup.short_name)
+
+        editor = LookupEditor(self, profile, lookup)
+        result = editor.exec_()
+
+        if result == 1:
+            model_index_name  = model_item.index(row_id, 0)
+            model_item.setData(model_index_name, editor.lookup.short_name)
+            model_item.edit_entity(tmp_short_name, editor.lookup)
+
+            profile.entities[tmp_short_name] = editor.lookup
+            profile.entities[editor.lookup.short_name] = \
+                profile.entities.pop(tmp_short_name)
+
+        self.lvLookups.setFocus()
 
     def scroll_to_bottom(self, table_view, scroll_position):
         table_view.selectRow(table_view.model().rowCount()-1)

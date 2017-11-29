@@ -310,8 +310,10 @@ class LookupEntitiesModel(QStandardItemModel):
             self._add_row(entity)
             self._entities[entity.short_name] = entity
 
-    def edit_entity(self, old_entity, new_entity):
-        self._entities[old_entity.short_name] = new_entity
+    def edit_entity(self, old_entity_name, new_entity):
+        self._entities[old_entity_name] = new_entity
+        self._entities[new_entity.short_name] = \
+                self._entities.pop(old_entity_name)
 
     # ++
     def delete_entity(self, entity):
