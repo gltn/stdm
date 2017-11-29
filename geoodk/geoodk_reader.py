@@ -160,7 +160,7 @@ class GeoODKReader():
             col_obj = self.profile_entity_attribute().get(col)
             value_list = col_obj.value_list
             for val in value_list.values.values():
-                col_attributes[val.value] = val.code
+                col_attributes[unicode(val.value)] = unicode(val.code)
             return col_attributes
         else:
             return None
@@ -187,7 +187,7 @@ class GeoODKReader():
         for col in col_objs:
             if col.TYPE_INFO == "LOOKUP" or col.TYPE_INFO == "MULTIPLE_SELECT":
                 value_list = col.value_list
-                lk_attributes[col] = value_list.name
+                lk_attributes[col] = unicode(value_list.name)
         return lk_attributes
 
     def column_info(self, item_col):
