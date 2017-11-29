@@ -41,6 +41,7 @@ from stdm.data.configuration.db_items import DbItem
 from stdm.ui.wizard.custom_item_model import EntitiesModel
 from stdm.geoodk.geoodk_writer import GeoodkWriter
 from stdm.settings import current_profile
+from stdm.geoodk import  FormUploader
 
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -75,6 +76,7 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         self.check_geoODK_path_exist()
 
         self.chk_all.stateChanged.connect(self.check_state_on)
+        self.btn_upload.clicked.connect(self.upload_generated_form)
 
         self._notif_bar_str = NotificationBar(self.vlnotification)
 
@@ -160,10 +162,15 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         if not os.access(FORM_HOME, os.F_OK):
             os.makedirs(unicode(FORM_HOME))
 
-    # def eventFilter(self, source, event):
-    #     if (event.type() == QEvent.KeyPress and
-    #                 source is self):
-    #         return True
+    def upload_generated_form(self):
+        """
+        Upload the generated Xform file to mobile phone.
+        This eliminates the process of copying the file
+        manually to the mobile device
+        :return:
+        """
+        form_uploader = FormUploader(self)
+        form_uploader.exec_()
 
     def generate_mobile_form(self, selected_entities):
         """
