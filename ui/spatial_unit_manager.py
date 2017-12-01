@@ -188,7 +188,8 @@ class SpatialUnitManagerDockWidget(
     def join_fk_layer(self, layer):
 
         entity = self._curr_profile.entity_by_name(self.curr_lyr_table)
-
+        if entity is None:
+            return
         for column in entity.columns.values():
 
             if column.TYPE_INFO == 'LOOKUP':
