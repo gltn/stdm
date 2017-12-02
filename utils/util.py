@@ -873,7 +873,9 @@ def enable_drag_sort(mv_widget):
         :return: None
         :rtype: NoneType
         """
+
         if event.source() == mv_widget:
+            view = True
             rows = set(
                 [mi.row()
                 for mi in mv_widget.selectedIndexes()
@@ -902,18 +904,30 @@ def enable_drag_sort(mv_widget):
                     row_mapping[row] = target_row + idx
                 else:
                     row_mapping[row + len(rows)] = target_row + idx
-
-            colCount = mv_widget.model().columnCount()
+            try:
+                colCount = mv_widget.model().columnCount()
+            except Exception:
+                colCount = mv_widget.columnCount()
 
             for src_row, tgt_row in sorted(row_mapping.iteritems()):
                 for col in range(0, colCount):
-                    mv_widget.model().setItem(
-                        tgt_row,
-                        col,
-                        mv_widget.model().takeItem(
-                            src_row, col
+                    try:
+
+                        mv_widget.model().setItem(
+                            tgt_row,
+                            col,
+                            mv_widget.model().takeItem(
+                                src_row, col
+                            )
                         )
-                    )
+                    except Exception:
+                        mv_widget.setItem(
+                            tgt_row,
+                            col,
+                            mv_widget.takeItem(
+                                src_row, col
+                            )
+                        )
 
             for row in reversed(
                     sorted(row_mapping.iterkeys())
