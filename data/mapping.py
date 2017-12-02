@@ -363,11 +363,13 @@ class MapperMixin(object):
                 errors.append(error)
         return errors
 
-    def validate(self, attrMapper):
+    def validate(self, attrMapper, update=False):
         """
         Validate attribute.
         :param attrMapper: The attribute
         :type attrMapper: _AttributeMapper
+        :param update: Whether the validation is on update or new entry
+        :type update: Boolean
         :return: List of error messages or None
         :rtype: list or NoneType
         """
@@ -382,8 +384,15 @@ class MapperMixin(object):
 
         if column.unique:
             column_obj = getattr(self.entity_model, column_name, None)
-            result = self.entity_model_obj.queryObject().filter(
-                column_obj == attrMapper.valueHandler().value()).first()
+            if not update:
+                result = self.entity_model_obj.queryObject().filter(
+                    column_obj == attrMapper.valueHandler().value()).first()
+            else:
+                id_obj = getattr(self.entity_model, 'id', None)
+                result = self.entity_model_obj.queryObject().filter(
+                    column_obj == attrMapper.valueHandler().value()).filter(
+                    id_obj != self.model().id).first()
+
             if result is not None:
                 msg = QApplication.translate("MappedDialog",
                                              "field value should be unique.")
@@ -419,8 +428,11 @@ class MapperMixin(object):
         # Validate mandatory fields have been entered by the user.
         errors = []
         for attrMapper in self._attrMappers:
-            error = self.validate(attrMapper)
 
+            if self._mode == 'SAVE':
+                error = self.validate(attrMapper)
+            else: # update mode
+                error = self.validate(attrMapper, True)
             if error is not None:
                 self._notifBar.insertWarningNotification(error)
                 errors.append(error)
