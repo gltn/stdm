@@ -14,31 +14,7 @@
    <string>GeoODK Form Generator</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_4">
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_3">
-     <property name="text">
-      <string>Select entities that will be exported to generated GeoODK form</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QCheckBox" name="chk_all">
-     <property name="text">
-      <string>Check all</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <widget class="QCheckBox" name="ck_social_tenure">
-     <property name="text">
-      <string>Enable definition social tenure relationship...</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
+   <item row="5" column="1">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -51,11 +27,35 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="0">
+   <item row="3" column="0" colspan="2">
+    <widget class="QTreeView" name="trentities"/>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Select entities that will be exported to generated GeoODK form</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QCheckBox" name="chk_all">
+     <property name="text">
+      <string>Check all</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="2">
     <layout class="QVBoxLayout" name="vlnotification"/>
    </item>
-   <item row="3" column="0">
-    <widget class="QTreeView" name="trentities"/>
+   <item row="4" column="0" colspan="2">
+    <widget class="QCheckBox" name="ck_social_tenure">
+     <property name="text">
+      <string>Enable definition of social tenure relationship...</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
