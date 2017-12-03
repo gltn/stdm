@@ -76,7 +76,7 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         self.check_geoODK_path_exist()
 
         self.chk_all.stateChanged.connect(self.check_state_on)
-        self.btn_upload.clicked.connect(self.upload_generated_form)
+        #self.btn_upload.clicked.connect(self.upload_generated_form)
 
         self._notif_bar_str = NotificationBar(self.vlnotification)
 
