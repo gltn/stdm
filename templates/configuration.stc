@@ -94,6 +94,7 @@
   <Entity editable="True" global="False" rowindex="-1" associative="False" description="A person can be an individual, household or group" documentTypeLookup="check_person_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Person" name="in_person">
    <Columns>
     <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
+    <Column unique="True" tip="First name of the person" rowindex="-1" minimum="0" maximum="30" description="First name of the person" index="True" name="first_name" searchable="True" TYPE_INFO="VARCHAR" label="" mandatory="True"/>
     <Column unique="False" tip="Middle name of the person" rowindex="" minimum="0" maximum="30" description="Middle name of the person" index="False" name="middle_name" searchable="True" TYPE_INFO="VARCHAR" label="" mandatory="False"/>
     <Column unique="False" tip="Last name of the person" rowindex="" minimum="0" maximum="30" description="Last name of the person" index="False" name="last_name" searchable="True" TYPE_INFO="VARCHAR" label="" mandatory="False"/>
     <Column unique="False" tip="The identification card number of the person" rowindex="" minimum="0" maximum="30" description="The identification card number of the person" index="False" name="national_id" searchable="True" TYPE_INFO="VARCHAR" label="" mandatory="False"/>
@@ -114,7 +115,6 @@
     <Column unique="False" tip="The residence area of the person" rowindex="" minimum="0" maximum="2147483647" description="The residence area of the person" index="False" name="residence_area" searchable="True" TYPE_INFO="ADMIN_SPATIAL_UNIT" label="" mandatory="False">
      <Relation name="fk_admin_spatial_unit_set_id_in_person_residence_area"/>
     </Column>
-    <Column unique="True" tip="First name of the person" rowindex="-1" minimum="0" maximum="30" description="First name of the person" index="True" name="first_name" searchable="True" TYPE_INFO="VARCHAR" label="" mandatory="True"/>
    </Columns>
   </Entity>
   <Entity editable="True" global="False" rowindex="-1" associative="False" description="A parcel or plot of land" documentTypeLookup="check_structure_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Structure" name="in_structure">
@@ -169,12 +169,13 @@
     <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="" index="False" name="dispute_status" searchable="True" TYPE_INFO="LOOKUP" label="" mandatory="False">
      <Relation name="fk_in_check_dispute_status_id_in_check_tenure_type_str_attrs_dispute_status"/>
     </Column>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2.225073858507201383090232717332404064219215980462331830553327416887204434813918195854283159012511020564067339731035811005152434161553460108856012385377718821130777993532002330479610147442583636071921565046942503734208375250806650616658158948720491179968591639648500635908770118304874799780887753749949451580451605050915399856582470818645113537935804992115981085766051992433352114352390148795699609591288891602992641511063466313393663477586513029371762047325631781485664350872122828637642044846811407613911477062801689853244110024161447421618567166150540154285084716752901903161322778896729707373123334086988983175067838846926092773977972858659654941091369095406136467568702398678315290680984617210924625396728515625E-308" maximum="179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368" description="Period of stay in years" index="False" name="period_of_stay_in_years" searchable="True" TYPE_INFO="DOUBLE" label="" mandatory="False">
-     <Numeric scale="6" precision="18"/>
-    </Column>
     <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="" index="False" name="dispute_type" searchable="True" TYPE_INFO="LOOKUP" label="" mandatory="False">
      <Relation name="fk_in_check_dispute_type_id_in_check_tenure_type_str_attrs_dispute_type"/>
     </Column>
+    <Column unique="False" tip="" rowindex="-1" minimum="-2.225073858507201383090232717332404064219215980462331830553327416887204434813918195854283159012511020564067339731035811005152434161553460108856012385377718821130777993532002330479610147442583636071921565046942503734208375250806650616658158948720491179968591639648500635908770118304874799780887753749949451580451605050915399856582470818645113537935804992115981085766051992433352114352390148795699609591288891602992641511063466313393663477586513029371762047325631781485664350872122828637642044846811407613911477062801689853244110024161447421618567166150540154285084716752901903161322778896729707373123334086988983175067838846926092773977972858659654941091369095406136467568702398678315290680984617210924625396728515625E-308" maximum="179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368" description="Period of stay in years" index="False" name="period_of_stay_in_years" searchable="True" TYPE_INFO="DOUBLE" label="" mandatory="False">
+     <Numeric scale="6" precision="18"/>
+    </Column>
+
    </Columns>
   </Entity>
   <Entity editable="False" global="False" rowindex="-1" associative="False" description="" proxy="False" createId="True" supportsDocuments="False" shortName="check_farm_tenure_type_str_attrs" name="in_check_farm_tenure_type_str_attrs">

@@ -222,12 +222,13 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
                 sc_obj = sc
                 geom_col = sc.name
                 geom = db_geom
+        QApplication.processEvents()
+
         lyr = sp_unit_manager.geom_col_layer_name(
             table_name, sc_obj
         )
 
         sp_unit_manager.add_layer_by_name(lyr)
-        QApplication.processEvents()
 
         if geom is not None:
 
