@@ -786,8 +786,8 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
 
             lk_item = self.create_node("item")
             lk_item_label = self.create_node("label")
-            decoded_key = key.encode('utf_8')
-            lk_item_label_txt = self.create_text_node(decoded_key)
+            encode_key = key.encode('utf_8')
+            lk_item_label_txt = self.create_text_node(encode_key)
             lk_item_label_txt_val = self.create_node("value")
             if val == "":
                 val = key
