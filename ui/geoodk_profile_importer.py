@@ -52,6 +52,7 @@ from stdm.data.usermodels import listEntityViewer
 from stdm.geoodk.importer import EntityImporter
 from stdm.settings.projectionSelector import ProjectionSelector
 from stdm.geoodk.importer import ImportLogger
+from stdm.geoodk.importer.geoodkserver import JSONEXTRACTOR
 
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -563,31 +564,43 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         Execute the import dialog once the save button has been clicked
         :return:
         """
-        self.buttonBox.setEnabled(False)
-        try:
-            if self.lst_widget.count() < 1:
-                msg = 'No mobile records could be found for the current profile'
-                self._notif_bar_str.insertErrorNotification(msg)
-                self.buttonBox.setEnabled(True)
-                return
-            entities = self.user_selected_entities()
-            if len(entities) < 1:
-                if QMessageBox.information(self,
-                        QApplication.translate('MobileForms', 'Import Warning'),
-                        QApplication.translate('MobileForms',
-                        'You have not '
-                        'selected any entity for import. All entities '
-                        'will be imported'), QMessageBox.Ok |
-                                            QMessageBox.No) == QMessageBox.Ok:
-                    entities = self.instance_entities()
-                else:
+        if self.tab_widget.currentIndex() == 1:
+            host = self.txt_host.text()
+            passwd = self.txt_pass.text()
+            db = self.cbo_dbname.currentText()
+            user = self.txt_username.text()
+            port = self.txt_port.text()
+            json_extractor = JSONEXTRACTOR(user,passwd,host,port,db, self.profile)
+            json_conn = json_extractor.create_orphan_connection()
+            self.importlogger.onlogger_action(json_conn)
+            self.txt_svlog.append(json_conn)
+        else:
+
+            self.buttonBox.setEnabled(False)
+            try:
+                if self.lst_widget.count() < 1:
+                    msg = 'No mobile records could be found for the current profile'
+                    self._notif_bar_str.insertErrorNotification(msg)
+                    self.buttonBox.setEnabled(True)
                     return
-            self.entity_attribute_to_database(entities)
-            self.buttonBox.setEnabled(True)
-        except Exception as ex:
-            self._notif_bar_str.insertErrorNotification(ex.message)
-            self.feedback_message(str(ex.message))
-            self.buttonBox.setEnabled(True)
+                entities = self.user_selected_entities()
+                if len(entities) < 1:
+                    if QMessageBox.information(self,
+                            QApplication.translate('MobileForms', 'Import Warning'),
+                            QApplication.translate('MobileForms',
+                            'You have not '
+                            'selected any entity for import. All entities '
+                            'will be imported'), QMessageBox.Ok |
+                                                QMessageBox.No) == QMessageBox.Ok:
+                        entities = self.instance_entities()
+                    else:
+                        return
+                self.entity_attribute_to_database(entities)
+                self.buttonBox.setEnabled(True)
+            except Exception as ex:
+                self._notif_bar_str.insertErrorNotification(ex.message)
+                self.feedback_message(str(ex.message))
+                self.buttonBox.setEnabled(True)
 
 
 
