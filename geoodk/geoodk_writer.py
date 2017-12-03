@@ -161,9 +161,7 @@ class XFORMDocument:
         :return: 
         """
         if isinstance(self.form, QFile):
-            stream = QTextStream(self.form)
-            stream << self.doc.toString()
-            stream.flush()
+            self.form.write(self.doc.toByteArray())
             self.form.close()
             self.doc.clear()
         else:
