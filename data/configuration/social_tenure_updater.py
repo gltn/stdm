@@ -37,6 +37,8 @@ from stdm.data.configuration.columns import (
 )
 from stdm.data.configuration.exception import ConfigurationException
 
+from stdm.data.configuration import entity_model
+
 LOGGER = logging.getLogger('stdm')
 
 BASE_STR_VIEW = 'vw_social_tenure_relationship'
@@ -345,10 +347,22 @@ def _entity_select_column(
 
                 # Map lookup and admin unit values by default
                 if c.TYPE_INFO == 'LOOKUP':
-                    select_column_name = u'{0}.value AS {1}'.format(
-                        table_pseudo_name,
-                        pseudo_column_name
-                    )
+                    lookup_model = entity_model(c.entity_relation.parent)
+                    lookup_model_obj = lookup_model()
+                    result = lookup_model_obj.queryObject().filter(
+                        lookup_model.code != '').filter(
+                        lookup_model.code != None).all()
+                    if len(result) == 0:
+                        select_column_name = u'{0}.value AS {1}'.format(
+                            table_pseudo_name,
+                            pseudo_column_name
+                        )
+                    else:
+                        value = u'{0}.value'.format(table_pseudo_name)
+                        code = u'{0}.code'.format(table_pseudo_name)
+                        select_column_name = u"concat({0}, ' (', {1}, ')') AS {2}".\
+                            format(value, code, pseudo_column_name)
+
                     use_custom_join = True
 
                     # Check if the column is for tenure type
