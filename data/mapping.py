@@ -354,6 +354,11 @@ class MapperMixin(object):
         self.saved_model = dbmodel
 
     def validate_all(self):
+        """
+        Validate the entire form.
+        :return:
+        :rtype:
+        """
         errors = []
         for attrMapper in self._attrMappers:
             error = self.validate(attrMapper)

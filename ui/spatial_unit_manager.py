@@ -143,17 +143,6 @@ class SpatialUnitManagerDockWidget(
         config.setColumns(columns)
         layer.setAttributeTableConfig(config)
 
-    @staticmethod
-    def sort_layer_columns_by_entity(entity, layer):
-        config = layer.attributeTableConfig()
-        columns = config.columns()
-
-        for column in columns:
-            print column.name
-            print column.hidden
-
-
-
     def beautify_legend(self):
         layer = self.iface.activeLayer()
 
@@ -503,6 +492,7 @@ class SpatialUnitManagerDockWidget(
         index = self.stdm_layers_combo.findText(
             layer_name, Qt.MatchFixedString
         )
+
         if index >= 0:
             self.stdm_layers_combo.setCurrentIndex(index)
             # add spatial unit layer.
@@ -531,11 +521,7 @@ class SpatialUnitManagerDockWidget(
 
         elif col.layer_display_name == '':
 
-            spatial_layer_item = unicode(
-                '{}.{}'.format(
-                    table, col.name
-                )
-            )
+            spatial_layer_item = u'{0}'.format(col.entity.short_name)
         # use the layer_display_name
         else:
             spatial_layer_item = col.layer_display_name
