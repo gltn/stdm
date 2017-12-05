@@ -111,7 +111,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self._exclude_col_type_info = []
 
         if self.is_new:
-            self.prop_set = None
+            self.prop_set = None  # why not False??
         else:
             self.prop_set = True
 
@@ -178,6 +178,11 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.buttonBox.button(QtGui.QDialogButtonBox.Ok).clicked.connect(self.accept)
         self.buttonBox.button(QtGui.QDialogButtonBox.Cancel).clicked.connect(self.cancel)
+
+        self.cbMandt.setEnabled(not self.in_db)
+        self.cbSearch.setEnabled(not self.in_db)
+        self.cbUnique.setEnabled(not self.in_db)
+        self.cbIndex.setEnabled(not self.in_db)
 
     def validate_text(self, text):
         """
