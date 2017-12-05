@@ -180,7 +180,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.buttonBox.button(QtGui.QDialogButtonBox.Cancel).clicked.connect(self.cancel)
 
         self.cbMandt.setEnabled(not self.in_db)
-        self.cbSearch.setEnabled(not self.in_db)
         self.cbUnique.setEnabled(not self.in_db)
         self.cbIndex.setEnabled(not self.in_db)
 
