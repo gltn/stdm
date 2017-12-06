@@ -94,8 +94,9 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
         self.btnEditColumn.clicked.connect(self.on_edit_column)
         self.btnDeleteColumn.clicked.connect(self.on_delete_column)
 
-        if not editable:
-            self._disable_editing()
+        self._editable = editable
+        #if not editable:
+            #self._disable_editing()
 
         # Update excluded columns
         self._update_excluded_columns()
@@ -196,14 +197,14 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
 
         return attr, idx
 
-    def _disable_editing(self):
+    #def _disable_editing(self):
         # Disable editing
-        self.btnAddColumn.setEnabled(False)
-        self.btnEditColumn.setEnabled(False)
-        self.btnDeleteColumn.setEnabled(False)
-        self.tb_view.setEnabled(False)
-        ok_btn = self.buttonBox.button(QDialogButtonBox.Ok)
-        ok_btn.setEnabled(False)
+        #self.btnAddColumn.setEnabled(False)
+        #self.btnEditColumn.setEnabled(False)
+        #self.btnDeleteColumn.setEnabled(False)
+        #self.tb_view.setEnabled(False)
+        #ok_btn = self.buttonBox.button(QDialogButtonBox.Ok)
+        #ok_btn.setEnabled(False)
 
     def _column_editor_params(self):
         # Constructor params for column editor
@@ -321,6 +322,7 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
         editor_params = self._column_editor_params()
         editor_params['column'] = sel_col
         editor_params['is_new'] = False
+        editor_params['in_db'] = not self._editable
 
         editor = ColumnEditor(**editor_params)
         editor.exclude_column_types(self._exc_cols)

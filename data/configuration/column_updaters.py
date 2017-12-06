@@ -29,15 +29,20 @@ from sqlalchemy import (
     Numeric,
     String,
     Table,
-    Text
+    Text,
+    Index
 )
 from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.engine import reflection
 
 from migrate.changeset import *
 from migrate.changeset.constraint import CheckConstraint
 
 from geoalchemy2 import Geometry
-
+from stdm.data.database import (
+    metadata
+)
+from . import _bind_metadata
 from stdm.data.configuration.db_items import DbItem
 from stdm.data.pg_utils import (
     drop_cascade_column
@@ -128,7 +133,6 @@ def _update_col(column, table, data_type, columns):
     idx_name = None
     if column.index:
         idx_name = u'idx_{0}_{1}'.format(column.entity.name, column.name)
-
     unique_name = None
     if column.unique:
         unique_name = u'unq_{0}_{1}'.format(column.entity.name, column.name)
@@ -138,7 +142,6 @@ def _update_col(column, table, data_type, columns):
         if not column.name in columns:
             alchemy_column.create(
                 table=table,
-                index_name=idx_name,
                 unique_name=unique_name
             )
 
@@ -165,11 +168,29 @@ def _update_col(column, table, data_type, columns):
             _clear_ref_in_entity_relations(column)
             # Use drop cascade command
             drop_cascade_column(column.entity.name, column.name)
-            #alchemy_column.drop(table=table)
 
     # Ensure column is added to the table
     if alchemy_column.table is None:
         alchemy_column._set_parent(table)
+    # add different type of index for columns with index
+    if column.index:
+        _bind_metadata(metadata)
+        inspector = reflection.Inspector.from_engine(metadata.bind)
+        indexes_list = inspector.get_indexes(column.entity.name)
+        indexes = [i['name'] for i in indexes_list if not i['unique']]
+        # get_indexes do not get gist indexes so try/ except needs to be used.
+        try:
+            if idx_name not in indexes:
+
+                if column.TYPE_INFO == 'GEOMETRY':
+                    idx = Index(idx_name, alchemy_column, postgresql_using='gist')
+                    idx.create()
+
+                else:
+                    idx = Index(idx_name, alchemy_column, postgresql_using='btree')
+                    idx.create()
+        except Exception:
+            pass
 
     return alchemy_column
 
@@ -304,7 +325,6 @@ def geometry_updater(column, table, columns):
     return _update_col(column, table, Geometry(geometry_type=geom_type,
                                                srid=column.srid),
                        columns)
-
 
 def yes_no_updater(column, table, columns):
     """

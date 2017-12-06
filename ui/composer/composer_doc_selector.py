@@ -37,7 +37,7 @@ from PyQt4.QtCore import (
 
 from PyQt4.QtXml import QDomDocument
 
-from stdm.utils.util import documentTemplates
+from stdm.utils.util import documentTemplates, user_non_profile_views
 from stdm.composer.composer_data_source import composer_data_source
 from stdm.settings.registryconfig import RegistryConfig
 from stdm.ui.notification import (
@@ -151,15 +151,16 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
 
         #Append current profile templates to the model.
         for dt in self._profile_templates:
+
             if self._template_contains_filter_table(dt):
-                doc_name_item =  self._createDocNameItem(dt.name)
+                doc_name_item = self._createDocNameItem(dt.name)
                 file_path_item = QStandardItem(dt.path)
                 self._docItemModel.appendRow([doc_name_item,file_path_item])
-            
+
         self.lstDocs.setModel(self._docItemModel)
 
     def _load_current_profile_templates(self):
-        #Loads only those templates that refer to tables in the current
+        # Loads only those templates that refer to tables in the current
         # profile.
         if self._current_profile is None:
             return
@@ -179,14 +180,23 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
             if doc_temp.data_source.referenced_table_name in profile_tables:
                 self._profile_templates.append(doc_temp)
 
+            if doc_temp.data_source._dataSourceName in user_non_profile_views(self._current_profile):
+                self._profile_templates.append(doc_temp)
+
     def _template_contains_filter_table(self, document_template):
         #Returns true if the template refers to the filter data source
 
         #If no filter data source defined then always return True
+
+        if document_template.data_source._dataSourceName in user_non_profile_views(
+                self._current_profile):
+            return True
+
         if not self._filter_data_source:
             return True
 
         referenced_table = document_template.referenced_table_name
+
         if referenced_table == self._filter_data_source:
             return True
 

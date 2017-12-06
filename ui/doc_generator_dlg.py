@@ -173,6 +173,9 @@ class DocumentGeneratorDialogWrapper(object):
 
             for i, t in enumerate(entities):
                 QApplication.processEvents()
+                # Exclude custom tenure entities
+                if 'check' in t.name:
+                    continue
                 entity_cfg = self._entity_config_from_profile(
                     str(t.name), t.short_name
                 )
@@ -314,8 +317,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         if state == Qt.Checked:
             self.tabWidget.setEnabled(False)
             self.chkUseOutputFolder.setEnabled(False)
-            self.chkUseOutputFolder.setChecked(True)
-            self._load_template_datasource_fields()
+            self.chkUseOutputFolder.setChecked(False)
 
         elif state == Qt.Unchecked:
             self.tabWidget.setEnabled(True)

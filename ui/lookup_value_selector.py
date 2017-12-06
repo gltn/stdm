@@ -41,9 +41,16 @@ class LookupValueSelector(QDialog, Ui_LookupValueSelector):
 
     def __init__(self, parent, lookup_entity_name, profile=None):
         """
-
+        Initializes LookupValueSelector.
+        :param parent: The parent of the dialog.
+        :type parent: QWidget
+        :param lookup_entity_name: The lookup entity name
+        :type lookup_entity_name: String
+        :param profile: The current profile object
+        :type profile: Object
         """
-        QDialog.__init__(self, parent, Qt.WindowTitleHint|Qt.WindowCloseButtonHint)
+        QDialog.__init__(self, parent, Qt.WindowTitleHint |
+                         Qt.WindowCloseButtonHint)
         self.setupUi(self)
         self.value_and_code = None
         if profile is None:
@@ -67,15 +74,27 @@ class LookupValueSelector(QDialog, Ui_LookupValueSelector):
 
         self.value_list_box.clicked.connect(self.validate_selected_code)
 
-
     def populate_value_list_view(self):
+        """
+        Populates the lookup values and codes.
+        """
         self.value_and_code = self.lookup_entity.values
+
         for value, code in self.value_and_code.iteritems():
-            value_code = QStandardItem('{} ({})'.format(value, code.code))
+            u_value = unicode(value)
+            code_value = self.lookup_entity.values[u_value]
+
+            value_code = QStandardItem('{} ({})'.format(
+                    code_value.value, code.code
+                )
+            )
             value_code.setData(code.code)
             self._view_model.appendRow(value_code)
 
     def validate_selected_code(self):
+        """
+        Validate the selected code for the presence of Code or not.
+        """
         self.notice.clear()
         self.selected_code_value()
         if self.selected_code == '':
@@ -83,16 +102,25 @@ class LookupValueSelector(QDialog, Ui_LookupValueSelector):
             self.notice.insertWarningNotification(notice)
 
     def selected_code_value(self):
+        """
+        Get the selected lookup value.
+        """
         index = self.value_list_box.currentIndex()
         item = self._view_model.itemFromIndex(index)
         self.selected_code = item.data()
         self.selected_value_code = item.text()
 
     def accept(self):
+        """
+        Overridden QDialog accept method.
+        """
         self.selected_code_value()
         self.done(1)
 
     def reject(self):
+        """
+        Overridden QDialog accept method.
+        """
         self.selected_code = None
         self.selected_value_code = None
         self.done(0)

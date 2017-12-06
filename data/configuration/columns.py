@@ -124,7 +124,10 @@ class BaseColumn(ColumnItem):
         self.user_tip = kwargs.get('user_tip', '')
         self.label = kwargs.get('label', '')
 
+        self.row_index = kwargs.get('row_index',-1)
+
         self.reset_updated_attrs()
+
 
         LOGGER.debug('%s column initialized in %s entity.',self.name, self.entity.name)
 
@@ -642,7 +645,7 @@ class GeometryColumn(BaseColumn):
         if self.layer_display_name:
             return self.layer_display_name
 
-        return u'{0}.{1}'.format(self.entity.name, self.name)
+        return u'{0}'.format(self.entity.short_name)
 
     def geometry_type(self):
         """
@@ -695,6 +698,7 @@ class ForeignKeyColumn(IntegerColumn):
     """
     TYPE_INFO = 'FOREIGN_KEY'
     sql_updater = integer_updater
+    CASCADE, NO_ACTION, SET_NULL, SET_DEFAULT = range(0, 4)
 
     def __init__(self, *args, **kwargs):
         # Reset bounds
@@ -702,6 +706,10 @@ class ForeignKeyColumn(IntegerColumn):
         kwargs['maximum'] = self.SQL_MAX
 
         IntegerColumn.__init__(self, *args, **kwargs)
+
+        # Added in version 1.7
+        self._on_update_action = None
+        self._on_delete_action = None
 
         self.entity_relation = kwargs.pop('entity_relation',
                                           EntityRelation(self.entity.profile))
@@ -713,6 +721,18 @@ class ForeignKeyColumn(IntegerColumn):
         if self.entity_relation.valid()[0]:
             self.profile.add_entity_relation(self.entity_relation)
 
+        # Map referential actions
+        self.ref_actions = {
+            self.CASCADE: 'CASCADE',
+            self.NO_ACTION: 'NO ACTION',
+            self.SET_NULL: 'SET NULL',
+            self.SET_DEFAULT: 'SET DEFAULT'
+        }
+
+        # Set default cascade options
+        self.on_update_action = ForeignKeyColumn.NO_ACTION
+        self.on_delete_action = ForeignKeyColumn.SET_NULL
+
     @property
     def parent(self):
         """
@@ -722,6 +742,67 @@ class ForeignKeyColumn(IntegerColumn):
         :rtype: Entity
         """
         return self.entity_relation.parent
+
+    @property
+    def on_update_action(self):
+        """
+        Returns the referential action enumeration for a foreign key 
+        constraint update operation.
+        .. versionadded:: 1.7
+        :return: Returns the update operation referential action.
+        :rtype: int
+        """
+        return self._on_update_action
+
+    @on_update_action.setter
+    def on_update_action(self, action):
+        """Sets the referential action for a foreign key constraint update 
+        operation.
+        .. versionadded:: 1.7
+        :param action: Update operation referential action.
+        :type action: int
+        """
+        if self._on_update_action != action:
+            self._on_update_action = action
+            self.entity_relation.on_update_action = self.referential_action(
+                action
+            )
+
+    @property
+    def on_delete_action(self):
+        """
+        Returns the referential action enumeration for a foreign key 
+        constraint delete operation.
+        .. versionadded:: 1.7
+        :return: Returns the delete operation referential action.
+        :rtype: int
+        """
+        return self._on_delete_action
+
+    @on_delete_action.setter
+    def on_delete_action(self, action):
+        """Sets the referential action for a foreign key constraint delete 
+        operation.
+        .. versionadded:: 1.7
+        :param action: Delete operation referential action.
+        :type action: int
+        """
+        if self._on_delete_action != action:
+            self._on_delete_action = action
+            self.entity_relation.on_delete_action = self.referential_action(
+                action
+            )
+
+    def referential_action(self, ref_enum):
+        """Returns a string of the referential action from the corresponding 
+        enumeration type.
+        .. versionadded:: 1.7
+        :param ref_enum: Referential action enumeration type.
+        :type ref_enum: int
+        :return: A string of the referential action.
+        :rtype: str
+        """
+        return self.ref_actions.get(ref_enum, 'NO ACTION')
 
     def set_entity_relation_attr(self, attr, val):
         """

@@ -2,6 +2,7 @@ import  logging
 
 from collections import OrderedDict
 from PyQt4.QtGui import *
+from PyQt4.QtCore import Qt
 
 LOGGER = logging.getLogger('stdm')
 
@@ -45,6 +46,8 @@ class EntitiesModel(QStandardItemModel):
         
         self.setHorizontalHeaderLabels(EntityModelItem.headers_labels)
 
+        self.setSupportedDragActions(Qt.MoveAction)
+
     def entity(self, name):
         if name in self._entities:
             return self._entities[name]
@@ -62,10 +65,11 @@ class EntitiesModel(QStandardItemModel):
             self._add_row(entity)
             self._entities[entity.short_name] = entity
 
-    def edit_entity(self, old_entity, new_entity):
-        self._entities[old_entity.name] = new_entity
-        self._entities[new_entity.name] = \
-                self._entities.pop(old_entity.name)
+    def edit_entity(self, old_entity_name, new_entity):
+        self._entities[old_entity_name] = new_entity
+        self._entities[new_entity.short_name] = \
+                self._entities.pop(old_entity_name)
+
     # ++
     def delete_entity(self, entity):
         if entity.short_name in self._entities:
@@ -192,6 +196,8 @@ class ColumnEntitiesModel(QStandardItemModel):
         
         self.setHorizontalHeaderLabels(ColumnEntityModelItem.headers_labels)
 
+        self.setSupportedDragActions(Qt.MoveAction)
+
     def entity(self, name):
         if name in self._entities:
             return self._entities[name]
@@ -304,8 +310,10 @@ class LookupEntitiesModel(QStandardItemModel):
             self._add_row(entity)
             self._entities[entity.short_name] = entity
 
-    def edit_entity(self, old_entity, new_entity):
-        self._entities[old_entity.short_name] = new_entity
+    def edit_entity(self, old_entity_name, new_entity):
+        self._entities[old_entity_name] = new_entity
+        self._entities[new_entity.short_name] = \
+                self._entities.pop(old_entity_name)
 
     # ++
     def delete_entity(self, entity):

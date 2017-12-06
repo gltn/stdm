@@ -83,7 +83,7 @@ class LayerSelectionHandler(object):
      Handles all tasks related to the layer.
     """
 
-    def __init__(self, iface):
+    def __init__(self, iface, plugin):
         """
         Initializes the LayerSelectionHandler.
         :param iface: The QGIS Interface object
@@ -93,6 +93,7 @@ class LayerSelectionHandler(object):
         """
         self.layer = None
         self.iface = iface
+        self.plugin = plugin
         self.sel_highlight = None
         self.current_profile = current_profile()
 
@@ -231,7 +232,17 @@ class LayerSelectionHandler(object):
         """
         self.iface.actionSelect().trigger()
         layer_select_tool = self.iface.mapCanvas().mapTool()
+        layer_select_tool.deactivated.connect(self.disable_feature_details_btn)
+
         layer_select_tool.activate()
+
+    def disable_feature_details_btn(self):
+        """
+        Disables features details button.
+        :return:
+        :rtype:
+        """
+        self.plugin.feature_details_act.setChecked(False)
 
     def clear_sel_highlight(self):
         """
@@ -507,7 +518,7 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
         self.edit_btn.setDisabled(True)
         self.delete_btn.setDisabled(True)
         self.view_document_btn.setDisabled(True)
-        LayerSelectionHandler.__init__(self, iface)
+        LayerSelectionHandler.__init__(self, iface, plugin)
         self.setBaseSize(300, 5000)
 
     def init_dock(self):
@@ -854,6 +865,10 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             if roots is None:
                 return
             for id, root in roots.iteritems():
+
+                if not isinstance(id, long):
+
+                    continue
                 str_records = self.feature_str_link(id)
                 self.spatial_unit_items[root] = self.entity
                 if len(str_records) > 0:
@@ -884,6 +899,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         # self.reset_tree_view(selected_features)
 
         for spu_id in spatial_unit_ids:
+
             root = QStandardItem(layer_icon, unicode(entity.short_name))
             self.spatial_unit_items[root] = entity
             root.setData(spu_id)
@@ -1629,7 +1645,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 'relationship to delete the {} record.'.format(
                     item.text()
                 )
-
             )
             QMessageBox.warning(
                 self.iface.mainWindow(),
@@ -1689,6 +1704,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             remaining_str = len(self.str_models)
 
             self.updated_removed_steam(str_edit, item, remaining_str)
+            return
         else:
             return
 

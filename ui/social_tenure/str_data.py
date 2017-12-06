@@ -191,8 +191,8 @@ class STRDBHandler():
         _str_obj.saveMany(str_objs)
         if custom_attr_entity is None:
             return
-        custom_attr_model = entity_model(custom_attr_entity)
-        custom_attr_obj = custom_attr_model()
+        custom_attr_en_model = entity_model(custom_attr_entity)
+        custom_attr_obj = custom_attr_en_model()
 
         custom_attr_objs = []
 
@@ -200,8 +200,9 @@ class STRDBHandler():
 
             # save custom tenure
             for col in custom_attr_entity.columns.values():
+                if custom_attr_model is None:
+                    custom_attr_model = custom_attr_obj
                 if col.TYPE_INFO == 'FOREIGN_KEY':
-
                     if col.parent.name == self.social_tenure.name:
                         # print col.name, str_objs[i].id
                         setattr(custom_attr_model, col.name, str_objs[i].id)
@@ -209,7 +210,8 @@ class STRDBHandler():
 
                         break
 
-        custom_attr_obj.saveMany(custom_attr_objs)
+        if len(custom_attr_objs) > 0:
+            custom_attr_obj.saveMany(custom_attr_objs)
 
 
     def on_edit_str(self, str_store):

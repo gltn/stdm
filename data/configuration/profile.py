@@ -85,6 +85,8 @@ class Profile(QObject):
         #Init STR
         self.social_tenure = self._create_social_tenure()
 
+        self._str_table_exists = False
+
         self._admin_spatial_unit = AdministrativeSpatialUnit(self)
         self.removed_entities = []
 
@@ -635,3 +637,21 @@ class Profile(QObject):
             self.social_tenure.add_spatial_unit(rn_entity)
 
         return True
+
+    # Added in 1.7
+    def update_entity_row_index(self, name, index):
+        if self.entities.has_key(name):
+            self.entities[name].row_index = index
+
+    def sort_entities(self):
+        self.entities = OrderedDict(sorted(self.entities.iteritems(), key=lambda e : e[1].row_index))
+
+    @property
+    def str_table_exists(self):
+        return self._str_table_exists
+
+    @str_table_exists.setter
+    def str_table_exists(self, value):
+        self._str_table_exists = value
+        
+    

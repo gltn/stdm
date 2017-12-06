@@ -307,15 +307,15 @@ class TableFormatter(BaseComposerItemFormatter):
                 for widget in contents_widget.findChildren(QWidget, name_regex):
                     widget.setVisible(False)
 
-                main_properties_groupbox = contents_widget.findChild(QGroupBox, "groupBox")
-                #Version 2.4
-                if qgis_version >= 20400 and qgis_version <= 20600:
-                    self._hide_filter_controls(main_properties_groupbox)
+                # main_properties_groupbox = contents_widget.findChild(QGroupBox, "groupBox")
+                # #Version 2.4
+                # if qgis_version >= 20400 and qgis_version <= 20600:
+                #     self._hide_filter_controls(main_properties_groupbox)
 
-            if qgis_version >= 20600:
-                feature_filter_groupbox = contents_widget.findChild(QGroupBox, "groupBox_5")
-                if not feature_filter_groupbox is None:
-                    self._hide_filter_controls(feature_filter_groupbox)
+            # if qgis_version >= 20600:
+            #     feature_filter_groupbox = contents_widget.findChild(QGroupBox, "groupBox_5")
+                # if not feature_filter_groupbox is None:
+                #     self._hide_filter_controls(feature_filter_groupbox)
             appearance_groupbox = contents_widget.findChild(QGroupBox, "groupBox_6")
             appearance_groupbox.setVisible(True)
 

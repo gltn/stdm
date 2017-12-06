@@ -470,6 +470,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             documents = self.details_tree_view._supporting_doc_models(
                 entity.name, str_model
             )
+
             self._load_source_documents(documents)
             # if there is supporting document,
             # expand supporting document tab
@@ -516,6 +517,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
     def load_edit_str_editor(self):
         self.details_tree_view.edit_selected_steam([1])
         self.btnSearch.click()
+        self.disable_buttons()
 
     def load_new_str_editor(self):
         try:
@@ -536,6 +538,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
     def delete_str(self):
         self.details_tree_view.delete_selected_item([1])
         self.btnSearch.click()
+        self.disable_buttons()
 
     def onSourceDocumentRemoved(self, container_id, doc_uuid, removed_doc):
         """

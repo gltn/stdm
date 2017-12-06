@@ -277,15 +277,16 @@ def documentTemplates():
     keyName = "ComposerTemplates"
         
     pathConfig = regConfig.read([keyName])
-        
+
     if len(pathConfig) > 0:
         templateDir = pathConfig[keyName]
         
         pathDir = QDir(templateDir)
         pathDir.setNameFilters(["*.sdt"])
-        docFileInfos = pathDir.entryInfoList(QDir.Files,QDir.Name)
-        
+        docFileInfos = pathDir.entryInfoList(QDir.Files, QDir.Name)
+
         for df in docFileInfos:
+
             docTemplates[df.completeBaseName()] = df.absoluteFilePath()
         
     return docTemplates
@@ -481,7 +482,7 @@ def profile_spatial_tables(profile):
     spatial_tables = dict(spatial_tables)
     return spatial_tables
 
-def profile_user_tables(profile, include_views=True, admin=False):
+def profile_user_tables(profile, include_views=True, admin=False, sort=False):
     """
     Returns user accessible tables from current profile and pg_views
     .
@@ -527,11 +528,17 @@ def profile_user_tables(profile, include_views=True, admin=False):
                 'VALUE_LIST'
             ]
         ]
-    tables = dict(tables)
+    tables = OrderedDict(tables)
     if include_views:
         for view in pg_views():
             tables[view] = view
-
+    if sort:
+        names = tables.keys()
+        names = sorted(names)
+        sorted_table = OrderedDict()
+        for name in names:
+            sorted_table[name] = tables[name]
+        return sorted_table
     return tables
 
 def db_user_tables(profile):
@@ -615,18 +622,21 @@ def lookup_id_to_value(profile, col, id):
     """
     if col in profile_lookup_columns(profile):
         parent_entity = lookup_parent_entity(profile, col)
-        if not parent_entity is None:
+
+        if parent_entity is not None:
             db_model = entity_model(parent_entity)
             db_obj = db_model()
             query = db_obj.queryObject().filter(
                 db_model.id == id
             ).first()
+
             if query is not None:
                 value = getattr(
                     query,
                     'value',
                     None
                 )
+
                 return value
             else:
                 return id
@@ -695,6 +705,46 @@ def entity_id_to_attr(entity, attr, id):
     return attr_val
 
 
+def entity_id_to_display_col(entity, column, id):
+    """
+    Converts an entity column id to another
+    column value of the same record.
+    :param entity: Entity
+    :type entity: Class
+    :param column: Column name
+    :type column: String
+    :param id: Id of the entity
+    :type id: Integer
+    :return: a column value if a match found
+    :rtype: Integer or String
+    """
+
+    display_cols = entity.columns[column].entity_relation.display_cols
+    parent_entity = entity.columns[column].entity_relation.parent
+    model = entity_model(parent_entity)
+    model_obj = model()
+    result = model_obj.queryObject().filter(
+        model.id == id
+    ).first()
+    attr_vals = []
+
+    if result is not None:
+        for col in display_cols:
+
+            attr_val = getattr(
+                result,
+                col,
+                None
+            )
+            if attr_val is not None:
+                attr_vals.append(attr_val)
+
+    else:
+        attr_vals = [id]
+
+    return ', '.join(attr_vals)
+
+
 def entity_id_to_model(entity, id):
     """
     Gets the model of an entity based on an id and the entity.
@@ -724,8 +774,6 @@ def entity_attr_to_model(entity, attr, value):
     model = entity_model(entity)
     model_obj = model()
     attr_col_obj = getattr(model, attr)
-
-    result_2 = model_obj.queryObject().first()
 
     result = model_obj.queryObject().filter(
         attr_col_obj == value
@@ -846,7 +894,9 @@ def enable_drag_sort(mv_widget):
         :return: None
         :rtype: NoneType
         """
+
         if event.source() == mv_widget:
+            view = True
             rows = set(
                 [mi.row()
                 for mi in mv_widget.selectedIndexes()
@@ -875,18 +925,30 @@ def enable_drag_sort(mv_widget):
                     row_mapping[row] = target_row + idx
                 else:
                     row_mapping[row + len(rows)] = target_row + idx
-
-            colCount = mv_widget.model().columnCount()
+            try:
+                colCount = mv_widget.model().columnCount()
+            except Exception:
+                colCount = mv_widget.columnCount()
 
             for src_row, tgt_row in sorted(row_mapping.iteritems()):
                 for col in range(0, colCount):
-                    mv_widget.model().setItem(
-                        tgt_row,
-                        col,
-                        mv_widget.model().takeItem(
-                            src_row, col
+                    try:
+
+                        mv_widget.model().setItem(
+                            tgt_row,
+                            col,
+                            mv_widget.model().takeItem(
+                                src_row, col
+                            )
                         )
-                    )
+                    except Exception:
+                        mv_widget.setItem(
+                            tgt_row,
+                            col,
+                            mv_widget.takeItem(
+                                src_row, col
+                            )
+                        )
 
             for row in reversed(
                     sorted(row_mapping.iterkeys())
@@ -997,11 +1059,7 @@ def profile_and_user_views(profile, check_party=False):
     social_tenure = profile.social_tenure
 
     for view, entity in social_tenure.views.iteritems():
-        ### Not necessary when spatial unit none issue fixed
-        # TODO remove this
-        if entity is None:
-            source_tables.append(view)
-            continue
+
         # For party views, if check party is true, add party views.
         # If multi-party is false. Otherwise, add all party views - this is not
         # recommended for composer data source.
@@ -1016,6 +1074,16 @@ def profile_and_user_views(profile, check_party=False):
             source_tables.append(view)
     for value in pg_views():
         if value not in social_tenure.views.keys():
+            source_tables.append(value)
+    return source_tables
+
+def user_non_profile_views(profile):
+    from stdm.data.pg_utils import (
+        pg_views
+    )
+    source_tables = []
+    for value in pg_views():
+        if value not in profile.social_tenure.views.keys():
             source_tables.append(value)
     return source_tables
 

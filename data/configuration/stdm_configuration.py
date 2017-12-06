@@ -160,6 +160,32 @@ class StdmConfiguration(QObject):
         """
         return [p.prefix for p in self.profiles.values()]
 
+    # Added in v1.7
+    def prefix_from_profile_name(self, profile):
+        """
+        Creates profile prefix using a given profile name.
+        :param profile: Profile name
+        :type profile: String
+        :return: Profile prefix
+        :rtype: String
+        """
+        prefixes = self.prefixes()
+
+        prefix = profile
+
+        for i in range(2, len(profile)):
+            curr_prefix = profile[0:i].lower()
+
+            if not curr_prefix in prefixes:
+                prefix = curr_prefix
+
+                LOGGER.debug('Prefix determined %s for %s profile',
+                             prefix.lower(), profile)
+
+                break
+
+        return prefix.lower()
+
     def _clear(self):
         """
         Resets the profile collection without syncing the operations in the

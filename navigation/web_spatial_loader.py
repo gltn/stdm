@@ -179,11 +179,10 @@ class WebSpatialLoader(QObject):
 
         self.olPage.mainFrame().load(QUrl(self.url()[1]))
         self.webview.setPage(self.olPage)
-
-        receivers = self.olPage.mainFrame().receivers(SIGNAL("javaScriptWindowObjectCleared()"))
-        if receivers > 0:
+        try:
             self.olPage.mainFrame().javaScriptWindowObjectCleared.disconnect()
-
+        except TypeError:
+            pass
         self.olPage.mainFrame().javaScriptWindowObjectCleared.connect(
             self._populate_js_window_object
         )

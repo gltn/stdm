@@ -1,6 +1,44 @@
 # Change Log
 All notable changes of the Social Tenure Domain Model(STDM) is documented in this file.
+## [1.7.0] - 2017-10-25
 
+### Added
+- **Database and Configuration**: Multiple spatial units are now possible to be used in social tenure relationship.
+- **Database and Configuration**: Custom Tenure entity is added to attach additional attribute to each Social Tenure Relationship.
+- **Social Tenure Relationship Editor**: Added ability to choose more than one Spatial Unit.
+- **Social Tenure Relationship Editor**: Added additional node for Custom Tenure Information entity.
+- **Spatial Entity Browser**: Added the GPS Feature Import to be used for editing and adding a new record.
+
+### Fixed
+- **Export Data**: Fixed encoding issues when exporting data.
+
+### Changed
+- **View Social Tenure Relationship**: Refactored the tree view to use the Spatial Entity Details to speed up performance.
+
+## [1.6.4] - 2017-07-29
+### Fixed
+- **Export Data**: Fixed export error.
+
+## [1.6.2] - 2017-05-29
+### Fixed
+- **Social Tenure Relationship**: Fixed Edit STR issue of Party, STR Type and supporting document not working.
+- **Import Data**: Fixed lookup values and virtual not showing issue.
+
+## [1.6.1] - 2017-05-21
+### Fixed
+- **Database and Configuration**: Fixed the draft configuration not deleting automatically issue.
+- **Database and Configuration**: Fixed inability to delete lookup values.
+- **Database and Configuration**: Fixed inability to save lookup values to the database.
+
+## [1.6.0] - 2017-05-01
+### Fixed
+- **Language**: Added full translation of the plugin in French, German and Portuguese.
+- **Language**: Fixed translation issues in different modules of the plugin.
+- **Spatial Entity Details**: Fixed save children error when there are no child entities.
+- **Login**: Fixed key error changing database setting before first time login.
+
+### Changed
+- **Social Tenure Relationship**: Removed deep inheritances.
 
 ## [1.5.2] - 2017-03-31
 ### Fixed
@@ -15,8 +53,6 @@ with similar name as the profile.
 - **Supporting Documents**: Fixed the error when saving supporting documents on
 entities with no profile prefix.
 
-### Changed
-- **Change Log**: Updated the change log.
 
 ## [1.5.0] - 2017-02-23
 

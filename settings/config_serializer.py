@@ -309,6 +309,7 @@ class ConfigurationFileSerializer(QObject):
 
 
             if not profile is None:
+                profile.sort_entities()
                 self.config.add_profile(profile)
 
             else:
@@ -1000,6 +1001,7 @@ class EntitySerializer(EntitySerializerCollection):
     SUPPORTS_DOCUMENTS = 'supportsDocuments'
     DOCUMENT_TYPE_LOOKUP = 'documentTypeLookup'
     ENTITY_TYPE_INFO = 'ENTITY'
+    ROW_INDEX = 'rowindex'
     DEPENDENCY_FLAGS = [ForeignKeyColumn.TYPE_INFO]
 
     @staticmethod
@@ -1075,6 +1077,14 @@ class EntitySerializer(EntitySerializerCollection):
             )
             ent.description = description
 
+            #RowIndex
+            row_index = unicode(child_element.attribute(
+                EntitySerializer.ROW_INDEX, '')
+            )
+            if row_index:
+                row_index = str(row_index)
+                ent.row_index = row_index
+
             #Add entity to the profile so that it is discoverable
             profile.add_entity(ent)
 
@@ -1090,6 +1100,7 @@ class EntitySerializer(EntitySerializerCollection):
                     ColumnSerializerCollection.read_xml(ce, ent,
                                                         association_elements,
                                                         entity_relation_elements)
+            ent.sort_columns()
 
     @staticmethod
     def column_elements(entity_element):
@@ -1269,6 +1280,9 @@ class EntitySerializer(EntitySerializerCollection):
                                     str(entity.is_proxy))
         entity_element.setAttribute(EntitySerializer.SUPPORTS_DOCUMENTS,
                                     str(entity.supports_documents))
+
+        entity_element.setAttribute(EntitySerializer.ROW_INDEX,
+                                    str(entity.row_index))
 
         #Set document type lookup
         if entity.supports_documents:
@@ -1580,6 +1594,7 @@ class ColumnSerializerCollection(object):
     MINIMUM = 'minimum'
     MAXIMUM = 'maximum'
     LABEL = 'label'
+    ROW_INDEX='rowindex' # for ordering on a listview 
 
     @classmethod
     def register(cls):
@@ -1668,6 +1683,12 @@ class ColumnSerializerCollection(object):
         )
         kwargs['label'] = label
 
+        # Row Index - for ordering on a viewer
+        row_index = unicode(
+            element.attribute(ColumnSerializerCollection.ROW_INDEX, '')
+        )
+        kwargs['row_index'] = row_index
+
         #Minimum
         if element.hasAttribute(ColumnSerializerCollection.MINIMUM):
             minimum = element.attribute(ColumnSerializerCollection.MINIMUM)
@@ -1747,6 +1768,8 @@ class ColumnSerializerCollection(object):
                                  column.user_tip)
         col_element.setAttribute(ColumnSerializerCollection.LABEL,
                                  column.label)
+        col_element.setAttribute(ColumnSerializerCollection.ROW_INDEX,
+                                 str(column.row_index))
 
         if hasattr(column, 'minimum'):
             col_element.setAttribute(ColumnSerializerCollection.MINIMUM,

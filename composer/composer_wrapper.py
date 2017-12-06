@@ -693,6 +693,7 @@ class ComposerWrapper(QObject):
         else:
             self.mainWindow().setWindowTitle(template_name)
 
+        self.setDocumentFile(docFile)
         docFile.close()
 
     def _writeXML(self, xml_doc, doc_name):

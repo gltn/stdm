@@ -179,7 +179,6 @@ class STDMQGISLoader(object):
         self.logoutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/logout.png"), \
         QApplication.translate("LogoutToolbarAction","Logout"), self.iface.mainWindow(),
         "EF3D96AF-F127-4C31-8D9F-381C07E855DD")
-        self.logoutAct.setShortcut(QKeySequence(Qt.Key_Backspace))
 
         self.changePasswordAct = STDMAction(QIcon(":/plugins/stdm/images/icons/change_password.png"), \
         QApplication.translate("ChangePasswordToolbarAction","Change Password"), self.iface.mainWindow(),
@@ -1453,20 +1452,20 @@ class STDMQGISLoader(object):
         defining a new social
         tenure relationship
         '''
-        # try:
+        try:
 
-        str_editor = STREditor()
-        str_editor.open()
+            str_editor = STREditor()
+            str_editor.open()
 
-        # except Exception as ex:
-        #     QMessageBox.critical(
-        #         self.iface.mainWindow(),
-        #         QApplication.translate(
-        #             'STDMQGISLoader',
-        #             'Error Loading the STR Editor'
-        #         ),
-        #         str(ex)
-        #     )
+        except Exception as ex:
+            QMessageBox.critical(
+                self.iface.mainWindow(),
+                QApplication.translate(
+                    'STDMQGISLoader',
+                    'Error Loading the STR Editor'
+                ),
+                str(ex)
+            )
 
     def onManageAdminUnits(self):
         '''
@@ -1729,6 +1728,7 @@ class STDMQGISLoader(object):
             self.stdmInitToolbar.removeAction(self.docDesignerAct)
             self.stdmInitToolbar.removeAction(self.docGeneratorAct)
             self.stdmInitToolbar.removeAction(self.viewSTRAct)
+
             if self.toolbarLoader is not None:
                 self.toolbarLoader.unloadContent()
             if self.menubarLoader is not None:

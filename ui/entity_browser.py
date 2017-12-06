@@ -62,6 +62,8 @@ from stdm.ui.spatial_unit_manager import (
 )
 
 from stdm.ui.document_viewer import DocumentViewManager
+
+from stdm.ui.gps_tool import GPSToolDialog
 from .admin_unit_manager import VIEW,MANAGE,SELECT
 from .ui_entity_browser import Ui_EntityBrowser
 from .helpers import SupportsManageMixin
@@ -703,6 +705,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         self._tableModel.insertRows(insertPosition, 1)
 
         for i, attr in enumerate(self._entity_attrs):
+
             prop_idx = self._tableModel.index(insertPosition, i)
             attr_val = getattr(model_obj, attr)
 
@@ -742,6 +745,8 @@ class EntityBrowserWithEditor(EntityBrowser):
 
         self.highlight = None
         self.load_records = load_records
+        self.selection_layer = None
+
         #Add action toolbar if the state contains Manage flag
         if (state & MANAGE) != 0:
             add = QApplication.translate("EntityBrowserWithEditor", "Add")
@@ -802,7 +807,6 @@ class EntityBrowserWithEditor(EntityBrowser):
                 self.geom_cols = self.sp_unit_manager.geom_columns(
                     self._entity
                 )
-                self.selection_layer = None
 
                 self.add_spatial_unit_layer()
                 self.tbEntity.clicked.connect(
@@ -814,7 +818,7 @@ class EntityBrowserWithEditor(EntityBrowser):
 
                 self.shift_spatial_entity_browser()
                 # Hide the add button from spatial tables
-                self._newEntityAction.setVisible(False)
+                # self._newEntityAction.setVisible(False)
 
             self._editor_dlg = EntityEditorDialog
 
@@ -832,14 +836,28 @@ class EntityBrowserWithEditor(EntityBrowser):
             self._notifBar.insertErrorNotification(msg)
 
             return
+        if self._entity.has_geometry_column():
+            self.sp_unit_manager.active_layer_source()
 
-        self.addEntityDlg = self._editor_dlg(
-            self._entity, parent=self, parent_entity=self.parent_entity
-        )
+            gps_tool = GPSToolDialog(
+                iface,
+                self._entity,
+                self._entity.name,
+                self.sp_unit_manager.active_sp_col,
+                reload=False,
+                entity_browser=self
+            )
+            result = gps_tool.exec_()
+            result = False # a workaround to avoid duplicate model insert
+            self.addEntityDlg = gps_tool.entity_editor
+        else:
+            self.addEntityDlg = self._editor_dlg(
+                self._entity, parent=self, parent_entity=self.parent_entity
+            )
 
-        self.addEntityDlg.addedModel.connect(self.on_save_and_new)
+            self.addEntityDlg.addedModel.connect(self.on_save_and_new)
 
-        result = self.addEntityDlg.exec_()
+            result = self.addEntityDlg.exec_()
 
         if result == QDialog.Accepted:
             model_obj = self.addEntityDlg.model()
@@ -1011,14 +1029,32 @@ class EntityBrowserWithEditor(EntityBrowser):
         Load editor dialog based on the selected model instance with the given ID.
         '''
         model_obj = self._model_from_id(recid, rownumber)
+        # show GPS editor if geometry
+        if self._entity.has_geometry_column():
+            self.sp_unit_manager.active_layer_source()
 
-        #Load editor dialog
-        edit_entity_dlg = self._editor_dlg(self._entity, model=model_obj,
-                                         parent=self, parent_entity=self.parent_entity)
+            gps_tool = GPSToolDialog(
+                iface,
+                self._entity,
+                self._entity.name,
+                self.sp_unit_manager.active_sp_col,
+                model=model_obj,
+                reload=False,
+                row_number=rownumber,
+                entity_browser=self
+            )
+            result = gps_tool.exec_()
+        else:
+            #Load editor dialog
+            edit_entity_dlg = self._editor_dlg(self._entity, model=model_obj,
+                                             parent=self, parent_entity=self.parent_entity)
 
-        result = edit_entity_dlg.exec_()
+            result = edit_entity_dlg.exec_()
 
         if result == QDialog.Accepted:
+            if self._entity.has_geometry_column():
+                edit_entity_dlg = gps_tool.entity_editor
+
             updated_model_obj = edit_entity_dlg.model()
             if not edit_entity_dlg.is_valid:
                 return
@@ -1094,6 +1130,7 @@ class EntityBrowserWithEditor(EntityBrowser):
     
         recordId = recordIdIndex.data()
         self._load_editor_dialog(recordId,recordIdIndex.row())
+
 
     def shift_spatial_entity_browser(self):
         """
@@ -1214,9 +1251,9 @@ class EntityBrowserWithEditor(EntityBrowser):
         :return: None
         """
         if self._entity.has_geometry_column():
-            if not self.selection_layer is None:
+            if self.selection_layer is not None:
                 self.selection_layer.removeSelection()
-            self.sp_unit_manager.zoom_to_layer()
+                self.sp_unit_manager.zoom_to_layer()
 
 
 class ContentGroupEntityBrowser(EntityBrowserWithEditor):

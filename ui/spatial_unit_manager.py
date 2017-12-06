@@ -20,14 +20,31 @@
  *                                                                         *
  ***************************************************************************/
 """
+
 import os
 import logging
 import re
+from collections import OrderedDict
 
-from PyQt4 import uic
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from qgis.core import *
+from qgis.core import (
+    NULL,
+    QgsGeometry,
+    QgsStyleV2,
+    QgsFeature,
+    QgsMapLayerRegistry,
+    QgsField,
+    QgsSymbolV2,
+    QgsRendererCategoryV2,
+    QgsCategorizedSymbolRendererV2,
+   QgsVectorJoinInfo
+)
+from qgis.gui import (
+    QgsCategorizedSymbolRendererV2Widget
+)
+from stdm.data.configuration import entity_model
 
 from gps_tool import GPSToolDialog
 from stdm.settings import (
@@ -49,13 +66,13 @@ from stdm.data.pg_utils import (
 from stdm.ui.forms.spatial_unit_form import (
     STDMFieldWidget
 )
-from stdm.utils.util import profile_and_user_views
+from stdm.utils.util import profile_and_user_views, lookup_id_to_value, entity_id_to_display_col
 from stdm.mapping.utils import pg_layerNamesIDMapping
 
 from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
 
-
 LOGGER = logging.getLogger('stdm')
+
 
 class SpatialUnitManagerDockWidget(
     QDockWidget, Ui_SpatialUnitManagerWidget
@@ -67,6 +84,7 @@ class SpatialUnitManagerDockWidget(
         QDockWidget.__init__(self, iface.mainWindow())
         # Set up the user interface from Designer.
         self.setupUi(self)
+
         self.iface = iface
         self._plugin = plugin
         self.gps_tool_dialog = None
@@ -78,7 +96,7 @@ class SpatialUnitManagerDockWidget(
         self.active_entity = None
         self.active_table = None
         self.active_sp_col = None
-
+        self.style_updated = None
         self.setMaximumHeight(300)
         self._curr_profile = current_profile()
         self._profile_spatial_layers = []
@@ -90,12 +108,154 @@ class SpatialUnitManagerDockWidget(
         self.iface.currentLayerChanged.connect(
             self.control_digitize_toolbar
         )
+
         self.onLayerAdded.connect(
             self.init_spatial_form
         )
         self.add_to_canvas_button.clicked.connect(
             self.on_add_to_canvas_button_clicked
         )
+
+    def get_column_config(self, config, name):
+        """
+        Gets joined column name config.
+        :param config: The config object
+        :type config: ColumnConfig
+        :param name: The column name
+        :type name:String
+        :return:
+        :rtype:
+        """
+        configs = [c for c in config.columns() if c.name == name]
+        if len(configs) > 0:
+            return configs[0]
+        else:
+            return None
+
+    def sort_joined_columns(self, layer, fk_fields):
+        """
+        Sort joined columns using the order in the configuration
+        :param layer: The layer containing joined layers
+        :type layer: QgsVectorLayer
+        :return:
+        :rtype:
+        """
+        entity = self._curr_profile.entity_by_name(self.curr_lyr_table)
+        config = layer.attributeTableConfig()
+        columns = config.columns()
+        updated_columns = []
+        for column in columns:
+            if column.name not in entity.columns.keys():
+                continue
+            if column.name in fk_fields.keys():
+
+                # hide the lookup id column
+                column.hidden = True
+                header = entity.columns[column.name].header()
+
+                joined_column_name = u'{} {}'.format(header, fk_fields[column.name])
+
+                joined_column = self.get_column_config(config, joined_column_name)
+
+                if joined_column is not None:
+
+                    updated_columns.append(joined_column)
+
+                    updated_columns.append(column)
+
+            else:
+                updated_columns.append(column)
+
+        config.setColumns(updated_columns)
+        layer.setAttributeTableConfig(config)
+
+    @staticmethod
+    def execute_layers_join(layer, layer_field, column_header, fk_layer, fk_field):
+        """
+        Joins two layers with specified field.
+        :param layer: The destination layer of the merge.
+        :type layer: QgsVectorLayer
+        :param layer_field: The source layer of the merge.
+        :type layer_field: String
+        :param fk_layer: The foreign key layer object.
+        :type fk_layer: QgsVectorLayer
+        :param fk_field: The foreign key layer field name.
+        :type fk_field: String
+        :return:
+        :rtype:
+        """
+        join = QgsVectorJoinInfo()
+        join.joinLayerId = fk_layer.id()
+        join.joinFieldName = 'id'
+
+        join.setJoinFieldNamesSubset([fk_field])
+        join.targetFieldName = layer_field
+        join.memoryCache = True
+        join.prefix = u'{} '.format(column_header)
+        layer.addJoin(join)
+
+    def column_to_fk_layer_join(self, column, layer, join_field):
+        """
+        Creates and executes the join by creating fk layer and running the join
+        method using a column object.
+        :param column: The column object
+        :type column: Object
+        :param layer: The layer to contain the joined fk layer
+        :type layer: QgsVectorLayer
+        :param join_field: The join field that is in the fk layer
+        :type join_field: String
+        """
+        fk_entity = column.entity_relation.parent
+        fk_layer = vector_layer(
+            fk_entity.name,
+            layer_name=fk_entity.name
+        )
+        QgsMapLayerRegistry.instance().addMapLayer(
+            fk_layer, False
+        )
+        # hide the fk id column
+        column.hidden = True
+        header = column.header()
+
+        self.execute_layers_join(layer, column.name, header, fk_layer, join_field)
+
+    def join_fk_layer(self, layer, entity):
+        """
+        Joins foreign key to the layer by creating and choosing join fields.
+        :param layer: The layer to contain the joined fk layer
+        :type layer: QgsVectorLayer
+        :param entity: The layer entity object
+        :type entity: Object
+        :return: A dictionary containing fk_field and column object
+        :rtype: OrderedDict
+        """
+
+        if entity is None:
+            return
+
+        fk_columns = OrderedDict()
+        for column in entity.columns.values():
+            if column.TYPE_INFO == 'LOOKUP':
+                fk_column = 'value'
+
+            elif column.TYPE_INFO == 'ADMIN_SPATIAL_UNIT':
+                fk_column = 'name'
+
+            elif column.TYPE_INFO == 'FOREIGN_KEY':
+                display_cols = column.entity_relation.display_cols
+
+                if len(display_cols) > 0:
+                    fk_column = display_cols[0]
+                else:
+                    fk_column = 'id'
+            else:
+                fk_column = None
+
+            if fk_column is not None:
+                self.column_to_fk_layer_join(column, layer, fk_column)
+                fk_columns[column.name] = fk_column
+
+        return fk_columns
 
     def _adjust_layer_drop_down_width(self):
         """
@@ -118,11 +278,9 @@ class SpatialUnitManagerDockWidget(
         self.stdm_layers_combo.clear()
 
         if self._curr_profile is None:
-
             return
 
-        self.spatial_unit = self._curr_profile.\
-            social_tenure.spatial_units
+        self.spatial_units = self._curr_profile.social_tenure.spatial_units
 
         # Get entities containing geometry
         # columns based on the config info
@@ -130,7 +288,7 @@ class SpatialUnitManagerDockWidget(
         self.geom_entities = [
             ge for ge in config_entities.values()
             if ge.TYPE_INFO == 'ENTITY' and
-            ge.has_geometry_column()
+               ge.has_geometry_column()
         ]
 
         self._profile_spatial_layers = []
@@ -139,9 +297,12 @@ class SpatialUnitManagerDockWidget(
         for e in self.geom_entities:
             table_name = e.name
             if table_name in self.sp_tables:
-                for gc in e.geometry_columns():
+                for i, gc in enumerate(e.geometry_columns()):
                     column_name = gc.name
+
                     display_name = gc.layer_display()
+                    if i > 0:
+                        display_name = u'{}.{}'.format(display_name, gc.name)
                     self._add_geometry_column_to_combo(
                         table_name,
                         column_name,
@@ -168,14 +329,9 @@ class SpatialUnitManagerDockWidget(
                     for i, geom_col in enumerate(self.str_view_geom_columns):
                         view_layer_name = str_view
                         if i > 0:
-                            # view_layer_name = self._curr_profile. \
-                            #     social_tenure.layer_display()
                             view_layer_name = '{}.{}'.format(
                                 view_layer_name, geom_col
                             )
-                        # else:
-                            # view_layer_name = self._curr_profile. \
-                            #     social_tenure.layer_display()
 
                         self._add_geometry_column_to_combo(
                             str_view,
@@ -190,7 +346,8 @@ class SpatialUnitManagerDockWidget(
         # add old config views and custom views.
         for sp_table in self.sp_tables:
             if sp_table in pg_views() and sp_table not in str_views and \
-                sp_table in profile_and_user_views(self._curr_profile):
+                            sp_table in profile_and_user_views(
+                        self._curr_profile):
                 view_geom_columns = table_column_names(
                     sp_table, True
                 )
@@ -261,16 +418,16 @@ class SpatialUnitManagerDockWidget(
         icon = self._geom_icon(table_name, column_name)
 
         self.stdm_layers_combo.addItem(icon, display, {
-                'table_name': table_name,
-                'column_name': column_name,
-                'item': item
-            }
-        )
-        for spatial_unit_obj in self.spatial_unit:
-            table = spatial_unit_obj.name
+            'table_name': table_name,
+            'column_name': column_name,
+            'item': item
+        }
+                                       )
+        for spatial_unit in self.spatial_units:
+            table = spatial_unit.name
             spatial_column = [
                 c.name
-                for c in spatial_unit_obj.columns.values()
+                for c in spatial_unit.columns.values()
                 if c.TYPE_INFO == 'GEOMETRY'
             ]
 
@@ -281,8 +438,7 @@ class SpatialUnitManagerDockWidget(
                 spatial_unit_item, Qt.MatchFixedString
             )
             if index >= 0:
-                 self.stdm_layers_combo.setCurrentIndex(index)
-
+                self.stdm_layers_combo.setCurrentIndex(index)
 
     def _layer_info_from_table_column(
             self, table, column
@@ -335,14 +491,13 @@ class SpatialUnitManagerDockWidget(
         Add a layer when a name is supplied.
         :param layer_name: The stdm layer name
         :type layer_name: String
-        :return: None
-        :rtype: NoneType
+
         """
         index = self.stdm_layers_combo.findText(
             layer_name, Qt.MatchFixedString
         )
-        if index >= 0:
 
+        if index >= 0:
             self.stdm_layers_combo.setCurrentIndex(index)
             # add spatial unit layer.
             self.on_add_to_canvas_button_clicked()
@@ -370,11 +525,7 @@ class SpatialUnitManagerDockWidget(
 
         elif col.layer_display_name == '':
 
-            spatial_layer_item = unicode(
-                '{}.{}'.format(
-                    table, col.name
-                )
-            )
+            spatial_layer_item = u'{0}'.format(col.entity.short_name)
         # use the layer_display_name
         else:
             spatial_layer_item = col.layer_display_name
@@ -418,7 +569,8 @@ class SpatialUnitManagerDockWidget(
         )
 
         if layer_name in self._map_registry_layer_names():
-            layer = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)[0]
+            layer = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)[
+                0]
             self.iface.setActiveLayer(layer)
             return
 
@@ -442,24 +594,35 @@ class SpatialUnitManagerDockWidget(
             )
 
         if curr_layer.isValid():
+            if curr_layer.name() in self._map_registry_layer_names():
+                return
 
             QgsMapLayerRegistry.instance().addMapLayer(
                 curr_layer
             )
+            self.zoom_to_layer()
+
+            self.onLayerAdded.emit(spatial_column, curr_layer)
 
             self.toggle_entity_multi_layers(curr_layer)
 
             self.set_canvas_crs(curr_layer)
             # Required in order for the layer name to be set
-            QTimer.singleShot(
-                100,
-                lambda: self._set_layer_display_name(
-                    curr_layer,
-                    layer_name
+            if layer_name is not None:
+                QTimer.singleShot(
+                    100,
+                    lambda: self._set_layer_display_name(
+                        curr_layer,
+                        layer_name
+                    )
                 )
-            )
-            self.zoom_to_layer()
-            self.onLayerAdded.emit(spatial_column, curr_layer)
+
+            entity = self._curr_profile.entity_by_name(self.curr_lyr_table)
+            fk_fields = self.join_fk_layer(curr_layer, entity)
+
+            self.sort_joined_columns(curr_layer, fk_fields)
+            self.set_field_alias(curr_layer, entity, fk_fields)
+
         else:
             msg = QApplication.translate(
                 "Spatial Unit Manager",
@@ -473,6 +636,30 @@ class SpatialUnitManagerDockWidget(
                 'Spatial Unit Manager',
                 msg
             )
+
+    def set_field_alias(self, layer, entity, fk_fields):
+        """
+        Set the field alia for fk joined fields so that they are
+        same as the child columns.
+        :param layer: The layer containing the join
+        :type layer: QgsVectorLayer
+        :param entity: The entity of the layer
+        :type entity: Object
+        :param fk_fields: The dictionary containing the parent and child fields
+        :type fk_fields: OrderedDict
+        :return:
+        :rtype:
+        """
+        for column, fk_field in fk_fields.iteritems():
+            header = entity.columns[column].header()
+
+            f_index = layer.fieldNameIndex(
+                u'{} {}'.format(header, fk_field)
+            )
+            alias = u'{} Value'.format(header)
+
+            layer.addAttributeAlias(f_index, alias)
+
 
     def zoom_to_layer(self):
         """
@@ -541,11 +728,9 @@ class SpatialUnitManagerDockWidget(
             if sel_lyr_name in layer_list
         ]
 
-
         str_view = self._curr_profile.social_tenure.view_name
 
         if len(layer_lists) < 1:
-
             geom_columns = table_column_names(
                 str_view, True
             )
@@ -579,13 +764,13 @@ class SpatialUnitManagerDockWidget(
             # of the same entity
             if layer_name != sel_lyr_name:
 
-                layer_objects = QgsMapLayerRegistry.\
+                layer_objects = QgsMapLayerRegistry. \
                     instance().mapLayersByName(layer_name)
 
                 if len(layer_objects) > 0:
                     for layer in layer_objects:
                         layer_id = layer.id()
-                        QgsMapLayerRegistry.\
+                        QgsMapLayerRegistry. \
                             instance().removeMapLayer(layer_id)
             # Change the crs of the canvas based on the new layer
 
@@ -744,7 +929,6 @@ class SpatialUnitManagerDockWidget(
         except KeyError:
             return False
 
-
     @pyqtSignature("")
     def on_import_gpx_file_button_clicked(self):
         """
@@ -753,9 +937,9 @@ class SpatialUnitManagerDockWidget(
         source_status = self.active_layer_source()
         layer_map = QgsMapLayerRegistry.instance().mapLayers()
         error_title = QApplication.translate(
-                    'SpatialUnitManagerDockWidget',
-                    'GPS Feature Import Loading Error'
-                )
+            'SpatialUnitManagerDockWidget',
+            'GPS Feature Import Loading Error'
+        )
         if len(layer_map) > 0:
             if source_status is None:
                 QMessageBox.critical(
