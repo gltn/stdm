@@ -117,13 +117,20 @@ class SpatialUnitManagerDockWidget(
         )
 
     def get_column_config(self, config, name):
-
+        """
+        Gets joined column name config.
+        :param config: The config object
+        :type config: ColumnConfig
+        :param name: The column name
+        :type name:String
+        :return:
+        :rtype:
+        """
         configs = [c for c in config.columns() if c.name == name]
         if len(configs) > 0:
             return configs[0]
         else:
             return None
-
 
     def sort_joined_columns(self, layer, fk_fields):
         """
@@ -140,15 +147,20 @@ class SpatialUnitManagerDockWidget(
         for column in columns:
             if column.name not in entity.columns.keys():
                 continue
-            if column.name in fk_fields:
+            if column.name in fk_fields.keys():
+
                 # hide the lookup id column
                 column.hidden = True
                 header = entity.columns[column.name].header()
+
                 joined_column_name = u'{} {}'.format(header, fk_fields[column.name])
+
                 joined_column = self.get_column_config(config, joined_column_name)
+
                 if joined_column is not None:
 
                     updated_columns.append(joined_column)
+
                     updated_columns.append(column)
 
             else:
@@ -157,7 +169,8 @@ class SpatialUnitManagerDockWidget(
         config.setColumns(updated_columns)
         layer.setAttributeTableConfig(config)
 
-    def join_layers(self, layer, layer_field, column_header, fk_layer, fk_field):
+    @staticmethod
+    def execute_layers_join(layer, layer_field, column_header, fk_layer, fk_field):
         """
         Joins two layers with specified field.
         :param layer: The destination layer of the merge.
@@ -204,43 +217,42 @@ class SpatialUnitManagerDockWidget(
         column.hidden = True
         header = column.header()
 
-        self.join_layers(layer, column.name, header, fk_layer, join_field)
+        self.execute_layers_join(layer, column.name, header, fk_layer, join_field)
 
-    def join_fk_layer(self, layer):
+    def join_fk_layer(self, layer, entity):
         """
         Joins foreign key to the layer by creating and choosing join fields.
         :param layer: The layer to contain the joined fk layer
         :type layer: QgsVectorLayer
+        :param entity: The layer entity object
+        :type entity: Object
         :return: A dictionary containing fk_field and column object
         :rtype: OrderedDict
         """
-        entity = self._curr_profile.entity_by_name(self.curr_lyr_table)
+
         if entity is None:
             return
 
         fk_columns = OrderedDict()
         for column in entity.columns.values():
-            fk_column = None
             if column.TYPE_INFO == 'LOOKUP':
                 fk_column = 'value'
-                self.column_to_fk_layer_join(column, layer, fk_column)
 
             elif column.TYPE_INFO == 'ADMIN_SPATIAL_UNIT':
                 fk_column = 'name'
-                self.column_to_fk_layer_join(column, layer, fk_column)
 
             elif column.TYPE_INFO == 'FOREIGN_KEY':
-
                 display_cols = column.entity_relation.display_cols
+
                 if len(display_cols) > 0:
                     fk_column = display_cols[0]
-                    # for display_col in display_cols:
-                    self.column_to_fk_layer_join(column, layer, display_cols[0])
                 else:
                     fk_column = 'id'
-                    self.column_to_fk_layer_join(column, layer, 'id')
+            else:
+                fk_column = None
 
             if fk_column is not None:
+                self.column_to_fk_layer_join(column, layer, fk_column)
                 fk_columns[column.name] = fk_column
 
         return fk_columns
@@ -584,9 +596,13 @@ class SpatialUnitManagerDockWidget(
         if curr_layer.isValid():
             if curr_layer.name() in self._map_registry_layer_names():
                 return
+
             QgsMapLayerRegistry.instance().addMapLayer(
                 curr_layer
             )
+            self.zoom_to_layer()
+
+            self.onLayerAdded.emit(spatial_column, curr_layer)
 
             self.toggle_entity_multi_layers(curr_layer)
 
@@ -600,11 +616,12 @@ class SpatialUnitManagerDockWidget(
                         layer_name
                     )
                 )
-            self.zoom_to_layer()
-            self.onLayerAdded.emit(spatial_column, curr_layer)
-            fk_fields = self.join_fk_layer(curr_layer)
+
+            entity = self._curr_profile.entity_by_name(self.curr_lyr_table)
+            fk_fields = self.join_fk_layer(curr_layer, entity)
 
             self.sort_joined_columns(curr_layer, fk_fields)
+            self.set_field_alias(curr_layer, entity, fk_fields)
 
         else:
             msg = QApplication.translate(
@@ -619,6 +636,30 @@ class SpatialUnitManagerDockWidget(
                 'Spatial Unit Manager',
                 msg
             )
+
+    def set_field_alias(self, layer, entity, fk_fields):
+        """
+        Set the field alia for fk joined fields so that they are
+        same as the child columns.
+        :param layer: The layer containing the join
+        :type layer: QgsVectorLayer
+        :param entity: The entity of the layer
+        :type entity: Object
+        :param fk_fields: The dictionary containing the parent and child fields
+        :type fk_fields: OrderedDict
+        :return:
+        :rtype:
+        """
+        for column, fk_field in fk_fields.iteritems():
+            header = entity.columns[column].header()
+
+            f_index = layer.fieldNameIndex(
+                u'{} {}'.format(header, fk_field)
+            )
+            alias = u'{} Value'.format(header)
+
+            layer.addAttributeAlias(f_index, alias)
+
 
     def zoom_to_layer(self):
         """
