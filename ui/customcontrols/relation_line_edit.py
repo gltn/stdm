@@ -269,15 +269,7 @@ class RelatedEntityLineEdit(ForeignKeyLineEdit):
                 'Please use the form to edit data.'
             )
         except TypeError:
-            QMessageBox.warning(
-                None,
-                QApplication.translate(
-                    'DateEditValueHandler',
-                    "Display Error"
-                ),
-                'Could not set display name. '
-                'Please check if the data is saved.'
-            )
+            pass
 
     def format_display(self):
         #Display based on the configured display columns.
