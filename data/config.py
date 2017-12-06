@@ -52,4 +52,4 @@ class DatabaseConfig(object):
         db_settings[self.db_name] = db_connection.Database
 
         self.reg_config.write(db_settings)
-    
+
