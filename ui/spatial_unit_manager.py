@@ -109,7 +109,6 @@ class SpatialUnitManagerDockWidget(
             self.control_digitize_toolbar
         )
 
-        # QgsSymbolV2SelectorDialog.symbolModified.connect(self.sym_mod)
         self.onLayerAdded.connect(
             self.init_spatial_form
         )
@@ -117,102 +116,14 @@ class SpatialUnitManagerDockWidget(
             self.on_add_to_canvas_button_clicked
         )
 
-    # def connect_beautify_legend(self):
-    #
-    #     layer = self.iface.activeLayer()
-    #     feature_renderer = layer.rendererV2()
-    #     renderer_widget = QgsCategorizedSymbolRendererV2Widget(
-    #     layer, QgsStyleV2().defaultStyle(), feature_renderer)
-    #     renderer_widget.showPanel.connect(self.beautify_legend)
-    #     # self.beautify_legend()
-    #     renderer_widget.refreshSymbolView()
-    #
-    # def add_classes(self):
-    #     layer = self.iface.activeLayer()
-    #     idx = layer.fieldNameIndex('fieldName')
-    #     values = layer.uniqueValues(idx)
-
-    @staticmethod
-    def replace_lookup_columns(layer, column_name):
-        config = layer.attributeTableConfig()
-        columns = config.columns()
-        for column in columns:
-            if column.name == column_name:
-                column.hidden = False
-                break
-        config.setColumns(columns)
-        layer.setAttributeTableConfig(config)
-
     def get_column_config(self, config, name):
 
         configs = [c for c in config.columns() if c.name == name]
-        # if len(configs) > 0:
-        return configs[0]
-        # else:
-        #     return None
+        if len(configs) > 0:
+            return configs[0]
+        else:
+            return None
 
-    def join_fk_layer(self, layer):
-        """
-        Joins foreign key to the layer by creating and choosing join fields.
-        :param layer: The layer to contain the joined fk layer
-        :type layer: QgsVectorLayer
-        :return: A dictionary containing fk_field and column object
-        :rtype: OrderedDict
-        """
-        entity = self._curr_profile.entity_by_name(self.curr_lyr_table)
-        if entity is None:
-            return
-
-        fk_columns = OrderedDict()
-        for column in entity.columns.values():
-            fk_column = None
-            if column.TYPE_INFO == 'LOOKUP':
-                fk_column = 'value'
-                self.create_and_join_fk_layer(column, layer, fk_column)
-
-            elif column.TYPE_INFO == 'ADMIN_SPATIAL_UNIT':
-                fk_column = 'name'
-                self.create_and_join_fk_layer(column, layer, fk_column)
-
-            elif column.TYPE_INFO == 'FOREIGN_KEY':
-
-                display_cols = column.entity_relation.display_cols
-                if len(display_cols) > 0:
-                    fk_column = display_cols[0]
-                else:
-                    fk_column = 'id'
-                self.create_and_join_fk_layer(column, layer, fk_column)
-
-            if fk_column is not None:
-                fk_columns[column.name] = fk_column
-
-        return fk_columns
-
-    def create_and_join_fk_layer(self, column, layer, join_field):
-        """
-        Creates and executes the join by creating fk  layer and running the join
-        method.
-        :param column: The column object
-        :type column: Object
-        :param layer: The layer to contain the joined fk layer
-        :type layer: QgsVectorLayer
-        :param join_field: The join field that is in the fk layer
-        :type join_field: String
-        """
-
-        fk_entity = column.entity_relation.parent
-        fk_layer = vector_layer(
-            fk_entity.name,
-            layer_name=fk_entity.name
-        )
-        QgsMapLayerRegistry.instance().addMapLayer(
-            fk_layer, False
-        )
-        # hide the fk id column
-        column.hidden = True
-        header = column.header()
-
-        self.join_layers(layer, column.name, header, fk_layer, join_field)
 
     def sort_joined_columns(self, layer, fk_fields):
         """
@@ -233,7 +144,6 @@ class SpatialUnitManagerDockWidget(
                 # hide the lookup id column
                 column.hidden = True
                 header = entity.columns[column.name].header()
-
                 joined_column_name = u'{} {}'.format(header, fk_fields[column.name])
                 joined_column = self.get_column_config(config, joined_column_name)
                 if joined_column is not None:
@@ -270,6 +180,70 @@ class SpatialUnitManagerDockWidget(
         join.memoryCache = True
         join.prefix = u'{} '.format(column_header)
         layer.addJoin(join)
+
+    def column_to_fk_layer_join(self, column, layer, join_field):
+        """
+        Creates and executes the join by creating fk layer and running the join
+        method using a column object.
+        :param column: The column object
+        :type column: Object
+        :param layer: The layer to contain the joined fk layer
+        :type layer: QgsVectorLayer
+        :param join_field: The join field that is in the fk layer
+        :type join_field: String
+        """
+        fk_entity = column.entity_relation.parent
+        fk_layer = vector_layer(
+            fk_entity.name,
+            layer_name=fk_entity.name
+        )
+        QgsMapLayerRegistry.instance().addMapLayer(
+            fk_layer, False
+        )
+        # hide the fk id column
+        column.hidden = True
+        header = column.header()
+
+        self.join_layers(layer, column.name, header, fk_layer, join_field)
+
+    def join_fk_layer(self, layer):
+        """
+        Joins foreign key to the layer by creating and choosing join fields.
+        :param layer: The layer to contain the joined fk layer
+        :type layer: QgsVectorLayer
+        :return: A dictionary containing fk_field and column object
+        :rtype: OrderedDict
+        """
+        entity = self._curr_profile.entity_by_name(self.curr_lyr_table)
+        if entity is None:
+            return
+
+        fk_columns = OrderedDict()
+        for column in entity.columns.values():
+            fk_column = None
+            if column.TYPE_INFO == 'LOOKUP':
+                fk_column = 'value'
+                self.column_to_fk_layer_join(column, layer, fk_column)
+
+            elif column.TYPE_INFO == 'ADMIN_SPATIAL_UNIT':
+                fk_column = 'name'
+                self.column_to_fk_layer_join(column, layer, fk_column)
+
+            elif column.TYPE_INFO == 'FOREIGN_KEY':
+
+                display_cols = column.entity_relation.display_cols
+                if len(display_cols) > 0:
+                    fk_column = display_cols[0]
+                    # for display_col in display_cols:
+                    self.column_to_fk_layer_join(column, layer, display_cols[0])
+                else:
+                    fk_column = 'id'
+                    self.column_to_fk_layer_join(column, layer, 'id')
+
+            if fk_column is not None:
+                fk_columns[column.name] = fk_column
+
+        return fk_columns
 
     def _adjust_layer_drop_down_width(self):
         """
