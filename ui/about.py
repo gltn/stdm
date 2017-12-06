@@ -46,7 +46,40 @@ class AboutSTDMDialog(QDialog,Ui_frmAbout):
         self.btnContactUs.clicked.connect(self.onContactUs)
         self.btnSTDMHome.clicked.connect(self.onSTDMHome)
 
-        self._insert_metadata_info()
+        #Load about HTML file
+        aboutLocation = PLUGIN_DIR + "/html/about.htm"
+        if QFile.exists(aboutLocation):
+            aboutFile = QFile(aboutLocation)
+
+            if not aboutFile.open(QIODevice.ReadOnly):
+
+                QMessageBox.critical(
+                    self,
+                    QApplication.translate(
+                        "AboutSTDMDialog","Open Operation Error"),
+                    QApplication.translate(
+                        "AboutSTDMDialog",
+                        "Cannot read 'About STDM' source file."
+                    )
+                )
+                self.reject()
+
+            reader = QTextStream(aboutFile)
+            aboutSTDM = reader.readAll()
+            self.txtAbout.setHtml(aboutSTDM)
+            #Insert plugin info
+            self._insert_metadata_info()
+
+        else:
+            QMessageBox.critical(
+                self,
+                QApplication.translate(
+                    "AboutSTDMDialog","File Does Not Exist"),
+                QApplication.translate(
+                    "AboutSTDMDialog",
+                    "'About STDM' source file does not exist.")
+            )
+            self.reject()
 
     def _insert_metadata_info(self):
         #Insert version and build numbers respectively.

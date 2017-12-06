@@ -235,8 +235,7 @@ def value_list_updater(value_list, engine, metadata):
         lookup_val = db_val.value
 
         #Check if it exists in the lookup collection
-        hashed_vt = value_list.value_hash(lookup_val)
-        code_value = value_list.code_value(hashed_vt)
+        code_value = value_list.code_value(lookup_val)
 
         model_obj = model()
 
@@ -247,3 +246,5 @@ def value_list_updater(value_list, engine, metadata):
             ).one()
             if not lookup_obj is None:
                 lookup_obj.delete()
+
+

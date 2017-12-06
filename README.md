@@ -19,11 +19,11 @@ Some of the functionality provided by the tool include:
 
 For more information about STDM and its documentation, please visit [www.stdm.gltn.net](http://www.stdm.gltn.net/).
 
-### Third Party Software
+###Third Party Software
 
 STDM is built on top of free and open source geospatial software products. The client has been developed as a QGIS Python plugin, whereas the backend is based on a PostgreSQL/PostGIS database stack. These are required prior to using STDM.
 
-### Installation
+###Installation
 
 STDM can be installed in two ways:
 
@@ -58,12 +58,12 @@ STDM can be installed in two ways:
     >
     > **Note:** If you have issues when downloading the plugin, first confirm if the network settings are okay. On the QGIS menu go to **“Settings -&gt; Options”** In the **“Options”** dialog box select **“Network”** tab and check your proxy settings are okay. For more details on setting up network options, please read the QGIS documentation available [here](http://docs.qgis.org/testing/en/docs/user_manual/).
 
-### License
+###License
 
 STDM is a free software; you can redistribute it and/or modify it under the terms of the GNU General Public License version 2 (GPL v2) as published by the Free Software Foundation. The full GNU General Public License is available in LICENSE.txt or [here](http://www.gnu.org/licenses/gpl-2.0.html).
     
 
-### How to Participate
+###How to Participate
 
 -   For more information, please visit [www.stdm.gltn.net](http://www.stdm.gltn.net/) or subscribe to: [lists.osgeo.org/cgi-bin/mailman/listinfo/stdm-user](http://lists.osgeo.org/cgi-bin/mailman/listinfo/stdm-user)
 

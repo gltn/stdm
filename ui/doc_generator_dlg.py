@@ -160,7 +160,7 @@ class DocumentGeneratorDialogWrapper(object):
 
         self.curr_profile = current_profile()
         #Load entity configurations
-        self._load_entity_configurations()
+        QTimer.singleShot(22, self._load_entity_configurations)
 
     def _load_entity_configurations(self):
         """

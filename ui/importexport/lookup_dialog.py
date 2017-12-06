@@ -117,13 +117,8 @@ class LookupDialog(QDialog, Ui_LookupTranslatorDialog, TranslatorDialogBase):
 
         lk_values = lk_ent.lookups()
 
-
         self.cbo_default.addItem('')
-
-        for lk_value in lk_values:
-            vt = unicode(lk_value)
-            text_value = lk_ent.values[vt]
-            self.cbo_default.addItem(text_value.value)
+        self.cbo_default.addItems(lk_values)
 
     def value_translator(self):
         """

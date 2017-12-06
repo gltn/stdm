@@ -1383,7 +1383,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
         template_str = QApplication.translate(
             'ConfigurationFileUpdater',
             'Specify the template folder '
-            'that contains your document templates.'
+            'the contains your document templates.'
         )
 
         template_path = QFileDialog.getExistingDirectory(

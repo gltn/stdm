@@ -70,7 +70,7 @@
            </size>
           </property>
           <property name="title">
-           <string>Search by:</string>
+           <string>Search By:</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_4">
            <item row="0" column="0" colspan="2">
@@ -209,7 +209,7 @@
              <x>0</x>
              <y>0</y>
              <width>486</width>
-             <height>440</height>
+             <height>475</height>
             </rect>
            </property>
            <attribute name="label">
@@ -227,7 +227,7 @@
              <x>0</x>
              <y>0</y>
              <width>486</width>
-             <height>440</height>
+             <height>475</height>
             </rect>
            </property>
            <attribute name="label">

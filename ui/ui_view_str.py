@@ -114,7 +114,7 @@ class Ui_frmManageSTR(object):
         self.toolBox.setMidLineWidth(1)
         self.toolBox.setObjectName(_fromUtf8("toolBox"))
         self.page_1 = QtGui.QWidget()
-        self.page_1.setGeometry(QtCore.QRect(0, 0, 486, 440))
+        self.page_1.setGeometry(QtCore.QRect(0, 0, 486, 475))
         self.page_1.setObjectName(_fromUtf8("page_1"))
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.page_1)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
@@ -123,7 +123,7 @@ class Ui_frmManageSTR(object):
         self.verticalLayout_2.addWidget(self.tbPropertyPreview)
         self.toolBox.addItem(self.page_1, _fromUtf8(""))
         self.page_2 = QtGui.QWidget()
-        self.page_2.setGeometry(QtCore.QRect(0, 0, 486, 440))
+        self.page_2.setGeometry(QtCore.QRect(0, 0, 486, 475))
         self.page_2.setObjectName(_fromUtf8("page_2"))
         self.verticalLayout_3 = QtGui.QVBoxLayout(self.page_2)
         self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
@@ -157,7 +157,7 @@ class Ui_frmManageSTR(object):
 
     def retranslateUi(self, frmManageSTR):
         frmManageSTR.setWindowTitle(_translate("frmManageSTR", "View Social Tenure Relationship", None))
-        self.groupBox.setTitle(_translate("frmManageSTR", "Search by:", None))
+        self.groupBox.setTitle(_translate("frmManageSTR", "Search By:", None))
         self.btnSearch.setText(_translate("frmManageSTR", "Search", None))
         self.btnClearSearch.setText(_translate("frmManageSTR", "Clear Results", None))
         self.groupBox_2.setTitle(_translate("frmManageSTR", "Search Results:", None))
