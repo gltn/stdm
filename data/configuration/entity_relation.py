@@ -64,6 +64,10 @@ class EntityRelation(object):
         self.child_column = kwargs.get('child_column', '')
         self.display_cols = kwargs.get('display_columns', [])
 
+        # Added in version 1.7
+        self.on_update_action = ''
+        self.on_delete_action = ''
+
     @property
     def parent(self):
         return self._parent
