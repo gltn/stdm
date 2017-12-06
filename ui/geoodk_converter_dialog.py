@@ -41,7 +41,7 @@ from stdm.data.configuration.db_items import DbItem
 from stdm.ui.wizard.custom_item_model import EntitiesModel
 from stdm.geoodk.geoodk_writer import GeoodkWriter
 from stdm.settings import current_profile
-from stdm.geoodk import  FormUploader
+#from stdm.geoodk import  FormUploader
 
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
