@@ -35,7 +35,7 @@ def _rename_supporting_doc_collection(base, local_cls, ref_cls, constraint):
 
 def _gen_relationship(base, direction, return_fn,
                                 attrname, local_cls, referred_cls, **kw):
-    #Disable type check for many-to-many relationships
+    # Disable type check for many-to-many relationships
     if direction is MANYTOMANY:
         kw['enable_typechecks'] = False
 
