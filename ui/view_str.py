@@ -470,6 +470,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             documents = self.details_tree_view._supporting_doc_models(
                 entity.name, str_model
             )
+
             self._load_source_documents(documents)
             # if there is supporting document,
             # expand supporting document tab

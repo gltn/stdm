@@ -712,7 +712,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         social_tenure = self.current_profile().social_tenure
 
         # Get corresponding tenure types and assign default if not set
-        for sp in sel_sp_units:
+        for i, sp in enumerate(sel_sp_units):
             # Check from the initialized collection if the tenure had been set
             t_type = self._sp_t_mapping.get(sp, None)
 
@@ -724,6 +724,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             sp_unit_tenure_dlg.set_spatial_unit_tenure_type(
                 sp,
                 t_type
+            )
+
+            sp_unit_tenure_dlg.sp_tenure_view.openPersistentEditor(
+                sp_unit_tenure_dlg.sp_tenure_view.model().index(i, 1)
             )
 
         if sp_unit_tenure_dlg.exec_() == QDialog.Accepted:

@@ -107,7 +107,7 @@
    <item row="3" column="0">
     <widget class="QCheckBox" name="chk_template_datasource">
      <property name="text">
-      <string>Use matching records in data source defined in document template</string>
+      <string>Disable record selection</string>
      </property>
     </widget>
    </item>

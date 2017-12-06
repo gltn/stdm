@@ -59,7 +59,7 @@ class SpatialUnitTenureTypeDialog(QDialog, Ui_SpatialUnitTenureDialog):
         self.sp_tenure_view.add_empty_row = False
 
         # Disable changing the spatial unit
-        self.sp_tenure_view.disable_editing_column = 0
+        # self.sp_tenure_view.disable_editing_column = 0
 
         self._sp_units, self._t_types = [], []
 

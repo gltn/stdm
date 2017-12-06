@@ -318,7 +318,6 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
             self.tabWidget.setEnabled(False)
             self.chkUseOutputFolder.setEnabled(False)
             self.chkUseOutputFolder.setChecked(False)
-            self._load_template_datasource_fields()
 
         elif state == Qt.Unchecked:
             self.tabWidget.setEnabled(True)

@@ -37,6 +37,8 @@ from stdm.data.configuration.columns import (
 )
 from stdm.data.configuration.exception import ConfigurationException
 
+from stdm.data.configuration import entity_model
+
 LOGGER = logging.getLogger('stdm')
 
 BASE_STR_VIEW = 'vw_social_tenure_relationship'
@@ -126,7 +128,8 @@ def _create_primary_entity_view(
         True,
         True,
         foreign_key_parents=fk_parent_names,
-        omit_join_statement_columns=party_col_names
+        omit_join_statement_columns=party_col_names,
+        view_name = view_name
     )
 
     party_columns, party_join = [], []
@@ -138,7 +141,8 @@ def _create_primary_entity_view(
             primary_entity, True, True, True,
             foreign_key_parents=fk_parent_names,
             omit_view_columns=omit_view_columns,
-            omit_join_statement_columns=omit_join_statement_columns
+            omit_join_statement_columns=omit_join_statement_columns,
+            view_name = view_name
         )
 
         # Set removal of all spatial unit columns apart from the id column
@@ -147,7 +151,7 @@ def _create_primary_entity_view(
             if 'id' in omit_view_columns:
                 omit_view_columns.remove('id')
 
-        view_columns = party_columns + str_columns #+ spatial_unit_columns
+        view_columns = party_columns + str_columns
 
         # Set distinct column if specified
         if not distinct_column is None:
@@ -187,16 +191,34 @@ def _create_primary_entity_view(
             is_primary=pe_is_spatial,
             foreign_key_parents=fk_parent_names,
             omit_view_columns=omit_view_columns,
-            omit_join_statement_columns=omit_join_statement_columns
+            omit_join_statement_columns=omit_join_statement_columns,
+            view_name = view_name
         )
+        custom_tenure_columns = []
+        custom_tenure_join = []
+        custom_tenure_entity = social_tenure.spu_custom_attribute_entity(
+            primary_entity
+        )
+        if custom_tenure_entity is not None:
 
-        view_columns = spatial_unit_columns + str_columns
+            custom_tenure_columns, custom_tenure_join = _entity_select_column(
+                custom_tenure_entity,
+                True,
+                join_parents=True,
+                is_primary=False,
+                foreign_key_parents=fk_parent_names,
+                omit_view_columns=omit_view_columns,
+                omit_join_statement_columns=omit_join_statement_columns,
+                view_name=view_name
+            )
+
+        view_columns = spatial_unit_columns + str_columns + custom_tenure_columns
 
         # Set distinct column if specified
         if not distinct_column is None:
             view_columns = _set_distinct_column(distinct_column, view_columns)
 
-        join_statement = str_join + spatial_unit_join
+        join_statement = str_join + spatial_unit_join + custom_tenure_join
 
         if len(view_columns) == 0:
             LOGGER.debug('There are no columns for creating the social tenure '
@@ -221,8 +243,10 @@ def _entity_select_column(
         is_primary=False,
         foreign_key_parents=None,
         omit_view_columns=None,
-        omit_join_statement_columns=None
+        omit_join_statement_columns=None,
+        view_name=None
 ):
+
     # Check if the entity exists in the database
     if not pg_table_exists(entity.name):
         msg = u'{0} table does not exist, social tenure view will not be ' \
@@ -239,7 +263,6 @@ def _entity_select_column(
 
     column_names = []
     join_statements = []
-
     columns = entity.columns.values()
 
     # Create foreign key parent collection if none is specified
@@ -247,14 +270,26 @@ def _entity_select_column(
         foreign_key_parents = {}
 
     str_entity = entity.profile.social_tenure
+    if entity in str_entity.custom_attribute_entities.values():
+        custom_tenure = True
+    else:
+        custom_tenure = False
 
+    i = 0
     for c in columns:
         if c.TYPE_INFO not in _exclude_view_column_types:
             normalized_entity_sname = entity.short_name.replace(' ', '_').lower()
 
             pseudo_column_name = u'{0}_{1}'.format(normalized_entity_sname,
                     c.name)
-            col_select_name = u'{0}.{1}'.format(entity.name, c.name)
+            # use sudo name for custom tenure entity
+            if custom_tenure:
+                col_select_name = u'{0}_1.{1}'.format(
+                    entity.name, c.name
+                )
+            else:
+                col_select_name = u'{0}.{1}'.format(entity.name, c.name)
+            # Get pseudoname to use
 
             select_column_name = u'{0} AS {1}'.format(col_select_name,
                                                       pseudo_column_name)
@@ -263,56 +298,36 @@ def _entity_select_column(
                 # add row number id instead of party.id
                 # if multi_party is allowed.
                 if str_entity.multi_party:
+                    # for party entity add use row number
                     if not entity.has_geometry_column():
                         row_id = 'row_number() OVER () AS id'
-                        column_names.append(row_id)
-                        select_column_name = select_column_name
 
-                    # else:
-                    #     # add spatial unit id as the id.
-                    #     select_column_name = col_select_name
-                    #     #  # add the social_tenure_relationship_id
-                    #     str_id = u'{0}.id AS {1}_id'.format(
-                    #         str_entity.name, str_entity.short_name.lower()
-                    #     )
-                    #     if str_id not in column_names:
-                    #         column_names.append(str_id)
+                        select_column_name = row_id
+
+                    else:
+                        # add spatial unit id as the id.
+                        col_spatial_unit_id = u'{0}.{1} AS {1}'.format(
+                            entity.name, c.name
+                        )
+                        select_column_name = col_spatial_unit_id
 
                 else:
-                    # add party_id on spatial unit view to use
-                    # [party]_supporting_document for
-                    # profiles with one party entity and no multi_party.
-                    if len(str_entity.parties) == 1 and not str_entity.multi_party and \
-                        entity.has_geometry_column():
-                        party_id = '{}_id'.format(
-                            str_entity.parties[0].short_name.lower().replace(
-                                ' ', '_'
-                            )
-                        )
-                        str_party_id = u'{0}.{1} AS {1}'.format(
-                            str_entity.name, party_id
-                        )
-                        column_names.append(str_party_id)
+                    # add party id or spatial unit as id
+                    entity_id = u'{0}.{1} AS {1}'.format(
+                        entity.name, c.name
+                    )
 
-                    select_column_name = col_select_name
-                    # if entity has a geometry column, even if not multi_party
-                    # add social_tenure_relationship_id
-                    if entity.has_geometry_column():
-                        # add the social_tenure_relationship_id
-                        str_id = u'{0}.id AS {1}_id'.format(
-                            str_entity.name, str_entity.short_name.lower()
-                        )
-                        if str_id not in column_names:
-                            column_names.append(str_id)
+                    select_column_name = entity_id
+
             # Use custom join flag
             use_custom_join = False
 
             if isinstance(c, ForeignKeyColumn) and join_parents:
                 LOGGER.debug('Creating STR: Getting parent for %s column', c.name)
+
                 fk_parent_entity = c.entity_relation.parent
 
                 parent_table = c.entity_relation.parent.name
-
 
                 LOGGER.debug('Parent found')
                 select_column_name = ''
@@ -332,10 +347,22 @@ def _entity_select_column(
 
                 # Map lookup and admin unit values by default
                 if c.TYPE_INFO == 'LOOKUP':
-                    select_column_name = u'{0}.value AS {1}'.format(
-                        table_pseudo_name,
-                        pseudo_column_name
-                    )
+                    lookup_model = entity_model(c.entity_relation.parent)
+                    lookup_model_obj = lookup_model()
+                    result = lookup_model_obj.queryObject().filter(
+                        lookup_model.code != '').filter(
+                        lookup_model.code != None).all()
+                    if len(result) == 0:
+                        select_column_name = u'{0}.value AS {1}'.format(
+                            table_pseudo_name,
+                            pseudo_column_name
+                        )
+                    else:
+                        value = u'{0}.value'.format(table_pseudo_name)
+                        code = u'{0}.code'.format(table_pseudo_name)
+                        select_column_name = u"concat({0}, ' (', {1}, ')') AS {2}".\
+                            format(value, code, pseudo_column_name)
+
                     use_custom_join = True
 
                     # Check if the column is for tenure type
@@ -348,35 +375,92 @@ def _entity_select_column(
                     use_custom_join = True
                     use_inner_join = False
 
+                elif c.TYPE_INFO == 'FOREIGN_KEY':
+                    if c.entity_relation.parent not in str_entity.parties and \
+                        c.entity_relation.parent not in str_entity.spatial_units:
+
+                        if len(c.entity_relation.display_cols) > 0:
+                            display_col_names = []
+                            for display_col in c.entity_relation.display_cols:
+                                name = u'{0}.{1}'.format(table_pseudo_name, display_col)
+                                display_col_names.append(name)
+                            select_column_name = u"concat_ws(' '::text, {0}) AS {1}".format(
+                                ', '.join(display_col_names),
+                                pseudo_column_name
+                            )
+
+                        else:
+                            if not custom_tenure:
+                                select_column_name = u'{0}.id AS {1}'.format(
+                                    table_pseudo_name,
+                                    pseudo_column_name
+                                )
+
+                        use_custom_join = True
+                        use_inner_join = False
                 # These are outer joins
                 join_type = 'LEFT JOIN'
 
                 # Use inner join only if parent entity is an STR entity and it is the current entity.
                 # Other str entities should use left join.
-                if use_inner_join and \
-                        str_entity.is_str_entity(fk_parent_entity) and fk_parent_entity == entity:
+
+                if str_entity.is_str_entity(fk_parent_entity) and \
+                                fk_parent_entity.name in view_name:
 
                     join_type = 'INNER JOIN'
 
-
                 if use_custom_join:
-                    join_statement = u'{0} {1} {2} ON {3} = {2}.{4}'.format(
-                        join_type, parent_table, table_pseudo_name,
-                        col_select_name, c.entity_relation.parent_column
-                    )
+                   # exclude replace str name with custom tenure name in join.
+                    if custom_tenure:
+                        if c.name == 'social_tenure_relationship_id':
+                            i = i + 1
+                            # pseudo_names = foreign_key_parents.get(parent_table)
+                            col_select_name = u'{0}_{1}.{2}'.format(
+                                entity.name, str(i), c.name
+                            )
+                            # Get pseudoname to use
+                            table_pseudo_name = u'{0}_{1}'.format(
+                                entity.name, str(i)
+                            )
+                            join_statement = u'{0} {1} {2} ON {3} = {2}.{4}'.format(
+                                join_type, entity.name, table_pseudo_name,
+                                col_select_name,
+                                c.entity_relation.parent_column
+                            )
+                            join_statements = [join_statement] + join_statements
+
+                        else:
+                            join_statement = u'{0} {1} {2} ON {3} = {2}.{4}'.format(
+                                join_type, parent_table, table_pseudo_name,
+                                col_select_name,
+                                c.entity_relation.parent_column
+                            )
+                            join_statements.append(join_statement)
+
+                    else:
+
+                        join_statement = u'{0} {1} {2} ON {3} = {2}.{4}'.format(
+                            join_type, parent_table, table_pseudo_name,
+                            col_select_name, c.entity_relation.parent_column
+                        )
+                        join_statements.append(join_statement)
+
 
                 else:
-                    join_statement = u'{0} {1} ON {2} = {1}.{3}'.format(
-                        join_type, parent_table, col_select_name,
-                        c.entity_relation.parent_column
-                    )
+
                 # Assert if the column is in the list of omitted join columns
                 #
                 # if c.name in omit_join_statement_columns:
                 #     if 'INNER JOIN' in join_statement:
                 #         join_statements.append(join_statement)
                 # else:
-                join_statements.append(join_statement)
+
+                    join_statement = u'{0} {1} ON {2} = {1}.{3}'.format(
+                        join_type, parent_table, col_select_name,
+                        c.entity_relation.parent_column
+                    )
+                    join_statements.append(join_statement)
+
 
             # Assert if the column is in the list of omitted view columns
             if c.name not in omit_view_columns:

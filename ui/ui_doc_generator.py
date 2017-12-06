@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_doc_generator.ui'
 #
-# Created: Fri Sep 29 18:38:51 2017
-#      by: PyQt4 UI code generator 4.11.3
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -127,7 +126,7 @@ class Ui_DocumentGeneratorDialog(object):
         self.rbExpPDF.setText(_translate("DocumentGeneratorDialog", "Export as PDF", None))
         self.gbDocNaming.setTitle(_translate("DocumentGeneratorDialog", "Output Document Naming:", None))
         self.label_2.setText(_translate("DocumentGeneratorDialog", "Select the fields whose values will be used to name the output document files.", None))
-        self.chk_template_datasource.setText(_translate("DocumentGeneratorDialog", "Use matching records in data source defined in document template", None))
+        self.chk_template_datasource.setText(_translate("DocumentGeneratorDialog", "Disable record selection", None))
         self.label.setText(_translate("DocumentGeneratorDialog", "<html><head/><body><p>Click on the plus button below to add a record from the database.</p></body></html>", None))
         self.groupBox.setTitle(_translate("DocumentGeneratorDialog", "Template:", None))
         self.btnSelectTemplate.setText(_translate("DocumentGeneratorDialog", "Select document template", None))
@@ -135,3 +134,4 @@ class Ui_DocumentGeneratorDialog(object):
         self.btnShowOutputFolder.setText(_translate("DocumentGeneratorDialog", "Open output folder...", None))
 
 from customcontrols import ModelAtrributesView
+from stdm import resources_rc
