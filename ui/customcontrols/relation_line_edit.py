@@ -242,8 +242,19 @@ class RelatedEntityLineEdit(ForeignKeyLineEdit):
         QApplication.processEvents()
         for c in display_columns:
             if hasattr(model_object, c):
-                display_vals.append(getattr(model_object, c))
 
+                display_val = getattr(model_object, c)
+                if isinstance(display_val, bool):
+                    if display_val:
+                        display_val = QApplication.translate(
+                            'DateEditValueHandler', 'Yes'
+                        )
+                    else:
+                        display_val = QApplication.translate(
+                            'DateEditValueHandler', 'No'
+                        )
+
+                display_vals.append(display_val)
         try:
             return cls.COLUMN_SEPARATOR.join(display_vals)
 
@@ -258,7 +269,15 @@ class RelatedEntityLineEdit(ForeignKeyLineEdit):
                 'Please use the form to edit data.'
             )
         except TypeError:
-            pass
+            QMessageBox.warning(
+                None,
+                QApplication.translate(
+                    'DateEditValueHandler',
+                    "Display Error"
+                ),
+                'Could not set display name. '
+                'Please check if the data is saved.'
+            )
 
     def format_display(self):
         #Display based on the configured display columns.
