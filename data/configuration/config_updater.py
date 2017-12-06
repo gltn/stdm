@@ -151,29 +151,34 @@ class ConfigurationSchemaUpdater(QObject):
         #Get existing foreign key names
         fks = profile_foreign_keys(profile)
 
-        #Drop removed relations
-        for er in profile.removed_relations:
-            #Assert if the foreign key exists and skip drop if it exists
-            if er.autoname in fks:
-                continue
+        try:
 
-            status = er.drop_foreign_key_constraint()
+            # Drop removed relations
+            for er in profile.removed_relations:
+                # Assert if the foreign key exists and skip drop if it exists
+                if er.autoname in fks:
+                    continue
 
-            if not status:
-                msg = self.tr(u'Error in removing {0} foreign key '
-                              'constraint.'.format(er.autoname))
-                #self.update_progress.emit(ConfigurationSchemaUpdater.WARNING, msg)
+                status = er.drop_foreign_key_constraint()
 
-            else:
-                del profile.relations[er.name]
+                if not status:
+                    msg = self.tr(u'Error in removing {0} foreign key '
+                                  'constraint.'.format(er.autoname))
 
-                msg = self.tr(u'{0} foreign key constraint successfully '
-                              'removed.'.format(er.autoname))
-                #self.update_progress.emit(ConfigurationSchemaUpdater.INFORMATION, msg)
+                else:
+                    del profile.relations[er.name]
 
-            QgsApplication.processEvents()
+                    msg = self.tr(u'{0} foreign key constraint successfully '
+                                  'removed.'.format(er.autoname))
 
+                QgsApplication.processEvents()
+
+                LOGGER.debug(msg)
+        except ConfigurationException as ce:
+            msg = unicode(ce)
+            self.update_progress.emit(ConfigurationSchemaUpdater.ERROR, msg)
             LOGGER.debug(msg)
+            self.update_completed.emit(False)
 
     def update_profile(self, profile):
         """

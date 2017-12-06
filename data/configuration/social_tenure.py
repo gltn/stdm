@@ -447,6 +447,7 @@ class SocialTenure(Entity):
         fk_col_name = self._foreign_key_column_name(sp_unit_entity)
 
         sp_unit_fk = ForeignKeyColumn(fk_col_name, self)
+        sp_unit_fk.on_delete_action = ForeignKeyColumn.CASCADE
         sp_unit_fk.set_entity_relation_attr('parent', sp_unit_entity)
         sp_unit_fk.set_entity_relation_attr('parent_column', 'id')
 
@@ -654,6 +655,7 @@ class SocialTenure(Entity):
         fk_col_name = self._foreign_key_column_name(party_entity)
 
         party_fk = ForeignKeyColumn(fk_col_name, self)
+        party_fk.on_delete_action = ForeignKeyColumn.CASCADE
         party_fk.set_entity_relation_attr('parent', party_entity)
         party_fk.set_entity_relation_attr('parent_column', 'id')
 

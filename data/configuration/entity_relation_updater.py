@@ -48,7 +48,7 @@ def _table_col_attr(table, col_names):
     return col_attrs
 
 
-def fk_constraint(child, child_cols, parent, parent_cols):
+def fk_constraint(child, child_cols, parent, parent_cols, **kwargs):
     """
     Creates a ForeignKeyConstraint object based on the parent and child
     table information.
@@ -60,6 +60,9 @@ def fk_constraint(child, child_cols, parent, parent_cols):
     :type parent: str
     :param parent_cols: Referred column names in the other table.
     :type parent_cols: list
+    :param kwargs: Additional optional arguments during initialization of 
+    FK constraint.
+    :type kwargs: dict
     :return: A ForeignKeyConstraint object or None if some of the information
     is invalid.
     :rtype: ForeignKeyConstraint
@@ -104,11 +107,11 @@ def fk_constraint(child, child_cols, parent, parent_cols):
     child_col_attrs = _table_col_attr(child_table, child_cols)
     parent_col_attrs = _table_col_attr(parent_table, parent_cols)
 
-    #Return None if one of the column attributes is None
+    # Return None if one of the column attributes is None
     if len(child_col_attrs) == 0 or len(parent_col_attrs) == 0:
         return None
 
-    return ForeignKeyConstraint(child_col_attrs, parent_col_attrs)
+    return ForeignKeyConstraint(child_col_attrs, parent_col_attrs, **kwargs)
 
 
 def fk_constraint_from_er(entity_relation):
@@ -119,16 +122,28 @@ def fk_constraint_from_er(entity_relation):
     :return: A ForeignKeyConstraint object.
     :rtype: ForeignKeyConstraint
     """
-    #Validate that the referenced columns exist in the respective tables.
-    #Parent table
+    # Validate that the referenced columns exist in the respective tables.
+    # Parent table
     parent = entity_relation.parent.name
     parent_col = entity_relation.parent_column
 
-    #Child table
+    # Child table
     child = entity_relation.child.name
     child_col = entity_relation.child_column
 
-    return fk_constraint(child, [child_col], parent, [parent_col])
+    fk_opts = dict()
+
+    # Referential constraint actions
+    fk_opts['onupdate'] = entity_relation.on_update_action
+    fk_opts['ondelete'] = entity_relation.on_delete_action
+
+    return fk_constraint(
+        child,
+        [child_col],
+        parent,
+        [parent_col],
+        **fk_opts
+    )
 
 
 def create_foreign_key_constraint(entity_relation):
