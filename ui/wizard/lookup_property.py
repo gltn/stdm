@@ -25,7 +25,7 @@ from ui_lookup_property import Ui_LookupProperty
 from stdm.data.configuration.entity_relation import EntityRelation
 from create_lookup import LookupEditor
 
-EX_VALUE_LIST = ['check_tenure_type']
+EX_VALUE_LIST = []
 
 class LookupProperty(QDialog, Ui_LookupProperty):
     """

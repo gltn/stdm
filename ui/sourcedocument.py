@@ -214,6 +214,7 @@ class SourceDocumentManager(QObject):
 
                 #Check if the file exists
                 if QFile.exists(path):
+
                     network_location = network_document_path()
 
                     if not network_location:
@@ -274,10 +275,6 @@ class SourceDocumentManager(QObject):
                             path, entity.name, doc_type_value, doc_type_id
                         )
                         container.addWidget(docWidg)
-
-        else:
-            print "Nothing found"
-
 
     def onFileUploadComplete(self, documenttype):
         """

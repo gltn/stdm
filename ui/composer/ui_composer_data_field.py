@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_composer_data_field.ui'
 #
-# Created: Sat May 17 05:01:36 2014
-#      by: PyQt4 UI code generator 4.10.3
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,7 +25,7 @@ except AttributeError:
 class Ui_frmComposerFieldEditor(object):
     def setupUi(self, frmComposerFieldEditor):
         frmComposerFieldEditor.setObjectName(_fromUtf8("frmComposerFieldEditor"))
-        frmComposerFieldEditor.resize(281, 76)
+        frmComposerFieldEditor.resize(281, 83)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -36,11 +35,16 @@ class Ui_frmComposerFieldEditor(object):
         self.gridLayout.setVerticalSpacing(11)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.cboDataField = QtGui.QComboBox(frmComposerFieldEditor)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.cboDataField.sizePolicy().hasHeightForWidth())
+        self.cboDataField.setSizePolicy(sizePolicy)
         self.cboDataField.setMinimumSize(QtCore.QSize(0, 30))
         self.cboDataField.setObjectName(_fromUtf8("cboDataField"))
         self.gridLayout.addWidget(self.cboDataField, 1, 1, 1, 1)
         self.label_2 = QtGui.QLabel(frmComposerFieldEditor)
-        self.label_2.setMaximumSize(QtCore.QSize(80, 16777215))
+        self.label_2.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.label_2.setObjectName(_fromUtf8("label_2"))
         self.gridLayout.addWidget(self.label_2, 1, 0, 1, 1)
         self.label = QtGui.QLabel(frmComposerFieldEditor)
@@ -53,7 +57,7 @@ class Ui_frmComposerFieldEditor(object):
         QtCore.QMetaObject.connectSlotsByName(frmComposerFieldEditor)
 
     def retranslateUi(self, frmComposerFieldEditor):
-        frmComposerFieldEditor.setWindowTitle(_translate("frmComposerFieldEditor", "Table Column Editor", None))
+        frmComposerFieldEditor.setWindowTitle(_translate("frmComposerFieldEditor", "Field Selector", None))
         self.label_2.setText(_translate("frmComposerFieldEditor", "Data Field", None))
         self.label.setText(_translate("frmComposerFieldEditor", "Field", None))
 

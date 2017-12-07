@@ -3,7 +3,7 @@
 Name                 : Database Registry Configuration
 Description          : Class for reading and writing database settings for
                        STDM stored in the registry
-Date                 : 24/May/2013 
+Date                 : 24/May/2013
 copyright            : (C) 2015 by UN-Habitat and Implementing partners
 email                : stdm@unhabitat.org
  ***************************************************************************/
@@ -21,16 +21,18 @@ email                : stdm@unhabitat.org
 from .connection import DatabaseConnection
 from stdm.settings.registryconfig import RegistryConfig
 
+
 class DatabaseConfig(object):
     """
     Reads and writes database settings in the registry.
     """
+
     def __init__(self):
         self.host = "Host"
-        self.port = "Port"    
-        self.db_name = "Database"    
+        self.port = "Port"
+        self.db_name = "Database"
         self.reg_config = RegistryConfig()
-        
+
     def read(self):
         '''
         Get the database connection properties
@@ -39,9 +41,10 @@ class DatabaseConfig(object):
 
         if len(db_props) < 3:
             return None
-        else:            
-            return DatabaseConnection(db_props[self.host], db_props[self.port], db_props[self.db_name])
-        
+        else:
+            return DatabaseConnection(db_props[self.host], db_props[self.port],
+                                      db_props[self.db_name])
+
     def write(self, db_connection):
         '''
         Writes the database connection settings to the registry
@@ -52,4 +55,3 @@ class DatabaseConfig(object):
         db_settings[self.db_name] = db_connection.Database
 
         self.reg_config.write(db_settings)
-

@@ -23,7 +23,8 @@ from PyQt4.QtGui import (
     QDialog,
     QApplication,
     QMessageBox,
-    QRegExpValidator
+    QRegExpValidator,
+    QValidator
 )
 
 from ui_copy_profile import Ui_dlgCopyProfile 
@@ -46,10 +47,46 @@ class CopyProfileEditor(QDialog, Ui_dlgCopyProfile):
         self.edtDesc.setText(self.orig_desc)
         self.edtName.setText(self.copy_name)
         self.edtName.setFocus()
-        name_regex = QRegExp('^[A-Za-z0-9_\s]*$')
-        name_validator = QRegExpValidator(name_regex)
-        self.edtName.setValidator(name_validator)
-        
+        self.edtName.textChanged.connect(self.validate_text)
+
+    def validate_text(self, text):
+        """
+        Validates and updates the entered text if necessary.
+        Spaces are replaced by _ and capital letters are replaced by small.
+        :param text: The text entered
+        :type text: String
+        """
+        text_edit = self.sender()
+        cursor_position = text_edit.cursorPosition()
+        text_edit.setValidator(None)
+        if len(text) == 0:
+            return
+        locale = QSettings().value("locale/userLocale")[0:2]
+
+        if locale == 'en':
+            name_regex = QRegExp('^(?=.{0,40}$)[ _a-zA-Z][a-zA-Z0-9_ ]*$')
+            name_validator = QRegExpValidator(name_regex)
+            text_edit.setValidator(name_validator)
+            QApplication.processEvents()
+            last_character = text[-1:]
+            state = name_validator.validate(text, text.index(last_character))[0]
+            if state != QValidator.Acceptable:
+                self.show_notification('"{}" is not allowed at this position.'.
+                                       format(last_character)
+                                       )
+                text = text[:-1]
+
+        # remove space and underscore at the beginning of the text
+        if len(text) > 1:
+            if text[0] == ' ' or text[0] == '_':
+                text = text[1:]
+
+        self.blockSignals(True)
+        text_edit.setText(text)
+        text_edit.setCursorPosition(cursor_position)
+        self.blockSignals(False)
+        text_edit.setValidator(None)
+
     def format_name(self, txt):
         ''''remove any trailing spaces in the name and replace them underscore'''
         formatted_name = txt.strip().replace(' ', "_")
@@ -64,12 +101,22 @@ class CopyProfileEditor(QDialog, Ui_dlgCopyProfile):
         listen to user OK action
         '''
         if self.edtName.text() == '':
-            self.error_info_message(QApplication.translate("CopyEditor", "Please enter a profile name."))
+            self.error_info_message(
+                QApplication.translate(
+                    "CopyEditor", "Please enter a profile name."
+                )
+            )
             return
 
         # avoid existing profile names
         if self.edtName.text() in self.profile_names:
-            self.error_info_message(QApplication.translate("CopyEditor", "Entered name is already in use. Please enter another profile name."))
+            self.error_info_message(
+                QApplication.translate(
+                    "CopyEditor",
+                    "Entered name is already in use. "
+                    "Please enter another profile name."
+                )
+            )
             return
 
         self.add_profile()

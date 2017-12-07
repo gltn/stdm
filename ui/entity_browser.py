@@ -319,7 +319,8 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         formatted_name = format_name(
             self._entity.short_name
         )
-        return u'{0} {1}'.format(formatted_name, records)
+
+        return u'{} {}'.format(formatted_name, records)
 
     def setCellFormatters(self,formattermapping):
         '''
@@ -340,7 +341,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         This is for improved user experience i.e. to prevent the dialog from taking
         long to load.
         '''
-        self.setWindowTitle(self.title())
+        self.setWindowTitle(unicode(self.title()))
 
         if self._data_initialized:
             return
@@ -381,11 +382,13 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         #Get number of records
         numRecords = entity.queryObject().count()
 
-        rowStr = "row" if numRecords == 1 else "rows"
-        windowTitle = "{0} - {1} {2}".format(
-            unicode(self.title()),
-            unicode(QApplication.translate("EntityBrowser",
-                                           str(numRecords))),rowStr)
+        rowStr = QApplication.translate('EntityBrowser', 'row') \
+            if numRecords == 1 \
+            else QApplication.translate('EntityBrowser', 'rows')
+        windowTitle = u"{0} - {1} {2}".format(
+            self.title(), numRecords, rowStr
+        )
+
         self.setWindowTitle(windowTitle)
 
         return numRecords

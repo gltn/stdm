@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_property_preview.ui'
 #
-# Created: Thu Oct 16 13:32:44 2014
-#      by: PyQt4 UI code generator 4.10.3
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -128,9 +127,10 @@ class Ui_frmPropertyPreview(object):
         self.label.setText(_translate("frmPropertyPreview", "Zoom level", None))
         self.groupBox_2.setTitle(_translate("frmPropertyPreview", "Choose Base Layer", None))
         self.rbGMaps.setText(_translate("frmPropertyPreview", "Google Maps", None))
-        self.rbOSM.setText(_translate("frmPropertyPreview", "Open Street Maps", None))
+        self.rbOSM.setText(_translate("frmPropertyPreview", "OpenStreetMaps", None))
         self.label_2.setText(_translate("frmPropertyPreview", "Web overlay may vary from actual representation in the local map.", None))
         frmPropertyPreview.setTabText(frmPropertyPreview.indexOf(self.web), _translate("frmPropertyPreview", "Web", None))
 
 from PyQt4 import QtWebKit
 from mirror_map import MirrorMap
+from stdm import resources_rc
