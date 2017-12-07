@@ -594,9 +594,12 @@ def lookup_parent_entity(profile, col):
     :param profile:  Object
     :param col: The lookup's child column name
     :type col: String
-    :return: List of parent lookup entity
-    :rtype: List
+    :return: Parent lookup entity
+    :rtype: Object
     """
+    # for r in profile.relations.values():
+    #     if r.child_column == col and 'check_' in r.parent.name:
+    #         print vars(r.parent)
     parent_entity = [
         r.parent for r in profile.relations.values()
         if r.child_column == col and 'check_' in r.parent.name
@@ -781,31 +784,14 @@ def entity_attr_to_model(entity, attr, value):
 
     return result
 
-def lookup_id_from_value(entity, lookup_value):
-        """
-        Coverts other column values to id value
-        of the same table.
-        :param entity: Entity
-        :type entity: Class
-        :param attr_obj: The source column object
-        :type attr_obj: Object
-        :param attr_val: Any value of a source column
-        :type attr_val: Any
-        :return: The Id of the entity or the attribute
-        value if no id is found or the attribute is not valid.
-        :rtype: Integer or NoneType
-        """
-        return entity_attr_to_id(entity, 'value', lookup_value)
-
-
-def entity_attr_to_id(entity, col_name, attr_val, lower=False):
+def entity_attr_to_id(entity, attr_obj, attr_val, lower=False):
     """
     Coverts other column values to id value
     of the same table.
     :param entity: Entity
     :type entity: Class
-    :param col_name: The table column name
-    :type col_name: String
+    :param attr_obj: The source column object
+    :type attr_obj: Object
     :param attr_val: Any value of a source column
     :type attr_val: Any
     :return: The Id of the entity or the attribute
@@ -813,24 +799,17 @@ def entity_attr_to_id(entity, col_name, attr_val, lower=False):
     :rtype: Integer or NoneType
     """
     doc_type_model = entity_model(entity)
-
     doc_type_obj = doc_type_model()
-
-    model_col = getattr(doc_type_model, col_name)
-    if model_col is None:
-        raise AttributeError('Specified column does not exist')
-
     if lower:
 
         result = doc_type_obj.queryObject().filter(
-            func.lower(col_name) == func.lower(attr_val)
+            func.lower(attr_obj) == func.lower(attr_val)
         ).first()
 
     else:
         result = doc_type_obj.queryObject().filter(
-            model_col == attr_val
+            attr_obj == attr_val
         ).first()
-
     if result is not None:
         attr_id = getattr(
             result,

@@ -225,10 +225,11 @@ class ConfigurationSchemaUpdater(QObject):
 
             if action != DbItem.NONE:
                 action_txt = unicode(self._action_text(action))
-                trans_msg = u'{0} {1} entity...'.format(
-                    action_txt.capitalize(), e.short_name)
+                entity_text = self.tr('entity')
+                trans_msg = u'{0} {1} {2}...'.format(
+                    action_txt.capitalize(), e.short_name, entity_text)
 
-                msg = self.tr(trans_msg)
+                msg = trans_msg
 
                 LOGGER.debug(trans_msg)
 
