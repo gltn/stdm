@@ -48,7 +48,6 @@ from stdm.utils.util import setComboCurrentIndexWithText
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.geoodk.importer.uuid_extractor import InstanceUUIDExtractor
 from stdm.ui.wizard.custom_item_model import EntitiesModel
-from stdm.data.usermodels import listEntityViewer
 from stdm.geoodk.importer import EntityImporter
 from stdm.settings.projectionSelector import ProjectionSelector
 from stdm.geoodk.importer import ImportLogger

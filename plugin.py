@@ -773,7 +773,7 @@ class STDMQGISLoader(object):
         # Mobile content menu container
         geoodk_mobile_dataMenu = QMenu(self.stdmMenu)
         geoodk_mobile_dataMenu.setObjectName("MobileMenu")
-        geoodk_mobile_dataMenu.setIcon(QIcon(":/plugins/stdm/images/icons/mobile-data-management.png"))
+        geoodk_mobile_dataMenu.setIcon(QIcon(":/plugins/stdm/images/icons/mobile_data_management.png"))
         geoodk_mobile_dataMenu.setTitle(QApplication.translate("GeoODKMobileSettings", "Mobile Settings"))
 
         geoodkBtn = QToolButton()
@@ -781,7 +781,7 @@ class STDMQGISLoader(object):
         # Required by module loader for those widgets that need to be inserted into the container
         geoodkBtn.setObjectName(adminObjName)
         geoodkBtn.setToolTip(adminObjName)
-        geoodkBtn.setIcon(QIcon(":/plugins/stdm/images/icons/mobile-data-management.png"))
+        geoodkBtn.setIcon(QIcon(":/plugins/stdm/images/icons/mobile_data_management.png"))
         geoodkBtn.setPopupMode(QToolButton.InstantPopup)
 
         geoodkMenu = QMenu(geoodkBtn)

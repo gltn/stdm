@@ -22,7 +22,7 @@ import os
 from PyQt4.QtXml import QDomDocument
 from PyQt4.QtCore import QFile, QIODevice
 from stdm.settings import current_profile
-from stdm.utils.util import entity_attr_to_id, lookup_id_from_value
+from stdm.utils.util import entity_attr_to_id, entity_attr_to_model
 from stdm.data.configuration import entity_model
 from stdm.geoodk.importer.geometry_provider import STDMGeometry
 from stdm.data.configuration.columns import GeometryColumn
@@ -276,7 +276,7 @@ class Save2DB:
         # Create document container
         doc_container = QVBoxLayout()
         supporting_doc_entity = self.entity.supporting_doc.document_type_entity
-        document_type_id = entity_attr_to_id(supporting_doc_entity, 'value', doc)
+        document_type_id = entity_attr_to_id(supporting_doc_entity, 'value', doc, lower=False)
         # Register container
         self._doc_manager.registerContainer(
             doc_container,
@@ -352,6 +352,8 @@ class Save2DB:
         self.key = self.model.id
         return self.key
 
+    #def model_object_formatter(self):
+
     def column_info(self):
         """
 
@@ -372,6 +374,14 @@ class Save2DB:
         self.geom = srid
         return self.geom
 
+    def id_from_model_object(self, obj):
+        """
+        We need to obtian id from object instance
+        :param obj:
+        :return:
+        """
+        return obj.id
+
     def attribute_formatter(self, col_type, col_prop, var):
         """
 
@@ -383,7 +393,8 @@ class Save2DB:
             if not len(var) > 3 and var != 'Yes' and var != 'No':
                 return entity_attr_to_id(col_prop.parent, "code", var)
             if len(var) < 4:
-                return lookup_id_from_value(col_prop.parent, var)
+                obj_isnt = entity_attr_to_model(col_prop.parent, 'value', var)
+                return self.id_from_model_object(obj_isnt)
             else:
                 return None
         elif col_type == 'ADMIN_SPATIAL_UNIT':
@@ -398,7 +409,8 @@ class Save2DB:
             if not len(var) > 3:
                 return entity_attr_to_id(col_prop.association.first_parent, "code", var)
             else:
-                return lookup_id_from_value(col_prop.association.first_parent, var)
+                obj_instance = entity_attr_to_model(col_prop.association.first_parent,'value', var)
+                return self.id_from_model_object(obj_instance)
         elif col_type == 'GEOMETRY':
             defualt_srid = 0
             geom_provider = STDMGeometry(var)
