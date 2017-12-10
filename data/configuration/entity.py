@@ -108,6 +108,9 @@ class Entity(QObject, TableItem):
         self.columns = RenameableKeyDict()
         self.updated_columns = OrderedDict()
 
+        # Added in version 1.7
+        self.label = ''
+
         '''
         We will always create an ID column due to a bug in SQLAlchemy-migrate
         as setting the 'id' column as a primary key does not create a serial
@@ -146,7 +149,7 @@ class Entity(QObject, TableItem):
 
         # Ensure prefix is not duplicated in the names
         prfx = self.profile.prefix
-        prefix_idx = name.find('{}_'.format(prfx), 0, len(prfx) + 1)
+        prefix_idx = name.find(u'{}_'.format(prfx), 0, len(prfx) + 1)
 
         # If there is no prefix then append
         if prefix_idx == -1 and not self.is_global:
@@ -190,6 +193,18 @@ class Entity(QObject, TableItem):
         """
         sc = SerialColumn('id', self)
         self.add_column(sc)
+
+    def ui_display(self):
+        """
+        :return: Returns a more friendly name for the entity as this will 
+        allow non-ASCII characters to be used to describe the entity in a 
+        user-interface context. The 'label' attribute is given preference, 
+        otherwise the short_name is used.
+        :rtype: str
+        """
+        return self.label or self.short_name.replace(
+            '_', ' '
+        ).title()
 
     def add_column(self, column):
         """

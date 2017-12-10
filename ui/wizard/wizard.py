@@ -1068,7 +1068,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 self._custom_attr_entities[tt] = ent
 
             # check if social tenure relationship has been setup
-            str_table = '{}_social_tenure_relationship'.format(c_profile.prefix)
+            str_table = u'{}_social_tenure_relationship'.format(c_profile.prefix)
             self.set_str_controls(str_table)
 
             # Set validity date ranges
@@ -1142,13 +1142,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         error_msg = "Please enter {0} !"
         if self.empty_text(self.edtDocPath.text()):
-            return False, self.tr(error_msg.format("'supporting documents path'"))
+            return False, self.tr(error_msg.format(u"'supporting documents path'"))
 
         if self.empty_text(self.edtOutputPath.text()):
-            return False, self.tr(error_msg.format("'documents output path'"))
+            return False, self.tr(error_msg.format(u"'documents output path'"))
 
         if self.empty_text(self.edtTemplatePath.text()):
-            return False, self.tr(error_msg.format("'documents template path'"))
+            return False, self.tr(error_msg.format(u"'documents template path'"))
 
         return True, "Ok."
 
@@ -1712,7 +1712,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         profile_name = unicode(self.cboProfile.currentText())
 
         if self.cboProfile.count() == 1:
-            msg = self.tr('{0} profile cannot be deleted. At least one '
+            msg = self.tr(u'{0} profile cannot be deleted. At least one '
             'profile is required to exist in the '
             'STDM configuration. ').format(profile_name)
 
@@ -2332,7 +2332,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         row_id = self.tbvColumns.selectedIndexes()[0].row()
         col_name = self.tbvColumns.model().data(
                 self.tbvColumns.model().index(row_id, 0))
-        column = model_item.entities()[str(col_name)]
+        column = model_item.entities()[unicode(col_name)]
         return row_id, column, model_item
 
     def delete_column(self):
@@ -2457,7 +2457,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         # the current profile
         dependencies = self.all_column_dependencies(profile)
         if self.find_lookup(lookup.name, dependencies):
-            self.show_message(self.tr("Cannot delete '{0}' lookup!\n "
+            self.show_message(self.tr(u"Cannot delete '{0}' lookup!\n "
             "Lookup is been used by existing columns."
             "".format(lookup.name, lookup.name)))
             return

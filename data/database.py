@@ -261,7 +261,6 @@ class Model(object):
             raise db_error
             
     def delete(self):
-        print dir(self)
         op_result = True
 
         db = STDMDb.instance()

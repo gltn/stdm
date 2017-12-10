@@ -23,13 +23,13 @@ def _bind_metadata(metadata):
         metadata.bind = STDMDb.instance().engine
 
 def _rename_supporting_doc_collection(base, local_cls, ref_cls, constraint):
-    #Rename document collection property in an entity model
+    # Rename document collection property in an entity model
     referred_name = ref_cls.__name__
 
     if referred_name == 'EntitySupportingDocumentProxy':
         return 'documents'
     else:
-        #Default
+        # Default
         return ref_cls.__name__.lower() + '_collection'
 
 
