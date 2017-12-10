@@ -63,9 +63,7 @@ from stdm.utils.util import (
     format_name,
     entity_display_columns
 )
-from stdm.utils.util import (
-    entity_display_columns
-)
+
 from stdm.settings.registryconfig import (
     last_document_path,
     set_last_document_path
@@ -489,6 +487,7 @@ class STRType(ComponentUtility):
         """
         party_row_data = []
         model = table_view.model()
+
         for col in range(model.columnCount()):
             party_id_idx = model.index(row, col)
             party_row_data.append(model.data(party_id_idx, Qt.DisplayRole))
@@ -510,7 +509,7 @@ class STRType(ComponentUtility):
         headers = []
         # Load headers
         if db_model is not None:
-            entity_display_columns(self.party_1)
+
             # Append str type if the method
             # is used for str_type
             str_type_header = QApplication.translate(
@@ -522,9 +521,9 @@ class STRType(ComponentUtility):
             # First (ID) column will always be hidden
             headers.append(str_type_header)
             headers.append(share_header)
-
-            for col in entity_display_columns(self.party_1):
-                headers.append(format_name(col))
+            display_columns = entity_display_columns(self.party_1, True)
+            for col in display_columns.values():
+                headers.append(col)
             return headers
 
     def create_str_type_table(self):
@@ -622,7 +621,14 @@ class CustomTenureInfo(object):
         self.entity_editors = OrderedDict()
 
 
-    def display_columns(self, party_entity):
+    def textual_display_columns(self, party_entity):
+        """
+        Returns the only textual columns.
+        :param party_entity: The entity object
+        :type party_entity: Object
+        :return: Textual columns
+        :rtype: List
+        """
         return entity_display_columns(party_entity, False, [
             'SERIAL',
             'INT',
@@ -631,6 +637,7 @@ class CustomTenureInfo(object):
             'DATETIME',
             'BOOL',
             'LOOKUP',
+            'FOREIGN_KEY',
             'ADMIN_SPATIAL_UNIT',
             'MULTIPLE_SELECT',
             'PERCENT'
@@ -679,7 +686,7 @@ class CustomTenureInfo(object):
                 exclude_columns=['social_tenure_relationship_id']
             )
 
-        display_columns = self.display_columns(party_entity)
+        display_columns = self.textual_display_columns(party_entity)
         if len(display_columns) > 0:
             party_title = getattr(party_model, display_columns[0], None)
         else:
