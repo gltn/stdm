@@ -2199,6 +2199,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
             if result == 1:
                 entity.add_column(editor.column)
+
                 if editor.type_info == 'LOOKUP':
                     self.clear_lookup_view()
                     self.populate_lookup_view(profile)
@@ -2207,8 +2208,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 # add this entity to STR spatial unit list of selection.
                 if editor.type_info == 'GEOMETRY':
                     self.STR_spunit_model.add_entity(entity)
-                self.tbvColumns.selectRow(self.tbvColumns.model().rowCount()-1)
+
+                row = self.tbvColumns.model().rowCount()-1
+                self.tbvColumns.selectRow(row)
                 self.tbvColumns.scrollToBottom()
+
+                midx = self.tbvColumns.model().index(row, 0)
+                profile.update_entity_row_index(editor.column.name, midx.row())
 
     def edit_column(self):
         """

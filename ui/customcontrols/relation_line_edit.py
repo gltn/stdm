@@ -208,6 +208,7 @@ class ForeignKeyLineEdit(QLineEdit):
         :param id: Primary key of the referenced entity.
         :type id: int
         """
+        QApplication.processEvents()
         model = self.parent_entity_model()
 
         if model is None:
@@ -238,11 +239,25 @@ class RelatedEntityLineEdit(ForeignKeyLineEdit):
         """
         display_columns = column.entity_relation.display_cols
         display_vals = []
-
+        QApplication.processEvents()
         for c in display_columns:
             if hasattr(model_object, c):
-                display_vals.append(getattr(model_object, c))
 
+                display_val = getattr(model_object, c)
+                if isinstance(display_val, bool):
+                    if display_val:
+                        display_val = QApplication.translate(
+                            'DateEditValueHandler', 'Yes'
+                        )
+                    else:
+                        display_val = QApplication.translate(
+                            'DateEditValueHandler', 'No'
+                        )
+                if display_val is None:
+                    display_val = ''
+
+                display_vals.append(unicode(display_val))
+                
         try:
             return cls.COLUMN_SEPARATOR.join(display_vals)
 
@@ -263,7 +278,7 @@ class RelatedEntityLineEdit(ForeignKeyLineEdit):
         #Display based on the configured display columns.
         if self.current_item is None:
             return
-
+        QApplication.processEvents()
         display_value = RelatedEntityLineEdit.process_display(
             self.column,
             self.current_item
