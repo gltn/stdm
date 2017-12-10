@@ -253,8 +253,11 @@ class RelatedEntityLineEdit(ForeignKeyLineEdit):
                         display_val = QApplication.translate(
                             'DateEditValueHandler', 'No'
                         )
+                if display_val is None:
+                    display_val = ''
 
-                display_vals.append(display_val)
+                display_vals.append(unicode(display_val))
+                
         try:
             return cls.COLUMN_SEPARATOR.join(display_vals)
 
