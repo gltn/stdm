@@ -1214,7 +1214,9 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                     custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
                         spatial_unit
                     )
-                    if custom_attr_entity is not None:
+
+
+                    if custom_attr_entity is not None and len(custom_attr_entity.columns) > 2:
                         custom_attr_model = entity_attr_to_model(
                             custom_attr_entity,
                             'social_tenure_relationship_id', record_dict['id'])
