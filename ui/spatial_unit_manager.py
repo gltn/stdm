@@ -141,6 +141,8 @@ class SpatialUnitManagerDockWidget(
         :rtype:
         """
         entity = self._curr_profile.entity_by_name(self.curr_lyr_table)
+        if not hasattr(layer, 'attributeTableConfig'):
+            return 
         config = layer.attributeTableConfig()
         columns = config.columns()
         updated_columns = []
@@ -677,9 +679,11 @@ class SpatialUnitManagerDockWidget(
 
     def geom_columns(self, entity):
         """
-        Get the geometry column
-        :return:
-        :rtype:
+        Returns the geometry columns of an entity.
+        :param entity: The entity object.
+        :type entity: Object
+        :return: List of Geometry column objects
+        :rtype: List
         """
         geom_column = [
             column
