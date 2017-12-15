@@ -119,12 +119,10 @@ class InstanceUUIDExtractor():
         :return:
         """
         str_defined = False
-        try:
-            if self.str_definition() is not None or len(self.str_definition())>0:
-                str_defined = True
-        except:
-            pass
-        return str_defined
+        if self.str_definition() is not None or len(self.str_definition())>1:
+            str_defined = True
+            atribute = self.str_definition()
+        return str_defined, atribute
 
     def entity_atrributes(self):
         """

@@ -19,7 +19,7 @@ email                : stdm@unhabitat.org
 """
 from PyQt4.QtCore import QObject
 from stdm.settings import current_profile
-
+from collections import OrderedDict
 class GeoODKReader():
     """
     Class to read entity info from profile and return the entity data
@@ -31,8 +31,8 @@ class GeoODKReader():
 
         self.entity_name = None
         self.user_entity = entity
-        self.entity_attributes = {}
-        self.lookup_attributes = {}
+        self.entity_attributes = OrderedDict()
+        self.lookup_attributes = OrderedDict()
         self.lookup =[]
         self.profile()
 
@@ -133,7 +133,7 @@ class GeoODKReader():
         :return:dict of entity column and data type
         """
         self.get_user_selected_entity()
-        self.entity_attributes = {}
+        self.entity_attributes = OrderedDict()
         col_objs = self.profile_entity_attribute().values()
         for obj in col_objs:
             self.entity_attributes[obj.name] = obj.TYPE_INFO
@@ -155,7 +155,7 @@ class GeoODKReader():
         :param col:
         :return:
         """
-        col_attributes ={}
+        col_attributes = OrderedDict()
         if self.on_column_info(col):
             col_obj = self.profile_entity_attribute().get(col)
             value_list = col_obj.value_list
@@ -182,7 +182,7 @@ class GeoODKReader():
         Check if the column has a lookup and get the associated lookup definition
         :return:
         """
-        lk_attributes ={}
+        lk_attributes = OrderedDict()
         col_objs = self.profile_entity_attribute().values()
         for col in col_objs:
             if col.TYPE_INFO == "LOOKUP" or col.TYPE_INFO == "MULTIPLE_SELECT":
@@ -245,7 +245,7 @@ class GeoODKReader():
         :return: column obj
         :rtype dict
         """
-        str_attributes = {}
+        str_attributes = OrderedDict()
         for obj in self.social_tenure().columns.values():
             if str(obj.name).endswith('id'):
                 continue
@@ -271,7 +271,7 @@ class GeoODKReader():
         :return: valuelist
         :rtype: dict
         """
-        str_lk_values = {}
+        str_lk_values = OrderedDict()
         cols_obj = self.social_tenure().columns
 
         column_isnt = cols_obj[col]

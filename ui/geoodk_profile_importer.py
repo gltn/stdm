@@ -27,6 +27,7 @@ from PyQt4.QtGui import (
     QMessageBox,
     QListWidgetItem,
     QFileDialog,
+    QIcon,
     QDialogButtonBox
 )
 from PyQt4.Qt import QDirIterator
@@ -51,6 +52,7 @@ from stdm.ui.wizard.custom_item_model import EntitiesModel
 from stdm.geoodk.importer import EntityImporter
 from stdm.settings.projectionSelector import ProjectionSelector
 from stdm.geoodk.importer import ImportLogger
+from stdm import resources_rc
 #from stdm.geoodk.importer.geoodkserver import JSONEXTRACTOR
 
 
@@ -89,12 +91,16 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.chk_all.setCheckState(Qt.Checked)
         self.entity_model = EntitiesModel()
         self.uuid_extractor = InstanceUUIDExtractor(self.path)
+        self.btn_chang_dir.setIcon(QIcon(":/plugins/stdm/images/icons/open_file.png"))
+        self.btn_refresh.setIcon(QIcon(":/plugins/stdm/images/icons/update.png"))
+        self.btn_srid.setIcon(QIcon(":/plugins/stdm/images/icons/edit24.png"))
 
         self.chk_all.stateChanged.connect(self.check_state_on)
         #self.cbo_profile.currentIndexChanged.connect(self.current_profile_changed)
         self.btn_chang_dir.clicked.connect(self.on_directory_search)
         self.lst_widget.itemClicked.connect(self.user_selected_entities)
         self.btn_srid.clicked.connect(self.projection_settings)
+        self.btn_refresh.clicked.connect(self.update_files_with_custom_filter)
 
         #self.load_config()
         self.on_filepath()
@@ -260,7 +266,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             for entity in entity_list:
                 list_widget = QListWidgetItem(
                     current_profile().entity_by_name(entity).short_name, self.lst_widget)
-                list_widget.setCheckState(Qt.Unchecked)
+                list_widget.setCheckState(Qt.Checked)
         else:
             return
 
@@ -292,12 +298,28 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             dir_f = dirs[0]
             instance_file = [f for f in os.listdir(dir_f) if f.endswith('.xml')]
             self.uuid_extractor.set_file_path(os.path.join(dir_f, instance_file[0]))
-            entity_list = self.uuid_extractor.document_entities(self.profile)
+            entity_list = self.check_profile_with_custom_name()
             for entity_name in entity_list:
                 if current_profile().entity_by_name(entity_name) is not None:
                     current_etities.append(entity_name)
             if len(current_etities) > 0:
                 return current_etities
+
+    def check_profile_with_custom_name(self):
+        """
+        Try extract mobile instance with custom filter name.
+        Assumption is that there is a profile that bears that name
+        :return:
+        """
+        mismatch_profile = 'Please set current profile based on the data to be imported'
+        entity_attr = []
+        if self.txt_filter.text()!= '':
+            for obj in self.profiles():
+                if obj.name.startswith(self.txt_filter.text()):
+                    if obj.name != current_profile().name:
+                        self._notif_bar_str.insertErrorNotification(mismatch_profile)
+                        return
+        return self.uuid_extractor.document_entities(self.profile)
 
     def entity_attribute_to_database(self, entity_info):
         """
@@ -406,14 +428,18 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         self.feedback_message('unable to read foreign key properties for "{0}"'
                                               .format(parent_object.name))
                         return
+        str_active, attribute = self.uuid_extractor.has_str_captured_in_instance()
+        self.feedback_message(str(attribute))
 
         if self.uuid_extractor.has_str_captured_in_instance():
+
             if party_tbl not in self.relations.keys():
                 self.relations[party_tbl] = ['social_tenure_relationship',
                                              str_tables.parties[0].short_name.lower()+'_id']
             if sp_tbl not in self.relations.keys():
                 self.relations[sp_tbl] = ['social_tenure_relationship',
                                           str_tables.spatial_units[0].short_name.lower() + '_id']
+        self.feedback_message(str(self.relations))
         return has_relations
 
     def parent_table_isselected(self):
@@ -507,6 +533,15 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             return filter_text
         else:
             return self.profile
+
+    def update_files_with_custom_filter(self):
+        """
+        Get the new file count with the user custom filter text
+        :return: file count
+        """
+        self.available_records()
+        self.on_dir_path()
+        self.profile_instance_entities()
 
     def projection_settings(self):
         """
