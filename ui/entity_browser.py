@@ -852,6 +852,13 @@ class EntityBrowserWithEditor(EntityBrowser):
                 reload=False,
                 entity_browser=self
             )
+            editor_trans = self.tr('Editor')
+            title = u'{0} {1}'.format(
+                format_name(self._entity.short_name),
+                editor_trans
+            )
+            gps_tool.setWindowTitle(title)
+
             result = gps_tool.exec_()
             result = False # a workaround to avoid duplicate model insert
             self.addEntityDlg = gps_tool.entity_editor
@@ -1048,6 +1055,13 @@ class EntityBrowserWithEditor(EntityBrowser):
                 row_number=rownumber,
                 entity_browser=self
             )
+            editor_trans = self.tr('Editor')
+            title = u'{0} {1}'.format(
+                format_name(self._entity.short_name),
+                editor_trans
+            )
+            gps_tool.setWindowTitle(title)
+
             result = gps_tool.exec_()
         else:
             #Load editor dialog
