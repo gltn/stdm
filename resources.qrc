@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="/plugins/stdm">
+    <file>images/icons/mobile_collect.png</file>
+    <file>images/icons/mobile_data_management.png</file>
+    <file>images/icons/mobile_import.png</file>
     <file>images/icons/warning_large.png</file>
     <file>images/icons/edit_settings.png</file>
     <file>images/icons/help-content.png</file>
@@ -101,6 +104,6 @@
     <file>images/icons/period_blue.png</file>
     <file>images/icons/code.png</file>
     <file>images/icons/clear.png</file>
-        <file>images/icons/custom_tenure.png</file>
+    <file>images/icons/custom_tenure.png</file>
   </qresource>
 </RCC>
