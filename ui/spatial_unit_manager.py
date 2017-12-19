@@ -143,7 +143,7 @@ class SpatialUnitManagerDockWidget(
         if not hasattr(layer, 'attributeTableConfig'):
             return
         entity = self._curr_profile.entity_by_name(self.curr_lyr_table)
-
+      
         config = layer.attributeTableConfig()
         columns = config.columns()
         updated_columns = []
@@ -622,9 +622,9 @@ class SpatialUnitManagerDockWidget(
 
             entity = self._curr_profile.entity_by_name(self.curr_lyr_table)
             fk_fields = self.join_fk_layer(curr_layer, entity)
-
-            self.sort_joined_columns(curr_layer, fk_fields)
-            self.set_field_alias(curr_layer, entity, fk_fields)
+            if entity is not None:
+                self.sort_joined_columns(curr_layer, fk_fields)
+                self.set_field_alias(curr_layer, entity, fk_fields)
 
         else:
             msg = QApplication.translate(
