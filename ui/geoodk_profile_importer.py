@@ -428,10 +428,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         self.feedback_message('unable to read foreign key properties for "{0}"'
                                               .format(parent_object.name))
                         return
-        str_active, attribute = self.uuid_extractor.has_str_captured_in_instance()
-        self.feedback_message(str(attribute))
+        has_str_defined = self.uuid_extractor.has_str_captured_in_instance()
 
-        if self.uuid_extractor.has_str_captured_in_instance():
+        if has_str_defined:
 
             if party_tbl not in self.relations.keys():
                 self.relations[party_tbl] = ['social_tenure_relationship',
@@ -439,8 +438,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             if sp_tbl not in self.relations.keys():
                 self.relations[sp_tbl] = ['social_tenure_relationship',
                                           str_tables.spatial_units[0].short_name.lower() + '_id']
-        self.feedback_message(str(self.relations))
-        return has_relations
+        else:
+
+            return has_relations
 
     def parent_table_isselected(self):
         """
