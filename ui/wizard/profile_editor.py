@@ -30,6 +30,7 @@ from PyQt4.QtGui import QValidator
 from ui_profile import Ui_Profile
 from stdm.ui.notification import NotificationBar
 
+
 class ProfileEditor(QDialog, Ui_Profile):
     def __init__(self, parent):
         QDialog.__init__(self, parent)
@@ -62,7 +63,7 @@ class ProfileEditor(QDialog, Ui_Profile):
         :param message: The message of the notification.
         :type message: String
         """
-        msg = self.tr(message)
+        msg = self.trUtf8(message)
         self.notice_bar.clear()
         self.notice_bar.insertErrorNotification(msg)
 
@@ -88,9 +89,10 @@ class ProfileEditor(QDialog, Ui_Profile):
             last_character = text[-1:]
             state = name_validator.validate(text, text.index(last_character))[0]
             if state != QValidator.Acceptable:
-                self.show_notification('"{}" is not allowed at this position.'.
-                                       format(last_character)
-                                       )
+                msg = u'\'{0}\' is not allowed at this position.'.format(
+                    last_character
+                )
+                self.show_notification(msg)
                 text = text[:-1]
 
         # remove space and underscore at the beginning of the text

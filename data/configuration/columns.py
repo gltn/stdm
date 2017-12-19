@@ -106,10 +106,10 @@ class BaseColumn(ColumnItem):
 
         ColumnItem.__init__(self, name)
 
-        #Internal flag used to check whether this constructor has been initialized
+        # Internal flag used to check whether this constructor has been initialized
         self._intialized = True
 
-        #Attributes in the database that need to monitored for any changes
+        # Attributes in the database that need to monitored for any changes
         self._monitor_attrs = ['mandatory', 'searchable', 'index', 'unique' ]
 
         self.updated_db_attrs = {}

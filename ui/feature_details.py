@@ -1158,7 +1158,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         spatial_units = self.social_tenure.spatial_units
 
         for spatial_unit in spatial_units:
-            spatial_unit_name = spatial_unit.name.split(self.current_profile.prefix)[1]
+            spatial_unit_name = spatial_unit.name.split(self.current_profile.prefix, 1)[1]
             spatial_unit_id = '{}_id'.format(spatial_unit_name).lstrip('_')
             if not spatial_unit_id in record:
                 return None, None
@@ -1179,6 +1179,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         if self.layer_table is None and self.plugin is not None:
             return
         spatial_unit_names = [sp.name for sp in self.spatial_units]
+
         # If the layer table is not spatial unit table, don't show STR node.
         if self.layer_table not in spatial_unit_names  and self.plugin is not None:
             return
@@ -1213,7 +1214,9 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                     custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
                         spatial_unit
                     )
-                    if custom_attr_entity is not None:
+
+
+                    if custom_attr_entity is not None and len(custom_attr_entity.columns) > 2:
                         custom_attr_model = entity_attr_to_model(
                             custom_attr_entity,
                             'social_tenure_relationship_id', record_dict['id'])

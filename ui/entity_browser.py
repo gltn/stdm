@@ -76,6 +76,7 @@ from stdm.utils.util import (
 __all__ = ["EntityBrowser", "EntityBrowserWithEditor",
            "ContentGroupEntityBrowser"]
 
+
 class _EntityDocumentViewerHandler(object):
     """
     Class that loads the document viewer to display all documents
@@ -188,7 +189,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             'Document Viewer'
         )
         self.doc_viewer_title = u'{0} {1}'.format(
-            entity.short_name,
+            entity.ui_display(),
             viewer_title
         )
         self._doc_viewer = _EntityDocumentViewerHandler(
@@ -317,7 +318,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         '''
         records = QApplication.translate('EntityBrowser', 'Records')
         formatted_name = format_name(
-            self._entity.short_name
+            self._entity.ui_display()
         )
 
         return u'{} {}'.format(formatted_name, records)
@@ -407,7 +408,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
         #Iterate entity column and assert if they exist
         for c in self._entity.columns.values():
-            #Exclude geometry columns
+            # Exclude geometry columns
             if isinstance(c, GeometryColumn):
                 continue
 
@@ -432,7 +433,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
                 self._entity_attrs.append(col_name)
 
-                #Get widget factory so that we can use the value formatter
+                # Get widget factory so that we can use the value formatter
                 w_factory = ColumnWidgetRegistry.factory(c.TYPE_INFO)
                 if not w_factory is None:
                     formatter = w_factory(c)
@@ -440,7 +441,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
                 #Set searchable columns
                 if c.searchable:
-                    self._searchable_columns[header] = {
+                    self._searchable_columns[c.ui_display()] = {
                         'name': c.name,
                         'header_index': header_idx
                     }
@@ -582,6 +583,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                     return
 
                 entity_records_collection.append(entity_row_info)
+
             # Set maximum value of the progress dialog
             progressDialog.setValue(numRecords)
 
@@ -850,6 +852,13 @@ class EntityBrowserWithEditor(EntityBrowser):
                 reload=False,
                 entity_browser=self
             )
+            editor_trans = self.tr('Editor')
+            title = u'{0} {1}'.format(
+                format_name(self._entity.short_name),
+                editor_trans
+            )
+            gps_tool.setWindowTitle(title)
+
             result = gps_tool.exec_()
             result = False # a workaround to avoid duplicate model insert
             self.addEntityDlg = gps_tool.entity_editor
@@ -1046,6 +1055,13 @@ class EntityBrowserWithEditor(EntityBrowser):
                 row_number=rownumber,
                 entity_browser=self
             )
+            editor_trans = self.tr('Editor')
+            title = u'{0} {1}'.format(
+                format_name(self._entity.short_name),
+                editor_trans
+            )
+            gps_tool.setWindowTitle(title)
+
             result = gps_tool.exec_()
         else:
             #Load editor dialog

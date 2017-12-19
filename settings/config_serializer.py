@@ -989,7 +989,7 @@ class EntitySerializer(EntitySerializerCollection):
     """
     TAG_NAME = 'Entity'
 
-    #Specify attribute names
+    # Specify attribute names
     GLOBAL = 'global'
     SHORT_NAME = 'shortName'
     NAME = 'name'
@@ -1002,6 +1002,7 @@ class EntitySerializer(EntitySerializerCollection):
     DOCUMENT_TYPE_LOOKUP = 'documentTypeLookup'
     ENTITY_TYPE_INFO = 'ENTITY'
     ROW_INDEX = 'rowindex'
+    LABEL = 'label'
     DEPENDENCY_FLAGS = [ForeignKeyColumn.TYPE_INFO]
 
     @staticmethod
@@ -1084,6 +1085,12 @@ class EntitySerializer(EntitySerializerCollection):
             if row_index:
                 row_index = str(row_index)
                 ent.row_index = row_index
+
+            # Label
+            label = unicode(child_element.attribute(
+                EntitySerializer.LABEL, '')
+            )
+            ent.label = label
 
             #Add entity to the profile so that it is discoverable
             profile.add_entity(ent)
@@ -1179,7 +1186,7 @@ class EntitySerializer(EntitySerializerCollection):
         """
         dep_cols = EntitySerializer._dependency_columns(element)
 
-        #Add entity directly if there are no dependency columns
+        # Add entity directly if there are no dependency columns
         if len(dep_cols) == 0:
             EntitySerializer.read_xml(
                 element,
@@ -1191,7 +1198,7 @@ class EntitySerializer(EntitySerializerCollection):
             return
 
         for c in dep_cols:
-            #Get foreign key columns
+            # Get foreign key columns
             type_info = unicode(c.attribute('TYPE_INFO'))
 
             if type_info == ForeignKeyColumn.TYPE_INFO:
@@ -1280,9 +1287,10 @@ class EntitySerializer(EntitySerializerCollection):
                                     str(entity.is_proxy))
         entity_element.setAttribute(EntitySerializer.SUPPORTS_DOCUMENTS,
                                     str(entity.supports_documents))
-
         entity_element.setAttribute(EntitySerializer.ROW_INDEX,
                                     str(entity.row_index))
+        entity_element.setAttribute(EntitySerializer.LABEL,
+                                    entity.label)
 
         #Set document type lookup
         if entity.supports_documents:

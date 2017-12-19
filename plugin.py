@@ -929,17 +929,8 @@ class STDMQGISLoader(object):
         self._moduleItems = OrderedDict()
         self._reportModules = OrderedDict()
 
-        # add the tables to the stdm toolbar
-        # Format the table names to friendly format before adding them
-        # social_tenure = self.current_profile.social_tenure
-        #custom_attr_entity = social_tenure.custom_attributes_entity
-
-        #if self.user_entities() is not None:
-        user_entities = OrderedDict(self.user_entities())
-        for i, (name, short_name) in enumerate(user_entities.iteritems()):
-            # if custom_attr_entity.name != name:
-            display_name = unicode(short_name).replace("_", " ").title()
-            self._moduleItems[display_name] = name
+        for attrs in self.user_entities():
+            self._moduleItems[attrs[2]] = attrs[0]
 
         for k, v in self._moduleItems.iteritems():
 
@@ -1821,7 +1812,7 @@ class STDMQGISLoader(object):
         entities = []
         if self.current_profile is not None:
             entities = [
-                (e.name, e.short_name)
+                (e.name, e.short_name, e.ui_display())
                 for e in
                 self.current_profile.entities.values()
                 if (e.TYPE_INFO == 'ENTITY') and (e.user_editable)

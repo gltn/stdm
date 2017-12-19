@@ -729,7 +729,7 @@ def drop_cascade_table(table_name):
     :return: Returns True if the operation succeeded. otherwise False.
     :rtype: bool
     """
-    del_com = 'DROP TABLE IF EXISTS {0} CASCADE;'.format(table_name)
+    del_com = u'DROP TABLE IF EXISTS {0} CASCADE;'.format(table_name)
     t = text(del_com)
 
     try:
@@ -752,7 +752,7 @@ def drop_cascade_column(table_name, column):
     :return: Returns True if the operation succeeded. otherwise False.
     :rtype: bool
     """
-    del_com = 'ALTER TABLE {0} DROP COLUMN IF EXISTS {1} CASCADE;'.format(
+    del_com = u'ALTER TABLE {0} DROP COLUMN IF EXISTS {1} CASCADE;'.format(
         table_name,
         column
     )

@@ -359,26 +359,28 @@ def entity_display_columns(entity, with_header=False, exclude=[]):
     :return: List of column names or dictionary with column header.
     :rtype: List or Dictionary
     """
+    display_type_info = [
+        'VARCHAR',
+        'SERIAL',
+        'TEXT',
+        'INT',
+        'DOUBLE',
+        'DATE',
+        'DATETIME',
+        'BOOL',
+        'LOOKUP',
+        'ADMIN_SPATIAL_UNIT',
+        'FOREIGN_KEY',
+        'MULTIPLE_SELECT',
+        'PERCENT',
+        'AUTO_GENERATED'
+    ]
     if with_header:
         display_column = [
             (c.name, c.header())
             for c in
             entity.columns.values()
-            if c.TYPE_INFO in [
-                'VARCHAR',
-                'SERIAL',
-                'TEXT',
-                'INT',
-                'DOUBLE',
-                'DATE',
-                'DATETIME',
-                'BOOL',
-                'LOOKUP',
-                'ADMIN_SPATIAL_UNIT',
-                'MULTIPLE_SELECT',
-                'PERCENT',
-                'AUTO_GENERATED'
-            ]
+            if c.TYPE_INFO in display_type_info
             if c.TYPE_INFO not in exclude
         ]
         display_column = OrderedDict(display_column)
@@ -388,21 +390,7 @@ def entity_display_columns(entity, with_header=False, exclude=[]):
             c.name
             for c in
             entity.columns.values()
-            if c.TYPE_INFO in [
-                'VARCHAR',
-                'SERIAL',
-                'TEXT',
-                'INT',
-                'DOUBLE',
-                'DATE',
-                'DATETIME',
-                'BOOL',
-                'LOOKUP',
-                'ADMIN_SPATIAL_UNIT',
-                'MULTIPLE_SELECT',
-                'PERCENT',
-                'AUTO_GENERATED'
-            ]
+            if c.TYPE_INFO in display_type_info
             if c.TYPE_INFO not in exclude
         ]
 

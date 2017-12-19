@@ -47,9 +47,9 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         :param in_db : Boolean flag to check if entity exist in database
         """
         self.form_parent = kwargs.get('parent', self)
-        self.profile     = kwargs.get('profile', None)
-        self.entity      = kwargs.get('entity', None)
-        self.in_db       = kwargs.get('in_db', False)
+        self.profile = kwargs.get('profile', None)
+        self.entity = kwargs.get('entity', None)
+        self.in_db = kwargs.get('in_db', False)
 
         QDialog.__init__(self, self.form_parent)
         self.setupUi(self)
@@ -62,6 +62,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         if self.entity:
             self.edtTable.setText(self.entity.short_name)
             self.edtDesc.setText(self.entity.description)
+            self.txt_display_name.setText(self.entity.label)
 
             self.cbSupportDoc.setCheckState(
                     self.bool_to_check(self.entity.supports_documents)
@@ -102,19 +103,18 @@ class EntityEditor(QDialog, Ui_dlgEntity):
             return
         locale = QSettings().value("locale/userLocale")[0:2]
 
-        if locale == 'en':
-            name_regex = QRegExp('^(?=.{0,40}$)[ _a-zA-Z][a-zA-Z0-9_ ]*$')
-            name_validator = QRegExpValidator(name_regex)
-            text_edit.setValidator(name_validator)
-            QApplication.processEvents()
-            last_character = text[-1:]
-            state = name_validator.validate(text, text.index(last_character))[0]
+        name_regex = QRegExp('^(?=.{0,40}$)[ _a-zA-Z][a-zA-Z0-9_ ]*$')
+        name_validator = QRegExpValidator(name_regex)
+        text_edit.setValidator(name_validator)
+        QApplication.processEvents()
+        last_character = text[-1:]
+        state = name_validator.validate(text, text.index(last_character))[0]
 
-            if state != QValidator.Acceptable:
-                self.show_notification(u'"{}" is not allowed at this position.'.
-                                       format(last_character)
-                )
-                text = text[:-1]
+        if state != QValidator.Acceptable:
+            self.show_notification(u'"{}" is not allowed at this position.'.
+                                   format(last_character)
+            )
+            text = text[:-1]
 
         # remove space and underscore at the beginning of the text
         if len(text) > 1:
@@ -176,6 +176,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         entity = self.profile.create_entity(short_name, entity_factory,
                 supports_documents=self.support_doc())
         entity.description = self.edtDesc.text()
+        entity.label = self.txt_display_name.text()
         entity.column_added.connect(self.form_parent.add_column_item)
         entity.column_removed.connect(self.form_parent.delete_column_item)
 
@@ -183,8 +184,6 @@ class EntityEditor(QDialog, Ui_dlgEntity):
 
     def edit_entity(self, short_name):
         # remove old entity
-        #self.profile.remove_entity(self.entity.short_name)
-        #self.entity = self._create_entity(short_name)
         old_short_name = self.entity.short_name
 
         if old_short_name <> short_name:
@@ -192,6 +191,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
             self.entity.short_name = short_name
 
         self.entity.description = self.edtDesc.text()
+        self.entity.label = self.txt_display_name.text()
         self.entity.supports_documents = self.support_doc()
 
     def duplicate_check(self, name):

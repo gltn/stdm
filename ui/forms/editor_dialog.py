@@ -444,7 +444,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
                 # Format label text if it is a mandatory field
                 if c.mandatory:
-                    header = '{0} *'.format(c.ui_display())
+                    header = u'{0} *'.format(c.ui_display())
                     #Highlight asterisk
                     header = self._highlight_asterisk(header)
 
