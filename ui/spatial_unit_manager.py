@@ -143,7 +143,7 @@ class SpatialUnitManagerDockWidget(
         if not hasattr(layer, 'attributeTableConfig'):
             return
         entity = self._curr_profile.entity_by_name(self.curr_lyr_table)
-      
+
         config = layer.attributeTableConfig()
         columns = config.columns()
         updated_columns = []

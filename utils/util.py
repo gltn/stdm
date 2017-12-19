@@ -772,14 +772,14 @@ def entity_attr_to_model(entity, attr, value):
 
     return result
 
-def entity_attr_to_id(entity, attr_obj, attr_val, lower=False):
+def entity_attr_to_id(entity, col_name, attr_val, lower=False):
     """
     Coverts other column values to id value
     of the same table.
     :param entity: Entity
     :type entity: Class
-    :param attr_obj: The source column object
-    :type attr_obj: Object
+    :param col_name: The table column name
+    :type col_name: String
     :param attr_val: Any value of a source column
     :type attr_val: Any
     :return: The Id of the entity or the attribute
@@ -787,17 +787,24 @@ def entity_attr_to_id(entity, attr_obj, attr_val, lower=False):
     :rtype: Integer or NoneType
     """
     doc_type_model = entity_model(entity)
+
     doc_type_obj = doc_type_model()
+
+    model_col = getattr(doc_type_model, col_name)
+    if model_col is None:
+        raise AttributeError('Specified column does not exist')
+
     if lower:
 
         result = doc_type_obj.queryObject().filter(
-            func.lower(attr_obj) == func.lower(attr_val)
+            func.lower(col_name) == func.lower(attr_val)
         ).first()
 
     else:
         result = doc_type_obj.queryObject().filter(
-            attr_obj == attr_val
+            model_col == attr_val
         ).first()
+
     if result is not None:
         attr_id = getattr(
             result,
@@ -808,6 +815,44 @@ def entity_attr_to_id(entity, attr_obj, attr_val, lower=False):
         attr_id = attr_val
 
     return attr_id
+
+#
+# def entity_attr_to_id(entity, attr_obj, attr_val, lower=False):
+#     """
+#     Coverts other column values to id value
+#     of the same table.
+#     :param entity: Entity
+#     :type entity: Class
+#     :param attr_obj: The source column object
+#     :type attr_obj: Object
+#     :param attr_val: Any value of a source column
+#     :type attr_val: Any
+#     :return: The Id of the entity or the attribute
+#     value if no id is found or the attribute is not valid.
+#     :rtype: Integer or NoneType
+#     """
+#     doc_type_model = entity_model(entity)
+#     doc_type_obj = doc_type_model()
+#     if lower:
+#
+#         result = doc_type_obj.queryObject().filter(
+#             func.lower(attr_obj) == func.lower(attr_val)
+#         ).first()
+#
+#     else:
+#         result = doc_type_obj.queryObject().filter(
+#             attr_obj == attr_val
+#         ).first()
+#     if result is not None:
+#         attr_id = getattr(
+#             result,
+#             'id',
+#             None
+#         )
+#     else:
+#         attr_id = attr_val
+#
+#     return attr_id
 
 
 def profile_entities(profile):
