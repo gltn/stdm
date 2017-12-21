@@ -17,10 +17,11 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QObject
 from stdm.settings import current_profile
 from collections import OrderedDict
-class GeoODKReader():
+
+
+class GeoODKReader:
     """
     Class to read entity info from profile and return the entity data
     """
@@ -250,7 +251,6 @@ class GeoODKReader():
             if str(obj.name).endswith('id'):
                 continue
             str_attributes[obj.name] = obj.TYPE_INFO
-        #del str_attributes['id']
         return str_attributes
 
     def social_tenure_lookup(self, cur_col):
@@ -273,7 +273,6 @@ class GeoODKReader():
         """
         str_lk_values = OrderedDict()
         cols_obj = self.social_tenure().columns
-
         column_isnt = cols_obj[col]
         value_list = column_isnt.value_list
         for val in value_list.values.values():
