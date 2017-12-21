@@ -1809,6 +1809,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Event handler for removing column item from various view models
         """
         model_item, column, row_id = self.get_model_entity(self.tbvColumns)
+        if column is None:
+            return
         self.col_view_model.delete_entity(column)
         self.col_view_model.removeRow(row_id)
         self.party_item_model.removeRow(row_id)
