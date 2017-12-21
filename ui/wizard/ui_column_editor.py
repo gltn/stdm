@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_column_editor.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created: Tue Dec 19 19:06:34 2017
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -109,8 +110,8 @@ class Ui_ColumnEditor(object):
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
         self.gridLayout.addWidget(self.buttonBox, 12, 0, 1, 3)
         self.notif_bar = QtGui.QVBoxLayout()
-        self.notif_bar.setContentsMargins(-1, -1, -1, 0)
         self.notif_bar.setSpacing(8)
+        self.notif_bar.setContentsMargins(-1, -1, -1, 0)
         self.notif_bar.setObjectName(_fromUtf8("notif_bar"))
         self.gridLayout.addLayout(self.notif_bar, 1, 0, 1, 3)
         self.cbIndex = QtGui.QCheckBox(ColumnEditor)
@@ -159,7 +160,7 @@ class Ui_ColumnEditor(object):
         ColumnEditor.setWindowTitle(_translate("ColumnEditor", "Column editor", None))
         self.label_2.setText(_translate("ColumnEditor", "Column name", None))
         self.edtColName.setPlaceholderText(_translate("ColumnEditor", "Enter column name", None))
-        self.label.setText(_translate("ColumnEditor", "Form Label", None))
+        self.label.setText(_translate("ColumnEditor", "Column Label", None))
         self.txt_form_label.setPlaceholderText(_translate("ColumnEditor", "Column name in the form", None))
         self.edtColDesc.setPlaceholderText(_translate("ColumnEditor", "Column Description", None))
         self.label_4.setText(_translate("ColumnEditor", "Column data type", None))

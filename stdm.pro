@@ -16,6 +16,7 @@ SOURCES = \
           data\configuration\social_tenure.py \
           data\importexport\reader.py \
           data\importexport\value_translators.py \
+          data\importexport\writer.py \
           mapping\capture_tool.py \
           mapping\create_feature.py \
           mapping\edit_tool.py \
@@ -47,6 +48,7 @@ SOURCES = \
           ui\foreign_key_mapper.py \
           ui\geometry.py \
           ui\geometry_editor.py \
+          ui\geoodk_profile_importer.py \
           ui\gps_tool.py \
           ui\image_export_settings.py \
           ui\import_data.py \
@@ -70,6 +72,7 @@ SOURCES = \
           ui\composer\table_data_source.py \
           ui\customcontrols\combobox_with_other.py \
           ui\customcontrols\coordinates_editor.py \
+          ui\customcontrols\list_pair_table_view.py \
           ui\customcontrols\relation_line_edit.py \
           ui\forms\documents.py \
           ui\forms\editor_dialog.py \
@@ -85,6 +88,7 @@ SOURCES = \
           ui\social_tenure\str_components.py \
           ui\social_tenure\str_data.py \
           ui\social_tenure\str_editor.py \
+          ui\wizard\attributes_table_view.py \
           ui\wizard\bigint_property.py \
           ui\wizard\code_property.py \
           ui\wizard\column_depend.py \
@@ -94,10 +98,12 @@ SOURCES = \
           ui\wizard\create_lookup.py \
           ui\wizard\create_lookup_value.py \
           ui\wizard\double_property.py \
+          ui\wizard\entity_attributes_editor.py \
           ui\wizard\entity_depend.py \
           ui\wizard\geometry_property.py \
           ui\wizard\profile_editor.py \
           ui\wizard\profile_tenure_view.py \
+          ui\wizard\spatial_tenure_types_dialog.py \
           ui\wizard\varchar_property.py \
           ui\wizard\wizard.py
 
@@ -118,12 +124,15 @@ FORMS =	\
         ui\ui_entity_browser.ui \
         ui\ui_export_data.ui \
         ui\ui_feature_details.ui \
+        ui\ui_geoodk_converter.ui \
+        ui\ui_geoodk_import.ui \
         ui\ui_gps_tool.ui \
         ui\ui_image_export_settings.ui \
         ui\ui_import_data.ui \
         ui\ui_license_agreement.ui \
         ui\ui_login.ui \
         ui\ui_lookup_value_selector.ui \
+        ui\ui_mobile_upload_form.ui \
         ui\ui_new_role.ui \
         ui\ui_new_user.ui \
         ui\ui_notif_item.ui \
@@ -157,6 +166,7 @@ FORMS =	\
         ui\wizard\ui_double_property.ui \
         ui\wizard\ui_dtime_property.ui \
         ui\wizard\ui_entity.ui \
+        ui\wizard\ui_entity_attributes_editor.ui \
         ui\wizard\ui_entity_depend.ui \
         ui\wizard\ui_fk_property.ui \
         ui\wizard\ui_geom_property.ui \
@@ -165,6 +175,7 @@ FORMS =	\
         ui\wizard\ui_lookup_value.ui \
         ui\wizard\ui_mselect_type_prop.ui \
         ui\wizard\ui_profile.ui \
+        ui\wizard\ui_spatial_unit_tenure_dialog.ui \
         ui\wizard\ui_stdm_config.ui \
         ui\wizard\ui_varchar_property.ui
 
