@@ -330,7 +330,7 @@ def _entity_select_column(
                 parent_table = c.entity_relation.parent.name
 
                 LOGGER.debug('Parent found')
-              
+
                 # Handle renaming of parent table names to appropriate
                 # pseudonames.
                 if not parent_table in foreign_key_parents:

@@ -487,6 +487,7 @@ def profile_user_tables(profile, include_views=True, admin=False, sort=False):
     from stdm.data.pg_utils import (
         pg_views
     )
+
     if not admin:
         tables = [
             (e.name, e.short_name)
@@ -1065,7 +1066,9 @@ def profile_and_user_views(profile, check_party=False):
     from stdm.data.pg_utils import (
         pg_views
     )
-
+    from stdm.data.configuration.stdm_configuration import (
+        StdmConfiguration
+    )
     source_tables = []
 
     social_tenure = profile.social_tenure
@@ -1084,8 +1087,14 @@ def profile_and_user_views(profile, check_party=False):
 
         else:
             source_tables.append(view)
+
+    stdm_config = StdmConfiguration.instance()
+    all_str_views = []
+    for prof in stdm_config.profiles.values():
+        all_str_views.extend(prof.social_tenure.views.keys())
+
     for value in pg_views():
-        if value not in social_tenure.views.keys():
+        if value not in all_str_views:
             source_tables.append(value)
     return source_tables
 

@@ -354,6 +354,7 @@ class SpatialUnitManagerDockWidget(
                 view_geom_columns = table_column_names(
                     sp_table, True
                 )
+
                 for geom_col in view_geom_columns:
                     view_layer_name = '{}.{}'.format(
                         sp_table, geom_col
