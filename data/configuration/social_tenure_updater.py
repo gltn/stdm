@@ -330,8 +330,7 @@ def _entity_select_column(
                 parent_table = c.entity_relation.parent.name
 
                 LOGGER.debug('Parent found')
-                select_column_name = ''
-
+              
                 # Handle renaming of parent table names to appropriate
                 # pseudonames.
                 if not parent_table in foreign_key_parents:
@@ -376,6 +375,7 @@ def _entity_select_column(
                     use_inner_join = False
 
                 elif c.TYPE_INFO == 'FOREIGN_KEY':
+
                     if c.entity_relation.parent not in str_entity.parties and \
                         c.entity_relation.parent not in str_entity.spatial_units:
 
