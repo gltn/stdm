@@ -93,7 +93,7 @@ class GeoODKReader():
         :rtype: lookup values of the supported document type
         """
         if self.entity_object().supports_documents:
-            return self.entity_object().document_types()
+            return self.entity_object().document_types_non_hex()
 
     def profile_entity_attribute(self):
         """

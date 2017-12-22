@@ -485,6 +485,20 @@ class Entity(QObject, TableItem):
 
         return self.supporting_doc.document_types().keys()
 
+    def document_types_non_hex(self):
+        """
+        :return: Returns a list of document type String specified for this entity.
+        An AttributeError is raised if supporting documents are not enabled for this
+        entity.
+        :rtype: list
+        """
+        if not self.supports_documents:
+            raise AttributeError('Supporting documents are not enabled for '
+                                 'this entity.')
+
+        return self.supporting_doc.document_types_non_hex()
+
+
     def document_path(self):
         """
         :return: Returns a subpath for locating supporting documents using
@@ -708,6 +722,23 @@ class EntitySupportingDocument(Entity):
         :rtype: OrderedDict
         """
         return self._doc_types_value_list.values
+
+    def document_types_non_hex(self):
+        # Added in version 1.7
+        """
+        :return: Returns a collection of document type names and
+        corresponding codes.
+        :rtype: OrderedDict
+        """
+        non_hex_values = []
+        for v in self._doc_types_value_list.values:
+            cv = self._doc_types_value_list.code_value(v)
+            if cv.updated_value == '':
+                txt = cv.value
+            else:
+                txt = cv.updated_value
+            non_hex_values.append(txt)
+        return non_hex_values
 
     def document_path(self):
         """
