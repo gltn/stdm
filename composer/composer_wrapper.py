@@ -891,8 +891,12 @@ class ComposerWrapper(QObject):
                 else:
                     self._stdmItemPropDock.setWidget(stdmWidget)
 
+
                 #Playing it safe in applying the formatting for the editor controls where applicable
                 itemFormatter = None
+
+                if isinstance(stdmWidget, ComposerTableDataSourceEditor):
+                    itemFormatter = TableFormatter()
 
                 if isinstance(composer_item, QgsComposerArrow):
                     itemFormatter = LineFormatter()
@@ -919,7 +923,7 @@ class ComposerWrapper(QObject):
                 elif isinstance(composer_item, QgsComposerAttributeTableV2):
                     itemFormatter = TableFormatter()
 
-                if not itemFormatter is None:
+                if itemFormatter is not None:
                     itemFormatter.apply(composer_item, self, True)
 
             else:

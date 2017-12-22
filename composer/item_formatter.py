@@ -248,7 +248,10 @@ class TableFormatter(BaseComposerItemFormatter):
     """
     Add widget for formatting an attribute table item.
     """
+
     def apply(self, frame_item, composerWrapper, fromTemplate=False):
+
+        frame_item.blockSignals(True)
 
         if not isinstance(frame_item, QgsComposerFrame):
             return
@@ -269,7 +272,7 @@ class TableFormatter(BaseComposerItemFormatter):
 
             table_item.setColumns([default_column])
 
-            #Create data properties editor and it to the dock widget
+            #Create data properties editor and add it to the dock widget
             table_data_source_editor = ComposerTableDataSourceEditor(composerWrapper, table_item)
 
             ############################################################################################
@@ -289,7 +292,7 @@ class TableFormatter(BaseComposerItemFormatter):
             #Add widget to the composer wrapper widget mapping collection
             composerWrapper.addWidgetMapping(frame_item.uuid(), table_data_source_editor)
 
-        #Set ID to match UUID
+            #Set ID to match UUID
             frame_item.setId(frame_item.uuid())
 
     def _configure_table_editor_properties(self, base_table_editor):
@@ -332,7 +335,6 @@ class TableFormatter(BaseComposerItemFormatter):
                         curr_text = widget.currentText()
                         break
         return curr_text
-
 
 
     def _hide_filter_controls(self, groupbox):
