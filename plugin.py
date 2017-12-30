@@ -17,9 +17,11 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+import glob
 import logging
 import os.path
 import platform
+import shutil
 from collections import OrderedDict
 
 from PyQt4.QtCore import *
@@ -32,7 +34,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings import current_profile, save_current_profile
 from stdm.settings.startup_handler import copy_startup
-
+from stdm.data.configfile_paths import FilePaths
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.settings.config_file_updater import ConfigurationFileUpdater
@@ -82,7 +84,8 @@ from stdm.settings.registryconfig import (
     RegistryConfig,
     WIZARD_RUN,
     CONFIG_UPDATED,
-    HOST
+    HOST,
+    composer_template_path
 )
 from stdm.ui.license_agreement import LicenseAgreement
 
@@ -340,6 +343,7 @@ class STDMQGISLoader(object):
                 self.loadModules()
                 self.default_profile()
                 self.run_wizard()
+                self.copy_designer_template()
                 self._user_logged_in = True
 
             except Exception as pe:
@@ -621,6 +625,28 @@ class STDMQGISLoader(object):
         if result:
             change_log = ChangeLog(self.iface.mainWindow())
             change_log.show_change_log(self.plugin_dir)
+
+    def copy_designer_template(self):
+        """
+        Copies designer templates from the templates folder in the plugin.
+        :return:
+        :rtype:
+        """
+        file_handler = FilePaths()
+
+        template_files = glob.glob(u'{0}*.sdt'.format(
+            file_handler.defaultConfigPath()
+        ))
+        templates_path = composer_template_path()
+
+        for temp_file in template_files:
+
+            destination_file = u'{}/{}'.format(
+                    templates_path, os.path.basename(temp_file))
+
+            if not os.path.isfile(u'{}/{}'.format(
+                    templates_path, os.path.basename(temp_file))):
+                shutil.copyfile(temp_file, destination_file)
 
     def load_configuration_from_file(self, parent, manual=False):
         """
@@ -1394,7 +1420,7 @@ class STDMQGISLoader(object):
             )
         try:
             self.loadModules()
-
+            self.copy_designer_template()
             LOGGER.debug(
                 'Successfully reloaded all modules.'
             )

@@ -398,6 +398,9 @@ def _entity_select_column(
 
                         use_custom_join = True
                         use_inner_join = False
+
+                    else:
+                        QApplication.processEvents()
                 # These are outer joins
                 join_type = 'LEFT JOIN'
 
@@ -466,7 +469,7 @@ def _entity_select_column(
             if c.name not in omit_view_columns:
                 if select_column_name:
                     column_names.append(select_column_name)
-
+            QApplication.processEvents()
     return column_names, join_statements
 
 
