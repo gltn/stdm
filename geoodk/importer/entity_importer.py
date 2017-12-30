@@ -227,7 +227,7 @@ class Save2DB:
         during import process
         :return: List
         """
-        return self.entity.document_types()
+        return self.entity.document_types_non_hex()
 
     def dbmodel_from_entity(self):
         """
@@ -298,6 +298,7 @@ class Save2DB:
         doc_list = self.entity_supported_document_types()
         default = 'General'
         doc_type = str(key_name).split('_')
+
         if len(doc_type) > 2:
             if doc_type[0] in doc_list:
                 return doc_type[0]
@@ -305,6 +306,8 @@ class Save2DB:
                 for doc in doc_list:
                     if doc.startswith(doc_type[0]):
                         return doc
+        elif len(doc_type)<2 and key_name != default:
+            return key_name
         else:
             return default
 
@@ -390,11 +393,23 @@ class Save2DB:
         if col_type == 'LOOKUP':
             if var == '' or var is None:
                 return None
+            if var == 'Yes' or var =='No':
+                return entity_attr_to_model(col_prop.parent, 'value', var).id
             if not len(var) > 3 and var != 'Yes' and var != 'No':
-                return entity_attr_to_id(col_prop.parent, "code", var)
-            if len(var) < 4:
-                obj_isnt = entity_attr_to_model(col_prop.parent, 'value', var)
-                return self.id_from_model_object(obj_isnt)
+                lk_code = entity_attr_to_id(col_prop.parent, "code", var)
+                if not str(lk_code).isdigit():
+                    return None
+                else:
+                    return lk_code
+            if len(var) > 3:
+                if not str(entity_attr_to_id(col_prop.parent, 'code', var)).isdigit():
+                    return entity_attr_to_model(col_prop.parent, 'value', var).id
+                else:
+                    lk_code = entity_attr_to_id(col_prop.parent, "code", var)
+                    if not str(lk_code).isdigit():
+                        return None
+                    else:
+                        return lk_code
             else:
                 return None
         elif col_type == 'ADMIN_SPATIAL_UNIT':
@@ -408,9 +423,12 @@ class Save2DB:
                 return None
             if not len(var) > 3:
                 return entity_attr_to_id(col_prop.association.first_parent, "code", var)
-            else:
-                obj_instance = entity_attr_to_model(col_prop.association.first_parent,'value', var)
-                return self.id_from_model_object(obj_instance)
+            elif len(var) > 3:
+                if not str(entity_attr_to_id(col_prop.association.first_parent, "code", var)).isdigit():
+                    return entity_attr_to_model(col_prop.association.first_parent,'value', var).id
+                else:
+                    return entity_attr_to_id(col_prop.association.first_parent, "code", var)
+
         elif col_type == 'GEOMETRY':
             defualt_srid = 0
             geom_provider = STDMGeometry(var)
@@ -435,6 +453,11 @@ class Save2DB:
                     else:
                         if col_prop.parent.name == code:
                             return val[0]
+        elif col_type == 'INT' or col_type == 'DOUBLE':
+            if var == '':
+                return 0
+            else:
+                return var
         else:
             return var
 
