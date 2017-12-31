@@ -109,7 +109,7 @@
 <context>
     <name>AboutToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="176"/>
+        <location filename="../plugin.py" line="179"/>
         <source>About</source>
         <translation>حول</translation>
     </message>
@@ -544,7 +544,7 @@ Click Yes to delete or No to cancel.</source>
 <context>
     <name>ChangePasswordToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="184"/>
+        <location filename="../plugin.py" line="187"/>
         <source>Change Password</source>
         <translation>تغيير كلمة السر</translation>
     </message>
@@ -1013,27 +1013,27 @@ Please check the geometry type of the spatial column.</source>
 <context>
     <name>ConfigWizard</name>
     <message>
-        <location filename="../plugin.py" line="846"/>
+        <location filename="../plugin.py" line="872"/>
         <source>Configuration Wizard</source>
         <translation>معالج التكوين</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="812"/>
+        <location filename="../ui/wizard/wizard.py" line="813"/>
         <source>Minimum start date is greater than maximum start date.</source>
         <translation>الحد الأدنى لتاريخ البدء أكبر من تاريخ البدء الأقصى.</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="275"/>
+        <location filename="../ui/wizard/wizard.py" line="276"/>
         <source>Maximum start date is less than minimum start date.</source>
         <translation>الحد الأقصى لتاريخ البداية أقل من الحد الأدنى لتاريخ البداية </translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="819"/>
+        <location filename="../ui/wizard/wizard.py" line="820"/>
         <source>Minimum end date is greater than maximum end date.</source>
         <translation>الحد الأدنى لتاريخ الانتهاء أكبر من تاريخ الانتهاء الأقصى.</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="295"/>
+        <location filename="../ui/wizard/wizard.py" line="296"/>
         <source>Maximum end date is less than minimum end date.</source>
         <translation>الحد الأقصى لتاريخ الانتهاء هو أقل من الحد الأدنى من تاريخ الانتهاء.</translation>
     </message>
@@ -1045,13 +1045,13 @@ Please check the geometry type of the spatial column.</source>
 هل ترغب بحفظ التغيرات كمسودة والاستمرار في المرة المقبلة؟ </translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="401"/>
+        <location filename="../ui/wizard/wizard.py" line="402"/>
         <source>Your main configuration file seems to be corrupt!
 The system will revert to the latest configuration backup file </source>
         <translation>يبدو أن ملف التهيئة الرئيسي خاصتك معطل. سيقوم النظام بالرجوع إلى أحدث ملف تهئية احتياطي</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="408"/>
+        <location filename="../ui/wizard/wizard.py" line="409"/>
         <source>Your configuration files seems to be corrupt!
   The system will revert to the original system configuration file.</source>
         <translation>يبدو أن تهئية ملفاتك قد فسدت. سيقوم النظام بالرجوع إلى ملف التهئية الأصلي في النظام</translation>
@@ -1075,17 +1075,17 @@ The system will revert to the latest configuration backup file </source>
         <translation type="obsolete">لقد تم تحديد الكيان المختار كذلك كوحدة مكانية لعلاقة الحيازة الاجتماعية لهذا الملف الشخصي. </translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="640"/>
+        <location filename="../ui/wizard/wizard.py" line="641"/>
         <source>Load Configuration Error</source>
         <translation>خطأ في تكوين التحميل</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="791"/>
+        <location filename="../ui/wizard/wizard.py" line="792"/>
         <source>No entities for creating social tenure relationship.</source>
         <translation>لا يوجد كيانات من أجل إنشاء علاقة الحيازة الاجتماعية</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="797"/>
+        <location filename="../ui/wizard/wizard.py" line="798"/>
         <source>Please select at least one party from the list of applicable party entities.</source>
         <translation>الرجاء اختيار طرف واحد على الأقل من قائمة أطراف الكيانات الملائمة</translation>
     </message>
@@ -1100,78 +1100,78 @@ The system will revert to the latest configuration backup file </source>
         <translation type="obsolete">يجب أن يكون لكيان النسب المئوية عمود للشكل الهندسي</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="826"/>
+        <location filename="../ui/wizard/wizard.py" line="827"/>
         <source>Minimum start date should be less than maximum end date.</source>
         <translation>يجب أن تكون القيمة الدنيا لتاريخ البدء أقل من القيمة القصوى لتاريخ الانتهاء</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="831"/>
+        <location filename="../ui/wizard/wizard.py" line="832"/>
         <source>Ok</source>
         <translation>تم</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="892"/>
+        <location filename="../ui/wizard/wizard.py" line="893"/>
         <source>Entity &apos;%s&apos; has no columns!</source>
         <translation>28/5000
 الكيان &apos;٪ s&apos; ليس له أعمدة!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="913"/>
+        <location filename="../ui/wizard/wizard.py" line="914"/>
         <source>Lookup %s has no values</source>
         <translation>لا يوجد قيمة للبحث جار إعداد التهيئة، يرجى الانتظار ...</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1285"/>
+        <location filename="../ui/wizard/wizard.py" line="1286"/>
         <source>Preparing configuration, please wait...</source>
         <translation>جار إعداد التهيئة، يرجى الانتظار ...</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1312"/>
+        <location filename="../ui/wizard/wizard.py" line="1313"/>
         <source>Close</source>
         <translation>اغلاق</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1438"/>
+        <location filename="../ui/wizard/wizard.py" line="1439"/>
         <source>Failed to update configuration. Check error logs.</source>
         <translation>أخفق تحديث التهيئة. تحقق من سجلات الأخطاء.</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1484"/>
+        <location filename="../ui/wizard/wizard.py" line="1485"/>
         <source>Accept</source>
         <translation>قبول</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1485"/>
+        <location filename="../ui/wizard/wizard.py" line="1486"/>
         <source>Reject</source>
         <translation>رفض</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1488"/>
+        <location filename="../ui/wizard/wizard.py" line="1489"/>
         <source>Options</source>
         <translation>خيارات</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1521"/>
+        <location filename="../ui/wizard/wizard.py" line="1522"/>
         <source>Are you sure you want to discard the draft profile?</source>
         <translation>هل تريد بالتأكيد تجاهل مسودة الملف الشخصي؟</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1534"/>
+        <location filename="../ui/wizard/wizard.py" line="1535"/>
         <source>Select a directory for supporting documents</source>
         <translation>حدد دليلا للمستندات الداعمة</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1580"/>
+        <location filename="../ui/wizard/wizard.py" line="1581"/>
         <source>Select Folder</source>
         <translation>تحديد الملف</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1712"/>
+        <location filename="../ui/wizard/wizard.py" line="1713"/>
         <source>{0} profile cannot be deleted. At least one profile is required to exist in the STDM configuration. </source>
         <translation>حدد بحثا لحذفه!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1720"/>
+        <location filename="../ui/wizard/wizard.py" line="1721"/>
         <source>You will loose all items related to this profile i.e 
 entities, lookups and Social Tenure Relationships.
 Are you sure you want to delete this profile?</source>
@@ -1180,105 +1180,105 @@ Are you sure you want to delete this profile?</source>
 هل تريد بالتأكيد حذف هذا الملف الشخصي؟</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2452"/>
+        <location filename="../ui/wizard/wizard.py" line="2455"/>
         <source>Nothing to delete!</source>
         <translation>لا يوجد شيء قابل للحذف</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2455"/>
+        <location filename="../ui/wizard/wizard.py" line="2458"/>
         <source>Select a lookup to delete!</source>
         <translation>حدد بحثا لحذفه!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2463"/>
+        <location filename="../ui/wizard/wizard.py" line="2466"/>
         <source>Cannot delete &apos;{0}&apos; lookup!
  Lookup is been used by existing columns.</source>
         <translation>لا يمكن حذف &apos;{0}&apos; بحث! 
 تم استخدام البحث بواسطة الأعمدة الحالية.</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2470"/>
+        <location filename="../ui/wizard/wizard.py" line="2473"/>
         <source>Cannot delete tenure type lookup table!</source>
         <translation>تعذر حذف جدول بحث نوع الحيازة</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2474"/>
+        <location filename="../ui/wizard/wizard.py" line="2477"/>
         <source>Delete selected lookup?</source>
         <translation>حذف البحث المختار؟</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2686"/>
+        <location filename="../ui/wizard/wizard.py" line="2689"/>
         <source>STDM Configuration Wizard</source>
         <translation>معالج تكوين نموذج ملكية الحيازة الاجتماعية</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2691"/>
+        <location filename="../ui/wizard/wizard.py" line="2694"/>
         <source>Save</source>
         <translation>حفظ</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2693"/>
+        <location filename="../ui/wizard/wizard.py" line="2696"/>
         <source>Don&apos;t Save</source>
         <translation>لا تحفظ</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2695"/>
+        <location filename="../ui/wizard/wizard.py" line="2698"/>
         <source>Cancel</source>
         <translation>اغلاق</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2415"/>
+        <location filename="../ui/wizard/wizard.py" line="2418"/>
         <source>Please select a lookup to edit!</source>
         <translation>الرجاء تحديد بحث لتعديله!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2221"/>
+        <location filename="../ui/wizard/wizard.py" line="2224"/>
         <source>Please select a column to edit</source>
         <translation>يرجى تحديد عمود للتعديل</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="230"/>
+        <location filename="../ui/wizard/wizard.py" line="231"/>
         <source> - [ DRAFT ]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="341"/>
+        <location filename="../ui/wizard/wizard.py" line="342"/>
         <source>You have made some changes to your current configuration file, but you have not saved them in the database permanently.
  Would you like to save your changes as draft and continue next time? </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="563"/>
+        <location filename="../ui/wizard/wizard.py" line="564"/>
         <source>The selected entity has already been specified as a spatial unit in the profile&apos;s social tenure relationship.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="590"/>
+        <location filename="../ui/wizard/wizard.py" line="591"/>
         <source>The selected entity has already been specified as a party in the profile&apos;s social tenure relationship.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="693"/>
+        <location filename="../ui/wizard/wizard.py" line="694"/>
         <source>Please select at least one spatial unit in order to be able to specify the tenure type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="771"/>
+        <location filename="../ui/wizard/wizard.py" line="772"/>
         <source>Custom Tenure Attributes Editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="804"/>
+        <location filename="../ui/wizard/wizard.py" line="805"/>
         <source>Please select at least one spatial unit from the list of applicable spatial unit entities.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="931"/>
+        <location filename="../ui/wizard/wizard.py" line="932"/>
         <source>No tenure types have been specified in the profile&apos;s social tenure relationship.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="420"/>
+        <location filename="../ui/wizard/wizard.py" line="421"/>
         <source>Your previous configuration wizard did not complete successfully!
  Would you like to recover that session?</source>
         <translation type="unfinished"></translation>
@@ -1287,72 +1287,72 @@ Are you sure you want to delete this profile?</source>
 <context>
     <name>Configuration Wizard</name>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1384"/>
+        <location filename="../ui/wizard/wizard.py" line="1385"/>
         <source>Configuration update started...</source>
         <translation>تم بدء تحديث التهيئة ...</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1407"/>
+        <location filename="../ui/wizard/wizard.py" line="1408"/>
         <source>The configuration has been successfully updated.</source>
         <translation>تم تحديث التهيئة بنجاح.</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1727"/>
+        <location filename="../ui/wizard/wizard.py" line="1728"/>
         <source>Unable to delete profile!</source>
         <translation>يتعذر حذف الملف الشخصي!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1830"/>
+        <location filename="../ui/wizard/wizard.py" line="1833"/>
         <source>No profile selected to add entity!</source>
         <translation>لم يتم تحديد ملف شخصي لإضافة كيان!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1880"/>
+        <location filename="../ui/wizard/wizard.py" line="1883"/>
         <source>No entity selected for deletion!</source>
         <translation>لا يوجد كيان مختار للحذف</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2179"/>
+        <location filename="../ui/wizard/wizard.py" line="2182"/>
         <source>No entity selected to add column!</source>
         <translation>لا يوجد كيان مختار لإضافة عمود</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2262"/>
+        <location filename="../ui/wizard/wizard.py" line="2265"/>
         <source>No column selected for edit!</source>
         <translation>لا يوجد عمود مختار للتعديل</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2348"/>
+        <location filename="../ui/wizard/wizard.py" line="2351"/>
         <source>No column selected for deletion!</source>
         <translation>لا يوجد عمود مختار للحذف</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2399"/>
+        <location filename="../ui/wizard/wizard.py" line="2402"/>
         <source>No profile selected to add lookup!</source>
         <translation>لا يوجد ملف شخصي مختار من أجل إضافة بحث</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2410"/>
+        <location filename="../ui/wizard/wizard.py" line="2413"/>
         <source>Nothing to edit!</source>
         <translation>لا شيء للتعديل</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2565"/>
+        <location filename="../ui/wizard/wizard.py" line="2568"/>
         <source>No lookup selected to add value!</source>
         <translation>لا يوجد بحث مختار لإضافة قيم</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2620"/>
+        <location filename="../ui/wizard/wizard.py" line="2623"/>
         <source>Select value to delete</source>
         <translation>اختيار قيمة لحذفها</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1838"/>
+        <location filename="../ui/wizard/wizard.py" line="1841"/>
         <source>Please select an entity to edit!</source>
         <translation>الرجاء اختيار كيان للتعديل</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2582"/>
+        <location filename="../ui/wizard/wizard.py" line="2585"/>
         <source>Please select a lookup value to edit!</source>
         <translation>الرجاء اختيار قيمة بحث من أجل التعديل</translation>
     </message>
@@ -1360,7 +1360,7 @@ Are you sure you want to delete this profile?</source>
 <context>
     <name>ConfigurationFileUpdater</name>
     <message>
-        <location filename="../plugin.py" line="606"/>
+        <location filename="../plugin.py" line="610"/>
         <source>Upgrade Information</source>
         <translation>تحديث المعلومات</translation>
     </message>
@@ -1465,7 +1465,7 @@ Are you sure you want to cancel the migration process?</source>
 <context>
     <name>ContentAuthorizationToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="793"/>
+        <location filename="../plugin.py" line="819"/>
         <source>Content Authorization</source>
         <translation>تفويض المحتوى</translation>
     </message>
@@ -2152,7 +2152,7 @@ This action cannot be undone.</source>
 <context>
     <name>DocumentDesignerAction</name>
     <message>
-        <location filename="../plugin.py" line="825"/>
+        <location filename="../plugin.py" line="851"/>
         <source>Document Designer</source>
         <translation>مصمم الملفات</translation>
     </message>
@@ -2209,11 +2209,21 @@ This action cannot be undone.</source>
         <source>Memory allocation error. Please try a lower resolution or a smaller paper size.</source>
         <translation>خطأ في تخصيص الذاكرة. الرجاء تجربة درجة وضوح أقل أو حجم ورق أصغر</translation>
     </message>
+    <message>
+        <location filename="../composer/document_generator.py" line="893"/>
+        <source>Yes</source>
+        <translation type="unfinished">نعم</translation>
+    </message>
+    <message>
+        <location filename="../composer/document_generator.py" line="897"/>
+        <source>No</source>
+        <translation type="unfinished">لا</translation>
+    </message>
 </context>
 <context>
     <name>DocumentGeneratorAction</name>
     <message>
-        <location filename="../plugin.py" line="828"/>
+        <location filename="../plugin.py" line="854"/>
         <source>Document Generator</source>
         <translation>مولد المستندات</translation>
     </message>
@@ -2784,12 +2794,12 @@ Please check if the record has dependencies such as social tenure relationship o
 <context>
     <name>EntitySupportingDocument</name>
     <message>
-        <location filename="../data/configuration/entity.py" line="590"/>
+        <location filename="../data/configuration/entity.py" line="604"/>
         <source>General</source>
         <translation>عام</translation>
     </message>
     <message>
-        <location filename="../data/configuration/entity.py" line="641"/>
+        <location filename="../data/configuration/entity.py" line="655"/>
         <source>%s does not have an id column. This is required in order to link it to the supporting document table through this association table.</source>
         <translation>لا يوجد للنسب المئوية عمود معرف. وهذا مطلوب حتى يتم ربطه بجدول المستندات الداعمه من خلال جدول المشاركة .</translation>
     </message>
@@ -3087,7 +3097,7 @@ digitize a feature to add a record.</source>
 <context>
     <name>GeoODKMobileSettings</name>
     <message>
-        <location filename="../plugin.py" line="779"/>
+        <location filename="../plugin.py" line="805"/>
         <source>Mobile Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3272,7 +3282,7 @@ digitize a feature to add a record.</source>
 <context>
     <name>ImportAction</name>
     <message>
-        <location filename="../plugin.py" line="819"/>
+        <location filename="../plugin.py" line="845"/>
         <source>Import Data</source>
         <translation>استيراد بيانات</translation>
     </message>
@@ -3462,7 +3472,7 @@ the details.</source>
 <context>
     <name>LoginToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="169"/>
+        <location filename="../plugin.py" line="172"/>
         <source>Login</source>
         <translation>تسجيل دخول</translation>
     </message>
@@ -3470,7 +3480,7 @@ the details.</source>
 <context>
     <name>LogoutToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="180"/>
+        <location filename="../plugin.py" line="183"/>
         <source>Logout</source>
         <translation>تسجيل خروج</translation>
     </message>
@@ -3597,7 +3607,7 @@ the details.</source>
 <context>
     <name>ManageAdminUnitsToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="810"/>
+        <location filename="../plugin.py" line="836"/>
         <source>Manage Administrative Units</source>
         <translation>إدارة الوحدات الإدارية</translation>
     </message>
@@ -3613,7 +3623,7 @@ the details.</source>
 <context>
     <name>ManageUsersToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="802"/>
+        <location filename="../plugin.py" line="828"/>
         <source>Manage Users-Roles</source>
         <translation>إدارة أدوار المستخدمين</translation>
     </message>
@@ -3692,12 +3702,12 @@ the details.</source>
 <context>
     <name>MobileFormGenerator</name>
     <message>
-        <location filename="../plugin.py" line="852"/>
+        <location filename="../plugin.py" line="878"/>
         <source>Generate Mobile Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="855"/>
+        <location filename="../plugin.py" line="881"/>
         <source>Import Mobile Data</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3718,7 +3728,7 @@ the details.</source>
 <context>
     <name>MobileToolbarSettings</name>
     <message>
-        <location filename="../plugin.py" line="782"/>
+        <location filename="../plugin.py" line="808"/>
         <source>Mobile Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3908,7 +3918,7 @@ Please set it in the Options dialog or Configuration Wizard.</source>
 <context>
     <name>OptionsToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="806"/>
+        <location filename="../plugin.py" line="832"/>
         <source>Options</source>
         <translation>خيارات</translation>
     </message>
@@ -4283,7 +4293,7 @@ Please set it in the Options dialog or Configuration Wizard.</source>
 <context>
     <name>ReportBuilderAction</name>
     <message>
-        <location filename="../plugin.py" line="822"/>
+        <location filename="../plugin.py" line="848"/>
         <source>Export Data</source>
         <translation>تصدير البيانات</translation>
     </message>
@@ -4291,12 +4301,12 @@ Please set it in the Options dialog or Configuration Wizard.</source>
 <context>
     <name>STDM</name>
     <message>
-        <location filename="../plugin.py" line="293"/>
+        <location filename="../plugin.py" line="296"/>
         <source>Spatial Extension Error</source>
         <translation>خطأ في الامتداد المكاني</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="590"/>
+        <location filename="../plugin.py" line="594"/>
         <source>Load Configuration Error</source>
         <translation>خطأ محلي في التكوين</translation>
     </message>
@@ -4304,12 +4314,12 @@ Please set it in the Options dialog or Configuration Wizard.</source>
 <context>
     <name>STDM Configuration</name>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1549"/>
+        <location filename="../ui/wizard/wizard.py" line="1550"/>
         <source>Select a directory for outputting generated documents</source>
         <translation>حدد دليلا لإخراج المستندات التي تم إنشاؤها</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1564"/>
+        <location filename="../ui/wizard/wizard.py" line="1565"/>
         <source>Select a directory for document templates</source>
         <translation>حدد دليلا لنماذج المستندات</translation>
     </message>
@@ -4317,7 +4327,7 @@ Please set it in the Options dialog or Configuration Wizard.</source>
 <context>
     <name>STDM Configuration Wizard</name>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2654"/>
+        <location filename="../ui/wizard/wizard.py" line="2657"/>
         <source>STDM</source>
         <translation>نموذج ملكية الحيازة الاجتماعية</translation>
     </message>
@@ -4333,7 +4343,7 @@ Please set it in the Options dialog or Configuration Wizard.</source>
 <context>
     <name>STDMEntityMenu</name>
     <message>
-        <location filename="../plugin.py" line="772"/>
+        <location filename="../plugin.py" line="798"/>
         <source>Entities</source>
         <translation>كيانات</translation>
     </message>
@@ -4379,7 +4389,7 @@ Make sure you have added a base layer to digitize on.</source>
 <context>
     <name>STDMPlugin</name>
     <message>
-        <location filename="../plugin.py" line="1428"/>
+        <location filename="../plugin.py" line="1454"/>
         <source>Error Loading the Configuration Wizard</source>
         <translation>حدث خطأ أثناء تحميل معالج التكوين</translation>
     </message>
@@ -4389,12 +4399,12 @@ Make sure you have added a base layer to digitize on.</source>
         <translation>مصمممستندات نموذج ملكية الحيازة الاجتماعية</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1666"/>
+        <location filename="../plugin.py" line="1692"/>
         <source>Error Loading Entity Browser</source>
         <translation>خطأ في تحميل متصفح الكيان</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1666"/>
+        <location filename="../plugin.py" line="1692"/>
         <source>Unable to load the entity in the browser. Check if the entity is configured correctly. Error: %s</source>
         <translation>تعذر تحميل الكيان في المتصفح. تحقق مما إذا تم تكوين الكيان بشكل صحيح. خطأ:٪ </translation>
     </message>
@@ -4420,33 +4430,33 @@ Make sure you have added a base layer to digitize on.</source>
 <context>
     <name>STDMQGISLoader</name>
     <message>
-        <location filename="../plugin.py" line="187"/>
+        <location filename="../plugin.py" line="190"/>
         <source>Help Contents</source>
         <translation>محتوى المساعدة</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="204"/>
+        <location filename="../plugin.py" line="207"/>
         <source>STDM</source>
         <translation>نموذج ملكية الحيازة الاجتماعية</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="219"/>
+        <location filename="../plugin.py" line="222"/>
         <source>STDM plugin menu</source>
         <translation>القائمة المساعده لنموذج حيازة الملكية الإجتماعية
   </translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="347"/>
+        <location filename="../plugin.py" line="351"/>
         <source>Error Loading Modules</source>
         <translation>خطأ في تحميل الأنماط</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="391"/>
+        <location filename="../plugin.py" line="395"/>
         <source>Database Table Error</source>
         <translation>خطأ في جدول قاعدة البيانات</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="364"/>
+        <location filename="../plugin.py" line="368"/>
         <source>The system has detected that database tables 
 required in this module are missing.
 Do you want to re-run the Configuration Wizard now?</source>
@@ -4455,74 +4465,74 @@ Do you want to re-run the Configuration Wizard now?</source>
 هل تريد إعادة تشغيل &quot;معالج التكوين&quot; الآن؟</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="442"/>
+        <location filename="../plugin.py" line="446"/>
         <source>Configuration Wizard Error</source>
         <translation>خطأ في معالج التكوين</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="446"/>
+        <location filename="../plugin.py" line="450"/>
         <source>The system has detected that you did not run 
 the Configuration Wizard so far. 
 Do you want to run it now? </source>
         <translation>اكتشف النظام أنك لم تقم بتشغيل &quot;معالج التكوين&quot; حتى الآن. هل تريد تشغيله الآن؟</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="495"/>
+        <location filename="../plugin.py" line="499"/>
         <source>Default Profile Error</source>
         <translation>خطأ في الملف الشخصي الاعتيادي</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="683"/>
+        <location filename="../plugin.py" line="709"/>
         <source>Upgrade STDM Configuration</source>
         <translation>تحديث تكون نموذج حيازة الملكية الإجتماعية</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="683"/>
+        <location filename="../plugin.py" line="709"/>
         <source>Your configuration has been successfully upgraded!</source>
         <translation>تم تحديث التهيئة بنجاح</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1618"/>
+        <location filename="../plugin.py" line="1644"/>
         <source>New Social Tenure Relationship</source>
         <translation>علاقة حيازة اجتماعية جديدة</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1230"/>
+        <location filename="../plugin.py" line="1256"/>
         <source>Spatial Table Error</source>
         <translation>خطأ في الجدول المكاني</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1268"/>
+        <location filename="../plugin.py" line="1294"/>
         <source>Spatial Unit Manager</source>
         <translation>إدارة الوحدات الفراغية</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1834"/>
+        <location filename="../plugin.py" line="1860"/>
         <source>Open Error</source>
         <translation>خطأ في الفتح</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1902"/>
+        <location filename="../plugin.py" line="1928"/>
         <source>Config file version</source>
         <translation>نسخة ملف التهيئة</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1904"/>
+        <location filename="../plugin.py" line="1930"/>
         <source>Your configuration file is older than the current stdm version, do you want to backupthe configuration and databasedata</source>
         <translation>ملف التكوين الخاص بك هو أقدم من الإصدار سدتم الحالي، هل تريد النسخ الاحتياطي للبيانات التكوين وقاعدة البيانات</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1916"/>
+        <location filename="../plugin.py" line="1942"/>
         <source>Update config file</source>
         <translation>تحديث ملف التهيئة</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1918"/>
+        <location filename="../plugin.py" line="1944"/>
         <source>The config version installed is old and outdated STDM will try to apply the required updates</source>
         <translation>إصدار التكوين المثبتة قديمة وسوف عفا عليها الزمن ستدم محاولة تطبيق التحديثات المطلوبة</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1927"/>
+        <location filename="../plugin.py" line="1953"/>
         <source>STDM has detected that the version of config installed is old and outdated. Delete existing configuration folder or xml file and restart QGIS.</source>
         <translation>إكتشف نموذج حيازة الملكية الإجتماعية أن إصدار التهيئة المثبت قديم. إحذف مجلد التكوين الحالي أو ملف xmlوإعادة تشغيل QGIS.</translation>
     </message>
@@ -4552,7 +4562,7 @@ Do you want to run it now? </source>
         <translation>علاقة الحيازة الاجتماعية</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1456"/>
+        <location filename="../plugin.py" line="1482"/>
         <source>Error Loading the STR Editor</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5064,12 +5074,12 @@ Hence, this translator is not applicable.</source>
 <context>
     <name>SpatialEditorAction</name>
     <message>
-        <location filename="../plugin.py" line="832"/>
+        <location filename="../plugin.py" line="858"/>
         <source>Spatial Unit Manager</source>
         <translation>إدارة الوحدات المكانية</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="837"/>
+        <location filename="../plugin.py" line="863"/>
         <source>Spatial Entity Details</source>
         <translation>تفاصيل الكيان المكاني</translation>
     </message>
@@ -5126,36 +5136,36 @@ Hence, this translator is not applicable.</source>
 <context>
     <name>SpatialUnitManagerDockWidget</name>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="548"/>
+        <location filename="../ui/spatial_unit_manager.py" line="549"/>
         <source>Spatial Unit Manager</source>
         <translation>إدارة الوحدات المكانية</translation>
     </message>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="552"/>
+        <location filename="../ui/spatial_unit_manager.py" line="553"/>
         <source>Spatial Column Layer Could not be found</source>
         <translation>تعذر العثور على طبقة العمود المكاني</translation>
     </message>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="945"/>
+        <location filename="../ui/spatial_unit_manager.py" line="946"/>
         <source>GPS Feature Import Loading Error</source>
         <translation>خطأ تحميل ميزة استيراد نظام تحديد المواقع العالمي  </translation>
     </message>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="951"/>
+        <location filename="../ui/spatial_unit_manager.py" line="952"/>
         <source>You have not selected a layer.
  Please select a valid layer to import GPS features.</source>
         <translation>لم يتم إختيار طبقة.
 يرجى تحديد طبقة صالحة لاستيراد ميزات نظام تحديد المواقع العالمي.</translation>
     </message>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="961"/>
+        <location filename="../ui/spatial_unit_manager.py" line="962"/>
         <source>You have selected a non-STDM entity layer.
  Please select a valid layer to import GPS features.</source>
         <translation>لقد قمت بتحديد طبقة كيان غير مرتبطة بنموذج الحيازة المكانية.
 الرجاء تحديد طبقة صالحة لاستيراد ميزات نظام تحديد المواقع العالمي.</translation>
     </message>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="979"/>
+        <location filename="../ui/spatial_unit_manager.py" line="980"/>
         <source>You must add an entity layer from Spatial Unit Manager
 and select it to import GPS Features.</source>
         <translation>يجب إضافة طبقة كيان من مدير الوحدة المكانية
@@ -5595,12 +5605,12 @@ it is being used by another process</source>
 <context>
     <name>ToolbarAdminSettings</name>
     <message>
-        <location filename="../plugin.py" line="754"/>
+        <location filename="../plugin.py" line="780"/>
         <source>Admin Settings</source>
         <translation>إعدادات المشرف</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="759"/>
+        <location filename="../plugin.py" line="785"/>
         <source>Entities</source>
         <translation>كيانات</translation>
     </message>
@@ -5796,7 +5806,7 @@ it is being used by another process</source>
 <context>
     <name>ViewSTRToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="842"/>
+        <location filename="../plugin.py" line="868"/>
         <source>View Social Tenure Relationship</source>
         <translation>عرض العلاقة الاجتماعية العلاقة</translation>
     </message>
@@ -5830,7 +5840,7 @@ it is being used by another process</source>
 <context>
     <name>WorkspaceConfig</name>
     <message>
-        <location filename="../plugin.py" line="849"/>
+        <location filename="../plugin.py" line="875"/>
         <source>Entities</source>
         <translation>كيانات</translation>
     </message>

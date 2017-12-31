@@ -109,7 +109,7 @@
 <context>
     <name>AboutToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="176"/>
+        <location filename="../plugin.py" line="179"/>
         <source>About</source>
         <translation>A propos</translation>
     </message>
@@ -544,7 +544,7 @@ Cliquer sur Oui pour valider ou Non pour annuler.</translation>
 <context>
     <name>ChangePasswordToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="184"/>
+        <location filename="../plugin.py" line="187"/>
         <source>Change Password</source>
         <translation>Modifier le mot de passe</translation>
     </message>
@@ -1013,27 +1013,27 @@ La table ne sera pas ajoutée.</translation>
 <context>
     <name>ConfigWizard</name>
     <message>
-        <location filename="../plugin.py" line="846"/>
+        <location filename="../plugin.py" line="872"/>
         <source>Configuration Wizard</source>
         <translation>Assistant de configuration</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="812"/>
+        <location filename="../ui/wizard/wizard.py" line="813"/>
         <source>Minimum start date is greater than maximum start date.</source>
         <translation>La date minimale de début est supérieure à la date maximale de début.</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="275"/>
+        <location filename="../ui/wizard/wizard.py" line="276"/>
         <source>Maximum start date is less than minimum start date.</source>
         <translation>La date maximale de début est inférieure à la date minimale de début.</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="819"/>
+        <location filename="../ui/wizard/wizard.py" line="820"/>
         <source>Minimum end date is greater than maximum end date.</source>
         <translation>La date minimale de fin est supérieure à la date maximale de fin.</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="295"/>
+        <location filename="../ui/wizard/wizard.py" line="296"/>
         <source>Maximum end date is less than minimum end date.</source>
         <translation>La date maximale de fin est inférieure à la date minimale de fin.</translation>
     </message>
@@ -1045,14 +1045,14 @@ La table ne sera pas ajoutée.</translation>
 Voulez-vous enregistrer ces modifications comme bruillon et continuer après?</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="401"/>
+        <location filename="../ui/wizard/wizard.py" line="402"/>
         <source>Your main configuration file seems to be corrupt!
 The system will revert to the latest configuration backup file </source>
         <translation>Votre fichier de configuration principal semble être corrompu!
 Le système reviendra vers le dernier fichier de sauvegarde des configurations</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="408"/>
+        <location filename="../ui/wizard/wizard.py" line="409"/>
         <source>Your configuration files seems to be corrupt!
   The system will revert to the original system configuration file.</source>
         <translation>Votre fichier de configuration semble être corrompu!
@@ -1077,17 +1077,17 @@ Et il pourrait y avoir un décalage entre la base de données et la configuratio
         <translation type="obsolete">L&apos;entité sélectionnée a également été définie comme unité spatiale de relation sociale du profil.</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="640"/>
+        <location filename="../ui/wizard/wizard.py" line="641"/>
         <source>Load Configuration Error</source>
         <translation>Erreur de chargement de la configuration</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="791"/>
+        <location filename="../ui/wizard/wizard.py" line="792"/>
         <source>No entities for creating social tenure relationship.</source>
         <translation>Aucune entité pour la création des relations de tenure sociale.</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="797"/>
+        <location filename="../ui/wizard/wizard.py" line="798"/>
         <source>Please select at least one party from the list of applicable party entities.</source>
         <translation>Veillez selectionner au minimum une partie de la liste des parties applicables.</translation>
     </message>
@@ -1102,77 +1102,77 @@ Et il pourrait y avoir un décalage entre la base de données et la configuratio
         <translation type="obsolete">L&apos;entité %s doit avoir une colonne de type Géometrie.</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="826"/>
+        <location filename="../ui/wizard/wizard.py" line="827"/>
         <source>Minimum start date should be less than maximum end date.</source>
         <translation>La date minimum de début  doit être inférieure à la date maximum de fin.</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="831"/>
+        <location filename="../ui/wizard/wizard.py" line="832"/>
         <source>Ok</source>
         <translation>Ok</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="892"/>
+        <location filename="../ui/wizard/wizard.py" line="893"/>
         <source>Entity &apos;%s&apos; has no columns!</source>
         <translation>L&apos;entité &apos;%s&apos; ne contient pas de colonne!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="913"/>
+        <location filename="../ui/wizard/wizard.py" line="914"/>
         <source>Lookup %s has no values</source>
         <translation>La recherche %s n&apos;a pas de valeurs definies</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1285"/>
+        <location filename="../ui/wizard/wizard.py" line="1286"/>
         <source>Preparing configuration, please wait...</source>
         <translation>Preparation de la configuration. Veillez patienter...</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1312"/>
+        <location filename="../ui/wizard/wizard.py" line="1313"/>
         <source>Close</source>
         <translation>Fermer</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1438"/>
+        <location filename="../ui/wizard/wizard.py" line="1439"/>
         <source>Failed to update configuration. Check error logs.</source>
         <translation>Echec de mis à jour de la configuration. Verifier le journal d&apos;erreurs</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1484"/>
+        <location filename="../ui/wizard/wizard.py" line="1485"/>
         <source>Accept</source>
         <translation>Accepter</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1485"/>
+        <location filename="../ui/wizard/wizard.py" line="1486"/>
         <source>Reject</source>
         <translation>Rejeter</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1488"/>
+        <location filename="../ui/wizard/wizard.py" line="1489"/>
         <source>Options</source>
         <translation>Options</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1521"/>
+        <location filename="../ui/wizard/wizard.py" line="1522"/>
         <source>Are you sure you want to discard the draft profile?</source>
         <translation>Etes-vous sûr de vouloir annuler le brouillon du profile?</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1534"/>
+        <location filename="../ui/wizard/wizard.py" line="1535"/>
         <source>Select a directory for supporting documents</source>
         <translation>Sélectionner le répertoire des documents justificatifs</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1580"/>
+        <location filename="../ui/wizard/wizard.py" line="1581"/>
         <source>Select Folder</source>
         <translation>Sélectionner le dossier</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1712"/>
+        <location filename="../ui/wizard/wizard.py" line="1713"/>
         <source>{0} profile cannot be deleted. At least one profile is required to exist in the STDM configuration. </source>
         <translation>{0} le profile ne peut pas etre supprimer. Au minimum un profile est requis pour exister dans la configuration de STDM.</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1720"/>
+        <location filename="../ui/wizard/wizard.py" line="1721"/>
         <source>You will loose all items related to this profile i.e 
 entities, lookups and Social Tenure Relationships.
 Are you sure you want to delete this profile?</source>
@@ -1180,105 +1180,105 @@ Are you sure you want to delete this profile?</source>
 Voulez-vous supprimer ce profile§</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2452"/>
+        <location filename="../ui/wizard/wizard.py" line="2455"/>
         <source>Nothing to delete!</source>
         <translation>Rien à supprimer!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2455"/>
+        <location filename="../ui/wizard/wizard.py" line="2458"/>
         <source>Select a lookup to delete!</source>
         <translation>Selectionner une liste à supprimer!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2463"/>
+        <location filename="../ui/wizard/wizard.py" line="2466"/>
         <source>Cannot delete &apos;{0}&apos; lookup!
  Lookup is been used by existing columns.</source>
         <translation>Impossible de supprimer la liste &apos;{0}&apos;!
 Cette liste est utilisée par une colonne existante.</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2470"/>
+        <location filename="../ui/wizard/wizard.py" line="2473"/>
         <source>Cannot delete tenure type lookup table!</source>
         <translation>Impossible de supprimer la table &quot;Liste des types des tenures&quot;</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2474"/>
+        <location filename="../ui/wizard/wizard.py" line="2477"/>
         <source>Delete selected lookup?</source>
         <translation>Supprimer la liste selectionnée</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2686"/>
+        <location filename="../ui/wizard/wizard.py" line="2689"/>
         <source>STDM Configuration Wizard</source>
         <translation>Assistant de configuration de STDM</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2691"/>
+        <location filename="../ui/wizard/wizard.py" line="2694"/>
         <source>Save</source>
         <translation>Enregistrer</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2693"/>
+        <location filename="../ui/wizard/wizard.py" line="2696"/>
         <source>Don&apos;t Save</source>
         <translation>Ne pas enregistrer</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2695"/>
+        <location filename="../ui/wizard/wizard.py" line="2698"/>
         <source>Cancel</source>
         <translation>Annuler</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2415"/>
+        <location filename="../ui/wizard/wizard.py" line="2418"/>
         <source>Please select a lookup to edit!</source>
         <translation>Sélectionner un liste à modifier </translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2221"/>
+        <location filename="../ui/wizard/wizard.py" line="2224"/>
         <source>Please select a column to edit</source>
         <translation>Sélectionner un colonne à modifier </translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="230"/>
+        <location filename="../ui/wizard/wizard.py" line="231"/>
         <source> - [ DRAFT ]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="341"/>
+        <location filename="../ui/wizard/wizard.py" line="342"/>
         <source>You have made some changes to your current configuration file, but you have not saved them in the database permanently.
  Would you like to save your changes as draft and continue next time? </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="563"/>
+        <location filename="../ui/wizard/wizard.py" line="564"/>
         <source>The selected entity has already been specified as a spatial unit in the profile&apos;s social tenure relationship.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="590"/>
+        <location filename="../ui/wizard/wizard.py" line="591"/>
         <source>The selected entity has already been specified as a party in the profile&apos;s social tenure relationship.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="693"/>
+        <location filename="../ui/wizard/wizard.py" line="694"/>
         <source>Please select at least one spatial unit in order to be able to specify the tenure type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="771"/>
+        <location filename="../ui/wizard/wizard.py" line="772"/>
         <source>Custom Tenure Attributes Editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="804"/>
+        <location filename="../ui/wizard/wizard.py" line="805"/>
         <source>Please select at least one spatial unit from the list of applicable spatial unit entities.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="931"/>
+        <location filename="../ui/wizard/wizard.py" line="932"/>
         <source>No tenure types have been specified in the profile&apos;s social tenure relationship.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="420"/>
+        <location filename="../ui/wizard/wizard.py" line="421"/>
         <source>Your previous configuration wizard did not complete successfully!
  Would you like to recover that session?</source>
         <translation type="unfinished"></translation>
@@ -1287,72 +1287,72 @@ Cette liste est utilisée par une colonne existante.</translation>
 <context>
     <name>Configuration Wizard</name>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1384"/>
+        <location filename="../ui/wizard/wizard.py" line="1385"/>
         <source>Configuration update started...</source>
         <translation>Modification de la configuration en cours...</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1407"/>
+        <location filename="../ui/wizard/wizard.py" line="1408"/>
         <source>The configuration has been successfully updated.</source>
         <translation>La configuration a été effectuée avec succès.</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1727"/>
+        <location filename="../ui/wizard/wizard.py" line="1728"/>
         <source>Unable to delete profile!</source>
         <translation>Impossible de supprimer le profile!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1830"/>
+        <location filename="../ui/wizard/wizard.py" line="1833"/>
         <source>No profile selected to add entity!</source>
         <translation>Aucun profil selectionné pour l&apos;ajout d&apos;une entité!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1880"/>
+        <location filename="../ui/wizard/wizard.py" line="1883"/>
         <source>No entity selected for deletion!</source>
         <translation>Aucune entité sélectionnée pour la suppression!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2179"/>
+        <location filename="../ui/wizard/wizard.py" line="2182"/>
         <source>No entity selected to add column!</source>
         <translation>Aucune entité sélectionnée pour ajouter une colonne!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2262"/>
+        <location filename="../ui/wizard/wizard.py" line="2265"/>
         <source>No column selected for edit!</source>
         <translation>Aucune colonne sélectionnée pour la modification!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2348"/>
+        <location filename="../ui/wizard/wizard.py" line="2351"/>
         <source>No column selected for deletion!</source>
         <translation>Aucune colonne sélectionnée pour la suppression!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2399"/>
+        <location filename="../ui/wizard/wizard.py" line="2402"/>
         <source>No profile selected to add lookup!</source>
         <translation>Aucun profil sélectionné pour ajouter une liste!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2410"/>
+        <location filename="../ui/wizard/wizard.py" line="2413"/>
         <source>Nothing to edit!</source>
         <translation>Rien à éditer!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2565"/>
+        <location filename="../ui/wizard/wizard.py" line="2568"/>
         <source>No lookup selected to add value!</source>
         <translation>Aucune liste sélectionnée pour ajouter une valeur!</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2620"/>
+        <location filename="../ui/wizard/wizard.py" line="2623"/>
         <source>Select value to delete</source>
         <translation>Sélectionnez la valeur à supprimer</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1838"/>
+        <location filename="../ui/wizard/wizard.py" line="1841"/>
         <source>Please select an entity to edit!</source>
         <translation>Sélectionner un entité à modifier </translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2582"/>
+        <location filename="../ui/wizard/wizard.py" line="2585"/>
         <source>Please select a lookup value to edit!</source>
         <translation>Sélectionner un liste valeur à modifier </translation>
     </message>
@@ -1360,7 +1360,7 @@ Cette liste est utilisée par une colonne existante.</translation>
 <context>
     <name>ConfigurationFileUpdater</name>
     <message>
-        <location filename="../plugin.py" line="606"/>
+        <location filename="../plugin.py" line="610"/>
         <source>Upgrade Information</source>
         <translation>Informations de mise à niveau</translation>
     </message>
@@ -1465,7 +1465,7 @@ Et la perte temporaire d&apos;accès à votre profil, données et modèles exist
 <context>
     <name>ContentAuthorizationToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="793"/>
+        <location filename="../plugin.py" line="819"/>
         <source>Content Authorization</source>
         <translation>Autorisation de contenu</translation>
     </message>
@@ -2154,7 +2154,7 @@ Cette action ne peut pas être annulé.</translation>
 <context>
     <name>DocumentDesignerAction</name>
     <message>
-        <location filename="../plugin.py" line="825"/>
+        <location filename="../plugin.py" line="851"/>
         <source>Document Designer</source>
         <translation>Concepteur des documents</translation>
     </message>
@@ -2211,11 +2211,21 @@ Cette action ne peut pas être annulé.</translation>
         <source>Memory allocation error. Please try a lower resolution or a smaller paper size.</source>
         <translation>Erreur d&apos;allocation de mémoire. Essayez une résolution inférieure ou un format de papier plus petit.</translation>
     </message>
+    <message>
+        <location filename="../composer/document_generator.py" line="893"/>
+        <source>Yes</source>
+        <translation type="unfinished">Oui</translation>
+    </message>
+    <message>
+        <location filename="../composer/document_generator.py" line="897"/>
+        <source>No</source>
+        <translation type="unfinished">Non</translation>
+    </message>
 </context>
 <context>
     <name>DocumentGeneratorAction</name>
     <message>
-        <location filename="../plugin.py" line="828"/>
+        <location filename="../plugin.py" line="854"/>
         <source>Document Generator</source>
         <translation>Générateur des documents</translation>
     </message>
@@ -2790,12 +2800,12 @@ Vérifiez si l&apos;enregistrement comporte des dépendances telles que la relat
 <context>
     <name>EntitySupportingDocument</name>
     <message>
-        <location filename="../data/configuration/entity.py" line="590"/>
+        <location filename="../data/configuration/entity.py" line="604"/>
         <source>General</source>
         <translation>Général</translation>
     </message>
     <message>
-        <location filename="../data/configuration/entity.py" line="641"/>
+        <location filename="../data/configuration/entity.py" line="655"/>
         <source>%s does not have an id column. This is required in order to link it to the supporting document table through this association table.</source>
         <translation> La table %s n&apos;a de colonne Identifiant unique. Ceci est nécessaire afin de le lier à la table Documents justificatifs à travers cette table d&apos;association.</translation>
     </message>
@@ -3093,7 +3103,7 @@ digitize a feature to add a record.</source>
 <context>
     <name>GeoODKMobileSettings</name>
     <message>
-        <location filename="../plugin.py" line="779"/>
+        <location filename="../plugin.py" line="805"/>
         <source>Mobile Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3278,7 +3288,7 @@ digitize a feature to add a record.</source>
 <context>
     <name>ImportAction</name>
     <message>
-        <location filename="../plugin.py" line="819"/>
+        <location filename="../plugin.py" line="845"/>
         <source>Import Data</source>
         <translation>Importer les données</translation>
     </message>
@@ -3471,7 +3481,7 @@ Sélectionnez une couche STDM pour afficher les détails.</translation>
 <context>
     <name>LoginToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="169"/>
+        <location filename="../plugin.py" line="172"/>
         <source>Login</source>
         <translation>Connexion</translation>
     </message>
@@ -3479,7 +3489,7 @@ Sélectionnez une couche STDM pour afficher les détails.</translation>
 <context>
     <name>LogoutToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="180"/>
+        <location filename="../plugin.py" line="183"/>
         <source>Logout</source>
         <translation>Déconnexion </translation>
     </message>
@@ -3606,7 +3616,7 @@ Sélectionnez une couche STDM pour afficher les détails.</translation>
 <context>
     <name>ManageAdminUnitsToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="810"/>
+        <location filename="../plugin.py" line="836"/>
         <source>Manage Administrative Units</source>
         <translation>Gérer les entités administratives</translation>
     </message>
@@ -3622,7 +3632,7 @@ Sélectionnez une couche STDM pour afficher les détails.</translation>
 <context>
     <name>ManageUsersToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="802"/>
+        <location filename="../plugin.py" line="828"/>
         <source>Manage Users-Roles</source>
         <translation>Gérer les Roles-Utilisateurs </translation>
     </message>
@@ -3701,12 +3711,12 @@ Sélectionnez une couche STDM pour afficher les détails.</translation>
 <context>
     <name>MobileFormGenerator</name>
     <message>
-        <location filename="../plugin.py" line="852"/>
+        <location filename="../plugin.py" line="878"/>
         <source>Generate Mobile Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="855"/>
+        <location filename="../plugin.py" line="881"/>
         <source>Import Mobile Data</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3727,7 +3737,7 @@ Sélectionnez une couche STDM pour afficher les détails.</translation>
 <context>
     <name>MobileToolbarSettings</name>
     <message>
-        <location filename="../plugin.py" line="782"/>
+        <location filename="../plugin.py" line="808"/>
         <source>Mobile Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3918,7 +3928,7 @@ Configurez-le dans la boîte de dialogue Options ou l&apos;assistant de configur
 <context>
     <name>OptionsToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="806"/>
+        <location filename="../plugin.py" line="832"/>
         <source>Options</source>
         <translation>Options</translation>
     </message>
@@ -4293,7 +4303,7 @@ Configurez-le dans la boîte de dialogue Options ou l&apos;assistant de configur
 <context>
     <name>ReportBuilderAction</name>
     <message>
-        <location filename="../plugin.py" line="822"/>
+        <location filename="../plugin.py" line="848"/>
         <source>Export Data</source>
         <translation>Exporter les données</translation>
     </message>
@@ -4301,12 +4311,12 @@ Configurez-le dans la boîte de dialogue Options ou l&apos;assistant de configur
 <context>
     <name>STDM</name>
     <message>
-        <location filename="../plugin.py" line="293"/>
+        <location filename="../plugin.py" line="296"/>
         <source>Spatial Extension Error</source>
         <translation>Erreur de l&apos;extension spatiale</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="590"/>
+        <location filename="../plugin.py" line="594"/>
         <source>Load Configuration Error</source>
         <translation>Erreur de chargement de la configuration</translation>
     </message>
@@ -4314,12 +4324,12 @@ Configurez-le dans la boîte de dialogue Options ou l&apos;assistant de configur
 <context>
     <name>STDM Configuration</name>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1549"/>
+        <location filename="../ui/wizard/wizard.py" line="1550"/>
         <source>Select a directory for outputting generated documents</source>
         <translation>Sélectionner le répertoire pour la sortie des documents générés</translation>
     </message>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="1564"/>
+        <location filename="../ui/wizard/wizard.py" line="1565"/>
         <source>Select a directory for document templates</source>
         <translation>Sélectionner le répertoire des modèles de document</translation>
     </message>
@@ -4327,7 +4337,7 @@ Configurez-le dans la boîte de dialogue Options ou l&apos;assistant de configur
 <context>
     <name>STDM Configuration Wizard</name>
     <message>
-        <location filename="../ui/wizard/wizard.py" line="2654"/>
+        <location filename="../ui/wizard/wizard.py" line="2657"/>
         <source>STDM</source>
         <translation>STDM</translation>
     </message>
@@ -4343,7 +4353,7 @@ Configurez-le dans la boîte de dialogue Options ou l&apos;assistant de configur
 <context>
     <name>STDMEntityMenu</name>
     <message>
-        <location filename="../plugin.py" line="772"/>
+        <location filename="../plugin.py" line="798"/>
         <source>Entities</source>
         <translation>Entités</translation>
     </message>
@@ -4388,7 +4398,7 @@ Make sure you have added a base layer to digitize on.</source>
 <context>
     <name>STDMPlugin</name>
     <message>
-        <location filename="../plugin.py" line="1428"/>
+        <location filename="../plugin.py" line="1454"/>
         <source>Error Loading the Configuration Wizard</source>
         <translation>Erreur de chargement de l&apos;Assistant configuration</translation>
     </message>
@@ -4398,12 +4408,12 @@ Make sure you have added a base layer to digitize on.</source>
         <translation>Concepteur des documents STDM</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1666"/>
+        <location filename="../plugin.py" line="1692"/>
         <source>Error Loading Entity Browser</source>
         <translation>Erreur de chargement du navigateur d&apos;entité</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1666"/>
+        <location filename="../plugin.py" line="1692"/>
         <source>Unable to load the entity in the browser. Check if the entity is configured correctly. Error: %s</source>
         <translation>Impossible de charger l&apos;entité dans le navigateur. Vérifiez si l&apos;entité est configurée correctement.  Erreur: %s</translation>
     </message>
@@ -4429,32 +4439,32 @@ Make sure you have added a base layer to digitize on.</source>
 <context>
     <name>STDMQGISLoader</name>
     <message>
-        <location filename="../plugin.py" line="187"/>
+        <location filename="../plugin.py" line="190"/>
         <source>Help Contents</source>
         <translation>Contenu d&apos;aide</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="204"/>
+        <location filename="../plugin.py" line="207"/>
         <source>STDM</source>
         <translation>STDM</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="219"/>
+        <location filename="../plugin.py" line="222"/>
         <source>STDM plugin menu</source>
         <translation>Menu de l&apos;extension STDM</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="347"/>
+        <location filename="../plugin.py" line="351"/>
         <source>Error Loading Modules</source>
         <translation>Erreur de chargement des modules</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="391"/>
+        <location filename="../plugin.py" line="395"/>
         <source>Database Table Error</source>
         <translation>Erreur de la table de la base de données</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="364"/>
+        <location filename="../plugin.py" line="368"/>
         <source>The system has detected that database tables 
 required in this module are missing.
 Do you want to re-run the Configuration Wizard now?</source>
@@ -4463,12 +4473,12 @@ requises dans ce module manquent.
 Voulez-vous relancer l&apos;assistant de configuration maintenant?</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="442"/>
+        <location filename="../plugin.py" line="446"/>
         <source>Configuration Wizard Error</source>
         <translation>Erreur de l&apos;Assistant de configuration</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="446"/>
+        <location filename="../plugin.py" line="450"/>
         <source>The system has detected that you did not run 
 the Configuration Wizard so far. 
 Do you want to run it now? </source>
@@ -4477,62 +4487,62 @@ L&apos;assistant de configuration jusqu&apos;à présent.
 Voulez-vous l&apos;exécuter maintenant?</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="495"/>
+        <location filename="../plugin.py" line="499"/>
         <source>Default Profile Error</source>
         <translation>Erreur du Profil par défaut</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="683"/>
+        <location filename="../plugin.py" line="709"/>
         <source>Upgrade STDM Configuration</source>
         <translation>Mettre à niveau la configuration STDM</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="683"/>
+        <location filename="../plugin.py" line="709"/>
         <source>Your configuration has been successfully upgraded!</source>
         <translation>La configuration a été mise à niveau avec succès.</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1618"/>
+        <location filename="../plugin.py" line="1644"/>
         <source>New Social Tenure Relationship</source>
         <translation>Nouvelle Relation de de Tenure Sociale</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1230"/>
+        <location filename="../plugin.py" line="1256"/>
         <source>Spatial Table Error</source>
         <translation>Erreur de la table spatiale</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1268"/>
+        <location filename="../plugin.py" line="1294"/>
         <source>Spatial Unit Manager</source>
         <translation>Gestionnaire de l&apos;unité spatiale</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1834"/>
+        <location filename="../plugin.py" line="1860"/>
         <source>Open Error</source>
         <translation>Erreur d&apos;ouverture</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1902"/>
+        <location filename="../plugin.py" line="1928"/>
         <source>Config file version</source>
         <translation>Version du fichier de configuration</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1904"/>
+        <location filename="../plugin.py" line="1930"/>
         <source>Your configuration file is older than the current stdm version, do you want to backupthe configuration and databasedata</source>
         <translation>Votre fichier de configuration est plus ancien que la version actuelle de STDM, souhaitez-vous sauvegarder la configuration et la base de données?</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1916"/>
+        <location filename="../plugin.py" line="1942"/>
         <source>Update config file</source>
         <translation>Mis à jour fichier de configuration</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1918"/>
+        <location filename="../plugin.py" line="1944"/>
         <source>The config version installed is old and outdated STDM will try to apply the required updates</source>
         <translation>La version de configuration installée est ancienne et dépassée. STDM essaiera d&apos;appliquer les mises à jour requises</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1927"/>
+        <location filename="../plugin.py" line="1953"/>
         <source>STDM has detected that the version of config installed is old and outdated. Delete existing configuration folder or xml file and restart QGIS.</source>
         <translation>STDM a détecté que la version de configuration installée est ancienne et dépassée. Supprimez le dossier de configuration existant ou le fichier xml et redémarrez QGIS.</translation>
     </message>
@@ -4562,7 +4572,7 @@ Voulez-vous l&apos;exécuter maintenant?</translation>
         <translation>Relation de tenure sociale</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="1456"/>
+        <location filename="../plugin.py" line="1482"/>
         <source>Error Loading the STR Editor</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5075,12 +5085,12 @@ Par conséquent, ce traducteur n&apos;est pas applicable.</translation>
 <context>
     <name>SpatialEditorAction</name>
     <message>
-        <location filename="../plugin.py" line="832"/>
+        <location filename="../plugin.py" line="858"/>
         <source>Spatial Unit Manager</source>
         <translation>Gestionnaire de l&apos;unité spatiale</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="837"/>
+        <location filename="../plugin.py" line="863"/>
         <source>Spatial Entity Details</source>
         <translation>Details de l&apos;entité spatiale</translation>
     </message>
@@ -5137,35 +5147,35 @@ Par conséquent, ce traducteur n&apos;est pas applicable.</translation>
 <context>
     <name>SpatialUnitManagerDockWidget</name>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="548"/>
+        <location filename="../ui/spatial_unit_manager.py" line="549"/>
         <source>Spatial Unit Manager</source>
         <translation>Gestionnaire de l&apos;unité Spatiale</translation>
     </message>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="552"/>
+        <location filename="../ui/spatial_unit_manager.py" line="553"/>
         <source>Spatial Column Layer Could not be found</source>
         <translation>La colonne de couche de colonne spatiale n&apos;a pas pu être trouvée</translation>
     </message>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="945"/>
+        <location filename="../ui/spatial_unit_manager.py" line="946"/>
         <source>GPS Feature Import Loading Error</source>
         <translation>Erreur de chargement d&apos;importation de entités GPS</translation>
     </message>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="951"/>
+        <location filename="../ui/spatial_unit_manager.py" line="952"/>
         <source>You have not selected a layer.
  Please select a valid layer to import GPS features.</source>
         <translation>Vous n&apos;avez pas sélectionné une couche</translation>
     </message>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="961"/>
+        <location filename="../ui/spatial_unit_manager.py" line="962"/>
         <source>You have selected a non-STDM entity layer.
  Please select a valid layer to import GPS features.</source>
         <translation>Vous avez sélectionné une couche d&apos;entité non STDM.
 Sélectionnez une couche valide pour importer des entités GPS.</translation>
     </message>
     <message>
-        <location filename="../ui/spatial_unit_manager.py" line="979"/>
+        <location filename="../ui/spatial_unit_manager.py" line="980"/>
         <source>You must add an entity layer from Spatial Unit Manager
 and select it to import GPS Features.</source>
         <translation>Vous devez ajouter une couche d&apos;entité à partir de Gestionnaire de l&apos;Unité Spatiale
@@ -5606,12 +5616,12 @@ il est utilisé par un autre processus</translation>
 <context>
     <name>ToolbarAdminSettings</name>
     <message>
-        <location filename="../plugin.py" line="754"/>
+        <location filename="../plugin.py" line="780"/>
         <source>Admin Settings</source>
         <translation>Paramètres d&apos;administration</translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="759"/>
+        <location filename="../plugin.py" line="785"/>
         <source>Entities</source>
         <translation>Entité</translation>
     </message>
@@ -5806,7 +5816,7 @@ il est utilisé par un autre processus</translation>
 <context>
     <name>ViewSTRToolbarAction</name>
     <message>
-        <location filename="../plugin.py" line="842"/>
+        <location filename="../plugin.py" line="868"/>
         <source>View Social Tenure Relationship</source>
         <translation>Afficher la Relation de Tenure Sociale</translation>
     </message>
@@ -5840,7 +5850,7 @@ il est utilisé par un autre processus</translation>
 <context>
     <name>WorkspaceConfig</name>
     <message>
-        <location filename="../plugin.py" line="849"/>
+        <location filename="../plugin.py" line="875"/>
         <source>Entities</source>
         <translation>Entités</translation>
     </message>

@@ -1420,7 +1420,7 @@ class STDMQGISLoader(object):
             )
         try:
             self.loadModules()
-            self.copy_designer_template()
+
             LOGGER.debug(
                 'Successfully reloaded all modules.'
             )
