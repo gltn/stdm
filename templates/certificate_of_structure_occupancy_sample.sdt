@@ -1,5 +1,5 @@
 <Composer title="certificate_of_structure_occupancy_sample" visible="1">
- <Composition resizeToContentsMarginLeft="0" snapping="0" showPages="1" guidesVisible="1" resizeToContentsMarginTop="0" worldFileMap="{21a0b3be-3cc3-4591-ad9c-7ce3fc272df8}" alignmentSnap="1" printResolution="300" paperWidth="210" gridVisible="0" snapGridOffsetX="0" smartGuides="1" snapGridOffsetY="0" resizeToContentsMarginRight="0" snapTolerancePixels="5" printAsRaster="0" generateWorldFile="0" paperHeight="297" numPages="1" snapGridResolution="10" resizeToContentsMarginBottom="0">
+ <Composition resizeToContentsMarginLeft="0" snapping="0" showPages="1" guidesVisible="1" resizeToContentsMarginTop="0" worldFileMap="{4a245cfe-e54d-4210-b068-e64263a12a04}" alignmentSnap="1" printResolution="300" paperWidth="210" gridVisible="0" snapGridOffsetX="0" smartGuides="1" snapGridOffsetY="0" resizeToContentsMarginRight="0" snapTolerancePixels="5" printAsRaster="0" generateWorldFile="0" paperHeight="297" numPages="1" snapGridResolution="10" resizeToContentsMarginBottom="0">
   <symbol alpha="1" clip_to_extent="1" type="fill" name="">
    <layer pass="0" class="SimpleFill" locked="0">
     <prop k="border_width_map_unit_scale" v="0,0,0,0,0,0"/>
@@ -15,19 +15,18 @@
     <prop k="style" v="solid"/>
    </layer>
   </symbol>
+  <ComposerPicture resizeMode="3" svgBorderWidth="0.2" pictureRotation="0" pictureWidth="80.6552" svgFillColor="255,255,255,255" svgBorderColor="0,0,0,255" northMode="0" file="C:/Users/Wondim/.qgis2/python/plugins/stdm/images/icons/photo_512.png" northOffset="0" pictureHeight="80.6552" mapId="-1" anchorPoint="0">
+   <ComposerItem pagey="54.4233" page="1" id="{c7653797-2b86-4649-ac7f-be6142b32225}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="106.495" y="54.4233" visibility="1" zValue="15" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="80.6552" outlineWidth="0.15" excludeFromExports="0" uuid="{c7653797-2b86-4649-ac7f-be6142b32225}" height="80.6552" itemRotation="0" frame="true" pagex="106.495">
+    <FrameColor alpha="255" red="0" blue="0" green="0"/>
+    <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
+    <dataDefinedSource expr="" field="" active="false" useExpr="true"/>
+    <customproperties/>
+   </ComposerItem>
+  </ComposerPicture>
   <ComposerLabel valign="32" marginX="1" marginY="1" labelText="Recognition Status: [in_structure_vw_social_tenure_relationship.structure_recognition_status]" htmlState="0" halign="1">
    <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
    <FontColor red="0" blue="0" green="0"/>
-   <ComposerItem pagey="130.938" page="1" id="{b0383ce7-c90b-4dd7-bee9-337f8d2ed197}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.25" y="130.938" visibility="1" zValue="15" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="105.888" outlineWidth="0.3" excludeFromExports="0" uuid="{b0383ce7-c90b-4dd7-bee9-337f8d2ed197}" height="6.2" itemRotation="0" frame="false" pagex="21.25">
-    <FrameColor alpha="255" red="0" blue="0" green="0"/>
-    <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
-    <customproperties/>
-   </ComposerItem>
-  </ComposerLabel>
-  <ComposerLabel valign="32" marginX="1" marginY="1" labelText="Ownership Type: [in_structure_vw_social_tenure_relationship.structure_ownership_type]" htmlState="0" halign="1">
-   <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
-   <FontColor red="0" blue="0" green="0"/>
-   <ComposerItem pagey="122.5" page="1" id="{734b9ffd-2322-4b7d-886f-b3065bc89142}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.25" y="122.5" visibility="1" zValue="14" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="95.2625" outlineWidth="0.3" excludeFromExports="0" uuid="{734b9ffd-2322-4b7d-886f-b3065bc89142}" height="6.825" itemRotation="0" frame="false" pagex="21.25">
+   <ComposerItem pagey="130.938" page="1" id="{c4d8f483-9d16-439b-af60-2293e36c18ae}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.25" y="130.938" visibility="1" zValue="15" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="105.888" outlineWidth="0.3" excludeFromExports="0" uuid="{c4d8f483-9d16-439b-af60-2293e36c18ae}" height="6.2" itemRotation="0" frame="false" pagex="21.25">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
@@ -36,7 +35,16 @@
   <ComposerLabel valign="32" marginX="1" marginY="1" labelText="&lt;strong>Disclaimer:&lt;/strong> This template is a sample. Users should have legal rights to use it for actual use. " htmlState="2" halign="1">
    <LabelFont description="MS Shell Dlg 2,8,-1,5,50,0,0,0,0,0" style=""/>
    <FontColor red="0" blue="0" green="0"/>
-   <ComposerItem pagey="285.618" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="13.3634" y="285.618" visibility="1" zValue="14" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="148.287" outlineWidth="0.3" excludeFromExports="0" uuid="{fb7be084-a2a3-403f-b3cc-8bb6fec0dfda}" height="7.35635" itemRotation="0" frame="false" pagex="13.3634">
+   <ComposerItem pagey="285.618" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="13.3634" y="285.618" visibility="1" zValue="14" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="148.287" outlineWidth="0.3" excludeFromExports="0" uuid="{968f6969-a51c-465e-a54e-83854b34ded2}" height="7.35635" itemRotation="0" frame="false" pagex="13.3634">
+    <FrameColor alpha="255" red="0" blue="0" green="0"/>
+    <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
+    <customproperties/>
+   </ComposerItem>
+  </ComposerLabel>
+  <ComposerLabel valign="32" marginX="1" marginY="1" labelText="Ownership Type: [in_structure_vw_social_tenure_relationship.structure_ownership_type]" htmlState="0" halign="1">
+   <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
+   <FontColor red="0" blue="0" green="0"/>
+   <ComposerItem pagey="122.5" page="1" id="{73858b1b-8ef9-472a-9169-fbb6ba984360}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.25" y="122.5" visibility="1" zValue="14" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="95.2625" outlineWidth="0.3" excludeFromExports="0" uuid="{73858b1b-8ef9-472a-9169-fbb6ba984360}" height="6.825" itemRotation="0" frame="false" pagex="21.25">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
@@ -45,7 +53,7 @@
   <ComposerLabel valign="32" marginX="1" marginY="1" labelText="Location: [in_structure_vw_social_tenure_relationship.structure_location]" htmlState="0" halign="1">
    <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
    <FontColor red="0" blue="0" green="0"/>
-   <ComposerItem pagey="113.75" page="1" id="{be59fe13-770a-428c-a1be-3adb79f76309}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.25" y="113.75" visibility="1" zValue="13" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="71.2" outlineWidth="0.3" excludeFromExports="0" uuid="{be59fe13-770a-428c-a1be-3adb79f76309}" height="6.2" itemRotation="0" frame="false" pagex="21.25">
+   <ComposerItem pagey="113.75" page="1" id="{31345c18-186c-4849-b6d4-c2e5d34997b9}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.25" y="113.75" visibility="1" zValue="13" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="71.2" outlineWidth="0.3" excludeFromExports="0" uuid="{31345c18-186c-4849-b6d4-c2e5d34997b9}" height="6.2" itemRotation="0" frame="false" pagex="21.25">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
@@ -54,7 +62,7 @@
   <ComposerLabel valign="32" marginX="1" marginY="1" labelText="Structure Code: [in_structure_vw_social_tenure_relationship.structure_code]" htmlState="0" halign="1">
    <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
    <FontColor red="0" blue="0" green="0"/>
-   <ComposerItem pagey="105" page="1" id="{a4bc369c-230b-4228-a31b-e0701739596a}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.25" y="105" visibility="1" zValue="12" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="76.2" outlineWidth="0.3" excludeFromExports="0" uuid="{a4bc369c-230b-4228-a31b-e0701739596a}" height="6.825" itemRotation="0" frame="false" pagex="21.25">
+   <ComposerItem pagey="105" page="1" id="{9c5091ca-10da-44fe-979b-456cab8dda33}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.25" y="105" visibility="1" zValue="12" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="76.2" outlineWidth="0.3" excludeFromExports="0" uuid="{9c5091ca-10da-44fe-979b-456cab8dda33}" height="6.825" itemRotation="0" frame="false" pagex="21.25">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
@@ -63,14 +71,14 @@
   <ComposerLabel valign="32" marginX="1" marginY="1" labelText="Structure Details" htmlState="0" halign="1">
    <LabelFont description="MS Shell Dlg 2,12,-1,5,75,0,0,0,0,0" style=""/>
    <FontColor red="0" blue="0" green="0"/>
-   <ComposerItem pagey="94.0625" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.25" y="94.0625" visibility="1" zValue="11" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="75" outlineWidth="0.3" excludeFromExports="0" uuid="{a4c23308-4a7c-438e-9445-d5844bed3f50}" height="6.5625" itemRotation="0" frame="false" pagex="21.25">
+   <ComposerItem pagey="94.0625" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.25" y="94.0625" visibility="1" zValue="11" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="75" outlineWidth="0.3" excludeFromExports="0" uuid="{7177040c-577f-4686-9921-ed847622ee13}" height="6.5625" itemRotation="0" frame="false" pagex="21.25">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
    </ComposerItem>
   </ComposerLabel>
   <ComposerPicture resizeMode="0" svgBorderWidth="0.2" pictureRotation="0" pictureWidth="7.8125" svgFillColor="255,255,255,255" svgBorderColor="0,0,0,255" northMode="0" file="C:/PROGRA~1/QGIS2~1.18/apps/qgis/svg/arrows/Arrow_03.svg" northOffset="0" pictureHeight="7.8125" mapId="-1" anchorPoint="0">
-   <ComposerItem pagey="144.375" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="173.438" y="144.375" visibility="1" zValue="10" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="7.8125" outlineWidth="0.3" excludeFromExports="0" uuid="{b42214b2-c7fe-40cb-9d00-24994c3f6c67}" height="10.9375" itemRotation="0" frame="false" pagex="173.438">
+   <ComposerItem pagey="144.375" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="173.438" y="144.375" visibility="1" zValue="10" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="7.8125" outlineWidth="0.3" excludeFromExports="0" uuid="{18009da7-cfe5-4933-ab58-e6ff4d6cb664}" height="10.9375" itemRotation="0" frame="false" pagex="173.438">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <dataDefinedSource expr="" field="" active="false" useExpr="true"/>
@@ -83,7 +91,7 @@
    <fillColor2 alpha="255" red="255" blue="255" green="255"/>
    <strokeColor alpha="255" red="0" blue="0" green="0"/>
    <textColor alpha="255" red="0" blue="0" green="0"/>
-   <ComposerItem pagey="263.887" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="23.125" y="263.887" visibility="1" zValue="9" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="48.5434" outlineWidth="0.3" excludeFromExports="0" uuid="{0b909223-04e5-441e-93d7-8f43e9cc35ca}" height="7.5125" itemRotation="0" frame="false" pagex="23.125">
+   <ComposerItem pagey="263.887" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="23.125" y="263.887" visibility="1" zValue="9" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="48.5434" outlineWidth="0.3" excludeFromExports="0" uuid="{e8168752-14ab-41f2-9814-55fe35a7926a}" height="7.5125" itemRotation="0" frame="false" pagex="23.125">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
@@ -107,7 +115,7 @@
      <styleFont description="MS Shell Dlg 2,12,-1,5,50,0,0,0,0,0" style=""/>
     </style>
    </styles>
-   <ComposerItem pagey="243.75" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="138.75" y="243.75" visibility="1" zValue="8" background="true" transparency="0" frameJoinStyle="miter" blendMode="0" width="22.9" outlineWidth="0.3" excludeFromExports="0" uuid="{7961151a-c1e1-4b36-b881-bf7c1d3bf893}" height="14.2" itemRotation="0" frame="false" pagex="138.75">
+   <ComposerItem pagey="243.75" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="138.75" y="243.75" visibility="1" zValue="8" background="true" transparency="0" frameJoinStyle="miter" blendMode="0" width="22.9" outlineWidth="0.3" excludeFromExports="0" uuid="{2f2017fe-7981-4a0f-86ca-be67dd86da57}" height="14.2" itemRotation="0" frame="false" pagex="138.75">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
@@ -166,7 +174,7 @@
     <annotationFontProperties description="MS Shell Dlg 2,7.5,-1,5,50,0,0,0,0,0" style=""/>
    </ComposerMapGrid>
    <AtlasMap scalingMode="2" atlasDriven="0" margin="0.10000000000000001"/>
-   <ComposerItem pagey="140.312" page="1" id="{21a0b3be-3cc3-4591-ad9c-7ce3fc272df8}" lastValidViewScaleFactor="3.45917" positionMode="0" positionLock="false" x="21.3256" y="140.312" visibility="1" zValue="7" background="true" transparency="0" frameJoinStyle="miter" blendMode="0" width="170.188" outlineWidth="0.3" excludeFromExports="0" uuid="{21a0b3be-3cc3-4591-ad9c-7ce3fc272df8}" height="134.938" itemRotation="0" frame="true" pagex="21.3256">
+   <ComposerItem pagey="140.312" page="1" id="{4a245cfe-e54d-4210-b068-e64263a12a04}" lastValidViewScaleFactor="3.45917" positionMode="0" positionLock="false" x="21.3256" y="140.312" visibility="1" zValue="7" background="true" transparency="0" frameJoinStyle="miter" blendMode="0" width="170.188" outlineWidth="0.3" excludeFromExports="0" uuid="{4a245cfe-e54d-4210-b068-e64263a12a04}" height="134.938" itemRotation="0" frame="true" pagex="21.3256">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
@@ -175,7 +183,7 @@
   <ComposerLabel valign="32" marginX="1" marginY="1" labelText="This is to certify that the individual(s) listed below is/are the occupant(s) of structure: [in_structure_vw_social_tenure_relationship.structure_code]" htmlState="0" halign="1">
    <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
    <FontColor red="0" blue="0" green="0"/>
-   <ComposerItem pagey="41.9176" page="1" id="{47058f12-9d03-4147-b1c8-c25330f410c0}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.1756" y="41.9176" visibility="1" zValue="4" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="167.649" outlineWidth="0.3" excludeFromExports="0" uuid="{47058f12-9d03-4147-b1c8-c25330f410c0}" height="6.2" itemRotation="0" frame="false" pagex="21.1756">
+   <ComposerItem pagey="41.9176" page="1" id="{c395c396-d2b4-46c6-ae02-d34674aaf4cd}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.1756" y="41.9176" visibility="1" zValue="4" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="167.649" outlineWidth="0.3" excludeFromExports="0" uuid="{c395c396-d2b4-46c6-ae02-d34674aaf4cd}" height="6.2" itemRotation="0" frame="false" pagex="21.1756">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
@@ -184,7 +192,7 @@
   <ComposerLabel valign="32" marginX="1" marginY="1" labelText="CERTIFICATE OF OCCUPANCY" htmlState="0" halign="4">
    <LabelFont description="Bodoni MT Black,18,-1,5,87,0,0,0,0,0" style=""/>
    <FontColor red="0" blue="0" green="0"/>
-   <ComposerItem pagey="21.6815" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="49.3251" y="21.6815" visibility="1" zValue="2" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="114.189" outlineWidth="0.3" excludeFromExports="0" uuid="{0f75b62d-4008-4778-a52d-dd85865be8fd}" height="10.4071" itemRotation="0" frame="false" pagex="49.3251">
+   <ComposerItem pagey="23.7051" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="49.3251" y="23.7051" visibility="1" zValue="2" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="114.189" outlineWidth="0.3" excludeFromExports="0" uuid="{14ba905f-585e-4850-8e56-15b288913699}" height="10.4071" itemRotation="0" frame="false" pagex="49.3251">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
@@ -241,19 +249,16 @@
      <prop k="style" v="solid"/>
     </layer>
    </symbol>
-   <ComposerItem pagey="14.4375" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="14.5446" y="14.4375" visibility="1" zValue="1" background="true" transparency="0" frameJoinStyle="miter" blendMode="0" width="183.75" outlineWidth="0.3" excludeFromExports="0" uuid="{7523876a-12f8-4974-95bd-294fb5193d4f}" height="268.125" itemRotation="0" frame="false" pagex="14.5446">
+   <ComposerItem pagey="14.4375" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="14.5446" y="14.4375" visibility="1" zValue="1" background="true" transparency="0" frameJoinStyle="miter" blendMode="0" width="183.75" outlineWidth="0.3" excludeFromExports="0" uuid="{139029dd-4adc-416a-a84b-3b1194595ed8}" height="268.125" itemRotation="0" frame="false" pagex="14.5446">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
    </ComposerItem>
   </ComposerShape>
-  <ComposerAttributeTableV2 vectorLayerName="in_person_vw_social_tenure_relationship" source="0" showGrid="1" maxFeatures="6" resizeMode="0" filterFeatures="false" featureFilter="" emptyTableMode="0" wrapString="" wrapBehaviour="0" headerMode="0" backgroundColor="255,255,255,255" showEmptyRows="0" emptyTableMessage="" showOnlyVisibleFeatures="0" vectorLayer="in_person_vw_social_tenure_relationship20171230181252884" vectorLayerSource="dbname='stdm' host=localhost port=5432 user='postgres' key='id' table=&quot;public&quot;.&quot;in_person_vw_social_tenure_relationship&quot; sql=" composerMap="-1" headerHAlignment="0" contentFontColor="0,0,0,255" headerFontColor="0,0,0,255" cellMargin="1" filterToAtlasIntersection="0" relationId="" gridStrokeWidth="0.5" gridColor="0,0,0,255" showUniqueRowsOnly="0" vectorLayerProvider="postgres">
+  <ComposerAttributeTableV2 vectorLayerName="in_person_vw_social_tenure_relationship" source="0" showGrid="1" maxFeatures="6" resizeMode="0" filterFeatures="false" featureFilter="" emptyTableMode="0" wrapString="" wrapBehaviour="0" headerMode="0" backgroundColor="255,255,255,255" showEmptyRows="0" emptyTableMessage="" showOnlyVisibleFeatures="0" vectorLayer="in_person_vw_social_tenure_relationship20171231082418111" vectorLayerSource="dbname='stdm' host=localhost port=5432 user='postgres' key='id' table=&quot;public&quot;.&quot;in_person_vw_social_tenure_relationship&quot; sql=" composerMap="-1" headerHAlignment="0" contentFontColor="0,0,0,255" headerFontColor="0,0,0,255" cellMargin="1" filterToAtlasIntersection="0" relationId="" gridStrokeWidth="0.5" gridColor="0,0,0,255" showUniqueRowsOnly="0" vectorLayerProvider="postgres">
    <headerFontProperties description="MS Shell Dlg 2,7.5,-1,5,50,0,0,0,0,0" style=""/>
    <contentFontProperties description="MS Shell Dlg 2,7.5,-1,5,50,0,0,0,0,0" style=""/>
    <displayColumns>
-    <column width="0" vAlignment="128" attribute="id" sortByRank="0" hAlignment="1" heading="id" sortOrder="0">
-     <backgroundColor alpha="0" red="0" blue="0" green="0"/>
-    </column>
     <column width="0" vAlignment="128" attribute="person_first_name" sortByRank="0" hAlignment="1" heading="First Name" sortOrder="0">
      <backgroundColor alpha="0" red="0" blue="0" green="0"/>
     </column>
@@ -269,9 +274,6 @@
     <column width="0" vAlignment="128" attribute="person_gender" sortByRank="0" hAlignment="1" heading="Gender" sortOrder="0">
      <backgroundColor alpha="0" red="0" blue="0" green="0"/>
     </column>
-    <column width="0" vAlignment="128" attribute="person_date_of_birth" sortByRank="0" hAlignment="1" heading="Date of Birth" sortOrder="0">
-     <backgroundColor alpha="0" red="0" blue="0" green="0"/>
-    </column>
    </displayColumns>
    <cellStyles>
     <oddColumns enabled="0" cellBackgroundColor="255,255,255,255"/>
@@ -285,7 +287,7 @@
     <lastRow enabled="0" cellBackgroundColor="255,255,255,255"/>
    </cellStyles>
    <ComposerFrame sectionWidth="100" sectionHeight="21.3924" hideBackgroundIfEmpty="0" hidePageIfEmpty="0" sectionX="0" sectionY="0">
-    <ComposerItem pagey="54.3483" page="1" id="{6651ef67-ea63-4275-b05f-bf425f8642d2}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="22.8378" y="54.3483" visibility="1" zValue="3" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="100" outlineWidth="0.3" excludeFromExports="0" uuid="{6651ef67-ea63-4275-b05f-bf425f8642d2}" height="21.3924" itemRotation="0" frame="false" pagex="22.8378">
+    <ComposerItem pagey="54.3483" page="1" id="{fa10d013-db90-49ab-a1ba-fc98cbe2f7f9}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="22.8378" y="54.3483" visibility="1" zValue="3" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="78.3" outlineWidth="0.3" excludeFromExports="0" uuid="{fa10d013-db90-49ab-a1ba-fc98cbe2f7f9}" height="21.3924" itemRotation="0" frame="false" pagex="22.8378">
      <FrameColor alpha="255" red="0" blue="0" green="0"/>
      <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
      <customproperties/>
@@ -296,13 +298,13 @@
   <customproperties/>
  </Composition>
  <DataSource category="View" name="in_structure_vw_social_tenure_relationship" referencedTable="in_structure">
-  <DataField name="structure_recognition_status" itemid="{b0383ce7-c90b-4dd7-bee9-337f8d2ed197}"/>
-  <DataField name="structure_code" itemid="{a4bc369c-230b-4228-a31b-e0701739596a}"/>
-  <DataField name="structure_code" itemid="{47058f12-9d03-4147-b1c8-c25330f410c0}"/>
-  <DataField name="structure_ownership_type" itemid="{734b9ffd-2322-4b7d-886f-b3065bc89142}"/>
-  <DataField name="structure_location" itemid="{be59fe13-770a-428c-a1be-3adb79f76309}"/>
+  <DataField name="structure_ownership_type" itemid="{73858b1b-8ef9-472a-9169-fbb6ba984360}"/>
+  <DataField name="structure_recognition_status" itemid="{c4d8f483-9d16-439b-af60-2293e36c18ae}"/>
+  <DataField name="structure_code" itemid="{9c5091ca-10da-44fe-979b-456cab8dda33}"/>
+  <DataField name="structure_location" itemid="{31345c18-186c-4849-b6d4-c2e5d34997b9}"/>
+  <DataField name="structure_code" itemid="{c395c396-d2b4-46c6-ae02-d34674aaf4cd}"/>
   <SpatialFields>
-   <SpatialField geomType="POLYGON" zoom="1.2" srid="4326" labelField="structure_code" name="structure_spatial_geometry" itemid="{21a0b3be-3cc3-4591-ad9c-7ce3fc272df8}">
+   <SpatialField geomType="POLYGON" zoom="1.2" srid="4326" labelField="structure_code" name="structure_spatial_geometry" itemid="{4a245cfe-e54d-4210-b068-e64263a12a04}">
     <Symbol layerType="SimpleFill">
      <prop k="border_width_map_unit_scale" v="0,0,0,0,0,0"/>
      <prop k="color" v="213,163,93,255"/>
@@ -318,9 +320,11 @@
     </Symbol>
    </SpatialField>
   </SpatialFields>
-  <Photos/>
+  <Photos>
+   <Source referenced_field="social_tenure_relationship_id" documentType="General" table="in_social_tenure_relationship_supporting_document" itemid="{c7653797-2b86-4649-ac7f-be6142b32225}" referencing_field="social_tenure_relationship_id" documentTypeId="1"/>
+  </Photos>
   <Tables>
-   <Source referenced_field="social_tenure_relationship_id" documentType="" table="in_person_vw_social_tenure_relationship" itemid="{6651ef67-ea63-4275-b05f-bf425f8642d2}" referencing_field="social_tenure_relationship_id" documentTypeId="-1"/>
+   <Source referenced_field="social_tenure_relationship_structure_id" documentType="" table="in_person_vw_social_tenure_relationship" itemid="{fa10d013-db90-49ab-a1ba-fc98cbe2f7f9}" referencing_field="social_tenure_relationship_structure_id" documentTypeId="-1"/>
   </Tables>
   <Charts/>
  </DataSource>

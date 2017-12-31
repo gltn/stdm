@@ -1,5 +1,5 @@
 <Composer title="certificate_of_parcel_ownership_sample" visible="1">
- <Composition resizeToContentsMarginLeft="0" snapping="0" showPages="1" guidesVisible="1" resizeToContentsMarginTop="0" worldFileMap="{c3802542-ffcb-4cf2-aaa8-e0e683c7c2ab}" alignmentSnap="1" printResolution="300" paperWidth="210" gridVisible="0" snapGridOffsetX="0" smartGuides="1" snapGridOffsetY="0" resizeToContentsMarginRight="0" snapTolerancePixels="5" printAsRaster="0" generateWorldFile="0" paperHeight="297" numPages="1" snapGridResolution="10" resizeToContentsMarginBottom="0">
+ <Composition resizeToContentsMarginLeft="0" snapping="0" showPages="1" guidesVisible="1" resizeToContentsMarginTop="0" worldFileMap="{bd2d30ed-3d4d-4027-a1af-23a966378086}" alignmentSnap="1" printResolution="300" paperWidth="210" gridVisible="0" snapGridOffsetX="0" smartGuides="1" snapGridOffsetY="0" resizeToContentsMarginRight="0" snapTolerancePixels="5" printAsRaster="0" generateWorldFile="0" paperHeight="297" numPages="1" snapGridResolution="10" resizeToContentsMarginBottom="0">
   <symbol alpha="1" clip_to_extent="1" type="fill" name="">
    <layer pass="0" class="SimpleFill" locked="0">
     <prop k="border_width_map_unit_scale" v="0,0,0,0,0,0"/>
@@ -18,7 +18,7 @@
   <ComposerLabel valign="32" marginX="1" marginY="1" labelText="Parcel Area: [lo_parcel_vw_social_tenure_relationship.parcel_area]" htmlState="0" halign="1">
    <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
    <FontColor red="0" blue="0" green="0"/>
-   <ComposerItem pagey="123.125" page="1" id="{155d2d59-8fcf-4b64-9831-fbe85bae0d21}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.1756" y="123.125" visibility="1" zValue="16" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="67.4632" outlineWidth="0.3" excludeFromExports="0" uuid="{155d2d59-8fcf-4b64-9831-fbe85bae0d21}" height="6.2" itemRotation="0" frame="false" pagex="21.1756">
+   <ComposerItem pagey="123.125" page="1" id="{0757be69-a255-47e0-a31f-723815a81a9c}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.1756" y="123.125" visibility="1" zValue="16" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="67.4632" outlineWidth="0.3" excludeFromExports="0" uuid="{0757be69-a255-47e0-a31f-723815a81a9c}" height="6.2" itemRotation="0" frame="false" pagex="21.1756">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
@@ -27,7 +27,7 @@
   <ComposerLabel valign="32" marginX="1" marginY="1" labelText="&lt;strong>Disclaimer:&lt;/strong> This template is a sample. Users should have legal rights to use it for actual use. " htmlState="2" halign="1">
    <LabelFont description="MS Shell Dlg 2,8,-1,5,50,0,0,0,0,0" style=""/>
    <FontColor red="0" blue="0" green="0"/>
-   <ComposerItem pagey="286.774" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="13.5446" y="286.774" visibility="1" zValue="15" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="126.042" outlineWidth="0.3" excludeFromExports="0" uuid="{9fbeb543-8ac6-4d1d-b80b-33d96fb11766}" height="6.2" itemRotation="0" frame="false" pagex="13.5446">
+   <ComposerItem pagey="286.774" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="13.5446" y="286.774" visibility="1" zValue="15" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="126.042" outlineWidth="0.3" excludeFromExports="0" uuid="{fae677bd-85b7-486a-b317-dbdff8198514}" height="6.2" itemRotation="0" frame="false" pagex="13.5446">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
@@ -36,14 +36,14 @@
   <ComposerLabel valign="32" marginX="1" marginY="1" labelText="This is to certify that the individual(s) listed below is/are the occupant(s) of structure: [lo_parcel_vw_social_tenure_relationship.parcel_code]" htmlState="0" halign="1">
    <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
    <FontColor red="0" blue="0" green="0"/>
-   <ComposerItem pagey="40.7612" page="1" id="{0893190e-60df-49d2-8eaa-e96ddf9f7d98}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="22.8378" y="40.7612" visibility="1" zValue="15" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="167.921" outlineWidth="0.3" excludeFromExports="0" uuid="{0893190e-60df-49d2-8eaa-e96ddf9f7d98}" height="6.2" itemRotation="0" frame="false" pagex="22.8378">
+   <ComposerItem pagey="40.7612" page="1" id="{a61137b7-bb93-490e-9e81-e9a20f1c280d}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="22.8378" y="40.7612" visibility="1" zValue="15" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="167.921" outlineWidth="0.3" excludeFromExports="0" uuid="{a61137b7-bb93-490e-9e81-e9a20f1c280d}" height="6.2" itemRotation="0" frame="false" pagex="22.8378">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
    </ComposerItem>
   </ComposerLabel>
   <ComposerPicture resizeMode="3" svgBorderWidth="0.2" pictureRotation="0" pictureWidth="79.5397" svgFillColor="255,255,255,255" svgBorderColor="0,0,0,255" northMode="0" file="C:/Users/Wondim/.qgis2/python/plugins/stdm/images/icons/photo_512.png" northOffset="0" pictureHeight="79.5397" mapId="-1" anchorPoint="0">
-   <ComposerItem pagey="54.4233" page="1" id="{a4320f2f-bfd7-48f9-9161-beae04f44e6f}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="111.144" y="54.4233" visibility="1" zValue="14" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="79.5397" outlineWidth="0.15" excludeFromExports="0" uuid="{a4320f2f-bfd7-48f9-9161-beae04f44e6f}" height="79.5397" itemRotation="0" frame="true" pagex="111.144">
+   <ComposerItem pagey="54.4233" page="1" id="{5035a1ad-4b07-4292-bc21-d4ebdb228f5f}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="111.144" y="54.4233" visibility="1" zValue="14" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="79.5397" outlineWidth="0.15" excludeFromExports="0" uuid="{5035a1ad-4b07-4292-bc21-d4ebdb228f5f}" height="79.5397" itemRotation="0" frame="true" pagex="111.144">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <dataDefinedSource expr="" field="" active="false" useExpr="true"/>
@@ -53,7 +53,7 @@
   <ComposerLabel valign="32" marginX="1" marginY="1" labelText="Location: [lo_parcel_vw_social_tenure_relationship.parcel_location]" htmlState="0" halign="1">
    <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
    <FontColor red="0" blue="0" green="0"/>
-   <ComposerItem pagey="113.75" page="1" id="{123c5b69-5350-42c5-bc7d-3e2a7a4a2b71}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.25" y="113.75" visibility="1" zValue="13" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="67.3888" outlineWidth="0.3" excludeFromExports="0" uuid="{123c5b69-5350-42c5-bc7d-3e2a7a4a2b71}" height="6.2" itemRotation="0" frame="false" pagex="21.25">
+   <ComposerItem pagey="113.75" page="1" id="{4922e352-75e7-4ded-b65e-8ad093274ea6}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.25" y="113.75" visibility="1" zValue="13" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="67.3888" outlineWidth="0.3" excludeFromExports="0" uuid="{4922e352-75e7-4ded-b65e-8ad093274ea6}" height="6.2" itemRotation="0" frame="false" pagex="21.25">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
@@ -62,7 +62,7 @@
   <ComposerLabel valign="32" marginX="1" marginY="1" labelText="Parcel Code: [lo_parcel_vw_social_tenure_relationship.parcel_code]" htmlState="0" halign="1">
    <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
    <FontColor red="0" blue="0" green="0"/>
-   <ComposerItem pagey="105" page="1" id="{b1543347-f477-4055-909b-d986c38261dc}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.25" y="105" visibility="1" zValue="12" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="67.3888" outlineWidth="0.3" excludeFromExports="0" uuid="{b1543347-f477-4055-909b-d986c38261dc}" height="6.825" itemRotation="0" frame="false" pagex="21.25">
+   <ComposerItem pagey="105" page="1" id="{8948600e-39b8-422e-895c-349936cd1537}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.25" y="105" visibility="1" zValue="12" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="67.3888" outlineWidth="0.3" excludeFromExports="0" uuid="{8948600e-39b8-422e-895c-349936cd1537}" height="6.825" itemRotation="0" frame="false" pagex="21.25">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
@@ -71,14 +71,14 @@
   <ComposerLabel valign="32" marginX="1" marginY="1" labelText="Structure Details" htmlState="0" halign="1">
    <LabelFont description="MS Shell Dlg 2,12,-1,5,75,0,0,0,0,0" style=""/>
    <FontColor red="0" blue="0" green="0"/>
-   <ComposerItem pagey="94.0625" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.25" y="94.0625" visibility="1" zValue="11" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="75" outlineWidth="0.3" excludeFromExports="0" uuid="{b5a459f5-b871-40da-8d17-dc5f42d0c5f9}" height="6.5625" itemRotation="0" frame="false" pagex="21.25">
+   <ComposerItem pagey="94.0625" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="21.25" y="94.0625" visibility="1" zValue="11" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="75" outlineWidth="0.3" excludeFromExports="0" uuid="{4bcc257f-0c91-459c-b1f2-1e7ff0e99a6e}" height="6.5625" itemRotation="0" frame="false" pagex="21.25">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
    </ComposerItem>
   </ComposerLabel>
   <ComposerPicture resizeMode="0" svgBorderWidth="0.2" pictureRotation="0" pictureWidth="7.8125" svgFillColor="255,255,255,255" svgBorderColor="0,0,0,255" northMode="0" file="C:/PROGRA~1/QGIS2~1.18/apps/qgis/svg/arrows/Arrow_03.svg" northOffset="0" pictureHeight="7.8125" mapId="-1" anchorPoint="0">
-   <ComposerItem pagey="144.375" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="173.438" y="144.375" visibility="1" zValue="10" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="7.8125" outlineWidth="0.3" excludeFromExports="0" uuid="{e9aff9ae-4d2a-42df-a328-82fc24031eb5}" height="10.9375" itemRotation="0" frame="false" pagex="173.438">
+   <ComposerItem pagey="144.375" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="173.438" y="144.375" visibility="1" zValue="10" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="7.8125" outlineWidth="0.3" excludeFromExports="0" uuid="{66e60271-cb46-4b8d-9a70-911feb27601a}" height="10.9375" itemRotation="0" frame="false" pagex="173.438">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <dataDefinedSource expr="" field="" active="false" useExpr="true"/>
@@ -91,7 +91,7 @@
    <fillColor2 alpha="255" red="255" blue="255" green="255"/>
    <strokeColor alpha="255" red="0" blue="0" green="0"/>
    <textColor alpha="255" red="0" blue="0" green="0"/>
-   <ComposerItem pagey="263.887" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="23.125" y="263.887" visibility="1" zValue="9" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="48.5434" outlineWidth="0.3" excludeFromExports="0" uuid="{f8fac936-1e41-4fa9-8ee9-7d596143b08a}" height="7.5125" itemRotation="0" frame="false" pagex="23.125">
+   <ComposerItem pagey="263.887" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="23.125" y="263.887" visibility="1" zValue="9" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="48.5434" outlineWidth="0.3" excludeFromExports="0" uuid="{d8b23719-aeb9-4e73-b201-2b862b1703f4}" height="7.5125" itemRotation="0" frame="false" pagex="23.125">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
@@ -115,7 +115,7 @@
      <styleFont description="MS Shell Dlg 2,12,-1,5,50,0,0,0,0,0" style=""/>
     </style>
    </styles>
-   <ComposerItem pagey="243.75" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="138.75" y="243.75" visibility="1" zValue="8" background="true" transparency="0" frameJoinStyle="miter" blendMode="0" width="24" outlineWidth="0.3" excludeFromExports="0" uuid="{69790a38-80f6-4680-a71b-a54d5d42f466}" height="18.2" itemRotation="0" frame="false" pagex="138.75">
+   <ComposerItem pagey="243.75" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="138.75" y="243.75" visibility="1" zValue="8" background="true" transparency="0" frameJoinStyle="miter" blendMode="0" width="22.9" outlineWidth="0.3" excludeFromExports="0" uuid="{3d109052-a025-4475-9ce4-f34deefed11d}" height="14.2" itemRotation="0" frame="false" pagex="138.75">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
@@ -174,7 +174,7 @@
     <annotationFontProperties description="MS Shell Dlg 2,7.5,-1,5,50,0,0,0,0,0" style=""/>
    </ComposerMapGrid>
    <AtlasMap scalingMode="2" atlasDriven="0" margin="0.10000000000000001"/>
-   <ComposerItem pagey="140.312" page="1" id="{c3802542-ffcb-4cf2-aaa8-e0e683c7c2ab}" lastValidViewScaleFactor="3.45917" positionMode="0" positionLock="false" x="21.3256" y="140.312" visibility="1" zValue="7" background="true" transparency="0" frameJoinStyle="miter" blendMode="0" width="170.188" outlineWidth="0.3" excludeFromExports="0" uuid="{c3802542-ffcb-4cf2-aaa8-e0e683c7c2ab}" height="134.938" itemRotation="0" frame="true" pagex="21.3256">
+   <ComposerItem pagey="140.312" page="1" id="{bd2d30ed-3d4d-4027-a1af-23a966378086}" lastValidViewScaleFactor="3.45917" positionMode="0" positionLock="false" x="21.3256" y="140.312" visibility="1" zValue="7" background="true" transparency="0" frameJoinStyle="miter" blendMode="0" width="170.188" outlineWidth="0.3" excludeFromExports="0" uuid="{bd2d30ed-3d4d-4027-a1af-23a966378086}" height="134.938" itemRotation="0" frame="true" pagex="21.3256">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
@@ -183,7 +183,7 @@
   <ComposerLabel valign="32" marginX="1" marginY="1" labelText="CERTIFICATE OF OWNERSHIP" htmlState="0" halign="4">
    <LabelFont description="Bodoni MT Black,18,-1,5,87,0,0,0,0,0" style=""/>
    <FontColor red="0" blue="0" green="0"/>
-   <ComposerItem pagey="23.127" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="49.3251" y="23.127" visibility="1" zValue="2" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="114.189" outlineWidth="0.3" excludeFromExports="0" uuid="{021b306c-467f-4b3c-bc8d-e7798b5b2fce}" height="10.4071" itemRotation="0" frame="false" pagex="49.3251">
+   <ComposerItem pagey="23.127" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="49.3251" y="23.127" visibility="1" zValue="2" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="114.189" outlineWidth="0.3" excludeFromExports="0" uuid="{ac3e6bd2-4afd-4f6f-82d5-4aedfdf1b78a}" height="10.4071" itemRotation="0" frame="false" pagex="49.3251">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
@@ -240,19 +240,16 @@
      <prop k="style" v="solid"/>
     </layer>
    </symbol>
-   <ComposerItem pagey="14.4375" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="14.5446" y="14.4375" visibility="1" zValue="1" background="true" transparency="0" frameJoinStyle="miter" blendMode="0" width="183.75" outlineWidth="0.3" excludeFromExports="0" uuid="{21c35c79-37ae-4aad-9457-2847b021e6a8}" height="268.125" itemRotation="0" frame="false" pagex="14.5446">
+   <ComposerItem pagey="14.4375" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="14.5446" y="14.4375" visibility="1" zValue="1" background="true" transparency="0" frameJoinStyle="miter" blendMode="0" width="183.75" outlineWidth="0.3" excludeFromExports="0" uuid="{82c08ff5-6350-4fcd-b351-86d912a74901}" height="268.125" itemRotation="0" frame="false" pagex="14.5446">
     <FrameColor alpha="255" red="0" blue="0" green="0"/>
     <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
     <customproperties/>
    </ComposerItem>
   </ComposerShape>
-  <ComposerAttributeTableV2 vectorLayerName="lo_person_vw_social_tenure_relationship" source="0" showGrid="1" maxFeatures="6" resizeMode="0" filterFeatures="false" featureFilter="" emptyTableMode="0" wrapString="" wrapBehaviour="0" headerMode="0" backgroundColor="255,255,255,255" showEmptyRows="0" emptyTableMessage="" showOnlyVisibleFeatures="0" vectorLayer="lo_person_vw_social_tenure_relationship20171231074049320" vectorLayerSource="dbname='stdm' host=localhost port=5432 user='postgres' key='id' table=&quot;public&quot;.&quot;lo_person_vw_social_tenure_relationship&quot; sql=" composerMap="-1" headerHAlignment="0" contentFontColor="0,0,0,255" headerFontColor="0,0,0,255" cellMargin="1" filterToAtlasIntersection="0" relationId="" gridStrokeWidth="0.5" gridColor="0,0,0,255" showUniqueRowsOnly="0" vectorLayerProvider="postgres">
+  <ComposerAttributeTableV2 vectorLayerName="lo_person_vw_social_tenure_relationship" source="0" showGrid="1" maxFeatures="6" resizeMode="0" filterFeatures="false" featureFilter="" emptyTableMode="0" wrapString="" wrapBehaviour="0" headerMode="0" backgroundColor="255,255,255,255" showEmptyRows="0" emptyTableMessage="" showOnlyVisibleFeatures="0" vectorLayer="lo_person_vw_social_tenure_relationship20171231083902153" vectorLayerSource="dbname='stdm' host=localhost port=5432 user='postgres' key='id' table=&quot;public&quot;.&quot;lo_person_vw_social_tenure_relationship&quot; sql=" composerMap="-1" headerHAlignment="0" contentFontColor="0,0,0,255" headerFontColor="0,0,0,255" cellMargin="1" filterToAtlasIntersection="0" relationId="" gridStrokeWidth="0.5" gridColor="0,0,0,255" showUniqueRowsOnly="0" vectorLayerProvider="postgres">
    <headerFontProperties description="MS Shell Dlg 2,7.5,-1,5,50,0,0,0,0,0" style=""/>
    <contentFontProperties description="MS Shell Dlg 2,7.5,-1,5,50,0,0,0,0,0" style=""/>
    <displayColumns>
-    <column width="0" vAlignment="128" attribute="id" sortByRank="0" hAlignment="1" heading="id" sortOrder="0">
-     <backgroundColor alpha="0" red="0" blue="0" green="0"/>
-    </column>
     <column width="0" vAlignment="128" attribute="person_first_name" sortByRank="0" hAlignment="1" heading="First Name" sortOrder="0">
      <backgroundColor alpha="0" red="0" blue="0" green="0"/>
     </column>
@@ -280,8 +277,8 @@
     <firstRow enabled="0" cellBackgroundColor="255,255,255,255"/>
     <lastRow enabled="0" cellBackgroundColor="255,255,255,255"/>
    </cellStyles>
-   <ComposerFrame sectionWidth="78.6" sectionHeight="21.3924" hideBackgroundIfEmpty="0" hidePageIfEmpty="0" sectionX="0" sectionY="0">
-    <ComposerItem pagey="54.3483" page="1" id="{c5d294d4-54ba-4a79-95fb-27b1a86d8899}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="22.8378" y="54.3483" visibility="1" zValue="3" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="78.6" outlineWidth="0.3" excludeFromExports="0" uuid="{c5d294d4-54ba-4a79-95fb-27b1a86d8899}" height="21.3924" itemRotation="0" frame="false" pagex="22.8378">
+   <ComposerFrame sectionWidth="86.3" sectionHeight="21.3924" hideBackgroundIfEmpty="0" hidePageIfEmpty="0" sectionX="0" sectionY="0">
+    <ComposerItem pagey="54.3483" page="1" id="{8d92679c-3c8f-4a72-a3a1-d3b12f8ccfd6}" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="22.8378" y="54.3483" visibility="1" zValue="3" background="false" transparency="0" frameJoinStyle="miter" blendMode="0" width="81.8" outlineWidth="0.3" excludeFromExports="0" uuid="{8d92679c-3c8f-4a72-a3a1-d3b12f8ccfd6}" height="21.3924" itemRotation="0" frame="false" pagex="22.8378">
      <FrameColor alpha="255" red="0" blue="0" green="0"/>
      <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
      <customproperties/>
@@ -292,12 +289,12 @@
   <customproperties/>
  </Composition>
  <DataSource category="View" name="lo_parcel_vw_social_tenure_relationship" referencedTable="lo_parcel">
-  <DataField name="parcel_code" itemid="{b1543347-f477-4055-909b-d986c38261dc}"/>
-  <DataField name="parcel_area" itemid="{155d2d59-8fcf-4b64-9831-fbe85bae0d21}"/>
-  <DataField name="parcel_location" itemid="{123c5b69-5350-42c5-bc7d-3e2a7a4a2b71}"/>
-  <DataField name="parcel_code" itemid="{0893190e-60df-49d2-8eaa-e96ddf9f7d98}"/>
+  <DataField name="parcel_code" itemid="{a61137b7-bb93-490e-9e81-e9a20f1c280d}"/>
+  <DataField name="parcel_area" itemid="{0757be69-a255-47e0-a31f-723815a81a9c}"/>
+  <DataField name="parcel_location" itemid="{4922e352-75e7-4ded-b65e-8ad093274ea6}"/>
+  <DataField name="parcel_code" itemid="{8948600e-39b8-422e-895c-349936cd1537}"/>
   <SpatialFields>
-   <SpatialField geomType="POLYGON" zoom="1.2" srid="4326" labelField="parcel_code" name="parcel_spatial_geometery" itemid="{c3802542-ffcb-4cf2-aaa8-e0e683c7c2ab}">
+   <SpatialField geomType="POLYGON" zoom="1.2" srid="4326" labelField="parcel_code" name="parcel_spatial_geometery" itemid="{bd2d30ed-3d4d-4027-a1af-23a966378086}">
     <Symbol layerType="SimpleFill">
      <prop k="border_width_map_unit_scale" v="0,0,0,0,0,0"/>
      <prop k="color" v="255,162,86,255"/>
@@ -314,10 +311,10 @@
    </SpatialField>
   </SpatialFields>
   <Photos>
-   <Source referenced_field="social_tenure_relationship_id" documentType="General" table="lo_social_tenure_relationship_supporting_document" itemid="{a4320f2f-bfd7-48f9-9161-beae04f44e6f}" referencing_field="social_tenure_relationship_id" documentTypeId="1"/>
+   <Source referenced_field="social_tenure_relationship_id" documentType="General" table="lo_social_tenure_relationship_supporting_document" itemid="{5035a1ad-4b07-4292-bc21-d4ebdb228f5f}" referencing_field="social_tenure_relationship_id" documentTypeId="1"/>
   </Photos>
   <Tables>
-   <Source referenced_field="social_tenure_relationship_parcel_id" documentType="" table="lo_person_vw_social_tenure_relationship" itemid="{c5d294d4-54ba-4a79-95fb-27b1a86d8899}" referencing_field="social_tenure_relationship_parcel_id" documentTypeId="-1"/>
+   <Source referenced_field="social_tenure_relationship_parcel_id" documentType="" table="lo_person_vw_social_tenure_relationship" itemid="{8d92679c-3c8f-4a72-a3a1-d3b12f8ccfd6}" referencing_field="social_tenure_relationship_parcel_id" documentTypeId="-1"/>
   </Tables>
   <Charts/>
  </DataSource>

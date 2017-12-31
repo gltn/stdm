@@ -903,6 +903,8 @@ class ValidateSTREditor(object):
             custom_attr_entity = self.editor.social_tenure.spu_custom_attribute_entity(
                 spatial_unit
             )
+            if custom_attr_entity is None:
+                continue
 
             if len(custom_attr_entity.columns) < 3:
                 continue
