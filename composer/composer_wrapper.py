@@ -585,20 +585,20 @@ class ComposerWrapper(QObject):
         Creates and saves a new document template.
         """
         #Validate if the user has specified the data source
-        #if not self.selectedDataSource():
-            #QMessageBox.critical(self.composerView(),
-                                 #QApplication.translate("ComposerWrapper","Error"),
-                                #QApplication.translate("ComposerWrapper","Please specify the "
-                                            #"data source name for the document composition."))
-            #return
+        if not self.selectedDataSource():
+            QMessageBox.critical(self.composerView(),
+                                 QApplication.translate("ComposerWrapper","Error"),
+                                QApplication.translate("ComposerWrapper","Please specify the "
+                                            "data source name for the document composition."))
+            return
 
         #Assert if the referenced table name has been set
-        #if not self.selected_referenced_table():
-            #QMessageBox.critical(self.composerView(),
-                                 #QApplication.translate("ComposerWrapper","Error"),
-                                #QApplication.translate("ComposerWrapper","Please specify the "
-                                            #"referenced table name for the selected data source."))
-            #return
+        if not self.selected_referenced_table():
+            QMessageBox.critical(self.composerView(),
+                                 QApplication.translate("ComposerWrapper","Error"),
+                                QApplication.translate("ComposerWrapper","Please specify the "
+                                            "referenced table name for the selected data source."))
+            return
 
         #If it is a new unsaved document template then prompt for the document name.
         docFile = self.documentFile()
