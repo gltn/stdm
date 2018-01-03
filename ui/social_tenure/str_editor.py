@@ -910,10 +910,13 @@ class ValidateSTREditor(object):
                 continue
             for i, (party_id, custom_model) in enumerate(store.custom_tenure.iteritems()):
                 if custom_model is not None:
-                    editor = self.editor.custom_tenure_info_component.entity_editors[
-                        (str_number, i)]
+                    if (str_number, i) in \
+                            self.editor.custom_tenure_info_component.\
+                                    entity_editors.keys():
+                        editor = self.editor.custom_tenure_info_component.entity_editors[
+                            (str_number, i)]
 
-                    errors = editor.validate_all()
+                        errors = editor.validate_all()
 
                 else:
                     for col in custom_attr_entity.columns.values():
