@@ -438,6 +438,9 @@ class SocialTenure(Entity):
         """
         sp_unit_entity = self._obj_from_str(spatial_unit)
 
+        if sp_unit_entity is None:
+            return False
+
         if self._sp_unit_in_sp_units(sp_unit_entity):
             return False
 
@@ -478,6 +481,9 @@ class SocialTenure(Entity):
         :rtype: bool
         """
         sp_unit_entity = self._obj_from_str(spatial_unit)
+
+        if sp_unit_entity is None:
+            return False
 
         if not self._sp_unit_in_sp_units(sp_unit_entity):
             return False
@@ -649,6 +655,9 @@ class SocialTenure(Entity):
         """
         party_entity = self._obj_from_str(party)
 
+        if party_entity is None:
+            return False
+
         if self._party_in_parties(party_entity):
             return False
 
@@ -670,6 +679,7 @@ class SocialTenure(Entity):
 
     def _foreign_key_column_name(self, entity):
         # Appends 'id' suffix to the entity's short name.
+
         fk_col_name = u'{0}_id'.format(entity.short_name.lower()).replace(
             ' ', '_'
         )
@@ -696,6 +706,9 @@ class SocialTenure(Entity):
         """
         party_entity = self._obj_from_str(party)
 
+        if party_entity is None:
+            return False
+
         if not self._party_in_parties(party_entity):
             return False
 
@@ -716,6 +729,8 @@ class SocialTenure(Entity):
 
     def _party_in_parties(self, party):
         # Check if a party is in the STR collection.
+        if party is None:
+            return False
         party = self._obj_from_str(party)
         party_names = [p.name for p in self.parties]
 
