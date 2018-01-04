@@ -1770,7 +1770,7 @@ class STDMQGISLoader(object):
         """
         Load and open documentation manual
         """
-        help_manual = self.plugin_dir+'/%s'%"stdm.chm"
+        help_manual = u'{0}/stdm.chm'.format(self.plugin_dir)
         try:
             os.startfile(
                 help_manual,'open'
@@ -1782,10 +1782,7 @@ class STDMQGISLoader(object):
                     "STDMQGISLoader",
                     'Open Error'
                 ),
-                QApplication.translate(
-                    "STDMQGISLoader",
-                    ex
-                )
+                unicode(ex)
             )
 
     def reset_content_modules_id(self, title, message_text):
