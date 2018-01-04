@@ -663,13 +663,18 @@ class CustomTenureInfo(object):
         :param custom_model: The custom tenure model that populates the tab
         forms.
         :type custom_model: Integer
+        :return: True if the editor is created and false if not created.
+        :rtype: Boolean
         """
         # Get the custom attribute entity
         custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
             spatial_unit_entity
         )
         if custom_attr_entity is None:
-            return
+            return False
+
+        if len(custom_attr_entity.columns) < 3:
+            return False
 
         # If None then create
         if custom_model is None:
@@ -697,10 +702,17 @@ class CustomTenureInfo(object):
                 entity_tab_widget.widget(0),
             party_title
         )
+        return True
 
     def remove_entity_editor(self, spatial_unit, row_numbers):
         """
-        Instantiates entity editor and remove its widgets as tabs
+        Instantiates entity editor and remove its widgets as tabs.
+        :param spatial_unit: The spatial unit entity
+        :type spatial_unit: Object
+        :param row_numbers: Number of party rows
+        :type row_numbers: Integer
+        :return:
+        :rtype:
         """
         # Get the custom attribute entity
         custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(

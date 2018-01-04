@@ -57,7 +57,6 @@ from stdm.utils.util import (
     entity_display_columns,
     format_name,
     get_db_attr,
-    entity_attr_to_id,
     lookup_parent_entity
 )
 

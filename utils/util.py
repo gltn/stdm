@@ -487,6 +487,7 @@ def profile_user_tables(profile, include_views=True, admin=False, sort=False):
     from stdm.data.pg_utils import (
         pg_views
     )
+
     if not admin:
         tables = [
             (e.name, e.short_name)
@@ -772,14 +773,14 @@ def entity_attr_to_model(entity, attr, value):
 
     return result
 
-def entity_attr_to_id(entity, attr_obj, attr_val, lower=False):
+def entity_attr_to_id(entity, col_name, attr_val, lower=False):
     """
     Coverts other column values to id value
     of the same table.
     :param entity: Entity
     :type entity: Class
-    :param attr_obj: The source column object
-    :type attr_obj: Object
+    :param col_name: The table column name
+    :type col_name: String
     :param attr_val: Any value of a source column
     :type attr_val: Any
     :return: The Id of the entity or the attribute
@@ -787,17 +788,24 @@ def entity_attr_to_id(entity, attr_obj, attr_val, lower=False):
     :rtype: Integer or NoneType
     """
     doc_type_model = entity_model(entity)
+
     doc_type_obj = doc_type_model()
+
+    model_col = getattr(doc_type_model, col_name)
+    if model_col is None:
+        raise AttributeError('Specified column does not exist')
+
     if lower:
 
         result = doc_type_obj.queryObject().filter(
-            func.lower(attr_obj) == func.lower(attr_val)
+            func.lower(col_name) == func.lower(attr_val)
         ).first()
 
     else:
         result = doc_type_obj.queryObject().filter(
-            attr_obj == attr_val
+            model_col == attr_val
         ).first()
+
     if result is not None:
         attr_id = getattr(
             result,
@@ -808,6 +816,44 @@ def entity_attr_to_id(entity, attr_obj, attr_val, lower=False):
         attr_id = attr_val
 
     return attr_id
+
+#
+# def entity_attr_to_id(entity, attr_obj, attr_val, lower=False):
+#     """
+#     Coverts other column values to id value
+#     of the same table.
+#     :param entity: Entity
+#     :type entity: Class
+#     :param attr_obj: The source column object
+#     :type attr_obj: Object
+#     :param attr_val: Any value of a source column
+#     :type attr_val: Any
+#     :return: The Id of the entity or the attribute
+#     value if no id is found or the attribute is not valid.
+#     :rtype: Integer or NoneType
+#     """
+#     doc_type_model = entity_model(entity)
+#     doc_type_obj = doc_type_model()
+#     if lower:
+#
+#         result = doc_type_obj.queryObject().filter(
+#             func.lower(attr_obj) == func.lower(attr_val)
+#         ).first()
+#
+#     else:
+#         result = doc_type_obj.queryObject().filter(
+#             attr_obj == attr_val
+#         ).first()
+#     if result is not None:
+#         attr_id = getattr(
+#             result,
+#             'id',
+#             None
+#         )
+#     else:
+#         attr_id = attr_val
+#
+#     return attr_id
 
 
 def profile_entities(profile):
@@ -1020,7 +1066,9 @@ def profile_and_user_views(profile, check_party=False):
     from stdm.data.pg_utils import (
         pg_views
     )
-
+    from stdm.data.configuration.stdm_configuration import (
+        StdmConfiguration
+    )
     source_tables = []
 
     social_tenure = profile.social_tenure
@@ -1039,8 +1087,14 @@ def profile_and_user_views(profile, check_party=False):
 
         else:
             source_tables.append(view)
+
+    stdm_config = StdmConfiguration.instance()
+    all_str_views = []
+    for prof in stdm_config.profiles.values():
+        all_str_views.extend(prof.social_tenure.views.keys())
+
     for value in pg_views():
-        if value not in social_tenure.views.keys():
+        if value not in all_str_views:
             source_tables.append(value)
     return source_tables
 

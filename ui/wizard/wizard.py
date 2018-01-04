@@ -17,6 +17,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
+
 import platform
 import os
 import sys
@@ -417,12 +418,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         If a user chooses 'YES', the backup file is returned else the main configuration.
         :rtype: str
         """
-        msg = self.tr("Please note that your previous configuration wizard did "
-                "not complete successfully!\n However a backup of work done on "
-                "that session is available.\n Would you like to restore that backup session?\n "
-                "If you choose the NO button, you will lose all your latest changes, \n "
-                "and there could be a mismatch between the database and the "
-                "configuration.")
+        msg = self.tr("Your previous configuration wizard did "
+                "not complete successfully!\n Would you like to recover that session?")
 
         if self.query_box_yesno(msg, QMessageBox.Critical) == QMessageBox.Yes:
             return CONFIG_BACKUP_FILE
@@ -1813,6 +1810,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Event handler for removing column item from various view models
         """
         model_item, column, row_id = self.get_model_entity(self.tbvColumns)
+        if column is None:
+            return
         self.col_view_model.delete_entity(column)
         self.col_view_model.removeRow(row_id)
         self.party_item_model.removeRow(row_id)

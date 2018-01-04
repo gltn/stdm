@@ -330,7 +330,6 @@ def _entity_select_column(
                 parent_table = c.entity_relation.parent.name
 
                 LOGGER.debug('Parent found')
-                select_column_name = ''
 
                 # Handle renaming of parent table names to appropriate
                 # pseudonames.
@@ -376,6 +375,7 @@ def _entity_select_column(
                     use_inner_join = False
 
                 elif c.TYPE_INFO == 'FOREIGN_KEY':
+
                     if c.entity_relation.parent not in str_entity.parties and \
                         c.entity_relation.parent not in str_entity.spatial_units:
 
@@ -398,6 +398,9 @@ def _entity_select_column(
 
                         use_custom_join = True
                         use_inner_join = False
+
+                    else:
+                        QApplication.processEvents()
                 # These are outer joins
                 join_type = 'LEFT JOIN'
 
@@ -466,7 +469,7 @@ def _entity_select_column(
             if c.name not in omit_view_columns:
                 if select_column_name:
                     column_names.append(select_column_name)
-
+            QApplication.processEvents()
     return column_names, join_statements
 
 

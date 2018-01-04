@@ -18,7 +18,7 @@ email                : gkahiu@gmail.com
 """
 import uuid
 import logging
-from datetime import date
+from datetime import date, datetime
 from numbers import Number
 
 from PyQt4.QtGui import (
@@ -882,6 +882,22 @@ class DocumentGenerator(QObject):
             else:
                 data_text = label_text[
                             label_text.find('[') + 1:label_text.find(']')]
+                if isinstance(value, Number):
+                    value = str(value)
+                if isinstance(value, bool):
+                    if value:
+                        value = QApplication.translate(
+                            'DocumentGenerator', u'Yes'
+                        )
+                    else:
+                        value = QApplication.translate(
+                            'DocumentGenerator', u'No'
+                        )
+                if isinstance(value, date):
+                    value = str(value)
+
+                if isinstance(value, datetime):
+                    value = str(value)
 
                 composer_item.setText(
                     label_text.replace(u'[{}]'.format(data_text), value)

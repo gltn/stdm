@@ -903,12 +903,20 @@ class ValidateSTREditor(object):
             custom_attr_entity = self.editor.social_tenure.spu_custom_attribute_entity(
                 spatial_unit
             )
+            if custom_attr_entity is None:
+                continue
+
+            if len(custom_attr_entity.columns) < 3:
+                continue
             for i, (party_id, custom_model) in enumerate(store.custom_tenure.iteritems()):
                 if custom_model is not None:
-                    editor = self.editor.custom_tenure_info_component.entity_editors[
-                        (str_number, i)]
+                    if (str_number, i) in \
+                            self.editor.custom_tenure_info_component.\
+                                    entity_editors.keys():
+                        editor = self.editor.custom_tenure_info_component.entity_editors[
+                            (str_number, i)]
 
-                    errors = editor.validate_all()
+                        errors = editor.validate_all()
 
                 else:
                     for col in custom_attr_entity.columns.values():
@@ -1485,12 +1493,13 @@ class STREditor(QDialog, Ui_STREditor):
         """
         store = self.current_data_store()
         QApplication.processEvents()
-        self.custom_tenure_info_component.add_entity_editor(
+        create_result = self.custom_tenure_info_component.add_entity_editor(
             self.party, self.spatial_unit, party_model,
             self.str_number, row_number, custom_model
         )
 
-        store.custom_tenure[party_model.id] = custom_model
+        if create_result:
+            store.custom_tenure[party_model.id] = custom_model
 
     def reset_share_spinboxes(self, data_store):
         """
@@ -2252,7 +2261,8 @@ class EditSTREditor(STREditor):
         )
         if custom_entity is None:
             return
-
+        if len(custom_entity.columns) < 3:
+            return
         custom_model = entity_attr_to_model(
             custom_entity, 'social_tenure_relationship_id', self.str_edit_obj.id
         )

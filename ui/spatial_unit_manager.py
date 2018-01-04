@@ -140,7 +140,10 @@ class SpatialUnitManagerDockWidget(
         :return:
         :rtype:
         """
+        if not hasattr(layer, 'attributeTableConfig'):
+            return
         entity = self._curr_profile.entity_by_name(self.curr_lyr_table)
+
         config = layer.attributeTableConfig()
         columns = config.columns()
         updated_columns = []
@@ -351,6 +354,7 @@ class SpatialUnitManagerDockWidget(
                 view_geom_columns = table_column_names(
                     sp_table, True
                 )
+
                 for geom_col in view_geom_columns:
                     view_layer_name = '{}.{}'.format(
                         sp_table, geom_col
@@ -619,9 +623,9 @@ class SpatialUnitManagerDockWidget(
 
             entity = self._curr_profile.entity_by_name(self.curr_lyr_table)
             fk_fields = self.join_fk_layer(curr_layer, entity)
-
-            self.sort_joined_columns(curr_layer, fk_fields)
-            self.set_field_alias(curr_layer, entity, fk_fields)
+            if entity is not None:
+                self.sort_joined_columns(curr_layer, fk_fields)
+                self.set_field_alias(curr_layer, entity, fk_fields)
 
         else:
             msg = QApplication.translate(
@@ -677,9 +681,11 @@ class SpatialUnitManagerDockWidget(
 
     def geom_columns(self, entity):
         """
-        Get the geometry column
-        :return:
-        :rtype:
+        Returns the geometry columns of an entity.
+        :param entity: The entity object.
+        :type entity: Object
+        :return: List of Geometry column objects
+        :rtype: List
         """
         geom_column = [
             column

@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_entity.ui'
 #
-# Created: Sun Dec 10 20:21:21 2017
-#      by: PyQt4 UI code generator 4.9.4
+# Created: Tue Dec 19 19:06:43 2017
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_dlgEntity(object):
     def setupUi(self, dlgEntity):
@@ -72,12 +81,12 @@ class Ui_dlgEntity(object):
         QtCore.QMetaObject.connectSlotsByName(dlgEntity)
 
     def retranslateUi(self, dlgEntity):
-        dlgEntity.setWindowTitle(QtGui.QApplication.translate("dlgEntity", "Entity editor", None, QtGui.QApplication.UnicodeUTF8))
-        self.edtDesc.setPlaceholderText(QtGui.QApplication.translate("dlgEntity", "Entity description", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("dlgEntity", "Description", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("dlgEntity", "Entity Name", None, QtGui.QApplication.UnicodeUTF8))
-        self.edtTable.setPlaceholderText(QtGui.QApplication.translate("dlgEntity", "Entity name", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_3.setText(QtGui.QApplication.translate("dlgEntity", "Display Name", None, QtGui.QApplication.UnicodeUTF8))
-        self.txt_display_name.setPlaceholderText(QtGui.QApplication.translate("dlgEntity", "Entity display name", None, QtGui.QApplication.UnicodeUTF8))
-        self.cbSupportDoc.setText(QtGui.QApplication.translate("dlgEntity", "Allow supporting documents?", None, QtGui.QApplication.UnicodeUTF8))
+        dlgEntity.setWindowTitle(_translate("dlgEntity", "Entity editor", None))
+        self.edtDesc.setPlaceholderText(_translate("dlgEntity", "Entity description", None))
+        self.label_2.setText(_translate("dlgEntity", "Description", None))
+        self.label.setText(_translate("dlgEntity", "Entity Name", None))
+        self.edtTable.setPlaceholderText(_translate("dlgEntity", "Entity name", None))
+        self.label_3.setText(_translate("dlgEntity", "Entity Label", None))
+        self.txt_display_name.setPlaceholderText(_translate("dlgEntity", "Entity display name", None))
+        self.cbSupportDoc.setText(_translate("dlgEntity", "Allow supporting documents?", None))
 
