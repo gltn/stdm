@@ -1098,18 +1098,36 @@ def profile_and_user_views(profile, check_party=False):
             source_tables.append(value)
     return source_tables
 
-def user_non_profile_views(profile):
+def user_non_profile_views():
+    """
+    Gets and return user based views excluding profile views in the configuration.
+    :return: User views
+    :rtype: List
+    """
+    from stdm.data.configuration.stdm_configuration import (
+        StdmConfiguration
+    )
     from stdm.data.pg_utils import (
         pg_views
     )
     source_tables = []
+    stdm_config = StdmConfiguration.instance()
+    all_str_views = []
+    for prof in stdm_config.profiles.values():
+        all_str_views.extend(prof.social_tenure.views.keys())
+
     for value in pg_views():
-        if value not in profile.social_tenure.views.keys():
+        if value not in all_str_views:
             source_tables.append(value)
     return source_tables
 
 
 def version_from_metadata():
+    """
+    Gets the version from a metadata file.
+    :return: Meta data.
+    :rtype: String
+    """
     with open('{}/metadata.txt'.format(PLUGIN_DIR)) as meta:
         lines = meta.readlines()
         for line in lines:
