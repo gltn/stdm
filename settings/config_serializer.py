@@ -439,7 +439,6 @@ class ProfileSerializer(object):
                 child_tag_name
             )
 
-            #Hack: Process only entity elements.
             if child_element.tagName() == 'Entity':
                 if not item_serializer is None:
                     #Check if element has dependency
@@ -1095,6 +1094,7 @@ class EntitySerializer(EntitySerializerCollection):
             #Add entity to the profile so that it is discoverable
             profile.add_entity(ent)
 
+
             column_elements = EntitySerializer.column_elements(child_element)
 
             for ce in column_elements:
@@ -1104,10 +1104,10 @@ class EntitySerializer(EntitySerializerCollection):
                     Read element and load the corresponding column object
                     into the entity.
                     '''
+
                     ColumnSerializerCollection.read_xml(ce, ent,
                                                         association_elements,
                                                         entity_relation_elements)
-            ent.sort_columns()
 
     @staticmethod
     def column_elements(entity_element):
