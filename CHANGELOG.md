@@ -5,12 +5,23 @@ All notable changes of the Social Tenure Domain Model(STDM) is documented in thi
 ### Added
 - **Database and Configuration**: Multiple spatial units are now possible to be used in social tenure relationship.
 - **Database and Configuration**: Custom Tenure entity is added to attach additional attribute to each Social Tenure Relationship.
+- **Database and Configuration**: Added entity labels to accept user defined and database independent labels for entities.
+- **Database and Configuration**: Added column labels to accept user defined and database independent labels for columns.
+- **Database and Configuration**: Added ordering entities and columns that is reflected in interfaces such as forms and menus.
 - **Social Tenure Relationship Editor**: Added ability to choose more than one Spatial Unit.
 - **Social Tenure Relationship Editor**: Added additional node for Custom Tenure Information entity.
 - **Spatial Entity Browser**: Added the GPS Feature Import to be used for editing and adding a new record.
+- **Designer**: Added three sample templates.
+- **Designer**: Added the ability to add HTML in data labels.
+- **Designer**: Added the ability to add inline text in data label items.
+- **Documents Generator**: Added Open output folder to open the output folder.  
+- **STDM Mobile**: Added mobile form export and mobile data import using GeoODK apps.
+- **Styling Lookups**: Added conversion of lookup IDs to values in QGIS attribute table for styling.
 
 ### Fixed
 - **Export Data**: Fixed encoding issues when exporting data.
+- **Designer**: Fixed QGIS crash when moving attribute table.
+- **Designer**: Fixed showing save popup on already saved templates.
 
 ### Changed
 - **View Social Tenure Relationship**: Refactored the tree view to use the Spatial Entity Details to speed up performance.
