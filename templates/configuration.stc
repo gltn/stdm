@@ -80,7 +80,7 @@
     <CodeValue value="Ownership" code=""/>
     <CodeValue value="Rent" code=""/>
    </ValueList>
-
+</ValueLists>
   <Associations>
    <Association secondParent="Structure" firstParent="check_related_structures" shortName="related_structures" name="in_related_structures"/>
    <Association secondParent="Structure" firstParent="check_utilities" shortName="utilities" name="in_utilities"/>
