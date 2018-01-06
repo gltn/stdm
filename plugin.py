@@ -606,7 +606,6 @@ class STDMQGISLoader(object):
         :param metadata_version: The metadata version
         :type metadata_version: String
         :return: Result of the check or update.
-        If reg_version is not set, it returns 'new'
         If reg_version is different from metadata returns 'updated'
         If reg_version is same as metadata returns 'non-updated'
         :rtype: String
@@ -625,7 +624,7 @@ class STDMQGISLoader(object):
             self.reg_config.write(
                 {STDM_VERSION: metadata_version}
             )
-            return 'new'
+            return 'updated'
         elif metadata_version != reg_version:
             self.reg_config.write(
                 {STDM_VERSION: metadata_version}
@@ -634,7 +633,7 @@ class STDMQGISLoader(object):
             md_major_version = metadata_version.rsplit('.', 1)[0]
             reg_major_version = reg_version.rsplit('.', 1)[0]
 
-            if md_major_version !=reg_major_version:
+            if md_major_version != reg_major_version:
                 return 'updated'
             else:
                 return 'non-updated'
