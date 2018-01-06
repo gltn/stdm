@@ -14,9 +14,10 @@ All notable changes of the Social Tenure Domain Model(STDM) is documented in thi
 - **Designer**: Added three sample templates.
 - **Designer**: Added the ability to add HTML in data labels.
 - **Designer**: Added the ability to add inline text in data label items.
-- **Documents Generator**: Added Open output folder to open the output folder.  
+- **Documents Generator**: Added Open output folder to open the output folder.
 - **STDM Mobile**: Added mobile form export and mobile data import using GeoODK apps.
 - **Styling Lookups**: Added conversion of lookup IDs to values in QGIS attribute table for styling.
+- **Registry**: Added registry STDM version that is the same as metadata version.
 
 ### Fixed
 - **Export Data**: Fixed encoding issues when exporting data.
