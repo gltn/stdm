@@ -80,13 +80,7 @@
     <CodeValue value="Ownership" code=""/>
     <CodeValue value="Rent" code=""/>
    </ValueList>
-   <ValueList name="check_farm_tenure_type">
-    <CodeValue value="Ownership" code=""/>
-    <CodeValue value="Rent" code=""/>
-    <CodeValue value="Lease" code=""/>
-    <CodeValue value="Communal" code=""/>
-   </ValueList>
-  </ValueLists>
+
   <Associations>
    <Association secondParent="Structure" firstParent="check_related_structures" shortName="related_structures" name="in_related_structures"/>
    <Association secondParent="Structure" firstParent="check_utilities" shortName="utilities" name="in_utilities"/>
@@ -161,14 +155,7 @@
     </Column>
    </Columns>
   </Entity>
-  <Entity editable="False" global="False" rowindex="-1" associative="False" description="" proxy="False" createId="True" supportsDocuments="False" shortName="check_farm_tenure_type_str_attrs" name="in_check_farm_tenure_type_str_attrs" label="">
-   <Columns>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="" index="False" name="social_tenure_relationship_id" searchable="True" TYPE_INFO="FOREIGN_KEY" label="" mandatory="False">
-     <Relation name="fk_in_social_tenure_relationship_id_in_check_farm_tenure_type_str_attrs_social_tenure_relationship_id"/>
-    </Column>
-   </Columns>
-  </Entity>
+
   <Relations>
    <EntityRelation displayColumns="name,code" child="social_tenure_relationship_supporting_document" parent="check_social_tenure_relationship_document_type" name="fk_in_check_social_tenure_relationship_document_type_id_in_social_tenure_relationship_supporting_document_document_type" parentColumn="id" childColumn="document_type"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship_supporting_document" parent="social_tenure_relationship" name="fk_in_social_tenure_relationship_id_in_social_tenure_relationship_supporting_document_social_tenure_relationship_id" parentColumn="id" childColumn="social_tenure_relationship_id"/>
@@ -194,22 +181,18 @@
    <EntityRelation displayColumns="" child="check_tenure_type_str_attrs" parent="social_tenure_relationship" name="fk_in_social_tenure_relationship_id_in_check_tenure_type_str_attrs_social_tenure_relationship_id" parentColumn="id" childColumn="social_tenure_relationship_id"/>
    <EntityRelation displayColumns="name,code" child="check_tenure_type_str_attrs" parent="check_dispute_status" name="fk_in_check_dispute_status_id_in_check_tenure_type_str_attrs_dispute_status" parentColumn="id" childColumn="dispute_status"/>
    <EntityRelation displayColumns="name,code" child="check_tenure_type_str_attrs" parent="check_dispute_type" name="fk_in_check_dispute_type_id_in_check_tenure_type_str_attrs_dispute_type" parentColumn="id" childColumn="dispute_type"/>
-   <EntityRelation displayColumns="" child="check_farm_tenure_type_str_attrs" parent="social_tenure_relationship" name="fk_in_social_tenure_relationship_id_in_check_farm_tenure_type_str_attrs_social_tenure_relationship_id" parentColumn="id" childColumn="social_tenure_relationship_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Person" name="fk_in_person_id_in_social_tenure_relationship_person_id" parentColumn="id" childColumn="person_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" parent="Structure" name="fk_in_structure_id_in_social_tenure_relationship_structure_id" parentColumn="id" childColumn="structure_id"/>
-   <EntityRelation displayColumns="name,code" child="social_tenure_relationship" parent="check_farm_tenure_type" name="fk_in_check_farm_tenure_type_id_in_social_tenure_relationship_farm_tenure_type" parentColumn="id" childColumn="farm_tenure_type"/>
-  </Relations>
+ </Relations>
   <SocialTenure layerDisplay="in_structure_vw_social_tenure_relationship" tenureTypeList="check_tenure_type" spatialUnit="Structure" supportsMultipleParties="True" party="Person">
    <Validity>
     <Start minimum="1752-09-14" maximum="7999-12-31"/>
     <End minimum="1752-09-14" maximum="7999-12-31"/>
    </Validity>
    <SpatialUnitTenureMappings>
-    <Mapping tenureTypeList="check_farm_tenure_type" spatialUnit="Farm"/>
     <Mapping tenureTypeList="check_tenure_type" spatialUnit="Structure"/>
    </SpatialUnitTenureMappings>
    <CustomAttributes>
-    <TenureEntity tenureTypeList="check_farm_tenure_type" entity="check_farm_tenure_type_str_attrs"/>
     <TenureEntity tenureTypeList="check_tenure_type" entity="check_tenure_type_str_attrs"/>
    </CustomAttributes>
   </SocialTenure>
