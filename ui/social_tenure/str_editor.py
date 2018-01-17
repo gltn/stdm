@@ -2107,6 +2107,7 @@ class EditSTREditor(STREditor):
                     self.str_edit_dict
                 )
 
+
         title = QApplication.translate(
             'EditSTREditor',
             'Edit Social Tenure Relationship'
@@ -2181,7 +2182,7 @@ class EditSTREditor(STREditor):
         self.data_store[1].str_type[
             self.str_edit_dict[self.party_column]
         ] = tenure_type
-
+        self.data_store[1].current_party = self.party
         QTimer.singleShot(
             40, lambda: self.populate_str_type(tenure_type)
         )
@@ -2246,7 +2247,7 @@ class EditSTREditor(STREditor):
         self.data_store[1].spatial_unit[
             spatial_unit_model_obj.id
         ] = spatial_unit_model_obj
-
+        self.data_store[1].current_spatial_unit = self.spatial_unit
         doc_item = self.str_item(self.spatial_unit_text, self.str_number)
         doc_item.setEnabled(True)
 
@@ -2396,7 +2397,8 @@ class EditSTREditor(STREditor):
         Saves the edited data into the database.
         """
         current_store = self.current_data_store()
-
+        # print vars(current_store)
+        # print vars(current_store.current_spatial_unit)
         result = self.validate.validate_custom_tenure_form()
         if not result:
             return
@@ -2410,3 +2412,4 @@ class EditSTREditor(STREditor):
         )
         self.updated_str_obj = db_handler.commit_str()
         self.done(1)
+        

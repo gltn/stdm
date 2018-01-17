@@ -355,7 +355,7 @@ class ExportData(QWizard,Ui_frmExportWizard):
         '''
         field = lstItem.text()
         if "'" in field and '"' not in field:
-            field = u'"{}"'.format(field)
+            field = u'{}'.format(field)
         self.txtWhereQuery.insertPlainText(field)
 
     
