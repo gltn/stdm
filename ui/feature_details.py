@@ -1217,9 +1217,13 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
 
 
                     if custom_attr_entity is not None and len(custom_attr_entity.columns) > 2:
-                        custom_attr_model = entity_attr_to_model(
-                            custom_attr_entity,
-                            'social_tenure_relationship_id', record_dict['id'])
+                        try:
+                            custom_attr_model = entity_attr_to_model(
+                                custom_attr_entity,
+                                'social_tenure_relationship_id', record_dict['id']
+                            )
+                        except Exception:
+                            custom_attr_model = None
 
                         if custom_attr_model is not None:
                             custom_attr_root = self.add_custom_attr_child(
@@ -1592,7 +1596,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             )
             editor.exec_()
         # Edit spatial entity
-        else:
+        elif item in self.spatial_unit_items.keys():
             entity = self.spatial_unit_items[item]
 
             model = self.feature_model(entity, id)
@@ -1601,7 +1605,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 entity, model, self.iface.mainWindow()
             )
             editor.exec_()
-
+        else:
+            return
         self.view.expand(item.index())
         if feature_edit:
             self.update_edited_steam(entity, id)

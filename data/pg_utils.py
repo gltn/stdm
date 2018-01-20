@@ -231,7 +231,7 @@ def process_report_filter(tableName, columns, whereStr="", sortStmnt=""):
         spited_cols = columns.split(',')
         for col in spited_cols:
 
-            col = u'"{}"'.format(col)
+            col = u'{}'.format(col)
             cols.append(col)
         columns = ','.join(cols)
 
@@ -243,7 +243,7 @@ def process_report_filter(tableName, columns, whereStr="", sortStmnt=""):
 
     if sortStmnt !="":
         sql += sortStmnt
-    print sql
+
     t = text(sql)
     
     return _execute(t)
@@ -422,7 +422,7 @@ def columnType(tableName, columnName):
     """
     view = tableName in pg_views()
     if not view:
-        sql = u"SELECT data_type FROM information_schema.columns where table_name={} AND column_name={}".\
+        sql = u"SELECT data_type FROM information_schema.columns where table_name='{}' AND column_name='{}'".\
             format(tableName, columnName)
     else:
         # if ' ' in columnName:
