@@ -80,7 +80,7 @@ class AssociationEntity(Entity):
     def first_parent(self, parent):
         self.first_reference_column = self._set_parent(parent)
 
-        #Add column to the collection
+        # Add column to the collection
         if self.first_reference_column:
             self.add_column(self.first_reference_column)
 
@@ -100,7 +100,7 @@ class AssociationEntity(Entity):
 
             return
 
-        #check if there is an 'id' column
+        # Check if there is an 'id' column
         parent_id = self._entity_id_column(parent_entity)
 
         LOGGER.debug('Attempting to set %s entity as the party.',
@@ -115,11 +115,11 @@ class AssociationEntity(Entity):
 
             raise AttributeError(err)
 
-        #Set foreign key reference
+        # Set foreign key reference
         fk_name = u'{0}_{1}'.format(parent_entity.name, 'id')
         foreign_key_reference = ForeignKeyColumn(fk_name, self)
 
-        #Set parent attributes
+        # Set parent attributes
         foreign_key_reference.set_entity_relation_attr('parent', parent_entity)
         foreign_key_reference.set_entity_relation_attr('parent_column', 'id')
 

@@ -805,6 +805,7 @@ def copy_from_column_to_another(table, source, destination):
     t = text(sql)
     result = _execute(t)
 
+
 def remove_constraint(child, child_col):
     """
     Removes constraint from the current database.

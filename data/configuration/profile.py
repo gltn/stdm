@@ -223,7 +223,7 @@ class Profile(QObject):
         """
         :param name: Name of the entity i.e. table name in the database.
         :type name: str
-        :return: Return an entity object with the specified name attribute.
+        :returns: Return an entity object with the specified name attribute.
         ValueLists are also searched and returned.
         :rtype: Entity
         """
