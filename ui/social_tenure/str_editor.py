@@ -1462,6 +1462,7 @@ class STREditor(QDialog, Ui_STREditor):
                 0, model.id, row_number
             )
         )
+
         self.party_component.party_fk_mapper.afterEntityAdded.connect(
             lambda model, row_number: self.add_custom_tenure_info_data(
                 model, row_number
@@ -1491,6 +1492,12 @@ class STREditor(QDialog, Ui_STREditor):
         forms.
         :type custom_model: Integer
         """
+        custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
+            self.spatial_unit
+        )
+
+        if custom_attr_entity is None:
+            return
         store = self.current_data_store()
         QApplication.processEvents()
         create_result = self.custom_tenure_info_component.add_entity_editor(
@@ -2397,8 +2404,7 @@ class EditSTREditor(STREditor):
         Saves the edited data into the database.
         """
         current_store = self.current_data_store()
-        # print vars(current_store)
-        # print vars(current_store.current_spatial_unit)
+
         result = self.validate.validate_custom_tenure_form()
         if not result:
             return

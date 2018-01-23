@@ -247,6 +247,9 @@ class CheckBoxValueHandler(ControlValueHandler):
     def supportsMandatory(self):
         return False
 
+    def default(self):
+        return None
+
     def clear(self):
         self.control.setChecked(False)
 
@@ -263,6 +266,12 @@ class TextEditValueHandler(LineEditValueHandler):
     
     def setValue(self,value):
         self.control.setText(value)
+
+    def default(self):
+        return None
+
+    def supportsMandatory(self):
+        return True
 
     def clear(self):
         self.control.clear()
@@ -320,6 +329,8 @@ class DateEditValueHandler(ControlValueHandler):
                 )
             except TypeError:
                 pass
+    def default(self):
+        return QDate.currentDate()
 
     def supportsMandatory(self):
         return False
@@ -356,6 +367,9 @@ class DateTimeEditValueHandler(ControlValueHandler):
             )
         except TypeError:
             pass
+
+    def default(self):
+        return QDateTime.currentDateTime()
 
     def supportsMandatory(self):
         return False
@@ -484,6 +498,9 @@ class MultipleChoiceComboBox(ControlValueHandler):
     def setValue(self,value):
         if value:
             self.control.set_values(value)
+
+    def default(self):
+        return None
 
     def clear(self):
         self.control.clear()

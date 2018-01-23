@@ -186,6 +186,7 @@ class MapperMixin(object):
         self.saved_model = None
         # Get document objects
         self.entity_model = entity_model(entity)
+
         self.entity_model_obj = self.entity_model()
         #Initialize notification bar
         if hasattr(self,"vlNotification"):
