@@ -2412,4 +2412,3 @@ class EditSTREditor(STREditor):
         )
         self.updated_str_obj = db_handler.commit_str()
         self.done(1)
-        
