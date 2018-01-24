@@ -1462,6 +1462,7 @@ class STREditor(QDialog, Ui_STREditor):
                 0, model.id, row_number
             )
         )
+
         self.party_component.party_fk_mapper.afterEntityAdded.connect(
             lambda model, row_number: self.add_custom_tenure_info_data(
                 model, row_number
@@ -1491,6 +1492,12 @@ class STREditor(QDialog, Ui_STREditor):
         forms.
         :type custom_model: Integer
         """
+        custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
+            self.spatial_unit
+        )
+
+        if custom_attr_entity is None:
+            return
         store = self.current_data_store()
         QApplication.processEvents()
         create_result = self.custom_tenure_info_component.add_entity_editor(
@@ -2107,6 +2114,7 @@ class EditSTREditor(STREditor):
                     self.str_edit_dict
                 )
 
+
         title = QApplication.translate(
             'EditSTREditor',
             'Edit Social Tenure Relationship'
@@ -2181,7 +2189,7 @@ class EditSTREditor(STREditor):
         self.data_store[1].str_type[
             self.str_edit_dict[self.party_column]
         ] = tenure_type
-
+        self.data_store[1].current_party = self.party
         QTimer.singleShot(
             40, lambda: self.populate_str_type(tenure_type)
         )
@@ -2246,7 +2254,7 @@ class EditSTREditor(STREditor):
         self.data_store[1].spatial_unit[
             spatial_unit_model_obj.id
         ] = spatial_unit_model_obj
-
+        self.data_store[1].current_spatial_unit = self.spatial_unit
         doc_item = self.str_item(self.spatial_unit_text, self.str_number)
         doc_item.setEnabled(True)
 

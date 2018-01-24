@@ -83,6 +83,7 @@ from stdm.data.pg_utils import (
 from stdm.settings.registryconfig import (
     RegistryConfig,
     WIZARD_RUN,
+    STDM_VERSION,
     CONFIG_UPDATED,
     HOST,
     composer_template_path
@@ -148,7 +149,7 @@ class STDMQGISLoader(object):
         self.stdmTables = []
 
         self.stdm_config = StdmConfiguration.instance()
-
+        self.reg_config = RegistryConfig()
         self.spatialLayerMangerDockWidget = None
 
         self._user_logged_in = False
@@ -332,7 +333,7 @@ class STDMQGISLoader(object):
                 return
 
             try:
-
+                self.show_change_log()
                 #Set current profile
                 self.current_profile = current_profile()
 
@@ -429,16 +430,14 @@ class STDMQGISLoader(object):
         :return:
         :rtype:
         """
-        reg_config = RegistryConfig()
-
-        host = reg_config.read([HOST])
+        host = self.reg_config.read([HOST])
         host_val = host[HOST]
 
         if host_val != u'localhost':
             if host_val != u'127.0.0.1':
                 return
 
-        wizard_key = reg_config.read(
+        wizard_key = self.reg_config.read(
             [WIZARD_RUN]
         )
 
@@ -557,11 +556,11 @@ class STDMQGISLoader(object):
         """
         # TODO remove this line below when schema updater is refactored
         self.config_serializer.on_version_updated(document)
-        registry_config = RegistryConfig()
-        registry_config.write(
+
+        self.reg_config.write(
             {WIZARD_RUN: 1}
         )
-        self.show_change_log()
+
         self.progress.hide()
         self.progress.cancel()
 
@@ -601,30 +600,75 @@ class STDMQGISLoader(object):
 
             return False
 
+    def stdm_reg_version(self, metadata_version):
+        """
+        Checks and set STDM registry version using metadata version.
+        :param metadata_version: The metadata version
+        :type metadata_version: String
+        :return: Result of the check or update.
+        If reg_version is different from metadata returns 'updated'
+        If reg_version is same as metadata returns 'non-updated'
+        :rtype: String
+        """
+        reg_version_dict = self.reg_config.read(
+            [STDM_VERSION]
+        )
+
+        if STDM_VERSION in reg_version_dict.keys():
+            reg_version = reg_version_dict[STDM_VERSION]
+
+        else:
+            reg_version = None
+
+        if reg_version is None:
+            self.reg_config.write(
+                {STDM_VERSION: metadata_version}
+            )
+            return 'updated'
+        elif metadata_version != reg_version:
+            self.reg_config.write(
+                {STDM_VERSION: metadata_version}
+            )
+            # compare major versions and mark it return 'updated' if major update.
+            md_major_version = metadata_version.rsplit('.', 1)[0]
+            reg_major_version = reg_version.rsplit('.', 1)[0]
+
+            if md_major_version != reg_major_version:
+                return 'updated'
+            else:
+                return 'non-updated'
+        elif metadata_version == reg_version:
+            return 'non-updated'
+
     def show_change_log(self):
         """
         Shows the change log the new version of STDM.
         """
         version = version_from_metadata()
-        title = QApplication.translate(
-            'ConfigurationFileUpdater',
-            'Upgrade Information'
-        )
+        # Get the big releases only not minor ones.
+        major_version = version.rsplit('.', 1)[0]
+        result = self.stdm_reg_version(version)
 
-        message = QApplication.translate(
-            'ConfigurationFileUpdater',
-            'Would you like to view the '
-            'new features and changes of STDM {}?'.format(version)
-        )
+        if result == 'updated':
+            title = QApplication.translate(
+                'ConfigurationFileUpdater',
+                'Upgrade Information'
+            )
 
-        result, checkbox_result = simple_dialog(
-            self.iface.mainWindow(),
-            title,
-            message
-        )
-        if result:
-            change_log = ChangeLog(self.iface.mainWindow())
-            change_log.show_change_log(self.plugin_dir)
+            message = QApplication.translate(
+                'ConfigurationFileUpdater',
+                'Would you like to view the '
+                'new features and changes of STDM {}?'.format(major_version)
+            )
+
+            result, checkbox_result = simple_dialog(
+                self.iface.mainWindow(),
+                title,
+                message
+            )
+            if result:
+                change_log = ChangeLog(self.iface.mainWindow())
+                change_log.show_change_log(self.plugin_dir)
 
     def copy_designer_template(self):
         """

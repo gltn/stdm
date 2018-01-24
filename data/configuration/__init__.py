@@ -128,6 +128,7 @@ def entity_model(entity, entity_only=False, with_supporting_document=False):
     )
 
     if with_supporting_document and not entity_only:
+
         return getattr(Base.classes, entity.name, None), supporting_doc_model
 
     return getattr(Base.classes, entity.name, None)

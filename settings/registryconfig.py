@@ -19,6 +19,7 @@ email                : gkahiu@gmail.com
 """
 from PyQt4.QtCore import QSettings
 from PyQt4.QtGui import QColor
+
 #Names of registry keys
 NETWORK_DOC_RESOURCE = 'NetDocumentResource'
 PATHKEYS = ['Config','NetDocumentResource','ComposerOutputs','ComposerTemplates']
@@ -38,6 +39,7 @@ DEBUG_LOG = 'Debug'
 HOST = 'Host'
 FIRST_LOGIN = 'FirstLogin'
 STDM_PLUGIN = 'stdm'
+STDM_VERSION = 'STDMVersion'
 
 def registry_value(key_name):
     """
