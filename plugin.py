@@ -1431,6 +1431,8 @@ class STDMQGISLoader(object):
         on the configuration wizard.
         :type: string
         """
+        if not self._user_logged_in:
+            return 
         if self.toolbarLoader is not None:
             self.toolbarLoader.unloadContent()
             # Clear current profile combobox
@@ -1801,6 +1803,7 @@ class STDMQGISLoader(object):
             self.logoutCleanUp()
             self.initMenuItems()
             self.loginAct.setEnabled(True)
+            self._user_logged_in = False
         except Exception as ex:
             LOGGER.debug(unicode(ex))
 
