@@ -1432,7 +1432,7 @@ class STDMQGISLoader(object):
         :type: string
         """
         if not self._user_logged_in:
-            return 
+            return
         if self.toolbarLoader is not None:
             self.toolbarLoader.unloadContent()
             # Clear current profile combobox
