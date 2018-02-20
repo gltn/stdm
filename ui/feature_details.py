@@ -442,13 +442,17 @@ class DetailsDBHandler:
         self.display_column_object(entity)
         for col in self.display_columns:
             if isinstance(model, OrderedDict):
-                col_val = model[col.name]
+                if col.name in model.keys():
+                    col_val = model[col.name]
+                else:
+                    continue
             else:
                 col_val = getattr(model, col.name)
             # Check if there are display formatters and apply if
             # one exists for the given attribute.
             if col_val == NULL:
                 col_val = None
+
             if col.name in self.column_formatter:
                 formatter = self.column_formatter[col.name]
 
@@ -699,13 +703,17 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :type button_clicked: Boolean
         """
         if self.plugin is None:
-
             # Registry column widget
-            # self.set_formatter()
             # set formatter for social tenure relationship.
             self.set_formatter(self.social_tenure)
             for party in self.social_tenure.parties:
                 self.set_formatter(party)
+            for spatial_unit in self.social_tenure.spatial_units:
+                self.set_formatter(spatial_unit)
+                custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
+                    spatial_unit
+                )
+                self.set_formatter(custom_attr_entity)
             return
         # Get and set the active layer.
         self.layer = self.iface.activeLayer()
@@ -775,6 +783,13 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         self.set_formatter(self.social_tenure)
         for party in self.social_tenure.parties:
             self.set_formatter(party)
+
+        for spatial_unit in self.social_tenure.spatial_units:
+            self.set_formatter(spatial_unit)
+            custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
+                spatial_unit
+            )
+            self.set_formatter(custom_attr_entity)
         # pull data, show treeview
         active_layer.selectionChanged.connect(
             self.show_tree
@@ -1066,9 +1081,12 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
 
         if not isinstance(model, OrderedDict):
             entity = self.current_profile.entity_by_name(model.__table__.name)
+
             self.column_widget_registry(model, entity)
+
         else:
             self.column_widget_registry(model, self.entity)
+
         for i, (col, row) in enumerate(self._formatted_record.iteritems()):
             child = QStandardItem(u'{}: {}'.format(col, row))
 
@@ -1236,7 +1254,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
 
                         self.party_items[party_root] = party
                     else:
-                        # ToDo continue here.
+
                         record_dict = record.__dict__
                         spatial_unit, spatial_unit_id = self.current_spatial_unit(
                             record_dict
@@ -1333,6 +1351,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :rtype: QStandardItem
         """
         spatial_unit_id = spatial_unit_model.id
+        # self.column_widget_registry(spatial_unit_model, spatial_entity)
         # self.party_models[spatial_unit_id] = spatial_unit_model
         party_root = self.add_spatial_unit_steam(
             parent, spatial_entity, spatial_unit_id

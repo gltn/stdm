@@ -17,6 +17,7 @@ docs/_build
 
 # Others
 *.swp
+*.chm
 
 # My scripts
 ui.make.bat
