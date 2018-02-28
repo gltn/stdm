@@ -178,10 +178,21 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
 
             #Assert data source is in the current profile
             if doc_temp.data_source.referenced_table_name in profile_tables:
-                self._profile_templates.append(doc_temp)
+                self._add_doc_temp(doc_temp)
+                #self._profile_templates.append(doc_temp)
 
             if doc_temp.data_source._dataSourceName in user_non_profile_views():
-                self._profile_templates.append(doc_temp)
+                self._add_doc_temp(doc_temp)
+                #self._profile_templates.append(doc_temp)
+
+    def _add_doc_temp(self, doc_temp):
+        found = False
+        for template in self._profile_templates:
+            if template.name == doc_temp.name:
+                found = True
+                break
+        if not found:
+            self._profile_templates.append(doc_temp)
 
     def _template_contains_filter_table(self, document_template):
         #Returns true if the template refers to the filter data source
