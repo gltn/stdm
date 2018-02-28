@@ -514,7 +514,7 @@ class Entity(QObject, TableItem):
 
     def virtual_columns(self):
         """
-        :return: Returns a list of derived columns such as multi-select
+        :return: Returns a list of derived column names such as multi-select 
         columns, supporting document columns separated by document type etc.
         :rtype: list
         """
@@ -533,6 +533,10 @@ class Entity(QObject, TableItem):
         multi_select_cols = self.columns_by_type_info(
             MultipleSelectColumn.TYPE_INFO
         )
+
+        # Get column names
+        multi_select_cols = [c.name for c in multi_select_cols]
+
         virtual_cols.extend(multi_select_cols)
 
         return virtual_cols
