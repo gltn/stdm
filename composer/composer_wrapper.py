@@ -695,7 +695,9 @@ class ComposerWrapper(QObject):
 
         self.setDocumentFile(docFile)
         docFile.close()
-        self.copy_template_file.close()
+
+        if self.copy_template_file:
+            self.copy_template_file.close()
 
     def _writeXML(self, xml_doc, doc_name):
         """
