@@ -599,6 +599,7 @@ def lookup_parent_entity(profile, col):
     else:
         return None
 
+
 def lookup_id_to_value(profile, col, id):
     """
     Converts a lookup id into its value
