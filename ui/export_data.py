@@ -277,24 +277,24 @@ class ExportData(QWizard,Ui_frmExportWizard):
             self.ErrorInfoMessage(msg)
             return succeed
 
-        try:
+        # try:
 
-            writer.db2Feat(
-                self, self.srcTab, resultSet, self.selectedColumns(),
-                self.geomColumn
-            )
-            ft = QApplication.translate('ExportData', 'Features in ')
-            succ = QApplication.translate(
-                'ExportData', 'have been successfully exported!')
-            self.InfoMessage(u'{}{} {}'.format(ft, self.srcTab, succ))
+        writer.db2Feat(
+            self, self.srcTab, resultSet, self.selectedColumns(),
+            self.geomColumn
+        )
+        ft = QApplication.translate('ExportData', 'Features in ')
+        succ = QApplication.translate(
+            'ExportData', 'have been successfully exported!')
+        self.InfoMessage(u'{}{} {}'.format(ft, self.srcTab, succ))
 
-            # Update directory info in the registry
-            setVectorFileDir(targetFile)
+        # Update directory info in the registry
+        setVectorFileDir(targetFile)
 
-            succeed = True
+        succeed = True
 
-        except Exception as ex:
-            self.ErrorInfoMessage(ex)
+        # except Exception as ex:
+        #     self.ErrorInfoMessage(ex)
 
         return succeed
             
