@@ -113,6 +113,7 @@ from mapping.utils import pg_layerNamesIDMapping
 from composer import ComposerWrapper
 from stdm.ui.progress_dialog import STDMProgressDialog
 from stdm.ui.feature_details import DetailsTreeView
+from stdm.ui.geometry.geometry_container import GeometryToolsContainer
 from stdm.ui.social_tenure.str_editor import STREditor
 
 from stdm.ui.geoodk_converter_dialog import GeoODKConverter
@@ -793,6 +794,7 @@ class STDMQGISLoader(object):
     def loadModules(self):
 
         self.details_tree_view = DetailsTreeView(self.iface, self)
+        self.geom_tools_container = GeometryToolsContainer(self.iface, self)
         '''
         Define and add modules to the menu and/or toolbar using the module loader
         '''
@@ -917,6 +919,13 @@ class STDMQGISLoader(object):
         self.ModuleAct = QAction(QIcon(":/plugins/stdm/images/icons/table_designer.png"),\
                     QApplication.translate("WorkspaceConfig","Entities"), self.iface.mainWindow())
 
+        # Spatial Layer Manager
+        self.geom_tools_cont_act = QAction(
+            QIcon(":/plugins/stdm/images/icons/geometry_tools.png"), \
+            QApplication.translate("STDMQGISLoader", "Geometry Tools"),
+            self.iface.mainWindow())
+        self.geom_tools_cont_act.setCheckable(True)
+
         self.mobile_form_act = QAction(QIcon(":/plugins/stdm/images/icons/mobile_collect.png"), \
                                        QApplication.translate("MobileFormGenerator", "Generate Mobile Form"),
                                        self.iface.mainWindow())
@@ -938,11 +947,17 @@ class STDMQGISLoader(object):
         self.docGeneratorAct.triggered.connect(self.onDocumentGenerator)
         self.spatialLayerManager.triggered.connect(self.spatialLayerMangerActivate)
         self.feature_details_act.triggered.connect(self.details_tree_view.activate_feature_details)
+        self.geom_tools_cont_act.triggered.connect(
+            self.geom_tools_container.activate_geometry_tools)
+
         self.mobile_form_act.triggered.connect(self.mobile_form_generator)
         self.mobile_form_import.triggered.connect(self.mobile_form_importer)
 
         self.iface.mapCanvas().currentLayerChanged.connect(
             lambda :self.details_tree_view.activate_feature_details(False)
+        )
+        self.iface.mapCanvas().currentLayerChanged.connect(
+            lambda: self.geom_tools_container.activate_geometry_tools(False)
         )
         contentMenu.triggered.connect(self.widgetLoader)
         self.wzdAct.triggered.connect(self.load_config_wizard)
@@ -979,6 +994,10 @@ class STDMQGISLoader(object):
 
         feature_details_cnt = ContentGroup.contentItemFromQAction(self.feature_details_act)
         feature_details_cnt.code = '2adff3f8-bda9-49f9-b37d-caeed9889ab6'
+
+        geom_tools_cnt = ContentGroup.contentItemFromQAction(
+            self.geom_tools_cont_act)
+        geom_tools_cnt.code = 'd1c67ab1-b617-4601-87dd-d20eb702a802'
 
         wzdConfigCnt = ContentGroup.contentItemFromQAction(self.wzdAct)
         wzdConfigCnt.code = "F16CA4AC-3E8C-49C8-BD3C-96111EA74206"
@@ -1065,6 +1084,11 @@ class STDMQGISLoader(object):
         self.feature_details_cnt_group.addContentItem(feature_details_cnt)
         self.feature_details_cnt_group.register()
 
+        self.geometry_tools_cnt_group = ContentGroup(username,
+                                                      self.geom_tools_cont_act)
+        self.geometry_tools_cnt_group.addContentItem(geom_tools_cnt)
+        self.geometry_tools_cnt_group.register()
+
         self.wzdConfigCntGroup = ContentGroup(username, self.wzdAct)
         self.wzdConfigCntGroup.addContentItem(wzdConfigCnt)
         self.wzdConfigCntGroup.register()
@@ -1136,6 +1160,9 @@ class STDMQGISLoader(object):
 
         self.toolbarLoader.addContent(self.adminUnitsCntGroup)
         self.menubarLoader.addContent(self.adminUnitsCntGroup)
+
+        self.toolbarLoader.addContent(self.geometry_tools_cnt_group)
+        self.menubarLoader.addContent(self.geometry_tools_cnt_group)
 
         self.toolbarLoader.addContent(self.importCntGroup)
         self.menubarLoader.addContent(self.importCntGroup)
@@ -1784,6 +1811,9 @@ class STDMQGISLoader(object):
             self.stdmInitToolbar.removeAction(self.spatialLayerManager)
             self.feature_details_act.setChecked(False)
             self.stdmInitToolbar.removeAction(self.feature_details_act)
+            self.geom_tools_cont_act.setChecked(False)
+            self.stdmInitToolbar.removeAction(self.geom_tools_cont_act)
+
             self.stdmInitToolbar.removeAction(self.contentAuthAct)
             self.stdmInitToolbar.removeAction(self.usersAct)
             self.stdmInitToolbar.removeAction(self.options_act)
@@ -1838,6 +1868,9 @@ class STDMQGISLoader(object):
 
             self.details_tree_view.close_dock(
                 self.feature_details_act
+            )
+            self.geom_tools_container.close_dock(
+                self.geom_tools_cont_act
             )
             if not reload_plugin:
 

@@ -13,14 +13,18 @@
 # rotate line from a point with a given distance from line point end, with an angle
 #1. add_line_points_to_map(layer_point, selected_line2)
 #2. Select one point
-#3. rotate_line_with_area(selected_line2, 300, 30, -1, True)
+#3. rotate_line_with_area(selected_line2, 300, 30, -1)
 import json
 import math
 
+from PyQt4.QtGui import QColor
+from qgis._gui import QgsHighlight
 from qgis.core import QgsPoint, QgsGeometry, QgsVectorLayer, QgsFeature, \
     QgsMapLayerRegistry, QgsLineStringV2, QgsPointV2, edit
 from qgis.utils import iface
-
+from stdm.settings.registryconfig import (
+    selection_color
+)
 line_start = QgsPoint(50, 125)
 line_m2 = QgsPoint(70, 70)
 line_m3 = QgsPoint(100, 100)
@@ -135,6 +139,7 @@ def rotate_line(point_geom, polygon_layer, line, angle):
             geom = feature.geometry()
             break
     if geom is not None:
+
         added_points = extend_line_points(line_geom, geom.boundingBox())
         extended_geom = QgsGeometry.fromPolyline(added_points)
         add_geom_to_layer(layer, extended_geom)
@@ -254,17 +259,19 @@ def extend_line_points(line_geom, polygon_extent):
     """
     x_max = polygon_extent.xMaximum()
     x_min = polygon_extent.xMinimum()
+    #TODO take this method outisde this function and put all output as inputs
     line, slope, start_x, start_y, end_x, end_y = line_slope(line_geom)
+
     x1 = x_max
     x = x_min
     y = end_y + slope * (x - end_x)
     y1 = start_y + slope * (x1 - start_x)
     p1 = QgsPoint(x1, y1)
-    p2 = QgsPoint(end_x, end_y)
+    p2 = QgsPoint(start_x, start_y)
     p3 = QgsPoint(x, y)
-    # print p1.azimuth(p3)
+
     poly_line = [p1, p2, p3]
-    print p1,
+
     return poly_line
 
 
@@ -397,7 +404,7 @@ def add_geom_to_layer(layer, geom):
 
 def zoom_refresh_to_geom(geom):
     extent = geom.boundingBox()
-    iface.mapCanvas().setExtent(extent)
+    # iface.mapCanvas().setExtent(extent)
     iface.mapCanvas().refresh()
 
 
@@ -446,9 +453,10 @@ def clear_points(point_layer):
 def point_by_distance(point_layer, selected_line, distance):
 
     location = identify_selected_point_location(point_layer, selected_line)
-    if location == 'start':
-        get_point_by_distance(point_layer, selected_line, distance)
 
+    if location == 'start':
+        added_point_geom = get_point_by_distance(point_layer, selected_line, distance)
+        return added_point_geom
     elif location == 'end':
         line_length = selected_line.length()
         distance_from_end = line_length - distance
@@ -491,6 +499,9 @@ def rotate_line_with_area(selected_line_geom, area, distance, clockwise):
         break
     sel_feats = layer_poly.selectedFeatures()
     geom0 = sel_feats[0].geometry()
+    orig_geom = QgsGeometry(geom0)
+    poly_bbox = geom0.boundingBox()
+
     # extent = geom0.boundingBox()
     poly_line = geom0.exportToGeoJSON()
     poly_json = json.loads(poly_line)
@@ -506,18 +517,18 @@ def rotate_line_with_area(selected_line_geom, area, distance, clockwise):
     #     layer_poly, point_geom,
     #     line_v2, nearest_angle, clockwise
     # )
-    print 'nearest angle ', nearest_angle
+    # print 'nearest angle ', nearest_angle
     result = selected_line_geom.rotate(nearest_angle, point_geom.asPoint())
     ext_line_geom = selected_line_geom
     points = selected_line_geom.asPolyline()
-
+    # added_points = extend_line_points(selected_line_geom, poly_bbox)
     (res, split_geom, topolist) = geom0.splitGeometry(points, False)
 
     # if not clockwise and len(split_geom) > 0:
     #     split_area = split_geom[0].area()
     # else:
     #     split_area = geom0.area()
-
+    # print split_geom
     if len(split_geom) < 1:
         return
     # if direction == -1:
@@ -531,112 +542,124 @@ def rotate_line_with_area(selected_line_geom, area, distance, clockwise):
 
     # decimal_place = 1
 
-    handle_area_split_area2(geom0, line_v2, point_geom,
+    handle_area_split_area2(orig_geom, line_v2, point_geom, poly_bbox,
         area, clockwise, nearest_angle, split_area)
 
 
+def highlight_geom(map, layer, geom):
+    sel_highlight = QgsHighlight(map, geom, layer)
 
-def handle_area_split_area2(poly_geom, selected_line, point_geom, area,
-                            clockwise, ori_angle,
-                           split_area):
+    sel_highlight.setFillColor(selection_color())
+    sel_highlight.setWidth(4)
+    sel_highlight.setColor(QColor(212, 95, 0, 255))
+    sel_highlight.show()
+
+def handle_area_split_area2(ori_poly_geom, selected_line, point_geom, poly_bbox, area,
+                            clockwise, ori_angle, split_area):
     #TODO check if angle change is causing errors of two rotating lines
     decimal_place_new = 0
+    increment = 4
+    increase = None
     angle = ori_angle
     if area > split_area:
         condition = area > split_area
         angle_change = 1
+        # increase = True
     else:
         condition = area < split_area
         angle_change = -1
+        # increase = False
 
-    wkt_poly = poly_geom.exportToWkt()
+    # wkt_poly = poly_geom.exportToWkt()
+    # polygon = QgsGeometry.fromWkt(wkt_poly)
+    # real_ori_poly_geom = QgsGeometry(ori_poly_geom)
     while condition:
 
         decimal_place = decimal_place_new
-        print 'angle_change', angle_change
+        # print 'angle_change', angle_change
         # if angle is None:
         #     angle = ori_angle + angle_change / math.pow(10, decimal_place)
         # else:
         if angle_change == -1:
-            angle = angle - 1 / math.pow(10, decimal_place)
+            angle = angle - increment / math.pow(10, decimal_place)
+            increase = False
         else:
-            angle = angle + 1 / math.pow(10, decimal_place)
-
+            angle = angle + increment / math.pow(10, decimal_place)
+            increase = True
         if angle > 180:
             angle = 0
         if angle < -180:
             angle = 0
-        # print selected_line_geom.asPolyline(), angle, clockwise
-        print 'rotate point ', point_geom.asPoint()
-        # ext_line_geom = rotate_line(
-        #     point_geom, layer_poly, selected_line, angle
-        # )
-        print 'loop angle ', angle
-        print selected_line.asWkt()
+
         line_geom = QgsGeometry.fromWkt(selected_line.asWkt())
         result = line_geom.rotate(angle, point_geom.asPoint())
-        added_points = extend_line_points(line_geom, poly_geom.boundingBox())
+        added_points = extend_line_points(line_geom, poly_bbox)
+        sel_feats = layer_poly.selectedFeatures()
+        geom1 = sel_feats[0].geometry()
         ext_line_geom = QgsGeometry.fromPolyline(added_points)
-        add_geom_to_layer(layer, ext_line_geom)
-        points = ext_line_geom.asPolyline()
-        polygon = QgsGeometry.fromWkt(wkt_poly)
-        print 'points ', points
-        # print ext_line_geom.intersects(poly_geom), poly_geom.asPolygon()
-        # print ext_line_geom.intersects(polygon), polygon.asPolygon()
+        # add_geom_to_layer(layer, ext_line_geom)
 
-        if ext_line_geom.intersects(poly_geom):
+        if ext_line_geom.intersects(ori_poly_geom):
             # split with the rotated line
-            (res, split_geom, topolist) = polygon.splitGeometry(points, False)
-            # add_geom_to_layer(polygon_layer, split_geom[0])
 
-            # if vertical:
-            if len(split_geom):
-                split_area1 = split_geom[0].area()
-                split_geom = split_geom[0]
+            (res, split_geom, topolist) = geom1.splitGeometry(
+                added_points, False
+            )
+
+            if len(split_geom) > 0:
+
+                if clockwise == -1:
+                    split_area1 = split_geom[0].area()
+                    split_geom = split_geom[0]
+                    # print 'compare1 ', split_area1
+                    angle_change = -1
+                    # print 'split ', split_geom.asPolygon(), split_area1
+                else:
+                    split_area1 = geom1.area()
+                    split_geom = geom1
+                    angle_change = 1
+                    # print 'clockwise ', angle_change, area, split_area1
             else:
-                split_area1 = poly_geom.area()
-                split_geom = poly_geom
-            print 'compare ',  area, split_area1
+                continue
+            # print 'compare2 ', geom1.area()
+
             if area > split_area1:
                 # helps in changing height in small steps after switching from
-                # area < split_area1
 
+                # print angle_change, increase
                 if angle_change == -1:
-                    decimal_place_new = 2
+                    if math.modf(split_area1)[1] + 1 > area:
+                        decimal_place_new = 4
+                    else:
+                        decimal_place_new = 2
                 angle_change = 1
 
-                print '22 {}'.format(split_area1)
-                if math.modf(split_area1)[1] + 25 > area:
-                    decimal_place_new = 10
-                    print 'round ', int(round(split_area1))
-                    if int(round(split_area1)) == area - 1:
+                if math.modf(split_area1)[1] + 1 > area:
+                    decimal_place_new = 4
+                    increment = 1
+                    if (round(split_area1, 2)) == area:
                         add_geom_to_layer(layer_poly, split_geom)
                         break
+
             if area < split_area1:
                 # helps in changing height in small steps after switching from
-                # area > split_area1
+
                 if angle_change == 1:
-                    decimal_place_new = 2
-                angle_change = -1
+                    if math.modf(split_area1)[1] < area + 1:
+                        decimal_place_new = 4
+                    else:
+                        decimal_place_new = 2
 
-                print '32 {}'.format(split_area1)
+                if math.modf(split_area1)[1] < area + 1:
+                    decimal_place_new = 4
+                    increment = 1
 
-                if math.modf(split_area1)[1] < area + 25:
-                    decimal_place_new = 10
-                    print 'round ', int(round(split_area1))
-                    if int(round(split_area1)) == area + 1:
+                    if (round(split_area1, 2)) == area:
                         add_geom_to_layer(layer_poly, split_geom)
                         break
-            if area == split_area1:
 
-                print '42 {}'.format(split_area1)
+            if area == split_area1:
                 add_geom_to_layer(layer_poly, split_geom)
                 break
         else:
-
-            print 'Failed'
-            # print '51 ', angle, decimal_place
-            # print '52 {} {}'.format(split_area1, area_above)
             continue
-            # break
-
