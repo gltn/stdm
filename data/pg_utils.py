@@ -279,7 +279,6 @@ def fix_sequence(table_name):
 
     _execute(sql_sequence_fix)
 
-
 def import_data(table_name, columns_names, data, **kwargs):
 
     sql = u"INSERT INTO {0} ({1}) VALUES {2}".format(table_name,
