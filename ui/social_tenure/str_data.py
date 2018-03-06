@@ -189,9 +189,12 @@ class STRDBHandler():
             index = index + 1
 
         _str_obj.saveMany(str_objs)
+
         if custom_attr_entity is None:
             return
         custom_attr_en_model = entity_model(custom_attr_entity)
+        if custom_attr_en_model is None:
+            return
         custom_attr_obj = custom_attr_en_model()
 
         custom_attr_objs = []
@@ -204,7 +207,7 @@ class STRDBHandler():
                     custom_attr_model = custom_attr_obj
                 if col.TYPE_INFO == 'FOREIGN_KEY':
                     if col.parent.name == self.social_tenure.name:
-                        # print col.name, str_objs[i].id
+
                         setattr(custom_attr_model, col.name, str_objs[i].id)
                         custom_attr_objs.append(custom_attr_model)
 
@@ -305,7 +308,7 @@ class STRDBHandler():
         """
         isValid = True
         # Create a progress dialog
-        #try:
+        # try:
 
         self.progress.show()
         if self.str_edit_obj is None:

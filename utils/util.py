@@ -43,7 +43,8 @@ from PyQt4.QtGui import (
     QApplication,
     QCheckBox,
     QDialogButtonBox,
-    QLineEdit, QHBoxLayout, QIcon, QToolButton)
+    QLineEdit, QHBoxLayout, QIcon, QToolButton, QTableWidget, QTableView,
+    QListWidget)
 from sqlalchemy import (
     func
 )
@@ -598,6 +599,7 @@ def lookup_parent_entity(profile, col):
     else:
         return None
 
+
 def lookup_id_to_value(profile, col, id):
     """
     Converts a lookup id into its value
@@ -938,30 +940,37 @@ def enable_drag_sort(mv_widget):
                     row_mapping[row] = target_row + idx
                 else:
                     row_mapping[row + len(rows)] = target_row + idx
-            try:
-                colCount = mv_widget.model().columnCount()
-            except Exception:
-                colCount = mv_widget.columnCount()
+            if not isinstance(mv_widget, QListWidget):
 
+                if isinstance(mv_widget, QTableView):
+                    colCount = mv_widget.model().columnCount()
+                if isinstance(mv_widget, QTableWidget):
+                    colCount = mv_widget.columnCount()
+                else:
+                    colCount = 1
+            else:
+                colCount = 1
             for src_row, tgt_row in sorted(row_mapping.iteritems()):
-                for col in range(0, colCount):
-                    try:
+                if not isinstance(mv_widget, QListWidget):
 
-                        mv_widget.model().setItem(
-                            tgt_row,
-                            col,
-                            mv_widget.model().takeItem(
-                                src_row, col
+                    for col in range(0, colCount):
+                        try:
+
+                            mv_widget.model().setItem(
+                                tgt_row,
+                                col,
+                                mv_widget.model().takeItem(
+                                    src_row, col
+                                )
                             )
-                        )
-                    except Exception:
-                        mv_widget.setItem(
-                            tgt_row,
-                            col,
-                            mv_widget.takeItem(
-                                src_row, col
+                        except Exception:
+                            mv_widget.setItem(
+                                tgt_row,
+                                col,
+                                mv_widget.takeItem(
+                                    src_row, col
+                                )
                             )
-                        )
 
             for row in reversed(
                     sorted(row_mapping.iterkeys())

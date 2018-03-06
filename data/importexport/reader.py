@@ -302,21 +302,27 @@ class OGRReader(object):
             #Only insert geometry if it has been defined by the user
             if geomColumn is not None:
                 geom = feat.GetGeometryRef()
-                
+
                 if geom is not None:
-                    #Get geometry in WKT/WKB format
-                    geomWkb = geom.ExportToWkt()
-                    column_value_mapping[geomColumn] = "SRID={0!s};{1}".format(self._targetGeomColSRID,geomWkb)
-                    
-                    #Check if the geometry types match
+                    # Check if the geometry types match
                     layerGeomType = geom.GetGeometryName()
-                    
+                    # Convert polygon to multipolygon if the destination table is multi-polygon.
+                    if layerGeomType.lower() == 'polygon' and self._geomType.lower() == 'multipolygon':
+                        multi_polygon = ogr.Geometry(ogr.wkbMultiPolygon)
+                        multi_polygon.AddGeometry(geom)
+                        geomWkb = multi_polygon.ExportToWkt()
+                        layerGeomType = multi_polygon.GetGeometryName()
+                    else:
+                        geomWkb = geom.ExportToWkt()
+                        layerGeomType = geom.GetGeometryName()
+                    column_value_mapping[geomColumn] = "SRID={0!s};{1}".format(self._targetGeomColSRID,geomWkb)
+
+
                     if layerGeomType.lower() != self._geomType.lower():
                         raise TypeError("The geometries of the source and destination columns do not match.\n" \
                                         "Source Geometry Type: {0}, Destination Geometry Type: {1}".format(layerGeomType,
                                                                                                            self._geomType))
-                        return
-            
+
             try:               
                 #Insert the record
                 self._insertRow(column_value_mapping)

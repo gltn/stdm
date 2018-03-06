@@ -496,7 +496,8 @@ class ImportData(QWizard, Ui_frmImport):
                     translator_manager=value_translator_manager
                 )
                 self.InfoMessage(
-                    "All features have been imported successfully!")
+                    "All features have been imported successfully!"
+                )
                 #Update directory info in the registry
                 setVectorFileDir(self.field("srcFile"))
                 success = True

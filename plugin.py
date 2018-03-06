@@ -336,7 +336,7 @@ class STDMQGISLoader(object):
                 self.show_change_log()
                 #Set current profile
                 self.current_profile = current_profile()
-
+                self._user_logged_in = True
                 if self.current_profile is None:
                     result = self.default_profile()
                     if not result:
@@ -345,7 +345,7 @@ class STDMQGISLoader(object):
                 self.default_profile()
                 self.run_wizard()
                 self.copy_designer_template()
-                self._user_logged_in = True
+
 
             except Exception as pe:
                 title = QApplication.translate(
@@ -1431,6 +1431,8 @@ class STDMQGISLoader(object):
         on the configuration wizard.
         :type: string
         """
+        if not self._user_logged_in:
+            return
         if self.toolbarLoader is not None:
             self.toolbarLoader.unloadContent()
             # Clear current profile combobox
@@ -1801,6 +1803,7 @@ class STDMQGISLoader(object):
             self.logoutCleanUp()
             self.initMenuItems()
             self.loginAct.setEnabled(True)
+            self._user_logged_in = False
         except Exception as ex:
             LOGGER.debug(unicode(ex))
 

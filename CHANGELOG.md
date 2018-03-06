@@ -1,5 +1,12 @@
 # Change Log
 All notable changes of the Social Tenure Domain Model(STDM) is documented in this file.
+
+## [1.7.1] - 2018-01-25
+
+### Fixed
+- **Social Tenure Relationship Editor**: Fixed editing issues.
+- **Forms**: Fixed form widgets not implemented errors.
+
 ## [1.7.0] - 2017-10-25
 
 ### Added
