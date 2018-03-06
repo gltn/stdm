@@ -690,6 +690,7 @@ class BooleanColumn(BaseColumn):
 
 BooleanColumn.register()
 
+
 class ForeignKeyColumn(IntegerColumn):
     """
     Corresponds to a foreign key reference. Child attributes are implicitly

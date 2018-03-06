@@ -307,12 +307,6 @@ class ImportData(QWizard, Ui_frmImport):
 
         self._add_target_table_columns(targetCols)
 
-        # #Add virtual columns if checkbox is enabled
-        # if self.chk_virtual.isChecked():
-        #     #Force virtual columns to be appended
-        #     self.chk_virtual.setChecked(False)
-        #     self.chk_virtual.setChecked(True)
-
     def _add_target_table_columns(self, items, style=False):
         for item in items:
             list_item = QListWidgetItem(item)
@@ -325,7 +319,7 @@ class ImportData(QWizard, Ui_frmImport):
                 
     def _on_load_virtual_columns(self, state):
         """
-        Load/unload relationships in the list of destination table columns."
+        Load/unload relationships in the list of destination table columns.
         """
         virtual_columns = self.dataReader.entity_virtual_columns(self.targetTab)
 
