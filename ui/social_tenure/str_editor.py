@@ -66,6 +66,9 @@ from stdm.utils.util import (
     format_name,
     entity_attr_to_model
 )
+
+from stdm.data.pg_utils import pg_table_count
+
 from str_data import STRDataStore, STRDBHandler
 
 
@@ -973,6 +976,9 @@ class STREditor(QDialog, Ui_STREditor):
 
         self.social_tenure = self.current_profile.social_tenure
 
+        count = pg_table_count(self.social_tenure.name)
+
+        self.setWindowTitle(self.tr(u'{}{}'.format(self.windowTitle(), '- '+str(count)+' rows')))
 
         self.party_count = OrderedDict()
 
