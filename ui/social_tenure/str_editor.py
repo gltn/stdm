@@ -880,9 +880,9 @@ class ValidateSTREditor(object):
         # returns the number of entries for a specific parcel.
         str_obj = self.editor.str_model()
         spatial_unit_id = getattr(self.editor.str_model, '{}_id'.format(
-                self.editor.spatial_unit.name.split(
-                    self.editor.current_profile.prefix + '_'
-                )[1]))
+                self.editor.spatial_unit.short_name.replace(
+                    ' ', '_'
+                ).lower()))
         usage_count = str_obj.queryObject(
             [func.count().label('spatial_unit_count')]
         ).filter(spatial_unit_id == model_obj.id).first()
