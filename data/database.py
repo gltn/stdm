@@ -25,8 +25,6 @@ from collections import (
     OrderedDict
 )
 
-from PyQt4.QtGui import QApplication
-
 from sqlalchemy import (
     create_engine,
     ForeignKey,
@@ -168,6 +166,7 @@ class STDMDb(object):
 
         return spatial_extension_installed
 
+
 def alchemy_table(table_name):
     """
     Get an SQLAlchemy table object based on the table_name of the table in the table..
@@ -182,6 +181,7 @@ def alchemy_table(table_name):
     except NoSuchTableError:
         return None
 
+
 def table_mapper(table_name):
     """
     :param table_name: Name of the database table.
@@ -195,6 +195,7 @@ def table_mapper(table_name):
         return None
 
     return list(mapper_collection)[0]
+
 
 def alchemy_table_relationships(table_name):
     """
@@ -219,6 +220,7 @@ def alchemy_table_relationships(table_name):
         relationship_names.append(r_names[1])
 
     return relationship_names
+
         
 class Model(object):
     '''
@@ -235,7 +237,7 @@ class Model(object):
             db.session.commit()
         except exc.SQLAlchemyError as db_error:
             db.session.rollback()
-            LOGGER.debug(str(db_error))
+            LOGGER.debug(unicode(db_error))
             raise db_error
 
     def saveMany(self,objects = []):
@@ -248,7 +250,7 @@ class Model(object):
             db.session.commit()
         except exc.SQLAlchemyError as db_error:
             db.session.rollback()
-            LOGGER.debug(str(db_error))
+            LOGGER.debug(unicode(db_error))
             raise db_error
 
     def update(self):
@@ -257,24 +259,31 @@ class Model(object):
             db.session.commit()
         except exc.SQLAlchemyError as db_error:
             db.session.rollback()
-            LOGGER.debug(str(db_error))
+            LOGGER.debug(unicode(db_error))
             raise db_error
             
     def delete(self):
-        op_result = True
+        from stdm.data.pg_utils import set_child_dependencies_null_on_delete
 
         db = STDMDb.instance()
-        db.session.delete(self)
-
         try:
+            db.session.delete(self)
             db.session.commit()
-        except exc.SQLAlchemyError as db_error:
-            op_result = False
-            db.session.rollback()
-            LOGGER.debug(str(db_error))
-            raise db_error
 
-        return op_result
+            return True
+        except exc.SQLAlchemyError as db_error:
+            db.session.rollback()
+            LOGGER.debug(unicode(db_error))
+            
+            # Reset the constraints
+            set_child_dependencies_null_on_delete(self.__table__)
+
+            # Attempt to delete again
+            db.session.delete(self)
+            db.session.commit()
+
+            raise db_error
+            return False
 
     def queryObject(self,args=[]):
         '''
@@ -283,7 +292,7 @@ class Model(object):
         Else, the full model object will be returned.
         '''
         db = STDMDb.instance()
-        #raise NameError(str(self.__class__))
+        # raise NameError(str(self.__class__))
         try:
             if len(args) == 0:
                 return db.session.query(self.__class__)

@@ -161,7 +161,7 @@ def create_foreign_key_constraint(entity_relation):
 
         return False
 
-    #Catch exception of foreign key already exists
+    # Catch exception of foreign key already exists
     try:
         fk_cons.create()
 
@@ -205,7 +205,7 @@ def drop_foreign_key_constraint(entity_relation):
         return False
 
 def _get_table(table_name):
-    #Get Table object from metadata or create one
+    # Get Table object from metadata or create one
     table = metadata.tables.get(table_name, None)
     if table is None:
         table = Table(table_name, metadata, autoload=True)

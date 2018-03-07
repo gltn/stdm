@@ -279,7 +279,6 @@ def fix_sequence(table_name):
 
     _execute(sql_sequence_fix)
 
-
 def import_data(table_name, columns_names, data, **kwargs):
 
     sql = u"INSERT INTO {0} ({1}) VALUES {2}".format(table_name,
@@ -597,7 +596,7 @@ def vector_layer(table_name, sql='', key='id', geom_column='', layer_name=''):
 
 def foreign_key_parent_tables(table_name, search_parent=True, filter_exp=None):
     """
-    Functions that searches for foreign key references in the specified table.
+    Function that searches for foreign key references in the specified table.
     :param table_name: Name of the database table.
     :type table_name: str
     :param search_parent: Select True if table_name is the child and
@@ -606,14 +605,14 @@ def foreign_key_parent_tables(table_name, search_parent=True, filter_exp=None):
     :type search_parent: bool
     :param filter_exp: A regex expression to filter related table names.
     :type filter_exp: QRegExp
-    :return: A list of tuples containing the local column name, foreign table
-    name and corresponding foreign column name.
+    :return: A list of tuples containing the local column name, foreign table 
+    name, corresponding foreign column name and constraint name.
     :rtype: list
     """
-    #Check if the view for listing foreign key references exists
+    # Check if the view for listing foreign key references exists
     fk_ref_view = pg_table_exists("foreign_key_references")
 
-    #Create if it does not exist
+    # Create if it does not exist
     if not fk_ref_view:
         script_path = PLUGIN_DIR + "/scripts/foreign_key_references.sql"
 
@@ -638,7 +637,7 @@ def foreign_key_parent_tables(table_name, search_parent=True, filter_exp=None):
         ref_table = "table_name"
         search_table = "foreign_table_name"
 
-    #Fetch foreign key references
+    # Fetch foreign key references
     sql = u"SELECT column_name,{0},foreign_column_name FROM " \
           u"foreign_key_references where {1} =:tb_name".format(ref_table,
                                                                search_table)
@@ -651,7 +650,7 @@ def foreign_key_parent_tables(table_name, search_parent=True, filter_exp=None):
         rel_table = r[ref_table]
 
         fk_ref = r["column_name"], rel_table,\
-                 r["foreign_column_name"]
+                 r["foreign_column_name"], r['constraint_name']
 
         if not filter_exp is None:
             if filter_exp.indexIn(rel_table) >= 0:
@@ -805,6 +804,7 @@ def copy_from_column_to_another(table, source, destination):
     t = text(sql)
     result = _execute(t)
 
+
 def remove_constraint(child, child_col):
     """
     Removes constraint from the current database.
@@ -882,6 +882,7 @@ def create_postgis():
     t = text(sql)
     _execute(t)
 
+
 def profile_sequences(prefix):
     """
     Returns all sequences of a given profile based on the profile prefix.
@@ -902,3 +903,41 @@ def profile_sequences(prefix):
                 profile_sequences.append(profile_sequence)
 
     return profile_sequences
+
+def set_child_dependencies_null_on_delete(table):
+    """
+    Sets the foreign key constraints of child tables to null on delete. This 
+    is a workaround for foreign keys whose delete action has been set to 
+    NO_ACTION.
+    :param table: Name of the parent table.
+    :type table: str
+    :return: True if the operation succeeded, otherwise False.
+    :rtype: bool
+    """
+    # Get foreign key dependencies
+    deps = foreign_key_parent_tables(table, False)
+
+    if deps is None or len(deps) == 0:
+        return False
+
+    for d in deps:
+        local_col, fk_table, fk_col, fk_name = d[0], d[1], d[2], d[3]
+
+        # Drop the constraint
+        sql = u'ALTER TABLE {0} DROP CONSTRAINT IF EXISTS {1};'.format(
+            fk_table, fk_name
+        )
+        _execute(sql)
+
+        # Recreate constraint
+        sql = u'ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) ' \
+              u'REFERENCES {3}({4}) ON DELETE SET NULL;'.format(
+            fk_table,
+            fk_name,
+            fk_col,
+            table,
+            local_col
+        )
+        _execute(sql)
+
+    return True
