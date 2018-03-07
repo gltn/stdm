@@ -274,12 +274,14 @@ class Model(object):
         except exc.SQLAlchemyError as db_error:
             db.session.rollback()
             LOGGER.debug(unicode(db_error))
+            
             # Reset the constraints
             set_child_dependencies_null_on_delete(self.__table__)
+
             # Attempt to delete again
             db.session.delete(self)
             db.session.commit()
-            
+
             raise db_error
             return False
 

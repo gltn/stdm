@@ -39,9 +39,6 @@ def _gen_relationship(base, direction, return_fn,
     if direction is MANYTOMANY:
         kw['enable_typechecks'] = False
 
-    elif direction is ONETOMANY:
-        kw['cascade'] = 'all, delete-orphan'
-
     return generate_relationship(base, direction, return_fn,
                                  attrname, local_cls, referred_cls, **kw)
 
@@ -100,7 +97,7 @@ def entity_model(entity, entity_only=False, with_supporting_document=False):
             profile_supporting_doc, None
         )
 
-        #Remove the supporting doc tables from the metadata
+        # Remove the supporting doc tables from the metadata
         if not ent_supporting_docs_table is None:
             rf_metadata.remove(ent_supporting_docs_table)
         if not profile_supporting_docs_table is None:
@@ -114,14 +111,14 @@ def entity_model(entity, entity_only=False, with_supporting_document=False):
     '''
     supporting_doc_model = None
 
-    #Setup supporting document models
+    # Setup supporting document models
     if entity.supports_documents and not entity_only:
         supporting_doc_model = configure_supporting_documents_inheritance(
             ent_supporting_docs_table, profile_supporting_docs_table, Base,
             entity.name
         )
 
-    #Set up mapped classes and relationships
+    # Set up mapped classes and relationships
     Base.prepare(
         name_for_collection_relationship=_rename_supporting_doc_collection,
         generate_relationship=_gen_relationship

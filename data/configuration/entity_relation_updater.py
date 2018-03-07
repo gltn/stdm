@@ -161,7 +161,7 @@ def create_foreign_key_constraint(entity_relation):
 
         return False
 
-    #Catch exception of foreign key already exists
+    # Catch exception of foreign key already exists
     try:
         fk_cons.create()
 
