@@ -279,7 +279,6 @@ def fix_sequence(table_name):
 
     _execute(sql_sequence_fix)
 
-
 def import_data(table_name, columns_names, data, **kwargs):
 
     sql = u"INSERT INTO {0} ({1}) VALUES {2}".format(table_name,
@@ -904,7 +903,6 @@ def profile_sequences(prefix):
                 profile_sequences.append(profile_sequence)
 
     return profile_sequences
-
 
 def set_child_dependencies_null_on_delete(table):
     """

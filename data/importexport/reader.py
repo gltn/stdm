@@ -273,7 +273,7 @@ class OGRReader(object):
                     '''
                     value_translator = translator_manager.translator(dest_column)
 
-                    if not value_translator is None:
+                    if value_translator is not None:
                         #Set destination table entity
                         value_translator.entity = destination_entity
 
