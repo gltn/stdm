@@ -1,104 +1,111 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>OffsetDistance</class>
- <widget class="QFrame" name="OffsetDistance">
+ <widget class="QWidget" name="OffsetDistance">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>332</width>
-    <height>173</height>
+    <width>327</width>
+    <height>241</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Offset Distance</string>
-  </property>
-  <property name="frameShape">
-   <enum>QFrame::StyledPanel</enum>
-  </property>
-  <property name="frameShadow">
-   <enum>QFrame::Raised</enum>
+   <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="3" column="2">
-    <widget class="QLabel" name="label_4">
+   <item row="0" column="1">
+    <widget class="QLabel" name="label_25">
      <property name="text">
-      <string>TextLabel</string>
+      <string>0</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
-    <widget class="QLabel" name="label_2">
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_24">
      <property name="text">
-      <string>Selected Features:</string>
+      <string>Selected features:</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
-    <widget class="QLabel" name="label_6">
+   <item row="2" column="1" colspan="2">
+    <widget class="QDoubleSpinBox" name="doubleSpinBox_2"/>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_11">
      <property name="text">
       <string>Offset distance:</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="1">
-    <widget class="QPushButton" name="pushButton">
+   <item row="1" column="1">
+    <widget class="QLabel" name="label_29">
      <property name="text">
-      <string>Cancel</string>
+      <string>0</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="3">
-    <widget class="QRadioButton" name="radioButton_2">
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_28">
      <property name="text">
-      <string>Right</string>
+      <string>Selected line:</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
-    <widget class="QLabel" name="label">
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_10">
      <property name="text">
       <string>Offset side:</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="2">
-    <widget class="QRadioButton" name="radioButton">
+   <item row="3" column="1">
+    <widget class="QRadioButton" name="offset_side_l">
      <property name="text">
       <string>Left</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="2">
-    <widget class="QPushButton" name="pushButton_2">
+   <item row="3" column="2">
+    <widget class="QRadioButton" name="offset_side_r">
+     <property name="text">
+      <string>Right</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QPushButton" name="pushButton_6">
+     <property name="text">
+      <string>Cancel</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QPushButton" name="pushButton_5">
      <property name="text">
       <string>Preview</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
-    <widget class="QLabel" name="label_3">
-     <property name="text">
-      <string>Maximum area:</string>
-     </property>
-    </widget>
-   </item>
    <item row="4" column="2">
-    <widget class="QLabel" name="label_5">
-     <property name="text">
-      <string>TextLabel</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2" colspan="2">
-    <widget class="QLineEdit" name="lineEdit"/>
-   </item>
-   <item row="5" column="3">
-    <widget class="QPushButton" name="pushButton_3">
+    <widget class="QPushButton" name="pushButton_4">
      <property name="text">
       <string>Save</string>
      </property>
     </widget>
+   </item>
+   <item row="5" column="1">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>

@@ -295,8 +295,8 @@ def move_line_with_area(selected_line_geom, area):
     if nearest_line_geom.intersects(geom0):
         (res, newlist, topolist) = geom0.splitGeometry(added_points, False)
         start_point = QgsGeometry.fromWkt(line_v2.startPoint().asWkt())
-        print geom0.intersects(start_point)
-        print newlist[0].intersects(start_point)
+        # print geom0.intersects(start_point)
+        # print newlist[0].intersects(start_point)
 
         if len(newlist) < 1:
             return
@@ -345,7 +345,7 @@ def handle_area_split_area(area, ori_decimal_place, ori_height,
         added_points = extend_line_points(nearest_line_geom, extent)
         nearest_line_geom = QgsGeometry.fromPolyline(added_points)
         # add_geom_to_layer(layer, nearest_line_geom)
-        print 'handler', nearest_line_geom.intersects(geom1)
+        # print 'handler', nearest_line_geom.intersects(geom1)
 
         if nearest_line_geom.intersects(geom1):
             (res, newlist1, topolist) = geom1.splitGeometry(added_points,
@@ -363,8 +363,8 @@ def handle_area_split_area(area, ori_decimal_place, ori_height,
                 if height_change == -1:
                     decimal_place_new = 2
                 height_change = 1
-                print height, decimal_place
-                print '2 {} {}'.format(split_area1, area_above)
+                # print height, decimal_place
+                # print '2 {} {}'.format(split_area1, area_above)
                 if math.modf(split_area1)[1] + 3 > area:
                     decimal_place_new = 4
                     if (round(split_area1, 2)) == area:
@@ -376,8 +376,8 @@ def handle_area_split_area(area, ori_decimal_place, ori_height,
                 if height_change == 1:
                     decimal_place_new = 2
                 height_change = -1
-                print height, decimal_place
-                print '3 {} {}'.format(split_area1, area_above)
+                # print height, decimal_place
+                # print '3 {} {}'.format(split_area1, area_above)
                 if math.modf(split_area1)[1] < area + 3:
                     decimal_place_new = 4
                     if (round(split_area1, 2)) == area:

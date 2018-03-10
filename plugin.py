@@ -333,31 +333,31 @@ class STDMQGISLoader(object):
             if not config_load_status:
                 return
 
-            try:
-                self.show_change_log()
-                #Set current profile
-                self.current_profile = current_profile()
+            # try:
+            self.show_change_log()
+            #Set current profile
+            self.current_profile = current_profile()
 
-                if self.current_profile is None:
-                    result = self.default_profile()
-                    if not result:
-                        return
-                self.loadModules()
-                self.default_profile()
-                self.run_wizard()
-                self.copy_designer_template()
-                self._user_logged_in = True
+            if self.current_profile is None:
+                result = self.default_profile()
+                if not result:
+                    return
+            self.loadModules()
+            self.default_profile()
+            self.run_wizard()
+            self.copy_designer_template()
+            self._user_logged_in = True
 
-            except Exception as pe:
-                title = QApplication.translate(
-                    "STDMQGISLoader",
-                    "Error Loading Modules"
-                )
+            # except Exception as pe:
+            title = QApplication.translate(
+                "STDMQGISLoader",
+                "Error Loading Modules"
+            )
 
-                self.reset_content_modules_id(
-                    title,
-                    pe
-                )
+            # self.reset_content_modules_id(
+            #     title,
+            #     pe
+            # )
 
     def minimum_table_checker(self):
 
