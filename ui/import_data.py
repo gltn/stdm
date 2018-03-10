@@ -31,7 +31,7 @@ from PyQt4.QtCore import (
 
 
 from stdm.utils import *
-from stdm.utils.util import getIndex
+from stdm.utils.util import getIndex, enable_drag_sort_widgets
 from stdm.data.database import alchemy_table_relationships
 from stdm.data.pg_utils import (
     table_column_names,
@@ -74,7 +74,7 @@ class ImportData(QWizard, Ui_frmImport):
         self.lstTargetFields.currentRowChanged[int].connect(self.destRowChanged)
         self.lstTargetFields.currentRowChanged[int].connect(self._enable_disable_trans_tools)
         self.chk_virtual.toggled.connect(self._on_load_virtual_columns)
-         
+
         #Data Reader
         self.dataReader = None
          
@@ -620,7 +620,35 @@ class ImportData(QWizard, Ui_frmImport):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
         msg.setText(message)
-        msg.exec_()  
+        msg.exec_()
+    #
+    # def drag_drop_handler(self, event):
+    #     if event.source() == self:
+    #         rows = set([mi.row() for mi in self.selectedIndexes()])
+    #         targetRow = self.indexAt(event.pos()).row()
+    #         rows.discard(targetRow)
+    #         rows = sorted(rows)
+    #         if not rows:
+    #             return
+    #         if targetRow == -1:
+    #             targetRow = self.rowCount()
+    #         for _ in range(len(rows)):
+    #             self.insertRow(targetRow)
+    #         rowMapping = dict()  # Src row to target row.
+    #         for idx, row in enumerate(rows):
+    #             if row < targetRow:
+    #                 rowMapping[row] = targetRow + idx
+    #             else:
+    #                 rowMapping[row + len(rows)] = targetRow + idx
+    #         colCount = self.columnCount()
+    #         for srcRow, tgtRow in sorted(rowMapping.iteritems()):
+    #             for col in range(0, colCount):
+    #                 self.setItem(tgtRow, col, self.takeItem(srcRow, col))
+    #         for row in reversed(sorted(rowMapping.iterkeys())):
+    #             self.removeRow(row)
+    #         event.accept()
+    #         return
 
-   
 
+    def drag_move(self, e):
+        e.accept()
