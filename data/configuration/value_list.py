@@ -55,7 +55,6 @@ class CodeValue(object):
         self.updated_code = ''
 
 
-
 class ValueList(Entity):
     """
     Corresponds to a database table object which contains a list of
@@ -68,7 +67,7 @@ class ValueList(Entity):
     sql_updater = value_list_updater
 
     def __init__(self, name, profile):
-        #Assert if 'check' prefix has been appended.
+        # Assert if 'check' prefix has been appended.
         name = self._append_check(name)
 
         Entity.__init__(self, name, profile, supports_documents=False)
@@ -80,14 +79,14 @@ class ValueList(Entity):
         self.values = OrderedDict()
         self._hash = hashlib
 
-        #Attach columns
+        # Attach columns
         self.add_column(self.code_column)
         self.add_column(self.value_column)
 
         LOGGER.debug('%s ValueList initialized.', self.name)
 
     def _append_check(self, name):
-        #Appends a 'check_prefix' to the name.
+        # Appends a 'check_prefix' to the name.
         idx = name.find(self.PREFIX+'_')
 
         if idx != -1:
@@ -130,6 +129,7 @@ class ValueList(Entity):
         :rtype: Unicode
         """
         lookup_value = self._hash.md5(value.encode('utf-8'))
+
         return lookup_value.hexdigest()
 
     def add_code_value(self, code_value):
@@ -158,11 +158,11 @@ class ValueList(Entity):
         before copying the new ones
         :type clear_first: Boolean
         """
-        #Test if it is a ValueList object
+        # Test if it is a ValueList object
         if value_list.TYPE_INFO != ValueList.TYPE_INFO:
             return
 
-        #Check if clear_first is True
+        # Check if clear_first is True
         if clear_first:
             for cv in self.values.values():
                 self.remove_value(cv)
@@ -205,10 +205,11 @@ class ValueList(Entity):
         :param lookup_value: Previous lookup value used in the index.
         :type lookup_value: str
         """
-        if not lookup_value in self.values:
+        lk_digest = self.value_hash(lookup_value)
+        if not lk_digest in self.values:
             return
 
-        code_value = self.values.pop(lookup_value)
+        code_value = self.values.pop(lk_digest)
         digest = self.value_hash(code_value.updated_value)
         self.values[digest] = code_value
 
@@ -234,7 +235,7 @@ class ValueList(Entity):
         return cv
 
     def _values_by_updates(self):
-        #Remap the CodeValue collection to be indexed by updated value.
+        # Remap the CodeValue collection to be indexed by updated value.
         updated_values = OrderedDict()
 
         for v, cv in self.values.iteritems():
