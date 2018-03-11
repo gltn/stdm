@@ -448,61 +448,61 @@ class ImportData(QWizard, Ui_frmImport):
 
         value_translator_manager = self._trans_widget_mgr.translator_manager()
                
-        try:
-            if self.field("optOverwrite"):
-                entity = self.curr_profile.entity_by_name(self.targetTab)
-                dependencies = entity.dependencies()
-                view_dep = dependencies['views']
-                entity_dep = [e.name for e in entity.children()]
-                entities_dep_str = ', '.join(entity_dep)
-                views_dep_str = ', '.join(view_dep)
+        # try:
+        if self.field("optOverwrite"):
+            entity = self.curr_profile.entity_by_name(self.targetTab)
+            dependencies = entity.dependencies()
+            view_dep = dependencies['views']
+            entity_dep = [e.name for e in entity.children()]
+            entities_dep_str = ', '.join(entity_dep)
+            views_dep_str = ', '.join(view_dep)
 
-                if len(entity_dep) > 0 or len(view_dep) > 0:
-                    del_msg = QApplication.translate(
-                        'ImportData',
-                        "Overwriting existing records will permanently \n"
-                        "remove records from other tables linked to the \n"
-                        "records. The following tables will be affected."
-                        "\n{}\n{}"
-                        "\nClick Yes to proceed importing or No to cancel.".
-                            format(entities_dep_str, views_dep_str)
-                    )
-                    del_result = QMessageBox.critical(
-                        self,
-                        QApplication.translate(
-                            "ImportData",
-                            "Overwrite Import Data Warning"
-                        ),
-                        del_msg,
-                        QMessageBox.Yes | QMessageBox.No
-                    )
-
-                    if del_result == QMessageBox.Yes:
-                        self.dataReader.featToDb(
-                            self.targetTab, matchCols, False, self, geom_column,
-                            translator_manager=value_translator_manager
-                        )
-                        # Update directory info in the registry
-                        setVectorFileDir(self.field("srcFile"))
-
-                        self.InfoMessage(
-                            "All features have been imported successfully!")
-
-                    else:
-                        success = False
-            else:
-                self.dataReader.featToDb(
-                    self.targetTab, matchCols, True, self, geom_column,
-                    translator_manager=value_translator_manager
+            if len(entity_dep) > 0 or len(view_dep) > 0:
+                del_msg = QApplication.translate(
+                    'ImportData',
+                    "Overwriting existing records will permanently \n"
+                    "remove records from other tables linked to the \n"
+                    "records. The following tables will be affected."
+                    "\n{}\n{}"
+                    "\nClick Yes to proceed importing or No to cancel.".
+                        format(entities_dep_str, views_dep_str)
                 )
-                self.InfoMessage(
-                    "All features have been imported successfully!"
+                del_result = QMessageBox.critical(
+                    self,
+                    QApplication.translate(
+                        "ImportData",
+                        "Overwrite Import Data Warning"
+                    ),
+                    del_msg,
+                    QMessageBox.Yes | QMessageBox.No
                 )
-                #Update directory info in the registry
-                setVectorFileDir(self.field("srcFile"))
-                success = True
-        except:
-            self.ErrorInfoMessage(unicode(sys.exc_info()[1]))
+
+                if del_result == QMessageBox.Yes:
+                    self.dataReader.featToDb(
+                        self.targetTab, matchCols, False, self, geom_column,
+                        translator_manager=value_translator_manager
+                    )
+                    # Update directory info in the registry
+                    setVectorFileDir(self.field("srcFile"))
+
+                    self.InfoMessage(
+                        "All features have been imported successfully!")
+
+                else:
+                    success = False
+        else:
+            self.dataReader.featToDb(
+                self.targetTab, matchCols, True, self, geom_column,
+                translator_manager=value_translator_manager
+            )
+            self.InfoMessage(
+                "All features have been imported successfully!"
+            )
+            #Update directory info in the registry
+            setVectorFileDir(self.field("srcFile"))
+            success = True
+        # except:
+        #     self.ErrorInfoMessage(unicode(sys.exc_info()[1]))
 
         return success
 

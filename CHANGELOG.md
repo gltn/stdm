@@ -1,5 +1,12 @@
 # Change Log
 All notable changes of the Social Tenure Domain Model(STDM) is documented in this file.
+## [1.7.2] - 2018-03-11
+
+### Fixed
+- **Import Data**: Fixed drag and drop sort issue.
+- **Configuration Wizard**: Fixed drag and drop sort issue.
+### Added
+- **Import Data**: Added auto fixers for column types.
 
 ## [1.7.1] - 2018-01-25
 
