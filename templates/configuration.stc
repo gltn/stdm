@@ -88,7 +88,7 @@
   <Entity editable="True" global="False" rowindex="-1" associative="False" description="A person can be an individual, household or group" documentTypeLookup="check_person_document_type" proxy="False" createId="True" supportsDocuments="True" shortName="Person" name="in_person" label="">
    <Columns>
     <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-    <Column unique="True" tip="First name of the person" rowindex="0" minimum="0" maximum="30" description="First name of the person" index="True" name="first_name" searchable="True" TYPE_INFO="VARCHAR" label="" mandatory="True"/>
+    <Column unique="False" tip="First name of the person" rowindex="0" minimum="0" maximum="30" description="First name of the person" index="True" name="first_name" searchable="True" TYPE_INFO="VARCHAR" label="" mandatory="False"/>
     <Column unique="False" tip="Middle name of the person" rowindex="1" minimum="0" maximum="30" description="Middle name of the person" index="False" name="middle_name" searchable="True" TYPE_INFO="VARCHAR" label="" mandatory="False"/>
     <Column unique="False" tip="Last name of the person" rowindex="2" minimum="0" maximum="30" description="Last name of the person" index="False" name="last_name" searchable="True" TYPE_INFO="VARCHAR" label="" mandatory="False"/>
     <Column unique="False" tip="The identification card number of the person" rowindex="3" minimum="0" maximum="30" description="The identification card number of the person" index="False" name="national_id" searchable="True" TYPE_INFO="VARCHAR" label="" mandatory="False"/>

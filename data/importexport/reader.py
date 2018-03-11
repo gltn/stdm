@@ -18,8 +18,6 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-import logging
-import sys
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -31,7 +29,6 @@ except:
     import gdal
     import ogr
 
-from stdm.ui.stdmdialog import DeclareMapping
 from stdm.data.pg_utils import (
     delete_table_data,
     geometryType
@@ -51,63 +48,64 @@ from stdm.data.configuration import entity_model
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.ui.sourcedocument import SourceDocumentManager
 
+
 class OGRReader(object):
     def __init__(self, source_file):
         self._ds = ogr.Open(source_file)
-        self._targetGeomColSRID = -1 
+        self._targetGeomColSRID = -1
         self._geomType = ''
-        self._dbSession = STDMDb.instance().session   
+        self._dbSession = STDMDb.instance().session
         self._mapped_cls = None
         self._mapped_doc_cls = None
         self._current_profile = current_profile()
         self._source_doc_manager = None
-                
+
     def getLayer(self):
-        #Return the first layer in the data source
+        # Return the first layer in the data source
         if self.isValid():
             numLayers = self._ds.GetLayerCount()
-            if numLayers > 0:                
+            if numLayers > 0:
                 return self._ds.GetLayer(0)
 
             else:
                 return None
-            
+
     def getSpatialRefCode(self):
-        #Get the EPSG code (More work required)
+        # Get the EPSG code (More work required)
         if self.getLayer() != None:
             spRef = self.getLayer().GetSpatialRef()
             refCode = spRef.GetAttrValue("PRIMEM|AUTHORITY", 1)
-            
+
         else:
-            #Fallback to WGS84
+            # Fallback to WGS84
             refCode = 4326
-            
+
         return refCode
-        
+
     def isValid(self):
-        #Whether the open process succeeded or failed
+        # Whether the open process succeeded or failed
         if self._ds is None:
             return False
         else:
             return True
-        
+
     def reset(self):
-        #Destroy
-        self._ds=None
+        # Destroy
+        self._ds = None
         self._geomType = ""
         self._targetGeomColSRID = -1
-        
+
     def getFields(self):
-        #Return the data source's fields in a list
+        # Return the data source's fields in a list
         fields = []
         lyr = self.getLayer()
         lyr.ResetReading()
         feat_defn = lyr.GetLayerDefn()
-        
+
         for l in range(feat_defn.GetFieldCount()):
             field_defn = feat_defn.GetFieldDefn(l)
             fields.append(str(field_defn.GetNameRef()))
-            
+
         return fields
 
     def _data_source_entity(self, table_name):
@@ -130,24 +128,106 @@ class OGRReader(object):
         return entity.virtual_columns()
 
     def _get_mapped_class(self, table_name):
-        #Get entity from the corresponding table name
+        # Get entity from the corresponding table name
         entity = self._data_source_entity(table_name)
 
         if entity is None:
             return None
 
-        ent_model, doc_model = entity_model(entity, with_supporting_document=True)
+        ent_model, doc_model = entity_model(entity,
+                                            with_supporting_document=True)
 
         return ent_model, doc_model
-    
-    def _insertRow(self, columnValueMapping):
+
+    def auto_fix_float_integer(self, target_table, col_name, value):
+        """
+        Fixes float and integer columns if empty and with a wrong format.
+        :param target_table: The destination table name
+        :type target_table: String
+        :param col_name: The destination column name
+        :type col_name: String
+        :param value: Value to be saved to the DB
+        :type value: Any
+        :return: Converted value
+        :rtype: Any
+        """
+        entity = self._data_source_entity(target_table)
+        integer_types = ['INT', 'LOOKUP', 'ADMIN_SPATIAL_UNIT',
+                         'FOREIGN_KEY', 'DOUBLE', 'PERCENT']
+        float_type = ['DOUBLE', 'PERCENT']
+        int_type = ['INT', 'LOOKUP', 'ADMIN_SPATIAL_UNIT',
+                    'FOREIGN_KEY']
+        if entity.columns[col_name].TYPE_INFO in integer_types:
+            if not bool(value.strip()) or value.strip().lower() == 'null':
+                value = None
+            elif entity.columns[col_name].TYPE_INFO in float_type:
+                try:
+                    value = float(value)
+                except ValueError:
+                    value = None
+            elif entity.columns[col_name].TYPE_INFO in int_type:
+                try:
+                    value = int(value)
+                except ValueError:
+                    value = None
+        return value
+
+    def auto_fix_date(self, target_table, col_name, value):
+        """
+        Fixes date and datetime columns if empty and with a wrong format.
+        :param target_table: The destination table name
+        :type target_table: String
+        :param col_name: The destination column name
+        :type col_name: String
+        :param value: Value to be saved to the DB
+        :type value: Any
+        :return: Converted value
+        :rtype: Any
+        """
+        entity = self._data_source_entity(target_table)
+        date_types = ['DATE', 'DATETIME']
+        if entity.columns[col_name].TYPE_INFO in date_types:
+            if not bool(value.strip()) or value.strip().lower() == 'null':
+                value = None
+
+        return value
+
+    def auto_fix_yes_no(self, target_table, col_name, value):
+        """
+        Fixes Yes_NO columns if empty and with a wrong format.
+        :param target_table: The destination table name
+        :type target_table: String
+        :param col_name: The destination column name
+        :type col_name: String
+        :param value: Value to be saved to the DB
+        :type value: Any
+        :return: Converted value
+        :rtype: Any
+        """
+        entity = self._data_source_entity(target_table)
+        yes_no_types = ['BOOL']
+        if entity.columns[col_name].TYPE_INFO in yes_no_types:
+            if not bool(value.strip()) or value.strip().lower() == 'null':
+                value = None
+            elif value.strip().lower() == 'yes':
+                value = True
+            elif value.strip().lower() == 'no':
+                value = False
+            elif value.strip().lower() == 'true':
+                value = True
+            elif value.strip().lower() == 'false':
+                value = False
+        return value
+
+    def _insertRow(self, target_table, columnValueMapping):
         """
         Insert a new row using the mapped class instance then mapping column
         names to the corresponding column values.
         """
         model_instance = self._mapped_cls()
-        
-        for col,value in columnValueMapping.iteritems():
+
+        for col, value in columnValueMapping.iteritems():
+
             if hasattr(model_instance, col):
                 '''
                 #Check if column type is enumeration and transform accordingly
@@ -156,6 +236,13 @@ class OGRReader(object):
                 if col_is_enum:
                     value = enum_symbol
                 '''
+                # documents is not a column so exclude it.
+                if col != 'documents':
+                    value = self.auto_fix_float_integer(target_table, col,
+                                                        value)
+                    value = self.auto_fix_date(target_table, col, value)
+                    value = self.auto_fix_yes_no(target_table, col, value)
+
                 if not isinstance(value, IgnoreType):
                     setattr(model_instance, col, value)
 
@@ -166,8 +253,8 @@ class OGRReader(object):
         except:
             self._dbSession.rollback()
             raise
-    
-    def featToDb(self, targettable , columnmatch, append, parentdialog,
+
+    def featToDb(self, targettable, columnmatch, append, parentdialog,
                  geomColumn=None, geomCode=-1, translator_manager=None):
         """
         Performs the data import from the source layer to the STDM database.
@@ -179,7 +266,7 @@ class OGRReader(object):
         containing value translators defined for the destination table columns.
         :type translator_manager: ValueTranslatorManager
         """
-        #Check current profile
+        # Check current profile
         if self._current_profile is None:
             msg = QApplication.translate(
                 'OGRReader',
@@ -191,55 +278,56 @@ class OGRReader(object):
         if translator_manager is None:
             translator_manager = ValueTranslatorManager()
 
-        #Delete existing rows in the target table if user has chosen to overwrite
+        # Delete existing rows in the target table if user has chosen to overwrite
         if not append:
             delete_table_data(targettable)
 
-        #Container for mapping column names to their corresponding values
+        # Container for mapping column names to their corresponding values
         column_value_mapping = {}
-        
+
         lyr = self.getLayer()
         lyr.ResetReading()
         feat_defn = lyr.GetLayerDefn()
-        numFeat = lyr.GetFeatureCount() 
-          
-        #Configure progress dialog
+        numFeat = lyr.GetFeatureCount()
+
+        # Configure progress dialog
         init_val = 0
         progress = QProgressDialog("", "&Cancel", init_val, numFeat,
                                    parentdialog)
-        progress.setWindowModality(Qt.WindowModal)    
+        progress.setWindowModality(Qt.WindowModal)
         lblMsgTemp = "Importing {0} of {1} to STDM..."
 
-        #Set entity for use in translators
+        # Set entity for use in translators
         destination_entity = self._data_source_entity(targettable)
-           
+
         for feat in lyr:
             column_count = 0
             progress.setValue(init_val)
             progressMsg = lblMsgTemp.format((init_val + 1), numFeat)
             progress.setLabelText(progressMsg)
-            
+
             if progress.wasCanceled():
                 break
 
-            #Reset source document manager for new records
+            # Reset source document manager for new records
             if destination_entity.supports_documents:
                 if not self._source_doc_manager is None:
                     self._source_doc_manager.reset()
-            
+
             for f in range(feat_defn.GetFieldCount()):
-                field_defn = feat_defn.GetFieldDefn(f) 
-                field_name = field_defn.GetNameRef()  
-                
-                #Append value only if it has been defined by the user                         
+                field_defn = feat_defn.GetFieldDefn(f)
+                field_name = field_defn.GetNameRef()
+
+                # Append value only if it has been defined by the user
                 if field_name in columnmatch:
                     dest_column = columnmatch[field_name]
 
                     field_value = feat.GetField(f)
 
-                    #Create mapped class only once
+                    # Create mapped class only once
                     if self._mapped_cls is None:
-                        mapped_cls, mapped_doc_cls = self._get_mapped_class(targettable)
+                        mapped_cls, mapped_doc_cls = self._get_mapped_class(
+                            targettable)
 
                         if mapped_cls is None:
                             msg = QApplication.translate(
@@ -255,7 +343,7 @@ class OGRReader(object):
                         self._mapped_cls = mapped_cls
                         self._mapped_doc_cls = mapped_doc_cls
 
-                        #Create source document manager if the entity supports them
+                        # Create source document manager if the entity supports them
                         if destination_entity.supports_documents:
                             self._source_doc_manager = SourceDocumentManager(
                                 destination_entity.supporting_doc,
@@ -263,25 +351,27 @@ class OGRReader(object):
                             )
 
                         if geomColumn is not None:
-                            #Use geometry column SRID in the target table
-                            self._geomType,self._targetGeomColSRID = \
-                                geometryType(targettable,geomColumn)
+                            # Use geometry column SRID in the target table
+                            self._geomType, self._targetGeomColSRID = \
+                                geometryType(targettable, geomColumn)
 
                     '''
                     Check if there is a value translator defined for the
                     specified destination column.
                     '''
-                    value_translator = translator_manager.translator(dest_column)
+                    value_translator = translator_manager.translator(
+                        dest_column)
 
                     if value_translator is not None:
-                        #Set destination table entity
+                        # Set destination table entity
                         value_translator.entity = destination_entity
 
                         source_col_names = value_translator.source_column_names()
 
-                        field_value_mappings = self._map_column_values(feat, feat_defn,
+                        field_value_mappings = self._map_column_values(feat,
+                                                                       feat_defn,
                                                                        source_col_names)
-                        #Set source document manager if required
+                        # Set source document manager if required
                         if value_translator.requires_source_document_manager:
                             value_translator.source_document_manager = self._source_doc_manager
 
@@ -290,16 +380,16 @@ class OGRReader(object):
                         )
 
                     if not isinstance(field_value, IgnoreType):
-                            column_value_mapping[dest_column] = field_value
+                        column_value_mapping[dest_column] = field_value
 
-                    #Set supporting documents
+                    # Set supporting documents
                     if destination_entity.supports_documents:
                         column_value_mapping['documents'] = \
                             self._source_doc_manager.model_objects()
 
                     column_count += 1
-                                                       
-            #Only insert geometry if it has been defined by the user
+
+            # Only insert geometry if it has been defined by the user
             if geomColumn is not None:
                 geom = feat.GetGeometryRef()
 
@@ -315,24 +405,26 @@ class OGRReader(object):
                     else:
                         geomWkb = geom.ExportToWkt()
                         layerGeomType = geom.GetGeometryName()
-                    column_value_mapping[geomColumn] = "SRID={0!s};{1}".format(self._targetGeomColSRID,geomWkb)
-
+                    column_value_mapping[geomColumn] = "SRID={0!s};{1}".format(
+                        self._targetGeomColSRID, geomWkb)
 
                     if layerGeomType.lower() != self._geomType.lower():
-                        raise TypeError("The geometries of the source and destination columns do not match.\n" \
-                                        "Source Geometry Type: {0}, Destination Geometry Type: {1}".format(layerGeomType,
-                                                                                                           self._geomType))
+                        raise TypeError(
+                            "The geometries of the source and destination columns do not match.\n" \
+                            "Source Geometry Type: {0}, Destination Geometry Type: {1}".format(
+                                layerGeomType,
+                                self._geomType))
 
-            try:               
-                #Insert the record
-                self._insertRow(column_value_mapping)
+            try:
+                # Insert the record
+                self._insertRow(targettable, column_value_mapping)
 
             except:
                 progress.close()
                 raise
-            
-            init_val+=1
-            
+
+            init_val += 1
+
         progress.setValue(numFeat)
 
     def _enumeration_column_type(self, column_name, value):
@@ -345,8 +437,9 @@ class OGRReader(object):
         :rtype: tuple
         """
         try:
-            #Get column type of the enumeration
-            enum_col_type = self._mapped_cls.__mapper__.columns[column_name].type
+            # Get column type of the enumeration
+            enum_col_type = self._mapped_cls.__mapper__.columns[
+                column_name].type
         except KeyError:
             return False, None
 
@@ -357,7 +450,8 @@ class OGRReader(object):
             enum_obj = enum_col_type.enum
 
             try:
-                if not isinstance(value, str) or not isinstance(value, unicode):
+                if not isinstance(value, str) or not isinstance(value,
+                                                                unicode):
                     value = unicode(value)
 
                 enum_symbol = enum_obj.from_string(value.strip())
@@ -397,8 +491,3 @@ class OGRReader(object):
                 col_values[field_name] = field_value
 
         return col_values
-        
-            
-
-        
-        

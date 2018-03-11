@@ -31,7 +31,7 @@ from PyQt4.QtCore import (
 
 
 from stdm.utils import *
-from stdm.utils.util import getIndex
+from stdm.utils.util import getIndex, enable_drag_sort_widgets
 from stdm.data.database import alchemy_table_relationships
 from stdm.data.pg_utils import (
     table_column_names,
@@ -74,7 +74,7 @@ class ImportData(QWizard, Ui_frmImport):
         self.lstTargetFields.currentRowChanged[int].connect(self.destRowChanged)
         self.lstTargetFields.currentRowChanged[int].connect(self._enable_disable_trans_tools)
         self.chk_virtual.toggled.connect(self._on_load_virtual_columns)
-         
+
         #Data Reader
         self.dataReader = None
          
@@ -448,61 +448,61 @@ class ImportData(QWizard, Ui_frmImport):
 
         value_translator_manager = self._trans_widget_mgr.translator_manager()
                
-        try:
-            if self.field("optOverwrite"):
-                entity = self.curr_profile.entity_by_name(self.targetTab)
-                dependencies = entity.dependencies()
-                view_dep = dependencies['views']
-                entity_dep = [e.name for e in entity.children()]
-                entities_dep_str = ', '.join(entity_dep)
-                views_dep_str = ', '.join(view_dep)
+        # try:
+        if self.field("optOverwrite"):
+            entity = self.curr_profile.entity_by_name(self.targetTab)
+            dependencies = entity.dependencies()
+            view_dep = dependencies['views']
+            entity_dep = [e.name for e in entity.children()]
+            entities_dep_str = ', '.join(entity_dep)
+            views_dep_str = ', '.join(view_dep)
 
-                if len(entity_dep) > 0 or len(view_dep) > 0:
-                    del_msg = QApplication.translate(
-                        'ImportData',
-                        "Overwriting existing records will permanently \n"
-                        "remove records from other tables linked to the \n"
-                        "records. The following tables will be affected."
-                        "\n{}\n{}"
-                        "\nClick Yes to proceed importing or No to cancel.".
-                            format(entities_dep_str, views_dep_str)
-                    )
-                    del_result = QMessageBox.critical(
-                        self,
-                        QApplication.translate(
-                            "ImportData",
-                            "Overwrite Import Data Warning"
-                        ),
-                        del_msg,
-                        QMessageBox.Yes | QMessageBox.No
-                    )
-
-                    if del_result == QMessageBox.Yes:
-                        self.dataReader.featToDb(
-                            self.targetTab, matchCols, False, self, geom_column,
-                            translator_manager=value_translator_manager
-                        )
-                        # Update directory info in the registry
-                        setVectorFileDir(self.field("srcFile"))
-
-                        self.InfoMessage(
-                            "All features have been imported successfully!")
-
-                    else:
-                        success = False
-            else:
-                self.dataReader.featToDb(
-                    self.targetTab, matchCols, True, self, geom_column,
-                    translator_manager=value_translator_manager
+            if len(entity_dep) > 0 or len(view_dep) > 0:
+                del_msg = QApplication.translate(
+                    'ImportData',
+                    "Overwriting existing records will permanently \n"
+                    "remove records from other tables linked to the \n"
+                    "records. The following tables will be affected."
+                    "\n{}\n{}"
+                    "\nClick Yes to proceed importing or No to cancel.".
+                        format(entities_dep_str, views_dep_str)
                 )
-                self.InfoMessage(
-                    "All features have been imported successfully!"
+                del_result = QMessageBox.critical(
+                    self,
+                    QApplication.translate(
+                        "ImportData",
+                        "Overwrite Import Data Warning"
+                    ),
+                    del_msg,
+                    QMessageBox.Yes | QMessageBox.No
                 )
-                #Update directory info in the registry
-                setVectorFileDir(self.field("srcFile"))
-                success = True
-        except:
-            self.ErrorInfoMessage(unicode(sys.exc_info()[1]))
+
+                if del_result == QMessageBox.Yes:
+                    self.dataReader.featToDb(
+                        self.targetTab, matchCols, False, self, geom_column,
+                        translator_manager=value_translator_manager
+                    )
+                    # Update directory info in the registry
+                    setVectorFileDir(self.field("srcFile"))
+
+                    self.InfoMessage(
+                        "All features have been imported successfully!")
+
+                else:
+                    success = False
+        else:
+            self.dataReader.featToDb(
+                self.targetTab, matchCols, True, self, geom_column,
+                translator_manager=value_translator_manager
+            )
+            self.InfoMessage(
+                "All features have been imported successfully!"
+            )
+            #Update directory info in the registry
+            setVectorFileDir(self.field("srcFile"))
+            success = True
+        # except:
+        #     self.ErrorInfoMessage(unicode(sys.exc_info()[1]))
 
         return success
 
@@ -620,7 +620,35 @@ class ImportData(QWizard, Ui_frmImport):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
         msg.setText(message)
-        msg.exec_()  
+        msg.exec_()
+    #
+    # def drag_drop_handler(self, event):
+    #     if event.source() == self:
+    #         rows = set([mi.row() for mi in self.selectedIndexes()])
+    #         targetRow = self.indexAt(event.pos()).row()
+    #         rows.discard(targetRow)
+    #         rows = sorted(rows)
+    #         if not rows:
+    #             return
+    #         if targetRow == -1:
+    #             targetRow = self.rowCount()
+    #         for _ in range(len(rows)):
+    #             self.insertRow(targetRow)
+    #         rowMapping = dict()  # Src row to target row.
+    #         for idx, row in enumerate(rows):
+    #             if row < targetRow:
+    #                 rowMapping[row] = targetRow + idx
+    #             else:
+    #                 rowMapping[row + len(rows)] = targetRow + idx
+    #         colCount = self.columnCount()
+    #         for srcRow, tgtRow in sorted(rowMapping.iteritems()):
+    #             for col in range(0, colCount):
+    #                 self.setItem(tgtRow, col, self.takeItem(srcRow, col))
+    #         for row in reversed(sorted(rowMapping.iterkeys())):
+    #             self.removeRow(row)
+    #         event.accept()
+    #         return
 
-   
 
+    def drag_move(self, e):
+        e.accept()

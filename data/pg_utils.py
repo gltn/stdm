@@ -638,9 +638,10 @@ def foreign_key_parent_tables(table_name, search_parent=True, filter_exp=None):
         search_table = "foreign_table_name"
 
     # Fetch foreign key references
-    sql = u"SELECT column_name,{0},foreign_column_name FROM " \
+    sql = u"SELECT column_name,{0},foreign_column_name, constraint_name FROM " \
           u"foreign_key_references where {1} =:tb_name".format(ref_table,
                                                                search_table)
+    print sql
     t = text(sql)
     result = _execute(t, tb_name=table_name)
 
@@ -650,7 +651,7 @@ def foreign_key_parent_tables(table_name, search_parent=True, filter_exp=None):
         rel_table = r[ref_table]
 
         fk_ref = r["column_name"], rel_table,\
-                 r["foreign_column_name"], r['constraint_name']
+                 r["foreign_column_name"], r["constraint_name"]
 
         if not filter_exp is None:
             if filter_exp.indexIn(rel_table) >= 0:
