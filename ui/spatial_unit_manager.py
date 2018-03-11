@@ -46,6 +46,7 @@ from qgis.gui import (
 )
 from stdm.data.configuration import entity_model
 
+from stdm.data.configuration.social_tenure import SocialTenure
 from gps_tool import GPSToolDialog
 from stdm.settings import (
     current_profile,
@@ -521,12 +522,11 @@ class SpatialUnitManagerDockWidget(
 
         if isinstance(col, str) or isinstance(col, unicode):
 
-            spatial_layer_item = unicode(
-                '{}.{}'.format(
-                    table, col
-                )
-            )
+            spatial_layer_item = u'{}.{}'.format(table, col)
 
+        elif isinstance(col, SocialTenure):
+            spatial_layer_item = col.view_name
+            
         elif col.layer_display_name == '':
 
             spatial_layer_item = u'{0}'.format(col.entity.short_name)

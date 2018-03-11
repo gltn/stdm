@@ -10,7 +10,7 @@ All notable changes of the Social Tenure Domain Model(STDM) is documented in thi
 - **Import Data**: Added auto fixers for column types.
 
 ### Changed
-- **Default configuration.stc**: Removed first name mandatory and unique constraint.  
+- **Default configuration.stc**: Removed first name mandatory and unique constraint.
 
 ## [1.7.1] - 2018-01-25
 
