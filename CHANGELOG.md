@@ -5,8 +5,12 @@ All notable changes of the Social Tenure Domain Model(STDM) is documented in thi
 ### Fixed
 - **Import Data**: Fixed drag and drop sort issue.
 - **Configuration Wizard**: Fixed drag and drop sort issue.
+
 ### Added
 - **Import Data**: Added auto fixers for column types.
+
+### Changed
+- **Default configuration.stc**: Removed first name mandatory and unique constraint.  
 
 ## [1.7.1] - 2018-01-25
 
