@@ -197,8 +197,14 @@ def value_list_updater(value_list, engine, metadata):
 
         model_obj = model()
 
-        #If it does not exist then create
+        # If it does not exist then create
         if len(matching_items) == 0:
+            # Value might be updated even if it does not exist in the database so check
+            if cd.updated_value:
+                value_list.update_index(cd.value)
+                cd.value = cd.updated_value
+                cd.updated_value = ''
+
             model_obj.code = cd.code
             model_obj.value = cd.value
 
@@ -234,13 +240,13 @@ def value_list_updater(value_list, engine, metadata):
     for db_val in db_values:
         lookup_val = db_val.value
 
-        #Check if it exists in the lookup collection
+        # Check if it exists in the lookup collection
         hashed_vt = value_list.value_hash(lookup_val)
         code_value = value_list.code_value(hashed_vt)
 
         model_obj = model()
 
-        #Delete if it does not exist in the configuration collection
+        # Delete if it does not exist in the configuration collection
         if code_value is None:
             lookup_obj = model_obj.queryObject().filter(
                 model.value == lookup_val

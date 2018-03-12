@@ -274,7 +274,7 @@ class Model(object):
         except exc.SQLAlchemyError as db_error:
             db.session.rollback()
             LOGGER.debug(unicode(db_error))
-            
+
             # Reset the constraints
             set_child_dependencies_null_on_delete(self.__table__)
 
@@ -283,7 +283,6 @@ class Model(object):
             db.session.commit()
 
             raise db_error
-            return False
 
     def queryObject(self,args=[]):
         '''

@@ -246,7 +246,13 @@
              <height>250</height>
             </size>
            </property>
+           <property name="showDropIndicator" stdset="0">
+            <bool>true</bool>
+           </property>
            <property name="dragEnabled">
+            <bool>true</bool>
+           </property>
+           <property name="dragDropOverwriteMode">
             <bool>true</bool>
            </property>
            <property name="dragDropMode">
@@ -329,7 +335,13 @@
              <height>250</height>
             </size>
            </property>
+           <property name="showDropIndicator" stdset="0">
+            <bool>true</bool>
+           </property>
            <property name="dragEnabled">
+            <bool>true</bool>
+           </property>
+           <property name="dragDropOverwriteMode">
             <bool>true</bool>
            </property>
            <property name="dragDropMode">

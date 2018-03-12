@@ -209,4 +209,4 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle("STDM")
         msg.setText(message)
-        msg.exec_()  
+        msg.exec_()
