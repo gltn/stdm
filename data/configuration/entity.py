@@ -135,6 +135,8 @@ class Entity(QObject, TableItem):
         # Sync this with row index of the viewer 
         self.row_index = -1  
 
+        self.entity_in_database = False
+
         LOGGER.debug('%s entity created.', self.name)
 
     def _shortname_to_name(self, name):
