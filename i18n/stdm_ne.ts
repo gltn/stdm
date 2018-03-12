@@ -5,12 +5,12 @@
     <message>
         <location filename="../data/configuration/columns.py" line="452"/>
         <source>Varying-length Text</source>
-        <translation type="unfinished">फरक-फरक लम्दाइ हुन सक्ने</translation>
+        <translation type="unfinished">फरक-फरक लम्दाइ हुन सक्ने नामपद</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="473"/>
         <source>Unlimited-length Text</source>
-        <translation type="unfinished">जतीनी लम्बाईको हुन सक्ने</translation>
+        <translation type="unfinished">जतीनी लम्बाईको हुन नामपद</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="493"/>
@@ -25,62 +25,62 @@
     <message>
         <location filename="../data/configuration/columns.py" line="547"/>
         <source>Auto-increment</source>
-        <translation type="unfinished">زيادة تلقائية</translation>
+        <translation type="unfinished">स्वबृद्धि हुने</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="579"/>
         <source>Date</source>
-        <translation type="unfinished">التاريخ</translation>
+        <translation type="unfinished">मिति</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="612"/>
         <source>Date with time</source>
-        <translation type="unfinished">التاريخ والوقت</translation>
+        <translation type="unfinished">समय सहित मिति</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="675"/>
         <source>Geometry</source>
-        <translation type="unfinished">علم الهندسة</translation>
+        <translation type="unfinished">ज्यामिति</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="689"/>
         <source>Yes/No</source>
-        <translation type="unfinished">نعم / لا</translation>
+        <translation type="unfinished">हो/होइन</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="837"/>
         <source>Related Entity</source>
-        <translation type="unfinished">كيان ذو صله</translation>
+        <translation type="unfinished">सम्बन्धित इन्तिति</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="887"/>
         <source>Single Select Lookup</source>
-        <translation type="unfinished">بحث بإختيار واحد</translation>
+        <translation type="unfinished">एउटा मात्र छान्न मिल्ने</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="910"/>
         <source>Administrative Spatial Unit</source>
-        <translation type="unfinished">وحدة إدارية مكانية</translation>
+        <translation type="unfinished">प्रशासनिक भौगोलिक इकाई</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="940"/>
         <source>Auto Generated Code</source>
-        <translation type="unfinished">شفرة مولدة تلقائيا</translation>
+        <translation type="unfinished">स्वउत्पन्न कोड</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="999"/>
         <source>Multiple Select Lookup</source>
-        <translation type="unfinished">بحث بلختيار متعدد</translation>
+        <translation type="unfinished">एउटा वा बदि छान्न मिल्ने</translation>
     </message>
     <message>
         <location filename="../data/configuration/columns.py" line="1028"/>
         <source>Percent</source>
-        <translation type="unfinished">نسبة مئوية</translation>
+        <translation type="unfinished">प्रतिशत</translation>
     </message>
     <message>
         <location filename="../data/configuration/entity_relation.py" line="126"/>
         <source>The parent entity has not been set.</source>
-        <translation type="unfinished">الكيان الأم لم يحدد</translation>
+        <translation type="unfinished">माथिल्लो इन्तिति सेट नभएको</translation>
     </message>
     <message>
         <location filename="../data/configuration/entity_relation.py" line="129"/>
