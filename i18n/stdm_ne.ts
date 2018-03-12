@@ -85,17 +85,17 @@
     <message>
         <location filename="../data/configuration/entity_relation.py" line="129"/>
         <source>The child entity has not been set.</source>
-        <translation type="unfinished">الكيان الطفل لم يحدد</translation>
+        <translation type="unfinished">तल्लो इन्तिति सेट नभएको</translation>
     </message>
     <message>
         <location filename="../data/configuration/entity_relation.py" line="132"/>
         <source>The parent column has not been defined.</source>
-        <translation type="unfinished">العمود الأم لم يحدد</translation>
+        <translation type="unfinished">मुल महल सेट नभएको</translation>
     </message>
     <message>
         <location filename="../data/configuration/entity_relation.py" line="135"/>
         <source>The child column has not been defined.</source>
-        <translation type="unfinished">العمود الطفل لم يحدد</translation>
+        <translation type="unfinished">शाखा महल सेट नभएको</translation>
     </message>
 </context>
 <context>
