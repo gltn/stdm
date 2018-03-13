@@ -157,19 +157,22 @@ class OGRReader(object):
         float_type = ['DOUBLE', 'PERCENT']
         int_type = ['INT', 'LOOKUP', 'ADMIN_SPATIAL_UNIT',
                     'FOREIGN_KEY']
-        if entity.columns[col_name].TYPE_INFO in integer_types:
-            if not bool(value.strip()) or value.strip().lower() == 'null':
-                value = None
-            elif entity.columns[col_name].TYPE_INFO in float_type:
-                try:
-                    value = float(value)
-                except ValueError:
-                    value = None
-            elif entity.columns[col_name].TYPE_INFO in int_type:
-                try:
-                    value = int(value)
-                except ValueError:
-                    value = None
+
+        if col_name in entity.columns.keys():
+            if entity.columns[col_name].TYPE_INFO in integer_types:
+                if isinstance(value, str):
+                    if not bool(value.strip()) or value.strip().lower() == 'null':
+                        value = None
+                elif entity.columns[col_name].TYPE_INFO in float_type:
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        value = None
+                elif entity.columns[col_name].TYPE_INFO in int_type:
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        value = None
         return value
 
     def auto_fix_date(self, target_table, col_name, value):

@@ -449,8 +449,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.type_attribs['GEOMETRY'] = {
                 'mandt':{'check_state':False, 'enabled_state':False},
                 'search':{'check_state':False, 'enabled_state':False},
-                'unique':{'check_state':True, 'enabled_state':False},
-                'index':{'check_state':True, 'enabled_state':False},
+                'unique':{'check_state':False, 'enabled_state':False},
+                'index':{'check_state':False, 'enabled_state':False},
                 'srid':"", 'geom_type':0,
                 'property':self.geometry_property, 'prop_set':False }
 

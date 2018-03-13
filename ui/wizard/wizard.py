@@ -2423,7 +2423,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         row_id, lookup, model_item = self._get_model(self.lvLookups)
 
+
         tmp_short_name = copy.deepcopy(lookup.short_name)
+        lookup.entity_in_database = pg_table_exists(lookup.name)
 
         editor = LookupEditor(self, profile, lookup)
         result = editor.exec_()

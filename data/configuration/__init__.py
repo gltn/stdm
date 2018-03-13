@@ -127,6 +127,9 @@ def entity_model(entity, entity_only=False, with_supporting_document=False):
     )'''
     Base.prepare()
 
+    if entity.name == 'ba_check_tenure_type_str_attrs':
+        pass #print Base.classes.keys()
+
     if with_supporting_document and not entity_only:
         return getattr(Base.classes, entity.name, None), supporting_doc_model
 
