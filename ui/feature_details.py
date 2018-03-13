@@ -1226,7 +1226,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                     pass
                 record_dict = record.__dict__
                 party, party_id = self.current_party(record_dict)
-                party_model = getattr(record, party.name)
+                if party is not None:
+                    party_model = getattr(record, party.name)
 
                 if i == len(self._formatted_record) - 1:
                     custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
@@ -1248,11 +1249,12 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                                 str_root, custom_attr_entity, custom_attr_model
                             )
                     if not party_query:
-                        party_root = self.add_party_child(
-                            str_root, party, party_model
-                        )
+                        if party_model is not None:
+                            party_root = self.add_party_child(
+                                str_root, party, party_model
+                            )
 
-                        self.party_items[party_root] = party
+                            self.party_items[party_root] = party
                     else:
 
                         record_dict = record.__dict__

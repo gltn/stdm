@@ -909,7 +909,7 @@ class ValidateSTREditor(object):
             if custom_attr_entity is None:
                 continue
 
-            if len(custom_attr_entity.columns) < 3:
+            if len(custom_attr_entity.columns) < 4:
                 continue
             for i, (party_id, custom_model) in enumerate(store.custom_tenure.iteritems()):
                 if custom_model is not None:

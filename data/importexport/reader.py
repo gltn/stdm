@@ -165,12 +165,22 @@ class OGRReader(object):
                         value = None
                 elif entity.columns[col_name].TYPE_INFO in float_type:
                     try:
-                        value = float(value)
+                        if value is not None:
+                            value = float(value)
+
                     except ValueError:
                         value = None
+
                 elif entity.columns[col_name].TYPE_INFO in int_type:
                     try:
-                        value = int(value)
+                        if value is not None:
+                            value = int(value)
+                            if isinstance(value, int):
+                                if value == 0:
+                                    if entity.columns[col_name].TYPE_INFO in \
+                                        ['LOOKUP', 'ADMIN_SPATIAL_UNIT',
+                                        'FOREIGN_KEY']:
+                                        value = None
                     except ValueError:
                         value = None
         return value

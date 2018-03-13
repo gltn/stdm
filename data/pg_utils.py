@@ -641,7 +641,7 @@ def foreign_key_parent_tables(table_name, search_parent=True, filter_exp=None):
     sql = u"SELECT column_name,{0},foreign_column_name, constraint_name FROM " \
           u"foreign_key_references where {1} =:tb_name".format(ref_table,
                                                                search_table)
-    print sql
+
     t = text(sql)
     result = _execute(t, tb_name=table_name)
 
