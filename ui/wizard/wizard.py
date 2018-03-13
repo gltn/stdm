@@ -767,7 +767,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self._custom_attr_entities,
             self,
             editable=can_edit,
-            exclude_columns=['id', 'social_tenure_relationship_id']
+            exclude_columns=[
+                'id',
+                'social_tenure_relationship_id',
+                SocialTenure.CUSTOM_TENURE_DUMMY_COLUMN
+            ]
         )
         custom_attr_editor.setWindowTitle(
             self.tr('Custom Tenure Attributes Editor')

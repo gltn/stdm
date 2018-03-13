@@ -25,7 +25,8 @@ from stdm.data.configuration.columns import (
     DateColumn,
     ForeignKeyColumn,
     LookupColumn,
-    PercentColumn
+    PercentColumn,
+    VarCharColumn
 )
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.configuration.entity import Entity
@@ -52,6 +53,7 @@ class SocialTenure(Entity):
     BASE_STR_VIEW = 'vw_social_tenure_relationship'
     CUSTOM_ATTRS_ENTITY = 'attrs'
     tenure_type_list = 'tenure_type'
+    CUSTOM_TENURE_DUMMY_COLUMN = 'dummy_custom_str'
     view_creator = view_updater
     view_remover = view_deleter
 
@@ -184,7 +186,22 @@ class SocialTenure(Entity):
             str_col.set_entity_relation_attr('parent_column', 'id')
             custom_ent.add_column(str_col)
 
+        # Validate existence of dummy column
+        self._validate_custom_attr_dummy_column(custom_ent)
+
         return custom_ent
+
+    def _validate_custom_attr_dummy_column(self, custom_entity):
+        # Check if the dummy column has been added to the custom tenure entity
+        # Insert dummy column so that the table is not flagged as a m2m
+        dummy_col = custom_entity.column(self.CUSTOM_TENURE_DUMMY_COLUMN)
+        if dummy_col is None:
+            dummy_col = VarCharColumn(
+                self.CUSTOM_TENURE_DUMMY_COLUMN,
+                custom_entity,
+                maximum=1
+            )
+            custom_entity.add_column(dummy_col)
 
     def add_tenure_attr_custom_entity(self, tenure_lookup, entity):
         """
@@ -197,6 +214,9 @@ class SocialTenure(Entity):
         """
         tenure_lookup = self._obj_from_str(tenure_lookup)
         entity = self._obj_from_str(entity)
+
+        # Validate existence of dummy column
+        self._validate_custom_attr_dummy_column(entity)
 
         self._custom_attr_entities[tenure_lookup.short_name] = entity
 

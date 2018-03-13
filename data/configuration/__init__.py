@@ -17,10 +17,12 @@ from stdm.data.database import (
     STDMDb
 )
 
+
 def _bind_metadata(metadata):
-    #Ensures there is a connectable set in the metadata
+    # Ensures there is a connectable set in the metadata
     if metadata.bind is None:
         metadata.bind = STDMDb.instance().engine
+
 
 def _rename_supporting_doc_collection(base, local_cls, ref_cls, constraint):
     # Rename document collection property in an entity model
@@ -75,7 +77,7 @@ def entity_model(entity, entity_only=False, with_supporting_document=False):
 
     _bind_metadata(metadata)
 
-    #We will use a different metadata object just for reflecting 'rf_entities'
+    # We will use a different metadata object just for reflecting 'rf_entities'
     rf_metadata = MetaData(metadata.bind)
     rf_metadata.reflect(only=rf_entities)
 
@@ -104,7 +106,6 @@ def entity_model(entity, entity_only=False, with_supporting_document=False):
             rf_metadata.remove(profile_supporting_docs_table)
 
     Base = automap_base(metadata=rf_metadata, cls=Model)
-
     '''
     Return the supporting document model that corresponds to the
     primary entity.
@@ -119,16 +120,18 @@ def entity_model(entity, entity_only=False, with_supporting_document=False):
         )
 
     # Set up mapped classes and relationships
+    '''
     Base.prepare(
         name_for_collection_relationship=_rename_supporting_doc_collection,
         generate_relationship=_gen_relationship
-    )
+    )'''
+    Base.prepare()
 
     if with_supporting_document and not entity_only:
-
         return getattr(Base.classes, entity.name, None), supporting_doc_model
 
     return getattr(Base.classes, entity.name, None)
+
 
 def configure_supporting_documents_inheritance(entity_supporting_docs_t,
                                                profile_supporting_docs_t,
@@ -158,7 +161,7 @@ def configure_supporting_documents_inheritance(entity_supporting_docs_t,
             'polymorphic_on': 'source_entity'
         }
 
-    #Get the link columns
+    # Get the link columns
     t_doc_id_col = getattr(entity_supporting_docs_t.c, 'supporting_doc_id')
     p_doc_id_col = getattr(profile_supporting_docs_t.c, 'id')
 
