@@ -33,7 +33,7 @@ from PyQt4.QtCore import (
     QFile
 )
 
-from sqlalchemy import func
+from sqlalchemy import func, cast, String
 from sqlalchemy.schema import (
     Table,
     MetaData
@@ -408,7 +408,8 @@ class RelatedTableTranslator(SourceValueTranslator):
 
                 #If column is found, add it to the query fields collection
                 if col_idx != -1:
-                    query_attrs[ref_table_col] = val
+                    # TODO use the column object to cast based on column data type
+                    query_attrs[ref_table_col] = cast(val, String)
 
         #Create link table object
         link_table = self._table(self._referenced_table)
