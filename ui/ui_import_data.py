@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_import_data.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created: Sun Mar 11 00:17:38 2018
+#      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -129,7 +130,9 @@ class Ui_frmImport(object):
         self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
         self.lstSrcFields = QtGui.QListWidget(self.groupBox_5)
         self.lstSrcFields.setMinimumSize(QtCore.QSize(0, 250))
+        self.lstSrcFields.setProperty("showDropIndicator", True)
         self.lstSrcFields.setDragEnabled(True)
+        self.lstSrcFields.setDragDropOverwriteMode(True)
         self.lstSrcFields.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
         self.lstSrcFields.setDefaultDropAction(QtCore.Qt.MoveAction)
         self.lstSrcFields.setAlternatingRowColors(True)
@@ -168,7 +171,9 @@ class Ui_frmImport(object):
         self.verticalLayout_5.setObjectName(_fromUtf8("verticalLayout_5"))
         self.lstTargetFields = QtGui.QListWidget(self.groupBox_6)
         self.lstTargetFields.setMinimumSize(QtCore.QSize(0, 250))
+        self.lstTargetFields.setProperty("showDropIndicator", True)
         self.lstTargetFields.setDragEnabled(True)
+        self.lstTargetFields.setDragDropOverwriteMode(True)
         self.lstTargetFields.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
         self.lstTargetFields.setDefaultDropAction(QtCore.Qt.MoveAction)
         self.lstTargetFields.setAlternatingRowColors(True)
@@ -266,5 +271,3 @@ class Ui_frmImport(object):
         self.btn_add_translator.setWhatsThis(_translate("frmImport", "<html><head/><body><p>Use value translators to transform the value from the corresponding source table column in order to adopt it to a format that adaptible to the destination column.</p></body></html>", None))
         self.btn_edit_translator.setToolTip(_translate("frmImport", "Edit value translator", None))
         self.btn_delete_translator.setToolTip(_translate("frmImport", "Delete value translator", None))
-
-from stdm import resources_rc

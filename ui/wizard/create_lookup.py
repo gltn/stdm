@@ -71,6 +71,8 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         if self.lookup:
             self.edtName.setText(
                     self.lookup.short_name.replace('check_',''))
+            self.edtName.setEnabled(not self.lookup.entity_in_database)
+            self.buttonBox.button(QtGui.QDialogButtonBox.Ok).setEnabled(not self.lookup.entity_in_database)
         self.edtName.textChanged.connect(self.validate_text)
 
     def show_notification(self, message):
@@ -207,4 +209,4 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle("STDM")
         msg.setText(message)
-        msg.exec_()  
+        msg.exec_()

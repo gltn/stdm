@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_adminUnitManager.ui'
 #
-# Created: Sun Jun 19 16:22:28 2016
-#      by: PyQt4 UI code generator 4.9.4
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +11,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_frmAdminUnitManager(object):
     def setupUi(self, frmAdminUnitManager):
@@ -56,7 +64,7 @@ class Ui_frmAdminUnitManager(object):
         self.label_2 = QtGui.QLabel(self.gbManage)
         self.label_2.setObjectName(_fromUtf8("label_2"))
         self.horizontalLayout.addWidget(self.label_2)
-        self.txtUnitCode = ValidatingLineEdit(self.gbManage)
+        self.txtUnitCode = QtGui.QLineEdit(self.gbManage)
         self.txtUnitCode.setMinimumSize(QtCore.QSize(0, 30))
         self.txtUnitCode.setMaximumSize(QtCore.QSize(50, 16777215))
         self.txtUnitCode.setMaxLength(10)
@@ -76,12 +84,12 @@ class Ui_frmAdminUnitManager(object):
         QtCore.QMetaObject.connectSlotsByName(frmAdminUnitManager)
 
     def retranslateUi(self, frmAdminUnitManager):
-        frmAdminUnitManager.setWindowTitle(QtGui.QApplication.translate("frmAdminUnitManager", "Administrative Unit Manager", None, QtGui.QApplication.UnicodeUTF8))
-        self.btnRemove.setText(QtGui.QApplication.translate("frmAdminUnitManager", "Delete Selection", None, QtGui.QApplication.UnicodeUTF8))
-        self.btnClear.setText(QtGui.QApplication.translate("frmAdminUnitManager", "Clear Selection", None, QtGui.QApplication.UnicodeUTF8))
-        self.gbManage.setTitle(QtGui.QApplication.translate("frmAdminUnitManager", "New Administrative Unit:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("frmAdminUnitManager", "Unit Name", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("frmAdminUnitManager", "Code", None, QtGui.QApplication.UnicodeUTF8))
+        frmAdminUnitManager.setWindowTitle(_translate("frmAdminUnitManager", "Administrative Unit Manager", None))
+        self.btnRemove.setText(_translate("frmAdminUnitManager", "Delete Selection", None))
+        self.btnClear.setText(_translate("frmAdminUnitManager", "Clear Selection", None))
+        self.gbManage.setTitle(_translate("frmAdminUnitManager", "New Administrative Unit:", None))
+        self.label.setText(_translate("frmAdminUnitManager", "Unit Name", None))
+        self.label_2.setText(_translate("frmAdminUnitManager", "Code", None))
 
 from customcontrols import ValidatingLineEdit
 from stdm import resources_rc

@@ -91,7 +91,7 @@
        </widget>
       </item>
       <item>
-       <widget class="ValidatingLineEdit" name="txtUnitCode">
+       <widget class="QLineEdit" name="txtUnitCode">
         <property name="minimumSize">
          <size>
           <width>0</width>

@@ -82,7 +82,7 @@ def create_entity(entity, table, engine):
     """
     Creates a database table corresponding to the entity.
     """
-    #Create table
+    # Create table
     table.create(engine, checkfirst=True)
     update_entity_columns(entity, table, entity.columns.values())
 
@@ -118,7 +118,7 @@ def drop_dependencies(entity):
 
 
 def _table_column_names(table):
-    #Returns both spatial and non-spatial column names in the given table.
+    # Returns both spatial and non-spatial column names in the given table.
     sp_cols = table_column_names(table, True)
     textual_cols = table_column_names(table)
 
@@ -172,11 +172,11 @@ def value_list_updater(value_list, engine, metadata):
     """
     entity_updater(value_list, engine, metadata)
 
-    #Return if action is to delete the lookup table
+    # Return if action is to delete the lookup table
     if value_list.action == DbItem.DROP:
         return
 
-    #Update lookup values
+    # Update lookup values
     model = entity_model(value_list, True)
 
     if model is None:
@@ -187,18 +187,24 @@ def value_list_updater(value_list, engine, metadata):
 
     model_obj = model()
 
-    #Get all the lookup values in the table
+    # Get all the lookup values in the table
     db_values = model_obj.queryObject().all()
 
-    #Update database values
+    # Update database values
     for cd in value_list.values.values():
-        #Search if the current code value exists in the collection
+        # Search if the current code value exists in the collection
         matching_items = [db_obj for db_obj in db_values if db_obj.value == cd.value]
 
         model_obj = model()
 
-        #If it does not exist then create
+        # If it does not exist then create
         if len(matching_items) == 0:
+            # Value might be updated even if it does not exist in the database so check
+            if cd.updated_value:
+                value_list.update_index(cd.value)
+                cd.value = cd.updated_value
+                cd.updated_value = ''
+
             model_obj.code = cd.code
             model_obj.value = cd.value
 
@@ -208,7 +214,7 @@ def value_list_updater(value_list, engine, metadata):
             item = matching_items[0]
             needs_update = False
 
-            #Check if the values have changed and update accordingly
+            # Check if the values have changed and update accordingly
             if cd.updated_value:
                 value_list.update_index(item.value)
                 item.value = cd.updated_value
@@ -227,20 +233,20 @@ def value_list_updater(value_list, engine, metadata):
             if needs_update:
                 item.update()
 
-    #Refresh lookup values
+    # Refresh lookup values
     db_values = model_obj.queryObject().all()
 
-    #Remove redundant values in the database
+    # Remove redundant values in the database
     for db_val in db_values:
         lookup_val = db_val.value
 
-        #Check if it exists in the lookup collection
+        # Check if it exists in the lookup collection
         hashed_vt = value_list.value_hash(lookup_val)
         code_value = value_list.code_value(hashed_vt)
 
         model_obj = model()
 
-        #Delete if it does not exist in the configuration collection
+        # Delete if it does not exist in the configuration collection
         if code_value is None:
             lookup_obj = model_obj.queryObject().filter(
                 model.value == lookup_val

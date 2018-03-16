@@ -125,10 +125,10 @@ class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
         self._notifBar = NotificationBar(self.vlNotification)
         
         #Configure validating line edit controls
-        invalidMsg = "{} already exists."
-        self.txtUnitCode.setModelAttr(AdminSpatialUnitSet,"Code")
-        self.txtUnitCode.setInvalidMessage(invalidMsg)
-        self.txtUnitCode.setNotificationBar(self._notifBar)
+        # invalidMsg = "{} already exists."
+        # self.txtUnitCode.setModelAttr(AdminSpatialUnitSet,"Code")
+        # self.txtUnitCode.setInvalidMessage(invalidMsg)
+        # self.txtUnitCode.setNotificationBar(self._notifBar)
         
         '''
         Initialize formatter for the rendering the admin unit nodes and insert
@@ -228,8 +228,8 @@ class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
             self.txtUnitCode.setFocus()
             return
         
-        if not self.txtUnitCode.validate():
-            return
+        # if not self.txtUnitCode.validate():
+        #     return
         
         #Get current row selection
         selIndexes = self.tvAdminUnits.selectionModel().selectedRows(0)

@@ -49,7 +49,6 @@ from stdm.data.database import Content
 from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
 
-
 from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
 from stdm.security.authorization import Authorizer
 from stdm.utils.util import (
@@ -59,6 +58,8 @@ from stdm.utils.util import (
     get_db_attr,
     lookup_parent_entity
 )
+
+from stdm.data.pg_utils import pg_table_count
 
 from stdm.ui.feature_details import DetailsTreeView
 from .notification import (
@@ -175,6 +176,10 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self.initGui()
         self.details_tree_view = DetailsTreeView(iface, None, self.tvSTRResults)
         self.details_tree_view.activate_feature_details(False)
+
+        count = pg_table_count(self.curr_profile.social_tenure.name)
+        self.setWindowTitle(self.tr(u'{}{}'.format(self.windowTitle(), '- '+str(count)+' rows')))
+        
 
     def add_tool_buttons(self):
         """

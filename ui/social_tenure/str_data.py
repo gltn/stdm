@@ -176,6 +176,7 @@ class STRDBHandler():
                     # looping though document objects in multiple party
                     loop_increment = (k * no_of_party) + j
                     # append into the str obj
+
                     str_obj.documents.append(
                         doc_objs[loop_increment]
                     )

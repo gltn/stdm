@@ -297,13 +297,14 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         if len(dirs) > 0:
             dir_f = dirs[0]
             instance_file = [f for f in os.listdir(dir_f) if f.endswith('.xml')]
-            self.uuid_extractor.set_file_path(os.path.join(dir_f, instance_file[0]))
-            entity_list = self.check_profile_with_custom_name()
-            for entity_name in entity_list:
-                if current_profile().entity_by_name(entity_name) is not None:
-                    current_etities.append(entity_name)
-            if len(current_etities) > 0:
-                return current_etities
+            if len(instance_file) > 0:
+                self.uuid_extractor.set_file_path(os.path.join(dir_f, instance_file[0]))
+                entity_list = self.check_profile_with_custom_name()
+                for entity_name in entity_list:
+                    if current_profile().entity_by_name(entity_name) is not None:
+                        current_etities.append(entity_name)
+                if len(current_etities) > 0:
+                    return current_etities
 
     def check_profile_with_custom_name(self):
         """

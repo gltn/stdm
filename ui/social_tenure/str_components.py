@@ -681,14 +681,16 @@ class CustomTenureInfo(object):
             self.entity_editors[(str_number, row_number)] = EntityEditorDialog(
                 custom_attr_entity, parent=self.parent.custom_tenure_tab,
                 manage_documents=False, parent_entity=self.social_tenure,
-                exclude_columns=['social_tenure_relationship_id']
+                exclude_columns=['social_tenure_relationship_id',
+                                 self.social_tenure.CUSTOM_TENURE_DUMMY_COLUMN]
             )
         else:
             self.entity_editors[(str_number, row_number)] = EntityEditorDialog(
                 custom_attr_entity, parent=self.parent.custom_tenure_tab,
                 manage_documents=False, model=custom_model,
                 parent_entity=self.social_tenure,
-                exclude_columns=['social_tenure_relationship_id']
+                exclude_columns=['social_tenure_relationship_id',
+                                 self.social_tenure.CUSTOM_TENURE_DUMMY_COLUMN]
             )
 
         display_columns = self.textual_display_columns(party_entity)

@@ -101,7 +101,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.collection_suffix = self.tr('Collection')
 
         #Set minimum width
-        self.setMinimumWidth(350)
+        self.setMinimumWidth(450)
 
         #Flag for mandatory columns
         self.has_mandatory = False
@@ -489,8 +489,9 @@ class EntityEditorDialog(QDialog, MapperMixin):
         if not self._disable_collections:
             ch_entities = self.children_entities()
 
-            for ch in ch_entities:
-                self._add_fk_browser(ch)
+            for col, ch in ch_entities.iteritems():
+
+                self._add_fk_browser(ch, col)
 
         #Add tab widget if entity supports documents
         if self._entity.supports_documents:
@@ -535,12 +536,13 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 pr_txt
             )
 
-    def _add_fk_browser(self, child_entity):
+    def _add_fk_browser(self, child_entity, column):
         # Create and add foreign key
         # browser to the collection
         from stdm.ui.entity_browser import (
             EntityBrowserWithEditor
         )
+
         attr = u'{0}_collection'.format(child_entity.name)
 
         # Return if the attribute does not exist
@@ -555,11 +557,14 @@ class EntityEditorDialog(QDialog, MapperMixin):
         entity_browser.buttonBox.setVisible(False)
         entity_browser.record_filter = []
 
+        if len(column.label) > 2:
+            column_label = column.label
+        else:
+            column_label = format_name(column.name)
         self.entity_tab_widget.addTab(
             entity_browser,
-            u'{0} {1}'.format(
-                child_entity.short_name.replace('_', ' '),
-                self.collection_suffix
+            u'{0}'.format(
+                column_label
             )
         )
         self.set_filter(child_entity, entity_browser)
@@ -597,10 +602,16 @@ class EntityEditorDialog(QDialog, MapperMixin):
         """
         :return: Returns a list of children entities
         that refer to the main entity as the parent.
-        :rtype: list
+        :rtype: OrderedDict
         """
-        return [ch for ch in self._entity.children()
-                if ch.TYPE_INFO == Entity.TYPE_INFO]
+        child_columns = OrderedDict()
+        for ch in self._entity.children():
+            if ch.TYPE_INFO == Entity.TYPE_INFO:
+                for col in ch.columns.values():
+                    if hasattr(col, 'entity_relation'):
+                        if col.parent.name == self._entity.name:
+                            child_columns[col] = ch
+        return child_columns
 
     def document_widget(self):
         """

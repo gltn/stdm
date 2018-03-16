@@ -197,15 +197,6 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
 
         return attr, idx
 
-    #def _disable_editing(self):
-        # Disable editing
-        #self.btnAddColumn.setEnabled(False)
-        #self.btnEditColumn.setEnabled(False)
-        #self.btnDeleteColumn.setEnabled(False)
-        #self.tb_view.setEnabled(False)
-        #ok_btn = self.buttonBox.button(QDialogButtonBox.Ok)
-        #ok_btn.setEnabled(False)
-
     def _column_editor_params(self):
         # Constructor params for column editor
         params = {}

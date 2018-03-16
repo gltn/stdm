@@ -21,3 +21,5 @@ docs/_build
 
 # My scripts
 ui.make.bat
+
+*.chm

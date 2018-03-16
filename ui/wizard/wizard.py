@@ -767,7 +767,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self._custom_attr_entities,
             self,
             editable=can_edit,
-            exclude_columns=['id', 'social_tenure_relationship_id']
+            exclude_columns=[
+                'id',
+                'social_tenure_relationship_id',
+                SocialTenure.CUSTOM_TENURE_DUMMY_COLUMN
+            ]
         )
         custom_attr_editor.setWindowTitle(
             self.tr('Custom Tenure Attributes Editor')
@@ -2419,7 +2423,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         row_id, lookup, model_item = self._get_model(self.lvLookups)
 
+
         tmp_short_name = copy.deepcopy(lookup.short_name)
+        lookup.entity_in_database = pg_table_exists(lookup.name)
 
         editor = LookupEditor(self, profile, lookup)
         result = editor.exec_()
