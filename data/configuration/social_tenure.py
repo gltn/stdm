@@ -37,7 +37,7 @@ from stdm.data.configuration.social_tenure_updater import (
     view_updater
 )
 from stdm.data.configuration.value_list import ValueList
-from stdm.data.pg_utils import table_column_names
+from stdm.data.pg_utils import table_column_names, pg_table_exists
 LOGGER = logging.getLogger('stdm')
 
 
@@ -204,10 +204,11 @@ class SocialTenure(Entity):
                 maximum=1
             )
             custom_entity.add_column(dummy_col)
-        custom_ent_cols = table_column_names(custom_entity.name)
-        if dummy_col.name not in custom_ent_cols:
-            custom_table = alchemy_table(custom_entity.name)
-            varchar_updater(dummy_col, custom_table, custom_ent_cols)
+        if pg_table_exists(custom_entity.name):
+            custom_ent_cols = table_column_names(custom_entity.name)
+            if dummy_col.name not in custom_ent_cols:
+                custom_table = alchemy_table(custom_entity.name)
+                varchar_updater(dummy_col, custom_table, custom_ent_cols)
 
     def add_tenure_attr_custom_entity(self, tenure_lookup, entity):
         """
