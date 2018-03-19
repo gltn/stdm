@@ -67,7 +67,8 @@ from stdm.data.pg_utils import (
 from stdm.ui.forms.spatial_unit_form import (
     STDMFieldWidget
 )
-from stdm.utils.util import profile_and_user_views, lookup_id_to_value, entity_id_to_display_col
+from stdm.utils.util import profile_and_user_views, \
+    lookup_id_to_value, entity_id_to_display_col
 from stdm.mapping.utils import pg_layerNamesIDMapping
 
 from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget

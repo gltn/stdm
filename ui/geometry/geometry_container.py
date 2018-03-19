@@ -1,21 +1,220 @@
 from collections import OrderedDict
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QDockWidget, QApplication, QStatusBar, QWidget
-from qgis.PyQt.QtCore import NULL
+import re
+from PyQt4.QtCore import Qt, pyqtSlot
+from PyQt4.QtGui import QDockWidget, QApplication, QStatusBar, QWidget, \
+    QMessageBox, QAction
+from qgis.PyQt.QtCore import NULL, pyqtSignal, QObject
 from qgis.core import QgsMapLayer
+from qgis.utils import iface
 
 from stdm.data.pg_utils import spatial_tables, pg_views
 from stdm.ui.feature_details import LayerSelectionHandler
 
+from stdm.ui.notification import NotificationBar
+from ...geometry.geometry_utils import *
 from stdm.data.configuration import entity_model
 from stdm.settings import current_profile
-from stdm.ui.forms.widgets import ColumnWidgetRegistry
+
 from ui_geometry_container import Ui_GeometryContainer
 from ui_move_line_area import Ui_MoveLineArea
 from ui_offset_distance import Ui_OffsetDistance
 from ui_one_point_area import Ui_OnePointArea
 from ui_join_points import Ui_JoinPoints
+
+
+class GeomWidgetsSettings():
+
+    # selection_finished = pyqtSignal()
+    def __init__(self, layer_settings, widget):
+        # QObject.__init__(widget)
+        self.settings = layer_settings
+        self.current_profile = current_profile()
+        self.iface = iface
+
+        self.settings = layer_settings
+        self.widget = widget
+        self.feature_count = 0
+        self.features = []
+        self.lines_count = 0
+        self.lines = []
+        self.line_layer = None
+        self.notice = NotificationBar(
+            self.settings.notice_box
+        )
+        self.feature_ids = []
+        self.executed = False
+        self.preview_layer = None
+        self.widget.preview_btn.clicked.connect(self.preview)
+        self.widget.save_btn.clicked.connect(self.save)
+
+    def init_signals(self):
+        self.settings.layer.selectionChanged.connect(
+            self.show_selected_layer
+        )
+        # if self.settings.line_layer is not None:
+
+        # self.selection_finished.connect(
+        #     self.on_selection_finished
+        # )
+    def disconnect_signals(self):
+        self.settings.layer.selectionChanged.disconnect(
+            self.show_selected_layer
+        )
+   # @pyqtSlot()
+    def on_feature_selection_finished(self):
+        self.line_layer = polygon_to_lines(self.settings.layer)
+        self.settings.line_layer = self.line_layer
+        if self.line_layer is not None:
+            self.line_layer.selectionChanged.connect(
+                self.show_selected_line_layer
+            )
+
+    def on_line_selection_finished(self):
+        self.preview()
+
+    def show_selected_layer(self):
+        self.preview_layer = None
+
+        if self.executed:
+            return
+        if self.settings.layer is None:
+            return
+        if iface.activeLayer().name() == 'Polygon Lines':
+            return
+
+        if self.settings.stdm_layer(self.settings.layer):
+            if hasattr(self.widget, 'sel_features_lbl'):
+                self.feature_count = self.selected_features_count()
+                self.widget.sel_features_lbl.setText(str(self.feature_count))
+                self.on_feature_selection_finished()
+
+    def show_selected_line_layer(self):
+        if self.settings.layer is None:
+            return
+        if iface.activeLayer().name() != 'Polygon Lines':
+            return
+
+        if hasattr(self.widget, 'selected_line_lbl'):
+            self.lines_count = self.selected_line_count()
+
+            self.widget.selected_line_lbl.setText(str(self.lines_count))
+            if self.lines_count > 1:
+                message = QApplication.translate(
+                    'GeomWidgetsSettings',
+                    'The first selected segment will be used.'
+                )
+                self.notice.insertWarningNotification(message)
+            # self.on_line_selection_finished()
+
+    def selected_features_count(self):
+        self.features = self.settings.selected_features()
+        self.feature_ids = [f.id() for f in self.features]
+        if self.features is not None:
+            return len(self.features)
+        else:
+            return 0
+
+    def selected_line_count(self):
+        if self.line_layer is None:
+            return 0
+        self.lines = self.line_layer.selectedFeatures()
+
+        if self.lines is not None:
+            return len(self.lines)
+        else:
+            return 0
+
+    def save(self):
+        self.executed = True
+
+        self.settings.layer.selectionChanged.disconnect(
+            self.show_selected_layer
+        )
+        self.preview_layer = copy_layer_to_memory(
+            self.settings.layer, 'Preview Polygon', self.features)
+        # if len(self.features) > 1:
+        #     self.settings.layer.startEditing()
+        #     iface.mainWindow().findChild(
+        #         QAction, 'mActionMergeFeatureAttributes').trigger()
+        #
+        #     self.settings.layer.commitChanges()
+
+        iface.legendInterface().setLayerVisible(self.preview_layer, False)
+        # iface.setActiveLayer(self.settings.layer)
+
+        # self.settings.layer.setSelectedFeatures(self.feature_ids)
+        move_line_with_area(
+            self.settings.layer,
+            self.line_layer,
+            self.preview_layer,
+            self.lines[0],
+            self.widget.split_polygon_area.value(),
+            self.feature_ids
+        )
+        iface.mapCanvas().refresh()
+        self.settings.layer.selectionChanged.connect(
+            self.show_selected_layer
+        )
+
+    def preview(self):
+        self.executed = True
+        self.preview_layer = copy_layer_to_memory(
+            self.settings.layer, 'Preview Polygon', self.features)
+
+        # if len(self.features) > 1:
+        #     self.preview_layer.selectAll()
+        #     self.preview_layer.startEditing()
+        #     iface.mainWindow().findChild(
+        #         QAction, 'mActionMergeFeatureAttributes').trigger()
+        # self.preview_layer.commitChanges()
+        self.preview_layer.selectAll()
+        if len(self.lines) > 0:
+            move_line_with_area(
+                self.preview_layer,
+                self.line_layer,
+                self.preview_layer,
+                self.lines[0],
+                self.widget.split_polygon_area.value()
+            )
+            iface.mapCanvas().refresh()
+
+    def cancel(self):
+        pass
+
+class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsSettings):
+
+    def __init__(self, layer_settings, parent):
+        QWidget.__init__(self)
+
+        self.setupUi(self)
+        GeomWidgetsSettings.__init__(self, layer_settings, self)
+
+
+class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsSettings):
+
+    def __init__(self, layer_settings, parent):
+        QWidget.__init__(self)
+
+        self.setupUi(self)
+        GeomWidgetsSettings.__init__(self, layer_settings, self)
+
+
+class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsSettings):
+
+    def __init__(self, layer_settings, parent):
+        QWidget.__init__(self)
+
+        self.setupUi(self)
+        GeomWidgetsSettings.__init__(self, layer_settings, self)
+
+
+class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsSettings):
+    def __init__(self, layer_settings, parent):
+        QWidget.__init__(self)
+        self.setupUi(self)
+        GeomWidgetsSettings.__init__(self, layer_settings, self)
+
 class GeometryWidgetRegistry(object):
     """
     Base container for widget factories based on column types. It is used to
@@ -60,7 +259,7 @@ class GeometryWidgetRegistry(object):
         GeometryWidgetRegistry.registered_factories[cls.NAME] = cls
 
     @classmethod
-    def create(cls, parent=None):
+    def create(cls, settings, parent=None):
         """
         Creates the appropriate widget.
         :param c: Column object for which to create a widget for.
@@ -74,7 +273,7 @@ class GeometryWidgetRegistry(object):
         factory = GeometryWidgetRegistry.factory(cls.NAME)
 
         if not factory is None:
-            w = factory._create_widget(parent)
+            w = factory._create_widget(settings, parent)
             factory._widget_configuration(w)
 
             return w
@@ -96,7 +295,7 @@ class GeometryWidgetRegistry(object):
         )
 
     @classmethod
-    def _create_widget(cls, parent):
+    def _create_widget(cls, settings, parent):
         #For implementation by sub-classes to create the appropriate widget.
         raise NotImplementedError
 
@@ -108,35 +307,22 @@ class GeometryWidgetRegistry(object):
         """
         pass
 
-class MoveLineAreaWidget(QWidget, Ui_MoveLineArea):
-
-    def __init__(self, parent):
-        QWidget.__init__(self)
-        self.setupUi(self)
-
-
 
 class MoveLineAreaTool(GeometryWidgetRegistry, MoveLineAreaWidget):
     """
     Widget factory for Text column type.
     """
-    NAME = QApplication.translate('MoveLineAreaTool', 'Split Polygon: Move Line and Area')
+    NAME = QApplication.translate('MoveLineAreaTool',
+                                  'Split Polygon: Move Line and Area')
     OBJECT_NAME = NAME.replace(' ', '_')
-  
-    @classmethod
-    def _create_widget(cls, parent):
 
-        move_line = MoveLineAreaWidget(parent)
+    @classmethod
+    def _create_widget(cls, settings, parent):
+        move_line = MoveLineAreaWidget(settings, parent)
         return move_line
 
+
 MoveLineAreaTool.register()
-
-
-class OffsetDistanceWidget(QWidget, Ui_OffsetDistance):
-
-    def __init__(self, parent):
-        QWidget.__init__(self)
-        self.setupUi(self)
 
 
 class OffsetDistanceTool(GeometryWidgetRegistry, OffsetDistanceWidget):
@@ -147,21 +333,13 @@ class OffsetDistanceTool(GeometryWidgetRegistry, OffsetDistanceWidget):
     OBJECT_NAME = NAME.replace(' ', '_')
     
     @classmethod
-    def _create_widget(cls, parent):
+    def _create_widget(cls, settings, parent):
 
-        move_line = OffsetDistanceWidget(parent)
+        move_line = OffsetDistanceWidget(settings, parent)
         # cls.WIDGET = move_line
         return move_line
 
 OffsetDistanceTool.register()
-
-
-
-class OnePointAreaWidget(QWidget, Ui_OnePointArea):
-
-    def __init__(self, parent):
-        QWidget.__init__(self)
-        self.setupUi(self)
 
 
 class OnePointAreaTool(GeometryWidgetRegistry, OnePointAreaWidget):
@@ -172,19 +350,13 @@ class OnePointAreaTool(GeometryWidgetRegistry, OnePointAreaWidget):
     OBJECT_NAME = NAME.replace(' ', '_')
    
     @classmethod
-    def _create_widget(cls, parent):
+    def _create_widget(cls, settings, parent):
 
-        move_line = OnePointAreaWidget(parent)
+        move_line = OnePointAreaWidget(settings, parent)
         # cls.WIDGET = move_line
         return move_line
 
 OnePointAreaTool.register()
-
-
-class JoinPointsWidget(QWidget, Ui_JoinPoints):
-    def __init__(self, parent):
-        QWidget.__init__(self)
-        self.setupUi(self)
 
 
 class JoinPointsTool(GeometryWidgetRegistry, JoinPointsWidget):
@@ -196,8 +368,8 @@ class JoinPointsTool(GeometryWidgetRegistry, JoinPointsWidget):
     OBJECT_NAME = NAME.replace(' ', '_')
 
     @classmethod
-    def _create_widget(cls, parent):
-        move_line = JoinPointsWidget(parent)
+    def _create_widget(cls, settings, parent):
+        move_line = JoinPointsWidget(settings, parent)
         # cls.WIDGET = move_line
         return move_line
 
@@ -211,6 +383,8 @@ class GeometryToolsContainer(
     """
     The logic for the spatial entity details dock widget.
     """
+    # panel_loaded = pyqtSignal()
+
     def __init__(self, iface, plugin):
         """
         Initializes the DetailsDockWidget.
@@ -226,7 +400,10 @@ class GeometryToolsContainer(
         self._entity = None
         LayerSelectionHandler.__init__(self, iface, plugin)
         self.setBaseSize(300, 5000)
-        self.add_widgets()
+        self.layer = None
+        self.line_layer = None
+
+
 
 
     def init_dock(self):
@@ -240,10 +417,13 @@ class GeometryToolsContainer(
 
 
     def add_widgets(self):
+
         for i, factory in enumerate(GeometryWidgetRegistry.registered_factories.values()):
-            widget = factory.create(self.geom_tools_widgets.widget(i))
+            widget = factory.create(self, self.geom_tools_widgets.widget(i))
             self.geom_tools_widgets.addWidget(widget)
             self.geom_tools_combo.addItem(factory.NAME, factory.OBJECT_NAME)
+            widget.init_signals()
+
 
     def init_signals(self):
         self.geom_tools_combo.currentIndexChanged.connect(
@@ -265,6 +445,7 @@ class GeometryToolsContainer(
         self.clear_feature_selection()
         self.clear_sel_highlight()
         self.hide()
+        # self.disconnect_signals()
 
     def closeEvent(self, event):
         """
@@ -299,33 +480,53 @@ class GeometryToolsContainer(
         because of button click or because of change in the active layer.
         :type button_clicked: Boolean
         """
+        # No need of activation as it is activated.
+        print 'hidden ', self.isHidden()
+        if not self.isHidden():
+            self.activate_select_tool()
+            self.plugin.geom_tools_cont_act.setChecked(True)
+            return
         # Get and set the active layer.
+
         self.layer = self.iface.activeLayer()
+
+        if self.layer is not None:
+            # if it is Polygon Lines layer that is selected, keep dock
+            if self.stdm_layer(self.layer):
+                self.layer = self.iface.activeLayer()
+                self.line_layer = None
+            if self.layer.name() == 'Polygon Lines':
+                self.activate_select_tool()
+                self.plugin.geom_tools_cont_act.setChecked(True)
+                self.line_layer = self.layer
+                return True
         # if no active layer, show error message
         # and uncheck the feature tool
+        # print self.layer.name()
         if self.layer is None:
             if button_clicked:
                 self.active_layer_check()
             self.plugin.geom_tools_cont_act.setChecked(False)
-            return
+            return False
         # If the button is unchecked, close dock.
         if not self.plugin.geom_tools_cont_act.isChecked():
             self.close_dock(self.plugin.geom_tools_cont_act)
             self.geometry_tools = None
-            return
+            return False
         # if the selected layer is not an STDM layer,
         # show not feature layer.
         if not self.stdm_layer(self.layer):
             if button_clicked and self.isHidden():
                 # show popup message if dock is hidden and button clicked
-
                 self.non_stdm_layer_error()
                 self.plugin.geom_tools_cont_act.setChecked(False)
-
+            return False
         # If the selected layer is feature layer, get data and
         # display geometry_tools in a dock widget
-        else:
-            self.prepare_for_selection()
+        # else:
+        self.prepare_for_selection()
+        return True
+            # self.panel_loaded.emit()
 
 
 
@@ -405,7 +606,9 @@ class GeometryToolsContainer(
 
         if self.layer_table in spatial_tables() and \
                         self.layer_table not in pg_views():
-            self.entity = self.current_profile.entity_by_name(self.layer_table)
+            self.entity = self.current_profile.entity_by_name(
+                self.layer_table
+            )
 
 
     def set_entity(self, entity):
@@ -415,3 +618,5 @@ class GeometryToolsContainer(
         :type entity: Object
         """
         self._entity = entity
+
+

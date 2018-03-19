@@ -883,6 +883,9 @@ def enable_drag_sort(mv_widget):
     drag and drop sort is enabled
     :type mv_widget: QTableView, QListView
     """
+    if isinstance(mv_widget, QListWidget):
+        return
+
     mv_widget.setDragEnabled(True)
     mv_widget.setAcceptDrops(True)
     mv_widget.setSelectionMode(
@@ -976,101 +979,6 @@ def enable_drag_sort(mv_widget):
 
     mv_widget.__class__.dropEvent = drop_event
 
-
-
-def enable_drag_sort_widgets(qt_widget):
-    """
-    Enables internal drag and drop sorting in
-    model/view widgets.
-    :param mv_widget: The model/view widget for which
-    drag and drop sort is enabled
-    :type mv_widget: QTableView, QListView
-    """
-    qt_widget.setDragEnabled(True)
-    qt_widget.setAcceptDrops(True)
-    qt_widget.setSelectionMode(
-        QAbstractItemView.SingleSelection
-    )
-    qt_widget.setDragDropOverwriteMode(False)
-    qt_widget.setDropIndicatorShown(True)
-    qt_widget.setDefaultDropAction(Qt.TargetMoveAction)
-    qt_widget.setDragDropMode(
-        QAbstractItemView.InternalMove
-    )
-
-    def widget_drop_event(qt_widget, event):
-        """
-        A drop event function that prevents overwriting of destination
-        rows if a row or cell is a destination target.
-        :param qt_widget: QT widget for which drag and drop sort is enabled
-        :param event: The drop event
-        :return: None
-        :rtype: None
-        """
-
-        if event.source() == qt_widget:
-
-            rows = set(
-                [mi.row()
-                for mi in qt_widget.selectedIndexes()
-                ]
-            )
-
-            widget_item = qt_widget.itemAt(event.pos())
-            target_row = qt_widget.row(widget_item)
-
-            rows.discard(target_row)
-            rows = sorted(rows)
-
-            if not rows:
-                return
-
-            if target_row == -1:
-                target_row = qt_widget.count()
-
-            for i in range(len(rows)):
-                qt_widget.insertItem(target_row, widget_item)
-
-            row_mapping = dict()  # Src row to target row.
-            for idx, row in enumerate(rows):
-                if row < target_row:
-                    row_mapping[row] = target_row + idx
-                else:
-                    row_mapping[row + len(rows)] = target_row + idx
-            # try:
-            #     colCount = qt_widget.model().columnCount()
-            # except Exception:
-            #     colCount = qt_widget.columnCount()
-
-            # for src_row, tgt_row in sorted(row_mapping.iteritems()):
-            #     for col in range(0, colCount):
-            #         try:
-            #
-            #             qt_widget.model().setItem(
-            #                 tgt_row,
-            #                 col,
-            #                 qt_widget.model().takeItem(
-            #                     src_row, col
-            #                 )
-            #             )
-            #         except Exception:
-            for src_row, tgt_row in sorted(row_mapping.iteritems()):
-                tgt_widget_item = qt_widget.item(tgt_row)
-                tgt_widget = qt_widget.itemWidget(tgt_widget_item)
-                qt_widget.setItemWidget(tgt_widget_item, tgt_widget)
-                qt_widget.takeItem(src_row)
-
-
-            for row in reversed(
-                    sorted(row_mapping.iterkeys())
-            ):
-                qt_widget.removeItemWidget(qt_widget.item(row))
-
-            event.accept()
-
-            return
-
-    qt_widget.__class__.dropEvent = widget_drop_event
 
 
 def simple_dialog(parent, title, message, checkbox_text=None, yes_no=True):

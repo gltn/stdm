@@ -413,6 +413,7 @@ class STDMFieldWidget():
         :rtype:NoneType
         """
         srid = None
+
         self.current_feature = feature_id
 
         # If the digitizing save button is clicked,
@@ -507,18 +508,20 @@ class STDMFieldWidget():
         :rtype: WKT
         """
         geom_wkt = None
-        fid = feature_id
+
         request = QgsFeatureRequest()
-        request.setFilterFid(fid)
+        request.setFilterFid(feature_id)
         features = self.layer.getFeatures(request)
 
-        # get the wkt of the geometry
-        for feature in features:
+        features_list = list(features)
+        for feature in features_list:
+
             geometry = feature.geometry()
+
             if geometry.isGeosValid():
                 geom_wkt = feature.geometry().exportToWkt()
 
-        return geom_wkt
+            return geom_wkt
 
     def on_form_saved(self, model):
         """

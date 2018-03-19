@@ -113,7 +113,7 @@ class LayerSelectionHandler(object):
                 for field in self.layer.pendingFields()]
             for feature in selected_features:
                 if 'id' in field_names:
-                    features.append(feature['id'])
+                    features.append(feature)
             if len(features) > 40:
                 max_error = QApplication.translate(
                     'LayerSelectionHandler',
