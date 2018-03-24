@@ -909,7 +909,8 @@ def enable_drag_sort(mv_widget):
         :return: None
         :rtype: NoneType
         """
-
+        if isinstance(mv_widget, QListWidget):
+            return
         if event.source() == mv_widget:
             view = True
             rows = set(

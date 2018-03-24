@@ -198,9 +198,11 @@ class OGRReader(object):
         :rtype: Any
         """
         entity = self._data_source_entity(target_table)
+
         date_types = ['DATE', 'DATETIME']
+
         if entity.columns[col_name].TYPE_INFO in date_types:
-            if not bool(value.strip()) or value.strip().lower() == 'null':
+            if not bool(value) or value.lower() == 'null':
                 value = None
 
         return value
@@ -253,6 +255,7 @@ class OGRReader(object):
                 if col != 'documents':
                     value = self.auto_fix_float_integer(target_table, col,
                                                         value)
+
                     value = self.auto_fix_date(target_table, col, value)
                     value = self.auto_fix_yes_no(target_table, col, value)
 
