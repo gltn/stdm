@@ -9,7 +9,7 @@ from qgis.core import QgsMapLayer
 from qgis.utils import iface
 
 from stdm.data.pg_utils import spatial_tables, pg_views
-from stdm.ui.feature_details import LayerSelectionHandler
+# from stdm.ui.feature_details import LayerSelectionHandler
 
 from stdm.ui.notification import NotificationBar
 from ...geometry.geometry_utils import *
@@ -22,6 +22,207 @@ from ui_offset_distance import Ui_OffsetDistance
 from ui_one_point_area import Ui_OnePointArea
 from ui_join_points import Ui_JoinPoints
 
+
+
+class LayerSelectionHandler(object):
+    """
+     Handles all tasks related to the layer.
+    """
+
+    def __init__(self, iface, plugin):
+        """
+        Initializes the LayerSelectionHandler.
+        :param iface: The QGIS Interface object
+        :type iface: Object
+        :param plugin: The STDM plugin object
+        :type plugin: Object
+        """
+        self.layer = None
+        self.iface = iface
+        self.plugin = plugin
+        self.sel_highlight = None
+        self.current_profile = current_profile()
+
+    def selected_features(self):
+        """
+        Returns a selected feature spatial unit
+        id and code as key and value.
+        :return: Dictionary
+        """
+        if self.layer is None:
+            return None
+        if self.stdm_layer(self.layer):
+            selected_features = self.layer.selectedFeatures()
+            features = []
+            field_names = [
+                field.name()
+                for field in self.layer.pendingFields()]
+            for feature in selected_features:
+                if 'id' in field_names:
+                    features.append(feature)
+            if len(features) > 40:
+                max_error = QApplication.translate(
+                    'LayerSelectionHandler',
+                    'You have exceeded the maximum number of features that \n'
+                    'can be selected and queried by Spatial Entity Details. \n'
+                    'Please select a maximum of 40 features.'
+                )
+
+                QMessageBox.warning(
+                    self.iface.mainWindow(),
+                    QApplication.translate(
+                        'LayerSelectionHandler', 'Maximum Features Error'
+                    ),
+                    max_error
+                )
+                return None
+            return features
+        else:
+            return None
+
+    def non_stdm_layer_error(self):
+        """
+        Shows an error if the layer is not an STDM entity layer.
+        """
+        not_feature_msg = QApplication.translate(
+            'LayerSelectionHandler',
+            'You have selected a non-STDM layer. \n'
+            'Please select an STDM layer to view \n'
+            'the details.'
+        )
+
+        QMessageBox.warning(
+            self.iface.mainWindow(),
+            QApplication.translate(
+                'LayerSelectionHandler', 'Invalid Layer Error'
+            ),
+            not_feature_msg
+        )
+
+    def get_layer_source(self, layer):
+        """
+        Get the layer table name if the source is from the database.
+        :param layer: The layer for which the source is checked
+        :type layer: QgsVectorLayer
+        :return: The table name or none if no table name found.
+        :rtype: String or None
+        """
+        if layer is None:
+            return None
+        source = layer.source()
+        if source is None:
+            return None
+        if re is None:
+            return None
+        vals = dict(re.findall('(\S+)="?(.*?)"? ', source))
+        try:
+            table = vals['table'].split('.')
+
+            table_name = table[1].strip('"')
+            if table_name in pg_views():
+                return table_name
+
+            entity_table = self.current_profile.entity_by_name(table_name)
+            if entity_table is None:
+                return None
+            return table_name
+        except KeyError:
+            return None
+
+    def active_layer_check(self):
+        """
+        Check if there is active layer and if not, displays
+        a message box to select a feature layer.
+        """
+        active_layer = self.iface.activeLayer()
+        if active_layer is None:
+            no_layer_msg = QApplication.translate(
+                'LayerSelectionHandler',
+                'Please select a spatial entity '
+                'layer to view feature details.'
+            )
+            QMessageBox.critical(
+                self.iface.mainWindow(),
+                QApplication.translate(
+                    'LayerSelectionHandler', 'Layer Error'
+                ),
+                no_layer_msg
+            )
+
+    def stdm_layer(self, active_layer):
+        """
+        Check whether the layer is feature layer or not.
+        :param active_layer: The layer to be checked
+        :type active_layer: QGIS VectorLayer
+        :return: True if the active layer is STDM layer or False if it is not.
+        :rtype: Boolean
+        """
+        layer_source = self.get_layer_source(active_layer)
+
+        if layer_source is not None:
+            return True
+        else:
+            return False
+
+    def clear_feature_selection(self):
+        """
+        Clears selection of layer(s).
+        """
+        map = self.iface.mapCanvas()
+        for layer in map.layers():
+            if layer.type() == layer.VectorLayer:
+                layer.removeSelection()
+        map.refresh()
+
+    def activate_select_tool(self):
+        """
+        Enables the select tool to be used to select features.
+        """
+        self.iface.actionSelect().trigger()
+        layer_select_tool = self.iface.mapCanvas().mapTool()
+        layer_select_tool.deactivated.connect(self.disable_feature_details_btn)
+
+        layer_select_tool.activate()
+
+    def disable_feature_details_btn(self):
+        """
+        Disables features details button.
+        :return:
+        :rtype:
+        """
+        self.plugin.feature_details_act.setChecked(False)
+
+    def clear_sel_highlight(self):
+        """
+        Removes sel_highlight from the canvas.
+        """
+        if self.sel_highlight is not None:
+            self.sel_highlight = None
+
+    def refresh_layers(self):
+        """
+        Refresh all database layers.
+        """
+        layers = self.iface.legendInterface().layers()
+        for layer in layers:
+            layer.dataProvider().forceReload()
+            layer.triggerRepaint()
+        if not self.iface.activeLayer() is None:
+            canvas = self.iface.mapCanvas()
+            canvas.setExtent(
+                self.iface.activeLayer().extent()
+            )
+            self.iface.mapCanvas().refresh()
+
+    def multi_select_highlight(self, index):
+        """
+        Highlights a feature with rubberBald
+        class when selecting
+        features are more than one.
+        :param index: Selected QTreeView item index
+        :type index: Integer
+        """
+        pass
 
 class GeomWidgetsSettings():
 
@@ -143,7 +344,7 @@ class GeomWidgetsSettings():
         iface.legendInterface().setLayerVisible(self.preview_layer, False)
         # iface.setActiveLayer(self.settings.layer)
 
-        # self.settings.layer.setSelectedFeatures(self.feature_ids)
+        # self.settings.layer.selectByIds(self.feature_ids)
         move_line_with_area(
             self.settings.layer,
             self.line_layer,

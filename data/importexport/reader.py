@@ -202,7 +202,6 @@ class OGRReader(object):
         if entity.columns[col_name].TYPE_INFO in date_types:
             if not bool(value.strip()) or value.strip().lower() == 'null':
                 value = None
-
         return value
 
     def auto_fix_yes_no(self, target_table, col_name, value):

@@ -19,7 +19,7 @@ import math
 from collections import OrderedDict
 
 from PyQt4.QtCore import QVariant
-from PyQt4.QtGui import QColor
+from PyQt4.QtGui import QColor, QApplication
 from qgis.gui import QgsHighlight, QgsLayerPropertiesWidget, QgsGenericProjectionSelector
 from qgis.core import QgsPoint, QgsGeometry, QgsVectorLayer, QgsFeature, \
     QgsMapLayerRegistry, QgsLineStringV2, QgsPointV2, edit, QgsDistanceArea, \
@@ -216,11 +216,11 @@ def get_parallel_line(selected_line_geom, offset_distance):
     if parallel_geom is None:
         return None
 
-    line_feature = QgsFeature()
-    line_feature.setGeometry(parallel_geom)
+    # line_feature = QgsFeature()
+    # line_feature.setGeometry(parallel_geom)
     # pr.addFeatures([line_feature])
     # line_layer.updateExtents()
-    return line_feature
+    return parallel_geom
     # return True
 
 
@@ -262,7 +262,6 @@ def check_segment_sign():
 
 def line_slope(line_geom):
     points = line_geom.asPolyline()
-
     line = create_V2_line(points)
     start_point = line.startPoint()
     end_point = line.endPoint()
@@ -272,7 +271,14 @@ def line_slope(line_geom):
     end_x = end_point.x()
 
     end_point = line.endPoint()
-    slope = (end_point.y() - start_y) / (end_point.x() - start_x)
+    denominator = end_point.x() - start_x
+    numerator = end_point.y() - start_y
+    if numerator == 0:
+        slope = 0
+    elif denominator == 0:
+        slope = None
+    else:
+        slope = (end_point.y() - start_y) / (end_point.x() - start_x)
     return line, slope, start_x, start_y, end_x, end_y
 
 
@@ -296,143 +302,243 @@ def extend_line_points(line_geom, polygon_extent):
     :return:
     :rtype: Polyline
     """
+    # x_max = polygon_extent.xMaximum()
+    # x_min = polygon_extent.xMinimum()
+    # #TODO take this method outside this function and put all output as inputs
+    # line, slope, start_x, start_y, end_x, end_y = line_slope(line_geom)
+    #
+    # # x1 = x_max
+    # # x = x_min
+    #
+    # # y1 = start_y + slope * (x_max - start_x)
+    # y1 = start_y + slope * (start_x - x_min)
+    # y = end_y = slope * (end_x - x_max)
+    #
+    # p4 = QgsPoint(x_max, y)
+    # p3 = QgsPoint(end_x, end_y)
+    # p2 = QgsPoint(start_x, start_y)
+    # p1 = QgsPoint(x_min, y1)
+    #
+    # poly_line = [p1, p2, p3, p4]
+    # print poly_line
+    # return poly_line
+
     x_max = polygon_extent.xMaximum()
     x_min = polygon_extent.xMinimum()
-    #TODO take this method outisde this function and put all output as inputs
+    # TODO take this method outisde this function and put all output as inputs
     line, slope, start_x, start_y, end_x, end_y = line_slope(line_geom)
+    if slope is None:
+        y_max = polygon_extent.yMaximum()
+        y_min = polygon_extent.yMinimum()
+        ext_end_y = y_max
+        ent_start_y = y_min
+    else:
+        ext_end_y = end_y + slope * (x_max - end_x)
+        ent_start_y = start_y + slope * (x_min - start_x)
 
-    x1 = x_max
-    x = x_min
-    y = end_y + slope * (x - end_x)
-    y1 = start_y + slope * (x1 - start_x)
-    p1 = QgsPoint(x1, y1)
+    p1 = QgsPoint(x_min, ent_start_y)
     p2 = QgsPoint(start_x, start_y)
-    p3 = QgsPoint(x, y)
-
+    p3 = QgsPoint(x_max, ext_end_y)
     poly_line = [p1, p2, p3]
-
+    print poly_line
     return poly_line
+#
+# def move_line_with_area(polygon_layer, line_layer, preview_layer,
+#                         selected_line_ft, area, feature_ids=None):
+#
+#     selected_line_geom = selected_line_ft.geometry()
+    # line_v2 = create_V2_line(selected_line_geom.asPolyline())
 
+    # height = area / selected_line_geom.length()
+    # nearest_line = get_parallel_line(selected_line_geom, height * -1)
+    # nearest_line_geom = nearest_line.geometry()
+    # preview_layer.selectAll()
+    # sel_feats = preview_layer.selectedFeatures()
 
-def move_line_with_area(polygon_layer, line_layer, preview_layer, selected_line_ft, area, feature_ids=None):
+    # geom0 = sel_feats[0].geometry()
+    # extent = geom0.boundingBox()
 
-    selected_line_geom = selected_line_ft.geometry()
-    line_v2 = create_V2_line(selected_line_geom.asPolyline())
-
-    height = area / selected_line_geom.length()
-    nearest_line = get_parallel_line(selected_line_geom, height * -1)
-    nearest_line_geom = nearest_line.geometry()
-    preview_layer.selectAll()
-    sel_feats = preview_layer.selectedFeatures()
-
-    geom0 = sel_feats[0].geometry()
-    extent = geom0.boundingBox()
-
-    added_points = extend_line_points(nearest_line_geom, extent)
-    nearest_line_geom = QgsGeometry.fromPolyline(added_points)
+    # added_points = extend_line_points(nearest_line_geom, extent)
+    # nearest_line_geom = QgsGeometry.fromPolyline(added_points)
     # add_geom_to_layer(layer, nearest_line_geom)
 
-    if nearest_line_geom.intersects(geom0):
-        (res, newlist, topolist) = geom0.splitGeometry(added_points, False)
-        start_point = QgsGeometry.fromWkt(line_v2.startPoint().asWkt())
+    # if nearest_line_geom.intersects(geom0):
+    #     (res, newlist, topolist) = geom0.splitGeometry(added_points, False)
+        # start_point = QgsGeometry.fromWkt(line_v2.startPoint().asWkt())
 
-        if len(newlist) < 1:
-            return
+        # if len(newlist) < 1:
+        #     return
 
-        if newlist[0].intersects(start_point):
-            split_area = newlist[0].area()
-            vertical = False
-        else:
-            vertical = True
-            split_area = geom0.area()
-        decimal_place = 1
+        # if newlist[0].intersects(start_point):
+        #     split_area = newlist[0].area()
+        #     split_geom = newlist[0]
+        #     # vertical = False
+        # else:
+        #     # vertical = True
+        #     split_area = geom0.area()
+        #     split_geom = geom0
+        # decimal_place = 1
+        # if area == split_area:
+        #     add_geom_to_layer(
+        #         polygon_layer, split_geom,
+        #         added_points, True, feature_ids
+        #     )
+        #     return
+    # handle_area_split_area(
+    #     area, polygon_layer, line_layer, preview_layer, selected_line_ft,feature_ids
+    #     #0, 0, 0, vertical,
+    # )
 
-        handle_area_split_area(
-            area, polygon_layer, line_layer, preview_layer, selected_line_geom,
-            decimal_place, height, split_area, vertical, feature_ids
-        )
-        handle_area_split_area(
-            area, polygon_layer, line_layer, preview_layer, selected_line_geom,
-            decimal_place, height, split_area, vertical, False, feature_ids
-        )
-
-def handle_area_split_area(
-        area, polygon_layer, line_layer, preview_layer,
-        selected_line_geom, ori_decimal_place, ori_height,
-        split_area, vertical=False, area_above=True, feature_ids=None
+#polygon_layer, line_layer, preview_layer,
+#                         selected_line_ft, area, feature_ids=None
+def move_line_with_area(
+        polygon_layer, line_layer, preview_layer,
+        selected_line_ft, area, feature_ids=None
 ):
-    decimal_place_new = None
-    height = None
-    if area_above:
-        condition = area > split_area
-        height_change = 1
-    else:
-        condition = area < split_area
-        height_change = -1
-    while condition:
-        if decimal_place_new is None:
-            decimal_place = ori_decimal_place
-        else:
-            decimal_place = decimal_place_new
-        if height is None:
-            height = ori_height + height_change / math.pow(10, decimal_place)
-        else:
-            height = height + height_change / math.pow(10, decimal_place)
+    selected_line_geom = selected_line_ft.geometry()
+    decimal_place_new = 0
+    # ori_decimal_place = 0
+    # ori_height = 0
+    height = 1
+    split_area1 = 0
+    height_change = 1
+    loop_index = 0
+    multi_split_case = 0
+    # if area > split_area:
+    #     condition = area > split_area
+    #     height_change = 1
+    #
+    # else:
+    #     condition = area < split_area
+    #     height_change = -1
 
-        nearest_line = get_parallel_line(
-            selected_line_geom, height * -1
+    # if area > geom1.area():
+    #     print 'Split area is larger than polygon area'
+    #     return
+    while split_area1 >= 0:
+        # print split_area1
+        # if decimal_place_new is None:
+        #     decimal_place = ori_decimal_place
+        # else:
+        # decimal_place = decimal_place_new
+        # if height is None:
+        height = height + height_change / math.pow(10, decimal_place_new)
+        # else:
+        #     height = height + height_change / math.pow(10, decimal_place)
+
+        nearest_line_geom = get_parallel_line(
+            selected_line_geom, height*-1
         )
-        nearest_line_geom = nearest_line.geometry()
+        # nearest_line_geom = nearest_line.geometry()
         # polygon_layer
+
+        # print selected_poly_ft
+
         preview_layer.selectAll()
         sel_features = preview_layer.selectedFeatures()
         geom1 = sel_features[0].geometry()
-        # print selected_poly_ft
         extent = geom1.boundingBox()
+        print 'geom1 area ', geom1.area()
+        # if loop_index == 0:
         added_points = extend_line_points(nearest_line_geom, extent)
-        nearest_line_geom = QgsGeometry.fromPolyline(added_points)
+        print extent
+        # else:
+        #     added_points = nearest_line_geom.asPolyline()
 
-        if nearest_line_geom.intersects(geom1):
-            (res, newlist1, topolist) = geom1.splitGeometry(
+        nearest_line_geom2 = QgsGeometry.fromPolyline(added_points)
+        add_geom_to_layer(line_layer, nearest_line_geom2)
+        if nearest_line_geom2.intersects(geom1):
+            (res, split_geom, topolist) = geom1.splitGeometry(
                 added_points, False
             )
+            if len(split_geom) > 0:
 
-            if vertical:
-                split_area1 = geom1.area()
-                split_geom = geom1
+                if loop_index == 0:
+
+                    first_intersection = selected_line_ft.geometry()
+                    # inter_point = intersection.asPolyline()
+                    #
+                    # if len(inter_point) > 0:
+                    #     intersecting_point = inter_point[0]
+                    #     intersecting_point_pt = QgsGeometry.fromPoint(
+                    #         intersecting_point
+                    #     )
+                    #
+                    # else:
+                    #     continue
+                # print 'loop_index', intersecting_point_pt, loop_index
+                if loop_index >= 1:
+
+                    # if intersecting_point_pt is None:
+                    #     continue
+                    print 'distance comp ', first_intersection.distance(geom1), \
+                        first_intersection.distance(split_geom[0])
+                    if first_intersection.distance(geom1) < first_intersection.distance(split_geom[0]):
+                        print 'geom1 is split'
+                        split_area1 = geom1.area()
+                        split_geom = geom1
+                    elif first_intersection.distance(geom1) > first_intersection.distance(split_geom[0]):
+                        print 'split_geom[0] is split'
+                        if len(split_geom) > 1:
+                            if multi_split_case > 3:
+                                raise Exception('The area is too small.')
+
+                            multi_split_case = multi_split_case + 1
+                            # print 'split geom greater than one ', len(split_geom)
+                            # polygon_list = [geom.asMultiPolygon() for geom in split_geom]
+                            # print polygon_list
+                            # split_geom = QgsGeometry.fromMultiPolygon(polygon_list[0])
+                            # split_area1 = split_geom.area()
+                            # print 'multi-area ', split_area1
+                        else:
+                            split_area1 = split_geom[0].area()
+                            split_geom = split_geom[0]
+                    else:
+                        continue
+                loop_index = loop_index + 1
             else:
-                split_area1 = newlist1[0].area()
-                split_geom = newlist1[0]
+                continue
+
+            # if vertical:
+            #     split_area1 = geom1.area()
+            #     split_geom = geom1
+            # else:
+            #     split_area1 = newlist1[0].area()
+            #     split_geom = newlist1[0]
             if area > split_area1:
                 # helps in changing height in small steps after switching from
                 # area < split_area1
-                if height_change == -1:
+                if height_change == -1 and math.modf(split_area1)[1] + 5 > area:
+                    decimal_place_new = 4
+                else:
                     decimal_place_new = 2
                 height_change = 1
                 # print height, decimal_place
-                # print '2 {} {}'.format(split_area1, area_above)
+                print '2 {} {}'.format(split_area1, area)
                 if math.modf(split_area1)[1] + 3 > area:
                     decimal_place_new = 4
                     if (round(split_area1, 2)) == area:
 
                         add_geom_to_layer(
-                            polygon_layer, split_geom,
+                            polygon_layer, split_geom, preview_layer,
                             added_points, True, feature_ids
                         )
                         break
             if area < split_area1:
                 # helps in changing height in small steps after switching from
                 # area > split_area1
-                if height_change == 1:
+                if height_change == 1 and math.modf(split_area1)[1] < area + 5:
+                    decimal_place_new = 4
+                else:
                     decimal_place_new = 2
                 height_change = -1
                 # print height, decimal_place
-                # print '3 {} {}'.format(split_area1, area_above)
+                print '3 {} {}'.format(split_area1, area)
                 if math.modf(split_area1)[1] < area + 3:
                     decimal_place_new = 4
                     if (round(split_area1, 2)) == area:
                         add_geom_to_layer(
-                            polygon_layer, split_geom,
+                            polygon_layer, split_geom, preview_layer,
                             added_points, True, feature_ids
                         )
                         break
@@ -441,47 +547,48 @@ def handle_area_split_area(
             break
 
 
-def add_geom_to_layer(layer, geom, split_points=None, emit_signal=False, feature_ids=None):
+def add_geom_to_layer(layer, geom, preview_layer=None, split_points=None, emit_signal=False,
+                      feature_ids=None):
     provider = layer.dataProvider()
-    print 'provider ', layer.name()
+    # print 'provider ', layer.name()
     if isinstance(geom, QgsPoint):
         geom = QgsGeometry.fromPoint(geom)
+    iface.setActiveLayer(layer)
 
     # feature.setFeatureId(0)
-
-
     # refresh map canvas to see the result
 
-
     if emit_signal and feature_ids is not None:
-        print feature_ids
-
-        layer.startEditing()
-
-        # split_line_geom = QgsGeometry.fromPolyline(split_points)
-        # preview_layer.selectAll()
-        # prev_feature = list(preview_layer.getFeatures())[0]
-        # prev_geom = prev_feature.geometry()
-        # intersect_line_geom = split_line_geom.intersection(prev_geom)
-        # final_split_points = intersect_line_geom.asPolyline()
+        print 'add_geom_  ', feature_ids
+        split_line_geom = QgsGeometry.fromPolyline(split_points)
+        preview_layer.selectAll()
+        prev_feature = list(preview_layer.getFeatures())[0]
+        prev_geom = prev_feature.geometry()
+        intersect_line_geom = split_line_geom.intersection(prev_geom)
+        # add_geom_to_layer(line_layer, intersect_line_geom)
+        final_split_points = intersect_line_geom.asPolyline()
         # print final_split_points
         # TODO start from here. Feature split but no feature added signal emitted
+        # iface.setActiveLayer(layer)
+        print feature_ids
         iface.setActiveLayer(layer)
-
-        layer.setSelectedFeatures(feature_ids)
-        split = layer.splitFeatures(split_points)
+        layer.startEditing()
+        # QApplication.processEvents()
+        # layer.selectByIds(feature_ids)
+        # (result, split_geoms, topo) = geom.splitGeometry(split_points, False)
+        split = layer.splitParts(final_split_points)
+        print split
         # layer.featureAdded.emit(0)
-        iface.setActiveLayer(layer)
 
         # add_geom_to_layer(layer)
-        print 'split result ', split
-
+        # print 'split result ', split
+        # if result:
+        # for split_geom in split_geoms:
         # feature = QgsFeature()
         # attr = provider.fields().toList()
         # feature.setAttributes(attr)
         # feature.setGeometry(geom)
-        # # print geom.exportToGeoJSON()
-        # # layer.addFeature(feature, True)
+        # print feature.id()
         # provider.addFeatures([feature])
         # layer.updateExtents()
         # layer.featureAdded.emit(feature.id())
@@ -494,9 +601,10 @@ def add_geom_to_layer(layer, geom, split_points=None, emit_signal=False, feature
         # print 'valid ', feature.geometry().isGeosValid()
         # layer.featureAdded.emit(feature.id())
         # print geom.area()
-    # layer.setSelectedFeatures([feature.id()])
-    layer.updateExtents()
-    zoom_refresh_to_geom(geom)
+        layer.commitChanges()
+    # layer.selectByIds([feature.id()])
+    # layer.updateExtents()
+    # zoom_refresh_to_geom(geom)
     return geom
 
 def add_geom_to_layer_with_measurement(layer, geom):
@@ -521,8 +629,7 @@ def add_geom_to_layer_with_measurement(layer, geom):
 
     layer.commitChanges()
 
-    layer.setSelectedFeatures([feature.id()])
-
+    layer.selectByIds([feature.id()])
     # zoom_refresh_to_geom(geom)
     return geom
 
@@ -602,7 +709,6 @@ def test_rotate():
 def rotate_from_distance_point(
         polygon_layer, point_geom, line, angle, clockwise=True
 ):
-
     if clockwise:
         ext_line_geom = rotate_line_clockwise(
             point_geom.asPoint(), polygon_layer, line, angle
@@ -620,7 +726,7 @@ def rotate_line_with_area(selected_line_geom, area, distance, clockwise):
     line_v2 = create_V2_line(selected_line_geom.asPolyline())
 
     for poly_ft in layer_poly.getFeatures():
-        layer_poly.setSelectedFeatures([poly_ft.id()])
+        layer_poly.selectByIds([poly_ft.id()])
         break
     sel_feats = layer_poly.selectedFeatures()
     geom0 = sel_feats[0].geometry()
@@ -673,10 +779,9 @@ def highlight_geom(map, layer, geom):
     sel_highlight.setColor(QColor(212, 95, 0, 255))
     sel_highlight.show()
 
+
 def handle_area_split_area2(ori_poly_geom, selected_line, point_geom, poly_bbox, area,
                             clockwise):
-    #TODO check if angle change is causing errors of two rotating lines
-    #TODO remaining is line 4
     decimal_place_new = 0
     increment = 4
 
@@ -721,7 +826,6 @@ def handle_area_split_area2(ori_poly_geom, selected_line, point_geom, poly_bbox,
         sel_feats = layer_poly.selectedFeatures()
         geom1 = sel_feats[0].geometry()
         ext_line_geom = QgsGeometry.fromPolyline(added_points)
-        # add_geom_to_layer(layer, ext_line_geom)
 
         if ext_line_geom.intersects(ori_poly_geom):
             # split with the rotated line
@@ -739,19 +843,20 @@ def handle_area_split_area2(ori_poly_geom, selected_line, point_geom, poly_bbox,
 
                 if loop_index == 0:
                     intersection = ext_line_geom.intersection(ori_poly_geom)
-
                     inter_point = intersection.asPolyline()
 
                     for point in inter_point:
                         distance = point_geom.distance(
-                            QgsGeometry.fromPoint(point))
+                            QgsGeometry.fromPoint(point)
+                        )
                         if round(distance, 0) == 0:
                             inter_point.remove(point)
 
                     if len(inter_point) > 0:
                         intersecting_point = inter_point[0]
                         intersecting_point_pt = QgsGeometry.fromPoint(
-                            intersecting_point)
+                            intersecting_point
+                        )
 
                     else:
                         continue

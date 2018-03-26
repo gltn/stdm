@@ -1747,7 +1747,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         """
         # remove rows before adding the updated ones.
         if self.plugin is not None:
-            self.layer.setSelectedFeatures(
+            self.layer.selectByIds(
                 self.feature_models.keys()
             )
         root = self.find_root(entity, feature_id)
@@ -1795,7 +1795,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             if len(self.feature_models) > 1:
                 self.refresh_layers()
             feature_ids = self.feature_models.keys()
-            self.layer.setSelectedFeatures(
+            self.layer.selectByIds(
                 feature_ids
             )
         else:
