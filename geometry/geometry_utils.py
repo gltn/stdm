@@ -325,7 +325,7 @@ def extend_line_points(line_geom, polygon_extent):
 
     x_max = polygon_extent.xMaximum()
     x_min = polygon_extent.xMinimum()
-    # TODO take this method outisde this function and put all output as inputs
+    # TODO fix extending vertical line.
     line, slope, start_x, start_y, end_x, end_y = line_slope(line_geom)
     if slope is None:
         y_max = polygon_extent.yMaximum()
