@@ -340,7 +340,7 @@ def extend_line_points(line_geom, polygon_extent):
     p2 = QgsPoint(start_x, start_y)
     p3 = QgsPoint(x_max, ext_end_y)
     poly_line = [p1, p2, p3]
-    print poly_line
+    # print poly_line
     return poly_line
 #
 # def move_line_with_area(polygon_layer, line_layer, preview_layer,
@@ -395,6 +395,7 @@ def move_line_with_area(
         polygon_layer, line_layer, preview_layer,
         selected_line_ft, area, feature_ids=None
 ):
+    # print 'start process '
     selected_line_geom = selected_line_ft.geometry()
     decimal_place_new = 0
     # ori_decimal_place = 0
@@ -438,10 +439,10 @@ def move_line_with_area(
         sel_features = preview_layer.selectedFeatures()
         geom1 = sel_features[0].geometry()
         extent = geom1.boundingBox()
-        print 'geom1 area ', geom1.area()
+        # print 'geom1 area ', geom1.area()
         # if loop_index == 0:
         added_points = extend_line_points(nearest_line_geom, extent)
-        print extent
+        # print extent
         # else:
         #     added_points = nearest_line_geom.asPolyline()
 
@@ -451,6 +452,7 @@ def move_line_with_area(
             (res, split_geom, topolist) = geom1.splitGeometry(
                 added_points, False
             )
+            # print 'split geom len ', split_geom
             if len(split_geom) > 0:
 
                 if loop_index == 0:
@@ -471,14 +473,14 @@ def move_line_with_area(
 
                     # if intersecting_point_pt is None:
                     #     continue
-                    print 'distance comp ', first_intersection.distance(geom1), \
-                        first_intersection.distance(split_geom[0])
+                    # print 'distance comp ', first_intersection.distance(geom1), \
+                    #     first_intersection.distance(split_geom[0])
                     if first_intersection.distance(geom1) < first_intersection.distance(split_geom[0]):
-                        print 'geom1 is split'
+                        # print 'geom1 is split'
                         split_area1 = geom1.area()
                         split_geom = geom1
                     elif first_intersection.distance(geom1) > first_intersection.distance(split_geom[0]):
-                        print 'split_geom[0] is split'
+                        # print 'split_geom[0] is split'
                         if len(split_geom) > 1:
                             if multi_split_case > 3:
                                 raise Exception('The area is too small.')
@@ -559,7 +561,7 @@ def add_geom_to_layer(layer, geom, preview_layer=None, split_points=None, emit_s
     # refresh map canvas to see the result
 
     if emit_signal and feature_ids is not None:
-        print 'add_geom_  ', feature_ids
+        # print 'add_geom_  ', feature_ids
         split_line_geom = QgsGeometry.fromPolyline(split_points)
         preview_layer.selectAll()
         prev_feature = list(preview_layer.getFeatures())[0]
@@ -570,13 +572,14 @@ def add_geom_to_layer(layer, geom, preview_layer=None, split_points=None, emit_s
         # print final_split_points
         # TODO start from here. Feature split but no feature added signal emitted
         # iface.setActiveLayer(layer)
-        print feature_ids
+        # print feature_ids
         iface.setActiveLayer(layer)
+        layer.selectByIds(feature_ids)
         layer.startEditing()
-        # QApplication.processEvents()
-        # layer.selectByIds(feature_ids)
+        QApplication.processEvents()
+
         # (result, split_geoms, topo) = geom.splitGeometry(split_points, False)
-        split = layer.splitParts(final_split_points)
+        split = layer.splitFeatures(final_split_points)
         print split
         # layer.featureAdded.emit(0)
 

@@ -287,18 +287,20 @@ class GeomWidgetsSettings():
         if self.settings.stdm_layer(self.settings.layer):
             if hasattr(self.widget, 'sel_features_lbl'):
                 self.feature_count = self.selected_features_count()
+
                 self.widget.sel_features_lbl.setText(str(self.feature_count))
                 self.on_feature_selection_finished()
 
     def show_selected_line_layer(self):
         if self.settings.layer is None:
             return
+
         if iface.activeLayer().name() != 'Polygon Lines':
             return
 
         if hasattr(self.widget, 'selected_line_lbl'):
-            self.lines_count = self.selected_line_count()
 
+            self.lines_count = self.selected_line_count()
             self.widget.selected_line_lbl.setText(str(self.lines_count))
             if self.lines_count > 1:
                 message = QApplication.translate(
@@ -310,7 +312,12 @@ class GeomWidgetsSettings():
 
     def selected_features_count(self):
         self.features = self.settings.selected_features()
-        self.feature_ids = [f.id() for f in self.features]
+        feat_data = [(f.id(), f.geometry().area()) for f in self.features]
+        feat_data = dict(feat_data)
+        self.feature_ids = feat_data.keys()
+        area_list = feat_data.values()
+        total_area = sum(area_list)
+        self.widget.split_polygon_area.setValue(total_area)
         if self.features is not None:
             return len(self.features)
         else:
@@ -332,8 +339,11 @@ class GeomWidgetsSettings():
         self.settings.layer.selectionChanged.disconnect(
             self.show_selected_layer
         )
+        self.remove_preview_layers()
+        print 'self.features ', self.features
         self.preview_layer = copy_layer_to_memory(
             self.settings.layer, 'Preview Polygon', self.features)
+
         # if len(self.features) > 1:
         #     self.settings.layer.startEditing()
         #     iface.mainWindow().findChild(
@@ -357,6 +367,14 @@ class GeomWidgetsSettings():
         self.settings.layer.selectionChanged.connect(
             self.show_selected_layer
         )
+
+    def remove_preview_layers(self):
+        preview_layers = QgsMapLayerRegistry.instance().mapLayersByName(
+            'Preview Polygon')
+        prev_layer_ids = []
+        for prev_layer in preview_layers:
+            prev_layer_ids.append(prev_layer.id())
+        QgsMapLayerRegistry.instance().removeMapLayers(prev_layer_ids)
 
     def preview(self):
         self.executed = True
