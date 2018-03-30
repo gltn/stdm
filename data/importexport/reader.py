@@ -157,6 +157,15 @@ class OGRReader(object):
         float_type = ['DOUBLE', 'PERCENT']
         int_type = ['INT', 'LOOKUP', 'ADMIN_SPATIAL_UNIT',
                     'FOREIGN_KEY']
+        if col_name not in entity.columns.keys():
+            try:
+                if value is not None:
+                    value = int(value)
+                    if isinstance(value, int):
+                        if value == 0:
+                            value = None
+            except ValueError:
+                value = None
 
         if col_name in entity.columns.keys():
             if entity.columns[col_name].TYPE_INFO in integer_types:
@@ -198,9 +207,12 @@ class OGRReader(object):
         :rtype: Any
         """
         entity = self._data_source_entity(target_table)
+
         date_types = ['DATE', 'DATETIME']
+        if col_name not in entity.columns.keys():
+            return value
         if entity.columns[col_name].TYPE_INFO in date_types:
-            if not bool(value.strip()) or value.strip().lower() == 'null':
+            if not bool(value) or value.lower() == 'null':
                 value = None
         return value
 
@@ -218,6 +230,8 @@ class OGRReader(object):
         """
         entity = self._data_source_entity(target_table)
         yes_no_types = ['BOOL']
+        if col_name not in entity.columns.keys():
+            return value
         if entity.columns[col_name].TYPE_INFO in yes_no_types:
             if not bool(value.strip()) or value.strip().lower() == 'null':
                 value = None
@@ -252,6 +266,7 @@ class OGRReader(object):
                 if col != 'documents':
                     value = self.auto_fix_float_integer(target_table, col,
                                                         value)
+
                     value = self.auto_fix_date(target_table, col, value)
                     value = self.auto_fix_yes_no(target_table, col, value)
 

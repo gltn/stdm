@@ -413,7 +413,6 @@ class STDMFieldWidget():
         :rtype:NoneType
         """
         srid = None
-
         self.current_feature = feature_id
 
         # If the digitizing save button is clicked,
@@ -439,7 +438,8 @@ class STDMFieldWidget():
             return
         # If the feature is not valid, geom_wkt will be None
         # So don't launch form for invalid feature and delete feature
-        geom_wkt = self.get_wkt(feature_id)
+
+        geom_wkt = self.get_wkt(spatial_column, feature_id)
 
         if geom_wkt is None:
             title = QApplication.translate(
@@ -486,6 +486,7 @@ class STDMFieldWidget():
             srid = full_srid[1]
         if not geom_wkt is None:
             # add geometry into the model
+
             setattr(
                 self.model,
                 spatial_column,
@@ -498,30 +499,37 @@ class STDMFieldWidget():
             self.removed_feature_models[feature_id] = None
             self.layer.deleteFeature(feature_id)
 
-    def get_wkt(self, feature_id):
+    def get_wkt(self, spatial_column, feature_id):
         """
         Gets feature geometry in Well-Known Text
         format and returns it.
+        :param spatial_column: The spatial column name.
+        :type spatial_column: String
         :param feature_id: Feature id
         :type feature_id: Integer
         :return: Well-Known Text format of a geometry
         :rtype: WKT
         """
         geom_wkt = None
-
+        fid = feature_id
         request = QgsFeatureRequest()
-        request.setFilterFid(feature_id)
+        request.setFilterFid(fid)
         features = self.layer.getFeatures(request)
 
-        features_list = list(features)
-        for feature in features_list:
+        geom_col_obj = self.entity.columns[spatial_column]
+        geom_type = geom_col_obj.geometry_type()
 
+        # get the wkt of the geometry
+        for feature in features:
             geometry = feature.geometry()
-
             if geometry.isGeosValid():
-                geom_wkt = feature.geometry().exportToWkt()
+                if geom_type in ['MULTIPOLYGON', 'MULTILINESTRING']:
 
-            return geom_wkt
+                    geometry.convertToMultiType()
+
+                geom_wkt = geometry.exportToWkt()
+
+        return geom_wkt
 
     def on_form_saved(self, model):
         """
