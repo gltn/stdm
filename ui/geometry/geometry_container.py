@@ -248,8 +248,10 @@ class GeomWidgetsSettings():
         self.preview_layer = None
         self.widget.preview_btn.clicked.connect(self.preview)
         self.widget.save_btn.clicked.connect(self.save)
+        self.settings_layer_connected = False
 
     def init_signals(self):
+        self.settings_layer_connected = True
         self.settings.layer.selectionChanged.connect(
             self.show_selected_layer
         )
@@ -259,6 +261,7 @@ class GeomWidgetsSettings():
         #     self.on_selection_finished
         # )
     def disconnect_signals(self):
+        self.settings_layer_connected = False
         self.settings.layer.selectionChanged.disconnect(
             self.show_selected_layer
         )
@@ -286,8 +289,8 @@ class GeomWidgetsSettings():
 
         if self.settings.stdm_layer(self.settings.layer):
             if hasattr(self.widget, 'sel_features_lbl'):
-                self.feature_count = self.selected_features_count()
 
+                self.feature_count = self.selected_features_count()
                 self.widget.sel_features_lbl.setText(str(self.feature_count))
                 self.on_feature_selection_finished()
 
@@ -311,13 +314,16 @@ class GeomWidgetsSettings():
             # self.on_line_selection_finished()
 
     def selected_features_count(self):
+        self.features[:] = []
         self.features = self.settings.selected_features()
         feat_data = [(f.id(), f.geometry().area()) for f in self.features]
         feat_data = dict(feat_data)
         self.feature_ids = feat_data.keys()
         area_list = feat_data.values()
         total_area = sum(area_list)
-        self.widget.split_polygon_area.setValue(total_area)
+        if hasattr(self.widget, 'split_polygon_area'):
+            self.widget.split_polygon_area.setMaximum(total_area)
+
         if self.features is not None:
             return len(self.features)
         else:
@@ -336,9 +342,9 @@ class GeomWidgetsSettings():
     def save(self):
         self.executed = True
 
-        self.settings.layer.selectionChanged.disconnect(
-            self.show_selected_layer
-        )
+        if self.settings_layer_connected:
+            self.disconnect_signals()
+
         self.remove_preview_layers()
         print 'self.features ', self.features
         self.preview_layer = copy_layer_to_memory(
@@ -364,6 +370,7 @@ class GeomWidgetsSettings():
             self.feature_ids
         )
         iface.mapCanvas().refresh()
+        iface.setActiveLayer(self.settings.layer)
         self.settings.layer.selectionChanged.connect(
             self.show_selected_layer
         )

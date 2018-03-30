@@ -516,7 +516,7 @@ def move_line_with_area(
                     decimal_place_new = 2
                 height_change = 1
                 # print height, decimal_place
-                print '2 {} {}'.format(split_area1, area)
+                # print '2 {} {}'.format(split_area1, area)
                 if math.modf(split_area1)[1] + 3 > area:
                     decimal_place_new = 4
                     if (round(split_area1, 2)) == area:
@@ -535,7 +535,7 @@ def move_line_with_area(
                     decimal_place_new = 2
                 height_change = -1
                 # print height, decimal_place
-                print '3 {} {}'.format(split_area1, area)
+                # print '3 {} {}'.format(split_area1, area)
                 if math.modf(split_area1)[1] < area + 3:
                     decimal_place_new = 4
                     if (round(split_area1, 2)) == area:
@@ -580,7 +580,7 @@ def add_geom_to_layer(layer, geom, preview_layer=None, split_points=None, emit_s
 
         # (result, split_geoms, topo) = geom.splitGeometry(split_points, False)
         split = layer.splitFeatures(final_split_points)
-        print split
+        # print split
         # layer.featureAdded.emit(0)
 
         # add_geom_to_layer(layer)
@@ -1051,17 +1051,25 @@ def copy_layer_to_memory(layer, name, features=None):
 
     feats = [feat for feat in layer.getFeatures()]
     geom_type = layer_type(layer)
+    print 'type'
+    # crs = layer.crs()
+    # crs_id = crs.authid()
+    # mem_layer = QgsVectorLayer(
+    #     "{}?crs={}".format(geom_type, crs_id), name, "memory")
+    # print 'created memory layer'
 
-    crs = layer.crs()
-    crs_id = crs.authid()
-    mem_layer = QgsVectorLayer(
-        "{}?crs={}".format(geom_type, crs_id), name,
-                               "memory")
+    crs = layer.crs().toWkt()
+    vl_geom_config = u"{0}?crs={1}&field=name:string(20)&" \
+                     u"index=yes".format(geom_type, crs)
+
+    mem_layer = QgsVectorLayer(vl_geom_config, name, "memory")
+
 
     mem_layer_data = mem_layer.dataProvider()
 
     attr = layer.dataProvider().fields().toList()
     mem_layer_data.addAttributes(attr)
+    print 'fields '
     mem_layer.updateFields()
     if features is None:
         mem_layer_data.addFeatures(feats)
@@ -1069,6 +1077,7 @@ def copy_layer_to_memory(layer, name, features=None):
         mem_layer_data.addFeatures(features)
 
     QgsMapLayerRegistry.instance().addMapLayer(mem_layer)
+    print 'added layer to map'
     return mem_layer
 
 
