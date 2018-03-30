@@ -42,8 +42,8 @@ from qgis.core import (
    QgsVectorJoinInfo
 )
 from qgis.gui import (
-    QgsCategorizedSymbolRendererV2Widget
-)
+    QgsCategorizedSymbolRendererV2Widget,
+    QgsGenericProjectionSelector)
 from stdm.data.configuration import entity_model
 
 from stdm.data.configuration.social_tenure import SocialTenure
@@ -92,7 +92,7 @@ class SpatialUnitManagerDockWidget(
         # properties of last added layer
         self.curr_lyr_table = None
         self.curr_lyr_sp_col = None
-        self.curr_layer = None
+
         # properties of the active layer
         self.active_entity = None
         self.active_table = None
@@ -483,7 +483,14 @@ class SpatialUnitManagerDockWidget(
             icon = QIcon(
                 ':/plugins/stdm/images/icons/layer_point.png'
             )
-
+        elif geometry_typ == 'MULTIPOLYGON':
+            icon = QIcon(
+                ':/plugins/stdm/images/icons/layer_polygon.png'
+            )
+        elif geometry_typ == 'MULTILINESTRING':
+            icon = QIcon(
+                ':/plugins/stdm/images/icons/layer_line.png'
+            )
         else:
             icon = QIcon(
                 ':/plugins/stdm/images/icons/table.png'
@@ -573,12 +580,10 @@ class SpatialUnitManagerDockWidget(
         )
 
         if layer_name in self._map_registry_layer_names():
-            layer = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)[
-                0]
+            layer = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)[0]
             self.iface.setActiveLayer(layer)
             return
 
-        # Used in gpx_table.py
         self.curr_lyr_table = table_name
         self.curr_lyr_sp_col = spatial_column
 
@@ -587,15 +592,26 @@ class SpatialUnitManagerDockWidget(
                 layer_name = layer_item
             else:
                 layer_name = layer_item.layer_display()
+
+            entity = self._curr_profile.entity_by_name(table_name)
+            geom_col_obj = entity.columns[spatial_column]
+
+            srid = None
+            if geom_col_obj.srid >= 100000:
+                srid = geom_col_obj.srid
+
             curr_layer = vector_layer(
                 table_name,
                 geom_column=spatial_column,
-                layer_name=layer_name
+                layer_name=layer_name,
+                proj_wkt=srid
             )
+        # for lookup layer.
         else:
             curr_layer = vector_layer(
                 table_name, geom_column=spatial_column
             )
+
 
         if curr_layer.isValid():
             if curr_layer.name() in self._map_registry_layer_names():

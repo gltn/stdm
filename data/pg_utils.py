@@ -23,8 +23,9 @@ from PyQt4.QtCore import (
     QFile,
     QIODevice,
     QRegExp,
-    QTextStream
-)
+    QTextStream,
+    QSettings)
+from qgis.utils import iface
 
 from sqlalchemy.sql.expression import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -570,7 +571,7 @@ def safely_delete_tables(tables):
 def flush_session_activity():
     STDMDb.instance().session._autoflush()
 
-def vector_layer(table_name, sql='', key='id', geom_column='', layer_name=''):
+def vector_layer(table_name, sql='', key='id', geom_column='', layer_name='', proj_wkt=None):
     """
     Returns a QgsVectorLayer based on the specified table name.
     """
@@ -590,7 +591,17 @@ def vector_layer(table_name, sql='', key='id', geom_column='', layer_name=''):
     if not layer_name:
         layer_name = table_name
 
+    if proj_wkt is not None:
+        iface.mainWindow().blockSignals(True)
+
     v_layer = QgsVectorLayer(ds_uri.uri(), layer_name, "postgres")
+
+    if proj_wkt is not None:
+        iface.mainWindow().blockSignals(False)
+        target_crs = QgsCoordinateReferenceSystem(
+            proj_wkt, QgsCoordinateReferenceSystem.InternalCrsId
+        )
+        v_layer.setCrs(target_crs)
 
     return v_layer
 
