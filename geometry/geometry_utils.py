@@ -24,7 +24,7 @@ from qgis.gui import QgsHighlight, QgsLayerPropertiesWidget, QgsGenericProjectio
 from qgis.core import QgsPoint, QgsGeometry, QgsVectorLayer, QgsFeature, \
     QgsMapLayerRegistry, QgsLineStringV2, QgsPointV2, edit, QgsDistanceArea, \
     QgsCoordinateReferenceSystem, QgsField, QgsPalLayerSettings, \
-    QgsRenderContext, QGis
+    QgsRenderContext, QGis, QgsFeatureRequest
 from qgis.utils import iface
 from stdm.settings.registryconfig import (
     selection_color
@@ -396,7 +396,9 @@ def move_line_with_area(
         selected_line_ft, area, feature_ids=None
 ):
     # print 'start process '
+
     selected_line_geom = selected_line_ft.geometry()
+
     decimal_place_new = 0
     # ori_decimal_place = 0
     # ori_height = 0
@@ -416,13 +418,16 @@ def move_line_with_area(
     # if area > geom1.area():
     #     print 'Split area is larger than polygon area'
     #     return
+
     while split_area1 >= 0:
+        QApplication.processEvents()
         # print split_area1
         # if decimal_place_new is None:
         #     decimal_place = ori_decimal_place
         # else:
         # decimal_place = decimal_place_new
-        # if height is None:
+        # if height is None:'
+        # print 'height_change ', height_change
         height = height + height_change / math.pow(10, decimal_place_new)
         # else:
         #     height = height + height_change / math.pow(10, decimal_place)
@@ -436,9 +441,15 @@ def move_line_with_area(
         # print selected_poly_ft
 
         preview_layer.selectAll()
-        sel_features = preview_layer.selectedFeatures()
-        geom1 = sel_features[0].geometry()
-        extent = geom1.boundingBox()
+        iterator = QgsFeatureRequest()
+        iterator.setFilterFid(feature_ids[0])
+        features = polygon_layer.getFeatures(iterator)
+
+        # sel_features = list(preview_layer.getFeatures())
+        for feat in features:
+            geom1 = feat.geometry()
+            extent = geom1.boundingBox()
+            break
         # print 'geom1 area ', geom1.area()
         # if loop_index == 0:
         added_points = extend_line_points(nearest_line_geom, extent)
@@ -447,7 +458,7 @@ def move_line_with_area(
         #     added_points = nearest_line_geom.asPolyline()
 
         nearest_line_geom2 = QgsGeometry.fromPolyline(added_points)
-        add_geom_to_layer(line_layer, nearest_line_geom2)
+        # add_geom_to_layer(line_layer, nearest_line_geom2)
         if nearest_line_geom2.intersects(geom1):
             (res, split_geom, topolist) = geom1.splitGeometry(
                 added_points, False
@@ -475,11 +486,13 @@ def move_line_with_area(
                     #     continue
                     # print 'distance comp ', first_intersection.distance(geom1), \
                     #     first_intersection.distance(split_geom[0])
-                    if first_intersection.distance(geom1) < first_intersection.distance(split_geom[0]):
+                    if first_intersection.distance(geom1) < \
+                            first_intersection.distance(split_geom[0]):
                         # print 'geom1 is split'
                         split_area1 = geom1.area()
                         split_geom = geom1
-                    elif first_intersection.distance(geom1) > first_intersection.distance(split_geom[0]):
+                    elif first_intersection.distance(geom1) > \
+                            first_intersection.distance(split_geom[0]):
                         # print 'split_geom[0] is split'
                         if len(split_geom) > 1:
                             if multi_split_case > 3:
@@ -501,12 +514,6 @@ def move_line_with_area(
             else:
                 continue
 
-            # if vertical:
-            #     split_area1 = geom1.area()
-            #     split_geom = geom1
-            # else:
-            #     split_area1 = newlist1[0].area()
-            #     split_geom = newlist1[0]
             if area > split_area1:
                 # helps in changing height in small steps after switching from
                 # area < split_area1
@@ -514,13 +521,19 @@ def move_line_with_area(
                     decimal_place_new = 4
                 else:
                     decimal_place_new = 2
+                # if loop_index > 1:
+                #     if area - math.modf(split_area1)[1] >= 200:
+                #         height_change = 1000
+                #     elif area - math.modf(split_area1)[1] < 200:
+                #         height_change = 1
+                # else:
                 height_change = 1
                 # print height, decimal_place
                 # print '2 {} {}'.format(split_area1, area)
                 if math.modf(split_area1)[1] + 3 > area:
                     decimal_place_new = 4
                     if (round(split_area1, 2)) == area:
-
+                        add_geom_to_layer(line_layer, nearest_line_geom2)
                         add_geom_to_layer(
                             polygon_layer, split_geom, preview_layer,
                             added_points, True, feature_ids
@@ -533,12 +546,19 @@ def move_line_with_area(
                     decimal_place_new = 4
                 else:
                     decimal_place_new = 2
+                # if loop_index > 1:
+                #     if math.modf(split_area1)[1] - area >= 200:
+                #         height_change = -1000
+                #     elif math.modf(split_area1)[1] - area < 200:
+                #         height_change = -1
+                # else:
                 height_change = -1
                 # print height, decimal_place
                 # print '3 {} {}'.format(split_area1, area)
                 if math.modf(split_area1)[1] < area + 3:
                     decimal_place_new = 4
                     if (round(split_area1, 2)) == area:
+                        add_geom_to_layer(line_layer, nearest_line_geom2)
                         add_geom_to_layer(
                             polygon_layer, split_geom, preview_layer,
                             added_points, True, feature_ids
@@ -562,6 +582,8 @@ def add_geom_to_layer(layer, geom, preview_layer=None, split_points=None, emit_s
 
     if emit_signal and feature_ids is not None:
         # print 'add_geom_  ', feature_ids
+        QApplication.processEvents()
+
         split_line_geom = QgsGeometry.fromPolyline(split_points)
         preview_layer.selectAll()
         prev_feature = list(preview_layer.getFeatures())[0]
@@ -576,11 +598,10 @@ def add_geom_to_layer(layer, geom, preview_layer=None, split_points=None, emit_s
         iface.setActiveLayer(layer)
         layer.selectByIds(feature_ids)
         layer.startEditing()
-        QApplication.processEvents()
 
         # (result, split_geoms, topo) = geom.splitGeometry(split_points, False)
         split = layer.splitFeatures(final_split_points)
-        # print split
+        print split
         # layer.featureAdded.emit(0)
 
         # add_geom_to_layer(layer)
@@ -605,9 +626,11 @@ def add_geom_to_layer(layer, geom, preview_layer=None, split_points=None, emit_s
         # layer.featureAdded.emit(feature.id())
         # print geom.area()
         layer.commitChanges()
+        layer.updateExtents()
+        zoom_refresh_to_geom(geom)
     # layer.selectByIds([feature.id()])
-    # layer.updateExtents()
-    # zoom_refresh_to_geom(geom)
+    #
+    #
     return geom
 
 def add_geom_to_layer_with_measurement(layer, geom):
@@ -632,7 +655,7 @@ def add_geom_to_layer_with_measurement(layer, geom):
 
     layer.commitChanges()
 
-    layer.selectByIds([feature.id()])
+    # layer.selectByIds([feature.id()])
     # zoom_refresh_to_geom(geom)
     return geom
 
@@ -975,17 +998,14 @@ def polygon_to_lines(layer, measurement=True):
     line_geoms = []
     line_layers = QgsMapLayerRegistry.instance().mapLayersByName('Polygon Lines')
     sel_feats = layer.selectedFeatures()
+
     if len(line_layers) == 0:
         line_layer = create_temporary_layer(layer, 'LineString', 'Polygon Lines')
     else:
         line_layer = line_layers[0]
-        # loop over the features and delete
-        line_layer.startEditing()
-        for feat in line_layer.getFeatures():
-            line_layer.deleteFeature(feat.id())
-        line_layer.commitChanges()
+        clear_layer_features(line_layer)
         iface.setActiveLayer(line_layer)
-    print layer.name()
+
     type = layer_type(layer)
 
     for feature in sel_feats:
@@ -1005,7 +1025,7 @@ def polygon_to_lines(layer, measurement=True):
                 for lines in list_of_lines:
                     line_geom_list = add_line_features(line_layer, lines, measurement)
                     line_geoms.extend(line_geom_list)
-
+    # line_layer.blockSignals(False)
     return line_layer
 
 
@@ -1049,14 +1069,7 @@ def label_layer_by_field(layer, field_name):
 
 def copy_layer_to_memory(layer, name, features=None):
 
-    feats = [feat for feat in layer.getFeatures()]
     geom_type = layer_type(layer)
-    print 'type'
-    # crs = layer.crs()
-    # crs_id = crs.authid()
-    # mem_layer = QgsVectorLayer(
-    #     "{}?crs={}".format(geom_type, crs_id), name, "memory")
-    # print 'created memory layer'
 
     crs = layer.crs().toWkt()
     vl_geom_config = u"{0}?crs={1}&field=name:string(20)&" \
@@ -1069,15 +1082,24 @@ def copy_layer_to_memory(layer, name, features=None):
 
     attr = layer.dataProvider().fields().toList()
     mem_layer_data.addAttributes(attr)
-    print 'fields '
+    mem_layer.startEditing()
     mem_layer.updateFields()
     if features is None:
+        feats = [feat for feat in layer.getFeatures()]
         mem_layer_data.addFeatures(feats)
     else:
-        mem_layer_data.addFeatures(features)
 
+        for f_id in features:
+
+            request = QgsFeatureRequest()
+            request.setFilterFid(f_id)
+            feature_itr = layer.getFeatures(request)
+            for feat in feature_itr:
+                mem_layer_data.addFeatures([feat])
+
+    mem_layer.commitChanges()
     QgsMapLayerRegistry.instance().addMapLayer(mem_layer)
-    print 'added layer to map'
+
     return mem_layer
 
 
@@ -1092,3 +1114,32 @@ def layer_type(layer):
     if layer.wkbType() == QGis.WKBMultiPolygon:
         geom_type = 'MultiPolygon'
     return geom_type
+
+
+def clear_layer_features(layer):
+    with edit(layer):
+        feat_ids = [feat.id() for feat in layer.getFeatures()]
+        layer.deleteFeatures(feat_ids)
+
+def add_features_to_layer(layer, features):
+
+    provider = layer.dataProvider()
+    layer.startEditing()
+    for feat in features:
+        provider.addFeatures([feat])
+
+    layer.commitChanges()
+
+def feature_id_to_feature(layer, feature_ids):
+    features = []
+    for f_id in feature_ids:
+        # print f_id
+        request = QgsFeatureRequest()
+        request.setFilterFid(f_id)
+        feature_itr = layer.getFeatures(request)
+        for feat in feature_itr:
+            features.append(feat)
+
+    return features
+
+

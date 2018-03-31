@@ -1,3 +1,4 @@
+import inspect
 from collections import OrderedDict
 
 import re
@@ -5,7 +6,7 @@ from PyQt4.QtCore import Qt, pyqtSlot
 from PyQt4.QtGui import QDockWidget, QApplication, QStatusBar, QWidget, \
     QMessageBox, QAction
 from qgis.PyQt.QtCore import NULL, pyqtSignal, QObject
-from qgis.core import QgsMapLayer
+from qgis.core import QgsMapLayer, QgsFeatureRequest
 from qgis.utils import iface
 
 from stdm.data.pg_utils import spatial_tables, pg_views
@@ -249,37 +250,41 @@ class GeomWidgetsSettings():
         self.widget.preview_btn.clicked.connect(self.preview)
         self.widget.save_btn.clicked.connect(self.save)
         self.settings_layer_connected = False
+        self.line_layer_connected = False
+
 
     def init_signals(self):
         self.settings_layer_connected = True
         self.settings.layer.selectionChanged.connect(
             self.show_selected_layer
         )
-        # if self.settings.line_layer is not None:
 
-        # self.selection_finished.connect(
-        #     self.on_selection_finished
-        # )
     def disconnect_signals(self):
         self.settings_layer_connected = False
         self.settings.layer.selectionChanged.disconnect(
             self.show_selected_layer
         )
-   # @pyqtSlot()
+
     def on_feature_selection_finished(self):
+
         self.line_layer = polygon_to_lines(self.settings.layer)
         self.settings.line_layer = self.line_layer
-        if self.line_layer is not None:
+        if self.line_layer is not None and not self.line_layer_connected:
             self.line_layer.selectionChanged.connect(
                 self.show_selected_line_layer
             )
+            self.line_layer_connected = True
 
     def on_line_selection_finished(self):
         self.preview()
 
-    def show_selected_layer(self):
-        self.preview_layer = None
-
+    def show_selected_layer(self, feature):
+        if len(feature) == 0:
+            return
+        self.feature_ids = feature
+        self.features = feature_id_to_feature(
+            self.settings.layer, self.feature_ids
+        )
         if self.executed:
             return
         if self.settings.layer is None:
@@ -294,16 +299,20 @@ class GeomWidgetsSettings():
                 self.widget.sel_features_lbl.setText(str(self.feature_count))
                 self.on_feature_selection_finished()
 
+                # print inspect.stack()
+
     def show_selected_line_layer(self):
         if self.settings.layer is None:
             return
 
         if iface.activeLayer().name() != 'Polygon Lines':
             return
-
+        if len(self.line_layer.selectedFeatures()) == 0:
+            return
         if hasattr(self.widget, 'selected_line_lbl'):
-
+            self.lines[:] = []
             self.lines_count = self.selected_line_count()
+
             self.widget.selected_line_lbl.setText(str(self.lines_count))
             if self.lines_count > 1:
                 message = QApplication.translate(
@@ -311,21 +320,24 @@ class GeomWidgetsSettings():
                     'The first selected segment will be used.'
                 )
                 self.notice.insertWarningNotification(message)
-            # self.on_line_selection_finished()
 
     def selected_features_count(self):
-        self.features[:] = []
-        self.features = self.settings.selected_features()
-        feat_data = [(f.id(), f.geometry().area()) for f in self.features]
-        feat_data = dict(feat_data)
-        self.feature_ids = feat_data.keys()
-        area_list = feat_data.values()
-        total_area = sum(area_list)
+        request = QgsFeatureRequest()
+        feat_data = []
+
+        for feat_id in self.feature_ids:
+            request.setFilterFid(feat_id)
+            features = self.settings.layer.getFeatures(request)
+            for feature in features:
+                self.features.append(feature)
+                feat_data.append(feature.geometry().area())
+
+        total_area = sum(feat_data)
         if hasattr(self.widget, 'split_polygon_area'):
             self.widget.split_polygon_area.setMaximum(total_area)
 
-        if self.features is not None:
-            return len(self.features)
+        if self.feature_ids is not None:
+            return len(self.feature_ids)
         else:
             return 0
 
@@ -341,26 +353,19 @@ class GeomWidgetsSettings():
 
     def save(self):
         self.executed = True
-
         if self.settings_layer_connected:
             self.disconnect_signals()
 
-        self.remove_preview_layers()
-        print 'self.features ', self.features
-        self.preview_layer = copy_layer_to_memory(
-            self.settings.layer, 'Preview Polygon', self.features)
-
+        self.create_preview_layer()
         # if len(self.features) > 1:
         #     self.settings.layer.startEditing()
         #     iface.mainWindow().findChild(
         #         QAction, 'mActionMergeFeatureAttributes').trigger()
-        #
-        #     self.settings.layer.commitChanges()
 
-        iface.legendInterface().setLayerVisible(self.preview_layer, False)
+        #     self.settings.layer.commitChanges()
         # iface.setActiveLayer(self.settings.layer)
 
-        # self.settings.layer.selectByIds(self.feature_ids)
+        self.settings.layer.selectByIds(self.feature_ids)
         move_line_with_area(
             self.settings.layer,
             self.line_layer,
@@ -369,24 +374,43 @@ class GeomWidgetsSettings():
             self.widget.split_polygon_area.value(),
             self.feature_ids
         )
-        iface.mapCanvas().refresh()
+        # iface.mapCanvas().refresh()
         iface.setActiveLayer(self.settings.layer)
+
         self.settings.layer.selectionChanged.connect(
             self.show_selected_layer
         )
 
+    def create_preview_layer(self):
+        prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
+            'Preview Polygon'
+        )
+        for prev_layer in prev_layers:
+            clear_layer_features(prev_layer)
+
+        if len(prev_layers) == 0:
+            self.preview_layer = copy_layer_to_memory(
+                self.settings.layer, 'Preview Polygon', self.feature_ids
+            )
+        else:
+            add_features_to_layer(self.preview_layer, self.features)
+            print 'feat count', self.preview_layer.featureCount()
+
+        iface.legendInterface().setLayerVisible(self.preview_layer, False)
+
     def remove_preview_layers(self):
         preview_layers = QgsMapLayerRegistry.instance().mapLayersByName(
-            'Preview Polygon')
-        prev_layer_ids = []
+            'Preview Polygon'
+        )
+        # prev_layer_ids = []
         for prev_layer in preview_layers:
-            prev_layer_ids.append(prev_layer.id())
-        QgsMapLayerRegistry.instance().removeMapLayers(prev_layer_ids)
+            # prev_layer_ids.append(prev_layer.id())
+            QgsMapLayerRegistry.instance().removeMapLayer(prev_layer)
 
     def preview(self):
         self.executed = True
         self.preview_layer = copy_layer_to_memory(
-            self.settings.layer, 'Preview Polygon', self.features)
+            self.settings.layer, 'Preview Polygon', self.feature_ids)
 
         # if len(self.features) > 1:
         #     self.preview_layer.selectAll()
@@ -394,7 +418,7 @@ class GeomWidgetsSettings():
         #     iface.mainWindow().findChild(
         #         QAction, 'mActionMergeFeatureAttributes').trigger()
         # self.preview_layer.commitChanges()
-        self.preview_layer.selectAll()
+        # self.preview_layer.selectAll()
         if len(self.lines) > 0:
             move_line_with_area(
                 self.preview_layer,
