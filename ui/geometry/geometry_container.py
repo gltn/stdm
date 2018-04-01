@@ -23,8 +23,10 @@ from ui_offset_distance import Ui_OffsetDistance
 from ui_one_point_area import Ui_OnePointArea
 from ui_join_points import Ui_JoinPoints
 
-
-
+GEOM_DOCK_ON = False
+PREVIEW_POLYGON = 'Preview Polygon'
+POLYGON_LINES = 'Polygon Lines'
+#TODO check entity browser can select feature and zoom with geom tools
 class LayerSelectionHandler(object):
     """
      Handles all tasks related to the layer.
@@ -225,11 +227,268 @@ class LayerSelectionHandler(object):
         """
         pass
 
+
+class GeometryToolsContainer(
+    QDockWidget, Ui_GeometryContainer, LayerSelectionHandler
+):
+    """
+    The logic for the spatial entity details dock widget.
+    """
+    # panel_loaded = pyqtSignal()
+
+    def __init__(self, iface, plugin):
+        """
+        Initializes the DetailsDockWidget.
+        :param iface: The QGIS interface
+        :type iface: Object
+        :param plugin: The STDM plugin object
+        :type plugin: Object
+        """
+        QDockWidget.__init__(self, iface.mainWindow())
+        self.setupUi(self)
+        self.plugin = plugin
+        self.iface = iface
+        self._entity = None
+        LayerSelectionHandler.__init__(self, iface, plugin)
+        self.setBaseSize(300, 5000)
+        self.layer = None
+        self.line_layer = None
+
+
+
+
+    def init_dock(self):
+        """
+        Creates dock on right dock widget area and set window title.
+        """
+
+        self.iface.addDockWidget(Qt.RightDockWidgetArea, self)
+
+        self.init_signals()
+
+
+    def add_widgets(self):
+
+        for i, factory in enumerate(GeometryWidgetRegistry.registered_factories.values()):
+            widget = factory.create(self, self.geom_tools_widgets.widget(i))
+            self.geom_tools_widgets.addWidget(widget)
+            self.geom_tools_combo.addItem(factory.NAME, factory.OBJECT_NAME)
+            widget.init_signals()
+
+    def close_widgets(self):
+        for i, factory in enumerate(GeometryWidgetRegistry.registered_factories.values()):
+            widget = factory.create(self, self.geom_tools_widgets.widget(i))
+            print 'widget.settings_layer_connected',  widget.settings_layer_connected
+            # self.layer.selectionChanged.disconnect(
+            #     widget.show_selected_layer
+            # )
+            print 'closed ', widget.widget_closed
+
+    def init_signals(self):
+        self.geom_tools_combo.currentIndexChanged.connect(
+            self.on_geom_tools_combo_changed
+        )
+
+    def on_geom_tools_combo_changed(self, index):
+        self.geom_tools_widgets.setCurrentIndex(index)
+
+    def close_dock(self, tool):
+        """
+        Closes the dock by replacing select tool with pan tool,
+        clearing feature selection, and hiding the dock.
+        :param tool: Feature detail tool button
+        :type tool: QAction
+        """
+        global GEOM_DOCK_ON
+        self.iface.actionPan().trigger()
+        tool.setChecked(False)
+        self.clear_feature_selection()
+        self.clear_sel_highlight()
+        self.hide()
+        GEOM_DOCK_ON = False
+        # self.close_widgets()
+
+    def closeEvent(self, event):
+        """
+        On close of the dock window, this event is executed
+        to run close_dock method
+        :param event: The close event
+        :type event: QCloseEvent
+        :return: None
+        """
+        if self.plugin is None:
+            return
+        self.close_dock(
+            self.plugin.geom_tools_cont_act
+        )
+
+    def hideEvent(self, event):
+        """
+        Listens to the hide event of the dock and properly close the dock
+        using the close_dock method.
+        :param event: The close event
+        :type event: QCloseEvent
+        """
+        self.close_dock(
+            self.plugin.geom_tools_cont_act
+        )
+
+
+    def activate_geometry_tools(self, button_clicked=True):
+        """
+        A slot raised when the feature details button is clicked.
+        :param button_clicked: A boolean to identify if it is activated
+        because of button click or because of change in the active layer.
+        :type button_clicked: Boolean
+        """
+        # No need of activation as it is activated.
+        # print 'hidden ', self.isHidden()
+        if not self.isHidden():
+            self.activate_select_tool()
+            self.plugin.geom_tools_cont_act.setChecked(True)
+            return
+        # Get and set the active layer.
+
+        self.layer = self.iface.activeLayer()
+
+        if self.layer is not None:
+            # if it is Polygon Lines layer that is selected, keep dock
+            if self.stdm_layer(self.layer):
+                self.layer = self.iface.activeLayer()
+                self.line_layer = None
+            if self.layer.name() == POLYGON_LINES:
+                self.activate_select_tool()
+                self.plugin.geom_tools_cont_act.setChecked(True)
+                self.line_layer = self.layer
+                return True
+        # if no active layer, show error message
+        # and uncheck the feature tool
+        # print self.layer.name()
+        if self.layer is None:
+            if button_clicked:
+                self.active_layer_check()
+            self.plugin.geom_tools_cont_act.setChecked(False)
+            return False
+        # If the button is unchecked, close dock.
+        if not self.plugin.geom_tools_cont_act.isChecked():
+            self.close_dock(self.plugin.geom_tools_cont_act)
+            self.geometry_tools = None
+            return False
+        # if the selected layer is not an STDM layer,
+        # show not feature layer.
+        if not self.stdm_layer(self.layer):
+            if button_clicked and self.isHidden():
+                # show popup message if dock is hidden and button clicked
+                self.non_stdm_layer_error()
+                self.plugin.geom_tools_cont_act.setChecked(False)
+            return False
+        # If the selected layer is feature layer, get data and
+        # display geometry_tools in a dock widget
+        # else:
+        self.prepare_for_selection()
+        return True
+            # self.panel_loaded.emit()
+
+
+
+    def prepare_for_selection(self):
+        """
+        Prepares the dock widget for data loading.
+        """
+        self.init_dock()
+
+        self.activate_select_tool()
+        self.update_layer_source(self.layer)
+
+
+    def activate_select_tool(self):
+        """
+        Enables the select tool to be used to select features.
+        """
+        self.iface.actionSelect().trigger()
+        layer_select_tool = self.iface.mapCanvas().mapTool()
+        layer_select_tool.deactivated.connect(
+            self.disable_feature_details_btn
+        )
+
+        layer_select_tool.activate()
+
+
+    def disable_feature_details_btn(self):
+        """
+        Disables features details button.
+        :return:
+        :rtype:
+        """
+        self.plugin.geom_tools_cont_act.setChecked(False)
+
+
+    def update_layer_source(self, active_layer):
+        """
+        Updates the layer source in case of layer change.
+        :param active_layer: The active layer on the canvas.
+        :type active_layer: QgsVectorLayer
+        """
+        if active_layer.type() != QgsMapLayer.VectorLayer:
+            return
+        # set entity from active layer in the child class
+        self.set_layer_entity()
+        # set entity for the super class DetailModel
+        self.set_entity(self.entity)
+
+
+    def feature_model(self, entity, id):
+        """
+        Gets the model of an entity based on an id and the entity.
+        :param entity: Entity
+        :type entity: Object
+        :param id: Id of the record
+        :type id: Integer
+        :return: SQLAlchemy result proxy
+        :rtype: Object
+        """
+        model = entity_model(entity)
+        model_obj = model()
+        result = model_obj.queryObject().filter(model.id == id).all()
+        if len(result) > 0:
+            return result[0]
+        else:
+            return None
+
+    def set_layer_entity(self):
+        """
+        Sets the entity property using the layer table.
+        """
+        self.layer_table = self.get_layer_source(
+            self.iface.activeLayer()
+        )
+        if self.layer_table is None:
+            return
+
+        if self.layer_table in spatial_tables() and \
+                        self.layer_table not in pg_views():
+            self.entity = self.current_profile.entity_by_name(
+                self.layer_table
+            )
+
+
+    def set_entity(self, entity):
+        """
+        Sets the spatial entity.
+        :param entity: The entity object
+        :type entity: Object
+        """
+        self._entity = entity
+
+
 class GeomWidgetsSettings():
 
     # selection_finished = pyqtSignal()
     def __init__(self, layer_settings, widget):
         # QObject.__init__(widget)
+        global GEOM_DOCK_ON
+        GEOM_DOCK_ON = True
+        print 'Geom widget activated 1'
         self.settings = layer_settings
         self.current_profile = current_profile()
         self.iface = iface
@@ -247,38 +506,46 @@ class GeomWidgetsSettings():
         self.feature_ids = []
         self.executed = False
         self.preview_layer = None
+
         self.widget.preview_btn.clicked.connect(self.preview)
         self.widget.save_btn.clicked.connect(self.save)
         self.settings_layer_connected = False
         self.line_layer_connected = False
 
-
     def init_signals(self):
-        self.settings_layer_connected = True
-        self.settings.layer.selectionChanged.connect(
-            self.show_selected_layer
-        )
+        if not self.settings_layer_connected:
+            print 'Geom widget signal activated 1'
+            self.settings.layer.selectionChanged.connect(
+                self.show_selected_layer
+            )
+            self.settings_layer_connected = True
 
     def disconnect_signals(self):
-        self.settings_layer_connected = False
-        self.settings.layer.selectionChanged.disconnect(
-            self.show_selected_layer
-        )
+        print 'self.settings_layer_connected ', self.settings_layer_connected
+        if self.settings_layer_connected:
+            self.settings.layer.selectionChanged.disconnect(
+                self.show_selected_layer
+            )
+            self.settings_layer_connected = False
 
     def on_feature_selection_finished(self):
 
         self.line_layer = polygon_to_lines(self.settings.layer)
         self.settings.line_layer = self.line_layer
         if self.line_layer is not None and not self.line_layer_connected:
+
             self.line_layer.selectionChanged.connect(
                 self.show_selected_line_layer
             )
+            print self.line_layer.selectionChanged
             self.line_layer_connected = True
 
     def on_line_selection_finished(self):
         self.preview()
 
     def show_selected_layer(self, feature):
+        if not GEOM_DOCK_ON:
+            return
         if len(feature) == 0:
             return
         self.feature_ids = feature
@@ -289,7 +556,7 @@ class GeomWidgetsSettings():
             return
         if self.settings.layer is None:
             return
-        if iface.activeLayer().name() == 'Polygon Lines':
+        if iface.activeLayer().name() == POLYGON_LINES:
             return
 
         if self.settings.stdm_layer(self.settings.layer):
@@ -301,11 +568,28 @@ class GeomWidgetsSettings():
 
                 # print inspect.stack()
 
+    def hideEvent(self, event):
+        self.widget_closed = True
+        prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
+            PREVIEW_POLYGON
+        )
+        if len(prev_layers) > 0:
+            for prev_layer in prev_layers:
+                QgsMapLayerRegistry.instance().removeMapLayer(prev_layer)
+        line_layers = QgsMapLayerRegistry.instance().mapLayersByName(
+            POLYGON_LINES
+        )
+        if len(line_layers) > 0:
+            for line_layer in line_layers:
+                QgsMapLayerRegistry.instance().removeMapLayer(line_layer)
+
+        self.disconnect_signals()
+
     def show_selected_line_layer(self):
         if self.settings.layer is None:
             return
 
-        if iface.activeLayer().name() != 'Polygon Lines':
+        if iface.activeLayer().name() != POLYGON_LINES:
             return
         if len(self.line_layer.selectedFeatures()) == 0:
             return
@@ -351,7 +635,20 @@ class GeomWidgetsSettings():
         else:
             return 0
 
+    def validate_save(self):
+        if self.widget.split_polygon_area.value() == 0:
+            message = QApplication.translate(
+                'GeomWidgetsSettings',
+                'The area must be greater than 0.'
+            )
+            self.notice.insertErrorNotification(message)
+            return False
+        return True
+
     def save(self):
+        result = self.validate_save()
+        if not result:
+            return
         self.executed = True
         if self.settings_layer_connected:
             self.disconnect_signals()
@@ -376,31 +673,28 @@ class GeomWidgetsSettings():
         )
         # iface.mapCanvas().refresh()
         iface.setActiveLayer(self.settings.layer)
-
-        self.settings.layer.selectionChanged.connect(
-            self.show_selected_layer
-        )
+        self.init_signals()
 
     def create_preview_layer(self):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
-            'Preview Polygon'
+            PREVIEW_POLYGON
         )
         for prev_layer in prev_layers:
             clear_layer_features(prev_layer)
 
         if len(prev_layers) == 0:
             self.preview_layer = copy_layer_to_memory(
-                self.settings.layer, 'Preview Polygon', self.feature_ids
+                self.settings.layer, PREVIEW_POLYGON, self.feature_ids, False
             )
         else:
             add_features_to_layer(self.preview_layer, self.features)
-            print 'feat count', self.preview_layer.featureCount()
+            # print 'feat count', self.preview_layer.featureCount()
 
         iface.legendInterface().setLayerVisible(self.preview_layer, False)
 
     def remove_preview_layers(self):
         preview_layers = QgsMapLayerRegistry.instance().mapLayersByName(
-            'Preview Polygon'
+            PREVIEW_POLYGON
         )
         # prev_layer_ids = []
         for prev_layer in preview_layers:
@@ -410,7 +704,7 @@ class GeomWidgetsSettings():
     def preview(self):
         self.executed = True
         self.preview_layer = copy_layer_to_memory(
-            self.settings.layer, 'Preview Polygon', self.feature_ids)
+            self.settings.layer, PREVIEW_POLYGON, self.feature_ids, False)
 
         # if len(self.features) > 1:
         #     self.preview_layer.selectAll()
@@ -420,17 +714,21 @@ class GeomWidgetsSettings():
         # self.preview_layer.commitChanges()
         # self.preview_layer.selectAll()
         if len(self.lines) > 0:
-            move_line_with_area(
-                self.preview_layer,
-                self.line_layer,
-                self.preview_layer,
-                self.lines[0],
-                self.widget.split_polygon_area.value()
-            )
+            try:
+                move_line_with_area(
+                    self.preview_layer,
+                    self.line_layer,
+                    self.preview_layer,
+                    self.lines[0],
+                    self.widget.split_polygon_area.value()
+                )
+            except Exception as ex:
+                self.notice.insertWarningNotification(ex)
             iface.mapCanvas().refresh()
 
     def cancel(self):
         pass
+
 
 class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsSettings):
 
@@ -625,248 +923,4 @@ class JoinPointsTool(GeometryWidgetRegistry, JoinPointsWidget):
 
 
 JoinPointsTool.register()
-
-
-class GeometryToolsContainer(
-    QDockWidget, Ui_GeometryContainer, LayerSelectionHandler
-):
-    """
-    The logic for the spatial entity details dock widget.
-    """
-    # panel_loaded = pyqtSignal()
-
-    def __init__(self, iface, plugin):
-        """
-        Initializes the DetailsDockWidget.
-        :param iface: The QGIS interface
-        :type iface: Object
-        :param plugin: The STDM plugin object
-        :type plugin: Object
-        """
-        QDockWidget.__init__(self, iface.mainWindow())
-        self.setupUi(self)
-        self.plugin = plugin
-        self.iface = iface
-        self._entity = None
-        LayerSelectionHandler.__init__(self, iface, plugin)
-        self.setBaseSize(300, 5000)
-        self.layer = None
-        self.line_layer = None
-
-
-
-
-    def init_dock(self):
-        """
-        Creates dock on right dock widget area and set window title.
-        """
-
-        self.iface.addDockWidget(Qt.RightDockWidgetArea, self)
-
-        self.init_signals()
-
-
-    def add_widgets(self):
-
-        for i, factory in enumerate(GeometryWidgetRegistry.registered_factories.values()):
-            widget = factory.create(self, self.geom_tools_widgets.widget(i))
-            self.geom_tools_widgets.addWidget(widget)
-            self.geom_tools_combo.addItem(factory.NAME, factory.OBJECT_NAME)
-            widget.init_signals()
-
-
-    def init_signals(self):
-        self.geom_tools_combo.currentIndexChanged.connect(
-            self.on_geom_tools_combo_changed
-        )
-
-    def on_geom_tools_combo_changed(self, index):
-        self.geom_tools_widgets.setCurrentIndex(index)
-
-    def close_dock(self, tool):
-        """
-        Closes the dock by replacing select tool with pan tool,
-        clearing feature selection, and hiding the dock.
-        :param tool: Feature detail tool button
-        :type tool: QAction
-        """
-        self.iface.actionPan().trigger()
-        tool.setChecked(False)
-        self.clear_feature_selection()
-        self.clear_sel_highlight()
-        self.hide()
-        # self.disconnect_signals()
-
-    def closeEvent(self, event):
-        """
-        On close of the dock window, this event is executed
-        to run close_dock method
-        :param event: The close event
-        :type event: QCloseEvent
-        :return: None
-        """
-        if self.plugin is None:
-            return
-        self.close_dock(
-            self.plugin.geom_tools_cont_act
-        )
-
-    def hideEvent(self, event):
-        """
-        Listens to the hide event of the dock and properly close the dock
-        using the close_dock method.
-        :param event: The close event
-        :type event: QCloseEvent
-        """
-        self.close_dock(
-            self.plugin.geom_tools_cont_act
-        )
-
-
-    def activate_geometry_tools(self, button_clicked=True):
-        """
-        A slot raised when the feature details button is clicked.
-        :param button_clicked: A boolean to identify if it is activated
-        because of button click or because of change in the active layer.
-        :type button_clicked: Boolean
-        """
-        # No need of activation as it is activated.
-        print 'hidden ', self.isHidden()
-        if not self.isHidden():
-            self.activate_select_tool()
-            self.plugin.geom_tools_cont_act.setChecked(True)
-            return
-        # Get and set the active layer.
-
-        self.layer = self.iface.activeLayer()
-
-        if self.layer is not None:
-            # if it is Polygon Lines layer that is selected, keep dock
-            if self.stdm_layer(self.layer):
-                self.layer = self.iface.activeLayer()
-                self.line_layer = None
-            if self.layer.name() == 'Polygon Lines':
-                self.activate_select_tool()
-                self.plugin.geom_tools_cont_act.setChecked(True)
-                self.line_layer = self.layer
-                return True
-        # if no active layer, show error message
-        # and uncheck the feature tool
-        # print self.layer.name()
-        if self.layer is None:
-            if button_clicked:
-                self.active_layer_check()
-            self.plugin.geom_tools_cont_act.setChecked(False)
-            return False
-        # If the button is unchecked, close dock.
-        if not self.plugin.geom_tools_cont_act.isChecked():
-            self.close_dock(self.plugin.geom_tools_cont_act)
-            self.geometry_tools = None
-            return False
-        # if the selected layer is not an STDM layer,
-        # show not feature layer.
-        if not self.stdm_layer(self.layer):
-            if button_clicked and self.isHidden():
-                # show popup message if dock is hidden and button clicked
-                self.non_stdm_layer_error()
-                self.plugin.geom_tools_cont_act.setChecked(False)
-            return False
-        # If the selected layer is feature layer, get data and
-        # display geometry_tools in a dock widget
-        # else:
-        self.prepare_for_selection()
-        return True
-            # self.panel_loaded.emit()
-
-
-
-    def prepare_for_selection(self):
-        """
-        Prepares the dock widget for data loading.
-        """
-        self.init_dock()
-
-        self.activate_select_tool()
-        self.update_layer_source(self.layer)
-
-
-    def activate_select_tool(self):
-        """
-        Enables the select tool to be used to select features.
-        """
-        self.iface.actionSelect().trigger()
-        layer_select_tool = self.iface.mapCanvas().mapTool()
-        layer_select_tool.deactivated.connect(
-            self.disable_feature_details_btn
-        )
-
-        layer_select_tool.activate()
-
-
-    def disable_feature_details_btn(self):
-        """
-        Disables features details button.
-        :return:
-        :rtype:
-        """
-        self.plugin.geom_tools_cont_act.setChecked(False)
-
-
-    def update_layer_source(self, active_layer):
-        """
-        Updates the layer source in case of layer change.
-        :param active_layer: The active layer on the canvas.
-        :type active_layer: QgsVectorLayer
-        """
-        if active_layer.type() != QgsMapLayer.VectorLayer:
-            return
-        # set entity from active layer in the child class
-        self.set_layer_entity()
-        # set entity for the super class DetailModel
-        self.set_entity(self.entity)
-
-
-    def feature_model(self, entity, id):
-        """
-        Gets the model of an entity based on an id and the entity.
-        :param entity: Entity
-        :type entity: Object
-        :param id: Id of the record
-        :type id: Integer
-        :return: SQLAlchemy result proxy
-        :rtype: Object
-        """
-        model = entity_model(entity)
-        model_obj = model()
-        result = model_obj.queryObject().filter(model.id == id).all()
-        if len(result) > 0:
-            return result[0]
-        else:
-            return None
-
-    def set_layer_entity(self):
-        """
-        Sets the entity property using the layer table.
-        """
-        self.layer_table = self.get_layer_source(
-            self.iface.activeLayer()
-        )
-        if self.layer_table is None:
-            return
-
-        if self.layer_table in spatial_tables() and \
-                        self.layer_table not in pg_views():
-            self.entity = self.current_profile.entity_by_name(
-                self.layer_table
-            )
-
-
-    def set_entity(self, entity):
-        """
-        Sets the spatial entity.
-        :param entity: The entity object
-        :type entity: Object
-        """
-        self._entity = entity
-
 

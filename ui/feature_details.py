@@ -42,7 +42,8 @@ from qgis.core import (
     QgsFeatureRequest,
     QgsExpression,
     QgsMapLayer,
-    NULL
+    NULL,
+    QgsFeature
 )
 
 from stdm.settings import current_profile
@@ -77,6 +78,7 @@ from stdm.ui.social_tenure.str_editor import EditSTREditor
 
 from ui_feature_details import Ui_DetailsDock
 
+DETAILS_DOCK_ON = False
 
 class LayerSelectionHandler(object):
     """
@@ -455,8 +457,8 @@ class DetailsDBHandler:
 
             if col.name in self.column_formatter:
                 formatter = self.column_formatter[col.name]
-
                 col_val = formatter.format_column_value(col_val)
+                print 'col_value  ', col_val
             if col.header() == QApplication.translate(
                     'DetailsDBHandler', 'Tenure Share'
             ):
@@ -516,6 +518,8 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
         :type plugin: Object
         """
         QDockWidget.__init__(self, iface.mainWindow())
+        global DETAILS_DOCK_ON
+        DETAILS_DOCK_ON = True
         self.setupUi(self)
         self.plugin = plugin
         self.iface = iface
@@ -544,11 +548,13 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
         :param tool: Feature detail tool button
         :type tool: QAction
         """
+        global DETAILS_DOCK_ON
         self.iface.actionPan().trigger()
         tool.setChecked(False)
         self.clear_feature_selection()
         self.clear_sel_highlight()
         self.hide()
+        DETAILS_DOCK_ON = False
 
     def closeEvent(self, event):
         """
@@ -702,6 +708,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         because of button click or because of change in the active layer.
         :type button_clicked: Boolean
         """
+        global DETAILS_DOCK_ON
+        DETAILS_DOCK_ON = True
         if self.plugin is None:
             # Registry column widget
             # set formatter for social tenure relationship.
@@ -854,6 +862,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         """
         Shows the treeview.
         """
+        if not DETAILS_DOCK_ON:
+            return
         selected_features = self.selected_features()
         if selected_features is None:
             self.reset_tree_view()
@@ -881,16 +891,19 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 return
             for id, root in roots.iteritems():
 
+                if isinstance(id, QgsFeature):
+                    id = id.id()
                 if not isinstance(id, long):
-
                     continue
                 str_records = self.feature_str_link(id)
+
                 self.spatial_unit_items[root] = self.entity
                 if len(str_records) > 0:
                     db_model = getattr(str_records[0], self.entity.name)
 
                 else:
                     data = self.features_data(id)
+
                     if len(self.features_data(id)) > 0:
                         db_model = data[0]
                     else:
@@ -1233,7 +1246,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                     custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
                         spatial_unit
                     )
-
 
                     if custom_attr_entity is not None and len(custom_attr_entity.columns) > 2:
                         try:
@@ -1822,6 +1834,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :param results: The number of records selected/searched
         :type results: List
         """
+        if results is None:
+            return
         id, item = self.steam_data('edit', results)
 
         if id is None:

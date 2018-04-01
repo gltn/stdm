@@ -44,8 +44,8 @@ from PyQt4.QtGui import (
     QLabel,
     QHBoxLayout,
     QColor,
-    QMessageBox
-)
+    QMessageBox,
+    QAction)
 
 from qgis.gui import (
     QgsEditorWidgetWrapper,
@@ -243,6 +243,18 @@ class STDMFieldWidget():
         self.current_feature = None
         self.editor = None
 
+    def disable_form_on_merge(self):
+        # TODO find a way of disabling form when merge is used. 
+        self.merge_action = iface.mainWindow().findChild(
+            QAction, 'mActionMergeFeatureAttributes'
+        )
+        if self.merge_action is None:
+            return True
+
+
+        self.merge_action.triggered.connect(self.disable_form_on_merge)
+
+
     def init_form(self, table, spatial_column, curr_layer):
         """
         Initialize required methods and slots
@@ -412,7 +424,10 @@ class STDMFieldWidget():
         :return: None
         :rtype:NoneType
         """
+        self.disable_form_on_merge()
+
         srid = None
+
         self.current_feature = feature_id
 
         # If the digitizing save button is clicked,
