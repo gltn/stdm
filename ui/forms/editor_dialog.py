@@ -241,6 +241,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 if not self.collect_model:
                     # updating existing record of the parent editor
                     self.buttonBox.accepted.connect(self.save_parent_editor)
+                else:
+                    self.buttonBox.accepted.connect(self.on_model_added)
         # Saving in child editor
         else:
             # save and new record

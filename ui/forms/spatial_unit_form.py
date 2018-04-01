@@ -243,18 +243,6 @@ class STDMFieldWidget():
         self.current_feature = None
         self.editor = None
 
-    def disable_form_on_merge(self):
-        # TODO find a way of disabling form when merge is used. 
-        self.merge_action = iface.mainWindow().findChild(
-            QAction, 'mActionMergeFeatureAttributes'
-        )
-        if self.merge_action is None:
-            return True
-
-
-        self.merge_action.triggered.connect(self.disable_form_on_merge)
-
-
     def init_form(self, table, spatial_column, curr_layer):
         """
         Initialize required methods and slots
@@ -411,6 +399,36 @@ class STDMFieldWidget():
                 layer, col, widget_id_name[0]
             )
 
+    def feature_to_model(self, feature_id):
+        """
+        Converts feature to db model.
+        :param feature_id: The feature id
+        :type feature_id: Integer
+        :return: The model and number of columns with data.
+        :rtype: Tuple
+        """
+        ent_model = entity_model(self.entity)
+        model_obj = ent_model()
+
+        iterator = self.layer.getFeatures(
+            QgsFeatureRequest().setFilterFid(feature_id))
+        feature = next(iterator)
+        field_names = [field.name() for field in self.layer.pendingFields()]
+
+        mapped_data = OrderedDict(zip(field_names, feature.attributes()))
+        col_with_data = []
+        for col, value in mapped_data.iteritems():
+            if col == 'id':
+                continue
+            if value is None:
+                continue
+            if value == NULL:
+                continue
+            setattr(model_obj, col, value)
+            col_with_data.append(col)
+
+        return model_obj, len(col_with_data)
+
     def load_stdm_form(self, feature_id, spatial_column):
         """
         Loads STDM Form and collects the model added
@@ -424,7 +442,6 @@ class STDMFieldWidget():
         :return: None
         :rtype:NoneType
         """
-        self.disable_form_on_merge()
 
         srid = None
 
@@ -442,6 +459,7 @@ class STDMFieldWidget():
         # already populated by the form
         if feature_id in self.feature_models.keys():
             return
+
         # If the feature is removed by the undo button, don't
         # load the form for it but add it
         # back to feature_models and don't show the form.
@@ -481,14 +499,17 @@ class STDMFieldWidget():
             )
             return
         # init form
+        feature_model, col_with_data = self.feature_to_model(feature_id)
+
+        if col_with_data == 0:
+            feature_model = None
         self.editor = EntityEditorDialog(
             self.entity,
-            None,
+            model=feature_model,
             parent=iface.mainWindow(),
             manage_documents=True,
             collect_model=True
         )
-
         self.model = self.editor.model()
         self.editor.addedModel.connect(self.on_form_saved)
 

@@ -1538,7 +1538,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         )
         self.view_document_btn.clicked.connect(
             lambda: self.view_steam_document(
-                entity
+                entity, self.layer.selectedFeatures()
             )
         )
 
@@ -1588,7 +1588,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :type results: List
         """
         id, item = self.steam_data('edit', results)
-        entity = None
 
         feature_edit = True
         if id is None:
@@ -1834,10 +1833,12 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :param results: The number of records selected/searched
         :type results: List
         """
+        print entity, results
         if results is None:
             return
         id, item = self.steam_data('edit', results)
-
+        if isinstance(id, QgsFeature):
+            id = id.id()
         if id is None:
             return
         if isinstance(id, str):
@@ -1854,9 +1855,13 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         elif item in self.party_items:
             db_model = self.feature_model(self.party_items[item], id)
         else:
+
             db_model = self.feature_model(entity, id)
         if not db_model is None:
-            docs = db_model.documents
+            if not hasattr(db_model, 'documents'):
+                docs = []
+            else:
+                docs = db_model.documents
             # Notify there are no documents for the selected doc
             if len(docs) == 0:
                 msg = QApplication.translate(
