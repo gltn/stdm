@@ -204,6 +204,7 @@ class SocialTenure(Entity):
                 maximum=1
             )
             custom_entity.add_column(dummy_col)
+
         if pg_table_exists(custom_entity.name):
             custom_ent_cols = table_column_names(custom_entity.name)
             if dummy_col.name not in custom_ent_cols:
