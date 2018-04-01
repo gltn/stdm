@@ -22,6 +22,7 @@ import logging
 
 from stdm.data.configuration.entity import Entity
 from stdm.data.configuration.columns import (
+    ForeignKeyColumn,
     VarCharColumn
 )
 
@@ -43,8 +44,13 @@ class AdministrativeSpatialUnit(Entity):
         self.admin_unit_name = VarCharColumn('name', self, maximum=70)
         self.admin_unit_code = VarCharColumn('code', self, maximum=10)
 
+        self.admin_parent_id = ForeignKeyColumn('parent_id', self)
+        self.admin_parent_id.set_entity_relation_attr('parent', self)
+        self.admin_parent_id.set_entity_relation_attr('parent_column', 'id')
+
         LOGGER.debug('%s Administrative Spatial Unit set initialized.', self.name)
 
-        #Add columns
+        # Add columns
         self.add_column(self.admin_unit_name)
         self.add_column(self.admin_unit_code)
+        self.add_column(self.admin_parent_id)
