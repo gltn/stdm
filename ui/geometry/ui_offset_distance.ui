@@ -21,13 +21,6 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_24">
-     <property name="text">
-      <string>Selected features:</string>
-     </property>
-    </widget>
-   </item>
    <item row="2" column="1" colspan="2">
     <widget class="QDoubleSpinBox" name="offset_distance"/>
    </item>
@@ -35,6 +28,13 @@
     <widget class="QLabel" name="label_11">
      <property name="text">
       <string>Offset distance:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_24">
+     <property name="text">
+      <string>Selected features:</string>
      </property>
     </widget>
    </item>
@@ -52,49 +52,7 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_10">
-     <property name="text">
-      <string>Offset side:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QRadioButton" name="offset_side_l">
-     <property name="text">
-      <string>Left</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="2">
-    <widget class="QRadioButton" name="offset_side_r">
-     <property name="text">
-      <string>Right</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <widget class="QPushButton" name="cancel_btn">
-     <property name="text">
-      <string>Cancel</string>
-     </property>
-    </widget>
-   </item>
    <item row="4" column="1">
-    <widget class="QPushButton" name="preview_btn">
-     <property name="text">
-      <string>Preview</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="2">
-    <widget class="QPushButton" name="save_btn">
-     <property name="text">
-      <string>Save</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="1">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -106,6 +64,27 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item row="3" column="1">
+    <widget class="QPushButton" name="preview_btn">
+     <property name="text">
+      <string>Preview</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2">
+    <widget class="QPushButton" name="save_btn">
+     <property name="text">
+      <string>Save</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QPushButton" name="cancel_btn">
+     <property name="text">
+      <string>Cancel</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
