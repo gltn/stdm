@@ -53,7 +53,7 @@ class OGRReader(object):
     def __init__(self, source_file):
         self._ds = ogr.Open(source_file)
         self._targetGeomColSRID = -1
-        self._geomType = ""
+        self._geomType = ''
         self._dbSession = STDMDb.instance().session
         self._mapped_cls = None
         self._mapped_doc_cls = None
@@ -72,7 +72,7 @@ class OGRReader(object):
         # Get the EPSG code (More work required)
         if self.getLayer() != None:
             spRef = self.getLayer().GetSpatialRef()
-            refCode = spRef.GetAttrValue("PRIMEM|AUTHORITY", 1)
+            refCode = spRef.GetAttrValue('PRIMEM|AUTHORITY', 1)
         else:
             # Fallback to WGS84
             refCode = 4326
@@ -89,7 +89,7 @@ class OGRReader(object):
     def reset(self):
         # Destroy
         self._ds = None
-        self._geomType = ""
+        self._geomType = ''
         self._targetGeomColSRID = -1
 
     def getFields(self):
@@ -253,13 +253,13 @@ class OGRReader(object):
         for col, value in columnValueMapping.iteritems():
 
             if hasattr(model_instance, col):
-                '''
+                """
                 #Check if column type is enumeration and transform accordingly
                 col_is_enum, enum_symbol = self._enumeration_column_type(col, value)
 
                 if col_is_enum:
                     value = enum_symbol
-                '''
+                """
                 # documents is not a column so exclude it.
                 if col != 'documents':
                     value = self.auto_fix_float_integer(target_table, col,
@@ -342,9 +342,9 @@ class OGRReader(object):
         # Check current profile
         if self._current_profile is None:
             msg = QApplication.translate(
-                "OGRReader",
-                "The current profile could not be determined.\nPlease set it "
-                "in the Options dialog or Configuration Wizard."
+                'OGRReader',
+                'The current profile could not be determined.\nPlease set it '
+                'in the Options dialog or Configuration Wizard.'
             )
             raise ConfigurationException(msg)
 
@@ -365,10 +365,10 @@ class OGRReader(object):
 
         # Configure progress dialog
         init_val = 0
-        progress = QProgressDialog("", "&Cancel", init_val, numFeat,
+        progress = QProgressDialog('', '&Cancel', init_val, numFeat,
                                    parentdialog)
         progress.setWindowModality(Qt.WindowModal)
-        lblMsgTemp = "Importing {0} of {1} to STDM..."
+        lblMsgTemp = 'Importing {0} of {1} to STDM...'
 
         # Set entity for use in translators
         destination_entity = self._data_source_entity(targettable)
@@ -404,11 +404,11 @@ class OGRReader(object):
 
                         if mapped_cls is None:
                             msg = QApplication.translate(
-                                "OGRReader",
-                                "Something happened that caused the "
-                                "database table not to be mapped to the "
-                                "corresponding model class. Please contact"
-                                " your system administrator."
+                                'OGRReader',
+                                'Something happened that caused the '
+                                'database table not to be mapped to the '
+                                'corresponding model class. Please contact'
+                                ' your system administrator.'
                             )
 
                             raise RuntimeError(msg)
@@ -457,7 +457,7 @@ class OGRReader(object):
 
                     # Set supporting documents
                     if destination_entity.supports_documents:
-                        column_value_mapping["documents"] = \
+                        column_value_mapping['documents'] = \
                             self._source_doc_manager.model_objects()
 
                     column_count += 1
@@ -472,13 +472,13 @@ class OGRReader(object):
                     # Convert polygon to multipolygon if the destination table is multi-polygon.
                     geom_wkb, geom_type = self.auto_fix_geom_type(
                         geom, layerGeomType, self._geomType)
-                    column_value_mapping[geomColumn] = "SRID={0!s};{1}".format(
+                    column_value_mapping[geomColumn] = 'SRID={0!s};{1}'.format(
                         self._targetGeomColSRID, geom_wkb)
 
                     if geom_type.lower() != self._geomType.lower():
                         raise TypeError(
-                            "The geometries of the source and destination columns do not match.\n" \
-                            "Source Geometry Type: {0}, Destination Geometry Type: {1}".format(
+                            'The geometries of the source and destination columns do not match.\n' \
+                            'Source Geometry Type: {0}, Destination Geometry Type: {1}'.format(
                                 geom_type,
                                 self._geomType))
 
@@ -510,7 +510,7 @@ class OGRReader(object):
         except KeyError:
             return False, None
 
-        if not hasattr(enum_col_type, "enum"):
+        if not hasattr(enum_col_type, 'enum'):
             return False, None
 
         else:

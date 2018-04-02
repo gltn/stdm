@@ -105,7 +105,7 @@ class ImportData(QWizard, Ui_frmImport):
         self._trans_signal_mapper = QSignalMapper(self)
 
         for trans_name, config in ValueTranslatorConfig.translators.iteritems():
-            trans_action = QAction(u"{}...".format(trans_name),
+            trans_action = QAction(u'{}...'.format(trans_name),
                 translator_menu
             )
 
@@ -156,8 +156,8 @@ class ImportData(QWizard, Ui_frmImport):
                     QMessageBox.critical(
                         self,
                         QApplication.translate(
-                            "ImportData",
-                            "Value Translator"
+                            'ImportData',
+                            'Value Translator'
                         ),
                         unicode(re)
                     )
@@ -231,7 +231,7 @@ class ImportData(QWizard, Ui_frmImport):
         dest_field_item = self.lstTargetFields.currentItem()
 
         if dest_field_item is None:
-            return ""
+            return ''
 
         else:
             return dest_field_item.text()
@@ -240,31 +240,31 @@ class ImportData(QWizard, Ui_frmImport):
         src_field_item = self.lstSrcFields.currentItem()
 
         if src_field_item is None:
-            return ""
+            return ''
 
         else:
             return src_field_item.text()
 
     def _set_target_fields_stylesheet(self):
-        self.lstTargetFields.setStyleSheet("QListWidget#lstTargetFields::item:selected"
-                                           " { selection-background-color: darkblue }")
+        self.lstTargetFields.setStyleSheet('QListWidget#lstTargetFields::item:selected'
+                                           ' { selection-background-color: darkblue }')
 
     def registerFields(self):
         #Register wizard fields
         pgSource = self.page(0)
-        pgSource.registerField("srcFolder*", self.txtDataSource)
-        pgSource.registerField("typeText", self.rbTextType)
-        pgSource.registerField("typeSpatial", self.rbSpType)
+        pgSource.registerField('srcFolder*', self.txtDataSource)
+        pgSource.registerField('typeText', self.rbTextType)
+        pgSource.registerField('typeSpatial', self.rbSpType)
 
         #Destination table configuration
         destConf = self.page(1)
-        destConf.registerField("optAppend", self.rbAppend)
-        destConf.registerField("optOverwrite", self.rbOverwrite)
-        destConf.registerField("tabIndex*", self.lstDestTables)
-        destConf.registerField("geomCol",
+        destConf.registerField('optAppend', self.rbAppend)
+        destConf.registerField('optOverwrite', self.rbOverwrite)
+        destConf.registerField('tabIndex*', self.lstDestTables)
+        destConf.registerField('geomCol',
                                self.geomClm,
-                               "currentText",
-                               SIGNAL("currentIndexChanged(int)"))
+                               'currentText',
+                               SIGNAL('currentIndexChanged(int)'))
 
     def initializePage(self,pageid):
         # Re-implementation of wizard page initialization
@@ -273,11 +273,11 @@ class ImportData(QWizard, Ui_frmImport):
             self.destCheckedItem=None
             self.geomClm.clear()
 
-            if self.field("typeText"):
-                self.loadTables("textual")
+            if self.field('typeText'):
+                self.loadTables('textual')
                 self.geomClm.setEnabled(False)
-            elif self.field("typeSpatial"):
-                self.loadTables("spatial")
+            elif self.field('typeSpatial'):
+                self.loadTables('spatial')
                 self.geomClm.setEnabled(True)
 
         if pageid == 2:
@@ -296,11 +296,11 @@ class ImportData(QWizard, Ui_frmImport):
         for c in srcCols:
             srcItem = QListWidgetItem(c,self.lstSrcFields)
             srcItem.setCheckState(Qt.Unchecked)
-            srcItem.setIcon(QIcon(":/plugins/stdm/images/icons/column.png"))
+            srcItem.setIcon(QIcon(':/plugins/stdm/images/icons/column.png'))
             self.lstSrcFields.addItem(srcItem)
 
         # Destination Columns
-        tabIndex = int(self.field("tabIndex"))
+        tabIndex = int(self.field('tabIndex'))
         self.targetTab = self.destCheckedItem.text()
         targetCols = table_column_names(self.targetTab, False, True)
 
@@ -336,13 +336,13 @@ class ImportData(QWizard, Ui_frmImport):
 
         if state:
             if len(virtual_columns) == 0:
-                msg = QApplication.translate("ImportData",
-                    "There are no virtual columns for the specified table.")
+                msg = QApplication.translate('ImportData',
+                    'There are no virtual columns for the specified table.')
                 QMessageBox.warning(
                     self,
                     QApplication.translate(
-                        "ImportData",
-                        "Import Data"
+                        'ImportData',
+                        'Import Data'
                     ),
                     msg
                 )
@@ -383,16 +383,16 @@ class ImportData(QWizard, Ui_frmImport):
         self.lstDestTables.clear()
         tables = None
 
-        if type == "textual":
+        if type == 'textual':
             tables = profile_user_tables(self.curr_profile, False, True)
-        elif type == "spatial":
+        elif type == 'spatial':
             tables = profile_spatial_tables(self.curr_profile)
 
         if tables is not None:
             for t in tables:
                 tabItem = QListWidgetItem(t,self.lstDestTables)
                 tabItem.setCheckState(Qt.Unchecked)
-                tabItem.setIcon(QIcon(":/plugins/stdm/images/icons/table.png"))
+                tabItem.setIcon(QIcon(':/plugins/stdm/images/icons/table.png'))
                 self.lstDestTables.addItem(tabItem)
 
     def validateCurrentPage(self):
@@ -401,16 +401,16 @@ class ImportData(QWizard, Ui_frmImport):
 
         # Source selection wizard
         if self.currentId() == 0:
-            qfileinfo = QFileInfo(self.field("srcFolder"))
+            qfileinfo = QFileInfo(self.field('srcFolder'))
             if self.rbFolderSelection.isChecked():
                 if not qfileinfo.isDir():
-                    self.ErrorInfoMessage("The specified source is not a folder.")
+                    self.ErrorInfoMessage('The specified source is not a folder.')
                     validPage = False
                 else:
-                    folder = r"%s" % self.field("srcFolder")
-                    files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f)) and (f.endswith(tuple([".csv", ".shp", ".dxf"])))]
+                    folder = r'%s' % self.field('srcFolder')
+                    files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f)) and (f.endswith(tuple(['.csv', '.shp', '.dxf'])))]
                     if not len(files):
-                        self.ErrorInfoMessage("No any csv file, shapefile or Autocad DXF file in the specified path")
+                        self.ErrorInfoMessage('No any csv file, shapefile or Autocad DXF file in the specified path')
                         validPage = False
                     else:
                         for file in files:
@@ -418,27 +418,27 @@ class ImportData(QWizard, Ui_frmImport):
                                 self.dataReader.reset()
                             self.dataReader = OGRReader(os.path.join(folder, file))
                             if not self.dataReader.isValid():
-                                self.ErrorInfoMessage("The source file could not be opened."
-                                                      "\nPlease check is the given file type "
-                                                      "is supported")
+                                self.ErrorInfoMessage('The source file could not be opened.'
+                                                      '\nPlease check is the given file type '
+                                                      'is supported')
                                 validPage = False
                             else:
                                 self.dataReaders.append(OGRReader(os.path.join(folder, file)))
             elif self.rbFileSelection.isChecked():
                 if self.dataReader:
                     self.dataReader.reset()
-                self.dataReader = OGRReader(r"%s" % self.field("srcFolder"))
+                self.dataReader = OGRReader(r'%s' % self.field('srcFolder'))
                 if not self.dataReader.isValid():
-                    self.ErrorInfoMessage("The source file could not be opened."
-                                          "\nPlease check is the given file type "
-                                          "is supported")
+                    self.ErrorInfoMessage('The source file could not be opened.'
+                                          '\nPlease check is the given file type '
+                                          'is supported')
                     validPage = False
                 else:
-                    self.dataReaders.append(OGRReader(r"%s" % self.field("srcFolder")))
+                    self.dataReaders.append(OGRReader(r'%s' % self.field('srcFolder')))
         # Destination table selection wizard
         elif self.currentId() == 1:
             if self.destCheckedItem == None:                                                        
-                self.ErrorInfoMessage("Please select the destination table.")
+                self.ErrorInfoMessage('Please select the destination table.')
                 validPage = False
         # Assign column selection wizard
         elif self.currentId() == 2:
@@ -450,17 +450,17 @@ class ImportData(QWizard, Ui_frmImport):
         # Set the file path to the source file
         if self.rbFolderSelection.isChecked():
             sourceFile = QFileDialog.getExistingDirectory(self,
-                                "Open a folder",
-                                vectorFileDir() if vectorFileDir() else os.getenv("HOME"),
+                                'Open a folder',
+                                vectorFileDir() if vectorFileDir() else os.getenv('HOME'),
                                 QFileDialog.ShowDirsOnly)
         elif self.rbFileSelection.isChecked():
-            imageFilters = "Comma Separated Value (*.csv);;ESRI Shapefile (*.shp);;AutoCAD DXF (*.dxf)" 
+            imageFilters = 'Comma Separated Value (*.csv);;ESRI Shapefile (*.shp);;AutoCAD DXF (*.dxf)' 
             sourceFile = QFileDialog.getOpenFileName(self,
-                                                     "Select Source File",
+                                                     'Select Source File',
                                                      vectorFileDir(),
                                                      imageFilters)
 
-        if sourceFile != "":
+        if sourceFile != '':
             self.txtDataSource.setText(sourceFile)
 
     def getSrcDestPairs(self):
@@ -484,41 +484,41 @@ class ImportData(QWizard, Ui_frmImport):
         # Ensure that user has selected at least one column if it is a
         # non-spatial table
         if len(matchCols) == 0:
-            self.ErrorInfoMessage("Please select at least one source column.")
+            self.ErrorInfoMessage('Please select at least one source column.')
             return success
 
         # Specify geometry column
         geom_column=None
 
-        if self.field("typeSpatial"):
-            geom_column = self.field("geomCol")
+        if self.field('typeSpatial'):
+            geom_column = self.field('geomCol')
 
         value_translator_manager = self._trans_widget_mgr.translator_manager()
 
         try:
-            if self.field("optOverwrite"):
+            if self.field('optOverwrite'):
                 entity = self.curr_profile.entity_by_name(self.targetTab)
                 dependencies = entity.dependencies()
-                view_dep = dependencies["views"]
+                view_dep = dependencies['views']
                 entity_dep = [e.name for e in entity.children()]
-                entities_dep_str = ", ".join(entity_dep)
-                views_dep_str = ", ".join(view_dep)
+                entities_dep_str = ', '.join(entity_dep)
+                views_dep_str = ', '.join(view_dep)
 
                 if len(entity_dep) > 0 or len(view_dep) > 0:
                     del_msg = QApplication.translate(
-                        "ImportData",
-                        "Overwriting existing records will permanently \n"
-                        "remove records from other tables linked to the \n"
-                        "records. The following tables will be affected."
-                        "\n{}\n{}"
-                        "\nClick Yes to proceed importing or No to cancel.".
+                        'ImportData',
+                        'Overwriting existing records will permanently \n'
+                        'remove records from other tables linked to the \n'
+                        'records. The following tables will be affected.'
+                        '\n{}\n{}'
+                        '\nClick Yes to proceed importing or No to cancel.'.
                             format(entities_dep_str, views_dep_str)
                     )
                     del_result = QMessageBox.critical(
                         self,
                         QApplication.translate(
-                            "ImportData",
-                            "Overwrite Import Data Warning"
+                            'ImportData',
+                            'Overwrite Import Data Warning'
                         ),
                         del_msg,
                         QMessageBox.Yes | QMessageBox.No
@@ -543,9 +543,9 @@ class ImportData(QWizard, Ui_frmImport):
 
         if success:
             # Update directory info in the registry
-            setVectorFileDir(r"%s" % self.field("srcFolder"))
+            setVectorFileDir(r'%s' % self.field('srcFolder'))
             self.InfoMessage(
-                "All features have been imported successfully!"
+                'All features have been imported successfully!'
             )
 
         return success
@@ -578,7 +578,7 @@ class ImportData(QWizard, Ui_frmImport):
             self._clear_dest_table_selections(exclude=[item.text()])
 
             #Load geometry columns if selection is a spatial table
-            if self.field("typeSpatial"):
+            if self.field('typeSpatial'):
                 self.loadGeomCols(item.text())
 
     def syncRowSelection(self, srcList, destList):
