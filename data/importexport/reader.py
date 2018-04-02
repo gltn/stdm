@@ -53,7 +53,7 @@ class OGRReader(object):
     def __init__(self, source_file):
         self._ds = ogr.Open(source_file)
         self._targetGeomColSRID = -1
-        self._geomType = ''
+        self._geomType = ""
         self._dbSession = STDMDb.instance().session
         self._mapped_cls = None
         self._mapped_doc_cls = None
@@ -66,16 +66,13 @@ class OGRReader(object):
             numLayers = self._ds.GetLayerCount()
             if numLayers > 0:
                 return self._ds.GetLayer(0)
-
-            else:
-                return None
+            return None
 
     def getSpatialRefCode(self):
         # Get the EPSG code (More work required)
         if self.getLayer() != None:
             spRef = self.getLayer().GetSpatialRef()
             refCode = spRef.GetAttrValue("PRIMEM|AUTHORITY", 1)
-
         else:
             # Fallback to WGS84
             refCode = 4326
@@ -151,6 +148,7 @@ class OGRReader(object):
         :return: Converted value
         :rtype: Any
         """
+
         entity = self._data_source_entity(target_table)
         integer_types = ['INT', 'LOOKUP', 'ADMIN_SPATIAL_UNIT',
                          'FOREIGN_KEY', 'DOUBLE', 'PERCENT']
@@ -344,9 +342,9 @@ class OGRReader(object):
         # Check current profile
         if self._current_profile is None:
             msg = QApplication.translate(
-                'OGRReader',
-                'The current profile could not be determined.\nPlease set it '
-                'in the Options dialog or Configuration Wizard.'
+                "OGRReader",
+                "The current profile could not be determined.\nPlease set it "
+                "in the Options dialog or Configuration Wizard."
             )
             raise ConfigurationException(msg)
 
@@ -430,10 +428,10 @@ class OGRReader(object):
                             self._geomType, self._targetGeomColSRID = \
                                 geometryType(targettable, geomColumn)
 
-                    '''
+                    """
                     Check if there is a value translator defined for the
                     specified destination column.
-                    '''
+                    """
                     value_translator = translator_manager.translator(
                         dest_column)
 
@@ -459,7 +457,7 @@ class OGRReader(object):
 
                     # Set supporting documents
                     if destination_entity.supports_documents:
-                        column_value_mapping['documents'] = \
+                        column_value_mapping["documents"] = \
                             self._source_doc_manager.model_objects()
 
                     column_count += 1
