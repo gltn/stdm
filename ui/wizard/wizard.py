@@ -580,7 +580,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         # Handle deselection of a party entity
         # Remove party graphic item from the view
         party_name = item.text()
-        self.dg_tenure.remove_party(party_name)
+
+        p = self.current_profile()
+        if not p is None:
+            # Remove party from the profile
+            res = p.social_tenure.remove_party(party_name)
+            if res:
+                self.dg_tenure.remove_party(party_name)
 
     def _on_spatial_unit_selected(self, item):
         # Check if the spatial unit has also been selected as a party

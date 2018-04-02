@@ -39,13 +39,14 @@ from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.settings.config_file_updater import ConfigurationFileUpdater
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
+from stdm.data.configuration.column_updaters import varchar_updater
 
 from stdm.ui.change_pwd_dlg import changePwdDlg
 from stdm.ui.doc_generator_dlg import (
     DocumentGeneratorDialogWrapper,
     EntityConfig
 )
-
+from stdm.data.database import alchemy_table
 from stdm.ui.login_dlg import loginDlg
 from stdm.ui.manage_accounts_dlg import manageAccountsDlg
 from stdm.ui.content_auth_dlg import contentAuthDlg
@@ -342,6 +343,8 @@ class STDMQGISLoader(object):
                     result = self.default_profile()
                     if not result:
                         return
+                self.create_custom_tenure_dummy_col()
+
                 self.loadModules()
                 self.default_profile()
                 self.run_wizard()
@@ -358,6 +361,27 @@ class STDMQGISLoader(object):
                     title,
                     pe
                 )
+
+    def create_custom_tenure_dummy_col(self):
+        """
+        Creates custom tenure entity dummy column if it does not exist.
+        :return:
+        :rtype:
+        """
+        social_tenure = self.current_profile.social_tenure
+        for spatial_unit in social_tenure.spatial_units:
+            custom_entity = social_tenure.spu_custom_attribute_entity(
+                spatial_unit
+            )
+            if pg_table_exists(custom_entity.name):
+                custom_ent_cols = table_column_names(custom_entity.name)
+                if social_tenure.CUSTOM_TENURE_DUMMY_COLUMN \
+                        not in custom_ent_cols:
+                    dummy_col = custom_entity.columns[
+                        social_tenure.CUSTOM_TENURE_DUMMY_COLUMN]
+                    custom_table = alchemy_table(custom_entity.name)
+                    varchar_updater(dummy_col, custom_table,
+                                    custom_ent_cols)
 
     def minimum_table_checker(self):
 
