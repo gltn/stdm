@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_import_data.ui'
 #
-# Created: Sun Mar 11 00:17:38 2018
-#      by: PyQt4 UI code generator 4.10.2
+# Created: Mon Apr 02 15:41:08 2018
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -33,6 +33,19 @@ class Ui_frmImport(object):
         self.pgSource.setObjectName(_fromUtf8("pgSource"))
         self.verticalLayout = QtGui.QVBoxLayout(self.pgSource)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
+        self.groupBox_7 = QtGui.QGroupBox(self.pgSource)
+        self.groupBox_7.setObjectName(_fromUtf8("groupBox_7"))
+        self.horizontalLayout_7 = QtGui.QHBoxLayout(self.groupBox_7)
+        self.horizontalLayout_7.setObjectName(_fromUtf8("horizontalLayout_7"))
+        self.rbFolderSelection = QtGui.QRadioButton(self.groupBox_7)
+        self.rbFolderSelection.setEnabled(True)
+        self.rbFolderSelection.setChecked(True)
+        self.rbFolderSelection.setObjectName(_fromUtf8("rbFolderSelection"))
+        self.horizontalLayout_7.addWidget(self.rbFolderSelection)
+        self.rbFileSelection = QtGui.QRadioButton(self.groupBox_7)
+        self.rbFileSelection.setObjectName(_fromUtf8("rbFileSelection"))
+        self.horizontalLayout_7.addWidget(self.rbFileSelection)
+        self.verticalLayout.addWidget(self.groupBox_7)
         self.groupBox = QtGui.QGroupBox(self.pgSource)
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
         self.horizontalLayout_2 = QtGui.QHBoxLayout(self.groupBox)
@@ -245,6 +258,9 @@ class Ui_frmImport(object):
         frmImport.setWindowTitle(_translate("frmImport", "Import to STDM", None))
         self.pgSource.setTitle(_translate("frmImport", "Source Data", None))
         self.pgSource.setSubTitle(_translate("frmImport", "Specify the location of the source file and representative data type.", None))
+        self.groupBox_7.setTitle(_translate("frmImport", "Select From:", None))
+        self.rbFolderSelection.setText(_translate("frmImport", "Folder (Batch Import)", None))
+        self.rbFileSelection.setText(_translate("frmImport", "Single File (Single Import)", None))
         self.groupBox.setTitle(_translate("frmImport", "Source:", None))
         self.label.setText(_translate("frmImport", "Dataset", None))
         self.btnBrowseSource.setText(_translate("frmImport", "Browse", None))
