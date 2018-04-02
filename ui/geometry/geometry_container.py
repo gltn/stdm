@@ -26,7 +26,10 @@ from ui_join_points import Ui_JoinPoints
 GEOM_DOCK_ON = False
 PREVIEW_POLYGON = 'Preview Polygon'
 POLYGON_LINES = 'Polygon Lines'
-#TODO check entity browser can select feature and zoom with geom tools
+LINE_POINTS = 'Line Points'
+# TODO Line count is not showing on seond time load.
+# TODO reset selected feature on toggle of geom combobox - Done partly
+# TODO on selection of polygon, clear selection of line in the UI
 class LayerSelectionHandler(object):
     """
      Handles all tasks related to the layer.
@@ -253,9 +256,7 @@ class GeometryToolsContainer(
         self.setBaseSize(300, 5000)
         self.layer = None
         self.line_layer = None
-
-
-
+        # self.current_widget = None
 
     def init_dock(self):
         """
@@ -272,17 +273,13 @@ class GeometryToolsContainer(
         for i, factory in enumerate(GeometryWidgetRegistry.registered_factories.values()):
             widget = factory.create(self, self.geom_tools_widgets.widget(i))
             self.geom_tools_widgets.addWidget(widget)
-            self.geom_tools_combo.addItem(factory.NAME, factory.OBJECT_NAME)
-            widget.init_signals()
 
-    def close_widgets(self):
-        for i, factory in enumerate(GeometryWidgetRegistry.registered_factories.values()):
-            widget = factory.create(self, self.geom_tools_widgets.widget(i))
-            print 'widget.settings_layer_connected',  widget.settings_layer_connected
-            # self.layer.selectionChanged.disconnect(
-            #     widget.show_selected_layer
-            # )
-            print 'closed ', widget.widget_closed
+            self.geom_tools_combo.addItem(factory.NAME, factory.OBJECT_NAME)
+
+            widget.init_signals()
+            # if i == 0:
+            #     self.current_widget = widget
+
 
     def init_signals(self):
         self.geom_tools_combo.currentIndexChanged.connect(
@@ -291,6 +288,11 @@ class GeometryToolsContainer(
 
     def on_geom_tools_combo_changed(self, index):
         self.geom_tools_widgets.setCurrentIndex(index)
+        current_widget = self.geom_tools_widgets.widget(index)
+
+        current_widget.set_widget(current_widget)
+        current_widget.init_signals()
+        current_widget.clear_inputs()
 
     def close_dock(self, tool):
         """
@@ -306,7 +308,6 @@ class GeometryToolsContainer(
         self.clear_sel_highlight()
         self.hide()
         GEOM_DOCK_ON = False
-        # self.close_widgets()
 
     def closeEvent(self, event):
         """
@@ -471,7 +472,6 @@ class GeometryToolsContainer(
                 self.layer_table
             )
 
-
     def set_entity(self, entity):
         """
         Sets the spatial entity.
@@ -481,14 +481,14 @@ class GeometryToolsContainer(
         self._entity = entity
 
 
-class GeomWidgetsSettings():
+class GeomWidgetsBase(object):
 
-    # selection_finished = pyqtSignal()
+
     def __init__(self, layer_settings, widget):
-        # QObject.__init__(widget)
+        # QObject.__init__(self, widget)
         global GEOM_DOCK_ON
         GEOM_DOCK_ON = True
-        print 'Geom widget activated 1'
+        # print 'Geom widget activated 1'
         self.settings = layer_settings
         self.current_profile = current_profile()
         self.iface = iface
@@ -498,8 +498,11 @@ class GeomWidgetsSettings():
         self.feature_count = 0
         self.features = []
         self.lines_count = 0
+        self.points_count = 0
         self.lines = []
+        self.points = []
         self.line_layer = None
+        self.point_layer = None
         self.notice = NotificationBar(
             self.settings.notice_box
         )
@@ -510,63 +513,57 @@ class GeomWidgetsSettings():
         self.widget.preview_btn.clicked.connect(self.preview)
         self.widget.save_btn.clicked.connect(self.save)
         self.settings_layer_connected = False
-        self.line_layer_connected = False
+        # self.line_layer_connected = False
 
     def init_signals(self):
         if not self.settings_layer_connected:
-            print 'Geom widget signal activated 1'
+            # print 'Geom widget signal activated 1'
             self.settings.layer.selectionChanged.connect(
-                self.show_selected_layer
+                self.on_feature_selected
             )
             self.settings_layer_connected = True
 
+    def set_widget(self, widget):
+        self.widget = widget
+
+    def clear_inputs(self):
+        if hasattr(self.widget, 'sel_features_lbl'):
+
+            self.widget.sel_features_lbl.setText(str(0))
+
+        if hasattr(self.widget, 'selected_line_lbl'):
+
+            self.widget.selected_line_lbl.setText(str(0))
+
+        if hasattr(self.widget, 'line_length_lbl'):
+
+            self.widget.line_length_lbl.setText(str(0))
+
+        if hasattr(self.widget, 'selected_points_lbl'):
+
+            self.widget.selected_points_lbl.setText(str(0))
+
+
     def disconnect_signals(self):
-        print 'self.settings_layer_connected ', self.settings_layer_connected
+        # print 'self.settings_layer_connected ', self.settings_layer_connected
         if self.settings_layer_connected:
             self.settings.layer.selectionChanged.disconnect(
-                self.show_selected_layer
+                self.on_feature_selected
             )
             self.settings_layer_connected = False
 
     def on_feature_selection_finished(self):
 
-        self.line_layer = polygon_to_lines(self.settings.layer)
+        self.line_layer = polygon_to_lines(self.settings.layer, POLYGON_LINES)
         self.settings.line_layer = self.line_layer
-        if self.line_layer is not None and not self.line_layer_connected:
+        # print self.line_layer, self.line_layer_connected
+        if self.line_layer is not None:
 
             self.line_layer.selectionChanged.connect(
-                self.show_selected_line_layer
+                self.on_line_feature_selected
             )
-            print self.line_layer.selectionChanged
-            self.line_layer_connected = True
 
-    def on_line_selection_finished(self):
-        self.preview()
-
-    def show_selected_layer(self, feature):
-        if not GEOM_DOCK_ON:
-            return
-        if len(feature) == 0:
-            return
-        self.feature_ids = feature
-        self.features = feature_id_to_feature(
-            self.settings.layer, self.feature_ids
-        )
-        if self.executed:
-            return
-        if self.settings.layer is None:
-            return
-        if iface.activeLayer().name() == POLYGON_LINES:
-            return
-
-        if self.settings.stdm_layer(self.settings.layer):
-            if hasattr(self.widget, 'sel_features_lbl'):
-
-                self.feature_count = self.selected_features_count()
-                self.widget.sel_features_lbl.setText(str(self.feature_count))
-                self.on_feature_selection_finished()
-
-                # print inspect.stack()
+            # self.line_layer_connected = True
 
     def hideEvent(self, event):
         self.widget_closed = True
@@ -583,16 +580,73 @@ class GeomWidgetsSettings():
             for line_layer in line_layers:
                 QgsMapLayerRegistry.instance().removeMapLayer(line_layer)
 
+        point_layers = QgsMapLayerRegistry.instance().mapLayersByName(
+            LINE_POINTS
+        )
+        if len(point_layers) > 0:
+            for point_layer in point_layers:
+                QgsMapLayerRegistry.instance().removeMapLayer(point_layer)
+        if self.settings.layer.isEditable():
+            iface.mainWindow().findChild(QAction, 'mActionToggleEditing').trigger()
+
         self.disconnect_signals()
 
-    def show_selected_line_layer(self):
+    def on_line_selection_finished(self):
+        # self.preview()
+        pass
+
+    def on_feature_selected(self, feature):
+        """
+        Selects a feature and load line layer which is boundary of the polygon.
+        :param feature: List of feature ids selected
+        :type feature: List
+        :return:
+        :rtype:
+        """
+        if self.parent().currentWidget().objectName() != self.objectName():
+            return
+
+        self.set_widget(self.parent().currentWidget())
+
+        if not GEOM_DOCK_ON:
+            return
+
+        if len(feature) == 0:
+            return
+
+        self.feature_ids = feature
+
+        self.features = feature_id_to_feature(
+            self.settings.layer, self.feature_ids
+        )
+
         if self.settings.layer is None:
             return
 
+        if iface.activeLayer().name() == POLYGON_LINES:
+            return
+
+        if self.settings.stdm_layer(self.settings.layer):
+            if hasattr(self.widget, 'sel_features_lbl'):
+                self.feature_count = self.selected_features_count()
+
+                self.widget.sel_features_lbl.setText(str(self.feature_count))
+
+                self.on_feature_selection_finished()
+
+                # print inspect.stack()
+
+    def on_line_feature_selected(self):
+        # print self.settings.layer
+        if self.settings.layer is None:
+            return
+        # print iface.activeLayer().name() , self.settings.layer
         if iface.activeLayer().name() != POLYGON_LINES:
             return
+        # print self.line_layer.selectedFeatures()
         if len(self.line_layer.selectedFeatures()) == 0:
             return
+        QApplication.processEvents()
         if hasattr(self.widget, 'selected_line_lbl'):
             self.lines[:] = []
             self.lines_count = self.selected_line_count()
@@ -600,10 +654,12 @@ class GeomWidgetsSettings():
             self.widget.selected_line_lbl.setText(str(self.lines_count))
             if self.lines_count > 1:
                 message = QApplication.translate(
-                    'GeomWidgetsSettings',
+                    'GeomWidgetsBase',
                     'The first selected segment will be used.'
                 )
                 self.notice.insertWarningNotification(message)
+
+            # self.line_selection_finished.emit()
 
     def selected_features_count(self):
         request = QgsFeatureRequest()
@@ -635,10 +691,31 @@ class GeomWidgetsSettings():
         else:
             return 0
 
+    def selected_point_count(self):
+        if self.point_layer is None:
+            return 0
+
+        points = self.point_layer.selectedFeatures()
+        if len(self.lines) > 0:
+            location = identify_selected_point_location(
+                points[0], self.lines[0].geometry()
+            )
+
+            if location == 'middle':
+
+                return 0
+        # else:
+        self.points = points
+
+        if self.points is not None:
+            return len(self.points)
+        else:
+            return 0
+
     def validate_save(self):
         if self.widget.split_polygon_area.value() == 0:
             message = QApplication.translate(
-                'GeomWidgetsSettings',
+                'GeomWidgetsBase',
                 'The area must be greater than 0.'
             )
             self.notice.insertErrorNotification(message)
@@ -646,34 +723,20 @@ class GeomWidgetsSettings():
         return True
 
     def save(self):
-        result = self.validate_save()
-        if not result:
-            return
-        self.executed = True
-        if self.settings_layer_connected:
-            self.disconnect_signals()
+        pass
 
-        self.create_preview_layer()
-        # if len(self.features) > 1:
-        #     self.settings.layer.startEditing()
-        #     iface.mainWindow().findChild(
-        #         QAction, 'mActionMergeFeatureAttributes').trigger()
 
-        #     self.settings.layer.commitChanges()
-        # iface.setActiveLayer(self.settings.layer)
-
-        self.settings.layer.selectByIds(self.feature_ids)
-        move_line_with_area(
-            self.settings.layer,
-            self.line_layer,
-            self.preview_layer,
-            self.lines[0],
-            self.widget.split_polygon_area.value(),
-            self.feature_ids
+    def create_point_layer(self):
+        prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
+            LINE_POINTS
         )
-        # iface.mapCanvas().refresh()
-        iface.setActiveLayer(self.settings.layer)
-        self.init_signals()
+        for prev_layer in prev_layers:
+            clear_layer_features(prev_layer)
+
+        if len(prev_layers) == 0:
+            self.point_layer = create_temporary_layer(
+                self.settings.layer, 'Point', LINE_POINTS, True
+            )
 
     def create_preview_layer(self):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
@@ -706,16 +769,9 @@ class GeomWidgetsSettings():
         self.preview_layer = copy_layer_to_memory(
             self.settings.layer, PREVIEW_POLYGON, self.feature_ids, False)
 
-        # if len(self.features) > 1:
-        #     self.preview_layer.selectAll()
-        #     self.preview_layer.startEditing()
-        #     iface.mainWindow().findChild(
-        #         QAction, 'mActionMergeFeatureAttributes').trigger()
-        # self.preview_layer.commitChanges()
-        # self.preview_layer.selectAll()
         if len(self.lines) > 0:
             try:
-                move_line_with_area(
+                split_move_line_with_area(
                     self.preview_layer,
                     self.line_layer,
                     self.preview_layer,
@@ -730,38 +786,471 @@ class GeomWidgetsSettings():
         pass
 
 
-class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsSettings):
+class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
 
     def __init__(self, layer_settings, parent):
         QWidget.__init__(self)
 
         self.setupUi(self)
-        GeomWidgetsSettings.__init__(self, layer_settings, self)
+        GeomWidgetsBase.__init__(self, layer_settings, self)
+
+    def validate_save(self):
+        if self.widget.split_polygon_area.value() == 0:
+            message = QApplication.translate(
+                'GeomWidgetsBase',
+                'The area must be greater than 0.'
+            )
+            self.notice.insertErrorNotification(message)
+            return False
+        return True
+
+    def save(self):
+        result = self.validate_save()
+        if not result:
+            return
+        self.executed = True
+        if self.settings_layer_connected:
+            self.disconnect_signals()
+
+        self.create_preview_layer()
+
+        self.settings.layer.selectByIds(self.feature_ids)
+
+        split_move_line_with_area(
+            self.settings.layer,
+            self.line_layer,
+            self.preview_layer,
+            self.lines[0],
+            self.widget.split_polygon_area.value(),
+            self.feature_ids
+        )
+
+        iface.setActiveLayer(self.settings.layer)
+        self.init_signals()
 
 
-class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsSettings):
+class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
 
     def __init__(self, layer_settings, parent):
         QWidget.__init__(self)
 
         self.setupUi(self)
-        GeomWidgetsSettings.__init__(self, layer_settings, self)
+        GeomWidgetsBase.__init__(self, layer_settings, self)
+        self.offset_distance.valueChanged.connect(self.on_offset_distance_changed)
+    def on_offset_distance_changed(self, new_value):
+        if self.settings_layer_connected:
+            self.disconnect_signals()
+
+        self.create_preview_layer()
+
+        result = split_offset_distance(
+            self.settings.layer,
+            self.line_layer,
+            self.preview_layer,
+            self.lines[0],
+            new_value,
+            self.feature_ids,
+            validate=True
+        )
+        if not result:
+            message = QApplication.translate(
+                'OffsetDistanceWidget', 'The offset distance is too large.'
+            )
+            self.notice.insertErrorNotification(message)
+        else:
+            self.notice.clear()
+        iface.setActiveLayer(self.settings.layer)
+        self.init_signals()
+
+    def validate_save(self):
+        if self.widget.offset_distance.value() == 0:
+            message = QApplication.translate(
+                'GeomWidgetsBase',
+                'The offset distance must be greater than 0.'
+            )
+            self.notice.insertErrorNotification(message)
+            return False
+        return True
+
+    def save(self):
+        result = self.validate_save()
+        if not result:
+            return
+        self.executed = True
+        if self.settings_layer_connected:
+            self.disconnect_signals()
+
+        self.create_preview_layer()
+
+        self.settings.layer.selectByIds(self.feature_ids)
+        result = split_offset_distance(
+            self.settings.layer,
+            self.line_layer,
+            self.preview_layer,
+            self.lines[0],
+            self.widget.offset_distance.value(),
+            self.feature_ids
+        )
+        if not result:
+            message = QApplication.translate(
+                'OffsetDistanceWidget', 'The offset distance is too large.'
+            )
+            self.notice.insertErrorNotification(message)
+        iface.setActiveLayer(self.settings.layer)
+        self.init_signals()
 
 
-class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsSettings):
 
+class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
+    line_selection_finished = pyqtSignal()
     def __init__(self, layer_settings, parent):
         QWidget.__init__(self)
 
         self.setupUi(self)
-        GeomWidgetsSettings.__init__(self, layer_settings, self)
+        GeomWidgetsBase.__init__(self, layer_settings, self)
+        self.line_selection_finished.connect(self.on_line_selection_finished)
+        self.length_from_point.valueChanged.connect(
+            self.on_length_from_reference_point_changed
+        )
+        self.rotation_point = None
+
+    def on_point_feature_selected(self):
+        print self.settings.layer
+        if self.settings.layer is None:
+            return
+        # print iface.activeLayer().name() , self.settings.layer
+        if iface.activeLayer().name() != LINE_POINTS:
+            return
+
+        if len(self.point_layer.selectedFeatures()) == 0:
+            return
+
+        if hasattr(self.widget, 'selected_points_lbl'):
+
+            self.points_count = self.selected_point_count()
+
+            self.widget.selected_points_lbl.setText(str(self.points_count))
+            if self.points_count > 1:
+                message = QApplication.translate(
+                    'GeomWidgetsBase',
+                    'The first selected point will be used.'
+                )
+                self.notice.insertWarningNotification(message)
+
+    def on_line_feature_selected(self):
+        # print self.settings.layer
+        if self.settings.layer is None:
+            return
+        # print iface.activeLayer().name() , self.settings.layer
+        if iface.activeLayer().name() != POLYGON_LINES:
+            return
+        # print self.line_layer.selectedFeatures()
+        if len(self.line_layer.selectedFeatures()) == 0:
+            return
+
+        if hasattr(self.widget, 'selected_line_lbl'):
+            self.lines[:] = []
+            self.lines_count = self.selected_line_count()
+
+            self.widget.selected_line_lbl.setText(str(self.lines_count))
+            if self.lines_count > 1:
+                message = QApplication.translate(
+                    'GeomWidgetsBase',
+                    'The first selected segment will be used.'
+                )
+                self.notice.insertWarningNotification(message)
+
+            self.line_selection_finished.emit()
+
+    def on_length_from_reference_point_changed(self, new_value):
+        # if len(self.point_layer.selectedFeatures()) > 0:
+        print 'self.rotation_point ', self.rotation_point
+        # self.point_layer.commitChanges()
+        if self.rotation_point is not None:
+            with edit(self.point_layer):
+                point_features = [f.id() for f in self.point_layer.getFeatures()]
+                rotation_point = point_features[-1:]
+                self.point_layer.deleteFeature(rotation_point[0])
+
+        self.rotation_point = point_by_distance(
+            self.point_layer,
+            self.points[0],
+            self.lines[0].geometry(),
+            new_value
+        )
+        # print self.rotation_point
+
+    def on_line_selection_finished(self):
+        self.rotation_point = None
+
+        line_geom = self.lines[0].geometry()
+        line_length = line_geom.length()
+        # add line length for the user to see
+        self.line_length_lbl.setText(str(round(line_length, 2)))
+        self.length_from_point.setMaximum(math.modf(line_length)[1])
+        # add points for the line.
+        self.create_point_layer()
+        add_line_points_to_map(self.point_layer, line_geom)
+        self.points_count = self.selected_point_count()
+
+        self.widget.selected_points_lbl.setText(str(self.points_count))
 
 
-class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsSettings):
+    def validate_save(self):
+        state = True
+        if self.rotation_point is None:
+            message = QApplication.translate(
+                'OnePointAreaWidget',
+                'The rotation point is not added.'
+            )
+            self.notice.insertErrorNotification(message)
+            state = False
+        if self.widget.split_polygon_area.value() == 0:
+            message = QApplication.translate(
+                'OnePointAreaWidget',
+                'The area must be greater than 0.'
+            )
+            self.notice.insertErrorNotification(message)
+            if state == True:
+                state = False
+        return state
+
+    def save(self):
+        result = self.validate_save()
+        if not result:
+            return
+        self.executed = True
+        if self.settings_layer_connected:
+            self.disconnect_signals()
+
+        self.create_preview_layer()
+        if self.clockwise.isChecked():
+            clockwise = 1
+        else:
+            clockwise = -1
+
+        self.settings.layer.selectByIds(self.feature_ids)
+        selected_line_geom = self.lines[0].geometry()
+        split_rotate_line_with_area(
+            self.settings.layer,
+            self.preview_layer,
+            selected_line_geom,
+            self.rotation_point.geometry(),
+            self.split_polygon_area.value(),
+            self.feature_ids,
+            clockwise
+        )
+        iface.setActiveLayer(self.settings.layer)
+        self.init_signals()
+
+
+class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
+    line_selection_finished = pyqtSignal()
     def __init__(self, layer_settings, parent):
         QWidget.__init__(self)
         self.setupUi(self)
-        GeomWidgetsSettings.__init__(self, layer_settings, self)
+
+        GeomWidgetsBase.__init__(self, layer_settings, self)
+        self.line_selection_finished.connect(self.on_line_selection_finished)
+        self.length_from_point.valueChanged.connect(
+            self.on_length_from_reference_point_changed
+        )
+        self.rotation_point = None
+
+    def create_point_layer(self):
+        prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
+            LINE_POINTS
+        )
+        for prev_layer in prev_layers:
+            clear_layer_features(prev_layer)
+
+        if len(prev_layers) == 0:
+            self.point_layer = create_temporary_layer(
+                self.settings.layer, 'Point', LINE_POINTS, True
+            )
+            self.point_layer.selectionChanged.connect(
+                self.on_point_feature_selected
+            )
+
+    def on_feature_selected(self, feature):
+        """
+        Selects a feature and load line layer which is boundary of the polygon.
+        :param feature: List of feature ids selected
+        :type feature: List
+        :return:
+        :rtype:
+        """
+        if self.parent().currentWidget().objectName() != self.objectName():
+            return
+
+        self.set_widget(self.parent().currentWidget())
+
+        if not GEOM_DOCK_ON:
+            return
+
+        if len(feature) == 0:
+            return
+
+        self.feature_ids = feature
+
+        zoom_to_selected(self.settings.layer)
+        self.features = feature_id_to_feature(
+            self.settings.layer, self.feature_ids
+        )
+
+        if self.settings.layer is None:
+            return
+
+        if iface.activeLayer().name() == POLYGON_LINES:
+            return
+
+        if self.settings.stdm_layer(self.settings.layer):
+            if hasattr(self.widget, 'sel_features_lbl'):
+                self.feature_count = self.selected_features_count()
+
+                self.widget.sel_features_lbl.setText(str(self.feature_count))
+
+                self.on_feature_selection_finished()
+
+    def on_feature_selection_finished(self):
+
+        self.line_layer = polygon_to_lines(self.settings.layer, POLYGON_LINES)
+        self.create_point_layer()
+        polygon_to_points(self.settings.layer, self.line_layer,
+                          self.point_layer,  POLYGON_LINES)
+        self.settings.line_layer = self.line_layer
+        # print self.line_layer, self.line_layer_connected
+        if self.line_layer is not None:
+
+            self.line_layer.selectionChanged.connect(
+                self.on_line_feature_selected
+            )
+
+    def on_point_feature_selected(self):
+        # print self.settings.layer
+        if self.settings.layer is None:
+            return
+        # print iface.activeLayer().name() , self.settings.layer
+        if iface.activeLayer().name() != LINE_POINTS:
+            return
+
+        if len(self.point_layer.selectedFeatures()) == 0:
+            return
+
+        if hasattr(self.widget, 'selected_points_lbl'):
+
+            self.points_count = self.selected_point_count()
+
+            self.widget.selected_points_lbl.setText(str(self.points_count))
+            if self.points_count > 2:
+                message = QApplication.translate(
+                    'GeomWidgetsBase',
+                    'The first two selected point will be used.'
+                )
+                self.notice.insertWarningNotification(message)
+
+    def on_line_feature_selected(self):
+        # print self.settings.layer
+        if self.settings.layer is None:
+            return
+        # print iface.activeLayer().name() , self.settings.layer
+        if iface.activeLayer().name() != POLYGON_LINES:
+            return
+        # print self.line_layer.selectedFeatures()
+        if len(self.line_layer.selectedFeatures()) == 0:
+            return
+
+        if hasattr(self.widget, 'selected_line_lbl'):
+            self.lines[:] = []
+            self.lines_count = self.selected_line_count()
+
+            self.widget.selected_line_lbl.setText(str(self.lines_count))
+            if self.lines_count > 1:
+                message = QApplication.translate(
+                    'GeomWidgetsBase',
+                    'The first selected segment will be used.'
+                )
+                self.notice.insertWarningNotification(message)
+
+            self.line_selection_finished.emit()
+
+    def on_length_from_reference_point_changed(self, new_value):
+        # if len(self.point_layer.selectedFeatures()) > 0:
+        print 'self.rotation_point ', self.rotation_point
+        # self.point_layer.commitChanges()
+        if self.rotation_point is not None:
+            with edit(self.point_layer):
+                point_features = [f.id() for f in self.point_layer.getFeatures()]
+                rotation_point = point_features[-1:]
+                self.point_layer.deleteFeature(rotation_point[0])
+
+        self.rotation_point = point_by_distance(
+            self.point_layer,
+            self.points[0],
+            self.lines[0].geometry(),
+            new_value
+        )
+        # print self.rotation_point
+
+    def on_line_selection_finished(self):
+        self.rotation_point = None
+
+        line_geom = self.lines[0].geometry()
+        line_length = line_geom.length()
+        # add line length for the user to see
+        self.line_length_lbl.setText(str(round(line_length, 2)))
+        self.length_from_point.setMaximum(math.modf(line_length)[1])
+        # add points for the line.
+        # self.create_point_layer()
+        add_line_points_to_map(self.point_layer, line_geom, clear=False)
+        self.points_count = self.selected_point_count()
+
+        self.widget.selected_points_lbl.setText(str(self.points_count))
+
+
+    def validate_save(self):
+        state = True
+        if self.points_count < 2:
+            message = QApplication.translate(
+                'OnePointAreaWidget',
+                'Two points must be selected to split.'
+            )
+            self.notice.insertErrorNotification(message)
+            state = False
+        if self.points_count > 2:
+            message = QApplication.translate(
+                'GeomWidgetsBase',
+                'The first two selected point will be used.'
+            )
+            self.notice.insertWarningNotification(message)
+
+        return state
+
+    def save(self):
+        result = self.validate_save()
+        if not result:
+            return
+        self.executed = True
+        if self.settings_layer_connected:
+            self.disconnect_signals()
+
+        self.create_preview_layer()
+
+        self.settings.layer.selectByIds(self.feature_ids)
+        point_geoms = [f.geometry() for f in self.points]
+        result = split_join_points(
+            self.settings.layer,
+            self.preview_layer, point_geoms, self.feature_ids
+        )
+        if not result:
+            message = QApplication.translate(
+                'JoinPointsWidget', 'Unable to split polygon.\nCheck the selected points.'
+            )
+            self.notice.insertErrorNotification(message)
+
+        iface.setActiveLayer(self.settings.layer)
+        self.init_signals()
+
 
 class GeometryWidgetRegistry(object):
     """

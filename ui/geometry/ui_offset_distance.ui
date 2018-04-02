@@ -29,7 +29,7 @@
     </widget>
    </item>
    <item row="2" column="1" colspan="2">
-    <widget class="QDoubleSpinBox" name="doubleSpinBox_2"/>
+    <widget class="QDoubleSpinBox" name="offset_distance"/>
    </item>
    <item row="2" column="0">
     <widget class="QLabel" name="label_11">

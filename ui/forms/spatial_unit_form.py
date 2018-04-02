@@ -37,8 +37,8 @@ from qgis.core import (
     QgsMapLayerRegistry,
     QgsFeature,
     QgsPoint,
-    QgsVectorLayer
-)
+    QgsVectorLayer,
+    QgsField)
 from PyQt4.QtGui import (
     QApplication,
     QLabel,
@@ -414,9 +414,12 @@ class STDMFieldWidget():
             QgsFeatureRequest().setFilterFid(feature_id))
         feature = next(iterator)
         field_names = [field.name() for field in self.layer.pendingFields()]
-
+        attribute = feature.attributes()
+        if isinstance(attribute[0], QgsField):
+            return None, 0
         mapped_data = OrderedDict(zip(field_names, feature.attributes()))
         col_with_data = []
+        print mapped_data
         for col, value in mapped_data.iteritems():
             if col == 'id':
                 continue

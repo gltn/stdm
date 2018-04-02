@@ -18,7 +18,7 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 # @ToDos
-# 1. Allow option for scanning sub-folders (With Scan sub-folders – Yes/No radio button)
+# 1. Allow option for scanning sub-folders (With Scan sub-folders Yes/No radio button)
 # 2. It would be great if there is a popup option of selecting, unselecting files 
 # in the Batch processing. This gives more flexibility. Select all/Unselect all
 # option is necessary here.
