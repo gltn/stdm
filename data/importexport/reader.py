@@ -161,7 +161,7 @@ class OGRReader(object):
                 if isinstance(value, str):
                     if not bool(value.strip()) or value.strip().lower() == 'null':
                         value = None
-                elif entity.columns[col_name].TYPE_INFO in float_type:
+                if entity.columns[col_name].TYPE_INFO in float_type:
                     try:
                         if value is not None:
                             value = float(value)
@@ -170,6 +170,7 @@ class OGRReader(object):
                         value = None
 
                 elif entity.columns[col_name].TYPE_INFO in int_type:
+
                     try:
                         if value is not None:
                             value = int(value)
@@ -180,7 +181,10 @@ class OGRReader(object):
                                         'FOREIGN_KEY']:
                                         value = None
                     except ValueError:
+                        #TODO show warning to the user that
+                        #  some values cannot be converted to integer.
                         value = None
+                    
         return value
 
     def auto_fix_date(self, target_table, col_name, value):
