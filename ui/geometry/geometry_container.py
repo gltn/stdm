@@ -511,7 +511,7 @@ class GeomWidgetsBase(object):
         self.preview_layer = None
 
         self.widget.preview_btn.clicked.connect(self.preview)
-        self.widget.save_btn.clicked.connect(self.save)
+        self.widget.run_btn.clicked.connect(self.save)
         self.settings_layer_connected = False
         self.progress_dialog = STDMProgressDialog(iface.mainWindow())
         self.progress_dialog.setMinimumWidth(400)
@@ -589,8 +589,11 @@ class GeomWidgetsBase(object):
         if len(point_layers) > 0:
             for point_layer in point_layers:
                 QgsMapLayerRegistry.instance().removeMapLayer(point_layer)
-        if self.settings.layer.isEditable():
-            iface.mainWindow().findChild(QAction, 'mActionToggleEditing').trigger()
+        if self.settings.layer is not None:
+            if self.settings.layer.isEditable():
+                iface.mainWindow().findChild(
+                    QAction, 'mActionToggleEditing'
+                ).trigger()
 
         self.disconnect_signals()
 

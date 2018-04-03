@@ -66,9 +66,9 @@
     <widget class="QDoubleSpinBox" name="length_from_point"/>
    </item>
    <item row="5" column="4">
-    <widget class="QPushButton" name="save_btn">
+    <widget class="QPushButton" name="run_btn">
      <property name="text">
-      <string>Save</string>
+      <string>Run</string>
      </property>
     </widget>
    </item>

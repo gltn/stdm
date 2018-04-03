@@ -419,7 +419,7 @@ class STDMFieldWidget():
             return None, 0
         mapped_data = OrderedDict(zip(field_names, feature.attributes()))
         col_with_data = []
-        print mapped_data
+      
         for col, value in mapped_data.iteritems():
             if col == 'id':
                 continue

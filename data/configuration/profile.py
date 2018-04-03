@@ -47,6 +47,8 @@ from stdm.data.configuration.value_list import (
     ValueList
 )
 
+from stdm.data.configuration.auto_generate_code import AutoGenerateCode
+
 LOGGER = logging.getLogger('stdm')
 
 
@@ -88,12 +90,13 @@ class Profile(QObject):
         self._str_table_exists = False
 
         self._admin_spatial_unit = AdministrativeSpatialUnit(self)
+        self._auto_generate_code = AutoGenerateCode(self)
         self.removed_entities = []
 
         #Add default entities to the entity collection
         self.add_entity(self.supporting_document)
         self.add_entity(self._admin_spatial_unit)
-
+        self.add_entity(self._auto_generate_code)
         self.add_entity(self.social_tenure)
 
     def _prefix(self):
@@ -132,6 +135,16 @@ class Profile(QObject):
         spatial unit.
         :rtype: AdministrativeSpatialUnit
         """
+        return self._admin_spatial_unit
+
+    @property
+    def auto_generate_code(self):
+
+        """
+        :return: Returns the entity corresponding to the auto generate code
+        :rtype: AutoGenerateCode
+        """
+        # Added in 1.7.4
         return self._admin_spatial_unit
 
     @property

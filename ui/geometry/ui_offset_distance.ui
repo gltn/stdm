@@ -52,9 +52,9 @@
     </widget>
    </item>
    <item row="3" column="3">
-    <widget class="QPushButton" name="save_btn">
+    <widget class="QPushButton" name="run_btn">
      <property name="text">
-      <string>Save</string>
+      <string>Run</string>
      </property>
     </widget>
    </item>
